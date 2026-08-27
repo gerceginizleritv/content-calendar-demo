@@ -398,7 +398,8 @@ function getPlatform(ev){ return ev.platform; }
 
 function calWindowStart(){
   const d = new Date();
-  d.setDate(d.getDate() - d.getDay() + weekStartOffset);
+  const mondayOffset = (d.getDay() + 6) % 7;
+  d.setDate(d.getDate() - mondayOffset + weekStartOffset);
   d.setHours(0,0,0,0);
   return d;
 }
@@ -456,7 +457,7 @@ function renderLegend(){
 function renderCal(){
   const grid = document.getElementById('calGrid');
   grid.innerHTML = '';
-  const dows = ['SUN','MON','TUE','WED','THU','FRI','SAT'];
+ const dows = ['MON','TUE','WED','THU','FRI','SAT','SUN'];
   dows.forEach(dw=>{
     const el = document.createElement('div');
     el.className = 'cal-dow';
@@ -466,7 +467,7 @@ function renderCal(){
 
   const start = calWindowStart();
   const today = new Date(); today.setHours(0,0,0,0);
-  const totalDays = 14;
+  const totalDays = 28;
   const rangeEnd = new Date(start); rangeEnd.setDate(start.getDate()+totalDays-1);
   document.getElementById('rangeLabel').textContent =
     start.toLocaleDateString('en-US',{month:'short',day:'numeric'}) + ' – ' + rangeEnd.toLocaleDateString('en-US',{month:'short',day:'numeric'});
