@@ -1,0 +1,796 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Slate — Content Publishing Calendar</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Manrope:wght@500;700;800&family=IBM+Plex+Sans:wght@400;500;600&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+:root{
+  --bg:#10131C; --surface:#171B28; --surface-2:#1E2333; --line:#2A3049;
+  --accent:#FFB020; --accent-dim:#8A6320; --accent-glow:rgba(255,176,32,0.35);
+  --text:#E9EBF2; --text-dim:#8B90A3;
+  --red:#E85D5D;
+}
+*{box-sizing:border-box;}
+body{
+  margin:0; background:var(--bg); color:var(--text);
+  font-family:'IBM Plex Sans',-apple-system,sans-serif;
+  padding:24px;
+}
+.mono{font-family:'JetBrains Mono',monospace;}
+.wrap{max-width:1200px;margin:0 auto;}
+
+.banner{
+  background:var(--surface); border:1px solid var(--line); border-left:3px solid var(--accent);
+  border-radius:6px; padding:14px 18px; margin-bottom:22px; font-size:13.5px; line-height:1.6; color:var(--text-dim);
+}
+.banner b{color:var(--text);}
+.banner .tally{
+  display:inline-block; width:7px; height:7px; border-radius:50%;
+  background:var(--accent); box-shadow:0 0 8px var(--accent-glow);
+  animation:pulse 1.8s ease-in-out infinite; margin-right:8px; vertical-align:middle;
+}
+@keyframes pulse{0%,100%{opacity:1;}50%{opacity:.35;}}
+
+.header{
+  background:var(--surface); border:1px solid var(--line); border-radius:8px;
+  padding:32px; margin-bottom:22px; position:relative; overflow:hidden;
+}
+.header::before{
+  content:''; position:absolute; top:0; right:0; width:280px; height:280px;
+  background:radial-gradient(circle, var(--accent-glow), transparent 70%);
+  opacity:.5; pointer-events:none;
+}
+.eyebrow{
+  font-family:'JetBrains Mono',monospace; font-size:11px; letter-spacing:2.5px; text-transform:uppercase;
+  color:var(--accent); display:flex; align-items:center; gap:8px; margin-bottom:10px;
+}
+.eyebrow .tally{display:inline-block;width:6px;height:6px;border-radius:50%;background:var(--accent);box-shadow:0 0 6px var(--accent-glow);animation:pulse 1.8s ease-in-out infinite;}
+.header h1{
+  font-family:'Manrope',sans-serif; font-weight:800; font-size:32px; line-height:1.15;
+  margin:0 0 12px; letter-spacing:-0.5px; max-width:640px;
+}
+.header p{color:var(--text-dim); margin:0; max-width:560px; font-size:14.5px; line-height:1.6;}
+.toolbar{display:flex;gap:10px;flex-wrap:wrap;margin-top:22px;}
+.btn{
+  background:transparent; border:1px solid var(--line); color:var(--text);
+  padding:9px 16px; font-size:13px; font-weight:500; cursor:pointer; border-radius:6px;
+  font-family:'IBM Plex Sans',sans-serif; transition:border-color .15s, background .15s;
+}
+.btn:hover{border-color:var(--accent-dim); background:var(--surface-2);}
+.btn-primary{background:var(--accent); color:#1a1204; border-color:var(--accent); font-weight:700;}
+.btn-primary:hover{background:#ffc247;}
+
+.legend{display:flex;flex-wrap:wrap;gap:6px;margin:10px 0;align-items:center;}
+.legend-item{
+  display:flex;align-items:center;gap:6px;font-size:12px;font-weight:500;
+  padding:6px 12px 6px 10px; border:1px solid var(--line); border-radius:4px 4px 4px 0; cursor:pointer;
+  transition:all .15s; color:var(--text-dim); position:relative;
+  clip-path:polygon(0 0, 100% 0, 100% 100%, 8px 100%, 0 calc(100% - 8px));
+}
+.legend-item:hover{border-color:var(--accent-dim);color:var(--text);}
+.legend-item.active{border-color:var(--accent);color:var(--text);background:rgba(255,176,32,0.08);}
+.dot{width:7px;height:7px;border-radius:50%;display:inline-block;flex-shrink:0;}
+.pico{width:15px;height:15px;display:inline-flex;flex-shrink:0;}
+.pico svg{width:100%;height:100%;}
+.legend-reset{font-family:'JetBrains Mono',monospace;font-size:11px;color:var(--accent-dim);cursor:pointer;opacity:0;transition:opacity .15s;}
+.legend-reset.show{opacity:1;}
+.legend-reset:hover{color:var(--accent);}
+.hint{font-size:12.5px;color:var(--text-dim);margin:8px 0 20px;}
+
+.cal-nav{display:flex;justify-content:space-between;align-items:center;margin-bottom:14px;}
+.cal-nav-btn{background:var(--surface);border:1px solid var(--line);color:var(--text);padding:8px 16px;cursor:pointer;border-radius:6px;font-size:13px;font-family:'IBM Plex Sans',sans-serif;}
+.cal-nav-btn:hover{border-color:var(--accent-dim);}
+.cal-range{font-family:'JetBrains Mono',monospace;font-size:13px;color:var(--text-dim);}
+
+.cal-grid{display:grid;grid-template-columns:repeat(7,1fr);border:1px solid var(--line);background:var(--line);gap:1px;border-radius:8px;overflow:hidden;}
+.cal-dow{background:var(--surface);padding:9px;text-align:center;font-family:'JetBrains Mono',monospace;font-size:10px;letter-spacing:1.5px;color:var(--accent-dim);text-transform:uppercase;}
+.cal-day{background:var(--bg);padding:9px 8px;min-height:112px;}
+.cal-day.today{background:rgba(255,176,32,0.04);box-shadow:inset 0 0 0 1px rgba(255,176,32,0.25);}
+.cal-day-num{font-family:'JetBrains Mono',monospace;font-size:11px;color:var(--text-dim);margin-bottom:7px;}
+.cal-day.today .cal-day-num{color:var(--accent);font-weight:700;}
+.cal-chip-row{display:flex;gap:3px;margin-bottom:3px;}
+.cal-chip{
+  flex:1;display:flex;align-items:center;gap:5px;background:var(--surface);
+  border-left:2px solid var(--line);padding:5px 7px;cursor:pointer;
+  font-size:10.5px;overflow:hidden;transition:background .12s,border-color .12s;border-radius:0 3px 3px 0;
+}
+.cal-chip:hover{background:var(--surface-2);}
+.cal-chip.live{border-left-color:var(--accent);}
+.cal-badge{
+  font-family:'JetBrains Mono',monospace;font-size:8px;font-weight:700;color:#0a0a0a;
+  padding:2px 5px;border-radius:2px 2px 2px 0;flex-shrink:0;
+}
+.cal-chip-title{overflow:hidden;text-overflow:ellipsis;white-space:nowrap;color:var(--text-dim);}
+.cal-status-icon{margin-left:auto;font-size:9px;flex-shrink:0;}
+.cal-status-icon.on-air{
+  width:6px;height:6px;border-radius:50%;background:var(--accent);
+  box-shadow:0 0 5px var(--accent-glow);animation:pulse 1.8s ease-in-out infinite;
+}
+
+.overlay{display:none;position:fixed;inset:0;background:rgba(4,5,10,0.8);z-index:50;align-items:center;justify-content:center;padding:20px;}
+.overlay.open{display:flex;}
+.modal{
+  background:var(--surface);border:1px solid var(--line);border-top:3px solid var(--accent);
+  padding:26px;width:100%;max-width:600px;max-height:88vh;overflow-y:auto;border-radius:8px;
+}
+.modal h2{font-family:'Manrope',sans-serif;font-size:16px;font-weight:800;letter-spacing:-0.2px;margin:0 0 18px;}
+.field{margin-bottom:15px;}
+.field label{display:block;font-family:'JetBrains Mono',monospace;font-size:10.5px;text-transform:uppercase;letter-spacing:1.2px;color:var(--accent-dim);margin-bottom:6px;}
+.field input,.field select,.field textarea{
+  width:100%;background:var(--bg);border:1px solid var(--line);color:var(--text);
+  padding:9px 10px;font-size:13px;font-family:'IBM Plex Sans',sans-serif;border-radius:5px;
+}
+.field input:focus,.field select:focus,.field textarea:focus{outline:none;border-color:var(--accent-dim);}
+.field textarea{min-height:80px;resize:vertical;font-family:'JetBrains Mono',monospace;font-size:12px;line-height:1.5;}
+.field-header{display:flex;justify-content:space-between;align-items:center;margin-bottom:6px;}
+.field-header label{margin:0;}
+.copy-btn{background:transparent;border:1px solid var(--line);color:var(--text-dim);padding:3px 9px;font-size:10px;cursor:pointer;border-radius:4px;font-family:'JetBrains Mono',monospace;}
+.copy-btn:hover{border-color:var(--accent-dim);color:var(--accent);}
+.copy-btn.copied{color:var(--accent);border-color:var(--accent);}
+.row2{display:grid;grid-template-columns:1fr 1fr;gap:12px;}
+.platform-checks{display:flex;flex-wrap:wrap;gap:8px;}
+.pcheck{display:flex;align-items:center;gap:6px;border:1px solid var(--line);padding:7px 12px;border-radius:5px;font-size:12px;cursor:pointer;}
+.pcheck:hover{border-color:var(--accent-dim);}
+.pcheck input{width:auto;accent-color:var(--accent);}
+.upload-toggle{display:flex;align-items:center;gap:9px;border:1px solid var(--line);padding:11px 13px;margin:15px 0;cursor:pointer;border-radius:6px;}
+.upload-toggle .box{width:17px;height:17px;border:1px solid var(--accent-dim);display:flex;align-items:center;justify-content:center;font-size:11px;border-radius:3px;}
+.upload-toggle.checked .box{background:var(--accent);color:#1a1204;border-color:var(--accent);}
+.section-title{font-family:'Manrope',sans-serif;color:var(--accent);font-weight:700;font-size:12px;text-transform:uppercase;letter-spacing:1px;margin:20px 0 12px;border-top:1px solid var(--line);padding-top:16px;}
+.modal-actions{display:flex;justify-content:flex-end;gap:9px;margin-top:20px;}
+.btn-danger{border-color:var(--red);color:var(--red);}
+.btn-danger:hover{background:rgba(232,93,93,0.08);}
+.ai-btn{color:var(--accent);border-color:var(--accent-dim);}
+.ai-btn:hover{border-color:var(--accent);background:rgba(255,176,32,0.08);}
+.ai-btn:disabled{opacity:.5;cursor:default;}
+.ai-status{font-size:11.5px;color:var(--text-dim);margin-top:6px;min-height:14px;}
+.ai-status.error{color:var(--red);}
+.ai-status.ok{color:var(--accent);}
+.tour-dots{display:flex;gap:5px;margin-top:14px;}
+.tour-dot{width:6px;height:6px;border-radius:50%;background:var(--line);}
+.tour-dot.active{background:var(--accent);}
+@media(max-width:700px){
+  .cal-grid{grid-template-columns:1fr;}
+  .cal-dow{display:none;}
+  .cal-day{min-height:auto;}
+  .row2{grid-template-columns:1fr;}
+  .header h1{font-size:26px;}
+  .cal-nav{flex-wrap:wrap;gap:8px;justify-content:center;}
+  .cal-range{order:-1;width:100%;text-align:center;margin-bottom:4px;}
+}
+</style>
+</head>
+<body>
+<div class="wrap">
+
+  <div class="banner">
+    <span class="tally"></span><b>This is a live, working demo.</b> Click any entry to edit it, or create a new one. Everything is saved <b>only in your own browser</b> — no account, no signup, nothing sent anywhere. Refresh and it's still there. Clear your browser data and it resets.
+  </div>
+
+  <div class="header">
+    <div class="eyebrow"><span class="tally"></span>QUEUE — NEXT 14 DAYS</div>
+    <h1>One slate per post. Every platform, in sync.</h1>
+    <p>Video, Reels, Carousel, Story — track content type and platform as two separate signals, so you can filter by either one. Open any slot to see the full caption, hashtags, and cover-image prompt, ready to copy.</p>
+    <div class="toolbar">
+      <button class="btn btn-primary" id="addBtn">+ New Entry</button>
+      <button class="btn" id="exportBtn">Export Backup</button>
+      <button class="btn" id="importBtn">Import Backup</button>
+      <button class="btn" id="resetBtn">Reset Demo</button>
+      <button class="btn" id="tourBtn">? How this works</button>
+      <button class="btn" id="refreshBtn">↻ Refresh</button>
+      <input type="file" id="importFile" accept="application/json" style="display:none;">
+    </div>
+  </div>
+
+  <div class="legend" id="typeLegend"></div>
+  <div class="legend" id="platformLegend"></div>
+  <div class="legend" id="statusLegend"></div>
+  <div class="hint">Click a tab in either row to filter — combine content type + platform together. Click again to remove.</div>
+
+  <div class="cal-nav">
+    <button class="cal-nav-btn" id="prevBtn">◀ Previous</button>
+    <span class="cal-range mono" id="rangeLabel"></span>
+    <button class="cal-nav-btn" id="todayBtn">Today</button>
+    <button class="cal-nav-btn" id="nextBtn">Next ▶</button>
+  </div>
+
+  <div class="cal-grid" id="calGrid"></div>
+
+</div>
+
+<div class="overlay" id="editOverlay">
+  <div class="modal">
+    <h2 id="modalTitle">New Entry</h2>
+
+    <div class="row2">
+      <div class="field">
+        <label>Content Type</label>
+        <select id="f_type"></select>
+      </div>
+      <div class="field" id="platformSingleWrap">
+        <label>Platform</label>
+        <select id="f_platform"></select>
+      </div>
+    </div>
+
+    <div class="field" id="platformMultiWrap">
+      <label>Platform(s) — check all that this same content goes to</label>
+      <div class="platform-checks" id="platformChecks"></div>
+    </div>
+
+    <div class="field">
+      <label>Title / Note</label>
+      <input type="text" id="f_title" placeholder="e.g. Product Launch Teaser">
+    </div>
+
+    <div class="row2">
+      <div class="field"><label>Date</label><input type="date" id="f_date"></div>
+      <div class="field"><label>Time</label><input type="time" id="f_time"></div>
+    </div>
+
+    <div class="upload-toggle" id="uploadToggle">
+      <span class="box" id="uploadBox"></span>
+      <span>Posted / Scheduled</span>
+    </div>
+
+    <div class="field">
+      <div class="field-header">
+        <label>Caption</label>
+        <span style="display:flex;gap:6px;">
+          <button type="button" class="copy-btn ai-btn" id="aiDraftBtn">✨ Draft with AI</button>
+          <button type="button" class="copy-btn" data-copy="f_caption">Copy</button>
+        </span>
+      </div>
+      <textarea id="f_caption" placeholder="Write the caption for this post..."></textarea>
+      <div id="aiStatus" class="ai-status"></div>
+    </div>
+
+    <div class="field">
+      <div class="field-header">
+        <label>Hashtags / Tags (comma-separated, no #)</label>
+        <button type="button" class="copy-btn" data-copy="f_hashtags">Copy</button>
+      </div>
+      <textarea id="f_hashtags" style="min-height:44px;" placeholder="product launch, saas, startup"></textarea>
+    </div>
+
+    <div class="field" id="thumbWrap">
+      <div class="field-header">
+        <label>Cover / Thumbnail Image Prompt</label>
+        <button type="button" class="copy-btn" data-copy="f_thumb">Copy</button>
+      </div>
+      <textarea id="f_thumb" placeholder="Describe the cover image for an AI image generator..."></textarea>
+    </div>
+
+    <div id="carouselWrap" style="display:none;">
+      <div class="section-title">Carousel Slide Prompts (9)</div>
+      <div id="carouselSlides"></div>
+    </div>
+
+    <div class="modal-actions">
+      <button class="btn btn-danger" id="deleteBtn" style="display:none;">Delete</button>
+      <button class="btn" id="cancelBtn">Cancel</button>
+      <button class="btn btn-primary" id="saveBtn">Save</button>
+    </div>
+  </div>
+</div>
+
+<div class="overlay" id="aiSettingsOverlay">
+  <div class="modal" style="max-width:440px;">
+    <h2>Connect Your Own AI</h2>
+    <p style="color:var(--text-dim);font-size:13px;line-height:1.6;margin-top:-8px;">
+      Bring your own API key from Claude or Gemini to draft captions. Your key is stored <b>only in this browser's local storage</b> — it's sent directly from your browser to Anthropic's or Google's servers, never through us or any third party.
+    </p>
+    <div class="field">
+      <label>Provider</label>
+      <select id="ai_provider">
+        <option value="claude">Claude (Anthropic)</option>
+        <option value="gemini">Gemini (Google)</option>
+      </select>
+    </div>
+    <div class="field">
+      <label>API Key</label>
+      <input type="password" id="ai_key" placeholder="sk-ant-... or AIza...">
+    </div>
+    <div class="field" style="font-size:12px;color:var(--text-dim);">
+      Don't have a key? Get one free at
+      <a href="https://console.anthropic.com/settings/keys" target="_blank" style="color:var(--accent);" id="ai_key_link">console.anthropic.com</a>.
+    </div>
+    <div class="modal-actions">
+      <button class="btn" id="aiSettingsCancelBtn">Cancel</button>
+      <button class="btn btn-primary" id="aiSettingsSaveBtn">Save & Connect</button>
+    </div>
+  </div>
+</div>
+
+<div class="overlay" id="tourOverlay">
+  <div class="modal" style="max-width:480px;">
+    <div class="mono" style="font-size:10.5px;letter-spacing:1.5px;color:var(--accent-dim);margin-bottom:6px;" id="tourStep">STEP 1 / 4</div>
+    <h2 id="tourTitle" style="font-size:19px;"></h2>
+    <p id="tourBody" style="color:var(--text-dim);font-size:14px;line-height:1.65;"></p>
+    <div class="tour-dots" id="tourDots"></div>
+    <div class="modal-actions" style="justify-content:space-between;align-items:center;">
+      <span class="mono" id="tourSkip" style="font-size:12px;color:var(--text-dim);cursor:pointer;text-decoration:underline;">Skip tour</span>
+      <span style="display:flex;gap:8px;">
+        <button class="btn" id="tourBackBtn" style="display:none;">Back</button>
+        <button class="btn btn-primary" id="tourNextBtn">Next</button>
+      </span>
+    </div>
+  </div>
+</div>
+
+<script>
+const STORAGE_KEY = 'demo_content_calendar_v1';
+
+const CAL_TYPES = ['video','shorts','reels','carousel','story','text_post','poll'];
+const CAL_SM_PLATFORMS = ['youtube','instagram','tiktok','facebook','threads','x','pinterest','linkedin'];
+const CAL_TYPE_NAMES = {video:'Video', shorts:'Shorts', reels:'Reels', carousel:'Carousel', story:'Story', text_post:'Text Post', poll:'Poll'};
+const CAL_TYPE_LABELS = {video:'VID', shorts:'SHRT', reels:'REEL', carousel:'CAR', story:'STORY', text_post:'TXT', poll:'POLL'};
+const CAL_SM_NAMES = {youtube:'YouTube', instagram:'Instagram', tiktok:'TikTok', facebook:'Facebook', threads:'Threads', x:'X', pinterest:'Pinterest', linkedin:'LinkedIn'};
+const CAL_SM_COLORS = {youtube:'#E85D5D', instagram:'#D6538F', tiktok:'#3FCFC4', facebook:'#5B8CE8', threads:'#C9CBD6', x:'#8B90A3', pinterest:'#F2895C', linkedin:'#3B82C4'};
+const PLATFORM_ICONS = {
+  youtube: '<svg viewBox="0 0 24 24" fill="currentColor"><rect x="1" y="5" width="22" height="14" rx="4"/><path d="M10 8.7v6.6l6-3.3z" fill="var(--surface)"/></svg>',
+  instagram: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="2" y="2" width="20" height="20" rx="6"/><circle cx="12" cy="12" r="5"/><circle cx="17.3" cy="6.7" r="1.1" fill="currentColor" stroke="none"/></svg>',
+  tiktok: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 4v11.5"/><circle cx="9" cy="17.5" r="3" fill="currentColor" stroke="none"/><path d="M12 4c.8 2.3 2.7 3.9 5 4.2"/></svg>',
+  facebook: '<svg viewBox="0 0 24 24" fill="currentColor"><circle cx="12" cy="12" r="11"/><path d="M14 8.6h-1.3c-.4 0-.9.3-.9.9V11h2.2l-.3 2.1h-1.9V20h-2.3v-6.9H7.9V11h1.6V9.3c0-2 1.2-3.2 3.1-3.2.8 0 1.4.1 1.4.1v2.4z" fill="var(--surface)"/></svg>',
+  threads: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"><path d="M12 3c-4.6 0-7.2 2.9-7.2 8s2.6 10 7.2 10c3.9 0 6.2-2.1 6.2-4.8 0-2.1-1.4-3.3-3.5-3.5 1.6-.4 2.7-1.5 2.7-3.1 0-2.4-2-3.9-4.8-3.9-2 0-3.7.8-4.6 2.3"/></svg>',
+  x: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.3" stroke-linecap="round"><path d="M5 5l14 14M19 5L5 19"/></svg>',
+  pinterest: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><path d="M9.2 17.3c1-3.1 1.6-5.3 1.6-7.1a3 3 0 1 1 3 3c-.9 0-1.4-.4-1.5-1.3"/></svg>',
+  linkedin: '<svg viewBox="0 0 24 24" fill="currentColor"><rect x="1" y="1" width="22" height="22" rx="4"/><g fill="var(--surface)"><circle cx="6.7" cy="7.2" r="1.6"/><rect x="5.5" y="10.2" width="2.4" height="8.8"/><path d="M10.7 10.2h2.3v1.3c.4-.7 1.3-1.5 2.8-1.5 2.2 0 3.4 1.4 3.4 4v5.1h-2.4v-4.5c0-1.3-.5-2.1-1.6-2.1-1 0-1.6.7-1.8 1.4-.1.2-.1.5-.1.8v4.4h-2.4l-.2-8.9z"/></g></svg>',
+};
+const CAL_TYPE_COLORS = {video:'#FFB020', shorts:'#F2895C', reels:'#B383E8', carousel:'#6FA8DC', story:'#E8C34A', text_post:'#8B90A3', poll:'#5FD9A0'};
+
+function seedData(){
+  const today = new Date();
+  const d = (offset)=>{ const x = new Date(today); x.setDate(x.getDate()+offset); return x.toISOString().slice(0,10); };
+  return [
+    { id:'seed1', type:'video', platform:'youtube', title:'Product Launch — Full Walkthrough', date:d(1), time:'18:00', uploaded:false,
+      content:{ caption:"We just shipped the biggest update of the year. In this video I walk through every new feature, why we built it, and what's coming next.\n\nTimestamps in the description. Let me know what you think in the comments!", hashtags:'product launch, saas, startup, behind the scenes', thumbPrompt:'High-contrast YouTube thumbnail, bold white text "IT\'S HERE", excited expression, product screenshot in the background, bright accent color pop.', slidePrompts:[] } },
+    { id:'seed2', type:'reels', platform:'instagram', title:'60-Second Feature Teaser', date:d(1), time:'19:00', uploaded:false,
+      content:{ caption:"This one feature alone saves our users 4 hours a week. 👀\n\nFull breakdown in today's video — link in bio.", hashtags:'productivity, saas, worksmarter, techtok, startuplife', thumbPrompt:'Vertical 9:16 Reels cover. Clean product UI screenshot with a bold minimal headline overlay, soft gradient background, plenty of negative space for text.', slidePrompts:[] } },
+    { id:'seed3', type:'reels', platform:'facebook', title:'60-Second Feature Teaser', date:d(1), time:'20:00', uploaded:false,
+      content:{ caption:"This one feature alone saves our users 4 hours a week. 👀\n\nFull video posted above.", hashtags:'productivity, saas', thumbPrompt:'Same cover as Instagram Reels version, 9:16 vertical.', slidePrompts:[] } },
+    { id:'seed4', type:'carousel', platform:'instagram', title:'5 Mistakes New Users Make', date:d(3), time:'12:00', uploaded:false,
+      content:{ caption:"Save this before you make these 5 mistakes 👇\n\nWe pulled these from real support tickets — they're more common than you'd think.", hashtags:'productivitytips, saastips, howto', thumbPrompt:'', slidePrompts:[
+        'Carousel slide 1/9 (cover). Bold headline "5 MISTAKES NEW USERS MAKE", dark background, clean sans-serif typography, minimal icon.',
+        'Carousel slide 2/9. Mistake #1 headline with a simple before/after style illustration, consistent brand color palette.',
+        'Carousel slide 3/9. Mistake #2 headline with supporting icon.',
+        'Carousel slide 4/9. Mistake #3 headline with supporting icon.',
+        'Carousel slide 5/9. Mistake #4 headline with supporting icon.',
+        'Carousel slide 6/9. Mistake #5 headline with supporting icon.',
+        'Carousel slide 7/9. Quick recap slide, all 5 mistakes listed compactly.',
+        'Carousel slide 8/9. "Which one surprised you?" question slide, friendly tone.',
+        'Carousel slide 9/9 (closing/CTA). "Follow for more tips like this" with logo, matching brand palette.'
+      ] } },
+    { id:'seed5', type:'story', platform:'instagram', title:'Poll — Which feature next?', date:d(2), time:'10:00', uploaded:false,
+      content:{ caption:'Screen text: "Which feature should we build next?" — poll sticker with two options.', hashtags:'', thumbPrompt:'Vertical 9:16 story background, on-brand color gradient, clean space reserved for the native poll sticker.', slidePrompts:[] } },
+    { id:'seed6', type:'poll', platform:'facebook', title:'Community Poll — Feature Vote', date:d(4), time:'14:00', uploaded:false,
+      content:{ caption:"Help us prioritize! Which of these would help you most?\n\nA) Dark mode\nB) Mobile app\nC) Team collaboration\n\nVote below 👇", hashtags:'communityfeedback, productroadmap', thumbPrompt:'', slidePrompts:[] } },
+    { id:'seed7', type:'text_post', platform:'facebook', title:'Behind-the-scenes note', date:d(5), time:'11:00', uploaded:false,
+      content:{ caption:"Small team update: we spent this whole week just on load-time improvements. Nothing flashy to show, but the app now opens twice as fast. Sometimes the best work is invisible.", hashtags:'buildinpublic, startuplife', thumbPrompt:'', slidePrompts:[] } },
+    { id:'seed8', type:'shorts', platform:'youtube', title:'One Tip in 30 Seconds', date:d(6), time:'17:00', uploaded:true,
+      content:{ caption:"One setting most people never find — and it fixes the #1 complaint we get. 30 seconds, worth it.", hashtags:'shorts, producttips, tutorial, quicktip', thumbPrompt:'YouTube Shorts cover, bold "1 SETTING" text, high contrast, mobile screen mockup in frame.', slidePrompts:[] } },
+  ];
+}
+
+let events = [];
+let activeTypeFilters = new Set();
+let activePlatformFilters = new Set();
+let activeStatusFilters = new Set();
+let weekStartOffset = 0;
+let currentEvent = null;
+
+function load(){
+  try{
+    const raw = localStorage.getItem(STORAGE_KEY);
+    events = raw ? JSON.parse(raw) : seedData();
+    if(!raw) save();
+  }catch(e){ events = seedData(); }
+}
+function save(){
+  localStorage.setItem(STORAGE_KEY, JSON.stringify(events));
+}
+
+function getType(ev){ return ev.type; }
+function getPlatform(ev){ return ev.platform; }
+
+function calWindowStart(){
+  const d = new Date();
+  d.setDate(d.getDate() - d.getDay() + weekStartOffset);
+  d.setHours(0,0,0,0);
+  return d;
+}
+function pad(n){ return String(n).padStart(2,'0'); }
+function fmtKey(d){ return `${d.getFullYear()}-${pad(d.getMonth()+1)}-${pad(d.getDate())}`; }
+
+function renderLegend(){
+  const typeEl = document.getElementById('typeLegend');
+  typeEl.innerHTML = CAL_TYPES.map(t=>`
+    <span class="legend-item ${activeTypeFilters.has(t)?'active':''}" data-type="${t}">
+      <span class="dot" style="background:${CAL_TYPE_COLORS[t]}"></span>${CAL_TYPE_NAMES[t]}
+    </span>`).join('') + `<span class="legend-reset ${activeTypeFilters.size?'show':''}" id="typeReset">Clear</span>`;
+  typeEl.querySelectorAll('.legend-item').forEach(el=>{
+    el.addEventListener('click', ()=>{
+      const t = el.dataset.type;
+      activeTypeFilters.has(t) ? activeTypeFilters.delete(t) : activeTypeFilters.add(t);
+      renderLegend(); renderCal();
+    });
+  });
+  document.getElementById('typeReset').addEventListener('click', ()=>{ activeTypeFilters.clear(); renderLegend(); renderCal(); });
+
+  const platEl = document.getElementById('platformLegend');
+  platEl.innerHTML = CAL_SM_PLATFORMS.map(p=>`
+    <span class="legend-item ${activePlatformFilters.has(p)?'active':''}" data-platform="${p}">
+      <span class="pico" style="color:${CAL_SM_COLORS[p]}">${PLATFORM_ICONS[p]}</span>${CAL_SM_NAMES[p]}
+    </span>`).join('') + `<span class="legend-reset ${activePlatformFilters.size?'show':''}" id="platReset">Clear</span>`;
+  platEl.querySelectorAll('.legend-item').forEach(el=>{
+    el.addEventListener('click', ()=>{
+      const p = el.dataset.platform;
+      activePlatformFilters.has(p) ? activePlatformFilters.delete(p) : activePlatformFilters.add(p);
+      renderLegend(); renderCal();
+    });
+  });
+  document.getElementById('platReset').addEventListener('click', ()=>{ activePlatformFilters.clear(); renderLegend(); renderCal(); });
+
+  const statusEl = document.getElementById('statusLegend');
+  const statuses = [
+    {key:'scheduled', label:'🕒 Scheduled', color:'#8B90A3'},
+    {key:'posted', label:'● Posted', color:'#FFB020'},
+  ];
+  statusEl.innerHTML = statuses.map(s=>`
+    <span class="legend-item ${activeStatusFilters.has(s.key)?'active':''}" data-status="${s.key}">
+      <span class="dot" style="background:${s.color}"></span>${s.label}
+    </span>`).join('') + `<span class="legend-reset ${activeStatusFilters.size?'show':''}" id="statusReset">Clear</span>`;
+  statusEl.querySelectorAll('.legend-item').forEach(el=>{
+    el.addEventListener('click', ()=>{
+      const s = el.dataset.status;
+      activeStatusFilters.has(s) ? activeStatusFilters.delete(s) : activeStatusFilters.add(s);
+      renderLegend(); renderCal();
+    });
+  });
+  document.getElementById('statusReset').addEventListener('click', ()=>{ activeStatusFilters.clear(); renderLegend(); renderCal(); });
+}
+
+function renderCal(){
+  const grid = document.getElementById('calGrid');
+  grid.innerHTML = '';
+  const dows = ['SUN','MON','TUE','WED','THU','FRI','SAT'];
+  dows.forEach(dw=>{
+    const el = document.createElement('div');
+    el.className = 'cal-dow';
+    el.textContent = dw;
+    grid.appendChild(el);
+  });
+
+  const start = calWindowStart();
+  const today = new Date(); today.setHours(0,0,0,0);
+  const totalDays = 14;
+  const rangeEnd = new Date(start); rangeEnd.setDate(start.getDate()+totalDays-1);
+  document.getElementById('rangeLabel').textContent =
+    start.toLocaleDateString('en-US',{month:'short',day:'numeric'}) + ' – ' + rangeEnd.toLocaleDateString('en-US',{month:'short',day:'numeric'});
+
+  for(let i=0;i<totalDays;i++){
+    const d = new Date(start); d.setDate(start.getDate()+i);
+    const key = fmtKey(d);
+    const cell = document.createElement('div');
+    cell.className = 'cal-day' + (d.toDateString()===today.toDateString() ? ' today' : '');
+    cell.innerHTML = `<div class="cal-day-num">${d.getDate()} ${d.toLocaleDateString('en-US',{month:'short'})}</div>`;
+
+    let dayEvents = events.filter(e=>e.date===key
+      && (activeTypeFilters.size===0 || activeTypeFilters.has(getType(e)))
+      && (activePlatformFilters.size===0 || activePlatformFilters.has(getPlatform(e)))
+      && (activeStatusFilters.size===0 || activeStatusFilters.has(e.uploaded ? 'posted' : 'scheduled'))
+    ).sort((a,b)=>(a.time||'').localeCompare(b.time||''));
+
+    dayEvents.forEach(ev=>{
+      const row = document.createElement('div');
+      row.className = 'cal-chip-row';
+      const chip = document.createElement('div');
+      chip.className = 'cal-chip' + (ev.uploaded ? ' live' : '');
+      chip.innerHTML = `<span class="cal-badge" style="background:${CAL_SM_COLORS[ev.platform]}" title="${CAL_SM_NAMES[ev.platform]}">${CAL_TYPE_LABELS[ev.type]}</span>
+        <span class="cal-chip-title">${ev.time||''} ${escapeHtml(ev.title||'')}</span>
+        <span class="cal-status-icon${ev.uploaded?' on-air':''}">${ev.uploaded?'':'○'}</span>`;
+      chip.addEventListener('click', ()=> openModal(ev));
+      row.appendChild(chip);
+      cell.appendChild(row);
+    });
+
+    grid.appendChild(cell);
+  }
+}
+
+function escapeHtml(s){
+  const d = document.createElement('div');
+  d.textContent = s;
+  return d.innerHTML;
+}
+
+function populateSelects(){
+  document.getElementById('f_type').innerHTML = CAL_TYPES.map(t=>`<option value="${t}">${CAL_TYPE_NAMES[t]}</option>`).join('');
+  document.getElementById('f_platform').innerHTML = CAL_SM_PLATFORMS.map(p=>`<option value="${p}">${CAL_SM_NAMES[p]}</option>`).join('');
+  document.getElementById('platformChecks').innerHTML = CAL_SM_PLATFORMS.map(p=>`
+    <label class="pcheck"><input type="checkbox" value="${p}" ${p==='youtube'?'checked':''}><span class="pico" style="color:${CAL_SM_COLORS[p]}">${PLATFORM_ICONS[p]}</span>${CAL_SM_NAMES[p]}</label>`).join('');
+}
+
+function refreshTypeDependentFields(){
+  const type = document.getElementById('f_type').value;
+  document.getElementById('thumbWrap').style.display = (type==='video'||type==='shorts'||type==='reels') ? '' : 'none';
+  document.getElementById('carouselWrap').style.display = (type==='carousel') ? '' : 'none';
+  if(type === 'carousel'){
+    const container = document.getElementById('carouselSlides');
+    if(container.children.length === 0){
+      container.innerHTML = Array.from({length:9},(_,i)=>`
+        <div class="field">
+          <div class="field-header"><label>Slide ${i+1}</label><button type="button" class="copy-btn" data-copy="slide${i+1}">Copy</button></div>
+          <textarea id="slide${i+1}"></textarea>
+        </div>`).join('');
+    }
+  }
+}
+
+function openModal(ev){
+  currentEvent = ev || null;
+  const isNew = !ev;
+  document.getElementById('modalTitle').textContent = isNew ? 'New Entry' : 'Edit Entry';
+  document.getElementById('deleteBtn').style.display = isNew ? 'none' : '';
+  document.getElementById('platformMultiWrap').style.display = isNew ? '' : 'none';
+  document.getElementById('platformSingleWrap').style.display = isNew ? 'none' : '';
+
+  if(ev){
+    document.getElementById('f_type').value = ev.type;
+    document.getElementById('f_platform').value = ev.platform;
+    document.getElementById('f_title').value = ev.title||'';
+    document.getElementById('f_date').value = ev.date;
+    document.getElementById('f_time').value = ev.time||'';
+    setUploadToggle(!!ev.uploaded);
+    const c = ev.content || {};
+    document.getElementById('f_caption').value = c.caption||'';
+    document.getElementById('f_hashtags').value = c.hashtags||'';
+    document.getElementById('f_thumb').value = c.thumbPrompt||'';
+    document.getElementById('carouselSlides').innerHTML = '';
+    refreshTypeDependentFields();
+    if(ev.type === 'carousel'){
+      const slides = c.slidePrompts && c.slidePrompts.length ? c.slidePrompts : Array(9).fill('');
+      slides.forEach((s,i)=>{ const el = document.getElementById('slide'+(i+1)); if(el) el.value = s; });
+    }
+  } else {
+    document.getElementById('f_type').value = 'video';
+    document.querySelectorAll('#platformChecks input').forEach(el=> el.checked = el.value==='youtube');
+    document.getElementById('f_title').value = '';
+    const today = new Date();
+    document.getElementById('f_date').value = fmtKey(today);
+    document.getElementById('f_time').value = '18:00';
+    setUploadToggle(false);
+    document.getElementById('f_caption').value = '';
+    document.getElementById('f_hashtags').value = '';
+    document.getElementById('f_thumb').value = '';
+    document.getElementById('carouselSlides').innerHTML = '';
+    refreshTypeDependentFields();
+  }
+  document.getElementById('editOverlay').classList.add('open');
+}
+function closeModal(){
+  document.getElementById('editOverlay').classList.remove('open');
+  currentEvent = null;
+}
+function setUploadToggle(val){
+  const t = document.getElementById('uploadToggle');
+  const b = document.getElementById('uploadBox');
+  t.classList.toggle('checked', val);
+  b.textContent = val ? '✓' : '';
+  t.dataset.val = val ? '1' : '0';
+}
+
+document.getElementById('f_type').addEventListener('change', refreshTypeDependentFields);
+document.getElementById('addBtn').addEventListener('click', ()=> openModal(null));
+document.getElementById('cancelBtn').addEventListener('click', closeModal);
+document.getElementById('editOverlay').addEventListener('click', (e)=>{ if(e.target.id==='editOverlay') closeModal(); });
+document.getElementById('uploadToggle').addEventListener('click', ()=> setUploadToggle(document.getElementById('uploadToggle').dataset.val !== '1'));
+
+document.getElementById('deleteBtn').addEventListener('click', ()=>{
+  if(!currentEvent) return;
+  if(!confirm('Delete this entry?')) return;
+  events = events.filter(e=>e.id!==currentEvent.id);
+  save(); closeModal(); renderCal();
+});
+
+document.getElementById('saveBtn').addEventListener('click', ()=>{
+  const title = document.getElementById('f_title').value.trim();
+  const date = document.getElementById('f_date').value;
+  const time = document.getElementById('f_time').value;
+  if(!title || !date || !time){ alert('Please fill in title, date and time.'); return; }
+  const type = document.getElementById('f_type').value;
+
+  const content = {
+    caption: document.getElementById('f_caption').value,
+    hashtags: document.getElementById('f_hashtags').value,
+    thumbPrompt: document.getElementById('f_thumb').value,
+    slidePrompts: type==='carousel' ? Array.from({length:9},(_,i)=> (document.getElementById('slide'+(i+1))||{}).value || '') : []
+  };
+  const uploaded = document.getElementById('uploadToggle').dataset.val === '1';
+
+  if(currentEvent){
+    Object.assign(currentEvent, { type, platform: document.getElementById('f_platform').value, title, date, time, uploaded, content });
+  } else {
+    const platforms = Array.from(document.querySelectorAll('#platformChecks input:checked')).map(el=>el.value);
+    if(platforms.length===0){ alert('Select at least one platform.'); return; }
+    platforms.forEach((p,i)=>{
+      events.push({ id:'ev_'+Date.now()+'_'+i, type, platform:p, title, date, time, uploaded, content: JSON.parse(JSON.stringify(content)) });
+    });
+  }
+  save(); closeModal(); renderCal();
+});
+
+document.getElementById('prevBtn').addEventListener('click', ()=>{ weekStartOffset -= 7; renderCal(); });
+document.getElementById('nextBtn').addEventListener('click', ()=>{ weekStartOffset += 7; renderCal(); });
+document.getElementById('todayBtn').addEventListener('click', ()=>{ weekStartOffset = 0; renderCal(); });
+
+document.getElementById('exportBtn').addEventListener('click', ()=>{
+  const blob = new Blob([JSON.stringify(events,null,2)], {type:'application/json'});
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a');
+  a.href = url; a.download = 'content-calendar-backup.json';
+  document.body.appendChild(a); a.click(); document.body.removeChild(a);
+  URL.revokeObjectURL(url);
+});
+document.getElementById('importBtn').addEventListener('click', ()=> document.getElementById('importFile').click());
+document.getElementById('importFile').addEventListener('change', (e)=>{
+  const file = e.target.files[0];
+  if(!file) return;
+  const reader = new FileReader();
+  reader.onload = ()=>{
+    try{
+      const parsed = JSON.parse(reader.result);
+      if(!Array.isArray(parsed)) throw new Error('bad format');
+      events = parsed; save(); renderCal();
+      alert('Backup imported successfully.');
+    }catch(err){ alert('Could not read that file.'); }
+  };
+  reader.readAsText(file);
+  e.target.value = '';
+});
+document.getElementById('refreshBtn').addEventListener('click', ()=> location.reload());
+document.getElementById('resetBtn').addEventListener('click', ()=>{
+  if(!confirm('Reset the demo back to the original example content? This clears anything you added.')) return;
+  events = seedData(); save(); renderCal();
+});
+
+document.addEventListener('click', (e)=>{
+  const btn = e.target.closest('.copy-btn');
+  if(!btn) return;
+  const targetId = btn.dataset.copy;
+  const el = document.getElementById(targetId);
+  if(!el) return;
+  navigator.clipboard.writeText(el.value).then(()=>{
+    const orig = btn.textContent;
+    btn.textContent = 'Copied';
+    btn.classList.add('copied');
+    setTimeout(()=>{ btn.textContent = orig; btn.classList.remove('copied'); }, 1500);
+  });
+});
+
+// ===== Onboarding tour =====
+const TOUR_STEPS = [
+  { title:"Welcome to Slate", body:"This is a live demo of a content calendar built for creators who post the same content across multiple platforms — YouTube, Instagram, TikTok, X, Threads, and more. Everything here is real and editable. Nothing you do leaves your browser." },
+  { title:"Two independent tags per post", body:"The top row is what the content is — Video, Reels, Carousel, Story. The bottom row is where it's going — YouTube, Instagram, TikTok, X, Threads, Pinterest, LinkedIn, Facebook. Click either row to filter, or combine both at once." },
+  { title:"Click any entry to open it", body:"Every slot holds the full caption, hashtags, and even an AI image-generation prompt for the cover — all editable, all one click from being copied into whatever app you post from." },
+  { title:"Optional: draft with your own AI", body:"Stuck on a caption? Connect your own Claude or Gemini API key — it's a bring-your-own-key setup, stored only in your browser, and calls go straight from your browser to Anthropic or Google. We never see it. Look for the “✨ Draft with AI” button inside any entry." },
+];
+let tourIndex = 0;
+function renderTourStep(){
+  const s = TOUR_STEPS[tourIndex];
+  document.getElementById('tourStep').textContent = `STEP ${tourIndex+1} / ${TOUR_STEPS.length}`;
+  document.getElementById('tourTitle').textContent = s.title;
+  document.getElementById('tourBody').textContent = s.body;
+  document.getElementById('tourBackBtn').style.display = tourIndex===0 ? 'none' : '';
+  document.getElementById('tourNextBtn').textContent = tourIndex===TOUR_STEPS.length-1 ? 'Got it' : 'Next';
+  document.getElementById('tourDots').innerHTML = TOUR_STEPS.map((_,i)=>`<span class="tour-dot ${i===tourIndex?'active':''}"></span>`).join('');
+}
+function openTour(){ tourIndex = 0; renderTourStep(); document.getElementById('tourOverlay').classList.add('open'); }
+function closeTour(){ document.getElementById('tourOverlay').classList.remove('open'); localStorage.setItem('demo_seen_intro','1'); }
+document.getElementById('tourNextBtn').addEventListener('click', ()=>{
+  if(tourIndex === TOUR_STEPS.length-1){ closeTour(); return; }
+  tourIndex++; renderTourStep();
+});
+document.getElementById('tourBackBtn').addEventListener('click', ()=>{ tourIndex--; renderTourStep(); });
+document.getElementById('tourSkip').addEventListener('click', closeTour);
+document.getElementById('tourOverlay').addEventListener('click', (e)=>{ if(e.target.id==='tourOverlay') closeTour(); });
+document.getElementById('tourBtn').addEventListener('click', openTour);
+
+// ===== Bring-your-own-key AI drafting (Claude or Gemini, called directly from the browser) =====
+function getAiSettings(){
+  try{ return JSON.parse(localStorage.getItem('demo_ai_settings') || 'null'); }catch(e){ return null; }
+}
+function saveAiSettings(s){ localStorage.setItem('demo_ai_settings', JSON.stringify(s)); }
+
+document.getElementById('ai_provider').addEventListener('change', ()=>{
+  const p = document.getElementById('ai_provider').value;
+  const link = document.getElementById('ai_key_link');
+  link.href = p === 'claude' ? 'https://console.anthropic.com/settings/keys' : 'https://aistudio.google.com/apikey';
+  link.textContent = p === 'claude' ? 'console.anthropic.com' : 'aistudio.google.com';
+});
+document.getElementById('aiSettingsCancelBtn').addEventListener('click', ()=> document.getElementById('aiSettingsOverlay').classList.remove('open'));
+document.getElementById('aiSettingsOverlay').addEventListener('click', (e)=>{ if(e.target.id==='aiSettingsOverlay') document.getElementById('aiSettingsOverlay').classList.remove('open'); });
+document.getElementById('aiSettingsSaveBtn').addEventListener('click', ()=>{
+  const provider = document.getElementById('ai_provider').value;
+  const key = document.getElementById('ai_key').value.trim();
+  if(!key){ alert('Enter an API key first.'); return; }
+  saveAiSettings({ provider, key });
+  document.getElementById('aiSettingsOverlay').classList.remove('open');
+  runAiDraft();
+});
+
+async function callClaude(apiKey, prompt){
+  const res = await fetch('https://api.anthropic.com/v1/messages', {
+    method:'POST',
+    headers:{
+      'x-api-key': apiKey,
+      'anthropic-version': '2023-06-01',
+      'content-type': 'application/json',
+      'anthropic-dangerous-direct-browser-access': 'true'
+    },
+    body: JSON.stringify({ model:'claude-haiku-4-5-20251001', max_tokens:400, messages:[{role:'user', content:prompt}] })
+  });
+  if(!res.ok){ const err = await res.json().catch(()=>({})); throw new Error((err.error && err.error.message) || ('HTTP '+res.status)); }
+  const data = await res.json();
+  return (data.content||[]).map(b=>b.text||'').join('').trim();
+}
+async function callGemini(apiKey, prompt){
+  const res = await fetch('https://generativelanguage.googleapis.com/v1beta/models/gemini-3.7-flash:generateContent', {
+    method:'POST',
+    headers:{ 'x-goog-api-key': apiKey, 'content-type':'application/json' },
+    body: JSON.stringify({ contents:[{ parts:[{ text: prompt }] }] })
+  });
+  if(!res.ok){ const err = await res.json().catch(()=>({})); throw new Error((err.error && err.error.message) || ('HTTP '+res.status)); }
+  const data = await res.json();
+  const parts = (data.candidates && data.candidates[0] && data.candidates[0].content && data.candidates[0].content.parts) || [];
+  return parts.map(p=>p.text||'').join('').trim();
+}
+
+function buildDraftPrompt(){
+  const type = CAL_TYPE_NAMES[document.getElementById('f_type').value];
+  const platform = currentEvent ? CAL_SM_NAMES[document.getElementById('f_platform').value] : 'social media';
+  const title = document.getElementById('f_title').value || '(no title given)';
+  return `Write a short, natural social media caption for a ${type} post on ${platform}. The post is about: "${title}". Keep it in the creator's own voice — casual, direct, no corporate tone, no more than 3-4 short sentences, end with a light call to action if it fits naturally. Return ONLY the caption text, nothing else — no preamble, no quotation marks around it.`;
+}
+
+async function runAiDraft(){
+  const settings = getAiSettings();
+  const statusEl = document.getElementById('aiStatus');
+  if(!settings || !settings.key){
+    document.getElementById('aiSettingsOverlay').classList.add('open');
+    return;
+  }
+  const btn = document.getElementById('aiDraftBtn');
+  btn.disabled = true; btn.textContent = 'Drafting…';
+  statusEl.textContent = ''; statusEl.className = 'ai-status';
+  try{
+    const prompt = buildDraftPrompt();
+    const text = settings.provider === 'claude'
+      ? await callClaude(settings.key, prompt)
+      : await callGemini(settings.key, prompt);
+    document.getElementById('f_caption').value = text;
+    statusEl.textContent = `Drafted with ${settings.provider === 'claude' ? 'Claude' : 'Gemini'}. Feel free to edit it.`;
+    statusEl.className = 'ai-status ok';
+  }catch(err){
+    statusEl.textContent = 'Could not reach the API: ' + err.message + ' — check your key in Settings and try again.';
+    statusEl.className = 'ai-status error';
+  }finally{
+    btn.disabled = false; btn.textContent = '✨ Draft with AI';
+  }
+}
+document.getElementById('aiDraftBtn').addEventListener('click', runAiDraft);
+
+
+populateSelects();
+load();
+renderLegend();
+renderCal();
+if(!localStorage.getItem('demo_seen_intro')){
+  setTimeout(openTour, 400);
+}
+</script>
+</body>
+</html>
