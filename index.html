@@ -259,6 +259,17 @@ body{
   letter-spacing:-.035em;color:var(--text);line-height:1;
 }
 
+/* ===== Kisa bildirim ===== */
+.toast{
+  position:fixed;left:50%;bottom:24px;transform:translate(-50%,14px);
+  background:var(--text);color:var(--bg);padding:11px 18px;border-radius:8px;
+  font-size:13px;font-weight:500;box-shadow:0 8px 24px -10px rgba(0,0,0,.5);
+  opacity:0;pointer-events:none;transition:opacity .18s ease, transform .18s ease;
+  z-index:100;max-width:calc(100vw - 32px);text-align:center;
+}
+.toast.show{opacity:1;transform:translate(-50%,0);}
+@media (prefers-reduced-motion:reduce){ .toast{transition:none;} }
+
 /* ===== Bulut daveti ===== */
 .nudge{
   display:flex;align-items:center;gap:10px;flex-wrap:wrap;
@@ -703,6 +714,8 @@ const LANG = {
     auth_synced: "Saved to your account.",
     auth_sync_err: "Could not reach the cloud — your work is still saved in this browser.",
     auth_moved: (n)=> `${n} entries moved to your account.`,
+    auth_move_ask: (n)=> `This browser has ${n} entries that were made without an account. Move them into this account?\n\nChoose Cancel if they are not yours.`,
+    auth_signed_out: "Signed out. You are back to this browser only.",
     nudge_text: "Only this browser knows about this calendar.",
     nudge_cta: "Keep it on every device",
     nudge_dismiss: "Not now",
@@ -827,6 +840,8 @@ const LANG = {
     auth_synced: "Hesabına kaydedildi.",
     auth_sync_err: "Buluta ulaşılamadı — çalışman bu tarayıcıda duruyor.",
     auth_moved: (n)=> `${n} kayıt hesabına taşındı.`,
+    auth_move_ask: (n)=> `Bu tarayıcıda hesapsız oluşturulmuş ${n} kayıt var. Bu hesaba taşınsın mı?\n\nSana ait değilse İptal'e bas.`,
+    auth_signed_out: "Çıkış yapıldı. Yalnızca bu tarayıcıya döndün.",
     nudge_text: "Bu takvimi yalnızca bu tarayıcı biliyor.",
     nudge_cta: "Her cihazda yanımda olsun",
     nudge_dismiss: "Şimdi değil",
@@ -1093,18 +1108,28 @@ function sanitizeEvents(list){
   return list.slice(0, MAX_EVENTS).map(sanitizeEvent).filter(Boolean);
 }
 
-function load(){
+// localStorage tarayiciya ait, hesaba degil. Ayni bilgisayarda iki kisi giris
+// yaparsa ikincisi birincinin takvimini gormemeli — bu yuzden yerel kopya
+// hesap basina ayri anahtarda tutuluyor. Anonim mod kendi anahtarinda kaliyor.
+function storageKey(){
+  return session ? 'demo_cal_' + session.user.id : STORAGE_KEY;
+}
+function readLocal(key){
   try{
-    const raw = localStorage.getItem(STORAGE_KEY);
-    events = raw ? sanitizeEvents(JSON.parse(raw)) : seedData();
-    if(!raw) save();
-  }catch(e){ events = seedData(); }
+    const raw = localStorage.getItem(key);
+    return raw ? sanitizeEvents(JSON.parse(raw)) : null;
+  }catch(e){ return null; }
+}
+function load(){
+  const yerel = readLocal(storageKey());
+  if(yerel){ events = yerel; }
+  else { events = seedData(); save(); }
 }
 // Yerel kopya her zaman yaziliyor: cevrimdisi da, hesapsiz da calissin diye.
 // Giris yapilmissa degisen satirlar ayrica buluta gonderiliyor.
 let pushTimer = null;
 function save(){
-  localStorage.setItem(STORAGE_KEY, JSON.stringify(events));
+  localStorage.setItem(storageKey(), JSON.stringify(events));
   if(session){
     clearTimeout(pushTimer);
     pushTimer = setTimeout(pushChanges, 400);
@@ -1903,6 +1928,25 @@ applyThemeLabel();
   });
 })();
 
+// Kisa bildirim. Bulut akisinda cagriliyordu ama hic tanimlanmamisti; try
+// blogunun icinde patlayip hatayi "buluta ulasilamadi" gibi gostermisti.
+let toastTimer = null;
+function showToast(mesaj){
+  if(!mesaj) return;
+  let el = document.getElementById('toast');
+  if(!el){
+    el = document.createElement('div');
+    el.id = 'toast';
+    el.className = 'toast';
+    el.setAttribute('role','status');
+    document.body.appendChild(el);
+  }
+  el.textContent = mesaj;
+  el.classList.add('show');
+  clearTimeout(toastTimer);
+  toastTimer = setTimeout(()=> el.classList.remove('show'), 3600);
+}
+
 // ===== Bulut hesabı (isteğe bağlı) =====
 function setCloudStatus(durum){
   const b = document.getElementById('authBtn');
@@ -1928,18 +1972,36 @@ function openAuth(){
 // Giris yapildiginda tarayicidaki calisma kaybolmamali: bulut bossa yerel
 // veri yukarı tasiniyor, doluysa hesaptaki veri esas aliniyor.
 async function afterSignIn(){
+  dirtyIds.clear(); removedIds.clear();
   try{
     const uzak = await pullRemote();
-    if(uzak.length === 0 && events.length > 0){
-      events.forEach(e=>{ if(!UUID_RE.test(e.id)) e.id = newId(); });
-      markAllDirty();
-      await pushChanges();
-      showToast(t('auth_moved')(events.length));
-    }else{
+
+    if(uzak.length){
+      // Hesapta veri var: esas olan o.
       events = uzak;
-      localStorage.setItem(STORAGE_KEY, JSON.stringify(events));
       showToast(t('auth_synced'));
+    }else{
+      // Hesap bos. Tarayicida anonim modda uretilmis bir calisma varsa
+      // tasimayi TEKLIF ediyoruz — sessizce almiyoruz, cunku o veri baska
+      // birinin hesabindan kalmis da olabilir.
+      const anonim = readLocal(STORAGE_KEY) || [];
+      const hesabinKendiKopyasi = readLocal(storageKey());
+      if(hesabinKendiKopyasi){
+        events = hesabinKendiKopyasi;
+        markAllDirty();
+        await pushChanges();
+      }else if(anonim.length && confirm(t('auth_move_ask')(anonim.length))){
+        // Kimlikleri yeniden uretiyoruz: baska bir hesabin satirlariyla
+        // birincil anahtar cakismasi olmasin.
+        events = anonim.map(e => ({...e, id: newId(), content: JSON.parse(JSON.stringify(e.content||{}))}));
+        markAllDirty();
+        await pushChanges();
+        showToast(t('auth_moved')(events.length));
+      }else{
+        events = [];
+      }
     }
+    save();
     renderCal();
     setCloudStatus('ok');
     trackOnce('funnel/cloud-connected');
@@ -1947,6 +2009,16 @@ async function afterSignIn(){
     console.error('[bulut] okuma hatasi', err);
     setCloudStatus('error');
   }
+}
+
+// Cikista onceki hesabin verisi ekranda kalmamali.
+function afterSignOut(){
+  dirtyIds.clear(); removedIds.clear();
+  const anonim = readLocal(STORAGE_KEY);
+  events = anonim || seedData();
+  renderCal();
+  setCloudStatus('');
+  showToast(t('auth_signed_out'));
 }
 
 if(window.supabase){
@@ -1959,6 +2031,7 @@ if(window.supabase){
     session = s;
     refreshAuthUi();
     if(s && !oncekiVarMi) afterSignIn();
+    if(!s && oncekiVarMi) afterSignOut();
   });
 }
 
