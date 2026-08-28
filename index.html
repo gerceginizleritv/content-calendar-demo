@@ -7,6 +7,7 @@
 <meta name="description" content="One shoot becomes ten posts. Slate keeps every Reel, Short, carousel and story attached to the shoot it came from — and tells you which ones aren't written yet.">
 <link rel="manifest" href="manifest.json">
 <meta name="theme-color" content="#10131C">
+<link rel="icon" href="favicon.svg" type="image/svg+xml">
 <link rel="icon" href="favicon.ico" sizes="any">
 <link rel="icon" href="favicon-32x32.png" sizes="32x32" type="image/png">
 <link rel="icon" href="favicon-16x16.png" sizes="16x16" type="image/png">
@@ -16,13 +17,49 @@
 <meta name="apple-mobile-web-app-title" content="Slate">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=Manrope:wght@500;700;800&family=IBM+Plex+Sans:wght@400;500;600&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Archivo:wght@500;600;700;800&family=IBM+Plex+Sans:wght@400;500;600&family=IBM+Plex+Mono:wght@400;500;600&display=swap" rel="stylesheet">
 <style>
+/* Slate — temel palet acik tema. Token adlari korundu, sadece degerler
+   degisti; boylece butun bilesen kurallari tek noktadan yeniden renklendi. */
 :root{
-  --bg:#10131C; --surface:#171B28; --surface-2:#1E2333; --line:#2A3049;
-  --accent:#FFB020; --accent-dim:#8A6320; --accent-glow:rgba(255,176,32,0.35);
-  --text:#E9EBF2; --text-dim:#8B90A3;
-  --red:#E85D5D;
+  --bg:#F4F7FA; --surface:#FFFFFF; --surface-2:#EDF1F6; --line:#DFE5EC; --line-soft:#EAEFF4;
+  --accent:#2563C7; --accent-dim:#8B9AAB; --accent-glow:rgba(37,99,199,0.28); --accent-soft:#E8EFFB;
+  --accent-hover:#1D53AC;
+  --text:#141C27; --text-dim:#5B6B7F;
+  --amber:#E0871F; --amber-soft:#FBF0DE;
+  --green:#2E8B62;
+  --red:#C4453C;
+  --on-accent:#FFFFFF;
+  --p-youtube:#DA4B42; --p-instagram:#C0478E; --p-tiktok:#14868F; --p-facebook:#3B6FC4;
+  --p-threads:#616B78; --p-x:#232B36; --p-pinterest:#A8322C; --p-linkedin:#1C6C9C;
+}
+/* sistem koyu — yalnizca kullanici acik temayi zorlamadiysa */
+@media (prefers-color-scheme: dark){
+  :root:not([data-theme="light"]){
+    --bg:#0F151D; --surface:#18212C; --surface-2:#202B38; --line:#2A3644; --line-soft:#222D3A;
+    --accent:#6BA0EE; --accent-dim:#6F7F92; --accent-glow:rgba(107,160,238,0.30); --accent-soft:#1B2A42;
+    --accent-hover:#8AB6F3;
+    --text:#E6ECF3; --text-dim:#93A2B4;
+    --amber:#F0A445; --amber-soft:#33270F;
+    --green:#4FB185;
+    --red:#E8706A;
+    --on-accent:#0F151D;
+    --p-youtube:#E8706A; --p-instagram:#D96BA6; --p-tiktok:#3CA9B2; --p-facebook:#6B9AE0;
+    --p-threads:#8A94A2; --p-x:#9AA4B2; --p-pinterest:#D4685F; --p-linkedin:#4E9AC8;
+  }
+}
+/* acik secim diger yonde de kazanir */
+:root[data-theme="dark"]{
+  --bg:#0F151D; --surface:#18212C; --surface-2:#202B38; --line:#2A3644; --line-soft:#222D3A;
+  --accent:#6BA0EE; --accent-dim:#6F7F92; --accent-glow:rgba(107,160,238,0.30); --accent-soft:#1B2A42;
+  --accent-hover:#8AB6F3;
+  --text:#E6ECF3; --text-dim:#93A2B4;
+  --amber:#F0A445; --amber-soft:#33270F;
+  --green:#4FB185;
+  --red:#E8706A;
+  --on-accent:#0F151D;
+  --p-youtube:#E8706A; --p-instagram:#D96BA6; --p-tiktok:#3CA9B2; --p-facebook:#6B9AE0;
+  --p-threads:#8A94A2; --p-x:#9AA4B2; --p-pinterest:#D4685F; --p-linkedin:#4E9AC8;
 }
 *{box-sizing:border-box;}
 body{
@@ -30,7 +67,7 @@ body{
   font-family:'IBM Plex Sans',-apple-system,sans-serif;
   padding:24px;
 }
-.mono{font-family:'JetBrains Mono',monospace;}
+.mono{font-family:'IBM Plex Mono',monospace;}
 .wrap{max-width:1200px;margin:0 auto;}
 
 .banner{
@@ -55,12 +92,12 @@ body{
   opacity:.5; pointer-events:none;
 }
 .eyebrow{
-  font-family:'JetBrains Mono',monospace; font-size:11px; letter-spacing:2.5px; text-transform:uppercase;
+  font-family:'IBM Plex Mono',monospace; font-size:11px; letter-spacing:2.5px; text-transform:uppercase;
   color:var(--accent); display:flex; align-items:center; gap:8px; margin-bottom:10px;
 }
 .eyebrow .tally{display:inline-block;width:6px;height:6px;border-radius:50%;background:var(--accent);box-shadow:0 0 6px var(--accent-glow);animation:pulse 1.8s ease-in-out infinite;}
 .header h1{
-  font-family:'Manrope',sans-serif; font-weight:800; font-size:32px; line-height:1.15;
+  font-family:'Archivo',sans-serif; font-weight:800; font-size:32px; line-height:1.15;
   margin:0 0 12px; letter-spacing:-0.5px; max-width:640px;
 }
 .header p{color:var(--text-dim); margin:0; max-width:560px; font-size:14.5px; line-height:1.6;}
@@ -72,8 +109,8 @@ body{
   font-family:'IBM Plex Sans',sans-serif; transition:border-color .15s, background .15s;
 }
 .btn:hover{border-color:var(--accent-dim); background:var(--surface-2);}
-.btn-primary{background:var(--accent); color:#1a1204; border-color:var(--accent); font-weight:700;}
-.btn-primary:hover{background:#ffc247;}
+.btn-primary{background:var(--accent); color:var(--on-accent); border-color:var(--accent); font-weight:700;}
+.btn-primary:hover{background:var(--accent-hover); border-color:var(--accent-hover);}
 
 .legend{display:flex;flex-wrap:wrap;gap:6px;margin:10px 0;align-items:center;}
 .legend-item{
@@ -83,11 +120,11 @@ body{
   clip-path:polygon(0 0, 100% 0, 100% 100%, 8px 100%, 0 calc(100% - 8px));
 }
 .legend-item:hover{border-color:var(--accent-dim);color:var(--text);}
-.legend-item.active{border-color:var(--accent);color:var(--text);background:rgba(255,176,32,0.08);}
+.legend-item.active{border-color:var(--accent);color:var(--text);background:var(--accent-soft);}
 .dot{width:7px;height:7px;border-radius:50%;display:inline-block;flex-shrink:0;}
 .pico{width:15px;height:15px;display:inline-flex;flex-shrink:0;}
 .pico svg{width:100%;height:100%;}
-.legend-reset{font-family:'JetBrains Mono',monospace;font-size:11px;color:var(--accent-dim);cursor:pointer;opacity:0;transition:opacity .15s;padding:8px 4px;min-height:38px;display:inline-flex;align-items:center;}
+.legend-reset{font-family:'IBM Plex Mono',monospace;font-size:11px;color:var(--accent-dim);cursor:pointer;opacity:0;transition:opacity .15s;padding:8px 4px;min-height:38px;display:inline-flex;align-items:center;}
 .legend-reset.show{opacity:1;}
 .legend-reset:hover{color:var(--accent);}
 .hint{font-size:12.5px;color:var(--text-dim);margin:8px 0 20px;}
@@ -95,34 +132,48 @@ body{
 .cal-nav{display:grid;grid-template-columns:1fr auto 1fr;align-items:center;margin-bottom:14px;gap:10px;}
 .cal-nav-btn{background:var(--surface);border:1px solid var(--line);color:var(--text);padding:8px 16px;min-height:44px;display:inline-flex;align-items:center;justify-content:center;cursor:pointer;border-radius:6px;font-size:13px;font-family:'IBM Plex Sans',sans-serif;white-space:nowrap;}
 .cal-nav-btn:hover{border-color:var(--accent-dim);}
-.cal-range{font-family:'JetBrains Mono',monospace;font-size:13px;color:var(--text-dim);justify-self:center;white-space:nowrap;}
+.cal-range{font-family:'IBM Plex Mono',monospace;font-size:13px;color:var(--text-dim);justify-self:center;white-space:nowrap;}
 #prevBtn{justify-self:start;}
 .cal-nav-right{justify-self:end;display:flex;gap:8px;}
 
 .cal-grid{display:grid;grid-template-columns:repeat(7,1fr);border:1px solid var(--line);background:var(--line);gap:1px;border-radius:8px;overflow:hidden;}
-.cal-dow{background:var(--surface);padding:9px;text-align:center;font-family:'JetBrains Mono',monospace;font-size:10px;letter-spacing:1.5px;color:var(--accent-dim);text-transform:uppercase;}
+.cal-dow{background:var(--surface);padding:9px;text-align:center;font-family:'IBM Plex Mono',monospace;font-size:10px;letter-spacing:1.5px;color:var(--accent-dim);text-transform:uppercase;}
 .cal-day{background:var(--bg);padding:9px 8px;min-height:112px;min-width:0;overflow:hidden;}
-.cal-day.today{background:rgba(255,176,32,0.04);box-shadow:inset 0 0 0 1px rgba(255,176,32,0.25);}
-.cal-day-num{font-family:'JetBrains Mono',monospace;font-size:11px;color:var(--text-dim);margin-bottom:7px;}
+.cal-day.today{background:var(--accent-soft);box-shadow:inset 0 0 0 1px var(--accent);}
+.cal-day-num{font-family:'IBM Plex Mono',monospace;font-size:11px;color:var(--text-dim);margin-bottom:7px;}
 .cal-day.today .cal-day-num{color:var(--accent);font-weight:700;}
 .cal-chip-row{display:flex;gap:3px;margin-bottom:3px;}
 .cal-chip{
-  flex:1;display:flex;align-items:center;gap:5px;background:var(--surface);
-  border-left:2px solid var(--line);padding:5px 7px;cursor:pointer;
-  font-size:10.5px;overflow:hidden;transition:background .12s,border-color .12s;border-radius:0 3px 3px 0;
+  flex:1;display:flex;align-items:center;gap:7px;background:var(--surface);
+  border-left:2px solid var(--line);padding:7px 9px;cursor:pointer;
+  font-size:11.5px;overflow:hidden;transition:background .12s,border-color .12s;border-radius:0 5px 5px 0;
+  min-height:44px;  /* parmak ucu hedefi — eskiden 24px idi */
+}
+.cal-pico{width:15px;height:15px;flex:none;display:block;}
+.cal-pico svg{width:100%;height:100%;display:block;}
+.cal-time{
+  font-family:'IBM Plex Mono',monospace;font-size:10.5px;color:var(--text-dim);
+  font-variant-numeric:tabular-nums;flex:none;
+}
+.tcode{
+  font-family:'IBM Plex Mono',monospace;font-size:8.5px;font-weight:600;letter-spacing:.06em;
+  border:1px solid var(--line);border-radius:3px;padding:1px 4px;color:var(--text-dim);
 }
 .cal-chip:hover{background:var(--surface-2);}
-.cal-chip.live{border-left-color:var(--accent);}
+.cal-chip.live{border-left-color:var(--green);}
 .cal-badge{
-  font-family:'JetBrains Mono',monospace;font-size:8px;font-weight:700;color:#0a0a0a;
-  padding:2px 5px;border-radius:2px 2px 2px 0;flex-shrink:0;min-width:32px;text-align:center;
+  font-family:'IBM Plex Mono',monospace;font-size:8.5px;font-weight:600;letter-spacing:.05em;
+  color:var(--text-dim);background:transparent;border:1px solid var(--line);
+  padding:2px 5px;border-radius:3px;flex-shrink:0;text-align:center;
 }
 .cal-chip-title{overflow:hidden;text-overflow:ellipsis;white-space:nowrap;color:var(--text-dim);}
-.cal-status-icon{margin-left:auto;font-size:9px;flex-shrink:0;}
-.cal-status-icon.on-air{
-  width:6px;height:6px;border-radius:50%;background:var(--accent);
-  box-shadow:0 0 5px var(--accent-glow);animation:pulse 1.8s ease-in-out infinite;
+.cal-status-icon{
+  margin-left:auto;flex-shrink:0;width:7px;height:7px;border-radius:50%;
+  background:var(--amber);  /* hala borclu */
 }
+/* Yayinlandi. Eskiden bu nokta amber "ON AIR" isigiydi ve yanip sonuyordu;
+   yeni sistemde amber sadece "hala borclu" demek, yayinlanan sabit yesil. */
+.cal-status-icon.on-air{background:var(--green);}
 
 .overlay{display:none;position:fixed;inset:0;background:rgba(4,5,10,0.8);z-index:50;align-items:center;justify-content:center;padding:20px;}
 .overlay.open{display:flex;}
@@ -130,18 +181,18 @@ body{
   background:var(--surface);border:1px solid var(--line);border-top:3px solid var(--accent);
   padding:26px;width:100%;max-width:600px;max-height:88vh;overflow-y:auto;border-radius:8px;
 }
-.modal h2{font-family:'Manrope',sans-serif;font-size:16px;font-weight:800;letter-spacing:-0.2px;margin:0 0 18px;}
+.modal h2{font-family:'Archivo',sans-serif;font-size:16px;font-weight:800;letter-spacing:-0.2px;margin:0 0 18px;}
 .field{margin-bottom:15px;}
-.field label{display:block;font-family:'JetBrains Mono',monospace;font-size:10.5px;text-transform:uppercase;letter-spacing:1.2px;color:var(--accent-dim);margin-bottom:6px;}
+.field label{display:block;font-family:'IBM Plex Mono',monospace;font-size:10.5px;text-transform:uppercase;letter-spacing:1.2px;color:var(--accent-dim);margin-bottom:6px;}
 .field input,.field select,.field textarea{
   width:100%;background:var(--bg);border:1px solid var(--line);color:var(--text);
   padding:9px 10px;font-size:13px;font-family:'IBM Plex Sans',sans-serif;border-radius:5px;
 }
 .field input:focus,.field select:focus,.field textarea:focus{outline:none;border-color:var(--accent-dim);}
-.field textarea{min-height:80px;resize:vertical;font-family:'JetBrains Mono',monospace;font-size:12px;line-height:1.5;}
+.field textarea{min-height:80px;resize:vertical;font-family:'IBM Plex Mono',monospace;font-size:12px;line-height:1.5;}
 .field-header{display:flex;justify-content:space-between;align-items:center;margin-bottom:6px;}
 .field-header label{margin:0;}
-.copy-btn{background:transparent;border:1px solid var(--line);color:var(--text-dim);padding:6px 10px;min-height:30px;display:inline-flex;align-items:center;font-size:10px;cursor:pointer;border-radius:4px;font-family:'JetBrains Mono',monospace;}
+.copy-btn{background:transparent;border:1px solid var(--line);color:var(--text-dim);padding:6px 10px;min-height:30px;display:inline-flex;align-items:center;font-size:10px;cursor:pointer;border-radius:4px;font-family:'IBM Plex Mono',monospace;}
 .copy-btn:hover{border-color:var(--accent-dim);color:var(--accent);}
 .copy-btn.copied{color:var(--accent);border-color:var(--accent);}
 .row2{display:grid;grid-template-columns:1fr 1fr;gap:12px;}
@@ -151,17 +202,17 @@ body{
 .pcheck input{width:auto;accent-color:var(--accent);}
 .upload-toggle{display:flex;align-items:center;gap:9px;border:1px solid var(--line);padding:11px 13px;min-height:44px;margin:15px 0;cursor:pointer;border-radius:6px;}
 .upload-toggle .box{width:17px;height:17px;border:1px solid var(--accent-dim);display:flex;align-items:center;justify-content:center;font-size:11px;border-radius:3px;}
-.upload-toggle.checked .box{background:var(--accent);color:#1a1204;border-color:var(--accent);}
-.section-title{font-family:'Manrope',sans-serif;color:var(--accent);font-weight:700;font-size:12px;text-transform:uppercase;letter-spacing:1px;margin:20px 0 12px;border-top:1px solid var(--line);padding-top:16px;}
+.upload-toggle.checked .box{background:var(--green);color:#fff;border-color:var(--green);}
+.section-title{font-family:'Archivo',sans-serif;color:var(--accent);font-weight:700;font-size:12px;text-transform:uppercase;letter-spacing:1px;margin:20px 0 12px;border-top:1px solid var(--line);padding-top:16px;}
 .modal-actions{display:flex;justify-content:flex-end;gap:9px;margin-top:20px;}
 .btn-danger{border-color:var(--red);color:var(--red);}
 .btn-danger:hover{background:rgba(232,93,93,0.08);}
 .ai-btn{color:var(--accent);border-color:var(--accent-dim);}
-.ai-btn:hover{border-color:var(--accent);background:rgba(255,176,32,0.08);}
+.ai-btn:hover{border-color:var(--accent);background:var(--accent-soft);}
 .ai-btn:disabled{opacity:.5;cursor:default;}
 .ai-status{font-size:11.5px;color:var(--text-dim);margin-top:6px;min-height:14px;}
 .ai-status.error{color:var(--red);}
-.ai-status.ok{color:var(--accent);}
+.ai-status.ok{color:var(--green);}
 .tour-dots{display:flex;gap:5px;margin-top:14px;}
 .tour-dot{width:6px;height:6px;border-radius:50%;background:var(--line);}
 .tour-dot.active{background:var(--accent);}
@@ -195,7 +246,81 @@ body{
   .cal-nav{display:flex;flex-wrap:wrap;gap:8px;justify-content:center;}
   .cal-range{order:-1;width:100%;text-align:center;margin-bottom:4px;}
 }
+
+/* ===== Logo ===== */
+.lockup{display:flex;align-items:center;gap:10px;margin-bottom:14px;}
+.lockup .mark{width:30px;height:30px;flex:none;display:block;}
+.lockup .mark svg{width:100%;height:100%;display:block;}
+.wordmark{
+  font-family:'Archivo',sans-serif;font-weight:800;font-size:25px;
+  letter-spacing:-.035em;color:var(--text);line-height:1;
+}
+
+/* ===== Katlanabilir bloklar (filtreler / ikincil butonlar) ===== */
+.fold{border:1px solid var(--line);border-radius:8px;background:var(--surface);margin-bottom:12px;}
+.fold > summary{
+  cursor:pointer;list-style:none;padding:12px 14px;min-height:44px;
+  display:flex;align-items:center;gap:8px;
+  font-family:'IBM Plex Mono',monospace;font-size:11px;letter-spacing:.1em;
+  text-transform:uppercase;color:var(--text-dim);
+}
+.fold > summary::-webkit-details-marker{display:none;}
+.fold > summary::after{content:'+';margin-left:auto;font-size:15px;color:var(--accent-dim);}
+.fold[open] > summary::after{content:'\2212';}
+.fold > summary:hover{color:var(--accent);}
+.fold > summary:focus-visible{outline:2px solid var(--accent);outline-offset:2px;}
+.fold .legend,.fold .hint{margin-left:14px;margin-right:14px;}
+.fold .hint{padding-bottom:12px;}
+.fold-inline{margin-bottom:0;background:transparent;border-color:transparent;}
+.fold-inline > summary{padding:0 12px;border:1px solid var(--line);border-radius:6px;background:var(--surface);}
+.fold-row{display:flex;flex-wrap:wrap;gap:8px;padding:10px 0 0;}
+
+/* Katlama yalnizca telefonda anlamli — masaustunde bloklar eskisi gibi acik
+   ve cerceveiz duruyor, aksi halde arac cubugu ikiye bolunuyor. */
+@media(min-width:701px){
+  .fold{border:0;background:transparent;margin-bottom:0;}
+  .fold > summary{display:none;}
+  .fold .legend,.fold .hint{margin-left:0;margin-right:0;}
+  .fold .hint{padding-bottom:0;}
+  .fold-inline,.fold-inline .fold-row{display:contents;}
+}
+.toolbar{align-items:flex-start;}
+
+/* Izgara gorunumunde hucre ~150px: isaret + tip + saat yan yana girince
+   basliga yer kalmiyordu. Baslik kendi satirina aliniyor. */
+@media(min-width:701px){
+  .cal-chip{flex-wrap:wrap;row-gap:3px;}
+  .cal-chip-title{flex-basis:100%;order:5;}
+  .cal-status-icon{order:4;}
+}
+
+/* ===== Mobil ===== */
+@media(max-width:700px){
+  /* Takvime inmeden once 1,6 ekran kaydirmak gerekiyordu — hero sikistirildi */
+  .header h1{font-size:26px;line-height:1.15;}
+  .header p{font-size:13.5px;line-height:1.5;}
+  .banner{font-size:12.5px;line-height:1.5;}
+  .eyebrow{margin-bottom:6px;}
+
+  /* Bos gunler gizleniyor: 28 gunun 22'si bos, hepsi tam satir kapliyordu */
+  .cal-empty{display:none;}
+
+  /* Dokunma hedefleri */
+  .legend-item{min-height:44px;}
+  .lang-select{min-height:44px;}
+  .copy-btn{min-height:44px;}
+}
 </style>
+<script>
+// Kayitli tema tercihini ilk boyamadan once uygula — aksi halde acik temayi
+// secmis biri koyu bir flash gorur. Tercih yoksa isletim sistemi karar verir.
+(function(){
+  try{
+    var t = localStorage.getItem('demo_theme');
+    if(t === 'dark' || t === 'light') document.documentElement.setAttribute('data-theme', t);
+  }catch(e){}
+})();
+</script>
 </head>
 <body>
 <div class="wrap">
@@ -212,27 +337,37 @@ body{
   </div>
 
   <div class="header">
+    <div class="lockup"><span class="mark"><svg viewBox="0 0 64 64" aria-hidden="true"><rect x="6" y="24" width="52" height="34" rx="7" fill="var(--text)"/><g transform="rotate(-9 32 17)"><rect x="6" y="7" width="52" height="15" rx="3.5" fill="var(--accent)"/><path d="M17 7 L22.5 7 L14.5 22 L9 22 Z" fill="var(--bg)"/><path d="M33 7 L38.5 7 L30.5 22 L25 22 Z" fill="var(--bg)"/><path d="M49 7 L54.5 7 L46.5 22 L41 22 Z" fill="var(--bg)"/></g><rect x="15" y="34" width="26" height="3.4" rx="1.7" fill="var(--text-dim)"/><rect x="15" y="43" width="17" height="3.4" rx="1.7" fill="var(--amber)"/></svg></span><span class="wordmark">Slate</span></div>
     <div class="eyebrow"><span class="tally"></span><span data-i18n="eyebrow">QUEUE — NEXT 4 WEEKS</span></div>
     <h1 data-i18n="h1">One shoot becomes ten posts. Slate tracks every one.</h1>
     <p data-i18n="h1_sub">The same footage goes out as a Reel, a Short, a carousel, a story and a poll — each on its own platform, at its own time, with its own caption and cover text. Slate keeps all of them attached to the one shoot they came from, and tells you which ones aren't written yet.</p>
     <div class="toolbar">
       <button class="btn btn-primary" id="addBtn" data-i18n="btn_new">+ New Entry</button>
       <button class="btn" id="pendingBtn" data-i18n="btn_pending">⏳ Pending</button>
-      <button class="btn" id="storageBtn" data-i18n="btn_storage">📊 Storage</button>
-      <button class="btn" id="exportBtn" data-i18n="btn_export">Export Backup</button>
-      <button class="btn" id="importBtn" data-i18n="btn_import">Import Backup</button>
-      <button class="btn" id="resetBtn" data-i18n="btn_reset">Reset Demo</button>
-      <button class="btn" id="tourBtn" data-i18n="btn_tour">? How this works</button>
-      <button class="btn" id="refreshBtn" data-i18n="btn_refresh">↻ Refresh</button>
+      <details class="fold fold-inline" id="moreFold">
+        <summary><span data-i18n="more_title">More</span></summary>
+        <div class="fold-row">
+          <button class="btn" id="storageBtn" data-i18n="btn_storage">📊 Storage</button>
+          <button class="btn" id="exportBtn" data-i18n="btn_export">Export Backup</button>
+          <button class="btn" id="importBtn" data-i18n="btn_import">Import Backup</button>
+          <button class="btn" id="resetBtn" data-i18n="btn_reset">Reset Demo</button>
+          <button class="btn" id="tourBtn" data-i18n="btn_tour">? How this works</button>
+          <button class="btn" id="refreshBtn" data-i18n="btn_refresh">↻ Refresh</button>
+        </div>
+      </details>
       <button class="btn" id="feedbackBtn" data-i18n="btn_feedback">💬 Feedback</button>
+      <button class="btn" id="themeBtn">🌙 Dark</button>
       <input type="file" id="importFile" accept="application/json" style="display:none;">
     </div>
   </div>
 
-  <div class="legend" id="typeLegend"></div>
-  <div class="legend" id="platformLegend"></div>
-  <div class="legend" id="statusLegend"></div>
-  <div class="hint" data-i18n="hint_filter">Click a tab in either row to filter — combine content type + platform together. Click again to remove.</div>
+  <details class="fold" id="filterFold">
+    <summary><span data-i18n="filters_title">Filters</span></summary>
+    <div class="legend" id="typeLegend"></div>
+    <div class="legend" id="platformLegend"></div>
+    <div class="legend" id="statusLegend"></div>
+    <div class="hint" data-i18n="hint_filter">Click a tab in either row to filter — combine content type + platform together. Click again to remove.</div>
+  </details>
 
   <div class="cal-nav">
     <button class="cal-nav-btn" id="prevBtn" data-i18n="nav_prev">◀ Previous</button>
@@ -470,7 +605,7 @@ const CAL_SM_PLATFORMS = ['youtube','instagram','tiktok','facebook','threads','x
 const CAL_TYPE_NAMES = {video:'Video', shorts:'Shorts', reels:'Reels', carousel:'Carousel', story:'Story', text_post:'Text Post', poll:'Poll'};
 const CAL_TYPE_LABELS = {video:'VID', shorts:'SHRT', reels:'REEL', carousel:'CAR', story:'STORY', text_post:'TXT', poll:'POLL'};
 const CAL_SM_NAMES = {youtube:'YouTube', instagram:'Instagram', tiktok:'TikTok', facebook:'Facebook', threads:'Threads', x:'X', pinterest:'Pinterest', linkedin:'LinkedIn'};
-const CAL_SM_COLORS = {youtube:'#E85D5D', instagram:'#D6538F', tiktok:'#3FCFC4', facebook:'#5B8CE8', threads:'#C9CBD6', x:'#8B90A3', pinterest:'#F2895C', linkedin:'#3B82C4'};
+const CAL_SM_COLORS = {youtube:'var(--p-youtube)', instagram:'var(--p-instagram)', tiktok:'var(--p-tiktok)', facebook:'var(--p-facebook)', threads:'var(--p-threads)', x:'var(--p-x)', pinterest:'var(--p-pinterest)', linkedin:'var(--p-linkedin)'};
 const PLATFORM_ICONS = {
   youtube: '<svg viewBox="0 0 24 24" fill="currentColor"><rect x="1" y="5" width="22" height="14" rx="4"/><path d="M10 8.7v6.6l6-3.3z" fill="var(--surface)"/></svg>',
   instagram: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="2" y="2" width="20" height="20" rx="6"/><circle cx="12" cy="12" r="5"/><circle cx="17.3" cy="6.7" r="1.1" fill="currentColor" stroke="none"/></svg>',
@@ -481,7 +616,6 @@ const PLATFORM_ICONS = {
   pinterest: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><path d="M9.2 17.3c1-3.1 1.6-5.3 1.6-7.1a3 3 0 1 1 3 3c-.9 0-1.4-.4-1.5-1.3"/></svg>',
   linkedin: '<svg viewBox="0 0 24 24" fill="currentColor"><rect x="1" y="1" width="22" height="22" rx="4"/><g fill="var(--surface)"><circle cx="6.7" cy="7.2" r="1.6"/><rect x="5.5" y="10.2" width="2.4" height="8.8"/><path d="M10.7 10.2h2.3v1.3c.4-.7 1.3-1.5 2.8-1.5 2.2 0 3.4 1.4 3.4 4v5.1h-2.4v-4.5c0-1.3-.5-2.1-1.6-2.1-1 0-1.6.7-1.8 1.4-.1.2-.1.5-.1.8v4.4h-2.4l-.2-8.9z"/></g></svg>',
 };
-const CAL_TYPE_COLORS = {video:'#FFB020', shorts:'#F2895C', reels:'#B383E8', carousel:'#6FA8DC', story:'#E8C34A', text_post:'#8B90A3', poll:'#5FD9A0'};
 
 // ===== i18n =====
 const LANG_KEY = 'demo_ui_language';
@@ -503,6 +637,10 @@ const LANG = {
     btn_reset: "Reset Demo",
     btn_tour: "? How this works",
     btn_feedback: "💬 Feedback",
+    filters_title: "Filters",
+    more_title: "More",
+    btn_theme_dark: "Dark",
+    btn_theme_light: "Light",
     fb_title: "Two questions, 20 seconds",
     fb_intro: "This is built by one creator, for creators. What you answer here decides what gets built next.",
     fb_q1: "What do you use for this today?",
@@ -616,6 +754,10 @@ const LANG = {
     btn_reset: "Demoyu Sıfırla",
     btn_tour: "? Bu nasıl çalışır",
     btn_feedback: "💬 Geri Bildirim",
+    filters_title: "Filtreler",
+    more_title: "Diğer",
+    btn_theme_dark: "Koyu",
+    btn_theme_light: "Açık",
     fb_title: "İki soru, 20 saniye",
     fb_intro: "Bunu bir içerik üreticisi, içerik üreticileri için yapıyor. Buraya yazdığın şey sıradaki özelliği belirliyor.",
     fb_q1: "Bugün bu iş için ne kullanıyorsun?",
@@ -752,6 +894,7 @@ function setLanguage(lang){
   const sel = document.getElementById('langSelect');
   if(sel) sel.value = lang;
   applyStaticI18n();
+  applyThemeLabel();
   renderFbUses();
   populateSelects();
   renderLegend();
@@ -844,7 +987,7 @@ function renderLegend(){
   const typeEl = document.getElementById('typeLegend');
   typeEl.innerHTML = CAL_TYPES.map(t=>`
     <span class="legend-item ${activeTypeFilters.has(t)?'active':''}" data-type="${t}">
-      <span class="dot" style="background:${CAL_TYPE_COLORS[t]}"></span>${typeName(t)}
+      <span class="tcode">${typeLabel(t)}</span>${typeName(t)}
     </span>`).join('') + `<span class="legend-reset ${activeTypeFilters.size?'show':''}" id="typeReset">Clear</span>`;
   typeEl.querySelectorAll('.legend-item').forEach(el=>{
     el.addEventListener('click', ()=>{
@@ -871,8 +1014,8 @@ function renderLegend(){
 
   const statusEl = document.getElementById('statusLegend');
   const statuses = [
-    {key:'scheduled', label:statusLabel('scheduled'), color:'#8B90A3'},
-    {key:'posted', label:statusLabel('posted'), color:'#FFB020'},
+    {key:'scheduled', label:statusLabel('scheduled'), color:'var(--amber)'},
+    {key:'posted', label:statusLabel('posted'), color:'var(--green)'},
   ];
   statusEl.innerHTML = statuses.map(s=>`
     <span class="legend-item ${activeStatusFilters.has(s.key)?'active':''}" data-status="${s.key}">
@@ -924,13 +1067,21 @@ function renderCal(){
       row.className = 'cal-chip-row';
       const chip = document.createElement('div');
       chip.className = 'cal-chip' + (ev.uploaded ? ' live' : '');
-      chip.innerHTML = `<span class="cal-badge" style="background:${CAL_SM_COLORS[ev.platform]}" title="${CAL_SM_NAMES[ev.platform]}">${typeLabel(ev.type)}</span>
-        <span class="cal-chip-title">${ev.time||''} ${escapeHtml(ev.title||'')}</span>
-        <span class="cal-status-icon${ev.uploaded?' on-air':''}">${ev.uploaded?'':'○'}</span>`;
+      // Renk platformu, etiket tipi anlatir: isaret hem kimligi hem rengi tasidigi
+      // icin ayri bir renk cubuguna gerek kalmiyor.
+      chip.innerHTML = `<span class="cal-pico" style="color:${CAL_SM_COLORS[ev.platform]}" title="${CAL_SM_NAMES[ev.platform]}">${PLATFORM_ICONS[ev.platform]||''}</span>
+        <span class="cal-badge">${typeLabel(ev.type)}</span>
+        <span class="cal-time">${ev.time||''}</span>
+        <span class="cal-chip-title">${escapeHtml(ev.title||'')}</span>
+        <span class="cal-status-icon${ev.uploaded?' on-air':''}"></span>`;
       chip.addEventListener('click', ()=> openModal(ev));
       row.appendChild(chip);
       cell.appendChild(row);
     });
+
+    // Mobilde bos gunler gizleniyor: 28 gunluk pencerede cogu gun bos oluyor ve
+    // telefonda bos satirlarin arasinda kaydirmak zorunda kaliniyordu.
+    if(dayEvents.length === 0) cell.classList.add('cal-empty');
 
     grid.appendChild(cell);
   }
@@ -1413,7 +1564,7 @@ function showPendingPopup(autoMode){
     const ev = p.ev;
     return `<tr class="pending-row ${p.overdue?'pending-overdue':''}" data-id="${ev.id}">
       <td>${p.overdue ? '🔴' : '🕒'} ${ev.date} ${ev.time||''}</td>
-      <td><span class="cal-badge" style="background:${CAL_SM_COLORS[ev.platform]};display:inline-block;">${typeLabel(ev.type)}</span> ${CAL_SM_NAMES[ev.platform]}</td>
+      <td><span class="cal-pico" style="color:${CAL_SM_COLORS[ev.platform]};display:inline-block;vertical-align:-3px;">${PLATFORM_ICONS[ev.platform]||''}</span> <span class="cal-badge">${typeLabel(ev.type)}</span> ${CAL_SM_NAMES[ev.platform]}</td>
       <td>${escapeHtml(ev.title||'')}</td>
     </tr>`;
   }).join('');
@@ -1550,6 +1701,45 @@ function maybeAskFeedback(){
   }catch(e){ return; }
   setTimeout(()=> openFeedback('auto'), 1400);
 }
+
+// ===== Tema =====
+// Varsayilan acik; kullanici isterse koyuya gecer ve tercihi hatirlanir.
+// Hic secim yapmadiysa isletim sisteminin tercihi gecerli olur.
+function currentTheme(){
+  const forced = document.documentElement.getAttribute('data-theme');
+  if(forced === 'dark' || forced === 'light') return forced;
+  return window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light';
+}
+function applyThemeLabel(){
+  const btn = document.getElementById('themeBtn');
+  if(!btn) return;
+  const dark = currentTheme() === 'dark';
+  btn.textContent = dark ? '\u2600 ' + t('btn_theme_light') : '\uD83C\uDF19 ' + t('btn_theme_dark');
+  const meta = document.querySelector('meta[name="theme-color"]');
+  if(meta) meta.setAttribute('content', dark ? '#0F151D' : '#F4F7FA');
+}
+document.getElementById('themeBtn').addEventListener('click', ()=>{
+  const next = currentTheme() === 'dark' ? 'light' : 'dark';
+  document.documentElement.setAttribute('data-theme', next);
+  try{ localStorage.setItem('demo_theme', next); }catch(e){}
+  applyThemeLabel();
+  track('funnel/theme-toggled-' + next);
+});
+// Kullanici hicbir secim yapmadiysa sistem temasini takip etmeye devam et.
+window.matchMedia('(prefers-color-scheme: dark)').addEventListener('change', ()=>{
+  if(!document.documentElement.getAttribute('data-theme')) applyThemeLabel();
+});
+applyThemeLabel();
+
+// Filtreler ve ikincil butonlar masaustunde acik, telefonda katli baslar —
+// mobilde bu iki blok takvimden once ~600px yer kapliyordu.
+(function(){
+  const wide = window.innerWidth > 700;
+  ['filterFold','moreFold'].forEach(id=>{
+    const el = document.getElementById(id);
+    if(el) el.open = wide;
+  });
+})();
 
 document.getElementById('feedbackBtn').addEventListener('click', ()=> openFeedback('manual'));
 document.getElementById('fbLaterBtn').addEventListener('click', ()=>{ track('feedback/dismissed'); closeFeedback(); });
