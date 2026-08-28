@@ -4,6 +4,15 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Slate — Content Publishing Calendar</title>
+<link rel="manifest" href="manifest.json">
+<meta name="theme-color" content="#10131C">
+<link rel="icon" href="favicon.ico" sizes="any">
+<link rel="icon" href="favicon-32x32.png" sizes="32x32" type="image/png">
+<link rel="icon" href="favicon-16x16.png" sizes="16x16" type="image/png">
+<link rel="apple-touch-icon" sizes="180x180" href="apple-touch-icon.png">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="Slate">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Manrope:wght@500;700;800&family=IBM+Plex+Sans:wght@400;500;600&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
@@ -152,6 +161,25 @@ body{
 .tour-dots{display:flex;gap:5px;margin-top:14px;}
 .tour-dot{width:6px;height:6px;border-radius:50%;background:var(--line);}
 .tour-dot.active{background:var(--accent);}
+
+.lang-select{
+  background:var(--surface); border:1px solid var(--line); color:var(--text);
+  padding:6px 10px; font-size:12.5px; font-weight:500; cursor:pointer; border-radius:6px;
+  font-family:'IBM Plex Sans',sans-serif;
+}
+.lang-select:hover{border-color:var(--accent-dim);}
+.lang-select:focus{outline:none;border-color:var(--accent-dim);}
+
+.pending-table{width:100%;border-collapse:collapse;font-size:12.5px;}
+.pending-table th{padding:6px 8px;text-align:left;border-bottom:1px solid var(--line);color:var(--text-dim);font-weight:600;}
+.pending-table td{padding:7px 8px;border-bottom:1px solid var(--line);}
+.pending-row{cursor:pointer;transition:background .12s;}
+.pending-row:hover{background:var(--surface-2);}
+.pending-overdue td:first-child{color:var(--red);font-weight:600;}
+.pending-empty{padding:16px 0;color:#5FD9A0;font-weight:600;}
+.storage-bar-track{background:var(--surface-2);border-radius:6px;height:10px;overflow:hidden;}
+.storage-bar-fill{height:100%;transition:width .3s;}
+.storage-top-item{display:flex;justify-content:space-between;padding:2px 0;font-size:13px;}
 @media(max-width:700px){
   .cal-grid{grid-template-columns:1fr;}
   .cal-dow{display:none;}
@@ -167,26 +195,29 @@ body{
 <div class="wrap">
 
   <div class="banner">
-    <span class="tally"></span><b>This is a live, working demo.</b> Click any entry to edit it, or create a new one. Everything is saved <b>only in your own browser</b> — no account, no signup, nothing sent anywhere. Refresh and it's still there. Clear your browser data and it resets.
+    <span class="tally"></span><b data-i18n="banner_bold1">This is a live, working demo.</b> <span data-i18n="banner_rest">Click any entry to edit it, or create a new one. Everything is saved <b>only in your own browser</b> — no account, no signup, nothing sent anywhere. Refresh and it's still there. Clear your browser data and it resets.</span>
   </div>
 
-  <div style="text-align:right;margin:-10px 0 14px;">
+  <div style="display:flex;justify-content:space-between;align-items:center;margin:-10px 0 14px;gap:10px;flex-wrap:wrap;">
+    <select id="langSelect" class="lang-select" aria-label="Language"></select>
     <a href="https://hits.sh/gerceginizleritv.github.io/content-calendar-demo/" target="_blank" rel="noopener">
       <img src="https://hits.sh/gerceginizleritv.github.io/content-calendar-demo.svg?style=flat-square&label=visits&color=8a6320&labelColor=171b28" alt="visit counter" style="height:20px;vertical-align:middle;">
     </a>
   </div>
 
   <div class="header">
-    <div class="eyebrow"><span class="tally"></span>QUEUE — NEXT 14 DAYS</div>
-    <h1>One slate per post. Every platform, in sync.</h1>
-    <p>Video, Reels, Carousel, Story — track content type and platform as two separate signals, so you can filter by either one. Open any slot to see the full caption, hashtags, and cover-image prompt, ready to copy.</p>
+    <div class="eyebrow"><span class="tally"></span><span data-i18n="eyebrow">QUEUE — NEXT 4 WEEKS</span></div>
+    <h1 data-i18n="h1">One slate per post. Every platform, in sync.</h1>
+    <p data-i18n="h1_sub">Video, Reels, Carousel, Story — track content type and platform as two separate signals, so you can filter by either one. Open any slot to see the full caption, hashtags, and cover-image prompt, ready to copy.</p>
     <div class="toolbar">
-      <button class="btn btn-primary" id="addBtn">+ New Entry</button>
-      <button class="btn" id="exportBtn">Export Backup</button>
-      <button class="btn" id="importBtn">Import Backup</button>
-      <button class="btn" id="resetBtn">Reset Demo</button>
-      <button class="btn" id="tourBtn">? How this works</button>
-      <button class="btn" id="refreshBtn">↻ Refresh</button>
+      <button class="btn btn-primary" id="addBtn" data-i18n="btn_new">+ New Entry</button>
+      <button class="btn" id="pendingBtn" data-i18n="btn_pending">⏳ Pending</button>
+      <button class="btn" id="storageBtn" data-i18n="btn_storage">📊 Storage</button>
+      <button class="btn" id="exportBtn" data-i18n="btn_export">Export Backup</button>
+      <button class="btn" id="importBtn" data-i18n="btn_import">Import Backup</button>
+      <button class="btn" id="resetBtn" data-i18n="btn_reset">Reset Demo</button>
+      <button class="btn" id="tourBtn" data-i18n="btn_tour">? How this works</button>
+      <button class="btn" id="refreshBtn" data-i18n="btn_refresh">↻ Refresh</button>
       <input type="file" id="importFile" accept="application/json" style="display:none;">
     </div>
   </div>
@@ -194,13 +225,13 @@ body{
   <div class="legend" id="typeLegend"></div>
   <div class="legend" id="platformLegend"></div>
   <div class="legend" id="statusLegend"></div>
-  <div class="hint">Click a tab in either row to filter — combine content type + platform together. Click again to remove.</div>
+  <div class="hint" data-i18n="hint_filter">Click a tab in either row to filter — combine content type + platform together. Click again to remove.</div>
 
   <div class="cal-nav">
-    <button class="cal-nav-btn" id="prevBtn">◀ Previous</button>
+    <button class="cal-nav-btn" id="prevBtn" data-i18n="nav_prev">◀ Previous</button>
     <span class="cal-range mono" id="rangeLabel"></span>
-    <button class="cal-nav-btn" id="todayBtn">Today</button>
-    <button class="cal-nav-btn" id="nextBtn">Next ▶</button>
+    <button class="cal-nav-btn" id="todayBtn" data-i18n="nav_today">Today</button>
+    <button class="cal-nav-btn" id="nextBtn" data-i18n="nav_next">Next ▶</button>
   </div>
 
   <div class="cal-grid" id="calGrid"></div>
@@ -209,104 +240,120 @@ body{
 
 <div class="overlay" id="editOverlay">
   <div class="modal">
-    <h2 id="modalTitle">New Entry</h2>
+    <h2 id="modalTitle" data-i18n="modal_new_title">New Entry</h2>
 
     <div class="row2">
       <div class="field">
-        <label>Content Type</label>
+        <label data-i18n="f_type_label">Content Type</label>
         <select id="f_type"></select>
       </div>
       <div class="field" id="platformSingleWrap">
-        <label>Platform</label>
+        <label data-i18n="f_platform_label">Platform</label>
         <select id="f_platform"></select>
       </div>
     </div>
 
     <div class="field" id="platformMultiWrap">
-      <label>Platform(s) — check all that this same content goes to</label>
+      <label data-i18n="f_platforms_label">Platform(s) — check all that this same content goes to</label>
       <div class="platform-checks" id="platformChecks"></div>
     </div>
 
     <div class="field">
-      <label>Title / Note</label>
-      <input type="text" id="f_title" placeholder="e.g. Product Launch Teaser">
+      <label data-i18n="f_title_label">Title / Note</label>
+      <input type="text" id="f_title" data-i18n-placeholder="f_title_ph" placeholder="e.g. Product Launch Teaser">
     </div>
 
     <div class="row2">
-      <div class="field"><label>Date</label><input type="date" id="f_date"></div>
-      <div class="field"><label>Time</label><input type="time" id="f_time"></div>
+      <div class="field"><label data-i18n="f_date_label">Date</label><input type="date" id="f_date"></div>
+      <div class="field"><label data-i18n="f_time_label">Time</label><input type="time" id="f_time"></div>
     </div>
 
     <div class="upload-toggle" id="uploadToggle">
       <span class="box" id="uploadBox"></span>
-      <span>Posted / Scheduled</span>
+      <span data-i18n="f_posted_label">Posted / Scheduled</span>
     </div>
 
     <div class="field">
       <div class="field-header">
-        <label>Caption</label>
+        <label data-i18n="f_caption_label">Caption</label>
         <span style="display:flex;gap:6px;">
-          <button type="button" class="copy-btn ai-btn" id="aiDraftBtn">✨ Draft with AI</button>
-          <button type="button" class="copy-btn" data-copy="f_caption">Copy</button>
+          <button type="button" class="copy-btn ai-btn" id="aiDraftBtn" data-i18n="btn_ai_draft">✨ Draft with AI</button>
+          <button type="button" class="copy-btn" data-copy="f_caption" data-i18n="btn_copy">Copy</button>
         </span>
       </div>
-      <textarea id="f_caption" placeholder="Write the caption for this post..."></textarea>
+      <textarea id="f_caption" data-i18n-placeholder="f_caption_ph" placeholder="Write the caption for this post..."></textarea>
       <div id="aiStatus" class="ai-status"></div>
     </div>
 
     <div class="field">
       <div class="field-header">
-        <label>Hashtags / Tags (comma-separated, no #)</label>
-        <button type="button" class="copy-btn" data-copy="f_hashtags">Copy</button>
+        <label data-i18n="f_hashtags_label">Hashtags / Tags (comma-separated, no #)</label>
+        <button type="button" class="copy-btn" data-copy="f_hashtags" data-i18n="btn_copy">Copy</button>
       </div>
-      <textarea id="f_hashtags" style="min-height:44px;" placeholder="product launch, saas, startup"></textarea>
+      <textarea id="f_hashtags" style="min-height:44px;" data-i18n-placeholder="f_hashtags_ph" placeholder="product launch, saas, startup"></textarea>
+    </div>
+
+    <div class="field" id="videoTitleWrap" style="display:none;">
+      <div class="field-header">
+        <label data-i18n="f_videotitle_label">Video Title (public — what viewers see in search/suggested)</label>
+        <button type="button" class="copy-btn" data-copy="f_videotitle" data-i18n="btn_copy">Copy</button>
+      </div>
+      <textarea id="f_videotitle" style="min-height:34px;" data-i18n-placeholder="f_videotitle_ph" placeholder="The actual title that goes on the upload — different from the note above"></textarea>
+    </div>
+
+    <div class="field" id="shortTitleWrap" style="display:none;">
+      <div class="field-header">
+        <label data-i18n="f_shorttitle_label">Cover Short Text (3–5 words to put ON the thumbnail)</label>
+        <button type="button" class="copy-btn" data-copy="f_shorttitle" data-i18n="btn_copy">Copy</button>
+      </div>
+      <textarea id="f_shorttitle" style="min-height:34px;" data-i18n-placeholder="f_shorttitle_ph" placeholder="e.g. IT'S FINALLY HERE"></textarea>
     </div>
 
     <div class="field" id="thumbWrap">
       <div class="field-header">
-        <label>Cover / Thumbnail Image Prompt</label>
-        <button type="button" class="copy-btn" data-copy="f_thumb">Copy</button>
+        <label data-i18n="f_thumb_label">Cover / Thumbnail Image Prompt</label>
+        <button type="button" class="copy-btn" data-copy="f_thumb" data-i18n="btn_copy">Copy</button>
       </div>
-      <textarea id="f_thumb" placeholder="Describe the cover image for an AI image generator..."></textarea>
+      <textarea id="f_thumb" data-i18n-placeholder="f_thumb_ph" placeholder="Describe the cover image for an AI image generator..."></textarea>
     </div>
 
     <div id="carouselWrap" style="display:none;">
-      <div class="section-title">Carousel Slide Prompts (9)</div>
+      <div class="section-title" data-i18n="carousel_title">Carousel Slide Prompts (9)</div>
       <div id="carouselSlides"></div>
     </div>
 
     <div class="modal-actions">
-      <button class="btn btn-danger" id="deleteBtn" style="display:none;">Delete</button>
-      <button class="btn" id="cancelBtn">Cancel</button>
-      <button class="btn btn-primary" id="saveBtn">Save</button>
+      <button class="btn btn-danger" id="deleteBtn" style="display:none;" data-i18n="btn_delete">Delete</button>
+      <button class="btn" id="cancelBtn" data-i18n="btn_cancel">Cancel</button>
+      <button class="btn btn-primary" id="saveBtn" data-i18n="btn_save">Save</button>
     </div>
   </div>
 </div>
 
 <div class="overlay" id="aiSettingsOverlay">
   <div class="modal" style="max-width:440px;">
-    <h2>Connect Your Own AI</h2>
-    <p style="color:var(--text-dim);font-size:13px;line-height:1.6;margin-top:-8px;">
+    <h2 data-i18n="ai_title">Connect Your Own AI</h2>
+    <p style="color:var(--text-dim);font-size:13px;line-height:1.6;margin-top:-8px;" data-i18n-html="ai_intro">
       Bring your own API key from Claude or Gemini to draft captions. Your key is stored <b>only in this browser's local storage</b> — it's sent directly from your browser to Anthropic's or Google's servers, never through us or any third party.
     </p>
     <div class="field">
-      <label>Provider</label>
+      <label data-i18n="ai_provider_label">Provider</label>
       <select id="ai_provider">
         <option value="claude">Claude (Anthropic)</option>
         <option value="gemini">Gemini (Google)</option>
       </select>
     </div>
     <div class="field">
-      <label>API Key</label>
+      <label data-i18n="ai_key_label">API Key</label>
       <input type="password" id="ai_key" placeholder="sk-ant-... or AIza...">
     </div>
     <div class="field" style="font-size:12px;color:var(--text-dim);">
-      Don't have a key? Get one free at
+      <span data-i18n="ai_no_key">Don't have a key? Get one free at</span>
       <a href="https://console.anthropic.com/settings/keys" target="_blank" style="color:var(--accent);" id="ai_key_link">console.anthropic.com</a>.
     </div>
     <div class="modal-actions">
-      <button class="btn" id="aiSettingsCancelBtn">Cancel</button>
-      <button class="btn btn-primary" id="aiSettingsSaveBtn">Save & Connect</button>
+      <button class="btn" id="aiSettingsCancelBtn" data-i18n="btn_cancel">Cancel</button>
+      <button class="btn btn-primary" id="aiSettingsSaveBtn" data-i18n="ai_save_connect">Save & Connect</button>
     </div>
   </div>
 </div>
@@ -318,11 +365,31 @@ body{
     <p id="tourBody" style="color:var(--text-dim);font-size:14px;line-height:1.65;"></p>
     <div class="tour-dots" id="tourDots"></div>
     <div class="modal-actions" style="justify-content:space-between;align-items:center;">
-      <span class="mono" id="tourSkip" style="font-size:12px;color:var(--text-dim);cursor:pointer;text-decoration:underline;">Skip tour</span>
+      <span class="mono" id="tourSkip" style="font-size:12px;color:var(--text-dim);cursor:pointer;text-decoration:underline;" data-i18n="tour_skip">Skip tour</span>
       <span style="display:flex;gap:8px;">
-        <button class="btn" id="tourBackBtn" style="display:none;">Back</button>
-        <button class="btn btn-primary" id="tourNextBtn">Next</button>
+        <button class="btn" id="tourBackBtn" style="display:none;" data-i18n="btn_back">Back</button>
+        <button class="btn btn-primary" id="tourNextBtn" data-i18n="btn_next">Next</button>
       </span>
+    </div>
+  </div>
+</div>
+
+<div class="overlay" id="pendingOverlay">
+  <div class="modal" style="max-width:640px;">
+    <h2 data-i18n="pending_title">Not Yet Posted</h2>
+    <div id="pendingBody"></div>
+    <div class="modal-actions">
+      <button class="btn btn-primary" id="pendingCloseBtn" data-i18n="btn_close">Close</button>
+    </div>
+  </div>
+</div>
+
+<div class="overlay" id="storageOverlay">
+  <div class="modal" style="max-width:480px;">
+    <h2 data-i18n="storage_title">Browser Storage</h2>
+    <div id="storageBody"></div>
+    <div class="modal-actions">
+      <button class="btn btn-primary" id="storageCloseBtn" data-i18n="btn_close">Close</button>
     </div>
   </div>
 </div>
@@ -348,16 +415,253 @@ const PLATFORM_ICONS = {
 };
 const CAL_TYPE_COLORS = {video:'#FFB020', shorts:'#F2895C', reels:'#B383E8', carousel:'#6FA8DC', story:'#E8C34A', text_post:'#8B90A3', poll:'#5FD9A0'};
 
+// ===== i18n =====
+const LANG_KEY = 'demo_ui_language';
+const LANG_NAMES = { en: 'English', tr: 'Türkçe' };
+let currentLang = 'en';
+
+const LANG = {
+  en: {
+    banner_bold1: "This is a live, working demo.",
+    banner_rest: "Click any entry to edit it, or create a new one. Everything is saved <b>only in your own browser</b> — no account, no signup, nothing sent anywhere. Refresh and it's still there. Clear your browser data and it resets.",
+    eyebrow: "QUEUE — NEXT 4 WEEKS",
+    h1: "One slate per post. Every platform, in sync.",
+    h1_sub: "Video, Reels, Carousel, Story — track content type and platform as two separate signals, so you can filter by either one. Open any slot to see the full caption, hashtags, and cover-image prompt, ready to copy.",
+    btn_new: "+ New Entry",
+    btn_pending: "⏳ Pending",
+    btn_storage: "📊 Storage",
+    btn_export: "Export Backup",
+    btn_import: "Import Backup",
+    btn_reset: "Reset Demo",
+    btn_tour: "? How this works",
+    btn_refresh: "↻ Refresh",
+    hint_filter: "Click a tab in either row to filter — combine content type + platform together. Click again to remove.",
+    nav_prev: "◀ Previous",
+    nav_today: "Today",
+    nav_next: "Next ▶",
+    modal_new_title: "New Entry",
+    modal_edit_title: "Edit Entry",
+    f_type_label: "Content Type",
+    f_platform_label: "Platform",
+    f_platforms_label: "Platform(s) — check all that this same content goes to",
+    f_title_label: "Title / Note",
+    f_title_ph: "e.g. Product Launch Teaser",
+    f_date_label: "Date",
+    f_time_label: "Time",
+    f_posted_label: "Posted / Scheduled",
+    f_caption_label: "Caption",
+    f_caption_ph: "Write the caption for this post...",
+    btn_ai_draft: "✨ Draft with AI",
+    btn_copy: "Copy",
+    btn_copied: "Copied",
+    f_hashtags_label: "Hashtags / Tags (comma-separated, no #)",
+    f_hashtags_ph: "product launch, saas, startup",
+    f_videotitle_label: "Video Title (public — what viewers see in search/suggested)",
+    f_videotitle_ph: "The actual title that goes on the upload — different from the note above",
+    f_shorttitle_label: "Cover Short Text (3–5 words to put ON the thumbnail)",
+    f_shorttitle_ph: "e.g. IT'S FINALLY HERE",
+    f_thumb_label: "Cover / Thumbnail Image Prompt",
+    f_thumb_ph: "Describe the cover image for an AI image generator...",
+    carousel_title: "Carousel Slide Prompts (9)",
+    btn_delete: "Delete",
+    btn_cancel: "Cancel",
+    btn_save: "Save",
+    ai_title: "Connect Your Own AI",
+    ai_intro: "Bring your own API key from Claude or Gemini to draft captions. Your key is stored <b>only in this browser's local storage</b> — it's sent directly from your browser to Anthropic's or Google's servers, never through us or any third party.",
+    ai_provider_label: "Provider",
+    ai_key_label: "API Key",
+    ai_no_key: "Don't have a key? Get one free at",
+    ai_save_connect: "Save & Connect",
+    tour_skip: "Skip tour",
+    tour_got_it: "Got it",
+    btn_back: "Back",
+    btn_next: "Next",
+    pending_title: "Not Yet Posted",
+    btn_close: "Close",
+    storage_title: "Browser Storage",
+    alert_fill_required: "Please fill in title, date and time.",
+    alert_select_platform: "Select at least one platform.",
+    confirm_delete: "Delete this entry?",
+    confirm_reset: "Reset the demo back to the original example content? This clears anything you added.",
+    import_bad_file: "Could not read that file.",
+    import_success: "Backup imported successfully.",
+    ai_alert_need_key: "Enter an API key first.",
+    ai_drafting: "Drafting…",
+    ai_drafted_prefix: "Drafted with ",
+    ai_drafted_suffix: ". Feel free to edit it.",
+    ai_error_prefix: "Could not reach the API: ",
+    ai_error_suffix: " — check your key in Settings and try again.",
+    pending_count_text: (n)=> `${n} ${n===1?'entry is':'entries are'} not yet posted`,
+    pending_overdue_clause: (n)=> ` — ${n} of ${n===1?'it is':'them are'} already past ${n===1?'its':'their'} time`,
+    pending_col_datetime: "Date/Time",
+    pending_col_type: "Content",
+    pending_col_title: "Title",
+    pending_click_hint: "Click a row to open that entry directly.",
+    pending_all_clear: "✓ All caught up — nothing pending.",
+    storage_used_of: (kb, pct, mb)=> `${kb} KB used (~${pct}% of a typical ${mb} MB browser limit)`,
+    storage_status_ok: "Plenty of room left.",
+    storage_status_med: "Getting fuller — worth keeping an eye on.",
+    storage_status_crit: "Close to the typical browser limit — export a backup and consider trimming old entries.",
+    storage_entries_count: (n)=> `📅 Calendar entries: ${n}`,
+    storage_top5_label: "Largest entries (by caption/prompt volume):",
+    storage_note: "Note: this demo saves only in your own browser's local storage — nothing is sent to a server. Clearing your browser data or switching devices resets it, so export a backup if you want to keep it.",
+  },
+  tr: {
+    banner_bold1: "Bu, canlı ve çalışan bir demodur.",
+    banner_rest: "Herhangi bir girişe tıklayarak düzenleyebilir, ya da yeni bir tane oluşturabilirsin. Her şey <b>sadece kendi tarayıcında</b> saklanır — hesap yok, kayıt yok, hiçbir yere gönderilmez. Sayfayı yenile, hâlâ orada duruyor olacak. Tarayıcı verilerini temizlersen sıfırlanır.",
+    eyebrow: "SIRADAKİLER — ÖNÜMÜZDEKİ 4 HAFTA",
+    h1: "Her paylaşım için tek bir slayt. Tüm platformlar senkron.",
+    h1_sub: "Video, Reels, Carousel, Hikaye — içerik tipini ve platformu iki ayrı sinyal olarak takip et, ikisine birden göre filtrele. Herhangi bir kutucuğu açarak tam caption, hashtag ve kapak görseli prompt'unu gör, tek tıkla kopyala.",
+    btn_new: "+ Yeni Giriş",
+    btn_pending: "⏳ Bekleyenler",
+    btn_storage: "📊 Depolama",
+    btn_export: "Yedek Dışa Aktar",
+    btn_import: "Yedek İçe Aktar",
+    btn_reset: "Demoyu Sıfırla",
+    btn_tour: "? Bu nasıl çalışır",
+    btn_refresh: "↻ Yenile",
+    hint_filter: "Filtrelemek için her iki satırdaki bir sekmeye tıkla — içerik tipi + platformu birlikte kullanabilirsin. Tekrar tıklayınca kaldırılır.",
+    nav_prev: "◀ Önceki",
+    nav_today: "Bugün",
+    nav_next: "Sonraki ▶",
+    modal_new_title: "Yeni Giriş",
+    modal_edit_title: "Girişi Düzenle",
+    f_type_label: "İçerik Tipi",
+    f_platform_label: "Platform",
+    f_platforms_label: "Platform(lar) — aynı içeriğin gideceği tüm hesapları işaretle",
+    f_title_label: "Başlık / Not",
+    f_title_ph: "örn. Ürün Lansmanı Fragmanı",
+    f_date_label: "Tarih",
+    f_time_label: "Saat",
+    f_posted_label: "Yüklendi / Zamanlandı",
+    f_caption_label: "Caption",
+    f_caption_ph: "Bu paylaşım için caption'ı yaz...",
+    btn_ai_draft: "✨ AI ile Taslak Oluştur",
+    btn_copy: "Kopyala",
+    btn_copied: "Kopyalandı",
+    f_hashtags_label: "Hashtag / Etiket (virgülle ayrılmış, # olmadan)",
+    f_hashtags_ph: "ürün lansmanı, saas, girişim",
+    f_videotitle_label: "Video Başlığı (herkese açık — izleyicinin arama/öneri ekranında gördüğü başlık)",
+    f_videotitle_ph: "Yüklemede kullanılacak gerçek başlık — yukarıdaki nottan farklı",
+    f_shorttitle_label: "Kapak Kısa Başlığı (thumbnail üzerine yazılacak, 3-5 kelime)",
+    f_shorttitle_ph: "örn. SONUNDA ÇIKTI",
+    f_thumb_label: "Kapak / Thumbnail Görsel Prompt'u",
+    f_thumb_ph: "AI görsel üretici için kapak görselini tarif et...",
+    carousel_title: "Carousel Slayt Prompt'ları (9)",
+    btn_delete: "Sil",
+    btn_cancel: "Vazgeç",
+    btn_save: "Kaydet",
+    ai_title: "Kendi AI'ını Bağla",
+    ai_intro: "Caption taslağı için kendi Claude ya da Gemini API anahtarını bağla. Anahtarın <b>sadece bu tarayıcının yerel deposunda</b> saklanır — doğrudan tarayıcından Anthropic ya da Google sunucularına gönderilir, bizim ya da başka bir üçüncü tarafın üzerinden hiç geçmez.",
+    ai_provider_label: "Sağlayıcı",
+    ai_key_label: "API Anahtarı",
+    ai_no_key: "Anahtarın yok mu? Ücretsiz almak için:",
+    ai_save_connect: "Kaydet ve Bağlan",
+    tour_skip: "Turu atla",
+    tour_got_it: "Anladım",
+    btn_back: "Geri",
+    btn_next: "İleri",
+    pending_title: "Henüz Yüklenmemiş",
+    btn_close: "Kapat",
+    storage_title: "Tarayıcı Depolaması",
+    alert_fill_required: "Lütfen başlık, tarih ve saati doldur.",
+    alert_select_platform: "En az bir platform seç.",
+    confirm_delete: "Bu giriş silinsin mi?",
+    confirm_reset: "Demo, orijinal örnek içeriğine sıfırlansın mı? Eklediğin her şey silinir.",
+    import_bad_file: "Bu dosya okunamadı.",
+    import_success: "Yedek başarıyla içe aktarıldı.",
+    ai_alert_need_key: "Önce bir API anahtarı gir.",
+    ai_drafting: "Taslak hazırlanıyor…",
+    ai_drafted_prefix: "",
+    ai_drafted_suffix: " ile taslak hazırlandı. Dilediğin gibi düzenleyebilirsin.",
+    ai_error_prefix: "API'ye ulaşılamadı: ",
+    ai_error_suffix: " — Ayarlar'dan anahtarını kontrol edip tekrar dene.",
+    pending_count_text: (n)=> `${n} içerik henüz yüklenmedi`,
+    pending_overdue_clause: (n)=> ` — bunlardan ${n} tanesinin saati çoktan geçmiş`,
+    pending_col_datetime: "Tarih/Saat",
+    pending_col_type: "İçerik",
+    pending_col_title: "Başlık",
+    pending_click_hint: "Bir satıra tıklayarak doğrudan o girişi açabilirsin.",
+    pending_all_clear: "✓ Hepsi tamam — bekleyen içerik yok.",
+    storage_used_of: (kb, pct, mb)=> `${kb} KB kullanılıyor (tipik ${mb} MB tarayıcı sınırının ~%${pct}'i)`,
+    storage_status_ok: "Bolca yer var.",
+    storage_status_med: "Doluyor — takip etmekte fayda var.",
+    storage_status_crit: "Tipik tarayıcı sınırına yaklaşıldı — bir yedek indir ve eski girişleri gözden geçirmeyi düşün.",
+    storage_entries_count: (n)=> `📅 Takvim girişi: ${n}`,
+    storage_top5_label: "En çok yer kaplayan girişler (caption/prompt hacmine göre):",
+    storage_note: "Not: Bu demo sadece kendi tarayıcının yerel deposuna kaydeder — hiçbir şey bir sunucuya gönderilmez. Tarayıcı verilerini temizlemek ya da cihaz değiştirmek veriyi sıfırlar, saklamak istiyorsan bir yedek indir.",
+  },
+};
+
+function t(key){
+  const v = (LANG[currentLang] && LANG[currentLang][key]);
+  if(v !== undefined) return v;
+  return (LANG.en[key] !== undefined) ? LANG.en[key] : key;
+}
+function applyStaticI18n(){
+  document.querySelectorAll('[data-i18n]').forEach(el=>{
+    el.textContent = t(el.dataset.i18n);
+  });
+  document.querySelectorAll('[data-i18n-html]').forEach(el=>{
+    el.innerHTML = t(el.dataset.i18nHtml);
+  });
+  document.querySelectorAll('[data-i18n-placeholder]').forEach(el=>{
+    el.placeholder = t(el.dataset.i18nPlaceholder);
+  });
+  document.documentElement.lang = currentLang;
+}
+function populateLangSelect(){
+  const sel = document.getElementById('langSelect');
+  sel.innerHTML = Object.keys(LANG_NAMES).map(code=>`<option value="${code}">${LANG_NAMES[code]}</option>`).join('');
+  sel.value = currentLang;
+}
+function detectDefaultLang(){
+  try{
+    const nav = (navigator.language || navigator.userLanguage || 'en').toLowerCase();
+    if(nav.startsWith('tr')) return 'tr';
+  }catch(e){}
+  return 'en';
+}
+function setLanguage(lang){
+  if(!LANG[lang]) return;
+  currentLang = lang;
+  try{ localStorage.setItem(LANG_KEY, lang); }catch(e){}
+  const sel = document.getElementById('langSelect');
+  if(sel) sel.value = lang;
+  applyStaticI18n();
+  populateSelects();
+  renderLegend();
+  renderCal();
+}
+
+// Language-aware labels for content type / status (platform brand names like
+// "YouTube" or "Instagram" are proper nouns and stay the same in every language)
+const TYPE_NAMES = {
+  en: {video:'Video', shorts:'Shorts', reels:'Reels', carousel:'Carousel', story:'Story', text_post:'Text Post', poll:'Poll'},
+  tr: {video:'Video', shorts:'Shorts', reels:'Reels', carousel:'Carousel', story:'Hikaye', text_post:'Metin Postu', poll:'Anket'},
+};
+const TYPE_LABELS = {
+  en: {video:'VID', shorts:'SHRT', reels:'REEL', carousel:'CAR', story:'STORY', text_post:'TXT', poll:'POLL'},
+  tr: {video:'VID', shorts:'KISA', reels:'REEL', carousel:'KRSL', story:'HKY', text_post:'METİN', poll:'ANK'},
+};
+const STATUS_LABELS = {
+  en: {scheduled:'🕒 Scheduled', posted:'● Posted'},
+  tr: {scheduled:'🕒 Zamanlandı', posted:'● Yayınlandı'},
+};
+function typeName(key){ return (TYPE_NAMES[currentLang]||TYPE_NAMES.en)[key] || key; }
+function typeLabel(key){ return (TYPE_LABELS[currentLang]||TYPE_LABELS.en)[key] || key; }
+function statusLabel(key){ return (STATUS_LABELS[currentLang]||STATUS_LABELS.en)[key] || key; }
+
 function seedData(){
   const today = new Date();
   const d = (offset)=>{ const x = new Date(today); x.setDate(x.getDate()+offset); return x.toISOString().slice(0,10); };
   return [
     { id:'seed1', type:'video', platform:'youtube', title:'Product Launch — Full Walkthrough', date:d(1), time:'18:00', uploaded:false,
-      content:{ caption:"We just shipped the biggest update of the year. In this video I walk through every new feature, why we built it, and what's coming next.\n\nTimestamps in the description. Let me know what you think in the comments!", hashtags:'product launch, saas, startup, behind the scenes', thumbPrompt:'High-contrast YouTube thumbnail, bold white text "IT\'S HERE", excited expression, product screenshot in the background, bright accent color pop.', slidePrompts:[] } },
+      content:{ caption:"We just shipped the biggest update of the year. In this video I walk through every new feature, why we built it, and what's coming next.\n\nTimestamps in the description. Let me know what you think in the comments!", hashtags:'product launch, saas, startup, behind the scenes', videoTitle:'We Rebuilt Our Entire App — Here\'s Everything New', shortTitle:"IT'S FINALLY HERE", thumbPrompt:'High-contrast YouTube thumbnail, bold white text "IT\'S HERE", excited expression, product screenshot in the background, bright accent color pop.', slidePrompts:[] } },
     { id:'seed2', type:'reels', platform:'instagram', title:'60-Second Feature Teaser', date:d(1), time:'19:00', uploaded:false,
-      content:{ caption:"This one feature alone saves our users 4 hours a week. 👀\n\nFull breakdown in today's video — link in bio.", hashtags:'productivity, saas, worksmarter, techtok, startuplife', thumbPrompt:'Vertical 9:16 Reels cover. Clean product UI screenshot with a bold minimal headline overlay, soft gradient background, plenty of negative space for text.', slidePrompts:[] } },
+      content:{ caption:"This one feature alone saves our users 4 hours a week. 👀\n\nFull breakdown in today's video — link in bio.", hashtags:'productivity, saas, worksmarter, techtok, startuplife', shortTitle:'4 HOURS SAVED / WEEK', thumbPrompt:'Vertical 9:16 Reels cover. Clean product UI screenshot with a bold minimal headline overlay, soft gradient background, plenty of negative space for text.', slidePrompts:[] } },
     { id:'seed3', type:'reels', platform:'facebook', title:'60-Second Feature Teaser', date:d(1), time:'20:00', uploaded:false,
-      content:{ caption:"This one feature alone saves our users 4 hours a week. 👀\n\nFull video posted above.", hashtags:'productivity, saas', thumbPrompt:'Same cover as Instagram Reels version, 9:16 vertical.', slidePrompts:[] } },
+      content:{ caption:"This one feature alone saves our users 4 hours a week. 👀\n\nFull video posted above.", hashtags:'productivity, saas', shortTitle:'4 HOURS SAVED / WEEK', thumbPrompt:'Same cover as Instagram Reels version, 9:16 vertical.', slidePrompts:[] } },
     { id:'seed4', type:'carousel', platform:'instagram', title:'5 Mistakes New Users Make', date:d(3), time:'12:00', uploaded:false,
       content:{ caption:"Save this before you make these 5 mistakes 👇\n\nWe pulled these from real support tickets — they're more common than you'd think.", hashtags:'productivitytips, saastips, howto', thumbPrompt:'', slidePrompts:[
         'Carousel slide 1/9 (cover). Bold headline "5 MISTAKES NEW USERS MAKE", dark background, clean sans-serif typography, minimal icon.',
@@ -377,7 +681,7 @@ function seedData(){
     { id:'seed7', type:'text_post', platform:'facebook', title:'Behind-the-scenes note', date:d(5), time:'11:00', uploaded:false,
       content:{ caption:"Small team update: we spent this whole week just on load-time improvements. Nothing flashy to show, but the app now opens twice as fast. Sometimes the best work is invisible.", hashtags:'buildinpublic, startuplife', thumbPrompt:'', slidePrompts:[] } },
     { id:'seed8', type:'shorts', platform:'youtube', title:'One Tip in 30 Seconds', date:d(6), time:'17:00', uploaded:true,
-      content:{ caption:"One setting most people never find — and it fixes the #1 complaint we get. 30 seconds, worth it.", hashtags:'shorts, producttips, tutorial, quicktip', thumbPrompt:'YouTube Shorts cover, bold "1 SETTING" text, high contrast, mobile screen mockup in frame.', slidePrompts:[] } },
+      content:{ caption:"One setting most people never find — and it fixes the #1 complaint we get. 30 seconds, worth it.", hashtags:'shorts, producttips, tutorial, quicktip', videoTitle:'The Setting Everyone Misses (Fixes Your #1 Complaint)', shortTitle:'1 SETTING FIXES IT', thumbPrompt:'YouTube Shorts cover, bold "1 SETTING" text, high contrast, mobile screen mockup in frame.', slidePrompts:[] } },
   ];
 }
 
@@ -416,7 +720,7 @@ function renderLegend(){
   const typeEl = document.getElementById('typeLegend');
   typeEl.innerHTML = CAL_TYPES.map(t=>`
     <span class="legend-item ${activeTypeFilters.has(t)?'active':''}" data-type="${t}">
-      <span class="dot" style="background:${CAL_TYPE_COLORS[t]}"></span>${CAL_TYPE_NAMES[t]}
+      <span class="dot" style="background:${CAL_TYPE_COLORS[t]}"></span>${typeName(t)}
     </span>`).join('') + `<span class="legend-reset ${activeTypeFilters.size?'show':''}" id="typeReset">Clear</span>`;
   typeEl.querySelectorAll('.legend-item').forEach(el=>{
     el.addEventListener('click', ()=>{
@@ -443,8 +747,8 @@ function renderLegend(){
 
   const statusEl = document.getElementById('statusLegend');
   const statuses = [
-    {key:'scheduled', label:'🕒 Scheduled', color:'#8B90A3'},
-    {key:'posted', label:'● Posted', color:'#FFB020'},
+    {key:'scheduled', label:statusLabel('scheduled'), color:'#8B90A3'},
+    {key:'posted', label:statusLabel('posted'), color:'#FFB020'},
   ];
   statusEl.innerHTML = statuses.map(s=>`
     <span class="legend-item ${activeStatusFilters.has(s.key)?'active':''}" data-status="${s.key}">
@@ -496,7 +800,7 @@ function renderCal(){
       row.className = 'cal-chip-row';
       const chip = document.createElement('div');
       chip.className = 'cal-chip' + (ev.uploaded ? ' live' : '');
-      chip.innerHTML = `<span class="cal-badge" style="background:${CAL_SM_COLORS[ev.platform]}" title="${CAL_SM_NAMES[ev.platform]}">${CAL_TYPE_LABELS[ev.type]}</span>
+      chip.innerHTML = `<span class="cal-badge" style="background:${CAL_SM_COLORS[ev.platform]}" title="${CAL_SM_NAMES[ev.platform]}">${typeLabel(ev.type)}</span>
         <span class="cal-chip-title">${ev.time||''} ${escapeHtml(ev.title||'')}</span>
         <span class="cal-status-icon${ev.uploaded?' on-air':''}">${ev.uploaded?'':'○'}</span>`;
       chip.addEventListener('click', ()=> openModal(ev));
@@ -515,22 +819,32 @@ function escapeHtml(s){
 }
 
 function populateSelects(){
-  document.getElementById('f_type').innerHTML = CAL_TYPES.map(t=>`<option value="${t}">${CAL_TYPE_NAMES[t]}</option>`).join('');
+  const prevType = document.getElementById('f_type').value;
+  const prevPlatform = document.getElementById('f_platform').value;
+  const prevChecked = Array.from(document.querySelectorAll('#platformChecks input:checked')).map(el=>el.value);
+  document.getElementById('f_type').innerHTML = CAL_TYPES.map(t=>`<option value="${t}">${typeName(t)}</option>`).join('');
   document.getElementById('f_platform').innerHTML = CAL_SM_PLATFORMS.map(p=>`<option value="${p}">${CAL_SM_NAMES[p]}</option>`).join('');
   document.getElementById('platformChecks').innerHTML = CAL_SM_PLATFORMS.map(p=>`
     <label class="pcheck"><input type="checkbox" value="${p}" ${p==='youtube'?'checked':''}><span class="pico" style="color:${CAL_SM_COLORS[p]}">${PLATFORM_ICONS[p]}</span>${CAL_SM_NAMES[p]}</label>`).join('');
+  if(prevType) document.getElementById('f_type').value = prevType;
+  if(prevPlatform) document.getElementById('f_platform').value = prevPlatform;
+  if(prevChecked.length){
+    document.querySelectorAll('#platformChecks input').forEach(el=>{ el.checked = prevChecked.includes(el.value); });
+  }
 }
 
 function refreshTypeDependentFields(){
   const type = document.getElementById('f_type').value;
   document.getElementById('thumbWrap').style.display = (type==='video'||type==='shorts'||type==='reels') ? '' : 'none';
+  document.getElementById('videoTitleWrap').style.display = (type==='video'||type==='shorts') ? '' : 'none';
+  document.getElementById('shortTitleWrap').style.display = (type==='video'||type==='shorts'||type==='reels') ? '' : 'none';
   document.getElementById('carouselWrap').style.display = (type==='carousel') ? '' : 'none';
   if(type === 'carousel'){
     const container = document.getElementById('carouselSlides');
     if(container.children.length === 0){
       container.innerHTML = Array.from({length:9},(_,i)=>`
         <div class="field">
-          <div class="field-header"><label>Slide ${i+1}</label><button type="button" class="copy-btn" data-copy="slide${i+1}">Copy</button></div>
+          <div class="field-header"><label>Slide ${i+1}</label><button type="button" class="copy-btn" data-copy="slide${i+1}" data-i18n="btn_copy">${t('btn_copy')}</button></div>
           <textarea id="slide${i+1}"></textarea>
         </div>`).join('');
     }
@@ -540,7 +854,7 @@ function refreshTypeDependentFields(){
 function openModal(ev){
   currentEvent = ev || null;
   const isNew = !ev;
-  document.getElementById('modalTitle').textContent = isNew ? 'New Entry' : 'Edit Entry';
+  document.getElementById('modalTitle').textContent = isNew ? t('modal_new_title') : t('modal_edit_title');
   document.getElementById('deleteBtn').style.display = isNew ? 'none' : '';
   document.getElementById('platformMultiWrap').style.display = isNew ? '' : 'none';
   document.getElementById('platformSingleWrap').style.display = isNew ? 'none' : '';
@@ -555,6 +869,8 @@ function openModal(ev){
     const c = ev.content || {};
     document.getElementById('f_caption').value = c.caption||'';
     document.getElementById('f_hashtags').value = c.hashtags||'';
+    document.getElementById('f_videotitle').value = c.videoTitle||'';
+    document.getElementById('f_shorttitle').value = c.shortTitle||'';
     document.getElementById('f_thumb').value = c.thumbPrompt||'';
     document.getElementById('carouselSlides').innerHTML = '';
     refreshTypeDependentFields();
@@ -572,6 +888,8 @@ function openModal(ev){
     setUploadToggle(false);
     document.getElementById('f_caption').value = '';
     document.getElementById('f_hashtags').value = '';
+    document.getElementById('f_videotitle').value = '';
+    document.getElementById('f_shorttitle').value = '';
     document.getElementById('f_thumb').value = '';
     document.getElementById('carouselSlides').innerHTML = '';
     refreshTypeDependentFields();
@@ -598,7 +916,7 @@ document.getElementById('uploadToggle').addEventListener('click', ()=> setUpload
 
 document.getElementById('deleteBtn').addEventListener('click', ()=>{
   if(!currentEvent) return;
-  if(!confirm('Delete this entry?')) return;
+  if(!confirm(t('confirm_delete'))) return;
   events = events.filter(e=>e.id!==currentEvent.id);
   save(); closeModal(); renderCal();
 });
@@ -607,12 +925,14 @@ document.getElementById('saveBtn').addEventListener('click', ()=>{
   const title = document.getElementById('f_title').value.trim();
   const date = document.getElementById('f_date').value;
   const time = document.getElementById('f_time').value;
-  if(!title || !date || !time){ alert('Please fill in title, date and time.'); return; }
+  if(!title || !date || !time){ alert(t('alert_fill_required')); return; }
   const type = document.getElementById('f_type').value;
 
   const content = {
     caption: document.getElementById('f_caption').value,
     hashtags: document.getElementById('f_hashtags').value,
+    videoTitle: document.getElementById('f_videotitle').value,
+    shortTitle: document.getElementById('f_shorttitle').value,
     thumbPrompt: document.getElementById('f_thumb').value,
     slidePrompts: type==='carousel' ? Array.from({length:9},(_,i)=> (document.getElementById('slide'+(i+1))||{}).value || '') : []
   };
@@ -622,7 +942,7 @@ document.getElementById('saveBtn').addEventListener('click', ()=>{
     Object.assign(currentEvent, { type, platform: document.getElementById('f_platform').value, title, date, time, uploaded, content });
   } else {
     const platforms = Array.from(document.querySelectorAll('#platformChecks input:checked')).map(el=>el.value);
-    if(platforms.length===0){ alert('Select at least one platform.'); return; }
+    if(platforms.length===0){ alert(t('alert_select_platform')); return; }
     platforms.forEach((p,i)=>{
       events.push({ id:'ev_'+Date.now()+'_'+i, type, platform:p, title, date, time, uploaded, content: JSON.parse(JSON.stringify(content)) });
     });
@@ -652,15 +972,15 @@ document.getElementById('importFile').addEventListener('change', (e)=>{
       const parsed = JSON.parse(reader.result);
       if(!Array.isArray(parsed)) throw new Error('bad format');
       events = parsed; save(); renderCal();
-      alert('Backup imported successfully.');
-    }catch(err){ alert('Could not read that file.'); }
+      alert(t('import_success'));
+    }catch(err){ alert(t('import_bad_file')); }
   };
   reader.readAsText(file);
   e.target.value = '';
 });
 document.getElementById('refreshBtn').addEventListener('click', ()=> location.reload());
 document.getElementById('resetBtn').addEventListener('click', ()=>{
-  if(!confirm('Reset the demo back to the original example content? This clears anything you added.')) return;
+  if(!confirm(t('confirm_reset'))) return;
   events = seedData(); save(); renderCal();
 });
 
@@ -672,33 +992,43 @@ document.addEventListener('click', (e)=>{
   if(!el) return;
   navigator.clipboard.writeText(el.value).then(()=>{
     const orig = btn.textContent;
-    btn.textContent = 'Copied';
+    btn.textContent = t('btn_copied');
     btn.classList.add('copied');
     setTimeout(()=>{ btn.textContent = orig; btn.classList.remove('copied'); }, 1500);
   });
 });
 
 // ===== Onboarding tour =====
-const TOUR_STEPS = [
-  { title:"Welcome to Slate", body:"This is a live demo of a content calendar built for creators who post the same content across multiple platforms — YouTube, Instagram, TikTok, X, Threads, and more. Everything here is real and editable. Nothing you do leaves your browser." },
-  { title:"Two independent tags per post", body:"The top row is what the content is — Video, Reels, Carousel, Story. The bottom row is where it's going — YouTube, Instagram, TikTok, X, Threads, Pinterest, LinkedIn, Facebook. Click either row to filter, or combine both at once." },
-  { title:"Click any entry to open it", body:"Every slot holds the full caption, hashtags, and even an AI image-generation prompt for the cover — all editable, all one click from being copied into whatever app you post from." },
-  { title:"Optional: draft with your own AI", body:"Stuck on a caption? Connect your own Claude or Gemini API key — it's a bring-your-own-key setup, stored only in your browser, and calls go straight from your browser to Anthropic or Google. We never see it. Look for the “✨ Draft with AI” button inside any entry." },
-];
+const TOUR_STEPS_I18N = {
+  en: [
+    { title:"Welcome to Slate", body:"This is a live demo of a content calendar built for creators who post the same content across multiple platforms — YouTube, Instagram, TikTok, X, Threads, and more. Everything here is real and editable. Nothing you do leaves your browser." },
+    { title:"Two independent tags per post", body:"The top row is what the content is — Video, Reels, Carousel, Story. The bottom row is where it's going — YouTube, Instagram, TikTok, X, Threads, Pinterest, LinkedIn, Facebook. Click either row to filter, or combine both at once." },
+    { title:"Click any entry to open it", body:"Every slot holds the full caption, hashtags, video title, cover text and even an AI image-generation prompt for the cover — all editable, all one click from being copied into whatever app you post from." },
+    { title:"Optional: draft with your own AI", body:"Stuck on a caption? Connect your own Claude or Gemini API key — it's a bring-your-own-key setup, stored only in your browser, and calls go straight from your browser to Anthropic or Google. We never see it. Look for the “✨ Draft with AI” button inside any entry." },
+  ],
+  tr: [
+    { title:"Slate'e Hoş Geldin", body:"Bu, aynı içeriği birden fazla platformda (YouTube, Instagram, TikTok, X, Threads ve daha fazlası) paylaşan içerik üreticileri için hazırlanmış canlı bir içerik takvimi demosudur. Buradaki her şey gerçek ve düzenlenebilir. Yaptığın hiçbir şey tarayıcından dışarı çıkmaz." },
+    { title:"Her paylaşım için iki bağımsız etiket", body:"Üst satır içeriğin NE olduğu — Video, Reels, Carousel, Hikaye. Alt satır NEREYE gittiği — YouTube, Instagram, TikTok, X, Threads, Pinterest, LinkedIn, Facebook. Filtrelemek için her iki satıra da tıklayabilir, ya da ikisini birden kullanabilirsin." },
+    { title:"Herhangi bir girişe tıkla, aç", body:"Her kutucukta tam caption, hashtag'ler, video başlığı, kapak metni ve hatta kapak için bir AI görsel prompt'u bulunur — hepsi düzenlenebilir, hepsi tek tıkla paylaşım yaptığın uygulamaya kopyalanmaya hazır." },
+    { title:"İsteğe bağlı: kendi AI'ınla taslak oluştur", body:"Caption'da mı takıldın? Kendi Claude ya da Gemini API anahtarını bağla — bring-your-own-key mantığıyla çalışır, sadece tarayıcında saklanır, istekler doğrudan tarayıcından Anthropic ya da Google'a gider. Biz hiç görmeyiz. Herhangi bir girişin içinde “✨ AI ile Taslak Oluştur” butonunu ara." },
+  ],
+};
 let tourIndex = 0;
 function renderTourStep(){
-  const s = TOUR_STEPS[tourIndex];
-  document.getElementById('tourStep').textContent = `STEP ${tourIndex+1} / ${TOUR_STEPS.length}`;
+  const steps = TOUR_STEPS_I18N[currentLang] || TOUR_STEPS_I18N.en;
+  const s = steps[tourIndex];
+  document.getElementById('tourStep').textContent = `STEP ${tourIndex+1} / ${steps.length}`;
   document.getElementById('tourTitle').textContent = s.title;
   document.getElementById('tourBody').textContent = s.body;
   document.getElementById('tourBackBtn').style.display = tourIndex===0 ? 'none' : '';
-  document.getElementById('tourNextBtn').textContent = tourIndex===TOUR_STEPS.length-1 ? 'Got it' : 'Next';
-  document.getElementById('tourDots').innerHTML = TOUR_STEPS.map((_,i)=>`<span class="tour-dot ${i===tourIndex?'active':''}"></span>`).join('');
+  document.getElementById('tourNextBtn').textContent = tourIndex===steps.length-1 ? t('tour_got_it') : t('btn_next');
+  document.getElementById('tourDots').innerHTML = steps.map((_,i)=>`<span class="tour-dot ${i===tourIndex?'active':''}"></span>`).join('');
 }
 function openTour(){ tourIndex = 0; renderTourStep(); document.getElementById('tourOverlay').classList.add('open'); }
 function closeTour(){ document.getElementById('tourOverlay').classList.remove('open'); localStorage.setItem('demo_seen_intro','1'); }
 document.getElementById('tourNextBtn').addEventListener('click', ()=>{
-  if(tourIndex === TOUR_STEPS.length-1){ closeTour(); return; }
+  const steps = TOUR_STEPS_I18N[currentLang] || TOUR_STEPS_I18N.en;
+  if(tourIndex === steps.length-1){ closeTour(); return; }
   tourIndex++; renderTourStep();
 });
 document.getElementById('tourBackBtn').addEventListener('click', ()=>{ tourIndex--; renderTourStep(); });
@@ -723,7 +1053,7 @@ document.getElementById('aiSettingsOverlay').addEventListener('click', (e)=>{ if
 document.getElementById('aiSettingsSaveBtn').addEventListener('click', ()=>{
   const provider = document.getElementById('ai_provider').value;
   const key = document.getElementById('ai_key').value.trim();
-  if(!key){ alert('Enter an API key first.'); return; }
+  if(!key){ alert(t('ai_alert_need_key')); return; }
   saveAiSettings({ provider, key });
   document.getElementById('aiSettingsOverlay').classList.remove('open');
   runAiDraft();
@@ -757,10 +1087,11 @@ async function callGemini(apiKey, prompt){
 }
 
 function buildDraftPrompt(){
-  const type = CAL_TYPE_NAMES[document.getElementById('f_type').value];
+  const type = typeName(document.getElementById('f_type').value);
   const platform = currentEvent ? CAL_SM_NAMES[document.getElementById('f_platform').value] : 'social media';
   const title = document.getElementById('f_title').value || '(no title given)';
-  return `Write a short, natural social media caption for a ${type} post on ${platform}. The post is about: "${title}". Keep it in the creator's own voice — casual, direct, no corporate tone, no more than 3-4 short sentences, end with a light call to action if it fits naturally. Return ONLY the caption text, nothing else — no preamble, no quotation marks around it.`;
+  const langInstruction = currentLang === 'tr' ? ' Write the caption in Turkish.' : ' Write the caption in English.';
+  return `Write a short, natural social media caption for a ${type} post on ${platform}. The post is about: "${title}". Keep it in the creator's own voice — casual, direct, no corporate tone, no more than 3-4 short sentences, end with a light call to action if it fits naturally.${langInstruction} Return ONLY the caption text, nothing else — no preamble, no quotation marks around it.`;
 }
 
 async function runAiDraft(){
@@ -771,7 +1102,7 @@ async function runAiDraft(){
     return;
   }
   const btn = document.getElementById('aiDraftBtn');
-  btn.disabled = true; btn.textContent = 'Drafting…';
+  btn.disabled = true; btn.textContent = t('ai_drafting');
   statusEl.textContent = ''; statusEl.className = 'ai-status';
   try{
     const prompt = buildDraftPrompt();
@@ -779,24 +1110,139 @@ async function runAiDraft(){
       ? await callClaude(settings.key, prompt)
       : await callGemini(settings.key, prompt);
     document.getElementById('f_caption').value = text;
-    statusEl.textContent = `Drafted with ${settings.provider === 'claude' ? 'Claude' : 'Gemini'}. Feel free to edit it.`;
+    statusEl.textContent = t('ai_drafted_prefix') + (settings.provider === 'claude' ? 'Claude' : 'Gemini') + t('ai_drafted_suffix');
     statusEl.className = 'ai-status ok';
   }catch(err){
-    statusEl.textContent = 'Could not reach the API: ' + err.message + ' — check your key in Settings and try again.';
+    statusEl.textContent = t('ai_error_prefix') + err.message + t('ai_error_suffix');
     statusEl.className = 'ai-status error';
   }finally{
-    btn.disabled = false; btn.textContent = '✨ Draft with AI';
+    btn.disabled = false; btn.textContent = t('btn_ai_draft');
   }
 }
 document.getElementById('aiDraftBtn').addEventListener('click', runAiDraft);
 
+// ===== Pending / Not Yet Posted popup =====
+let pendingAutoShown = false; // auto popup only ever fires once per page load
+function showPendingPopup(autoMode){
+  if(autoMode){
+    if(pendingAutoShown) return;
+    pendingAutoShown = true;
+  }
+  const now = new Date();
+  const pending = events.filter(e=>!e.uploaded).map(e=>{
+    const dt = new Date(e.date + 'T' + (e.time||'00:00') + ':00');
+    return { ev:e, dt, overdue: dt <= now };
+  }).sort((a,b)=> a.dt - b.dt);
 
+  const body = document.getElementById('pendingBody');
+  if(pending.length === 0){
+    if(autoMode) return; // don't interrupt when everything is already caught up
+    body.innerHTML = `<div class="pending-empty">${t('pending_all_clear')}</div>`;
+    document.getElementById('pendingOverlay').classList.add('open');
+    return;
+  }
+
+  const overdueCount = pending.filter(p=>p.overdue).length;
+  const rows = pending.map(p=>{
+    const ev = p.ev;
+    return `<tr class="pending-row ${p.overdue?'pending-overdue':''}" data-id="${ev.id}">
+      <td>${p.overdue ? '🔴' : '🕒'} ${ev.date} ${ev.time||''}</td>
+      <td><span class="cal-badge" style="background:${CAL_SM_COLORS[ev.platform]};display:inline-block;">${typeLabel(ev.type)}</span> ${CAL_SM_NAMES[ev.platform]}</td>
+      <td>${escapeHtml(ev.title||'')}</td>
+    </tr>`;
+  }).join('');
+
+  body.innerHTML = `
+    <div style="margin-bottom:12px;">
+      <b>${t('pending_count_text')(pending.length)}</b>${overdueCount>0 ? `<span style="color:var(--red);font-weight:600;">${t('pending_overdue_clause')(overdueCount)}</span> 🔴` : ''}.
+    </div>
+    <table class="pending-table">
+      <thead>
+        <tr>
+          <th>${t('pending_col_datetime')}</th>
+          <th>${t('pending_col_type')}</th>
+          <th>${t('pending_col_title')}</th>
+        </tr>
+      </thead>
+      <tbody>${rows}</tbody>
+    </table>
+    <div style="margin-top:10px;font-size:11.5px;opacity:.7;">${t('pending_click_hint')}</div>
+  `;
+  body.querySelectorAll('.pending-row').forEach(tr=>{
+    tr.addEventListener('click', ()=>{
+      const ev = events.find(e=>e.id===tr.dataset.id);
+      if(!ev) return;
+      document.getElementById('pendingOverlay').classList.remove('open');
+      openModal(ev);
+    });
+  });
+  document.getElementById('pendingOverlay').classList.add('open');
+}
+document.getElementById('pendingBtn').addEventListener('click', ()=> showPendingPopup(false));
+document.getElementById('pendingCloseBtn').addEventListener('click', ()=> document.getElementById('pendingOverlay').classList.remove('open'));
+document.getElementById('pendingOverlay').addEventListener('click', (e)=>{ if(e.target.id==='pendingOverlay') document.getElementById('pendingOverlay').classList.remove('open'); });
+
+// ===== Browser storage usage indicator =====
+// localStorage quotas vary by browser (commonly ~5MB, some allow more) — we
+// show usage against a conservative 5MB reference point so the bar is a
+// useful early warning rather than a precise measurement.
+function updateStorageDisplay(){
+  const payload = JSON.stringify(events);
+  const bytes = new Blob([payload]).size;
+  const kb = bytes / 1024;
+  const LIMIT_KB = 5 * 1024; // conservative common localStorage quota reference
+  const pct = Math.min(100, (kb / LIMIT_KB) * 100);
+
+  let barColor = '#5FD9A0';
+  let statusText = t('storage_status_ok');
+  if(pct >= 85){ barColor = '#E85D5D'; statusText = t('storage_status_crit'); }
+  else if(pct >= 60){ barColor = '#E8A23A'; statusText = t('storage_status_med'); }
+
+  const topItems = events.map(e => ({
+    title: e.title || '(untitled)',
+    size: new Blob([JSON.stringify(e)]).size
+  })).sort((a,b)=>b.size-a.size).slice(0,5);
+
+  const body = document.getElementById('storageBody');
+  body.innerHTML = `
+    <div style="margin-bottom:12px;">
+      <div style="display:flex;justify-content:space-between;font-weight:600;margin-bottom:4px;font-size:13px;">
+        <span>${t('storage_used_of')(kb.toFixed(1), pct.toFixed(1), (LIMIT_KB/1024).toFixed(0))}</span>
+      </div>
+      <div class="storage-bar-track">
+        <div class="storage-bar-fill" style="background:${barColor};width:${Math.max(pct,0.5)}%;"></div>
+      </div>
+      <div style="margin-top:6px;color:${barColor};font-weight:600;font-size:13px;">${statusText}</div>
+    </div>
+    <div style="margin-bottom:10px;font-size:13px;">${t('storage_entries_count')(events.length)}</div>
+    <div style="font-size:12px;opacity:.8;margin-bottom:6px;">${t('storage_top5_label')}</div>
+    <div>${topItems.map(x => `<div class="storage-top-item"><span>${escapeHtml(x.title)}</span><span style="opacity:.7;">${(x.size/1024).toFixed(1)} KB</span></div>`).join('')}</div>
+    <div style="margin-top:12px;font-size:12px;opacity:.75;border-top:1px solid var(--line);padding-top:10px;">${t('storage_note')}</div>
+  `;
+}
+document.getElementById('storageBtn').addEventListener('click', ()=>{
+  updateStorageDisplay();
+  document.getElementById('storageOverlay').classList.add('open');
+});
+document.getElementById('storageCloseBtn').addEventListener('click', ()=> document.getElementById('storageOverlay').classList.remove('open'));
+document.getElementById('storageOverlay').addEventListener('click', (e)=>{ if(e.target.id==='storageOverlay') document.getElementById('storageOverlay').classList.remove('open'); });
+
+// ===== Init =====
+try{
+  const savedLang = localStorage.getItem(LANG_KEY);
+  currentLang = (savedLang && LANG[savedLang]) ? savedLang : detectDefaultLang();
+}catch(e){ currentLang = detectDefaultLang(); }
+document.getElementById('langSelect').addEventListener('change', (e)=> setLanguage(e.target.value));
+populateLangSelect();
+applyStaticI18n();
 populateSelects();
 load();
 renderLegend();
 renderCal();
 if(!localStorage.getItem('demo_seen_intro')){
   setTimeout(openTour, 400);
+} else {
+  setTimeout(()=> showPendingPopup(true), 600);
 }
 </script>
   <script data-goatcounter="https://slate-demo.goatcounter.com/count"
