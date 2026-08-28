@@ -616,10 +616,9 @@ function populateLangSelect(){
   sel.value = currentLang;
 }
 function detectDefaultLang(){
-  try{
-    const nav = (navigator.language || navigator.userLanguage || 'en').toLowerCase();
-    if(nav.startsWith('tr')) return 'tr';
-  }catch(e){}
+  // The demo always opens in English by default, regardless of browser
+  // locale — visitors can switch to Türkçe (or any future language) manually
+  // via the language selector, and that manual choice is what gets saved.
   return 'en';
 }
 function setLanguage(lang){
@@ -1024,8 +1023,16 @@ function renderTourStep(){
   document.getElementById('tourNextBtn').textContent = tourIndex===steps.length-1 ? t('tour_got_it') : t('btn_next');
   document.getElementById('tourDots').innerHTML = steps.map((_,i)=>`<span class="tour-dot ${i===tourIndex?'active':''}"></span>`).join('');
 }
+let tourAutoSequence = false; // true only for the automatic on-load tour, so we know to chain the Pending popup after it closes
 function openTour(){ tourIndex = 0; renderTourStep(); document.getElementById('tourOverlay').classList.add('open'); }
-function closeTour(){ document.getElementById('tourOverlay').classList.remove('open'); localStorage.setItem('demo_seen_intro','1'); }
+function closeTour(){
+  document.getElementById('tourOverlay').classList.remove('open');
+  localStorage.setItem('demo_seen_intro','1');
+  if(tourAutoSequence){
+    tourAutoSequence = false;
+    setTimeout(()=> showPendingPopup(true), 300);
+  }
+}
 document.getElementById('tourNextBtn').addEventListener('click', ()=>{
   const steps = TOUR_STEPS_I18N[currentLang] || TOUR_STEPS_I18N.en;
   if(tourIndex === steps.length-1){ closeTour(); return; }
@@ -1034,7 +1041,7 @@ document.getElementById('tourNextBtn').addEventListener('click', ()=>{
 document.getElementById('tourBackBtn').addEventListener('click', ()=>{ tourIndex--; renderTourStep(); });
 document.getElementById('tourSkip').addEventListener('click', closeTour);
 document.getElementById('tourOverlay').addEventListener('click', (e)=>{ if(e.target.id==='tourOverlay') closeTour(); });
-document.getElementById('tourBtn').addEventListener('click', openTour);
+document.getElementById('tourBtn').addEventListener('click', ()=>{ tourAutoSequence = false; openTour(); });
 
 // ===== Bring-your-own-key AI drafting (Claude or Gemini, called directly from the browser) =====
 function getAiSettings(){
@@ -1239,11 +1246,11 @@ populateSelects();
 load();
 renderLegend();
 renderCal();
-if(!localStorage.getItem('demo_seen_intro')){
-  setTimeout(openTour, 400);
-} else {
-  setTimeout(()=> showPendingPopup(true), 600);
-}
+// Every time the demo loads: "How this works" tour first, then — once that's
+// closed (skipped or finished) — the Pending popup, so a first-time visitor
+// always gets the explainer before the state-of-the-calendar nudge.
+tourAutoSequence = true;
+setTimeout(openTour, 400);
 </script>
   <script data-goatcounter="https://slate-demo.goatcounter.com/count"
         async src="//gc.zgo.at/count.js"></script>
