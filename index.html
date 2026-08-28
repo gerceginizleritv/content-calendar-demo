@@ -371,7 +371,6 @@ body{
         <summary><span data-i18n="more_title">More</span></summary>
         <div class="fold-row">
           <button class="btn" id="exportBtn" data-i18n="btn_export">Export Backup</button>
-          <button class="btn" id="importBtn" data-i18n="btn_import">Import Backup</button>
           <button class="btn" id="resetBtn" data-i18n="btn_reset">Reset Demo</button>
           <button class="btn" id="tourBtn" data-i18n="btn_tour">? How this works</button>
         </div>
@@ -381,7 +380,6 @@ body{
       <a class="visit-badge" href="https://hits.sh/gerceginizleritv.github.io/content-calendar-demo/" target="_blank" rel="noopener">
         <img src="https://hits.sh/gerceginizleritv.github.io/content-calendar-demo.svg?style=flat-square&label=visits&color=2563C7&labelColor=EDF1F6" alt="visit counter">
       </a>
-      <input type="file" id="importFile" accept="application/json" style="display:none;">
     </div>
   </div>
 
@@ -648,7 +646,6 @@ const LANG = {
     btn_new: "+ New Entry",
     btn_pending: "⏳ Pending",
     btn_export: "Export Backup",
-    btn_import: "Import Backup",
     btn_reset: "Reset Demo",
     btn_tour: "? How this works",
     btn_feedback: "💬 Feedback",
@@ -722,8 +719,6 @@ const LANG = {
     alert_select_platform: "Select at least one platform.",
     confirm_delete: "Delete this entry?",
     confirm_reset: "Reset the demo back to the original example content? This clears anything you added.",
-    import_bad_file: "Could not read that file.",
-    import_success: "Backup imported successfully.",
     ai_alert_need_key: "Enter an API key first.",
     ai_drafting: "Drafting…",
     ai_drafted_prefix: "Drafted with ",
@@ -757,7 +752,6 @@ const LANG = {
     btn_new: "+ Yeni Giriş",
     btn_pending: "⏳ Bekleyenler",
     btn_export: "Yedek Dışa Aktar",
-    btn_import: "Yedek İçe Aktar",
     btn_reset: "Demoyu Sıfırla",
     btn_tour: "? Bu nasıl çalışır",
     btn_feedback: "💬 Geri Bildirim",
@@ -831,8 +825,6 @@ const LANG = {
     alert_select_platform: "En az bir platform seç.",
     confirm_delete: "Bu giriş silinsin mi?",
     confirm_reset: "Demo, orijinal örnek içeriğine sıfırlansın mı? Eklediğin her şey silinir.",
-    import_bad_file: "Bu dosya okunamadı.",
-    import_success: "Yedek başarıyla içe aktarıldı.",
     ai_alert_need_key: "Önce bir API anahtarı gir.",
     ai_drafting: "Taslak hazırlanıyor…",
     ai_drafted_prefix: "",
@@ -1319,22 +1311,6 @@ document.getElementById('exportBtn').addEventListener('click', ()=>{
   trackOnce('funnel/backup-exported');
   document.body.appendChild(a); a.click(); document.body.removeChild(a);
   URL.revokeObjectURL(url);
-});
-document.getElementById('importBtn').addEventListener('click', ()=> document.getElementById('importFile').click());
-document.getElementById('importFile').addEventListener('change', (e)=>{
-  const file = e.target.files[0];
-  if(!file) return;
-  const reader = new FileReader();
-  reader.onload = ()=>{
-    try{
-      const parsed = JSON.parse(reader.result);
-      if(!Array.isArray(parsed)) throw new Error('bad format');
-      events = sanitizeEvents(parsed); save(); renderCal();
-      alert(t('import_success'));
-    }catch(err){ alert(t('import_bad_file')); }
-  };
-  reader.readAsText(file);
-  e.target.value = '';
 });
 document.getElementById('resetBtn').addEventListener('click', ()=>{
   if(!confirm(t('confirm_reset'))) return;
