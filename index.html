@@ -1509,11 +1509,15 @@ renderCal();
 // closed (skipped or finished) — the Pending popup, so a first-time visitor
 // always gets the explainer before the state-of-the-calendar nudge.
 // ===== Feedback capture =====
-// Any endpoint that accepts a JSON POST works here (Formspree, Tally, a webhook).
-// Leaving it empty is fine and the form still does its job: the multiple-choice
-// answer is recorded as a GoatCounter event either way — only the free text and
-// the email need somewhere to land.
-const FEEDBACK_ENDPOINT = '';
+// Web3Forms relays each submission straight to the inbox the key is registered
+// to. The access key is meant to live in client code — it only grants "send a
+// message to the owner", nothing else — but it can be rotated from web3forms.com
+// if it ever starts attracting spam.
+// Clearing the key does not break the form: the multiple-choice answer is
+// recorded as a GoatCounter event either way. Only the free text and the email
+// need somewhere to land.
+const FEEDBACK_ENDPOINT = 'https://api.web3forms.com/submit';
+const FEEDBACK_KEY = '64552f4d-d476-4ec9-9983-8960b94b564c';
 
 const FB_USES = ['nothing','notion','later','metricool','other'];
 const FB_USE_KEY = { nothing:'fb_u_nothing', notion:'fb_u_notion', later:'fb_u_later', metricool:'fb_u_metricool', other:'fb_u_other' };
@@ -1566,16 +1570,36 @@ document.getElementById('fbSendBtn').addEventListener('click', async ()=>{
   track('feedback/sent');
   try{ localStorage.setItem('demo_fb_done','1'); }catch(e){}
 
-  if(FEEDBACK_ENDPOINT && (pain || email)){
+  if(FEEDBACK_ENDPOINT && FEEDBACK_KEY && (pain || email)){
     btn.disabled = true;
     statusEl.textContent = t('fb_sending'); statusEl.className = 'ai-status';
+    // Field names are written out in plain English because Web3Forms turns the
+    // payload straight into the body of the notification email — these are the
+    // labels that get read in the inbox.
+    const payload = {
+      access_key: FEEDBACK_KEY,
+      subject: 'Slate feedback — ' + (uses || 'no answer'),
+      from_name: 'Slate demo',
+      'Uses today': uses ? (LANG.en[FB_USE_KEY[uses]] || uses) : '(no answer)',
+      'Biggest pain': pain || '(blank)',
+      'Wants early access': email || '(not given)',
+      'Page language': currentLang,
+      'Submitted at': new Date().toISOString()
+    };
+    // Sent as `email` too so a reply in the inbox goes straight back to them.
+    if(email) payload.email = email;
     try{
-      await fetch(FEEDBACK_ENDPOINT, {
+      const res = await fetch(FEEDBACK_ENDPOINT, {
         method: 'POST',
         headers: { 'Content-Type':'application/json', 'Accept':'application/json' },
-        body: JSON.stringify({ uses, pain, email, lang: currentLang, at: new Date().toISOString() })
+        body: JSON.stringify(payload)
       });
-      statusEl.textContent = t('fb_thanks'); statusEl.className = 'ai-status ok';
+      const out = await res.json().catch(()=>({}));
+      if(res.ok && out.success !== false){
+        statusEl.textContent = t('fb_thanks'); statusEl.className = 'ai-status ok';
+      }else{
+        statusEl.textContent = t('fb_err'); statusEl.className = 'ai-status error';
+      }
     }catch(err){
       statusEl.textContent = t('fb_err'); statusEl.className = 'ai-status error';
     }
