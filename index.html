@@ -287,6 +287,17 @@ body{
   .fold .hint{padding-bottom:0;}
   .fold-inline,.fold-inline .fold-row{display:contents;}
 }
+/* Yogun gunler: ilk 3 kayit gorunur, gerisi tiklaninca acilir. Boylece tek
+   yogun gun butun haftanin satirini uzatmiyor. */
+.cal-day.collapsed .cal-chip-row.overflow{display:none;}
+.cal-more{
+  background:transparent;border:0;color:var(--accent);cursor:pointer;
+  font-family:'IBM Plex Mono',monospace;font-size:10px;letter-spacing:.04em;
+  padding:4px 2px;min-height:28px;width:100%;text-align:left;
+}
+.cal-more:hover{text-decoration:underline;}
+.cal-more:focus-visible{outline:2px solid var(--accent);outline-offset:2px;border-radius:3px;}
+
 /* Komsu aylarin gunleri: gorunur ama geri planda — ay gecisi takip edilebilsin */
 /* Hucreyi geri plana atiyoruz ama icerigi okunur birakiyoruz — ayin sonuna
    tasan paylasimlar cogu zaman tam da gorulmesi gerekenler. */
@@ -316,6 +327,9 @@ body{
 
   /* Bos gunler gizleniyor: 28 gunun 22'si bos, hepsi tam satir kapliyordu */
   .cal-empty{display:none;}
+  /* Tek sutunlu listede yer sorunu yok — gunun tamami gorunsun */
+  .cal-day.collapsed .cal-chip-row.overflow{display:flex;}
+  .cal-more{display:none;}
   .cal-outside:not(:has(.cal-chip)){display:none;}
 
   /* Dokunma hedefleri — masaustunde 36px yeterli, parmakta degil */
@@ -601,6 +615,7 @@ function trackOnce(name){ if(_trackSeen.has(name)) return; _trackSeen.add(name);
   }, 700);
 })();
 
+const CAL_MAX_CHIPS = 3;  // bir gun hucresinde katlanmadan gosterilen kayit sayisi
 const CAL_TYPES = ['video','shorts','reels','carousel','story','text_post','poll'];
 const CAL_SM_PLATFORMS = ['youtube','instagram','tiktok','facebook','threads','x','pinterest','linkedin'];
 const CAL_TYPE_NAMES = {video:'Video', shorts:'Shorts', reels:'Reels', carousel:'Carousel', story:'Story', text_post:'Text Post', poll:'Poll'};
@@ -637,6 +652,8 @@ const LANG = {
     btn_reset: "Reset Demo",
     btn_tour: "? How this works",
     btn_feedback: "💬 Feedback",
+    cal_more: (n)=> `+${n} more`,
+    cal_less: "Show less",
     filters_title: "Filters",
     more_title: "More",
     btn_theme_dark: "Dark",
@@ -744,6 +761,8 @@ const LANG = {
     btn_reset: "Demoyu Sıfırla",
     btn_tour: "? Bu nasıl çalışır",
     btn_feedback: "💬 Geri Bildirim",
+    cal_more: (n)=> `+${n} daha`,
+    cal_less: "Daha az",
     filters_title: "Filtreler",
     more_title: "Diğer",
     btn_theme_dark: "Koyu",
@@ -1067,9 +1086,11 @@ function renderCal(){
       && (activeStatusFilters.size===0 || activeStatusFilters.has(e.uploaded ? 'posted' : 'scheduled'))
     ).sort((a,b)=>(a.time||'').localeCompare(b.time||''));
 
-    dayEvents.forEach(ev=>{
+    dayEvents.forEach((ev, idx)=>{
       const row = document.createElement('div');
-      row.className = 'cal-chip-row';
+      // Ilk CAL_MAX_CHIPS disindakiler katlanabilir: yogun bir gun butun
+      // haftanin satir yuksekligini buyutmesin.
+      row.className = 'cal-chip-row' + (idx >= CAL_MAX_CHIPS ? ' overflow' : '');
       const chip = document.createElement('div');
       chip.className = 'cal-chip' + (ev.uploaded ? ' live' : '');
       // Renk platformu, etiket tipi anlatir: isaret hem kimligi hem rengi tasidigi
@@ -1083,6 +1104,22 @@ function renderCal(){
       row.appendChild(chip);
       cell.appendChild(row);
     });
+
+    const gizli = dayEvents.length - CAL_MAX_CHIPS;
+    if(gizli > 0){
+      cell.classList.add('collapsed');
+      const more = document.createElement('button');
+      more.type = 'button';
+      more.className = 'cal-more';
+      more.textContent = t('cal_more')(gizli);
+      more.addEventListener('click', (e)=>{
+        e.stopPropagation();
+        const kapali = cell.classList.toggle('collapsed');
+        more.textContent = kapali ? t('cal_more')(gizli) : t('cal_less');
+        if(!kapali) trackOnce('funnel/day-expanded');
+      });
+      cell.appendChild(more);
+    }
 
     // Mobilde bos gunler gizleniyor: 28 gunluk pencerede cogu gun bos oluyor ve
     // telefonda bos satirlarin arasinda kaydirmak zorunda kaliniyordu.
