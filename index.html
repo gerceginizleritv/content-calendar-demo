@@ -90,10 +90,12 @@ body{
 .legend-reset:hover{color:var(--accent);}
 .hint{font-size:12.5px;color:var(--text-dim);margin:8px 0 20px;}
 
-.cal-nav{display:flex;justify-content:space-between;align-items:center;margin-bottom:14px;}
-.cal-nav-btn{background:var(--surface);border:1px solid var(--line);color:var(--text);padding:8px 16px;cursor:pointer;border-radius:6px;font-size:13px;font-family:'IBM Plex Sans',sans-serif;}
+.cal-nav{display:grid;grid-template-columns:1fr auto 1fr;align-items:center;margin-bottom:14px;gap:10px;}
+.cal-nav-btn{background:var(--surface);border:1px solid var(--line);color:var(--text);padding:8px 16px;cursor:pointer;border-radius:6px;font-size:13px;font-family:'IBM Plex Sans',sans-serif;white-space:nowrap;}
 .cal-nav-btn:hover{border-color:var(--accent-dim);}
-.cal-range{font-family:'JetBrains Mono',monospace;font-size:13px;color:var(--text-dim);}
+.cal-range{font-family:'JetBrains Mono',monospace;font-size:13px;color:var(--text-dim);justify-self:center;white-space:nowrap;}
+#prevBtn{justify-self:start;}
+.cal-nav-right{justify-self:end;display:flex;gap:8px;}
 
 .cal-grid{display:grid;grid-template-columns:repeat(7,1fr);border:1px solid var(--line);background:var(--line);gap:1px;border-radius:8px;overflow:hidden;}
 .cal-dow{background:var(--surface);padding:9px;text-align:center;font-family:'JetBrains Mono',monospace;font-size:10px;letter-spacing:1.5px;color:var(--accent-dim);text-transform:uppercase;}
@@ -186,7 +188,7 @@ body{
   .cal-day{min-height:auto;}
   .row2{grid-template-columns:1fr;}
   .header h1{font-size:26px;}
-  .cal-nav{flex-wrap:wrap;gap:8px;justify-content:center;}
+  .cal-nav{display:flex;flex-wrap:wrap;gap:8px;justify-content:center;}
   .cal-range{order:-1;width:100%;text-align:center;margin-bottom:4px;}
 }
 </style>
@@ -195,7 +197,7 @@ body{
 <div class="wrap">
 
   <div class="banner">
-    <span class="tally"></span><b data-i18n="banner_bold1">This is a live, working demo.</b> <span data-i18n="banner_rest">Click any entry to edit it, or create a new one. Everything is saved <b>only in your own browser</b> — no account, no signup, nothing sent anywhere. Refresh and it's still there. Clear your browser data and it resets.</span>
+    <span class="tally"></span><b data-i18n="banner_bold1">This is a live, working demo.</b> <span data-i18n-html="banner_rest">Click any entry to edit it, or create a new one. Everything is saved <b>only in your own browser</b> — no account, no signup, nothing sent anywhere. Refresh and it's still there. Clear your browser data and it resets.</span>
   </div>
 
   <div style="display:flex;justify-content:space-between;align-items:center;margin:-10px 0 14px;gap:10px;flex-wrap:wrap;">
@@ -230,8 +232,10 @@ body{
   <div class="cal-nav">
     <button class="cal-nav-btn" id="prevBtn" data-i18n="nav_prev">◀ Previous</button>
     <span class="cal-range mono" id="rangeLabel"></span>
-    <button class="cal-nav-btn" id="todayBtn" data-i18n="nav_today">Today</button>
-    <button class="cal-nav-btn" id="nextBtn" data-i18n="nav_next">Next ▶</button>
+    <div class="cal-nav-right">
+      <button class="cal-nav-btn" id="todayBtn" data-i18n="nav_today">Today</button>
+      <button class="cal-nav-btn" id="nextBtn" data-i18n="nav_next">Next ▶</button>
+    </div>
   </div>
 
   <div class="cal-grid" id="calGrid"></div>
