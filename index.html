@@ -2078,8 +2078,17 @@ document.getElementById('fbSendBtn').addEventListener('click', async ()=>{
   if(el) el.addEventListener('click', ()=> trackOnce('funnel/filter-used'));
 });
 
-tourAutoSequence = true;
-setTimeout(openTour, 400);
+// Turu yalnizca ilk gelene goster. demo_seen_intro yaziliyordu ama hic
+// okunmuyordu, bu yuzden her acilista tekrar cikiyordu — giris yapip geri
+// donen birinin ilk gordugu sey tanitim slaytlari olmamali.
+let turuGordu = false;
+try{ turuGordu = !!localStorage.getItem('demo_seen_intro'); }catch(e){}
+if(turuGordu){
+  setTimeout(()=> showPendingPopup(true), 500);
+}else{
+  tourAutoSequence = true;
+  setTimeout(openTour, 400);
+}
 </script>
   <script data-goatcounter="https://slate-demo.goatcounter.com/count"
         async src="//gc.zgo.at/count.js"></script>
