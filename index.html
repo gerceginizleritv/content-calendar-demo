@@ -3,7 +3,8 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Slate — Content Publishing Calendar</title>
+<title>Slate — One Shoot, Every Post</title>
+<meta name="description" content="One shoot becomes ten posts. Slate keeps every Reel, Short, carousel and story attached to the shoot it came from — and tells you which ones aren't written yet.">
 <link rel="manifest" href="manifest.json">
 <meta name="theme-color" content="#10131C">
 <link rel="icon" href="favicon.ico" sizes="any">
@@ -200,7 +201,7 @@ body{
 <div class="wrap">
 
   <div class="banner">
-    <span class="tally"></span><b data-i18n="banner_bold1">This is a live, working demo.</b> <span data-i18n-html="banner_rest">Click any entry to edit it, or create a new one. Everything is saved <b>only in your own browser</b> — no account, no signup, nothing sent anywhere. Refresh and it's still there. Clear your browser data and it resets.</span>
+    <span class="tally"></span><b data-i18n="banner_bold1">This is a live, working demo.</b> <span data-i18n-html="banner_rest">Click any entry to edit it, or create a new one. Everything is saved <b>only in your own browser</b> — no account, no signup, and none of your content is sent anywhere. Refresh and it's still there. Clear your browser data and it resets.</span>
   </div>
 
   <div style="display:flex;justify-content:space-between;align-items:center;margin:-10px 0 14px;gap:10px;flex-wrap:wrap;">
@@ -212,8 +213,8 @@ body{
 
   <div class="header">
     <div class="eyebrow"><span class="tally"></span><span data-i18n="eyebrow">QUEUE — NEXT 4 WEEKS</span></div>
-    <h1 data-i18n="h1">One slate per post. Every platform, in sync.</h1>
-    <p data-i18n="h1_sub">Video, Reels, Carousel, Story — track content type and platform as two separate signals, so you can filter by either one. Open any slot to see the full caption, hashtags, and cover-image prompt, ready to copy.</p>
+    <h1 data-i18n="h1">One shoot becomes ten posts. Slate tracks every one.</h1>
+    <p data-i18n="h1_sub">The same footage goes out as a Reel, a Short, a carousel, a story and a poll — each on its own platform, at its own time, with its own caption and cover text. Slate keeps all of them attached to the one shoot they came from, and tells you which ones aren't written yet.</p>
     <div class="toolbar">
       <button class="btn btn-primary" id="addBtn" data-i18n="btn_new">+ New Entry</button>
       <button class="btn" id="pendingBtn" data-i18n="btn_pending">⏳ Pending</button>
@@ -223,6 +224,7 @@ body{
       <button class="btn" id="resetBtn" data-i18n="btn_reset">Reset Demo</button>
       <button class="btn" id="tourBtn" data-i18n="btn_tour">? How this works</button>
       <button class="btn" id="refreshBtn" data-i18n="btn_refresh">↻ Refresh</button>
+      <button class="btn" id="feedbackBtn" data-i18n="btn_feedback">💬 Feedback</button>
       <input type="file" id="importFile" accept="application/json" style="display:none;">
     </div>
   </div>
@@ -402,8 +404,66 @@ body{
   </div>
 </div>
 
+<div class="overlay" id="fbOverlay">
+  <div class="modal" style="max-width:520px;">
+    <h2 data-i18n="fb_title">Two questions, 20 seconds</h2>
+    <p style="font-size:12.5px;color:var(--text-dim);margin:-8px 0 18px;line-height:1.55;" data-i18n="fb_intro">This is built by one creator, for creators.</p>
+    <div class="field">
+      <label data-i18n="fb_q1">What do you use for this today?</label>
+      <div class="platform-checks" id="fbUses"></div>
+    </div>
+    <div class="field">
+      <label data-i18n="fb_q2">What is the single most annoying part of your posting week?</label>
+      <textarea id="fbPain" data-i18n-placeholder="fb_q2_ph" placeholder="One line is plenty."></textarea>
+    </div>
+    <div class="field">
+      <label data-i18n="fb_q3">Email — only if you want early access. Optional.</label>
+      <input type="email" id="fbEmail" placeholder="you@example.com" autocomplete="email">
+    </div>
+    <div class="ai-status" id="fbStatus"></div>
+    <div class="modal-actions">
+      <button class="btn" id="fbLaterBtn" data-i18n="fb_later_btn">Not now</button>
+      <button class="btn btn-primary" id="fbSendBtn" data-i18n="fb_send">Send</button>
+    </div>
+  </div>
+</div>
+
 <script>
 const STORAGE_KEY = 'demo_content_calendar_v1';
+
+// ===== Funnel tracking (GoatCounter custom events) =====
+// The visit counter on its own only says "someone showed up". These events say
+// what they actually did — finished the tour, created an entry, connected a key
+// — which is the only thing that can tell us what to build next.
+// Nothing personal is sent: just the name of the step that was reached.
+const _trackSeen = new Set();
+let _trackQueue = [];
+let _trackGaveUp = false;
+function _gcReady(){ return !!(window.goatcounter && typeof window.goatcounter.count === 'function'); }
+function track(name){
+  if(_gcReady()){
+    try{ window.goatcounter.count({ path: name, title: name, event: true }); }catch(e){}
+  }else if(!_trackGaveUp){
+    _trackQueue.push(name);
+  }
+}
+function trackOnce(name){ if(_trackSeen.has(name)) return; _trackSeen.add(name); track(name); }
+(function(){
+  // count.js is loaded async at the very bottom of the page, so anything fired
+  // before it lands waits here. If it never arrives (blocker, offline) we give
+  // up quietly rather than growing the queue forever.
+  let waited = 0;
+  const timer = setInterval(()=>{
+    waited += 700;
+    if(_gcReady()){
+      clearInterval(timer);
+      const queued = _trackQueue; _trackQueue = [];
+      queued.forEach(n => track(n));
+    }else if(waited >= 12000){
+      clearInterval(timer); _trackGaveUp = true; _trackQueue = [];
+    }
+  }, 700);
+})();
 
 const CAL_TYPES = ['video','shorts','reels','carousel','story','text_post','poll'];
 const CAL_SM_PLATFORMS = ['youtube','instagram','tiktok','facebook','threads','x','pinterest','linkedin'];
@@ -431,10 +491,10 @@ let currentLang = 'en';
 const LANG = {
   en: {
     banner_bold1: "This is a live, working demo.",
-    banner_rest: "Click any entry to edit it, or create a new one. Everything is saved <b>only in your own browser</b> — no account, no signup, nothing sent anywhere. Refresh and it's still there. Clear your browser data and it resets.",
+    banner_rest: "Click any entry to edit it, or create a new one. Everything is saved <b>only in your own browser</b> — no account, no signup, and none of your content is sent anywhere. Refresh and it's still there. Clear your browser data and it resets.",
     eyebrow: "QUEUE — NEXT 4 WEEKS",
-    h1: "One slate per post. Every platform, in sync.",
-    h1_sub: "Video, Reels, Carousel, Story — track content type and platform as two separate signals, so you can filter by either one. Open any slot to see the full caption, hashtags, and cover-image prompt, ready to copy.",
+    h1: "One shoot becomes ten posts. Slate tracks every one.",
+    h1_sub: "The same footage goes out as a Reel, a Short, a carousel, a story and a poll — each on its own platform, at its own time, with its own caption and cover text. Slate keeps all of them attached to the one shoot they came from, and tells you which ones aren't written yet.",
     btn_new: "+ New Entry",
     btn_pending: "⏳ Pending",
     btn_storage: "📊 Storage",
@@ -442,6 +502,24 @@ const LANG = {
     btn_import: "Import Backup",
     btn_reset: "Reset Demo",
     btn_tour: "? How this works",
+    btn_feedback: "💬 Feedback",
+    fb_title: "Two questions, 20 seconds",
+    fb_intro: "This is built by one creator, for creators. What you answer here decides what gets built next.",
+    fb_q1: "What do you use for this today?",
+    fb_u_nothing: "Nothing — I wing it",
+    fb_u_notion: "Notion or a spreadsheet",
+    fb_u_later: "Later / Buffer / Hootsuite",
+    fb_u_metricool: "Metricool / Publer / Pallyy",
+    fb_u_other: "Something else",
+    fb_q2: "What is the single most annoying part of your posting week?",
+    fb_q2_ph: "One line is plenty.",
+    fb_q3: "Email — only if you want early access. Optional.",
+    fb_send: "Send",
+    fb_later_btn: "Not now",
+    fb_sending: "Sending...",
+    fb_thanks: "Thank you — that genuinely helps.",
+    fb_thanks_noted: "Thank you — your answer was recorded.",
+    fb_err: "Could not send — but your answer was recorded.",
     btn_refresh: "↻ Refresh",
     hint_filter: "Click a tab in either row to filter — combine content type + platform together. Click again to remove.",
     nav_prev: "◀ Previous",
@@ -526,10 +604,10 @@ const LANG = {
   },
   tr: {
     banner_bold1: "Bu, canlı ve çalışan bir demodur.",
-    banner_rest: "Herhangi bir girişe tıklayarak düzenleyebilir, ya da yeni bir tane oluşturabilirsin. Her şey <b>sadece kendi tarayıcında</b> saklanır — hesap yok, kayıt yok, hiçbir yere gönderilmez. Sayfayı yenile, hâlâ orada duruyor olacak. Tarayıcı verilerini temizlersen sıfırlanır.",
+    banner_rest: "Herhangi bir girişe tıklayarak düzenleyebilir, ya da yeni bir tane oluşturabilirsin. Her şey <b>sadece kendi tarayıcında</b> saklanır — hesap yok, kayıt yok, içeriğin hiçbir yere gönderilmez. Sayfayı yenile, hâlâ orada duruyor olacak. Tarayıcı verilerini temizlersen sıfırlanır.",
     eyebrow: "SIRADAKİLER — ÖNÜMÜZDEKİ 4 HAFTA",
-    h1: "Her paylaşım için tek bir slayt. Tüm platformlar senkron.",
-    h1_sub: "Video, Reels, Carousel, Hikaye — içerik tipini ve platformu iki ayrı sinyal olarak takip et, ikisine birden göre filtrele. Herhangi bir kutucuğu açarak tam caption, hashtag ve kapak görseli prompt'unu gör, tek tıkla kopyala.",
+    h1: "Tek çekim on paylaşıma dönüşür. Slate hepsini takip eder.",
+    h1_sub: "Aynı çekim; Reels, Shorts, carousel, hikaye ve anket olarak çıkar — her biri kendi platformunda, kendi saatinde, kendi caption'ı ve kapak metniyle. Slate hepsini geldikleri tek çekime bağlı tutar ve hangisinin hâlâ yazılmadığını sana söyler.",
     btn_new: "+ Yeni Giriş",
     btn_pending: "⏳ Bekleyenler",
     btn_storage: "📊 Depolama",
@@ -537,6 +615,24 @@ const LANG = {
     btn_import: "Yedek İçe Aktar",
     btn_reset: "Demoyu Sıfırla",
     btn_tour: "? Bu nasıl çalışır",
+    btn_feedback: "💬 Geri Bildirim",
+    fb_title: "İki soru, 20 saniye",
+    fb_intro: "Bunu bir içerik üreticisi, içerik üreticileri için yapıyor. Buraya yazdığın şey sıradaki özelliği belirliyor.",
+    fb_q1: "Bugün bu iş için ne kullanıyorsun?",
+    fb_u_nothing: "Hiçbir şey — kafadan idare ediyorum",
+    fb_u_notion: "Notion ya da bir tablo",
+    fb_u_later: "Later / Buffer / Hootsuite",
+    fb_u_metricool: "Metricool / Publer / Pallyy",
+    fb_u_other: "Başka bir şey",
+    fb_q2: "Paylaşım haftanda seni en çok yoran tek şey ne?",
+    fb_q2_ph: "Tek cümle yeter.",
+    fb_q3: "E-posta — sadece erken erişim istersen. Zorunlu değil.",
+    fb_send: "Gönder",
+    fb_later_btn: "Şimdi değil",
+    fb_sending: "Gönderiliyor...",
+    fb_thanks: "Teşekkürler — bu gerçekten işe yarıyor.",
+    fb_thanks_noted: "Teşekkürler — cevabın kaydedildi.",
+    fb_err: "Gönderilemedi — ama cevabın kaydedildi.",
     btn_refresh: "↻ Yenile",
     hint_filter: "Filtrelemek için her iki satırdaki bir sekmeye tıkla — içerik tipi + platformu birlikte kullanabilirsin. Tekrar tıklayınca kaldırılır.",
     nav_prev: "◀ Önceki",
@@ -656,6 +752,7 @@ function setLanguage(lang){
   const sel = document.getElementById('langSelect');
   if(sel) sel.value = lang;
   applyStaticI18n();
+  renderFbUses();
   populateSelects();
   renderLegend();
   renderCal();
@@ -945,6 +1042,7 @@ document.getElementById('deleteBtn').addEventListener('click', ()=>{
   if(!currentEvent) return;
   if(!confirm(t('confirm_delete'))) return;
   events = events.filter(e=>e.id!==currentEvent.id);
+  track('funnel/entry-deleted');
   save(); closeModal(); renderCal();
 });
 
@@ -967,18 +1065,24 @@ document.getElementById('saveBtn').addEventListener('click', ()=>{
 
   if(currentEvent){
     Object.assign(currentEvent, { type, platform: document.getElementById('f_platform').value, title, date, time, uploaded, content });
+    trackOnce('funnel/entry-edited');
   } else {
     const platforms = Array.from(document.querySelectorAll('#platformChecks input:checked')).map(el=>el.value);
     if(platforms.length===0){ alert(t('alert_select_platform')); return; }
     platforms.forEach((p,i)=>{
       events.push({ id:'ev_'+Date.now()+'_'+i, type, platform:p, title, date, time, uploaded, content: JSON.parse(JSON.stringify(content)) });
     });
+    trackOnce('funnel/entry-created');
+    // The whole premise of the product: one piece of content, several platforms.
+    // If nobody ever ticks more than one box, the premise is wrong.
+    if(platforms.length > 1) trackOnce('funnel/multi-platform-entry');
+    maybeAskFeedback();
   }
   save(); closeModal(); renderCal();
 });
 
-document.getElementById('prevBtn').addEventListener('click', ()=>{ weekStartOffset -= 7; renderCal(); });
-document.getElementById('nextBtn').addEventListener('click', ()=>{ weekStartOffset += 7; renderCal(); });
+document.getElementById('prevBtn').addEventListener('click', ()=>{ trackOnce('funnel/week-navigated'); weekStartOffset -= 7; renderCal(); });
+document.getElementById('nextBtn').addEventListener('click', ()=>{ trackOnce('funnel/week-navigated'); weekStartOffset += 7; renderCal(); });
 document.getElementById('todayBtn').addEventListener('click', ()=>{ weekStartOffset = 0; renderCal(); });
 
 document.getElementById('exportBtn').addEventListener('click', ()=>{
@@ -986,6 +1090,7 @@ document.getElementById('exportBtn').addEventListener('click', ()=>{
   const url = URL.createObjectURL(blob);
   const a = document.createElement('a');
   a.href = url; a.download = 'content-calendar-backup.json';
+  trackOnce('funnel/backup-exported');
   document.body.appendChild(a); a.click(); document.body.removeChild(a);
   URL.revokeObjectURL(url);
 });
@@ -1176,7 +1281,8 @@ function renderTourStep(){
 }
 let tourAutoSequence = false; // true only for the automatic on-load tour, so we know to chain the Pending popup after it closes
 function openTour(){ tourIndex = 0; renderTourStep(); document.getElementById('tourOverlay').classList.add('open'); }
-function closeTour(){
+function closeTour(completed){
+  trackOnce(completed === true ? 'funnel/tour-completed' : 'funnel/tour-skipped');
   document.getElementById('tourOverlay').classList.remove('open');
   localStorage.setItem('demo_seen_intro','1');
   if(tourAutoSequence){
@@ -1186,13 +1292,13 @@ function closeTour(){
 }
 document.getElementById('tourNextBtn').addEventListener('click', ()=>{
   const steps = TOUR_STEPS_I18N[currentLang] || TOUR_STEPS_I18N.en;
-  if(tourIndex === steps.length-1){ closeTour(); return; }
+  if(tourIndex === steps.length-1){ closeTour(true); return; }
   tourIndex++; renderTourStep();
 });
 document.getElementById('tourBackBtn').addEventListener('click', ()=>{ tourIndex--; renderTourStep(); });
-document.getElementById('tourSkip').addEventListener('click', closeTour);
-document.getElementById('tourOverlay').addEventListener('click', (e)=>{ if(e.target.id==='tourOverlay') closeTour(); });
-document.getElementById('tourBtn').addEventListener('click', ()=>{ tourAutoSequence = false; openTour(); });
+document.getElementById('tourSkip').addEventListener('click', ()=> closeTour(false));
+document.getElementById('tourOverlay').addEventListener('click', (e)=>{ if(e.target.id==='tourOverlay') closeTour(false); });
+document.getElementById('tourBtn').addEventListener('click', ()=>{ track('funnel/tour-reopened'); tourAutoSequence = false; openTour(); });
 
 // ===== Bring-your-own-key AI drafting (Claude or Gemini, called directly from the browser) =====
 function getAiSettings(){
@@ -1213,6 +1319,7 @@ document.getElementById('aiSettingsSaveBtn').addEventListener('click', ()=>{
   const key = document.getElementById('ai_key').value.trim();
   if(!key){ alert(t('ai_alert_need_key')); return; }
   saveAiSettings({ provider, key });
+  trackOnce('funnel/ai-key-connected');
   document.getElementById('aiSettingsOverlay').classList.remove('open');
   runAiDraft();
 });
@@ -1268,6 +1375,7 @@ async function runAiDraft(){
       ? await callClaude(settings.key, prompt)
       : await callGemini(settings.key, prompt);
     document.getElementById('f_caption').value = text;
+    trackOnce('funnel/ai-draft-generated');
     statusEl.textContent = t('ai_drafted_prefix') + (settings.provider === 'claude' ? 'Claude' : 'Gemini') + t('ai_drafted_suffix');
     statusEl.className = 'ai-status ok';
   }catch(err){
@@ -1336,7 +1444,7 @@ function showPendingPopup(autoMode){
   });
   document.getElementById('pendingOverlay').classList.add('open');
 }
-document.getElementById('pendingBtn').addEventListener('click', ()=> showPendingPopup(false));
+document.getElementById('pendingBtn').addEventListener('click', ()=>{ trackOnce('funnel/pending-opened'); showPendingPopup(false); });
 document.getElementById('pendingCloseBtn').addEventListener('click', ()=> document.getElementById('pendingOverlay').classList.remove('open'));
 document.getElementById('pendingOverlay').addEventListener('click', (e)=>{ if(e.target.id==='pendingOverlay') document.getElementById('pendingOverlay').classList.remove('open'); });
 
@@ -1400,6 +1508,90 @@ renderCal();
 // Every time the demo loads: "How this works" tour first, then — once that's
 // closed (skipped or finished) — the Pending popup, so a first-time visitor
 // always gets the explainer before the state-of-the-calendar nudge.
+// ===== Feedback capture =====
+// Any endpoint that accepts a JSON POST works here (Formspree, Tally, a webhook).
+// Leaving it empty is fine and the form still does its job: the multiple-choice
+// answer is recorded as a GoatCounter event either way — only the free text and
+// the email need somewhere to land.
+const FEEDBACK_ENDPOINT = '';
+
+const FB_USES = ['nothing','notion','later','metricool','other'];
+const FB_USE_KEY = { nothing:'fb_u_nothing', notion:'fb_u_notion', later:'fb_u_later', metricool:'fb_u_metricool', other:'fb_u_other' };
+
+function renderFbUses(){
+  const box = document.getElementById('fbUses');
+  if(!box) return;
+  const cur = (box.querySelector('input:checked') || {}).value || '';
+  box.innerHTML = FB_USES.map(k =>
+    `<label class="pcheck"><input type="radio" name="fbUses" value="${k}"${cur===k?' checked':''}> ${escapeHtml(t(FB_USE_KEY[k]))}</label>`
+  ).join('');
+}
+
+function openFeedback(source){
+  renderFbUses();
+  const statusEl = document.getElementById('fbStatus');
+  statusEl.textContent = ''; statusEl.className = 'ai-status';
+  document.getElementById('fbSendBtn').disabled = false;
+  document.getElementById('fbOverlay').classList.add('open');
+  try{ localStorage.setItem('demo_fb_asked','1'); }catch(e){}
+  track('feedback/opened-' + (source || 'manual'));
+}
+function closeFeedback(){ document.getElementById('fbOverlay').classList.remove('open'); }
+
+// Asked once, after the visitor has actually built something — at that point
+// they have an opinion worth having. Never asked again, on any later visit.
+function maybeAskFeedback(){
+  try{
+    if(localStorage.getItem('demo_fb_asked') || localStorage.getItem('demo_fb_done')) return;
+  }catch(e){ return; }
+  setTimeout(()=> openFeedback('auto'), 1400);
+}
+
+document.getElementById('feedbackBtn').addEventListener('click', ()=> openFeedback('manual'));
+document.getElementById('fbLaterBtn').addEventListener('click', ()=>{ track('feedback/dismissed'); closeFeedback(); });
+document.getElementById('fbOverlay').addEventListener('click', (e)=>{
+  if(e.target.id==='fbOverlay'){ track('feedback/dismissed'); closeFeedback(); }
+});
+
+document.getElementById('fbSendBtn').addEventListener('click', async ()=>{
+  const uses = (document.querySelector('#fbUses input:checked') || {}).value || '';
+  const pain = document.getElementById('fbPain').value.trim();
+  const email = document.getElementById('fbEmail').value.trim();
+  const statusEl = document.getElementById('fbStatus');
+  const btn = document.getElementById('fbSendBtn');
+
+  if(uses) track('feedback/uses-' + uses);
+  if(pain) track('feedback/wrote-pain');
+  if(email) track('feedback/left-email');
+  track('feedback/sent');
+  try{ localStorage.setItem('demo_fb_done','1'); }catch(e){}
+
+  if(FEEDBACK_ENDPOINT && (pain || email)){
+    btn.disabled = true;
+    statusEl.textContent = t('fb_sending'); statusEl.className = 'ai-status';
+    try{
+      await fetch(FEEDBACK_ENDPOINT, {
+        method: 'POST',
+        headers: { 'Content-Type':'application/json', 'Accept':'application/json' },
+        body: JSON.stringify({ uses, pain, email, lang: currentLang, at: new Date().toISOString() })
+      });
+      statusEl.textContent = t('fb_thanks'); statusEl.className = 'ai-status ok';
+    }catch(err){
+      statusEl.textContent = t('fb_err'); statusEl.className = 'ai-status error';
+    }
+  }else{
+    statusEl.textContent = t('fb_thanks_noted'); statusEl.className = 'ai-status ok';
+  }
+  setTimeout(closeFeedback, 1800);
+});
+
+// Filters are the one feature people either get instantly or never touch —
+// worth knowing which, so one delegated listener covers all three rows.
+['typeLegend','platformLegend','statusLegend'].forEach(id=>{
+  const el = document.getElementById(id);
+  if(el) el.addEventListener('click', ()=> trackOnce('funnel/filter-used'));
+});
+
 tourAutoSequence = true;
 setTimeout(openTour, 400);
 </script>
