@@ -98,14 +98,17 @@ body{
 .eyebrow .tally{display:inline-block;width:6px;height:6px;border-radius:50%;background:var(--accent);box-shadow:0 0 6px var(--accent-glow);animation:pulse 1.8s ease-in-out infinite;}
 .header h1{
   font-family:'Archivo',sans-serif; font-weight:800; font-size:32px; line-height:1.15;
-  margin:0 0 12px; letter-spacing:-0.5px; max-width:640px;
+  margin:0 0 10px; letter-spacing:-0.5px;
+  /* max-width yoktu -> 640px'e sikismis ve iki satira bolunmustu */
 }
-.header p{color:var(--text-dim); margin:0; max-width:560px; font-size:14.5px; line-height:1.6;}
-.toolbar{display:flex;gap:10px;flex-wrap:wrap;margin-top:22px;}
+/* Metin sola sikismak yerine genisligi kullaniyor: uc satirdan ikiye iniyor,
+   asil is olan takvim yukari geliyor. */
+.header p{color:var(--text-dim); margin:0; max-width:1000px; font-size:15px; line-height:1.55;}
+.toolbar{display:flex;gap:8px;flex-wrap:wrap;margin-top:18px;align-items:center;}
 .btn{
   background:transparent; border:1px solid var(--line); color:var(--text);
-  padding:9px 16px; min-height:44px; display:inline-flex; align-items:center; justify-content:center;
-  font-size:13px; font-weight:500; cursor:pointer; border-radius:6px;
+  padding:7px 12px; min-height:36px; display:inline-flex; align-items:center; justify-content:center;
+  font-size:12.5px; font-weight:500; cursor:pointer; border-radius:6px;
   font-family:'IBM Plex Sans',sans-serif; transition:border-color .15s, background .15s;
 }
 .btn:hover{border-color:var(--accent-dim); background:var(--surface-2);}
@@ -221,7 +224,7 @@ body{
 
 .lang-select{
   background:var(--surface); border:1px solid var(--line); color:var(--text);
-  padding:6px 10px; font-size:12.5px; font-weight:500; cursor:pointer; border-radius:6px;
+  padding:7px 10px; min-height:36px; font-size:12.5px; font-weight:500; cursor:pointer; border-radius:6px;
   font-family:'IBM Plex Sans',sans-serif;
 }
 .lang-select:hover{border-color:var(--accent-dim);}
@@ -284,7 +287,16 @@ body{
   .fold .hint{padding-bottom:0;}
   .fold-inline,.fold-inline .fold-row{display:contents;}
 }
-.toolbar{align-items:flex-start;}
+/* Komsu aylarin gunleri: gorunur ama geri planda — ay gecisi takip edilebilsin */
+/* Hucreyi geri plana atiyoruz ama icerigi okunur birakiyoruz — ayin sonuna
+   tasan paylasimlar cogu zaman tam da gorulmesi gerekenler. */
+.cal-outside{background:var(--surface-2);}
+.cal-outside .cal-day-num{opacity:.55;font-weight:400;}
+.cal-outside .cal-chip{opacity:.8;}
+
+/* Ziyaret sayaci sagda, butonlardan ayri durur */
+.visit-badge{margin-left:auto;display:inline-flex;align-items:center;line-height:0;}
+.visit-badge img{height:20px;display:block;}
 
 /* Izgara gorunumunde hucre ~150px: isaret + tip + saat yan yana girince
    basliga yer kalmiyordu. Baslik kendi satirina aliniyor. */
@@ -304,8 +316,10 @@ body{
 
   /* Bos gunler gizleniyor: 28 gunun 22'si bos, hepsi tam satir kapliyordu */
   .cal-empty{display:none;}
+  .cal-outside:not(:has(.cal-chip)){display:none;}
 
-  /* Dokunma hedefleri */
+  /* Dokunma hedefleri — masaustunde 36px yeterli, parmakta degil */
+  .btn{min-height:44px;padding:9px 14px;font-size:13px;}
   .legend-item{min-height:44px;}
   .lang-select{min-height:44px;}
   .copy-btn{min-height:44px;}
@@ -329,34 +343,30 @@ body{
     <span class="tally"></span><b data-i18n="banner_bold1">This is a live, working demo.</b> <span data-i18n-html="banner_rest">Click any entry to edit it, or create a new one. Everything is saved <b>only in your own browser</b> — no account, no signup, and none of your content is sent anywhere. Refresh and it's still there. Clear your browser data and it resets.</span>
   </div>
 
-  <div style="display:flex;justify-content:space-between;align-items:center;margin:-10px 0 14px;gap:10px;flex-wrap:wrap;">
-    <select id="langSelect" class="lang-select" aria-label="Language"></select>
-    <a href="https://hits.sh/gerceginizleritv.github.io/content-calendar-demo/" target="_blank" rel="noopener">
-      <img src="https://hits.sh/gerceginizleritv.github.io/content-calendar-demo.svg?style=flat-square&label=visits&color=8a6320&labelColor=171b28" alt="visit counter" style="height:20px;vertical-align:middle;">
-    </a>
-  </div>
 
   <div class="header">
     <div class="lockup"><span class="mark"><svg viewBox="0 0 64 64" aria-hidden="true"><rect x="6" y="24" width="52" height="34" rx="7" fill="var(--text)"/><g transform="rotate(-9 32 17)"><rect x="6" y="7" width="52" height="15" rx="3.5" fill="var(--accent)"/><path d="M17 7 L22.5 7 L14.5 22 L9 22 Z" fill="var(--bg)"/><path d="M33 7 L38.5 7 L30.5 22 L25 22 Z" fill="var(--bg)"/><path d="M49 7 L54.5 7 L46.5 22 L41 22 Z" fill="var(--bg)"/></g><rect x="15" y="34" width="26" height="3.4" rx="1.7" fill="var(--text-dim)"/><rect x="15" y="43" width="17" height="3.4" rx="1.7" fill="var(--amber)"/></svg></span><span class="wordmark">Slate</span></div>
-    <div class="eyebrow"><span class="tally"></span><span data-i18n="eyebrow">QUEUE — NEXT 4 WEEKS</span></div>
+    <div class="eyebrow"><span class="tally"></span><span data-i18n="eyebrow">QUEUE — BY MONTH</span></div>
     <h1 data-i18n="h1">One shoot becomes ten posts. Slate tracks every one.</h1>
-    <p data-i18n="h1_sub">The same footage goes out as a Reel, a Short, a carousel, a story and a poll — each on its own platform, at its own time, with its own caption and cover text. Slate keeps all of them attached to the one shoot they came from, and tells you which ones aren't written yet.</p>
+    <p data-i18n="h1_sub">The same footage goes out as a Reel, a Short, a carousel and a story — each with its own caption, cover text and time slot. Slate also tells you which ones aren't written yet.</p>
     <div class="toolbar">
+      <select id="langSelect" class="lang-select" aria-label="Language"></select>
       <button class="btn btn-primary" id="addBtn" data-i18n="btn_new">+ New Entry</button>
       <button class="btn" id="pendingBtn" data-i18n="btn_pending">⏳ Pending</button>
       <details class="fold fold-inline" id="moreFold">
         <summary><span data-i18n="more_title">More</span></summary>
         <div class="fold-row">
-          <button class="btn" id="storageBtn" data-i18n="btn_storage">📊 Storage</button>
           <button class="btn" id="exportBtn" data-i18n="btn_export">Export Backup</button>
           <button class="btn" id="importBtn" data-i18n="btn_import">Import Backup</button>
           <button class="btn" id="resetBtn" data-i18n="btn_reset">Reset Demo</button>
           <button class="btn" id="tourBtn" data-i18n="btn_tour">? How this works</button>
-          <button class="btn" id="refreshBtn" data-i18n="btn_refresh">↻ Refresh</button>
         </div>
       </details>
       <button class="btn" id="feedbackBtn" data-i18n="btn_feedback">💬 Feedback</button>
       <button class="btn" id="themeBtn">🌙 Dark</button>
+      <a class="visit-badge" href="https://hits.sh/gerceginizleritv.github.io/content-calendar-demo/" target="_blank" rel="noopener">
+        <img src="https://hits.sh/gerceginizleritv.github.io/content-calendar-demo.svg?style=flat-square&label=visits&color=2563C7&labelColor=EDF1F6" alt="visit counter">
+      </a>
       <input type="file" id="importFile" accept="application/json" style="display:none;">
     </div>
   </div>
@@ -529,15 +539,6 @@ body{
   </div>
 </div>
 
-<div class="overlay" id="storageOverlay">
-  <div class="modal" style="max-width:480px;">
-    <h2 data-i18n="storage_title">Browser Storage</h2>
-    <div id="storageBody"></div>
-    <div class="modal-actions">
-      <button class="btn btn-primary" id="storageCloseBtn" data-i18n="btn_close">Close</button>
-    </div>
-  </div>
-</div>
 
 <div class="overlay" id="fbOverlay">
   <div class="modal" style="max-width:520px;">
@@ -626,12 +627,11 @@ const LANG = {
   en: {
     banner_bold1: "This is a live, working demo.",
     banner_rest: "Click any entry to edit it, or create a new one. Everything is saved <b>only in your own browser</b> — no account, no signup, and none of your content is sent anywhere. Refresh and it's still there. Clear your browser data and it resets.",
-    eyebrow: "QUEUE — NEXT 4 WEEKS",
+    eyebrow: "QUEUE — BY MONTH",
     h1: "One shoot becomes ten posts. Slate tracks every one.",
-    h1_sub: "The same footage goes out as a Reel, a Short, a carousel, a story and a poll — each on its own platform, at its own time, with its own caption and cover text. Slate keeps all of them attached to the one shoot they came from, and tells you which ones aren't written yet.",
+    h1_sub: "The same footage goes out as a Reel, a Short, a carousel and a story — each with its own caption, cover text and time slot. Slate also tells you which ones aren't written yet.",
     btn_new: "+ New Entry",
     btn_pending: "⏳ Pending",
-    btn_storage: "📊 Storage",
     btn_export: "Export Backup",
     btn_import: "Import Backup",
     btn_reset: "Reset Demo",
@@ -658,7 +658,6 @@ const LANG = {
     fb_thanks: "Thank you — that genuinely helps.",
     fb_thanks_noted: "Thank you — your answer was recorded.",
     fb_err: "Could not send — but your answer was recorded.",
-    btn_refresh: "↻ Refresh",
     hint_filter: "Click a tab in either row to filter — combine content type + platform together. Click again to remove.",
     nav_prev: "◀ Previous",
     nav_today: "Today",
@@ -702,7 +701,6 @@ const LANG = {
     btn_next: "Next",
     pending_title: "Not Yet Posted",
     btn_close: "Close",
-    storage_title: "Browser Storage",
     alert_fill_required: "Please fill in title, date and time.",
     alert_select_platform: "Select at least one platform.",
     confirm_delete: "Delete this entry?",
@@ -722,13 +720,6 @@ const LANG = {
     pending_col_title: "Title",
     pending_click_hint: "Click a row to open that entry directly.",
     pending_all_clear: "✓ All caught up — nothing pending.",
-    storage_used_of: (kb, pct, mb)=> `${kb} KB used (~${pct}% of a typical ${mb} MB browser limit)`,
-    storage_status_ok: "Plenty of room left.",
-    storage_status_med: "Getting fuller — worth keeping an eye on.",
-    storage_status_crit: "Close to the typical browser limit — export a backup and consider trimming old entries.",
-    storage_entries_count: (n)=> `📅 Calendar entries: ${n}`,
-    storage_top5_label: "Largest entries (by caption/prompt volume):",
-    storage_note: "Note: this demo saves only in your own browser's local storage — nothing is sent to a server. Clearing your browser data or switching devices resets it, so export a backup if you want to keep it.",
     tour_visual_what: "WHAT",
     tour_visual_where: "WHERE",
     tour_visual_browser: "Your Browser",
@@ -743,12 +734,11 @@ const LANG = {
   tr: {
     banner_bold1: "Bu, canlı ve çalışan bir demodur.",
     banner_rest: "Herhangi bir girişe tıklayarak düzenleyebilir, ya da yeni bir tane oluşturabilirsin. Her şey <b>sadece kendi tarayıcında</b> saklanır — hesap yok, kayıt yok, içeriğin hiçbir yere gönderilmez. Sayfayı yenile, hâlâ orada duruyor olacak. Tarayıcı verilerini temizlersen sıfırlanır.",
-    eyebrow: "SIRADAKİLER — ÖNÜMÜZDEKİ 4 HAFTA",
+    eyebrow: "SIRADAKİLER — AYLIK GÖRÜNÜM",
     h1: "Tek çekim on paylaşıma dönüşür. Slate hepsini takip eder.",
-    h1_sub: "Aynı çekim; Reels, Shorts, carousel, hikaye ve anket olarak çıkar — her biri kendi platformunda, kendi saatinde, kendi caption'ı ve kapak metniyle. Slate hepsini geldikleri tek çekime bağlı tutar ve hangisinin hâlâ yazılmadığını sana söyler.",
+    h1_sub: "Aynı çekim; Reels, Shorts, carousel ve hikaye olarak çıkar — her biri kendi caption'ı, kapak metni ve saatiyle. Slate hangisinin hâlâ yazılmadığını da söyler.",
     btn_new: "+ Yeni Giriş",
     btn_pending: "⏳ Bekleyenler",
-    btn_storage: "📊 Depolama",
     btn_export: "Yedek Dışa Aktar",
     btn_import: "Yedek İçe Aktar",
     btn_reset: "Demoyu Sıfırla",
@@ -775,7 +765,6 @@ const LANG = {
     fb_thanks: "Teşekkürler — bu gerçekten işe yarıyor.",
     fb_thanks_noted: "Teşekkürler — cevabın kaydedildi.",
     fb_err: "Gönderilemedi — ama cevabın kaydedildi.",
-    btn_refresh: "↻ Yenile",
     hint_filter: "Filtrelemek için her iki satırdaki bir sekmeye tıkla — içerik tipi + platformu birlikte kullanabilirsin. Tekrar tıklayınca kaldırılır.",
     nav_prev: "◀ Önceki",
     nav_today: "Bugün",
@@ -819,7 +808,6 @@ const LANG = {
     btn_next: "İleri",
     pending_title: "Henüz Yüklenmemiş",
     btn_close: "Kapat",
-    storage_title: "Tarayıcı Depolaması",
     alert_fill_required: "Lütfen başlık, tarih ve saati doldur.",
     alert_select_platform: "En az bir platform seç.",
     confirm_delete: "Bu giriş silinsin mi?",
@@ -839,13 +827,6 @@ const LANG = {
     pending_col_title: "Başlık",
     pending_click_hint: "Bir satıra tıklayarak doğrudan o girişi açabilirsin.",
     pending_all_clear: "✓ Hepsi tamam — bekleyen içerik yok.",
-    storage_used_of: (kb, pct, mb)=> `${kb} KB kullanılıyor (tipik ${mb} MB tarayıcı sınırının ~%${pct}'i)`,
-    storage_status_ok: "Bolca yer var.",
-    storage_status_med: "Doluyor — takip etmekte fayda var.",
-    storage_status_crit: "Tipik tarayıcı sınırına yaklaşıldı — bir yedek indir ve eski girişleri gözden geçirmeyi düşün.",
-    storage_entries_count: (n)=> `📅 Takvim girişi: ${n}`,
-    storage_top5_label: "En çok yer kaplayan girişler (caption/prompt hacmine göre):",
-    storage_note: "Not: Bu demo sadece kendi tarayıcının yerel deposuna kaydeder — hiçbir şey bir sunucuya gönderilmez. Tarayıcı verilerini temizlemek ya da cihaz değiştirmek veriyi sıfırlar, saklamak istiyorsan bir yedek indir.",
     tour_visual_what: "NE",
     tour_visual_where: "NEREYE",
     tour_visual_browser: "Tarayıcın",
@@ -956,7 +937,7 @@ let events = [];
 let activeTypeFilters = new Set();
 let activePlatformFilters = new Set();
 let activeStatusFilters = new Set();
-let weekStartOffset = 0;
+let monthOffset = 0;  // 0 = icinde bulunulan ay
 let currentEvent = null;
 
 function load(){
@@ -973,12 +954,30 @@ function save(){
 function getType(ev){ return ev.type; }
 function getPlatform(ev){ return ev.platform; }
 
-function calWindowStart(){
-  const d = new Date();
-  const mondayOffset = (d.getDay() + 6) % 7; // Sunday(0)->6, Monday(1)->0, ... Saturday(6)->5
-  d.setDate(d.getDate() - mondayOffset + weekStartOffset);
+// Gosterilen ayin ilk gunu.
+function calMonthStart(){
+  const now = new Date();
+  const d = new Date(now.getFullYear(), now.getMonth() + monthOffset, 1);
   d.setHours(0,0,0,0);
   return d;
+}
+// Izgara her zaman Pazartesi'den baslar, o yuzden ayin 1'ini iceren haftanin
+// Pazartesi'sine geri saririz; ayin disinda kalan gunler soluk gosterilir.
+function calWindowStart(){
+  const first = calMonthStart();
+  const mondayOffset = (first.getDay() + 6) % 7; // Pazar(0)->6, Pazartesi(1)->0
+  const d = new Date(first);
+  d.setDate(d.getDate() - mondayOffset);
+  d.setHours(0,0,0,0);
+  return d;
+}
+// Ayin son gununu iceren haftanin Pazar'ina kadar kac hucre gerekiyor.
+function calCellCount(){
+  const first = calMonthStart();
+  const last = new Date(first.getFullYear(), first.getMonth() + 1, 0);
+  const start = calWindowStart();
+  const gun = Math.round((last - start) / 86400000) + 1;
+  return Math.ceil(gun / 7) * 7;
 }
 function pad(n){ return String(n).padStart(2,'0'); }
 function fmtKey(d){ return `${d.getFullYear()}-${pad(d.getMonth()+1)}-${pad(d.getDate())}`; }
@@ -1044,17 +1043,23 @@ function renderCal(){
 
   const start = calWindowStart();
   const today = new Date(); today.setHours(0,0,0,0);
-  const totalDays = 28;
-  const rangeEnd = new Date(start); rangeEnd.setDate(start.getDate()+totalDays-1);
+  const totalDays = calCellCount();
+  const shownMonth = calMonthStart().getMonth();
+  const locale = currentLang === 'tr' ? 'tr-TR' : 'en-US';
   document.getElementById('rangeLabel').textContent =
-    start.toLocaleDateString('en-US',{month:'short',day:'numeric'}) + ' – ' + rangeEnd.toLocaleDateString('en-US',{month:'short',day:'numeric'});
+    calMonthStart().toLocaleDateString(locale, {month:'long', year:'numeric'});
 
   for(let i=0;i<totalDays;i++){
     const d = new Date(start); d.setDate(start.getDate()+i);
     const key = fmtKey(d);
     const cell = document.createElement('div');
-    cell.className = 'cal-day' + (d.toDateString()===today.toDateString() ? ' today' : '');
-    cell.innerHTML = `<div class="cal-day-num">${d.getDate()} ${d.toLocaleDateString('en-US',{month:'short'})}</div>`;
+    const disAy = d.getMonth() !== shownMonth;
+    cell.className = 'cal-day'
+      + (d.toDateString()===today.toDateString() ? ' today' : '')
+      + (disAy ? ' cal-outside' : '');
+    // Ay ici gunlerde sadece rakam; komsu aylarin gunlerinde ay adi da yazilir
+    // ki gecis nerede oldugu bir bakista gorunsun.
+    cell.innerHTML = `<div class="cal-day-num">${d.getDate()}${disAy ? ' ' + d.toLocaleDateString(locale,{month:'short'}) : ''}</div>`;
 
     let dayEvents = events.filter(e=>e.date===key
       && (activeTypeFilters.size===0 || activeTypeFilters.has(getType(e)))
@@ -1232,9 +1237,9 @@ document.getElementById('saveBtn').addEventListener('click', ()=>{
   save(); closeModal(); renderCal();
 });
 
-document.getElementById('prevBtn').addEventListener('click', ()=>{ trackOnce('funnel/week-navigated'); weekStartOffset -= 7; renderCal(); });
-document.getElementById('nextBtn').addEventListener('click', ()=>{ trackOnce('funnel/week-navigated'); weekStartOffset += 7; renderCal(); });
-document.getElementById('todayBtn').addEventListener('click', ()=>{ weekStartOffset = 0; renderCal(); });
+document.getElementById('prevBtn').addEventListener('click', ()=>{ trackOnce('funnel/month-navigated'); monthOffset -= 1; renderCal(); });
+document.getElementById('nextBtn').addEventListener('click', ()=>{ trackOnce('funnel/month-navigated'); monthOffset += 1; renderCal(); });
+document.getElementById('todayBtn').addEventListener('click', ()=>{ monthOffset = 0; renderCal(); });
 
 document.getElementById('exportBtn').addEventListener('click', ()=>{
   const blob = new Blob([JSON.stringify(events,null,2)], {type:'application/json'});
@@ -1261,7 +1266,6 @@ document.getElementById('importFile').addEventListener('change', (e)=>{
   reader.readAsText(file);
   e.target.value = '';
 });
-document.getElementById('refreshBtn').addEventListener('click', ()=> location.reload());
 document.getElementById('resetBtn').addEventListener('click', ()=>{
   if(!confirm(t('confirm_reset'))) return;
   events = seedData(); save(); renderCal();
@@ -1603,46 +1607,6 @@ document.getElementById('pendingOverlay').addEventListener('click', (e)=>{ if(e.
 // localStorage quotas vary by browser (commonly ~5MB, some allow more) — we
 // show usage against a conservative 5MB reference point so the bar is a
 // useful early warning rather than a precise measurement.
-function updateStorageDisplay(){
-  const payload = JSON.stringify(events);
-  const bytes = new Blob([payload]).size;
-  const kb = bytes / 1024;
-  const LIMIT_KB = 5 * 1024; // conservative common localStorage quota reference
-  const pct = Math.min(100, (kb / LIMIT_KB) * 100);
-
-  let barColor = '#5FD9A0';
-  let statusText = t('storage_status_ok');
-  if(pct >= 85){ barColor = '#E85D5D'; statusText = t('storage_status_crit'); }
-  else if(pct >= 60){ barColor = '#E8A23A'; statusText = t('storage_status_med'); }
-
-  const topItems = events.map(e => ({
-    title: e.title || '(untitled)',
-    size: new Blob([JSON.stringify(e)]).size
-  })).sort((a,b)=>b.size-a.size).slice(0,5);
-
-  const body = document.getElementById('storageBody');
-  body.innerHTML = `
-    <div style="margin-bottom:12px;">
-      <div style="display:flex;justify-content:space-between;font-weight:600;margin-bottom:4px;font-size:13px;">
-        <span>${t('storage_used_of')(kb.toFixed(1), pct.toFixed(1), (LIMIT_KB/1024).toFixed(0))}</span>
-      </div>
-      <div class="storage-bar-track">
-        <div class="storage-bar-fill" style="background:${barColor};width:${Math.max(pct,0.5)}%;"></div>
-      </div>
-      <div style="margin-top:6px;color:${barColor};font-weight:600;font-size:13px;">${statusText}</div>
-    </div>
-    <div style="margin-bottom:10px;font-size:13px;">${t('storage_entries_count')(events.length)}</div>
-    <div style="font-size:12px;opacity:.8;margin-bottom:6px;">${t('storage_top5_label')}</div>
-    <div>${topItems.map(x => `<div class="storage-top-item"><span>${escapeHtml(x.title)}</span><span style="opacity:.7;">${(x.size/1024).toFixed(1)} KB</span></div>`).join('')}</div>
-    <div style="margin-top:12px;font-size:12px;opacity:.75;border-top:1px solid var(--line);padding-top:10px;">${t('storage_note')}</div>
-  `;
-}
-document.getElementById('storageBtn').addEventListener('click', ()=>{
-  updateStorageDisplay();
-  document.getElementById('storageOverlay').classList.add('open');
-});
-document.getElementById('storageCloseBtn').addEventListener('click', ()=> document.getElementById('storageOverlay').classList.remove('open'));
-document.getElementById('storageOverlay').addEventListener('click', (e)=>{ if(e.target.id==='storageOverlay') document.getElementById('storageOverlay').classList.remove('open'); });
 
 // ===== Init =====
 try{
