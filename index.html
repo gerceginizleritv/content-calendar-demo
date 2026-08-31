@@ -21,7 +21,11 @@
 <style>
 /* Slate — temel palet acik tema. Token adlari korundu, sadece degerler
    degisti; boylece butun bilesen kurallari tek noktadan yeniden renklendi. */
+/* Tema data-theme ile degistiriliyor ama tarayiciya bildirilmiyordu; bu yuzden
+   onay kutulari ve tarih/saat secicileri gibi yerel denetimler yanlis semada
+   ciziliyor, koyu temada siyah ustune siyah kaliyordu. */
 :root{
+  color-scheme: light;
   --bg:#F4F7FA; --surface:#FFFFFF; --surface-2:#EDF1F6; --line:#DFE5EC; --line-soft:#EAEFF4;
   --accent:#2563C7; --accent-dim:#8B9AAB; --accent-glow:rgba(37,99,199,0.28); --accent-soft:#E8EFFB;
   --accent-hover:#1D53AC;
@@ -36,6 +40,7 @@
 /* sistem koyu — yalnizca kullanici acik temayi zorlamadiysa */
 @media (prefers-color-scheme: dark){
   :root:not([data-theme="light"]){
+    color-scheme: dark;
     --bg:#0F151D; --surface:#18212C; --surface-2:#202B38; --line:#2A3644; --line-soft:#222D3A;
     --accent:#6BA0EE; --accent-dim:#6F7F92; --accent-glow:rgba(107,160,238,0.30); --accent-soft:#1B2A42;
     --accent-hover:#8AB6F3;
@@ -50,6 +55,7 @@
 }
 /* acik secim diger yonde de kazanir */
 :root[data-theme="dark"]{
+  color-scheme: dark;
   --bg:#0F151D; --surface:#18212C; --surface-2:#202B38; --line:#2A3644; --line-soft:#222D3A;
   --accent:#6BA0EE; --accent-dim:#6F7F92; --accent-glow:rgba(107,160,238,0.30); --accent-soft:#1B2A42;
   --accent-hover:#8AB6F3;
@@ -204,7 +210,9 @@ body{
 .pcheck:hover{border-color:var(--accent-dim);}
 .pcheck input{width:auto;accent-color:var(--accent);}
 .upload-toggle{display:flex;align-items:center;gap:9px;border:1px solid var(--line);padding:11px 13px;min-height:44px;margin:15px 0;cursor:pointer;border-radius:6px;}
-.upload-toggle .box{width:17px;height:17px;border:1px solid var(--accent-dim);display:flex;align-items:center;justify-content:center;font-size:11px;border-radius:3px;}
+/* Bos kutu da gorunmeli: arka plani ve kenari acikca boyaniyor, yoksa koyu
+   temada zeminle ayni tona dusuyordu. */
+.upload-toggle .box{width:17px;height:17px;border:1.5px solid var(--accent-dim);background:var(--surface);display:flex;align-items:center;justify-content:center;font-size:11px;border-radius:3px;flex:none;}
 .upload-toggle.checked .box{background:var(--green);color:#fff;border-color:var(--green);}
 .section-title{font-family:'Archivo',sans-serif;color:var(--accent);font-weight:700;font-size:12px;text-transform:uppercase;letter-spacing:1px;margin:20px 0 12px;border-top:1px solid var(--line);padding-top:16px;}
 .modal-actions{display:flex;justify-content:flex-end;gap:9px;margin-top:20px;}
@@ -819,6 +827,7 @@ const LANG = {
     pending_title: "Not Yet Posted",
     btn_close: "Close",
     alert_fill_required: "Please fill in title, date and time.",
+    alert_fill_missing: (alanlar)=> `Still missing: ${alanlar}.`,
     alert_select_platform: "Select at least one platform.",
     confirm_delete: "Delete this entry?",
     confirm_reset: "Reset the demo back to the original example content? This clears anything you added.",
@@ -950,6 +959,7 @@ const LANG = {
     pending_title: "Henüz Yüklenmemiş",
     btn_close: "Kapat",
     alert_fill_required: "Lütfen başlık, tarih ve saati doldur.",
+    alert_fill_missing: (alanlar)=> `Şu alan eksik: ${alanlar}.`,
     alert_select_platform: "En az bir platform seç.",
     confirm_delete: "Bu giriş silinsin mi?",
     confirm_reset: "Demo, orijinal örnek içeriğine sıfırlansın mı? Eklediğin her şey silinir.",
@@ -1445,7 +1455,8 @@ function openModal(ev){
     }
   } else {
     document.getElementById('f_type').value = 'video';
-    document.querySelectorAll('#platformChecks input').forEach(el=> el.checked = el.value==='youtube');
+    // Hicbiri onceden isaretli gelmiyor: platformu kullanici bilerek secsin.
+    document.querySelectorAll('#platformChecks input').forEach(el=> el.checked = false);
     document.getElementById('f_title').value = '';
     const today = new Date();
     document.getElementById('f_date').value = fmtKey(today);
@@ -1492,7 +1503,19 @@ document.getElementById('saveBtn').addEventListener('click', ()=>{
   const title = document.getElementById('f_title').value.trim();
   const date = document.getElementById('f_date').value;
   const time = document.getElementById('f_time').value;
-  if(!title || !date || !time){ alert(t('alert_fill_required')); return; }
+  // Eskiden her durumda "baslik, tarih ve saati doldur" deniyordu; tarih ve saat
+  // yeni kayitta zaten dolu geldigi icin kullanici doldurdugu alanlari yeniden
+  // doldurmaya calisiyordu. Artik yalnizca gercekten eksik olan soyleniyor.
+  const eksikler = [];
+  if(!title) eksikler.push(['f_title', t('f_title_label')]);
+  if(!date)  eksikler.push(['f_date',  t('f_date_label')]);
+  if(!time)  eksikler.push(['f_time',  t('f_time_label')]);
+  if(eksikler.length){
+    alert(t('alert_fill_missing')(eksikler.map(x=>x[1]).join(', ')));
+    const ilk = document.getElementById(eksikler[0][0]);
+    if(ilk) ilk.focus();
+    return;
+  }
   const type = document.getElementById('f_type').value;
 
   const content = {
