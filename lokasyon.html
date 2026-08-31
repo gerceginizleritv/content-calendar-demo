@@ -1,0 +1,3417 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Saha Dosyası — Gerçeğin İzleri</title>
+<link rel="manifest" href="manifest.json">
+<meta name="theme-color" content="#0D0D0F">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="Lokasyon Takip">
+<link rel="icon" type="image/x-icon" href="favicon.ico">
+<link rel="icon" type="image/png" sizes="32x32" href="favicon-32x32.png">
+<link rel="icon" type="image/png" sizes="16x16" href="favicon-16x16.png">
+<link rel="apple-touch-icon" sizes="180x180" href="apple-touch-icon.png">
+<style>
+@import url('https://fonts.googleapis.com/css2?family=Poppins:wght@400;600;700;800&family=JetBrains+Mono:wght@400;500;700&display=swap');
+
+:root{
+  --ink:#0D0D0F;
+  --ink-2:#17171A;
+  --ink-3:#212124;
+  --parchment:#EFE6D4;
+  --parchment-dim:#C9BFA9;
+  --gold:#C8A24A;
+  --gold-dim:#8C7538;
+  --red:#B4302B;
+  --red-dim:#7A211D;
+  --line:rgba(200,162,74,0.25);
+}
+*{box-sizing:border-box;}
+body{
+  margin:0;
+  background:var(--ink);
+  color:var(--parchment);
+  font-family:'Poppins',sans-serif;
+  padding:0 20px 80px;
+  min-height:100vh;
+}
+.wrap{max-width:1180px;margin:0 auto;}
+
+/* Freeze-panes style sticky header: masthead + controls + (optional)
+   row-view column labels stay pinned while the list below scrolls. */
+.sticky-head{
+  position:sticky;
+  top:0;
+  z-index:30;
+  background:var(--ink);
+  padding-top:12px;
+  padding-bottom:6px;
+  margin:0 -20px;
+  padding-left:20px;
+  padding-right:20px;
+  border-bottom:1px solid var(--line);
+}
+
+.row-header{
+  display:grid;
+  grid-template-columns:minmax(160px,1fr) 300px 280px 190px;
+  align-items:center;
+  gap:16px;
+  padding:10px 16px 4px;
+  font-family:'JetBrains Mono',monospace;
+  font-size:10px;
+  letter-spacing:1px;
+  text-transform:uppercase;
+  color:var(--gold-dim);
+}
+.row-header-stamps{display:flex;gap:8px;}
+.row-header-stamps span{
+  width:40px;
+  text-align:center;
+  font-size:9.5px;
+  letter-spacing:0;
+  white-space:nowrap;
+  overflow:hidden;
+}
+@media(max-width:820px){
+  .row-header{display:none !important;}
+}
+
+/* HEADER */
+.masthead{
+  border:1px solid var(--line);
+  border-bottom:3px solid var(--gold);
+  padding:10px 16px;
+  margin-bottom:8px;
+  position:relative;
+  background:linear-gradient(180deg, var(--ink-2), var(--ink));
+}
+.masthead-top{
+  display:flex;
+  justify-content:space-between;
+  align-items:center;
+  gap:16px;
+  flex-wrap:wrap;
+}
+.masthead-left{flex-shrink:0;}
+.eyebrow{
+  font-family:'JetBrains Mono',monospace;
+  font-size:9px;
+  letter-spacing:2px;
+  color:var(--gold);
+  text-transform:uppercase;
+}
+h1{
+  font-family:'Poppins',sans-serif;
+  font-weight:800;
+  font-size:17px;
+  letter-spacing:0.3px;
+  margin:2px 0 1px;
+  text-transform:uppercase;
+}
+.slogan{
+  font-size:10px;
+  color:var(--parchment-dim);
+  font-style:italic;
+}
+.stats-row{
+  display:flex;
+  gap:0;
+  flex-wrap:wrap;
+  flex:1;
+  justify-content:flex-end;
+}
+.stat{
+  flex:0 0 auto;
+  min-width:66px;
+  padding:0 10px;
+  border-right:1px solid var(--line);
+}
+.stat:last-child{border-right:none;}
+.stat .num{font-family:'JetBrains Mono',monospace;font-size:14px;font-weight:700;color:var(--gold);}
+.stat .lbl{font-size:7px;letter-spacing:0.5px;text-transform:uppercase;color:var(--parchment-dim);white-space:nowrap;}
+
+/* CONTROLS */
+.controls{
+  display:flex;
+  gap:5px;
+  margin-bottom:6px;
+  flex-wrap:wrap;
+  align-items:center;
+}
+input[type="text"], select{
+  background:var(--ink-2);
+  border:1px solid var(--line);
+  color:var(--parchment);
+  font-family:'Poppins',sans-serif;
+  font-size:10.5px;
+  padding:5px 7px;
+}
+input[type="text"]{flex:1 1 130px;min-width:110px;}
+select{
+  cursor:pointer;
+  flex:0 0 auto;
+  max-width:118px;
+  text-overflow:ellipsis;
+}
+.btn{
+  background:var(--gold);
+  color:var(--ink);
+  border:none;
+  font-family:'Poppins',sans-serif;
+  font-weight:700;
+  font-size:13px;
+  padding:10px 18px;
+  cursor:pointer;
+  letter-spacing:0.3px;
+  transition:opacity .15s;
+}
+.btn:hover{opacity:0.85;}
+.btn-ghost{
+  background:transparent;
+  border:1px solid var(--gold-dim);
+  color:var(--gold);
+}
+.btn-danger{background:var(--red);color:var(--parchment);}
+
+/* GRID */
+.grid{
+  display:grid;
+  grid-template-columns:repeat(auto-fill, minmax(340px,1fr));
+  gap:14px;
+}
+
+/* ROW / LIST VIEW */
+.list{display:flex;flex-direction:column;border:1px solid var(--line);}
+.row{
+  display:grid;
+  grid-template-columns:minmax(160px,1fr) 300px 280px 190px;
+  align-items:center;
+  gap:16px;
+  padding:12px 16px;
+  border-bottom:1px solid var(--line);
+  border-left:3px solid var(--gold-dim);
+  background:var(--ink-2);
+  transition:background .15s;
+}
+.row:last-child{border-bottom:none;}
+.row:hover{background:var(--ink-3);}
+.row.row-done{border-left-color:var(--gold);opacity:0.75;}
+.row.row-cancelled{border-left-color:var(--red);opacity:0.5;}
+.row.row-needs-script{border-left-color:#E8912D;}
+.row-main{min-width:0;display:flex;gap:10px;align-items:flex-start;}
+.row-main-text{min-width:0;flex:1;}
+.row-image{width:44px;height:56px;flex-shrink:0;}
+.row-image img{width:100%;height:100%;object-fit:cover;border:1px solid var(--line);display:block;}
+.row-idx{font-family:'JetBrains Mono',monospace;font-size:9px;color:var(--gold-dim);letter-spacing:1px;}
+.row-name{font-weight:700;font-size:14.5px;display:flex;align-items:center;gap:6px;min-width:0;}
+.row-name .name-text{flex:1;min-width:0;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+.row-name .mini-badge{
+  font-family:'JetBrains Mono',monospace;
+  font-size:8.5px;
+  background:var(--gold);
+  color:var(--ink);
+  padding:1px 5px;
+  margin-left:6px;
+  letter-spacing:1px;
+}
+.row-loc{
+  font-family:'JetBrains Mono',monospace;
+  font-size:10.5px;
+  color:var(--parchment-dim);
+  white-space:nowrap;
+  overflow:hidden;
+  text-overflow:ellipsis;
+}
+.row-meta{display:flex;align-items:center;gap:8px;flex-wrap:wrap;}
+.row-stamps{display:flex;gap:8px;}
+.row-stamp{
+  width:40px;
+  text-align:center;
+  padding:6px 0;
+  cursor:pointer;
+  border:1px solid var(--line);
+  background:var(--ink);
+  font-family:'JetBrains Mono',monospace;
+  font-size:11px;
+  font-weight:700;
+  color:var(--parchment-dim);
+}
+.row-stamp.E{background:rgba(200,162,74,0.15);border-color:var(--gold);color:var(--gold);}
+.row-stamp:hover{border-color:var(--gold);}
+.row-actions{display:flex;gap:6px;white-space:nowrap;}
+.row-actions .icon-btn{padding:5px 9px;font-size:10.5px;}
+@media(max-width:820px){
+  .row{grid-template-columns:1fr;gap:8px;}
+  .row-actions{justify-content:flex-start;}
+}
+.card{
+  background:var(--ink-2);
+  border:1px solid var(--line);
+  border-left:4px solid var(--gold-dim);
+  padding:16px 18px;
+  position:relative;
+  transition:border-color .2s;
+  display:flex;
+  flex-direction:column;
+}
+.card.done{border-left-color:var(--gold);}
+.card.hybrid-flag{border-left-color:var(--red-dim);}
+.card.cancelled{border-left-color:var(--red);opacity:0.55;}
+.card.needs-script{border-left-color:#E8912D;}
+.needs-script-badge{
+  display:inline-block;
+  font-family:'JetBrains Mono',monospace;
+  font-size:9.5px;
+  letter-spacing:1px;
+  color:#E8912D;
+  background:rgba(232,145,45,0.12);
+  border:1px solid #E8912D;
+  padding:3px 8px;
+  margin-bottom:10px;
+  animation:pulse-border 2s infinite;
+}
+@keyframes pulse-border{
+  0%,100%{border-color:#E8912D;}
+  50%{border-color:rgba(232,145,45,0.4);}
+}
+.cancelled-badge{
+  position:absolute;
+  top:14px;right:16px;
+  font-family:'JetBrains Mono',monospace;
+  font-size:9px;
+  letter-spacing:2px;
+  color:#fff;
+  background:var(--red);
+  padding:3px 7px;
+  transform:rotate(3deg);
+}
+.card-head-row{display:flex;gap:12px;}
+.card-image{width:84px;flex-shrink:0;aspect-ratio:3/4;}
+.card-image img{width:100%;height:100%;object-fit:cover;border:1px solid var(--line);display:block;}
+.card-top{display:flex;justify-content:space-between;align-items:flex-start;gap:10px;flex:1;min-width:0;}
+.card-top-main{flex:1;min-width:0;}
+.card-idx{font-family:'JetBrains Mono',monospace;font-size:10px;color:var(--gold-dim);letter-spacing:1px;}
+.card-name{font-weight:700;font-size:16px;margin:3px 0 4px;line-height:1.25;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+.card-loc{font-size:11px;color:var(--parchment-dim);font-family:'JetBrains Mono',monospace;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+.maps-link{
+  display:inline-block;
+  font-size:10.5px;
+  color:#7FA3B8;
+  text-decoration:none;
+  border-bottom:1px dotted #7FA3B8;
+  margin-top:3px;
+}
+.maps-link:hover{color:var(--parchment);}
+.fmt-tag{
+  font-size:10px;
+  letter-spacing:1px;
+  text-transform:uppercase;
+  padding:3px 8px;
+  border:1px solid currentColor;
+  white-space:nowrap;
+  font-family:'JetBrains Mono',monospace;
+  flex-shrink:0;
+}
+.fmt-Saha{color:var(--gold);}
+.fmt-Masabaşı{color:#7FA3B8;}
+.fmt-Hibrit{color:var(--red);}
+
+.card-date-row{
+  display:flex;
+  align-items:center;
+  gap:6px;
+}
+.card-date-row .date-label{
+  font-family:'JetBrains Mono',monospace;
+  font-size:9.5px;
+  letter-spacing:1px;
+  text-transform:uppercase;
+  color:var(--gold-dim);
+}
+
+.topic{
+  font-size:12.5px;
+  color:var(--parchment-dim);
+  margin:10px 0 4px;
+  line-height:1.4;
+  min-height:calc(1.4em * 2);
+  display:-webkit-box;
+  -webkit-line-clamp:2;
+  -webkit-box-orient:vertical;
+  overflow:hidden;
+}
+.read-more{
+  display:block;
+  font-size:11px;
+  color:var(--gold);
+  cursor:pointer;
+  border:none;
+  background:none;
+  padding:0;
+  margin-bottom:10px;
+  font-family:'Poppins',sans-serif;
+  text-decoration:underline;
+  text-decoration-style:dotted;
+}
+.read-more:hover{color:var(--parchment);}
+.slot-empty{visibility:hidden;pointer-events:none;}
+
+.perm-flag{
+  font-size:10.5px;
+  color:var(--red);
+  background:rgba(180,48,43,0.12);
+  border:1px solid var(--red-dim);
+  padding:3px 8px;
+  display:inline-block;
+  margin-bottom:10px;
+  font-family:'JetBrains Mono',monospace;
+}
+
+.stages{display:flex;flex-wrap:wrap;gap:6px;margin-bottom:10px;}
+.stamp{
+  flex:1 1 14%;
+  min-width:46px;
+  text-align:center;
+  padding:7px 2px;
+  cursor:pointer;
+  border:1px solid var(--line);
+  background:var(--ink);
+  font-family:'JetBrains Mono',monospace;
+  font-size:9.5px;
+  letter-spacing:0.5px;
+  user-select:none;
+  transition:all .15s;
+}
+.stamp .v{display:block;font-weight:700;font-size:13px;margin-bottom:2px;}
+.stamp.E{background:rgba(200,162,74,0.15);border-color:var(--gold);color:var(--gold);}
+.perm-stamp.E{background:rgba(180,48,43,0.15);border-color:var(--red);color:var(--red);}
+.perm-stamp.H{opacity:0.5;}
+.stamp.H{color:var(--parchment-dim);}
+.stamp:hover{border-color:var(--gold);}
+
+.script-link{
+  display:inline-block;
+  font-size:11px;
+  color:var(--gold);
+  text-decoration:none;
+  border-bottom:1px dotted var(--gold-dim);
+  margin-bottom:10px;
+}
+.script-link:hover{color:var(--parchment);}
+
+.date-badge{
+  display:inline-block;
+  font-family:'JetBrains Mono',monospace;
+  font-size:10.5px;
+  color:var(--parchment);
+  background:rgba(200,162,74,0.1);
+  border:1px solid var(--line);
+  padding:3px 8px;
+  margin-bottom:10px;
+  margin-left:8px;
+}
+
+.inline-date{
+  background:rgba(200,162,74,0.1);
+  border:1px solid var(--line);
+  color:var(--gold);
+  font-family:'JetBrains Mono',monospace;
+  font-size:11px;
+  padding:2px 5px;
+  margin-left:8px;
+  cursor:pointer;
+  vertical-align:middle;
+  color-scheme:dark;
+  flex-shrink:0;
+}
+.inline-date:hover{border-color:var(--gold);}
+.card-actions .inline-date{font-size:10px;padding:5px 6px;}
+
+.notes{
+  font-size:11.5px;
+  color:var(--parchment-dim);
+  border-top:1px dashed var(--line);
+  padding-top:8px;
+  margin-top:8px;
+  min-height:calc(1.4em * 2 + 8px);
+  line-height:1.4;
+  display:-webkit-box;
+  -webkit-line-clamp:2;
+  -webkit-box-orient:vertical;
+  overflow:hidden;
+}
+.card-actions{
+  display:flex;
+  align-items:center;
+  gap:8px;
+  margin-top:auto;
+  padding-top:12px;
+  justify-content:space-between;
+  flex-wrap:wrap;
+}
+.card-actions-buttons{display:flex;gap:8px;flex-wrap:wrap;}
+.icon-btn{
+  background:none;
+  border:1px solid var(--line);
+  color:var(--parchment-dim);
+  font-size:11px;
+  padding:5px 10px;
+  cursor:pointer;
+  font-family:'Poppins',sans-serif;
+}
+.icon-btn:hover{border-color:var(--gold);color:var(--gold);}
+
+.completed-badge{
+  position:absolute;
+  top:14px;right:16px;
+  font-family:'JetBrains Mono',monospace;
+  font-size:9px;
+  letter-spacing:2px;
+  color:var(--ink);
+  background:var(--gold);
+  padding:3px 7px;
+  transform:rotate(3deg);
+}
+
+/* MODAL */
+.overlay{
+  display:none;
+  position:fixed;inset:0;
+  background:rgba(0,0,0,0.7);
+  z-index:50;
+  align-items:center;justify-content:center;
+  padding:20px;
+}
+.overlay.open{display:flex;}
+.modal{
+  background:var(--ink-2);
+  border:1px solid var(--gold-dim);
+  border-top:4px solid var(--gold);
+  padding:24px;
+  width:100%;
+  max-width:520px;
+  max-height:88vh;
+  overflow-y:auto;
+}
+.modal h2{font-size:16px;text-transform:uppercase;letter-spacing:1px;margin:0 0 16px;}
+.field{margin-bottom:12px;}
+.field label{
+  display:block;
+  font-size:10.5px;
+  letter-spacing:1px;
+  text-transform:uppercase;
+  color:var(--parchment-dim);
+  margin-bottom:5px;
+  font-family:'JetBrains Mono',monospace;
+}
+.field input, .field select, .field textarea{
+  width:100%;
+  background:var(--ink);
+  border:1px solid var(--line);
+  color:var(--parchment);
+  padding:9px 10px;
+  font-family:'Poppins',sans-serif;
+  font-size:13px;
+}
+.field textarea{resize:vertical;min-height:50px;}
+.field-row{display:flex;gap:10px;flex-wrap:wrap;}
+.field-row .field{flex:1 1 110px;min-width:110px;}
+.field-row-5{display:grid;grid-template-columns:repeat(5,1fr);gap:8px;}
+.field-row-5 .field{min-width:0;}
+.field-row-5 .field label{font-size:8.5px;letter-spacing:0.5px;}
+.field-row-5 .field select{padding:9px 4px;font-size:12px;}
+.modal-actions{display:flex;justify-content:flex-end;gap:10px;margin-top:18px;}
+.modal-wide{max-width:760px;}
+.pkg-section{
+  border-top:1px solid var(--line);
+  padding-top:14px;
+  margin-top:14px;
+}
+.pkg-section-title{
+  font-family:'JetBrains Mono',monospace;
+  font-size:10.5px;
+  letter-spacing:1.5px;
+  text-transform:uppercase;
+  color:var(--gold);
+  margin-bottom:10px;
+}
+.pkg-hint{font-size:10.5px;color:var(--parchment-dim);margin-top:-6px;margin-bottom:10px;font-style:italic;}
+.pkg-field{
+  border:1px solid var(--line);
+  background:var(--ink);
+  padding:12px 14px;
+  margin-bottom:12px;
+}
+.pkg-field .field-header{margin-bottom:8px;}
+.pkg-field input, .pkg-field select, .pkg-field textarea{
+  width:100%;
+  background:var(--ink-3);
+  border:1px solid var(--line);
+  color:var(--parchment);
+  padding:9px 10px;
+  font-family:'Poppins',sans-serif;
+  font-size:13px;
+  box-sizing:border-box;
+}
+.pkg-field textarea{resize:vertical;min-height:70px;}
+.pkg-field input:focus, .pkg-field textarea:focus{outline:none;border-color:var(--gold-dim);}
+.pkg-label{
+  font-family:'JetBrains Mono',monospace;
+  font-size:9.5px;
+  letter-spacing:1px;
+  text-transform:uppercase;
+  color:var(--gold-dim);
+}
+.pkg-value{
+  font-size:13px;
+  line-height:1.55;
+  color:var(--parchment);
+  white-space:pre-wrap;
+}
+.field-header{
+  display:flex;
+  align-items:center;
+  justify-content:space-between;
+  gap:8px;
+}
+.copy-btn{
+  background:none;
+  border:1px solid var(--gold-dim);
+  color:var(--gold);
+  font-size:11px;
+  padding:3px 9px;
+  cursor:pointer;
+  white-space:nowrap;
+  flex-shrink:0;
+}
+.copy-btn:hover{ background:rgba(200,162,74,0.12); }
+.copy-btn.copied{ color:var(--parchment); border-color:var(--parchment); }
+.detail-text{
+  font-size:13px;
+  line-height:1.6;
+  color:var(--parchment);
+  white-space:pre-wrap;
+  background:var(--ink);
+  border:1px solid var(--line);
+  padding:10px 12px;
+}
+
+.empty{
+  text-align:center;
+  padding:60px 20px;
+  color:var(--parchment-dim);
+  border:1px dashed var(--line);
+}
+
+.backup-row{
+  display:flex;
+  gap:6px;
+  margin-top:6px;
+  flex-wrap:wrap;
+  align-items:center;
+}
+.btn-small{
+  font-size:9.5px;
+  padding:4px 9px;
+}
+
+/* ===== Main tabs ===== */
+.main-tabs{
+  display:flex;
+  gap:0;
+  margin-top:0;
+  border:1px solid var(--line);
+  width:fit-content;
+}
+.main-tab{
+  background:var(--ink-2);
+  border:none;
+  color:var(--parchment-dim);
+  padding:5px 12px;
+  font-family:'JetBrains Mono',monospace;
+  font-size:9.5px;
+  letter-spacing:0.5px;
+  cursor:pointer;
+  border-right:1px solid var(--line);
+}
+.main-tab:last-child{border-right:none;}
+.main-tab.active{background:rgba(200,162,74,0.12);color:var(--gold);}
+
+/* ===== Calendar ===== */
+.cal-toolbar{display:flex;align-items:center;justify-content:space-between;margin:16px 0 14px;flex-wrap:wrap;gap:10px;}
+.cal-nav{display:flex;align-items:center;gap:8px;}
+.cal-nav-btn{
+  background:var(--ink-2);border:1px solid var(--line);color:var(--parchment-dim);
+  padding:8px 14px;font-family:'JetBrains Mono',monospace;font-size:11px;
+  letter-spacing:0.5px;cursor:pointer;transition:all .12s;
+}
+.cal-nav-btn:hover{border-color:var(--gold-dim);color:var(--parchment);}
+.cal-nav-today{color:var(--gold);}
+.cal-nav-range{
+  font-family:'JetBrains Mono',monospace;font-size:10.5px;color:var(--gold-dim);
+  padding:0 4px;white-space:nowrap;
+}
+.cal-view-toggle{display:flex;border:1px solid var(--line);}
+.cal-toggle-btn{
+  background:var(--ink-2);border:none;color:var(--parchment-dim);
+  padding:8px 14px;font-family:'JetBrains Mono',monospace;font-size:11px;
+  letter-spacing:1px;cursor:pointer;border-right:1px solid var(--line);
+}
+.cal-toggle-btn:last-child{border-right:none;}
+.cal-toggle-btn.active{background:rgba(200,162,74,0.12);color:var(--gold);}
+.cal-legend{display:flex;gap:14px;margin-bottom:8px;flex-wrap:wrap;align-items:center;}
+.cal-legend.cal-status-row{margin-bottom:16px;}
+.cal-legend-item{display:flex;align-items:center;gap:6px;font-size:11px;color:var(--parchment-dim);font-family:'JetBrains Mono',monospace;cursor:pointer;padding:3px 6px;border:1px solid transparent;transition:all .12s;user-select:none;}
+.cal-legend-item:hover{border-color:var(--line);}
+.cal-legend-item.cal-filter-inactive{opacity:0.3;}
+.cal-legend-item.cal-filter-active-only{border-color:var(--gold);background:rgba(200,162,74,0.08);color:var(--parchment);}
+.cal-legend-reset{
+  font-size:10px;font-family:'JetBrains Mono',monospace;color:var(--line);
+  cursor:default;padding:3px 6px;text-decoration:none;
+  transition:all .12s;
+}
+.cal-legend-reset.cal-filter-on{color:var(--gold-dim);cursor:pointer;text-decoration:underline;}
+.cal-legend-reset.cal-filter-on:hover{color:var(--gold);}
+.cal-dot{width:9px;height:9px;border-radius:50%;display:inline-block;}
+.cal-legend-sep{width:1px;height:14px;background:var(--line);}
+.cal-mini-chip{display:inline-flex;align-items:center;gap:4px;padding:2px 7px;font-size:10px;font-family:'JetBrains Mono',monospace;}
+.cal-mini-chip.cal-planned{border-left:3px solid var(--gold-dim);background:var(--ink-3);color:var(--parchment-dim);}
+.cal-mini-chip.cal-ready{border-left:3px solid var(--gold);background:var(--ink-3);color:var(--parchment);}
+.cal-mini-chip.cal-live{border-left:3px solid var(--gold);background:rgba(200,162,74,0.14);color:var(--gold);}
+.pending-row{cursor:pointer;transition:background .12s;border-bottom:1px solid #2a2a2a;}
+.pending-row:hover{background:rgba(200,162,74,0.08);}
+.pending-row td{padding:7px 8px;}
+.pending-row.pending-overdue td{color:#D64545;}
+.cal-pending-toggle{
+  background:var(--ink);border:1px solid var(--line);color:var(--parchment-dim);
+  padding:4px 10px;font-family:'JetBrains Mono',monospace;font-size:10.5px;
+  cursor:pointer;transition:all .12s;
+}
+.cal-pending-toggle:hover{border-color:var(--gold-dim);color:var(--parchment);}
+.cal-pending-toggle.cal-pending-active{
+  border-color:var(--gold);background:rgba(200,162,74,0.1);color:var(--gold);
+}
+
+.cal-grid{display:grid;grid-template-columns:repeat(7,1fr);border:1px solid var(--line);background:var(--line);gap:1px;}
+.cal-dow{background:var(--ink-2);padding:9px 10px;font-family:'JetBrains Mono',monospace;font-size:10px;letter-spacing:1.5px;color:var(--gold-dim);text-transform:uppercase;text-align:center;}
+.cal-day{background:var(--ink);aspect-ratio:1/1;padding:8px 7px;position:relative;overflow:hidden;}
+.cal-day.expanded{aspect-ratio:auto;overflow:visible;z-index:5;box-shadow:0 4px 16px rgba(0,0,0,0.5);}
+.cal-day.today{background:rgba(200,162,74,0.06);}
+.cal-day-num{font-family:'JetBrains Mono',monospace;font-size:11px;color:var(--parchment-dim);margin-bottom:6px;}
+.cal-day.today .cal-day-num{color:var(--gold);font-weight:700;}
+.cal-chip-row{display:flex;gap:3px;margin-bottom:4px;}
+.cal-chip{
+  display:flex;align-items:center;gap:4px;background:var(--ink-3);
+  border-left:3px solid var(--gold-dim);padding:3px 5px;font-size:9.5px;
+  line-height:1.25;cursor:pointer;transition:background .12s;flex:1;min-width:0;
+}
+.cal-chip:hover{background:#282829;}
+.cal-badge{width:14px;height:14px;border-radius:3px;display:flex;align-items:center;justify-content:center;font-size:7px;font-weight:800;flex-shrink:0;font-family:'JetBrains Mono',monospace;color:#fff;}
+.cal-chip-mid{flex:1;min-width:0;overflow:hidden;}
+.cal-chip-time{font-family:'JetBrains Mono',monospace;font-size:8px;color:var(--parchment-dim);display:block;}
+.cal-chip-title{overflow:hidden;text-overflow:ellipsis;white-space:nowrap;color:var(--parchment-dim);display:block;}
+.cal-status-icon{font-size:8px;flex-shrink:0;color:var(--parchment-dim);}
+.cal-chip.ready{border-left-color:var(--gold);}
+.cal-chip.ready .cal-chip-title{color:var(--parchment);}
+.cal-chip.live{border-left-color:var(--gold);background:rgba(200,162,74,0.12);}
+.cal-chip.live .cal-chip-title{color:var(--gold);font-weight:600;}
+.cal-chip.live .cal-chip-time{color:var(--gold-dim);}
+.cal-more{font-size:9px;color:var(--gold-dim);font-family:'JetBrains Mono',monospace;padding-left:2px;}
+.cal-more-clickable{cursor:pointer;text-decoration:underline;padding:3px 2px;}
+.cal-more-clickable:hover{color:var(--gold);}
+
+.cal-table{width:100%;border-collapse:collapse;border:1px solid var(--line);table-layout:fixed;}
+.cal-table thead th{background:var(--ink-2);border:1px solid var(--line);padding:12px 10px;font-family:'JetBrains Mono',monospace;font-size:11px;letter-spacing:1.5px;text-transform:uppercase;}
+.cal-date-col{text-align:left;color:var(--gold-dim);width:110px;}
+.cal-platform-head{display:flex;flex-direction:column;align-items:center;gap:5px;}
+.cal-p-badge{width:26px;height:26px;border-radius:6px;display:flex;align-items:center;justify-content:center;font-size:9px;font-weight:800;font-family:'JetBrains Mono',monospace;color:#fff;}
+.cal-table tbody td{border:1px solid var(--line);padding:8px;vertical-align:top;height:60px;}
+.cal-table tbody td.cal-date-cell{background:var(--ink-2);font-family:'JetBrains Mono',monospace;font-size:12px;color:var(--parchment-dim);}
+.cal-table tbody tr.today td.cal-date-cell{color:var(--gold);font-weight:700;background:rgba(200,162,74,0.08);}
+.cal-table tbody tr.today td{background:rgba(200,162,74,0.04);}
+.cal-dow-lbl{font-size:9px;color:var(--gold-dim);letter-spacing:1px;display:block;margin-top:2px;}
+.cal-cell-chip{display:flex;flex-direction:column;gap:2px;background:var(--ink-3);border-left:3px solid var(--gold-dim);padding:5px 7px;margin-bottom:4px;cursor:pointer;transition:background .12s;}
+.cal-cell-chip:hover{background:#282829;}
+.cal-cell-chip .cctime{font-family:'JetBrains Mono',monospace;font-size:9.5px;color:var(--parchment-dim);display:flex;justify-content:space-between;}
+.cal-cell-type-badge{display:inline-block;font-family:'JetBrains Mono',monospace;font-size:8.5px;font-weight:700;letter-spacing:0.5px;color:#0a0a0a;padding:1px 4px;border-radius:2px;margin:2px 0;}
+.cal-cell-chip .cctitle{font-size:10.5px;color:var(--parchment-dim);line-height:1.35;}
+.cal-cell-chip.ready{border-left-color:var(--gold);}
+.cal-cell-chip.ready .cctitle{color:var(--parchment);}
+.cal-cell-chip.live{border-left-color:var(--gold);background:rgba(200,162,74,0.12);}
+.cal-cell-chip.live .cctitle{color:var(--gold);font-weight:600;}
+.cal-cell-chip.live .cctime{color:var(--gold-dim);}
+.cal-empty-dash{color:var(--line);text-align:center;padding-top:12px;font-size:11px;}
+
+.cal-edit-row{display:flex;gap:10px;margin-bottom:16px;}
+.cal-platform-checks{display:flex;gap:8px;flex-wrap:wrap;}
+.cal-format-divider{
+  font-family:'JetBrains Mono',monospace;font-size:9.5px;letter-spacing:1px;
+  color:var(--gold-dim);text-transform:uppercase;margin:10px 0 7px;
+}
+.cal-platform-check{
+  display:flex;align-items:center;gap:6px;
+  background:var(--ink);border:1px solid var(--line);
+  padding:7px 11px;cursor:pointer;font-size:12px;color:var(--parchment-dim);
+  transition:all .12s;
+}
+.cal-platform-check:has(input:checked){border-color:var(--gold);background:rgba(200,162,74,0.1);color:var(--parchment);}
+.cal-platform-check input{accent-color:var(--gold);cursor:pointer;}
+.cal-edit-field{flex:1;}
+.cal-edit-field label{display:block;font-family:'JetBrains Mono',monospace;font-size:9.5px;letter-spacing:1px;color:var(--gold-dim);text-transform:uppercase;margin-bottom:5px;}
+.cal-edit-field input, .cal-edit-field select{
+  width:100%;background:var(--ink);border:1px solid var(--line);color:var(--parchment);
+  padding:7px 9px;font-family:'JetBrains Mono',monospace;font-size:12px;
+}
+.cal-upload-toggle{
+  display:flex;align-items:center;gap:9px;padding:10px 12px;background:var(--ink);
+  border:1px solid var(--line);margin-bottom:16px;cursor:pointer;user-select:none;
+}
+.cal-upload-toggle.checked{border-color:var(--gold);background:rgba(200,162,74,0.08);}
+.cal-upload-toggle .cal-box{
+  width:16px;height:16px;border:1px solid var(--parchment-dim);display:flex;
+  align-items:center;justify-content:center;font-size:11px;color:transparent;flex-shrink:0;
+}
+.cal-upload-toggle.checked .cal-box{border-color:var(--gold);color:var(--gold);background:rgba(200,162,74,0.15);}
+.cal-upload-toggle .cal-toggle-label{font-size:12.5px;color:var(--parchment);}
+.cal-upload-toggle .cal-toggle-sub{font-size:10.5px;color:var(--parchment-dim);margin-left:auto;}
+.cal-upload-toggle.disabled{opacity:0.45;cursor:default;}
+.cal-modal-status{display:inline-block;font-family:'JetBrains Mono',monospace;font-size:10px;padding:3px 8px;letter-spacing:1px;margin-bottom:16px;}
+.cal-modal-status.planned{color:var(--parchment-dim);border:1px solid var(--line);}
+.cal-modal-status.ready{color:var(--parchment);border:1px solid var(--gold-dim);background:rgba(200,162,74,0.08);}
+.cal-modal-status.live{color:var(--gold);border:1px solid var(--gold);background:rgba(200,162,74,0.14);}
+
+.log-item{
+  display:flex;gap:14px;padding:10px 14px;border-bottom:1px solid var(--line);
+  font-size:12.5px;align-items:baseline;
+}
+.log-item:hover{background:var(--ink-2);}
+.log-time{font-family:'JetBrains Mono',monospace;font-size:10.5px;color:var(--gold-dim);flex-shrink:0;white-space:nowrap;}
+.log-msg{color:var(--parchment-dim);}
+
+/* Moved to end of stylesheet so these mobile overrides always win the
+   cascade over same-specificity base rules declared later in the file
+   (e.g. .cal-grid/.cal-day/.cal-table) — CSS source order previously put
+   this block BEFORE those base rules, so on phones the media query never
+   actually took effect and the calendar rendered as a tiny unreadable
+   7-column desktop grid. */
+@media(max-width:600px){
+  h1{font-size:21px;}
+  .stats-row{gap:8px;}
+  .stat{border-right:none;padding:0;min-width:80px;}
+
+  /* Modal: use nearly the full screen on phones, less wasted padding */
+  .overlay{padding:8px;align-items:flex-start;}
+  .modal, .modal-wide{
+    max-width:100%;
+    max-height:94vh;
+    padding:16px 14px;
+    margin-top:8px;
+  }
+
+  /* Field label + Kopyala button: stack instead of squeezing side-by-side,
+     and make the button a full-width, easy-to-tap row of its own. */
+  .field-header{
+    flex-direction:column;
+    align-items:stretch;
+    gap:6px;
+  }
+  .copy-btn{
+    width:100%;
+    padding:9px 9px;
+    font-size:12.5px;
+    text-align:center;
+  }
+
+  /* Stamps (Script/Çekim/Ses/Kurgu/Yayın/İzin): bigger touch targets,
+     3-per-row instead of cramming 6 into one line. */
+  .stamp{
+    flex:1 1 30%;
+    min-width:0;
+    padding:10px 2px;
+  }
+  .stamp .v{font-size:15px;}
+
+  /* Calendar platform picker checkboxes: full-width rows, easier to tap */
+  .cal-platform-checks{gap:6px;}
+  .cal-platform-check{
+    flex:1 1 100%;
+    padding:10px 12px;
+  }
+
+  /* Package section titles wrap cleanly, JSON-paste box stays usable */
+  .pkg-section-title{font-size:9.5px;}
+  #p_jsonPaste{min-height:70px;}
+
+  /* Calendar (Dikey/Ay) grid: 7 columns is unusable on a phone — collapse
+     to a single-column agenda list instead, one full-width row per day. */
+  .cal-grid{grid-template-columns:1fr;}
+  .cal-dow{display:none;}
+  .cal-day{
+    aspect-ratio:auto;
+    overflow:visible;
+    padding:12px 14px;
+    min-height:0;
+  }
+  .cal-day-num{font-size:13px;margin-bottom:8px;}
+  .cal-chip-row{margin-bottom:6px;}
+  .cal-chip{padding:8px 10px;}
+  .cal-badge{width:30px;height:30px;font-size:10px;}
+  .cal-chip-time{font-size:10.5px;}
+  .cal-chip-mid{overflow:visible;}
+  .cal-chip-title{font-size:12px;white-space:normal;overflow:visible;text-overflow:clip;}
+  .cal-more-clickable{padding:8px 4px;font-size:11px;}
+
+  /* Yatay (Tablo) view: horizontal scroll instead of squeezing 9 columns */
+  .cal-table{table-layout:auto;min-width:820px;}
+  #calTableView{overflow-x:auto;-webkit-overflow-scrolling:touch;}
+}
+
+</style>
+</head>
+<body>
+<div class="wrap">
+
+<div class="sticky-head">
+  <div class="masthead">
+    <div class="masthead-top">
+      <div class="masthead-left">
+        <div class="eyebrow" data-i18n="eyebrow">Saha Dosyası · Dahili Kayıt Sistemi</div>
+        <h1 data-i18n="title">Lokasyon Takip Sistemi</h1>
+        <div class="slogan">Gerçeğin İzleri · Tarihi Dedektif — "Rivayet değil, kayıt."</div>
+      </div>
+      <div class="stats-row" id="statsRow"></div>
+    </div>
+    <div class="backup-row">
+      <button class="btn btn-ghost btn-small" id="exportBtn">💾 Yedek İndir</button>
+      <button class="btn btn-ghost btn-small" id="importBtn">📤 Yedekten Geri Yükle</button>
+      <button class="btn btn-ghost btn-small" id="dataSizeBtn">📊 Veri Alanı</button>
+      <button class="btn btn-ghost btn-small" id="refreshBtn">🔄 Yenile</button>
+      <button class="btn btn-ghost btn-small" id="githubTokenResetBtn">🚪 Çıkış</button>
+      <button class="btn btn-ghost btn-small" id="pendingBtn">⏳ Bekleyenler</button>
+      <input type="file" id="importFile" accept="application/json" style="display:none;">
+      <div class="main-tabs">
+        <button class="main-tab active" id="tabLocations">📋 Lokasyonlar</button>
+        <button class="main-tab" id="tabCalendar">📅 Yayın Takvimi</button>
+        <button class="main-tab" id="tabLog">📝 Değişiklik Kaydı</button>
+      </div>
+    </div>
+  </div>
+
+  <div class="controls" id="controls">
+    <input type="text" id="search" data-i18n-placeholder="search_ph" placeholder="Lokasyon, ilçe veya konu ara...">
+    <select id="filterFormat">
+      <option value="" data-i18n="fmt_all">Tüm Formatlar</option>
+      <option value="Saha" data-i18n="fmt_saha">Saha</option>
+      <option value="Masabaşı" data-i18n="fmt_masabasi">Masabaşı</option>
+      <option value="Hibrit" data-i18n="fmt_hibrit">Hibrit</option>
+    </select>
+    <select id="filterDistrict"></select>
+    <select id="filterCity"></select>
+    <select id="filterStatus">
+      <option value="" data-i18n="status_all">Tüm Durumlar</option>
+      <option value="pending" data-i18n="status_pending">Devam Eden</option>
+      <option value="done" data-i18n="status_done">Tamamlanan (Yayında)</option>
+      <option value="unfilmed" data-i18n="status_unfilmed">Henüz Çekilmedi</option>
+      <option value="permission" data-i18n="status_permission">İzin Bekliyor</option>
+      <option value="needsscript" data-i18n="status_needsscript">🎬 Script Yazılması Gereken</option>
+      <option value="cancelled" data-i18n="status_cancelled">İptal Edilenler</option>
+    </select>
+    <select id="sortMode">
+      <option value="default" data-i18n="sort_default">Sıra: Varsayılan</option>
+      <option value="date" data-i18n="sort_date">Sıra: Planlanan Tarihe Göre</option>
+    </select>
+    <select id="viewMode">
+      <option value="card" data-i18n="view_card">🗂 Kart Görünümü</option>
+      <option value="row" data-i18n="view_row">☰ Liste Görünümü</option>
+    </select>
+    <select id="langSelect">
+      <option value="tr">🇹🇷 TR</option>
+      <option value="en">🇬🇧 EN</option>
+      <option value="ru">🇷🇺 RU</option>
+    </select>
+    <button class="btn" id="addBtn" data-i18n="add_new" style="flex-shrink:0;white-space:nowrap;">+ Yeni Lokasyon</button>
+  </div>
+
+  <div class="row-header" id="rowHeader" style="display:none;">
+    <div data-i18n="col_location">Lokasyon</div>
+    <div data-i18n="col_detail">Detay</div>
+    <div class="row-header-stamps">
+      <span data-i18n="col_scr">Scr</span><span data-i18n="col_cek">Çek</span><span data-i18n="col_ses">Ses</span><span data-i18n="col_krg">Krg</span><span data-i18n="col_yay">Yay</span><span data-i18n="col_izin">İzn</span>
+    </div>
+    <div data-i18n="col_actions">İşlemler</div>
+  </div>
+</div>
+
+<div id="locationsView">
+  <div class="grid" id="grid"></div>
+  <div class="empty" id="emptyState" style="display:none;" data-i18n="empty_state">Bu filtrelerle eşleşen bir dosya bulunamadı.</div>
+</div>
+
+<div id="calendarView" style="display:none;">
+  <div class="cal-toolbar">
+    <div class="cal-view-toggle">
+      <button class="cal-toggle-btn active" id="calBtnGrid">📅 Dikey (Ay)</button>
+      <button class="cal-toggle-btn" id="calBtnTable">📋 Yatay (Tablo)</button>
+    </div>
+    <div class="cal-nav">
+      <button class="cal-nav-btn" id="calNavPrev">◀ Önceki</button>
+      <button class="cal-nav-btn cal-nav-today" id="calNavToday">Bugün</button>
+      <span class="cal-nav-range" id="calNavRange"></span>
+      <button class="cal-nav-btn" id="calNavNext">Sonraki ▶</button>
+    </div>
+    <button class="btn" id="calAddBtn">+ Yeni Yayın Girişi</button>
+  </div>
+  <div class="cal-legend" id="calTypeLegend">
+    <span class="cal-legend-item" data-type="video"><span class="cal-dot" style="background:#E8632B;"></span>Video</span>
+    <span class="cal-legend-item" data-type="shorts"><span class="cal-dot" style="background:#F2A93B;"></span>Shorts</span>
+    <span class="cal-legend-item" data-type="reels"><span class="cal-dot" style="background:#9C4FBF;"></span>Reels</span>
+    <span class="cal-legend-item" data-type="carousel"><span class="cal-dot" style="background:#5D7BC7;"></span>Carousel</span>
+    <span class="cal-legend-item" data-type="story"><span class="cal-dot" style="background:#D4A72C;"></span>Story</span>
+    <span class="cal-legend-item" data-type="text_post"><span class="cal-dot" style="background:#6B7280;"></span>Metin Postu</span>
+    <span class="cal-legend-item" data-type="poll"><span class="cal-dot" style="background:#2FA36B;"></span>Anket</span>
+    <span class="cal-legend-sep"></span>
+    <span class="cal-legend-reset" id="calTypeLegendReset">Tümünü Göster</span>
+  </div>
+  <div class="cal-legend" id="calPlatformLegend">
+    <span class="cal-legend-item" data-smplatform="youtube"><span class="cal-dot" style="background:#D64545;"></span>YouTube</span>
+    <span class="cal-legend-item" data-smplatform="instagram"><span class="cal-dot" style="background:#C1447E;"></span>Instagram</span>
+    <span class="cal-legend-item" data-smplatform="tiktok"><span class="cal-dot" style="background:#3FC9D1;"></span>TikTok</span>
+    <span class="cal-legend-item" data-smplatform="facebook"><span class="cal-dot" style="background:#4B7BD1;"></span>Facebook</span>
+    <span class="cal-legend-sep"></span>
+    <span class="cal-legend-reset" id="calPlatformLegendReset">Tümünü Göster</span>
+  </div>
+  <div class="cal-legend cal-status-row">
+    <span class="cal-mini-chip cal-planned">🕒 Planlandı</span>
+    <span class="cal-mini-chip cal-ready">✓ Yüklendi</span>
+    <span class="cal-mini-chip cal-live">● Yayında</span>
+    <span class="cal-legend-sep"></span>
+    <button class="cal-pending-toggle" id="calPendingToggle">☐ Sadece Yüklenmemişleri Göster</button>
+  </div>
+  <div class="pkg-hint" style="margin-top:-6px;">💡 Üst satır <b>içerik tipi</b> (Video, Reels, Story...), alt satır <b>SM hesabı</b> (YouTube, Instagram...) — ikisinden de istediğin kadar seçip birlikte filtreleyebilirsin. Tekrar tıklayınca kaldırılır, "Tümünü Göster" ile o satır sıfırlanır.</div>
+  <div id="calGridView">
+    <div class="cal-grid" id="calGrid"></div>
+  </div>
+  <div id="calTableView" style="display:none;">
+    <table class="cal-table">
+      <thead>
+        <tr>
+          <th class="cal-date-col">Tarih</th>
+          <th><div class="cal-platform-head"><span class="cal-p-badge" style="background:#D64545;">YT</span><span>YOUTUBE</span></div></th>
+          <th><div class="cal-platform-head"><span class="cal-p-badge" style="background:#C1447E;">IG</span><span>INSTAGRAM</span></div></th>
+          <th><div class="cal-platform-head"><span class="cal-p-badge" style="background:#3FC9D1;color:#0a0a0a;">TT</span><span>TIKTOK</span></div></th>
+          <th><div class="cal-platform-head"><span class="cal-p-badge" style="background:#4B7BD1;">FB</span><span>FACEBOOK</span></div></th>
+        </tr>
+      </thead>
+      <tbody id="calTbody"></tbody>
+    </table>
+  </div>
+</div>
+
+<div id="logView" style="display:none;">
+  <div class="cal-toolbar">
+    <div style="font-size:12.5px;color:var(--parchment-dim);">
+      Buradaki kaydı kopyalayıp Claude'a yapıştırdığında, ne değiştirdiğini bilir ve ona göre kod/veri güncellemesi yapar.
+    </div>
+    <div style="display:flex;gap:8px;">
+      <button class="btn btn-ghost btn-small" id="logCopyBtn">📋 Tümünü Kopyala</button>
+      <button class="btn btn-ghost btn-small" id="logClearBtn">🗑 Kaydı Temizle</button>
+    </div>
+  </div>
+  <div id="logList"></div>
+  <div class="empty" id="logEmpty" style="display:none;">Henüz bir değişiklik kaydı yok.</div>
+</div>
+
+<div class="overlay" id="pendingOverlay">
+  <div class="modal" style="max-width:720px;">
+    <div class="modal-top" style="display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:10px;">
+      <h2 style="margin:0;font-size:17px;">⏳ Girilmemiş / Yüklenmemiş İçerikler</h2>
+      <button class="btn btn-ghost" id="pendingCloseBtn">Kapat</button>
+    </div>
+    <div id="pendingBody" style="font-size:13px;"></div>
+  </div>
+</div>
+
+<div class="overlay" id="dataSizeOverlay">
+  <div class="modal" style="max-width:480px;">
+    <div class="modal-top" style="display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:10px;">
+      <h2 style="margin:0;font-size:17px;">📊 Veri Alanı Kullanımı</h2>
+      <button class="btn btn-ghost" id="dataSizeCloseBtn">Kapat</button>
+    </div>
+    <div id="dataSizeBody" style="font-size:14px;line-height:1.6;"></div>
+  </div>
+</div>
+
+<div class="overlay" id="calOverlay">
+  <div class="modal">
+    <div class="modal-top" style="display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:6px;">
+      <div style="display:flex;align-items:center;gap:8px;">
+        <span class="cal-badge" id="calDBadge" style="width:22px;height:22px;font-size:10px;"></span>
+        <h2 id="calDTitle" style="margin:0;font-size:17px;">Yeni Yayın Girişi</h2>
+      </div>
+      <button class="btn btn-ghost" id="calCloseBtn">Kapat</button>
+    </div>
+
+    <div class="field">
+      <label>Lokasyon</label>
+      <select id="cal_locationId"></select>
+    </div>
+    <div class="field">
+      <label>İçerik Tipi</label>
+      <select id="cal_type">
+        <option value="video">Video</option>
+        <option value="shorts">Shorts</option>
+        <option value="reels">Reels</option>
+        <option value="carousel">Carousel</option>
+        <option value="story">Story</option>
+        <option value="text_post">Metin Postu</option>
+        <option value="poll">Anket</option>
+      </select>
+    </div>
+    <div class="field" id="calPlatformMultiWrap">
+      <label>SM Hesabı/ları — aynı içerik birden fazla hesaba birden yayınlanacaksa hepsini seç</label>
+      <div class="cal-platform-checks">
+        <label class="cal-platform-check" data-smplatform="youtube"><input type="checkbox" value="youtube" checked><span class="cal-p-badge" style="background:#D64545;">YT</span>YouTube</label>
+        <label class="cal-platform-check" data-smplatform="instagram"><input type="checkbox" value="instagram"><span class="cal-p-badge" style="background:#C1447E;">IG</span>Instagram</label>
+        <label class="cal-platform-check" data-smplatform="tiktok"><input type="checkbox" value="tiktok"><span class="cal-p-badge" style="background:#3FC9D1;color:#0a0a0a;">TT</span>TikTok</label>
+        <label class="cal-platform-check" data-smplatform="facebook"><input type="checkbox" value="facebook"><span class="cal-p-badge" style="background:#4B7BD1;">FB</span>Facebook</label>
+      </div>
+    </div>
+    <div class="field" id="calPlatformSingleWrap" style="display:none;">
+      <label>SM Hesabı</label>
+      <select id="cal_platform">
+        <option value="youtube">YouTube</option>
+        <option value="instagram">Instagram</option>
+        <option value="tiktok">TikTok</option>
+        <option value="facebook">Facebook</option>
+      </select>
+    </div>
+    <div class="field">
+      <label>Başlık / Not</label>
+      <input type="text" id="cal_title" placeholder="Örn: Öküz Derisi Efsanesi (Reel 1)">
+    </div>
+
+    <div class="cal-edit-row">
+      <div class="cal-edit-field"><label>Tarih</label><input type="date" id="cal_date"></div>
+      <div class="cal-edit-field"><label>Saat</label><input type="time" id="cal_time"></div>
+    </div>
+
+    <div class="cal-upload-toggle" id="calUploadToggle">
+      <span class="cal-box" id="calUploadBox">✓</span>
+      <span class="cal-toggle-label">Yükledim / Zamanladım</span>
+      <span class="cal-toggle-sub" id="calUploadSub"></span>
+    </div>
+
+    <div class="cal-modal-status" id="calDStatus"></div>
+
+    <div id="calPkgFields"></div>
+
+    <div class="modal-actions">
+      <button class="btn btn-danger" id="calDeleteBtn" style="display:none;">Sil</button>
+      <button class="btn btn-ghost" id="calCancelBtn">Vazgeç</button>
+      <button class="btn" id="calSaveBtn">Kaydet</button>
+    </div>
+  </div>
+</div>
+
+<div class="overlay" id="overlay">
+  <div class="modal">
+    <h2 id="modalTitle">Yeni Lokasyon Dosyası</h2>
+    <input type="hidden" id="editId">
+    <div class="field">
+      <label data-i18n="f_name_label">Yer Adı</label>
+      <input type="text" id="f_name" data-i18n-placeholder="f_name_ph" placeholder="Örn: Gül Camii">
+    </div>
+    <div class="field-row">
+      <div class="field">
+        <label data-i18n="f_district_label">İlçe</label>
+        <input type="text" id="f_district" list="districtOptions" placeholder="Fatih">
+        <datalist id="districtOptions"></datalist>
+      </div>
+      <div class="field">
+        <label data-i18n="f_city_label">İl</label>
+        <input type="text" id="f_city" list="cityOptions" value="İstanbul">
+        <datalist id="cityOptions"></datalist>
+      </div>
+    </div>
+    <div class="field">
+      <label data-i18n="f_address_label">Adres / Semt Notu</label>
+      <input type="text" id="f_address" placeholder="Ayakapı, Haliç kıyısı">
+    </div>
+    <div class="field">
+      <label data-i18n="f_mapslink_label">Google Maps Linki (opsiyonel)</label>
+      <input type="text" id="f_mapsLink" placeholder="Boş bırakırsan isim+adresten otomatik oluşturulur">
+    </div>
+    <div class="field-row">
+      <div class="field">
+        <label data-i18n="f_format_label">Format</label>
+        <select id="f_format">
+          <option value="Saha" data-i18n="fmt_saha">Saha</option>
+          <option value="Masabaşı" data-i18n="fmt_masabasi">Masabaşı</option>
+          <option value="Hibrit" data-i18n="fmt_hibrit">Hibrit</option>
+        </select>
+      </div>
+      <div class="field">
+        <label data-i18n="f_permission_label">İzin Gerekiyor mu?</label>
+        <select id="f_permission">
+          <option value="H" data-i18n="opt_no">Hayır</option>
+          <option value="E" data-i18n="opt_yes_pending">Evet — bekliyor</option>
+        </select>
+      </div>
+    </div>
+    <div class="field">
+      <label data-i18n="f_topic_label">Çekim Konusu / Hook</label>
+      <textarea id="f_topic" data-i18n-placeholder="f_topic_ph" placeholder="Kısa gizem/hook özeti"></textarea>
+    </div>
+    <div class="field">
+      <label data-i18n="f_fieldnotes_label">Saha Notu (Neler Anlattım)</label>
+      <textarea id="f_fieldNotes" data-i18n-placeholder="f_fieldnotes_ph" placeholder="Kamerada söylediklerinin kısa özeti — script bunun üzerinden yazılacak"></textarea>
+    </div>
+    <div class="field">
+      <label style="color:var(--gold);" data-i18n="f_cautions_label">⚠️ Çekim Esnasında Dikkat Edilecek Noktalar</label>
+      <textarea id="f_shootingCautions" data-i18n-placeholder="f_cautions_ph" placeholder="Örn: burçlara restorasyon nedeniyle çıkılamıyor, zincir sahada yok (Deniz Müzesi'nde), güvenlik izin istiyor, en iyi ışık öğleden sonra vs."></textarea>
+    </div>
+    <div class="field-row field-row-5">
+      <div class="field">
+        <label data-i18n="f_script_label">Script Hazır mı?</label>
+        <select id="f_script"><option value="H">H</option><option value="E">E</option></select>
+      </div>
+      <div class="field">
+        <label data-i18n="f_filmed_label">Çekildi mi?</label>
+        <select id="f_filmed"><option value="H">H</option><option value="E">E</option></select>
+      </div>
+      <div class="field">
+        <label data-i18n="f_audio_label">Ses Kaydı</label>
+        <select id="f_audio"><option value="H">H</option><option value="E">E</option></select>
+      </div>
+      <div class="field">
+        <label data-i18n="f_edited_label">Kurgu</label>
+        <select id="f_edited"><option value="H">H</option><option value="E">E</option></select>
+      </div>
+      <div class="field">
+        <label data-i18n="f_published_label">Yayınlandı</label>
+        <select id="f_published"><option value="H">H</option><option value="E">E</option></select>
+      </div>
+    </div>
+    <div class="field">
+      <label data-i18n="f_scriptlink_label">Script Drive Linki</label>
+      <input type="text" id="f_scriptLink" placeholder="https://docs.google.com/document/d/...">
+    </div>
+    <div class="field">
+      <label data-i18n="f_drivefolder_label">Drive Klasörü Linki</label>
+      <input type="text" id="f_driveFolderLink" placeholder="https://drive.google.com/drive/folders/...">
+    </div>
+    <div class="field">
+      <label data-i18n="f_notes_label">Notlar</label>
+      <textarea id="f_notes" data-i18n-placeholder="f_notes_ph" placeholder="Ek notlar, script durumu vs."></textarea>
+    </div>
+    <div class="modal-actions">
+      <button class="icon-btn" id="deleteBtn" style="display:none;border-color:var(--red-dim);color:var(--red);" data-i18n="btn_delete">Sil</button>
+      <button class="btn btn-ghost" id="cancelBtn" data-i18n="btn_cancel">Vazgeç</button>
+      <button class="btn" id="saveBtn" data-i18n="btn_save">Kaydet</button>
+    </div>
+  </div>
+</div>
+
+<div class="overlay" id="pkgOverlay">
+  <div class="modal modal-wide">
+    <h2 id="pkgTitle">Script / Prodüksiyon Notu</h2>
+    <input type="hidden" id="pkgId">
+    <div class="pkg-hint" style="background:rgba(200,162,74,0.08);border:1px solid var(--gold-dim);padding:10px 12px;margin-bottom:14px;">
+      📌 <b>Mimari değişti (28 Ağustos 2026):</b> Caption, hashtag, kapak/thumbnail prompt ve carousel slaytları artık burada değil — <b>Yayın Takvimi'ndeki ilgili kayıt üzerinde</b> tutuluyor (her kayda tıklayınca düzenlenebiliyor). Burada sadece bu lokasyonla ilgili <b>script / sahada çekilmesi gereken notlar</b> kalıyor.
+    </div>
+
+    <div class="pkg-section" style="border-top:none;margin-top:0;padding-top:0;">
+      <div class="pkg-section-title" style="color:#E8912D;" data-i18n="pkg_section_shotlist">🎥 Sahada Çekilmesi Gerekenler</div>
+      <div class="field">
+        <textarea id="p_shotList" data-i18n-placeholder="p_shotlist_ph" placeholder="Giriş çekimi, çıkış çekimi, kapanış planı, özellikle vurgulanacak detay çekimleri vs. — maddeler halinde"></textarea>
+      </div>
+    </div>
+
+    <div class="modal-actions">
+      <button class="btn btn-ghost" id="pkgCancelBtn" data-i18n="btn_cancel">Vazgeç</button>
+      <button class="btn" id="pkgSaveBtn" data-i18n="btn_save">Kaydet</button>
+    </div>
+  </div>
+</div>
+
+<div class="overlay" id="detailOverlay">
+  <div class="modal">
+    <h2 id="detailTitle"></h2>
+    <div class="field">
+      <label data-i18n="f_topic_label">Çekim Konusu / Hook</label>
+      <div id="detailTopic" class="detail-text"></div>
+    </div>
+    <div class="field" id="detailNotesWrap">
+      <label data-i18n="f_notes_label">Notlar</label>
+      <div id="detailNotes" class="detail-text"></div>
+    </div>
+    <div class="field" id="detailFieldNotesWrap">
+      <label data-i18n="f_fieldnotes_label">Saha Notu (Neler Anlattım)</label>
+      <div id="detailFieldNotes" class="detail-text"></div>
+    </div>
+    <div class="field" id="detailCautionsWrap">
+      <label style="color:var(--gold);" data-i18n="f_cautions_label">⚠️ Çekim Esnasında Dikkat Edilecek Noktalar</label>
+      <div id="detailCautions" class="detail-text"></div>
+    </div>
+    <div class="modal-actions">
+      <button class="btn" id="detailCloseBtn" data-i18n="btn_close">Kapat</button>
+    </div>
+  </div>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.45.4/dist/umd/supabase.min.js"></script>
+<div style="position:fixed;bottom:0;left:0;right:0;z-index:9998;background:#8a5a00;color:#fff;font:600 13px/1.5 system-ui,sans-serif;text-align:center;padding:6px 10px">DENEME KOPYASI — Supabase sürümü. Canlı sistemin değil, burada yaptığın değişiklikler gerçek kayıtlara işler.</div>
+<script>
+const STORAGE_KEY = 'gerceginizleri_lokasyon_listesi';
+const LANG_KEY = 'gerceginizleri_ui_language';
+// ============================================================
+// VERI KATMANI — Supabase
+// ============================================================
+// Veri artik GitHub'daki data.json dosyasinda degil, Supabase'de.
+// Degisen yalnizca burasi: ekranlar, filtreler, takvim, yedek alma —
+// hepsi eskisi gibi locations / calendarEvents dizileriyle calisiyor.
+//
+// Neden degisti:
+//   * data.json tek dosyaydi, her kayitta bastan yaziliyordu. Iki cihazdan
+//     ayni anda calisildiginda biri otekinin yazdigini eziyordu.
+//   * Her yeni cihazda elle GitHub anahtari girmek gerekiyordu. Artik
+//     Google ile giris yetiyor.
+//   * Simdi yalnizca gercekten degisen satirlar yaziliyor.
+const SUPABASE_URL = 'https://dyemvzmpnlpnzwebuciu.supabase.co';
+const SUPABASE_KEY = 'sb_publishable_QpzqwOn4BX43GtX9ecaowQ_qIlaHJA-';
+
+let sb = null;
+let oturum = null;
+let calismaAlaniId = null;
+
+// Son bilinen hal: hangi satirin gercekten degistigini buradan anliyoruz.
+// Olmasaydi her kayitta 142 satirin tamami tekrar yazilirdi.
+let sonHal = { lok: new Map(), kyt: new Map() };
+
+// --- Bicim cevirileri --------------------------------------------------
+// Uygulama bayraklari 'E'/'H' metni olarak tutuyor (butun ekranlar buna
+// gore yazilmis). Veritabaninda ise boolean; bir bayrak "evet/hayir"
+// disinda deger alamasin diye. Cevirim tek yerde, burada.
+const _eh = v => (v ? 'E' : 'H');
+const _bool = v => v === 'E';
+
+function satirdanLokasyon(r){
+  return {
+    id: r.id, name: r.name || '', district: r.district || '', city: r.city || '',
+    address: r.address || '', topic: r.topic || '', notes: r.notes || '',
+    shootingCautions: r.cautions || '', fieldNotes: r.field_notes || '',
+    permission: _eh(r.permission), filmed: _eh(r.filmed), audio: _eh(r.audio),
+    edited: _eh(r.edited), published: _eh(r.published), script: _eh(r.script),
+    cancelled: _eh(r.cancelled),
+    // Bu alan hic kullanilmamisti, veritabanina tasinmadi; ekranlar yine de
+    // bekledigi icin sabit deger veriliyor.
+    prepRequested: 'H',
+    format: r.format || 'Saha',
+    mapsLink: r.maps_url || '', scriptLink: r.script_url || '',
+    driveFolderLink: r.drive_url || '', imageUrl: r.image_url || '',
+    plannedDate: r.planned_date || '',
+    package: { shotList: r.shot_list || '' }
+  };
+}
+
+function lokasyonSatiri(l){
+  const bicimler = ['Saha','Masabaşı','Hibrit','Stüdyo/Grafik'];
+  const p = (l.package && typeof l.package === 'object') ? l.package : {};
+  return {
+    id: l.id, workspace_id: calismaAlaniId,
+    name: l.name || '', district: l.district || '', city: l.city || '',
+    address: l.address || '', topic: l.topic || '', notes: l.notes || '',
+    cautions: l.shootingCautions || '', field_notes: l.fieldNotes || '',
+    format: bicimler.indexOf(l.format) >= 0 ? l.format : 'Saha',
+    // Bos metin tarih sutununa yazilamaz; yoklugu null ile anlatiyoruz.
+    planned_date: l.plannedDate ? l.plannedDate : null,
+    permission: _bool(l.permission), filmed: _bool(l.filmed), audio: _bool(l.audio),
+    edited: _bool(l.edited), published: _bool(l.published), script: _bool(l.script),
+    cancelled: _bool(l.cancelled),
+    maps_url: l.mapsLink || '', drive_url: l.driveFolderLink || '',
+    script_url: l.scriptLink || '', image_url: l.imageUrl || '',
+    shot_list: p.shotList || ''
+  };
+}
+
+function satirdanKayit(r){
+  const c = (r.content && typeof r.content === 'object') ? r.content : {};
+  return {
+    id: r.id, locationId: r.location_id || '',
+    platform: r.platform || '', type: r.type || '',
+    typeOverride: r.type_override || '', platformOverride: r.platform_override || '',
+    captionFieldOverride: r.caption_field_override || '',
+    title: r.title || '', date: r.post_date || '',
+    time: (r.post_time || '').slice(0,5), uploaded: !!r.uploaded,
+    // Sabitlenen yorum kendi sutununda duruyor; ekranlar onu content
+    // icinde bekledigi icin burada geri birlestiriliyor.
+    content: Object.assign({}, c, { pinnedComment: r.pinned_comment || '' })
+  };
+}
+
+function kayitSatiri(e){
+  const c = (e.content && typeof e.content === 'object') ? e.content : {};
+  const kalan = Object.assign({}, c);
+  delete kalan.pinnedComment;
+  return {
+    id: e.id, user_id: oturum.user.id, workspace_id: calismaAlaniId,
+    location_id: e.locationId || null,
+    type: e.type || '', platform: e.platform || '', title: e.title || '',
+    post_date: e.date || null, post_time: e.time || null,
+    uploaded: !!e.uploaded,
+    type_override: e.typeOverride || null,
+    platform_override: e.platformOverride || null,
+    caption_field_override: e.captionFieldOverride || null,
+    pinned_comment: c.pinnedComment || '',
+    content: kalan
+  };
+}
+
+// --- Giris -------------------------------------------------------------
+function girisEkrani(mesaj, hataMi){
+  let k = document.getElementById('girisPerde');
+  if(!k){
+    k = document.createElement('div');
+    k.id = 'girisPerde';
+    k.style.cssText = 'position:fixed;inset:0;z-index:9999;display:flex;'+
+      'align-items:center;justify-content:center;padding:24px;'+
+      'background:rgba(12,14,18,.92);backdrop-filter:blur(4px);';
+    document.body.appendChild(k);
+  }
+  k.innerHTML =
+    '<div style="max-width:420px;width:100%;background:#fff;color:#15181d;'+
+    'border-radius:14px;padding:28px;font:16px/1.6 system-ui,sans-serif;text-align:center">'+
+    '<div style="font-size:19px;font-weight:700;margin-bottom:8px">Lokasyon Takip Sistemi</div>'+
+    '<div style="color:'+(hataMi ? '#a52a2a' : '#5b6472')+';margin-bottom:20px">'+mesaj+'</div>'+
+    '<button id="girisBtn" style="font:inherit;font-weight:600;padding:12px 22px;'+
+    'border-radius:9px;border:0;background:#1f5f4f;color:#fff;cursor:pointer">'+
+    'Google ile giriş yap</button></div>';
+  document.getElementById('girisBtn').addEventListener('click', async ()=>{
+    const { error } = await sb.auth.signInWithOAuth({
+      provider: 'google',
+      options: { redirectTo: window.location.href.split('#')[0].split('?')[0] }
+    });
+    if(error) girisEkrani('Giriş başlatılamadı: ' + error.message, true);
+  });
+}
+
+function girisEkraniniKapat(){
+  const k = document.getElementById('girisPerde');
+  if(k) k.remove();
+}
+let currentLang = 'tr';
+
+const LANG = {
+  tr: {
+    eyebrow: "Saha Dosyası · Dahili Kayıt Sistemi",
+    title: "Lokasyon Takip Sistemi",
+    stat_total: "Toplam Dosya", stat_script: "Script Hazır", stat_filmed: "Çekildi", stat_published: "Yayında", stat_permission: "İzin Bekliyor",
+    search_ph: "Lokasyon, ilçe veya konu ara...",
+    fmt_all: "Tüm Formatlar", fmt_saha: "Saha", fmt_masabasi: "Masabaşı", fmt_hibrit: "Hibrit",
+    district_all: "Tüm İlçeler", city_all: "Tüm İller",
+    status_all: "Tüm Durumlar", status_pending: "Devam Eden", status_done: "Tamamlanan (Yayında)", status_unfilmed: "Henüz Çekilmedi", status_permission: "İzin Bekliyor", status_needsscript: "🎬 Script Yazılması Gereken", status_cancelled: "İptal Edilenler",
+    needs_script_badge: "🎬 SCRIPT BEKLİYOR",
+    pkg_section_shotlist: "🎥 Sahada Çekilmesi Gerekenler", p_shotlist_ph: "Giriş çekimi, çıkış çekimi, kapanış planı, özellikle vurgulanacak detay çekimleri vs. — maddeler halinde",
+    f_fieldnotes_label: "Saha Notu (Neler Anlattım)", f_fieldnotes_ph: "Kamerada söylediklerinin kısa özeti — script bunun üzerinden yazılacak",
+    f_cautions_label: "⚠️ Çekim Esnasında Dikkat Edilecek Noktalar", f_cautions_ph: "Örn: burçlara restorasyon nedeniyle çıkılamıyor, zincir sahada yok (Deniz Müzesi'nde), güvenlik izin istiyor, en iyi ışık öğleden sonra vs.",
+    sort_default: "Sıra: Varsayılan", sort_date: "Sıra: Planlanan Tarihe Göre",
+    view_card: "🗂 Kart Görünümü", view_row: "☰ Liste Görünümü",
+    add_new: "+ Yeni Lokasyon",
+    col_location: "Lokasyon", col_detail: "Detay", col_scr: "Scr", col_cek: "Çek", col_ses: "Ses", col_krg: "Krg", col_yay: "Yay", col_izin: "İzn", col_actions: "İşlemler",
+    empty_state: "Bu filtrelerle eşleşen bir dosya bulunamadı.",
+    file_no: "DOSYA №",
+    closed_badge: "KAPALI",
+    permission_pending: "⚠ İzin bekliyor",
+    script_open: "📄 Script'i Drive'da Aç →", script_short: "📄 Script",
+    maps_open: "🗺️ Haritada Aç →", f_mapslink_label: "Google Maps Linki (opsiyonel)",
+    drive_folder_open: "📁 Drive Klasörünü Aç →",
+    btn_package: "🎬 Script Notu", btn_edit: "Düzenle",
+    stamp_script: "Script", stamp_filmed: "Çekim", stamp_audio: "Ses", stamp_edited: "Kurgu", stamp_published: "Yayın", stamp_permission: "İzin",
+    modal_new: "Yeni Lokasyon Dosyası", modal_edit: "Dosyayı Düzenle",
+    f_name_label: "Yer Adı", f_name_ph: "Örn: Gül Camii",
+    f_district_label: "İlçe", f_city_label: "İl", f_address_label: "Adres / Semt Notu",
+    f_format_label: "Format", f_permission_label: "İzin Gerekiyor mu?", opt_no: "Hayır", opt_yes_pending: "Evet — bekliyor",
+    f_topic_label: "Çekim Konusu / Hook", f_topic_ph: "Kısa gizem/hook özeti",
+    f_script_label: "Script Hazır mı?", f_filmed_label: "Çekildi mi?", f_audio_label: "Ses Kaydı", f_edited_label: "Kurgu", f_published_label: "Yayınlandı",
+    f_scriptlink_label: "Script Drive Linki", f_drivefolder_label: "Drive Klasörü Linki", f_notes_label: "Notlar", f_notes_ph: "Ek notlar, script durumu vs.",
+    btn_delete: "Sil", btn_cancel: "Vazgeç", btn_save: "Kaydet",
+    pkg_title: "Script / Prodüksiyon Notu",
+    pkg_section_youtube: "YouTube (Uzun Video)", pkg_section_reels: "Reels / Shorts", pkg_section_seo: "SEO — Hashtag / Tag / Arama Hacmi", pkg_section_captions: "Platform Bazlı Caption'lar",
+    p_ytitles_label: "Başlık Seçenekleri (satır satır)", p_ytthumb_label: "Thumbnail Görsel Prompt'u",
+    p_thumb_hint: "Görseli ben üretemiyorum (Gemini'ye doğrudan bağlantım yok) — bu metni Flow'a yapıştırman yeterli.",
+    p_reelscount_label: "Kaç Adet Reels Hazırlanacak", p_reelstitles_label: "Reels Kısa Başlıkları (satır satır)", p_reelsprompts_label: "Reels Thumbnail Prompt'ları (satır satır)",
+    p_hashtags_label: "5 Yüksek Arama Hacimli Hashtag", p_tags_label: "Tag Listesi (YouTube — Uzun Video)", p_shortstags_label: "Tag Listesi (YouTube Shorts — ayrı)", p_keywordnotes_label: "vidIQ Arama Hacmi Notu",
+    p_shorts_label: "YouTube Shorts", p_ytdesc_label: "YouTube (Uzun Video Açıklaması)",
+    name_empty_alert: "Yer adı boş olamaz.",
+    delete_confirm: "Bu dosyayı silmek istediğine emin misin?",
+    save_error: "Kayıt başarısız oldu — bağlantı sorunu olabilir. Tekrar deniyor...",
+    yes_char: "E", no_char: "H", planned_date_title: "Planlanan çekim tarihi",
+    read_more: "Devamını oku", btn_close: "Kapat",
+    btn_cancel_shoot: "🚫 İptal Et", btn_uncancel: "↩ İptali Kaldır", cancelled_badge: "İPTAL", stat_cancelled: "İptal Edilen"
+  },
+  en: {
+    eyebrow: "Field File · Internal Tracking System",
+    title: "Location Tracking System",
+    stat_total: "Total Files", stat_script: "Script Ready", stat_filmed: "Filmed", stat_published: "Published", stat_permission: "Awaiting Permit",
+    search_ph: "Search location, district or topic...",
+    fmt_all: "All Formats", fmt_saha: "On-site", fmt_masabasi: "Desk", fmt_hibrit: "Hybrid",
+    district_all: "All Districts", city_all: "All Cities",
+    status_all: "All Statuses", status_pending: "In Progress", status_done: "Completed (Live)", status_unfilmed: "Not Filmed Yet", status_permission: "Awaiting Permit", status_needsscript: "🎬 Needs Script", status_cancelled: "Cancelled",
+    needs_script_badge: "🎬 NEEDS SCRIPT",
+    pkg_section_shotlist: "🎥 On-Location Shot List", p_shotlist_ph: "Opening shot, closing shot, wrap-up, detail cutaways to emphasize, etc. — as a list",
+    f_fieldnotes_label: "Field Notes (What I Said)", f_fieldnotes_ph: "Short summary of what you said on camera — the script will be based on this",
+    f_cautions_label: "⚠️ Important Points to Watch During Filming", f_cautions_ph: "e.g.: towers closed for restoration, chain not on-site (in Naval Museum), security requires permit, best light in the afternoon etc.",
+    sort_default: "Sort: Default", sort_date: "Sort: Planned Date",
+    view_card: "🗂 Card View", view_row: "☰ List View",
+    add_new: "+ New Location",
+    col_location: "Location", col_detail: "Detail", col_scr: "Scr", col_cek: "Film", col_ses: "Aud", col_krg: "Edt", col_yay: "Pub", col_izin: "Prm", col_actions: "Actions",
+    empty_state: "No file matches these filters.",
+    file_no: "FILE №",
+    closed_badge: "CLOSED",
+    permission_pending: "⚠ Awaiting permit",
+    script_open: "📄 Open script in Drive →", script_short: "📄 Script",
+    maps_open: "🗺️ Open in Maps →", f_mapslink_label: "Google Maps Link (optional)",
+    drive_folder_open: "📁 Open Drive Folder →",
+    btn_package: "📦 Publish Kit", btn_edit: "Edit",
+    stamp_script: "Script", stamp_filmed: "Filmed", stamp_audio: "Audio", stamp_edited: "Edited", stamp_published: "Published", stamp_permission: "Permit",
+    modal_new: "New Location File", modal_edit: "Edit File",
+    f_name_label: "Location Name", f_name_ph: "e.g. Gül Mosque",
+    f_district_label: "District", f_city_label: "City", f_address_label: "Address / Area Note",
+    f_format_label: "Format", f_permission_label: "Permit Required?", opt_no: "No", opt_yes_pending: "Yes — pending",
+    f_topic_label: "Topic / Hook", f_topic_ph: "Short mystery/hook summary",
+    f_script_label: "Script Ready?", f_filmed_label: "Filmed?", f_audio_label: "Audio Recorded", f_edited_label: "Edited", f_published_label: "Published",
+    f_scriptlink_label: "Script Drive Link", f_drivefolder_label: "Drive Folder Link", f_notes_label: "Notes", f_notes_ph: "Extra notes, script status, etc.",
+    btn_delete: "Delete", btn_cancel: "Cancel", btn_save: "Save",
+    pkg_title: "Publish Kit",
+    pkg_section_youtube: "YouTube (Long Video)", pkg_section_reels: "Reels / Shorts", pkg_section_seo: "SEO — Hashtags / Tags / Search Volume", pkg_section_captions: "Platform Captions",
+    p_ytitles_label: "Title Options (one per line)", p_ytthumb_label: "Thumbnail Image Prompt",
+    p_thumb_hint: "I can't generate the image myself (no direct link to Gemini) — paste this prompt into Flow.",
+    p_reelscount_label: "Number of Reels to Prepare", p_reelstitles_label: "Reels Short Titles (one per line)", p_reelsprompts_label: "Reels Thumbnail Prompts (one per line)",
+    p_hashtags_label: "5 High-Volume Hashtags", p_tags_label: "Tag List (YouTube — Long Video)", p_shortstags_label: "Tag List (YouTube Shorts — separate)", p_keywordnotes_label: "vidIQ Search Volume Notes",
+    p_shorts_label: "YouTube Shorts", p_ytdesc_label: "YouTube (Long Video Description)",
+    name_empty_alert: "Location name cannot be empty.",
+    delete_confirm: "Are you sure you want to delete this file?",
+    save_error: "Save failed — possible connection issue. Retrying...",
+    yes_char: "Y", no_char: "N", planned_date_title: "Planned filming date",
+    read_more: "Read more", btn_close: "Close",
+    btn_cancel_shoot: "🚫 Cancel", btn_uncancel: "↩ Uncancel", cancelled_badge: "CANCELLED", stat_cancelled: "Cancelled"
+  },
+  ru: {
+    eyebrow: "Полевое досье · Внутренняя система учёта",
+    title: "Система учёта локаций",
+    stat_total: "Всего файлов", stat_script: "Сценарий готов", stat_filmed: "Отснято", stat_published: "Опубликовано", stat_permission: "Ждёт разрешения",
+    search_ph: "Поиск локации, района или темы...",
+    fmt_all: "Все форматы", fmt_saha: "На месте", fmt_masabasi: "Кабинетный", fmt_hibrit: "Гибрид",
+    district_all: "Все районы", city_all: "Все города",
+    status_all: "Все статусы", status_pending: "В процессе", status_done: "Завершено (в эфире)", status_unfilmed: "Ещё не отснято", status_permission: "Ждёт разрешения", status_needsscript: "🎬 Нужен сценарий", status_cancelled: "Отменённые",
+    needs_script_badge: "🎬 НУЖЕН СЦЕНАРИЙ",
+    pkg_section_shotlist: "🎥 Что снять на месте", p_shotlist_ph: "Начальный план, финальный план, закадровые вставки, детали для акцента и т.д. — списком",
+    f_fieldnotes_label: "Заметки со съёмки (что я рассказал)", f_fieldnotes_ph: "Краткое содержание того, что ты сказал на камеру — сценарий будет основан на этом",
+    f_cautions_label: "⚠️ Важные моменты при съёмке", f_cautions_ph: "Напр.: башни закрыты на реставрацию, цепь не на месте (в Морском музее), нужен пропуск от охраны, лучший свет после обеда и т.д.",
+    sort_default: "Сортировка: по умолчанию", sort_date: "Сортировка: по дате съёмки",
+    view_card: "🗂 Вид карточек", view_row: "☰ Вид списка",
+    add_new: "+ Новая локация",
+    col_location: "Локация", col_detail: "Детали", col_scr: "Скр", col_cek: "Съём", col_ses: "Звук", col_krg: "Монт", col_yay: "Пуб", col_izin: "Разр", col_actions: "Действия",
+    empty_state: "По этим фильтрам файлов не найдено.",
+    file_no: "ДОСЬЕ №",
+    closed_badge: "ЗАКРЫТО",
+    permission_pending: "⚠ Ждёт разрешения",
+    script_open: "📄 Открыть сценарий в Drive →", script_short: "📄 Сценарий",
+    maps_open: "🗺️ Открыть на карте →", f_mapslink_label: "Ссылка Google Maps (опционально)",
+    drive_folder_open: "📁 Открыть папку Drive →",
+    btn_package: "📦 Пакет публикации", btn_edit: "Изменить",
+    stamp_script: "Сценарий", stamp_filmed: "Съёмка", stamp_audio: "Звук", stamp_edited: "Монтаж", stamp_published: "Публикация", stamp_permission: "Разрешение",
+    modal_new: "Новое досье локации", modal_edit: "Редактировать досье",
+    f_name_label: "Название места", f_name_ph: "напр. мечеть Гюль",
+    f_district_label: "Район", f_city_label: "Город", f_address_label: "Адрес / заметка о районе",
+    f_format_label: "Формат", f_permission_label: "Нужно разрешение?", opt_no: "Нет", opt_yes_pending: "Да — в ожидании",
+    f_topic_label: "Тема / завязка", f_topic_ph: "Краткое описание загадки/завязки",
+    f_script_label: "Сценарий готов?", f_filmed_label: "Отснято?", f_audio_label: "Звук записан", f_edited_label: "Монтаж", f_published_label: "Опубликовано",
+    f_scriptlink_label: "Ссылка на сценарий в Drive", f_drivefolder_label: "Ссылка на папку Drive", f_notes_label: "Заметки", f_notes_ph: "Доп. заметки, статус сценария и т.д.",
+    btn_delete: "Удалить", btn_cancel: "Отмена", btn_save: "Сохранить",
+    pkg_title: "Пакет публикации",
+    pkg_section_youtube: "YouTube (полное видео)", pkg_section_reels: "Reels / Shorts", pkg_section_seo: "SEO — хэштеги / теги / частотность", pkg_section_captions: "Подписи по платформам",
+    p_ytitles_label: "Варианты заголовка (по одному на строку)", p_ytthumb_label: "Промпт для превью",
+    p_thumb_hint: "Я не могу сгенерировать изображение сам (нет прямой связи с Gemini) — вставь этот промпт в Flow.",
+    p_reelscount_label: "Сколько Reels подготовить", p_reelstitles_label: "Короткие заголовки Reels (по одному на строку)", p_reelsprompts_label: "Промпты превью для Reels (по одному на строку)",
+    p_hashtags_label: "5 высокочастотных хэштегов", p_tags_label: "Список тегов (YouTube — Длинное видео)", p_shortstags_label: "Список тегов (YouTube Shorts — отдельно)", p_keywordnotes_label: "Заметки по частотности (vidIQ)",
+    p_shorts_label: "YouTube Shorts", p_ytdesc_label: "YouTube (описание полного видео)",
+    name_empty_alert: "Название места не может быть пустым.",
+    delete_confirm: "Вы уверены, что хотите удалить это досье?",
+    save_error: "Сохранение не удалось — возможна проблема соединения. Повтор...",
+    yes_char: "Д", no_char: "Н", planned_date_title: "Планируемая дата съёмки",
+    read_more: "Читать полностью", btn_close: "Закрыть",
+    btn_cancel_shoot: "🚫 Отменить", btn_uncancel: "↩ Вернуть", cancelled_badge: "ОТМЕНЕНО", stat_cancelled: "Отменено"
+  }
+};
+
+function t(key){
+  return (LANG[currentLang] && LANG[currentLang][key]) || LANG.tr[key] || key;
+}
+
+function applyStaticI18n(){
+  document.querySelectorAll('[data-i18n]').forEach(el=>{
+    el.textContent = t(el.dataset.i18n);
+  });
+  document.querySelectorAll('[data-i18n-placeholder]').forEach(el=>{
+    el.placeholder = t(el.dataset.i18nPlaceholder);
+  });
+  document.documentElement.lang = currentLang;
+}
+
+async function setLanguage(lang){
+  currentLang = lang;
+  document.getElementById('langSelect').value = lang;
+  applyStaticI18n();
+  render();
+  try{ localStorage.setItem(LANG_KEY, lang); }catch(e){ /* non-critical */ }
+}
+
+
+const seedData = [
+  {name:"Yedikule Zindanları", district:"Fatih", city:"İstanbul", address:"Yedikule Hisarı", mapsLink:"https://www.google.com/maps/search/?api=1&query=Yedikule%20Zindanlar%C4%B1%2C%20Yedikule%20Hisar%C4%B1%2C%20Fatih%2C%20%C4%B0stanbul", format:"Saha", topic:"Yılanlı kuyu, Mısır mumyası efsaneleri, örülmüş altın kapı", filmed:"E", audio:"E", edited:"E", published:"E", permission:"H", notes:"Tamamlandı, Reels serisi yayınlandı."},
+  {name:"İmrahor İlyas Bey Camii (Stüdyos Manastırı)", district:"Fatih", city:"İstanbul", address:"Samatya/Yedikule, İmam Aşir Sokak", mapsLink:"https://www.google.com/maps/search/?api=1&query=%C4%B0mrahor%20%C4%B0lyas%20Bey%20Camii%20%28St%C3%BCdyos%20Manast%C4%B1r%C4%B1%29%2C%20Samatya/Yedikule%2C%20%C4%B0mam%20A%C5%9Fir%20Sokak%2C%20Fatih%2C%20%C4%B0stanbul", format:"Saha", topic:"İstanbul'un ayakta kalan en eski dini yapısı, 5. yüzyılda inşa edilmiş, Ayasofya'dan ~100 yıl önce. Bizans imparatorlarının şehre tören alayıyla giriş/çıkış yaptığı Altın Kapı'dan sonra uğradığı önemli durak noktalarından biriydi. 1204 Latin İşgali'nde büyük zarar gördü — kanalın işlediği Latin İşgali temasıyla doğrudan bağlantılı.", filmed:"H", audio:"H", edited:"H", published:"H", permission:"E", notes:"⚠️ 2023'ten beri aktif restorasyonda (geçici çelik/uzay kafes çatı sistemi kuruldu) — gitmeden önce güncel ziyaret/erişim durumu teyit edilmeli, şu an tamamen kapalı olabilir. YouTube yorumundan gelen öneri (22 Ağustos), ikinci bir yorumla Altın Kapı/tören güzergahı detayı doğrulandı.", script:"H", scriptLink:"", driveFolderLink:"", prepRequested:"H"},
+  {name:"Yerebatan Sarnıcı", district:"Fatih", city:"İstanbul", address:"Sultanahmet", mapsLink:"https://www.google.com/maps/search/?api=1&query=Yerebatan%20Sarn%C4%B1c%C4%B1%2C%20Sultanahmet%2C%20Fatih%2C%20%C4%B0stanbul", format:"Saha", topic:"Medusa başları, unutulmuş Bizans sarnıcı", filmed:"E", audio:"E", edited:"E", published:"E", permission:"H", notes:""},
+  {name:"Kariye (Chora)", district:"Fatih", city:"İstanbul", address:"Edirnekapı", mapsLink:"https://www.google.com/maps/search/?api=1&query=Kariye%20%28Chora%29%2C%20Edirnekap%C4%B1%2C%20Fatih%2C%20%C4%B0stanbul", format:"Saha", topic:"Bizans mozaikleri, kara kanatlı melek", filmed:"E", audio:"E", edited:"E", published:"E", permission:"H", notes:""},
+  {name:"Süleymaniye Camii", district:"Fatih", city:"İstanbul", address:"Süleymaniye", mapsLink:"https://www.google.com/maps/search/?api=1&query=S%C3%BCleymaniye%20Camii%2C%20Fatih%2C%20%C4%B0stanbul", format:"Saha", topic:"Mimar Sinan gizemleri, gizli tünel rivayeti", filmed:"E", audio:"E", edited:"E", published:"E", permission:"H", notes:""},
+  {name:"Yoros Kalesi", district:"Beykoz", city:"İstanbul", address:"Anadolu Kavağı", mapsLink:"https://www.google.com/maps/search/?api=1&query=Yoros%20Kalesi%2C%20Anadolu%20Kava%C4%9F%C4%B1%2C%20Beykoz%2C%20%C4%B0stanbul", format:"Saha", topic:"Argonotlar efsanesi, boğaz gözcü kalesi", filmed:"E", audio:"E", edited:"E", published:"E", permission:"H", notes:""},
+  {name:"Mihrimah Sultan Camii", district:"Üsküdar/Fatih", city:"İstanbul", address:"Edirnekapı & Üsküdar", mapsLink:"https://www.google.com/maps/search/?api=1&query=Mihrimah%20Sultan%20Camii%2C%20Edirnekap%C4%B1%20%26%20%C3%9Csk%C3%BCdar%2C%20%C3%9Csk%C3%BCdar/Fatih%2C%20%C4%B0stanbul", format:"Saha", topic:"Ekinoks efsanesi (rivayet olarak işlendi)", filmed:"E", audio:"E", edited:"E", published:"E", permission:"H", notes:""},
+  {name:"Binbirdirek Sarnıcı", district:"Fatih", city:"İstanbul", address:"Sultanahmet", mapsLink:"https://www.google.com/maps/search/?api=1&query=Binbirdirek%20Sarn%C4%B1c%C4%B1%2C%20Sultanahmet%2C%20Fatih%2C%20%C4%B0stanbul", format:"Saha", topic:"Ters duran haç efsanesi (yalanlandı), 224 sütun", filmed:"E", audio:"E", edited:"E", published:"E", permission:"H", notes:""},
+  {name:"Şerefiye Sarnıcı (Theodosius Sarnıcı)", district:"Fatih", city:"İstanbul", address:"Piyer Loti Caddesi, Binbirdirek Mahallesi", mapsLink:"https://www.google.com/maps/search/?api=1&query=%C5%9Eerefiye%20Sarn%C4%B1c%C4%B1%20%28Theodosius%20Sarn%C4%B1c%C4%B1%29%2C%20Piyer%20Loti%20Caddesi%2C%20Binbirdirek%20Mahallesi%2C%20Fatih%2C%20%C4%B0stanbul", format:"Saha", topic:"Üç büyük sarnıcın en eskisi (II. Theodosius dönemi, 408-450 — Yerebatan'dan bile önce). Yıllarca üzerindeki belediye binasının altında tamamen unutulmuş, ancak 2010'da bina yıkımı sırasında yeniden keşfedilmiş. 45 yelken tonoz, 32 sütun, 360° projeksiyon gösterimi var.", filmed:"H", audio:"H", edited:"H", published:"H", permission:"H", notes:"YouTube yorumundan gelen öneri (23 Ağustos) — Yerebatan/Binbirdirek üçlemesini tamamlıyor, aynı bölgede (Sultanahmet).", script:"H", scriptLink:"", driveFolderLink:"", prepRequested:"H"},
+  {name:"Zeyrek Camii", district:"Fatih", city:"İstanbul", address:"Zeyrek", mapsLink:"https://www.google.com/maps/search/?api=1&query=Zeyrek%20Camii%2C%20Fatih%2C%20%C4%B0stanbul", format:"Saha", topic:"Üç kilisenin birleşimi, İmparatoriçe İrini mezar taşı", filmed:"E", audio:"E", edited:"E", published:"E", permission:"H", notes:"21 Ağustos yayınlandı.", script:"E", scriptLink:"https://docs.google.com/document/d/1_dwifNRnlj-Da12R7TSgfFiqVIm1pTs6ij1HkMUv7F4/edit", package:{
+    youtubeTitles:"",
+    youtubeThumbPrompt:"",
+    reelsCount:"4",
+    reelsTitles:"Reel1 (HOOK) — Ayasofya'dan Sonra En Büyük Bizans Yapısı\nReel2 — İmparatoriçenin Mezar Taşı\nReel3 — Gizli Gökyüzü\nReel4 — Kimse İnmedi",
+    reelsThumbPrompts:"",
+    hashtags:"#zeyrekcamii #tarihidedektif #bizanstarihi #rivayetdeğilkayıt #istanbultarihi",
+    tags:"zeyrek camii, pantokrator manastırı, bizans tarihi, tarihi dedektif, istanbul tarihi",
+    keywordNotes:"Bu lokasyon için ayrı vidIQ analizi henüz yapılmadı.",
+    captionShorts:"İstanbul'da, Ayasofya'dan sonra ayakta kalan en büyük Bizans yapısı burada duruyor — ama yanından geçen 10 kişiden 9'u adını bile bilmiyor. 12. yüzyılda İmparatoriçe İrini, kocası için 'Evrenin Hakimi' anlamına gelen Pantokrator'a ithaf edilen dev bir kompleks yaptırıyor: kilise, kütüphane ve inanılmaz organize bir hastane. Bizans'ın son yıllarında bu hastanenin başhekimliğine bir Türk hekim gelmiş — bir Hristiyan imparatorluk kurumunun en kritik görevinde. İçinde bir düzineden fazla imparator gömülüydü, bugün mezar odaları vakıf tarafından ziyarete kapalı. Latin İstilası'nda yağmalanan mezarlardan İmparatoriçe İrini'nin mezar taşı bugün Ayasofya'nın dış nartexinde sergileniyor. Fetihten sonra buraya İstanbul'un ilk medresesi kurulmuş, camiye bugünkü adını veren de o ilk müderris Molla Zeyrek Mehmet Efendi. Tam belgesel kanalımda. Rivayet değil, kayıt. #belgesel #tarih #zeyrekcamii #tarihidedektif #bizanstarihi #istanbul #fatih",
+    captionYouTube:"İstanbul'da, Ayasofya'dan sonra ayakta kalan en büyük Bizans yapısı burada duruyor. Yanından geçen 10 kişiden 9'u adını bile bilmiyor.\n\nİçinde bir düzineden fazla imparator gömülüydü — bugün mezarları açık, cesetler yok. Bizans'ın en kutsal hastanesinde başhekimlik görevine bir Türk hekim gelmiş. Taşların altında opus sectile bir taban gizli — bazı araştırmacılara göre zodyak sembolleri barındırıyor.\n\nÖnce kilise ve hastane, sonra İstanbul'un ilk medresesi, şimdi cami — aynı taşlar, üç farklı inanç.\n\nBu belgesel serimizde Fatih'in tarihini kanıtla anlatıyoruz.\n\nRivayet değil, kayıt.\n\n📍 Kaynaklar:\nİslam ve İhsan, Vikipedi, TDV İslâm Ansiklopedisi, Korku101, Gazete Duvar, The Byzantine Legacy, Cogito İstanbul, PallasWeb (Imperial Porphyry Tombs), Eileen Stephenson (The Pantokrator Monastery) — saha ziyaretinde doğrulanan bilgiler dahil edilmiştir.\n\n🔔 Abone ol, her hafta yeni bir gizem: youtube.com/@gerceginizleritv\n📸 Instagram: instagram.com/gerceginizleritv\n🎵 TikTok: @gerceginizleritv\n📱 Facebook: facebook.com/gerceginizleritv\n\n#belgesel #tarih #zeyrekcamii #tarihidedektif #bizanstarihi #istanbul #fatih",
+    captionInstagram:"İstanbul'da, Ayasofya'dan sonra ayakta kalan en büyük Bizans yapısı burada duruyor. Yanından geçen 10 kişiden 9'u adını bile bilmiyor. İçinde bir düzineden fazla imparator gömülüydü — önce kilise ve hastane, sonra medrese, şimdi cami — aynı taşlar, üç farklı inanç. Tam belgesel YouTube'da. Rivayet değil, kayıt. #belgesel #tarih #zeyrekcamii #tarihidedektif #bizanstarihi\n\n(Reel2-4 için tam metinler Drive dosya 15/16'da)",
+    captionFacebook:"İstanbul'da, Ayasofya'dan sonra ayakta kalan en büyük Bizans yapısı burada duruyor. Yanından geçen 10 kişiden 9'u adını bile bilmiyor. 🏛️\n\n🎬 TAM BELGESELİ İZLEMEK İÇİN: [YouTube video linki] — hemen tıkla, kaçırma.\n\nSayfamda Abonelikler açık. 🙏\n\n#belgesel #tarih"
+  }},
+  {name:"Çatladıkapı", district:"Fatih", city:"İstanbul", address:"Küçükayasofya Mahallesi, Kumkapı-Kadırga arası", mapsLink:"https://www.google.com/maps/search/?api=1&query=%C3%87atlad%C4%B1kap%C4%B1%2C%20K%C3%BC%C3%A7%C3%BCkayasofya%20Mahallesi%2C%20Kumkap%C4%B1-Kad%C4%B1rga%20aras%C4%B1%2C%20Fatih%2C%20%C4%B0stanbul", format:"Saha", topic:"Bizans'ta Leon (Aslan) Kapısı — Bukoleon Sarayı'nın liman kapısı. 1532 depreminde kemeri çatladı ama yıkılmadı. Sultan Abdülaziz demiryolu için yıktırdı, aslan heykelleri Arkeoloji Müzesi'ne taşındı. Hemen yanındaki Kontoskalion Limanı (Bizans donanma tersanesi) bugün otopark.", filmed:"H", audio:"H", edited:"H", published:"H", permission:"H", notes:"Araştırma 21 Ağustos'ta tamamlandı, script henüz yazılmadı.", script:"H", scriptLink:""},
+  {name:"Kız Kulesi", district:"Üsküdar", city:"İstanbul", address:"Salacak açıkları", mapsLink:"https://www.google.com/maps/search/?api=1&query=K%C4%B1z%20Kulesi%2C%20Salacak%20a%C3%A7%C4%B1klar%C4%B1%2C%20%C3%9Csk%C3%BCdar%2C%20%C4%B0stanbul", format:"Saha", topic:"Kader kaçamayan kız efsanesi", filmed:"H", audio:"H", edited:"H", published:"H", permission:"H", notes:"⚠️ Drive'da script dosyası bulunamadı — önceki 'script hazır' notu doğrulanamadı, teyit gerekiyor.", script:"H", scriptLink:""},
+  {name:"Pera Palas / Agatha Christie", district:"Beyoğlu", city:"İstanbul", address:"Oda 411", mapsLink:"https://www.google.com/maps/search/?api=1&query=Pera%20Palas%20/%20Agatha%20Christie%2C%20Oda%20411%2C%20Beyo%C4%9Flu%2C%20%C4%B0stanbul", format:"Masabaşı", topic:"1926'daki 11 günlük açıklanamayan kayboluş", filmed:"E", audio:"H", edited:"H", published:"H", permission:"E", notes:"Otel çekim izni reddetti (ücret talep etti) — masabaşı formata çevrildi. Script + teleprompter hazır.", script:"E", scriptLink:"https://docs.google.com/document/d/1urGh8EBo4yF7TX2t9nKGwlJyTGcVrKaSQh2w1c6qYPE/edit", package:{
+    youtubeTitles:"",
+    youtubeThumbPrompt:"",
+    reelsCount:"3",
+    reelsTitles:"Reel1 — Hook (15sn): 1926'da 11 gün kayboldu\nReel2 — 15.000 Kişilik Arama (15sn)\nReel3 — 1979 Anahtar Olayı (20sn)",
+    reelsThumbPrompts:"",
+    hashtags:"#agathachristie #perapalas #hercülepoirot #tarihidedektif #rivayetdeğilkayıt",
+    tags:"agatha christie, pera palas, hercule poirot, doğu ekspresinde cinayet, istanbul gizemleri, osmanlı tarihi",
+    keywordNotes:"vidIQ: 'hercule poirot' (65.8/100), 'midnight at the pera palace' (66.6/100), 'agatha christie' (63/100) — dört sorguda tutarlı, yüksek fırsatlı terimler. 'tarih'/'belgesel'/'istanbul' genel destek terimleri (145-173K hacim).",
+    captionShorts:"1926'da dünyaca ünlü yazar Agatha Christie, kocasıyla yaşadığı ciddi bir gerginliğin ardından evinden ayrıldı ve ortadan kayboldu. Arabası ertesi sabah farları açık, içinde bavulu ve kürk mantosuyla bir tebeşir ocağının kenarında bulundu — kendisi yoktu. On beş bine yakın kişi, uçaklar ve köpekler seferber edildi; Sherlock Holmes'un yazarı Arthur Conan Doyle bile bir medyuma başvurdu. On bir gün sonra Christie, Harrogate'teki bir otelde bulundu — ama kendi adıyla değil, kocasının sevgilisinin soyadıyla kayıt yaptırmıştı. O günlerde ne yaşadığını hiçbir zaman anlatmadı. 2023'te tarihçi Lucy Worsley bunun travmatik bir 'fugue' durumu olabileceğini öne sürdü, ama bu kesin bir kayıt değil, sadece teori. Asıl gizem İstanbul'da başlıyor: Christie'nin sık kaldığı Pera Palas'ta, 1979'da bir medyumun iddiası üzerine oda 411'in döşemesi canlı yayında kaldırıldı ve gerçekten paslı bir anahtar bulundu — bu bir efsane değil, belgelenmiş bir olay. Tam hikaye kanalımda. Rivayet değil, kayıt. #belgesel #tarih #agathachristie #perapalas #tarihidedektif",
+    captionYouTube:"1926'da dünyaca ünlü yazar Agatha Christie, on bir gün boyunca ortadan kayboldu. Arabası ertesi sabah farları açık halde bulundu, kendisi yoktu. On beş bine yakın kişi, uçaklar ve köpeklerle seferber edilen dev bir arama başladı — hatta Sherlock Holmes'un yazarı Arthur Conan Doyle bile bir medyuma başvurdu.\n\nOn bir gün sonra Christie, Harrogate'teki bir otelde, kendi adıyla değil kocasının sevgilisinin soyadıyla kayıtlı olarak bulundu. O günlerde ne yaşadığını hayatı boyunca hiçbir zaman anlatmadı; otobiyografisinde bile bu konudan neredeyse hiç bahsetmiyor.\n\n2023'te tarihçi Lucy Worsley bunun travmatik bir kişilik ayrışması ('fugue') olabileceğini öne sürdü — ama bunu net bir kayıt değil, bir teori olarak belirtiyoruz.\n\nPeki bunun İstanbul'la ne ilgisi var? Christie, 1920'lerin sonu ile 1930'ların başı arasında birden fazla kez Pera Palas'ta kalmış. 1979'da bir medyumun, oda 411'in döşemesi altında bir anahtar olduğu iddiası üzerine, Amerikan basını ve TV kameraları önünde döşeme gerçekten kaldırıldı — ve gerçekten paslı, 8 santimetre uzunluğunda bir anahtar bulundu. Bu kısmı özellikle vurguluyoruz: anahtarın bulunması bir efsane değil, canlı yayında belgelenmiş gerçek bir olay. Anahtar bugüne kadar hiçbir şeyi açmadı.\n\nRivayet değil, kayıt.\n\n📍 Kaynaklar:\n[Bu bölüm için kullanılan kaynak listesi netleşince eklenecek.]\n\n🔔 Abone ol, her hafta yeni bir gizem: youtube.com/@gerceginizleritv\n📸 Instagram: instagram.com/gerceginizleritv\n🎵 TikTok: @gerceginizleritv\n📱 Facebook: facebook.com/gerceginizleritv\n\n#belgesel #tarih #istanbul #agathachristie #hercülepoirot #perapalas #tarihidedektif #gizemlitarih #istanbultarihi #rivayetdeğilkayıt",
+    captionInstagram:"1926'da dünyaca ünlü bir yazar 11 gün boyunca ortadan kayboldu. 15.000 kişilik bir arama başlatıldı — uçaklar, köpekler, hatta Sherlock Holmes'un yazarı Arthur Conan Doyle bile bir medyuma başvurdu.\n\nBulunduğunda gerçek adıyla değil, kocasının sevgilisinin soyadıyla kayıt yaptırmıştı. Ve o 11 günde ne yaşadığını hiçbir zaman anlatmadı.\n\nYıllar sonra, İstanbul'da, Pera Palas'ta bir otel odasının döşemesi canlı yayında kaldırıldı — ve gerçekten paslı bir anahtar bulundu.\n\nO anahtar hâlâ hiçbir şeyi açmadı.\n\nRivayet değil, kayıt.\n\n#belgesel #tarih #agathachristie #perapalas #tarihidedektif",
+    captionFacebook:"1926'da dünyaca ünlü bir yazar 11 gün boyunca ortadan kayboldu. 15.000 kişilik bir arama başlatıldı, ama bulunduğunda o günlerde ne yaşadığını hiçbir zaman anlatmadı.\n\nYıllar sonra, İstanbul'da, Pera Palas'ta bir otel odasının döşemesi canlı yayında kaldırıldı — ve gerçekten paslı bir anahtar bulundu. O anahtar hâlâ hiçbir şeyi açmadı.\n\n🎬 TAM BELGESELİ İZLEMEK İÇİN: [YouTube video linki]\n\nSayfamda Abonelikler açık. 🙏\n\n#belgesel #tarih"
+  }},
+  {name:"Rumeli Hisarı", district:"Sarıyer", city:"İstanbul", address:"Rumeli Hisarı", mapsLink:"https://www.google.com/maps/search/?api=1&query=Rumeli%20Hisar%C4%B1%2C%20Sar%C4%B1yer%2C%20%C4%B0stanbul", format:"Saha", topic:"Fatih'in 4 ayda inşa ettirdiği kale, öküz derisi rivayeti, üç paşa görev dağılımı, Boğazkesen adı", filmed:"E", audio:"H", edited:"H", published:"H", permission:"H", notes:"Script v2 + tam yayın paketi 28 Ağustos yayını için hazırlandı.", script:"E", scriptLink:"https://docs.google.com/document/d/1mbrjTtthCzWS7eElWNOnSES09LmddaTcrdzkEY4pSoU/edit", driveFolderLink:"https://drive.google.com/drive/folders/1ix2Ej9LROOnREOw8fn31NPiv11p9iWUn", prepRequested:"H", package:{
+    shotList:"Üç kule (Saruca Paşa, Zağanos Paşa, Halil Paşa kuleleri) — geniş açı ve taş işçiliği yakın plan\nManzara noktası (burçlara restorasyon nedeniyle çıkılamadı — alternatif yükseklik noktasından Boğaz görüntüsü)\nAnadolu Hisarı karşılaştırma çekimi (karşı yakadan)\nBahçe — top ve gülle sergisi yakın çekim\nKule taşındaki 'M harfi' iddia edilen işaret\nGiriş kapısı ve genel dış cephe, gün batımı ışığı",
+    youtubeTitles:"Fatih Sultan Mehmed'in 4 Ayda İnşa Ettirdiği Kale: Rumeli Hisarı'nın Sırrı\nBir Öküz Derisi ve Bir İmparatorluk: Rumeli Hisarı Nasıl Yapıldı?\nRumeli Hisarı Yapılışı: 4 Ayda İmkansızı Başaran Sır",
+    youtubeThumbPrompt:"YouTube thumbnail, 16:9, 1280x720. Close-medium composition — a man in full motorcycle riding gear in the lower-right third, intense curious/shocked expression, pointing toward the fortress. Reference photo for face. Background: Rumeli Hisarı towers, golden-hour light, one tower stone highlighted with a soft glowing red circle/arrow (the 'M harfi' mystery mark). High contrast, punchy saturated colors, deep black shadows, sharp focus, empty upper-left space for bold text overlay, no text baked in.",
+    reelsCount:"4",
+    reelsTitles:"Reel1 (HOOK) — Öküz Derisi Efsanesi (0:00-0:25)\nReel2 — 4 Ayda İnşa + Boğazkesen Adı\nReel3 — Kule Detay + Sultan Bizzat Tasarladı\nReel4 — Toplar/Gülleler + Zincir Deniz Müzesi'nde",
+    reelsThumbPrompts:"",
+    hashtags:"#rumelihisarı #fatihsultanmehmet #tarihidedektif #boğazkesen #istanbultarihi",
+    tags:"rumeli hisarı, rumeli hisarı yapılışı, fatih sultan mehmet, boğazkesen, öküz derisi rivayeti, istanbul fethi, tarihi dedektif, osmanlı tarihi, istanbul tarihi",
+    keywordNotes:"vidIQ (23 Ağustos): 'rumeli hisarı yapılışı' yüksek fırsat skoru — 67.3/100 (hacim 54.8, rekabet 13.9, düşük). 'fatih sultan mehmet' TR'de çok yüksek hacim — 39.9K.",
+    captionShorts:"Bir sultan bir imparatordan toprak istedi, imparator alaycı bir şekilde \"sana bir öküz derisi kadar yer veririm\" dedi — ve bu hikaye bugün hâlâ ayakta duran Rumeli Hisarı'nın sınırlarını çiziyor. 1452'de, 20 yaşındaki II. Mehmed, İstanbul'u fethetmeden önce Karadeniz'den gelecek yardımı kesmek için bu kaleyi sadece 4 ayda inşa ettirdi — üç ayrı paşaya bölünmüş bir görev dağılımı, İznik'ten Çubuklu'ya uzanan devasa bir malzeme seferberliğiyle. Kaleye verilen isim bile tesadüf değildi: Boğazkesen — çünkü tamamlandıktan sonra hiçbir gemi Sultan'ın izni olmadan geçemedi. Videoda kulelerdeki gizemli \"M harfi\" iddiasını da araştırıyoruz, ve o öküz derisi rivayetinin gerçekten belgeli olup olmadığını sorguluyoruz. Tam belgesel kanalımda, link profilde. Rivayet değil, kayıt. #belgesel #tarih #rumelihisarı #fatihsultanmehmet #tarihidedektif #istanbul #osmanlıtarihi",
+    captionYouTube:"Bir sultan, bir imparatordan toprak istiyor. İmparator gülüyor: \"Sana sadece bir öküz derisi kadar yer veririm.\" Sultan kabul ediyor — ve bu hikaye, bugün hâlâ ayakta duran bir kalenin sınırlarını çiziyor.\n\n1452, II. Mehmed, 20 yaşında. İstanbul'u fethetmeden önce Karadeniz yardımını kesmesi gerekiyor. Rumeli Hisarı sadece 4 ayda inşa ediliyor — üç paşa (Saruca, Zağanos, Halil Paşa) arasında bölünmüş bir seferberlikle, İznik'ten Çubuklu'ya uzanan bir malzeme lojistiğiyle.\n\nBu videoda: öküz derisi rivayetinin gerçekliğini sorguluyoruz, kulelerdeki gizemli \"M harfi\" iddiasını araştırıyoruz, ve kalenin bugün neden kısmen kapalı olduğunu (restorasyon) gösteriyoruz.\n\nRivayet değil, kayıt.\n\n📍 Kaynaklar: Fikriyat Gazetesi, Vikipedi, Gezimanya, Hisarlar Müzesi (muze.gov.tr)\n\n🔔 Abone ol: youtube.com/@gerceginizleritv\n📸 Instagram: instagram.com/gerceginizleritv\n🎵 TikTok: @gerceginizleritv\n📱 Facebook: facebook.com/gerceginizleritv\n\n#belgesel #tarih #rumelihisarı #fatihsultanmehmet #tarihidedektif #istanbul #osmanlıtarihi",
+    captionInstagram:"Bir sultan, bir imparatordan toprak istiyor. İmparator gülerek \"sana bir öküz derisi kadar yer veririm\" diyor. Sultan kabul ediyor — ve bu hikaye bugün hâlâ ayakta duran bir kalenin sınırlarını çiziyor. 🏰\n\nRumeli Hisarı, 1452'de sadece 4 ayda inşa edildi — üç paşa arasında bölünmüş bir seferberlik, devasa bir malzeme lojistiği ve kulelerde gizemli bir \"M harfi\" iddiasıyla.\n\nPeki öküz derisi hikayesi gerçek bir diplomatik oyun mu, yoksa sonradan süslenmiş bir efsane mi? Tam belgesel YouTube'da.\n\nRivayet değil, kayıt.\n\n#belgesel #tarih #rumelihisarı #fatihsultanmehmet #tarihidedektif",
+    captionFacebook:"Bir sultan, bir imparatordan toprak istiyor. İmparator gülerek \"sana bir öküz derisi kadar yer veririm\" diyor. Sultan kabul ediyor — ve bu hikaye bugün hâlâ ayakta duran bir kalenin sınırlarını çiziyor. 🏰\n\nRumeli Hisarı, Fatih Sultan Mehmed'in emriyle sadece 4 ayda inşa edildi.\n\nTam belgesel yukarıda 👆 Rivayet değil, kayıt.\n\nSayfamda Abonelikler açık. 🙏\n\n#belgesel #tarih",
+    fbTags:"rumeli hisarı, fatih sultan mehmet, boğazkesen, istanbul fethi, osmanlı tarihi, istanbul tarihi, tarihi belgesel, bizans tarihi, istanbul boğazı, tarihi dedektif, motovlog, osmanlı imparatorluğu, 1453 istanbul, boğaziçi tarihi",
+    fbCoverPrompt:"YouTube-style thumbnail composition but calmer and more dignified — 16:9 landscape. A man in full motorcycle riding gear standing at the edge of Rumeli Hisarı fortress at golden hour, looking thoughtfully toward the towers with a curious, investigative expression (NOT shocked/mouth-open — composed, intrigued). Reference photo for face. Background: fortress towers and the Bosphorus in dramatic warm sunset light, cinematic wide shot, deep shadows with rich amber highlights, atmospheric and painterly. He's positioned in the right third of frame. Generous empty space in the upper-left sky area for a subtitle text overlay. No text baked in. Elegant, heritage-documentary tone."
+  }},
+  {name:"İstanbul Arkeoloji Müzeleri + Çinili Köşk", district:"Fatih", city:"İstanbul", address:"Gülhane", mapsLink:"https://www.google.com/maps/search/?api=1&query=%C4%B0stanbul%20Arkeoloji%20M%C3%BCzeleri%20%2B%20%C3%87inili%20K%C3%B6%C5%9Fk%2C%20G%C3%BClhane%2C%20Fatih%2C%20%C4%B0stanbul", format:"Saha", topic:"İskender Lahdi, dünyanın en eski aşk şiiri, İştar Kapısı", filmed:"H", audio:"H", edited:"H", published:"H", permission:"H", notes:"Script v2 (gelişme kısa, saha genişletilmiş standardına uygun) 23 Ağustos'ta güncellendi.", script:"E", scriptLink:"https://docs.google.com/document/d/1hL4RWZ5uilIHygiM_QejTh29YKgmUMYtcCqnvwKpvgE/edit", driveFolderLink:"https://drive.google.com/drive/folders/1QklqW4_GUbBYnL16348cCJ95t0ZK8O1t", prepRequested:"H", package:{
+    shotList:"İskender Lahdi (ana salon, en ünlü eser) — yakın plan\nAğlayan Kadınlar Lahdi — kederli kadın figürleri, detay çekim şart\nTabnit Lahdi (mumyalı lahit)\nGirişte devasa Bes heykeli (~4,5-5 metre)\nKadeş Antlaşması Tableti\nDünyanın En Eski Aşk Şiiri Tableti (İstanbul #2461)\nİştar Kapısı'ndan kalan özgün parçalar\nAkad Kralı Naramsin Steli\nTablet Arşivi genel görüntüsü (75.000 belge, geniş açı)\nÇinili Köşk dış cephe (1472 çini/seramik örnekleri)",
+    youtubeTitles:"70 Yıl Çekmecede Unutulan Dünyanın En Eski Aşk Şiiri\nİstanbul Arkeoloji Müzeleri'nin 4 Yıllık Sırrı\nİskender'e Ait mi Değil mi? Bir Lahdin Gizemi",
+    youtubeThumbPrompt:"İskender Lahdi'nin dramatik yakın çekimi, altın/amber ışıklandırma, arka planda çivi yazılı tablet siluetleri, gizemli müze atmosferi, marka renkleri (ink black, antique gold #C8A24A)",
+    reelsCount:"4",
+    reelsTitles:"Reel1 (HOOK) — 70 Yıl Çekmecede Unutulan Aşk Şiiri\nReel2 — İskender Lahdi Gerçekten İskender'e mi Ait?\nReel3 — İştar Kapısı'nın Almanya'ya Giden Yarısı\nReel4 — Girişte Karşılayan Dev Bes Heykeli",
+    reelsThumbPrompts:"",
+    hashtags:"#arkeolojimüzesi #tarihidedektif #bizanstarihi #istanbultarihi #rivayetdeğilkayıt",
+    tags:"istanbul arkeoloji müzesi, iskender lahdi, çinili köşk, en eski aşk şiiri, iştar kapısı, tarihi dedektif, osman hamdi bey",
+    keywordNotes:"Bu lokasyon için ayrı vidIQ analizi henüz yapılmadı.",
+    captionShorts:"Bir kil tablet, kazıldıktan sonra 70 yıl boyunca bir müze çekmecesinde unutuldu. Çözüldüğünde ortaya dünyanın bilinen en eski aşk şiiri çıktı. İstanbul Arkeoloji Müzeleri'nin 4 yıllık restorasyondan yeni çıkan kanadında, bu ve daha fazlası var. Tam belgesel kanalımda. #belgesel #tarih #arkeolojimüzesi #tarihidedektif #istanbul",
+    captionYouTube:"Bir kil tablet, kazıldıktan sonra yetmiş yıl boyunca bir müze çekmecesinde unutuldu. Kimse onu okuyamadı, kimse ne olduğunu bilmiyordu. Sonunda bir Amerikalı ve bir Türk bilim insanı birlikte deşifre etti — ortaya dünyanın bilinen en eski aşk şiiri çıktı.\n\n1891'de Osman Hamdi Bey tarafından kurulan İstanbul Arkeoloji Müzeleri'nin bir kanadı — Eski Şark Eserleri Müzesi — dört yıllık restorasyondan sadece bir hafta önce yeniden açıldı.\n\nMüzenin en ünlü eseri İskender Lahdi. Ama burada ilk gizem başlıyor: tarihçilerin çoğu bu lahdin aslında Büyük İskender'e değil, muhtemelen bir Sidon kralına ait olduğunu düşünüyor.\n\nBir başka gizem: İştar Kapısı'nın büyük kısmı, yüzyıl önce yapılan kazılarda Almanya'ya götürülüp bugün Berlin'de sergileniyor.\n\nRivayet değil, kayıt.\n\n📍 Kaynaklar: Saha ziyaretinde doğrulanan bilgiler ve müze bilgilendirme panoları esas alınmıştır.\n\n🔔 Abone ol: youtube.com/@gerceginizleritv\n📸 Instagram: instagram.com/gerceginizleritv\n🎵 TikTok: @gerceginizleritv\n📱 Facebook: facebook.com/gerceginizleritv\n\n#belgesel #tarih #arkeolojimüzesi #tarihidedektif #istanbul",
+    captionInstagram:"Bir kil tablet, kazıldıktan sonra 70 yıl boyunca bir müze çekmecesinde unutuldu. Kimse ne olduğunu bilmiyordu. Çözüldüğünde ortaya dünyanın bilinen en eski aşk şiiri çıktı. 📜\n\nİstanbul Arkeoloji Müzeleri'nin bir kanadı, 4 yıllık restorasyondan sadece bir hafta önce yeniden açıldı. İçeride İskender Lahdi de var — ama tarihçilerin çoğu bunun gerçekten İskender'e ait olmadığını düşünüyor.\n\nRivayet değil, kayıt.\n\n#belgesel #tarih #arkeolojimüzesi #tarihidedektif #iskenderlahdi",
+    captionFacebook:"Bir kil tablet, kazıldıktan sonra 70 yıl boyunca bir müze çekmecesinde unutuldu. Çözüldüğünde ortaya dünyanın bilinen en eski aşk şiiri çıktı. 📜\n\n🎬 TAM BELGESELİ İZLEMEK İÇİN: [YouTube video linki]\n\nSayfamda Abonelikler açık. 🙏\n\n#belgesel #tarih"
+  }},
+  {name:"Nuruosmaniye Camii", district:"Fatih", city:"İstanbul", address:"Kapalıçarşı girişi", mapsLink:"https://www.google.com/maps/search/?api=1&query=Nuruosmaniye%20Camii%2C%20Kapal%C4%B1%C3%A7ar%C5%9F%C4%B1%20giri%C5%9Fi%2C%20Fatih%2C%20%C4%B0stanbul", format:"Saha", topic:"İki padişah için hazırlanan boş türbe, gayrimüslim mimar Simeon, 270 yıldır hiç kullanılmamış mahzen, ilk Osmanlı Barok camisi", filmed:"H", audio:"H", edited:"H", published:"H", permission:"H", notes:"Script v1 (tam, ~1.500 kelime) + kurgu reçetesi + teleprompter 22 Ağustos'ta hazırlandı.", script:"E", scriptLink:"https://docs.google.com/document/d/1pjCwmGqll4dnq0XywIMWus8zBB4pGtyOmWMKDBXo1-o/edit", driveFolderLink:"https://drive.google.com/drive/folders/1cj0dCmg2LvXXFiKFfQKTQ7wGKvcBv7oc", prepRequested:"H", package:{
+    shotList:"Yarım daire (oval/poligonal) avlu — geniş açı, en ayırt edici özellik\nKare planlı harim (iç mekân) — 25,5m tek kubbe, dört büyük kemer\nKütüphane binası — dış cephe\nTürbe — Şehsuvar Sultan ve şehzade sandukaları, boş kalan asıl mezar yerine vurgu\nMahzen/alt kat girişi — 270 yıldır hiç kullanılmamış alanın dış görüntüsü\nBarok süsleme detayları — kemerler, oymalar, renkli cam pencereler\nKapalıçarşı'ya bitişik konum — giriş kapısından geçiş çekimi\nSebil/çeşme yapısı (dış avlu)",
+    youtubeTitles:"İki Padişah Kendine Türbe Yaptırdı Ama İkisi de Yatmıyor\nNuruosmaniye'nin Altındaki 270 Yıllık Sır\nBir Rum Kalfanın İnşa Ettiği İmparatorluk Camisi",
+    youtubeThumbPrompt:"Nuruosmaniye Camii'nin yarım daire avlusu, dramatik altın ışıkla aydınlatılmış, ön planda boş bir mermer sanduka/türbe silueti, gizemli/sinematik atmosfer, marka renkleri (ink black, antique gold #C8A24A)",
+    reelsCount:"4",
+    reelsTitles:"Reel1 (HOOK) — İki Padişah, Boş İki Türbe (0:00-0:25)\nReel2 — Boş Türbe Gizemi (3:50-5:10)\nReel3 — 270 Yıldır Kullanılmayan Mahzen (6:20-7:00)\nReel4 — İstanbul'un Tek Barok Camisi (5:10-6:00)",
+    reelsThumbPrompts:"",
+    hashtags:"#nuruosmaniyecamii #tarihidedektif #osmanlıtarihi #istanbultarihi #rivayetdeğilkayıt",
+    tags:"nuruosmaniye camii, osmanlı barok mimari, kapalıçarşı, III. Osman, I. Mahmud, simeon kalfa, tarihi dedektif",
+    keywordNotes:"Bu lokasyon için ayrı vidIQ analizi henüz yapılmadı.",
+    captionShorts:"İki padişah kendine türbe yaptırdı ama ikisi de içinde yatmıyor. Nuruosmaniye Camii'nin altında ise 270 yıldır hiç kullanılmamış gizemli bir mahzen var. Tam belgesel kanalımda. #belgesel #tarih #nuruosmaniyecamii #tarihidedektif #istanbul",
+    captionYouTube:"İki padişah, kendine özel bir türbe yaptırdı. Ama ikisi de o türbede yatmıyor.\n\n1749'da I. Mahmud, Kapalıçarşı'nın girişinde büyük bir külliye yaptırmaya başladı. Ömrü tamamlanmasına yetmedi — kardeşi III. Osman, camiyi 1755'te bitirdi ve adını kendine mal etti: Nur-u Osmani, \"Osmanlı'nın Nuru.\"\n\nİnşaatı günlük olarak yöneten kalfa bir Rum: Simeon — bu yüzden Nuruosmaniye, yapım süreci en iyi belgelenmiş Osmanlı yapılarından biri.\n\nKülliye içinde kendileri için hazırlanan türbeye ise ikisi de hiç girmedi. Ve altında, 270 yıldır asıl amacına uygun hiç kullanılmamış gizemli bir mahzen var.\n\nRivayet değil, kayıt.\n\n📍 Kaynaklar:\nTDV İslâm Ansiklopedisi, Vikipedi, Özhan Öztürk Makaleleri, İslam Düşünce Atlası (Ahmed Efendi risalesi), Anadolu Ajansı (2023), Türk Diyanet Vakıf-Sen\n\n🔔 Abone ol: youtube.com/@gerceginizleritv\n📸 Instagram: instagram.com/gerceginizleritv\n🎵 TikTok: @gerceginizleritv\n📱 Facebook: facebook.com/gerceginizleritv\n\n#belgesel #tarih #nuruosmaniyecamii #tarihidedektif #osmanlıtarihi #istanbul",
+    captionInstagram:"İki padişah, kendine özel bir türbe yaptırdı. Sandukalar hazırlandı, her şey hazırdı. Ama ikisi de o türbede yatmıyor. 🕌\n\nCaminin inşaatını günlük olarak yöneten kalfa bir Rum: Simeon. Ve altında, 270 yıldır hiç kullanılmamış gizemli bir mahzen var.\n\nRivayet değil, kayıt.\n\n#belgesel #tarih #nuruosmaniyecamii #tarihidedektif #kapalıçarşı",
+    captionFacebook:"İki padişah kendine özel bir türbe yaptırdı. Ama ikisi de içinde yatmıyor. 🕌\n\nNuruosmaniye Camii'nin altında ise 270 yıldır hiç kullanılmamış gizemli bir mahzen var.\n\n🎬 TAM BELGESELİ İZLEMEK İÇİN: [YouTube video linki]\n\nSayfamda Abonelikler açık. 🙏\n\n#belgesel #tarih"
+  }},
+  {name:"Gül Camii", district:"Fatih", city:"İstanbul", address:"Ayakapı, Balat", mapsLink:"https://www.google.com/maps/search/?api=1&query=G%C3%BCl%20Camii%2C%20Ayakap%C4%B1%2C%20Balat%2C%20Fatih%2C%20%C4%B0stanbul", format:"Saha", topic:"Aya Theodosia Kilisesi, 1453 gül efsanesi", filmed:"H", audio:"H", edited:"H", published:"H", permission:"H", notes:""},
+  {name:"Sveti Stefan Kilisesi (Demir Kilise)", district:"Fatih", city:"İstanbul", address:"Balat, Haliç kıyısı", mapsLink:"https://www.google.com/maps/search/?api=1&query=Sveti%20Stefan%20Kilisesi%20%28Demir%20Kilise%29%2C%20Balat%2C%20Hali%C3%A7%20k%C4%B1y%C4%B1s%C4%B1%2C%20Fatih%2C%20%C4%B0stanbul", format:"Saha", topic:"Dünyanın nadir demir kiliselerinden biri", filmed:"H", audio:"H", edited:"H", published:"H", permission:"H", notes:"09:00-17:00 açık, aktif ibadete devam ediyor."},
+  {name:"Panagia Muhliotissa (Kanlı Kilise)", district:"Fatih", city:"İstanbul", address:"Fener, Tevkii Cafer Mektebi Sokak — Fener Rum Erkek Lisesi'nin (Kırmızı Okul) karşısı", mapsLink:"https://www.google.com/maps/search/?api=1&query=Panagia%20Muhliotissa%20%28Kanl%C4%B1%20Kilise%29%2C%20Fener%2C%20Tevkii%20Cafer%20Mektebi%20Sokak%20%E2%80%94%20Fener%20Rum%20Erkek%20Lisesi%27nin%20%28K%C4%B1rm%C4%B1z%C4%B1%20Okul%29%20kar%C5%9F%C4%B1s%C4%B1%2C%20Fatih%2C%20%C4%B0stanbul", format:"Saha", topic:"Osmanlı fethinden bu yana hiç camiye çevrilmeden, kesintisiz Rum Ortodoks ibadetine açık kalan tek Bizans dönemi kilisesi. Kurucusu Maria Palaiologina — VIII. Mihael'in gayrimeşru kızı, siyasi barış evliliğiyle önce Hülagü Han'a (o ölünce oğlu Abaka Han'a) gönderilip İran'da 15 yıl yaşadı, kocasının ölümünden sonra dönüp bu kiliseyi kurdu. 'Kanlı Kilise' adı, 1453 fetih sırasında bölgede yaşanan çatışmalarla ilişkilendiriliyor.", filmed:"H", audio:"H", edited:"H", published:"H", permission:"E", notes:"YouTube yorumundan gelen öneri (22 Ağustos). Genelde halka açık değil — ziyaret/çekim izni için önceden iletişime geçilmeli, aynı gün Gül Camii ve Sveti Stefan ile birleştirilebilir (aynı Fener/Balat bölgesi).", script:"H", scriptLink:"", driveFolderLink:"", prepRequested:"H"},
+  {name:"Ayios Dimitrios Kilisesi", district:"Beşiktaş", city:"İstanbul", address:"Kuruçeşme", mapsLink:"https://www.google.com/maps/search/?api=1&query=Ayios%20Dimitrios%20Kilisesi%2C%20Kuru%C3%A7e%C5%9Fme%2C%20Be%C5%9Fikta%C5%9F%2C%20%C4%B0stanbul", format:"Saha", topic:"Yeraltı tüneli + şifalı ayazma", filmed:"H", audio:"H", edited:"H", published:"H", permission:"E", notes:"Aktif küçük cemaat — önceden izin şart."},
+  {name:"Kuştul (Peristera) Manastırı", district:"Maçka", city:"Trabzon", address:"Şimşirli Köyü", mapsLink:"https://www.google.com/maps/search/?api=1&query=Ku%C5%9Ftul%20%28Peristera%29%20Manast%C4%B1r%C4%B1%2C%20%C5%9Eim%C5%9Firli%20K%C3%B6y%C3%BC%2C%20Ma%C3%A7ka%2C%20Trabzon", format:"Saha", topic:"752 yılı kaya-üstü manastır, terk edilmiş kütüphane", filmed:"H", audio:"H", edited:"H", published:"H", permission:"H", notes:"Eylül'deki Sümela gezisiyle birleştirilecek — ayrı 'Karadeniz' mini-seri etiketi."},
+  {name:"Galata Kulesi", district:"Beyoğlu", city:"İstanbul", address:"Galata", mapsLink:"https://www.google.com/maps/search/?api=1&query=Galata%20Kulesi%2C%20Beyo%C4%9Flu%2C%20%C4%B0stanbul", format:"Saha", topic:"Hezarfen Ahmet Çelebi uçuş efsanesi", filmed:"H", audio:"H", edited:"H", published:"H", permission:"H", notes:""},
+  {name:"Bukoleon Sarayı", district:"Fatih", city:"İstanbul", address:"Sur duvarları, Kumkapı-Cankurtaran arası", mapsLink:"https://www.google.com/maps/search/?api=1&query=Bukoleon%20Saray%C4%B1%2C%20Sur%20duvarlar%C4%B1%2C%20Kumkap%C4%B1-Cankurtaran%20aras%C4%B1%2C%20Fatih%2C%20%C4%B0stanbul", format:"Saha", topic:"Hayalet Bizans sahil sarayı, restorasyonda bulunan iskeletler", filmed:"H", audio:"H", edited:"H", published:"H", permission:"H", notes:""},
+  {name:"Eyüp Sultan Türbesi", district:"Eyüp", city:"İstanbul", address:"Eyüp", mapsLink:"https://www.google.com/maps/search/?api=1&query=Ey%C3%BCp%20Sultan%20T%C3%BCrbesi%2C%20Ey%C3%BCp%2C%20%C4%B0stanbul", format:"Saha", topic:"Akşemseddin'in rüyada yer bulma iddiası", filmed:"H", audio:"H", edited:"H", published:"H", permission:"H", notes:"Pierre Loti ile aynı gün çekilebilir."},
+  {name:"Kapalıçarşı Cevahir Bedesteni", district:"Fatih", city:"İstanbul", address:"Beyazıt", mapsLink:"https://www.google.com/maps/search/?api=1&query=Kapal%C4%B1%C3%A7ar%C5%9F%C4%B1%20Cevahir%20Bedesteni%2C%20Beyaz%C4%B1t%2C%20Fatih%2C%20%C4%B0stanbul", format:"Saha", topic:"En eski/korunaklı bölüm, yangın ve tünel efsaneleri", filmed:"H", audio:"H", edited:"H", published:"H", permission:"H", notes:"Pazar günü kapalı olabilir — gitmeden saat teyidi şart."},
+  {name:"Sirkeci Garı", district:"Fatih", city:"İstanbul", address:"Sirkeci", mapsLink:"https://www.google.com/maps/search/?api=1&query=Sirkeci%20Gar%C4%B1%2C%20Fatih%2C%20%C4%B0stanbul", format:"Saha", topic:"Orient Ekspres son durağı, casusluk hikayeleri", filmed:"H", audio:"H", edited:"H", published:"H", permission:"H", notes:""},
+  {name:"Tekfur Sarayı", district:"Fatih", city:"İstanbul", address:"Edirnekapı", mapsLink:"https://www.google.com/maps/search/?api=1&query=Tekfur%20Saray%C4%B1%2C%20Edirnekap%C4%B1%2C%20Fatih%2C%20%C4%B0stanbul", format:"Saha", topic:"Ayakta kalan tek sivil Bizans sarayı", filmed:"H", audio:"H", edited:"H", published:"H", permission:"H", notes:""},
+  {name:"Aya İrini", district:"Fatih", city:"İstanbul", address:"Topkapı Sarayı 1. Avlu", mapsLink:"https://www.google.com/maps/search/?api=1&query=Aya%20%C4%B0rini%2C%20Topkap%C4%B1%20Saray%C4%B1%201.%20Avlu%2C%20Fatih%2C%20%C4%B0stanbul", format:"Saha", topic:"Hiç camiye çevrilmemiş tek Bizans kilisesi", filmed:"H", audio:"H", edited:"H", published:"H", permission:"H", notes:"Nadiren halka açık — takvim kontrolü gerek."},
+  {name:"Pierre Loti Tepesi", district:"Eyüp", city:"İstanbul", address:"Eyüp", mapsLink:"https://www.google.com/maps/search/?api=1&query=Pierre%20Loti%20Tepesi%2C%20Ey%C3%BCp%2C%20Ey%C3%BCp%2C%20%C4%B0stanbul", format:"Saha", topic:"Fransız yazarın efsaneleşmiş kahvesi, mezarlık", filmed:"H", audio:"H", edited:"H", published:"H", permission:"H", notes:"Eyüp Sultan ile aynı gün."},
+  {name:"Anadolu Hisarı", district:"Beykoz", city:"İstanbul", address:"Anadolu Hisarı", mapsLink:"https://www.google.com/maps/search/?api=1&query=Anadolu%20Hisar%C4%B1%2C%20Beykoz%2C%20%C4%B0stanbul", format:"Saha", topic:"Rumeli Hisarı'nın daha az bilinen kardeşi", filmed:"H", audio:"H", edited:"H", published:"H", permission:"H", notes:""},
+  {name:"Galata Mevlevihanesi", district:"Beyoğlu", city:"İstanbul", address:"Galata", mapsLink:"https://www.google.com/maps/search/?api=1&query=Galata%20Mevlevihanesi%2C%20Beyo%C4%9Flu%2C%20%C4%B0stanbul", format:"Saha", topic:"Sema ayini geleneği", filmed:"H", audio:"H", edited:"H", published:"H", permission:"H", notes:"Galata Kulesi ile aynı gün."},
+  {name:"Küçük Ayasofya", district:"Fatih", city:"İstanbul", address:"Sultanahmet", mapsLink:"https://www.google.com/maps/search/?api=1&query=K%C3%BC%C3%A7%C3%BCk%20Ayasofya%2C%20Sultanahmet%2C%20Fatih%2C%20%C4%B0stanbul", format:"Saha", topic:"Büyük Ayasofya'nın mimari provası iddiası", filmed:"H", audio:"H", edited:"H", published:"H", permission:"H", notes:""},
+  {name:"Büyük Saray Mozaik Müzesi", district:"Fatih", city:"İstanbul", address:"Sultanahmet", mapsLink:"https://www.google.com/maps/search/?api=1&query=B%C3%BCy%C3%BCk%20Saray%20Mozaik%20M%C3%BCzesi%2C%20Sultanahmet%2C%20Fatih%2C%20%C4%B0stanbul", format:"Saha", topic:"Bizans imparatorluk sarayı zemin mozaikleri", filmed:"H", audio:"H", edited:"H", published:"H", permission:"H", notes:""},
+  {name:"Ahrida Sinagogu", district:"Fatih", city:"İstanbul", address:"Balat", mapsLink:"https://www.google.com/maps/search/?api=1&query=Ahrida%20Sinagogu%2C%20Balat%2C%20Fatih%2C%20%C4%B0stanbul", format:"Saha", topic:"Tekne şeklindeki kürsü", filmed:"H", audio:"H", edited:"H", published:"H", permission:"E", notes:"Hahambaşılık'tan önceden izin gerekiyor."},
+  {name:"Haydarpaşa Garı / Khalkedon efsanesi", district:"Kadıköy", city:"İstanbul", address:"Haydarpaşa", mapsLink:"https://www.google.com/maps/search/?api=1&query=Haydarpa%C5%9Fa%20Gar%C4%B1%20/%20Khalkedon%20efsanesi%2C%20Kad%C4%B1k%C3%B6y%2C%20%C4%B0stanbul", format:"Masabaşı", topic:"'Körler Ülkesi' kuruluş efsanesi, 1917 patlaması", filmed:"H", audio:"H", edited:"H", published:"H", permission:"H", notes:"Aktif restorasyon/tahliye alanı, iç mekân kapalı — masabaşı formatla ele alınacak."},
+  {name:"Dolmabahçe Sarayı", district:"Beşiktaş", city:"İstanbul", address:"Dolmabahçe", mapsLink:"https://www.google.com/maps/search/?api=1&query=Dolmabah%C3%A7e%20Saray%C4%B1%2C%20Be%C5%9Fikta%C5%9F%2C%20%C4%B0stanbul", format:"Masabaşı", topic:"Atatürk'ün son nefesi, saatlerin 9:05'te durdurulması", filmed:"H", audio:"H", edited:"H", published:"H", permission:"E", notes:"Milli Saraylar — iç mekân çekimi yasak."},
+  {name:"Küçüksu Kasrı", district:"Beykoz", city:"İstanbul", address:"Küçüksu", mapsLink:"https://www.google.com/maps/search/?api=1&query=K%C3%BC%C3%A7%C3%BCksu%20Kasr%C4%B1%2C%20Beykoz%2C%20%C4%B0stanbul", format:"Masabaşı", topic:"Az bilinen padişah kaçış rotası iddiası", filmed:"H", audio:"H", edited:"H", published:"H", permission:"E", notes:"Milli Saraylar — iç mekân yasak olabilir, teyit gerek."},
+  {name:"Aynalıkavak Kasrı", district:"Beyoğlu", city:"İstanbul", address:"Kasımpaşa/Hasköy", mapsLink:"https://www.google.com/maps/search/?api=1&query=Aynal%C4%B1kavak%20Kasr%C4%B1%2C%20Kas%C4%B1mpa%C5%9Fa/Hask%C3%B6y%2C%20Beyo%C4%9Flu%2C%20%C4%B0stanbul", format:"Masabaşı", topic:"III. Selim'in beste yaptığı oda", filmed:"H", audio:"H", edited:"H", published:"H", permission:"E", notes:"Milli Saraylar — teyit gerek."},
+  {name:"Beylerbeyi Sarayı", district:"Üsküdar", city:"İstanbul", address:"Beylerbeyi", mapsLink:"https://www.google.com/maps/search/?api=1&query=Beylerbeyi%20Saray%C4%B1%2C%20%C3%9Csk%C3%BCdar%2C%20%C4%B0stanbul", format:"Hibrit", topic:"II. Abdülhamid'in esareti, Abdülaziz'in şüpheli ölümü", filmed:"H", audio:"H", edited:"H", published:"H", permission:"H", notes:"Bahçe çekimi serbest, iç mekân yasak — hibrit format planlandı."},
+  {name:"Topkapı Sarayı Harem Dairesi", district:"Fatih", city:"İstanbul", address:"Topkapı Sarayı", mapsLink:"https://www.google.com/maps/search/?api=1&query=Topkap%C4%B1%20Saray%C4%B1%20Harem%20Dairesi%2C%20Fatih%2C%20%C4%B0stanbul", format:"Masabaşı", topic:"'Kafes' sistemi, şehzade hapsi", filmed:"H", audio:"H", edited:"H", published:"H", permission:"E", notes:"⚠️ Erişim kuralları doğrulanmadı, saha kontrolü gerek."},
+  {name:"Çırağan Sarayı", district:"Beşiktaş", city:"İstanbul", address:"Çırağan", mapsLink:"https://www.google.com/maps/search/?api=1&query=%C3%87%C4%B1ra%C4%9Fan%20Saray%C4%B1%2C%20Be%C5%9Fikta%C5%9F%2C%20%C4%B0stanbul", format:"Masabaşı", topic:"V. Murad'ın hapsi, büyük yangın gizemi", filmed:"H", audio:"H", edited:"H", published:"H", permission:"E", notes:"⚠️ Şu an otel — iç çekim için otel izni gerekebilir, doğrulanmadı."}
+];
+
+let locations = [];
+let calendarEvents = [];
+let activityLog = [];
+let saveTimer = null;
+let saveInFlight = false;
+let pendingResave = false;
+
+function defaultPackage(){
+  return {
+    shotList:""
+  };
+}
+
+// Fills in any fields a location object is missing (script/scriptLink/package)
+// without touching fields that already have real values — safe to run on
+// both fresh seed data and data people already had saved from before.
+function normalizeLocation(l){
+  let touched = false;
+  if(l.script === undefined){ l.script = (l.published === 'E' ? 'E' : 'H'); touched = true; }
+  if(l.scriptLink === undefined){ l.scriptLink = ""; touched = true; }
+  if(l.plannedDate === undefined){ l.plannedDate = ""; touched = true; }
+  if(l.cancelled === undefined){ l.cancelled = "H"; touched = true; }
+  if(l.mapsLink === undefined){ l.mapsLink = ""; touched = true; }
+  if(l.fieldNotes === undefined){ l.fieldNotes = ""; touched = true; }
+  if(l.prepRequested === undefined){ l.prepRequested = "H"; touched = true; }
+  if(l.driveFolderLink === undefined){ l.driveFolderLink = ""; touched = true; }
+  if(!l.package){ l.package = defaultPackage(); touched = true; }
+  else l.package = {...defaultPackage(), ...l.package};
+  l._normalized = touched;
+  return l;
+}
+
+// Eksik alanları tamamlar (script/scriptLink/package gibi) — hem taze seed
+// verisinde hem eskiden kaydedilmiş veride güvenle çalışır.
+// NOT: Burada eskiden ~950 satırlık tek seferlik bir veri göçü (applyCorrections)
+// vardı. Göçün sonucu data.json'a kalıcı olarak işlendiği için 28 Ağustos 2026'da
+// kaldırıldı: orada durması, elle silinen takvim kayıtlarının her sayfa
+// yüklemesinde yeniden yaratılmasına ("zombi kayıt") yol açıyordu — 67 kaydın
+// 20'si bu durumdaydı.
+function normalizeAll(){
+  let changed = false;
+  locations.forEach(l=>{ normalizeLocation(l); if(l._normalized) changed = true; delete l._normalized; });
+  return changed;
+}
+
+// ===== Gelen verinin temizlenmesi =====
+// Hem "Yedekten Geri Yükle" hem GitHub'dan okunan data.json buradan geciyor.
+// Sebep: yedek dosyasi hicbir dogrulamadan gecmiyordu ve bazi alanlar
+// (ev.time, ev.date, l.mapsLink gibi) sablona ham giriyordu. Ozenle
+// hazirlanmis bir yedek dosyasi sayfada script calistirabilir, oradan da
+// localStorage'daki GitHub token'ini calabilirdi.
+const MAX_LOCATIONS = 5000, MAX_EVENTS = 20000;
+const LOC_TEXT_FIELDS = ['name','district','city','address','topic','notes',
+  'shootingCautions','fieldNotes'];
+// Bu alanlar acik uclu degil: kartlarda kacis karakteri olmadan yazildiklari
+// icin degerlerini kisitlamak escape etmekten daha kesin bir savunma.
+const LOC_FLAG_FIELDS = ['permission','filmed','audio','edited','published','script','cancelled','prepRequested'];
+const LOC_FORMATS = ['Saha','Masabaşı','Hibrit','Stüdyo/Grafik'];
+const LOC_URL_FIELDS = ['mapsLink','scriptLink','driveFolderLink','imageUrl'];
+
+function safeStr(v, max){ return typeof v === 'string' ? v.slice(0, max) : ''; }
+// Yalnizca http(s). "javascript:" ile baslayan bir baglanti href'e girerse
+// tiklandiginda script calisir — bu yuzden protokol beyaz listede.
+function safeUrl(v){
+  const u = safeStr(v, 2000).trim();
+  return /^https?:\/\//i.test(u) ? u : '';
+}
+function safeId(v, onek){
+  return /^[A-Za-z0-9_-]{1,64}$/.test(v) ? v : onek + Date.now() + '_' + Math.random().toString(36).slice(2,8);
+}
+function safeDate(v){ return /^\d{4}-\d{2}-\d{2}$/.test(v) ? v : ''; }
+function safeTime(v){ return /^\d{2}:\d{2}$/.test(v) ? v : ''; }
+
+function sanitizeLocation(raw){
+  if(!raw || typeof raw !== 'object') return null;
+  const out = { id: safeId(raw.id, 'loc_') };
+  LOC_TEXT_FIELDS.forEach(k => { out[k] = safeStr(raw[k], 4000); });
+  LOC_FLAG_FIELDS.forEach(k => { out[k] = (raw[k] === 'E' || raw[k] === 'H') ? raw[k] : 'H'; });
+  out.format = LOC_FORMATS.includes(raw.format) ? raw.format : 'Saha';
+  LOC_URL_FIELDS.forEach(k => { out[k] = safeUrl(raw[k]); });
+  out.plannedDate = safeDate(raw.plannedDate);
+  const src = (raw.package && typeof raw.package === 'object') ? raw.package : {};
+  const pkg = defaultPackage();
+  Object.keys(pkg).forEach(k => { pkg[k] = safeStr(src[k], 20000); });
+  out.package = pkg;
+  return out;
+}
+
+function sanitizeCalEvent(raw){
+  if(!raw || typeof raw !== 'object') return null;
+  const c = (raw.content && typeof raw.content === 'object') ? raw.content : {};
+  return {
+    id: safeId(raw.id, 'cal_'),
+    locationId: safeStr(raw.locationId, 64),
+    platform: safeStr(raw.platform, 32),
+    type: CAL_TYPES.includes(raw.type) ? raw.type : '',
+    typeOverride: CAL_TYPES.includes(raw.typeOverride) ? raw.typeOverride : '',
+    platformOverride: CAL_SM_PLATFORMS.includes(raw.platformOverride) ? raw.platformOverride : '',
+    captionFieldOverride: safeStr(raw.captionFieldOverride, 64),
+    title: safeStr(raw.title, 500),
+    date: safeDate(raw.date),
+    time: safeTime(raw.time),
+    uploaded: raw.uploaded === true,
+    content: {
+      caption:      safeStr(c.caption, 20000),
+      hashtags:     safeStr(c.hashtags, 4000),
+      videoTitle:   safeStr(c.videoTitle, 500),
+      shortTitle:   safeStr(c.shortTitle, 500),
+      thumbPrompt:  safeStr(c.thumbPrompt, 20000),
+      pinnedComment: safeStr(c.pinnedComment, 5000),
+      slidePrompts: Array.isArray(c.slidePrompts) ? c.slidePrompts.slice(0,9).map(x=>safeStr(x,20000)) : []
+    }
+  };
+}
+
+function sanitizeAll(locs, evs){
+  return {
+    locations: (Array.isArray(locs) ? locs : []).slice(0, MAX_LOCATIONS).map(sanitizeLocation).filter(Boolean),
+    calendarEvents: (Array.isArray(evs) ? evs : []).slice(0, MAX_EVENTS).map(sanitizeCalEvent).filter(Boolean)
+  };
+}
+
+
+async function loadData(){
+  try{
+    if(!window.supabase) throw new Error('Supabase kütüphanesi yüklenemedi.');
+    if(!sb) sb = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
+
+    const { data:{ session } } = await sb.auth.getSession();
+    if(!session){
+      girisEkrani('Kayıtlarına ulaşmak için giriş yap.');
+      return;
+    }
+    oturum = session;
+
+    const { data:alanlar, error:alanHata } = await sb.from('workspaces').select('id,name');
+    if(alanHata) throw alanHata;
+    if(!alanlar || !alanlar.length){
+      girisEkrani('Bu hesaba (' + session.user.email + ') bağlı çalışma alanı yok.', true);
+      return;
+    }
+    calismaAlaniId = alanlar[0].id;
+    girisEkraniniKapat();
+
+    // Silinen satirlar tabloda kaliyor ama listelere girmiyor. Sebebi
+    // gecmiste yasanan "zombi kayit" olayi: elle silinen kayitlar her
+    // acilista geri geliyordu.
+    const { data:lokSatir, error:e1 } = await sb.from('locations')
+      .select('*').eq('workspace_id', calismaAlaniId).is('deleted_at', null);
+    if(e1) throw e1;
+    const { data:kytSatir, error:e2 } = await sb.from('calendar_events')
+      .select('*').eq('workspace_id', calismaAlaniId).is('deleted_at', null);
+    if(e2) throw e2;
+
+    const temiz = sanitizeAll(
+      (lokSatir || []).map(satirdanLokasyon),
+      (kytSatir || []).map(satirdanKayit)
+    );
+    locations = temiz.locations;
+    calendarEvents = temiz.calendarEvents;
+    halIsaretle();
+
+    try{
+      const localLog = localStorage.getItem('gerceginizleri_activity_log');
+      activityLog = localLog ? JSON.parse(localLog) : [];
+    }catch(e){
+      activityLog = [];
+    }
+  }catch(e){
+    console.error('Veri okuma hatası', e);
+    // Okuma basarisizken BOS liste gostermek tehlikeli: kullanici veriyi
+    // kaybettigini sanip yeniden girmeye baslar, sonraki kayit da gercek
+    // veriyi ezer. Onun yerine durup haber veriyoruz.
+    girisEkrani('Kayıtlar okunamadı: ' + (e.message || e) +
+                '<br><br>Sayfayı yenilemeyi dene.', true);
+    return;
+  }
+  if(normalizeAll()) await persistNow();
+  render();
+  renderCal();
+  renderLog();
+}
+
+// Su anki halin fotografini al: bundan sonraki kayitta neyin degistigini
+// bununla karsilastirarak buluyoruz.
+function halIsaretle(){
+  sonHal.lok = new Map(locations.map(l => [l.id, JSON.stringify(lokasyonSatiri(l))]));
+  sonHal.kyt = new Map(calendarEvents.map(e => [e.id, JSON.stringify(kayitSatiri(e))]));
+}
+
+// Debounced entry point: rapid clicks (e.g. toggling several stamps fast)
+// get merged into a single save instead of firing one request per click.
+function persist(){
+  clearTimeout(saveTimer);
+  saveTimer = setTimeout(()=>{ persistNow(); }, 450);
+}
+
+async function persistNow(retriesLeft){
+  if(retriesLeft === undefined) retriesLeft = 2;
+  if(saveInFlight){ pendingResave = true; return; }
+  if(!sb || !calismaAlaniId || !oturum) return;
+  saveInFlight = true;
+  try{
+    const simdiLok = new Map(locations.map(l => [l.id, JSON.stringify(lokasyonSatiri(l))]));
+    const simdiKyt = new Map(calendarEvents.map(e => [e.id, JSON.stringify(kayitSatiri(e))]));
+
+    const degisen = (simdi, once) => {
+      const liste = [];
+      simdi.forEach((metin, id) => { if(once.get(id) !== metin) liste.push(JSON.parse(metin)); });
+      return liste;
+    };
+    const silinen = (simdi, once) => {
+      const liste = [];
+      once.forEach((_, id) => { if(!simdi.has(id)) liste.push(id); });
+      return liste;
+    };
+
+    const yeniLok = degisen(simdiLok, sonHal.lok);
+    const yeniKyt = degisen(simdiKyt, sonHal.kyt);
+    const gitLok = silinen(simdiLok, sonHal.lok);
+    const gitKyt = silinen(simdiKyt, sonHal.kyt);
+
+    // Sira onemli: once lokasyonlar yazilsin ki yeni bir kayit henuz
+    // olmayan bir lokasyona bagli kalmasin.
+    if(yeniLok.length){
+      const { error } = await sb.from('locations').upsert(yeniLok, { onConflict: 'id' });
+      if(error) throw error;
+    }
+    if(yeniKyt.length){
+      const { error } = await sb.from('calendar_events').upsert(yeniKyt, { onConflict: 'id' });
+      if(error) throw error;
+    }
+    // Silmede once kayitlar dusuyor: lokasyonu once silmek, ona bagli
+    // kayitlari sahipsiz birakirdi.
+    if(gitKyt.length){
+      const { error } = await sb.from('calendar_events')
+        .update({ deleted_at: new Date().toISOString() }).in('id', gitKyt);
+      if(error) throw error;
+    }
+    if(gitLok.length){
+      const { error } = await sb.from('locations')
+        .update({ deleted_at: new Date().toISOString() }).in('id', gitLok);
+      if(error) throw error;
+    }
+
+    // Fotograf ancak yazma bittikten sonra guncelleniyor. Once guncellenseydi
+    // yazma hata verdiginde degisiklik "yazilmis" sayilir ve bir daha hic
+    // denenmezdi.
+    sonHal.lok = simdiLok;
+    sonHal.kyt = simdiKyt;
+    hideToast();
+  }catch(e){
+    console.error('Kayıt hatası', e);
+    if(retriesLeft > 0){
+      await new Promise(r=>setTimeout(r, 700));
+      saveInFlight = false;
+      return persistNow(retriesLeft - 1);
+    }
+    showToast(t('save_error'));
+    setTimeout(()=>persistNow(2), 5000);
+  }finally{
+    saveInFlight = false;
+    if(pendingResave){
+      pendingResave = false;
+      persistNow();
+    }
+  }
+}
+
+// ============================================================
+// YAYIN TAKVİMİ (Calendar)
+// ============================================================
+const CAL_LABELS = {yt:"YT", yts:"YTS", ig:"IG", tt:"TT", fb:"FB", ig_car:"IGC", fb_car:"FBC", story:"STR", fb_text:"TXT", fb_poll:"ANK"};
+const CAL_PLATFORM_NAMES = {yt:"YouTube (Uzun Video)", yts:"YouTube Shorts", ig:"Instagram (Video/Reel)", tt:"TikTok", fb:"Facebook (Video)", ig_car:"Instagram Carousel", fb_car:"Facebook Carousel", story:"Story (IG/FB)", fb_text:"Facebook Metin Postu", fb_poll:"Facebook Anketi"};
+const CAL_PLATFORM_COLORS = {yt:"#D64545", yts:"#E8632B", ig:"#C1447E", tt:"#3FC9D1", fb:"#4B7BD1", ig_car:"#9C4FBF", fb_car:"#5D7BC7", story:"#D4A72C", fb_text:"#6B7280", fb_poll:"#2FA36B"};
+const CAL_PLATFORM_FIELD = {yt:"captionYouTube", yts:"captionShorts", ig:"captionInstagram", fb:"captionFacebook", tt:"captionInstagram", ig_car:"carouselCaptionInstagram", fb_car:"carouselCaptionFacebook", story:"storyKnowledgeText", fb_text:"captionFacebook", fb_poll:"pollCaptionFacebook"};
+
+// ===== İçerik TİPİ (format) × SM Hesabı (platform) — iki bağımsız boyut =====
+// Eski sistemde bunlar tek bir kodda birleşikti (ig_car, fb_poll gibi), bu da
+// aynı lokasyonda birden fazla Reels/Story olduğunda ayırt edilemez hale
+// geliyordu. Yeni girişler type+platform'u doğrudan bu şekilde saklar; eski
+// girişler ise LEGACY_TYPE_PLATFORM_MAP ile bu iki boyuma türetilir — ham
+// ev.platform değeri hiç değiştirilmez (idempotency guard'lar bu yüzden
+// bozulmaz), sadece görüntüleme/filtreleme bu türetilmiş değerleri kullanır.
+const CAL_TYPES = ['video','shorts','reels','carousel','story','text_post','poll'];
+const CAL_SM_PLATFORMS = ['youtube','instagram','tiktok','facebook'];
+const CAL_TYPE_NAMES = {video:'Video', shorts:'Shorts', reels:'Reels', carousel:'Carousel', story:'Story', text_post:'Metin Postu', poll:'Anket'};
+const CAL_TYPE_LABELS = {video:'VID', shorts:'SHRT', reels:'REEL', carousel:'CAR', story:'STR', text_post:'TXT', poll:'ANK'};
+const CAL_SM_NAMES = {youtube:'YouTube', instagram:'Instagram', tiktok:'TikTok', facebook:'Facebook'};
+const CAL_SM_LABELS = {youtube:'YT', instagram:'IG', tiktok:'TT', facebook:'FB'};
+const CAL_SM_COLORS = {youtube:'#D64545', instagram:'#C1447E', tiktok:'#3FC9D1', facebook:'#4B7BD1'};
+const CAL_TYPE_PLATFORM_FIELD = {
+  video:      {youtube:'captionYouTube', instagram:'captionInstagram', facebook:'captionFacebook', tiktok:'captionInstagram'},
+  shorts:     {youtube:'captionShorts',  instagram:'captionShorts',    facebook:'captionShorts',    tiktok:'captionShorts'},
+  reels:      {instagram:'captionInstagram', facebook:'captionFacebook', tiktok:'captionInstagram', youtube:'captionShorts'},
+  carousel:   {instagram:'carouselCaptionInstagram', facebook:'carouselCaptionFacebook'},
+  story:      {instagram:'storyKnowledgeText', facebook:'storyKnowledgeText', tiktok:'storyKnowledgeText', youtube:'storyKnowledgeText'},
+  text_post:  {facebook:'captionFacebook', instagram:'captionInstagram', tiktok:'captionInstagram', youtube:'captionYouTube'},
+  poll:       {facebook:'pollCaptionFacebook', instagram:'pollCaptionFacebook', tiktok:'pollCaptionFacebook', youtube:'pollCaptionFacebook'},
+};
+const LEGACY_TYPE_PLATFORM_MAP = {
+  yt:      {type:'video',    platform:'youtube'},
+  yts:     {type:'shorts',   platform:'youtube'},
+  ig:      {type:'video',    platform:'instagram'}, // title'da "reel" geçiyorsa aşağıda 'reels'e çevrilir
+  tt:      {type:'video',    platform:'tiktok'},
+  fb:      {type:'video',    platform:'facebook'},  // title'da "reel" geçiyorsa aşağıda 'reels'e çevrilir
+  ig_car:  {type:'carousel', platform:'instagram'},
+  fb_car:  {type:'carousel', platform:'facebook'},
+  story:   {type:'story',    platform:'instagram'}, // eskiden platform ayrımı yoktu, IG varsayılıyor
+  fb_text: {type:'text_post',platform:'facebook'},
+  fb_poll: {type:'poll',     platform:'facebook'},
+};
+function getEventType(ev){
+  if(ev.typeOverride) return ev.typeOverride;
+  if(CAL_TYPES.includes(ev.type)) return ev.type;
+  const m = LEGACY_TYPE_PLATFORM_MAP[ev.platform];
+  if(!m) return 'video';
+  if((ev.platform==='ig' || ev.platform==='fb') && /reels?/i.test(ev.title||'')) return 'reels';
+  return m.type;
+}
+function getEventPlatform(ev){
+  if(ev.platformOverride) return ev.platformOverride;
+  if(CAL_SM_PLATFORMS.includes(ev.platform)) return ev.platform;
+  const m = LEGACY_TYPE_PLATFORM_MAP[ev.platform];
+  return m ? m.platform : 'instagram';
+}
+function calDisplayName(ev){
+  return CAL_TYPE_NAMES[getEventType(ev)] + ' · ' + CAL_SM_NAMES[getEventPlatform(ev)];
+}
+const CAL_DOW = ["PZT","SAL","ÇAR","PER","CUM","CMT","PAZ"];
+const CAL_DOW_SHORT = ["Pzt","Sal","Çar","Per","Cum","Cmt","Paz"];
+
+let calCurrentEvent = null; // event object being viewed/edited in the modal (null = creating new)
+let calViewMode = 'grid'; // 'grid' | 'table'
+let calNewUploadedState = false; // "Yükledim" toggle state while creating a brand-new entry (not yet saved)
+let calExpandedDays = new Set(); // day keys (YYYY-MM-DD) the user has expanded to see all entries
+let calActiveTypeFilters = new Set(); // empty = show all types (default); non-empty = show only these
+let calActivePlatformFilters = new Set(); // empty = show all SM platforms (default); non-empty = show only these
+let calShowOnlyPending = false; // true = hide entries already marked "Yükledim"
+
+function calPad(n){ return n<10 ? '0'+n : ''+n; }
+
+function calEventStatus(ev){
+  const dt = new Date(ev.date + 'T' + (ev.time||'00:00') + ':00');
+  const now = new Date();
+  if(dt <= now) return 'live';
+  if(ev.uploaded) return 'ready';
+  return 'planned';
+}
+
+let calWindowOffset = 0; // days offset from today, moved by nav buttons
+
+function calWindowStart(){
+  // Rolling window starting from the Monday of the current week + offset —
+  // lets the user page forward/backward through the calendar instead of
+  // being stuck on a fixed today-relative range. Must snap to Monday because
+  // the header row (CAL_DOW) is fixed as PZT/SAL/ÇAR/.../PAZ — without this,
+  // the grid started on whatever weekday "today" happened to be, so the
+  // dates underneath silently drifted out of alignment with the day labels.
+  const d = new Date();
+  d.setHours(0,0,0,0);
+  const mondayOffset = (d.getDay() + 6) % 7; // Pazar(0)->6, Pzt(1)->0, ... Cmt(6)->5
+  d.setDate(d.getDate() - mondayOffset + calWindowOffset);
+  return d;
+}
+
+function renderCal(){
+  updateCalNavRange();
+  renderCalGrid();
+  renderCalTable();
+}
+
+function renderCalGrid(){
+  const grid = document.getElementById('calGrid');
+  if(!grid) return;
+  grid.innerHTML = '';
+  CAL_DOW.forEach(d=>{
+    const el = document.createElement('div');
+    el.className = 'cal-dow';
+    el.textContent = d;
+    grid.appendChild(el);
+  });
+
+  const start = calWindowStart();
+  const today = new Date(); today.setHours(0,0,0,0);
+  const totalDays = 21;
+
+  for(let i=0;i<totalDays;i++){
+    const d = new Date(start);
+    d.setDate(start.getDate()+i);
+    const key = `${d.getFullYear()}-${calPad(d.getMonth()+1)}-${calPad(d.getDate())}`;
+
+    const cell = document.createElement('div');
+    cell.className = 'cal-day';
+    if(d.toDateString() === today.toDateString()) cell.classList.add('today');
+    const isExpanded = calExpandedDays.has(key);
+    if(isExpanded) cell.classList.add('expanded');
+
+    const num = document.createElement('div');
+    num.className = 'cal-day-num';
+    const dowLabel = CAL_DOW[(d.getDay()+6)%7];
+    num.textContent = `${d.getDate()} ${d.toLocaleString('tr-TR',{month:'short'})} · ${dowLabel}`;
+    cell.appendChild(num);
+
+    let dayEvents = calendarEvents.filter(e=>e.date===key
+      && (calActiveTypeFilters.size===0 || calActiveTypeFilters.has(getEventType(e)))
+      && (calActivePlatformFilters.size===0 || calActivePlatformFilters.has(getEventPlatform(e)))
+      && (!calShowOnlyPending || !e.uploaded)).sort((a,b)=>(a.time||'').localeCompare(b.time||''));
+
+    // Pair up Instagram+Facebook entries sharing the same time AND same
+    // content type (same native Meta upload posted to both accounts).
+    const rows = [];
+    const used = new Set();
+    dayEvents.forEach((ev,i2)=>{
+      if(used.has(i2)) return;
+      if(getEventPlatform(ev) === 'instagram'){
+        const pairIdx = dayEvents.findIndex((e2,j)=> j!==i2 && !used.has(j) && getEventPlatform(e2)==='facebook' && getEventType(e2)===getEventType(ev) && e2.time===ev.time);
+        if(pairIdx !== -1){
+          rows.push([ev, dayEvents[pairIdx]]);
+          used.add(i2); used.add(pairIdx);
+          return;
+        }
+      }
+      rows.push([ev]);
+      used.add(i2);
+    });
+
+    const shownRows = isExpanded ? rows : rows.slice(0,3);
+    let hiddenCount = 0;
+    if(!isExpanded) rows.slice(3).forEach(r=>hiddenCount+=r.length);
+
+    shownRows.forEach(rowEvs=>{
+      const rowDiv = document.createElement('div');
+      rowDiv.className = 'cal-chip-row';
+      rowEvs.forEach(ev=>{
+        const status = calEventStatus(ev);
+        const chip = document.createElement('div');
+        chip.className = 'cal-chip ' + status;
+        const icon = status==='live' ? '●' : (status==='ready' ? '✓' : '🕒');
+        const evType = getEventType(ev), evPlatform = getEventPlatform(ev);
+        chip.title = calDisplayName(ev);
+        chip.innerHTML = `<span class="cal-badge" style="background:${CAL_SM_COLORS[evPlatform]};" title="${CAL_SM_NAMES[evPlatform]}">${CAL_TYPE_LABELS[evType]}</span>
+          <span class="cal-chip-mid"><span class="cal-chip-time">${escapeHtml(ev.time||'')}</span><span class="cal-chip-title">${escapeHtml(ev.title||'')}</span></span>
+          <span class="cal-status-icon">${icon}</span>`;
+        chip.addEventListener('click', ()=> openCalDetail(ev));
+        rowDiv.appendChild(chip);
+      });
+      cell.appendChild(rowDiv);
+    });
+
+    if(hiddenCount > 0){
+      const more = document.createElement('div');
+      more.className = 'cal-more cal-more-clickable';
+      more.textContent = `+${hiddenCount} daha (görmek için tıkla)`;
+      more.addEventListener('click', ()=>{
+        calExpandedDays.add(key);
+        renderCalGrid();
+      });
+      cell.appendChild(more);
+    } else if(isExpanded && rows.length > 3){
+      const less = document.createElement('div');
+      less.className = 'cal-more cal-more-clickable';
+      less.textContent = `daha az göster ▲`;
+      less.addEventListener('click', ()=>{
+        calExpandedDays.delete(key);
+        renderCalGrid();
+      });
+      cell.appendChild(less);
+    }
+
+    grid.appendChild(cell);
+  }
+}
+
+function renderCalTable(){
+  const tbody = document.getElementById('calTbody');
+  if(!tbody) return;
+  tbody.innerHTML = '';
+  const start = calWindowStart();
+  const today = new Date(); today.setHours(0,0,0,0);
+  const totalDays = 14;
+  const platformOrder = ['youtube','instagram','tiktok','facebook'];
+
+  for(let i=0;i<totalDays;i++){
+    const d = new Date(start);
+    d.setDate(start.getDate()+i);
+    const key = `${d.getFullYear()}-${calPad(d.getMonth()+1)}-${calPad(d.getDate())}`;
+
+    const tr = document.createElement('tr');
+    if(d.toDateString() === today.toDateString()) tr.classList.add('today');
+
+    const dateTd = document.createElement('td');
+    dateTd.className = 'cal-date-cell';
+    dateTd.innerHTML = `${d.getDate()} ${d.toLocaleString('tr-TR',{month:'short'})}<span class="cal-dow-lbl">${CAL_DOW_SHORT[(d.getDay()+6)%7]}</span>`;
+    tr.appendChild(dateTd);
+
+    platformOrder.forEach(p=>{
+      const td = document.createElement('td');
+      const dayPlatformEvents = calendarEvents.filter(e=>e.date===key
+        && getEventPlatform(e)===p
+        && (calActiveTypeFilters.size===0 || calActiveTypeFilters.has(getEventType(e)))
+        && (calActivePlatformFilters.size===0 || calActivePlatformFilters.has(getEventPlatform(e)))
+        && (!calShowOnlyPending || !e.uploaded)).sort((a,b)=>(a.time||'').localeCompare(b.time||''));
+      if(dayPlatformEvents.length === 0){
+        td.innerHTML = '<div class="cal-empty-dash">—</div>';
+      } else {
+        dayPlatformEvents.forEach(ev=>{
+          const status = calEventStatus(ev);
+          const icon = status==='live' ? '●' : (status==='ready' ? '✓' : '🕒');
+          const evType = getEventType(ev);
+          const chip = document.createElement('div');
+          chip.className = 'cal-cell-chip ' + status;
+          chip.title = calDisplayName(ev);
+          chip.innerHTML = `<span class="cctime">${escapeHtml(ev.time||'')}<span>${icon}</span></span><span class="cal-cell-type-badge" style="background:${CAL_SM_COLORS[p]};">${CAL_TYPE_LABELS[evType]}</span><span class="cctitle">${escapeHtml(ev.title||'')}</span>`;
+          chip.addEventListener('click', ()=> openCalDetail(ev));
+          td.appendChild(chip);
+        });
+      }
+      tr.appendChild(td);
+    });
+    tbody.appendChild(tr);
+  }
+}
+
+function escapeHtml(s){
+  const d = document.createElement('div');
+  d.textContent = s;
+  return d.innerHTML;
+}
+
+function populateCalLocationSelect(){
+  const sel = document.getElementById('cal_locationId');
+  sel.innerHTML = locations
+    .slice()
+    .sort((a,b)=>a.name.localeCompare(b.name,'tr'))
+    .map(l=>`<option value="${l.id}">${escapeHtml(l.name)}</option>`)
+    .join('');
+}
+
+function getSelectedNewPlatforms(){
+  return Array.from(document.querySelectorAll('#calPlatformMultiWrap input[type="checkbox"]:checked')).map(el=>el.value);
+}
+
+function currentPreviewType(){
+  return document.getElementById('cal_type').value;
+}
+function currentPreviewPlatform(){
+  if(calCurrentEvent) return document.getElementById('cal_platform').value;
+  const checked = getSelectedNewPlatforms();
+  return checked[0] || 'youtube';
+}
+
+function openCalDetail(ev){
+  calCurrentEvent = ev || null;
+  populateCalLocationSelect();
+
+  const isNew = !ev;
+  document.getElementById('calDTitle').textContent = isNew ? 'Yeni Yayın Girişi' : 'Yayın Girişini Düzenle';
+  const evType = ev ? getEventType(ev) : null;
+  const evPlatform = ev ? getEventPlatform(ev) : null;
+  document.getElementById('calDBadge').style.background = ev ? CAL_SM_COLORS[evPlatform] : '#8C7538';
+  document.getElementById('calDBadge').textContent = ev ? CAL_TYPE_LABELS[evType] : '+';
+  document.getElementById('calDBadge').title = ev ? calDisplayName(ev) : '';
+  document.getElementById('calDeleteBtn').style.display = isNew ? 'none' : '';
+  document.getElementById('calPlatformMultiWrap').style.display = isNew ? '' : 'none';
+  document.getElementById('calPlatformSingleWrap').style.display = isNew ? 'none' : '';
+
+  if(ev){
+    document.getElementById('cal_locationId').value = ev.locationId;
+    document.getElementById('cal_type').value = evType;
+    document.getElementById('cal_platform').value = evPlatform;
+    document.getElementById('cal_title').value = ev.title || '';
+    document.getElementById('cal_date').value = ev.date;
+    document.getElementById('cal_time').value = ev.time || '';
+  } else {
+    const today = new Date();
+    document.getElementById('cal_type').value = 'video';
+    document.querySelectorAll('#calPlatformMultiWrap input[type="checkbox"]').forEach(el=>{ el.checked = el.value === 'youtube'; });
+    document.getElementById('cal_title').value = '';
+    document.getElementById('cal_date').value = `${today.getFullYear()}-${calPad(today.getMonth()+1)}-${calPad(today.getDate())}`;
+    document.getElementById('cal_time').value = '20:00';
+    calNewUploadedState = false;
+  }
+
+  refreshCalModalStatus();
+  refreshCalPkgFields();
+  document.getElementById('calOverlay').classList.add('open');
+}
+
+
+
+function refreshCalModalStatus(){
+  const ev = calCurrentEvent;
+  const toggle = document.getElementById('calUploadToggle');
+  const box = document.getElementById('calUploadBox');
+  const sub = document.getElementById('calUploadSub');
+  const statusEl = document.getElementById('calDStatus');
+
+  if(!ev){
+    // New entry — not saved yet, but the toggle IS usable: it sets the
+    // starting "uploaded" state that will be applied to every platform
+    // created on save, so it doesn't need fixing one-by-one afterward.
+    toggle.classList.toggle('checked', calNewUploadedState);
+    toggle.classList.remove('disabled');
+    box.textContent = calNewUploadedState ? '✓' : '';
+    sub.textContent = calNewUploadedState ? 'İşaretli (kayıtta tüm platformlara uygulanır)' : 'İşaretsiz';
+    statusEl.className = 'cal-modal-status ' + (calNewUploadedState ? 'ready' : 'planned');
+    statusEl.textContent = calNewUploadedState ? '✓ YÜKLENDİ OLARAK KAYDEDİLECEK' : '🕒 PLANLANACAK';
+    return;
+  }
+  const status = calEventStatus(ev);
+  const isLive = status === 'live';
+  statusEl.className = 'cal-modal-status ' + status;
+  statusEl.textContent = status==='live' ? '● YAYINDA' : (status==='ready' ? '✓ YÜKLENDİ — BEKLİYOR' : '🕒 PLANLANDI');
+  toggle.classList.toggle('checked', !!ev.uploaded);
+  toggle.classList.toggle('disabled', isLive);
+  box.textContent = ev.uploaded ? '✓' : '';
+  sub.textContent = isLive ? 'Saat geçti — otomatik yayında' : (ev.uploaded ? 'İşaretli' : 'İşaretsiz');
+}
+
+function refreshCalPkgFields(){
+  const fields = document.getElementById('calPkgFields');
+  const type = currentPreviewType();
+  const platform = currentPreviewPlatform();
+  const ev = calCurrentEvent;
+
+  // Yeni mimari: içerik (caption/hashtag/kapak prompt/carousel slaytları)
+  // artık doğrudan takvim kaydının ÜZERİNDE (ev.content) tutuluyor — lokasyonun
+  // paylaşılan paketine bağımlı değil. ev.content yoksa (eski/legacy kayıt
+  // veya yeni giriş), eski lokasyon-paketi mekanizmasından TEK SEFERLİK
+  // okunur ve ekranda gösterilir; Kaydet'e basıldığında ev.content olarak
+  // kalıcı hale gelir, böylece aynı sorun bir daha yaşanmaz.
+  let content = (ev && ev.content) ? ev.content : null;
+  if(!content){
+    const locId = document.getElementById('cal_locationId').value;
+    const loc = locations.find(l=>l.id===locId);
+    const pkg = (loc && loc.package) ? loc.package : {};
+    const fieldKey = (ev && ev.captionFieldOverride)
+      || (CAL_TYPE_PLATFORM_FIELD[type] && CAL_TYPE_PLATFORM_FIELD[type][platform])
+      || 'captionInstagram';
+    const hashtagVal = platform === 'facebook' ? (pkg.fbTags || '') : (type === 'video' && platform === 'youtube' ? (pkg.tags||'') : (type === 'shorts' ? (pkg.shortsTags||'') : (pkg.hashtags||'')));
+    let thumbPrompt = '';
+    if(type === 'carousel'){ /* handled below via slidePrompts */ }
+    else if(platform === 'facebook' && (type==='video')) thumbPrompt = pkg.fbCoverPrompt || '';
+    else thumbPrompt = pkg.youtubeThumbPrompt || pkg.reel1ThumbPrompt || pkg.reel2ThumbPrompt || '';
+    const slidePrompts = [];
+    if(type === 'carousel'){
+      for(let i=1;i<=9;i++) slidePrompts.push(pkg['carouselSlidePrompt'+i] || '');
+    }
+    content = { caption: pkg[fieldKey] || '', hashtags: hashtagVal || '', thumbPrompt, shortTitle: pkg.youtubeThumbShort || '', videoTitle: '', pinnedComment: '', slidePrompts };
+  }
+
+  let html = `
+    <div class="pkg-field">
+      <div class="field-header">
+        <label>Caption (${CAL_TYPE_NAMES[type]} · ${CAL_SM_NAMES[platform]})</label>
+        <button type="button" class="copy-btn" data-copy-target="calEditCaption">📋 Kopyala</button>
+      </div>
+      <textarea id="calEditCaption">${escapeHtml(content.caption||'')}</textarea>
+    </div>
+    <div class="pkg-field">
+      <div class="field-header">
+        <label>Hashtag / Etiket (virgüllü, # olmadan)</label>
+        <button type="button" class="copy-btn" data-copy-target="calEditHashtags">📋 Kopyala</button>
+      </div>
+      <textarea id="calEditHashtags">${escapeHtml(content.hashtags||'')}</textarea>
+    </div>`;
+
+  if(type === 'video' || type === 'shorts'){
+    html += `
+    <div class="pkg-field">
+      <div class="field-header">
+        <label>Video Başlığı (YouTube arama/öneri ekranında görünen gerçek başlık — dikkat çekici)</label>
+        <button type="button" class="copy-btn" data-copy-target="calEditVideoTitle">📋 Kopyala</button>
+      </div>
+      <textarea id="calEditVideoTitle" style="min-height:34px;">${escapeHtml(content.videoTitle||'')}</textarea>
+    </div>`;
+  }
+
+  if(type === 'video' || type === 'shorts' || type === 'reels'){
+    html += `
+    <div class="pkg-field">
+      <div class="field-header">
+        <label>Kapak Kısa Başlığı (thumbnail üzerine yazılacak, 3-5 kelime, dikkat çekici)</label>
+        <button type="button" class="copy-btn" data-copy-target="calEditShortTitle">📋 Kopyala</button>
+      </div>
+      <textarea id="calEditShortTitle" style="min-height:34px;">${escapeHtml(content.shortTitle||'')}</textarea>
+    </div>
+    <div class="pkg-field">
+      <div class="field-header">
+        <label>Kapak / Thumbnail Görsel Prompt'u</label>
+        <button type="button" class="copy-btn" data-copy-target="calEditThumbPrompt">📋 Kopyala</button>
+      </div>
+      <textarea id="calEditThumbPrompt">${escapeHtml(content.thumbPrompt||'')}</textarea>
+    </div>`;
+  }
+
+  if(type === 'carousel'){
+    const slides = (content.slidePrompts && content.slidePrompts.length) ? content.slidePrompts : Array(9).fill('');
+    html += `<div class="pkg-section-title" style="margin-top:10px;color:#9C4FBF;">🖼️ Carousel Slayt Prompt'ları (9)</div>`;
+    for(let i=0;i<9;i++){
+      html += `
+      <div class="pkg-field">
+        <div class="field-header">
+          <label>Slayt ${i+1}</label>
+          <button type="button" class="copy-btn" data-copy-target="calEditSlide${i+1}">📋 Kopyala</button>
+        </div>
+        <textarea id="calEditSlide${i+1}">${escapeHtml(slides[i]||'')}</textarea>
+      </div>`;
+    }
+  }
+
+  html += `
+    <div class="pkg-field">
+      <div class="field-header">
+        <label>📌 Sabitlenecek Yorum (yayından hemen sonra ilk yorum olarak eklenecek)</label>
+        <button type="button" class="copy-btn" data-copy-target="calEditPinnedComment">📋 Kopyala</button>
+      </div>
+      <textarea id="calEditPinnedComment" style="min-height:44px;">${escapeHtml(content.pinnedComment||'')}</textarea>
+    </div>`;
+
+  fields.innerHTML = html;
+}
+
+// Copy buttons inside the calendar entry preview (İlgili Caption / Hashtag) —
+// same click-to-copy behavior as the Yayın Paketi modal, just scoped to the
+// calendar overlay since that pkg preview lives outside #pkgOverlay.
+document.getElementById('calOverlay').addEventListener('click', (e)=>{
+  const btn = e.target.closest('.copy-btn');
+  if(!btn) return;
+  const targetId = btn.dataset.copyTarget;
+  const el = document.getElementById(targetId);
+  if(!el) return;
+  const text = el.value || '';
+  const showCopied = ()=>{
+    const original = btn.textContent;
+    btn.textContent = '✓ Kopyalandı';
+    btn.classList.add('copied');
+    setTimeout(()=>{ btn.textContent = original; btn.classList.remove('copied'); }, 1400);
+  };
+  if(navigator.clipboard && navigator.clipboard.writeText){
+    navigator.clipboard.writeText(text).then(showCopied).catch(()=>{
+      el.style.display='block'; el.select(); document.execCommand('copy'); el.style.display='none'; showCopied();
+    });
+  } else {
+    el.style.display='block'; el.select(); document.execCommand('copy'); el.style.display='none'; showCopied();
+  }
+});
+
+document.getElementById('cal_locationId').addEventListener('change', refreshCalPkgFields);
+function updateCalDBadgeLive(){
+  if(!calCurrentEvent) return;
+  document.getElementById('calDBadge').style.background = CAL_SM_COLORS[document.getElementById('cal_platform').value];
+  document.getElementById('calDBadge').textContent = CAL_TYPE_LABELS[document.getElementById('cal_type').value];
+}
+document.getElementById('cal_platform').addEventListener('change', ()=>{
+  refreshCalPkgFields();
+  updateCalDBadgeLive();
+});
+document.getElementById('cal_type').addEventListener('change', ()=>{
+  refreshCalPkgFields();
+  updateCalDBadgeLive();
+});
+document.querySelectorAll('#calPlatformMultiWrap input[type="checkbox"]').forEach(el=>{
+  el.addEventListener('change', refreshCalPkgFields);
+});
+
+document.getElementById('calUploadToggle').addEventListener('click', ()=>{
+  if(calCurrentEvent){
+    if(calEventStatus(calCurrentEvent) === 'live') return;
+    calCurrentEvent.uploaded = !calCurrentEvent.uploaded;
+    const loc = locations.find(l=>l.id===calCurrentEvent.locationId);
+    logActivity(`Takvim — "${loc?loc.name:'?'}" (${calDisplayName(calCurrentEvent)}, ${calCurrentEvent.date} ${calCurrentEvent.time}): ${calCurrentEvent.uploaded ? 'yüklendi olarak işaretlendi' : 'işaret kaldırıldı'}.`);
+  } else {
+    calNewUploadedState = !calNewUploadedState;
+  }
+  refreshCalModalStatus();
+  renderCal();
+});
+
+function collectCalContentFromForm(type){
+  const content = {
+    caption: document.getElementById('calEditCaption') ? document.getElementById('calEditCaption').value : '',
+    hashtags: document.getElementById('calEditHashtags') ? document.getElementById('calEditHashtags').value : '',
+    thumbPrompt: document.getElementById('calEditThumbPrompt') ? document.getElementById('calEditThumbPrompt').value : '',
+    shortTitle: document.getElementById('calEditShortTitle') ? document.getElementById('calEditShortTitle').value : '',
+    videoTitle: document.getElementById('calEditVideoTitle') ? document.getElementById('calEditVideoTitle').value : '',
+    pinnedComment: document.getElementById('calEditPinnedComment') ? document.getElementById('calEditPinnedComment').value : '',
+    slidePrompts: []
+  };
+  if(type === 'carousel'){
+    for(let i=1;i<=9;i++){
+      const el = document.getElementById('calEditSlide'+i);
+      content.slidePrompts.push(el ? el.value : '');
+    }
+  }
+  return content;
+}
+
+document.getElementById('calSaveBtn').addEventListener('click', async ()=>{
+  const locationId = document.getElementById('cal_locationId').value;
+  const title = document.getElementById('cal_title').value.trim();
+  const date = document.getElementById('cal_date').value;
+  const time = document.getElementById('cal_time').value;
+  if(!date || !time){ alert('Tarih ve saat gerekli.'); return; }
+  if(!title){ alert('Başlık/not gerekli.'); return; }
+
+  if(calCurrentEvent){
+    const type = document.getElementById('cal_type').value;
+    const platform = document.getElementById('cal_platform').value;
+    calCurrentEvent.locationId = locationId;
+    // New-style entries (platform already one of the 4 pure SM values) can
+    // be overwritten directly. Legacy entries keep their original raw
+    // `platform` code untouched (migration-block idempotency checks key off
+    // it) — the edit is layered on top via typeOverride/platformOverride.
+    if(CAL_SM_PLATFORMS.includes(calCurrentEvent.platform)){
+      calCurrentEvent.type = type;
+      calCurrentEvent.platform = platform;
+    } else {
+      calCurrentEvent.typeOverride = type;
+      calCurrentEvent.platformOverride = platform;
+    }
+    calCurrentEvent.title = title;
+    calCurrentEvent.date = date;
+    calCurrentEvent.time = time;
+    // İçerik (caption/hashtag/kapak prompt/carousel slaytları) artık
+    // doğrudan bu kayıt üzerinde saklanıyor — lokasyon paketine bağımlı değil.
+    calCurrentEvent.content = collectCalContentFromForm(type);
+    logActivity(`Takvim girişi güncellendi: "${title}" (${CAL_TYPE_NAMES[type]} · ${CAL_SM_NAMES[platform]}, ${date} ${time}).`);
+  } else {
+    const type = document.getElementById('cal_type').value;
+    const platforms = getSelectedNewPlatforms();
+    if(platforms.length === 0){ alert('En az bir SM hesabı seç.'); return; }
+    const content = collectCalContentFromForm(type);
+    platforms.forEach((platform, i)=>{
+      calendarEvents.push({
+        id: 'cal_'+Date.now()+'_'+i,
+        locationId, type, platform, title, date, time,
+        uploaded: calNewUploadedState,
+        content: JSON.parse(JSON.stringify(content))
+      });
+    });
+    const platformNames = platforms.map(p=>CAL_SM_NAMES[p]).join(', ');
+    logActivity(`Yeni takvim girişi: "${title}" (${CAL_TYPE_NAMES[type]} — ${platformNames} — ${date} ${time}, ${platforms.length} hesaba${platforms.length>1?' birden':''}).`);
+  }
+  await persist();
+  closeCalModal();
+  renderCal();
+});
+
+document.getElementById('calDeleteBtn').addEventListener('click', async ()=>{
+  if(!calCurrentEvent) return;
+  if(!confirm('Bu takvim girişini silmek istediğine emin misin?')) return;
+  logActivity(`Takvim girişi silindi: "${calCurrentEvent.title}" (${calDisplayName(calCurrentEvent)}, ${calCurrentEvent.date}).`);
+  calendarEvents = calendarEvents.filter(e=>e.id !== calCurrentEvent.id);
+  await persist();
+  closeCalModal();
+  renderCal();
+});
+
+
+function closeCalModal(){
+  document.getElementById('calOverlay').classList.remove('open');
+  calCurrentEvent = null;
+}
+document.getElementById('calCancelBtn').addEventListener('click', closeCalModal);
+document.getElementById('calCloseBtn').addEventListener('click', closeCalModal);
+document.getElementById('calOverlay').addEventListener('click', (e)=>{
+  if(e.target.id === 'calOverlay') closeCalModal();
+});
+
+document.getElementById('calAddBtn').addEventListener('click', ()=> openCalDetail(null));
+
+// Grid/Table toggle within the calendar tab
+function updateCalNavRange(){
+  const el = document.getElementById('calNavRange');
+  if(!el) return;
+  const start = calWindowStart();
+  const end = new Date(start);
+  end.setDate(end.getDate() + (calViewMode === 'table' ? 13 : 20));
+  const fmt = (d)=> `${d.getDate()} ${d.toLocaleString('tr-TR',{month:'short'})}`;
+  el.textContent = `${fmt(start)} — ${fmt(end)}`;
+}
+
+document.getElementById('calNavPrev').addEventListener('click', ()=>{
+  calWindowOffset -= 7;
+  updateCalNavRange();
+  renderCal();
+});
+document.getElementById('calNavNext').addEventListener('click', ()=>{
+  calWindowOffset += 7;
+  updateCalNavRange();
+  renderCal();
+});
+document.getElementById('calNavToday').addEventListener('click', ()=>{
+  calWindowOffset = 0;
+  updateCalNavRange();
+  renderCal();
+});
+
+document.getElementById('calBtnGrid').addEventListener('click', ()=>{
+  calViewMode = 'grid';
+  document.getElementById('calGridView').style.display = '';
+  document.getElementById('calTableView').style.display = 'none';
+  document.getElementById('calBtnGrid').classList.add('active');
+  document.getElementById('calBtnTable').classList.remove('active');
+});
+document.getElementById('calBtnTable').addEventListener('click', ()=>{
+  calViewMode = 'table';
+  document.getElementById('calGridView').style.display = 'none';
+  document.getElementById('calTableView').style.display = '';
+  document.getElementById('calBtnTable').classList.add('active');
+  document.getElementById('calBtnGrid').classList.remove('active');
+});
+
+// ===== Yayın Takvimi format filtresi =====
+// İki bağımsız satır: içerik tipi (calActiveTypeFilters) ve SM platformu
+// (calActivePlatformFilters). Her ikisi de boşsa = hepsi gösterilir; biri
+// veya ikisi doluysa AND mantığıyla birleştirilir. Tıklamalar toggle,
+// "Tümünü Göster" o satırı sıfırlar.
+function updateLegendVisualState(){
+  const typeFiltering = calActiveTypeFilters.size > 0;
+  document.querySelectorAll('#calTypeLegend .cal-legend-item').forEach(el=>{
+    const t = el.dataset.type;
+    el.classList.toggle('cal-filter-active-only', typeFiltering && calActiveTypeFilters.has(t));
+    el.classList.toggle('cal-filter-inactive', typeFiltering && !calActiveTypeFilters.has(t));
+  });
+  document.getElementById('calTypeLegendReset').classList.toggle('cal-filter-on', typeFiltering);
+
+  const platformFiltering = calActivePlatformFilters.size > 0;
+  document.querySelectorAll('#calPlatformLegend .cal-legend-item').forEach(el=>{
+    const p = el.dataset.smplatform;
+    el.classList.toggle('cal-filter-active-only', platformFiltering && calActivePlatformFilters.has(p));
+    el.classList.toggle('cal-filter-inactive', platformFiltering && !calActivePlatformFilters.has(p));
+  });
+  document.getElementById('calPlatformLegendReset').classList.toggle('cal-filter-on', platformFiltering);
+}
+document.querySelectorAll('#calTypeLegend .cal-legend-item').forEach(el=>{
+  el.addEventListener('click', ()=>{
+    const t = el.dataset.type;
+    if(calActiveTypeFilters.has(t)) calActiveTypeFilters.delete(t);
+    else calActiveTypeFilters.add(t);
+    updateLegendVisualState();
+    renderCal();
+  });
+});
+document.querySelectorAll('#calPlatformLegend .cal-legend-item').forEach(el=>{
+  el.addEventListener('click', ()=>{
+    const p = el.dataset.smplatform;
+    if(calActivePlatformFilters.has(p)) calActivePlatformFilters.delete(p);
+    else calActivePlatformFilters.add(p);
+    updateLegendVisualState();
+    renderCal();
+  });
+});
+document.getElementById('calTypeLegendReset').addEventListener('click', ()=>{
+  if(calActiveTypeFilters.size === 0) return;
+  calActiveTypeFilters.clear();
+  updateLegendVisualState();
+  renderCal();
+});
+document.getElementById('calPlatformLegendReset').addEventListener('click', ()=>{
+  if(calActivePlatformFilters.size === 0) return;
+  calActivePlatformFilters.clear();
+  updateLegendVisualState();
+  renderCal();
+});
+
+document.getElementById('calPendingToggle').addEventListener('click', ()=>{
+  calShowOnlyPending = !calShowOnlyPending;
+  const btn = document.getElementById('calPendingToggle');
+  btn.classList.toggle('cal-pending-active', calShowOnlyPending);
+  btn.textContent = calShowOnlyPending ? '☑ Sadece Yüklenmemişleri Göster' : '☐ Sadece Yüklenmemişleri Göster';
+  renderCal();
+});
+
+// Main Lokasyonlar / Takvim / Kayıt tab switch
+function showMainTab(tab){
+  document.getElementById('locationsView').style.display = tab==='locations' ? '' : 'none';
+  document.getElementById('calendarView').style.display = tab==='calendar' ? '' : 'none';
+  document.getElementById('logView').style.display = tab==='log' ? '' : 'none';
+  document.getElementById('controls').style.display = tab==='locations' ? '' : 'none';
+  document.getElementById('rowHeader').style.display = (tab==='locations' && document.getElementById('viewMode').value === 'row') ? '' : 'none';
+  document.getElementById('tabLocations').classList.toggle('active', tab==='locations');
+  document.getElementById('tabCalendar').classList.toggle('active', tab==='calendar');
+  document.getElementById('tabLog').classList.toggle('active', tab==='log');
+  if(tab==='calendar'){ renderCal(); showPendingPopup(true); }
+  if(tab==='log') renderLog();
+}
+document.getElementById('tabLocations').addEventListener('click', ()=> showMainTab('locations'));
+document.getElementById('tabCalendar').addEventListener('click', ()=> showMainTab('calendar'));
+document.getElementById('tabLog').addEventListener('click', ()=> showMainTab('log'));
+
+// ============================================================
+// DEĞİŞİKLİK KAYDI (Activity Log)
+// ============================================================
+function logActivity(message){
+  const now = new Date();
+  const stamp = `${calPad(now.getDate())}.${calPad(now.getMonth()+1)} ${calPad(now.getHours())}:${calPad(now.getMinutes())}`;
+  activityLog.unshift({ time: stamp, message: message });
+  if(activityLog.length > 200) activityLog.length = 200;
+  try{ localStorage.setItem('gerceginizleri_activity_log', JSON.stringify(activityLog)); }catch(e){ /* non-critical */ }
+}
+
+function renderLog(){
+  const list = document.getElementById('logList');
+  const empty = document.getElementById('logEmpty');
+  if(!list) return;
+  if(activityLog.length === 0){
+    list.innerHTML = '';
+    empty.style.display = '';
+    return;
+  }
+  empty.style.display = 'none';
+  list.innerHTML = activityLog.map(e=>`
+    <div class="log-item">
+      <span class="log-time">${e.time}</span>
+      <span class="log-msg">${escapeHtml(e.message)}</span>
+    </div>
+  `).join('');
+}
+
+document.getElementById('logCopyBtn').addEventListener('click', ()=>{
+  const text = activityLog.map(e=>`[${e.time}] ${e.message}`).join('\n');
+  navigator.clipboard.writeText(text || '(kayıt yok)').then(()=>{
+    showToast('Kayıt kopyalandı ✓');
+  }).catch(()=>{
+    alert(text);
+  });
+});
+
+document.getElementById('logClearBtn').addEventListener('click', async ()=>{
+  if(!confirm('Tüm değişiklik kaydını temizlemek istediğine emin misin? (Bunu genelde Claude\'a gönderdikten sonra yaparsın.)')) return;
+  activityLog = [];
+  try{ localStorage.removeItem('gerceginizleri_activity_log'); }catch(e){ /* non-critical */ }
+  renderLog();
+});
+
+function showToast(msg){
+  let t = document.getElementById('toast');
+  if(!t){
+    t = document.createElement('div');
+    t.id = 'toast';
+    t.style.cssText = 'position:fixed;bottom:20px;left:50%;transform:translateX(-50%);background:var(--red);color:#fff;padding:10px 18px;font-family:Poppins,sans-serif;font-size:12.5px;z-index:100;border:1px solid var(--red-dim);max-width:90vw;text-align:center;';
+    document.body.appendChild(t);
+  }
+  t.textContent = msg;
+  t.style.display = 'block';
+}
+function hideToast(){
+  const t = document.getElementById('toast');
+  if(t) t.style.display = 'none';
+}
+
+function computeStats(){
+  const total = locations.length;
+  const scriptReady = locations.filter(l=>l.script==='E').length;
+  const published = locations.filter(l=>l.published==='E').length;
+  const filmed = locations.filter(l=>l.filmed==='E').length;
+  const pendingPermission = locations.filter(l=>l.permission==='E').length;
+  const cancelled = locations.filter(l=>l.cancelled==='E').length;
+  return {total, scriptReady, published, filmed, pendingPermission, cancelled};
+}
+
+function renderStats(){
+  const s = computeStats();
+  document.getElementById('statsRow').innerHTML = `
+    <div class="stat"><div class="num">${s.total}</div><div class="lbl">${t('stat_total')}</div></div>
+    <div class="stat"><div class="num">${s.scriptReady}</div><div class="lbl">${t('stat_script')}</div></div>
+    <div class="stat"><div class="num">${s.filmed}</div><div class="lbl">${t('stat_filmed')}</div></div>
+    <div class="stat"><div class="num">${s.published}</div><div class="lbl">${t('stat_published')}</div></div>
+    <div class="stat"><div class="num">${s.pendingPermission}</div><div class="lbl">${t('stat_permission')}</div></div>
+    <div class="stat"><div class="num">${s.cancelled}</div><div class="lbl">${t('stat_cancelled')}</div></div>
+  `;
+}
+
+function matchesFilters(l){
+  const q = document.getElementById('search').value.trim().toLowerCase();
+  const fmt = document.getElementById('filterFormat').value;
+  const district = document.getElementById('filterDistrict').value;
+  const city = document.getElementById('filterCity').value;
+  const status = document.getElementById('filterStatus').value;
+
+  if(q){
+    const hay = (l.name+' '+l.district+' '+l.city+' '+l.topic).toLowerCase();
+    if(!hay.includes(q)) return false;
+  }
+  if(fmt && l.format !== fmt) return false;
+  if(district && l.district !== district) return false;
+  if(city && l.city !== city) return false;
+  if(status === 'cancelled') return l.cancelled === 'E';
+  if(status === 'needsscript') return l.filmed==='E' && l.script==='H' && l.cancelled!=='E';
+  if(l.cancelled === 'E' && status && status !== 'cancelled') return false;
+  if(status === 'done' && l.published !== 'E') return false;
+  if(status === 'pending' && (l.published === 'E' || l.filmed !== 'E')) return false;
+  if(status === 'unfilmed' && l.filmed === 'E') return false;
+  if(status === 'permission' && l.permission !== 'E') return false;
+  return true;
+}
+
+function populateLocationFilters(){
+  const districtSel = document.getElementById('filterDistrict');
+  const citySel = document.getElementById('filterCity');
+  const curDistrict = districtSel.value;
+  const curCity = citySel.value;
+
+  const districts = [...new Set(locations.map(l=>l.district).filter(Boolean))].sort((a,b)=>a.localeCompare('tr'));
+  const cities = [...new Set(locations.map(l=>l.city).filter(Boolean))].sort((a,b)=>a.localeCompare('tr'));
+
+  districtSel.innerHTML = `<option value="">${t('district_all')}</option>` +
+    districts.map(d=>`<option value="${escapeHtml(d)}">${escapeHtml(d)}</option>`).join('');
+  citySel.innerHTML = `<option value="">${t('city_all')}</option>` +
+    cities.map(c=>`<option value="${escapeHtml(c)}">${escapeHtml(c)}</option>`).join('');
+
+  if(districts.includes(curDistrict)) districtSel.value = curDistrict;
+  if(cities.includes(curCity)) citySel.value = curCity;
+}
+
+function isFullyDone(l){
+  return l.filmed==='E' && l.audio==='E' && l.edited==='E' && l.published==='E';
+}
+
+function render(){
+  renderStats();
+  populateLocationFilters();
+  const grid = document.getElementById('grid');
+  let filtered = locations.filter(matchesFilters);
+  const sortMode = document.getElementById('sortMode').value;
+
+  // Completed (KAPALI) entries always sink to the bottom. Within the rest,
+  // either keep original order or sort by planned filming date (soonest
+  // first, entries with no date go last).
+  filtered = filtered
+    .map((l, i)=>({l, i}))
+    .sort((a,b)=>{
+      const tierOf = x => x.cancelled==='E' ? 2 : (isFullyDone(x) ? 1 : 0);
+      const ta = tierOf(a.l), tb = tierOf(b.l);
+      if(ta !== tb) return ta - tb;
+      if(sortMode === 'date' && ta === 0){
+        const ad = a.l.plannedDate || '9999-99-99';
+        const bd = b.l.plannedDate || '9999-99-99';
+        if(ad !== bd) return ad < bd ? -1 : 1;
+      }
+      return a.i - b.i;
+    })
+    .map(x=>x.l);
+
+  document.getElementById('emptyState').style.display = filtered.length ? 'none' : 'block';
+  const viewMode = document.getElementById('viewMode').value;
+  document.getElementById('rowHeader').style.display = viewMode === 'row' ? 'grid' : 'none';
+  grid.className = viewMode === 'row' ? 'list' : 'grid';
+  grid.innerHTML = viewMode === 'row' ? renderRows(filtered) : renderCards(filtered);
+  wireCardEvents(grid);
+}
+
+function renderCards(filtered){
+  return filtered.map((l, idx)=>{
+    const allDone = l.filmed==='E' && l.audio==='E' && l.edited==='E' && l.published==='E';
+    const needsScript = l.filmed==='E' && l.script==='H' && l.cancelled!=='E';
+    const topicLong = (l.topic||'').length > 110;
+    const notesLong = (l.notes||'').length > 90;
+    return `
+    <div class="card ${allDone?'done':''} ${l.permission==='E'?'hybrid-flag':''} ${l.cancelled==='E'?'cancelled':''} ${needsScript?'needs-script':''}">
+      ${allDone?`<div class="completed-badge">${t('closed_badge')}</div>`:''}
+      ${l.cancelled==='E'?`<div class="cancelled-badge">${t('cancelled_badge')}</div>`:''}
+      <div class="card-head-row">
+        ${l.imageUrl ? `<div class="card-image"><img src="${escapeHtml(l.imageUrl)}" alt="${escapeHtml(l.name)}" loading="lazy"></div>` : ''}
+        <div class="card-top">
+          <div class="card-top-main">
+            <div class="card-idx">${t('file_no')}${String(locations.indexOf(l)+1).padStart(3,'0')}</div>
+            <div class="card-name" title="${escapeHtml(l.name)}">${escapeHtml(l.name)}</div>
+            <div class="card-loc" title="${escapeHtml(l.district)} / ${escapeHtml(l.city)}${l.address?' — '+escapeHtml(l.address):''}">${escapeHtml(l.district)} / ${escapeHtml(l.city)}${l.address?' — '+escapeHtml(l.address):''}</div>
+            <a class="maps-link" href="${mapsUrl(l)}" target="_blank" rel="noopener">${t('maps_open')}</a>
+          </div>
+          <div class="fmt-tag fmt-${l.format}">${formatLabel(l.format)}</div>
+        </div>
+      </div>
+      <div class="needs-script-badge ${needsScript?'':'slot-empty'}">${t('needs_script_badge')}</div>
+      <div class="perm-flag ${l.permission==='E'?'':'slot-empty'}">${t('permission_pending')}</div>
+      <div class="topic">${escapeHtml(l.topic||'—')}</div>
+      <button class="read-more ${(topicLong||notesLong)?'':'slot-empty'}" data-detail="${l.id}">${t('read_more')} →</button>
+      <a class="script-link ${l.scriptLink?'':'slot-empty'}" href="${escapeHtml(l.scriptLink||'#')}" target="_blank" rel="noopener">${t('script_open')}</a>
+      <a class="script-link ${l.driveFolderLink?'':'slot-empty'}" href="${escapeHtml(l.driveFolderLink||'#')}" target="_blank" rel="noopener">${t('drive_folder_open')}</a>
+      <div class="stages">
+        <div class="stamp ${l.script}" data-id="${l.id}" data-field="script"><span class="v">${statusChar(l.script)}</span>${t('stamp_script')}</div>
+        <div class="stamp ${l.filmed}" data-id="${l.id}" data-field="filmed"><span class="v">${statusChar(l.filmed)}</span>${t('stamp_filmed')}</div>
+        <div class="stamp ${l.audio}" data-id="${l.id}" data-field="audio"><span class="v">${statusChar(l.audio)}</span>${t('stamp_audio')}</div>
+        <div class="stamp ${l.edited}" data-id="${l.id}" data-field="edited"><span class="v">${statusChar(l.edited)}</span>${t('stamp_edited')}</div>
+        <div class="stamp ${l.published}" data-id="${l.id}" data-field="published"><span class="v">${statusChar(l.published)}</span>${t('stamp_published')}</div>
+        <div class="stamp perm-stamp ${l.permission}" data-id="${l.id}" data-field="permission"><span class="v">${statusChar(l.permission)}</span>${t('stamp_permission')}</div>
+      </div>
+      <div class="notes">${escapeHtml(l.notes||'')}</div>
+      <div class="card-actions">
+        <input type="date" class="inline-date" data-id="${l.id}" value="${l.plannedDate||''}" title="${t('planned_date_title')}">
+        <div class="card-actions-buttons">
+          ${''}
+          <button class="icon-btn" data-cancel="${l.id}">${l.cancelled==='E'?t('btn_uncancel'):t('btn_cancel_shoot')}</button>
+          <button class="icon-btn" data-pkg="${l.id}">${t('btn_package')}</button>
+          <button class="icon-btn" data-edit="${l.id}">${t('btn_edit')}</button>
+        </div>
+      </div>
+    </div>`;
+  }).join('');
+}
+
+function formatLabel(fmt){
+  if(fmt==='Saha') return t('fmt_saha');
+  if(fmt==='Masabaşı') return t('fmt_masabasi');
+  if(fmt==='Hibrit') return t('fmt_hibrit');
+  return fmt;
+}
+function statusChar(v){
+  return v==='E' ? t('yes_char') : t('no_char');
+}
+
+function renderRows(filtered){
+  return filtered.map((l)=>{
+    const allDone = l.filmed==='E' && l.audio==='E' && l.edited==='E' && l.published==='E';
+    const needsScript = l.filmed==='E' && l.script==='H' && l.cancelled!=='E';
+    return `
+    <div class="row ${allDone?'row-done':''} ${l.cancelled==='E'?'row-cancelled':''} ${needsScript?'row-needs-script':''}">
+      <div class="row-main">
+        ${l.imageUrl ? `<div class="row-image"><img src="${escapeHtml(l.imageUrl)}" alt="${escapeHtml(l.name)}" loading="lazy"></div>` : ''}
+        <div class="row-main-text">
+          <div class="row-idx">${t('file_no')}${String(locations.indexOf(l)+1).padStart(3,'0')}</div>
+          <div class="row-name"><span class="name-text">${escapeHtml(l.name)}</span>${allDone?`<span class="mini-badge">${t('closed_badge')}</span>`:''}${l.cancelled==='E'?`<span class="mini-badge" style="background:var(--red);">${t('cancelled_badge')}</span>`:''}${needsScript?`<span class="mini-badge" style="background:#E8912D;color:#000;">${t('needs_script_badge')}</span>`:''}<input type="date" class="inline-date" data-id="${l.id}" value="${l.plannedDate||''}" title="${t('planned_date_title')}"></div>
+          <div class="row-loc">${escapeHtml(l.district)} / ${escapeHtml(l.city)}</div>
+        </div>
+      </div>
+      <div class="row-meta">
+        <div class="fmt-tag fmt-${l.format}">${formatLabel(l.format)}</div>
+        <a class="maps-link" href="${mapsUrl(l)}" target="_blank" rel="noopener">🗺️</a>
+        ${l.permission==='E' ? `<span class="perm-flag">${t('permission_pending')}</span>` : ''}
+        ${l.scriptLink ? `<a class="script-link" href="${escapeHtml(l.scriptLink)}" target="_blank" rel="noopener">${t('script_short')}</a>` : ''}
+        ${l.driveFolderLink ? `<a class="script-link" href="${escapeHtml(l.driveFolderLink)}" target="_blank" rel="noopener">📁</a>` : ''}
+      </div>
+      <div class="row-stamps">
+        <div class="row-stamp ${l.script}" data-id="${l.id}" data-field="script" title="${t('stamp_script')}">${statusChar(l.script)}</div>
+        <div class="row-stamp ${l.filmed}" data-id="${l.id}" data-field="filmed" title="${t('stamp_filmed')}">${statusChar(l.filmed)}</div>
+        <div class="row-stamp ${l.audio}" data-id="${l.id}" data-field="audio" title="${t('stamp_audio')}">${statusChar(l.audio)}</div>
+        <div class="row-stamp ${l.edited}" data-id="${l.id}" data-field="edited" title="${t('stamp_edited')}">${statusChar(l.edited)}</div>
+        <div class="row-stamp ${l.published}" data-id="${l.id}" data-field="published" title="${t('stamp_published')}">${statusChar(l.published)}</div>
+        <div class="row-stamp perm-stamp ${l.permission}" data-id="${l.id}" data-field="permission" title="${t('stamp_permission')}">${statusChar(l.permission)}</div>
+      </div>
+      <div class="row-actions">
+        ${''}
+        <button class="icon-btn" data-cancel="${l.id}">${l.cancelled==='E'?'↩':'🚫'}</button>
+        <button class="icon-btn" data-pkg="${l.id}">📦</button>
+        <button class="icon-btn" data-edit="${l.id}">${t('btn_edit')}</button>
+      </div>
+    </div>`;
+  }).join('');
+}
+
+function wireCardEvents(container){
+  container.querySelectorAll('.stamp, .row-stamp').forEach(el=>{
+    el.addEventListener('click', async ()=>{
+      const id = el.dataset.id, field = el.dataset.field;
+      const loc = locations.find(x=>x.id===id);
+      loc[field] = loc[field] === 'E' ? 'H' : 'E';
+      if(field==='script' && loc[field]==='E') loc.prepRequested = 'H';
+      const fieldNames = {script:'Script',filmed:'Çekim',audio:'Ses',edited:'Kurgu',published:'Yayın',permission:'İzin'};
+      logActivity(`"${loc.name}" — ${fieldNames[field]||field}: ${loc[field]==='E' ? 'işaretlendi ✓' : 'işaret kaldırıldı'}.`);
+      await persist();
+      render();
+    });
+  });
+  container.querySelectorAll('[data-edit]').forEach(el=>{
+    el.addEventListener('click', ()=> openModal(el.dataset.edit));
+  });
+  container.querySelectorAll('[data-pkg]').forEach(el=>{
+    el.addEventListener('click', ()=> openPkgModal(el.dataset.pkg));
+  });
+  container.querySelectorAll('.inline-date').forEach(el=>{
+    el.addEventListener('click', (e)=> e.stopPropagation());
+    el.addEventListener('change', async ()=>{
+      const loc = locations.find(x=>x.id===el.dataset.id);
+      if(!loc) return;
+      loc.plannedDate = el.value;
+      await persist();
+      render();
+    });
+  });
+  container.querySelectorAll('[data-detail]').forEach(el=>{
+    el.addEventListener('click', ()=> openDetail(el.dataset.detail));
+  });
+  container.querySelectorAll('[data-cancel]').forEach(el=>{
+    el.addEventListener('click', async ()=>{
+      const loc = locations.find(x=>x.id===el.dataset.cancel);
+      if(!loc) return;
+      loc.cancelled = loc.cancelled === 'E' ? 'H' : 'E';
+      await persist();
+      render();
+    });
+  });
+}
+
+function openDetail(id){
+  const l = locations.find(x=>x.id===id);
+  if(!l) return;
+  document.getElementById('detailTitle').textContent = l.name;
+  document.getElementById('detailTopic').textContent = l.topic || '—';
+  const notesWrap = document.getElementById('detailNotesWrap');
+  if(l.notes){
+    notesWrap.style.display = '';
+    document.getElementById('detailNotes').textContent = l.notes;
+  }else{
+    notesWrap.style.display = 'none';
+  }
+  const fieldNotesWrap = document.getElementById('detailFieldNotesWrap');
+  if(l.fieldNotes){
+    fieldNotesWrap.style.display = '';
+    document.getElementById('detailFieldNotes').textContent = l.fieldNotes;
+  }else{
+    fieldNotesWrap.style.display = 'none';
+  }
+  const cautionsWrap = document.getElementById('detailCautionsWrap');
+  if(l.shootingCautions){
+    cautionsWrap.style.display = '';
+    document.getElementById('detailCautions').textContent = l.shootingCautions;
+  }else{
+    cautionsWrap.style.display = 'none';
+  }
+  document.getElementById('detailOverlay').classList.add('open');
+}
+document.getElementById('detailCloseBtn').addEventListener('click', ()=>{
+  document.getElementById('detailOverlay').classList.remove('open');
+});
+document.getElementById('detailOverlay').addEventListener('click', (e)=>{
+  if(e.target.id==='detailOverlay') document.getElementById('detailOverlay').classList.remove('open');
+});
+
+function escapeHtml(str){
+  const d = document.createElement('div');
+  d.textContent = str||'';
+  return d.innerHTML;
+}
+
+function mapsUrl(l){
+  if(l.mapsLink) return l.mapsLink;
+  const q = [l.name, l.address, l.district, l.city].filter(Boolean).join(', ');
+  return 'https://www.google.com/maps/search/?api=1&query=' + encodeURIComponent(q);
+}
+
+function formatDate(iso){
+  if(!iso) return '';
+  const [y,m,d] = iso.split('-');
+  const aylar = ['Oca','Şub','Mar','Nis','May','Haz','Tem','Ağu','Eyl','Eki','Kas','Ara'];
+  return `${parseInt(d,10)} ${aylar[parseInt(m,10)-1]} ${y}`;
+}
+
+function populateModalDatalists(){
+  const districts = [...new Set(locations.map(l=>l.district).filter(Boolean))].sort((a,b)=>a.localeCompare('tr'));
+  const cities = [...new Set(locations.map(l=>l.city).filter(Boolean))].sort((a,b)=>a.localeCompare('tr'));
+  document.getElementById('districtOptions').innerHTML = districts.map(d=>`<option value="${escapeHtml(d)}">`).join('');
+  document.getElementById('cityOptions').innerHTML = cities.map(c=>`<option value="${escapeHtml(c)}">`).join('');
+}
+
+function openModal(id){
+  const overlay = document.getElementById('overlay');
+  document.getElementById('editId').value = id || '';
+  populateModalDatalists();
+  if(id){
+    const l = locations.find(x=>x.id===id);
+    document.getElementById('modalTitle').textContent = t('modal_edit');
+    document.getElementById('f_name').value = l.name;
+    document.getElementById('f_district').value = l.district;
+    document.getElementById('f_city').value = l.city;
+    document.getElementById('f_address').value = l.address;
+    document.getElementById('f_mapsLink').value = l.mapsLink || '';
+    document.getElementById('f_format').value = l.format;
+    document.getElementById('f_permission').value = l.permission;
+    document.getElementById('f_topic').value = l.topic;
+    document.getElementById('f_fieldNotes').value = l.fieldNotes || '';
+    document.getElementById('f_shootingCautions').value = l.shootingCautions || '';
+    document.getElementById('f_script').value = l.script || 'H';
+    document.getElementById('f_scriptLink').value = l.scriptLink || '';
+    document.getElementById('f_driveFolderLink').value = l.driveFolderLink || '';
+    document.getElementById('f_filmed').value = l.filmed;
+    document.getElementById('f_audio').value = l.audio;
+    document.getElementById('f_edited').value = l.edited;
+    document.getElementById('f_published').value = l.published;
+    document.getElementById('f_notes').value = l.notes;
+    document.getElementById('deleteBtn').style.display = 'inline-block';
+  }else{
+    document.getElementById('modalTitle').textContent = t('modal_new');
+    ['f_name','f_district','f_address','f_topic','f_notes','f_scriptLink','f_mapsLink','f_fieldNotes','f_shootingCautions','f_driveFolderLink'].forEach(f=>document.getElementById(f).value='');
+    document.getElementById('f_city').value = 'İstanbul';
+    document.getElementById('f_format').value = 'Saha';
+    document.getElementById('f_permission').value = 'H';
+    document.getElementById('f_script').value = 'H';
+    document.getElementById('f_filmed').value = 'H';
+    document.getElementById('f_audio').value = 'H';
+    document.getElementById('f_edited').value = 'H';
+    document.getElementById('f_published').value = 'H';
+    document.getElementById('deleteBtn').style.display = 'none';
+  }
+  overlay.classList.add('open');
+}
+
+function closeModal(){
+  document.getElementById('overlay').classList.remove('open');
+}
+
+document.getElementById('addBtn').addEventListener('click', ()=>openModal(null));
+document.getElementById('cancelBtn').addEventListener('click', closeModal);
+document.getElementById('overlay').addEventListener('click', (e)=>{
+  if(e.target.id==='overlay') closeModal();
+});
+
+document.getElementById('saveBtn').addEventListener('click', async ()=>{
+  const id = document.getElementById('editId').value;
+  const data = {
+    name: document.getElementById('f_name').value.trim(),
+    district: document.getElementById('f_district').value.trim(),
+    city: document.getElementById('f_city').value.trim(),
+    address: document.getElementById('f_address').value.trim(),
+    mapsLink: document.getElementById('f_mapsLink').value.trim(),
+    format: document.getElementById('f_format').value,
+    permission: document.getElementById('f_permission').value,
+    topic: document.getElementById('f_topic').value.trim(),
+    fieldNotes: document.getElementById('f_fieldNotes').value.trim(),
+    shootingCautions: document.getElementById('f_shootingCautions').value.trim(),
+    script: document.getElementById('f_script').value,
+    scriptLink: document.getElementById('f_scriptLink').value.trim(),
+    driveFolderLink: document.getElementById('f_driveFolderLink').value.trim(),
+    filmed: document.getElementById('f_filmed').value,
+    audio: document.getElementById('f_audio').value,
+    edited: document.getElementById('f_edited').value,
+    published: document.getElementById('f_published').value,
+    notes: document.getElementById('f_notes').value.trim()
+  };
+  if(!data.name){ alert(t('name_empty_alert')); return; }
+
+  if(id){
+    const idx = locations.findIndex(x=>x.id===id);
+    locations[idx] = {...locations[idx], ...data};
+    logActivity(`"${data.name}" lokasyonu güncellendi.`);
+  }else{
+    locations.push(normalizeLocation({...data, id:'loc_'+Date.now()}));
+    logActivity(`Yeni lokasyon eklendi: "${data.name}".`);
+  }
+  await persist();
+  closeModal();
+  render();
+});
+
+document.getElementById('deleteBtn').addEventListener('click', async ()=>{
+  const id = document.getElementById('editId').value;
+  if(!confirm(t('delete_confirm'))) return;
+  const loc = locations.find(x=>x.id===id);
+  const name = loc ? loc.name : id;
+  locations = locations.filter(x=>x.id!==id);
+  logActivity(`Lokasyon silindi: "${name}".`);
+  await persist();
+  closeModal();
+  render();
+});
+
+function openPkgModal(id){
+  const l = locations.find(x=>x.id===id);
+  if(!l) return;
+  normalizeLocation(l);
+  document.getElementById('pkgId').value = id;
+  document.getElementById('pkgTitle').textContent = t('pkg_title') + ' — ' + l.name;
+  document.getElementById('p_shotList').value = l.package.shotList;
+  document.getElementById('pkgOverlay').classList.add('open');
+}
+function closePkgModal(){
+  document.getElementById('pkgOverlay').classList.remove('open');
+}
+document.getElementById('pkgCancelBtn').addEventListener('click', closePkgModal);
+document.getElementById('pkgOverlay').addEventListener('click', (e)=>{
+  if(e.target.id==='pkgOverlay') closePkgModal();
+});
+
+document.getElementById('pkgSaveBtn').addEventListener('click', async ()=>{
+  const id = document.getElementById('pkgId').value;
+  const l = locations.find(x=>x.id===id);
+  if(!l) return;
+  l.package = {
+    shotList: document.getElementById('p_shotList').value
+  };
+  logActivity(`"${l.name}" — Yayın Paketi güncellendi.`);
+  await persist();
+  closePkgModal();
+  render();
+});
+
+// ===== Backup: export current data as a downloadable JSON file =====
+// Token dugmesi yerini cikisa birakti: artik cihaza anahtar girilmiyor,
+// Google ile giriliyor.
+document.getElementById('githubTokenResetBtn').addEventListener('click', async ()=>{
+  if(!confirm('Oturumu kapatmak istiyor musun?')) return;
+  if(sb) await sb.auth.signOut();
+  location.reload();
+});
+
+document.getElementById('refreshBtn').addEventListener('click', ()=>{
+  // Standalone/home-screen mode has no browser reload button, so this is
+  // the only way to force a fresh reload — cache-bust with a query param
+  // to make sure we're not serving a stale cached copy of index.html.
+  const url = new URL(window.location.href.split('?')[0].split('#')[0]);
+  url.searchParams.set('_r', Date.now());
+  window.location.href = url.toString();
+});
+
+document.getElementById('exportBtn').addEventListener('click', ()=>{
+  const dataStr = JSON.stringify({ locations: locations, calendarEvents: calendarEvents }, null, 2);
+  const blob = new Blob([dataStr], {type:'application/json'});
+  const url = URL.createObjectURL(blob);
+  const now = new Date();
+  const stamp = now.getFullYear()+'-'+String(now.getMonth()+1).padStart(2,'0')+'-'+String(now.getDate()).padStart(2,'0')+'_'+String(now.getHours()).padStart(2,'0')+String(now.getMinutes()).padStart(2,'0');
+  const a = document.createElement('a');
+  a.href = url;
+  a.download = `lokasyon-takip-yedek-${stamp}.json`;
+  document.body.appendChild(a);
+  a.click();
+  document.body.removeChild(a);
+  URL.revokeObjectURL(url);
+  showToast('Yedek indirildi ✓');
+});
+
+// ===== Veri boyutu gostergesi: Supabase'de kaplanan yer =====
+function updateDataSizeDisplay(){
+  // Kayitlarin metin hacmi. Etkinlik gunlugu haric: o yalnizca bu
+  // tarayicida, localStorage'da duruyor.
+  const payload = JSON.stringify({ locations: locations, calendarEvents: calendarEvents });
+  const bytes = new Blob([payload]).size;
+  const kb = bytes / 1024;
+  // Supabase ucretsiz plan veritabani siniri 500 MB. Bu kayitlar metin
+  // oldugu icin pratikte bu sinira yaklasmak cok zor.
+  const LIMIT_KB = 500 * 1024;
+  const pct = Math.min(100, (kb / LIMIT_KB) * 100);
+
+  let barColor = '#3FA34D'; // green
+  let statusText = 'Rahat — 500 MB sınırının çok altındayız, uzun süre sorun olmaz.';
+  if(pct >= 85){ barColor = '#D64545'; statusText = 'Kritik — yakında sınıra çarpabiliriz, büyük metin bloklarını gözden geçirmeliyiz.'; }
+  else if(pct >= 60){ barColor = '#E8A23A'; statusText = 'Orta — takip etmeye devam edelim, henüz acil değil.'; }
+
+  const byLocSizes = locations.map(l => ({
+    name: l.name,
+    size: new Blob([JSON.stringify(l)]).size
+  })).sort((a,b)=>b.size-a.size).slice(0,5);
+
+  const body = document.getElementById('dataSizeBody');
+  body.innerHTML = `
+    <div style="margin-bottom:12px;">
+      <div style="display:flex;justify-content:space-between;font-weight:600;margin-bottom:4px;">
+        <span>${kb.toFixed(1)} KB / ~${(LIMIT_KB/1024).toFixed(0)} MB</span>
+        <span>%${pct.toFixed(1)}</span>
+      </div>
+      <div style="background:#2a2a2a;border-radius:6px;height:10px;overflow:hidden;">
+        <div style="background:${barColor};height:100%;width:${Math.max(pct,0.5)}%;transition:width .3s;"></div>
+      </div>
+      <div style="margin-top:6px;color:${barColor};font-weight:600;">${statusText}</div>
+    </div>
+    <div style="margin-bottom:10px;">📋 Lokasyon sayısı: <b>${locations.length}</b> · 📅 Takvim girişi: <b>${calendarEvents.length}</b></div>
+    <div style="font-size:12px;opacity:.8;margin-bottom:6px;">En çok yer kaplayan 5 lokasyon (metin/caption/prompt hacmi):</div>
+    <div style="font-size:13px;">
+      ${byLocSizes.map(x => `<div style="display:flex;justify-content:space-between;padding:2px 0;"><span>${x.name}</span><span style="opacity:.7;">${(x.size/1024).toFixed(1)} KB</span></div>`).join('')}
+    </div>
+    <div style="margin-top:12px;font-size:12px;opacity:.75;border-top:1px solid #333;padding-top:10px;">
+      Not: Veri Supabase'de tutuluyor (GitHub'daki data.json dosyasından geçildi — 31 Ağustos 2026). Görseller dosya olarak değil sadece link olarak tutulduğu için yer kaplamıyor.
+    </div>
+  `;
+}
+
+document.getElementById('dataSizeBtn').addEventListener('click', ()=>{
+  updateDataSizeDisplay();
+  document.getElementById('dataSizeOverlay').classList.add('open');
+});
+document.getElementById('dataSizeCloseBtn').addEventListener('click', ()=>{
+  document.getElementById('dataSizeOverlay').classList.remove('open');
+});
+
+// ===== Girilmemiş / Yüklenmemiş İçerikler (Bekleyenler) =====
+// autoMode=true: sadece Takvim sekmesine geçildiğinde otomatik açılır ve
+// bekleyen hiçbir şey yoksa sessizce hiçbir şey göstermez (rahatsız etmez).
+// autoMode=false (buton tıklaması): bekleyen yoksa bile "hepsi tamam" diye
+// açıkça bilgilendirir, çünkü kullanıcı bilerek kontrol etmek istemiştir.
+let calPendingAutoShown = false; // otomatik popup oturum başına sadece 1 kez açılır
+function showPendingPopup(autoMode){
+  if(autoMode){
+    if(calPendingAutoShown) return; // zaten bir kez gösterildi, bir daha kendiliğinden açılmaz
+    calPendingAutoShown = true;
+  }
+  const now = new Date();
+  const pending = calendarEvents.filter(e => !e.uploaded).map(e=>{
+    const loc = locations.find(l=>l.id===e.locationId);
+    const dt = new Date(e.date + 'T' + (e.time||'00:00') + ':00');
+    return { ev: e, loc, dt, overdue: dt <= now };
+  }).sort((a,b)=> a.dt - b.dt);
+
+  if(pending.length === 0){
+    if(autoMode) return; // otomatik moda rahatsız etmeden geç
+    document.getElementById('pendingBody').innerHTML = `<div style="padding:16px 0;color:#3FA34D;font-weight:600;">✓ Hepsi tamam — girilmemiş/yüklenmemiş içerik yok.</div>`;
+    document.getElementById('pendingOverlay').classList.add('open');
+    return;
+  }
+
+  const overdueCount = pending.filter(p=>p.overdue).length;
+  const rows = pending.map(p=>{
+    const type = getEventType(p.ev), platform = getEventPlatform(p.ev);
+    return `<tr class="pending-row ${p.overdue?'pending-overdue':''}" data-id="${p.ev.id}">
+      <td>${p.overdue ? '🔴' : '🕒'} ${escapeHtml(p.ev.date||'')} ${escapeHtml(p.ev.time||'')}</td>
+      <td>${escapeHtml(p.loc ? p.loc.name : '?')}</td>
+      <td><span class="cal-badge" style="background:${CAL_SM_COLORS[platform]};display:inline-block;">${CAL_TYPE_LABELS[type]}</span> ${CAL_SM_NAMES[platform]}</td>
+      <td>${escapeHtml(p.ev.title||'')}</td>
+    </tr>`;
+  }).join('');
+
+  document.getElementById('pendingBody').innerHTML = `
+    <div style="margin-bottom:12px;">
+      <b>${pending.length}</b> girilmemiş içerik var${overdueCount>0 ? ` — bunlardan <b style="color:#D64545;">${overdueCount} tanesinin saati çoktan geçmiş</b> 🔴` : ''}.
+    </div>
+    <table style="width:100%;border-collapse:collapse;font-size:12.5px;">
+      <thead>
+        <tr style="text-align:left;border-bottom:1px solid #333;color:var(--parchment-dim);">
+          <th style="padding:6px 8px;">Tarih/Saat</th>
+          <th style="padding:6px 8px;">Lokasyon</th>
+          <th style="padding:6px 8px;">İçerik</th>
+          <th style="padding:6px 8px;">Başlık</th>
+        </tr>
+      </thead>
+      <tbody>${rows}</tbody>
+    </table>
+    <div style="margin-top:10px;font-size:11.5px;opacity:.7;">Bir satıra tıklayarak doğrudan o girişi düzenleyebilirsin.</div>
+  `;
+  document.querySelectorAll('#pendingBody .pending-row').forEach(tr=>{
+    tr.addEventListener('click', ()=>{
+      const ev = calendarEvents.find(e=>e.id===tr.dataset.id);
+      if(!ev) return;
+      document.getElementById('pendingOverlay').classList.remove('open');
+      showMainTab('calendar');
+      openCalDetail(ev);
+    });
+  });
+  document.getElementById('pendingOverlay').classList.add('open');
+}
+document.getElementById('pendingBtn').addEventListener('click', ()=> showPendingPopup(false));
+document.getElementById('pendingCloseBtn').addEventListener('click', ()=>{
+  document.getElementById('pendingOverlay').classList.remove('open');
+});
+document.getElementById('pendingOverlay').addEventListener('click', (e)=>{
+  if(e.target.id === 'pendingOverlay') document.getElementById('pendingOverlay').classList.remove('open');
+});
+
+// ===== Backup: restore from a previously downloaded JSON file =====
+document.getElementById('importBtn').addEventListener('click', ()=>{
+  document.getElementById('importFile').click();
+});
+document.getElementById('importFile').addEventListener('change', (e)=>{
+  const file = e.target.files[0];
+  if(!file) return;
+  const reader = new FileReader();
+  reader.onload = async (ev)=>{
+    try{
+      const parsed = JSON.parse(ev.target.result);
+      // Support both old-format backups (a bare array of locations) and
+      // new-format backups ({locations, calendarEvents}).
+      const newLocations = Array.isArray(parsed) ? parsed : parsed.locations;
+      const newCalEvents = Array.isArray(parsed) ? [] : (parsed.calendarEvents || []);
+      if(!Array.isArray(newLocations)) throw new Error('Geçersiz format');
+      const confirmMsg = `Bu dosyada ${newLocations.length} lokasyon ve ${newCalEvents.length} takvim girişi var. Mevcut verinin ÜZERİNE yazılacak. Devam edilsin mi?`;
+      if(!confirm(confirmMsg)) return;
+      const temiz = sanitizeAll(newLocations, newCalEvents);
+      locations = temiz.locations;
+      calendarEvents = temiz.calendarEvents;
+      locations.forEach(l => normalizeLocation(l));
+      await persistNow();
+      render();
+      renderCal();
+      showToast('Yedekten geri yüklendi ✓');
+    }catch(err){
+      alert('Dosya okunamadı — geçerli bir yedek JSON dosyası olduğundan emin ol.\n\n' + err.message);
+    }
+    e.target.value = '';
+  };
+  reader.readAsText(file);
+});
+
+document.getElementById('search').addEventListener('input', render);
+document.getElementById('filterFormat').addEventListener('change', render);
+document.getElementById('filterDistrict').addEventListener('change', render);
+document.getElementById('filterCity').addEventListener('change', render);
+document.getElementById('filterStatus').addEventListener('change', render);
+document.getElementById('sortMode').addEventListener('change', render);
+document.getElementById('viewMode').addEventListener('change', render);
+document.getElementById('langSelect').addEventListener('change', (e)=> setLanguage(e.target.value));
+
+// Copy-to-clipboard buttons in the Yayın Paketi modal — works for every
+// caption/tag field via event delegation, no per-field listener needed.
+document.getElementById('pkgOverlay').addEventListener('click', (e)=>{
+  const btn = e.target.closest('.copy-btn');
+  if(!btn) return;
+  const targetId = btn.dataset.copyTarget;
+  const el = document.getElementById(targetId);
+  if(!el) return;
+  const text = el.value || '';
+  const showCopied = ()=>{
+    const original = btn.textContent;
+    btn.textContent = '✓ Kopyalandı';
+    btn.classList.add('copied');
+    setTimeout(()=>{ btn.textContent = original; btn.classList.remove('copied'); }, 1400);
+  };
+  if(navigator.clipboard && navigator.clipboard.writeText){
+    navigator.clipboard.writeText(text).then(showCopied).catch(()=>{
+      el.select(); document.execCommand('copy'); showCopied();
+    });
+  } else {
+    el.select(); document.execCommand('copy'); showCopied();
+  }
+});
+
+async function loadLanguage(){
+  try{
+    const saved = localStorage.getItem(LANG_KEY);
+    if(saved && LANG[saved]) currentLang = saved;
+  }catch(e){ /* default to tr */ }
+  document.getElementById('langSelect').value = currentLang;
+  applyStaticI18n();
+}
+
+loadLanguage();
+loadData();
+</script>
+</body>
+</html>
