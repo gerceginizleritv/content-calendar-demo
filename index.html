@@ -205,6 +205,54 @@ body{
 .legend-reset.show{opacity:1;}
 .legend-reset:hover{color:var(--accent);}
 .hint{font-size:12.5px;color:var(--text-dim);margin:8px 0 20px;}
+/* --- Sekmeler --- */
+.tabs{display:flex;gap:4px;margin:0 0 18px;border-bottom:1px solid var(--line);}
+.tab{font:inherit;font-weight:600;font-size:14px;padding:10px 18px;border:0;background:none;
+  color:var(--text-dim);cursor:pointer;border-bottom:2px solid transparent;margin-bottom:-1px;}
+.tab:hover{color:var(--text);}
+.tab.active{color:var(--accent);border-bottom-color:var(--accent);}
+
+/* --- Proje sayfasi --- */
+.proj-new{display:grid;grid-template-columns:2fr 2fr auto auto;gap:8px;margin-bottom:14px;}
+.proj-new input{min-width:0;padding:11px 12px;border:1px solid var(--line);border-radius:8px;
+  background:var(--surface);color:var(--text);font:inherit;font-size:14px;color-scheme:light;}
+:root:not([data-theme="light"]) .proj-new input,
+:root:not([data-theme="light"]) .proj-tools input{color-scheme:dark;}
+.proj-tools{display:flex;align-items:center;gap:12px;margin-bottom:14px;}
+.proj-tools input{flex:1;min-width:0;padding:9px 12px;border:1px solid var(--line);border-radius:8px;
+  background:var(--surface);color:var(--text);font:inherit;font-size:13.5px;color-scheme:light;}
+.proj-count{font-size:12px;color:var(--text-dim);white-space:nowrap;
+  font-variant-numeric:tabular-nums;}
+.proj-card{border:1px solid var(--line);border-radius:11px;background:var(--surface);
+  padding:16px 18px;margin-bottom:12px;}
+.proj-head{display:flex;justify-content:space-between;align-items:flex-start;gap:14px;
+  flex-wrap:wrap;margin-bottom:12px;}
+.proj-name{font-size:16px;font-weight:700;color:var(--text);}
+.proj-kw{font-size:12.5px;color:var(--text-dim);margin-top:3px;}
+.proj-actions{display:flex;align-items:center;gap:10px;}
+.proj-shoot{font-size:11px;text-transform:uppercase;letter-spacing:.06em;color:var(--text-dim);
+  display:flex;align-items:center;gap:6px;}
+.proj-shoot input{padding:6px 8px;border:1px solid var(--line);border-radius:6px;
+  background:var(--bg);color:var(--text);font:inherit;font-size:12.5px;color-scheme:light;}
+:root:not([data-theme="light"]) .proj-shoot input{color-scheme:dark;}
+/* Adimlar: her biri tiklanan bir damga. Sirasi isin akisi. */
+.proj-steps{display:flex;flex-wrap:wrap;gap:7px;margin-bottom:10px;}
+.pstep{display:inline-flex;align-items:center;gap:7px;font:inherit;font-size:12.5px;
+  padding:7px 12px;border:1px solid var(--line);border-radius:99px;background:var(--bg);
+  color:var(--text-dim);cursor:pointer;}
+.pstep:hover{border-color:var(--accent-dim);}
+.pstep.on{background:var(--accent-soft);border-color:var(--accent);color:var(--accent);font-weight:600;}
+.pbox{width:14px;height:14px;border:1px solid currentColor;border-radius:4px;
+  display:inline-flex;align-items:center;justify-content:center;font-size:10px;line-height:1;}
+.proj-meta{font-size:12px;color:var(--text-dim);font-variant-numeric:tabular-nums;}
+/* --- Modaldeki proje secimi --- */
+.proj-pick{display:grid;grid-template-columns:1fr;gap:6px;}
+.proj-pick-hint{font-size:11.5px;color:var(--text-dim);margin-top:5px;}
+@media(max-width:700px){
+  .proj-new{grid-template-columns:1fr 1fr;}
+  .proj-new #p_add{grid-column:1 / -1;}
+  .proj-head{flex-direction:column;}
+}
 /* Klonlama satiri: tur, platform, tarih, saat ve cikar dugmesi yan yana.
    Dar ekranda alt alta duser, sayfa yana kaymaz. */
 .clone-row{display:grid;grid-template-columns:1fr 1fr auto auto auto;gap:8px;
@@ -668,6 +716,28 @@ body{
     <button class="btn btn-sm" id="nudgeDismiss" data-i18n="nudge_dismiss">Not now</button>
   </div>
 
+  <!-- Iki calisma alani: takvim "ne zaman", projeler "nerede kaldi".
+       Ayni veriye iki farkli soruyla bakiliyor. -->
+  <div class="tabs" role="tablist">
+    <button type="button" class="tab active" id="tabCalendar" role="tab" data-i18n="tab_calendar">Calendar</button>
+    <button type="button" class="tab" id="tabProjects" role="tab" data-i18n="tab_projects">Projects</button>
+  </div>
+
+  <div id="projectsPage" hidden>
+    <div class="proj-new">
+      <input type="text" id="p_name" maxlength="120" data-i18n-placeholder="p_name_ph" placeholder="Project name — e.g. Autumn Studio Shoot">
+      <input type="text" id="p_keywords" maxlength="200" data-i18n-placeholder="p_keywords_ph" placeholder="Keywords (optional) — brand, client, topic">
+      <input type="date" id="p_shoot" data-i18n-title="p_shoot_title" title="Shoot date">
+      <button type="button" class="btn btn-primary" id="p_add" data-i18n="p_add">+ Create project</button>
+    </div>
+    <div class="proj-tools">
+      <input type="search" id="p_search" data-i18n-placeholder="p_search_ph" placeholder="Search projects — name or keyword">
+      <span class="proj-count" id="p_count"></span>
+    </div>
+    <div id="projectList"></div>
+  </div>
+
+  <div id="calendarPage">
   <!-- Kayit olusturma ile filtreleme yan yana ama acikca ayri: soldaki buyuk
        dugme uretir, sagdaki panel yalnizca gorunumu daraltir. -->
   <div class="work-row">
@@ -724,6 +794,7 @@ body{
 
   <div class="cal-grid" id="calGrid"></div>
   <div class="cal-table-wrap" id="calTableWrap" hidden></div>
+  </div>
 
 </div>
 
@@ -748,8 +819,20 @@ body{
   <div class="modal">
     <h2 id="modalTitle" data-i18n="modal_new_title">New Entry</h2>
 
+    <!-- Proje en ustte: kayit once bir ise ait, sonra bir tur ve platforma.
+         Sirayi tersine cevirmek, kaydi hangi ise yazdigini en son sormak
+         demekti. -->
+    <div class="field">
+      <label data-i18n="f_concept_label">Project / Concept</label>
+      <div class="proj-pick">
+        <input type="search" id="f_projectSearch" data-i18n-placeholder="f_project_search_ph" placeholder="Search projects">
+        <select id="f_project"></select>
+      </div>
+      <div class="proj-pick-hint" id="f_projectHint"></div>
+    </div>
+
     <div class="row2">
-      <div class="field">
+      <div class="field" id="typeSingleWrap">
         <label data-i18n="f_type_label">Content Type</label>
         <select id="f_type"></select>
       </div>
@@ -759,20 +842,16 @@ body{
       </div>
     </div>
 
+    <!-- Tur de platform gibi coklu: ayni cekimden hem Reels hem Story
+         cikiyorsa ikisini tek seferde isaretleyip birak. -->
+    <div class="field" id="typeMultiWrap">
+      <label data-i18n="f_types_label">Content type(s) — tick every version you will make</label>
+      <div class="platform-checks" id="typeChecks"></div>
+    </div>
+
     <div class="field" id="platformMultiWrap">
       <label data-i18n="f_platforms_label">Platform(s) — check all that this same content goes to</label>
       <div class="platform-checks" id="platformChecks"></div>
-    </div>
-
-    <!-- Urunun vaadi "bir cekim, on paylasim" ama bugune kadar "o cekimi"
-         temsil eden hicbir alan yoktu: on kayit birbirinden habersiz duruyordu.
-         Proje alani o eksik baglanti. Zorunlu degil; bos birakan eskisi gibi
-         calismaya devam ediyor. -->
-    <div class="field">
-      <label data-i18n="f_concept_label">Project / Concept</label>
-      <input type="text" id="f_concept" maxlength="120" list="conceptList"
-             data-i18n-placeholder="f_concept_ph" placeholder="e.g. Studio Shoot, Product Review">
-      <datalist id="conceptList"></datalist>
     </div>
 
     <div class="field">
@@ -1144,7 +1223,39 @@ const LANG = {
     btn_delete: "Delete",
     btn_clone: "Duplicate…",
     f_concept_label: "Project / Concept",
-    f_concept_ph: "e.g. Studio Shoot, Product Review",
+    f_project_search_ph: "Search projects — name or keyword",
+    f_project_new: "+ New project…",
+    f_project_selected: "(selected)",
+    f_project_empty: "No projects yet — pick “+ New project” to create the first one.",
+    f_project_no_match: "Nothing matches. Clear the search or create a new project.",
+    f_project_prompt: "Name for the new project:",
+    f_types_label: "Content type(s) — tick every version you will make",
+    alert_need_project: "Pick a project first, or create one.",
+    alert_select_type: "Tick at least one content type.",
+    tab_calendar: "Calendar",
+    tab_projects: "Projects",
+    p_name_ph: "Project name — e.g. Autumn Studio Shoot",
+    p_keywords_ph: "Keywords (optional) — brand, client, topic",
+    p_shoot_title: "Shoot date",
+    p_shoot_label: "Shoot",
+    p_add: "+ Create project",
+    p_search_ph: "Search projects — name or keyword",
+    p_delete: "Delete",
+    p_none: "No projects yet. Create one above — a project is the shoot, the brand job, the series that your posts come out of.",
+    p_none_match: "No project matches that search.",
+    p_count_all: (n)=> `${n} ${n===1?'project':'projects'}`,
+    p_count_filtered: (n,tum)=> `${n} / ${tum} projects`,
+    p_entries: (n,y)=> `${n} ${n===1?'entry':'entries'} · ${y} posted`,
+    p_limit: (n)=> `The demo holds up to ${n} projects.`,
+    p_exists: (ad)=> `“${ad}” already exists — pick it from the list instead.`,
+    p_del_confirm: (ad)=> `Delete the project “${ad}”?`,
+    p_del_confirm_linked: (ad,n)=> `“${ad}” has ${n} calendar ${n===1?'entry':'entries'}. The entries stay on the calendar and lose their project. Delete the project?`,
+    step_script: "Script",
+    step_filmed: "Filmed",
+    step_audio: "Audio",
+    step_edited: "Edited",
+    step_approved: "Approved",
+    step_published: "Published",
     concept_none: "No project",
     btn_clear_filter: "Clear",
     clone_title: "Duplicate entry",
@@ -1325,7 +1436,39 @@ const LANG = {
     btn_delete: "Sil",
     btn_clone: "Çoğalt…",
     f_concept_label: "Proje / Konsept",
-    f_concept_ph: "Örn: Stüdyo Çekimi, Ürün İnceleme",
+    f_project_search_ph: "Proje ara — ad ya da anahtar kelime",
+    f_project_new: "+ Yeni proje…",
+    f_project_selected: "(seçili)",
+    f_project_empty: "Henüz proje yok — ilkini “+ Yeni proje” ile oluştur.",
+    f_project_no_match: "Eşleşen proje yok. Aramayı temizle ya da yeni proje oluştur.",
+    f_project_prompt: "Yeni projenin adı:",
+    f_types_label: "İçerik tipi(leri) — hazırlayacağın her sürümü işaretle",
+    alert_need_project: "Önce bir proje seç ya da oluştur.",
+    alert_select_type: "En az bir içerik tipi işaretle.",
+    tab_calendar: "Takvim",
+    tab_projects: "Projeler",
+    p_name_ph: "Proje adı — örn. Güz Stüdyo Çekimi",
+    p_keywords_ph: "Anahtar kelimeler (isteğe bağlı) — marka, müşteri, konu",
+    p_shoot_title: "Çekim tarihi",
+    p_shoot_label: "Çekim",
+    p_add: "+ Proje oluştur",
+    p_search_ph: "Proje ara — ad ya da anahtar kelime",
+    p_delete: "Sil",
+    p_none: "Henüz proje yok. Yukarıdan oluştur — proje, paylaşımlarının çıktığı çekim, marka işi ya da seri demek.",
+    p_none_match: "Bu aramaya uyan proje yok.",
+    p_count_all: (n)=> `${n} proje`,
+    p_count_filtered: (n,tum)=> `${n} / ${tum} proje`,
+    p_entries: (n,y)=> `${n} kayıt · ${y} yayınlandı`,
+    p_limit: (n)=> `Bu demoda en fazla ${n} proje tutulabiliyor.`,
+    p_exists: (ad)=> `“${ad}” zaten var — listeden onu seç.`,
+    p_del_confirm: (ad)=> `“${ad}” projesi silinsin mi?`,
+    p_del_confirm_linked: (ad,n)=> `“${ad}” projesine bağlı ${n} takvim kaydı var. Kayıtlar takvimde kalıyor, sadece projeleri kalkıyor. Proje silinsin mi?`,
+    step_script: "Script",
+    step_filmed: "Çekim",
+    step_audio: "Ses",
+    step_edited: "Kurgu",
+    step_approved: "Onay",
+    step_published: "Yayın",
     concept_none: "Projesiz",
     btn_clear_filter: "Temizle",
     clone_title: "Kaydı çoğalt",
@@ -1582,7 +1725,10 @@ function sanitizeEvent(raw){
   const c = (raw.content && typeof raw.content === 'object') ? raw.content : {};
   return {
     // Bilinen degerler beyaz listeden gecer, gerisi varsayilana duser.
-    id:       /^[A-Za-z0-9_-]{1,64}$/.test(raw.id) ? raw.id : 'ev_'+Date.now()+'_'+Math.random().toString(36).slice(2,8),
+    // Ayni tuzak: desen kontrolu degeri metne cevirdigi icin kimliksiz bir
+    // kayit "undefined" kimligiyle gecebiliyordu.
+    id:       (typeof raw.id === 'string' && /^[A-Za-z0-9_-]{1,64}$/.test(raw.id))
+                ? raw.id : 'ev_'+Date.now()+'_'+Math.random().toString(36).slice(2,8),
     type:     CAL_TYPES.includes(raw.type) ? raw.type : 'video',
     platform: CAL_SM_PLATFORMS.includes(raw.platform) ? raw.platform : 'youtube',
     date:     /^\d{4}-\d{2}-\d{2}$/.test(raw.date) ? raw.date : fmtKey(new Date()),
@@ -1713,6 +1859,299 @@ function calWindowEnd(){
   d.setDate(d.getDate() + calCellCount() - 1);
   return d;
 }
+// ===== Projeler =====
+// Proje, kayitlarin ustundeki is birimi: bir cekim, bir marka isi, bir
+// egitim serisi. Takvim "ne zaman cikacak" sorusunun, proje sayfasi
+// "nerede kaldi" sorusunun cevabi.
+//
+// Bugun tarayicida duruyor. Kayitlar gibi buluta tasinacak ama once
+// burada oturmasi gerekiyor; yarim bir modeli senkronlamak, iki yerde
+// birden duzeltmek demek.
+const PROJ_KEY = 'demo_projects';
+const MAX_PROJECTS = 100;
+// Uretim adimlari. Sirasi bilerek boyle: is soldan saga ilerliyor.
+const PROJ_STEPS = ['script','filmed','audio','edited','approved','published'];
+
+let projects = [];
+
+function newProjectId(){
+  return 'pr_' + Date.now().toString(36) + '_' + Math.random().toString(36).slice(2,7);
+}
+
+function sanitizeProject(raw){
+  if(!raw || typeof raw !== 'object') return null;
+  const str = (v,max)=> (typeof v === 'string' ? v.slice(0,max) : '');
+  const p = {
+    // typeof kontrolu sart: regex.test verilen degeri once metne cevirir,
+    // kimlik yoksa "undefined" metni desene uyar ve kimliksiz proje doger.
+    id: (typeof raw.id === 'string' && /^[A-Za-z0-9_-]{1,64}$/.test(raw.id)) ? raw.id : newProjectId(),
+    name: str(raw.name, 120).trim(),
+    keywords: str(raw.keywords, 200),
+    notes: str(raw.notes, 2000),
+    shootDate: /^\d{4}-\d{2}-\d{2}$/.test(raw.shootDate) ? raw.shootDate : '',
+    createdAt: typeof raw.createdAt === 'number' ? raw.createdAt : Date.now()
+  };
+  PROJ_STEPS.forEach(k=>{ p[k] = raw[k] === true; });
+  // Adsiz proje bir sey ifade etmiyor; listede bos satir olarak durur.
+  return p.name ? p : null;
+}
+
+function loadProjects(){
+  let ham = [];
+  try{ ham = JSON.parse(localStorage.getItem(PROJ_KEY) || '[]'); }catch(e){ ham = []; }
+  projects = (Array.isArray(ham) ? ham : []).slice(0, MAX_PROJECTS)
+    .map(sanitizeProject).filter(Boolean);
+}
+
+function saveProjects(){
+  try{ localStorage.setItem(PROJ_KEY, JSON.stringify(projects)); }
+  catch(e){ console.error('[proje] kaydedilemedi', e); }
+}
+
+function projectById(id){
+  return projects.find(p=>p.id === id) || null;
+}
+
+// Kaydin projesi. Once kimlik, sonra eski surumden kalan ad.
+function evProject(e){
+  const c = (e && e.content) || {};
+  if(c.projectId){
+    const p = projectById(c.projectId);
+    if(p) return p;
+  }
+  return null;
+}
+function evProjectAdi(e){
+  const p = evProject(e);
+  if(p) return p.name;
+  const c = (e && e.content) || {};
+  return typeof c.concept === 'string' ? c.concept.trim() : '';
+}
+
+// Bir onceki surumde proje sadece serbest metindi (content.concept).
+// O kayitlar kaybolmasin diye ilk acilista gercek projeye cevriliyor.
+// Bir kez calisiyor: kaydin projectId'si dolunca bir daha girmiyor.
+function projeleriGocur(){
+  let degisti = false;
+  events.forEach(e=>{
+    const c = e.content || (e.content = {});
+    if(c.projectId || !c.concept) return;
+    const ad = String(c.concept).trim();
+    if(!ad) return;
+    let p = projects.find(x=>x.name.toLocaleLowerCase() === ad.toLocaleLowerCase());
+    if(!p){
+      p = sanitizeProject({ name: ad });
+      if(!p) return;
+      projects.push(p);
+    }
+    c.projectId = p.id;
+    markDirty(e.id);
+    degisti = true;
+  });
+  if(degisti){ saveProjects(); save(); }
+}
+
+function projeIcinKayitlar(id){
+  return events.filter(e => (e.content||{}).projectId === id);
+}
+
+// --- Proje sayfasi ---------------------------------------------------
+function projeAra(liste, q){
+  const s = (q||'').trim().toLocaleLowerCase(currentLang === 'tr' ? 'tr' : 'en');
+  if(!s) return liste;
+  return liste.filter(p =>
+    [p.name, p.keywords, p.notes].some(x =>
+      (x||'').toLocaleLowerCase(currentLang === 'tr' ? 'tr' : 'en').indexOf(s) !== -1));
+}
+
+function renderProjects(){
+  const kap = document.getElementById('projectList');
+  if(!kap) return;
+  const q = (document.getElementById('p_search')||{}).value || '';
+  const hepsi = projects.slice().sort((a,b)=> b.createdAt - a.createdAt);
+  const liste = projeAra(hepsi, q);
+
+  const sayac = document.getElementById('p_count');
+  if(sayac){
+    sayac.textContent = q
+      ? t('p_count_filtered')(liste.length, hepsi.length)
+      : t('p_count_all')(hepsi.length);
+  }
+
+  if(!liste.length){
+    kap.innerHTML = '<p class="hint">' + escapeHtml(hepsi.length ? t('p_none_match') : t('p_none')) + '</p>';
+    return;
+  }
+
+  kap.innerHTML = liste.map(p=>{
+    const kayitlar = projeIcinKayitlar(p.id);
+    const yayinlanan = kayitlar.filter(e=>e.uploaded).length;
+    const adimlar = PROJ_STEPS.map(k=>
+      `<button type="button" class="pstep ${p[k]?'on':''}" data-proj="${escapeHtml(p.id)}" data-step="${k}">
+         <span class="pbox">${p[k]?'✓':''}</span>${escapeHtml(t('step_'+k))}
+       </button>`).join('');
+    return `<div class="proj-card">
+      <div class="proj-head">
+        <div>
+          <div class="proj-name">${escapeHtml(p.name)}</div>
+          ${p.keywords ? `<div class="proj-kw">${escapeHtml(p.keywords)}</div>` : ''}
+        </div>
+        <div class="proj-actions">
+          <label class="proj-shoot">${escapeHtml(t('p_shoot_label'))}
+            <input type="date" data-proj-date="${escapeHtml(p.id)}" value="${escapeHtml(p.shootDate||'')}">
+          </label>
+          <button type="button" class="btn btn-sm" data-proj-del="${escapeHtml(p.id)}">${escapeHtml(t('p_delete'))}</button>
+        </div>
+      </div>
+      <div class="proj-steps">${adimlar}</div>
+      <div class="proj-meta">${escapeHtml(t('p_entries')(kayitlar.length, yayinlanan))}</div>
+    </div>`;
+  }).join('');
+
+  kap.querySelectorAll('.pstep').forEach(el=>{
+    el.addEventListener('click', ()=>{
+      const p = projectById(el.dataset.proj);
+      if(!p) return;
+      p[el.dataset.step] = !p[el.dataset.step];
+      saveProjects(); renderProjects();
+    });
+  });
+  kap.querySelectorAll('[data-proj-date]').forEach(el=>{
+    el.addEventListener('change', ()=>{
+      const p = projectById(el.dataset.projDate);
+      if(!p) return;
+      p.shootDate = el.value || '';
+      saveProjects();
+    });
+  });
+  kap.querySelectorAll('[data-proj-del]').forEach(el=>{
+    el.addEventListener('click', ()=>{
+      const p = projectById(el.dataset.projDel);
+      if(!p) return;
+      const bagli = projeIcinKayitlar(p.id).length;
+      // Projeyi silmek kayitlari silmiyor; kayitlar projesiz kaliyor.
+      // Bir projeyi kapatirken haftalarca girilmis yayin planinin da
+      // gitmesi, geri alinamayacak bir surpriz olurdu.
+      if(!confirm(bagli ? t('p_del_confirm_linked')(p.name, bagli) : t('p_del_confirm')(p.name))) return;
+      projeIcinKayitlar(p.id).forEach(e=>{
+        delete e.content.projectId;
+        delete e.content.concept;
+        markDirty(e.id);
+      });
+      projects = projects.filter(x=>x.id !== p.id);
+      saveProjects(); save(); renderProjects(); renderCal();
+    });
+  });
+}
+
+function projeEkle(ad, anahtar, cekim){
+  const p = sanitizeProject({ name: ad, keywords: anahtar, shootDate: cekim });
+  if(!p) return null;
+  if(projects.length >= MAX_PROJECTS){ alert(t('p_limit')(MAX_PROJECTS)); return null; }
+  // Ayni ad iki kez girilmesin: "Stüdyo çekimi" ile "stüdyo Çekimi" ayri
+  // iki proje olarak dururdu.
+  const var_ = projects.find(x=>x.name.toLocaleLowerCase() === p.name.toLocaleLowerCase());
+  if(var_){ alert(t('p_exists')(var_.name)); return var_; }
+  projects.push(p);
+  saveProjects();
+  return p;
+}
+
+// --- Modaldeki proje secimi ------------------------------------------
+// Serbest metin degil secim: ayni proje iki farkli yazimla ikiye
+// bolunmesin. Listenin basinda "+ yeni proje" duruyor ki kullanici
+// kayit girmeye baslamisken ayri bir sayfaya gonderilmesin.
+const YENI_PROJE = '__yeni__';
+
+function projeSecimiTazele(seciliId){
+  const sel = document.getElementById('f_project');
+  const kutu = document.getElementById('f_projectSearch');
+  const ipucu = document.getElementById('f_projectHint');
+  if(!sel) return;
+  const q = (kutu && kutu.value) || '';
+  const hepsi = projects.slice().sort((a,b)=>a.name.localeCompare(b.name, currentLang==='tr'?'tr':'en'));
+  const uyan = projeAra(hepsi, q);
+
+  // Secili proje aramaya uymasa da listede kaliyor: yoksa arama yazar
+  // yazmaz kaydin projesi sessizce baskasina kayardi.
+  const gosterilecek = uyan.slice();
+  const secili = seciliId || sel.value;
+  const seciliP = secili && secili !== YENI_PROJE ? projectById(secili) : null;
+  const dusuyor = !!seciliP && !uyan.some(p=>p.id === seciliP.id);
+  if(dusuyor) gosterilecek.push(seciliP);
+
+  sel.innerHTML =
+    `<option value="${YENI_PROJE}">${escapeHtml(t('f_project_new'))}</option>` +
+    gosterilecek.map(p=>`<option value="${escapeHtml(p.id)}">${escapeHtml(p.name)}${dusuyor && p.id===secili ? ' ' + escapeHtml(t('f_project_selected')) : ''}</option>`).join('');
+
+  if(secili && gosterilecek.some(p=>p.id===secili)) sel.value = secili;
+  else if(!hepsi.length) sel.value = YENI_PROJE;
+  else if(gosterilecek.length) sel.value = gosterilecek[0].id;
+
+  if(ipucu){
+    if(!hepsi.length) ipucu.textContent = t('f_project_empty');
+    else if(q && !uyan.length) ipucu.textContent = t('f_project_no_match');
+    else if(q) ipucu.textContent = t('p_count_filtered')(uyan.length, hepsi.length);
+    else ipucu.textContent = '';
+  }
+}
+
+// Secim "+ yeni proje" ise adini sorup olusturuyor ve secili birakiyor.
+function secilenProjeyiCoz(){
+  const sel = document.getElementById('f_project');
+  if(!sel) return null;
+  if(sel.value !== YENI_PROJE) return projectById(sel.value);
+  const ad = (window.prompt(t('f_project_prompt')) || '').trim();
+  if(!ad) return null;
+  const p = projeEkle(ad, '', '');
+  if(!p) return null;
+  projeSecimiTazele(p.id);
+  renderProjects();
+  return p;
+}
+
+// --- Icerik tipi cok secimli -----------------------------------------
+function typeChecksDoldur(){
+  const kap = document.getElementById('typeChecks');
+  if(!kap) return;
+  kap.innerHTML = CAL_TYPES.map(x=>
+    `<label class="pcheck"><input type="checkbox" value="${x}"><span>${escapeHtml(typeName(x))}</span></label>`).join('');
+}
+function secilenTipler(){
+  return [...document.querySelectorAll('#typeChecks input:checked')].map(el=>el.value);
+}
+
+// --- Sekmeler --------------------------------------------------------
+// Takvim "ne zaman cikacak", projeler "nerede kaldi" sorusunun cevabi.
+// Ayni veri, iki farkli soru.
+function setPage(ad){
+  const proje = ad === 'projects';
+  document.getElementById('calendarPage').hidden = proje;
+  document.getElementById('projectsPage').hidden = !proje;
+  document.getElementById('tabCalendar').classList.toggle('active', !proje);
+  document.getElementById('tabProjects').classList.toggle('active', proje);
+  try{ localStorage.setItem('demo_page', ad); }catch(e){ /* onemsiz */ }
+  if(proje) renderProjects();
+}
+
+document.getElementById('tabCalendar').addEventListener('click', ()=> setPage('calendar'));
+document.getElementById('tabProjects').addEventListener('click', ()=>{ track('funnel/projects-opened'); setPage('projects'); });
+
+document.getElementById('p_add').addEventListener('click', ()=>{
+  const ad = document.getElementById('p_name').value.trim();
+  if(!ad){ document.getElementById('p_name').focus(); return; }
+  const p = projeEkle(ad, document.getElementById('p_keywords').value, document.getElementById('p_shoot').value);
+  if(!p) return;
+  document.getElementById('p_name').value = '';
+  document.getElementById('p_keywords').value = '';
+  document.getElementById('p_shoot').value = '';
+  trackOnce('funnel/project-created');
+  renderProjects();
+});
+document.getElementById('p_name').addEventListener('keydown', e=>{ if(e.key === 'Enter') document.getElementById('p_add').click(); });
+document.getElementById('p_search').addEventListener('input', renderProjects);
+document.getElementById('f_projectSearch').addEventListener('input', ()=> projeSecimiTazele());
+
 // ===== Klonlama =====
 // Ayni cekimden cikan farkli surumler: bir uzun video, bir Reels, bir Shorts.
 // Tarihler tek tek seciliyor. Otomatik dagitim ("birer gun arayla") gercek
@@ -2112,10 +2551,7 @@ function araligiYaz(){
 
 // Kaydin projesi. Bos olabilir; bos olan kayitlar filtrede "Projesiz"
 // altinda toplaniyor ki plan disi kalanlar gorunmez olmasin.
-function evKonsept(e){
-  const k = e && e.content && e.content.concept;
-  return (typeof k === 'string' ? k.trim() : '');
-}
+function evKonsept(e){ return evProjectAdi(e); }
 function kullanilanKonseptler(){
   const k = new Set();
   events.forEach(e=>{ const x = evKonsept(e); if(x) k.add(x); });
@@ -2321,7 +2757,9 @@ function refreshTypeDependentFields(){
 function openModal(ev, hazirTarih){
   currentEvent = ev || null;
   const isNew = !ev;
-  konseptOnerileriniTazele();
+  document.getElementById('typeMultiWrap').style.display = isNew ? '' : 'none';
+  document.getElementById('typeSingleWrap').style.display = isNew ? 'none' : '';
+  document.getElementById('f_projectSearch').value = '';
   // Klonlama yalnizca kayitli bir girise ait: henuz olusmamis bir seyin
   // kopyasi olmaz.
   document.getElementById('cloneBtn').style.display = isNew ? 'none' : '';
@@ -2333,7 +2771,7 @@ function openModal(ev, hazirTarih){
   if(ev){
     document.getElementById('f_type').value = ev.type;
     document.getElementById('f_platform').value = ev.platform;
-    document.getElementById('f_concept').value = evKonsept(ev);
+    projeSecimiTazele((ev.content||{}).projectId || '');
     document.getElementById('f_title').value = ev.title||'';
     document.getElementById('f_date').value = ev.date;
     document.getElementById('f_time').value = ev.time||'';
@@ -2356,7 +2794,9 @@ function openModal(ev, hazirTarih){
     document.getElementById('f_type').value = 'video';
     // Hicbiri onceden isaretli gelmiyor: platformu kullanici bilerek secsin.
     document.querySelectorAll('#platformChecks input').forEach(el=> el.checked = false);
-    document.getElementById('f_concept').value = '';
+    projeSecimiTazele('');
+    typeChecksDoldur();
+    document.querySelectorAll('#typeChecks input').forEach(el=> el.checked = false);
     document.getElementById('f_title').value = '';
     document.getElementById('f_date').value = hazirTarih || fmtKey(new Date());
     // Saat bos degil ama bos gibi: kullanici kendi saatini yazsin diye 00:00.
@@ -2378,14 +2818,6 @@ function openModal(ev, hazirTarih){
   const kutu = document.querySelector('#editOverlay .modal');
   if(kutu) kutu.scrollTop = 0;
 }
-// Daha once yazilan proje adlari oneri olarak dusuyor: ayni proje ikinci
-// kez "Studio shoot" / "studio Shoot" diye iki ayri kayda bolunmesin.
-function konseptOnerileriniTazele(){
-  const dl = document.getElementById('conceptList');
-  if(!dl) return;
-  dl.innerHTML = kullanilanKonseptler().map(k=>`<option value="${escapeHtml(k)}"></option>`).join('');
-}
-
 function closeModal(){
   document.getElementById('editOverlay').classList.remove('open');
   currentEvent = null;
@@ -2430,17 +2862,26 @@ document.getElementById('saveBtn').addEventListener('click', ()=>{
     if(ilk) ilk.focus();
     return;
   }
-  const type = document.getElementById('f_type').value;
+  // Proje once cozuluyor: "+ yeni proje" secildiyse burada olusuyor.
+  // Iptal edilirse kayit hic olusmuyor, yarim bir kayit kalmiyor.
+  const proje = secilenProjeyiCoz();
+  if(!proje){ alert(t('alert_need_project')); return; }
+
+  const type = currentEvent
+    ? document.getElementById('f_type').value
+    : (secilenTipler()[0] || 'video');
 
   const content = {
-    concept: document.getElementById('f_concept').value.trim().slice(0,120),
+    projectId: proje.id,
+    concept: proje.name,
     timezone: document.getElementById('f_tz').value || yerelTz(),
     caption: document.getElementById('f_caption').value,
     hashtags: document.getElementById('f_hashtags').value,
     videoTitle: document.getElementById('f_videotitle').value,
     shortTitle: document.getElementById('f_shorttitle').value,
     thumbPrompt: document.getElementById('f_thumb').value,
-    slidePrompts: type==='carousel' ? Array.from({length:9},(_,i)=> (document.getElementById('slide'+(i+1))||{}).value || '') : []
+    slidePrompts: (currentEvent ? type==='carousel' : secilenTipler().includes('carousel'))
+      ? Array.from({length:9},(_,i)=> (document.getElementById('slide'+(i+1))||{}).value || '') : []
   };
   const uploaded = document.getElementById('uploadToggle').dataset.val === '1';
 
@@ -2451,23 +2892,34 @@ document.getElementById('saveBtn').addEventListener('click', ()=>{
   } else {
     const platforms = Array.from(document.querySelectorAll('#platformChecks input:checked')).map(el=>el.value);
     if(platforms.length===0){ alert(t('alert_select_platform')); return; }
+    // Tur de coklu: ayni cekimden hem Reels hem Story cikabiliyor. Her
+    // tur-platform ciftine bir kayit dusuyor.
+    const tipler = secilenTipler();
+    if(tipler.length===0){ alert(t('alert_select_type')); return; }
+    const ciftler = [];
+    tipler.forEach(tp=> platforms.forEach(pf=> ciftler.push({type:tp, platform:pf})));
     // Bir modaldan secilen her platform icin ayri kayit cikiyor; sinir toplam
     // uzerinden kontrol ediliyor ki 99 kayitliyken uc platform secilip 102'ye
     // cikilamasin.
     const kalan = MAX_ENTRIES - events.length;
-    if(platforms.length > kalan){
+    if(ciftler.length > kalan){
       track('funnel/limit-hit');
       alert(kalan > 0
-        ? t('alert_limit_near')(kalan, platforms.length)
+        ? t('alert_limit_near')(kalan, ciftler.length)
         : t('alert_limit_full')(MAX_ENTRIES));
       if(kalan <= 0){ closeModal(); openFeedback('limit'); }
       return;
     }
-    platforms.forEach((p,i)=>{
-      const yeni = { id:newId(), type, platform:p, title, date, time, uploaded, content: JSON.parse(JSON.stringify(content)) };
+    ciftler.forEach(c=>{
+      const icerik = JSON.parse(JSON.stringify(content));
+      // Karusel gorselleri yalnizca karusel kaydina ait; Reels kaydinda
+      // dokuz slayt prompt'u tasimak gereksiz yer kaplardi.
+      if(c.type !== 'carousel') icerik.slidePrompts = [];
+      const yeni = { id:newId(), type:c.type, platform:c.platform, title, date, time, uploaded, content: icerik };
       events.push(yeni); markDirty(yeni.id);
     });
     trackOnce('funnel/entry-created');
+    if(tipler.length > 1) trackOnce('funnel/multi-type-entry');
     // The whole premise of the product: one piece of content, several platforms.
     // If nobody ever ticks more than one box, the premise is wrong.
     if(platforms.length > 1) trackOnce('funnel/multi-platform-entry');
@@ -2918,7 +3370,7 @@ document.getElementById('pendingOverlay').addEventListener('click', (e)=>{ if(e.
 
 // Yayina alinan surumun damgasi. Onbellekten eski bir kopya geldiginde bu
 // tarih eski kalir, boylece "guncel mi?" sorusu bakarak cevaplanir.
-const BUILD_STAMP = '2026-08-31 19:23 UTC';
+const BUILD_STAMP = '2026-08-31 19:47 UTC';
 document.getElementById('buildId').textContent = BUILD_STAMP;
 
 // ===== Init =====
@@ -2931,8 +3383,19 @@ populateLangSelect();
 applyStaticI18n();
 populateSelects();
 load();
+loadProjects();
+// Bir onceki surumde proje serbest metindi; o kayitlar gercek projeye
+// cevriliyor. Kayitlar yuklendikten SONRA calismali.
+projeleriGocur();
+typeChecksDoldur();
 renderLegend();
 renderCal();
+renderProjects();
+// Sekme secimi hatirlaniyor: proje sayfasinda calisan biri her acilista
+// takvime dusmesin.
+let acilisSayfasi = 'calendar';
+try{ const v = localStorage.getItem('demo_page'); if(v === 'projects') acilisSayfasi = v; }catch(e){}
+setPage(acilisSayfasi);
 // Every time the demo loads: "How this works" tour first, then — once that's
 // closed (skipped or finished) — the Pending popup, so a first-time visitor
 // always gets the explainer before the state-of-the-calendar nudge.
