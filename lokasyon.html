@@ -699,6 +699,8 @@ select{
 .cal-grid{display:grid;grid-template-columns:repeat(7,1fr);border:1px solid var(--line);background:var(--line);gap:1px;}
 .cal-dow{background:var(--ink-2);padding:9px 10px;font-family:'JetBrains Mono',monospace;font-size:10px;letter-spacing:1.5px;color:var(--gold-dim);text-transform:uppercase;text-align:center;}
 .cal-day{background:var(--ink);aspect-ratio:1/1;padding:8px 7px;position:relative;overflow:hidden;}
+/* Hafta modunda tek satir var; kare oranini birakip icerige gore uzuyor. */
+.cal-week-mode .cal-day{aspect-ratio:auto;min-height:150px;}
 .cal-day.expanded{aspect-ratio:auto;overflow:visible;z-index:5;box-shadow:0 4px 16px rgba(0,0,0,0.5);}
 .cal-day.today{background:rgba(200,162,74,0.06);}
 .cal-day-num{font-family:'JetBrains Mono',monospace;font-size:11px;color:var(--parchment-dim);margin-bottom:6px;}
@@ -874,6 +876,7 @@ select{
 </style>
 </head>
 <body>
+<div style="position:sticky;top:0;z-index:9998;background:#8a5a00;color:#fff;font:600 13px/1.45 system-ui,sans-serif;text-align:center;padding:8px 12px">DENEME KOPYASI — Supabase sürümü · Eski sistem: <a href="https://gerceginizleritv.github.io/lokasyon-takip/" style="color:#fff">lokasyon-takip</a></div>
 <div class="wrap">
 
 <div class="sticky-head">
@@ -955,7 +958,8 @@ select{
 <div id="calendarView" style="display:none;">
   <div class="cal-toolbar">
     <div class="cal-view-toggle">
-      <button class="cal-toggle-btn active" id="calBtnGrid">📅 Dikey (Ay)</button>
+      <button class="cal-toggle-btn active" id="calBtnGrid">📅 Dikey (3 Hafta)</button>
+      <button class="cal-toggle-btn" id="calBtnWeek">📆 Hafta</button>
       <button class="cal-toggle-btn" id="calBtnTable">📋 Yatay (Tablo)</button>
     </div>
     <div class="cal-nav">
@@ -1265,7 +1269,6 @@ select{
 </div>
 
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.45.4/dist/umd/supabase.min.js"></script>
-<div style="position:fixed;bottom:0;left:0;right:0;z-index:9998;background:#8a5a00;color:#fff;font:600 13px/1.5 system-ui,sans-serif;text-align:center;padding:6px 10px">DENEME KOPYASI — Supabase sürümü. Canlı sistemin değil, burada yaptığın değişiklikler gerçek kayıtlara işler.</div>
 <script>
 const STORAGE_KEY = 'gerceginizleri_lokasyon_listesi';
 const LANG_KEY = 'gerceginizleri_ui_language';
@@ -2020,7 +2023,18 @@ const CAL_DOW = ["PZT","SAL","ÇAR","PER","CUM","CMT","PAZ"];
 const CAL_DOW_SHORT = ["Pzt","Sal","Çar","Per","Cum","Cmt","Paz"];
 
 let calCurrentEvent = null; // event object being viewed/edited in the modal (null = creating new)
-let calViewMode = 'grid'; // 'grid' | 'table'
+let calViewMode = 'grid'; // 'grid' | 'week' | 'table'
+try{
+  const kayitli = localStorage.getItem('gerceginizleri_cal_gorunum');
+  if(kayitli === 'grid' || kayitli === 'week' || kayitli === 'table') calViewMode = kayitli;
+}catch(e){ /* non-critical */ }
+
+// Pencere boyu goruunume gore: hafta 7, tablo 14, izgara 21 gun.
+function calGunSayisi(){
+  if(calViewMode === 'week') return 7;
+  if(calViewMode === 'table') return 14;
+  return 21;
+}
 let calNewUploadedState = false; // "Yükledim" toggle state while creating a brand-new entry (not yet saved)
 let calExpandedDays = new Set(); // day keys (YYYY-MM-DD) the user has expanded to see all entries
 let calActiveTypeFilters = new Set(); // empty = show all types (default); non-empty = show only these
@@ -2072,7 +2086,7 @@ function renderCalGrid(){
 
   const start = calWindowStart();
   const today = new Date(); today.setHours(0,0,0,0);
-  const totalDays = 21;
+  const totalDays = calGunSayisi();
 
   for(let i=0;i<totalDays;i++){
     const d = new Date(start);
@@ -2576,7 +2590,7 @@ function updateCalNavRange(){
   if(!el) return;
   const start = calWindowStart();
   const end = new Date(start);
-  end.setDate(end.getDate() + (calViewMode === 'table' ? 13 : 20));
+  end.setDate(end.getDate() + calGunSayisi() - 1);
   const fmt = (d)=> `${d.getDate()} ${d.toLocaleString('tr-TR',{month:'short'})}`;
   el.textContent = `${fmt(start)} — ${fmt(end)}`;
 }
@@ -2597,20 +2611,25 @@ document.getElementById('calNavToday').addEventListener('click', ()=>{
   renderCal();
 });
 
-document.getElementById('calBtnGrid').addEventListener('click', ()=>{
-  calViewMode = 'grid';
-  document.getElementById('calGridView').style.display = '';
-  document.getElementById('calTableView').style.display = 'none';
-  document.getElementById('calBtnGrid').classList.add('active');
-  document.getElementById('calBtnTable').classList.remove('active');
-});
-document.getElementById('calBtnTable').addEventListener('click', ()=>{
-  calViewMode = 'table';
-  document.getElementById('calGridView').style.display = 'none';
-  document.getElementById('calTableView').style.display = '';
-  document.getElementById('calBtnTable').classList.add('active');
-  document.getElementById('calBtnGrid').classList.remove('active');
-});
+function setCalView(mod){
+  if(mod !== 'grid' && mod !== 'week' && mod !== 'table') return;
+  calViewMode = mod;
+  try{ localStorage.setItem('gerceginizleri_cal_gorunum', mod); }catch(e){ /* non-critical */ }
+  const tablo = mod === 'table';
+  document.getElementById('calGridView').style.display = tablo ? 'none' : '';
+  document.getElementById('calTableView').style.display = tablo ? '' : 'none';
+  // Hafta modunda izgara tek satir: hucreler genisleyip nefes alsin.
+  document.getElementById('calGridView').classList.toggle('cal-week-mode', mod === 'week');
+  [['calBtnGrid','grid'],['calBtnWeek','week'],['calBtnTable','table']].forEach(([id,m])=>{
+    document.getElementById(id).classList.toggle('active', m === mod);
+  });
+  renderCal();
+}
+document.getElementById('calBtnGrid').addEventListener('click', ()=> setCalView('grid'));
+document.getElementById('calBtnWeek').addEventListener('click', ()=> setCalView('week'));
+document.getElementById('calBtnTable').addEventListener('click', ()=> setCalView('table'));
+// Acilista kayitli gorunumu uygula
+setCalView(calViewMode);
 
 // ===== Yayın Takvimi format filtresi =====
 // İki bağımsız satır: içerik tipi (calActiveTypeFilters) ve SM platformu
