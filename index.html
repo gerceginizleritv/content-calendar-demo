@@ -118,7 +118,12 @@ body{
    hangisinin ne oldugu anlasilmiyordu. */
 .head-top{display:flex;align-items:flex-start;justify-content:space-between;gap:16px;flex-wrap:wrap;}
 .head-side{display:flex;gap:8px;align-items:center;flex-wrap:wrap;}
-.head-actions{display:flex;gap:8px;flex-wrap:wrap;align-items:center;margin-top:18px;}
+.promise-tag{
+  display:inline-block;margin:14px 0 0;padding:5px 11px;border-radius:20px;
+  border:1px solid var(--line);background:var(--surface-2);
+  font-family:'IBM Plex Mono',monospace;font-size:11px;color:var(--text-dim);
+}
+.head-actions{display:flex;gap:8px;flex-wrap:wrap;align-items:center;margin-top:14px;}
 .head-meta{
   display:flex;gap:14px;align-items:center;justify-content:flex-end;
   margin-top:18px;padding-top:12px;border-top:1px solid var(--line-soft);
@@ -335,6 +340,7 @@ body{
    temada zeminle ayni tona dusuyordu. */
 .upload-toggle .box{width:17px;height:17px;border:1.5px solid var(--accent-dim);background:var(--surface);display:flex;align-items:center;justify-content:center;font-size:11px;border-radius:3px;flex:none;}
 .upload-toggle.checked .box{background:var(--green);color:#fff;border-color:var(--green);}
+.posted-hint{font-size:11.5px;color:var(--text-dim);margin:-9px 0 15px;line-height:1.5;}
 .section-title{font-family:'Archivo',sans-serif;color:var(--accent);font-weight:700;font-size:12px;text-transform:uppercase;letter-spacing:1px;margin:20px 0 12px;border-top:1px solid var(--line);padding-top:16px;}
 .modal-actions{display:flex;justify-content:flex-end;gap:9px;margin-top:20px;}
 .btn-danger{border-color:var(--red);color:var(--red);}
@@ -561,6 +567,9 @@ body{
     <div class="eyebrow"><span class="tally"></span><span data-i18n="eyebrow">QUEUE — NEXT 6 WEEKS</span></div>
     <h1 data-i18n="h1">One shoot becomes ten posts. Slate keeps all ten on one board.</h1>
     <p data-i18n="h1_sub">The same footage goes out as a Reel, a Short, a carousel and a story — each with its own caption, cover text and time slot. You tick them off as they go out; Slate keeps the list of what is still waiting.</p>
+    <!-- Beklentiyi bir bakista kuran etiket: ziyaretcilerin en olasi yanlis
+         varsayimi "benim yerime paylasir" olurdu. -->
+    <p class="promise-tag" data-i18n="promise_tag">A planning board — not an auto-poster.</p>
     <!-- Ikincil eylemler: kayit olusturmak burada degil, asagidaki buyuk dugmede -->
     <div class="head-actions">
       <button class="btn" id="feedbackBtn" data-i18n="btn_feedback">💬 Feedback</button>
@@ -689,6 +698,9 @@ body{
       <span class="box" id="uploadBox"></span>
       <span data-i18n="f_posted_label">Posted / Scheduled</span>
     </div>
+    <!-- Yanlis beklentinin patladigi an tam olarak burasi: kullanici isaretin
+         kendiliginden degismesini bekliyorsa once burada fark eder. -->
+    <p class="posted-hint" data-i18n="posted_hint">Tick this after you publish. Slate does not listen to the platforms — you mark it.</p>
 
     <div class="field">
       <div class="field-header">
@@ -1081,7 +1093,9 @@ const LANG = {
     tour_visual_direct: "direct",
     tour_visual_ourserver: "our server",
     tour_visual_combine: "combine",
-    tour1_body: "Plan content across YouTube, Instagram, TikTok and more. Slate is a planning board, not an auto-poster — you publish on each platform, Slate keeps the plan straight.",
+    tour1_body: "Plan content across YouTube, Instagram, TikTok and more. We do not connect to your accounts: no passwords, no permission screens, nothing that breaks when a platform changes its rules. Just your plan — and it stays yours.",
+    promise_tag: "A planning board — not an auto-poster.",
+    posted_hint: "Tick this after you publish. Slate does not listen to the platforms — you mark it.",
     tour2_body: "Every post gets two independent tags: what it is, and where it's going. Filter by either, or both at once.",
     tour3_body: "Click any slot to open it — caption, hashtags, titles, cover prompt, all editable and one tap from copied.",
     tour4_body: "Posting for more than one country? Give each entry its own time zone. Days with several markets group by market, and you can filter down to one.",
@@ -1244,7 +1258,9 @@ const LANG = {
     tour_visual_direct: "doğrudan",
     tour_visual_ourserver: "bizim sunucumuz",
     tour_visual_combine: "birleştir",
-    tour1_body: "YouTube, Instagram, TikTok ve daha fazlasında içerik planla. Slate bir planlama panosu, otomatik paylaşım aracı değil — yayınlamayı sen yaparsın, Slate planı derli toplu tutar.",
+    tour1_body: "YouTube, Instagram, TikTok ve daha fazlasında içerik planla. Hesaplarına bağlanmıyoruz: şifre yok, izin ekranı yok, bir platform kuralını değiştirdiğinde bozulan bağlantı yok. Sadece planın var — o da her zaman senin elinde.",
+    promise_tag: "Planlama panosu — otomatik paylaşım değil.",
+    posted_hint: "Yayınladıktan sonra buraya tıkla. Slate platformları dinlemez; işaretleyen sensin.",
     tour2_body: "Her paylaşımın iki bağımsız etiketi var: ne olduğu ve nereye gittiği. Birine, ya da ikisine birden göre filtrele.",
     tour3_body: "Herhangi bir kutucuğa tıkla, aç — caption, hashtag, başlıklar, kapak prompt'u, hepsi düzenlenebilir ve tek dokunuşla kopyalanır.",
     tour4_body: "Birden fazla ülkeye mi paylaşıyorsun? Her kaydın kendi saat dilimi olur. Birden çok pazarın olduğu günler pazara göre gruplanır, dilersen tek pazara indirirsin.",
@@ -2459,7 +2475,7 @@ document.getElementById('pendingOverlay').addEventListener('click', (e)=>{ if(e.
 
 // Yayina alinan surumun damgasi. Onbellekten eski bir kopya geldiginde bu
 // tarih eski kalir, boylece "guncel mi?" sorusu bakarak cevaplanir.
-const BUILD_STAMP = '2026-08-31 14:56 UTC';
+const BUILD_STAMP = '2026-08-31 14:59 UTC';
 document.getElementById('buildId').textContent = BUILD_STAMP;
 
 // ===== Init =====
