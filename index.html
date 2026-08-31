@@ -340,7 +340,12 @@ body{
 .cal-day-month{margin-left:4px;text-transform:uppercase;letter-spacing:.04em;color:var(--accent);font-weight:700;}
 
 /* Ziyaret sayaci sagda, butonlardan ayri durur */
-.visit-badge{margin-left:auto;display:inline-flex;align-items:center;line-height:0;}
+/* Gizlilik baglantisi bu ikiliyi saga itiyor; sessiz dursun diye dugme degil,
+   duz metin baglantisi. */
+.privacy-link{margin-left:auto;font-size:12px;color:var(--text-dim);text-decoration:none;
+  align-self:center;white-space:nowrap;}
+.privacy-link:hover{color:var(--accent);text-decoration:underline;}
+.visit-badge{display:inline-flex;align-items:center;line-height:0;}
 .visit-badge img{height:20px;display:block;}
 
 /* Izgara gorunumunde hucre ~150px: isaret + tip + saat yan yana girince
@@ -414,6 +419,7 @@ body{
       <button class="btn" id="feedbackBtn" data-i18n="btn_feedback">💬 Feedback</button>
       <button class="btn" id="themeBtn">🌙 Dark</button>
       <button class="btn" id="authBtn" data-i18n="btn_signin">☁ Save to cloud</button>
+      <a class="privacy-link" href="privacy.html" data-i18n="btn_privacy">Privacy</a>
       <a class="visit-badge" href="https://hits.sh/gerceginizleritv.github.io/content-calendar-demo/" target="_blank" rel="noopener">
         <img src="https://hits.sh/gerceginizleritv.github.io/content-calendar-demo.svg?style=flat-square&label=visits&color=2563C7&labelColor=EDF1F6" alt="visit counter">
       </a>
@@ -725,6 +731,7 @@ const LANG = {
     cal_less: "Show less",
     btn_signin: "☁ Save to cloud",
     btn_account: "☁ Account",
+    btn_privacy: "Privacy",
     auth_title: "Keep this on every device",
     auth_intro: "We send you a sign-in link — no password to invent, none to forget. Everything you have built so far moves with you.",
     auth_intro_google: "Sign in with Google, or we send you a link — no password to invent, none to forget. Everything you have built so far moves with you.",
@@ -855,6 +862,7 @@ const LANG = {
     cal_less: "Daha az",
     btn_signin: "☁ Buluta kaydet",
     btn_account: "☁ Hesap",
+    btn_privacy: "Gizlilik",
     auth_title: "Her cihazda yanında olsun",
     auth_intro: "Sana bir giriş linki gönderiyoruz — uydurulacak da unutulacak da bir şifre yok. Şu ana kadar kurduğun her şey seninle geliyor.",
     auth_intro_google: "Google ile gir, ya da sana bir giriş linki gönderelim — uydurulacak da unutulacak da bir şifre yok. Şu ana kadar kurduğun her şey seninle geliyor.",

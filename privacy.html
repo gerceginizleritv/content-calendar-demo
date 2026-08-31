@@ -1,0 +1,338 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Privacy Policy — Slate</title>
+<meta name="description" content="What Slate stores, what leaves your browser, and who else is involved. Plain language, no dark patterns.">
+<link rel="icon" href="favicon.svg" type="image/svg+xml">
+<link rel="icon" href="favicon.ico" sizes="any">
+<style>
+/* Bu sayfa bilerek bagimsiz: hicbir dis kaynak yuklemiyor, hicbir olcum
+   yapmiyor. Bir gizlilik sayfasinin kendisi veri toplamamali. */
+:root{
+  --bg:#F4F7FA; --surface:#FFFFFF; --surface-2:#EDF1F6; --line:#DFE5EC;
+  --text:#16202B; --text-dim:#54637A; --accent:#2563C7;
+}
+@media (prefers-color-scheme: dark){
+  :root{
+    --bg:#10131C; --surface:#171D28; --surface-2:#1F2734; --line:#2B3442;
+    --text:#E7ECF3; --text-dim:#A2B0C2; --accent:#7AA6EE;
+  }
+}
+*{box-sizing:border-box;}
+body{
+  margin:0; background:var(--bg); color:var(--text);
+  font-family:'IBM Plex Sans','Segoe UI',system-ui,-apple-system,sans-serif;
+  font-size:15px; line-height:1.7; -webkit-font-smoothing:antialiased;
+}
+.wrap{max-width:720px;margin:0 auto;padding:40px 22px 72px;}
+header{border-bottom:1px solid var(--line);padding-bottom:22px;margin-bottom:32px;}
+.brand{font-weight:700;font-size:1.05rem;letter-spacing:-.01em;}
+.brand a{color:var(--text);text-decoration:none;}
+.brand a:hover{color:var(--accent);}
+h1{font-size:1.75rem;line-height:1.2;letter-spacing:-.02em;margin:14px 0 6px;}
+.updated{color:var(--text-dim);font-size:.85rem;margin:0;}
+.langbar{margin-top:16px;font-size:.85rem;color:var(--text-dim);}
+.langbar a{color:var(--accent);}
+h2{font-size:1.15rem;letter-spacing:-.01em;margin:34px 0 8px;padding-top:8px;}
+h2:first-of-type{margin-top:26px;}
+p{margin:0 0 12px;}
+ul{margin:0 0 12px;padding-left:20px;}
+li{margin-bottom:6px;}
+strong{font-weight:600;}
+a{color:var(--accent);text-underline-offset:2px;}
+code{
+  font-family:ui-monospace,'SF Mono',Menlo,Consolas,monospace;
+  font-size:.88em;background:var(--surface-2);padding:1px 5px;border-radius:4px;
+}
+.callout{
+  background:var(--surface);border:1px solid var(--line);
+  border-radius:10px;padding:16px 18px;margin:20px 0;
+}
+.callout p:last-child{margin-bottom:0;}
+table{width:100%;border-collapse:collapse;margin:14px 0;font-size:.92rem;display:block;overflow-x:auto;}
+th,td{text-align:left;padding:9px 10px;border-bottom:1px solid var(--line);vertical-align:top;}
+th{color:var(--text-dim);font-weight:600;font-size:.82rem;text-transform:uppercase;letter-spacing:.05em;}
+hr{border:0;border-top:1px solid var(--line);margin:48px 0 0;}
+footer{margin-top:26px;color:var(--text-dim);font-size:.85rem;}
+</style>
+</head>
+<body>
+<div class="wrap">
+
+<header>
+  <div class="brand"><a href="./index.html">🎬 Slate</a></div>
+  <h1>Privacy Policy</h1>
+  <p class="updated">Last updated: 31 August 2026</p>
+  <p class="langbar"><strong>English</strong> · <a href="#turkce">Türkçe için tıklayın</a></p>
+</header>
+
+<div class="callout">
+  <p>
+    <strong>The short version.</strong> Slate is a demo. By default everything you
+    create stays in your own browser and never reaches a server. If you choose to
+    sign in, your email address and your calendar entries are stored so they can
+    follow you to another device. We do not sell anything, we do not run ads, and
+    we do not use tracking cookies.
+  </p>
+</div>
+
+<h2>1. Who runs this</h2>
+<p>
+  Slate is an independent demo project, not a registered company. Questions about
+  this policy or your data go to
+  <a href="mailto:gerceginizleritv@gmail.com">gerceginizleritv@gmail.com</a>.
+</p>
+
+<h2>2. What stays in your browser</h2>
+<p>
+  Without an account, Slate stores everything locally using your browser's
+  <code>localStorage</code>. Nothing is sent anywhere. That includes:
+</p>
+<ul>
+  <li>Your calendar entries — titles, dates, times, captions, cover text, platform and status</li>
+  <li>Your interface language and light/dark preference</li>
+  <li>Small flags remembering that you have seen the intro tour</li>
+  <li>An AI provider key, if you choose to enter one (see section 6)</li>
+</ul>
+<p>
+  Clearing your browser data erases all of it. We cannot recover it, because we
+  never had it.
+</p>
+
+<h2>3. What happens if you sign in</h2>
+<p>
+  Signing in is optional and the demo works fully without it. If you do sign in —
+  by email link or with Google — the following is stored in our database, hosted by
+  Supabase:
+</p>
+<ul>
+  <li><strong>Your email address</strong>, which is what identifies your account.</li>
+  <li>
+    <strong>Your calendar entries</strong>, so the same calendar appears on your
+    other devices.
+  </li>
+  <li>
+    If you sign in with Google, Google tells us your <strong>name, email address
+    and profile picture</strong>. We use the email address to identify your account.
+    We never receive your Google password, and we get no access to your Gmail,
+    Drive, Contacts or any other Google service.
+  </li>
+</ul>
+<p>
+  Database access rules restrict every row to the account that created it, so
+  another signed-in user cannot read your entries.
+</p>
+
+<h2>4. Feedback form</h2>
+<p>
+  If you send feedback, the answers you type are delivered to us by email through
+  Web3Forms. That message contains what you wrote, your interface language, a
+  timestamp, and your email address only if you chose to give one. If you leave the
+  email field blank, the feedback is anonymous.
+</p>
+
+<h2>5. Visit counting</h2>
+<p>
+  We count visits and which features get used, so we know whether the demo is worth
+  continuing. This uses GoatCounter and hits.sh. Neither sets tracking cookies and
+  neither builds a profile of you; what we see are aggregate counts, not
+  individuals. We do not use Google Analytics or advertising trackers.
+</p>
+
+<h2>6. The AI caption feature</h2>
+<p>
+  Slate can draft captions, but it has no AI service of its own. You supply your own
+  API key from Anthropic or Google. That key is stored only in your browser and is
+  sent directly from your browser to the provider you chose, along with the text of
+  the entry you are working on. It never passes through us and we never see it or
+  your prompts. Your use of that provider is governed by their terms, not ours.
+</p>
+
+<h2>7. Everyone else involved</h2>
+<table>
+  <tr><th>Service</th><th>What it is for</th><th>What it can see</th></tr>
+  <tr><td>Supabase</td><td>Accounts and calendar storage</td><td>Your email and entries, only if you sign in</td></tr>
+  <tr><td>Google</td><td>Optional sign-in</td><td>That you signed in to Slate</td></tr>
+  <tr><td>GitHub Pages</td><td>Serving this site</td><td>Standard web server records, including IP address</td></tr>
+  <tr><td>Web3Forms</td><td>Delivering feedback</td><td>Only what you type into the feedback form</td></tr>
+  <tr><td>GoatCounter, hits.sh</td><td>Visit counts</td><td>Aggregate visit data, no cookies</td></tr>
+  <tr><td>Google Fonts, jsDelivr</td><td>Fonts and one code library</td><td>Your IP address, as with any file a browser loads</td></tr>
+  <tr><td>Anthropic or Google AI</td><td>Captions, only with your own key</td><td>The text you ask them to work on</td></tr>
+</table>
+
+<h2>8. How long we keep things</h2>
+<p>
+  Account data is kept while your account exists. Local browser data lives until you
+  clear it. Feedback messages sit in an email inbox and are kept while they are
+  still useful.
+</p>
+
+<h2>9. Your choices</h2>
+<ul>
+  <li><strong>Use it without an account.</strong> Nothing leaves your browser.</li>
+  <li><strong>Sign out.</strong> The screen returns to browser-only data.</li>
+  <li>
+    <strong>Delete your account and everything in it.</strong> Email
+    <a href="mailto:gerceginizleritv@gmail.com">gerceginizleritv@gmail.com</a> from
+    the address you signed up with and we will delete it.
+  </li>
+  <li><strong>Clear your browser data</strong> to erase the local copy.</li>
+</ul>
+<p>
+  Depending on where you live you may have rights to access, correct, export or
+  erase your data. Write to the address above and we will act on it.
+</p>
+
+<h2>10. Children</h2>
+<p>Slate is not intended for children under 13 and we do not knowingly collect their data.</p>
+
+<h2>11. Changes</h2>
+<p>
+  If this policy changes, the date at the top changes with it. Slate is a demo under
+  active development, so it is worth a glance if you return after a long gap.
+</p>
+
+<hr>
+
+<header id="turkce" style="border:0;padding-top:44px;margin-bottom:24px;">
+  <h1>Gizlilik Politikası</h1>
+  <p class="updated">Son güncelleme: 31 Ağustos 2026</p>
+  <p class="langbar"><a href="#">English</a> · <strong>Türkçe</strong></p>
+</header>
+
+<div class="callout">
+  <p>
+    <strong>Kısacası.</strong> Slate bir demodur. Varsayılan olarak oluşturduğunuz
+    her şey kendi tarayıcınızda kalır, hiçbir sunucuya ulaşmaz. Giriş yapmayı
+    seçerseniz e-posta adresiniz ve takvim kayıtlarınız saklanır; amacı başka bir
+    cihazda da aynı takvimi görmenizdir. Hiçbir şey satmıyoruz, reklam
+    göstermiyoruz, takip çerezi kullanmıyoruz.
+  </p>
+</div>
+
+<h2>1. Bunu kim yürütüyor</h2>
+<p>
+  Slate bağımsız bir demo projesidir, kayıtlı bir şirket değildir. Bu politika ya da
+  verileriniz hakkındaki sorular:
+  <a href="mailto:gerceginizleritv@gmail.com">gerceginizleritv@gmail.com</a>.
+</p>
+
+<h2>2. Tarayıcınızda kalanlar</h2>
+<p>
+  Hesap olmadan Slate her şeyi tarayıcınızın <code>localStorage</code> alanında
+  saklar. Hiçbir yere gönderilmez. Bunlar:
+</p>
+<ul>
+  <li>Takvim kayıtlarınız — başlık, tarih, saat, açıklama metni, kapak yazısı, platform ve durum</li>
+  <li>Arayüz diliniz ve açık/koyu tema tercihiniz</li>
+  <li>Tanıtım turunu gördüğünüzü hatırlayan küçük işaretler</li>
+  <li>Girmeyi seçerseniz bir yapay zekâ sağlayıcı anahtarı (bkz. 6. bölüm)</li>
+</ul>
+<p>
+  Tarayıcı verilerinizi temizlerseniz hepsi silinir. Bizde hiç bulunmadığı için geri
+  getiremeyiz.
+</p>
+
+<h2>3. Giriş yaparsanız ne oluyor</h2>
+<p>
+  Giriş isteğe bağlıdır, demo onsuz da tam çalışır. Giriş yaparsanız — e-posta linki
+  ya da Google ile — şunlar Supabase'de barındırılan veritabanımızda saklanır:
+</p>
+<ul>
+  <li><strong>E-posta adresiniz</strong>; hesabınızı tanımlayan şey budur.</li>
+  <li>
+    <strong>Takvim kayıtlarınız</strong>; aynı takvimi diğer cihazlarınızda da
+    görebilmeniz için.
+  </li>
+  <li>
+    Google ile girerseniz Google bize <strong>adınızı, e-posta adresinizi ve profil
+    fotoğrafınızı</strong> bildirir. Hesabınızı tanımlamak için e-posta adresini
+    kullanırız. Google şifrenizi hiçbir zaman almayız; Gmail, Drive, Kişiler ya da
+    başka bir Google hizmetinize erişimimiz olmaz.
+  </li>
+</ul>
+<p>
+  Veritabanı erişim kuralları her satırı yalnızca onu oluşturan hesaba açar; giriş
+  yapmış başka bir kullanıcı sizin kayıtlarınızı okuyamaz.
+</p>
+
+<h2>4. Geri bildirim formu</h2>
+<p>
+  Geri bildirim gönderirseniz yazdıklarınız Web3Forms üzerinden bize e-posta olarak
+  iletilir. O mesajda yazdığınız metin, arayüz diliniz, zaman damgası ve —yalnızca
+  siz verdiyseniz— e-posta adresiniz bulunur. E-posta alanını boş bırakırsanız geri
+  bildirim anonim olur.
+</p>
+
+<h2>5. Ziyaret sayımı</h2>
+<p>
+  Demonun devam etmeye değip değmediğini anlamak için ziyaretleri ve hangi
+  özelliklerin kullanıldığını sayıyoruz. Bunun için GoatCounter ve hits.sh
+  kullanılıyor. İkisi de takip çerezi koymuyor ve sizin hakkınızda profil
+  çıkarmıyor; gördüğümüz şey kişiler değil, toplam sayılar. Google Analytics ya da
+  reklam takipçisi kullanmıyoruz.
+</p>
+
+<h2>6. Yapay zekâ metin özelliği</h2>
+<p>
+  Slate açıklama metni yazabiliyor ama kendine ait bir yapay zekâ hizmeti yok.
+  Anthropic ya da Google'dan aldığınız kendi API anahtarınızı siz giriyorsunuz. O
+  anahtar yalnızca tarayıcınızda saklanır ve üzerinde çalıştığınız kaydın metniyle
+  birlikte doğrudan tarayıcınızdan seçtiğiniz sağlayıcıya gider. Bizden geçmez;
+  anahtarınızı da isteklerinizi de görmeyiz. O sağlayıcıyı kullanmanız bizim
+  değil, onların koşullarına tabidir.
+</p>
+
+<h2>7. İşin içindeki diğer taraflar</h2>
+<table>
+  <tr><th>Servis</th><th>Ne için</th><th>Ne görebiliyor</th></tr>
+  <tr><td>Supabase</td><td>Hesap ve takvim saklama</td><td>Yalnızca giriş yaparsanız e-postanız ve kayıtlarınız</td></tr>
+  <tr><td>Google</td><td>İsteğe bağlı giriş</td><td>Slate'e giriş yaptığınızı</td></tr>
+  <tr><td>GitHub Pages</td><td>Bu siteyi yayınlama</td><td>IP adresi dahil olağan sunucu kayıtları</td></tr>
+  <tr><td>Web3Forms</td><td>Geri bildirimi iletme</td><td>Yalnızca forma yazdıklarınızı</td></tr>
+  <tr><td>GoatCounter, hits.sh</td><td>Ziyaret sayımı</td><td>Toplam ziyaret verisi, çerez yok</td></tr>
+  <tr><td>Google Fonts, jsDelivr</td><td>Yazı tipleri ve bir kod kütüphanesi</td><td>IP adresiniz — tarayıcının yüklediği her dosyada olduğu gibi</td></tr>
+  <tr><td>Anthropic veya Google AI</td><td>Metin yazımı, yalnızca kendi anahtarınızla</td><td>Üzerinde çalışmasını istediğiniz metni</td></tr>
+</table>
+
+<h2>8. Ne kadar süre saklıyoruz</h2>
+<p>
+  Hesap verileri hesabınız var olduğu sürece saklanır. Yerel tarayıcı verisi siz
+  temizleyene kadar durur. Geri bildirim mesajları bir e-posta kutusunda, işe
+  yaradıkları sürece kalır.
+</p>
+
+<h2>9. Seçenekleriniz</h2>
+<ul>
+  <li><strong>Hesapsız kullanın.</strong> Hiçbir şey tarayıcınızdan çıkmaz.</li>
+  <li><strong>Çıkış yapın.</strong> Ekran yalnızca tarayıcıdaki veriye döner.</li>
+  <li>
+    <strong>Hesabınızı ve içindeki her şeyi sildirin.</strong> Kaydolduğunuz adresten
+    <a href="mailto:gerceginizleritv@gmail.com">gerceginizleritv@gmail.com</a>
+    adresine yazın, silelim.
+  </li>
+  <li><strong>Tarayıcı verilerinizi temizleyin</strong>, yerel kopya silinsin.</li>
+</ul>
+<p>
+  Yaşadığınız yere bağlı olarak verilerinize erişme, düzeltme, dışa aktarma veya
+  sildirme haklarınız olabilir. Yukarıdaki adrese yazın, gereğini yapalım.
+</p>
+
+<h2>10. Çocuklar</h2>
+<p>Slate 13 yaşından küçükler için tasarlanmamıştır ve bilerek onların verisini toplamayız.</p>
+
+<h2>11. Değişiklikler</h2>
+<p>
+  Bu politika değişirse en üstteki tarih de değişir. Slate geliştirilmeye devam eden
+  bir demo olduğu için, uzun bir aradan sonra dönerseniz göz atmakta fayda var.
+</p>
+
+<footer>
+  <p><a href="./index.html">← Slate'e dön</a></p>
+</footer>
+
+</div>
+</body>
+</html>
