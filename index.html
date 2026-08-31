@@ -244,13 +244,14 @@ body{
   padding:2px 5px;border-radius:3px;flex-shrink:0;text-align:center;
 }
 .cal-chip-title{overflow:hidden;text-overflow:ellipsis;white-space:nowrap;color:var(--text-dim);}
-.cal-status-icon{
-  margin-left:auto;flex-shrink:0;width:7px;height:7px;border-radius:50%;
-  background:var(--amber);  /* hala borclu */
+/* Durum artik renkli bir nokta degil, okunur bir rozet. Nokta neyin ne oldugunu
+   soylemiyordu; amber "hala borclu", yesil "yayinlandi" demek. */
+.cal-state{
+  margin-left:auto;flex:none;font-family:'IBM Plex Mono',monospace;font-size:9px;
+  letter-spacing:.04em;text-transform:uppercase;padding:0 4px;border-radius:3px;
+  border:1px solid var(--amber);color:var(--amber);line-height:1.6;white-space:nowrap;
 }
-/* Yayinlandi. Eskiden bu nokta amber "ON AIR" isigiydi ve yanip sonuyordu;
-   yeni sistemde amber sadece "hala borclu" demek, yayinlanan sabit yesil. */
-.cal-status-icon.on-air{background:var(--green);}
+.cal-state.on-air{border-color:var(--green);color:var(--green);}
 
 .overlay{display:none;position:fixed;inset:0;background:rgba(4,5,10,0.8);z-index:50;align-items:center;justify-content:center;padding:20px;}
 .overlay.open{display:flex;}
@@ -447,7 +448,7 @@ body{
 @media(min-width:701px){
   .cal-chip{flex-wrap:wrap;row-gap:3px;}
   .cal-chip-title{flex-basis:100%;order:5;}
-  .cal-status-icon{order:4;}
+  .cal-state{order:4;}
 }
 
 /* ===== Mobil ===== */
@@ -922,6 +923,8 @@ const LANG = {
     f_date_label: "Date",
     f_time_label: "Time",
     f_tz_label: "Time zone",
+    state_posted: "Posted",
+    state_not_posted: "Not posted",
     f_posted_label: "Posted / Scheduled",
     f_caption_label: "Caption",
     f_caption_ph: "Write the caption for this post...",
@@ -1062,6 +1065,8 @@ const LANG = {
     f_date_label: "Tarih",
     f_time_label: "Saat",
     f_tz_label: "Saat dilimi",
+    state_posted: "Yayınlandı",
+    state_not_posted: "Yayınlanmadı",
     f_posted_label: "Yüklendi / Zamanlandı",
     f_caption_label: "Caption",
     f_caption_ph: "Bu paylaşım için caption'ı yaz...",
@@ -1189,9 +1194,11 @@ const STATUS_LABELS = {
   en: {scheduled:'🕒 Scheduled', posted:'● Posted'},
   tr: {scheduled:'🕒 Zamanlandı', posted:'● Yayınlandı'},
 };
-function typeName(key){ return (TYPE_NAMES[currentLang]||TYPE_NAMES.en)[key] || key; }
-function typeLabel(key){ return (TYPE_LABELS[currentLang]||TYPE_LABELS.en)[key] || key; }
-function statusLabel(key){ return (STATUS_LABELS[currentLang]||STATUS_LABELS.en)[key] || key; }
+// Anahtar eksik ya da taninmiyorsa anahtarin kendisi donuyor; anahtar da yoksa
+// bos string. Eskiden undefined donup ekrana "undefined" olarak basiliyordu.
+function typeName(key){ return (TYPE_NAMES[currentLang]||TYPE_NAMES.en)[key] || key || ''; }
+function typeLabel(key){ return (TYPE_LABELS[currentLang]||TYPE_LABELS.en)[key] || key || ''; }
+function statusLabel(key){ return (STATUS_LABELS[currentLang]||STATUS_LABELS.en)[key] || key || ''; }
 
 function seedData(){
   const today = new Date();
@@ -1577,7 +1584,7 @@ function renderCal(){
           (ev.content && ev.content.timezone && ev.content.timezone !== yerelTz())
             ? `<span class="cal-tz" title="${escapeHtml(ev.content.timezone)}">${escapeHtml(tzFark(ev.content.timezone) || ev.content.timezone.split('/').pop())}</span>` : ''}
         <span class="cal-chip-title">${escapeHtml(ev.title||'')}</span>
-        <span class="cal-status-icon${ev.uploaded?' on-air':''}"></span>`;
+        <span class="cal-state${ev.uploaded?' on-air':''}">${escapeHtml(t(ev.uploaded ? 'state_posted' : 'state_not_posted'))}</span>`;
       chip.addEventListener('click', ()=> openModal(ev));
       row.appendChild(chip);
       cell.appendChild(row);
@@ -1617,7 +1624,9 @@ function renderCal(){
 
 function escapeHtml(s){
   const d = document.createElement('div');
-  d.textContent = s;
+  // textContent = undefined ekrana "undefined" yaziyordu. Bir alan eksikse
+  // hicbir sey gorunmesi gerekir, hata metni degil.
+  d.textContent = (s === undefined || s === null) ? '' : s;
   return d.innerHTML;
 }
 
