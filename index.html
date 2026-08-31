@@ -230,6 +230,51 @@ body{
 
 .cal-grid{display:grid;grid-template-columns:repeat(7,1fr);border:1px solid var(--line);background:var(--line);gap:1px;border-radius:8px;overflow:hidden;}
 .cal-dow{background:var(--surface);padding:9px;text-align:center;font-family:'IBM Plex Mono',monospace;font-size:10px;letter-spacing:1.5px;color:var(--accent-dim);text-transform:uppercase;}
+/* ---- Tablo gorunumu ----
+   Gunler satir, platformlar sutun. Genis olabildigi icin sayfayi degil
+   kendi kabini kaydiriyor; govde asla yana kaymiyor. */
+.cal-table-wrap{overflow-x:auto;border:1px solid var(--line);border-radius:8px;background:var(--surface);}
+.cal-table{border-collapse:collapse;width:100%;min-width:520px;font-size:12px;}
+.cal-table th,.cal-table td{border-bottom:1px solid var(--line-soft);border-right:1px solid var(--line-soft);
+  padding:0;vertical-align:top;}
+.cal-table th:last-child,.cal-table td:last-child{border-right:0;}
+.cal-table thead th{position:sticky;top:0;z-index:2;background:var(--surface-2);color:var(--text-dim);
+  font-size:10px;letter-spacing:.08em;text-transform:uppercase;font-weight:600;
+  padding:8px 9px;text-align:left;white-space:nowrap;}
+.ct-phead{display:inline-flex;align-items:center;gap:6px;}
+.ct-pdot{width:8px;height:8px;border-radius:50%;flex-shrink:0;}
+.ct-date-col{width:66px;}
+.ct-date{padding:8px 9px;white-space:nowrap;background:var(--surface-2);
+  font-variant-numeric:tabular-nums;}
+.ct-daynum{font-size:15px;font-weight:700;color:var(--text);margin-right:5px;}
+.ct-dow,.ct-mon{font-size:10px;color:var(--text-dim);text-transform:uppercase;letter-spacing:.05em;}
+.ct-mon{display:block;}
+.cal-table tr.ct-today .ct-date{background:var(--accent-soft);}
+.cal-table tr.ct-today .ct-daynum{color:var(--accent);}
+.cal-table tr.ct-past td{opacity:.62;}
+.ct-cell{padding:5px;cursor:pointer;min-width:104px;}
+.ct-cell:hover{background:var(--surface-2);}
+/* Bos hucredeki + isareti ancak uzerine gelince beliriyor: bos bir tablo
+   arti isaretiyle dolup gozu yormasin, ama tiklanabildigi de belli olsun. */
+.ct-empty{text-align:center;color:transparent;font-size:15px;line-height:26px;}
+.ct-empty:hover{color:var(--accent-dim);}
+.ct-chip{display:block;width:100%;text-align:left;border:1px solid var(--line);
+  border-left-width:3px;border-radius:5px;background:var(--surface);color:var(--text);
+  padding:5px 7px;margin-bottom:4px;cursor:pointer;font:inherit;}
+.ct-chip:last-child{margin-bottom:0;}
+.ct-chip:hover{border-color:var(--accent);}
+.ct-chip.scheduled{border-left-color:var(--amber);}
+.ct-chip.posted{border-left-color:var(--green);}
+.ct-time{font-size:10px;color:var(--text-dim);font-variant-numeric:tabular-nums;margin-right:5px;}
+.ct-type{font-size:9px;letter-spacing:.06em;color:var(--text-dim);}
+.ct-title{display:block;font-size:11.5px;line-height:1.35;margin-top:2px;
+  overflow:hidden;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;}
+.ct-tz{display:inline-block;margin-top:3px;font-size:9px;padding:1px 5px;border-radius:99px;
+  background:var(--surface-2);color:var(--text-dim);}
+@media(max-width:700px){
+  .ct-date-col{width:52px;}
+  .ct-cell{min-width:92px;}
+}
 .cal-day{background:var(--bg);padding:9px 8px;min-height:112px;min-width:0;overflow:hidden;cursor:pointer;}
 /* Gune tiklamanin bir sey yaptigi belli olsun */
 .cal-day:hover{background:var(--surface-2);}
@@ -641,6 +686,7 @@ body{
       <div class="view-toggle" role="group">
         <button type="button" class="view-btn" id="viewMonthBtn" data-i18n="view_month">Month</button>
         <button type="button" class="view-btn" id="viewWeekBtn" data-i18n="view_week">Week</button>
+        <button type="button" class="view-btn" id="viewTableBtn" data-i18n="view_table">Table</button>
       </div>
       <button class="cal-nav-btn" id="prevBtn" data-i18n="nav_prev">◀ Previous</button>
     </div>
@@ -652,6 +698,7 @@ body{
   </div>
 
   <div class="cal-grid" id="calGrid"></div>
+  <div class="cal-table-wrap" id="calTableWrap" hidden></div>
 
 </div>
 
@@ -1021,6 +1068,8 @@ const LANG = {
     f_tz_label: "Time zone",
     view_month: "Month",
     view_week: "Week",
+    view_table: "Table",
+    table_date: "Date",
     state_posted: "Posted",
     state_not_posted: "Not posted",
     f_posted_label: "Posted / Scheduled",
@@ -1186,6 +1235,8 @@ const LANG = {
     f_tz_label: "Saat dilimi",
     view_month: "Ay",
     view_week: "Hafta",
+    view_table: "Tablo",
+    table_date: "Tarih",
     state_posted: "Yayınlandı",
     state_not_posted: "Yayınlanmadı",
     f_posted_label: "Yüklendi / Zamanlandı",
@@ -1376,7 +1427,7 @@ let weekOffset = 0;  // 0 = icinde bulunulan hafta (pencere buradan baslar)
 // 'month' = CAL_WEEKS haftalik pencere, 'week' = tek hafta. Tek haftada hucre
 // uzun oldugu icin kayitlar katlanmadan gorunuyor.
 let viewMode = 'month';
-try{ const v = localStorage.getItem('demo_view'); if(v==='week'||v==='month') viewMode = v; }catch(e){}
+try{ const v = localStorage.getItem('demo_view'); if(v==='week'||v==='month'||v==='table') viewMode = v; }catch(e){}
 let currentEvent = null;
 
 // Disaridan gelen her kayit buradan geciyor: ice aktarilan yedek dosyasi da,
@@ -1563,7 +1614,13 @@ function calWindowStart(){
 }
 // Pencere sabit: her zaman CAL_WEEKS hafta. Satir sayisi ay ay degismedigi
 // icin izgaranin yuksekligi de zipllamiyor.
-function calCellCount(){ return (viewMode === 'week' ? 1 : CAL_WEEKS) * 7; }
+// Tablo iki hafta gosteriyor: gunler satir oldugu icin alti haftalik bir
+// tablo ekrana sigmiyor, bir hafta ise bosluk gormeye yetmiyor.
+function calCellCount(){
+  if(viewMode === 'week') return 7;
+  if(viewMode === 'table') return 14;
+  return CAL_WEEKS * 7;
+}
 // Son gun (dahil), aralik etiketi icin.
 function calWindowEnd(){
   const d = calWindowStart();
@@ -1718,10 +1775,131 @@ function renderEntryCount(){
   el.classList.toggle('full', n >= MAX_ENTRIES);
 }
 
+// Ekranda hangi kayitlarin gorunecegini belirleyen tek kural. Izgara ve
+// tablo bunu ortak kullaniyor; ayri ayri yazilsalardi biri guncellenip
+// oteki unutulurdu.
+// ---- Tablo gorunumu -------------------------------------------------
+// Izgara "o gun ne var" sorusuna cevap veriyor. Tablo baska bir soruya:
+// "bu platformda bosluk var mi". Gunler satir, platformlar sutun; bir
+// sutunun bos kalmasi hemen goze carpiyor.
+//
+// Sutunlar sabit degil: pencerede gercekten kullanilan platformlar
+// gosteriliyor. Sekiz platformun sekizini birden basmak, ikisini
+// kullanan birine altı bos sutun izletmek olurdu.
+function tabloPlatformlari(start, gunSayisi){
+  const bitis = new Date(start); bitis.setDate(start.getDate() + gunSayisi - 1);
+  const bas = fmtKey(start), son = fmtKey(bitis);
+  const gorulen = new Set();
+  events.forEach(e=>{
+    if(e.date >= bas && e.date <= son && gecerliKayit(e)) gorulen.add(getPlatform(e));
+  });
+  if(!gorulen.size) return ['youtube','instagram','tiktok','facebook'];
+  return CAL_SM_PLATFORMS.filter(p => gorulen.has(p));
+}
+
+function renderCalTable(){
+  const kap = document.getElementById('calTableWrap');
+  const start = calWindowStart();
+  const bugun = new Date(); bugun.setHours(0,0,0,0);
+  const gunSayisi = calCellCount();
+  const locale = currentLang === 'tr' ? 'tr-TR' : 'en-US';
+  const platformlar = tabloPlatformlari(start, gunSayisi);
+  const cokPazar = new Set(events.map(evTz)).size > 1;
+
+  let bas = '<tr><th class="ct-date-col">' + escapeHtml(t('table_date')) + '</th>';
+  platformlar.forEach(p=>{
+    bas += '<th><span class="ct-phead"><span class="ct-pdot" style="background:var(--p-'+p+')"></span>'
+        + escapeHtml(CAL_SM_NAMES[p]) + '</span></th>';
+  });
+  bas += '</tr>';
+
+  let govde = '';
+  for(let i=0;i<gunSayisi;i++){
+    const d = new Date(start); d.setDate(start.getDate()+i);
+    const key = fmtKey(d);
+    const bugunMu = d.toDateString() === bugun.toDateString();
+    const gecmis = d < bugun;
+    govde += '<tr class="' + (bugunMu ? 'ct-today' : '') + (gecmis ? ' ct-past' : '') + '">';
+    govde += '<td class="ct-date"><span class="ct-daynum">' + d.getDate() + '</span>'
+          + '<span class="ct-dow">' + d.toLocaleDateString(locale,{weekday:'short'}) + '</span>'
+          + '<span class="ct-mon">' + d.toLocaleDateString(locale,{month:'short'}) + '</span></td>';
+
+    platformlar.forEach(p=>{
+      const gun = events.filter(e => e.date===key && getPlatform(e)===p && gecerliKayit(e))
+                        .sort((a,b)=>(a.time||'').localeCompare(b.time||''));
+      if(!gun.length){
+        govde += '<td class="ct-cell ct-empty" data-date="'+key+'"><span>+</span></td>';
+      }else{
+        govde += '<td class="ct-cell" data-date="'+key+'">' + gun.map(ev=>{
+          const durum = ev.uploaded ? 'posted' : 'scheduled';
+          const tz = cokPazar ? '<span class="ct-tz">'+escapeHtml(tzKisa(evTz(ev)))+'</span>' : '';
+          return '<button type="button" class="ct-chip '+durum+'" data-id="'+escapeHtml(ev.id)+'" title="'
+               + escapeHtml((ev.title||'') + ' · ' + typeLabel(getType(ev))) + '">'
+               + '<span class="ct-time">' + escapeHtml(ev.time||'') + '</span>'
+               + '<span class="ct-type">' + escapeHtml(CAL_TYPE_LABELS[getType(ev)] || '') + '</span>'
+               + '<span class="ct-title">' + escapeHtml(ev.title||'') + '</span>'
+               + tz + '</button>';
+        }).join('') + '</td>';
+      }
+    });
+    govde += '</tr>';
+  }
+
+  kap.innerHTML = '<table class="cal-table"><thead>' + bas + '</thead><tbody>' + govde + '</tbody></table>';
+
+  kap.querySelectorAll('.ct-chip').forEach(b=>{
+    b.addEventListener('click', ev=>{
+      ev.stopPropagation();
+      const k = events.find(x=>x.id === b.dataset.id);
+      if(k) openModal(k);
+    });
+  });
+  // Bos hucreye tiklamak, izgaradaki bos gune tiklamakla ayni sey yapsin.
+  kap.querySelectorAll('.ct-cell').forEach(td=>{
+    td.addEventListener('click', ()=>{ openModal(null, td.dataset.date); });
+  });
+}
+
+// Saat dilimini kisa yaz: "Europe/Istanbul" -> "Istanbul".
+function tzKisa(z){
+  if(!z) return '';
+  const parca = String(z).split('/');
+  return (parca[parca.length-1] || z).replace(/_/g,' ');
+}
+
+// Ustteki aralik etiketi: pencere ay sinirina oturmadigi icin bir ay adi
+// yazilamiyor, kapsanan aralik yaziliyor. Yil hep sonda kaliyor ki uzaga
+// gidildiginde kaybolmasin.
+function araligiYaz(){
+  const locale = currentLang === 'tr' ? 'tr-TR' : 'en-US';
+  document.getElementById('rangeLabel').textContent =
+    calWindowStart().toLocaleDateString(locale, {day:'numeric', month:'short'})
+    + ' – '
+    + calWindowEnd().toLocaleDateString(locale, {day:'numeric', month:'short', year:'numeric'});
+}
+
+function gecerliKayit(e){
+  return (activeTypeFilters.size===0 || activeTypeFilters.has(getType(e)))
+      && (activePlatformFilters.size===0 || activePlatformFilters.has(getPlatform(e)))
+      && (activeStatusFilters.size===0 || activeStatusFilters.has(e.uploaded ? 'posted' : 'scheduled'))
+      && (activeTzFilters.size===0 || activeTzFilters.has(evTz(e)));
+}
+
 function renderCal(){
   renderEntryCount();
   const haftaModu = viewMode === 'week';
+  const tabloModu = viewMode === 'table';
   const grid = document.getElementById('calGrid');
+  const tabloKap = document.getElementById('calTableWrap');
+  grid.hidden = tabloModu;
+  tabloKap.hidden = !tabloModu;
+  document.getElementById('viewTableBtn').classList.toggle('active', tabloModu);
+  if(tabloModu){
+    araligiYaz();
+    renderCalTable();
+    return;
+  }
+
   grid.classList.toggle('cal-week', haftaModu);
   document.getElementById('viewMonthBtn').classList.toggle('active', !haftaModu);
   document.getElementById('viewWeekBtn').classList.toggle('active', haftaModu);
@@ -1740,11 +1918,7 @@ function renderCal(){
   const locale = currentLang === 'tr' ? 'tr-TR' : 'en-US';
   // Pencere ay sinirina oturmadigi icin etiket de bir ay adi olamaz: kapsanan
   // araligi yaziyoruz. Yil hep sonda, boylece uzaga gidildiginde kaybolmuyor.
-  const bitis = calWindowEnd();
-  document.getElementById('rangeLabel').textContent =
-    start.toLocaleDateString(locale, {day:'numeric', month:'short'})
-    + ' – '
-    + bitis.toLocaleDateString(locale, {day:'numeric', month:'short', year:'numeric'});
+  araligiYaz();
 
   for(let i=0;i<totalDays;i++){
     const d = new Date(start); d.setDate(start.getDate()+i);
@@ -1760,12 +1934,8 @@ function renderCal(){
       ? `<span class="cal-day-month">${d.toLocaleDateString(locale,{month:'short'})}</span>` : '';
     cell.innerHTML = `<div class="cal-day-num">${d.getDate()}${ayEtiketi}</div>`;
 
-    let dayEvents = events.filter(e=>e.date===key
-      && (activeTypeFilters.size===0 || activeTypeFilters.has(getType(e)))
-      && (activePlatformFilters.size===0 || activePlatformFilters.has(getPlatform(e)))
-      && (activeStatusFilters.size===0 || activeStatusFilters.has(e.uploaded ? 'posted' : 'scheduled'))
-      && (activeTzFilters.size===0 || activeTzFilters.has(evTz(e)))
-    ).sort((a,b)=>(a.time||'').localeCompare(b.time||''));
+    let dayEvents = events.filter(e=>e.date===key && gecerliKayit(e))
+      .sort((a,b)=>(a.time||'').localeCompare(b.time||''));
 
     // Bir gunde birden cok pazar varsa kayitlar tek tek degil, pazar pazar
     // gosteriliyor: uc ulkeye gunde ikiser paylasim yapan birinde hucre alti
@@ -2045,12 +2215,16 @@ document.getElementById('saveBtn').addEventListener('click', ()=>{
 // Olcum anahtari 'month-navigated' olarak birakildi: adim artik hafta ama
 // gecmis huni verisiyle karsilastirilabilir kalsin.
 // Adim gorunume gore: ay modunda dort hafta, hafta modunda bir hafta.
-function navAdim(){ return viewMode === 'week' ? 1 : CAL_STEP_WEEKS; }
+function navAdim(){
+  if(viewMode === 'week') return 1;
+  if(viewMode === 'table') return 2;
+  return CAL_STEP_WEEKS;
+}
 document.getElementById('prevBtn').addEventListener('click', ()=>{ trackOnce('funnel/month-navigated'); weekOffset -= navAdim(); renderCal(); });
 document.getElementById('nextBtn').addEventListener('click', ()=>{ trackOnce('funnel/month-navigated'); weekOffset += navAdim(); renderCal(); });
 
 function setView(mod){
-  if(mod !== 'week' && mod !== 'month') return;
+  if(mod !== 'week' && mod !== 'month' && mod !== 'table') return;
   if(viewMode === mod) return;
   viewMode = mod;
   try{ localStorage.setItem('demo_view', mod); }catch(e){}
@@ -2059,6 +2233,7 @@ function setView(mod){
 }
 document.getElementById('viewMonthBtn').addEventListener('click', ()=> setView('month'));
 document.getElementById('viewWeekBtn').addEventListener('click', ()=> setView('week'));
+document.getElementById('viewTableBtn').addEventListener('click', ()=> setView('table'));
 document.getElementById('todayBtn').addEventListener('click', ()=>{ weekOffset = 0; renderCal(); });
 
 document.getElementById('exportBtn').addEventListener('click', ()=>{
@@ -2478,7 +2653,7 @@ document.getElementById('pendingOverlay').addEventListener('click', (e)=>{ if(e.
 
 // Yayina alinan surumun damgasi. Onbellekten eski bir kopya geldiginde bu
 // tarih eski kalir, boylece "guncel mi?" sorusu bakarak cevaplanir.
-const BUILD_STAMP = '2026-08-31 16:51 UTC';
+const BUILD_STAMP = '2026-08-31 17:47 UTC';
 document.getElementById('buildId').textContent = BUILD_STAMP;
 
 // ===== Init =====
