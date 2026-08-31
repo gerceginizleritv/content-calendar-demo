@@ -698,6 +698,9 @@ select{
 
 .cal-grid{display:grid;grid-template-columns:repeat(7,1fr);border:1px solid var(--line);background:var(--line);gap:1px;}
 .cal-dow{background:var(--ink-2);padding:9px 10px;font-family:'JetBrains Mono',monospace;font-size:10px;letter-spacing:1.5px;color:var(--gold-dim);text-transform:uppercase;text-align:center;}
+#cal_locationSearch{width:100%;margin-bottom:6px;}
+.cal-loc-hint{font-family:'JetBrains Mono',monospace;font-size:9.5px;letter-spacing:.5px;
+  color:var(--parchment-dim);margin-top:4px;}
 .cal-tz-tag{display:inline-block;margin-left:5px;font-size:9px;padding:0 4px;border-radius:99px;
   background:rgba(200,162,74,0.16);color:var(--gold);vertical-align:middle;}
 .cal-day{background:var(--ink);aspect-ratio:1/1;padding:8px 7px;position:relative;overflow:hidden;}
@@ -1064,7 +1067,9 @@ select{
 
     <div class="field">
       <label>Lokasyon</label>
-      <select id="cal_locationId"></select>
+      <input type="text" id="cal_locationSearch" placeholder="Lokasyon ara — isim, ilçe veya konu" autocomplete="off">
+      <select id="cal_locationId" size="1"></select>
+      <div class="cal-loc-hint" id="cal_locationHint"></div>
     </div>
     <div class="field">
       <label>İçerik Tipi</label>
@@ -2277,13 +2282,47 @@ function escapeHtml(s){
   return d.innerHTML;
 }
 
+// Liste buyudukce acilir listeyi taramak zorlasiyor; ustune bir arama
+// kutusu konuyor. Arama isimle sinirli degil: ilce ve konu da eslesiyor,
+// cunku insan bir lokasyonu bazen adiyla degil "Fatih'teki sarnic" diye
+// hatirliyor.
+//
+// Secili lokasyon aramaya uymasa bile listede kaliyor. Aksi halde bir
+// kaydi duzenlerken arama yazar yazmaz kaydin kendi lokasyonu listeden
+// duser ve secim sessizce baskasina kayardi.
 function populateCalLocationSelect(){
   const sel = document.getElementById('cal_locationId');
-  sel.innerHTML = locations
-    .slice()
-    .sort((a,b)=>a.name.localeCompare(b.name,'tr'))
-    .map(l=>`<option value="${l.id}">${escapeHtml(l.name)}</option>`)
-    .join('');
+  const kutu = document.getElementById('cal_locationSearch');
+  const ipucu = document.getElementById('cal_locationHint');
+  const secili = sel.value;
+  const q = (kutu && kutu.value || '').trim().toLocaleLowerCase('tr');
+
+  const hepsi = locations.slice().sort((a,b)=>a.name.localeCompare(b.name,'tr'));
+  const uyan = q
+    ? hepsi.filter(l => [l.name, l.district, l.city, l.topic].some(x =>
+        (x||'').toLocaleLowerCase('tr').indexOf(q) !== -1))
+    : hepsi;
+
+  // Secili lokasyon aramaya uymuyorsa listeden dusmuyor, sona ekleniyor.
+  // Dusseydi, bir kaydi duzenlerken arama yazar yazmaz kaydin lokasyonu
+  // sessizce baskasina kayardi. Basa degil sona: arama sonucu once gelsin.
+  const gosterilecek = uyan.slice();
+  const seciliKayit = secili ? hepsi.find(l=>l.id === secili) : null;
+  const seciliDusuyor = !!seciliKayit && !uyan.some(l=>l.id === secili);
+  if(seciliDusuyor) gosterilecek.push(seciliKayit);
+
+  sel.innerHTML = gosterilecek.map(l=>{
+    const yer = [l.district, l.city].filter(Boolean).join(' / ');
+    const not = (seciliDusuyor && l.id === secili) ? ' (seçili)' : '';
+    return `<option value="${l.id}">${escapeHtml(l.name)}${yer ? ' — ' + escapeHtml(yer) : ''}${not}</option>`;
+  }).join('');
+  if(secili && gosterilecek.some(l=>l.id === secili)) sel.value = secili;
+
+  if(ipucu){
+    if(!q) ipucu.textContent = hepsi.length + ' lokasyon';
+    else if(!uyan.length) ipucu.textContent = 'Eşleşen lokasyon yok';
+    else ipucu.textContent = uyan.length + ' / ' + hepsi.length + ' lokasyon';
+  }
 }
 
 function getSelectedNewPlatforms(){
@@ -2324,6 +2363,10 @@ function tzSecenekleriniDoldur(){
 
 function openCalDetail(ev, varsayilanTarih){
   calCurrentEvent = ev || null;
+  // Arama onceki acilistan kalmasin: liste doldurulmadan ONCE temizleniyor,
+  // yoksa modal bir onceki aramayla daralmis halde aciliyor.
+  const aramaKutusu = document.getElementById('cal_locationSearch');
+  if(aramaKutusu) aramaKutusu.value = '';
   populateCalLocationSelect();
 
   const isNew = !ev;
@@ -2525,6 +2568,10 @@ document.getElementById('calOverlay').addEventListener('click', (e)=>{
 });
 
 document.getElementById('cal_locationId').addEventListener('change', refreshCalPkgFields);
+document.getElementById('cal_locationSearch').addEventListener('input', ()=>{
+  populateCalLocationSelect();
+  refreshCalPkgFields();
+});
 function updateCalDBadgeLive(){
   if(!calCurrentEvent) return;
   document.getElementById('calDBadge').style.background = CAL_SM_COLORS[document.getElementById('cal_platform').value];
