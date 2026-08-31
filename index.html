@@ -340,6 +340,9 @@ body{
   font-family:'IBM Plex Mono',monospace;font-size:10.5px;text-transform:uppercase;
   letter-spacing:1.2px;color:var(--accent-dim);}
 .auth-or::before,.auth-or::after{content:'';flex:1;height:1px;background:var(--line);}
+/* Giris ve kayit ayni islem oldugu icin dugmede iki kelime yazmak yerine
+   burada bir satirla soyleniyor. */
+.auth-hint{font-size:11.5px;color:var(--text-dim);margin:10px 0 0;line-height:1.5;}
 .ai-status{font-size:11.5px;color:var(--text-dim);margin-top:6px;min-height:14px;}
 .ai-status.error{color:var(--red);}
 .ai-status.ok{color:var(--green);}
@@ -532,7 +535,7 @@ body{
     <div class="head-top">
       <div class="lockup"><span class="mark"><svg viewBox="0 0 64 64" aria-hidden="true"><rect x="6" y="24" width="52" height="34" rx="7" fill="var(--text)"/><g transform="rotate(-9 32 17)"><rect x="6" y="7" width="52" height="15" rx="3.5" fill="var(--accent)"/><path d="M17 7 L22.5 7 L14.5 22 L9 22 Z" fill="var(--bg)"/><path d="M33 7 L38.5 7 L30.5 22 L25 22 Z" fill="var(--bg)"/><path d="M49 7 L54.5 7 L46.5 22 L41 22 Z" fill="var(--bg)"/></g><rect x="15" y="34" width="26" height="3.4" rx="1.7" fill="var(--text-dim)"/><rect x="15" y="43" width="17" height="3.4" rx="1.7" fill="var(--amber)"/></svg></span><span class="wordmark">Slate</span></div>
       <div class="head-side">
-        <button class="btn" id="authBtn" data-i18n="btn_signin">☁ Save to cloud</button>
+        <button class="btn" id="authBtn" data-i18n="btn_signin">☁ Sign in</button>
         <select id="langSelect" class="lang-select" aria-label="Language"></select>
         <button class="btn" id="themeBtn">🌙 Dark</button>
       </div>
@@ -791,6 +794,7 @@ body{
       <label data-i18n="auth_email_label">Your email</label>
       <input type="email" id="authEmail" placeholder="you@example.com" autocomplete="email">
     </div>
+    <p class="auth-hint" data-i18n="auth_signup_hint">New here? The same link creates your account — there is no separate sign-up.</p>
     <div class="ai-status" id="authStatus"></div>
     <div class="modal-actions">
       <button class="btn" id="authCancelBtn" data-i18n="btn_close">Close</button>
@@ -901,8 +905,9 @@ const LANG = {
     btn_feedback: "💬 Feedback",
     cal_more: (n)=> `+${n} more`,
     cal_less: "Show less",
-    btn_signin: "☁ Save to cloud",
-    btn_account: "☁ Account",
+    btn_signin: "☁ Sign in",
+    auth_signup_hint: "New here? The same link creates your account — there is no separate sign-up.",
+    auth_signed_title: "Signed in — click to sign out",
     btn_privacy: "Privacy",
     auth_title: "Keep this on every device",
     auth_intro: "We send you a sign-in link — no password to invent, none to forget. Everything you have built so far moves with you.",
@@ -1052,8 +1057,9 @@ const LANG = {
     btn_feedback: "💬 Geri Bildirim",
     cal_more: (n)=> `+${n} daha`,
     cal_less: "Daha az",
-    btn_signin: "☁ Buluta kaydet",
-    btn_account: "☁ Hesap",
+    btn_signin: "☁ Giriş yap",
+    auth_signup_hint: "İlk kez mi? Aynı link hesabını da oluşturur — ayrı bir kayıt adımı yok.",
+    auth_signed_title: "Giriş yapıldı — çıkmak için tıkla",
     btn_privacy: "Gizlilik",
     auth_title: "Her cihazda yanında olsun",
     auth_intro: "Sana bir giriş linki gönderiyoruz — uydurulacak da unutulacak da bir şifre yok. Şu ana kadar kurduğun her şey seninle geliyor.",
@@ -2312,7 +2318,7 @@ document.getElementById('pendingOverlay').addEventListener('click', (e)=>{ if(e.
 
 // Yayina alinan surumun damgasi. Onbellekten eski bir kopya geldiginde bu
 // tarih eski kalir, boylece "guncel mi?" sorusu bakarak cevaplanir.
-const BUILD_STAMP = '2026-08-31 14:26 UTC';
+const BUILD_STAMP = '2026-08-31 14:32 UTC';
 document.getElementById('buildId').textContent = BUILD_STAMP;
 
 // ===== Init =====
@@ -2463,6 +2469,7 @@ function refreshAuthUi(){
   const b = document.getElementById('authBtn');
   if(!b) return;
   b.textContent = session ? '\u2601 ' + session.user.email : t('btn_signin');
+  b.title = session ? t('auth_signed_title') : '';
   if(session) document.getElementById('cloudNudge').hidden = true;
 }
 function openAuth(){
