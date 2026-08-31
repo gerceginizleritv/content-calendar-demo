@@ -135,7 +135,16 @@ body{
   font-weight:700;font-size:14px;min-height:56px;padding:0 22px;white-space:nowrap;
 }
 .btn.btn-new:hover{background:var(--accent-hover);border-color:var(--accent-hover);}
+.new-entry-col{max-width:200px;}
 .new-entry-col .entry-count{justify-content:center;min-height:28px;font-size:11px;}
+.count-note{font-size:11.5px;line-height:1.45;color:var(--text-dim);}
+.early-link{
+  background:none;border:0;padding:2px 0;text-align:left;cursor:pointer;
+  font-family:'IBM Plex Sans',sans-serif;font-size:11.5px;font-weight:600;
+  color:var(--accent);text-decoration:underline;text-underline-offset:2px;
+}
+.early-link:hover{color:var(--accent-hover);}
+.early-link:focus-visible{outline:2px solid var(--accent);outline-offset:2px;border-radius:3px;}
 .filter-fold{flex:1;min-width:0;margin-bottom:0;}
 .filter-fold > summary{flex-wrap:wrap;row-gap:2px;}
 .filter-ico{color:var(--accent);letter-spacing:-2px;font-size:13px;}
@@ -531,7 +540,12 @@ body{
   <div class="work-row">
     <div class="new-entry-col">
       <button class="btn btn-new" id="addBtn" data-i18n="btn_new">+ New Entry</button>
+      <!-- Sinirin ne oldugu sayacin ustunde yaziyor: rakami gorup "neden 100?"
+           diye sormak zorunda kalmasin. Altindaki baglanti sinira takilmadan
+           once de ilgilenen kisiye bir cikis veriyor. -->
+      <span class="count-note" data-i18n="count_note">Demo limit — plenty for a full month of planning.</span>
       <span class="entry-count" id="entryCount" title=""></span>
+      <button type="button" class="early-link" id="earlyLink" data-i18n="early_cta">Get early access →</button>
     </div>
     <details class="fold filter-fold" id="filterFold">
       <summary>
@@ -941,6 +955,8 @@ const LANG = {
     alert_fill_required: "Please fill in title, date and time.",
     alert_fill_missing: (alanlar)=> `Still missing: ${alanlar}.`,
     count_label: (n, max)=> `${n} / ${max} entries`,
+    count_note: "Demo limit — plenty for a full month of planning.",
+    early_cta: "Get early access →",
     count_title: (max)=> `This demo holds up to ${max} entries per account.`,
     alert_limit_near: (kalan, secilen)=> `Only ${kalan} ${kalan===1?'entry':'entries'} left in this demo, but you picked ${secilen} platforms. Uncheck a few, or delete something first.`,
     alert_limit_full: (max)=> `You have reached the ${max}-entry demo limit. Delete an entry to make room — or tell us you want the full version.`,
@@ -1079,6 +1095,8 @@ const LANG = {
     alert_fill_required: "Lütfen başlık, tarih ve saati doldur.",
     alert_fill_missing: (alanlar)=> `Şu alan eksik: ${alanlar}.`,
     count_label: (n, max)=> `${n} / ${max} kayıt`,
+    count_note: "Demo sınırı — bir ayı planlamaya fazlasıyla yeter.",
+    early_cta: "Erken erişim iste →",
     count_title: (max)=> `Bu demo hesap başına ${max} kayıt tutar.`,
     alert_limit_near: (kalan, secilen)=> `Bu demoda ${kalan} kayıtlık yer kaldı ama ${secilen} platform seçtin. Birkaçının işaretini kaldır ya da önce bir kayıt sil.`,
     alert_limit_full: (max)=> `${max} kayıtlık demo sınırına ulaştın. Yer açmak için bir kayıt sil — ya da tam sürümü istediğini bize söyle.`,
@@ -2464,6 +2482,11 @@ document.getElementById('nudgeDismiss').addEventListener('click', ()=>{
 });
 
 document.getElementById('feedbackBtn').addEventListener('click', ()=> openFeedback('manual'));
+// Sinirin yanindaki baglanti: ilgilenen kisiyi sinira toslamadan yakaliyor.
+document.getElementById('earlyLink').addEventListener('click', ()=>{
+  track('funnel/early-link');
+  openFeedback('early-link');
+});
 document.getElementById('fbLaterBtn').addEventListener('click', ()=>{ track('feedback/dismissed'); closeFeedback(); });
 document.getElementById('fbOverlay').addEventListener('click', (e)=>{
   if(e.target.id==='fbOverlay'){ track('feedback/dismissed'); closeFeedback(); }
