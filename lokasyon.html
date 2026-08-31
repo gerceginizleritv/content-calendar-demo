@@ -765,6 +765,7 @@ select{
 .cal-edit-field input, .cal-edit-field select{
   width:100%;background:var(--ink);border:1px solid var(--line);color:var(--parchment);
   padding:7px 9px;font-family:'JetBrains Mono',monospace;font-size:12px;
+  color-scheme:dark;
 }
 .cal-upload-toggle{
   display:flex;align-items:center;gap:9px;padding:10px 12px;background:var(--ink);
@@ -2156,6 +2157,13 @@ function renderCalGrid(){
       cell.appendChild(less);
     }
 
+    cell.style.cursor = 'pointer';
+    cell.title = 'Bu güne yeni yayın girişi ekle';
+    cell.addEventListener('click', evt=>{
+      if(evt.target.closest('.cal-chip') || evt.target.closest('.cal-more')) return;
+      openCalDetail(null, key);
+    });
+
     grid.appendChild(cell);
   }
 }
@@ -2238,7 +2246,9 @@ function currentPreviewPlatform(){
   return checked[0] || 'youtube';
 }
 
-function openCalDetail(ev){
+// varsayilanTarih: takvimde bir gune tiklanarak acildiginda o gun
+// dolu gelsin diye. Bos birakilirsa bugun kullanilir.
+function openCalDetail(ev, varsayilanTarih){
   calCurrentEvent = ev || null;
   populateCalLocationSelect();
 
@@ -2263,9 +2273,10 @@ function openCalDetail(ev){
   } else {
     const today = new Date();
     document.getElementById('cal_type').value = 'video';
-    document.querySelectorAll('#calPlatformMultiWrap input[type="checkbox"]').forEach(el=>{ el.checked = el.value === 'youtube'; });
+    document.querySelectorAll('#calPlatformMultiWrap input[type="checkbox"]').forEach(el=>{ el.checked = false; });
     document.getElementById('cal_title').value = '';
-    document.getElementById('cal_date').value = `${today.getFullYear()}-${calPad(today.getMonth()+1)}-${calPad(today.getDate())}`;
+    document.getElementById('cal_date').value = varsayilanTarih ||
+      `${today.getFullYear()}-${calPad(today.getMonth()+1)}-${calPad(today.getDate())}`;
     document.getElementById('cal_time').value = '20:00';
     calNewUploadedState = false;
   }
