@@ -205,6 +205,26 @@ body{
 .legend-reset.show{opacity:1;}
 .legend-reset:hover{color:var(--accent);}
 .hint{font-size:12.5px;color:var(--text-dim);margin:8px 0 20px;}
+/* Klonlama satiri: tur, platform, tarih, saat ve cikar dugmesi yan yana.
+   Dar ekranda alt alta duser, sayfa yana kaymaz. */
+.clone-row{display:grid;grid-template-columns:1fr 1fr auto auto auto;gap:8px;
+  align-items:center;margin-bottom:8px;}
+.clone-row select,.clone-row input{min-width:0;padding:8px 9px;border:1px solid var(--line);
+  border-radius:7px;background:var(--surface);color:var(--text);font:inherit;font-size:13px;
+  color-scheme:light;}
+:root:not([data-theme="light"]) .clone-row select,
+:root:not([data-theme="light"]) .clone-row input{color-scheme:dark;}
+.clone-row .k-del{border:1px solid var(--line);background:var(--surface);color:var(--text-dim);
+  border-radius:7px;padding:8px 11px;cursor:pointer;font:inherit;line-height:1;}
+.clone-row .k-del:hover{border-color:var(--red);color:var(--red);}
+@media(max-width:640px){
+  /* Dar ekranda alanlar alt alta duser ve uc kopya tek bir liste gibi
+     gorunurdu; her kopya kendi cercevesine aliniyor ki nerede bitip
+     nerede basladigi belli olsun. */
+  .clone-row{grid-template-columns:1fr 1fr;gap:8px;border:1px solid var(--line);
+    border-radius:9px;padding:10px;background:var(--surface-2);margin-bottom:12px;}
+  .clone-row .k-del{grid-column:2;justify-self:end;}
+}
 /* Filtrelerin ustunde duran ipucu: once ne yapilacagini soyluyor, sonra
    secenekler geliyor. Altta dururken cogu kisi hic okumuyordu. */
 .hint-top{margin:2px 0 10px;}
@@ -672,6 +692,7 @@ body{
       <!-- Pazar satiri yalnizca takvimde birden cok saat dilimi varsa cikiyor;
            tek pazarda calisan icin gereksiz gurultu olurdu. -->
       <div class="legend" id="tzLegend" hidden></div>
+      <div class="legend" id="conceptLegend" hidden></div>
       <!-- Bekleyenler bir filtre degil, ayni kumenin liste gorunumu: saati
            gecenleri isaretliyor ve satira tiklayinca kaydi aciyor. Durum
            satirinin basinda duruyor ama rozet gibi degil, dugme gibi
@@ -706,6 +727,23 @@ body{
 
 </div>
 
+<!-- Klonlama: ayni icerigin farkli gunlerde cikan surumleri. Tarihler tek
+     tek seciliyor; "birer gun arayla" gibi otomatik dagitim gercek yayin
+     planlarina uymuyor. -->
+<div class="overlay" id="cloneOverlay">
+  <div class="modal">
+    <h2 data-i18n="clone_title">Duplicate entry</h2>
+    <p class="hint" id="cloneSource"></p>
+    <div id="cloneRows"></div>
+    <button type="button" class="btn" id="cloneAddRow" data-i18n="clone_add_row">+ Add another</button>
+    <p class="hint" data-i18n="clone_note">Caption, hashtags and everything else are copied. Each copy gets its own date.</p>
+    <div class="modal-actions">
+      <button class="btn" id="cloneCancel" data-i18n="btn_cancel">Cancel</button>
+      <button class="btn btn-primary" id="cloneSave" data-i18n="clone_create">Create copies</button>
+    </div>
+  </div>
+</div>
+
 <div class="overlay" id="editOverlay">
   <div class="modal">
     <h2 id="modalTitle" data-i18n="modal_new_title">New Entry</h2>
@@ -724,6 +762,17 @@ body{
     <div class="field" id="platformMultiWrap">
       <label data-i18n="f_platforms_label">Platform(s) — check all that this same content goes to</label>
       <div class="platform-checks" id="platformChecks"></div>
+    </div>
+
+    <!-- Urunun vaadi "bir cekim, on paylasim" ama bugune kadar "o cekimi"
+         temsil eden hicbir alan yoktu: on kayit birbirinden habersiz duruyordu.
+         Proje alani o eksik baglanti. Zorunlu degil; bos birakan eskisi gibi
+         calismaya devam ediyor. -->
+    <div class="field">
+      <label data-i18n="f_concept_label">Project / Concept</label>
+      <input type="text" id="f_concept" maxlength="120" list="conceptList"
+             data-i18n-placeholder="f_concept_ph" placeholder="e.g. Studio Shoot, Product Review">
+      <datalist id="conceptList"></datalist>
     </div>
 
     <div class="field">
@@ -801,6 +850,7 @@ body{
 
     <div class="modal-actions">
       <button class="btn btn-danger" id="deleteBtn" style="display:none;" data-i18n="btn_delete">Delete</button>
+      <button class="btn" id="cloneBtn" style="display:none;" data-i18n="btn_clone">Duplicate…</button>
       <button class="btn" id="cancelBtn" data-i18n="btn_cancel">Cancel</button>
       <button class="btn btn-primary" id="saveBtn" data-i18n="btn_save">Save</button>
     </div>
@@ -1092,6 +1142,20 @@ const LANG = {
     f_thumb_ph: "Describe the cover image for an AI image generator...",
     carousel_title: "Carousel Slide Prompts (9)",
     btn_delete: "Delete",
+    btn_clone: "Duplicate…",
+    f_concept_label: "Project / Concept",
+    f_concept_ph: "e.g. Studio Shoot, Product Review",
+    concept_none: "No project",
+    btn_clear_filter: "Clear",
+    clone_title: "Duplicate entry",
+    clone_add_row: "+ Add another",
+    clone_create: "Create copies",
+    clone_remove: "Remove this copy",
+    clone_untitled: "this entry",
+    clone_note: "Caption, hashtags and everything else are copied. Each copy gets its own date, and starts as not posted.",
+    clone_source: (ad)=> `Copying "${ad}".`,
+    clone_over_limit: (kalan)=> `only ${kalan} left in this demo`,
+    clone_need_date: "Every copy needs a date.",
     btn_cancel: "Cancel",
     btn_save: "Save",
     ai_title: "Connect Your Own AI",
@@ -1259,6 +1323,20 @@ const LANG = {
     f_thumb_ph: "AI görsel üretici için kapak görselini tarif et...",
     carousel_title: "Carousel Slayt Prompt'ları (9)",
     btn_delete: "Sil",
+    btn_clone: "Çoğalt…",
+    f_concept_label: "Proje / Konsept",
+    f_concept_ph: "Örn: Stüdyo Çekimi, Ürün İnceleme",
+    concept_none: "Projesiz",
+    btn_clear_filter: "Temizle",
+    clone_title: "Kaydı çoğalt",
+    clone_add_row: "+ Bir tane daha",
+    clone_create: "Kopyaları oluştur",
+    clone_remove: "Bu kopyayı çıkar",
+    clone_untitled: "bu kayıt",
+    clone_note: "Açıklama, etiketler ve diğer her şey kopyalanıyor. Her kopyanın kendi tarihi oluyor ve yayınlanmamış olarak başlıyor.",
+    clone_source: (ad)=> `"${ad}" çoğaltılıyor.`,
+    clone_over_limit: (kalan)=> `bu demoda ${kalan} kayıtlık yer kaldı`,
+    clone_need_date: "Her kopyanın tarihi olmalı.",
     btn_cancel: "Vazgeç",
     btn_save: "Kaydet",
     ai_title: "Kendi AI'ını Bağla",
@@ -1425,6 +1503,7 @@ function seedData(){
 let events = [];
 let activeTypeFilters = new Set();
 let activePlatformFilters = new Set();
+let activeConceptFilters = new Set();
 let activeStatusFilters = new Set();
 const activeTzFilters = new Set();
 let weekOffset = 0;  // 0 = icinde bulunulan hafta (pencere buradan baslar)
@@ -1521,6 +1600,9 @@ function sanitizeEvent(raw){
       // Gecersiz degerler (eski kayitlardaki "undefined" dahil) bos'a duser;
       // bos dilim "kendi dilimim" demek ve takvimde rozet cikarmaz.
       timezone:     gecerliTz(c.timezone) ? c.timezone.slice(0,64) : '',
+      // Proje adi content icinde: veritabaninda yeni sutun gerektirmiyor,
+      // beyaz listede olmasaydi sanitize onu sessizce duserdi.
+      concept:      str(c.concept, 120),
       // 9 x 5000 tek basina 45 KB ediyordu; bir gorsel prompt'u icin 2000
       // fazlasiyla yeterli ve arayuzdeki sinir zaten 1000.
       slidePrompts: Array.isArray(c.slidePrompts) ? c.slidePrompts.slice(0,9).map(x=>str(x,2000)) : []
@@ -1631,6 +1713,127 @@ function calWindowEnd(){
   d.setDate(d.getDate() + calCellCount() - 1);
   return d;
 }
+// ===== Klonlama =====
+// Ayni cekimden cikan farkli surumler: bir uzun video, bir Reels, bir Shorts.
+// Tarihler tek tek seciliyor. Otomatik dagitim ("birer gun arayla") gercek
+// yayin planlarina uymuyordu; plan takvimin degil, kullanicinin elinde.
+let klonKaynak = null;
+
+function klonSatiriEkle(varsayilan){
+  const kap = document.getElementById('cloneRows');
+  const sira = document.createElement('div');
+  sira.className = 'clone-row';
+  sira.innerHTML =
+    '<select class="k-type"></select>' +
+    '<select class="k-platform"></select>' +
+    '<input type="date" class="k-date">' +
+    '<input type="time" class="k-time">' +
+    '<button type="button" class="k-del" title="' + escapeHtml(t('clone_remove')) + '">✕</button>';
+  // typeLabel kisa kod veriyor (REEL, SHRT); acilir listede ana modaldaki
+  // gibi tam ad yazmali.
+  sira.querySelector('.k-type').innerHTML = CAL_TYPES.map(x=>`<option value="${x}">${escapeHtml(typeName(x))}</option>`).join('');
+  sira.querySelector('.k-platform').innerHTML = CAL_SM_PLATFORMS.map(x=>`<option value="${x}">${escapeHtml(CAL_SM_NAMES[x])}</option>`).join('');
+  sira.querySelector('.k-type').value = varsayilan.type;
+  sira.querySelector('.k-platform').value = varsayilan.platform;
+  sira.querySelector('.k-date').value = varsayilan.date;
+  sira.querySelector('.k-time').value = varsayilan.time || '00:00';
+  sira.querySelector('.k-del').addEventListener('click', ()=>{
+    sira.remove();
+    // Son satir da silinebiliyor: bos birakip vazgecmek de bir karar.
+    klonDurumunuTazele();
+  });
+  kap.appendChild(sira);
+  klonDurumunuTazele();
+}
+
+function klonDurumunuTazele(){
+  const adet = document.querySelectorAll('#cloneRows .clone-row').length;
+  const kalan = MAX_ENTRIES - events.length;
+  const btn = document.getElementById('cloneSave');
+  btn.disabled = adet === 0 || adet > kalan;
+  const bilgi = document.getElementById('cloneSource');
+  if(!klonKaynak) return;
+  const ad = klonKaynak.title || t('clone_untitled');
+  let metin = t('clone_source')(ad);
+  if(adet > kalan) metin += ' — ' + t('clone_over_limit')(kalan);
+  bilgi.textContent = metin;
+}
+
+function openClone(ev){
+  if(!ev) return;
+  klonKaynak = ev;
+  document.getElementById('cloneRows').innerHTML = '';
+  // Ilk satir kaynagin bir gun sonrasiyla aciliyor: ayni gune ayni platforma
+  // birebir kopya cikarmak neredeyse hicbir zaman istenen sey degil.
+  const ertesi = new Date(ev.date + 'T00:00:00');
+  ertesi.setDate(ertesi.getDate() + 1);
+  klonSatiriEkle({ type: ev.type, platform: ev.platform, date: fmtKey(ertesi), time: ev.time });
+  document.getElementById('cloneOverlay').classList.add('open');
+  const kutu = document.querySelector('#cloneOverlay .modal');
+  if(kutu) kutu.scrollTop = 0;
+}
+function closeClone(){
+  document.getElementById('cloneOverlay').classList.remove('open');
+  klonKaynak = null;
+}
+
+document.getElementById('cloneBtn').addEventListener('click', ()=>{
+  const kaynak = currentEvent;
+  closeModal();
+  openClone(kaynak);
+});
+document.getElementById('cloneAddRow').addEventListener('click', ()=>{
+  const sonuncu = document.querySelector('#cloneRows .clone-row:last-child');
+  const temel = sonuncu
+    ? { type: sonuncu.querySelector('.k-type').value,
+        platform: sonuncu.querySelector('.k-platform').value,
+        date: sonuncu.querySelector('.k-date').value,
+        time: sonuncu.querySelector('.k-time').value }
+    : { type: klonKaynak.type, platform: klonKaynak.platform, date: klonKaynak.date, time: klonKaynak.time };
+  klonSatiriEkle(temel);
+});
+document.getElementById('cloneCancel').addEventListener('click', closeClone);
+document.getElementById('cloneOverlay').addEventListener('click', e=>{ if(e.target.id==='cloneOverlay') closeClone(); });
+
+document.getElementById('cloneSave').addEventListener('click', ()=>{
+  if(!klonKaynak) return;
+  const satirlar = [...document.querySelectorAll('#cloneRows .clone-row')].map(sr=>({
+    type: sr.querySelector('.k-type').value,
+    platform: sr.querySelector('.k-platform').value,
+    date: sr.querySelector('.k-date').value,
+    time: sr.querySelector('.k-time').value
+  }));
+  if(!satirlar.length){ closeClone(); return; }
+  const eksikTarih = satirlar.some(x=>!x.date);
+  if(eksikTarih){ alert(t('clone_need_date')); return; }
+
+  const kalan = MAX_ENTRIES - events.length;
+  if(satirlar.length > kalan){
+    track('funnel/limit-hit');
+    alert(kalan > 0 ? t('alert_limit_near')(kalan, satirlar.length) : t('alert_limit_full')(MAX_ENTRIES));
+    if(kalan <= 0){ closeClone(); openFeedback('limit'); }
+    return;
+  }
+
+  satirlar.forEach(x=>{
+    const yeni = {
+      id: newId(),
+      type: x.type,
+      platform: x.platform,
+      title: klonKaynak.title,
+      date: x.date,
+      time: x.time || '00:00',
+      // Kopya her zaman yayinlanmamis dogyor: kaynagin "yayinlandi" isareti
+      // kopyaya gecseydi, hic paylasilmamis bir kayit paylasilmis gorunurdu.
+      uploaded: false,
+      content: JSON.parse(JSON.stringify(klonKaynak.content || {}))
+    };
+    events.push(yeni); markDirty(yeni.id);
+  });
+  trackOnce('funnel/entry-cloned');
+  save(); closeClone(); renderCal();
+});
+
 // ===== Saat dilimi =====
 // Kayit hangi saate gore planlandigini kendi icinde tasiyor. Baska bir ulke
 // icin uretilen icerikte "18:00" tek basina eksik bilgi; kimin 18:00'i oldugu
@@ -1746,6 +1949,33 @@ function renderLegend(){
       });
     });
     tzEl.querySelector('#tzReset').addEventListener('click', ()=>{ activeTzFilters.clear(); renderLegend(); renderCal(); });
+  }
+
+  const konseptEl = document.getElementById('conceptLegend');
+  const konseptler = kullanilanKonseptler();
+  const projesiz = events.some(e=>!evKonsept(e));
+  if(!konseptler.length){
+    konseptEl.hidden = true;
+    konseptEl.innerHTML = '';
+    activeConceptFilters.clear();
+  }else{
+    konseptEl.hidden = false;
+    // Projesi olmayan kayitlar icin ayri bir secenek: aksi halde proje
+    // filtresi aciklandiginda plan disi kalanlar gorunmez oluyordu.
+    const secenekler = konseptler.concat(projesiz ? [''] : []);
+    konseptEl.innerHTML = secenekler.map(k=>`
+      <span class="legend-item ${activeConceptFilters.has(k)?'active':''}" data-concept="${escapeHtml(k)}" title="${escapeHtml(k || t('concept_none'))}">
+        <span class="tcode">PRJ</span>${escapeHtml(k || t('concept_none'))}
+      </span>`).join('') + `<span class="legend-reset ${activeConceptFilters.size?'show':''}" id="conceptReset">${escapeHtml(t('btn_clear_filter'))}</span>`;
+    konseptEl.querySelectorAll('.legend-item').forEach(el=>{
+      el.addEventListener('click', ()=>{
+        const k = el.dataset.concept;
+        activeConceptFilters.has(k) ? activeConceptFilters.delete(k) : activeConceptFilters.add(k);
+        trackOnce('funnel/concept-filtered');
+        renderLegend(); renderCal();
+      });
+    });
+    konseptEl.querySelector('#conceptReset').addEventListener('click', ()=>{ activeConceptFilters.clear(); renderLegend(); renderCal(); });
   }
 
   const statusEl = document.getElementById('statusLegend');
@@ -1880,15 +2110,33 @@ function araligiYaz(){
     + calWindowEnd().toLocaleDateString(locale, {day:'numeric', month:'short', year:'numeric'});
 }
 
+// Kaydin projesi. Bos olabilir; bos olan kayitlar filtrede "Projesiz"
+// altinda toplaniyor ki plan disi kalanlar gorunmez olmasin.
+function evKonsept(e){
+  const k = e && e.content && e.content.concept;
+  return (typeof k === 'string' ? k.trim() : '');
+}
+function kullanilanKonseptler(){
+  const k = new Set();
+  events.forEach(e=>{ const x = evKonsept(e); if(x) k.add(x); });
+  return [...k].sort((a,b)=>a.localeCompare(b, currentLang === 'tr' ? 'tr' : 'en'));
+}
+
 function gecerliKayit(e){
   return (activeTypeFilters.size===0 || activeTypeFilters.has(getType(e)))
       && (activePlatformFilters.size===0 || activePlatformFilters.has(getPlatform(e)))
       && (activeStatusFilters.size===0 || activeStatusFilters.has(e.uploaded ? 'posted' : 'scheduled'))
-      && (activeTzFilters.size===0 || activeTzFilters.has(evTz(e)));
+      && (activeTzFilters.size===0 || activeTzFilters.has(evTz(e)))
+      && (activeConceptFilters.size===0 || activeConceptFilters.has(evKonsept(e)));
 }
 
 function renderCal(){
   renderEntryCount();
+  // Filtre satirlari veriden turuyor (kullanilan projeler, kullanilan saat
+  // dilimleri). Takvim her yenilendiginde onlar da yenilenmeli; aksi halde
+  // yeni bir proje giren kullanici filtresini ancak sayfayi yenileyince
+  // goruyordu.
+  renderLegend();
   const haftaModu = viewMode === 'week';
   const tabloModu = viewMode === 'table';
   const grid = document.getElementById('calGrid');
@@ -2073,6 +2321,10 @@ function refreshTypeDependentFields(){
 function openModal(ev, hazirTarih){
   currentEvent = ev || null;
   const isNew = !ev;
+  konseptOnerileriniTazele();
+  // Klonlama yalnizca kayitli bir girise ait: henuz olusmamis bir seyin
+  // kopyasi olmaz.
+  document.getElementById('cloneBtn').style.display = isNew ? 'none' : '';
   document.getElementById('modalTitle').textContent = isNew ? t('modal_new_title') : t('modal_edit_title');
   document.getElementById('deleteBtn').style.display = isNew ? 'none' : '';
   document.getElementById('platformMultiWrap').style.display = isNew ? '' : 'none';
@@ -2081,6 +2333,7 @@ function openModal(ev, hazirTarih){
   if(ev){
     document.getElementById('f_type').value = ev.type;
     document.getElementById('f_platform').value = ev.platform;
+    document.getElementById('f_concept').value = evKonsept(ev);
     document.getElementById('f_title').value = ev.title||'';
     document.getElementById('f_date').value = ev.date;
     document.getElementById('f_time').value = ev.time||'';
@@ -2103,6 +2356,7 @@ function openModal(ev, hazirTarih){
     document.getElementById('f_type').value = 'video';
     // Hicbiri onceden isaretli gelmiyor: platformu kullanici bilerek secsin.
     document.querySelectorAll('#platformChecks input').forEach(el=> el.checked = false);
+    document.getElementById('f_concept').value = '';
     document.getElementById('f_title').value = '';
     document.getElementById('f_date').value = hazirTarih || fmtKey(new Date());
     // Saat bos degil ama bos gibi: kullanici kendi saatini yazsin diye 00:00.
@@ -2124,6 +2378,14 @@ function openModal(ev, hazirTarih){
   const kutu = document.querySelector('#editOverlay .modal');
   if(kutu) kutu.scrollTop = 0;
 }
+// Daha once yazilan proje adlari oneri olarak dusuyor: ayni proje ikinci
+// kez "Studio shoot" / "studio Shoot" diye iki ayri kayda bolunmesin.
+function konseptOnerileriniTazele(){
+  const dl = document.getElementById('conceptList');
+  if(!dl) return;
+  dl.innerHTML = kullanilanKonseptler().map(k=>`<option value="${escapeHtml(k)}"></option>`).join('');
+}
+
 function closeModal(){
   document.getElementById('editOverlay').classList.remove('open');
   currentEvent = null;
@@ -2171,6 +2433,7 @@ document.getElementById('saveBtn').addEventListener('click', ()=>{
   const type = document.getElementById('f_type').value;
 
   const content = {
+    concept: document.getElementById('f_concept').value.trim().slice(0,120),
     timezone: document.getElementById('f_tz').value || yerelTz(),
     caption: document.getElementById('f_caption').value,
     hashtags: document.getElementById('f_hashtags').value,
@@ -2655,7 +2918,7 @@ document.getElementById('pendingOverlay').addEventListener('click', (e)=>{ if(e.
 
 // Yayina alinan surumun damgasi. Onbellekten eski bir kopya geldiginde bu
 // tarih eski kalir, boylece "guncel mi?" sorusu bakarak cevaplanir.
-const BUILD_STAMP = '2026-08-31 18:29 UTC';
+const BUILD_STAMP = '2026-08-31 19:23 UTC';
 document.getElementById('buildId').textContent = BUILD_STAMP;
 
 // ===== Init =====
