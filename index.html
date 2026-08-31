@@ -1848,7 +1848,10 @@ function markAllDirty(){ events.forEach(e=>dirtyIds.add(e.id)); }
 function toRow(e, uid){
   return { id: e.id, user_id: uid, type: e.type, platform: e.platform,
            title: e.title || '', post_date: e.date, post_time: e.time || null,
-           uploaded: !!e.uploaded, content: e.content || {} };
+           uploaded: !!e.uploaded, content: e.content || {},
+           // Proje kimligi content icinde de duruyor; ayri sutun sorgu ve
+           // ileride rapor icin. Ikisi ayni degerden yaziliyor.
+           project_id: (e.content && e.content.projectId) || null };
 }
 function fromRow(r){
   return { id: r.id, type: r.type, platform: r.platform, title: r.title || '',
@@ -2057,15 +2060,18 @@ function sanitizeProject(raw){
 }
 
 function loadProjects(){
-  let ham = [];
-  try{ ham = JSON.parse(localStorage.getItem(PROJ_KEY) || '[]'); }catch(e){ ham = []; }
-  projects = (Array.isArray(ham) ? ham : []).slice(0, MAX_PROJECTS)
-    .map(sanitizeProject).filter(Boolean);
+  projects = readLocalProjects(projStorageKey()) || readLocalProjects(PROJ_KEY) || [];
 }
 
+// Her kayitta tarayiciya yaziliyor; giris varsa degisenler buluta da
+// gonderiliyor. Once tarayici: bulut hata verse bile is kaybolmasin.
 function saveProjects(){
-  try{ localStorage.setItem(PROJ_KEY, JSON.stringify(projects)); }
+  try{ localStorage.setItem(projStorageKey(), JSON.stringify(projects)); }
   catch(e){ console.error('[proje] kaydedilemedi', e); }
+  if(session){
+    clearTimeout(projPushTimer);
+    projPushTimer = setTimeout(projPushChanges, 400);
+  }
 }
 
 function projectById(id){
@@ -2105,6 +2111,7 @@ function projeleriGocur(){
       projects.push(p);
     }
     c.projectId = p.id;
+    projDirtyIsaretle(p.id);
     markDirty(e.id);
     degisti = true;
   });
@@ -2235,6 +2242,7 @@ function renderProjects(){
       const p = projectById(el.dataset.proj);
       if(!p) return;
       p[el.dataset.step] = !p[el.dataset.step];
+      projDirtyIsaretle(p.id);
       saveProjects(); renderProjects();
     });
   });
@@ -2243,6 +2251,7 @@ function renderProjects(){
       const p = projectById(el.dataset.projDl);
       if(!p) return;
       adimTarihiYaz(p, el.dataset.step, el.value);
+      projDirtyIsaretle(p.id);
       saveProjects(); renderProjects();
     });
   });
@@ -2251,6 +2260,7 @@ function renderProjects(){
       const p = projectById(el.dataset.projDate);
       if(!p) return;
       p.shootDate = el.value || '';
+      projDirtyIsaretle(p.id);
       saveProjects();
     });
   });
@@ -2295,6 +2305,7 @@ function projeSil(p){
     delete e.content.projectId; delete e.content.concept; markDirty(e.id);
   });
   projects = projects.filter(x=>x.id !== p.id);
+  projSilindiIsaretle(p.id);
   saveProjects(); save(); renderProjects(); renderCal();
 }
 
@@ -2313,8 +2324,128 @@ function projeEkle(ad, anahtar, cekim, tur, adres){
   const var_ = projects.find(x=>x.name.toLocaleLowerCase() === p.name.toLocaleLowerCase());
   if(var_){ alert(t('p_exists')(var_.name)); return var_; }
   projects.push(p);
+  projDirtyIsaretle(p.id);
   saveProjects();
   return p;
+}
+
+// --- Projelerin bulut senkronu ---------------------------------------
+// Kayitlarla ayni desen: tarayici her zaman yaziliyor, giris varsa
+// degisen satirlar buluta gonderiliyor. Boylece cikisken de calisiyor.
+let projDirty = new Set();
+let projRemoved = new Set();
+let projPushTimer = null;
+
+function projStorageKey(){
+  return session ? PROJ_KEY + '_' + session.user.id : PROJ_KEY;
+}
+function projDirtyIsaretle(id){ if(id) projDirty.add(id); }
+function projSilindiIsaretle(id){ if(id){ projRemoved.add(id); projDirty.delete(id); } }
+function projHepsiDirty(){ projects.forEach(p=> projDirty.add(p.id)); }
+
+function projToRow(p, uid){
+  const adimlar = {}, tarihler = {};
+  PROJ_STEPS.forEach(k=>{
+    adimlar[k] = p[k] === true;
+    tarihler[k] = (p.deadlines || {})[k] || '';
+  });
+  return {
+    id: p.id, user_id: uid,
+    name: p.name || '', keywords: p.keywords || '', notes: p.notes || '',
+    address: p.address || '', type: p.type || 'other',
+    // Bos metin tarih sutununa yazilamaz; yoklugu null ile anlatiliyor.
+    start_date: p.shootDate ? p.shootDate : null,
+    steps: adimlar, deadlines: tarihler
+  };
+}
+function projFromRow(r){
+  const ham = {
+    id: r.id, name: r.name || '', keywords: r.keywords || '', notes: r.notes || '',
+    address: r.address || '', type: r.type || 'other',
+    shootDate: r.start_date || '',
+    deadlines: (r.deadlines && typeof r.deadlines === 'object') ? r.deadlines : {},
+    createdAt: r.created_at ? Date.parse(r.created_at) : Date.now()
+  };
+  const adimlar = (r.steps && typeof r.steps === 'object') ? r.steps : {};
+  PROJ_STEPS.forEach(k=>{ ham[k] = adimlar[k] === true; });
+  return sanitizeProject(ham);
+}
+
+async function projPullRemote(){
+  const { data, error } = await sb.from('projects')
+    .select('*').is('deleted_at', null);
+  if(error) throw error;
+  return (data || []).map(projFromRow).filter(Boolean);
+}
+
+async function projPushChanges(){
+  if(!sb || !session) return;
+  const uid = session.user.id;
+  // Kuyruklar isin basinda kopyalaniyor: gonderim surerken yapilan yeni
+  // degisiklik silinmesin, sonraki turda tekrar denensin.
+  const silinecek = [...projRemoved];
+  const yazilacak = new Set(projDirty);
+  try{
+    if(silinecek.length){
+      // Mezar tasi: satir kaliyor, listelerden dusuyor.
+      const { error } = await sb.from('projects')
+        .update({ deleted_at: new Date().toISOString() }).in('id', silinecek);
+      if(error) throw error;
+      silinecek.forEach(id => projRemoved.delete(id));
+    }
+    if(yazilacak.size){
+      const rows = projects.filter(p=>yazilacak.has(p.id)).map(p=>projToRow(p, uid));
+      if(rows.length){
+        const { error } = await sb.from('projects').upsert(rows, { onConflict: 'id' });
+        if(error) throw error;
+      }
+      yazilacak.forEach(id => projDirty.delete(id));
+    }
+  }catch(err){
+    // Kimlikler kuyrukta kaliyor: sonraki kayit tekrar deniyor.
+    console.error('[bulut] proje yazma hatasi', err);
+  }
+}
+
+// Projeler acilista buluttan geliyor. Hesapta proje varsa esas olan o;
+// hesap bossa bu tarayicidaki calisma yukleniyor. Kayitlardaki mantigin
+// aynisi, ama soru sorulmuyor: proje adi kimseyi sasirtacak bir veri
+// degil ve kayitlar zaten onlara bagli.
+async function projAfterSignIn(){
+  projDirty.clear(); projRemoved.clear();
+  try{
+    const uzak = await projPullRemote();
+    if(uzak.length){
+      projects = uzak;
+    }else{
+      const yerel = readLocalProjects(projStorageKey()) || readLocalProjects(PROJ_KEY) || [];
+      if(yerel.length){
+        projects = yerel;
+        projHepsiDirty();
+        await projPushChanges();
+      }else{
+        projects = [];
+      }
+    }
+    saveProjects();
+    renderProjects(); renderCal();
+  }catch(err){
+    console.error('[bulut] proje okuma hatasi', err);
+  }
+}
+
+function projAfterSignOut(){
+  projDirty.clear(); projRemoved.clear();
+  projects = readLocalProjects(PROJ_KEY) || [];
+  renderProjects();
+}
+
+function readLocalProjects(key){
+  try{
+    const ham = JSON.parse(localStorage.getItem(key) || 'null');
+    if(!Array.isArray(ham)) return null;
+    return ham.slice(0, MAX_PROJECTS).map(sanitizeProject).filter(Boolean);
+  }catch(e){ return null; }
 }
 
 // --- Modaldeki proje secimi ------------------------------------------
@@ -2445,6 +2576,7 @@ document.getElementById('pe_save').addEventListener('click', ()=>{
   p.address = document.getElementById('pe_address').value.trim().slice(0,300);
   p.keywords = document.getElementById('pe_keywords').value.slice(0,200);
   p.shootDate = document.getElementById('pe_shoot').value || '';
+  projDirtyIsaretle(p.id);
   saveProjects();
   // Kayitlardaki proje adi kopyasi da tazeleniyor; aksi halde takvimde
   // eski ad gorunmeye devam ederdi.
@@ -3674,7 +3806,7 @@ document.getElementById('pendingOverlay').addEventListener('click', (e)=>{ if(e.
 
 // Yayina alinan surumun damgasi. Onbellekten eski bir kopya geldiginde bu
 // tarih eski kalir, boylece "guncel mi?" sorusu bakarak cevaplanir.
-const BUILD_STAMP = '2026-08-31 20:22 UTC';
+const BUILD_STAMP = '2026-08-31 20:40 UTC';
 document.getElementById('buildId').textContent = BUILD_STAMP;
 
 // ===== Init =====
@@ -3922,6 +4054,9 @@ async function afterSignIn(){
       }
     }
     save();
+    // Projeler kayitlardan SONRA: kayitlar hangi projeye bagli oldugunu
+    // biliyor, projeler once gelseydi bir an sahipsiz gorunurlerdi.
+    await projAfterSignIn();
     renderCal();
     setCloudStatus('ok');
     trackOnce('funnel/cloud-connected');
@@ -3936,6 +4071,7 @@ function afterSignOut(){
   dirtyIds.clear(); removedIds.clear();
   const anonim = readLocal(STORAGE_KEY);
   events = anonim || seedData();
+  projAfterSignOut();
   renderCal();
   setCloudStatus('');
   showToast(t('auth_signed_out'));
