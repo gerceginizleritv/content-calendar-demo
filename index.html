@@ -233,6 +233,7 @@ body{
 /* ---- Tablo gorunumu ----
    Gunler satir, platformlar sutun. Genis olabildigi icin sayfayi degil
    kendi kabini kaydiriyor; govde asla yana kaymiyor. */
+.cal-grid[hidden],.cal-table-wrap[hidden]{display:none;}
 .cal-table-wrap{overflow-x:auto;border:1px solid var(--line);border-radius:8px;background:var(--surface);}
 .cal-table{border-collapse:collapse;width:100%;min-width:520px;font-size:12px;}
 .cal-table th,.cal-table td{border-bottom:1px solid var(--line-soft);border-right:1px solid var(--line-soft);
@@ -1786,15 +1787,13 @@ function renderEntryCount(){
 // Sutunlar sabit degil: pencerede gercekten kullanilan platformlar
 // gosteriliyor. Sekiz platformun sekizini birden basmak, ikisini
 // kullanan birine altı bos sutun izletmek olurdu.
-function tabloPlatformlari(start, gunSayisi){
-  const bitis = new Date(start); bitis.setDate(start.getDate() + gunSayisi - 1);
-  const bas = fmtKey(start), son = fmtKey(bitis);
-  const gorulen = new Set();
-  events.forEach(e=>{
-    if(e.date >= bas && e.date <= son && gecerliKayit(e)) gorulen.add(getPlatform(e));
-  });
-  if(!gorulen.size) return ['youtube','instagram','tiktok','facebook'];
-  return CAL_SM_PLATFORMS.filter(p => gorulen.has(p));
+// Butun platformlar sutun oluyor, kullanilanlar degil. Tablonun isi
+// boslugu gostermek: hic kayit girilmemis bir platform sutunu bastan
+// dislansaydi, gormek istenen sey tam olarak gorunmez olurdu.
+// Platform filtresi seciliyse yalnizca secilenler cikiyor.
+function tabloPlatformlari(){
+  if(activePlatformFilters.size) return CAL_SM_PLATFORMS.filter(p=>activePlatformFilters.has(p));
+  return CAL_SM_PLATFORMS.slice();
 }
 
 function renderCalTable(){
@@ -1803,7 +1802,7 @@ function renderCalTable(){
   const bugun = new Date(); bugun.setHours(0,0,0,0);
   const gunSayisi = calCellCount();
   const locale = currentLang === 'tr' ? 'tr-TR' : 'en-US';
-  const platformlar = tabloPlatformlari(start, gunSayisi);
+  const platformlar = tabloPlatformlari();
   const cokPazar = new Set(events.map(evTz)).size > 1;
 
   let bas = '<tr><th class="ct-date-col">' + escapeHtml(t('table_date')) + '</th>';
@@ -2653,7 +2652,7 @@ document.getElementById('pendingOverlay').addEventListener('click', (e)=>{ if(e.
 
 // Yayina alinan surumun damgasi. Onbellekten eski bir kopya geldiginde bu
 // tarih eski kalir, boylece "guncel mi?" sorusu bakarak cevaplanir.
-const BUILD_STAMP = '2026-08-31 17:47 UTC';
+const BUILD_STAMP = '2026-08-31 18:23 UTC';
 document.getElementById('buildId').textContent = BUILD_STAMP;
 
 // ===== Init =====
