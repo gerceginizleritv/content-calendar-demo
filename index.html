@@ -235,25 +235,28 @@ body{
    kendi kabini kaydiriyor; govde asla yana kaymiyor. */
 .cal-grid[hidden],.cal-table-wrap[hidden]{display:none;}
 .cal-table-wrap{overflow-x:auto;border:1px solid var(--line);border-radius:8px;background:var(--surface);}
-.cal-table{border-collapse:collapse;width:100%;min-width:520px;font-size:12px;}
+.cal-table{border-collapse:collapse;width:max-content;min-width:100%;font-size:12px;}
 .cal-table th,.cal-table td{border-bottom:1px solid var(--line-soft);border-right:1px solid var(--line-soft);
   padding:0;vertical-align:top;}
 .cal-table th:last-child,.cal-table td:last-child{border-right:0;}
-.cal-table thead th{position:sticky;top:0;z-index:2;background:var(--surface-2);color:var(--text-dim);
+.cal-table thead th{position:sticky;top:0;z-index:2;background:var(--surface-2);
+  white-space:nowrap;color:var(--text-dim);
   font-size:10px;letter-spacing:.08em;text-transform:uppercase;font-weight:600;
   padding:8px 9px;text-align:left;white-space:nowrap;}
+.cal-table thead th.ct-date-col{z-index:4;}
 .ct-phead{display:inline-flex;align-items:center;gap:6px;}
 .ct-pdot{width:8px;height:8px;border-radius:50%;flex-shrink:0;}
-.ct-date-col{width:66px;}
+.ct-date-col{width:78px;min-width:78px;position:sticky;left:0;z-index:3;}
 .ct-date{padding:8px 9px;white-space:nowrap;background:var(--surface-2);
-  font-variant-numeric:tabular-nums;}
+  font-variant-numeric:tabular-nums;position:sticky;left:0;z-index:1;
+  width:78px;min-width:78px;border-right:1px solid var(--line);}
 .ct-daynum{font-size:15px;font-weight:700;color:var(--text);margin-right:5px;}
 .ct-dow,.ct-mon{font-size:10px;color:var(--text-dim);text-transform:uppercase;letter-spacing:.05em;}
 .ct-mon{display:block;}
 .cal-table tr.ct-today .ct-date{background:var(--accent-soft);}
 .cal-table tr.ct-today .ct-daynum{color:var(--accent);}
 .cal-table tr.ct-past td{opacity:.62;}
-.ct-cell{padding:5px;cursor:pointer;min-width:104px;}
+.ct-cell{padding:5px;cursor:pointer;width:132px;min-width:132px;}
 .ct-cell:hover{background:var(--surface-2);}
 /* Bos hucredeki + isareti ancak uzerine gelince beliriyor: bos bir tablo
    arti isaretiyle dolup gozu yormasin, ama tiklanabildigi de belli olsun. */
@@ -273,8 +276,8 @@ body{
 .ct-tz{display:inline-block;margin-top:3px;font-size:9px;padding:1px 5px;border-radius:99px;
   background:var(--surface-2);color:var(--text-dim);}
 @media(max-width:700px){
-  .ct-date-col{width:52px;}
-  .ct-cell{min-width:92px;}
+  .ct-date-col,.ct-date{width:62px;min-width:62px;}
+  .ct-cell{width:116px;min-width:116px;}
 }
 .cal-day{background:var(--bg);padding:9px 8px;min-height:112px;min-width:0;overflow:hidden;cursor:pointer;}
 /* Gune tiklamanin bir sey yaptigi belli olsun */
@@ -2652,7 +2655,7 @@ document.getElementById('pendingOverlay').addEventListener('click', (e)=>{ if(e.
 
 // Yayina alinan surumun damgasi. Onbellekten eski bir kopya geldiginde bu
 // tarih eski kalir, boylece "guncel mi?" sorusu bakarak cevaplanir.
-const BUILD_STAMP = '2026-08-31 18:23 UTC';
+const BUILD_STAMP = '2026-08-31 18:29 UTC';
 document.getElementById('buildId').textContent = BUILD_STAMP;
 
 // ===== Init =====
