@@ -4,7 +4,7 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Slate — One Shoot, Every Post</title>
-<meta name="description" content="One shoot becomes ten posts. Slate keeps every Reel, Short, carousel and story attached to the shoot it came from — and tells you which ones aren't written yet.">
+<meta name="description" content="One shoot becomes ten posts. Slate keeps every Reel, Short, carousel and story on one board with its own caption, cover text and time slot — a planning board, not an auto-poster.">
 <link rel="manifest" href="manifest.json">
 <meta name="theme-color" content="#10131C">
 <link rel="icon" href="favicon.svg" type="image/svg+xml">
@@ -559,8 +559,8 @@ body{
       </div>
     </div>
     <div class="eyebrow"><span class="tally"></span><span data-i18n="eyebrow">QUEUE — NEXT 6 WEEKS</span></div>
-    <h1 data-i18n="h1">One shoot becomes ten posts. Slate tracks every one.</h1>
-    <p data-i18n="h1_sub">The same footage goes out as a Reel, a Short, a carousel and a story — each with its own caption, cover text and time slot. Slate also tells you which ones aren't written yet.</p>
+    <h1 data-i18n="h1">One shoot becomes ten posts. Slate keeps all ten on one board.</h1>
+    <p data-i18n="h1_sub">The same footage goes out as a Reel, a Short, a carousel and a story — each with its own caption, cover text and time slot. You tick them off as they go out; Slate keeps the list of what is still waiting.</p>
     <!-- Ikincil eylemler: kayit olusturmak burada degil, asagidaki buyuk dugmede -->
     <div class="head-actions">
       <button class="btn" id="feedbackBtn" data-i18n="btn_feedback">💬 Feedback</button>
@@ -929,8 +929,8 @@ const LANG = {
     banner_bold1: "This is a live, working demo.",
     banner_rest: "Click any day to add an entry, or any entry to edit it. It all works <b>without an account</b> — your calendar stays in this browser. Sign in with Google or an email link only if you want the same calendar on your phone too. The demo holds up to 100 entries.",
     eyebrow: "QUEUE — NEXT 6 WEEKS",
-    h1: "One shoot becomes ten posts. Slate tracks every one.",
-    h1_sub: "The same footage goes out as a Reel, a Short, a carousel and a story — each with its own caption, cover text and time slot. Slate also tells you which ones aren't written yet.",
+    h1: "One shoot becomes ten posts. Slate keeps all ten on one board.",
+    h1_sub: "The same footage goes out as a Reel, a Short, a carousel and a story — each with its own caption, cover text and time slot. You tick them off as they go out; Slate keeps the list of what is still waiting.",
     btn_new: "+ New Entry",
     btn_pending: "⏳ Pending",
     btn_export: "Export Backup",
@@ -1081,7 +1081,7 @@ const LANG = {
     tour_visual_direct: "direct",
     tour_visual_ourserver: "our server",
     tour_visual_combine: "combine",
-    tour1_body: "Plan content across YouTube, Instagram, TikTok and more — everything stays in this browser, no account needed.",
+    tour1_body: "Plan content across YouTube, Instagram, TikTok and more. Slate is a planning board, not an auto-poster — you publish on each platform, Slate keeps the plan straight.",
     tour2_body: "Every post gets two independent tags: what it is, and where it's going. Filter by either, or both at once.",
     tour3_body: "Click any slot to open it — caption, hashtags, titles, cover prompt, all editable and one tap from copied.",
     tour4_body: "Posting for more than one country? Give each entry its own time zone. Days with several markets group by market, and you can filter down to one.",
@@ -1092,8 +1092,8 @@ const LANG = {
     banner_bold1: "Bu, canlı ve çalışan bir demodur.",
     banner_rest: "Bir güne tıklayarak kayıt ekle, bir kayda tıklayarak düzenle. Hepsi <b>hesapsız çalışır</b> — takvimin bu tarayıcıda kalır. Aynı takvimi telefonunda da istiyorsan Google ya da e-posta linkiyle giriş yap. Demo 100 kayıt tutar.",
     eyebrow: "SIRADAKİLER — ÖNÜMÜZDEKİ 6 HAFTA",
-    h1: "Tek çekim on paylaşıma dönüşür. Slate hepsini takip eder.",
-    h1_sub: "Aynı çekim; Reels, Shorts, carousel ve hikaye olarak çıkar — her biri kendi caption'ı, kapak metni ve saatiyle. Slate hangisinin hâlâ yazılmadığını da söyler.",
+    h1: "Tek çekim on paylaşıma dönüşür. Slate onunu da tek panoda tutar.",
+    h1_sub: "Aynı çekim; Reels, Shorts, carousel ve hikaye olarak çıkar — her biri kendi caption'ı, kapak metni ve saatiyle. Yayınladıkça işaretlersin; Slate bekleyenlerin listesini tutar.",
     btn_new: "+ Yeni Giriş",
     btn_pending: "⏳ Bekleyenler",
     btn_export: "Yedek Dışa Aktar",
@@ -1244,7 +1244,7 @@ const LANG = {
     tour_visual_direct: "doğrudan",
     tour_visual_ourserver: "bizim sunucumuz",
     tour_visual_combine: "birleştir",
-    tour1_body: "YouTube, Instagram, TikTok ve daha fazlasında içerik planla — her şey bu tarayıcıda kalır, hesap gerekmez.",
+    tour1_body: "YouTube, Instagram, TikTok ve daha fazlasında içerik planla. Slate bir planlama panosu, otomatik paylaşım aracı değil — yayınlamayı sen yaparsın, Slate planı derli toplu tutar.",
     tour2_body: "Her paylaşımın iki bağımsız etiketi var: ne olduğu ve nereye gittiği. Birine, ya da ikisine birden göre filtrele.",
     tour3_body: "Herhangi bir kutucuğa tıkla, aç — caption, hashtag, başlıklar, kapak prompt'u, hepsi düzenlenebilir ve tek dokunuşla kopyalanır.",
     tour4_body: "Birden fazla ülkeye mi paylaşıyorsun? Her kaydın kendi saat dilimi olur. Birden çok pazarın olduğu günler pazara göre gruplanır, dilersen tek pazara indirirsin.",
@@ -2459,7 +2459,7 @@ document.getElementById('pendingOverlay').addEventListener('click', (e)=>{ if(e.
 
 // Yayina alinan surumun damgasi. Onbellekten eski bir kopya geldiginde bu
 // tarih eski kalir, boylece "guncel mi?" sorusu bakarak cevaplanir.
-const BUILD_STAMP = '2026-08-31 14:51 UTC';
+const BUILD_STAMP = '2026-08-31 14:56 UTC';
 document.getElementById('buildId').textContent = BUILD_STAMP;
 
 // ===== Init =====
