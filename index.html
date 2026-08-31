@@ -499,8 +499,8 @@ body{
 .privacy-link{margin-left:auto;font-size:12px;color:var(--text-dim);text-decoration:none;
   align-self:center;white-space:nowrap;}
 .privacy-link:hover{color:var(--accent);text-decoration:underline;}
-.visit-badge{display:inline-flex;align-items:center;line-height:0;}
-.visit-badge img{height:20px;display:block;}
+/* hits.sh ziyaret rozeti kaldirildi: hit sayiyordu, ziyaretci degil — sahibin
+   her yenilemesi bile +1 ediyordu. Tekil sayimi zaten GoatCounter yapiyor. */
 
 /* Izgara gorunumunde hucre ~150px: isaret + tip + saat yan yana girince
    basliga yer kalmiyordu. Baslik kendi satirina aliniyor. */
@@ -589,9 +589,6 @@ body{
            guncelleniyor. -->
       <span class="build-id" id="buildId" title="build"></span>
       <a class="privacy-link" href="privacy.html" data-i18n="btn_privacy">Privacy</a>
-      <a class="visit-badge" href="https://hits.sh/gerceginizleritv.github.io/content-calendar-demo/" target="_blank" rel="noopener">
-        <img src="https://hits.sh/gerceginizleritv.github.io/content-calendar-demo.svg?style=flat-square&label=visits&color=2563C7&labelColor=EDF1F6" alt="visit counter">
-      </a>
     </div>
   </div>
 
@@ -680,7 +677,7 @@ body{
 
     <div class="field">
       <label data-i18n="f_title_label">Title / Note</label>
-      <input type="text" id="f_title" data-i18n-placeholder="f_title_ph" placeholder="e.g. Product Launch Teaser">
+      <input type="text" id="f_title" maxlength="200" data-i18n-placeholder="f_title_ph" placeholder="e.g. Product Launch Teaser">
     </div>
 
     <div class="row3">
@@ -710,7 +707,7 @@ body{
           <button type="button" class="copy-btn" data-copy="f_caption" data-i18n="btn_copy">Copy</button>
         </span>
       </div>
-      <textarea id="f_caption" data-i18n-placeholder="f_caption_ph" placeholder="Write the caption for this post..."></textarea>
+      <textarea id="f_caption" maxlength="2200" data-i18n-placeholder="f_caption_ph" placeholder="Write the caption for this post..."></textarea>
       <div id="aiStatus" class="ai-status"></div>
     </div>
 
@@ -719,7 +716,7 @@ body{
         <label data-i18n="f_hashtags_label">Hashtags / Tags (comma-separated, no #)</label>
         <button type="button" class="copy-btn" data-copy="f_hashtags" data-i18n="btn_copy">Copy</button>
       </div>
-      <textarea id="f_hashtags" style="min-height:44px;" data-i18n-placeholder="f_hashtags_ph" placeholder="product launch, saas, startup"></textarea>
+      <textarea id="f_hashtags" maxlength="400" style="min-height:44px;" data-i18n-placeholder="f_hashtags_ph" placeholder="product launch, saas, startup"></textarea>
     </div>
 
     <div class="field" id="videoTitleWrap" style="display:none;">
@@ -727,7 +724,7 @@ body{
         <label data-i18n="f_videotitle_label">Video Title (public — what viewers see in search/suggested)</label>
         <button type="button" class="copy-btn" data-copy="f_videotitle" data-i18n="btn_copy">Copy</button>
       </div>
-      <textarea id="f_videotitle" style="min-height:34px;" data-i18n-placeholder="f_videotitle_ph" placeholder="The actual title that goes on the upload — different from the note above"></textarea>
+      <textarea id="f_videotitle" maxlength="150" style="min-height:34px;" data-i18n-placeholder="f_videotitle_ph" placeholder="The actual title that goes on the upload — different from the note above"></textarea>
     </div>
 
     <div class="field" id="shortTitleWrap" style="display:none;">
@@ -735,7 +732,7 @@ body{
         <label data-i18n="f_shorttitle_label">Cover Short Text (3–5 words to put ON the thumbnail)</label>
         <button type="button" class="copy-btn" data-copy="f_shorttitle" data-i18n="btn_copy">Copy</button>
       </div>
-      <textarea id="f_shorttitle" style="min-height:34px;" data-i18n-placeholder="f_shorttitle_ph" placeholder="e.g. IT'S FINALLY HERE"></textarea>
+      <textarea id="f_shorttitle" maxlength="100" style="min-height:34px;" data-i18n-placeholder="f_shorttitle_ph" placeholder="e.g. IT'S FINALLY HERE"></textarea>
     </div>
 
     <div class="field" id="thumbWrap">
@@ -743,7 +740,7 @@ body{
         <label data-i18n="f_thumb_label">Cover / Thumbnail Image Prompt</label>
         <button type="button" class="copy-btn" data-copy="f_thumb" data-i18n="btn_copy">Copy</button>
       </div>
-      <textarea id="f_thumb" data-i18n-placeholder="f_thumb_ph" placeholder="Describe the cover image for an AI image generator..."></textarea>
+      <textarea id="f_thumb" maxlength="1500" data-i18n-placeholder="f_thumb_ph" placeholder="Describe the cover image for an AI image generator..."></textarea>
     </div>
 
     <div id="carouselWrap" style="display:none;">
@@ -1469,7 +1466,9 @@ function sanitizeEvent(raw){
       // Gecersiz degerler (eski kayitlardaki "undefined" dahil) bos'a duser;
       // bos dilim "kendi dilimim" demek ve takvimde rozet cikarmaz.
       timezone:     gecerliTz(c.timezone) ? c.timezone.slice(0,64) : '',
-      slidePrompts: Array.isArray(c.slidePrompts) ? c.slidePrompts.slice(0,9).map(x=>str(x,5000)) : []
+      // 9 x 5000 tek basina 45 KB ediyordu; bir gorsel prompt'u icin 2000
+      // fazlasiyla yeterli ve arayuzdeki sinir zaten 1000.
+      slidePrompts: Array.isArray(c.slidePrompts) ? c.slidePrompts.slice(0,9).map(x=>str(x,2000)) : []
     }
   };
 }
@@ -1888,7 +1887,7 @@ function refreshTypeDependentFields(){
       container.innerHTML = Array.from({length:9},(_,i)=>`
         <div class="field">
           <div class="field-header"><label>Slide ${i+1}</label><button type="button" class="copy-btn" data-copy="slide${i+1}" data-i18n="btn_copy">${t('btn_copy')}</button></div>
-          <textarea id="slide${i+1}"></textarea>
+          <textarea id="slide${i+1}" maxlength="1000"></textarea>
         </div>`).join('');
     }
   }
@@ -2475,7 +2474,7 @@ document.getElementById('pendingOverlay').addEventListener('click', (e)=>{ if(e.
 
 // Yayina alinan surumun damgasi. Onbellekten eski bir kopya geldiginde bu
 // tarih eski kalir, boylece "guncel mi?" sorusu bakarak cevaplanir.
-const BUILD_STAMP = '2026-08-31 14:59 UTC';
+const BUILD_STAMP = '2026-08-31 15:56 UTC';
 document.getElementById('buildId').textContent = BUILD_STAMP;
 
 // ===== Init =====
