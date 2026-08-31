@@ -342,6 +342,12 @@ body{
 .ai-btn{color:var(--accent);border-color:var(--accent-dim);}
 .ai-btn:hover{border-color:var(--accent);background:var(--accent-soft);}
 .ai-btn:disabled{opacity:.5;cursor:default;}
+.ai-lead{font-size:13px;color:var(--text);margin:-8px 0 12px;font-weight:600;}
+/* Guven maddeleri: soluk degil okunur, cunku ikna etmesi gereken kisim burasi */
+.trust-list{margin:0 0 10px;padding-left:18px;font-size:12.5px;line-height:1.6;color:var(--text);}
+.trust-list li{margin-bottom:5px;}
+.trust-link{font-size:12px;color:var(--accent);display:inline-block;margin-bottom:4px;}
+.modal-actions #aiForgetBtn{margin-right:auto;}
 /* Google dugmesi tam genislikte ve email alanindan once duruyor: tek tikla
    biten yol once gelsin, link isteyen asagi baksin. */
 .btn-google{width:100%;gap:9px;min-height:44px;font-weight:600;background:var(--surface);}
@@ -744,9 +750,16 @@ body{
 <div class="overlay" id="aiSettingsOverlay">
   <div class="modal" style="max-width:440px;">
     <h2 data-i18n="ai_title">Connect Your Own AI</h2>
-    <p style="color:var(--text-dim);font-size:13px;line-height:1.6;margin-top:-8px;" data-i18n-html="ai_intro">
-      Bring your own API key from Claude or Gemini to draft captions. Your key is stored <b>only in this browser's local storage</b> — it's sent directly from your browser to Anthropic's or Google's servers, never through us or any third party.
-    </p>
+    <p class="ai-lead" data-i18n="ai_lead">Optional. Everything else in the demo works without it.</p>
+    <!-- Yeni tanisilan bir demoda API anahtari istemek mesru bir tereddut
+         yaratir. Ne oldugunu kucuk gri bir paragrafta degil, okunur uc madde
+         hâlinde soyluyoruz ve dogrulamak isteyene gizlilik sayfasini veriyoruz. -->
+    <ul class="trust-list">
+      <li data-i18n="ai_trust_1">Your key is saved only in this browser. It never reaches our servers, because we do not have any.</li>
+      <li data-i18n="ai_trust_2">Requests go straight from your browser to Anthropic or Google. We never see your key or your prompts.</li>
+      <li data-i18n="ai_trust_3">You can remove the key from this screen at any time.</li>
+    </ul>
+    <a class="trust-link" href="privacy.html" target="_blank" rel="noopener" data-i18n="ai_privacy_link">Read exactly what we store →</a>
     <div class="field">
       <label data-i18n="ai_provider_label">Provider</label>
       <select id="ai_provider">
@@ -763,6 +776,7 @@ body{
       <a href="https://console.anthropic.com/settings/keys" target="_blank" style="color:var(--accent);" id="ai_key_link">console.anthropic.com</a>.
     </div>
     <div class="modal-actions">
+      <button class="btn btn-danger" id="aiForgetBtn" data-i18n="ai_forget" hidden>Remove key</button>
       <button class="btn" id="aiSettingsCancelBtn" data-i18n="btn_cancel">Cancel</button>
       <button class="btn btn-primary" id="aiSettingsSaveBtn" data-i18n="ai_save_connect">Save & Connect</button>
     </div>
@@ -1019,7 +1033,14 @@ const LANG = {
     btn_cancel: "Cancel",
     btn_save: "Save",
     ai_title: "Connect Your Own AI",
-    ai_intro: "Bring your own API key from Claude or Gemini to draft captions. Your key is stored <b>only in this browser's local storage</b> — it's sent directly from your browser to Anthropic's or Google's servers, never through us or any third party.",
+    ai_lead: "Optional. Everything else in the demo works without it.",
+    ai_trust_1: "Your key is saved only in this browser. It never reaches our servers, because we do not have any.",
+    ai_trust_2: "Requests go straight from your browser to Anthropic or Google. We never see your key or your prompts.",
+    ai_trust_3: "You can remove the key from this screen at any time.",
+    ai_privacy_link: "Read exactly what we store →",
+    ai_forget: "Remove key",
+    ai_forget_confirm: "Remove the saved API key from this browser?",
+    ai_forgotten: "Key removed from this browser.",
     ai_provider_label: "Provider",
     ai_key_label: "API Key",
     ai_no_key: "Don't have a key? Get one free at",
@@ -1173,7 +1194,14 @@ const LANG = {
     btn_cancel: "Vazgeç",
     btn_save: "Kaydet",
     ai_title: "Kendi AI'ını Bağla",
-    ai_intro: "Caption taslağı için kendi Claude ya da Gemini API anahtarını bağla. Anahtarın <b>sadece bu tarayıcının yerel deposunda</b> saklanır — doğrudan tarayıcından Anthropic ya da Google sunucularına gönderilir, bizim ya da başka bir üçüncü tarafın üzerinden hiç geçmez.",
+    ai_lead: "İsteğe bağlı. Demonun geri kalanı bu olmadan da çalışır.",
+    ai_trust_1: "Anahtarın yalnızca bu tarayıcıda saklanır. Sunucularımıza hiç ulaşmaz, çünkü sunucumuz yok.",
+    ai_trust_2: "İstekler doğrudan tarayıcından Anthropic ya da Google'a gider. Anahtarını da yazdıklarını da görmüyoruz.",
+    ai_trust_3: "Anahtarı bu ekrandan istediğin an silebilirsin.",
+    ai_privacy_link: "Neyi sakladığımızı buradan oku →",
+    ai_forget: "Anahtarı sil",
+    ai_forget_confirm: "Kayıtlı API anahtarı bu tarayıcıdan silinsin mi?",
+    ai_forgotten: "Anahtar bu tarayıcıdan silindi.",
     ai_provider_label: "Sağlayıcı",
     ai_key_label: "API Anahtarı",
     ai_no_key: "Anahtarın yok mu? Ücretsiz almak için:",
@@ -2268,11 +2296,31 @@ function buildDraftPrompt(){
   return `Write a short, natural social media caption for a ${type} post on ${platform}. The post is about: "${title}". Keep it in the creator's own voice — casual, direct, no corporate tone, no more than 3-4 short sentences, end with a light call to action if it fits naturally.${langInstruction} Return ONLY the caption text, nothing else — no preamble, no quotation marks around it.`;
 }
 
+// Ekran her acildiginda: kayitli saglayici secili gelsin, anahtar alani bos
+// kalsin (ekranda gostermenin faydasi yok), silme dugmesi yalnizca kayitli
+// anahtar varken cikssin.
+function openAiSettings(){
+  const s = getAiSettings();
+  const prov = document.getElementById('ai_provider');
+  if(s && s.provider) prov.value = s.provider;
+  document.getElementById('ai_key').value = '';
+  document.getElementById('aiForgetBtn').hidden = !(s && s.key);
+  document.getElementById('aiSettingsOverlay').classList.add('open');
+}
+
+document.getElementById('aiForgetBtn').addEventListener('click', ()=>{
+  if(!confirm(t('ai_forget_confirm'))) return;
+  try{ localStorage.removeItem('demo_ai_settings'); }catch(e){}
+  track('funnel/ai-key-removed');
+  document.getElementById('aiForgetBtn').hidden = true;
+  showToast(t('ai_forgotten'));
+});
+
 async function runAiDraft(){
   const settings = getAiSettings();
   const statusEl = document.getElementById('aiStatus');
   if(!settings || !settings.key){
-    document.getElementById('aiSettingsOverlay').classList.add('open');
+    openAiSettings();
     return;
   }
   const btn = document.getElementById('aiDraftBtn');
@@ -2364,7 +2412,7 @@ document.getElementById('pendingOverlay').addEventListener('click', (e)=>{ if(e.
 
 // Yayina alinan surumun damgasi. Onbellekten eski bir kopya geldiginde bu
 // tarih eski kalir, boylece "guncel mi?" sorusu bakarak cevaplanir.
-const BUILD_STAMP = '2026-08-31 14:38 UTC';
+const BUILD_STAMP = '2026-08-31 14:48 UTC';
 document.getElementById('buildId').textContent = BUILD_STAMP;
 
 // ===== Init =====
