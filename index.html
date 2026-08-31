@@ -1056,7 +1056,9 @@ function statusLabel(key){ return (STATUS_LABELS[currentLang]||STATUS_LABELS.en)
 function seedData(){
   const today = new Date();
   const d = (offset)=>{ const x = new Date(today); x.setDate(x.getDate()+offset); return x.toISOString().slice(0,10); };
-  return [
+  // Kimlikler her uretimde yeniden veriliyor: sabit 'seed1' gibi degerler her
+  // tarayicida ayni oldugu icin hesaplar arasi cakismaya yol aciyordu.
+  return kimlikleriTazele([
     { id:'seed1', type:'video', platform:'youtube', title:'Product Launch — Full Walkthrough', date:d(1), time:'18:00', uploaded:false,
       content:{ caption:"We just shipped the biggest update of the year. In this video I walk through every new feature, why we built it, and what's coming next.\n\nTimestamps in the description. Let me know what you think in the comments!", hashtags:'product launch, saas, startup, behind the scenes', videoTitle:'We Rebuilt Our Entire App — Here\'s Everything New', shortTitle:"IT'S FINALLY HERE", thumbPrompt:'High-contrast YouTube thumbnail, bold white text "IT\'S HERE", excited expression, product screenshot in the background, bright accent color pop.', slidePrompts:[] } },
     { id:'seed2', type:'reels', platform:'instagram', title:'60-Second Feature Teaser', date:d(1), time:'19:00', uploaded:false,
@@ -1083,7 +1085,7 @@ function seedData(){
       content:{ caption:"Small team update: we spent this whole week just on load-time improvements. Nothing flashy to show, but the app now opens twice as fast. Sometimes the best work is invisible.", hashtags:'buildinpublic, startuplife', thumbPrompt:'', slidePrompts:[] } },
     { id:'seed8', type:'shorts', platform:'youtube', title:'One Tip in 30 Seconds', date:d(6), time:'17:00', uploaded:true,
       content:{ caption:"One setting most people never find — and it fixes the #1 complaint we get. 30 seconds, worth it.", hashtags:'shorts, producttips, tutorial, quicktip', videoTitle:'The Setting Everyone Misses (Fixes Your #1 Complaint)', shortTitle:'1 SETTING FIXES IT', thumbPrompt:'YouTube Shorts cover, bold "1 SETTING" text, high contrast, mobile screen mockup in frame.', slidePrompts:[] } },
-  ];
+  ]);
 }
 
 let events = [];
@@ -1119,6 +1121,14 @@ function newId(){
   });
 }
 const UUID_RE = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
+// Eski surumlerde tohum kayitlari sabit id tasiyordu (seed1, seed2...) ve bu
+// id'ler her tarayicida ayniydi. Iki farkli hesap ayni id'yi buluta yazmaya
+// calistiginda birincil anahtar cakisiyor: ya biri digerinin satirini eziyor ya
+// da RLS reddedip o hesabin senkronunu kalici olarak bozuyor. Buluta cikmadan
+// once UUID olmayan id'ler yenileniyor; kaydin kendisi aynen kaliyor.
+function kimlikleriTazele(list){
+  return list.map(e => UUID_RE.test(e.id) ? e : {...e, id: newId()});
+}
 function markDirty(id){ if(id) dirtyIds.add(id); }
 function markRemoved(id){ if(id){ removedIds.add(id); dirtyIds.delete(id); } }
 function markAllDirty(){ events.forEach(e=>dirtyIds.add(e.id)); }
@@ -2099,7 +2109,9 @@ async function afterSignIn(){
       const anonim = readLocal(STORAGE_KEY) || [];
       const hesabinKendiKopyasi = readLocal(storageKey());
       if(hesabinKendiKopyasi){
-        events = hesabinKendiKopyasi;
+        // Bu tarayicida eski surumden kalma sabit id'ler olabilir; buluta
+        // cikmadan once yenileniyor, baska bir hesabin satiriyla carpismasin.
+        events = kimlikleriTazele(hesabinKendiKopyasi);
         markAllDirty();
         await pushChanges();
       }else if(anonim.length && confirm(t('auth_move_ask')(anonim.length))){
