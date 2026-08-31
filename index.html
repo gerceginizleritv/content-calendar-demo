@@ -111,6 +111,15 @@ body{
    asil is olan takvim yukari geliyor. */
 .header p{color:var(--text-dim); margin:0; max-width:1000px; font-size:15px; line-height:1.55;}
 .toolbar{display:flex;gap:8px;flex-wrap:wrap;margin-top:18px;align-items:center;}
+/* Kayit sayaci: demo bir deneme alani, sinir gorunur olsun. Doluya yaklasinca
+   rengi degisiyor ki surpriz olmasin. */
+.entry-count{
+  font-family:'IBM Plex Mono',monospace;font-size:11.5px;color:var(--text-dim);
+  border:1px solid var(--line);border-radius:6px;padding:0 10px;min-height:36px;
+  display:inline-flex;align-items:center;white-space:nowrap;
+}
+.entry-count.warn{color:var(--amber);border-color:var(--amber);}
+.entry-count.full{color:var(--red);border-color:var(--red);font-weight:600;}
 .btn{
   background:transparent; border:1px solid var(--line); color:var(--text);
   padding:7px 12px; min-height:36px; display:inline-flex; align-items:center; justify-content:center;
@@ -415,6 +424,7 @@ body{
     <div class="toolbar">
       <select id="langSelect" class="lang-select" aria-label="Language"></select>
       <button class="btn btn-primary" id="addBtn" data-i18n="btn_new">+ New Entry</button>
+      <span class="entry-count" id="entryCount" title=""></span>
       <button class="btn" id="pendingBtn" data-i18n="btn_pending">⏳ Pending</button>
       <details class="fold fold-inline" id="moreFold">
         <summary><span data-i18n="more_title">More</span></summary>
@@ -828,6 +838,10 @@ const LANG = {
     btn_close: "Close",
     alert_fill_required: "Please fill in title, date and time.",
     alert_fill_missing: (alanlar)=> `Still missing: ${alanlar}.`,
+    count_label: (n, max)=> `${n} / ${max} entries`,
+    count_title: (max)=> `This demo holds up to ${max} entries per account.`,
+    alert_limit_near: (kalan, secilen)=> `Only ${kalan} ${kalan===1?'entry':'entries'} left in this demo, but you picked ${secilen} platforms. Uncheck a few, or delete something first.`,
+    alert_limit_full: (max)=> `You have reached the ${max}-entry demo limit. Delete an entry to make room — or tell us you want the full version.`,
     alert_select_platform: "Select at least one platform.",
     confirm_delete: "Delete this entry?",
     confirm_reset: "Reset the demo back to the original example content? This clears anything you added.",
@@ -960,6 +974,10 @@ const LANG = {
     btn_close: "Kapat",
     alert_fill_required: "Lütfen başlık, tarih ve saati doldur.",
     alert_fill_missing: (alanlar)=> `Şu alan eksik: ${alanlar}.`,
+    count_label: (n, max)=> `${n} / ${max} kayıt`,
+    count_title: (max)=> `Bu demo hesap başına ${max} kayıt tutar.`,
+    alert_limit_near: (kalan, secilen)=> `Bu demoda ${kalan} kayıtlık yer kaldı ama ${secilen} platform seçtin. Birkaçının işaretini kaldır ya da önce bir kayıt sil.`,
+    alert_limit_full: (max)=> `${max} kayıtlık demo sınırına ulaştın. Yer açmak için bir kayıt sil — ya da tam sürümü istediğini bize söyle.`,
     alert_select_platform: "En az bir platform seç.",
     confirm_delete: "Bu giriş silinsin mi?",
     confirm_reset: "Demo, orijinal örnek içeriğine sıfırlansın mı? Eklediğin her şey silinir.",
@@ -1100,6 +1118,10 @@ let currentEvent = null;
 // oldugu gibi geri donuyor ve bu deger sablona ham giriyordu — yani ozenle
 // hazirlanmis bir "yedek dosyasi" sayfada script calistirabiliyordu.
 const MAX_EVENTS = 2000;
+// Demo bir deneme alani; hesap basina kayit siniri. Sinirsiz birakildiginda
+// 2000'i gecen kayitlar sayfa yenilenince sessizce siliniyordu — gorunur bir
+// sinir hem bunu engelliyor hem de beklentiyi bastan kuruyor.
+const MAX_ENTRIES = 100;
 
 // ===== Bulut (isteğe bağlı) =====
 // Demo hesapsız calisiyor ve oyle kalmali: degerinin yarisi "kaydolmadan dene"
@@ -1311,7 +1333,20 @@ function renderLegend(){
   document.getElementById('statusReset').addEventListener('click', ()=>{ activeStatusFilters.clear(); renderLegend(); renderCal(); });
 }
 
+// Sayaci her cizimde tazeliyoruz: kayit eklendiginde/silindiginde renderCal
+// zaten cagriliyor.
+function renderEntryCount(){
+  const el = document.getElementById('entryCount');
+  if(!el) return;
+  const n = events.length;
+  el.textContent = t('count_label')(n, MAX_ENTRIES);
+  el.title = t('count_title')(MAX_ENTRIES);
+  el.classList.toggle('warn', n >= MAX_ENTRIES * 0.8 && n < MAX_ENTRIES);
+  el.classList.toggle('full', n >= MAX_ENTRIES);
+}
+
 function renderCal(){
+  renderEntryCount();
   const grid = document.getElementById('calGrid');
   grid.innerHTML = '';
   const dows = ['MON','TUE','WED','THU','FRI','SAT','SUN'];
@@ -1545,6 +1580,18 @@ document.getElementById('saveBtn').addEventListener('click', ()=>{
   } else {
     const platforms = Array.from(document.querySelectorAll('#platformChecks input:checked')).map(el=>el.value);
     if(platforms.length===0){ alert(t('alert_select_platform')); return; }
+    // Bir modaldan secilen her platform icin ayri kayit cikiyor; sinir toplam
+    // uzerinden kontrol ediliyor ki 99 kayitliyken uc platform secilip 102'ye
+    // cikilamasin.
+    const kalan = MAX_ENTRIES - events.length;
+    if(platforms.length > kalan){
+      track('funnel/limit-hit');
+      alert(kalan > 0
+        ? t('alert_limit_near')(kalan, platforms.length)
+        : t('alert_limit_full')(MAX_ENTRIES));
+      if(kalan <= 0){ closeModal(); openFeedback('limit'); }
+      return;
+    }
     platforms.forEach((p,i)=>{
       const yeni = { id:newId(), type, platform:p, title, date, time, uploaded, content: JSON.parse(JSON.stringify(content)) };
       events.push(yeni); markDirty(yeni.id);
