@@ -208,7 +208,19 @@ body{
 .cal-nav-btn{background:var(--surface);border:1px solid var(--line);color:var(--text);padding:8px 16px;min-height:44px;display:inline-flex;align-items:center;justify-content:center;cursor:pointer;border-radius:6px;font-size:13px;font-family:'IBM Plex Sans',sans-serif;white-space:nowrap;}
 .cal-nav-btn:hover{border-color:var(--accent-dim);}
 .cal-range{font-family:'IBM Plex Mono',monospace;font-size:13px;color:var(--text-dim);justify-self:center;white-space:nowrap;}
-#prevBtn{justify-self:start;}
+.cal-nav-left{justify-self:start;display:flex;gap:8px;align-items:center;}
+.view-toggle{display:inline-flex;border:1px solid var(--line);border-radius:6px;overflow:hidden;}
+.view-btn{
+  background:var(--surface);border:0;color:var(--text-dim);cursor:pointer;
+  padding:0 14px;min-height:44px;font-family:'IBM Plex Sans',sans-serif;font-size:12.5px;font-weight:500;
+}
+.view-btn + .view-btn{border-left:1px solid var(--line);}
+.view-btn:hover{color:var(--accent);}
+.view-btn.active{background:var(--accent);color:var(--on-accent);font-weight:700;}
+.view-btn:focus-visible{outline:2px solid var(--accent);outline-offset:-2px;}
+/* Hafta gorunumunde hucre uzun: gunde alti sekiz kayit katlanmadan siğiyor. */
+.cal-grid.cal-week .cal-day{min-height:300px;}
+.cal-grid.cal-week .cal-day.cal-empty{display:block;}
 .cal-nav-right{justify-self:end;display:flex;gap:8px;}
 
 .cal-grid{display:grid;grid-template-columns:repeat(7,1fr);border:1px solid var(--line);background:var(--line);gap:1px;border-radius:8px;overflow:hidden;}
@@ -611,7 +623,15 @@ body{
   </div>
 
   <div class="cal-nav">
-    <button class="cal-nav-btn" id="prevBtn" data-i18n="nav_prev">◀ Previous</button>
+    <div class="cal-nav-left">
+      <!-- Ay: butunu gormek icin. Hafta: yogun bir haftayi katlamadan calismak
+           icin — cok pazarli gunlerde ay hucresi yetmiyor. -->
+      <div class="view-toggle" role="group">
+        <button type="button" class="view-btn" id="viewMonthBtn" data-i18n="view_month">Month</button>
+        <button type="button" class="view-btn" id="viewWeekBtn" data-i18n="view_week">Week</button>
+      </div>
+      <button class="cal-nav-btn" id="prevBtn" data-i18n="nav_prev">◀ Previous</button>
+    </div>
     <span class="cal-range mono" id="rangeLabel"></span>
     <div class="cal-nav-right">
       <button class="cal-nav-btn" id="todayBtn" data-i18n="nav_today">Today</button>
@@ -976,6 +996,8 @@ const LANG = {
     f_date_label: "Date",
     f_time_label: "Time",
     f_tz_label: "Time zone",
+    view_month: "Month",
+    view_week: "Week",
     state_posted: "Posted",
     state_not_posted: "Not posted",
     f_posted_label: "Posted / Scheduled",
@@ -1128,6 +1150,8 @@ const LANG = {
     f_date_label: "Tarih",
     f_time_label: "Saat",
     f_tz_label: "Saat dilimi",
+    view_month: "Ay",
+    view_week: "Hafta",
     state_posted: "Yayınlandı",
     state_not_posted: "Yayınlanmadı",
     f_posted_label: "Yüklendi / Zamanlandı",
@@ -1304,6 +1328,10 @@ let activePlatformFilters = new Set();
 let activeStatusFilters = new Set();
 const activeTzFilters = new Set();
 let weekOffset = 0;  // 0 = icinde bulunulan hafta (pencere buradan baslar)
+// 'month' = CAL_WEEKS haftalik pencere, 'week' = tek hafta. Tek haftada hucre
+// uzun oldugu icin kayitlar katlanmadan gorunuyor.
+let viewMode = 'month';
+try{ const v = localStorage.getItem('demo_view'); if(v==='week'||v==='month') viewMode = v; }catch(e){}
 let currentEvent = null;
 
 // Disaridan gelen her kayit buradan geciyor: ice aktarilan yedek dosyasi da,
@@ -1484,7 +1512,7 @@ function calWindowStart(){
 }
 // Pencere sabit: her zaman CAL_WEEKS hafta. Satir sayisi ay ay degismedigi
 // icin izgaranin yuksekligi de zipllamiyor.
-function calCellCount(){ return CAL_WEEKS * 7; }
+function calCellCount(){ return (viewMode === 'week' ? 1 : CAL_WEEKS) * 7; }
 // Son gun (dahil), aralik etiketi icin.
 function calWindowEnd(){
   const d = calWindowStart();
@@ -1641,7 +1669,11 @@ function renderEntryCount(){
 
 function renderCal(){
   renderEntryCount();
+  const haftaModu = viewMode === 'week';
   const grid = document.getElementById('calGrid');
+  grid.classList.toggle('cal-week', haftaModu);
+  document.getElementById('viewMonthBtn').classList.toggle('active', !haftaModu);
+  document.getElementById('viewWeekBtn').classList.toggle('active', haftaModu);
   grid.innerHTML = '';
   const dows = ['MON','TUE','WED','THU','FRI','SAT','SUN'];
   dows.forEach(dw=>{
@@ -1720,7 +1752,8 @@ function renderCal(){
       cell.classList.add('cal-grouped');
       pazarlar.forEach((liste, z)=>{
         const grup = document.createElement('div');
-        grup.className = 'cal-group collapsed';
+        // Hafta gorunumunde yer bol: gruplar acik basliyor.
+        grup.className = 'cal-group' + (haftaModu ? '' : ' collapsed');
         const bas = document.createElement('button');
         bas.type = 'button';
         bas.className = 'cal-group-head';
@@ -1737,10 +1770,10 @@ function renderCal(){
         cell.appendChild(grup);
       });
     }else{
-      dayEvents.forEach((ev, idx)=> cell.appendChild(chipSatiri(ev, idx, true)));
+      dayEvents.forEach((ev, idx)=> cell.appendChild(chipSatiri(ev, idx, !haftaModu)));
     }
 
-    const gizli = grupluMu ? 0 : dayEvents.length - CAL_MAX_CHIPS;
+    const gizli = (grupluMu || haftaModu) ? 0 : dayEvents.length - CAL_MAX_CHIPS;
     if(gizli > 0){
       cell.classList.add('collapsed');
       const more = document.createElement('button');
@@ -1960,8 +1993,21 @@ document.getElementById('saveBtn').addEventListener('click', ()=>{
 
 // Olcum anahtari 'month-navigated' olarak birakildi: adim artik hafta ama
 // gecmis huni verisiyle karsilastirilabilir kalsin.
-document.getElementById('prevBtn').addEventListener('click', ()=>{ trackOnce('funnel/month-navigated'); weekOffset -= CAL_STEP_WEEKS; renderCal(); });
-document.getElementById('nextBtn').addEventListener('click', ()=>{ trackOnce('funnel/month-navigated'); weekOffset += CAL_STEP_WEEKS; renderCal(); });
+// Adim gorunume gore: ay modunda dort hafta, hafta modunda bir hafta.
+function navAdim(){ return viewMode === 'week' ? 1 : CAL_STEP_WEEKS; }
+document.getElementById('prevBtn').addEventListener('click', ()=>{ trackOnce('funnel/month-navigated'); weekOffset -= navAdim(); renderCal(); });
+document.getElementById('nextBtn').addEventListener('click', ()=>{ trackOnce('funnel/month-navigated'); weekOffset += navAdim(); renderCal(); });
+
+function setView(mod){
+  if(mod !== 'week' && mod !== 'month') return;
+  if(viewMode === mod) return;
+  viewMode = mod;
+  try{ localStorage.setItem('demo_view', mod); }catch(e){}
+  track('funnel/view-' + mod);
+  renderCal();
+}
+document.getElementById('viewMonthBtn').addEventListener('click', ()=> setView('month'));
+document.getElementById('viewWeekBtn').addEventListener('click', ()=> setView('week'));
 document.getElementById('todayBtn').addEventListener('click', ()=>{ weekOffset = 0; renderCal(); });
 
 document.getElementById('exportBtn').addEventListener('click', ()=>{
@@ -2318,7 +2364,7 @@ document.getElementById('pendingOverlay').addEventListener('click', (e)=>{ if(e.
 
 // Yayina alinan surumun damgasi. Onbellekten eski bir kopya geldiginde bu
 // tarih eski kalir, boylece "guncel mi?" sorusu bakarak cevaplanir.
-const BUILD_STAMP = '2026-08-31 14:32 UTC';
+const BUILD_STAMP = '2026-08-31 14:38 UTC';
 document.getElementById('buildId').textContent = BUILD_STAMP;
 
 // ===== Init =====
