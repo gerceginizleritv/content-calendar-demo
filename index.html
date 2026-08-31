@@ -169,6 +169,12 @@ body{
 .btn-primary:hover{background:var(--accent-hover); border-color:var(--accent-hover);}
 
 .legend{display:flex;flex-wrap:wrap;gap:6px;margin:10px 0;align-items:center;}
+/* Bekleyenler dugmesi durum rozetleriyle ayni satirda ama ayni gorunumde
+   degil: rozetler filtreler, bu bir liste aciyor. */
+.status-row{display:flex;flex-wrap:wrap;align-items:center;gap:6px;margin:10px 0;}
+.status-row .legend{margin:0;}
+.btn.btn-pending{min-height:34px;font-size:12px;padding:6px 12px;border-color:var(--accent-dim);}
+.btn.btn-pending:hover{border-color:var(--accent);color:var(--accent);}
 .legend-item{
   display:flex;align-items:center;justify-content:center;gap:6px;font-size:12px;font-weight:500;
   padding:9px 12px 9px 10px; min-height:38px; border:1px solid var(--line); border-radius:4px 4px 4px 0; cursor:pointer;
@@ -258,6 +264,14 @@ body{
 .copy-btn:hover{border-color:var(--accent-dim);color:var(--accent);}
 .copy-btn.copied{color:var(--accent);border-color:var(--accent);}
 .row2{display:grid;grid-template-columns:1fr 1fr;gap:12px;}
+.row3{display:grid;grid-template-columns:1fr 1fr 1.3fr;gap:12px;}
+@media(max-width:560px){ .row3{grid-template-columns:1fr;} }
+/* Kendi saat diliminden farkli bir kayit takvimde isaretleniyor */
+.cal-tz{
+  font-family:'IBM Plex Mono',monospace;font-size:9.5px;color:var(--amber);
+  border:1px solid var(--amber);border-radius:3px;padding:0 3px;flex:none;
+  line-height:1.5;
+}
 .platform-checks{display:flex;flex-wrap:wrap;gap:8px;}
 .pcheck{display:flex;align-items:center;gap:6px;border:1px solid var(--line);padding:9px 12px;min-height:40px;border-radius:5px;font-size:12px;cursor:pointer;}
 .pcheck:hover{border-color:var(--accent-dim);}
@@ -386,8 +400,10 @@ body{
   .filter-fold{border:1px solid var(--line);background:var(--surface);border-radius:8px;}
   .filter-fold > summary{display:flex;}
   .filter-fold .legend{margin-left:14px;margin-right:14px;}
+  .filter-fold .status-row{margin-left:14px;margin-right:14px;}
+  .filter-fold .status-row .legend{margin-left:0;margin-right:0;}
   .filter-fold .hint{margin-left:14px;margin-right:14px;padding-bottom:0;}
-  .filter-fold .legend:last-of-type{margin-bottom:14px;}
+  .filter-fold .status-row{margin-bottom:14px;}
 }
 /* Yogun gunler: ilk 3 kayit gorunur, gerisi tiklaninca acilir. Boylece tek
    yogun gun butun haftanin satirini uzatmiyor. */
@@ -484,7 +500,6 @@ body{
     <p data-i18n="h1_sub">The same footage goes out as a Reel, a Short, a carousel and a story — each with its own caption, cover text and time slot. Slate also tells you which ones aren't written yet.</p>
     <!-- Ikincil eylemler: kayit olusturmak burada degil, asagidaki buyuk dugmede -->
     <div class="head-actions">
-      <button class="btn" id="pendingBtn" data-i18n="btn_pending">⏳ Pending</button>
       <button class="btn" id="feedbackBtn" data-i18n="btn_feedback">💬 Feedback</button>
       <details class="fold fold-inline" id="moreFold">
         <summary><span data-i18n="more_title">More</span></summary>
@@ -527,7 +542,14 @@ body{
       <div class="hint hint-top" data-i18n="hint_filter">Click a tab in either row to filter — combine content type + platform together. Click again to remove.</div>
       <div class="legend" id="typeLegend"></div>
       <div class="legend" id="platformLegend"></div>
-      <div class="legend" id="statusLegend"></div>
+      <!-- Bekleyenler bir filtre degil, ayni kumenin liste gorunumu: saati
+           gecenleri isaretliyor ve satira tiklayinca kaydi aciyor. Durum
+           satirinin basinda duruyor ama rozet gibi degil, dugme gibi
+           gorunuyor — tiklayinca farkli bir sey oldugu belli olsun. -->
+      <div class="status-row">
+        <button class="btn btn-pending" id="pendingBtn" data-i18n="btn_pending">⏳ Pending</button>
+        <div class="legend" id="statusLegend"></div>
+      </div>
     </details>
   </div>
 
@@ -569,9 +591,15 @@ body{
       <input type="text" id="f_title" data-i18n-placeholder="f_title_ph" placeholder="e.g. Product Launch Teaser">
     </div>
 
-    <div class="row2">
+    <div class="row3">
       <div class="field"><label data-i18n="f_date_label">Date</label><input type="date" id="f_date"></div>
       <div class="field"><label data-i18n="f_time_label">Time</label><input type="time" id="f_time"></div>
+      <!-- Saat dilimi kaydin icinde saklaniyor: baska bir ulke icin planlanan
+           paylasimda saatin hangi saate gore oldugu belli olsun. -->
+      <div class="field">
+        <label data-i18n="f_tz_label">Time zone</label>
+        <select id="f_tz"></select>
+      </div>
     </div>
 
     <div class="upload-toggle" id="uploadToggle">
@@ -879,6 +907,7 @@ const LANG = {
     f_title_ph: "e.g. Product Launch Teaser",
     f_date_label: "Date",
     f_time_label: "Time",
+    f_tz_label: "Time zone",
     f_posted_label: "Posted / Scheduled",
     f_caption_label: "Caption",
     f_caption_ph: "Write the caption for this post...",
@@ -1016,6 +1045,7 @@ const LANG = {
     f_title_ph: "örn. Ürün Lansmanı Fragmanı",
     f_date_label: "Tarih",
     f_time_label: "Saat",
+    f_tz_label: "Saat dilimi",
     f_posted_label: "Yüklendi / Zamanlandı",
     f_caption_label: "Caption",
     f_caption_ph: "Bu paylaşım için caption'ı yaz...",
@@ -1258,6 +1288,9 @@ function sanitizeEvent(raw){
       videoTitle:   str(c.videoTitle, 300),
       shortTitle:   str(c.shortTitle, 300),
       thumbPrompt:  str(c.thumbPrompt, 5000),
+      // Saat dilimi content icinde tasiniyor: veritabaninda yeni sutun
+      // gerektirmiyor. Beyaz listeye eklenmezse sanitize onu duserdi.
+      timezone:     /^[A-Za-z_+\-]+(\/[A-Za-z_+\-0-9]+)*$/.test(c.timezone) ? String(c.timezone).slice(0,64) : '',
       slidePrompts: Array.isArray(c.slidePrompts) ? c.slidePrompts.slice(0,9).map(x=>str(x,5000)) : []
     }
   };
@@ -1356,6 +1389,54 @@ function calWindowEnd(){
   d.setDate(d.getDate() + calCellCount() - 1);
   return d;
 }
+// ===== Saat dilimi =====
+// Kayit hangi saate gore planlandigini kendi icinde tasiyor. Baska bir ulke
+// icin uretilen icerikte "18:00" tek basina eksik bilgi; kimin 18:00'i oldugu
+// da lazim.
+function yerelTz(){
+  try{ return Intl.DateTimeFormat().resolvedOptions().timeZone || 'UTC'; }
+  catch(e){ return 'UTC'; }
+}
+// Tarayici tam IANA listesini verebiliyorsa onu kullaniyoruz; veremiyorsa
+// yaygin dilimlerden olusan kisa bir listeye dusuyoruz.
+const TZ_YEDEK = ['UTC','Europe/Istanbul','Europe/London','Europe/Berlin','Europe/Paris',
+  'Europe/Moscow','America/New_York','America/Chicago','America/Denver','America/Los_Angeles',
+  'America/Sao_Paulo','Africa/Cairo','Africa/Lagos','Africa/Johannesburg','Asia/Dubai',
+  'Asia/Karachi','Asia/Kolkata','Asia/Bangkok','Asia/Shanghai','Asia/Tokyo','Asia/Seoul',
+  'Australia/Sydney','Pacific/Auckland'];
+function tzListesi(){
+  try{
+    if(typeof Intl.supportedValuesOf === 'function'){
+      const hepsi = Intl.supportedValuesOf('timeZone');
+      if(Array.isArray(hepsi) && hepsi.length) return hepsi;
+    }
+  }catch(e){}
+  return TZ_YEDEK;
+}
+// "UTC+3" gibi kisa bir fark etiketi — listede sehir adinin yaninda duruyor.
+function tzFark(tz){
+  try{
+    const bicim = new Intl.DateTimeFormat('en-US', { timeZone: tz, timeZoneName: 'shortOffset' });
+    const parca = bicim.formatToParts(new Date()).find(x=>x.type==='timeZoneName');
+    return parca ? parca.value : '';
+  }catch(e){ return ''; }
+}
+function tzEtiket(tz){
+  const fark = tzFark(tz);
+  const sehir = tz.split('/').pop().replace(/_/g,' ');
+  return fark ? `${sehir} (${fark})` : sehir;
+}
+function populateTz(){
+  const sel = document.getElementById('f_tz');
+  if(!sel || sel.dataset.dolu === '1') return;
+  const yerel = yerelTz();
+  const liste = tzListesi();
+  // Kendi dilimi en uste: cogu kayit onunla olusturuluyor.
+  const sirali = [yerel].concat(liste.filter(z=>z!==yerel));
+  sel.innerHTML = sirali.map(z=>`<option value="${escapeHtml(z)}">${escapeHtml(tzEtiket(z))}</option>`).join('');
+  sel.dataset.dolu = '1';
+}
+
 function pad(n){ return String(n).padStart(2,'0'); }
 function fmtKey(d){ return `${d.getFullYear()}-${pad(d.getMonth()+1)}-${pad(d.getDate())}`; }
 
@@ -1474,7 +1555,9 @@ function renderCal(){
       // icin ayri bir renk cubuguna gerek kalmiyor.
       chip.innerHTML = `<span class="cal-pico" style="color:${CAL_SM_COLORS[ev.platform]}" title="${CAL_SM_NAMES[ev.platform]}">${PLATFORM_ICONS[ev.platform]||''}</span>
         <span class="cal-badge">${escapeHtml(typeLabel(ev.type))}</span>
-        <span class="cal-time">${escapeHtml(ev.time||'')}</span>
+        <span class="cal-time">${escapeHtml(ev.time||'')}</span>${
+          (ev.content && ev.content.timezone && ev.content.timezone !== yerelTz())
+            ? `<span class="cal-tz" title="${escapeHtml(ev.content.timezone)}">${escapeHtml(tzFark(ev.content.timezone) || ev.content.timezone.split('/').pop())}</span>` : ''}
         <span class="cal-chip-title">${escapeHtml(ev.title||'')}</span>
         <span class="cal-status-icon${ev.uploaded?' on-air':''}"></span>`;
       chip.addEventListener('click', ()=> openModal(ev));
@@ -1568,6 +1651,8 @@ function openModal(ev, hazirTarih){
     document.getElementById('f_title').value = ev.title||'';
     document.getElementById('f_date').value = ev.date;
     document.getElementById('f_time').value = ev.time||'';
+    populateTz();
+    document.getElementById('f_tz').value = (ev.content && ev.content.timezone) || yerelTz();
     setUploadToggle(!!ev.uploaded);
     const c = ev.content || {};
     document.getElementById('f_caption').value = c.caption||'';
@@ -1587,7 +1672,10 @@ function openModal(ev, hazirTarih){
     document.querySelectorAll('#platformChecks input').forEach(el=> el.checked = false);
     document.getElementById('f_title').value = '';
     document.getElementById('f_date').value = hazirTarih || fmtKey(new Date());
-    document.getElementById('f_time').value = '18:00';
+    // Saat bos degil ama bos gibi: kullanici kendi saatini yazsin diye 00:00.
+    document.getElementById('f_time').value = '00:00';
+    populateTz();
+    document.getElementById('f_tz').value = yerelTz();
     setUploadToggle(false);
     document.getElementById('f_caption').value = '';
     document.getElementById('f_hashtags').value = '';
@@ -1650,6 +1738,7 @@ document.getElementById('saveBtn').addEventListener('click', ()=>{
   const type = document.getElementById('f_type').value;
 
   const content = {
+    timezone: document.getElementById('f_tz').value || yerelTz(),
     caption: document.getElementById('f_caption').value,
     hashtags: document.getElementById('f_hashtags').value,
     videoTitle: document.getElementById('f_videotitle').value,
