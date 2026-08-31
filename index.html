@@ -244,6 +244,25 @@ body{
   padding:2px 5px;border-radius:3px;flex-shrink:0;text-align:center;
 }
 .cal-chip-title{overflow:hidden;text-overflow:ellipsis;white-space:nowrap;color:var(--text-dim);}
+/* Pazar gruplari: bir gunde birden cok saat dilimi varsa kayitlar tek tek
+   degil, pazar basligi altinda toplaniyor. Baslik tiklaninca aciliyor. */
+.cal-group{margin-bottom:3px;}
+.cal-group-head{
+  width:100%;display:flex;align-items:center;gap:6px;cursor:pointer;
+  background:var(--surface-2);border:1px solid var(--line);border-radius:4px;
+  padding:3px 6px;min-height:24px;color:var(--text);
+  font-family:'IBM Plex Mono',monospace;font-size:10px;text-align:left;
+}
+.cal-group-head:hover{border-color:var(--accent-dim);color:var(--accent);}
+.cal-group-head::before{content:'\25B8';color:var(--accent-dim);font-size:9px;}
+.cal-group:not(.collapsed) .cal-group-head::before{content:'\25BE';}
+.cal-group-name{overflow:hidden;text-overflow:ellipsis;white-space:nowrap;}
+.cal-group-count{
+  margin-left:auto;flex:none;background:var(--accent-soft);color:var(--accent);
+  border-radius:3px;padding:0 5px;font-weight:600;
+}
+.cal-group.collapsed .cal-chip-row{display:none;}
+.cal-group .cal-chip-row{margin-top:3px;}
 /* Durum artik renkli bir nokta degil, okunur bir rozet. Nokta neyin ne oldugunu
    soylemiyordu; amber "hala borclu", yesil "yayinlandi" demek. */
 .cal-state{
@@ -557,6 +576,9 @@ body{
       <div class="hint hint-top" data-i18n="hint_filter">Click a tab in either row to filter — combine content type + platform together. Click again to remove.</div>
       <div class="legend" id="typeLegend"></div>
       <div class="legend" id="platformLegend"></div>
+      <!-- Pazar satiri yalnizca takvimde birden cok saat dilimi varsa cikiyor;
+           tek pazarda calisan icin gereksiz gurultu olurdu. -->
+      <div class="legend" id="tzLegend" hidden></div>
       <!-- Bekleyenler bir filtre degil, ayni kumenin liste gorunumu: saati
            gecenleri isaretliyor ve satira tiklayinca kaydi aciyor. Durum
            satirinin basinda duruyor ama rozet gibi degil, dugme gibi
@@ -1239,6 +1261,7 @@ let events = [];
 let activeTypeFilters = new Set();
 let activePlatformFilters = new Set();
 let activeStatusFilters = new Set();
+const activeTzFilters = new Set();
 let weekOffset = 0;  // 0 = icinde bulunulan hafta (pencere buradan baslar)
 let currentEvent = null;
 
@@ -1446,6 +1469,16 @@ function tzFark(tz){
     return parca ? parca.value : '';
   }catch(e){ return ''; }
 }
+// Bir kaydin pazari = saat dilimi. Ayri bir "ulke" alani eklemiyoruz; baska
+// bir ulke icin planlanan icerik zaten o ulkenin saatine gore giriliyor.
+function evTz(ev){ return (ev && ev.content && ev.content.timezone) || yerelTz(); }
+function tzKisa(tz){ return String(tz||'').split('/').pop().replace(/_/g,' '); }
+// Takvimde gecen dilimler, en cok kullanilan basta.
+function kullanilanTzler(){
+  const sayim = new Map();
+  events.forEach(e=>{ const z = evTz(e); sayim.set(z, (sayim.get(z)||0)+1); });
+  return [...sayim.entries()].sort((a,b)=> b[1]-a[1] || a[0].localeCompare(b[0])).map(x=>x[0]);
+}
 function tzEtiket(tz){
   const fark = tzFark(tz);
   const sehir = tz.split('/').pop().replace(/_/g,' ');
@@ -1493,6 +1526,30 @@ function renderLegend(){
     });
   });
   document.getElementById('platReset').addEventListener('click', ()=>{ activePlatformFilters.clear(); renderLegend(); renderCal(); });
+
+  // Pazar (saat dilimi) satiri: yalnizca birden fazla dilim kullanildiginda.
+  const tzEl = document.getElementById('tzLegend');
+  const tzler = kullanilanTzler();
+  if(tzler.length < 2){
+    tzEl.hidden = true;
+    tzEl.innerHTML = '';
+    activeTzFilters.clear();
+  }else{
+    tzEl.hidden = false;
+    tzEl.innerHTML = tzler.map(z=>`
+      <span class="legend-item ${activeTzFilters.has(z)?'active':''}" data-tz="${escapeHtml(z)}" title="${escapeHtml(z)}">
+        <span class="tcode">${escapeHtml(tzFark(z) || '')}</span>${escapeHtml(tzKisa(z))}
+      </span>`).join('') + `<span class="legend-reset ${activeTzFilters.size?'show':''}" id="tzReset">Clear</span>`;
+    tzEl.querySelectorAll('.legend-item').forEach(el=>{
+      el.addEventListener('click', ()=>{
+        const z = el.dataset.tz;
+        activeTzFilters.has(z) ? activeTzFilters.delete(z) : activeTzFilters.add(z);
+        trackOnce('funnel/market-filtered');
+        renderLegend(); renderCal();
+      });
+    });
+    tzEl.querySelector('#tzReset').addEventListener('click', ()=>{ activeTzFilters.clear(); renderLegend(); renderCal(); });
+  }
 
   const statusEl = document.getElementById('statusLegend');
   const statuses = [
@@ -1567,13 +1624,25 @@ function renderCal(){
       && (activeTypeFilters.size===0 || activeTypeFilters.has(getType(e)))
       && (activePlatformFilters.size===0 || activePlatformFilters.has(getPlatform(e)))
       && (activeStatusFilters.size===0 || activeStatusFilters.has(e.uploaded ? 'posted' : 'scheduled'))
+      && (activeTzFilters.size===0 || activeTzFilters.has(evTz(e)))
     ).sort((a,b)=>(a.time||'').localeCompare(b.time||''));
 
-    dayEvents.forEach((ev, idx)=>{
+    // Bir gunde birden cok pazar varsa kayitlar tek tek degil, pazar pazar
+    // gosteriliyor: uc ulkeye gunde ikiser paylasim yapan birinde hucre alti
+    // satir yerine uc satira iniyor ve hangi pazarin plani eksik goruluyor.
+    const pazarlar = new Map();
+    dayEvents.forEach(ev=>{
+      const z = evTz(ev);
+      if(!pazarlar.has(z)) pazarlar.set(z, []);
+      pazarlar.get(z).push(ev);
+    });
+    const grupluMu = pazarlar.size > 1;
+
+    function chipSatiri(ev, idx, katlanabilir){
       const row = document.createElement('div');
       // Ilk CAL_MAX_CHIPS disindakiler katlanabilir: yogun bir gun butun
       // haftanin satir yuksekligini buyutmesin.
-      row.className = 'cal-chip-row' + (idx >= CAL_MAX_CHIPS ? ' overflow' : '');
+      row.className = 'cal-chip-row' + (katlanabilir && idx >= CAL_MAX_CHIPS ? ' overflow' : '');
       const chip = document.createElement('div');
       chip.className = 'cal-chip' + (ev.uploaded ? ' live' : '');
       // Renk platformu, etiket tipi anlatir: isaret hem kimligi hem rengi tasidigi
@@ -1587,10 +1656,34 @@ function renderCal(){
         <span class="cal-state${ev.uploaded?' on-air':''}">${escapeHtml(t(ev.uploaded ? 'state_posted' : 'state_not_posted'))}</span>`;
       chip.addEventListener('click', ()=> openModal(ev));
       row.appendChild(chip);
-      cell.appendChild(row);
-    });
+      return row;
+    }
 
-    const gizli = dayEvents.length - CAL_MAX_CHIPS;
+    if(grupluMu){
+      cell.classList.add('cal-grouped');
+      pazarlar.forEach((liste, z)=>{
+        const grup = document.createElement('div');
+        grup.className = 'cal-group collapsed';
+        const bas = document.createElement('button');
+        bas.type = 'button';
+        bas.className = 'cal-group-head';
+        bas.title = z;
+        bas.innerHTML = `<span class="cal-group-name">${escapeHtml(tzKisa(z))}</span>
+          <span class="cal-group-count">${liste.length}</span>`;
+        bas.addEventListener('click', (e)=>{
+          e.stopPropagation();
+          grup.classList.toggle('collapsed');
+          if(!grup.classList.contains('collapsed')) trackOnce('funnel/market-expanded');
+        });
+        grup.appendChild(bas);
+        liste.forEach((ev,i)=> grup.appendChild(chipSatiri(ev, i, false)));
+        cell.appendChild(grup);
+      });
+    }else{
+      dayEvents.forEach((ev, idx)=> cell.appendChild(chipSatiri(ev, idx, true)));
+    }
+
+    const gizli = grupluMu ? 0 : dayEvents.length - CAL_MAX_CHIPS;
     if(gizli > 0){
       cell.classList.add('collapsed');
       const more = document.createElement('button');
