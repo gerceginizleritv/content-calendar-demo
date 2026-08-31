@@ -205,6 +205,44 @@ body{
 .legend-reset.show{opacity:1;}
 .legend-reset:hover{color:var(--accent);}
 .hint{font-size:12.5px;color:var(--text-dim);margin:8px 0 20px;}
+/* --- Sablon sayfasi --- */
+.tpl-h{font-size:13px;text-transform:uppercase;letter-spacing:.07em;color:var(--text-dim);
+  margin:22px 0 10px;font-weight:600;}
+.acc-new{display:grid;grid-template-columns:auto 1fr 1.4fr auto;gap:8px;margin-bottom:12px;}
+.acc-new select,.acc-new input{min-width:0;padding:10px 12px;border:1px solid var(--line);
+  border-radius:8px;background:var(--surface);color:var(--text);font:inherit;font-size:14px;}
+.hesap-satir{display:flex;align-items:center;gap:10px;padding:9px 12px;border:1px solid var(--line);
+  border-radius:9px;background:var(--surface);margin-bottom:7px;}
+.hesap-pico{width:17px;height:17px;flex-shrink:0;display:inline-flex;}
+.hesap-pico svg{width:100%;height:100%;}
+.hesap-ad{font-weight:600;font-size:13.5px;}
+.hesap-url{flex:1;min-width:0;font-size:12.5px;color:var(--text-dim);overflow:hidden;
+  text-overflow:ellipsis;white-space:nowrap;}
+.tpl-wrap{overflow-x:auto;border:1px solid var(--line);border-radius:11px;background:var(--surface);}
+.tpl-table{border-collapse:collapse;width:max-content;min-width:100%;font-size:12.5px;}
+.tpl-table th,.tpl-table td{border-bottom:1px solid var(--line-soft);
+  border-right:1px solid var(--line-soft);padding:9px 9px;vertical-align:top;text-align:left;}
+.tpl-table th:last-child,.tpl-table td:last-child{border-right:0;}
+.tpl-table thead th{position:sticky;top:0;z-index:2;background:var(--surface-2);
+  font-size:10px;text-transform:uppercase;letter-spacing:.07em;color:var(--text-dim);
+  font-weight:600;white-space:nowrap;}
+.tpl-phead{display:inline-flex;align-items:center;gap:6px;}
+.tpl-row-head{position:sticky;left:0;z-index:3;background:var(--surface-2);
+  width:150px;min-width:150px;border-right:1px solid var(--line);font-weight:600;
+  display:table-cell;}
+.tpl-table thead th.tpl-row-head{z-index:4;}
+.tpl-text{width:100%;min-width:150px;padding:7px 8px;border:1px solid var(--line);
+  border-radius:7px;background:var(--bg);color:var(--text);font:inherit;font-size:12px;
+  resize:vertical;}
+.tpl-cell{text-align:center;}
+.tpl-prev-row td,.tpl-prev-row th{background:var(--surface-2);}
+.tpl-prev{font-size:11.5px;color:var(--text-dim);line-height:1.45;max-width:220px;
+  word-break:break-word;}
+.tpl-bos{opacity:.5;}
+@media(max-width:700px){
+  .acc-new{grid-template-columns:1fr 1fr;}
+  .acc-new #acc_add{grid-column:1 / -1;}
+}
 /* Surukle-birak */
 .cal-chip,.ct-chip{touch-action:manipulation;}
 body.suruklenirken{user-select:none;}
@@ -794,6 +832,11 @@ body.suruklenirken *{cursor:grabbing !important;}
         <rect x="7" y="12.4" width="3" height="3" rx="0.6" fill="currentColor" stroke="none"/>
       </svg><span data-i18n="tab_calendar">Calendar</span>
     </button>
+    <button type="button" class="tab" id="tabTemplates" role="tab">
+      <svg class="tab-ico" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+        <rect x="4" y="3.5" width="16" height="17" rx="2.2"/><path d="M8 8.5h8M8 12.5h8M8 16.5h5"/>
+      </svg><span data-i18n="tab_templates">Templates</span>
+    </button>
   </div>
 
   <div id="projectsPage" hidden>
@@ -817,6 +860,23 @@ body.suruklenirken *{cursor:grabbing !important;}
       <span class="proj-count" id="p_count"></span>
     </div>
     <div id="projectList"></div>
+  </div>
+
+  <div id="templatesPage" hidden>
+    <p class="hint" data-i18n="tpl_intro">Write your fixed sign-off once. It is added to the caption of every new entry — you can still edit it inside the entry afterwards.</p>
+
+    <h3 class="tpl-h" data-i18n="tpl_accounts_title">My accounts</h3>
+    <div class="acc-new">
+      <select id="acc_platform"></select>
+      <input type="text" id="acc_label" maxlength="80" data-i18n-placeholder="tpl_label_ph" placeholder="Name — e.g. Instagram">
+      <input type="text" id="acc_url" maxlength="300" data-i18n-placeholder="tpl_url_ph" placeholder="Handle or link">
+      <button type="button" class="btn btn-primary" id="acc_add" data-i18n="tpl_add_account">+ Add account</button>
+    </div>
+    <div id="accountList"></div>
+
+    <h3 class="tpl-h" data-i18n="tpl_table_title">What goes where</h3>
+    <p class="hint" data-i18n="tpl_table_hint">Columns are where the post goes. Tick the accounts you want mentioned there, and write any fixed text above.</p>
+    <div id="tplTable"></div>
   </div>
 
   <div id="calendarPage">
@@ -1337,6 +1397,20 @@ const LANG = {
     f_types_label: "Content type(s) — tick every version you will make",
     alert_need_project: "Pick a project first, or create one.",
     alert_select_type: "Tick at least one content type.",
+    tab_templates: "Templates",
+    tpl_intro: "Write your fixed sign-off once. It is added to the caption of every new entry — you can still edit it inside the entry afterwards.",
+    tpl_accounts_title: "My accounts",
+    tpl_label_ph: "Name — e.g. Instagram",
+    tpl_url_ph: "Handle or link",
+    tpl_add_account: "+ Add account",
+    tpl_no_accounts: "No accounts yet. Add the ones you want mentioned in your captions.",
+    tpl_table_title: "What goes where",
+    tpl_table_hint: "Columns are where the post goes. Tick the accounts you want mentioned there, and write any fixed text above.",
+    tpl_col_account: "Account",
+    tpl_fixed_text: "Fixed text",
+    tpl_preview: "Goes into the caption",
+    tpl_text_ph: "Fixed text for this platform…",
+    tpl_limit: (n)=> `Up to ${n} accounts.`,
     tab_calendar: "Calendar",
     tab_projects: "Projects",
     p_name_ph: "Project name — e.g. Autumn Studio Shoot",
@@ -1572,6 +1646,20 @@ const LANG = {
     f_types_label: "İçerik tipi(leri) — hazırlayacağın her sürümü işaretle",
     alert_need_project: "Önce bir proje seç ya da oluştur.",
     alert_select_type: "En az bir içerik tipi işaretle.",
+    tab_templates: "Şablonlar",
+    tpl_intro: "Sabit metnini bir kez yaz. Her yeni kaydın açıklamasına ekleniyor — sonrasında kaydın içinde istediğin gibi düzenleyebilirsin.",
+    tpl_accounts_title: "Hesaplarım",
+    tpl_label_ph: "Ad — örn. Instagram",
+    tpl_url_ph: "Kullanıcı adı ya da bağlantı",
+    tpl_add_account: "+ Hesap ekle",
+    tpl_no_accounts: "Henüz hesap yok. Açıklamalarında geçmesini istediklerini ekle.",
+    tpl_table_title: "Nerede ne görünsün",
+    tpl_table_hint: "Sütunlar paylaşımın çıkacağı yer. Orada geçmesini istediğin hesapları işaretle, üstüne de sabit metnini yaz.",
+    tpl_col_account: "Hesap",
+    tpl_fixed_text: "Sabit metin",
+    tpl_preview: "Açıklamaya giden",
+    tpl_text_ph: "Bu platform için sabit metin…",
+    tpl_limit: (n)=> `En fazla ${n} hesap.`,
     tab_calendar: "Takvim",
     tab_projects: "Projeler",
     p_name_ph: "Proje adı — örn. Güz Stüdyo Çekimi",
@@ -2532,17 +2620,34 @@ function secilenTipler(){
 // Takvim "ne zaman cikacak", projeler "nerede kaldi" sorusunun cevabi.
 // Ayni veri, iki farkli soru.
 function setPage(ad){
-  const proje = ad === 'projects';
-  document.getElementById('calendarPage').hidden = proje;
-  document.getElementById('projectsPage').hidden = !proje;
-  document.getElementById('tabCalendar').classList.toggle('active', !proje);
-  document.getElementById('tabProjects').classList.toggle('active', proje);
+  if(ad !== 'projects' && ad !== 'calendar' && ad !== 'templates') ad = 'projects';
+  document.getElementById('projectsPage').hidden  = ad !== 'projects';
+  document.getElementById('calendarPage').hidden  = ad !== 'calendar';
+  document.getElementById('templatesPage').hidden = ad !== 'templates';
+  document.getElementById('tabProjects').classList.toggle('active', ad === 'projects');
+  document.getElementById('tabCalendar').classList.toggle('active', ad === 'calendar');
+  document.getElementById('tabTemplates').classList.toggle('active', ad === 'templates');
   try{ localStorage.setItem('demo_page', ad); }catch(e){ /* onemsiz */ }
-  if(proje) renderProjects();
+  if(ad === 'projects') renderProjects();
+  if(ad === 'templates') renderSablon();
 }
 
 document.getElementById('tabCalendar').addEventListener('click', ()=> setPage('calendar'));
 document.getElementById('tabProjects').addEventListener('click', ()=>{ track('funnel/projects-opened'); setPage('projects'); });
+document.getElementById('tabTemplates').addEventListener('click', ()=>{ track('funnel/templates-opened'); setPage('templates'); });
+
+document.getElementById('acc_add').addEventListener('click', ()=>{
+  const ad2 = document.getElementById('acc_label').value.trim();
+  const url = document.getElementById('acc_url').value.trim();
+  if(!ad2 && !url){ document.getElementById('acc_label').focus(); return; }
+  if(sablon.accounts.length >= MAX_HESAP){ alert(t('tpl_limit')(MAX_HESAP)); return; }
+  sablon.accounts.push({ id: yeniHesapId(), platform: document.getElementById('acc_platform').value,
+                         label: ad2.slice(0,80), url: url.slice(0,300) });
+  document.getElementById('acc_label').value = '';
+  document.getElementById('acc_url').value = '';
+  trackOnce('funnel/account-added');
+  saveSablon(); renderSablon();
+});
 
 document.getElementById('p_add').addEventListener('click', ()=>{
   const ad = document.getElementById('p_name').value.trim();
@@ -2597,6 +2702,171 @@ document.getElementById('pe_save').addEventListener('click', ()=>{
 document.getElementById('p_name').addEventListener('keydown', e=>{ if(e.key === 'Enter') document.getElementById('p_add').click(); });
 document.getElementById('p_search').addEventListener('input', renderProjects);
 document.getElementById('f_projectSearch').addEventListener('input', ()=> projeSecimiTazele());
+
+// ===== Aciklama sablonlari =====
+// Her paylasimin sonuna giden sabit metin: diger hesaplarin, standart
+// cagrin. Bir kez yaziliyor, yeni kayit olusturulurken ilgili platformun
+// metni aciklamaya ekleniyor.
+//
+// Metin kayda KOPYALANIYOR, baglanti kurulmuyor. Sablonu sonradan
+// degistirince yayinlanmis kayitlarin metni arkadan degismesin: bir posta
+// ne yazdigini bilmek, sablonu tek yerden guncellemekten daha onemli.
+const SABLON_KEY = 'demo_templates';
+const MAX_HESAP = 20;
+
+let sablon = { accounts: [], perPlatform: {} };
+
+function yeniHesapId(){ return 'ac_' + Math.random().toString(36).slice(2,9); }
+
+function sanitizeSablon(ham){
+  const str = (v,max)=> (typeof v === 'string' ? v.slice(0,max) : '');
+  const h = (ham && typeof ham === 'object') ? ham : {};
+  const hesaplar = (Array.isArray(h.accounts) ? h.accounts : [])
+    .slice(0, MAX_HESAP)
+    .map(a=>({
+      id: (typeof a.id === 'string' && /^[A-Za-z0-9_-]{1,32}$/.test(a.id)) ? a.id : yeniHesapId(),
+      platform: CAL_SM_PLATFORMS.includes(a.platform) ? a.platform : 'instagram',
+      label: str(a.label, 80),
+      url: str(a.url, 300)
+    }))
+    .filter(a=> a.label || a.url);
+  const bilinen = new Set(hesaplar.map(a=>a.id));
+  const perP = {};
+  CAL_SM_PLATFORMS.forEach(p=>{
+    const kaynak = (h.perPlatform && h.perPlatform[p]) || {};
+    const kullan = {};
+    Object.keys((kaynak.use && typeof kaynak.use === 'object') ? kaynak.use : {})
+      .forEach(id=>{ if(bilinen.has(id) && kaynak.use[id] === true) kullan[id] = true; });
+    perP[p] = { text: str(kaynak.text, 2000), use: kullan };
+  });
+  return { accounts: hesaplar, perPlatform: perP };
+}
+
+function sablonKey(){ return session ? SABLON_KEY + '_' + session.user.id : SABLON_KEY; }
+function loadSablon(){
+  let ham = null;
+  try{ ham = JSON.parse(localStorage.getItem(sablonKey()) || localStorage.getItem(SABLON_KEY) || 'null'); }
+  catch(e){ ham = null; }
+  sablon = sanitizeSablon(ham);
+}
+function saveSablon(){
+  try{ localStorage.setItem(sablonKey(), JSON.stringify(sablon)); }
+  catch(e){ console.error('[sablon] kaydedilemedi', e); }
+}
+
+// Bir platform icin uretilen metin: once serbest yazi, sonra secilen
+// hesaplarin satirlari.
+function sablonMetni(platform){
+  const p = sablon.perPlatform[platform] || { text:'', use:{} };
+  const satirlar = [];
+  const yazi = (p.text || '').trim();
+  if(yazi) satirlar.push(yazi);
+  const hesapSatiri = sablon.accounts
+    .filter(a=> p.use && p.use[a.id])
+    .map(a=> [a.label, a.url].filter(Boolean).join(': '))
+    .filter(Boolean);
+  if(hesapSatiri.length) satirlar.push(hesapSatiri.join('\n'));
+  return satirlar.join('\n\n');
+}
+
+// Yeni kayit olusurken aciklamanin sonuna ekleniyor. Kullanicinin kendi
+// yazdigi metin hep ustte kaliyor.
+function aciklamayaEkle(caption, platform){
+  const ek = sablonMetni(platform);
+  if(!ek) return caption;
+  const c = (caption || '').trim();
+  return c ? (c + '\n\n' + ek) : ek;
+}
+
+// --- Sablon sayfasi ---------------------------------------------------
+function renderSablon(){
+  const hesapKap = document.getElementById('accountList');
+  if(!hesapKap) return;
+
+  hesapKap.innerHTML = sablon.accounts.length
+    ? sablon.accounts.map(a=>`<div class="hesap-satir">
+        <span class="hesap-pico" style="color:${CAL_SM_COLORS[a.platform]}" title="${escapeHtml(CAL_SM_NAMES[a.platform])}">${PLATFORM_ICONS[a.platform]||''}</span>
+        <span class="hesap-ad">${escapeHtml(a.label || '—')}</span>
+        <span class="hesap-url">${escapeHtml(a.url || '')}</span>
+        <button type="button" class="btn btn-sm" data-hesap-sil="${escapeHtml(a.id)}">${escapeHtml(t('p_delete'))}</button>
+      </div>`).join('')
+    : '<p class="hint">' + escapeHtml(t('tpl_no_accounts')) + '</p>';
+
+  hesapKap.querySelectorAll('[data-hesap-sil]').forEach(el=>{
+    el.addEventListener('click', ()=>{
+      const id = el.dataset.hesapSil;
+      sablon.accounts = sablon.accounts.filter(a=>a.id !== id);
+      CAL_SM_PLATFORMS.forEach(p=>{ if(sablon.perPlatform[p]) delete sablon.perPlatform[p].use[id]; });
+      saveSablon(); renderSablon();
+    });
+  });
+
+  const kap = document.getElementById('tplTable');
+  if(!kap) return;
+  // Sutunlar platform, satirlar hesaplar. Ustte her platformun serbest
+  // metni, altta hangi hesabin o platformda gorunecegi.
+  const bas = CAL_SM_PLATFORMS.map(p=>
+    `<th><span class="tpl-phead"><span class="ct-pdot" style="background:var(--p-${p})"></span>${escapeHtml(CAL_SM_NAMES[p])}</span></th>`).join('');
+  const metinSatiri = CAL_SM_PLATFORMS.map(p=>
+    `<td><textarea class="tpl-text" data-tpl-text="${p}" rows="3"
+        placeholder="${escapeHtml(t('tpl_text_ph'))}">${escapeHtml((sablon.perPlatform[p]||{}).text || '')}</textarea></td>`).join('');
+  const hesapSatirlari = sablon.accounts.map(a=>
+    `<tr><th class="tpl-row-head" scope="row">
+       <span class="hesap-pico" style="color:${CAL_SM_COLORS[a.platform]}">${PLATFORM_ICONS[a.platform]||''}</span>
+       ${escapeHtml(a.label || a.url)}
+     </th>` +
+    CAL_SM_PLATFORMS.map(p=>{
+      const secili = !!((sablon.perPlatform[p]||{}).use||{})[a.id];
+      return `<td class="tpl-cell"><button type="button" class="pflag ${secili?'on':''}"
+        data-tpl-use="${escapeHtml(a.id)}" data-tpl-platform="${p}"><span class="pbox">${secili?'✓':''}</span></button></td>`;
+    }).join('') + '</tr>').join('');
+
+  const onizleme = CAL_SM_PLATFORMS.map(p=>{
+    const m = sablonMetni(p);
+    return `<td class="tpl-prev">${m ? escapeHtml(m).replace(/\n/g,'<br>') : '<span class="tpl-bos">—</span>'}</td>`;
+  }).join('');
+
+  kap.innerHTML = `<div class="tpl-wrap"><table class="tpl-table">
+    <thead><tr><th class="tpl-row-head">${escapeHtml(t('tpl_col_account'))}</th>${bas}</tr></thead>
+    <tbody>
+      <tr><th class="tpl-row-head">${escapeHtml(t('tpl_fixed_text'))}</th>${metinSatiri}</tr>
+      ${hesapSatirlari}
+      <tr class="tpl-prev-row"><th class="tpl-row-head">${escapeHtml(t('tpl_preview'))}</th>${onizleme}</tr>
+    </tbody>
+  </table></div>`;
+
+  kap.querySelectorAll('[data-tpl-text]').forEach(el=>{
+    el.addEventListener('input', ()=>{
+      const p = el.dataset.tplText;
+      sablon.perPlatform[p] = sablon.perPlatform[p] || { text:'', use:{} };
+      sablon.perPlatform[p].text = el.value.slice(0,2000);
+      saveSablon();
+      onizlemeTazele();
+    });
+  });
+  kap.querySelectorAll('[data-tpl-use]').forEach(el=>{
+    el.addEventListener('click', ()=>{
+      const p = el.dataset.tplPlatform, id = el.dataset.tplUse;
+      sablon.perPlatform[p] = sablon.perPlatform[p] || { text:'', use:{} };
+      if(sablon.perPlatform[p].use[id]) delete sablon.perPlatform[p].use[id];
+      else sablon.perPlatform[p].use[id] = true;
+      saveSablon(); renderSablon();
+    });
+  });
+}
+
+// Metin yazilirken tablo bastan cizilmiyor: yazi kutusundan odak kacar,
+// kullanici her harfte yazmayi keserdi. Yalnizca onizleme satiri
+// tazeleniyor.
+function onizlemeTazele(){
+  const hucreler = document.querySelectorAll('.tpl-prev-row .tpl-prev');
+  CAL_SM_PLATFORMS.forEach((p,i)=>{
+    const h = hucreler[i];
+    if(!h) return;
+    const m = sablonMetni(p);
+    h.innerHTML = m ? escapeHtml(m).replace(/\n/g,'<br>') : '<span class="tpl-bos">—</span>';
+  });
+}
 
 // ===== Surukle-birak =====
 // Bir kaydi baska gune tasimak. Yalnizca TARIH degisiyor; saat, platform
@@ -3527,6 +3797,9 @@ document.getElementById('saveBtn').addEventListener('click', ()=>{
     }
     ciftler.forEach(c=>{
       const icerik = JSON.parse(JSON.stringify(content));
+      // Sablon metni kayda KOPYALANIYOR. Baglanti kurulsaydi sablonu
+      // sonradan degistirmek yayinlanmis kayitlarin metnini de degistirirdi.
+      icerik.caption = aciklamayaEkle(icerik.caption, c.platform);
       // Karusel gorselleri yalnizca karusel kaydina ait; Reels kaydinda
       // dokuz slayt prompt'u tasimak gereksiz yer kaplardi.
       if(c.type !== 'carousel') icerik.slidePrompts = [];
@@ -3985,7 +4258,7 @@ document.getElementById('pendingOverlay').addEventListener('click', (e)=>{ if(e.
 
 // Yayina alinan surumun damgasi. Onbellekten eski bir kopya geldiginde bu
 // tarih eski kalir, boylece "guncel mi?" sorusu bakarak cevaplanir.
-const BUILD_STAMP = '2026-08-31 20:50 UTC';
+const BUILD_STAMP = '2026-08-31 20:59 UTC';
 document.getElementById('buildId').textContent = BUILD_STAMP;
 
 // ===== Init =====
@@ -4003,6 +4276,9 @@ loadProjects();
 // cevriliyor. Kayitlar yuklendikten SONRA calismali.
 projeleriGocur();
 typeChecksDoldur();
+loadSablon();
+document.getElementById('acc_platform').innerHTML =
+  CAL_SM_PLATFORMS.map(x=>`<option value="${x}">${escapeHtml(CAL_SM_NAMES[x])}</option>`).join('');
 projTypeSelectDoldur(document.getElementById('p_type'), 'outdoor');
 adresAlaniniTazele(document.getElementById('p_type'), document.getElementById('p_addressWrap'));
 renderLegend();
@@ -4013,7 +4289,7 @@ renderProjects();
 // Is projeyle basliyor, takvim onun ciktisi: acilis projeler sayfasi.
 // Takvimde calisan biri icin secim yine hatirlaniyor.
 let acilisSayfasi = 'projects';
-try{ const v = localStorage.getItem('demo_page'); if(v === 'calendar') acilisSayfasi = v; }catch(e){}
+try{ const v = localStorage.getItem('demo_page'); if(v === 'calendar' || v === 'templates') acilisSayfasi = v; }catch(e){}
 setPage(acilisSayfasi);
 // Every time the demo loads: "How this works" tour first, then — once that's
 // closed (skipped or finished) — the Pending popup, so a first-time visitor

@@ -14,17 +14,10 @@ tarayıcıda kalıcı ama başka cihaza geçmiyor ve site verisi temizlenirse
 gidiyor. Kayıtlar (`calendar_events`) zaten Supabase'de; projeler için
 yeni bir tablo ve istemci tarafında senkron gerekiyor.
 
-### Sürükle-bırak
-Takvimde bir kaydı başka güne sürükleyerek taşımak.
-- Yalnızca **tarih** değişmeli. "Yayınlandı" işareti sürüklemeyle
-  değişmemeli: bir elin kaymasıyla gerçek bir kayıt bozulur.
-- Dokunmatik ekranda çalışması ayrı iş; tarayıcıların standart
-  sürükle-bırak desteği telefonda çalışmıyor.
-
-### Açıklama şablonları
-Sabit metinler (hesap linkleri, standart CTA) bir kez kaydedilip tek
-tıkla eklensin. İlk sürümde değişkenli şablon motoru **yok** — birkaç
-isimli metin bloğu ve "ekle" düğmesi yeterli.
+### Şablonları buluta taşı
+Açıklama şablonları ve hesap listesi şu an yalnızca tarayıcının
+deposunda. Projelerde olduğu gibi bir tablo ve senkron gerekiyor.
+Tek satırlık bir veri olduğu için projelerden daha küçük bir iş.
 
 ### Yapay zekâ bağlantısı
 Metin taslağı için Claude (kod iskeleti var), görsel için Gemini (yeni
