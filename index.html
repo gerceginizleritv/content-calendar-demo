@@ -1182,23 +1182,30 @@ function save(){
 async function pushChanges(){
   if(!sb || !session) return;
   const uid = session.user.id;
+  // Gonderilecek kimlikler basta sabitleniyor. Eskiden await bittikten sonra
+  // dirtyIds/removedIds topluca temizleniyordu; yazma surerken kullanici yeni
+  // bir kayit olusturursa o kayit da kuyruktan siliniyor ve buluta hic
+  // yazilmadan kayboluyordu. Artik yalnizca bu turda gercekten gonderilenler
+  // dusuruluyor, arada isaretlenenler bir sonraki tura kaliyor.
+  const silinecek = [...removedIds];
+  const yazilacak = new Set(dirtyIds);
   try{
-    if(removedIds.size){
-      const ids = [...removedIds];
-      const { error } = await sb.from('calendar_events').delete().in('id', ids);
+    if(silinecek.length){
+      const { error } = await sb.from('calendar_events').delete().in('id', silinecek);
       if(error) throw error;
-      removedIds.clear();
+      silinecek.forEach(id => removedIds.delete(id));
     }
-    if(dirtyIds.size){
-      const rows = events.filter(e=>dirtyIds.has(e.id)).map(e=>toRow(e, uid));
+    if(yazilacak.size){
+      const rows = events.filter(e=>yazilacak.has(e.id)).map(e=>toRow(e, uid));
       if(rows.length){
         const { error } = await sb.from('calendar_events').upsert(rows);
         if(error) throw error;
       }
-      dirtyIds.clear();
+      yazilacak.forEach(id => dirtyIds.delete(id));
     }
     setCloudStatus('ok');
   }catch(err){
+    // Basarisiz turda kimlikler kuyrukta kaliyor: sonraki save() tekrar deniyor.
     console.error('[bulut] yazma hatasi', err);
     setCloudStatus('error');
   }
@@ -2103,18 +2110,29 @@ function afterSignOut(){
   showToast(t('auth_signed_out'));
 }
 
+// getSession() ve onAuthStateChange ikisi de oturumu bildiriyor; Google
+// donusunde sayfa yeniden yuklendigi icin ikisi de tetikleniyordu ve iki
+// eszamanli afterSignIn birbirinin kuyrugunu eziyordu. Artik tek kapi var:
+// hangi kullanici icin kosuldugunu tutuyoruz, ayni kullanici icin bir daha
+// kosulmuyor.
+let senkronKullanici = null;
+function oturumBildirildi(s){
+  session = s;
+  refreshAuthUi();
+  if(s && s.user.id !== senkronKullanici){
+    senkronKullanici = s.user.id;
+    afterSignIn();
+  }else if(!s && senkronKullanici){
+    senkronKullanici = null;
+    afterSignOut();
+  }
+}
 if(window.supabase){
   sb = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
   sb.auth.getSession().then(({data})=>{
-    if(data && data.session){ session = data.session; refreshAuthUi(); afterSignIn(); }
+    if(data && data.session) oturumBildirildi(data.session);
   });
-  sb.auth.onAuthStateChange((olay, s)=>{
-    const oncekiVarMi = !!session;
-    session = s;
-    refreshAuthUi();
-    if(s && !oncekiVarMi) afterSignIn();
-    if(!s && oncekiVarMi) afterSignOut();
-  });
+  sb.auth.onAuthStateChange((olay, s)=> oturumBildirildi(s));
 }
 
 document.getElementById('authBtn').addEventListener('click', ()=>{
