@@ -74,6 +74,7 @@
     <h2>3 · Aktarım</h2>
     <button id="go" disabled>Aktar</button>
     <button id="verify" class="ghost hide">Yeniden doğrula</button>
+    <div id="nedenPasif" class="msg warn" style="display:none"></div>
     <div id="goBox"></div>
     <div class="log hide" id="log"></div>
   </section>
@@ -149,17 +150,28 @@ async function baslat(){
   sb = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
   const { data:{ session } } = await sb.auth.getSession();
   if(!session){
-    yaz('authBox','warn',
-      'Giriş yapılmamış. Önce <a href="./">Slate</a> sayfasını açıp Google ile gir, '+
-      'sonra bu sayfaya dön ve yenile. Aynı adres olduğu için oturum burada da geçerli olur.');
+    $('authBox').innerHTML =
+      '<div class="msg warn">Giriş yapılmamış. Aşağıdaki düğmeyle gir; '+
+      'Google seni bu sayfaya geri getirecek.</div>'+
+      '<button id="girisBtn">Google ile giriş yap</button>';
+    $('girisBtn').addEventListener('click', async () => {
+      const { error } = await sb.auth.signInWithOAuth({
+        provider: 'google',
+        options: { redirectTo: window.location.href.split('#')[0] }
+      });
+      if(error) yaz('authBox','err','Giriş başlatılamadı: '+error.message);
+    });
+    dosyaKontrol();
     return;
   }
   uid = session.user.id;
 
   const { data:ws, error } = await sb.from('workspaces').select('id,name');
-  if(error){ yaz('authBox','err','Çalışma alanı okunamadı: '+error.message); return; }
+  if(error){ yaz('authBox','err','Çalışma alanı okunamadı: '+error.message); dosyaKontrol(); return; }
   if(!ws || !ws.length){
-    yaz('authBox','err','Bu hesaba bağlı çalışma alanı yok. Şema dosyasının en sondaki bloğunu bu e-postayla çalıştır.');
+    yaz('authBox','err','Bu hesaba (<b>'+session.user.email+'</b>) bağlı çalışma alanı yok. '+
+        'Şema dosyasının en sondaki bloğunu tam olarak bu e-postayla çalıştırman gerekiyor.');
+    dosyaKontrol();
     return;
   }
   wsId = ws[0].id;
@@ -175,10 +187,10 @@ $('file').addEventListener('change', async ev => {
   if(!f) return;
   let j;
   try{ j = JSON.parse(await f.text()); }
-  catch(e){ yaz('fileBox','err','Bu dosya okunamadı, geçerli bir JSON değil.'); return; }
+  catch(e){ yaz('fileBox','err','Bu dosya okunamadı, geçerli bir JSON değil.'); dosyaKontrol(); return; }
   if(!j || !Array.isArray(j.locations) || !Array.isArray(j.calendarEvents)){
     yaz('fileBox','err','Beklenen yedek biçimi değil: içinde <code>locations</code> ve <code>calendarEvents</code> listeleri yok.');
-    return;
+    dosyaKontrol(); return;
   }
   const L = j.locations, E = j.calendarEvents;
   const kimlikler = new Set(L.map(x => String(x.id)));
@@ -188,7 +200,7 @@ $('file').addEventListener('change', async ev => {
 
   if(mukerrerL || mukerrerE){
     yaz('fileBox','err','Dosyada mükerrer kimlik var (lokasyon: '+mukerrerL+', kayıt: '+mukerrerE+'). Aktarım durduruldu.');
-    return;
+    dosyaKontrol(); return;
   }
   veri = { L: L, E: E };
   $('s2').dataset.done = '1';
@@ -205,7 +217,19 @@ $('file').addEventListener('change', async ev => {
   dosyaKontrol();
 });
 
-function dosyaKontrol(){ $('go').disabled = !(sb && wsId && veri); }
+function dosyaKontrol(){
+  const eksik = [];
+  if(!wsId)  eksik.push('1. adımdaki giriş');
+  if(!veri)  eksik.push('2. adımdaki yedek dosyası');
+  $('go').disabled = eksik.length > 0;
+  const kutu = $('nedenPasif');
+  if(eksik.length){
+    kutu.style.display = '';
+    kutu.innerHTML = 'Aktar düğmesi pasif çünkü şu eksik: <b>' + eksik.join('</b> ve <b>') + '</b>.';
+  }else{
+    kutu.style.display = 'none';
+  }
+}
 
 // --- 3. Aktarim --------------------------------------------------------
 // upsert kullaniliyor: ayni dosya ikinci kez aktarilirsa satirlar
@@ -299,6 +323,7 @@ async function dogrula(){
   }
 }
 
+dosyaKontrol();
 baslat();
 </script>
 </body>
