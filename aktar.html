@@ -1,0 +1,305 @@
+<!doctype html>
+<html lang="tr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="robots" content="noindex, nofollow">
+<title>Lokasyon Aktarımı</title>
+<style>
+  :root{
+    --ink:#15181d; --ink-soft:#5b6472; --line:#dfe3e9; --bg:#f6f7f9;
+    --card:#ffffff; --accent:#1f5f4f; --accent-soft:#e6f0ec;
+    --ok:#1f7a4d; --warn:#8a5a00; --warn-bg:#fdf4e3; --err:#a52a2a; --err-bg:#fdeeee;
+    --mono:ui-monospace,SFMono-Regular,Menlo,Consolas,monospace;
+  }
+  @media (prefers-color-scheme: dark){
+    :root:not([data-theme="light"]){
+      --ink:#e8ecf1; --ink-soft:#9aa5b4; --line:#2b323c; --bg:#12151a;
+      --card:#1a1e25; --accent:#6fd3b3; --accent-soft:#17332c;
+      --ok:#6fd3b3; --warn:#e5bb6a; --warn-bg:#2e2716; --err:#f08a8a; --err-bg:#331d1d;
+    }
+  }
+  *{box-sizing:border-box}
+  body{margin:0;background:var(--bg);color:var(--ink);
+       font:16px/1.6 system-ui,-apple-system,"Segoe UI",Roboto,sans-serif;}
+  .wrap{max-width:760px;margin:0 auto;padding:32px 20px 80px;}
+  h1{font-size:26px;margin:0 0 4px;letter-spacing:-.01em;}
+  .sub{color:var(--ink-soft);margin:0 0 28px;}
+  .step{background:var(--card);border:1px solid var(--line);border-radius:12px;
+        padding:20px 22px;margin-bottom:16px;}
+  .step h2{font-size:13px;text-transform:uppercase;letter-spacing:.08em;
+           color:var(--ink-soft);margin:0 0 12px;font-weight:600;}
+  .step[data-done="1"]{border-color:var(--accent);}
+  button{font:inherit;font-weight:600;padding:12px 20px;border-radius:9px;
+         border:1px solid var(--accent);background:var(--accent);color:#fff;cursor:pointer;}
+  html:not([data-theme="light"]) button{color:#0d1512}
+  @media (prefers-color-scheme: dark){ button{color:#0d1512} }
+  button:disabled{opacity:.45;cursor:not-allowed;}
+  button.ghost{background:transparent;color:var(--accent);}
+  input[type=file]{font:inherit;max-width:100%;}
+  .msg{padding:12px 14px;border-radius:9px;margin-top:12px;font-size:15px;}
+  .msg.ok{background:var(--accent-soft);color:var(--ok);}
+  .msg.warn{background:var(--warn-bg);color:var(--warn);}
+  .msg.err{background:var(--err-bg);color:var(--err);}
+  table{width:100%;border-collapse:collapse;margin-top:12px;font-size:15px;}
+  th,td{text-align:left;padding:7px 8px;border-bottom:1px solid var(--line);}
+  td:last-child,th:last-child{text-align:right;font-variant-numeric:tabular-nums;}
+  th{font-size:12px;text-transform:uppercase;letter-spacing:.06em;color:var(--ink-soft);font-weight:600;}
+  .log{font-family:var(--mono);font-size:13px;white-space:pre-wrap;
+       background:var(--bg);border:1px solid var(--line);border-radius:9px;
+       padding:12px;margin-top:12px;max-height:280px;overflow:auto;}
+  .hide{display:none;}
+  code{font-family:var(--mono);font-size:.92em;background:var(--accent-soft);
+       padding:1px 5px;border-radius:4px;}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <h1>Lokasyon Aktarımı</h1>
+  <p class="sub">Yedek dosyandaki lokasyonları ve yayın kayıtlarını Supabase'e taşır.
+     Tek seferlik bir araçtır. Aynı dosyayı iki kez aktarsan da kayıtlar çoğalmaz.</p>
+
+  <section class="step" id="s1">
+    <h2>1 · Giriş</h2>
+    <div id="authBox">Bakılıyor…</div>
+  </section>
+
+  <section class="step" id="s2">
+    <h2>2 · Yedek dosyası</h2>
+    <input type="file" id="file" accept="application/json,.json">
+    <div id="fileBox"></div>
+  </section>
+
+  <section class="step" id="s3">
+    <h2>3 · Aktarım</h2>
+    <button id="go" disabled>Aktar</button>
+    <button id="verify" class="ghost hide">Yeniden doğrula</button>
+    <div id="goBox"></div>
+    <div class="log hide" id="log"></div>
+  </section>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.45.4/dist/umd/supabase.min.js"></script>
+<script>
+const SUPABASE_URL = 'https://dyemvzmpnlpnzwebuciu.supabase.co';
+const SUPABASE_KEY = 'sb_publishable_QpzqwOn4BX43GtX9ecaowQ_qIlaHJA-';   // index.html ile ayni olmali
+const PARCA = 50;   // tek seferde gonderilen satir sayisi
+
+let sb = null, uid = null, wsId = null, veri = null;
+
+const $ = id => document.getElementById(id);
+const yaz = (kutu, tip, html) => { $(kutu).innerHTML = '<div class="msg '+tip+'">'+html+'</div>'; };
+function kayit(satir){
+  const l = $('log'); l.classList.remove('hide');
+  l.textContent += satir + '\n'; l.scrollTop = l.scrollHeight;
+}
+
+// --- Donusum -----------------------------------------------------------
+// Kaynaktaki bayraklar 'E'/'H' metni. Veritabaninda boolean, cunku bir
+// bayrak "evet/hayir" disinda deger alabilmemeli.
+const eh = v => v === 'E';
+const mtn = (v, n) => (typeof v === 'string' ? v : '').slice(0, n);
+
+function lokasyonSatiri(x){
+  const bicimler = ['Saha','Masabaşı','Hibrit','Stüdyo/Grafik'];
+  const paket = (x.package && typeof x.package === 'object') ? x.package : {};
+  return {
+    id: String(x.id), workspace_id: wsId,
+    name: mtn(x.name,300), district: mtn(x.district,120), city: mtn(x.city,120),
+    address: mtn(x.address,500), topic: mtn(x.topic,1000), notes: mtn(x.notes,5000),
+    cautions: mtn(x.shootingCautions,5000), field_notes: mtn(x.fieldNotes,5000),
+    format: bicimler.indexOf(x.format) >= 0 ? x.format : 'Saha',
+    // Bos metin tarih sutununa yazilamaz; yoklugu null ile anlatiyoruz.
+    planned_date: x.plannedDate ? x.plannedDate : null,
+    permission: eh(x.permission), filmed: eh(x.filmed), audio: eh(x.audio),
+    edited: eh(x.edited), published: eh(x.published), script: eh(x.script),
+    cancelled: eh(x.cancelled),
+    maps_url: mtn(x.mapsLink,1000), drive_url: mtn(x.driveFolderLink,1000),
+    script_url: mtn(x.scriptLink,1000), image_url: mtn(x.imageUrl,1000),
+    shot_list: mtn(paket.shotList,20000)
+  };
+  // prepRequested tasinmiyor: 43 lokasyonun tamaminda 'H', hic kullanilmamis.
+}
+
+function kayitSatiri(x){
+  const c = (x.content && typeof x.content === 'object') ? x.content : {};
+  // pinnedComment kendi sutununa gidiyor, content icinde birakilmiyor:
+  // ayni bilgi iki yerde durursa er gec ikisi ayrisir.
+  const { pinnedComment, ...kalan } = c;
+  return {
+    id: String(x.id), user_id: uid, workspace_id: wsId,
+    location_id: x.locationId ? String(x.locationId) : null,
+    type: mtn(x.type,40), platform: mtn(x.platform,40), title: mtn(x.title,500),
+    post_date: x.date || null, post_time: x.time || null,
+    uploaded: !!x.uploaded,
+    type_override: mtn(x.typeOverride,40) || null,
+    platform_override: mtn(x.platformOverride,40) || null,
+    caption_field_override: mtn(x.captionFieldOverride,40) || null,
+    pinned_comment: mtn(pinnedComment,5000),
+    content: kalan
+  };
+}
+
+// --- 1. Giris ----------------------------------------------------------
+async function baslat(){
+  if(!window.supabase){
+    yaz('authBox','err','Supabase kütüphanesi yüklenemedi. Sayfayı yenile.');
+    return;
+  }
+  sb = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
+  const { data:{ session } } = await sb.auth.getSession();
+  if(!session){
+    yaz('authBox','warn',
+      'Giriş yapılmamış. Önce <a href="./">Slate</a> sayfasını açıp Google ile gir, '+
+      'sonra bu sayfaya dön ve yenile. Aynı adres olduğu için oturum burada da geçerli olur.');
+    return;
+  }
+  uid = session.user.id;
+
+  const { data:ws, error } = await sb.from('workspaces').select('id,name');
+  if(error){ yaz('authBox','err','Çalışma alanı okunamadı: '+error.message); return; }
+  if(!ws || !ws.length){
+    yaz('authBox','err','Bu hesaba bağlı çalışma alanı yok. Şema dosyasının en sondaki bloğunu bu e-postayla çalıştır.');
+    return;
+  }
+  wsId = ws[0].id;
+  $('s1').dataset.done = '1';
+  yaz('authBox','ok', 'Giriş: <b>'+session.user.email+'</b><br>Çalışma alanı: <b>'+ws[0].name+'</b>');
+  dosyaKontrol();
+}
+
+// --- 2. Dosya ----------------------------------------------------------
+$('file').addEventListener('change', async ev => {
+  const f = ev.target.files && ev.target.files[0];
+  veri = null; dosyaKontrol();
+  if(!f) return;
+  let j;
+  try{ j = JSON.parse(await f.text()); }
+  catch(e){ yaz('fileBox','err','Bu dosya okunamadı, geçerli bir JSON değil.'); return; }
+  if(!j || !Array.isArray(j.locations) || !Array.isArray(j.calendarEvents)){
+    yaz('fileBox','err','Beklenen yedek biçimi değil: içinde <code>locations</code> ve <code>calendarEvents</code> listeleri yok.');
+    return;
+  }
+  const L = j.locations, E = j.calendarEvents;
+  const kimlikler = new Set(L.map(x => String(x.id)));
+  const yetim = E.filter(x => !kimlikler.has(String(x.locationId)));
+  const mukerrerL = L.length - kimlikler.size;
+  const mukerrerE = E.length - new Set(E.map(x => String(x.id))).size;
+
+  if(mukerrerL || mukerrerE){
+    yaz('fileBox','err','Dosyada mükerrer kimlik var (lokasyon: '+mukerrerL+', kayıt: '+mukerrerE+'). Aktarım durduruldu.');
+    return;
+  }
+  veri = { L: L, E: E };
+  $('s2').dataset.done = '1';
+  $('fileBox').innerHTML =
+    '<table><thead><tr><th>Dosyada</th><th>Adet</th></tr></thead><tbody>'+
+    '<tr><td>Lokasyon</td><td>'+L.length+'</td></tr>'+
+    '<tr><td>Yayın kaydı</td><td>'+E.length+'</td></tr>'+
+    '<tr><td>Yayınlanmış lokasyon</td><td>'+L.filter(x=>x.published==='E').length+'</td></tr>'+
+    '<tr><td>Yüklenmiş yayın kaydı</td><td>'+E.filter(x=>x.uploaded).length+'</td></tr>'+
+    '<tr><td>Lokasyonu bulunamayan kayıt</td><td>'+yetim.length+'</td></tr>'+
+    '</tbody></table>'+
+    (yetim.length ? '<div class="msg warn">'+yetim.length+' kaydın lokasyonu dosyada yok. '+
+      'Bunlar lokasyonsuz aktarılır, kaybolmazlar.</div>' : '');
+  dosyaKontrol();
+});
+
+function dosyaKontrol(){ $('go').disabled = !(sb && wsId && veri); }
+
+// --- 3. Aktarim --------------------------------------------------------
+// upsert kullaniliyor: ayni dosya ikinci kez aktarilirsa satirlar
+// cogalmaz, uzerine yazilir. Boylece yarida kalan bir aktarim
+// bastan calistirilarak tamamlanabilir.
+async function parcaliYaz(tablo, satirlar, etiket){
+  for(let i = 0; i < satirlar.length; i += PARCA){
+    const dilim = satirlar.slice(i, i + PARCA);
+    const { error } = await sb.from(tablo).upsert(dilim, { onConflict: 'id' });
+    if(error) throw new Error(etiket+' yazılırken hata (satır '+(i+1)+'-'+(i+dilim.length)+'): '+error.message);
+    kayit(etiket+': '+Math.min(i+PARCA, satirlar.length)+'/'+satirlar.length);
+  }
+}
+
+$('go').addEventListener('click', async () => {
+  $('go').disabled = true; $('goBox').innerHTML = ''; $('log').textContent = '';
+  try{
+    kayit('Başladı.');
+    // Once lokasyonlar: yayin kayitlari onlara referans veriyor.
+    await parcaliYaz('locations', veri.L.map(lokasyonSatiri), 'Lokasyon');
+    await parcaliYaz('calendar_events', veri.E.map(kayitSatiri), 'Yayın kaydı');
+    kayit('Yazma bitti. Doğrulanıyor…');
+    await dogrula();
+  }catch(e){
+    kayit('HATA: ' + e.message);
+    yaz('goBox','err','Aktarım tamamlanamadı.<br>'+e.message+
+        '<br><br>Düzelttikten sonra aynı dosyayla tekrar çalıştırabilirsin; '+
+        'yazılmış satırlar çoğalmaz, üzerlerine yazılır.');
+    $('go').disabled = false;
+  }
+});
+
+$('verify').addEventListener('click', dogrula);
+
+// Yazdiktan sonra kaynagi degil, VERITABANINI okuyup sayiyoruz.
+// "Gonderdim" ile "yazildi" ayni sey degil.
+async function dogrula(){
+  const say = async (tablo, kur) => {
+    let q = sb.from(tablo).select('*', { count:'exact', head:true }).eq('workspace_id', wsId);
+    if(kur) q = kur(q);
+    const { count, error } = await q;
+    if(error) throw new Error(tablo+' sayılamadı: '+error.message);
+    return count;
+  };
+  try{
+    const bekL = veri ? veri.L.length : null;
+    const bekE = veri ? veri.E.length : null;
+    const bekLY = veri ? veri.L.filter(x=>x.published==='E').length : null;
+    const bekEY = veri ? veri.E.filter(x=>x.uploaded).length : null;
+
+    const nL  = await say('locations');
+    const nE  = await say('calendar_events');
+    const nLY = await say('locations', q=>q.eq('published', true));
+    const nEY = await say('calendar_events', q=>q.eq('uploaded', true));
+
+    // Bagin kopup kopmadigi: lokasyonu olmayan kayit var mi?
+    const { data:evs, error:e1 } = await sb.from('calendar_events')
+      .select('id,location_id').eq('workspace_id', wsId);
+    if(e1) throw new Error(e1.message);
+    const { data:locs, error:e2 } = await sb.from('locations')
+      .select('id').eq('workspace_id', wsId);
+    if(e2) throw new Error(e2.message);
+    const varOlan = new Set((locs||[]).map(l=>l.id));
+    const kopuk = (evs||[]).filter(e => e.location_id && !varOlan.has(e.location_id)).length;
+
+    const satir = (ad, olan, beklenen) => {
+      const uygun = beklenen === null || olan === beklenen;
+      return '<tr><td>'+ad+(beklenen===null?'':' <span style="color:var(--ink-soft)">(beklenen '+beklenen+')</span>')+
+             '</td><td>'+olan+' '+(uygun?'✔':'✖')+'</td></tr>';
+    };
+    const tamam = (bekL===null) || (nL===bekL && nE===bekE && nLY===bekLY && nEY===bekEY && kopuk===0);
+    $('goBox').innerHTML =
+      '<table><thead><tr><th>Veritabanında</th><th>Sonuç</th></tr></thead><tbody>'+
+      satir('Lokasyon', nL, bekL)+
+      satir('Yayın kaydı', nE, bekE)+
+      satir('Yayınlanmış lokasyon', nLY, bekLY)+
+      satir('Yüklenmiş yayın kaydı', nEY, bekEY)+
+      satir('Bağı kopmuş kayıt', kopuk, 0)+
+      '</tbody></table>'+
+      '<div class="msg '+(tamam?'ok':'warn')+'">'+
+      (tamam ? 'Aktarım tamam. Sayılar dosyayla birebir uyuşuyor.'
+             : 'Sayılar uyuşmuyor. Aynı dosyayla tekrar çalıştır; sorun sürerse bana bu tabloyu ilet.')+
+      '</div>';
+    $('verify').classList.remove('hide');
+    if(tamam) $('s3').dataset.done = '1'; else $('go').disabled = false;
+    kayit('Doğrulama bitti.');
+  }catch(e){
+    kayit('DOĞRULAMA HATASI: '+e.message);
+    yaz('goBox','err','Doğrulama yapılamadı: '+e.message);
+    $('go').disabled = false;
+  }
+}
+
+baslat();
+</script>
+</body>
+</html>
