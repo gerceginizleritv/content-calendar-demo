@@ -543,7 +543,7 @@ body{
 <div class="wrap">
 
   <div class="banner">
-    <span class="tally"></span><b data-i18n="banner_bold1">This is a live, working demo.</b> <span data-i18n-html="banner_rest">Click any entry to edit it, or create a new one. Everything is saved <b>only in your own browser</b> — no account needed, and nothing leaves your browser unless you choose to save it to the cloud. Refresh and it's still there. Clear your browser data and it resets.</span>
+    <span class="tally"></span><b data-i18n="banner_bold1">This is a live, working demo.</b> <span data-i18n-html="banner_rest">Click any day to add an entry, or any entry to edit it. It all works <b>without an account</b> — your calendar stays in this browser. Sign in with Google or an email link only if you want the same calendar on your phone too. The demo holds up to 100 entries.</span>
   </div>
 
 
@@ -927,7 +927,7 @@ let currentLang = 'en';
 const LANG = {
   en: {
     banner_bold1: "This is a live, working demo.",
-    banner_rest: "Click any entry to edit it, or create a new one. Everything is saved <b>only in your own browser</b> — no account needed, and nothing leaves your browser unless you choose to save it to the cloud. Refresh and it's still there. Clear your browser data and it resets.",
+    banner_rest: "Click any day to add an entry, or any entry to edit it. It all works <b>without an account</b> — your calendar stays in this browser. Sign in with Google or an email link only if you want the same calendar on your phone too. The demo holds up to 100 entries.",
     eyebrow: "QUEUE — NEXT 6 WEEKS",
     h1: "One shoot becomes ten posts. Slate tracks every one.",
     h1_sub: "The same footage goes out as a Reel, a Short, a carousel and a story — each with its own caption, cover text and time slot. Slate also tells you which ones aren't written yet.",
@@ -1084,11 +1084,13 @@ const LANG = {
     tour1_body: "Plan content across YouTube, Instagram, TikTok and more — everything stays in this browser, no account needed.",
     tour2_body: "Every post gets two independent tags: what it is, and where it's going. Filter by either, or both at once.",
     tour3_body: "Click any slot to open it — caption, hashtags, titles, cover prompt, all editable and one tap from copied.",
-    tour4_body: "Stuck on a caption? Connect your own Claude or Gemini key — it goes straight from your browser to them, we never see it.",
+    tour4_body: "Posting for more than one country? Give each entry its own time zone. Days with several markets group by market, and you can filter down to one.",
+    tour5_body: "Stuck on a caption? Connect your own Claude or Gemini key — it goes straight from your browser to them, we never see it.",
+    tour_visual_market: "MARKETS",
   },
   tr: {
     banner_bold1: "Bu, canlı ve çalışan bir demodur.",
-    banner_rest: "Herhangi bir girişe tıklayarak düzenleyebilir, ya da yeni bir tane oluşturabilirsin. Her şey <b>sadece kendi tarayıcında</b> saklanır — hesap gerekmiyor ve sen buluta kaydetmeyi seçmedikçe içeriğin bu tarayıcıdan çıkmıyor. Sayfayı yenile, hâlâ orada duruyor olacak. Tarayıcı verilerini temizlersen sıfırlanır.",
+    banner_rest: "Bir güne tıklayarak kayıt ekle, bir kayda tıklayarak düzenle. Hepsi <b>hesapsız çalışır</b> — takvimin bu tarayıcıda kalır. Aynı takvimi telefonunda da istiyorsan Google ya da e-posta linkiyle giriş yap. Demo 100 kayıt tutar.",
     eyebrow: "SIRADAKİLER — ÖNÜMÜZDEKİ 6 HAFTA",
     h1: "Tek çekim on paylaşıma dönüşür. Slate hepsini takip eder.",
     h1_sub: "Aynı çekim; Reels, Shorts, carousel ve hikaye olarak çıkar — her biri kendi caption'ı, kapak metni ve saatiyle. Slate hangisinin hâlâ yazılmadığını da söyler.",
@@ -1245,7 +1247,9 @@ const LANG = {
     tour1_body: "YouTube, Instagram, TikTok ve daha fazlasında içerik planla — her şey bu tarayıcıda kalır, hesap gerekmez.",
     tour2_body: "Her paylaşımın iki bağımsız etiketi var: ne olduğu ve nereye gittiği. Birine, ya da ikisine birden göre filtrele.",
     tour3_body: "Herhangi bir kutucuğa tıkla, aç — caption, hashtag, başlıklar, kapak prompt'u, hepsi düzenlenebilir ve tek dokunuşla kopyalanır.",
-    tour4_body: "Caption'da mı takıldın? Kendi Claude ya da Gemini anahtarını bağla — doğrudan tarayıcından onlara gider, biz hiç görmeyiz.",
+    tour4_body: "Birden fazla ülkeye mi paylaşıyorsun? Her kaydın kendi saat dilimi olur. Birden çok pazarın olduğu günler pazara göre gruplanır, dilersen tek pazara indirirsin.",
+    tour5_body: "Caption'da mı takıldın? Kendi Claude ya da Gemini anahtarını bağla — doğrudan tarayıcından onlara gider, biz hiç görmeyiz.",
+    tour_visual_market: "PAZARLAR",
   },
 };
 
@@ -2073,12 +2077,14 @@ const TOUR_STEPS_I18N = {
     { title:"Welcome to Slate" },
     { title:"Two independent tags per post" },
     { title:"Click any entry to open it" },
+    { title:"Don't stay local — go global" },
     { title:"Optional: draft with your own AI" },
   ],
   tr: [
     { title:"Slate'e Hoş Geldin" },
     { title:"Her paylaşım için iki bağımsız etiket" },
     { title:"Herhangi bir girişe tıkla, aç" },
+    { title:"Yerelde kalma — globale çık" },
     { title:"İsteğe bağlı: kendi AI'ınla taslak oluştur" },
   ],
 };
@@ -2168,7 +2174,48 @@ const TOUR_VISUALS = [
       </marker>
     </defs>
   </svg>`,
-  // Step 4 — bring-your-own-key, browser talks directly to the AI provider
+  // Step 4 — ayni gun, uc pazar: kayitlar pazar pazar gruplaniyor
+  () => `
+  <svg viewBox="0 0 400 130" xmlns="http://www.w3.org/2000/svg">
+    <text x="14" y="16" font-family="JetBrains Mono, monospace" font-size="10" letter-spacing="1.5" fill="var(--accent-dim)">${t('tour_visual_market')}</text>
+    <rect x="14" y="24" width="170" height="96" rx="6" fill="var(--surface)" stroke="var(--line)"/>
+    <text x="24" y="40" font-family="JetBrains Mono, monospace" font-size="9" fill="var(--text-dim)">1 SEP</text>
+    <g font-family="IBM Plex Sans, sans-serif" font-size="9" fill="var(--text)">
+      <rect x="24" y="47" width="150" height="19" rx="3" fill="var(--surface-2)" stroke="var(--line)"/>
+      <text x="32" y="60">Istanbul</text>
+      <rect x="152" y="51" width="16" height="11" rx="2" fill="var(--accent-soft)"/>
+      <text x="160" y="60" text-anchor="middle" fill="var(--accent)">2</text>
+      <rect x="24" y="70" width="150" height="19" rx="3" fill="var(--surface-2)" stroke="var(--line)"/>
+      <text x="32" y="83">Tokyo</text>
+      <rect x="152" y="74" width="16" height="11" rx="2" fill="var(--accent-soft)"/>
+      <text x="160" y="83" text-anchor="middle" fill="var(--accent)">2</text>
+      <rect x="24" y="93" width="150" height="19" rx="3" fill="var(--surface-2)" stroke="var(--line)"/>
+      <text x="32" y="106">London</text>
+      <rect x="152" y="97" width="16" height="11" rx="2" fill="var(--accent-soft)"/>
+      <text x="160" y="106" text-anchor="middle" fill="var(--accent)">2</text>
+    </g>
+    <g transform="translate(210,34)" font-family="JetBrains Mono, monospace" font-size="9">
+      <rect width="52" height="18" rx="3" fill="none" stroke="var(--amber)"/>
+      <text x="26" y="12" text-anchor="middle" fill="var(--amber)">GMT+3</text>
+      <rect y="26" width="52" height="18" rx="3" fill="none" stroke="var(--amber)"/>
+      <text x="26" y="38" text-anchor="middle" fill="var(--amber)">GMT+9</text>
+      <rect y="52" width="52" height="18" rx="3" fill="none" stroke="var(--amber)"/>
+      <text x="26" y="64" text-anchor="middle" fill="var(--amber)">GMT+1</text>
+    </g>
+    <path d="M276,68 L310,68" stroke="var(--accent)" stroke-width="2" stroke-dasharray="4 3" marker-end="url(#tourArrow4)"/>
+    <g transform="translate(318,36)">
+      <circle cx="30" cy="30" r="29" fill="none" stroke="var(--accent)" stroke-width="1.6"/>
+      <ellipse cx="30" cy="30" rx="12" ry="29" fill="none" stroke="var(--accent-dim)" stroke-width="1.1"/>
+      <path d="M1,30 L59,30" stroke="var(--accent-dim)" stroke-width="1.1"/>
+      <path d="M6,16 L54,16 M6,44 L54,44" stroke="var(--accent-dim)" stroke-width="1.1"/>
+    </g>
+    <defs>
+      <marker id="tourArrow4" markerWidth="8" markerHeight="8" refX="6" refY="3" orient="auto">
+        <path d="M0,0 L6,3 L0,6 Z" fill="var(--accent)"/>
+      </marker>
+    </defs>
+  </svg>`,
+  // Step 5 — bring-your-own-key, browser talks directly to the AI provider
   () => `
   <svg viewBox="0 0 400 130" xmlns="http://www.w3.org/2000/svg">
     <g transform="translate(14,34)">
@@ -2412,7 +2459,7 @@ document.getElementById('pendingOverlay').addEventListener('click', (e)=>{ if(e.
 
 // Yayina alinan surumun damgasi. Onbellekten eski bir kopya geldiginde bu
 // tarih eski kalir, boylece "guncel mi?" sorusu bakarak cevaplanir.
-const BUILD_STAMP = '2026-08-31 14:48 UTC';
+const BUILD_STAMP = '2026-08-31 14:51 UTC';
 document.getElementById('buildId').textContent = BUILD_STAMP;
 
 // ===== Init =====
