@@ -124,6 +124,7 @@ body{
   margin-top:18px;padding-top:12px;border-top:1px solid var(--line-soft);
 }
 .head-meta .privacy-link{margin-left:0;}
+.build-id{margin-left:auto;font-family:'IBM Plex Mono',monospace;font-size:10px;color:var(--accent-dim);}
 
 /* --- Calisma satiri: uretmek solda, filtrelemek sagda ------------------- */
 .work-row{display:flex;gap:14px;align-items:stretch;margin-bottom:12px;}
@@ -302,7 +303,19 @@ body{
   line-height:1.5;
 }
 .platform-checks{display:flex;flex-wrap:wrap;gap:8px;}
-.pcheck{display:flex;align-items:center;gap:6px;border:1px solid var(--line);padding:9px 12px;min-height:40px;border-radius:5px;font-size:12px;cursor:pointer;}
+/* Bu etiketler .field icinde durdugu icin ".field label" kurali (mono, buyuk
+   harf, soluk, display:block) onlari da yakaliyordu ve secenekler okunmuyordu.
+   Secenek bir alan basligi degil, okunmasi gereken metin. Ozgullugu ".field
+   .pcheck" ile asiyoruz; yalniz ".pcheck" yazmak yetmiyordu. */
+.pcheck,
+.field .pcheck{
+  display:flex;align-items:center;gap:7px;border:1px solid var(--line);
+  padding:9px 12px;min-height:40px;border-radius:5px;cursor:pointer;
+  font-family:'IBM Plex Sans',sans-serif;font-size:12.5px;font-weight:500;
+  text-transform:none;letter-spacing:normal;color:var(--text);margin-bottom:0;
+}
+.pcheck:has(input:checked),
+.field .pcheck:has(input:checked){border-color:var(--accent);background:var(--accent-soft);}
 .pcheck:hover{border-color:var(--accent-dim);}
 .pcheck input{width:auto;accent-color:var(--accent);}
 .upload-toggle{display:flex;align-items:center;gap:9px;border:1px solid var(--line);padding:11px 13px;min-height:44px;margin:15px 0;cursor:pointer;border-radius:6px;}
@@ -541,6 +554,10 @@ body{
     </div>
     <!-- Sessiz alt serit: isleyisle ilgisi olmayan baglantilar -->
     <div class="head-meta">
+      <!-- Surum damgasi: "yeni surumu mu goruyorum?" sorusunu tarayici
+           onbellegiyle ugrasmadan cevaplamak icin. Yayinda her seferinde
+           guncelleniyor. -->
+      <span class="build-id" id="buildId" title="build"></span>
       <a class="privacy-link" href="privacy.html" data-i18n="btn_privacy">Privacy</a>
       <a class="visit-badge" href="https://hits.sh/gerceginizleritv.github.io/content-calendar-demo/" target="_blank" rel="noopener">
         <img src="https://hits.sh/gerceginizleritv.github.io/content-calendar-demo.svg?style=flat-square&label=visits&color=2563C7&labelColor=EDF1F6" alt="visit counter">
@@ -916,11 +933,20 @@ const LANG = {
     btn_theme_light: "Light",
     fb_title: "Two questions, 20 seconds",
     fb_intro: "This is built by one creator, for creators. What you answer here decides what gets built next.",
-    fb_q1: "What do you use for this today?",
+    fb_q1: "What do you use for this today? Pick all that apply.",
+    fb_pick_one: "Pick at least one — even if it is \u201cnothing\u201d.",
     fb_u_nothing: "Nothing — I wing it",
-    fb_u_notion: "Notion or a spreadsheet",
-    fb_u_later: "Later / Buffer / Hootsuite",
-    fb_u_metricool: "Metricool / Publer / Pallyy",
+    fb_u_notion: "Notion",
+    fb_u_sheets: "Google Sheets / Excel",
+    fb_u_trello: "Trello / Asana",
+    fb_u_later: "Later",
+    fb_u_buffer: "Buffer",
+    fb_u_hootsuite: "Hootsuite",
+    fb_u_metricool: "Metricool",
+    fb_u_publer: "Publer",
+    fb_u_pallyy: "Pallyy",
+    fb_u_planoly: "Planoly",
+    fb_u_canva: "Canva Planner",
     fb_u_other: "Something else",
     fb_q2: "What is the single most annoying part of your posting week?",
     fb_q2_ph: "One line is plenty.",
@@ -1058,11 +1084,20 @@ const LANG = {
     btn_theme_light: "Açık",
     fb_title: "İki soru, 20 saniye",
     fb_intro: "Bunu bir içerik üreticisi, içerik üreticileri için yapıyor. Buraya yazdığın şey sıradaki özelliği belirliyor.",
-    fb_q1: "Bugün bu iş için ne kullanıyorsun?",
+    fb_q1: "Bugün bu iş için ne kullanıyorsun? Birden fazla seçebilirsin.",
+    fb_pick_one: "En az bir tane seç — \u201chiçbir şey\u201d bile olsa.",
     fb_u_nothing: "Hiçbir şey — kafadan idare ediyorum",
-    fb_u_notion: "Notion ya da bir tablo",
-    fb_u_later: "Later / Buffer / Hootsuite",
-    fb_u_metricool: "Metricool / Publer / Pallyy",
+    fb_u_notion: "Notion",
+    fb_u_sheets: "Google Sheets / Excel",
+    fb_u_trello: "Trello / Asana",
+    fb_u_later: "Later",
+    fb_u_buffer: "Buffer",
+    fb_u_hootsuite: "Hootsuite",
+    fb_u_metricool: "Metricool",
+    fb_u_publer: "Publer",
+    fb_u_pallyy: "Pallyy",
+    fb_u_planoly: "Planoly",
+    fb_u_canva: "Canva Planner",
     fb_u_other: "Başka bir şey",
     fb_q2: "Paylaşım haftanda seni en çok yoran tek şey ne?",
     fb_q2_ph: "Tek cümle yeter.",
@@ -2275,6 +2310,11 @@ document.getElementById('pendingOverlay').addEventListener('click', (e)=>{ if(e.
 // show usage against a conservative 5MB reference point so the bar is a
 // useful early warning rather than a precise measurement.
 
+// Yayina alinan surumun damgasi. Onbellekten eski bir kopya geldiginde bu
+// tarih eski kalir, boylece "guncel mi?" sorusu bakarak cevaplanir.
+const BUILD_STAMP = '2026-08-31 14:26 UTC';
+document.getElementById('buildId').textContent = BUILD_STAMP;
+
 // ===== Init =====
 try{
   const savedLang = localStorage.getItem(LANG_KEY);
@@ -2301,16 +2341,36 @@ renderCal();
 const FEEDBACK_ENDPOINT = 'https://api.web3forms.com/submit';
 const FEEDBACK_KEY = '64552f4d-d476-4ec9-9983-8960b94b564c';
 
-const FB_USES = ['nothing','notion','later','metricool','other'];
-const FB_USE_KEY = { nothing:'fb_u_nothing', notion:'fb_u_notion', later:'fb_u_later', metricool:'fb_u_metricool', other:'fb_u_other' };
+// Urunler tek tek soruluyor: "Later / Buffer / Hootsuite" birlesik secenegi
+// hangisinin kullanildigini gizliyordu. Coklu secim, en az bir tane zorunlu.
+const FB_USES = ['nothing','notion','sheets','trello','later','buffer','hootsuite',
+                 'metricool','publer','pallyy','planoly','canva','other'];
+const FB_USE_KEY = FB_USES.reduce((o,k)=>{ o[k] = 'fb_u_' + k; return o; }, {});
+// "Hicbir sey" digerleriyle bir arada anlamsiz: biri secilince oteki temizlenir.
+const FB_USE_NONE = 'nothing';
 
+function fbSecilenler(){
+  return Array.from(document.querySelectorAll('#fbUses input:checked')).map(el=>el.value);
+}
 function renderFbUses(){
   const box = document.getElementById('fbUses');
   if(!box) return;
-  const cur = (box.querySelector('input:checked') || {}).value || '';
+  const secili = new Set(fbSecilenler());
   box.innerHTML = FB_USES.map(k =>
-    `<label class="pcheck"><input type="radio" name="fbUses" value="${k}"${cur===k?' checked':''}> ${escapeHtml(t(FB_USE_KEY[k]))}</label>`
+    `<label class="pcheck"><input type="checkbox" name="fbUses" value="${k}"${secili.has(k)?' checked':''}> ${escapeHtml(t(FB_USE_KEY[k]))}</label>`
   ).join('');
+  box.querySelectorAll('input').forEach(el=>{
+    el.addEventListener('change', ()=>{
+      if(el.value === FB_USE_NONE && el.checked){
+        box.querySelectorAll('input').forEach(o=>{ if(o!==el) o.checked = false; });
+      }else if(el.checked){
+        const hic = box.querySelector(`input[value="${FB_USE_NONE}"]`);
+        if(hic) hic.checked = false;
+      }
+      const st = document.getElementById('fbStatus');
+      if(st && st.classList.contains('error')){ st.textContent = ''; st.className = 'ai-status'; }
+    });
+  });
 }
 
 function openFeedback(source){
@@ -2611,19 +2671,27 @@ document.getElementById('fbOverlay').addEventListener('click', (e)=>{
 });
 
 document.getElementById('fbSendBtn').addEventListener('click', async ()=>{
-  const uses = (document.querySelector('#fbUses input:checked') || {}).value || '';
+  const uses = fbSecilenler();
   const pain = document.getElementById('fbPain').value.trim();
   const email = document.getElementById('fbEmail').value.trim();
   const statusEl = document.getElementById('fbStatus');
   const btn = document.getElementById('fbSendBtn');
 
-  if(uses) track('feedback/uses-' + uses);
+  // En az bir secim zorunlu: bos gonderim hangi araci kullandigini soylemiyor
+  // ve bu formun tek isi tam olarak bunu ogrenmek.
+  if(uses.length === 0){
+    statusEl.textContent = t('fb_pick_one'); statusEl.className = 'ai-status error';
+    const ilk = document.querySelector('#fbUses input');
+    if(ilk) ilk.focus();
+    return;
+  }
+  uses.forEach(k=> track('feedback/uses-' + k));
   if(pain) track('feedback/wrote-pain');
   if(email) track('feedback/left-email');
   track('feedback/sent');
   try{ localStorage.setItem('demo_fb_done','1'); }catch(e){}
 
-  if(FEEDBACK_ENDPOINT && FEEDBACK_KEY && (pain || email)){
+  if(FEEDBACK_ENDPOINT && FEEDBACK_KEY){
     btn.disabled = true;
     statusEl.textContent = t('fb_sending'); statusEl.className = 'ai-status';
     // Field names are written out in plain English because Web3Forms turns the
@@ -2631,9 +2699,9 @@ document.getElementById('fbSendBtn').addEventListener('click', async ()=>{
     // labels that get read in the inbox.
     const payload = {
       access_key: FEEDBACK_KEY,
-      subject: 'Slate feedback — ' + (uses || 'no answer'),
+      subject: 'Slate feedback — ' + uses.join(', '),
       from_name: 'Slate demo',
-      'Uses today': uses ? (LANG.en[FB_USE_KEY[uses]] || uses) : '(no answer)',
+      'Uses today': uses.map(k=> LANG.en[FB_USE_KEY[k]] || k).join(', '),
       'Biggest pain': pain || '(blank)',
       'Wants early access': email || '(not given)',
       'Page language': currentLang,
