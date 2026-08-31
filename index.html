@@ -211,14 +211,14 @@ body{
 .proj-table-wrap{overflow-x:auto;border:1px solid var(--line);border-radius:11px;background:var(--surface);}
 .proj-table{border-collapse:collapse;width:max-content;min-width:100%;font-size:13px;}
 .proj-table th,.proj-table td{border-bottom:1px solid var(--line-soft);
-  border-right:1px solid var(--line-soft);padding:10px 12px;vertical-align:top;text-align:left;}
+  border-right:1px solid var(--line-soft);padding:9px 9px;vertical-align:top;text-align:left;}
 .proj-table tr:last-child th,.proj-table tr:last-child td{border-bottom:0;}
 .proj-table th:last-child,.proj-table td:last-child{border-right:0;}
 .proj-table thead th{position:sticky;top:0;z-index:2;background:var(--surface-2);
   font-size:10px;text-transform:uppercase;letter-spacing:.08em;color:var(--text-dim);
   font-weight:600;white-space:nowrap;}
 .pname-col{position:sticky;left:0;z-index:3;background:var(--surface-2);
-  width:230px;min-width:230px;border-right:1px solid var(--line);}
+  width:206px;min-width:206px;border-right:1px solid var(--line);}
 .proj-table thead th.pname-col{z-index:4;}
 .pname{font:inherit;font-size:14.5px;font-weight:700;color:var(--text);background:none;
   border:0;padding:0;cursor:pointer;text-align:left;}
@@ -229,15 +229,24 @@ body{
 .pmap{font-size:11.5px;color:var(--accent);text-decoration:none;}
 .pmap:hover{text-decoration:underline;}
 .pmap-missing{font-size:11px;color:var(--amber);}
-.pname-meta{font-size:11px;color:var(--text-dim);margin-top:5px;font-variant-numeric:tabular-nums;}
-.pshoot-col{width:132px;min-width:132px;}
-.pshoot-col input,.pdl{padding:6px 7px;border:1px solid var(--line);border-radius:6px;
-  background:var(--bg);color:var(--text);font:inherit;font-size:12px;color-scheme:light;width:100%;}
-:root:not([data-theme="light"]) .pshoot-col input,
+/* Baslangic tarihi ad ile sayac arasinda: kucuk etiketi ustunde, kutunun
+   ne oldugu yaziyor. */
+.pstart{display:block;margin-top:7px;}
+.pstart-lbl{display:block;font-size:9.5px;text-transform:uppercase;letter-spacing:.07em;
+  color:var(--text-dim);margin-bottom:2px;}
+.pstart input{width:100%;padding:4px 5px;border:1px solid var(--line);border-radius:6px;
+  background:var(--bg);color:var(--text);font:inherit;font-size:11px;color-scheme:light;}
+:root:not([data-theme="light"]) .pstart input{color-scheme:dark;}
+.pname-meta{font-size:11px;color:var(--text-dim);margin-top:6px;font-variant-numeric:tabular-nums;}
+/* Tarih kutulari daraltildi: yedi adim + proje sutunu bilgisayarda tek
+   ekrana sigsin, tablo yana kaydirilmadan okunabilsin. */
+.pdl{padding:4px 4px;border:1px solid var(--line);border-radius:6px;
+  background:var(--bg);color:var(--text);font:inherit;font-size:11px;
+  color-scheme:light;width:100%;min-width:0;}
 :root:not([data-theme="light"]) .pdl,
 :root:not([data-theme="light"]) .proj-new select,
 :root:not([data-theme="light"]) .proj-addr input{color-scheme:dark;}
-.pcell{width:120px;min-width:120px;}
+.pcell{width:108px;min-width:108px;}
 .pcell.done{background:var(--accent-soft);}
 /* Tarihi gecmis ve bitmemis adim: hem hucre hem tarih kutusu kirmizi. */
 .pcell.late{background:rgba(196,69,60,0.12);}
@@ -245,7 +254,6 @@ body{
 .pflag{border:1px solid var(--line);background:var(--bg);border-radius:7px;padding:5px 9px;
   cursor:pointer;margin-bottom:5px;display:inline-flex;}
 .pflag.on{background:var(--accent);border-color:var(--accent);color:var(--on-accent);}
-.pdel-col{width:74px;min-width:74px;}
 .proj-addr{margin-bottom:14px;}
 .proj-addr input{width:100%;padding:11px 12px;border:1px solid var(--line);border-radius:8px;
   background:var(--surface);color:var(--text);font:inherit;font-size:14px;}
@@ -263,7 +271,11 @@ body{
 .tab.active{color:var(--accent);border-bottom-color:var(--accent);}
 
 /* --- Proje sayfasi --- */
-.proj-new{display:grid;grid-template-columns:2fr 2fr auto auto;gap:8px;margin-bottom:14px;}
+.proj-new{display:grid;grid-template-columns:2fr 2fr auto auto;gap:8px;margin-bottom:14px;
+  align-items:end;}
+.pnew-date input{width:100%;padding:11px 12px;border:1px solid var(--line);border-radius:8px;
+  background:var(--surface);color:var(--text);font:inherit;font-size:14px;color-scheme:light;}
+:root:not([data-theme="light"]) .pnew-date input{color-scheme:dark;}
 .proj-new input{min-width:0;padding:11px 12px;border:1px solid var(--line);border-radius:8px;
   background:var(--surface);color:var(--text);font:inherit;font-size:14px;color-scheme:light;}
 :root:not([data-theme="light"]) .proj-new input,
@@ -778,7 +790,10 @@ body{
     <div class="proj-new">
       <input type="text" id="p_name" maxlength="120" data-i18n-placeholder="p_name_ph" placeholder="Project name — e.g. Autumn Studio Shoot">
       <select id="p_type"></select>
-      <input type="date" id="p_shoot" data-i18n-title="p_shoot_title" title="Shoot date">
+      <label class="pnew-date">
+        <span class="pstart-lbl" data-i18n="p_shoot_title">Project start date</span>
+        <input type="date" id="p_shoot">
+      </label>
       <button type="button" class="btn btn-primary" id="p_add" data-i18n="p_add">+ Create project</button>
     </div>
     <!-- Adres yalnizca saha isinde soruluyor; studyo isinde bos bir alan
@@ -874,6 +889,7 @@ body{
     <div class="field"><label data-i18n="pe_keywords">Keywords</label>
       <input type="text" id="pe_keywords" maxlength="200"></div>
     <div class="modal-actions">
+      <button class="btn btn-danger" id="pe_delete" data-i18n="p_delete">Delete</button>
       <button class="btn" id="pe_cancel" data-i18n="btn_cancel">Cancel</button>
       <button class="btn btn-primary" id="pe_save" data-i18n="btn_save">Save</button>
     </div>
@@ -1320,7 +1336,7 @@ const LANG = {
     p_addr_missing: "no address yet",
     p_map: "Map",
     p_col_project: "Project",
-    p_col_shoot: "Shoot",
+    p_col_shoot: "Start",
     p_deadline_title: "Deadline for this step",
     p_overdue: (n)=> n===1 ? '1 step is past its deadline:' : `${n} steps are past their deadline:`,
     pe_title: "Edit project",
@@ -1335,8 +1351,9 @@ const LANG = {
     ptype_review: "Product review",
     ptype_desk: "Desk / graphics",
     ptype_other: "Other",
-    p_shoot_title: "Shoot date",
-    p_shoot_label: "Shoot",
+    p_shoot_title: "Project start date",
+    p_start_label: "Start",
+    p_shoot_label: "Start",
     p_add: "+ Create project",
     p_search_ph: "Search projects — name, type or address",
     p_delete: "Delete",
@@ -1353,7 +1370,8 @@ const LANG = {
     step_filmed: "Filmed",
     step_audio: "Audio",
     step_edited: "Edited",
-    step_approved: "Approved",
+    step_approved: "Approved",
+    step_package: "Package",
     step_published: "Published",
     concept_none: "No project",
     btn_clear_filter: "Clear",
@@ -1553,7 +1571,7 @@ const LANG = {
     p_addr_missing: "adres girilmemiş",
     p_map: "Harita",
     p_col_project: "Proje",
-    p_col_shoot: "Çekim",
+    p_col_shoot: "Başlangıç",
     p_deadline_title: "Bu adımın teslim tarihi",
     p_overdue: (n)=> `${n} adımın teslim tarihi geçti:`,
     pe_title: "Projeyi düzenle",
@@ -1568,8 +1586,9 @@ const LANG = {
     ptype_review: "Ürün inceleme",
     ptype_desk: "Masabaşı / grafik",
     ptype_other: "Diğer",
-    p_shoot_title: "Çekim tarihi",
-    p_shoot_label: "Çekim",
+    p_shoot_title: "Proje başlangıç tarihi",
+    p_start_label: "Başlangıç",
+    p_shoot_label: "Başlangıç",
     p_add: "+ Proje oluştur",
     p_search_ph: "Proje ara — ad, tür ya da adres",
     p_delete: "Sil",
@@ -1586,7 +1605,8 @@ const LANG = {
     step_filmed: "Çekim",
     step_audio: "Ses",
     step_edited: "Kurgu",
-    step_approved: "Onay",
+    step_approved: "Onay",
+    step_package: "Yayın Paketi",
     step_published: "Yayın",
     concept_none: "Projesiz",
     btn_clear_filter: "Temizle",
@@ -1997,7 +2017,9 @@ function calWindowEnd(){
 const PROJ_KEY = 'demo_projects';
 const MAX_PROJECTS = 100;
 // Uretim adimlari. Sirasi bilerek boyle: is soldan saga ilerliyor.
-const PROJ_STEPS = ['script','filmed','audio','edited','approved','published'];
+// Sira isin akisi. Yayin paketi (caption, kapak, etiketler) onaydan sonra,
+// yayindan once: paketi hazir olmayan icerik yayina hazir degildir.
+const PROJ_STEPS = ['script','filmed','audio','edited','approved','package','published'];
 
 let projects = [];
 
@@ -2029,6 +2051,7 @@ function sanitizeProject(raw){
     p[k] = raw[k] === true;
     p.deadlines[k] = /^\d{4}-\d{2}-\d{2}$/.test(dl[k]) ? dl[k] : '';
   });
+
   // Adsiz proje bir sey ifade etmiyor; listede bos satir olarak durur.
   return p.name ? p : null;
 }
@@ -2115,8 +2138,13 @@ function bugunKey(){
 
 // Gecmis teslim tarihi: adim bitmemis ve tarih dune ya da oncesine ait.
 // Bugun gecmis sayilmiyor; gunun sonuna kadar zamani var.
+function adimTarihi(p, k){ return (p.deadlines || {})[k] || ''; }
+function adimTarihiYaz(p, k, deger){
+  p.deadlines = p.deadlines || {};
+  p.deadlines[k] = deger || '';
+}
 function adimGecikti(p, k){
-  const d = (p.deadlines || {})[k];
+  const d = adimTarihi(p, k);
   return !!d && !p[k] && d < bugunKey();
 }
 function gecikenAdimlar(){
@@ -2167,12 +2195,12 @@ function renderProjects(){
     const adres = p.address || '';
     const hucreler = PROJ_STEPS.map(k=>{
       const gecti = adimGecikti(p,k);
-      const dl = (p.deadlines||{})[k] || '';
+      const tarih = adimTarihi(p,k);
       return `<td class="pcell ${p[k]?'done':''} ${gecti?'late':''}">
         <button type="button" class="pflag ${p[k]?'on':''}" data-proj="${escapeHtml(p.id)}" data-step="${k}"
                 title="${escapeHtml(t('step_'+k))}"><span class="pbox">${p[k]?'✓':''}</span></button>
         <input type="date" class="pdl" data-proj-dl="${escapeHtml(p.id)}" data-step="${k}"
-               value="${escapeHtml(dl)}" title="${escapeHtml(t('p_deadline_title'))}">
+               value="${escapeHtml(tarih)}" title="${escapeHtml(t('p_deadline_title'))}">
       </td>`;
     }).join('');
     return `<tr>
@@ -2184,22 +2212,20 @@ function renderProjects(){
                         title="${escapeHtml(adres)}">📍 ${escapeHtml(t('p_map'))}</a>` : ''}
           ${adresGerekir(p.type) && !adres ? `<span class="pmap-missing">${escapeHtml(t('p_addr_missing'))}</span>` : ''}
         </div>
+        <label class="pstart">
+          <span class="pstart-lbl">${escapeHtml(t('p_start_label'))}</span>
+          <input type="date" data-proj-date="${escapeHtml(p.id)}" value="${escapeHtml(p.shootDate||'')}">
+        </label>
         <div class="pname-meta">${escapeHtml(t('p_entries')(kayitlar.length, yayinlanan))}</div>
       </th>
-      <td class="pshoot-col">
-        <input type="date" data-proj-date="${escapeHtml(p.id)}" value="${escapeHtml(p.shootDate||'')}">
-      </td>
       ${hucreler}
-      <td class="pdel-col"><button type="button" class="btn btn-sm" data-proj-del="${escapeHtml(p.id)}">${escapeHtml(t('p_delete'))}</button></td>
     </tr>`;
   }).join('');
 
   kap.innerHTML = `<div class="proj-table-wrap"><table class="proj-table">
     <thead><tr>
       <th class="pname-col">${escapeHtml(t('p_col_project'))}</th>
-      <th class="pshoot-col">${escapeHtml(t('p_col_shoot'))}</th>
       ${basliklar}
-      <th class="pdel-col"></th>
     </tr></thead>
     <tbody>${satirlar}</tbody>
   </table></div>`;
@@ -2216,8 +2242,7 @@ function renderProjects(){
     el.addEventListener('change', ()=>{
       const p = projectById(el.dataset.projDl);
       if(!p) return;
-      p.deadlines = p.deadlines || {};
-      p.deadlines[el.dataset.step] = el.value || '';
+      adimTarihiYaz(p, el.dataset.step, el.value);
       saveProjects(); renderProjects();
     });
   });
@@ -2232,22 +2257,7 @@ function renderProjects(){
   kap.querySelectorAll('[data-proj-edit]').forEach(el=>{
     el.addEventListener('click', ()=> openProjectEdit(el.dataset.projEdit));
   });
-  kap.querySelectorAll('[data-proj-del]').forEach(el=>{
-    el.addEventListener('click', ()=>{
-      const p = projectById(el.dataset.projDel);
-      if(!p) return;
-      const bagli = projeIcinKayitlar(p.id).length;
-      // Projeyi silmek kayitlari silmiyor; kayitlar projesiz kaliyor. Bir
-      // projeyi kapatirken haftalarca girilmis yayin planinin da gitmesi
-      // geri alinamayacak bir surpriz olurdu.
-      if(!confirm(bagli ? t('p_del_confirm_linked')(p.name, bagli) : t('p_del_confirm')(p.name))) return;
-      projeIcinKayitlar(p.id).forEach(e=>{
-        delete e.content.projectId; delete e.content.concept; markDirty(e.id);
-      });
-      projects = projects.filter(x=>x.id !== p.id);
-      saveProjects(); save(); renderProjects(); renderCal();
-    });
-  });
+
 }
 
 // --- Proje duzenleme penceresi ---------------------------------------
@@ -2274,6 +2284,20 @@ function openProjectEdit(id){
   adresAlaniniTazele(tur, document.getElementById('pe_addressWrap'));
   document.getElementById('projectEditOverlay').classList.add('open');
 }
+function projeSil(p){
+  if(!p) return;
+  const bagli = projeIcinKayitlar(p.id).length;
+  // Projeyi silmek kayitlari silmiyor; kayitlar projesiz kaliyor. Bir
+  // projeyi kapatirken haftalarca girilmis yayin planinin da gitmesi
+  // geri alinamayacak bir surpriz olurdu.
+  if(!confirm(bagli ? t('p_del_confirm_linked')(p.name, bagli) : t('p_del_confirm')(p.name))) return;
+  projeIcinKayitlar(p.id).forEach(e=>{
+    delete e.content.projectId; delete e.content.concept; markDirty(e.id);
+  });
+  projects = projects.filter(x=>x.id !== p.id);
+  saveProjects(); save(); renderProjects(); renderCal();
+}
+
 function closeProjectEdit(){
   document.getElementById('projectEditOverlay').classList.remove('open');
   duzenlenenProje = null;
@@ -2403,6 +2427,11 @@ document.getElementById('p_type').addEventListener('change', ()=>
 document.getElementById('pe_type').addEventListener('change', ()=>
   adresAlaniniTazele(document.getElementById('pe_type'), document.getElementById('pe_addressWrap')));
 document.getElementById('pe_cancel').addEventListener('click', closeProjectEdit);
+document.getElementById('pe_delete').addEventListener('click', ()=>{
+  const p = duzenlenenProje;
+  closeProjectEdit();
+  projeSil(p);
+});
 document.getElementById('projectEditOverlay').addEventListener('click', e=>{ if(e.target.id==='projectEditOverlay') closeProjectEdit(); });
 document.getElementById('pe_save').addEventListener('click', ()=>{
   const p = duzenlenenProje;
@@ -3645,7 +3674,7 @@ document.getElementById('pendingOverlay').addEventListener('click', (e)=>{ if(e.
 
 // Yayina alinan surumun damgasi. Onbellekten eski bir kopya geldiginde bu
 // tarih eski kalir, boylece "guncel mi?" sorusu bakarak cevaplanir.
-const BUILD_STAMP = '2026-08-31 20:10 UTC';
+const BUILD_STAMP = '2026-08-31 20:22 UTC';
 document.getElementById('buildId').textContent = BUILD_STAMP;
 
 // ===== Init =====
