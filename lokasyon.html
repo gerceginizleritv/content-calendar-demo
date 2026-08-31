@@ -698,6 +698,8 @@ select{
 
 .cal-grid{display:grid;grid-template-columns:repeat(7,1fr);border:1px solid var(--line);background:var(--line);gap:1px;}
 .cal-dow{background:var(--ink-2);padding:9px 10px;font-family:'JetBrains Mono',monospace;font-size:10px;letter-spacing:1.5px;color:var(--gold-dim);text-transform:uppercase;text-align:center;}
+.cal-tz-tag{display:inline-block;margin-left:5px;font-size:9px;padding:0 4px;border-radius:99px;
+  background:rgba(200,162,74,0.16);color:var(--gold);vertical-align:middle;}
 .cal-day{background:var(--ink);aspect-ratio:1/1;padding:8px 7px;position:relative;overflow:hidden;}
 /* Hafta modunda tek satir var; kare oranini birakip icerige gore uzuyor. */
 .cal-week-mode .cal-day{aspect-ratio:auto;min-height:150px;}
@@ -1102,6 +1104,12 @@ select{
     <div class="cal-edit-row">
       <div class="cal-edit-field"><label>Tarih</label><input type="date" id="cal_date"></div>
       <div class="cal-edit-field"><label>Saat</label><input type="time" id="cal_time"></div>
+    </div>
+    <div class="cal-edit-row">
+      <div class="cal-edit-field">
+        <label>Saat Dilimi <span style="text-transform:none;letter-spacing:0;opacity:.7">— yurt dışına yayın yapıyorsan değiştir</span></label>
+        <select id="cal_tz"></select>
+      </div>
     </div>
 
     <div class="cal-upload-toggle" id="calUploadToggle">
@@ -1778,6 +1786,34 @@ function sanitizeLocation(raw){
   return out;
 }
 
+function yerelTz(){
+  try{ return Intl.DateTimeFormat().resolvedOptions().timeZone || ''; }catch(e){ return ''; }
+}
+function gecerliTz(z){
+  if(typeof z !== 'string' || !z) return false;
+  try{ new Intl.DateTimeFormat('en-US', { timeZone: z }); return true; }
+  catch(e){ return false; }
+}
+// Kayitta dilim yoksa yerel dilim varsayiliyor: eski kayitlarin hepsi
+// boyle ve onlar zaten yerel saatle girilmisti.
+function evTz(ev){
+  const z = ev && ev.content && ev.content.timezone;
+  return gecerliTz(z) ? z : yerelTz();
+}
+function tzKisa(z){
+  if(!z) return '';
+  const p = String(z).split('/');
+  return (p[p.length-1] || z).replace(/_/g,' ');
+}
+// Takvimde dilim etiketi yalnizca birden fazla dilim kullaniliyorsa
+// gorunuyor. Tek pazarda calisana her kayitta "Istanbul" yazmak
+// gurultuden baska bir sey degil.
+function cokDilimliMi(){
+  const k = new Set();
+  calendarEvents.forEach(e=>k.add(evTz(e)));
+  return k.size > 1;
+}
+
 function sanitizeCalEvent(raw){
   if(!raw || typeof raw !== 'object') return null;
   const c = (raw.content && typeof raw.content === 'object') ? raw.content : {};
@@ -1800,6 +1836,7 @@ function sanitizeCalEvent(raw){
       shortTitle:   safeStr(c.shortTitle, 500),
       thumbPrompt:  safeStr(c.thumbPrompt, 20000),
       pinnedComment: safeStr(c.pinnedComment, 5000),
+      timezone:     gecerliTz(c.timezone) ? c.timezone.slice(0,64) : '',
       slidePrompts: Array.isArray(c.slidePrompts) ? c.slidePrompts.slice(0,9).map(x=>safeStr(x,20000)) : []
     }
   };
@@ -2128,6 +2165,7 @@ function renderCalGrid(){
       used.add(i2);
     });
 
+    const cokDilim = cokDilimliMi();
     const shownRows = isExpanded ? rows : rows.slice(0,3);
     let hiddenCount = 0;
     if(!isExpanded) rows.slice(3).forEach(r=>hiddenCount+=r.length);
@@ -2141,10 +2179,10 @@ function renderCalGrid(){
         chip.className = 'cal-chip ' + status;
         const icon = status==='live' ? '●' : (status==='ready' ? '✓' : '🕒');
         const evType = getEventType(ev), evPlatform = getEventPlatform(ev);
-        chip.title = calDisplayName(ev);
+        chip.title = calDisplayName(ev) + (cokDilim ? ' · ' + evTz(ev) : '');
         chip.innerHTML = `<span class="cal-badge" style="background:${CAL_SM_COLORS[evPlatform]};" title="${CAL_SM_NAMES[evPlatform]}">${CAL_TYPE_LABELS[evType]}</span>
           <span class="cal-chip-mid"><span class="cal-chip-time">${escapeHtml(ev.time||'')}</span><span class="cal-chip-title">${escapeHtml(ev.title||'')}</span></span>
-          <span class="cal-status-icon">${icon}</span>`;
+          <span class="cal-status-icon">${icon}</span>${cokDilim ? `<span class="cal-tz-tag">${escapeHtml(tzKisa(evTz(ev)))}</span>` : ''}`;
         chip.addEventListener('click', ()=> openCalDetail(ev));
         rowDiv.appendChild(chip);
       });
@@ -2190,6 +2228,7 @@ function renderCalTable(){
   const today = new Date(); today.setHours(0,0,0,0);
   const totalDays = 14;
   const platformOrder = ['youtube','instagram','tiktok','facebook'];
+  const cokDilimTablo = cokDilimliMi();
 
   for(let i=0;i<totalDays;i++){
     const d = new Date(start);
@@ -2220,8 +2259,8 @@ function renderCalTable(){
           const evType = getEventType(ev);
           const chip = document.createElement('div');
           chip.className = 'cal-cell-chip ' + status;
-          chip.title = calDisplayName(ev);
-          chip.innerHTML = `<span class="cctime">${escapeHtml(ev.time||'')}<span>${icon}</span></span><span class="cal-cell-type-badge" style="background:${CAL_SM_COLORS[p]};">${CAL_TYPE_LABELS[evType]}</span><span class="cctitle">${escapeHtml(ev.title||'')}</span>`;
+          chip.title = calDisplayName(ev) + (cokDilimTablo ? ' · ' + evTz(ev) : '');
+          chip.innerHTML = `<span class="cctime">${escapeHtml(ev.time||'')}<span>${icon}</span></span><span class="cal-cell-type-badge" style="background:${CAL_SM_COLORS[p]};">${CAL_TYPE_LABELS[evType]}</span><span class="cctitle">${escapeHtml(ev.title||'')}</span>${cokDilimTablo ? `<span class="cal-tz-tag">${escapeHtml(tzKisa(evTz(ev)))}</span>` : ''}`;
           chip.addEventListener('click', ()=> openCalDetail(ev));
           td.appendChild(chip);
         });
@@ -2262,6 +2301,27 @@ function currentPreviewPlatform(){
 
 // varsayilanTarih: takvimde bir gune tiklanarak acildiginda o gun
 // dolu gelsin diye. Bos birakilirsa bugun kullanilir.
+// Dilim listesi bir kez doldurulup birakiliyor: 400'den fazla secenek var,
+// her modal acilisinda yeniden uretmek gereksiz.
+let tzDolduruldu = false;
+function tzSecenekleriniDoldur(){
+  if(tzDolduruldu) return;
+  const sel = document.getElementById('cal_tz');
+  if(!sel) return;
+  let liste = [];
+  try{ liste = Intl.supportedValuesOf('timeZone') || []; }catch(e){ liste = []; }
+  if(!liste.length){
+    // Eski tarayicilarda liste alinamiyor; en cok kullanilanlar elde.
+    liste = ['Europe/Istanbul','Europe/London','Europe/Berlin','Europe/Paris',
+             'America/New_York','America/Los_Angeles','Asia/Tokyo','Asia/Dubai',
+             'Asia/Singapore','Australia/Sydney','UTC'];
+  }
+  const yerel = yerelTz();
+  if(yerel && liste.indexOf(yerel) === -1) liste.unshift(yerel);
+  sel.innerHTML = liste.map(z=>'<option value="'+escapeHtml(z)+'">'+escapeHtml(z.replace(/_/g,' '))+'</option>').join('');
+  tzDolduruldu = true;
+}
+
 function openCalDetail(ev, varsayilanTarih){
   calCurrentEvent = ev || null;
   populateCalLocationSelect();
@@ -2276,6 +2336,10 @@ function openCalDetail(ev, varsayilanTarih){
   document.getElementById('calDeleteBtn').style.display = isNew ? 'none' : '';
   document.getElementById('calPlatformMultiWrap').style.display = isNew ? '' : 'none';
   document.getElementById('calPlatformSingleWrap').style.display = isNew ? 'none' : '';
+
+  tzSecenekleriniDoldur();
+  const tzSel = document.getElementById('cal_tz');
+  if(tzSel) tzSel.value = ev ? evTz(ev) : yerelTz();
 
   if(ev){
     document.getElementById('cal_locationId').value = ev.locationId;
@@ -2499,6 +2563,7 @@ function collectCalContentFromForm(type){
     shortTitle: document.getElementById('calEditShortTitle') ? document.getElementById('calEditShortTitle').value : '',
     videoTitle: document.getElementById('calEditVideoTitle') ? document.getElementById('calEditVideoTitle').value : '',
     pinnedComment: document.getElementById('calEditPinnedComment') ? document.getElementById('calEditPinnedComment').value : '',
+    timezone: (document.getElementById('cal_tz') || {}).value || '',
     slidePrompts: []
   };
   if(type === 'carousel'){
