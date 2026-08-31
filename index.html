@@ -205,6 +205,16 @@ body{
 .legend-reset.show{opacity:1;}
 .legend-reset:hover{color:var(--accent);}
 .hint{font-size:12.5px;color:var(--text-dim);margin:8px 0 20px;}
+/* Surukle-birak */
+.cal-chip,.ct-chip{touch-action:manipulation;}
+body.suruklenirken{user-select:none;}
+body.suruklenirken *{cursor:grabbing !important;}
+.surukle-hayalet{position:fixed;z-index:10000;pointer-events:none;
+  background:var(--accent);color:var(--on-accent);font:600 12px/1.3 inherit;
+  padding:6px 10px;border-radius:7px;max-width:240px;overflow:hidden;
+  text-overflow:ellipsis;white-space:nowrap;box-shadow:0 6px 18px rgba(0,0,0,.28);}
+.surukle-hedef{outline:2px solid var(--accent);outline-offset:-2px;
+  background:var(--accent-soft) !important;}
 /* --- Proje tablosu ---
    Sol sutun sabit: alti adim sagda uzuyor, hangi projede oldugunu
    gormeden gezmek zor. */
@@ -2588,6 +2598,172 @@ document.getElementById('p_name').addEventListener('keydown', e=>{ if(e.key === 
 document.getElementById('p_search').addEventListener('input', renderProjects);
 document.getElementById('f_projectSearch').addEventListener('input', ()=> projeSecimiTazele());
 
+// ===== Surukle-birak =====
+// Bir kaydi baska gune tasimak. Yalnizca TARIH degisiyor; saat, platform
+// ve "yayinlandi" isareti oldugu gibi kaliyor. Isaret de degisseydi bir
+// elin kaymasiyla gercekten paylasilmis bir kayit paylasilmamis
+// gorunurdu — geri alinamayacak bir yanlis.
+//
+// Fare ve dokunmatik ayni kodla: tarayicilarin standart surukle-birak
+// destegi telefonda calismiyor, o yuzden isaretci olaylariyla yazildi.
+// Telefonda basili tutmak gerekiyor (BASILI_TUTMA ms): parmagini
+// koyar koymaz surukleme baslasaydi sayfayi kaydirmak imkansiz olurdu.
+const BASILI_TUTMA = 260;
+const SURUKLE_ESIGI = 5;
+
+let surukle = null;   // { ev, hayalet, baslangicX, baslangicY, aktif, sayac }
+
+function surukleBaslat(ev, e, kaynak){
+  surukle = {
+    ev, kaynak,
+    x: e.clientX, y: e.clientY,
+    bx: e.clientX, by: e.clientY,
+    aktif: false, sayac: null, isaretci: e.pointerId
+  };
+  // Yakalama hemen: aksi halde fare rozetin ustunden ayrilinca hareket
+  // olaylari baska elemana gider ve surukleme hic baslamaz.
+  try{ kaynak.setPointerCapture(e.pointerId); }catch(err){}
+  const baslat = ()=>{
+    if(!surukle || surukle.aktif) return;
+    surukle.aktif = true;
+    document.body.classList.add('suruklenirken');
+    const h = document.createElement('div');
+    h.className = 'surukle-hayalet';
+    h.textContent = (ev.title || typeName(ev.type)) + ' · ' + (ev.time || '');
+    document.body.appendChild(h);
+    surukle.hayalet = h;
+    hayaletiTasi(surukle.x, surukle.y);
+  };
+  // Dokunmatikte basili tutunca, farede birkac piksel oynayinca basliyor.
+  if(e.pointerType === 'touch') surukle.sayac = setTimeout(baslat, BASILI_TUTMA);
+  else surukle.baslatFn = baslat;
+}
+
+function hayaletiTasi(x, y){
+  if(!surukle || !surukle.hayalet) return;
+  surukle.hayalet.style.left = (x + 12) + 'px';
+  surukle.hayalet.style.top  = (y + 12) + 'px';
+}
+
+function hedefGun(x, y){
+  const el = document.elementFromPoint(x, y);
+  if(!el) return null;
+  const hucre = el.closest('[data-gun]') || el.closest('.ct-cell');
+  if(!hucre) return null;
+  return hucre.dataset.gun || hucre.dataset.date || null;
+}
+
+function hedefiIsaretle(x, y){
+  document.querySelectorAll('.surukle-hedef').forEach(n=>n.classList.remove('surukle-hedef'));
+  const el = document.elementFromPoint(x, y);
+  if(!el) return;
+  const hucre = el.closest('[data-gun]') || el.closest('.ct-cell');
+  if(hucre) hucre.classList.add('surukle-hedef');
+}
+
+function surukleBitir(iptal){
+  if(!surukle) return;
+  clearTimeout(surukle.sayac);
+  const s = surukle;
+  surukle = null;
+  document.body.classList.remove('suruklenirken');
+  document.querySelectorAll('.surukle-hedef').forEach(n=>n.classList.remove('surukle-hedef'));
+  if(s.hayalet) s.hayalet.remove();
+  try{ s.kaynak.releasePointerCapture(s.isaretci); }catch(err){}
+  if(!s.aktif || iptal) return false;
+
+  const gun = hedefGun(s.x, s.y);
+  if(!gun || gun === s.ev.date) return false;
+  s.ev.date = gun;
+  markDirty(s.ev.id);
+  save();
+  renderCal();
+  trackOnce('funnel/entry-dragged');
+  return true;
+}
+
+// Rozetin uzerine surukleme baglaniyor. Tiklama davranisi bozulmuyor:
+// surukleme baslamadiysa tiklama eskisi gibi kaydi aciyor.
+//
+// Fare ve dokunmatik AYRI ele aliniyor. Isaretci olaylari dokunmatikte
+// yetmiyor: tarayici parmak hareketini sayfa kaydirma saniyor ve
+// surukleme yarida "pointercancel" ile iptal oluyor. Dokunma olaylarinda
+// ise hareket, surukleme basladiktan sonra preventDefault ile
+// durdurulabiliyor — kaydirma iptal oluyor, surukleme yasiyor.
+function suruklenebilirYap(el, ev){
+  // ---- Fare / kalem ----
+  el.addEventListener('pointerdown', e=>{
+    if(e.pointerType === 'touch') return;          // dokunmayi asagisi yonetiyor
+    if(e.button !== undefined && e.button !== 0) return;
+    surukleBaslat(ev, e, el);
+  });
+  el.addEventListener('pointermove', e=>{
+    if(e.pointerType === 'touch') return;
+    if(!surukle || surukle.ev !== ev) return;
+    surukle.x = e.clientX; surukle.y = e.clientY;
+    if(!surukle.aktif && surukle.baslatFn){
+      const d = Math.hypot(e.clientX - surukle.bx, e.clientY - surukle.by);
+      if(d > SURUKLE_ESIGI) surukle.baslatFn();
+    }
+    if(surukle.aktif){
+      e.preventDefault();
+      hayaletiTasi(e.clientX, e.clientY);
+      hedefiIsaretle(e.clientX, e.clientY);
+    }
+  });
+  el.addEventListener('pointerup', e=>{
+    if(e.pointerType === 'touch') return;
+    if(!surukle || surukle.ev !== ev) return;
+    surukle.x = e.clientX; surukle.y = e.clientY;
+    const tasindi = surukleBitir(false);
+    // Surukleme gerceklestiyse tiklama sayilmiyor; aksi halde kaydi
+    // birakir birakmaz duzenleme penceresi acilirdi.
+    if(tasindi) e.preventDefault(); else openModal(ev);
+  });
+  el.addEventListener('pointercancel', e=>{
+    if(e.pointerType === 'touch') return;
+    surukleBitir(true);
+  });
+
+  // ---- Dokunmatik ----
+  el.addEventListener('touchstart', e=>{
+    if(e.touches.length !== 1) return;
+    const p = e.touches[0];
+    surukleBaslat(ev, { clientX:p.clientX, clientY:p.clientY, pointerType:'touch', pointerId:0 }, el);
+  }, { passive:true });
+
+  // passive:false sart: surukleme basladiktan sonra preventDefault ile
+  // sayfanin kaymasi durduruluyor.
+  el.addEventListener('touchmove', e=>{
+    if(!surukle || surukle.ev !== ev) return;
+    const p = e.touches[0];
+    if(!p) return;
+    surukle.x = p.clientX; surukle.y = p.clientY;
+    if(!surukle.aktif){
+      // Henuz basili tutma dolmadi: parmak kayiyorsa kullanici sayfayi
+      // kaydirmak istiyordur, surukleme hic baslamasin.
+      const d = Math.hypot(p.clientX - surukle.bx, p.clientY - surukle.by);
+      if(d > SURUKLE_ESIGI * 2) surukleBitir(true);
+      return;
+    }
+    e.preventDefault();
+    hayaletiTasi(p.clientX, p.clientY);
+    hedefiIsaretle(p.clientX, p.clientY);
+  }, { passive:false });
+
+  el.addEventListener('touchend', e=>{
+    if(!surukle || surukle.ev !== ev) return;
+    const p = e.changedTouches && e.changedTouches[0];
+    if(p){ surukle.x = p.clientX; surukle.y = p.clientY; }
+    const aktifti = surukle.aktif;
+    const tasindi = surukleBitir(false);
+    // Surukleme yapildiysa dokunma bir tiklamaya donusmemeli.
+    if(aktifti) e.preventDefault();
+  }, { passive:false });
+
+  el.addEventListener('touchcancel', ()=> surukleBitir(true));
+}
+
 // ===== Klonlama =====
 // Ayni cekimden cikan farkli surumler: bir uzun video, bir Reels, bir Shorts.
 // Tarihler tek tek seciliyor. Otomatik dagitim ("birer gun arayla") gercek
@@ -2955,11 +3131,10 @@ function renderCalTable(){
   kap.innerHTML = '<table class="cal-table"><thead>' + bas + '</thead><tbody>' + govde + '</tbody></table>';
 
   kap.querySelectorAll('.ct-chip').forEach(b=>{
-    b.addEventListener('click', ev=>{
-      ev.stopPropagation();
-      const k = events.find(x=>x.id === b.dataset.id);
-      if(k) openModal(k);
-    });
+    const k = events.find(x=>x.id === b.dataset.id);
+    if(!k) return;
+    b.addEventListener('click', e=>{ e.stopPropagation(); if(!surukle) openModal(k); });
+    suruklenebilirYap(b, k);
   });
   // Bos hucreye tiklamak, izgaradaki bos gune tiklamakla ayni sey yapsin.
   kap.querySelectorAll('.ct-cell').forEach(td=>{
@@ -3054,6 +3229,7 @@ function renderCal(){
     // ayin 1'i ve penceredeki ilk gun ay adiyla birlikte cikiyor.
     const ayEtiketi = (d.getDate() === 1 || i === 0)
       ? `<span class="cal-day-month">${d.toLocaleDateString(locale,{month:'short'})}</span>` : '';
+    cell.dataset.gun = key;
     cell.innerHTML = `<div class="cal-day-num">${d.getDate()}${ayEtiketi}</div>`;
 
     let dayEvents = events.filter(e=>e.date===key && gecerliKayit(e))
@@ -3086,7 +3262,10 @@ function renderCal(){
             ? `<span class="cal-tz" title="${escapeHtml(ev.content.timezone)}">${escapeHtml(tzFark(ev.content.timezone) || ev.content.timezone.split('/').pop())}</span>` : ''}
         <span class="cal-chip-title">${escapeHtml(ev.title||'')}</span>
         <span class="cal-state${ev.uploaded?' on-air':''}">${escapeHtml(t(ev.uploaded ? 'state_posted' : 'state_not_posted'))}</span>`;
-      chip.addEventListener('click', ()=> openModal(ev));
+      suruklenebilirYap(chip, ev);
+      // Dokunmatikte kaydi acan sey tiklama; surukleme yapildiysa tarayici
+      // zaten tiklama uretmiyor (touchend'de engelleniyor).
+      chip.addEventListener('click', e=>{ if(!surukle) openModal(ev); });
       row.appendChild(chip);
       return row;
     }
@@ -3806,7 +3985,7 @@ document.getElementById('pendingOverlay').addEventListener('click', (e)=>{ if(e.
 
 // Yayina alinan surumun damgasi. Onbellekten eski bir kopya geldiginde bu
 // tarih eski kalir, boylece "guncel mi?" sorusu bakarak cevaplanir.
-const BUILD_STAMP = '2026-08-31 20:40 UTC';
+const BUILD_STAMP = '2026-08-31 20:50 UTC';
 document.getElementById('buildId').textContent = BUILD_STAMP;
 
 // ===== Init =====
