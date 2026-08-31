@@ -1517,7 +1517,7 @@ async function pushChanges(){
   const yazilacak = new Set(dirtyIds);
   try{
     if(silinecek.length){
-      const { error } = await sb.from('calendar_events').delete().in('id', silinecek);
+      const { error } = await sb.from('calendar_events').delete().in('id', silinecek).is('workspace_id', null);
       if(error) throw error;
       silinecek.forEach(id => removedIds.delete(id));
     }
@@ -1537,8 +1537,12 @@ async function pushChanges(){
   }
 }
 
+// Slate yalnizca KENDI satirlarini goruyor: workspace_id'si bos olanlar.
+// Ayni tabloda lokasyon uygulamasinin satirlari da duruyor; onlarin
+// workspace_id'si dolu. Filtre olmasaydi Slate onlari da cekip demoya
+// doldurur, uzerlerine yazar, hatta silebilirdi.
 async function pullRemote(){
-  const { data, error } = await sb.from('calendar_events').select('*');
+  const { data, error } = await sb.from('calendar_events').select('*').is('workspace_id', null);
   if(error) throw error;
   return sanitizeEvents((data || []).map(fromRow));
 }
@@ -2474,7 +2478,7 @@ document.getElementById('pendingOverlay').addEventListener('click', (e)=>{ if(e.
 
 // Yayina alinan surumun damgasi. Onbellekten eski bir kopya geldiginde bu
 // tarih eski kalir, boylece "guncel mi?" sorusu bakarak cevaplanir.
-const BUILD_STAMP = '2026-08-31 15:56 UTC';
+const BUILD_STAMP = '2026-08-31 16:51 UTC';
 document.getElementById('buildId').textContent = BUILD_STAMP;
 
 // ===== Init =====
