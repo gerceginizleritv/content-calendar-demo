@@ -303,6 +303,116 @@ Gemini anahtarıyla sıfır.
 3. `buildDraftPrompt`'u okunan script'le **besleme** — asıl kazanç burada.
 4. Yüklemeye şimdilik girilmeyecek.
 
+### Projeler ve script — boşluğun asıl yeri (1 Eylül 2026)
+
+**Kullanıcının koyduğu sorun:** Projeler havada kalıyor, özellikle script
+kısmı. Kullanıcı projeye fikrini düz metin yazabilmeli; oradan AI ile
+scriptini Slate İÇİNDE hazırlayabilmeli. Slate video/görsel post etmenin
+ötesinde bir araç olacaksa uçtan uca çalışmalı.
+
+**Kodda doğrulandı:** `PROJ_STEPS` (`index.html:2405`) şöyle:
+`['script','filmed','audio','edited','approved','package','published']`.
+Yani **birinci adımın adı zaten `script`** — ama sadece bir onay kutusu
+ve bir termin tarihi. Proje "script yazılmalıydı, geç kaldın" diyor,
+kırmızıya boyuyor, ama **scriptin kendisi hiçbir yerde durmuyor.**
+Havada kalma hissinin kaynağı tam olarak burası: sistem işi takip
+ediyor, işi barındırmıyor.
+
+`sanitizeProject` bugün `notes` (2000 karakter) ve `keywords` (200)
+tutuyor. Yani "fikir alanı" yarı yarıya VAR. Ama 2000 karakter ≈ 300
+kelime: bir fikre yeter, bir script'e yetmez (2000 kelimelik script
+≈ 12.000 karakter).
+
+#### Karar: iki ayrı alan, tek alan değil
+
+* `notes` — fikir, brief, aklına geleni yaz. Kısa kalır.
+* `script` — uzun metin, çalışma alanı. YENİ alan, ayrı sınır.
+
+`notes`'u şişirip ikisini tek alana yüklemek yanlış: biri girdi, öbürü
+çıktı; biri kısa kalmalı, öbürü büyüyecek.
+
+#### Kurulacak zincir
+
+fikir (`notes`) → AI script üretir → script Slate'te düzenlenir →
+`script` adımı KENDİLİĞİNDEN işaretlenir → aynı script caption/başlık
+üretiminin bağlamı olur (bkz. bir üstteki Drive/AI maddesi) →
+gerekirse Drive'a dışa aktarılır.
+
+Buradaki küçük ama önemli ayrıntı: script yazıldığında adımın kendi
+kendine işaretlenmesi. "Uçtan uca"yı gerçek hissettiren şey daha fazla
+form değil, bir adımın çıktısının bir sonrakinin girdisi olması.
+
+#### Drive'ın yönü DEĞİŞTİ
+
+Bir üstteki maddede "Drive'dan ÇEK, yükleme yapma" yazmıştı. Script
+Slate'te yazılıyorsa birincil akış tersine dönüyor:
+
+* **Dışa aktarma (Drive'a yaz)** artık anlamlı. `drive.file` kapsamı
+  uygulamanın KENDİ oluşturduğu dosyalara izin veriyor, yani düz metni
+  Google Doc'a çevirip yazmak ucuz.
+* **Ama tek kişilik kullanımda faydası az** — script zaten Slate'te ve
+  telefonda. Değeri, Slate'i OLMAYAN ikinci bir kişi (kurgucu,
+  seslendiren, kameraman) script'e ihtiyaç duyduğunda ortaya çıkıyor.
+  Dışa aktarma bu gerekçeyle yapılacak, refleksle değil.
+* **İçe aktarma (Drive'dan oku)** ölmedi: hâlihazırda Docs'ta yazan
+  kullanıcı için giriş yolu olarak kalıyor.
+
+#### Prompt'u KULLANICIYA yazdırmayacağız (karar)
+
+Kullanıcının "AI için prompt bile yazabilsin" fikrine karşı sav: prompt
+yazması gereken kullanıcı ChatGPT'ye gider — orada daha iyisini bedava
+yapar. Slate'in üstünlüğü, ChatGPT'ye ANLATILMASI GEREKEN şeyi zaten
+biliyor olması: proje adı, proje türü (`PROJ_TYPES`: outdoor/venue/
+studio/vlog/review/desk), anahtar kelimeler, platform, içerik türü
+(shorts mı uzun mu), dil, termin, ve kullanıcının geçmiş
+caption'ları/şablonları (ses tonu için).
+
+**Yani prompt'u Slate kuracak.** İleri kullanıcı için "prompt'u düzenle"
+açılır bir alan olabilir, ama ASLA ön kapı olmayacak.
+
+#### Kapsam uyarısı — "uçtan uca"nın sınırı
+
+Yön doğru, ama harfiyen alınırsa Slate daha kötü bir Notion + daha kötü
+bir ChatGPT + daha kötü bir Buffer olur. Uçtan ucu gerçek yapan şey her
+aşamaya SAHİP olmak değil, **zincirin kopmaması** — her aşamanın
+çıktısının bir sonrakinin girdisi olması, arada yeniden yazılmaması.
+
+Script bu yüzden en yüksek kaldıraçlı halka: aşağıdaki bütün alanları
+besleyen tek çıktı o. Kurgu, thumbnail üretimi, video barındırma
+aşamaları BAĞLANACAK, içeri alınmayacak.
+
+#### Mühendislik notu — bu alan diğerlerinden tehlikeli
+
+Bu dosyada iki veri kaybı yazılı (aşağıda, şablonlar maddesi) ve ikisi
+de aynı kökten: boş bir hâl dolunun üzerine yazdı. **Script'te bunun
+bedeli kıyas kabul etmez** — kaybolan şey 2000 kelimelik emek. Bu yüzden:
+
+1. Şablonlardaki "boş dolunun üzerine YAZAMAZ" kuralı script için de,
+   baştan kurulacak.
+2. **Sürüm geçmişi gerekiyor.** En azından: AI yeniden üretmeden ÖNCEKİ
+   hâlin anlık kopyası alınacak. Aksi hâlde bir "yeniden üret" tıklaması
+   elle yapılmış bütün düzeltmeleri siler ve geri dönüşü olmaz.
+3. **Yerel depo sınırı:** 100 proje × ~12.000 karakter ≈ 1,2 MB.
+   localStorage'ın ~5 MB'ına yakınsıyor. Script eklendiği anda buluta
+   senkron "iyi olur" olmaktan çıkıp zorunlu hâle geliyor.
+
+#### Maliyet
+
+Bir script üretimi ≈ 2.700 çıktı token'ı. Haiku 4.5 ile ($5/1M çıktı)
+script başına ~1,5 kuruş; kullanıcının kendi Gemini anahtarıyla sıfır.
+Caption üretiminden pahalı ama hâlâ önemsiz.
+
+#### Sıra
+
+1. Projeye `script` alanı (uzun metin) + düzenleme alanı. AI olmadan da
+   faydalı: script'in duracağı bir yer olur.
+2. Boş-üzerine-yazmaz koruması + AI öncesi anlık kopya.
+3. `notes` + proje bilgilerinden Slate'in kurduğu prompt ile AI script
+   üretimi.
+4. Script yazılınca `script` adımının kendiliğinden işaretlenmesi.
+5. Script'i caption/başlık üretimine bağlam olarak besleme.
+6. Drive'a dışa aktarma — ekip gerekçesi doğrulandığında.
+
 ### Termin hatırlatmaları — iki kanal (kullanıcı kararı, 1 Eylül 2026)
 Bugün uyarı yalnızca sayfa AÇIKKEN var: geciken adım kırmızı, üstte şerit.
 Kullanıcı bakmıyorken haber göndermek için tarayıcının dışında zamanlanmış
