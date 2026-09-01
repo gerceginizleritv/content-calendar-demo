@@ -132,8 +132,8 @@ body{
 .build-id{margin-left:auto;font-family:'IBM Plex Mono',monospace;font-size:10px;color:var(--accent-dim);}
 
 /* --- Calisma satiri: uretmek solda, filtrelemek sagda ------------------- */
-.work-row{display:flex;gap:14px;align-items:stretch;margin-bottom:12px;}
-.new-entry-col{display:flex;flex-direction:column;gap:6px;flex:none;}
+.work-row{display:flex;gap:16px;align-items:center;flex-wrap:wrap;margin-bottom:14px;}
+.work-meta{display:flex;flex-direction:column;gap:2px;min-width:0;}
 /* .btn kurali asagida geldigi icin ozgulluk .btn.btn-new olarak yaziliyor;
    yoksa min-height 36px'e geri duserdi. */
 .btn.btn-new{
@@ -141,8 +141,13 @@ body{
   font-weight:700;font-size:14px;min-height:56px;padding:0 22px;white-space:nowrap;
 }
 .btn.btn-new:hover{background:var(--accent-hover);border-color:var(--accent-hover);}
-.new-entry-col{max-width:200px;}
-.new-entry-col .entry-count{justify-content:center;min-height:28px;font-size:11px;}
+/* Dugme artik satirin tek basina sahibi: eskiden yanindaki filtre paneli
+   yer kapiyor ve sayfaya ilk gelen once oraya bakiyordu. */
+.btn.btn-new{min-height:60px;font-size:15px;padding:0 30px;}
+/* Yatay satirda cerceve gereksiz: sayac bir giris alani degil, bir not. */
+.work-meta .entry-count{border:0;padding:0;min-height:0;font-size:12px;font-weight:600;color:var(--text);}
+.work-meta .entry-count.warn{color:var(--amber);}
+.work-meta .entry-count.full{color:var(--red);}
 .count-note{font-size:11.5px;line-height:1.45;color:var(--text-dim);}
 .early-link{
   background:none;border:0;padding:2px 0;text-align:left;cursor:pointer;
@@ -151,16 +156,67 @@ body{
 }
 .early-link:hover{color:var(--accent-hover);}
 .early-link:focus-visible{outline:2px solid var(--accent);outline-offset:2px;border-radius:3px;}
-.filter-fold{flex:1;min-width:0;margin-bottom:0;}
-.filter-fold > summary{flex-wrap:wrap;row-gap:2px;}
-.filter-ico{color:var(--accent);letter-spacing:-2px;font-size:13px;}
-.filter-sub{
-  text-transform:none;letter-spacing:0;font-family:'IBM Plex Sans',sans-serif;
-  font-size:11.5px;color:var(--accent-dim);
+/* ---- Filtre seridi ---------------------------------------------------
+   Takvimin hemen ustunde tek satir. Her filtre bir acilir panel; secim
+   coklu ve panel acik kaliyor, cunku insanlar filtreleri tek tek degil
+   kume halinde seciyor. */
+.filter-bar{display:flex;flex-wrap:wrap;align-items:center;gap:8px;margin:0 0 10px;}
+.filter-sep{width:1px;align-self:stretch;background:var(--line);margin:2px 2px;}
+.fdrop{position:relative;}
+.fbtn{
+  display:inline-flex;align-items:center;gap:7px;
+  background:var(--surface);border:1px solid var(--line);color:var(--text);
+  border-radius:8px;padding:0 12px;min-height:36px;cursor:pointer;
+  font-family:'IBM Plex Sans',sans-serif;font-size:12.5px;font-weight:600;
 }
+.fbtn:hover{border-color:var(--accent-dim);}
+.fbtn:focus-visible{outline:2px solid var(--accent);outline-offset:2px;}
+/* Acikken ve secim varken ayni vurgu: hangi filtrenin dolu oldugu
+   panelin acilmasina gerek kalmadan gorunuyor. */
+.fdrop.open > .fbtn,
+.fbtn.on{border-color:var(--accent);background:var(--accent-soft);}
+.fbadge{
+  display:inline-flex;align-items:center;justify-content:center;
+  min-width:18px;height:18px;padding:0 5px;border-radius:9px;
+  background:var(--accent);color:var(--on-accent);
+  font-family:'JetBrains Mono',monospace;font-size:10.5px;font-weight:700;
+}
+/* display:inline-flex, hidden ozniteligini eziyor: bu kural olmadan
+   rozet hicbir filtre secili degilken de bos bir nokta olarak duruyordu. */
+.fbadge[hidden]{display:none;}
+.fcaret{color:var(--text-dim);font-size:10px;}
+.fdrop.open .fcaret{color:var(--accent);}
+.fpanel{
+  position:absolute;z-index:60;top:calc(100% + 6px);left:0;
+  min-width:224px;max-width:min(330px,92vw);
+  background:var(--surface);border:1px solid var(--line);border-radius:10px;
+  box-shadow:0 12px 32px rgba(0,0,0,0.18);padding:8px;
+}
+/* Panel icinde liste dikey: acilir menude yan yana rozet okumak zor. */
+.fpanel .legend{flex-direction:column;align-items:stretch;gap:2px;margin:0;
+  max-height:min(52vh,340px);overflow-y:auto;}
+.fpanel .legend-item{width:100%;justify-content:flex-start;}
+.fpanel .legend-reset{display:none;}
+.fclear{
+  background:none;border:0;cursor:pointer;padding:6px 4px;
+  font-family:'IBM Plex Sans',sans-serif;font-size:12px;font-weight:600;
+  color:var(--accent);text-decoration:underline;text-underline-offset:2px;
+}
+.fclear:hover{color:var(--accent-hover);}
+.fsummary{font-size:11.5px;color:var(--text-dim);}
 @media (max-width:700px){
-  .work-row{flex-direction:column;}
-  .new-entry-col{width:100%;}
+  .work-row{flex-direction:column;align-items:stretch;}
+  .work-meta{align-items:flex-start;}
+  /* Dar ekranda panel dugmeye yaslanmiyor, ekranin altina oturuyor:
+     220px'lik bir kutu sagdaki dugmelerden tasiyordu, "top:auto" ile de
+     sabit konumda ekran disina dusuyordu. Altta hem tam gorunuyor hem
+     basparmakla erisilebiliyor. */
+  .fpanel{
+    position:fixed;left:8px;right:8px;bottom:8px;top:auto;
+    max-width:none;width:auto;max-height:62vh;overflow-y:auto;
+    box-shadow:0 -8px 34px rgba(0,0,0,0.28);
+  }
+  .fpanel .legend{max-height:none;}
   .btn-new{width:100%;}
   .head-meta{justify-content:flex-start;}
 }
@@ -977,38 +1033,16 @@ body.suruklenirken *{cursor:grabbing !important;}
   <div id="calendarPage">
   <!-- Kayit olusturma ile filtreleme yan yana ama acikca ayri: soldaki buyuk
        dugme uretir, sagdaki panel yalnizca gorunumu daraltir. -->
+  <!-- Kayit olusturma satiri. Filtreler buradan ALINDI: sayfaya ilk gelen
+       kisi once filtrelere bakiyordu, oysa akis once kayit girmek, sonra
+       filtrelemek. Filtreler artik takvimin hemen ustunde, ince bir serit. -->
   <div class="work-row">
-    <div class="new-entry-col">
-      <button class="btn btn-new" id="addBtn" data-i18n="btn_new">+ New Entry</button>
-      <!-- Sinirin ne oldugu sayacin ustunde yaziyor: rakami gorup "neden 100?"
-           diye sormak zorunda kalmasin. Altindaki baglanti sinira takilmadan
-           once de ilgilenen kisiye bir cikis veriyor. -->
-      <span class="count-note" data-i18n="count_note">Demo limit — plenty for a full month of planning.</span>
+    <button class="btn btn-new" id="addBtn" data-i18n="btn_new">+ New Entry</button>
+    <div class="work-meta">
       <span class="entry-count" id="entryCount" title=""></span>
+      <span class="count-note" data-i18n="count_note">Demo limit — plenty for a full month of planning.</span>
       <button type="button" class="early-link" id="earlyLink" data-i18n="early_cta">Get early access →</button>
     </div>
-    <details class="fold filter-fold" id="filterFold">
-      <summary>
-        <span class="filter-ico" aria-hidden="true">⁝⁝</span>
-        <span data-i18n="filters_title">Filter the calendar</span>
-        <span class="filter-sub" data-i18n="filters_sub">show only what you pick — nothing is deleted</span>
-      </summary>
-      <div class="hint hint-top" data-i18n="hint_filter">Click a tab in either row to filter — combine content type + platform together. Click again to remove.</div>
-      <div class="legend" id="typeLegend"></div>
-      <div class="legend" id="platformLegend"></div>
-      <!-- Pazar satiri yalnizca takvimde birden cok saat dilimi varsa cikiyor;
-           tek pazarda calisan icin gereksiz gurultu olurdu. -->
-      <div class="legend" id="tzLegend" hidden></div>
-      <div class="legend" id="conceptLegend" hidden></div>
-      <!-- Bekleyenler bir filtre degil, ayni kumenin liste gorunumu: saati
-           gecenleri isaretliyor ve satira tiklayinca kaydi aciyor. Durum
-           satirinin basinda duruyor ama rozet gibi degil, dugme gibi
-           gorunuyor — tiklayinca farkli bir sey oldugu belli olsun. -->
-      <div class="status-row">
-        <button class="btn btn-pending" id="pendingBtn" data-i18n="btn_pending">⏳ Pending</button>
-        <div class="legend" id="statusLegend"></div>
-      </div>
-    </details>
   </div>
 
   <div class="cal-nav">
@@ -1027,6 +1061,46 @@ body.suruklenirken *{cursor:grabbing !important;}
       <button class="cal-nav-btn" id="todayBtn" data-i18n="nav_today">Today</button>
       <button class="cal-nav-btn" id="nextBtn" data-i18n="nav_next">Next ▶</button>
     </div>
+  </div>
+
+  <!-- Filtre seridi navigasyonun altinda: hem ay/hafta izgarasi hem tablo
+       gorunumu ayni seridi kullaniyor, cunku ikisi de ayni kumeyi gosteriyor. -->
+  <div class="filter-bar" id="filterBar">
+    <button class="btn btn-pending" id="pendingBtn" data-i18n="btn_pending">⏳ Pending</button>
+    <span class="filter-sep" aria-hidden="true"></span>
+    <div class="fdrop" data-drop="type">
+      <button type="button" class="fbtn" aria-expanded="false" aria-haspopup="true">
+        <span data-i18n="filter_type">Type</span><span class="fbadge" hidden></span><span class="fcaret" aria-hidden="true">▾</span>
+      </button>
+      <div class="fpanel" hidden><div class="legend" id="typeLegend"></div></div>
+    </div>
+    <div class="fdrop" data-drop="platform">
+      <button type="button" class="fbtn" aria-expanded="false" aria-haspopup="true">
+        <span data-i18n="filter_platform">Platform</span><span class="fbadge" hidden></span><span class="fcaret" aria-hidden="true">▾</span>
+      </button>
+      <div class="fpanel" hidden><div class="legend" id="platformLegend"></div></div>
+    </div>
+    <div class="fdrop" data-drop="concept" hidden>
+      <button type="button" class="fbtn" aria-expanded="false" aria-haspopup="true">
+        <span data-i18n="filter_project">Project</span><span class="fbadge" hidden></span><span class="fcaret" aria-hidden="true">▾</span>
+      </button>
+      <div class="fpanel" hidden><div class="legend" id="conceptLegend"></div></div>
+    </div>
+    <!-- Pazar dugmesi yalnizca birden cok saat dilimi varsa cikiyor. -->
+    <div class="fdrop" data-drop="tz" hidden>
+      <button type="button" class="fbtn" aria-expanded="false" aria-haspopup="true">
+        <span data-i18n="filter_market">Market</span><span class="fbadge" hidden></span><span class="fcaret" aria-hidden="true">▾</span>
+      </button>
+      <div class="fpanel" hidden><div class="legend" id="tzLegend"></div></div>
+    </div>
+    <div class="fdrop" data-drop="status">
+      <button type="button" class="fbtn" aria-expanded="false" aria-haspopup="true">
+        <span data-i18n="filter_status">Status</span><span class="fbadge" hidden></span><span class="fcaret" aria-hidden="true">▾</span>
+      </button>
+      <div class="fpanel" hidden><div class="legend" id="statusLegend"></div></div>
+    </div>
+    <button type="button" class="fclear" id="filterClearAll" hidden data-i18n="filter_clear_all">Clear all filters</button>
+    <span class="fsummary" id="filterSummary"></span>
   </div>
 
   <div class="cal-grid" id="calGrid"></div>
@@ -1442,6 +1516,13 @@ const LANG = {
     nudge_dismiss: "Not now",
     filters_title: "Filter the calendar",
     filters_sub: "show only what you pick — nothing is deleted",
+    filter_type: "Type",
+    filter_platform: "Platform",
+    filter_project: "Project",
+    filter_market: "Market",
+    filter_status: "Status",
+    filter_clear_all: "Clear all filters",
+    filter_summary: (n)=> `${n} filter${n===1?'':'s'} on — showing part of the calendar`,
     more_title: "More",
     btn_theme_dark: "Dark",
     btn_theme_light: "Light",
@@ -1718,6 +1799,13 @@ const LANG = {
     nudge_dismiss: "Şimdi değil",
     filters_title: "Takvimi filtrele",
     filters_sub: "sadece seçtiklerini gösterir — hiçbir şey silinmez",
+    filter_type: "Tür",
+    filter_platform: "Platform",
+    filter_project: "Proje",
+    filter_market: "Pazar",
+    filter_status: "Durum",
+    filter_clear_all: "Filtreleri temizle",
+    filter_summary: (n)=> `${n} filtre açık — takvimin bir bölümü görünüyor`,
     more_title: "Diğer",
     btn_theme_dark: "Koyu",
     btn_theme_light: "Açık",
@@ -3811,7 +3899,83 @@ function renderLegend(){
     });
   });
   document.getElementById('statusReset').addEventListener('click', ()=>{ activeStatusFilters.clear(); renderLegend(); renderCal(); });
+
+  filtreSeridiniTazele();
 }
+
+// Seridin kendisi HTML'de duruyor, renderLegend yalnizca PANEL ICLERINI
+// yeniden yaziyor. Serit bastan cizilseydi acik panel her secimde
+// kapanirdi; oysa filtreler kume halinde seciliyor.
+const FILTRE_KUMELERI = {
+  type: () => activeTypeFilters,
+  platform: () => activePlatformFilters,
+  concept: () => activeConceptFilters,
+  tz: () => activeTzFilters,
+  status: () => activeStatusFilters
+};
+function filtreSeridiniTazele(){
+  const serit = document.getElementById('filterBar');
+  if(!serit) return;
+  let toplam = 0;
+  serit.querySelectorAll('.fdrop').forEach(kap=>{
+    const ad = kap.dataset.drop;
+    const kume = FILTRE_KUMELERI[ad] ? FILTRE_KUMELERI[ad]() : null;
+    const sayi = kume ? kume.size : 0;
+    toplam += sayi;
+    const dugme = kap.querySelector('.fbtn');
+    const rozet = kap.querySelector('.fbadge');
+    dugme.classList.toggle('on', sayi > 0);
+    rozet.hidden = sayi === 0;
+    rozet.textContent = sayi || '';
+    // Icerigi olmayan filtre (proje yoksa, tek saat dilimi varsa) hic
+    // gorunmuyor: bos bir acilir menu kullaniciyi bosuna tiklatiyor.
+    const liste = kap.querySelector('.legend');
+    const bos = !liste || liste.hidden || !liste.querySelector('.legend-item');
+    kap.hidden = bos;
+    if(bos) kap.classList.remove('open');
+  });
+  const temizle = document.getElementById('filterClearAll');
+  const ozet = document.getElementById('filterSummary');
+  if(temizle) temizle.hidden = toplam === 0;
+  if(ozet) ozet.textContent = toplam ? t('filter_summary')(toplam) : '';
+}
+
+function filtrePaneliKapat(){
+  document.querySelectorAll('#filterBar .fdrop.open').forEach(kap=>{
+    kap.classList.remove('open');
+    kap.querySelector('.fpanel').hidden = true;
+    kap.querySelector('.fbtn').setAttribute('aria-expanded','false');
+  });
+}
+(function filtreSeridiKur(){
+  const serit = document.getElementById('filterBar');
+  if(!serit) return;
+  serit.querySelectorAll('.fdrop').forEach(kap=>{
+    const dugme = kap.querySelector('.fbtn');
+    const panel = kap.querySelector('.fpanel');
+    dugme.addEventListener('click', e=>{
+      e.stopPropagation();
+      const acik = kap.classList.contains('open');
+      filtrePaneliKapat();
+      if(!acik){
+        kap.classList.add('open');
+        panel.hidden = false;
+        dugme.setAttribute('aria-expanded','true');
+      }
+    });
+    // Panel icindeki tiklama seridi kapatmasin: coklu secim yapiliyor.
+    panel.addEventListener('click', e=> e.stopPropagation());
+  });
+  document.addEventListener('click', filtrePaneliKapat);
+  document.addEventListener('keydown', e=>{ if(e.key === 'Escape') filtrePaneliKapat(); });
+  const temizle = document.getElementById('filterClearAll');
+  if(temizle) temizle.addEventListener('click', e=>{
+    e.stopPropagation();
+    Object.keys(FILTRE_KUMELERI).forEach(k=> FILTRE_KUMELERI[k]().clear());
+    filtrePaneliKapat();
+    renderLegend(); renderCal();
+  });
+})();
 
 // Sayaci her cizimde tazeliyoruz: kayit eklendiginde/silindiginde renderCal
 // zaten cagriliyor.
@@ -4914,7 +5078,7 @@ document.getElementById('pendingOverlay').addEventListener('click', (e)=>{ if(e.
 
 // Yayina alinan surumun damgasi. Onbellekten eski bir kopya geldiginde bu
 // tarih eski kalir, boylece "guncel mi?" sorusu bakarak cevaplanir.
-const BUILD_STAMP = '2026-09-01 10:15 UTC';
+const BUILD_STAMP = '2026-09-01 11:20 UTC';
 document.getElementById('buildId').textContent = BUILD_STAMP;
 
 // ===== Init =====
@@ -5042,14 +5206,11 @@ window.matchMedia('(prefers-color-scheme: dark)').addEventListener('change', ()=
 });
 applyThemeLabel();
 
-// Filtreler ve ikincil butonlar masaustunde acik, telefonda katli baslar —
-// mobilde bu iki blok takvimden once ~600px yer kapliyordu.
+// Ikincil butonlar masaustunde acik, telefonda katli baslar. Filtreler
+// artik burada degil: takvimin ustundeki seritte, kendi acilir panelinde.
 (function(){
-  const wide = window.innerWidth > 700;
-  ['filterFold','moreFold'].forEach(id=>{
-    const el = document.getElementById(id);
-    if(el) el.open = wide;
-  });
+  const el = document.getElementById('moreFold');
+  if(el) el.open = window.innerWidth > 700;
 })();
 
 // Kisa bildirim. Bulut akisinda cagriliyordu ama hic tanimlanmamisti; try
