@@ -101,10 +101,10 @@ body{
   font:700 18px/1 'Archivo',sans-serif;color:var(--text-dim);
 }
 .avatar img{width:100%;height:100%;object-fit:cover;display:block;}
-/* Giris yapilmamisken daire sessiz bir yer tutucu. */
-.avatar.bos{background:var(--surface-2);border-style:dashed;}
-.avatar.bos::after{content:'';width:20px;height:20px;border-radius:50%;
-  border:2px solid var(--line);}
+/* Giris yapilmamisken dairede Slate isareti duruyor: bos bir daire
+   "yuklenmedi mi?" izlenimi veriyordu. */
+.avatar.bos{background:var(--surface-2);}
+.avatar.bos svg{width:28px;height:28px;display:block;}
 .rail-name{font-size:12.5px;font-weight:600;text-align:center;
   max-width:100%;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;}
 .rail-name[hidden]{display:none;}
@@ -451,6 +451,73 @@ body.suruklenirken *{cursor:grabbing !important;}
   text-overflow:ellipsis;white-space:nowrap;box-shadow:0 6px 18px rgba(0,0,0,.28);}
 .surukle-hedef{outline:2px solid var(--accent);outline-offset:-2px;
   background:var(--accent-soft) !important;}
+/* --- Saat izgarasi (hafta ve gun) ------------------------------------- */
+.hour-grid{
+  display:grid;
+  /* DIKKAT: repeat() sayisina var() KONULAMAZ — kural tamamen dusuyor ve
+     izgara .cal-grid'in yedi sutununa geri donuyor; satir basina sekiz
+     hucre koydugumuz icin her satir bir sutun kayiyordu. Sutun sayisi
+     JS'ten yaziliyor, etiket genisligi degiskenle ayarlaniyor. */
+  --hg-etiket:58px; --hg-sutun:0px; --hg-sutun-max:1fr;
+  grid-template-columns:var(--hg-etiket) repeat(7, minmax(var(--hg-sutun),var(--hg-sutun-max)));
+  border:1px solid var(--line);border-radius:10px;overflow:hidden;
+  background:var(--surface);
+}
+.hg-corner{background:var(--surface-2);border-bottom:1px solid var(--line);}
+.hg-dayhead{
+  background:var(--surface-2);border-bottom:1px solid var(--line);
+  border-left:1px solid var(--line-soft);
+  padding:7px 8px;display:flex;align-items:baseline;gap:6px;
+  font-size:12px;color:var(--text-dim);
+}
+.hg-dayhead.today{background:var(--accent-soft);color:var(--text);}
+.hg-dow{font-family:'IBM Plex Mono',monospace;font-size:10px;letter-spacing:1px;text-transform:uppercase;}
+.hg-daynum{font-weight:700;font-size:14px;color:var(--text);}
+.hg-mon{font-size:10.5px;}
+/* Saat etiketi: satirin USTUNE hizali, cunku 14:00 etiketi o satirin
+   basladigi ani gosteriyor. */
+.hg-hour{
+  font-family:'IBM Plex Mono',monospace;font-size:10.5px;color:var(--text-dim);
+  padding:4px 8px 0;text-align:right;border-top:1px solid var(--line-soft);
+  background:var(--surface-2);
+}
+.hg-early-label{color:var(--amber);font-size:9.5px;line-height:1.25;text-align:right;}
+.hg-cell{
+  min-height:38px;border-top:1px solid var(--line-soft);
+  border-left:1px solid var(--line-soft);
+  padding:3px;display:flex;flex-direction:column;gap:3px;cursor:pointer;
+}
+.hg-cell:hover{background:var(--surface-2);}
+.hg-cell.today{background:rgba(37,99,199,0.045);}
+.hg-cell.hg-early{background:var(--amber-soft);cursor:default;}
+.cal-grid-wrap{min-width:0;}
+.hg-endlabel{border-top:1px solid var(--line);}
+.hg-endcell{border-top:1px solid var(--line);border-left:1px solid var(--line-soft);}
+/* Izgara icindeki rozet tek satir: saat sutunu zaten saati soyluyor,
+   kutu icinde ikinci kez yer kaplamasin. */
+.hg-chip{
+  display:flex;align-items:center;gap:5px;padding:3px 6px;border-radius:6px;
+  font-size:11.5px;line-height:1.3;min-width:0;
+}
+.hg-chip .cal-chip-title{overflow:hidden;text-overflow:ellipsis;white-space:nowrap;min-width:0;}
+.hg-chip .cal-time{font-size:10px;}
+@media(max-width:700px){
+  .hour-grid{--hg-etiket:44px;}
+  /* Yedi sutun 390 piksele sigmiyor: sutunlara okunabilir bir alt sinir
+     verip izgarayi kendi icinde kaydiriyoruz. Gun gorunumu zaten tek
+     sutun oldugu icin tam genislikte kaliyor. */
+  .cal-grid-wrap:has(.hour-grid){overflow-x:auto;-webkit-overflow-scrolling:touch;}
+  /* Sutun SABIT genislikte: yalnizca alt sinir verilseydi 1fr, en uzun
+     baslikla 270 piksele cikiyordu. Ayrica izgara kutusu icerigi kadar
+     genis olmali (width:max-content), yoksa tasma izgaranin ICINDE
+     kaliyor ve sarmalayici kaydirmiyor. */
+  .hour-grid.hg-cok{--hg-sutun:112px; --hg-sutun-max:112px; width:max-content;}
+  .hg-chip{font-size:10.5px;padding:2px 4px;gap:3px;}
+  .hg-chip .cal-badge{display:none;}
+  .hg-dayhead{flex-direction:column;gap:0;padding:5px 3px;align-items:center;}
+  .hg-mon{display:none;}
+}
+
 /* --- Proje tablosu ---
    Sol sutun sabit: alti adim sagda uzuyor, hangi projede oldugunu
    gormeden gezmek zor. */
@@ -1162,6 +1229,7 @@ body.suruklenirken *{cursor:grabbing !important;}
       <div class="view-toggle" role="group">
         <button type="button" class="view-btn" id="viewMonthBtn" data-i18n="view_month">Month</button>
         <button type="button" class="view-btn" id="viewWeekBtn" data-i18n="view_week">Week</button>
+        <button type="button" class="view-btn" id="viewDayBtn" data-i18n="view_day">Day</button>
         <button type="button" class="view-btn" id="viewTableBtn" data-i18n="view_table">Table</button>
       </div>
       <button class="cal-nav-btn" id="prevBtn" data-i18n="nav_prev">◀ Previous</button>
@@ -1213,7 +1281,9 @@ body.suruklenirken *{cursor:grabbing !important;}
     <span class="fsummary" id="filterSummary"></span>
   </div>
 
-  <div class="cal-grid" id="calGrid"></div>
+  <!-- Sarmalayici saat izgarasi icin: dar ekranda yedi sutun sigmiyor,
+       izgara KENDI icinde yana kayiyor. Sayfanin kaymasi degil. -->
+  <div class="cal-grid-wrap" id="calGridWrap"><div class="cal-grid" id="calGrid"></div></div>
   <div class="cal-table-wrap" id="calTableWrap" hidden></div>
   </div>
 
@@ -1692,7 +1762,9 @@ const LANG = {
     f_tz_label: "Time zone",
     view_month: "Month",
     view_week: "Week",
+    view_day: "Day",
     view_table: "Table",
+    hg_early: "Before 09:00 / no time",
     table_date: "Date",
     state_posted: "Posted",
     state_not_posted: "Not posted",
@@ -1978,7 +2050,9 @@ const LANG = {
     f_tz_label: "Saat dilimi",
     view_month: "Ay",
     view_week: "Hafta",
+    view_day: "Gün",
     view_table: "Tablo",
+    hg_early: "09:00 öncesi / saatsiz",
     table_date: "Tarih",
     state_posted: "Yayınlandı",
     state_not_posted: "Yayınlanmadı",
@@ -2285,10 +2359,12 @@ let activeConceptFilters = new Set();
 let activeStatusFilters = new Set();
 const activeTzFilters = new Set();
 let weekOffset = 0;  // 0 = icinde bulunulan hafta (pencere buradan baslar)
+// Gun gorunumu gun gun ilerliyor; hafta cipasi burada islemiyor.
+let gunKaymasi = 0;
 // 'month' = CAL_WEEKS haftalik pencere, 'week' = tek hafta. Tek haftada hucre
 // uzun oldugu icin kayitlar katlanmadan gorunuyor.
 let viewMode = 'month';
-try{ const v = localStorage.getItem('demo_view'); if(v==='week'||v==='month'||v==='table') viewMode = v; }catch(e){}
+try{ const v = localStorage.getItem('demo_view'); if(v==='week'||v==='month'||v==='table'||v==='day') viewMode = v; }catch(e){}
 let currentEvent = null;
 
 // Disaridan gelen her kayit buradan geciyor: ice aktarilan yedek dosyasi da,
@@ -2477,6 +2553,13 @@ function getPlatform(ev){ return ev.platform; }
 // weekOffset 0 iken ilk satir her zaman bu haftadir.
 function calWindowStart(){
   const d = new Date();
+  // Gun gorunumu haftaya cipalanmiyor: tek bir gun gosteriyor ve gun gun
+  // ilerliyor.
+  if(viewMode === 'day'){
+    d.setDate(d.getDate() + gunKaymasi);
+    d.setHours(0,0,0,0);
+    return d;
+  }
   const mondayOffset = (d.getDay() + 6) % 7; // Pazar(0)->6, Pazartesi(1)->0
   d.setDate(d.getDate() - mondayOffset + weekOffset * 7);
   d.setHours(0,0,0,0);
@@ -2487,6 +2570,7 @@ function calWindowStart(){
 // Tablo iki hafta gosteriyor: gunler satir oldugu icin alti haftalik bir
 // tablo ekrana sigmiyor, bir hafta ise bosluk gormeye yetmiyor.
 function calCellCount(){
+  if(viewMode === 'day') return 1;
   if(viewMode === 'week') return 7;
   if(viewMode === 'table') return 14;
   return CAL_WEEKS * 7;
@@ -2660,11 +2744,37 @@ function haritaLinki(adres){
   return 'https://www.google.com/maps/search/?api=1&query=' + encodeURIComponent(adres);
 }
 
+// Sira: gunu en yakin olan ustte. Onceki halde en son eklenen ustteydi;
+// bir is listesinde onemli olan ne zaman eklendigi degil, ne zaman
+// yapilmasi gerektigi.
+//
+// Projenin "gunu": once bitmemis adimlarin en yakin teslim tarihi, o yoksa
+// baslangic tarihi. Bitmis adimin tarihi sirayi belirlemiyor — yapilmis is
+// listeyi yukarida tutmamali.
+function projeGunu(p){
+  const tarihler = [];
+  PROJ_STEPS.forEach(k=>{
+    const d = (p.deadlines || {})[k];
+    if(d && !p[k]) tarihler.push(d);
+  });
+  if(tarihler.length) return tarihler.sort()[0];
+  return p.shootDate || '';
+}
+function projeSirasi(a, b){
+  const ga = projeGunu(a), gb = projeGunu(b);
+  // Tarihi olmayanlar sona: "ne zaman" sorusunun cevabi yok.
+  if(!ga && !gb) return b.createdAt - a.createdAt;
+  if(!ga) return 1;
+  if(!gb) return -1;
+  if(ga !== gb) return ga < gb ? -1 : 1;
+  return b.createdAt - a.createdAt;
+}
+
 function renderProjects(){
   const kap = document.getElementById('projectList');
   if(!kap) return;
   const q = (document.getElementById('p_search')||{}).value || '';
-  const hepsi = projects.slice().sort((a,b)=> b.createdAt - a.createdAt);
+  const hepsi = projects.slice().sort(projeSirasi);
   const liste = projeAra(hepsi, q);
 
   const sayac = document.getElementById('p_count');
@@ -3625,10 +3735,13 @@ function hayaletiTasi(x, y){
   surukle.hayalet.style.top  = (y + 12) + 'px';
 }
 
-function hedefGun(x, y){
+function hedefHucre(x, y){
   const el = document.elementFromPoint(x, y);
   if(!el) return null;
-  const hucre = el.closest('[data-gun]') || el.closest('.ct-cell');
+  return el.closest('[data-gun]') || el.closest('.ct-cell') || null;
+}
+function hedefGun(x, y){
+  const hucre = hedefHucre(x, y);
   if(!hucre) return null;
   return hucre.dataset.gun || hucre.dataset.date || null;
 }
@@ -3652,9 +3765,21 @@ function surukleBitir(iptal){
   try{ s.kaynak.releasePointerCapture(s.isaretci); }catch(err){}
   if(!s.aktif || iptal) return false;
 
-  const gun = hedefGun(s.x, s.y);
-  if(!gun || gun === s.ev.date) return false;
+  const hucre = hedefHucre(s.x, s.y);
+  const gun = hucre && (hucre.dataset.gun || hucre.dataset.date);
+  if(!gun) return false;
+  // Saat izgarasinda hucrenin YERI saati anlatiyor: baska bir saate
+  // birakilan kayit o saate tasinmali, yoksa birakildigi yerde durmayip
+  // eski satirina geri zipllar. Dakika korunuyor. Ay gorunumunde ve
+  // erken/saatsiz seritte data-saat yok: yalnizca tarih degisiyor.
+  const yeniSaat = hucre.dataset.saat;
+  const eskiDakika = /^\d{1,2}:(\d{2})/.exec(s.ev.time || '');
+  const hedefSaat = yeniSaat ? (yeniSaat + ':' + (eskiDakika ? eskiDakika[1] : '00')) : null;
+  const tarihAyni = gun === s.ev.date;
+  const saatAyni = !hedefSaat || hedefSaat === s.ev.time;
+  if(tarihAyni && saatAyni) return false;
   s.ev.date = gun;
+  if(hedefSaat) s.ev.time = hedefSaat;
   markDirty(s.ev.id);
   save();
   renderCal();
@@ -4208,8 +4333,117 @@ function tzKisa(z){
 // Ustteki aralik etiketi: pencere ay sinirina oturmadigi icin bir ay adi
 // yazilamiyor, kapsanan aralik yaziliyor. Yil hep sonda kaliyor ki uzaga
 // gidildiginde kaybolmasin.
+// ===== Saat izgarasi (hafta ve gun) =====
+// Kayitlarin YERI saatini anlatiyor: "sabahi bos, aksami yigilmis" tek
+// bakista gorunuyor. Aralik 09:00-00:00 — kullanicinin gercek yayin
+// penceresi. Disinda kalanlar (gece yarisi-09:00 arasi ve saati girilmemis
+// olanlar) en ustteki ayri seride cikiyor: hicbir kayit gizlenmiyor.
+const HG_BAS = 9, HG_SON = 23;   // 23 satiri 23:00-00:00 araligi
+
+function hgSaat(ev){
+  const m = /^(\d{1,2}):/.exec(ev.time || '');
+  return m ? parseInt(m[1], 10) : null;
+}
+function hgErkenMi(ev){
+  const s = hgSaat(ev);
+  return s === null || s < HG_BAS;
+}
+function hgChip(ev){
+  const chip = document.createElement('div');
+  chip.className = 'cal-chip hg-chip' + (ev.uploaded ? ' live' : '');
+  chip.title = (ev.title || '') + ' · ' + (ev.time || '') + ' · ' + CAL_SM_NAMES[ev.platform];
+  chip.innerHTML =
+    `<span class="cal-pico" style="color:${CAL_SM_COLORS[ev.platform]}">${PLATFORM_ICONS[ev.platform]||''}</span>` +
+    `<span class="cal-badge">${escapeHtml(typeLabel(ev.type))}</span>` +
+    `<span class="cal-time">${escapeHtml(ev.time||'')}</span>` +
+    `<span class="cal-chip-title">${escapeHtml(ev.title||'')}</span>`;
+  suruklenebilirYap(chip, ev);
+  chip.addEventListener('click', ()=>{ if(!surukle) openModal(ev); });
+  return chip;
+}
+
+function renderSaatIzgarasi(gunSayisi){
+  const grid = document.getElementById('calGrid');
+  grid.className = 'cal-grid hour-grid';
+  // Sutun alt siniri degiskenden: dar ekranda okunabilir bir genislik
+  // veriliyor ve izgara kendi icinde kayiyor.
+  grid.style.gridTemplateColumns =
+    'var(--hg-etiket) repeat(' + gunSayisi + ', minmax(var(--hg-sutun,0px), var(--hg-sutun-max,1fr)))';
+  // Cok gunlu izgara dar ekranda sabit sutunla kayiyor; tek gun tam
+  // genislikte kaliyor.
+  grid.classList.toggle('hg-cok', gunSayisi > 1);
+  grid.innerHTML = '';
+  const locale = currentLang === 'tr' ? 'tr-TR' : 'en-US';
+  const start = calWindowStart();
+  const bugun = new Date(); bugun.setHours(0,0,0,0);
+
+  const gunler = [];
+  for(let i=0;i<gunSayisi;i++){
+    const d = new Date(start); d.setDate(start.getDate()+i);
+    gunler.push({ d, key: fmtKey(d),
+      kayitlar: events.filter(e=>e.date===fmtKey(d) && gecerliKayit(e))
+                      .sort((a,b)=>(a.time||'').localeCompare(b.time||'')) });
+  }
+
+  const ekle = (sinif, icerik, veri)=>{
+    const el = document.createElement('div');
+    el.className = sinif;
+    if(icerik !== undefined && icerik !== null) el.innerHTML = icerik;
+    if(veri) Object.keys(veri).forEach(k=> el.dataset[k] = veri[k]);
+    grid.appendChild(el);
+    return el;
+  };
+
+  // Baslik satiri
+  ekle('hg-corner');
+  gunler.forEach(g=>{
+    const bugunMu = g.d.toDateString() === bugun.toDateString();
+    ekle('hg-dayhead' + (bugunMu ? ' today' : ''),
+      `<span class="hg-dow">${escapeHtml(g.d.toLocaleDateString(locale,{weekday:'short'}))}</span>` +
+      `<span class="hg-daynum">${g.d.getDate()}</span>` +
+      `<span class="hg-mon">${escapeHtml(g.d.toLocaleDateString(locale,{month:'short'}))}</span>`);
+  });
+
+  // Erken/saatsiz seridi: yalnizca icerigi varsa
+  if(gunler.some(g=>g.kayitlar.some(hgErkenMi))){
+    ekle('hg-hour hg-early-label', escapeHtml(t('hg_early')));
+    gunler.forEach(g=>{
+      // data-saat YOK: buraya birakilirsa yalnizca tarih degisiyor,
+      // saat oldugu gibi kaliyor.
+      const h = ekle('hg-cell hg-early', null, { gun:g.key });
+      g.kayitlar.filter(hgErkenMi).forEach(ev=> h.appendChild(hgChip(ev)));
+    });
+  }
+
+  // Saat satirlari
+  for(let saat = HG_BAS; saat <= HG_SON; saat++){
+    ekle('hg-hour', String(saat).padStart(2,'0') + ':00');
+    gunler.forEach(g=>{
+      const bugunMu = g.d.toDateString() === bugun.toDateString();
+      const h = ekle('hg-cell' + (bugunMu ? ' today' : ''), null,
+                     { gun:g.key, saat:String(saat).padStart(2,'0') });
+      g.kayitlar.filter(e=> !hgErkenMi(e) && hgSaat(e) === saat)
+                .forEach(ev=> h.appendChild(hgChip(ev)));
+      // Bos hucreye tiklayinca o gun ve SAATLE yeni kayit aciliyor.
+      h.addEventListener('click', e=>{
+        if(e.target.closest('.cal-chip')) return;
+        openModal(null, g.key, String(saat).padStart(2,'0') + ':00');
+      });
+    });
+  }
+  // Kapanis cizgisi: son satir 23:00-00:00 araligi.
+  ekle('hg-hour hg-endlabel', '00:00');
+  gunler.forEach(()=> ekle('hg-endcell'));
+}
+
 function araligiYaz(){
   const locale = currentLang === 'tr' ? 'tr-TR' : 'en-US';
+  // Tek gunde aralik yazmak anlamsiz: gunun tam adi yaziliyor.
+  if(viewMode === 'day'){
+    document.getElementById('rangeLabel').textContent =
+      calWindowStart().toLocaleDateString(locale, {weekday:'long', day:'numeric', month:'long', year:'numeric'});
+    return;
+  }
   document.getElementById('rangeLabel').textContent =
     calWindowStart().toLocaleDateString(locale, {day:'numeric', month:'short'})
     + ' – '
@@ -4241,21 +4475,33 @@ function renderCal(){
   // goruyordu.
   renderLegend();
   const haftaModu = viewMode === 'week';
+  const gunModu = viewMode === 'day';
   const tabloModu = viewMode === 'table';
   const grid = document.getElementById('calGrid');
   const tabloKap = document.getElementById('calTableWrap');
   grid.hidden = tabloModu;
   tabloKap.hidden = !tabloModu;
   document.getElementById('viewTableBtn').classList.toggle('active', tabloModu);
+  document.getElementById('viewMonthBtn').classList.toggle('active', viewMode === 'month');
+  document.getElementById('viewWeekBtn').classList.toggle('active', haftaModu);
+  document.getElementById('viewDayBtn').classList.toggle('active', gunModu);
   if(tabloModu){
     araligiYaz();
     renderCalTable();
     return;
   }
+  // Hafta ve gun saat izgarasi: kaydin YERI saatini anlatiyor. Ay
+  // gorunumu liste olarak kaliyor — alti haftayi saat saat gostermek
+  // okunmaz olurdu.
+  if(haftaModu || gunModu){
+    araligiYaz();
+    renderSaatIzgarasi(gunModu ? 1 : 7);
+    return;
+  }
 
-  grid.classList.toggle('cal-week', haftaModu);
-  document.getElementById('viewMonthBtn').classList.toggle('active', !haftaModu);
-  document.getElementById('viewWeekBtn').classList.toggle('active', haftaModu);
+  grid.classList.remove('cal-week');
+  grid.classList.remove('hour-grid');
+  grid.style.gridTemplateColumns = '';
   grid.innerHTML = '';
   const dows = ['MON','TUE','WED','THU','FRI','SAT','SUN'];
   dows.forEach(dw=>{
@@ -4429,7 +4675,10 @@ function refreshTypeDependentFields(){
 }
 
 // hazirTarih: takvimde bos bir gune tiklandiginda o gun onceden dolu gelsin.
-function openModal(ev, hazirTarih){
+// hazirSaat: saat izgarasinda bos bir SAAT hucresine tiklandiginda saat de
+// dolu gelsin — izgaranin butun anlami kaydin saatiyle yerinin ayni sey
+// olmasi.
+function openModal(ev, hazirTarih, hazirSaat){
   currentEvent = ev || null;
   const isNew = !ev;
   document.getElementById('typeMultiWrap').style.display = isNew ? '' : 'none';
@@ -4476,7 +4725,7 @@ function openModal(ev, hazirTarih){
     document.getElementById('f_title').value = '';
     document.getElementById('f_date').value = hazirTarih || fmtKey(new Date());
     // Saat bos degil ama bos gibi: kullanici kendi saatini yazsin diye 00:00.
-    document.getElementById('f_time').value = '00:00';
+    document.getElementById('f_time').value = hazirSaat || '00:00';
     populateTz();
     document.getElementById('f_tz').value = yerelTz();
     setUploadToggle(false);
@@ -4621,11 +4870,17 @@ function navAdim(){
   if(viewMode === 'table') return 2;
   return CAL_STEP_WEEKS;
 }
-document.getElementById('prevBtn').addEventListener('click', ()=>{ trackOnce('funnel/month-navigated'); weekOffset -= navAdim(); renderCal(); });
-document.getElementById('nextBtn').addEventListener('click', ()=>{ trackOnce('funnel/month-navigated'); weekOffset += navAdim(); renderCal(); });
+function takvimKaydir(yon){
+  trackOnce('funnel/month-navigated');
+  if(viewMode === 'day') gunKaymasi += yon;
+  else weekOffset += yon * navAdim();
+  renderCal();
+}
+document.getElementById('prevBtn').addEventListener('click', ()=> takvimKaydir(-1));
+document.getElementById('nextBtn').addEventListener('click', ()=> takvimKaydir(1));
 
 function setView(mod){
-  if(mod !== 'week' && mod !== 'month' && mod !== 'table') return;
+  if(mod !== 'week' && mod !== 'month' && mod !== 'table' && mod !== 'day') return;
   if(viewMode === mod) return;
   viewMode = mod;
   try{ localStorage.setItem('demo_view', mod); }catch(e){}
@@ -4634,8 +4889,9 @@ function setView(mod){
 }
 document.getElementById('viewMonthBtn').addEventListener('click', ()=> setView('month'));
 document.getElementById('viewWeekBtn').addEventListener('click', ()=> setView('week'));
+document.getElementById('viewDayBtn').addEventListener('click', ()=> setView('day'));
 document.getElementById('viewTableBtn').addEventListener('click', ()=> setView('table'));
-document.getElementById('todayBtn').addEventListener('click', ()=>{ weekOffset = 0; renderCal(); });
+document.getElementById('todayBtn').addEventListener('click', ()=>{ weekOffset = 0; gunKaymasi = 0; renderCal(); });
 
 document.getElementById('exportBtn').addEventListener('click', ()=>{
   const blob = new Blob([JSON.stringify(events,null,2)], {type:'application/json'});
@@ -5205,7 +5461,7 @@ document.getElementById('pendingOverlay').addEventListener('click', (e)=>{ if(e.
 
 // Yayina alinan surumun damgasi. Onbellekten eski bir kopya geldiginde bu
 // tarih eski kalir, boylece "guncel mi?" sorusu bakarak cevaplanir.
-const BUILD_STAMP = '2026-09-01 13:55 UTC';
+const BUILD_STAMP = '2026-09-01 15:10 UTC';
 document.getElementById('buildId').textContent = BUILD_STAMP;
 
 // ===== Init =====
@@ -5421,6 +5677,7 @@ function refreshAuthUi(){
 // veriyor (user_metadata), ayri bir servise gerek yok. E-posta linkiyle
 // girenlerde fotograf olmuyor: bas harfle bir daire ciziliyor. Fotograf
 // yuklenemezse de ayni daireye dusuyor.
+const SLATE_ISARET = `<svg viewBox="0 0 64 64" aria-hidden="true"><rect x="6" y="24" width="52" height="34" rx="7" fill="var(--text)"/><g transform="rotate(-9 32 17)"><rect x="6" y="7" width="52" height="15" rx="3.5" fill="var(--accent)"/><path d="M17 7 L22.5 7 L14.5 22 L9 22 Z" fill="var(--bg)"/><path d="M33 7 L38.5 7 L30.5 22 L25 22 Z" fill="var(--bg)"/><path d="M49 7 L54.5 7 L46.5 22 L41 22 Z" fill="var(--bg)"/></g><rect x="15" y="34" width="26" height="3.4" rx="1.7" fill="var(--text-dim)"/><rect x="15" y="43" width="17" height="3.4" rx="1.7" fill="var(--amber)"/></svg>`;
 function kullaniciAdi(){
   if(!session) return '';
   const m = session.user.user_metadata || {};
@@ -5444,8 +5701,11 @@ function kimlikGoster(){
 
   const m = (session && session.user.user_metadata) || {};
   const foto = m.avatar_url || m.picture || '';
-  daire.textContent = session ? basHarf() : '';
   daire.classList.toggle('bos', !session);
+  // Giris yoksa Slate isareti, varsa bas harf (fotograf gelirse onun
+  // uzerine yaziliyor).
+  if(session){ daire.textContent = basHarf(); }
+  else { daire.innerHTML = SLATE_ISARET; }
   if(session && foto){
     const img = new Image();
     img.alt = '';
