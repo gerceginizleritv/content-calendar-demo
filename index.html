@@ -320,14 +320,20 @@ body.suruklenirken *{cursor:grabbing !important;}
 :root:not([data-theme="light"]) .pdl,
 :root:not([data-theme="light"]) .proj-new select,
 :root:not([data-theme="light"]) .proj-addr input{color-scheme:dark;}
-.pcell{width:92px;min-width:92px;}
+.proj-table td.pcell{width:92px;min-width:92px;text-align:center;}
+/* Secici tabloya baglandi: .pcell (0,1,0) ile .proj-table td (0,1,1)
+   yarisiyordu, td kazaniyordu ve ortalama hic uygulanmiyordu. */
+.proj-table thead th:not(.pname-col){text-align:center;}
 .pcell.done{background:var(--accent-soft);}
 /* Tarihi gecmis ve bitmemis adim: hem hucre hem tarih kutusu kirmizi. */
 /* Adim hucresi: kutucuk + tarih METNI. Tarih girisi ayri pencerede;
    yedi tarih kutusu satiri okunmaz hale getiriyordu. */
 .pdate{font:inherit;font-size:11px;padding:3px 7px;border:1px solid transparent;
   border-radius:6px;background:transparent;color:var(--text-dim);cursor:pointer;
-  font-variant-numeric:tabular-nums;display:block;margin-top:4px;white-space:nowrap;}
+  font-variant-numeric:tabular-nums;white-space:nowrap;
+  /* Kendi satirinda ve ortali: ayni satirda kalinca, tarih bosken
+     gorunmez '+' isareti yer kaplayip kutucugu sola itiyordu. */
+  display:block;width:fit-content;margin:4px auto 0;}
 .pdate:hover{border-color:var(--line);color:var(--text);}
 .pdate.bos{color:transparent;}
 .pdate.bos:hover{color:var(--accent-dim);border-color:var(--line);}
@@ -4554,7 +4560,7 @@ document.getElementById('pendingOverlay').addEventListener('click', (e)=>{ if(e.
 
 // Yayina alinan surumun damgasi. Onbellekten eski bir kopya geldiginde bu
 // tarih eski kalir, boylece "guncel mi?" sorusu bakarak cevaplanir.
-const BUILD_STAMP = '2026-09-01 04:42 UTC';
+const BUILD_STAMP = '2026-09-01 04:55 UTC';
 document.getElementById('buildId').textContent = BUILD_STAMP;
 
 // ===== Init =====
