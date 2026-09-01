@@ -963,6 +963,16 @@ body.suruklenirken *{cursor:grabbing !important;}
 
 /* ===== Katlanabilir bloklar (filtreler / ikincil butonlar) ===== */
 .fold{border:1px solid var(--line);border-radius:8px;background:var(--surface);margin-bottom:12px;}
+/* Katlanmis bolumun basliginda kac alanin dolu oldugu yaziyor: acmadan
+   once icinde bir sey olup olmadigi belli olsun. */
+.fold-count{
+  margin-left:8px;font-family:'IBM Plex Mono',monospace;font-size:10.5px;
+  color:var(--accent);text-transform:none;letter-spacing:0;
+}
+#pe_fieldFold .field{margin-bottom:10px;}
+#pe_fieldFold > .row2, #pe_fieldFold > .field{padding:0 14px;}
+#pe_fieldFold > .row2:first-of-type{padding-top:12px;}
+#pe_fieldFold > .field:last-child{padding-bottom:12px;}
 .fold > summary{
   cursor:pointer;list-style:none;padding:12px 14px;min-height:44px;
   display:flex;align-items:center;gap:8px;
@@ -1341,6 +1351,44 @@ body.suruklenirken *{cursor:grabbing !important;}
     </div>
     <div class="field"><label data-i18n="pe_keywords">Keywords</label>
       <input type="text" id="pe_keywords" maxlength="200"></div>
+
+    <!-- Saha detaylari: saha cekimi yapan ekiplerin ihtiyaci olan alanlar.
+         KATLI basliyor ve bos alan hicbir yerde gorunmuyor; bu alanlari
+         kullanmayan biri icin pencere eskisi gibi kaliyor. -->
+    <details class="fold" id="pe_fieldFold">
+      <summary><span data-i18n="pe_field_title">Field details</span>
+        <span class="fold-count" id="pe_fieldCount"></span></summary>
+      <div class="row2">
+        <div class="field"><label data-i18n="pe_topic">Topic</label>
+          <input type="text" id="pe_topic" maxlength="300"></div>
+        <div class="field"><label data-i18n="pe_format">Format</label>
+          <input type="text" id="pe_format" maxlength="60" list="pe_formatList">
+          <datalist id="pe_formatList"><option value="Saha"><option value="Masabaşı"><option value="Hibrit"></datalist>
+        </div>
+      </div>
+      <div class="row2">
+        <div class="field"><label data-i18n="pe_district">District</label>
+          <input type="text" id="pe_district" maxlength="120"></div>
+        <div class="field"><label data-i18n="pe_city">City</label>
+          <input type="text" id="pe_city" maxlength="120"></div>
+      </div>
+      <div class="field"><label data-i18n="pe_permission">Permission</label>
+        <input type="text" id="pe_permission" maxlength="300"></div>
+      <div class="field"><label data-i18n="pe_maps">Map link</label>
+        <input type="text" id="pe_maps" maxlength="600" placeholder="https://maps.app.goo.gl/..."></div>
+      <div class="row2">
+        <div class="field"><label data-i18n="pe_script_url">Script link</label>
+          <input type="text" id="pe_scriptUrl" maxlength="600" placeholder="https://docs.google.com/..."></div>
+        <div class="field"><label data-i18n="pe_drive_url">Drive folder</label>
+          <input type="text" id="pe_driveUrl" maxlength="600" placeholder="https://drive.google.com/..."></div>
+      </div>
+      <div class="field"><label data-i18n="pe_shotlist">Shot list</label>
+        <textarea id="pe_shotList" rows="3" maxlength="4000"></textarea></div>
+      <div class="field"><label data-i18n="pe_cautions">Watch out for</label>
+        <textarea id="pe_cautions" rows="3" maxlength="4000"></textarea></div>
+      <div class="field"><label data-i18n="pe_fieldnotes">Field notes</label>
+        <textarea id="pe_fieldNotes" rows="3" maxlength="4000"></textarea></div>
+    </details>
     <!-- Termin penceresine ikinci kapi: tablodaki tarih dugmesi tek yol
          oldugu surece, pencere bir kez kapatilinca geri donulemiyordu. -->
     <button class="btn btn-wide" id="pe_deadlines" data-i18n="pe_deadlines">Step deadlines…</button>
@@ -1858,6 +1906,19 @@ const LANG = {
     p_shoot_title: "Project start date",
     p_start_label: "Start",
     pe_deadlines: "Step deadlines…",
+    pe_field_title: "Field details",
+    pe_topic: "Topic",
+    pe_format: "Format",
+    pe_district: "District",
+    pe_city: "City",
+    pe_permission: "Permission",
+    pe_maps: "Map link",
+    pe_script_url: "Script link",
+    pe_drive_url: "Drive folder",
+    pe_shotlist: "Shot list",
+    pe_cautions: "Watch out for",
+    pe_fieldnotes: "Field notes",
+    pe_field_filled: (n)=> `${n} filled`,
     p_shoot_label: "Start",
     p_add: "+ Create project",
     p_search_ph: "Search projects — name, type or address",
@@ -2146,6 +2207,19 @@ const LANG = {
     p_shoot_title: "Proje başlangıç tarihi",
     p_start_label: "Başlangıç",
     pe_deadlines: "Adım termin tarihleri…",
+    pe_field_title: "Saha detayları",
+    pe_topic: "Konu",
+    pe_format: "Format",
+    pe_district: "İlçe",
+    pe_city: "Şehir",
+    pe_permission: "İzin durumu",
+    pe_maps: "Harita bağlantısı",
+    pe_script_url: "Script bağlantısı",
+    pe_drive_url: "Drive klasörü",
+    pe_shotlist: "Sahada çekilecekler",
+    pe_cautions: "Çekimde dikkat",
+    pe_fieldnotes: "Saha notları",
+    pe_field_filled: (n)=> `${n} dolu`,
     p_shoot_label: "Başlangıç",
     p_add: "+ Proje oluştur",
     p_search_ph: "Proje ara — ad, tür ya da adres",
@@ -2668,7 +2742,20 @@ function sanitizeProject(raw){
     // Tur, isin nerede yapildigini soyluyor; saha isiyse adres de isteniyor.
     type: PROJ_TYPES.indexOf(raw.type) !== -1 ? raw.type : 'other',
     address: str(raw.address, 300),
-    createdAt: typeof raw.createdAt === 'number' ? raw.createdAt : Date.now()
+    createdAt: typeof raw.createdAt === 'number' ? raw.createdAt : Date.now(),
+    // Saha alanlari: hepsi istege bagli. Bos olan arayuzde gorunmuyor,
+    // boylece bu alanlari kullanmayan biri icin urun kalabalik olmuyor.
+    topic:      str(raw.topic, 300),
+    district:   str(raw.district, 120),
+    city:       str(raw.city, 120),
+    format:     str(raw.format, 60),
+    permission: str(raw.permission, 300),
+    scriptUrl:  str(raw.scriptUrl, 600),
+    driveUrl:   str(raw.driveUrl, 600),
+    mapsUrl:    str(raw.mapsUrl, 600),
+    fieldNotes: str(raw.fieldNotes, 4000),
+    cautions:   str(raw.cautions, 4000),
+    shotList:   str(raw.shotList, 4000)
   };
   // Her adimin kendi teslim tarihi olabiliyor; gecerse satirda kirmizi
   // cikiyor ve sayfanin ustunde sayiliyor.
@@ -2937,6 +3024,49 @@ function closeDeadlines(){
   terminProjesi = null;
 }
 
+// Saha alanlari tek listede: pencereyi doldurmak, okumak ve "kac tanesi
+// dolu" saymak ayni kaynaktan yapiliyor. Ayri ayri yazilsaydi biri
+// eklenip digeri unutuldugunda alan sessizce kaybolurdu.
+const SAHA_ALANLARI = [
+  ['pe_topic','topic'], ['pe_format','format'],
+  ['pe_district','district'], ['pe_city','city'],
+  ['pe_permission','permission'], ['pe_maps','mapsUrl'],
+  ['pe_scriptUrl','scriptUrl'], ['pe_driveUrl','driveUrl'],
+  ['pe_shotList','shotList'], ['pe_cautions','cautions'],
+  ['pe_fieldNotes','fieldNotes']
+];
+function sahaAlanlariniDoldur(p){
+  SAHA_ALANLARI.forEach(([id, anahtar])=>{
+    const el = document.getElementById(id);
+    if(el) el.value = p[anahtar] || '';
+  });
+  sahaSayaciniTazele();
+  // Dolu alani olan projede bolum ACIK aciliyor: kullanici oraya bir sey
+  // yazdiysa gormek ister.
+  const kat = document.getElementById('pe_fieldFold');
+  if(kat) kat.open = sahaDoluAdet(p) > 0;
+}
+function sahaAlanlariniOku(p){
+  SAHA_ALANLARI.forEach(([id, anahtar])=>{
+    const el = document.getElementById(id);
+    if(el) p[anahtar] = (el.value || '').trim();
+  });
+}
+function sahaDoluAdet(p){
+  return SAHA_ALANLARI.filter(([, anahtar])=> (p[anahtar] || '').trim()).length;
+}
+function sahaSayaciniTazele(){
+  const el = document.getElementById('pe_fieldCount');
+  if(!el) return;
+  const gecici = {};
+  SAHA_ALANLARI.forEach(([id, anahtar])=>{
+    const g = document.getElementById(id);
+    gecici[anahtar] = g ? g.value : '';
+  });
+  const n = sahaDoluAdet(gecici);
+  el.textContent = n ? t('pe_field_filled')(n) : '';
+}
+
 // --- Proje duzenleme penceresi ---------------------------------------
 let duzenlenenProje = null;
 function projTypeSelectDoldur(sel, deger){
@@ -2955,6 +3085,7 @@ function openProjectEdit(id){
   document.getElementById('pe_name').value = p.name;
   document.getElementById('pe_keywords').value = p.keywords || '';
   document.getElementById('pe_shoot').value = p.shootDate || '';
+  sahaAlanlariniDoldur(p);
   document.getElementById('pe_address').value = p.address || '';
   const tur = document.getElementById('pe_type');
   projTypeSelectDoldur(tur, p.type || 'other');
@@ -3022,7 +3153,12 @@ function projToRow(p, uid){
     address: p.address || '', type: p.type || 'other',
     // Bos metin tarih sutununa yazilamaz; yoklugu null ile anlatiliyor.
     start_date: p.shootDate ? p.shootDate : null,
-    steps: adimlar, deadlines: tarihler
+    steps: adimlar, deadlines: tarihler,
+    topic: p.topic || '', district: p.district || '', city: p.city || '',
+    format: p.format || '', permission: p.permission || '',
+    script_url: p.scriptUrl || '', drive_url: p.driveUrl || '',
+    maps_url: p.mapsUrl || '', field_notes: p.fieldNotes || '',
+    cautions: p.cautions || '', shot_list: p.shotList || ''
   };
 }
 function projFromRow(r){
@@ -3030,6 +3166,11 @@ function projFromRow(r){
     id: r.id, name: r.name || '', keywords: r.keywords || '', notes: r.notes || '',
     address: r.address || '', type: r.type || 'other',
     shootDate: r.start_date || '',
+    topic: r.topic || '', district: r.district || '', city: r.city || '',
+    format: r.format || '', permission: r.permission || '',
+    scriptUrl: r.script_url || '', driveUrl: r.drive_url || '',
+    mapsUrl: r.maps_url || '', fieldNotes: r.field_notes || '',
+    cautions: r.cautions || '', shotList: r.shot_list || '',
     deadlines: (r.deadlines && typeof r.deadlines === 'object') ? r.deadlines : {},
     createdAt: r.created_at ? Date.parse(r.created_at) : Date.now()
   };
@@ -3345,6 +3486,7 @@ document.getElementById('pe_save').addEventListener('click', ()=>{
   p.address = document.getElementById('pe_address').value.trim().slice(0,300);
   p.keywords = document.getElementById('pe_keywords').value.slice(0,200);
   p.shootDate = document.getElementById('pe_shoot').value || '';
+  sahaAlanlariniOku(p);
   projDirtyIsaretle(p.id);
   saveProjects();
   // Kayitlardaki proje adi kopyasi da tazeleniyor; aksi halde takvimde
@@ -3355,6 +3497,12 @@ document.getElementById('pe_save').addEventListener('click', ()=>{
 });
 // Duzenleme penceresinden termine gecis: acik formdaki degisiklikler once
 // kaydediliyor, aksi halde pencere degistirince yaziliyorlar kayboluyordu.
+// Yazdikca sayac guncelleniyor: bolum katlandiginda kac alanin dolu
+// oldugu gorunur kalsin.
+SAHA_ALANLARI.forEach(([id])=>{
+  const el = document.getElementById(id);
+  if(el) el.addEventListener('input', sahaSayaciniTazele);
+});
 document.getElementById('pe_deadlines').addEventListener('click', ()=>{
   const p = duzenlenenProje;
   if(!p) return;
@@ -5595,7 +5743,7 @@ document.getElementById('pendingOverlay').addEventListener('click', (e)=>{ if(e.
 
 // Yayina alinan surumun damgasi. Onbellekten eski bir kopya geldiginde bu
 // tarih eski kalir, boylece "guncel mi?" sorusu bakarak cevaplanir.
-const BUILD_STAMP = '2026-09-01 17:05 UTC';
+const BUILD_STAMP = '2026-09-01 18:15 UTC';
 document.getElementById('buildId').textContent = BUILD_STAMP;
 
 // ===== Init =====
