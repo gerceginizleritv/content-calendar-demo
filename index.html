@@ -653,9 +653,17 @@ body.suruklenirken *{cursor:grabbing !important;}
 .ai-status.error{color:var(--red);}
 .ai-status.ok{color:var(--green);}
 .tour-dots{display:flex;gap:5px;margin-top:14px;}
-.tour-dot{width:6px;height:6px;border-radius:50%;background:var(--line);}
-.tour-dot.active{background:var(--accent);}
-.tour-visual{margin:2px 0 16px;display:flex;justify-content:center;background:var(--bg);border:1px solid var(--line);border-radius:8px;padding:10px;}
+.tour-dot{width:7px;height:7px;border-radius:50%;background:var(--line);border:0;padding:0;
+  cursor:pointer;transition:background .15s, transform .15s;}
+.tour-dot:hover{background:var(--accent-dim);transform:scale(1.25);}
+.tour-dot.active{background:var(--accent);transform:scale(1.25);}
+.tour-dot:focus-visible{outline:2px solid var(--accent);outline-offset:2px;}
+.tour-visual{margin:2px 0 16px;display:flex;justify-content:center;background:var(--surface);
+  border:1px solid var(--line);border-radius:10px;padding:12px 10px;
+  /* Sahne sayfayla ayni renkte degil: cizim duz bir zeminde degil, kendi
+     karti uzerinde duruyor. Onceki halde --bg idi ve cizim sayfaya
+     yapisiyordu. */
+  box-shadow:0 1px 2px rgba(0,0,0,0.04);}
 .tour-visual svg{width:100%;height:auto;display:block;max-width:420px;}
 
 .lang-select{
@@ -1654,11 +1662,18 @@ const LANG = {
     tour1_body: "Plan content across YouTube, Instagram, TikTok and more. We do not connect to your accounts: no passwords, no permission screens, nothing that breaks when a platform changes its rules. Just your plan — and it stays yours.",
     promise_tag: "A planning board — not an auto-poster.",
     posted_hint: "Tick this after you publish. Slate does not listen to the platforms — you mark it.",
-    tour2_body: "Every post gets two independent tags: what it is, and where it's going. Filter by either, or both at once.",
-    tour3_body: "Click any slot to open it — caption, hashtags, titles, cover prompt, all editable and one tap from copied.",
-    tour4_body: "Posting for more than one country? Give each entry its own time zone. Days with several markets group by market, and you can filter down to one.",
-    tour5_body: "Stuck on a caption? Connect your own Claude or Gemini key — it goes straight from your browser to them, we never see it.",
+    tour2_body: "A shoot is not one post — it is script, filming, audio, edit, approval, package, publish. Projects holds all of it in one row: tick a step and the whole team sees where the work stands.",
+    tour3_body: "Every step can carry its own deadline. You enter them in a single window instead of seven date boxes — and a date that passes while the step is unfinished turns red on its own.",
+    tour4_body: "Every post gets two independent tags: what it is, and where it's going. Filter by either, or both at once.",
+    tour5_body: "Click any slot to open it — caption, hashtags, titles, cover prompt, all editable and one tap from copied. The same shoot going out as a Reel, a Short and a long video? Clone it and just set the new dates.",
+    tour6_body: "Plans move. Press and hold an entry, drag it to another day, let go. Works with a mouse and with a finger — nothing else about the entry changes.",
+    tour7_body: "Write your standard caption once. Add your handles, and they drop into the text. Need a different ending for YouTube? Give that one platform an exception — the rest keep the general text, and it flows into the caption the moment you pick a platform.",
+    tour8_body: "Sign in and your calendar, projects and templates follow you: phone, laptop, anywhere. Signed out, everything still works — it just stays in that browser.",
+    tour9_body: "Posting for more than one country? Give each entry its own time zone. Days with several markets group by market, and you can filter down to one.",
+    tour10_body: "Stuck on a caption? Connect your own Claude or Gemini key — it goes straight from your browser to them, we never see it.",
     tour_visual_market: "MARKETS",
+    tour_visual_general: "GENERAL",
+    tour_visual_exception: "EXCEPTION",
   },
   tr: {
     banner_bold1: "Bu, canlı ve çalışan bir demodur.",
@@ -1922,11 +1937,18 @@ const LANG = {
     tour1_body: "YouTube, Instagram, TikTok ve daha fazlasında içerik planla. Hesaplarına bağlanmıyoruz: şifre yok, izin ekranı yok, bir platform kuralını değiştirdiğinde bozulan bağlantı yok. Sadece planın var — o da her zaman senin elinde.",
     promise_tag: "Planlama panosu — otomatik paylaşım değil.",
     posted_hint: "Yayınladıktan sonra buraya tıkla. Slate platformları dinlemez; işaretleyen sensin.",
-    tour2_body: "Her paylaşımın iki bağımsız etiketi var: ne olduğu ve nereye gittiği. Birine, ya da ikisine birden göre filtrele.",
-    tour3_body: "Herhangi bir kutucuğa tıkla, aç — caption, hashtag, başlıklar, kapak prompt'u, hepsi düzenlenebilir ve tek dokunuşla kopyalanır.",
-    tour4_body: "Birden fazla ülkeye mi paylaşıyorsun? Her kaydın kendi saat dilimi olur. Birden çok pazarın olduğu günler pazara göre gruplanır, dilersen tek pazara indirirsin.",
-    tour5_body: "Caption'da mı takıldın? Kendi Claude ya da Gemini anahtarını bağla — doğrudan tarayıcından onlara gider, biz hiç görmeyiz.",
+    tour2_body: "Bir çekim tek bir paylaşım değil: script, çekim, ses, kurgu, onay, paket, yayın. Projeler bunların hepsini tek satırda tutar — bir adımı işaretlersin, işin nerede olduğu tek bakışta görünür.",
+    tour3_body: "Her adımın kendi teslim tarihi olabilir. Yedi ayrı tarih kutusu yerine tek pencereden girersin — adım bitmeden tarihi geçerse kendiliğinden kırmızıya döner.",
+    tour4_body: "Her paylaşımın iki bağımsız etiketi var: ne olduğu ve nereye gittiği. Birine, ya da ikisine birden göre filtrele.",
+    tour5_body: "Herhangi bir kutucuğa tıkla, aç — caption, hashtag, başlıklar, kapak prompt'u, hepsi düzenlenebilir ve tek dokunuşla kopyalanır. Aynı çekim Reels, Shorts ve uzun video olarak çıkacaksa çoğalt, sadece yeni tarihleri gir.",
+    tour6_body: "Planlar kayar. Bir kaydı basılı tut, başka güne sürükle, bırak. Fareyle de parmakla da çalışır — kaydın başka hiçbir şeyi değişmez.",
+    tour7_body: "Standart açıklamanı bir kez yaz. Hesaplarını ekle, metnin içine kendiliğinden düşsün. YouTube'da farklı bitsin mi istiyorsun? Sadece o platforma istisna yaz — diğerleri genel metni almaya devam eder, sen platformu seçer seçmez caption'a akar.",
+    tour8_body: "Giriş yap, takvimin de projelerin de şablonların da seninle gelsin: telefon, bilgisayar, fark etmez. Girmesen de her şey çalışır — sadece o tarayıcıda kalır.",
+    tour9_body: "Birden fazla ülkeye mi paylaşıyorsun? Her kaydın kendi saat dilimi olur. Birden çok pazarın olduğu günler pazara göre gruplanır, dilersen tek pazara indirirsin.",
+    tour10_body: "Caption'da mı takıldın? Kendi Claude ya da Gemini anahtarını bağla — doğrudan tarayıcından onlara gider, biz hiç görmeyiz.",
     tour_visual_market: "PAZARLAR",
+    tour_visual_general: "GENEL",
+    tour_visual_exception: "İSTİSNA",
   },
 };
 
@@ -4343,15 +4365,25 @@ document.addEventListener('click', (e)=>{
 const TOUR_STEPS_I18N = {
   en: [
     { title:"Welcome to Slate" },
+    { title:"One shoot, the whole production" },
+    { title:"A deadline for every step" },
     { title:"Two independent tags per post" },
-    { title:"Click any entry to open it" },
+    { title:"Open it, edit it, clone it" },
+    { title:"Plans move — so drag them" },
+    { title:"Write the caption once" },
+    { title:"The same plan on every device" },
     { title:"Don't stay local — go global" },
     { title:"Optional: draft with your own AI" },
   ],
   tr: [
     { title:"Slate'e Hoş Geldin" },
+    { title:"Tek çekim, tüm prodüksiyon" },
+    { title:"Her adımın kendi termini" },
     { title:"Her paylaşım için iki bağımsız etiket" },
-    { title:"Herhangi bir girişe tıkla, aç" },
+    { title:"Aç, düzenle, çoğalt" },
+    { title:"Planlar kayar — sürükle bırak" },
+    { title:"Açıklamayı bir kez yaz" },
+    { title:"Her cihazda aynı plan" },
     { title:"Yerelde kalma — globale çık" },
     { title:"İsteğe bağlı: kendi AI'ınla taslak oluştur" },
   ],
@@ -4361,161 +4393,294 @@ const TOUR_STEPS_I18N = {
 // page's CSS custom properties so they automatically match the live theme,
 // and pull their handful of on-diagram labels through t() so they stay in
 // sync with the selected language.
+// Tur cizimleri. Hepsi sayfanin renk degiskenlerini kullaniyor, yani acik
+// ve koyu temada kendiliginden dogru duruyor.
+//
+// KONTRAST KURALI: --text-dim ve --accent-dim BIRER GRI. Onceki surumde
+// cizim yazilari bu ikisiyle boyaniyordu ve arka planda kayboluyordu.
+// Artik okunmasi gereken her yazi --text ya da --accent; gri tonlar
+// yalnizca cizgi ve cerceve icin.
+const TV = {
+  // Ortak olculer: sahne 400x136.
+  goz: (x,y,metin) => `<text x="${x}" y="${y}" font-family="JetBrains Mono, monospace" font-size="9.5" letter-spacing="1.4" fill="var(--accent)">${metin}</text>`,
+  yazi: (x,y,metin,ek='') => `<text x="${x}" y="${y}" font-family="IBM Plex Sans, sans-serif" font-size="11" fill="var(--text)" ${ek}>${metin}</text>`,
+  kart: (x,y,w,h,ek='') => `<rect x="${x}" y="${y}" width="${w}" height="${h}" rx="9" fill="var(--surface)" stroke="var(--line)" ${ek}/>`,
+  ok: (id,renk='var(--accent)') => `<marker id="${id}" markerWidth="9" markerHeight="9" refX="6.5" refY="3" orient="auto"><path d="M0,0 L6.5,3 L0,6 Z" fill="${renk}"/></marker>`
+};
+
 const TOUR_VISUALS = [
-  // Step 1 — everything runs locally, one board for every platform
+  // 1 — Tek pano, her platform. Hesap baglanmiyor: kilit rozeti.
   () => `
-  <svg viewBox="0 0 400 130" xmlns="http://www.w3.org/2000/svg">
-    <rect x="40" y="8" width="320" height="106" rx="10" fill="var(--surface)" stroke="var(--line)"/>
-    <rect x="40" y="8" width="320" height="22" rx="10" fill="var(--surface-2)"/>
-    <rect x="40" y="20" width="320" height="10" fill="var(--surface-2)"/>
-    <circle cx="55" cy="19" r="4" fill="var(--red)"/>
-    <circle cx="68" cy="19" r="4" fill="#E8C34A"/>
-    <circle cx="81" cy="19" r="4" fill="#5FD9A0"/>
-    <g transform="translate(58,42)">
-      <rect x="0" y="0" width="284" height="60" rx="6" fill="var(--bg)" stroke="var(--line)"/>
-      <line x1="71" y1="0" x2="71" y2="60" stroke="var(--line)"/>
-      <line x1="142" y1="0" x2="142" y2="60" stroke="var(--line)"/>
-      <line x1="213" y1="0" x2="213" y2="60" stroke="var(--line)"/>
-      <line x1="0" y1="30" x2="284" y2="30" stroke="var(--line)"/>
-      <rect x="10" y="9" width="48" height="9" rx="4.5" fill="var(--accent)"/>
-      <rect x="81" y="9" width="48" height="9" rx="4.5" fill="#B383E8"/>
-      <rect x="152" y="39" width="48" height="9" rx="4.5" fill="#6FA8DC"/>
-      <rect x="223" y="39" width="40" height="9" rx="4.5" fill="#F2895C"/>
+  <svg viewBox="0 0 400 136" xmlns="http://www.w3.org/2000/svg" role="img">
+    <rect x="26" y="10" width="348" height="116" rx="12" fill="var(--accent-soft)"/>
+    ${TV.kart(38,20,324,96)}
+    <rect x="38" y="20" width="324" height="26" rx="9" fill="var(--surface-2)"/>
+    <rect x="38" y="37" width="324" height="9" fill="var(--surface-2)"/>
+    <circle cx="54" cy="33" r="3.5" fill="var(--p-youtube)"/>
+    <circle cx="66" cy="33" r="3.5" fill="var(--amber)"/>
+    <circle cx="78" cy="33" r="3.5" fill="var(--green)"/>
+    <g transform="translate(54,56)">
+      ${[0,1,2,3,4,5,6].map(i=>`<line x1="${i*42}" y1="0" x2="${i*42}" y2="48" stroke="var(--line-soft)"/>`).join('')}
+      <rect x="4"   y="6"  width="34" height="10" rx="5" fill="var(--p-youtube)"/>
+      <rect x="46"  y="6"  width="34" height="10" rx="5" fill="var(--p-instagram)"/>
+      <rect x="46"  y="21" width="34" height="10" rx="5" fill="var(--p-tiktok)"/>
+      <rect x="130" y="6"  width="34" height="10" rx="5" fill="var(--p-facebook)"/>
+      <rect x="172" y="21" width="34" height="10" rx="5" fill="var(--p-linkedin)"/>
+      <rect x="214" y="6"  width="34" height="10" rx="5" fill="var(--p-pinterest)"/>
+      <rect x="214" y="21" width="26" height="10" rx="5" fill="var(--p-threads)"/>
     </g>
-    <g transform="translate(356,100)">
-      <circle r="15" fill="var(--surface-2)" stroke="var(--accent)" stroke-width="1.5"/>
-      <rect x="-5" y="-1" width="10" height="8" rx="1.5" fill="var(--accent)"/>
-      <path d="M-3.5,-1 v-3.5 a3.5,3.5 0 0 1 7,0 v3.5" fill="none" stroke="var(--accent)" stroke-width="1.6"/>
+    <g transform="translate(348,102)">
+      <circle r="17" fill="var(--surface)" stroke="var(--accent)" stroke-width="1.6"/>
+      <rect x="-6" y="-1.5" width="12" height="9.5" rx="2" fill="var(--accent)"/>
+      <path d="M-4,-1.5 v-4 a4,4 0 0 1 8,0 v4" fill="none" stroke="var(--accent)" stroke-width="1.8"/>
     </g>
   </svg>`,
-  // Step 2 — content type (WHAT) x platform (WHERE), two independent rows
+
+  // 2 — Projeler: bir satir, yedi uretim adimi, dordu bitmis.
   () => `
-  <svg viewBox="0 0 400 130" xmlns="http://www.w3.org/2000/svg">
-    <text x="24" y="22" font-family="JetBrains Mono, monospace" font-size="10" letter-spacing="1.5" fill="var(--accent-dim)">${t('tour_visual_what')}</text>
-    <g transform="translate(24,30)" font-family="IBM Plex Sans, sans-serif" font-size="11" fill="var(--text)">
-      <rect x="0" y="0" width="66" height="26" rx="13" fill="none" stroke="var(--accent)" stroke-width="1.5"/>
-      <text x="33" y="17" text-anchor="middle">Video</text>
-      <rect x="74" y="0" width="66" height="26" rx="13" fill="none" stroke="#B383E8" stroke-width="1.5"/>
-      <text x="107" y="17" text-anchor="middle">Reels</text>
-      <rect x="148" y="0" width="66" height="26" rx="13" fill="none" stroke="#E8C34A" stroke-width="1.5"/>
-      <text x="181" y="17" text-anchor="middle">Story</text>
+  <svg viewBox="0 0 400 136" xmlns="http://www.w3.org/2000/svg" role="img">
+    ${TV.kart(14,26,372,84)}
+    <rect x="14" y="26" width="104" height="84" rx="9" fill="var(--surface-2)"/>
+    <rect x="14" y="26" width="10" height="84" fill="var(--accent)"/>
+    <rect x="34" y="44" width="66" height="9" rx="4.5" fill="var(--text)" opacity="0.82"/>
+    <rect x="34" y="60" width="42" height="7" rx="3.5" fill="var(--accent)" opacity="0.55"/>
+    <rect x="34" y="76" width="54" height="6" rx="3" fill="var(--text)" opacity="0.28"/>
+    <g transform="translate(132,52)">
+      <line x1="11" y1="16" x2="227" y2="16" stroke="var(--line)" stroke-width="2"/>
+      <line x1="11" y1="16" x2="119" y2="16" stroke="var(--green)" stroke-width="2.5"/>
+      ${[0,1,2,3].map(i=>`
+        <g transform="translate(${i*36},0)">
+          <rect width="22" height="22" rx="6" fill="var(--green)"/>
+          <path d="M6,11.5 L9.5,15 L16,7.5" fill="none" stroke="var(--on-accent)" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/>
+        </g>`).join('')}
+      ${[4,5,6].map(i=>`<rect x="${i*36}" width="22" height="22" rx="6" fill="var(--surface)" stroke="var(--line)" stroke-width="1.6"/>`).join('')}
     </g>
-    <text x="24" y="84" font-family="JetBrains Mono, monospace" font-size="10" letter-spacing="1.5" fill="var(--accent-dim)">${t('tour_visual_where')}</text>
-    <g transform="translate(24,92)" font-family="IBM Plex Sans, sans-serif" font-size="11" fill="var(--text)">
-      <rect x="0" y="0" width="86" height="26" rx="13" fill="none" stroke="var(--line)" stroke-width="1.5"/>
-      <text x="43" y="17" text-anchor="middle">YouTube</text>
-      <rect x="94" y="0" width="94" height="26" rx="13" fill="none" stroke="var(--line)" stroke-width="1.5"/>
-      <text x="141" y="17" text-anchor="middle">Instagram</text>
-      <rect x="196" y="0" width="76" height="26" rx="13" fill="none" stroke="var(--line)" stroke-width="1.5"/>
-      <text x="234" y="17" text-anchor="middle">TikTok</text>
-    </g>
-    <g transform="translate(346,62)">
-      <circle r="20" fill="var(--surface-2)" stroke="var(--accent)" stroke-width="1.5"/>
-      <text x="0" y="6" text-anchor="middle" font-size="20" fill="var(--accent)" font-family="IBM Plex Sans, sans-serif">+</text>
-    </g>
-    <text x="346" y="100" text-anchor="middle" font-family="IBM Plex Sans, sans-serif" font-size="9" fill="var(--text-dim)">${t('tour_visual_combine')}</text>
+    ${TV.goz(130,42, [ 'script','filmed','audio','edited' ].map(k=>t('step_'+k).toLocaleUpperCase(currentLang==='tr'?'tr':'en')).join(' · '))}
   </svg>`,
-  // Step 3 — click a chip, the full editable panel opens
+
+  // 3 — Termin penceresi: tek pencerede tarihler, geceni kirmizi.
   () => `
-  <svg viewBox="0 0 400 130" xmlns="http://www.w3.org/2000/svg">
-    <g transform="translate(16,50)">
-      <rect width="120" height="38" rx="6" fill="var(--surface)" stroke="var(--line)"/>
-      <rect x="8" y="9" width="32" height="14" rx="3" fill="var(--red)"/>
-      <text x="24" y="19" text-anchor="middle" font-family="JetBrains Mono, monospace" font-size="8" font-weight="700" fill="#0a0a0a">VID</text>
-      <rect x="46" y="12" width="62" height="7" rx="3.5" fill="var(--text-dim)" opacity="0.55"/>
+  <svg viewBox="0 0 400 136" xmlns="http://www.w3.org/2000/svg" role="img">
+    ${TV.kart(18,14,214,108)}
+    <rect x="34" y="30" width="74" height="9" rx="4.5" fill="var(--text)" opacity="0.8"/>
+    <rect x="150" y="26" width="66" height="18" rx="6" fill="var(--surface-2)" stroke="var(--line)"/>
+    ${TV.yazi(183,39,'12.09','text-anchor="middle" font-size="10.5"')}
+    <line x1="34" y1="54" x2="216" y2="54" stroke="var(--line-soft)"/>
+    <rect x="34" y="64" width="60" height="9" rx="4.5" fill="var(--text)" opacity="0.8"/>
+    <rect x="150" y="60" width="66" height="18" rx="6" fill="var(--surface-2)" stroke="var(--line)"/>
+    ${TV.yazi(183,73,'19.09','text-anchor="middle" font-size="10.5"')}
+    <line x1="34" y1="88" x2="216" y2="88" stroke="var(--line-soft)"/>
+    <rect x="34" y="98" width="52" height="9" rx="4.5" fill="var(--text)" opacity="0.8"/>
+    <rect x="150" y="94" width="66" height="18" rx="6" fill="none" stroke="var(--red)" stroke-width="1.8"/>
+    <text x="183" y="107" text-anchor="middle" font-family="IBM Plex Sans, sans-serif" font-size="10.5" font-weight="600" fill="var(--red)">02.09</text>
+    <path d="M244,103 L282,103" stroke="var(--red)" stroke-width="2" marker-end="url(#tvOkK)"/>
+    ${TV.kart(292,74,94,48)}
+    ${TV.goz(302,90,'YAYIN')}
+    <rect x="302" y="98" width="74" height="16" rx="5" fill="none" stroke="var(--red)" stroke-width="1.8"/>
+    <text x="339" y="110" text-anchor="middle" font-family="IBM Plex Sans, sans-serif" font-size="10.5" font-weight="600" fill="var(--red)">02.09</text>
+    <g transform="translate(292,20)">
+      <circle cx="26" cy="26" r="24" fill="var(--surface)" stroke="var(--line)" stroke-width="1.5"/>
+      <path d="M26,10 L26,27 L37,33" fill="none" stroke="var(--accent)" stroke-width="2.4" stroke-linecap="round"/>
     </g>
-    <g transform="translate(90,92)">
-      <path d="M0,0 L0,20 L5,15.5 L9.5,24 L14,21.7 L9.5,13.2 L17,13.2 Z" fill="var(--accent)"/>
-    </g>
-    <path d="M150,68 L196,68" stroke="var(--accent-dim)" stroke-width="2" marker-end="url(#tourArrow)"/>
-    <g transform="translate(206,14)">
-      <rect width="178" height="102" rx="8" fill="var(--surface)" stroke="var(--accent)" stroke-width="1.5"/>
-      <rect x="14" y="14" width="60" height="7" rx="3.5" fill="var(--accent-dim)"/>
-      <rect x="14" y="29" width="150" height="20" rx="4" fill="var(--bg)" stroke="var(--line)"/>
-      <rect x="14" y="58" width="60" height="7" rx="3.5" fill="var(--accent-dim)"/>
-      <rect x="14" y="72" width="150" height="16" rx="4" fill="var(--bg)" stroke="var(--line)"/>
-      <rect x="140" y="15" width="24" height="14" rx="3" fill="none" stroke="var(--accent-dim)"/>
-    </g>
-    <defs>
-      <marker id="tourArrow" markerWidth="8" markerHeight="8" refX="6" refY="3" orient="auto">
-        <path d="M0,0 L6,3 L0,6 Z" fill="var(--accent-dim)"/>
-      </marker>
-    </defs>
+    <defs>${TV.ok('tvOkK','var(--red)')}</defs>
   </svg>`,
-  // Step 4 — ayni gun, uc pazar: kayitlar pazar pazar gruplaniyor
+
+  // 4 — Iki bagimsiz etiket: NE x NEREYE.
   () => `
-  <svg viewBox="0 0 400 130" xmlns="http://www.w3.org/2000/svg">
-    <text x="14" y="16" font-family="JetBrains Mono, monospace" font-size="10" letter-spacing="1.5" fill="var(--accent-dim)">${t('tour_visual_market')}</text>
-    <rect x="14" y="24" width="170" height="96" rx="6" fill="var(--surface)" stroke="var(--line)"/>
-    <text x="24" y="40" font-family="JetBrains Mono, monospace" font-size="9" fill="var(--text-dim)">1 SEP</text>
-    <g font-family="IBM Plex Sans, sans-serif" font-size="9" fill="var(--text)">
-      <rect x="24" y="47" width="150" height="19" rx="3" fill="var(--surface-2)" stroke="var(--line)"/>
-      <text x="32" y="60">Istanbul</text>
-      <rect x="152" y="51" width="16" height="11" rx="2" fill="var(--accent-soft)"/>
-      <text x="160" y="60" text-anchor="middle" fill="var(--accent)">2</text>
-      <rect x="24" y="70" width="150" height="19" rx="3" fill="var(--surface-2)" stroke="var(--line)"/>
-      <text x="32" y="83">Tokyo</text>
-      <rect x="152" y="74" width="16" height="11" rx="2" fill="var(--accent-soft)"/>
-      <text x="160" y="83" text-anchor="middle" fill="var(--accent)">2</text>
-      <rect x="24" y="93" width="150" height="19" rx="3" fill="var(--surface-2)" stroke="var(--line)"/>
-      <text x="32" y="106">London</text>
-      <rect x="152" y="97" width="16" height="11" rx="2" fill="var(--accent-soft)"/>
-      <text x="160" y="106" text-anchor="middle" fill="var(--accent)">2</text>
+  <svg viewBox="0 0 400 136" xmlns="http://www.w3.org/2000/svg" role="img">
+    ${TV.goz(20,20,t('tour_visual_what'))}
+    <g transform="translate(20,28)">
+      <rect width="72" height="28" rx="14" fill="var(--accent-soft)" stroke="var(--accent)" stroke-width="1.6"/>
+      ${TV.yazi(36,18,'Video','text-anchor="middle"')}
+      <rect x="80" width="72" height="28" rx="14" fill="var(--surface)" stroke="var(--line)" stroke-width="1.6"/>
+      ${TV.yazi(116,18,'Reels','text-anchor="middle"')}
+      <rect x="160" width="72" height="28" rx="14" fill="var(--surface)" stroke="var(--line)" stroke-width="1.6"/>
+      ${TV.yazi(196,18,'Shorts','text-anchor="middle"')}
     </g>
-    <g transform="translate(210,34)" font-family="JetBrains Mono, monospace" font-size="9">
-      <rect width="52" height="18" rx="3" fill="none" stroke="var(--amber)"/>
-      <text x="26" y="12" text-anchor="middle" fill="var(--amber)">GMT+3</text>
-      <rect y="26" width="52" height="18" rx="3" fill="none" stroke="var(--amber)"/>
-      <text x="26" y="38" text-anchor="middle" fill="var(--amber)">GMT+9</text>
-      <rect y="52" width="52" height="18" rx="3" fill="none" stroke="var(--amber)"/>
-      <text x="26" y="64" text-anchor="middle" fill="var(--amber)">GMT+1</text>
+    ${TV.goz(20,86,t('tour_visual_where'))}
+    <g transform="translate(20,94)">
+      <rect width="90" height="28" rx="14" fill="var(--surface)" stroke="var(--line)" stroke-width="1.6"/>
+      <circle cx="17" cy="14" r="5" fill="var(--p-youtube)"/>
+      ${TV.yazi(56,18,'YouTube','text-anchor="middle"')}
+      <rect x="98" width="96" height="28" rx="14" fill="var(--surface)" stroke="var(--line)" stroke-width="1.6"/>
+      <circle cx="115" cy="14" r="5" fill="var(--p-instagram)"/>
+      ${TV.yazi(152,18,'Instagram','text-anchor="middle"')}
+      <rect x="202" width="80" height="28" rx="14" fill="var(--surface)" stroke="var(--line)" stroke-width="1.6"/>
+      <circle cx="219" cy="14" r="5" fill="var(--p-tiktok)"/>
+      ${TV.yazi(248,18,'TikTok','text-anchor="middle"')}
     </g>
-    <path d="M276,68 L310,68" stroke="var(--accent)" stroke-width="2" stroke-dasharray="4 3" marker-end="url(#tourArrow4)"/>
-    <g transform="translate(318,36)">
-      <circle cx="30" cy="30" r="29" fill="none" stroke="var(--accent)" stroke-width="1.6"/>
-      <ellipse cx="30" cy="30" rx="12" ry="29" fill="none" stroke="var(--accent-dim)" stroke-width="1.1"/>
-      <path d="M1,30 L59,30" stroke="var(--accent-dim)" stroke-width="1.1"/>
-      <path d="M6,16 L54,16 M6,44 L54,44" stroke="var(--accent-dim)" stroke-width="1.1"/>
+    <g transform="translate(340,68)">
+      <circle r="24" fill="var(--accent)"/>
+      <path d="M-8,-8 L8,8 M8,-8 L-8,8" stroke="var(--on-accent)" stroke-width="2.6" stroke-linecap="round"/>
     </g>
-    <defs>
-      <marker id="tourArrow4" markerWidth="8" markerHeight="8" refX="6" refY="3" orient="auto">
-        <path d="M0,0 L6,3 L0,6 Z" fill="var(--accent)"/>
-      </marker>
-    </defs>
   </svg>`,
-  // Step 5 — bring-your-own-key, browser talks directly to the AI provider
+
+  // 5 — Girisi ac, duzenle, cogalt.
   () => `
-  <svg viewBox="0 0 400 130" xmlns="http://www.w3.org/2000/svg">
+  <svg viewBox="0 0 400 136" xmlns="http://www.w3.org/2000/svg" role="img">
+    <g transform="translate(14,44)">
+      ${TV.kart(0,0,118,42)}
+      <rect x="10" y="12" width="30" height="18" rx="5" fill="var(--p-youtube)"/>
+      <rect x="48" y="14" width="58" height="7" rx="3.5" fill="var(--text)" opacity="0.72"/>
+      <rect x="48" y="25" width="38" height="6" rx="3" fill="var(--text)" opacity="0.3"/>
+    </g>
+    <path d="M140,66 L176,66" stroke="var(--accent)" stroke-width="2.2" marker-end="url(#tvOk5)"/>
+    ${TV.kart(240,26,86,40,'opacity="0.35"')}
+    ${TV.kart(230,20,86,40,'opacity="0.6"')}
+    ${TV.kart(186,14,140,104,'stroke="var(--accent)" stroke-width="1.8"')}
+    <rect x="200" y="30" width="50" height="8" rx="4" fill="var(--accent)"/>
+    <rect x="200" y="46" width="112" height="22" rx="6" fill="var(--bg)" stroke="var(--line)"/>
+    <rect x="200" y="76" width="42" height="7" rx="3.5" fill="var(--text)" opacity="0.35"/>
+    <rect x="200" y="90" width="112" height="16" rx="5" fill="var(--bg)" stroke="var(--line)"/>
+    <g transform="translate(344,52)">
+      <circle r="20" fill="var(--accent-soft)" stroke="var(--accent)" stroke-width="1.6"/>
+      <text x="0" y="5" text-anchor="middle" font-family="JetBrains Mono, monospace" font-size="13" font-weight="700" fill="var(--accent)">×3</text>
+    </g>
+    <defs>${TV.ok('tvOk5')}</defs>
+  </svg>`,
+
+  // 6 — Surukle birak: kayit baska gune tasiniyor.
+  () => `
+  <svg viewBox="0 0 400 136" xmlns="http://www.w3.org/2000/svg" role="img">
+    ${TV.kart(20,26,150,90)}
+    ${TV.goz(34,46,'12')}
+    <rect x="34" y="56" width="122" height="26" rx="7" fill="none" stroke="var(--accent)" stroke-width="1.6" stroke-dasharray="5 4"/>
+    ${TV.kart(230,26,150,90)}
+    ${TV.goz(244,46,'15')}
+    <rect x="244" y="56" width="122" height="26" rx="7" fill="var(--accent-soft)" stroke="var(--accent)" stroke-width="1.6" stroke-dasharray="5 4"/>
+    <path d="M104,56 C140,14 268,14 302,52" fill="none" stroke="var(--accent)" stroke-width="2" stroke-dasharray="6 5" marker-end="url(#tvOk6)"/>
+    <g transform="translate(144,17) rotate(-6)">
+      <rect width="96" height="30" rx="8" fill="var(--surface)" stroke="var(--accent)" stroke-width="1.8"/>
+      <rect x="9" y="9" width="24" height="12" rx="4" fill="var(--p-instagram)"/>
+      <rect x="40" y="11" width="46" height="7" rx="3.5" fill="var(--text)" opacity="0.7"/>
+    </g>
+    <g transform="translate(238,52)">
+      <path d="M0,0 L0,21 L5,16.5 L10,26 L15,23.6 L10,14.2 L18,14.2 Z" fill="var(--text)" stroke="var(--surface)" stroke-width="1.4"/>
+    </g>
+    <defs>${TV.ok('tvOk6')}</defs>
+  </svg>`,
+
+  // 7 — Sablon: bir genel metin, bir platforma istisna.
+  () => `
+  <svg viewBox="0 0 400 136" xmlns="http://www.w3.org/2000/svg" role="img">
+    ${TV.kart(14,26,152,84,'stroke="var(--accent)" stroke-width="1.8"')}
+    ${TV.goz(28,46,t('tour_visual_general'))}
+    <rect x="28" y="56" width="124" height="7" rx="3.5" fill="var(--text)" opacity="0.65"/>
+    <rect x="28" y="69" width="110" height="7" rx="3.5" fill="var(--text)" opacity="0.65"/>
+    <rect x="28" y="86" width="76" height="7" rx="3.5" fill="var(--accent)" opacity="0.75"/>
+    <path d="M172,50 C202,50 202,34 226,34" fill="none" stroke="var(--accent)" stroke-width="1.8" marker-end="url(#tvOk7)"/>
+    <path d="M172,68 C202,68 202,68 226,68" fill="none" stroke="var(--accent)" stroke-width="1.8" marker-end="url(#tvOk7)"/>
+    <path d="M172,86 C202,86 202,102 226,102" fill="none" stroke="var(--accent)" stroke-width="1.8" marker-end="url(#tvOk7)"/>
+    <g transform="translate(234,20)">
+      <rect width="152" height="30" rx="9" fill="var(--surface)" stroke="var(--p-youtube)" stroke-width="1.8"/>
+      <circle cx="18" cy="15" r="5.5" fill="var(--p-youtube)"/>
+      ${TV.yazi(32,19,'YouTube')}
+      <text x="144" y="19" text-anchor="end" font-family="JetBrains Mono, monospace" font-size="9.5"
+            letter-spacing="0.8" fill="var(--text)">${t('tour_visual_exception')}</text>
+    </g>
+    <g transform="translate(234,54)">
+      <rect width="152" height="30" rx="9" fill="var(--surface)" stroke="var(--line)"/>
+      <circle cx="18" cy="15" r="5.5" fill="var(--p-instagram)"/>
+      ${TV.yazi(32,19,'Instagram')}
+    </g>
+    <g transform="translate(234,88)">
+      <rect width="152" height="30" rx="9" fill="var(--surface)" stroke="var(--line)"/>
+      <circle cx="18" cy="15" r="5.5" fill="var(--p-tiktok)"/>
+      ${TV.yazi(32,19,'TikTok')}
+    </g>
+    <defs>${TV.ok('tvOk7')}</defs>
+  </svg>`,
+
+  // 8 — Bulut: ayni plan her cihazda.
+  () => `
+  <svg viewBox="0 0 400 136" xmlns="http://www.w3.org/2000/svg" role="img">
+    <g transform="translate(150,14)">
+      <path d="M28,54 a22,22 0 0 1 5,-43 a26,26 0 0 1 47,-4 a20,20 0 0 1 3,47 z"
+            fill="var(--accent-soft)" stroke="var(--accent)" stroke-width="1.8"/>
+      <path d="M42,32 L50,40 L64,24" fill="none" stroke="var(--accent)" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"/>
+    </g>
+    <path d="M92,86 C120,86 132,72 168,66" fill="none" stroke="var(--accent)" stroke-width="1.8" stroke-dasharray="5 4"/>
+    <path d="M308,86 C280,86 268,72 234,66" fill="none" stroke="var(--accent)" stroke-width="1.8" stroke-dasharray="5 4"/>
+    <g transform="translate(20,74)">
+      <rect width="72" height="44" rx="6" fill="var(--surface)" stroke="var(--line)" stroke-width="1.6"/>
+      <rect x="8" y="8" width="56" height="26" rx="3" fill="var(--surface-2)"/>
+      <rect x="14" y="14" width="30" height="5" rx="2.5" fill="var(--accent)"/>
+      <rect x="14" y="23" width="42" height="5" rx="2.5" fill="var(--text)" opacity="0.3"/>
+      <rect x="-6" y="44" width="84" height="5" rx="2.5" fill="var(--line)"/>
+    </g>
+    <g transform="translate(316,68)">
+      <rect width="40" height="60" rx="8" fill="var(--surface)" stroke="var(--line)" stroke-width="1.6"/>
+      <rect x="7" y="9" width="26" height="36" rx="3" fill="var(--surface-2)"/>
+      <rect x="11" y="14" width="16" height="4" rx="2" fill="var(--accent)"/>
+      <rect x="11" y="22" width="18" height="4" rx="2" fill="var(--text)" opacity="0.3"/>
+      <circle cx="20" cy="52" r="3" fill="var(--line)"/>
+    </g>
+  </svg>`,
+
+  // 9 — Pazarlar ve saat dilimleri.
+  () => `
+  <svg viewBox="0 0 400 136" xmlns="http://www.w3.org/2000/svg" role="img">
+    ${TV.goz(16,20,t('tour_visual_market'))}
+    ${TV.kart(14,26,182,96)}
+    <g>
+      <rect x="26" y="38" width="158" height="24" rx="6" fill="var(--surface-2)"/>
+      ${TV.yazi(38,54,'İstanbul')}
+      <rect x="150" y="42" width="24" height="16" rx="5" fill="var(--accent)"/>
+      <text x="162" y="54" text-anchor="middle" data-zemin="--accent" font-family="JetBrains Mono, monospace" font-size="10" font-weight="700" fill="var(--on-accent)">2</text>
+      <rect x="26" y="66" width="158" height="24" rx="6" fill="var(--surface-2)"/>
+      ${TV.yazi(38,82,'Tokyo')}
+      <rect x="150" y="70" width="24" height="16" rx="5" fill="var(--accent)"/>
+      <text x="162" y="82" text-anchor="middle" data-zemin="--accent" font-family="JetBrains Mono, monospace" font-size="10" font-weight="700" fill="var(--on-accent)">2</text>
+      <rect x="26" y="94" width="158" height="24" rx="6" fill="var(--surface-2)"/>
+      ${TV.yazi(38,110,'London')}
+      <rect x="150" y="98" width="24" height="16" rx="5" fill="var(--accent)"/>
+      <text x="162" y="110" text-anchor="middle" data-zemin="--accent" font-family="JetBrains Mono, monospace" font-size="10" font-weight="700" fill="var(--on-accent)">2</text>
+    </g>
+    <g transform="translate(212,40)" font-family="JetBrains Mono, monospace" font-size="10">
+      <rect width="60" height="20" rx="6" fill="var(--amber-soft)" stroke="var(--amber)"/>
+      <text x="30" y="14" text-anchor="middle" data-zemin="--amber-soft" fill="var(--text)" font-weight="600">GMT+3</text>
+      <rect y="28" width="60" height="20" rx="6" fill="var(--amber-soft)" stroke="var(--amber)"/>
+      <text x="30" y="42" text-anchor="middle" data-zemin="--amber-soft" fill="var(--text)" font-weight="600">GMT+9</text>
+      <rect y="56" width="60" height="20" rx="6" fill="var(--amber-soft)" stroke="var(--amber)"/>
+      <text x="30" y="70" text-anchor="middle" data-zemin="--amber-soft" fill="var(--text)" font-weight="600">GMT+1</text>
+    </g>
+    <g transform="translate(292,38)">
+      <circle cx="30" cy="30" r="29" fill="var(--accent-soft)" stroke="var(--accent)" stroke-width="1.8"/>
+      <ellipse cx="30" cy="30" rx="12" ry="29" fill="none" stroke="var(--accent)" stroke-width="1.2" opacity="0.7"/>
+      <path d="M1,30 L59,30" stroke="var(--accent)" stroke-width="1.2" opacity="0.7"/>
+      <path d="M6,16 L54,16 M6,44 L54,44" stroke="var(--accent)" stroke-width="1.2" opacity="0.7"/>
+    </g>
+  </svg>`,
+
+  // 10 — Kendi anahtarin: tarayici dogrudan saglayiciya gidiyor.
+  () => `
+  <svg viewBox="0 0 400 136" xmlns="http://www.w3.org/2000/svg" role="img">
     <g transform="translate(14,34)">
-      <rect width="118" height="62" rx="8" fill="var(--surface)" stroke="var(--line)"/>
-      <text x="59" y="24" text-anchor="middle" font-family="IBM Plex Sans, sans-serif" font-size="10" fill="var(--text-dim)">${t('tour_visual_browser')}</text>
-      <g transform="translate(44,34)">
-        <circle cx="7" cy="7" r="7" fill="none" stroke="var(--accent)" stroke-width="2"/>
-        <rect x="13" y="5" width="16" height="4" rx="1" fill="var(--accent)"/>
-        <rect x="24" y="9" width="4" height="6" fill="var(--accent)"/>
+      ${TV.kart(0,0,124,66)}
+      ${TV.yazi(62,24,t('tour_visual_browser'),'text-anchor="middle"')}
+      <g transform="translate(46,36)">
+        <circle cx="8" cy="8" r="7.5" fill="none" stroke="var(--accent)" stroke-width="2.2"/>
+        <rect x="15" y="6" width="17" height="4.5" rx="2" fill="var(--accent)"/>
+        <rect x="26" y="10.5" width="4.5" height="6" fill="var(--accent)"/>
       </g>
     </g>
-    <path d="M138,55 L228,55" stroke="var(--accent)" stroke-width="2" stroke-dasharray="4 3" marker-end="url(#tourArrow2)"/>
-    <text x="183" y="47" text-anchor="middle" font-family="IBM Plex Sans, sans-serif" font-size="9" fill="var(--accent-dim)">${t('tour_visual_direct')}</text>
-    <g transform="translate(148,78)" opacity="0.55">
-      <rect width="72" height="24" rx="4" fill="none" stroke="var(--red)" stroke-width="1.3"/>
-      <text x="36" y="16" text-anchor="middle" font-family="IBM Plex Sans, sans-serif" font-size="8" fill="var(--red)">${t('tour_visual_ourserver')}</text>
-      <line x1="2" y1="2" x2="70" y2="22" stroke="var(--red)" stroke-width="1.3"/>
-      <line x1="70" y1="2" x2="2" y2="22" stroke="var(--red)" stroke-width="1.3"/>
+    <path d="M146,56 L232,56" stroke="var(--accent)" stroke-width="2.2" stroke-dasharray="6 4" marker-end="url(#tvOk10)"/>
+    <text x="189" y="48" text-anchor="middle" font-family="JetBrains Mono, monospace" font-size="9.5" letter-spacing="1.2" fill="var(--accent)">${t('tour_visual_direct')}</text>
+    <g transform="translate(150,78)">
+      <rect width="86" height="26" rx="7" fill="var(--surface)" stroke="var(--red)" stroke-width="1.5"/>
+      <line x1="5" y1="5" x2="81" y2="21" stroke="var(--red)" stroke-width="1.4" opacity="0.45"/>
+      <line x1="81" y1="5" x2="5" y2="21" stroke="var(--red)" stroke-width="1.4" opacity="0.45"/>
+      <text x="43" y="17" text-anchor="middle" data-zemin="--surface" font-family="IBM Plex Sans, sans-serif" font-size="9.5" font-weight="600" fill="var(--red)">${t('tour_visual_ourserver')}</text>
     </g>
-    <g transform="translate(238,16)" font-family="IBM Plex Sans, sans-serif" font-size="11" fill="var(--text)">
-      <rect width="140" height="30" rx="15" fill="none" stroke="var(--accent-dim)" stroke-width="1.5"/>
-      <text x="70" y="20" text-anchor="middle">Claude</text>
+    <g transform="translate(244,26)">
+      <rect width="142" height="32" rx="10" fill="var(--surface)" stroke="var(--accent)" stroke-width="1.6"/>
+      ${TV.yazi(71,21,'Claude','text-anchor="middle"')}
     </g>
-    <g transform="translate(238,60)" font-family="IBM Plex Sans, sans-serif" font-size="11" fill="var(--text)">
-      <rect width="140" height="30" rx="15" fill="none" stroke="var(--accent-dim)" stroke-width="1.5"/>
-      <text x="70" y="20" text-anchor="middle">Gemini</text>
+    <g transform="translate(244,70)">
+      <rect width="142" height="32" rx="10" fill="var(--surface)" stroke="var(--accent)" stroke-width="1.6"/>
+      ${TV.yazi(71,21,'Gemini','text-anchor="middle"')}
     </g>
-    <defs>
-      <marker id="tourArrow2" markerWidth="8" markerHeight="8" refX="6" refY="3" orient="auto">
-        <path d="M0,0 L6,3 L0,6 Z" fill="var(--accent)"/>
-      </marker>
-    </defs>
+    <defs>${TV.ok('tvOk10')}</defs>
   </svg>`,
 ];
 
@@ -4529,7 +4694,15 @@ function renderTourStep(){
   document.getElementById('tourBody').textContent = t(`tour${tourIndex+1}_body`);
   document.getElementById('tourBackBtn').style.display = tourIndex===0 ? 'none' : '';
   document.getElementById('tourNextBtn').textContent = tourIndex===steps.length-1 ? t('tour_got_it') : t('btn_next');
-  document.getElementById('tourDots').innerHTML = steps.map((_,i)=>`<span class="tour-dot ${i===tourIndex?'active':''}"></span>`).join('');
+  // Noktalar dugme: on adimda sirayla ilerlemek zorunda kalmadan istenen
+  // adima atlanabiliyor.
+  const nokta = document.getElementById('tourDots');
+  nokta.innerHTML = steps.map((st,i)=>
+    `<button type="button" class="tour-dot ${i===tourIndex?'active':''}" data-tour-git="${i}"
+             title="${escapeHtml(st.title)}" aria-label="${escapeHtml(st.title)}"></button>`).join('');
+  nokta.querySelectorAll('[data-tour-git]').forEach(el=>{
+    el.addEventListener('click', ()=>{ tourIndex = Number(el.dataset.tourGit); renderTourStep(); });
+  });
 }
 let tourAutoSequence = false; // true only for the automatic on-load tour, so we know to chain the Pending popup after it closes
 function openTour(){ tourIndex = 0; renderTourStep(); document.getElementById('tourOverlay').classList.add('open'); }
@@ -4727,7 +4900,7 @@ document.getElementById('pendingOverlay').addEventListener('click', (e)=>{ if(e.
 
 // Yayina alinan surumun damgasi. Onbellekten eski bir kopya geldiginde bu
 // tarih eski kalir, boylece "guncel mi?" sorusu bakarak cevaplanir.
-const BUILD_STAMP = '2026-09-01 08:05 UTC';
+const BUILD_STAMP = '2026-09-01 09:30 UTC';
 document.getElementById('buildId').textContent = BUILD_STAMP;
 
 // ===== Init =====

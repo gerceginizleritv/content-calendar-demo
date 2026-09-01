@@ -13,13 +13,32 @@ harita bağlantısı), takvim tablo görünümü, sürükle-bırak, açıklama
 şablonları ve bunların buluta senkronu, projelerin buluta senkronu, kayıt
 çoğaltma, saat dilimi.
 
-**Sırada:** aşağıdaki üç madde. Kullanıcının başta istediği beş
+**Sırada:** aşağıdaki maddeler. Kullanıcının başta istediği beş
 özellikten dördü bitti; kalan tek madde roller/yetkilendirme ve o
 bilerek ertelendi (sebebi aşağıda).
 
 ---
 
 ## Sırada
+
+### Lokasyon uygulamasına Slate özelliklerini taşı — TAŞIMADAN ÖNCE
+İki dosya karşılaştırıldı (1 Eylül 2026). Lokasyon uygulamasında ZATEN
+var: takvim tablo görünümü, çoklu platform seçimi, saat dilimi, hafta
+görünümü, aranabilir lokasyon listesi, güne tıklayarak kayıt ekleme.
+
+Slate'te olup onda OLMAYAN beş şey:
+1. **Sürükle-bırak** (takvimde kaydı başka güne taşıma) — yok.
+2. **Kayıt çoğaltma** (aynı çekimin Reels/Shorts/uzun sürümleri) — yok.
+3. **Açıklama şablonları** — yok. Aynı Supabase projesini kullandıkları
+   için `caption_templates` tablosu hazır; aynı satırı paylaşabilirler
+   (aynı kişi, aynı hesaplar) — bu bir avantaj, karar verilmeli.
+4. **Adım termin tarihleri + gecikince kırmızı** — yok. Lokasyonun
+   adımları var (script/çekim/ses/kurgu/yayın) ama tarihleri yok;
+   `locations` tablosuna `deadlines jsonb` sütunu gerekir.
+5. **Kompakt üretim tablosu** (satır = lokasyon, sütun = adım) — yok;
+   bugün yalnızca kart ve liste görünümü var.
+
+Sıra önerisi: 2 → 1 → 3 → 4 → 5 (risksizden büyüğe).
 
 ### Lokasyon uygulamasını kendi adresine taşı
 Yeni sürüm `content-calendar-demo/lokasyon.html` adresinde deneme
