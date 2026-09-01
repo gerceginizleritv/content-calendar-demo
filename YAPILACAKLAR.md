@@ -6,6 +6,30 @@ duruyor, neden ertelendiği de yazıyor ki aynı tartışma baştan yapılmasın
 
 ---
 
+## Nerede kaldık (1 Eylül 2026, akşam)
+
+**Lokasyon göçü TAMAMLANDI.** `sql/07`–`sql/11` sırayla çalıştırıldı.
+Sonuç: 112 yayın kaydının 101'i projesine bağlandı, 43 lokasyon Slate
+projesi oldu, sınır 100.000'e çıkarıldı. Geriye kalan 11 kayıt Slate'in
+kendi demo kayıtları (İngilizce başlıklar, lokasyon bağı hiç yoktu) —
+hata değil; kullanıcı isterse arayüzden silebilir.
+
+Göç sırasında çıkan tek hata: `locations` tablosunda `user_id` sütunu
+yok, kayıtlar çalışma alanına bağlı. `sql/11` düzeltildi, sahip
+`workspaces.owner_id`'den okunuyor. Yerel test ortamı ile üretim şeması
+arasındaki fark bu göçte üçüncü kez sürpriz oldu; bundan sonra şema
+varsayımı yapmadan önce `information_schema`'ya bakılacak.
+
+**Geri dönüş yolu açık:** `sql/09-geri-al.sql` duruyor, lokasyon
+uygulaması (`lokasyon.html` ve kendi deposu) çalışır durumda. Kullanıcı
+kararı: bir hafta sorunsuz gidene kadar eski sistem silinmeyecek.
+
+**SIRADAKİ İŞ: Termin hatırlatmaları** (aşağıdaki bölüm). Kullanıcının
+verdiği sıralamada 4. madde; 1, 2 ve 3 bitti (3'ün yerini birleştirme
+aldı).
+
+---
+
 ## Nerede kaldık (1 Eylül 2026)
 
 **Bitti:** Projeler sayfası (üretim takibi, termin tarihleri, tür/adres,
