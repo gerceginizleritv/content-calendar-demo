@@ -461,14 +461,37 @@ Caption üretiminden pahalı ama hâlâ önemsiz.
 
 #### Sıra
 
-1. Projeye `script` alanı (uzun metin) + düzenleme alanı. AI olmadan da
-   faydalı: script'in duracağı bir yer olur.
-2. Boş-üzerine-yazmaz koruması + AI öncesi anlık kopya.
-3. `notes` + proje bilgilerinden Slate'in kurduğu prompt ile AI script
-   üretimi.
-4. Script yazılınca `script` adımının kendiliğinden işaretlenmesi.
-5. Script'i caption/başlık üretimine bağlam olarak besleme.
-6. Drive'a dışa aktarma — ekip gerekçesi doğrulandığında.
+Üç kapı aynı anda açılmak zorunda değil; alan bir kez kurulunca kapılar
+teker teker eklenebiliyor. Sıra da buna göre:
+
+1. **Alan.** Projeye `script` (uzun metin) + `script_updated_at` +
+   `scriptSource`; `projects` tablosuna sütunlar, `projToRow` /
+   `projFromRow` / `sanitizeProject`'e birer satır. Üst sınır ~40.000
+   karakter.
+2. **İkinci kapı — elle yazma.** Script düzenleme alanı. AI ve Drive
+   olmadan tek başına faydalı: script'in duracağı bir yer olur, `script`
+   adımı anlam kazanır. Buraya kadarı en küçük çalışan hâl.
+3. **Koruma.** Zaman damgasıyla "eski, yeninin üzerine yazamaz" kuralı;
+   script yalnızca gerçekten değiştiyse gönderilir. (Eski notta
+   "boş-üzerine-yazmaz" yazıyordu — `projects` senkronu satır satır ve
+   kirli işaretli olduğu için asıl tehlike boş değil ESKİ üzerine yazma;
+   damga doğru çözüm.)
+4. **Adım bağlantısı.** Script dolunca `script` adımının kendiliğinden
+   işaretlenmesi. Zinciri "gerçek" hissettiren küçük ayrıntı.
+5. **Üçüncü kapı — fikirden üret.** `notes` + proje bilgileriyle
+   (`PROJ_TYPES`, anahtar kelimeler, platform, dil, geçmiş caption'lar)
+   Slate'in KURDUĞU prompt ile AI script üretimi. Üretmeden önce anlık
+   kopya + "önceki hâle dön" AYNI adımda yapılacak, sonraya bırakılmayacak.
+6. **Zincirin devamı.** Script'i caption/başlık üretimine bağlam olarak
+   besleme — `buildDraftPrompt`'un bugünkü boşluğu burada kapanıyor.
+7. **Birinci kapı — Drive'dan getir.** Picker + `drive.file` + Docs'u düz
+   metin okuma. Kopya olarak gelir, canlı bağlantı değil; üzerine
+   yazmadan önce sorulur.
+8. **Drive'a dışa aktarma.** En sona kalıyor: tek kişilik kullanımda
+   faydası az, ekip gerekçesi doğrulandığında yapılacak.
+
+Not: 2. adımdan sonra ürün zaten kullanılabilir durumda oluyor. 5 ve 7
+bağımsız; hangisi önce yapılırsa yapılsın diğerini beklemiyor.
 
 ### Termin hatırlatmaları — iki kanal (kullanıcı kararı, 1 Eylül 2026)
 Bugün uyarı yalnızca sayfa AÇIKKEN var: geciken adım kırmızı, üstte şerit.
