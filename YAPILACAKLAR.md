@@ -13,53 +13,13 @@ harita bağlantısı), takvim tablo görünümü, sürükle-bırak, açıklama
 şablonları ve bunların buluta senkronu, projelerin buluta senkronu, kayıt
 çoğaltma, saat dilimi.
 
-**Sırada:** aşağıdaki listeler.
+**Sırada:** aşağıdaki üç madde. Kullanıcının başta istediği beş
+özellikten dördü bitti; kalan tek madde roller/yetkilendirme ve o
+bilerek ertelendi (sebebi aşağıda).
 
 ---
 
 ## Sırada
-
-### Şablonları buluta taşı — YAPILDI (1 Eylül 2026)
-Tablo: `caption_templates`, kullanıcı başına TEK satır (`user_id` birincil
-anahtar). Kurulum betiği depoda: `sql/05-sablonlar.sql`. Supabase panelinde
-SQL Editor'e yapıştırılıp çalıştırılıyor; tekrar çalıştırılabilir.
-
-Çakışma kuralı: **daha yeni olan kazanır**. `sablon.updatedAt` damgasını
-istemci yazıyor (sunucu saati değil), böylece çevrimdışı yapılan bir
-değişiklik sonradan bağlanan eski bir cihaz tarafından ezilmiyor.
-
-**Tek istisna:** boş bir bulut kaydı, dolu bir yerel kaydın üzerine asla
-yazamıyor — damgası daha yeni olsa bile. Sebebi: bu alanda iki kez veri
-kaybı yaşandı (aşağıda), ve eskimiş bir şablon kaybolmuş bir şablondan
-ucuzdur. Bunun bedeli: "hepsini sil" işlemi cihazlar arasına yayılmıyor.
-Bilinçli tercih; değiştirilecekse önce silme niyetini ayrı bir alanla
-(örn. `cleared_at`) taşımak gerekir.
-
-**Geçmişte yaşanan iki veri kaybı — aynı kökten:**
-
-1. Veri açılışta oturum çözülmeden okunuyordu: anahtar o an anonim
-   anahtardı, kaydetme ise girişten sonra hesabın anahtarına yazıyordu.
-   Okuma bir daha oraya bakmadığı için girişliyken girilen her şey
-   yenilemede yok görünüyordu.
-2. `sablonAfterSignIn()` çağrısı `afterSignIn` içinde, bulut okumasından
-   SONRA duruyordu. `pullRemote()` bir kez hata verince (ağ, RLS, zaman
-   aşımı) catch bloğu yutuyor ve şablonlar hiç yüklenmiyordu — kullanıcı
-   "şablonlarım silinmiş" diye bildirdi. Veri yerinde duruyordu, ekrana
-   hiç gelmiyordu. Beteri: sonra yazılan tek bir harf, boş hâli hesabın
-   anahtarına kaydedip gerçekten siliyordu.
-
-Alınan üç önlem (2026-09-01):
-* Şablon yüklemesi buluttan bağımsız, `afterSignIn`'in EN BAŞINDA.
-* `saveSablon()` boş hâli dolu kaydın üzerine yazacaksa önce
-  `<anahtar>_yedek`'e kopyalıyor.
-* Açılışta aktif anahtar boşsa `sablonAdaylari()` yedeğe ve anonim
-  anahtara bakıp en dolu kopyayı geri getiriyor. Tarama YALNIZCA kendi
-  anahtarlarına bakar — başka bir hesabın anahtarı asla okunmaz, ortak
-  bilgisayarda çıkan kişinin şablonları sonrakinin ekranında kalmasın.
-
-Aynı tuzağa düşmemek için: **oturum durumu değiştiğinde veriyi yeniden
-oku, ve yerel veriyi asla bulut çağrısının başarısına bağlama.**
-Yerel depo artık tek kopya değil, yine de emniyet ağı olarak duruyor.
 
 ### Lokasyon uygulamasını kendi adresine taşı
 Yeni sürüm `content-calendar-demo/lokasyon.html` adresinde deneme
@@ -117,3 +77,49 @@ oturmadan eklenirse geri alınması gerekir.
 Not: Google fiyatlandırması değişkendir; karar anında güncel fiyata
 bakılmalı, tahminle fiyat kurulmamalı. "Oturum" (session token) mantığı
 doğru kurulursa kullanıcı başına maliyet küçük kalır.
+
+---
+
+## Yapıldı — kararın gerekçesiyle birlikte
+
+### Şablonları buluta taşı — YAPILDI (1 Eylül 2026)
+Tablo: `caption_templates`, kullanıcı başına TEK satır (`user_id` birincil
+anahtar). Kurulum betiği depoda: `sql/05-sablonlar.sql`. Supabase panelinde
+SQL Editor'e yapıştırılıp çalıştırılıyor; tekrar çalıştırılabilir.
+
+Çakışma kuralı: **daha yeni olan kazanır**. `sablon.updatedAt` damgasını
+istemci yazıyor (sunucu saati değil), böylece çevrimdışı yapılan bir
+değişiklik sonradan bağlanan eski bir cihaz tarafından ezilmiyor.
+
+**Tek istisna:** boş bir bulut kaydı, dolu bir yerel kaydın üzerine asla
+yazamıyor — damgası daha yeni olsa bile. Sebebi: bu alanda iki kez veri
+kaybı yaşandı (aşağıda), ve eskimiş bir şablon kaybolmuş bir şablondan
+ucuzdur. Bunun bedeli: "hepsini sil" işlemi cihazlar arasına yayılmıyor.
+Bilinçli tercih; değiştirilecekse önce silme niyetini ayrı bir alanla
+(örn. `cleared_at`) taşımak gerekir.
+
+**Geçmişte yaşanan iki veri kaybı — aynı kökten:**
+
+1. Veri açılışta oturum çözülmeden okunuyordu: anahtar o an anonim
+   anahtardı, kaydetme ise girişten sonra hesabın anahtarına yazıyordu.
+   Okuma bir daha oraya bakmadığı için girişliyken girilen her şey
+   yenilemede yok görünüyordu.
+2. `sablonAfterSignIn()` çağrısı `afterSignIn` içinde, bulut okumasından
+   SONRA duruyordu. `pullRemote()` bir kez hata verince (ağ, RLS, zaman
+   aşımı) catch bloğu yutuyor ve şablonlar hiç yüklenmiyordu — kullanıcı
+   "şablonlarım silinmiş" diye bildirdi. Veri yerinde duruyordu, ekrana
+   hiç gelmiyordu. Beteri: sonra yazılan tek bir harf, boş hâli hesabın
+   anahtarına kaydedip gerçekten siliyordu.
+
+Alınan üç önlem (2026-09-01):
+* Şablon yüklemesi buluttan bağımsız, `afterSignIn`'in EN BAŞINDA.
+* `saveSablon()` boş hâli dolu kaydın üzerine yazacaksa önce
+  `<anahtar>_yedek`'e kopyalıyor.
+* Açılışta aktif anahtar boşsa `sablonAdaylari()` yedeğe ve anonim
+  anahtara bakıp en dolu kopyayı geri getiriyor. Tarama YALNIZCA kendi
+  anahtarlarına bakar — başka bir hesabın anahtarı asla okunmaz, ortak
+  bilgisayarda çıkan kişinin şablonları sonrakinin ekranında kalmasın.
+
+Aynı tuzağa düşmemek için: **oturum durumu değiştiğinde veriyi yeniden
+oku, ve yerel veriyi asla bulut çağrısının başarısına bağlama.**
+Yerel depo artık tek kopya değil, yine de emniyet ağı olarak duruyor.
