@@ -2819,7 +2819,7 @@ document.getElementById('acc_add').addEventListener('click', ()=>{
   // liste yeniden uretiliyor.
   if(!(sablon.general||'').trim() || sablon.general === oncekiOtomatik) sablon.general = otomatikGenel();
   trackOnce('funnel/account-added');
-  saveSablon(); renderSablon();
+  sablonDegisti(); renderSablon();
 });
 document.getElementById('acc_url').addEventListener('keydown', e=>{
   if(e.key === 'Enter') document.getElementById('acc_add').click();
@@ -2835,7 +2835,7 @@ function kaydedildiGoster(){
 }
 document.getElementById('tplGeneral').addEventListener('input', ()=>{
   sablon.general = document.getElementById('tplGeneral').value.slice(0,2000);
-  saveSablon(); kaydedildiGoster();
+  sablonDegisti(); kaydedildiGoster();
 });
 // Sonradan hesap eklenirse metinde olmayan satirlari ekliyor.
 document.getElementById('tplFillAccounts').addEventListener('click', ()=>{
@@ -2844,7 +2844,7 @@ document.getElementById('tplFillAccounts').addEventListener('click', ()=>{
   if(!eksik.length) return;
   kutu.value = (kutu.value.trim() ? kutu.value.replace(/\s+$/,'') + '\n' : '') + eksik.join('\n');
   sablon.general = kutu.value.slice(0,2000);
-  saveSablon(); kaydedildiGoster();
+  sablonDegisti(); kaydedildiGoster();
 });
 
 document.getElementById('ovr_add').addEventListener('click', ()=>{
@@ -2868,7 +2868,7 @@ document.getElementById('tplOvrSave').addEventListener('click', ()=>{
   sablon.overrides[ozelTaslak.platform] = metin.slice(0,2000);
   ozelTaslak = null;
   trackOnce('funnel/template-customised');
-  saveSablon(); renderSablon();
+  sablonDegisti(); renderSablon();
 });
 
 document.getElementById('p_add').addEventListener('click', ()=>{
@@ -2967,7 +2967,11 @@ document.getElementById('f_projectSearch').addEventListener('input', ()=> projeS
 const SABLON_KEY = 'demo_templates';
 const MAX_HESAP = 20;
 
-let sablon = { accounts: [], general: '', overrides: {} };
+// updatedAt: iki cihaz arasinda hangi tarafin daha YENI oldugunu bu
+// soyluyor. Sunucunun saati degil kullanicinin son degisiklik ani esas:
+// cevrimdisi yazilan bir metin, sonra baglanan eski bir cihaz tarafindan
+// ezilmesin.
+let sablon = { accounts: [], general: '', overrides: {}, updatedAt: 0 };
 
 function yeniHesapId(){ return 'ac_' + Math.random().toString(36).slice(2,9); }
 
@@ -3032,7 +3036,9 @@ function sanitizeSablon(ham){
     if(typeof istisna[p] === 'string' && istisna[p].trim()) temizIstisna[p] = str(istisna[p], 2000);
   });
 
-  return { accounts: temizHesap, general: genel, overrides: temizIstisna };
+  const damga = Number(h.updatedAt);
+  return { accounts: temizHesap, general: genel, overrides: temizIstisna,
+           updatedAt: (Number.isFinite(damga) && damga > 0) ? damga : 0 };
 }
 
 function sablonKey(){ return session ? SABLON_KEY + '_' + session.user.id : SABLON_KEY; }
@@ -3082,6 +3088,7 @@ function sablonAfterSignIn(){
 // Cikista SADECE anonim calisma geri geliyor. Burada kurtarma taramasi
 // yapilamaz: hesabin anahtarindaki sablonlar cikis yapan kisinin verisi.
 function sablonAfterSignOut(){
+  clearTimeout(sablonPushTimer);
   sablon = sanitizeSablon(okuSablon(SABLON_KEY));
   renderSablon();
 }
@@ -3091,6 +3098,14 @@ function sablonAgirligi(v){
   return (Array.isArray(v.accounts) ? v.accounts.length : 0)
        + ((typeof v.general === 'string' && v.general.trim()) ? 1 : 0)
        + (v.overrides && typeof v.overrides === 'object' ? Object.keys(v.overrides).length : 0);
+}
+// Kullanicinin yaptigi her degisiklik buradan geciyor: damga tazeleniyor,
+// yerele yaziliyor ve bulut kuyruguna giriyor. saveSablon() ise damgaya
+// dokunmayan ic kayit: buluttan gelen kopyayi yazarken kullaniliyor.
+function sablonDegisti(){
+  sablon.updatedAt = Date.now();
+  saveSablon();
+  sablonPushKuyrukla();
 }
 function saveSablon(){
   try{
@@ -3105,6 +3120,79 @@ function saveSablon(){
     }
     localStorage.setItem(anahtar, JSON.stringify(sablon));
   }catch(e){ console.error('[sablon] kaydedilemedi', e); }
+}
+
+// ---- Sablonlarin bulut senkronu ------------------------------------
+// Kayit ve projelerden farkli olarak bu TEK satir: kullanici basina bir
+// kayit. O yuzden kirli-kimlik kuyruguna gerek yok, gonderilecek sey her
+// zaman "su anki hal".
+let sablonPushTimer = null;
+
+function sablonRowYap(uid){
+  return {
+    user_id: uid,
+    accounts: sablon.accounts,
+    general: sablon.general || '',
+    overrides: sablon.overrides,
+    updated_at: new Date(sablon.updatedAt || Date.now()).toISOString()
+  };
+}
+function sablonRowOku(r){
+  return sanitizeSablon({
+    accounts: Array.isArray(r.accounts) ? r.accounts : [],
+    general: r.general || '',
+    overrides: (r.overrides && typeof r.overrides === 'object') ? r.overrides : {},
+    updatedAt: r.updated_at ? Date.parse(r.updated_at) : 0
+  });
+}
+
+// Yazma sik olmasin: her harfte degil, duraklamadan sonra tek istek.
+function sablonPushKuyrukla(){
+  if(!sb || !session) return;
+  clearTimeout(sablonPushTimer);
+  sablonPushTimer = setTimeout(sablonPush, 900);
+}
+async function sablonPush(){
+  if(!sb || !session) return;
+  try{
+    const { error } = await sb.from('caption_templates')
+      .upsert([sablonRowYap(session.user.id)], { onConflict: 'user_id' });
+    if(error) throw error;
+  }catch(err){
+    // Yerel kopya yerinde duruyor; sonraki degisiklik tekrar deniyor.
+    console.error('[bulut] sablon yazma hatasi', err);
+  }
+}
+
+// Giris sonrasi eslestirme. Kural: DAHA YENI olan kazanir. Tek istisna,
+// bos bir bulut kaydinin dolu bir yerel kaydi silmesine izin verilmemesi:
+// veri kaybi, eskimis bir sablondan daha pahali.
+async function sablonBulutSenkron(){
+  if(!sb || !session) return;
+  try{
+    const { data, error } = await sb.from('caption_templates')
+      .select('*').eq('user_id', session.user.id).maybeSingle();
+    if(error) throw error;
+
+    const uzak = data ? sablonRowOku(data) : null;
+    const uzakDolu = uzak && sablonAgirligi(uzak) > 0;
+    const yerelDolu = sablonAgirligi(sablon) > 0;
+
+    if(uzakDolu && (uzak.updatedAt > (sablon.updatedAt || 0) || !yerelDolu)){
+      sablon = uzak;
+      saveSablon();          // damgaya dokunmadan yerele yaz
+      renderSablon();
+      setCloudStatus('ok');
+      return;
+    }
+    // Bulut bos ya da eski: buradaki hal yukari gidiyor.
+    if(yerelDolu){
+      if(!sablon.updatedAt) sablon.updatedAt = Date.now();
+      await sablonPush();
+    }
+  }catch(err){
+    console.error('[bulut] sablon okuma hatasi', err);
+  }
 }
 
 // Bir platformun aciklamasina girecek metin: ozeli varsa o, yoksa genel.
@@ -3138,7 +3226,7 @@ function renderSablon(){
   hKap.querySelectorAll('[data-hesap-sil]').forEach(el=>{
     el.addEventListener('click', ()=>{
       sablon.accounts = sablon.accounts.filter(a=>a.id !== el.dataset.hesapSil);
-      saveSablon(); renderSablon();
+      sablonDegisti(); renderSablon();
     });
   });
 
@@ -3177,7 +3265,7 @@ function renderSablon(){
       const p = el.dataset.ovrSil;
       if(!confirm(t('tpl_ovr_del_confirm')(CAL_SM_NAMES[p]))) return;
       delete sablon.overrides[p];
-      saveSablon(); renderSablon();
+      sablonDegisti(); renderSablon();
     });
   });
   // Metin yazilirken liste bastan cizilmiyor: yazi kutusundan odak kacar,
@@ -3185,7 +3273,7 @@ function renderSablon(){
   oKap.querySelectorAll('[data-ovr-body]').forEach(el=>{
     el.addEventListener('input', ()=>{
       sablon.overrides[el.dataset.ovrBody] = el.value.slice(0,2000);
-      saveSablon();
+      sablonDegisti();
     });
   });
 
@@ -4639,7 +4727,7 @@ document.getElementById('pendingOverlay').addEventListener('click', (e)=>{ if(e.
 
 // Yayina alinan surumun damgasi. Onbellekten eski bir kopya geldiginde bu
 // tarih eski kalir, boylece "guncel mi?" sorusu bakarak cevaplanir.
-const BUILD_STAMP = '2026-09-01 07:10 UTC';
+const BUILD_STAMP = '2026-09-01 08:05 UTC';
 document.getElementById('buildId').textContent = BUILD_STAMP;
 
 // ===== Init =====
@@ -4864,6 +4952,10 @@ async function afterSignIn(){
   // try blogunun icindeydi: pullRemote() bir kez hata verdiginde
   // sablonlar hic yuklenmiyor, ekranda "silinmis" gorunuyorlardi.
   sablonAfterSignIn();
+  // Bulut eslestirmesi BEKLENMEDEN baslatiliyor: kendi try/catch'i var,
+  // gerektiginde ekrani kendisi tazeliyor. Await edilseydi takvim tek
+  // satirlik bir sorgu yuzunden gec acilirdi.
+  sablonBulutSenkron();
   try{
     const uzak = await pullRemote();
 

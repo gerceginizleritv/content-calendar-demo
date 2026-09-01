@@ -10,7 +10,8 @@ duruyor, neden ertelendiği de yazıyor ki aynı tartışma baştan yapılmasın
 
 **Bitti:** Projeler sayfası (üretim takibi, termin tarihleri, tür/adres,
 harita bağlantısı), takvim tablo görünümü, sürükle-bırak, açıklama
-şablonları, projelerin buluta senkronu, kayıt çoğaltma, saat dilimi.
+şablonları ve bunların buluta senkronu, projelerin buluta senkronu, kayıt
+çoğaltma, saat dilimi.
 
 **Sırada:** aşağıdaki listeler.
 
@@ -18,13 +19,23 @@ harita bağlantısı), takvim tablo görünümü, sürükle-bırak, açıklama
 
 ## Sırada
 
-### Şablonları buluta taşı
-Açıklama şablonları ve hesap listesi şu an yalnızca tarayıcının
-deposunda. Projelerde olduğu gibi bir tablo ve senkron gerekiyor.
-Tek satırlık bir veri olduğu için projelerden daha küçük bir iş.
+### Şablonları buluta taşı — YAPILDI (1 Eylül 2026)
+Tablo: `caption_templates`, kullanıcı başına TEK satır (`user_id` birincil
+anahtar). Kurulum betiği depoda: `sql/05-sablonlar.sql`. Supabase panelinde
+SQL Editor'e yapıştırılıp çalıştırılıyor; tekrar çalıştırılabilir.
 
-**Dikkat:** Bu alanda İKİ kez veri kaybı yaşandı; ikisi de aynı kökten:
-şablonlar tarayıcıda, oturuma bağlı bir anahtarda duruyor.
+Çakışma kuralı: **daha yeni olan kazanır**. `sablon.updatedAt` damgasını
+istemci yazıyor (sunucu saati değil), böylece çevrimdışı yapılan bir
+değişiklik sonradan bağlanan eski bir cihaz tarafından ezilmiyor.
+
+**Tek istisna:** boş bir bulut kaydı, dolu bir yerel kaydın üzerine asla
+yazamıyor — damgası daha yeni olsa bile. Sebebi: bu alanda iki kez veri
+kaybı yaşandı (aşağıda), ve eskimiş bir şablon kaybolmuş bir şablondan
+ucuzdur. Bunun bedeli: "hepsini sil" işlemi cihazlar arasına yayılmıyor.
+Bilinçli tercih; değiştirilecekse önce silme niyetini ayrı bir alanla
+(örn. `cleared_at`) taşımak gerekir.
+
+**Geçmişte yaşanan iki veri kaybı — aynı kökten:**
 
 1. Veri açılışta oturum çözülmeden okunuyordu: anahtar o an anonim
    anahtardı, kaydetme ise girişten sonra hesabın anahtarına yazıyordu.
@@ -48,7 +59,7 @@ Alınan üç önlem (2026-09-01):
 
 Aynı tuzağa düşmemek için: **oturum durumu değiştiğinde veriyi yeniden
 oku, ve yerel veriyi asla bulut çağrısının başarısına bağlama.**
-Kalıcı çözüm bu maddenin kendisi: şablonlar buluta taşınmalı.
+Yerel depo artık tek kopya değil, yine de emniyet ağı olarak duruyor.
 
 ### Lokasyon uygulamasını kendi adresine taşı
 Yeni sürüm `content-calendar-demo/lokasyon.html` adresinde deneme
