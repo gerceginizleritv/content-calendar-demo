@@ -21,6 +21,109 @@ bilerek ertelendi (sebebi aşağıda).
 
 ## Sırada
 
+### Yayın entegrasyonu ve "iki yere aynı şeyi yazma" sorunu (1 Eylül 2026)
+
+**Kullanıcının koyduğu sorun:** Slate süreci baştan aşağı yönetiyor,
+sadece yayın anına gelince iş manuel oluyor. Kullanıcı caption'ı Slate'e
+yazıyor, sonra aynı metni Studio'ya / Instagram'a bir daha yazıyor. "İki
+yere aynı şeyi yapıyor" hissi. Bugün kullanıcının kendi takibine çok
+faydası var ama satılacak bir üründe bu his bir itiraz.
+
+#### Önce mükerrerliğin gerçek boyutu
+
+Slate'teki verinin çoğunun platformda karşılığı YOK: proje, adım termin
+tarihleri, lokasyon, üretim durumu, aynı çekimin Reels/Shorts/uzun
+varyantları, takvim. Bunlar hiçbir yere ikinci kez girilmiyor.
+Mükerrer olan tek şey **yayın anındaki metin bloğu** (başlık, açıklama,
+etiket, kapak notu). Yani sorun gerçek ama dar: bir alan grubu, bir an.
+
+Ayrıca bu acı **tek kişilik** iş akışına özgü. Planlayan ile yayınlayan
+farklı kişiyse (ajans, ekip) mükerrerlik yok — Slate zaten brief'in
+kendisi. Acıyı en çok tek başına çalışan çekiyor; ve pazarın büyük kısmı
+da o. İkisi birden doğru.
+
+#### Yayın eklemek sorunu çözer mi — dikkat
+
+Buffer, Later, Metricool, Publer, Hootsuite hepsi yayın yapıyor. Slate
+yayın eklerse **onların yaptığı işi daha kötü yapan bir araç** olur ve
+bugünkü "hesaplarına bağlanmıyoruz, izin ekranı yok, bozulacak bağlantı
+yok" vaadini (`index.html:1761` / `:2046`) de kaybeder.
+
+Slate'in onlarda OLMAYAN tarafı yayının **öncesi**: fikir → çekim → ses →
+kurgu → hazır. Adım terminleri, lokasyon, proje, çoğaltma. O araçlar
+varlık zaten üretilmiş noktadan başlıyor. Kullanıcının "kendi takibime
+çok faydası var" dediği kısım tam olarak bu ve rakiplerde yok.
+
+**Bu yüzden yön şu:** Slate yayıncı olmaya çalışmayacak. Çözülecek olan
+mükerrerlik değil, **devir anı** — yeniden yazmak yerine tek hareketle
+aktarmak.
+
+#### Platform gerçeği (araştırıldı, 1 Eylül 2026)
+
+Kullanıcının sorduğu tam senaryo — "video hariç alanları önden gönder" —
+hiçbir platformda böyle çalışmıyor. Metadata-only taslak diye bir şey yok.
+
+* **YouTube:** en iyi aday. Video kaydı ancak dosya yüklenince doğuyor;
+  ama kullanıcı Studio'dan özel olarak yükledikten sonra `videos.update`
+  (başlık/açıklama/etiket), `thumbnails.set` (kapak) ve
+  `status.publishAt` (yayın saati) ile üstüne yazılabiliyor. Kota günde
+  10.000 birim: update 50, thumbnail 50, ama `videos.insert` **1600**
+  (≈ günde 6 yükleme, tüm kullanıcılar ortak havuzdan). Hassas kapsam →
+  Google doğrulaması şart, doğrulanmadan 100 kullanıcı sınırı.
+* **Facebook Sayfa:** çalışıyor, zamanlanmış yayın destekli
+  (`scheduled_publish_time`). App review gerekiyor.
+* **Instagram / Threads:** sadece Business/Creator hesap, kişisel hesap
+  hiç olmaz. Medya **herkese açık URL'den** çekiliyor, dosya
+  gönderilemiyor (yani bir barındırma gerekir). **API'de zamanlama yok**,
+  yayın anında oluyor; sıraya alma bizim işimiz olurdu.
+* **TikTok:** "inbox/taslak" modu akışa yakın (Slate gönderir, kullanıcı
+  uygulamada onaylar) ama video dosyası yine şart. Doğrudan yayın için
+  TikTok denetimi.
+* **LinkedIn:** post atmak partner onayı istiyor (Community Management
+  API), küçük ürüne pratikte kapalı.
+* **X:** yazma erişimi ücretli katmanda.
+* **Pinterest:** v5 pin oluşturma var, üretim erişimi inceleme istiyor.
+
+**Mimari engel:** Slate'in sunucusu yok; OAuth `client_secret`'ı ve
+kullanıcı token'ı tarayıcıda duramaz. Supabase Edge Function şart — ve
+orada duracak şey bir API anahtarı değil, **müşterinin hesabına post
+atma yetkisi**. Sızarsa birinin kanalına başkası video yükler. Google
+Places anahtarı saklamaktan bambaşka bir sorumluluk sınıfı. Üstüne
+token'lar süreli (Meta'nınki ~60 gün); kullanıcı şifresini değiştirse
+bağlantı **sessizce** kopar ve destek talebi olarak geri döner.
+
+#### Karar: kademeli, ve önce ölç
+
+**Kademe 0 — Yayın modu (önce bu yapılacak, bir günlük iş).**
+Yayın anında tek ekran: o platformun sorduğu alanlar, o platformun
+sorduğu sırada, her birinin yanında kopyala düğmesi (`.copy-btn`
+altyapısı `index.html:4547`'de zaten var), üstte "hepsini kopyala" ve
+Studio'ya / uygulamaya doğrudan bağlantı. Mükerrerliği kaldırmaz ama
+acısını kaldırır: yeniden yazmak yerine 20 saniyede üç kopyala. Hiçbir
+vaadi bozmaz, hiçbir denetimden geçmez.
+
+**Kademe 1 — Webhook çıkışı (küçük iş, uyum yükü sıfır).**
+Kayıt kaydedilirken isteğe bağlı webhook. Kullanıcı kendi
+Make/Zapier/n8n hesabını bağlar; OAuth'u ve sorumluluğu o taşır. Biz tek
+bir HTTP isteği yazarız, sekiz platform denetiminden geçmeyiz. Slate
+kullanıcının mevcut yığınının **üstü** olur, yerine geçmeye çalışmaz.
+
+**Kademe 2 — Sadece YouTube gerçek entegrasyon.**
+Değeri en yüksek, kotası en ucuz, akışı en oturmuş olan orada. Supabase
+Edge Function + Google doğrulaması. Bir hafta sorunsuz döndükten sonra
+ikinci platforma bakılır. Sekizini birden yapmaya kalkışmak yok.
+
+**Kademe 2'ye geçmeden ÖNCE ölçülecek (sahte kapı).**
+`trackOnce('funnel/...')` altyapısı zaten var. Yayın modu ekranına
+"Hesabıma gönder" düğmesi konur; basana "yakında, haber vereyim mi"
+denir ve tıklama sayılır. Aylarca OAuth yazmadan önce kullanıcının bunu
+gerçekten isteyip istemediği bu şekilde öğrenilir. Kullanıcı Kademe 0'la
+yetiniyorsa Kademe 2 hiç yazılmaz.
+
+**Konumlandırma notu:** Kademe 2 yapılırsa turdaki "hesaplarına
+bağlanmıyoruz" metni de düşer. O metin bugün bir satış argümanı; bilerek
+feda edilmeli, kazara değil.
+
 ### Lokasyon uygulamasına Slate özelliklerini taşı — TAŞIMADAN ÖNCE
 İki dosya karşılaştırıldı (1 Eylül 2026). Lokasyon uygulamasında ZATEN
 var: takvim tablo görünümü, çoklu platform seçimi, saat dilimi, hafta
