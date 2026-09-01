@@ -1513,7 +1513,8 @@ const LANG = {
     f_project_new: "+ New project…",
     f_project_selected: "(selected)",
     f_project_empty: "No projects yet — pick “+ New project” to create the first one.",
-    f_project_no_match: "Nothing matches. Clear the search or create a new project.",
+    f_project_no_match: "No project by that name yet — saving creates it.",
+    f_project_create: (ad)=> `+ Create “${ad}”`,
     f_project_prompt: "Name for the new project:",
     f_types_label: "Content type(s) — tick every version you will make",
     alert_need_project: "Pick a project first, or create one.",
@@ -1788,7 +1789,8 @@ const LANG = {
     f_project_new: "+ Yeni proje…",
     f_project_selected: "(seçili)",
     f_project_empty: "Henüz proje yok — ilkini “+ Yeni proje” ile oluştur.",
-    f_project_no_match: "Eşleşen proje yok. Aramayı temizle ya da yeni proje oluştur.",
+    f_project_no_match: "Bu adda proje yok — kaydedince oluşturulacak.",
+    f_project_create: (ad)=> `+ “${ad}” projesini oluştur`,
     f_project_prompt: "Yeni projenin adı:",
     f_types_label: "İçerik tipi(leri) — hazırlayacağın her sürümü işaretle",
     alert_need_project: "Önce bir proje seç ya da oluştur.",
@@ -2759,8 +2761,11 @@ function projeSecimiTazele(seciliId){
   const dusuyor = !!seciliP && !uyan.some(p=>p.id === seciliP.id);
   if(dusuyor) gosterilecek.push(seciliP);
 
+  // Aranan adda proje yoksa "+ yeni proje" secenegi ne olacagini soyluyor:
+  // yazilan ad orada gorunuyor, kaydedince o adla olusuyor.
+  const yeniAdayi = (q.trim() && !uyan.length) ? q.trim() : '';
   sel.innerHTML =
-    `<option value="${YENI_PROJE}">${escapeHtml(t('f_project_new'))}</option>` +
+    `<option value="${YENI_PROJE}">${escapeHtml(yeniAdayi ? t('f_project_create')(yeniAdayi) : t('f_project_new'))}</option>` +
     gosterilecek.map(p=>`<option value="${escapeHtml(p.id)}">${escapeHtml(p.name)}${dusuyor && p.id===secili ? ' ' + escapeHtml(t('f_project_selected')) : ''}</option>`).join('');
 
   // Arama yazildiginda ESLESEN ilk proje seciliyor. Onceki hali secimi
@@ -2769,6 +2774,11 @@ function projeSecimiTazele(seciliId){
   // Onceki secim listede kaliyor, sona "(seçili)" notuyla; geri donmek
   // isteyen kaybetmiyor.
   if(q && uyan.length) sel.value = uyan[0].id;
+  // Aranan ada uyan proje YOKSA secim "+ yeni proje"ye geciyor. Onceki
+  // halinde eski secim yerinde kaliyordu: kullanici yeni bir proje adi
+  // yaziyor, "eslesme yok" uyarisini goruyor ve kaydediyordu — kayit
+  // sessizce ONCEKI projeye yaziliyordu, yazdigi proje hic olusmuyordu.
+  else if(yeniAdayi) sel.value = YENI_PROJE;
   else if(secili && gosterilecek.some(p=>p.id===secili)) sel.value = secili;
   else if(!hepsi.length) sel.value = YENI_PROJE;
   else if(gosterilecek.length) sel.value = gosterilecek[0].id;
@@ -2786,7 +2796,11 @@ function secilenProjeyiCoz(){
   const sel = document.getElementById('f_project');
   if(!sel) return null;
   if(sel.value !== YENI_PROJE) return projectById(sel.value);
-  const ad = (window.prompt(t('f_project_prompt')) || '').trim();
+  // Arama kutusuna yazilan ad varsa adi TEKRAR sormuyoruz: kullanici onu
+  // zaten yazdi ve acilir listede "«...» oluştur" yazdigini gordu.
+  const kutu = document.getElementById('f_projectSearch');
+  const yazilan = ((kutu && kutu.value) || '').trim();
+  const ad = yazilan || (window.prompt(t('f_project_prompt')) || '').trim();
   if(!ad) return null;
   const p = projeEkle(ad, '', '');
   if(!p) return null;
@@ -4900,7 +4914,7 @@ document.getElementById('pendingOverlay').addEventListener('click', (e)=>{ if(e.
 
 // Yayina alinan surumun damgasi. Onbellekten eski bir kopya geldiginde bu
 // tarih eski kalir, boylece "guncel mi?" sorusu bakarak cevaplanir.
-const BUILD_STAMP = '2026-09-01 09:30 UTC';
+const BUILD_STAMP = '2026-09-01 10:15 UTC';
 document.getElementById('buildId').textContent = BUILD_STAMP;
 
 // ===== Init =====

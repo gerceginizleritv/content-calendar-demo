@@ -51,6 +51,28 @@ Metin taslağı için Claude (kod iskeleti var), görsel için Gemini (yeni
 iş). Bu ortamdan ikisinin de sunucusuna çıkılamıyor, yani yazılan kod
 burada test edilemiyor; ilk denemeyi kullanıcı yapacak.
 
+### Çok dillilik — ÖNCE ÖZELLİKLER OTURSUN (kullanıcı kararı, 1 Eylül 2026)
+Bugün iki dil var (en, tr), 273 anahtar, ikisi de eksiksiz. Altyapı çok
+dilli: `LANG_NAMES`'e bir kod eklenince menüye kendiliğinden düşüyor.
+Lokasyon uygulamasında üçüncü dil (ru) zaten çalışıyor.
+
+**Karar:** Ürün hâlâ hızla değişiyor; şimdi çeviri yapılırsa her yeni
+özellik altı dilde birden güncellenmek zorunda kalır. Diller özellikler
+oturduktan SONRA.
+
+**Dil eklemeden önce yapılması gereken:** Kodda 8 yerde
+`currentLang === 'tr' ? 'tr-TR' : 'en-US'` yazıyor (tarih biçimi,
+sıralama, büyük/küçük harf). Üçüncü dil eklenirse arayüz çevrilir ama
+tarihler Amerikan biçiminde kalır ve sıralama bozulur — sessizce, hata
+vermeden. Tek seferlik bir locale eşlemesi bunu kalıcı çözer.
+
+**Kapsam dışı:** Sağ-sol yazılan diller (Arapça, İbranice) sadece çeviri
+değil, tüm arayüzün aynalanması demek. Ayrı ve büyük iş.
+
+**Hedef:** 5–6 dil (en, tr + es, pt-BR, de, fr gibi). Örnek demo
+içerikleri de çevrilmeli, yoksa çevrilmiş arayüzde İngilizce caption'lar
+görünür.
+
 ---
 
 ## Ertelenenler (sebebiyle)
