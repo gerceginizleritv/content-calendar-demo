@@ -123,6 +123,14 @@ body{
   border:1px solid var(--line);background:var(--surface-2);
   font-family:'IBM Plex Mono',monospace;font-size:11px;color:var(--text-dim);
 }
+/* [hidden] tek basina yetmiyor olabilir: bu dosyada display kurallarinin
+   hidden'i ezdigi birkac kez yasandi. */
+#pitch[hidden], #pitchBanner[hidden]{display:none;}
+/* Tanitim kapaliyken ust blok bir arac cubuguna donuyor. */
+.header.sade{padding:14px 18px;}
+.header.sade::before{display:none;}
+.header.sade .head-actions{margin-top:0;}
+.header.sade .head-meta{margin-top:10px;padding-top:8px;}
 .head-actions{display:flex;gap:8px;flex-wrap:wrap;align-items:center;margin-top:14px;}
 .head-meta{
   display:flex;gap:14px;align-items:center;justify-content:flex-end;
@@ -894,7 +902,7 @@ body.suruklenirken *{cursor:grabbing !important;}
 <body>
 <div class="wrap">
 
-  <div class="banner">
+  <div class="banner" id="pitchBanner">
     <span class="tally"></span><b data-i18n="banner_bold1">This is a live, working demo.</b> <span data-i18n-html="banner_rest">Click any day to add an entry, or any entry to edit it. It all works <b>without an account</b> — your calendar stays in this browser. Sign in with Google or an email link only if you want the same calendar on your phone too. The demo holds up to 100 entries.</span>
   </div>
 
@@ -905,17 +913,24 @@ body.suruklenirken *{cursor:grabbing !important;}
     <div class="head-top">
       <div class="lockup"><span class="mark"><svg viewBox="0 0 64 64" aria-hidden="true"><rect x="6" y="24" width="52" height="34" rx="7" fill="var(--text)"/><g transform="rotate(-9 32 17)"><rect x="6" y="7" width="52" height="15" rx="3.5" fill="var(--accent)"/><path d="M17 7 L22.5 7 L14.5 22 L9 22 Z" fill="var(--bg)"/><path d="M33 7 L38.5 7 L30.5 22 L25 22 Z" fill="var(--bg)"/><path d="M49 7 L54.5 7 L46.5 22 L41 22 Z" fill="var(--bg)"/></g><rect x="15" y="34" width="26" height="3.4" rx="1.7" fill="var(--text-dim)"/><rect x="15" y="43" width="17" height="3.4" rx="1.7" fill="var(--amber)"/></svg></span><span class="wordmark">Slate</span></div>
       <div class="head-side">
+        <button class="btn btn-sm" id="pitchToggle" aria-expanded="true" data-i18n="pitch_hide">Hide intro</button>
         <button class="btn" id="authBtn" data-i18n="btn_signin">☁ Sign in</button>
         <select id="langSelect" class="lang-select" aria-label="Language"></select>
         <button class="btn" id="themeBtn">🌙 Dark</button>
       </div>
     </div>
+    <!-- Tanitim metni: yeni ziyaretci icin yazildi, her acilista tekrar
+         okunmasi gerekmiyor. Ilk ziyarette aciliyor, sonrasinda kapali
+         basliyor; ustteki dugmeyle her zaman geri getirilebiliyor.
+         Olculdu: kapali haldeyken takvim 735px yerine ~180px'te basliyor. -->
+    <div id="pitch">
     <div class="eyebrow"><span class="tally"></span><span data-i18n="eyebrow">QUEUE — NEXT 6 WEEKS</span></div>
     <h1 data-i18n="h1">One shoot becomes ten posts. Slate keeps all ten on one board.</h1>
     <p data-i18n="h1_sub">The same footage goes out as a Reel, a Short, a carousel and a story — each with its own caption, cover text and time slot. You tick them off as they go out; Slate keeps the list of what is still waiting.</p>
     <!-- Beklentiyi bir bakista kuran etiket: ziyaretcilerin en olasi yanlis
          varsayimi "benim yerime paylasir" olurdu. -->
     <p class="promise-tag" data-i18n="promise_tag">A planning board — not an auto-poster.</p>
+    </div>
     <!-- Ikincil eylemler: kayit olusturmak burada degil, asagidaki buyuk dugmede -->
     <div class="head-actions">
       <button class="btn" id="feedbackBtn" data-i18n="btn_feedback">💬 Feedback</button>
@@ -1514,6 +1529,8 @@ const LANG = {
     nudge_text: "Only this browser knows about this calendar.",
     nudge_cta: "Keep it on every device",
     nudge_dismiss: "Not now",
+    pitch_hide: "Hide intro",
+    pitch_show: "What is Slate?",
     filters_title: "Filter the calendar",
     filters_sub: "show only what you pick — nothing is deleted",
     filter_type: "Type",
@@ -1797,6 +1814,8 @@ const LANG = {
     nudge_text: "Bu takvimi yalnızca bu tarayıcı biliyor.",
     nudge_cta: "Her cihazda yanımda olsun",
     nudge_dismiss: "Şimdi değil",
+    pitch_hide: "Tanıtımı gizle",
+    pitch_show: "Slate nedir?",
     filters_title: "Takvimi filtrele",
     filters_sub: "sadece seçtiklerini gösterir — hiçbir şey silinmez",
     filter_type: "Tür",
@@ -5078,7 +5097,7 @@ document.getElementById('pendingOverlay').addEventListener('click', (e)=>{ if(e.
 
 // Yayina alinan surumun damgasi. Onbellekten eski bir kopya geldiginde bu
 // tarih eski kalir, boylece "guncel mi?" sorusu bakarak cevaplanir.
-const BUILD_STAMP = '2026-09-01 11:20 UTC';
+const BUILD_STAMP = '2026-09-01 12:40 UTC';
 document.getElementById('buildId').textContent = BUILD_STAMP;
 
 // ===== Init =====
@@ -5205,6 +5224,42 @@ window.matchMedia('(prefers-color-scheme: dark)').addEventListener('change', ()=
   if(!document.documentElement.getAttribute('data-theme')) applyThemeLabel();
 });
 applyThemeLabel();
+
+// ---- Tanitim blogu ---------------------------------------------------
+// Baslik, "bu bir demodur" seridi ve vaat etiketi yeni ziyaretci icin
+// yazildi. Her acilista tekrar gosterilmesi, aracin kendisini asagi
+// itiyordu: 1366x768 bir ekranda takvimden ekrana yalnizca 33 piksel
+// dusuyordu, telefonda hic. Ilk ziyarette aciliyor, sonrasinda kapali.
+const PITCH_KEY = 'demo_pitch';
+function pitchOku(){ try{ return localStorage.getItem(PITCH_KEY); }catch(e){ return null; } }
+function pitchYaz(v){ try{ localStorage.setItem(PITCH_KEY, v); }catch(e){} }
+function pitchUygula(acik){
+  const blok = document.getElementById('pitch');
+  const serit = document.getElementById('pitchBanner');
+  const dugme = document.getElementById('pitchToggle');
+  if(!blok || !dugme) return;
+  blok.hidden = !acik;
+  if(serit) serit.hidden = !acik;
+  document.querySelector('.header').classList.toggle('sade', !acik);
+  dugme.textContent = acik ? t('pitch_hide') : t('pitch_show');
+  dugme.setAttribute('data-i18n', acik ? 'pitch_hide' : 'pitch_show');
+  dugme.setAttribute('aria-expanded', acik ? 'true' : 'false');
+}
+function pitchAcikMi(){
+  const v = pitchOku();
+  // Kayit yoksa ILK ziyaret: tanitim aciliyor ve "gorundu" yaziliyor,
+  // boylece ikinci acilista kapali basliyor.
+  if(v === null){ pitchYaz('gorundu'); return true; }
+  return v === 'acik';
+}
+(function(){
+  pitchUygula(pitchAcikMi());
+  document.getElementById('pitchToggle').addEventListener('click', ()=>{
+    const acik = document.getElementById('pitch').hidden;   // simdi acilacak
+    pitchYaz(acik ? 'acik' : 'kapali');
+    pitchUygula(acik);
+  });
+})();
 
 // Ikincil butonlar masaustunde acik, telefonda katli baslar. Filtreler
 // artik burada degil: takvimin ustundeki seritte, kendi acilir panelinde.
