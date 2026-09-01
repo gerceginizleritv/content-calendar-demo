@@ -2387,7 +2387,11 @@ const MAX_EVENTS = 2000;
 // Demo bir deneme alani; hesap basina kayit siniri. Sinirsiz birakildiginda
 // 2000'i gecen kayitlar sayfa yenilenince sessizce siliniyordu — gorunur bir
 // sinir hem bunu engelliyor hem de beklentiyi bastan kuruyor.
-const MAX_ENTRIES = 100;
+// Sinir DEMO icin var: ziyaretciye "bu bir demo, bir aylik plana yeter"
+// demek icin. Giris yapmis kullanicinin sinirini hesabi belirliyor
+// (user_prefs.entry_limit); bos ise varsayilan gecerli.
+const VARSAYILAN_KAYIT_SINIRI = 100;
+let MAX_ENTRIES = VARSAYILAN_KAYIT_SINIRI;
 
 // ===== Bulut (isteğe bağlı) =====
 // Demo hesapsız calisiyor ve oyle kalmali: degerinin yarisi "kaydolmadan dene"
@@ -2425,6 +2429,11 @@ function toRow(e, uid){
   return { id: e.id, user_id: uid, type: e.type, platform: e.platform,
            title: e.title || '', post_date: e.date, post_time: e.time || null,
            uploaded: !!e.uploaded, content: e.content || {},
+           // Calisma alani AYNEN geri yaziliyor. Lokasyon uygulamasi
+           // satirlarini workspace_id ile buluyor; Slate bunu bos
+           // gonderseydi ayni kayitlar orada gorunmez olurdu ve geri
+           // donus noktamiz elimizden giderdi.
+           workspace_id: e.workspaceId || null,
            // Proje kimligi content icinde de duruyor; ayri sutun sorgu ve
            // ileride rapor icin. Ikisi ayni degerden yaziliyor.
            project_id: (e.content && e.content.projectId) || null };
@@ -2432,7 +2441,8 @@ function toRow(e, uid){
 function fromRow(r){
   return { id: r.id, type: r.type, platform: r.platform, title: r.title || '',
            date: r.post_date, time: (r.post_time || '').slice(0,5),
-           uploaded: !!r.uploaded, content: r.content || {} };
+           uploaded: !!r.uploaded, content: r.content || {},
+           workspaceId: r.workspace_id || null };
 }
 // Saat dilimi dogrulamasi desenle degil, Intl'in kendisiyle yapiliyor.
 // Onceki desen kontrolu (regex.test) verilen degeri once string'e ceviriyordu;
@@ -2461,6 +2471,12 @@ function sanitizeEvent(raw){
     time:     /^\d{2}:\d{2}$/.test(raw.time) ? raw.time : '',
     uploaded: raw.uploaded === true,
     title:    str(raw.title, 300),
+    // Calisma alani kimligi burada TASINMALI. Dusseydi kayit geri
+    // yazilirken bosaltilir ve lokasyon uygulamasi — geri donus
+    // noktamiz — o satirlari bir daha bulamazdi.
+    // typeof kontrolu sart: desen kontrolu degeri once metne cevirir.
+    workspaceId: (typeof raw.workspaceId === 'string'
+                  && /^[0-9a-f-]{36}$/i.test(raw.workspaceId)) ? raw.workspaceId : null,
     content: {
       caption:      str(c.caption, 5000),
       hashtags:     str(c.hashtags, 1000),
@@ -2526,7 +2542,7 @@ async function pushChanges(){
   const yazilacak = new Set(dirtyIds);
   try{
     if(silinecek.length){
-      const { error } = await sb.from('calendar_events').delete().in('id', silinecek).is('workspace_id', null);
+      const { error } = await sb.from('calendar_events').delete().in('id', silinecek);
       if(error) throw error;
       silinecek.forEach(id => removedIds.delete(id));
     }
@@ -2546,12 +2562,16 @@ async function pushChanges(){
   }
 }
 
-// Slate yalnizca KENDI satirlarini goruyor: workspace_id'si bos olanlar.
-// Ayni tabloda lokasyon uygulamasinin satirlari da duruyor; onlarin
-// workspace_id'si dolu. Filtre olmasaydi Slate onlari da cekip demoya
-// doldurur, uzerlerine yazar, hatta silebilirdi.
+// Slate artik kullanicinin BUTUN kayitlarini goruyor — lokasyon
+// uygulamasindan gelenler dahil. Onceden workspace_id'si bos olanlarla
+// sinirliydi; iki uygulama ayri dursun diye. Artik tek arac Slate.
+//
+// deleted_at SART: lokasyon uygulamasi silmeyi "mezar tasi" ile yapiyor
+// (satir kaliyor, deleted_at doluyor). Bu filtre olmadan orada silinen
+// kayitlar Slate'te diri gorunurdu.
 async function pullRemote(){
-  const { data, error } = await sb.from('calendar_events').select('*').is('workspace_id', null);
+  const { data, error } = await sb.from('calendar_events')
+    .select('*').is('deleted_at', null);
   if(error) throw error;
   return sanitizeEvents((data || []).map(fromRow));
 }
@@ -2621,7 +2641,8 @@ function calWindowEnd(){
 // burada oturmasi gerekiyor; yarim bir modeli senkronlamak, iki yerde
 // birden duzeltmek demek.
 const PROJ_KEY = 'demo_projects';
-const MAX_PROJECTS = 100;
+const VARSAYILAN_PROJE_SINIRI = 100;
+let MAX_PROJECTS = VARSAYILAN_PROJE_SINIRI;
 // Uretim adimlari. Sirasi bilerek boyle: is soldan saga ilerliyor.
 // Sira isin akisi. Yayin paketi (caption, kapak, etiketler) onaydan sonra,
 // yayindan once: paketi hazir olmayan icerik yayina hazir degildir.
@@ -3545,12 +3566,29 @@ async function tercihPush(){
     console.error('[bulut] tercih yazma hatasi', err);
   }
 }
+// Sinirlar hesaptan. Sayi degilse ya da satir yoksa varsayilana donuyor:
+// bozuk bir deger yuzunden sinir sonsuz olmasin.
+function sinirlariUygula(satir){
+  const oku = (v, varsayilan)=>{
+    const n = Number(v);
+    return (Number.isFinite(n) && n > 0) ? Math.floor(n) : varsayilan;
+  };
+  MAX_ENTRIES  = oku(satir && satir.entry_limit,   VARSAYILAN_KAYIT_SINIRI);
+  MAX_PROJECTS = oku(satir && satir.project_limit, VARSAYILAN_PROJE_SINIRI);
+  renderEntryCount();
+}
+function sinirlariSifirla(){
+  MAX_ENTRIES = VARSAYILAN_KAYIT_SINIRI;
+  MAX_PROJECTS = VARSAYILAN_PROJE_SINIRI;
+}
+
 async function tercihSenkron(){
   if(!sb || !session) return;
   try{
     const { data, error } = await sb.from('user_prefs')
       .select('*').eq('user_id', session.user.id).maybeSingle();
     if(error) throw error;
+    sinirlariUygula(data);
     const uzakDil = data && data.prefs && data.prefs.lang;
     const uzakTs = data && data.updated_at ? Date.parse(data.updated_at) : 0;
     if(uzakDil && LANG[uzakDil] && uzakTs > dilDamgasi()){
@@ -5557,7 +5595,7 @@ document.getElementById('pendingOverlay').addEventListener('click', (e)=>{ if(e.
 
 // Yayina alinan surumun damgasi. Onbellekten eski bir kopya geldiginde bu
 // tarih eski kalir, boylece "guncel mi?" sorusu bakarak cevaplanir.
-const BUILD_STAMP = '2026-09-01 16:20 UTC';
+const BUILD_STAMP = '2026-09-01 17:05 UTC';
 document.getElementById('buildId').textContent = BUILD_STAMP;
 
 // ===== Init =====
@@ -5915,6 +5953,7 @@ async function afterSignIn(){
 // Cikista onceki hesabin verisi ekranda kalmamali.
 function afterSignOut(){
   dirtyIds.clear(); removedIds.clear();
+  sinirlariSifirla();
   const anonim = readLocal(STORAGE_KEY);
   events = anonim || seedData();
   projAfterSignOut();
