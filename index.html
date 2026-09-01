@@ -553,6 +553,14 @@ body.suruklenirken *{cursor:grabbing !important;}
 .pname-sub{display:flex;flex-wrap:wrap;gap:8px;align-items:center;margin-top:5px;}
 .ptype{font-size:10.5px;text-transform:uppercase;letter-spacing:.05em;color:var(--text-dim);
   border:1px solid var(--line);border-radius:99px;padding:1px 8px;}
+/* Script rozeti hem gosterge hem dugme: dolu ise vurgulu, bos ise kesik
+   cizgili. Tablodan tek tikla metne giriliyor. */
+.pscript{font:inherit;font-size:10.5px;text-transform:uppercase;letter-spacing:.05em;
+  border:1px dashed var(--line);border-radius:99px;padding:1px 8px;cursor:pointer;
+  background:none;color:var(--accent-dim);}
+.pscript:hover{border-style:solid;border-color:var(--accent);color:var(--accent);}
+.pscript.dolu{border-style:solid;border-color:var(--accent);background:var(--accent-soft);
+  color:var(--accent);font-weight:600;}
 .pmap{font-size:11.5px;color:var(--accent);text-decoration:none;}
 .pmap:hover{text-decoration:underline;}
 .pmap-missing{font-size:11px;color:var(--amber);}
@@ -605,6 +613,27 @@ body.suruklenirken *{cursor:grabbing !important;}
 :root:not([data-theme="light"]) .dl-start input{color-scheme:dark;}
 /* Pencere genisliginde, kendi satirinda duran ikincil dugme. */
 .btn-wide{display:block;width:100%;margin-top:4px;}
+/* Dugmenin sagindaki durum etiketi: "Script…" yazisi solda kalsin,
+   kac karakter oldugu sagda. */
+#pe_script{display:flex;justify-content:space-between;align-items:center;gap:10px;}
+.btn-tag{font-size:11.5px;font-weight:400;color:var(--text-dim);
+  font-variant-numeric:tabular-nums;}
+
+/* --- Script penceresi --- */
+/* Yazma alani, formdan farkli olarak ekranin buyuk bolumunu istiyor:
+   bir metnin nasil aktigini gormeden duzenlemek zor. */
+.modal-lg{max-width:820px;width:min(820px,96vw);}
+.sc-head{display:flex;justify-content:space-between;align-items:flex-start;gap:14px;
+  margin-bottom:10px;}
+.sc-head h2{margin:0;}
+.sc-who{font-size:13px;color:var(--text-dim);margin-top:3px;}
+.sc-count{font-size:11.5px;color:var(--text-dim);white-space:nowrap;
+  font-variant-numeric:tabular-nums;padding-top:6px;}
+.sc-text{width:100%;min-height:min(58vh,460px);resize:vertical;
+  padding:14px 15px;border:1px solid var(--line);border-radius:10px;
+  background:var(--bg);color:var(--text);font:inherit;font-size:14.5px;line-height:1.7;}
+.sc-text:focus{outline:2px solid var(--accent);outline-offset:-2px;}
+.sc-note{font-size:11.5px;color:var(--text-dim);margin:8px 0 2px;}
 .dl-row{display:grid;grid-template-columns:1fr auto;align-items:center;gap:12px;
   padding:9px 0;border-bottom:1px solid var(--line-soft);}
 .dl-row:last-child{border-bottom:0;}
@@ -1445,11 +1474,34 @@ body.suruklenirken *{cursor:grabbing !important;}
     </label>
     <!-- Termin penceresine ikinci kapi: tablodaki tarih dugmesi tek yol
          oldugu surece, pencere bir kez kapatilinca geri donulemiyordu. -->
+    <button class="btn btn-wide" id="pe_script"><span data-i18n="pe_script">Script…</span><span class="btn-tag" id="pe_scriptTag"></span></button>
     <button class="btn btn-wide" id="pe_deadlines" data-i18n="pe_deadlines">Step deadlines…</button>
     <div class="modal-actions">
       <button class="btn btn-danger" id="pe_delete" data-i18n="p_delete">Delete</button>
       <button class="btn" id="pe_cancel" data-i18n="btn_cancel">Cancel</button>
       <button class="btn btn-primary" id="pe_save" data-i18n="btn_save">Save</button>
+    </div>
+  </div>
+</div>
+
+<!-- Script penceresi: genis ve yalin. Ic ice form alanlari degil, tek bir
+     yazma alani — burada yapilan is yazmak. -->
+<div class="overlay" id="scriptOverlay">
+  <div class="modal modal-lg">
+    <div class="sc-head">
+      <div>
+        <h2 data-i18n="sc_title">Script</h2>
+        <div class="sc-who" id="scWho"></div>
+      </div>
+      <div class="sc-count" id="scCount"></div>
+    </div>
+    <textarea id="sc_text" class="sc-text" rows="18" spellcheck="true"
+              data-i18n-placeholder="sc_ph"
+              placeholder="Write the script here. It stays with the project."></textarea>
+    <p class="sc-note" data-i18n="sc_note">Once there is text here, the “Script” step is ticked on its own.</p>
+    <div class="modal-actions">
+      <button class="btn" id="sc_cancel" data-i18n="btn_cancel">Cancel</button>
+      <button class="btn btn-primary" id="sc_save" data-i18n="btn_save">Save</button>
     </div>
   </div>
 </div>
@@ -1960,6 +2012,16 @@ const LANG = {
     p_shoot_title: "Project start date",
     p_start_label: "Start",
     pe_deadlines: "Step deadlines…",
+    pe_script: "Script…",
+    sc_title: "Script",
+    sc_chip: "Script",
+    sc_ph: "Write the script here. It stays with the project.",
+    sc_note: "Once there is text here, the “Script” step is ticked on its own.",
+    sc_chars: (n)=> `${n.toLocaleString('en-US')} characters`,
+    sc_empty: "empty",
+    sc_open_full: "Open the script",
+    sc_open_empty: "No script yet — write one",
+    sc_full: "Browser storage is full, so the script was NOT saved. Sign in so it goes to the cloud, or shorten the text.",
     pe_cancelled: "This project is cancelled",
     pe_cancelled_hint: "It stays in the list, at the bottom, greyed out. Nothing is deleted.",
     p_badge_done: "All steps done",
@@ -2272,6 +2334,16 @@ const LANG = {
     p_shoot_title: "Proje başlangıç tarihi",
     p_start_label: "Başlangıç",
     pe_deadlines: "Adım termin tarihleri…",
+    pe_script: "Script…",
+    sc_title: "Script",
+    sc_chip: "Script",
+    sc_ph: "Scripti buraya yaz. Projenin yanında durur.",
+    sc_note: "Burada metin olunca “Script” adımı kendiliğinden işaretlenir.",
+    sc_chars: (n)=> `${n.toLocaleString('tr-TR')} karakter`,
+    sc_empty: "boş",
+    sc_open_full: "Scripti aç",
+    sc_open_empty: "Henüz script yok — yaz",
+    sc_full: "Tarayıcı hafızası dolu, script KAYDEDİLMEDİ. Giriş yaparsan buluta gider; ya da metni kısalt.",
     pe_cancelled: "Bu proje iptal edildi",
     pe_cancelled_hint: "Listede kalır, en alta iner, soluklaşır. Hiçbir şey silinmez.",
     p_badge_done: "Bütün adımlar tamam",
@@ -3106,6 +3178,8 @@ function renderProjects(){
         <button type="button" class="pname" data-proj-edit="${escapeHtml(p.id)}">${escapeHtml(p.name)}</button>${rozet}
         <div class="pname-sub">
           <span class="ptype">${escapeHtml(projTypeName(p.type || 'other'))}</span>
+          <button type="button" class="pscript ${scriptVar(p.id)?'dolu':''}" data-sc-open="${escapeHtml(p.id)}"
+                  title="${escapeHtml(scriptVar(p.id) ? t('sc_open_full') : t('sc_open_empty'))}">${escapeHtml(t('sc_chip'))}</button>
           ${adres ? `<a class="pmap" href="${escapeHtml(haritaLinki(adres))}" target="_blank" rel="noopener"
                         title="${escapeHtml(adres)}">📍</a>` : ''}
           ${adresGerekir(p.type) && !adres ? `<span class="pmap-missing">${escapeHtml(t('p_addr_missing'))}</span>` : ''}
@@ -3132,6 +3206,9 @@ function renderProjects(){
       projDirtyIsaretle(p.id);
       saveProjects(); renderProjects();
     });
+  });
+  kap.querySelectorAll('[data-sc-open]').forEach(el=>{
+    el.addEventListener('click', ()=> openScript(el.dataset.scOpen));
   });
   kap.querySelectorAll('[data-dl-open]').forEach(el=>{
     el.addEventListener('click', ()=> openDeadlines(el.dataset.dlOpen));
@@ -3211,6 +3288,37 @@ function sahaSayaciniTazele(){
   el.textContent = n ? t('pe_field_filled')(n) : '';
 }
 
+// --- Script penceresi -------------------------------------------------
+let scriptProjesi = null;
+
+function scriptSayaci(n){
+  const el = document.getElementById('scCount');
+  if(el) el.textContent = n ? t('sc_chars')(n) : t('sc_empty');
+}
+async function openScript(id){
+  const p = projectById(id);
+  if(!p) return;
+  scriptProjesi = p;
+  document.getElementById('scWho').textContent = p.name;
+  const alan = document.getElementById('sc_text');
+  alan.value = scriptMetni(id);
+  scriptSayaci(alan.value.length);
+  document.getElementById('scriptOverlay').classList.add('open');
+  alan.focus();
+  // Bulutta daha yenisi varsa getir. Kullanici yazmaya BASLAMISSA
+  // dokunulmuyor: kendi yazdigini altindan cekmek en kotu surpriz olur.
+  const oncekiMetin = alan.value;
+  await scriptTazele(id);
+  if(scriptProjesi === p && alan.value === oncekiMetin && scriptMetni(id) !== oncekiMetin){
+    alan.value = scriptMetni(id);
+    scriptSayaci(alan.value.length);
+  }
+}
+function closeScript(){
+  document.getElementById('scriptOverlay').classList.remove('open');
+  scriptProjesi = null;
+}
+
 // --- Proje duzenleme penceresi ---------------------------------------
 let duzenlenenProje = null;
 function projTypeSelectDoldur(sel, deger){
@@ -3230,6 +3338,8 @@ function openProjectEdit(id){
   document.getElementById('pe_keywords').value = p.keywords || '';
   document.getElementById('pe_shoot').value = p.shootDate || '';
   document.getElementById('pe_cancelled').checked = p.cancelled === true;
+  const uzunluk = scriptMetni(p.id).length;
+  document.getElementById('pe_scriptTag').textContent = uzunluk ? t('sc_chars')(uzunluk) : t('sc_empty');
   sahaAlanlariniDoldur(p);
   document.getElementById('pe_address').value = p.address || '';
   const tur = document.getElementById('pe_type');
@@ -3393,6 +3503,156 @@ function projAfterSignOut(){
   projDirty.clear(); projRemoved.clear();
   projects = readLocalProjects(PROJ_KEY) || [];
   renderProjects();
+}
+
+// ---- Script -----------------------------------------------------------
+// Script projenin bir ALANI degil, kendi tablosu. Sebep iki tane ve ikisi
+// de bu urunde yasanmis:
+//   1) Proje satiri her termin degisikliginde butun olarak gidiyor. Script
+//      o satirin icinde olsaydi, telefondaki eski kopya masaustunde yazilan
+//      yeni scripti ezerdi. Ayri tabloda script YALNIZCA script degistiginde
+//      gidiyor; ezme ihtimali yapisal olarak yok.
+//   2) Script buyuk (bir metin 12.000 karakter olabilir). Proje satirinin
+//      icinde olsaydi her kucuk degisiklikte kilobaytlar bosa gidiyordu.
+const SCRIPT_KEY = 'demo_scripts';
+// Ust sinir: tarayici hafizasi (~5 MB) sessizce doluyor, hata vermiyor.
+// 40.000 karakter ~6.500 kelime — en uzun belgesel metnine yeter.
+const SCRIPT_MAX = 40000;
+let scripts = {};                 // { projeKimligi: {text, ts, source} }
+const scriptDirty = new Set();
+let scriptPushTimer = null;
+
+function scriptKey(){ return session ? SCRIPT_KEY + '_' + session.user.id : SCRIPT_KEY; }
+function scriptTemizle(ham){
+  const cikti = {};
+  if(!ham || typeof ham !== 'object') return cikti;
+  Object.keys(ham).forEach(id=>{
+    const v = ham[id];
+    if(!v || typeof v !== 'object') return;
+    if(typeof v.text !== 'string' || !v.text) return;
+    cikti[id] = {
+      text: v.text.slice(0, SCRIPT_MAX),
+      ts: typeof v.ts === 'number' ? v.ts : 0,
+      source: v.source === 'drive' || v.source === 'ai' ? v.source : 'manual'
+    };
+  });
+  return cikti;
+}
+function loadScripts(){
+  try{ scripts = scriptTemizle(JSON.parse(localStorage.getItem(scriptKey()) || 'null')); }
+  catch(e){ scripts = {}; }
+}
+function saveScripts(){
+  try{ localStorage.setItem(scriptKey(), JSON.stringify(scripts)); }
+  catch(e){
+    // Kota doldu. Sessizce yutulursa kullanici "kaydettim" sanir.
+    console.error('[script] kaydedilemedi', e);
+    alert(t('sc_full'));
+  }
+}
+function scriptMetni(id){ return (scripts[id] && scripts[id].text) || ''; }
+function scriptVar(id){ return !!scriptMetni(id).trim(); }
+function scriptYaz(id, metin, kaynak){
+  const yeni = (metin || '').slice(0, SCRIPT_MAX);
+  if(yeni === scriptMetni(id)) return false;   // gercekten degismediyse gonderme
+  if(yeni.trim()) scripts[id] = { text: yeni, ts: Date.now(), source: kaynak || 'manual' };
+  else delete scripts[id];
+  scriptDirty.add(id);
+  saveScripts();
+  scriptPushKuyrukla();
+  return true;
+}
+
+function scriptRowYap(id, uid){
+  const v = scripts[id];
+  return {
+    project_id: id, user_id: uid,
+    content: v ? v.text : '',
+    source: v ? v.source : 'manual',
+    updated_at: new Date(v ? v.ts : Date.now()).toISOString()
+  };
+}
+function scriptRowOku(r){
+  return { id: r.project_id, text: r.content || '',
+           ts: r.updated_at ? Date.parse(r.updated_at) : 0,
+           source: r.source || 'manual' };
+}
+function scriptPushKuyrukla(){
+  if(!sb || !session) return;
+  clearTimeout(scriptPushTimer);
+  scriptPushTimer = setTimeout(scriptPush, 900);
+}
+async function scriptPush(){
+  if(!sb || !session || !scriptDirty.size) return;
+  const uid = session.user.id;
+  const gonderilecek = [...scriptDirty];
+  try{
+    const rows = gonderilecek.map(id=> scriptRowYap(id, uid));
+    const { error } = await sb.from('project_scripts')
+      .upsert(rows, { onConflict: 'project_id' });
+    if(error) throw error;
+    gonderilecek.forEach(id=> scriptDirty.delete(id));
+  }catch(err){
+    // Kimlikler kuyrukta kaliyor; sonraki degisiklik tekrar deniyor.
+    console.error('[bulut] script yazma hatasi', err);
+  }
+}
+
+// Giris sonrasi eslestirme. Kural sablonlardaki ile ayni: DAHA YENI olan
+// kazanir, bos olan doluyu silmez.
+async function scriptBulutSenkron(){
+  if(!sb || !session) return;
+  try{
+    const { data, error } = await sb.from('project_scripts')
+      .select('*').eq('user_id', session.user.id);
+    if(error) throw error;
+    let degisti = false;
+    (data || []).forEach(r=>{
+      const u = scriptRowOku(r);
+      if(!u.text.trim()) return;                       // bos bulut satiri doluyu silmiyor
+      const y = scripts[u.id];
+      if(!y || u.ts > (y.ts || 0)){
+        scripts[u.id] = { text: u.text.slice(0, SCRIPT_MAX), ts: u.ts, source: u.source };
+        degisti = true;
+      }else if(u.ts < (y.ts || 0)){
+        scriptDirty.add(u.id);                          // buradaki daha yeni: yukari gitsin
+      }
+    });
+    // Bulutta hic olmayan yereller de gidiyor.
+    Object.keys(scripts).forEach(id=>{
+      if(!(data || []).some(r=> r.project_id === id)) scriptDirty.add(id);
+    });
+    if(degisti){ saveScripts(); renderProjects(); }
+    if(scriptDirty.size) await scriptPush();
+  }catch(err){
+    console.error('[bulut] script okuma hatasi', err);
+  }
+}
+
+// Pencere acilirken TEK satir tazeleniyor. Asil koruma bu: telefondaki
+// eski metni duzenleyip kaydetmek, masaustunde yazilani gercekten yok
+// eder — cunku yeni kaydin damgasi daha yenidir. Once en guncel hali
+// getirip onun uzerine yazdiriyoruz.
+async function scriptTazele(id){
+  if(!sb || !session) return;
+  try{
+    const { data, error } = await sb.from('project_scripts')
+      .select('*').eq('project_id', id).maybeSingle();
+    if(error) throw error;
+    if(!data) return;
+    const u = scriptRowOku(data);
+    if(u.text.trim() && u.ts > ((scripts[id] && scripts[id].ts) || 0)){
+      scripts[id] = { text: u.text.slice(0, SCRIPT_MAX), ts: u.ts, source: u.source };
+      saveScripts();
+    }
+  }catch(err){
+    console.error('[bulut] script tazeleme hatasi', err);
+  }
+}
+
+function scriptAfterSignOut(){
+  scriptDirty.clear();
+  loadScripts();
 }
 
 function readLocalProjects(key){
@@ -3650,6 +3910,36 @@ document.getElementById('pe_save').addEventListener('click', ()=>{
 SAHA_ALANLARI.forEach(([id])=>{
   const el = document.getElementById(id);
   if(el) el.addEventListener('input', sahaSayaciniTazele);
+});
+document.getElementById('sc_text').addEventListener('input', e=>{
+  if(e.target.value.length > SCRIPT_MAX) e.target.value = e.target.value.slice(0, SCRIPT_MAX);
+  scriptSayaci(e.target.value.length);
+});
+document.getElementById('sc_cancel').addEventListener('click', closeScript);
+document.getElementById('scriptOverlay').addEventListener('click', e=>{ if(e.target.id==='scriptOverlay') closeScript(); });
+document.getElementById('sc_save').addEventListener('click', ()=>{
+  const p = scriptProjesi;
+  if(!p) return;
+  const metin = document.getElementById('sc_text').value;
+  scriptYaz(p.id, metin, 'manual');
+  // Adim baglantisi: metin varsa "script" adimi kendiliginden isaretleniyor.
+  // Ters yonu YOK — metni silmek adimi geri almiyor. Script baska bir yerde
+  // yazilmis olabilir ve kullanicinin eliyle koydugu isareti bir silme
+  // isleminin kaldirmasi, isaretin anlamini belirsizlestirirdi.
+  if(metin.trim() && !p.script){
+    p.script = true;
+    projDirtyIsaretle(p.id);
+    saveProjects();
+  }
+  closeScript(); renderProjects();
+});
+document.getElementById('pe_script').addEventListener('click', ()=>{
+  const p = duzenlenenProje;
+  if(!p) return;
+  const kimlik = p.id;
+  document.getElementById('pe_save').click();
+  if(document.getElementById('projectEditOverlay').classList.contains('open')) return; // kaydedilemedi
+  openScript(kimlik);
 });
 document.getElementById('pe_deadlines').addEventListener('click', ()=>{
   const p = duzenlenenProje;
@@ -5891,7 +6181,7 @@ document.getElementById('pendingOverlay').addEventListener('click', (e)=>{ if(e.
 
 // Yayina alinan surumun damgasi. Onbellekten eski bir kopya geldiginde bu
 // tarih eski kalir, boylece "guncel mi?" sorusu bakarak cevaplanir.
-const BUILD_STAMP = '2026-09-01 20:05 UTC';
+const BUILD_STAMP = '2026-09-01 21:30 UTC';
 document.getElementById('buildId').textContent = BUILD_STAMP;
 
 // ===== Init =====
@@ -5905,6 +6195,7 @@ applyStaticI18n();
 populateSelects();
 load();
 loadProjects();
+loadScripts();
 // Bir onceki surumde proje serbest metindi; o kayitlar gercek projeye
 // cevriliyor. Kayitlar yuklendikten SONRA calismali.
 projeleriGocur();
@@ -6198,10 +6489,14 @@ async function afterSignIn(){
   // try blogunun icindeydi: pullRemote() bir kez hata verdiginde
   // sablonlar hic yuklenmiyor, ekranda "silinmis" gorunuyorlardi.
   sablonAfterSignIn();
+  // Scriptler de buluttan BAGIMSIZ yukleniyor: hesaba ozel anahtar bu
+  // noktada belli oldu. Sablonlarda bunun tersi bir kez veri kaybettirdi.
+  loadScripts();
   // Bulut eslestirmesi BEKLENMEDEN baslatiliyor: kendi try/catch'i var,
   // gerektiginde ekrani kendisi tazeliyor. Await edilseydi takvim tek
   // satirlik bir sorgu yuzunden gec acilirdi.
   sablonBulutSenkron();
+  scriptBulutSenkron();
   tercihSenkron();
   try{
     const uzak = await pullRemote();
@@ -6254,6 +6549,7 @@ function afterSignOut(){
   events = anonim || seedData();
   projAfterSignOut();
   sablonAfterSignOut();
+  scriptAfterSignOut();
   renderCal();
   setCloudStatus('');
   showToast(t('auth_signed_out'));
