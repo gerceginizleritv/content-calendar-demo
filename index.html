@@ -2274,10 +2274,17 @@ function detectDefaultLang(){
   // via the language selector, and that manual choice is what gets saved.
   return 'en';
 }
-function setLanguage(lang){
+function setLanguage(lang, buluttanGeldi){
   if(!LANG[lang]) return;
   currentLang = lang;
   try{ localStorage.setItem(LANG_KEY, lang); }catch(e){}
+  // Kullanicinin kendi secimi buluta gidiyor. Buluttan GELEN secim geri
+  // gonderilmiyor: damgasi tazelenirse iki cihaz birbirini surekli
+  // gunceller ve hangisinin daha yeni oldugu anlamsizlasir.
+  if(!buluttanGeldi){
+    try{ localStorage.setItem(LANG_TS_KEY, String(Date.now())); }catch(e){}
+    tercihPushKuyrukla();
+  }
   const sel = document.getElementById('langSelect');
   if(sel) sel.value = lang;
   applyStaticI18n();
@@ -3505,6 +3512,59 @@ function saveSablon(){
     }
     localStorage.setItem(anahtar, JSON.stringify(sablon));
   }catch(e){ console.error('[sablon] kaydedilemedi', e); }
+}
+
+// ---- Dil tercihinin bulut senkronu ----------------------------------
+// Dil KISIYE ait: bir cihazda Turkce secen digerinde de Turkce acilmali.
+// Tema ve gorunum (Ay/Hafta/Gun/Tablo) BILEREK senkronlanmiyor; onlar
+// cihaza ait tercihler — bilgisayarda acik, telefonda koyu tema istemek
+// makul.
+const LANG_TS_KEY = 'demo_ui_language_ts';
+let tercihPushTimer = null;
+
+function dilDamgasi(){
+  const v = Number(localStorage.getItem(LANG_TS_KEY) || 0);
+  return Number.isFinite(v) ? v : 0;
+}
+function tercihPushKuyrukla(){
+  if(!sb || !session) return;
+  clearTimeout(tercihPushTimer);
+  tercihPushTimer = setTimeout(tercihPush, 700);
+}
+async function tercihPush(){
+  if(!sb || !session) return;
+  try{
+    const { error } = await sb.from('user_prefs').upsert([{
+      user_id: session.user.id,
+      prefs: { lang: currentLang },
+      updated_at: new Date(dilDamgasi() || Date.now()).toISOString()
+    }], { onConflict: 'user_id' });
+    if(error) throw error;
+  }catch(err){
+    // Yerel tercih yerinde; sonraki degisiklik tekrar deniyor.
+    console.error('[bulut] tercih yazma hatasi', err);
+  }
+}
+async function tercihSenkron(){
+  if(!sb || !session) return;
+  try{
+    const { data, error } = await sb.from('user_prefs')
+      .select('*').eq('user_id', session.user.id).maybeSingle();
+    if(error) throw error;
+    const uzakDil = data && data.prefs && data.prefs.lang;
+    const uzakTs = data && data.updated_at ? Date.parse(data.updated_at) : 0;
+    if(uzakDil && LANG[uzakDil] && uzakTs > dilDamgasi()){
+      // Bulut daha yeni: ekrani onun diline cevir ve damgayi ona esitle.
+      try{ localStorage.setItem(LANG_TS_KEY, String(uzakTs)); }catch(e){}
+      if(uzakDil !== currentLang) setLanguage(uzakDil, true);
+      return;
+    }
+    // Buradaki secim daha yeni (ya da bulutta hic yok): yukari gidiyor.
+    if(!dilDamgasi()){ try{ localStorage.setItem(LANG_TS_KEY, String(Date.now())); }catch(e){} }
+    await tercihPush();
+  }catch(err){
+    console.error('[bulut] tercih okuma hatasi', err);
+  }
 }
 
 // ---- Sablonlarin bulut senkronu ------------------------------------
@@ -5497,7 +5557,7 @@ document.getElementById('pendingOverlay').addEventListener('click', (e)=>{ if(e.
 
 // Yayina alinan surumun damgasi. Onbellekten eski bir kopya geldiginde bu
 // tarih eski kalir, boylece "guncel mi?" sorusu bakarak cevaplanir.
-const BUILD_STAMP = '2026-09-01 15:35 UTC';
+const BUILD_STAMP = '2026-09-01 16:20 UTC';
 document.getElementById('buildId').textContent = BUILD_STAMP;
 
 // ===== Init =====
@@ -5808,6 +5868,7 @@ async function afterSignIn(){
   // gerektiginde ekrani kendisi tazeliyor. Await edilseydi takvim tek
   // satirlik bir sorgu yuzunden gec acilirdi.
   sablonBulutSenkron();
+  tercihSenkron();
   try{
     const uzak = await pullRemote();
 
