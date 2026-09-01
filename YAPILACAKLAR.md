@@ -23,12 +23,32 @@ Açıklama şablonları ve hesap listesi şu an yalnızca tarayıcının
 deposunda. Projelerde olduğu gibi bir tablo ve senkron gerekiyor.
 Tek satırlık bir veri olduğu için projelerden daha küçük bir iş.
 
-**Dikkat:** Bu alanda bir kez veri kaybı yaşandı. Sebebi, verinin
-açılışta oturum çözülmeden okunmasıydı: anahtar o an anonim anahtardı,
-kaydetme ise girişten sonra hesabın anahtarına yazıyordu. Okuma bir daha
-oraya bakmadığı için girişliyken girilen her şey yenilemede yok
-görünüyordu. Aynı tuzağa düşmemek için: **oturum durumu değiştiğinde
-veriyi yeniden oku.**
+**Dikkat:** Bu alanda İKİ kez veri kaybı yaşandı; ikisi de aynı kökten:
+şablonlar tarayıcıda, oturuma bağlı bir anahtarda duruyor.
+
+1. Veri açılışta oturum çözülmeden okunuyordu: anahtar o an anonim
+   anahtardı, kaydetme ise girişten sonra hesabın anahtarına yazıyordu.
+   Okuma bir daha oraya bakmadığı için girişliyken girilen her şey
+   yenilemede yok görünüyordu.
+2. `sablonAfterSignIn()` çağrısı `afterSignIn` içinde, bulut okumasından
+   SONRA duruyordu. `pullRemote()` bir kez hata verince (ağ, RLS, zaman
+   aşımı) catch bloğu yutuyor ve şablonlar hiç yüklenmiyordu — kullanıcı
+   "şablonlarım silinmiş" diye bildirdi. Veri yerinde duruyordu, ekrana
+   hiç gelmiyordu. Beteri: sonra yazılan tek bir harf, boş hâli hesabın
+   anahtarına kaydedip gerçekten siliyordu.
+
+Alınan üç önlem (2026-09-01):
+* Şablon yüklemesi buluttan bağımsız, `afterSignIn`'in EN BAŞINDA.
+* `saveSablon()` boş hâli dolu kaydın üzerine yazacaksa önce
+  `<anahtar>_yedek`'e kopyalıyor.
+* Açılışta aktif anahtar boşsa `sablonAdaylari()` yedeğe ve anonim
+  anahtara bakıp en dolu kopyayı geri getiriyor. Tarama YALNIZCA kendi
+  anahtarlarına bakar — başka bir hesabın anahtarı asla okunmaz, ortak
+  bilgisayarda çıkan kişinin şablonları sonrakinin ekranında kalmasın.
+
+Aynı tuzağa düşmemek için: **oturum durumu değiştiğinde veriyi yeniden
+oku, ve yerel veriyi asla bulut çağrısının başarısına bağlama.**
+Kalıcı çözüm bu maddenin kendisi: şablonlar buluta taşınmalı.
 
 ### Lokasyon uygulamasını kendi adresine taşı
 Yeni sürüm `content-calendar-demo/lokasyon.html` adresinde deneme

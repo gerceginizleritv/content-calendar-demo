@@ -335,8 +335,11 @@ body.suruklenirken *{cursor:grabbing !important;}
      gorunmez '+' isareti yer kaplayip kutucugu sola itiyordu. */
   display:block;width:fit-content;margin:4px auto 0;}
 .pdate:hover{border-color:var(--line);color:var(--text);}
-.pdate.bos{color:transparent;}
-.pdate.bos:hover{color:var(--accent-dim);border-color:var(--line);}
+/* Bos tarih dugmesi GORUNUR: onceden color:transparent idi, yalnizca fare
+   ustune gelince beliriyordu. Dokunmatikte fare yok, dolayisiyla termin
+   penceresine geri donmenin hicbir yolu kalmiyordu. */
+.pdate.bos{color:var(--accent-dim);border-color:var(--line);border-style:dashed;}
+.pdate.bos:hover{color:var(--accent);border-style:solid;}
 /* Tarihi gecmis ve bitmemis adim: tarih metni kirmizi kutuda. */
 .pdate.late{background:rgba(196,69,60,0.14);border-color:var(--red);color:var(--red);
   font-weight:600;}
@@ -346,9 +349,13 @@ body.suruklenirken *{cursor:grabbing !important;}
 .dl-head{display:grid;grid-template-columns:1fr auto;align-items:baseline;gap:12px;
   margin:0 0 4px;padding-bottom:9px;border-bottom:1px solid var(--line);}
 .dl-name{font-size:14px;font-weight:600;}
-.dl-start{font-size:12.5px;color:var(--text-dim);white-space:nowrap;
-  font-variant-numeric:tabular-nums;}
-.dl-start b{color:var(--text);font-weight:600;}
+.dl-start{display:inline-flex;align-items:center;gap:7px;font-size:12.5px;
+  color:var(--text-dim);white-space:nowrap;}
+.dl-start input{padding:6px 9px;border:1px solid var(--line);border-radius:7px;
+  background:var(--bg);color:var(--text);font:inherit;font-size:12.5px;color-scheme:light;}
+:root:not([data-theme="light"]) .dl-start input{color-scheme:dark;}
+/* Pencere genisliginde, kendi satirinda duran ikincil dugme. */
+.btn-wide{display:block;width:100%;margin-top:4px;}
 .dl-row{display:grid;grid-template-columns:1fr auto;align-items:center;gap:12px;
   padding:9px 0;border-bottom:1px solid var(--line-soft);}
 .dl-row:last-child{border-bottom:0;}
@@ -1031,7 +1038,8 @@ body.suruklenirken *{cursor:grabbing !important;}
     <h2 data-i18n="dl_title">Deadlines</h2>
     <div class="dl-head">
       <span class="dl-name" id="dlWho"></span>
-      <span class="dl-start" id="dlStart"></span>
+      <label class="dl-start"><span data-i18n="p_start_label">Start</span>
+        <input type="date" id="dlStart"></label>
     </div>
     <div id="dlRows"></div>
     <div class="modal-actions">
@@ -1057,6 +1065,9 @@ body.suruklenirken *{cursor:grabbing !important;}
     </div>
     <div class="field"><label data-i18n="pe_keywords">Keywords</label>
       <input type="text" id="pe_keywords" maxlength="200"></div>
+    <!-- Termin penceresine ikinci kapi: tablodaki tarih dugmesi tek yol
+         oldugu surece, pencere bir kez kapatilinca geri donulemiyordu. -->
+    <button class="btn btn-wide" id="pe_deadlines" data-i18n="pe_deadlines">Step deadlines…</button>
     <div class="modal-actions">
       <button class="btn btn-danger" id="pe_delete" data-i18n="p_delete">Delete</button>
       <button class="btn" id="pe_cancel" data-i18n="btn_cancel">Cancel</button>
@@ -1557,6 +1568,7 @@ const LANG = {
     ptype_other: "Other",
     p_shoot_title: "Project start date",
     p_start_label: "Start",
+    pe_deadlines: "Step deadlines…",
     p_shoot_label: "Start",
     p_add: "+ Create project",
     p_search_ph: "Search projects — name, type or address",
@@ -1824,6 +1836,7 @@ const LANG = {
     ptype_other: "Diğer",
     p_shoot_title: "Proje başlangıç tarihi",
     p_start_label: "Başlangıç",
+    pe_deadlines: "Adım termin tarihleri…",
     p_shoot_label: "Başlangıç",
     p_add: "+ Proje oluştur",
     p_search_ph: "Proje ara — ad, tür ya da adres",
@@ -2507,11 +2520,10 @@ function openDeadlines(id){
   if(!p) return;
   terminProjesi = p;
   document.getElementById('dlWho').textContent = p.name;
-  // Baslangic tarihi salt okunur referans: alttaki termin kutulari
-  // hangi tarihten sonrasini gosterdigini bilmeden doldurulamiyordu.
-  document.getElementById('dlStart').innerHTML =
-    escapeHtml(t('p_start_label')) + ' <b>' +
-    (p.shootDate ? escapeHtml(tarihMetni(p.shootDate)) : '—') + '</b>';
+  // Baslangic tarihi hem referans hem giris: proje tarihsiz kurulmussa
+  // buradan da girilebiliyor, bunun icin duzenleme penceresine gitmek
+  // gerekmiyor.
+  document.getElementById('dlStart').value = p.shootDate || '';
   document.getElementById('dlRows').innerHTML = PROJ_STEPS.map(k=>`
     <label class="dl-row">
       <span class="dl-step">${escapeHtml(t('step_'+k))}</span>
@@ -2896,6 +2908,7 @@ document.getElementById('dlSave').addEventListener('click', ()=>{
   document.querySelectorAll('#dlRows input').forEach(el=>{
     adimTarihiYaz(p, el.dataset.dlStep, el.value);
   });
+  p.shootDate = document.getElementById('dlStart').value || '';
   projDirtyIsaretle(p.id);
   saveProjects(); closeDeadlines(); renderProjects();
 });
@@ -2926,6 +2939,16 @@ document.getElementById('pe_save').addEventListener('click', ()=>{
   projeIcinKayitlar(p.id).forEach(e=>{ e.content.concept = p.name; markDirty(e.id); });
   save();
   closeProjectEdit(); renderProjects(); renderCal();
+});
+// Duzenleme penceresinden termine gecis: acik formdaki degisiklikler once
+// kaydediliyor, aksi halde pencere degistirince yaziliyorlar kayboluyordu.
+document.getElementById('pe_deadlines').addEventListener('click', ()=>{
+  const p = duzenlenenProje;
+  if(!p) return;
+  const kimlik = p.id;
+  document.getElementById('pe_save').click();
+  if(document.getElementById('projectEditOverlay').classList.contains('open')) return; // ad bos/cakisik: kaydedilemedi
+  openDeadlines(kimlik);
 });
 document.getElementById('p_name').addEventListener('keydown', e=>{ if(e.key === 'Enter') document.getElementById('p_add').click(); });
 document.getElementById('p_search').addEventListener('input', renderProjects);
@@ -3017,8 +3040,26 @@ function okuSablon(key){
   try{ return JSON.parse(localStorage.getItem(key) || 'null'); }
   catch(e){ return null; }
 }
+// Kurtarmaya AÇIK kopyalar. Yalnizca su anki oturuma ait olabilecekler:
+// hesabin kendi anahtari, giris yapilmadan once kullanilan anonim anahtar
+// ve bunlarin yedekleri. BASKA bir hesabin anahtari asla taranmiyor;
+// aksi halde ortak bilgisayarda cikis yapan kisinin sablonlari bir
+// sonrakinin ekraninda kalirdi.
+function sablonAdaylari(anahtar){
+  const izin = [anahtar, anahtar + '_yedek', SABLON_KEY, SABLON_KEY + '_yedek'];
+  return izin.map(k=>({ key:k, veri:okuSablon(k) }))
+             .map(x=>({ ...x, agirlik:sablonAgirligi(x.veri) }))
+             .filter(x=>x.agirlik > 0)
+             .sort((a,b)=>b.agirlik - a.agirlik);
+}
 function loadSablon(){
   sablon = sanitizeSablon(okuSablon(sablonKey()) || okuSablon(SABLON_KEY));
+  // Aktif anahtar bossa bu tarayicidaki en dolu kopya geri getiriliyor:
+  // oturum anahtari degistiginde sablonlar duruyor ama gorunmuyorlardi.
+  if(sablonAgirligi(sablon) === 0){
+    const en = sablonAdaylari(sablonKey())[0];
+    if(en) sablon = sanitizeSablon(en.veri);
+  }
 }
 
 // Giris cozuldugunde sablonlar hesabin anahtarindan yeniden okunuyor.
@@ -3026,22 +3067,44 @@ function loadSablon(){
 // giris yapmadan once girilen sablonlar kaybolmasin.
 function sablonAfterSignIn(){
   const hesabinKopyasi = okuSablon(sablonKey());
-  if(hesabinKopyasi){
+  if(sablonAgirligi(hesabinKopyasi) > 0){
     sablon = sanitizeSablon(hesabinKopyasi);
   }else{
-    const anonim = okuSablon(SABLON_KEY);
-    if(anonim) sablon = sanitizeSablon(anonim);
+    // Hesabin anahtari bos: anonim calisma ya da yedek hesaba tasiniyor.
+    // Hicbiri yoksa BOSALTILIYOR — onceki hesabin ekrandaki verisi
+    // yeni hesabin uzerine yapismasin.
+    const en = sablonAdaylari(sablonKey())[0];
+    sablon = sanitizeSablon(en ? en.veri : hesabinKopyasi);
     saveSablon();
   }
   renderSablon();
 }
+// Cikista SADECE anonim calisma geri geliyor. Burada kurtarma taramasi
+// yapilamaz: hesabin anahtarindaki sablonlar cikis yapan kisinin verisi.
 function sablonAfterSignOut(){
   sablon = sanitizeSablon(okuSablon(SABLON_KEY));
   renderSablon();
 }
+// Bir kaydin ne kadar dolu oldugu: kurtarma sirasinda en dolu kopya secilir.
+function sablonAgirligi(v){
+  if(!v || typeof v !== 'object') return 0;
+  return (Array.isArray(v.accounts) ? v.accounts.length : 0)
+       + ((typeof v.general === 'string' && v.general.trim()) ? 1 : 0)
+       + (v.overrides && typeof v.overrides === 'object' ? Object.keys(v.overrides).length : 0);
+}
 function saveSablon(){
-  try{ localStorage.setItem(sablonKey(), JSON.stringify(sablon)); }
-  catch(e){ console.error('[sablon] kaydedilemedi', e); }
+  try{
+    const anahtar = sablonKey();
+    // Bos hal dolu kaydin uzerine yaziliyorsa once yedegi aliniyor:
+    // yanlis anda calisan tek bir kayit butun sablonlari siliyordu.
+    if(sablonAgirligi(sablon) === 0){
+      const eski = okuSablon(anahtar);
+      if(sablonAgirligi(eski) > 0){
+        try{ localStorage.setItem(anahtar + '_yedek', JSON.stringify(eski)); }catch(e){}
+      }
+    }
+    localStorage.setItem(anahtar, JSON.stringify(sablon));
+  }catch(e){ console.error('[sablon] kaydedilemedi', e); }
 }
 
 // Bir platformun aciklamasina girecek metin: ozeli varsa o, yoksa genel.
@@ -4576,7 +4639,7 @@ document.getElementById('pendingOverlay').addEventListener('click', (e)=>{ if(e.
 
 // Yayina alinan surumun damgasi. Onbellekten eski bir kopya geldiginde bu
 // tarih eski kalir, boylece "guncel mi?" sorusu bakarak cevaplanir.
-const BUILD_STAMP = '2026-09-01 06:20 UTC';
+const BUILD_STAMP = '2026-09-01 07:10 UTC';
 document.getElementById('buildId').textContent = BUILD_STAMP;
 
 // ===== Init =====
@@ -4796,6 +4859,11 @@ function refreshProviders(){
 // veri yukarı tasiniyor, doluysa hesaptaki veri esas aliniyor.
 async function afterSignIn(){
   dirtyIds.clear(); removedIds.clear();
+  // Sablonlar buluta degil tarayiciya yaziliyor, bu yuzden bulut
+  // okumasindan ONCE ve onun disinda yukleniyor. Eskiden en sonda,
+  // try blogunun icindeydi: pullRemote() bir kez hata verdiginde
+  // sablonlar hic yuklenmiyor, ekranda "silinmis" gorunuyorlardi.
+  sablonAfterSignIn();
   try{
     const uzak = await pullRemote();
 
@@ -4830,7 +4898,6 @@ async function afterSignIn(){
     // Projeler kayitlardan SONRA: kayitlar hangi projeye bagli oldugunu
     // biliyor, projeler once gelseydi bir an sahipsiz gorunurlerdi.
     await projAfterSignIn();
-    sablonAfterSignIn();
     renderCal();
     setCloudStatus('ok');
     trackOnce('funnel/cloud-connected');
