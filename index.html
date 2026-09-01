@@ -74,7 +74,114 @@ body{
   padding:24px;
 }
 .mono{font-family:'IBM Plex Mono',monospace;}
-.wrap{max-width:1200px;margin:0 auto;}
+/* Sol serit yer kapladigi icin sayfa genisledi: icerik alani eskisinden
+   dar kalmasin. */
+.wrap{max-width:1440px;margin:0 auto;}
+
+/* --- Uygulama iskeleti: sol serit + calisma alani -----------------------
+   Serit BILEREK sabit (sticky) degil: sabit bir serit dikey alani da yer,
+   oysa buradaki butun isin sebebi dikey alan kazanmakti. */
+.shell{display:flex;gap:20px;align-items:flex-start;}
+.rail{
+  width:208px;flex:none;display:flex;flex-direction:column;gap:16px;
+  padding:16px 12px;background:var(--surface);
+  border:1px solid var(--line);border-radius:12px;
+}
+/* min-width:0 sart: olmadan genis takvim tablosu seridi ezip sayfayi
+   yatay kaydiriyor. */
+.rail-main{flex:1;min-width:0;}
+
+.rail-brand{padding:2px 6px 0;}
+.rail-me{display:flex;flex-direction:column;align-items:center;gap:8px;
+  padding:4px 6px 14px;border-bottom:1px solid var(--line-soft);}
+.avatar{
+  width:54px;height:54px;border-radius:50%;overflow:hidden;flex:none;
+  background:var(--surface-2);border:1px solid var(--line);
+  display:flex;align-items:center;justify-content:center;
+  font:700 18px/1 'Archivo',sans-serif;color:var(--text-dim);
+}
+.avatar img{width:100%;height:100%;object-fit:cover;display:block;}
+/* Giris yapilmamisken daire sessiz bir yer tutucu. */
+.avatar.bos{background:var(--surface-2);border-style:dashed;}
+.avatar.bos::after{content:'';width:20px;height:20px;border-radius:50%;
+  border:2px solid var(--line);}
+.rail-name{font-size:12.5px;font-weight:600;text-align:center;
+  max-width:100%;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;}
+.rail-name[hidden]{display:none;}
+.btn.rail-auth{width:100%;justify-content:center;}
+
+.rail-nav{display:flex;flex-direction:column;gap:2px;}
+/* Serit icindeki sekme: alt cizgi yerine sol vurgu, ve tam genislik. */
+.rail-nav .tab{
+  width:100%;justify-content:flex-start;padding:9px 10px;border-radius:8px;
+  border-bottom:0;margin-bottom:0;border-left:3px solid transparent;
+}
+.rail-nav .tab:hover{background:var(--surface-2);}
+.rail-nav .tab.active{
+  background:var(--accent-soft);border-left-color:var(--accent);border-bottom-color:transparent;
+}
+
+.rail-foot{display:flex;flex-direction:column;gap:2px;
+  padding-top:12px;border-top:1px solid var(--line-soft);}
+.rail-link{
+  font:inherit;font-size:12.5px;font-weight:500;text-align:left;
+  background:none;border:0;border-radius:7px;padding:7px 10px;cursor:pointer;
+  color:var(--text-dim);
+}
+.rail-link:hover{background:var(--surface-2);color:var(--text);}
+.rail-link:focus-visible{outline:2px solid var(--accent);outline-offset:2px;}
+.rail-prefs{display:flex;gap:6px;align-items:center;margin-top:8px;}
+.rail-prefs .lang-select{flex:1;min-width:0;}
+
+/* Dar ekran: serit yatay bir seride donuyor. Hamburger arkasina
+   saklamiyoruz — sahada telefonla calisan biri icin navigasyonun
+   gorunur kalmasi, bir dokunus tasarrufundan degerli. */
+@media(max-width:1023px){
+  /* align-items:stretch SART. Temel kuraldaki flex-start, dikey dizilimde
+     cocuklari ICERIGE gore boyutluyor: tablo gorunumundeki genis tablo
+     calisma alanini 992px'e cikariyor ve butun SAYFA yana kayiyordu —
+     oysa yalnizca tablonun kendi icinde kaymasi gerekiyor. */
+  .shell{flex-direction:column;gap:14px;align-items:stretch;}
+  .rail-main{width:100%;min-width:0;}
+  .rail{width:100%;flex-direction:row;flex-wrap:wrap;align-items:center;
+    gap:10px;padding:10px 12px;}
+  .rail-brand{padding:0;}
+  .rail-me{flex-direction:row;align-items:center;gap:8px;padding:0;
+    border-bottom:0;margin-left:auto;}
+  .avatar{width:34px;height:34px;font-size:13px;}
+  /* Girisilmemisken bos daire dar ekranda yalnizca gurultu. */
+  .avatar.bos{display:none;}
+  .btn.rail-auth{width:auto;}
+  .rail-nav{flex-direction:row;gap:4px;width:100%;
+    border-top:1px solid var(--line-soft);padding-top:8px;}
+  .rail-nav .tab{width:auto;flex:1;justify-content:center;padding:8px 6px;
+    border-left:0;border-bottom:2px solid transparent;}
+  .rail-nav .tab.active{border-left-color:transparent;border-bottom-color:var(--accent);}
+  .rail-foot{flex-direction:row;flex-wrap:wrap;align-items:center;width:100%;
+    gap:4px;padding-top:8px;}
+  .rail-prefs{margin-top:0;margin-left:auto;}
+  .rail-prefs .lang-select{flex:none;}
+}
+/* Cok dar: serit yazilari kisalmasin diye sekme yazilari kalsin ama
+   ikincil baglantilar alt satira insin. */
+@media(max-width:520px){
+  .rail-name{display:none;}
+  .rail-link{font-size:12px;padding:6px 8px;}
+}
+
+/* --- Sayfa alti ------------------------------------------------------- */
+.site-foot{
+  display:flex;flex-wrap:wrap;gap:14px;align-items:center;
+  margin:26px 0 10px;padding-top:12px;border-top:1px solid var(--line-soft);
+  font-size:11.5px;color:var(--text-dim);
+}
+.site-foot .build-id{margin-left:0;}
+.foot-link{
+  font:inherit;font-size:11.5px;background:none;border:0;padding:0;cursor:pointer;
+  color:var(--text-dim);text-decoration:underline;text-underline-offset:2px;
+}
+.foot-link:hover{color:var(--text);}
+.site-foot .privacy-link{margin-left:auto;}
 
 .banner{
   background:var(--surface); border:1px solid var(--line); border-left:3px solid var(--accent);
@@ -127,10 +234,7 @@ body{
    hidden'i ezdigi birkac kez yasandi. */
 #pitch[hidden], #pitchBanner[hidden]{display:none;}
 /* Tanitim kapaliyken ust blok bir arac cubuguna donuyor. */
-.header.sade{padding:14px 18px;}
-.header.sade::before{display:none;}
-.header.sade .head-actions{margin-top:0;}
-.header.sade .head-meta{margin-top:10px;padding-top:8px;}
+#pitchCard[hidden]{display:none;}
 .head-actions{display:flex;gap:8px;flex-wrap:wrap;align-items:center;margin-top:14px;}
 .head-meta{
   display:flex;gap:14px;align-items:center;justify-content:flex-end;
@@ -902,27 +1006,60 @@ body.suruklenirken *{cursor:grabbing !important;}
 <body>
 <div class="wrap">
 
+  <!-- Uygulama iskeleti: sol serit + calisma alani.
+       Onceki halde kimlik, hesap, tercihler ve ikincil dugmeler ustte
+       yigiliydi ve araci asagi itiyordu (olculdu: takvim 735 pikselde
+       basliyordu). Hepsi sola tasindi; ust taraf tamamen bosaldi. -->
+  <div class="shell">
+    <aside class="rail" id="rail">
+      <div class="rail-brand"><div class="lockup"><span class="mark"><svg viewBox="0 0 64 64" aria-hidden="true"><rect x="6" y="24" width="52" height="34" rx="7" fill="var(--text)"/><g transform="rotate(-9 32 17)"><rect x="6" y="7" width="52" height="15" rx="3.5" fill="var(--accent)"/><path d="M17 7 L22.5 7 L14.5 22 L9 22 Z" fill="var(--bg)"/><path d="M33 7 L38.5 7 L30.5 22 L25 22 Z" fill="var(--bg)"/><path d="M49 7 L54.5 7 L46.5 22 L41 22 Z" fill="var(--bg)"/></g><rect x="15" y="34" width="26" height="3.4" rx="1.7" fill="var(--text-dim)"/><rect x="15" y="43" width="17" height="3.4" rx="1.7" fill="var(--amber)"/></svg></span><span class="wordmark">Slate</span></div></div>
+
+      <!-- Kimlik: fotograf, ad, ve hemen ALTINDA giris dugmesi. -->
+      <div class="rail-me">
+        <div class="avatar" id="railAvatar" aria-hidden="true"></div>
+        <div class="rail-name" id="railName" hidden></div>
+        <button class="btn btn-sm rail-auth" id="authBtn" data-i18n="btn_signin">☁ Sign in</button>
+      </div>
+
+      <nav class="rail-nav" role="tablist">
+<button type="button" class="tab active" id="tabProjects" role="tab">
+          <svg class="tab-ico" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+            <path d="M3 6.5A1.5 1.5 0 0 1 4.5 5h4l2 2.4h7A1.5 1.5 0 0 1 19 8.9V18a1.5 1.5 0 0 1-1.5 1.5h-13A1.5 1.5 0 0 1 3 18z"/>
+            <path d="M8.5 13.4l2 2 4-4.3"/>
+          </svg><span data-i18n="tab_projects">Projects</span>
+        </button>
+        <button type="button" class="tab" id="tabCalendar" role="tab">
+          <svg class="tab-ico" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+            <rect x="3.2" y="5" width="17.6" height="15" rx="2.2"/><path d="M3.2 9.6h17.6M8 3.4v3.2M16 3.4v3.2"/>
+            <rect x="7" y="12.4" width="3" height="3" rx="0.6" fill="currentColor" stroke="none"/>
+          </svg><span data-i18n="tab_calendar">Calendar</span>
+        </button>
+        <button type="button" class="tab" id="tabTemplates" role="tab">
+          <svg class="tab-ico" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+            <rect x="4" y="3.5" width="16" height="17" rx="2.2"/><path d="M8 8.5h8M8 12.5h8M8 16.5h5"/>
+          </svg><span data-i18n="tab_templates">Templates</span>
+        </button>
+      </nav>
+
+      <!-- Alt grup: her zaman erisilebilir olmasi gereken ama sik
+           kullanilmayan seyler. -->
+      <div class="rail-foot">
+        <button class="rail-link" id="pitchToggle" aria-expanded="true" data-i18n="pitch_hide">Hide intro</button>
+        <button class="rail-link" id="tourBtn" data-i18n="btn_tour">? How this works</button>
+        <button class="rail-link" id="feedbackBtn" data-i18n="btn_feedback">💬 Feedback</button>
+        <div class="rail-prefs">
+          <select id="langSelect" class="lang-select" aria-label="Language"></select>
+          <button class="btn btn-sm" id="themeBtn">🌙 Dark</button>
+        </div>
+      </div>
+    </aside>
+
+    <main class="rail-main">
   <div class="banner" id="pitchBanner">
     <span class="tally"></span><b data-i18n="banner_bold1">This is a live, working demo.</b> <span data-i18n-html="banner_rest">Click any day to add an entry, or any entry to edit it. It all works <b>without an account</b> — your calendar stays in this browser. Sign in with Google or an email link only if you want the same calendar on your phone too. The demo holds up to 100 entries.</span>
   </div>
 
-
-  <div class="header">
-    <!-- Ust satir: kimlik solda, hesap ve tercihler sagda. Eskiden bunlarin
-         hepsi tek bir butonlar denizinin icinde kaybolmustu. -->
-    <div class="head-top">
-      <div class="lockup"><span class="mark"><svg viewBox="0 0 64 64" aria-hidden="true"><rect x="6" y="24" width="52" height="34" rx="7" fill="var(--text)"/><g transform="rotate(-9 32 17)"><rect x="6" y="7" width="52" height="15" rx="3.5" fill="var(--accent)"/><path d="M17 7 L22.5 7 L14.5 22 L9 22 Z" fill="var(--bg)"/><path d="M33 7 L38.5 7 L30.5 22 L25 22 Z" fill="var(--bg)"/><path d="M49 7 L54.5 7 L46.5 22 L41 22 Z" fill="var(--bg)"/></g><rect x="15" y="34" width="26" height="3.4" rx="1.7" fill="var(--text-dim)"/><rect x="15" y="43" width="17" height="3.4" rx="1.7" fill="var(--amber)"/></svg></span><span class="wordmark">Slate</span></div>
-      <div class="head-side">
-        <button class="btn btn-sm" id="pitchToggle" aria-expanded="true" data-i18n="pitch_hide">Hide intro</button>
-        <button class="btn" id="authBtn" data-i18n="btn_signin">☁ Sign in</button>
-        <select id="langSelect" class="lang-select" aria-label="Language"></select>
-        <button class="btn" id="themeBtn">🌙 Dark</button>
-      </div>
-    </div>
-    <!-- Tanitim metni: yeni ziyaretci icin yazildi, her acilista tekrar
-         okunmasi gerekmiyor. Ilk ziyarette aciliyor, sonrasinda kapali
-         basliyor; ustteki dugmeyle her zaman geri getirilebiliyor.
-         Olculdu: kapali haldeyken takvim 735px yerine ~180px'te basliyor. -->
+      <div class="header" id="pitchCard">
     <div id="pitch">
     <div class="eyebrow"><span class="tally"></span><span data-i18n="eyebrow">QUEUE — NEXT 6 WEEKS</span></div>
     <h1 data-i18n="h1">One shoot becomes ten posts. Slate keeps all ten on one board.</h1>
@@ -931,55 +1068,13 @@ body.suruklenirken *{cursor:grabbing !important;}
          varsayimi "benim yerime paylasir" olurdu. -->
     <p class="promise-tag" data-i18n="promise_tag">A planning board — not an auto-poster.</p>
     </div>
-    <!-- Ikincil eylemler: kayit olusturmak burada degil, asagidaki buyuk dugmede -->
-    <div class="head-actions">
-      <button class="btn" id="feedbackBtn" data-i18n="btn_feedback">💬 Feedback</button>
-      <details class="fold fold-inline" id="moreFold">
-        <summary><span data-i18n="more_title">More</span></summary>
-        <div class="fold-row">
-          <button class="btn" id="exportBtn" data-i18n="btn_export">Export Backup</button>
-          <button class="btn" id="resetBtn" data-i18n="btn_reset">Reset Demo</button>
-          <button class="btn" id="tourBtn" data-i18n="btn_tour">? How this works</button>
-        </div>
-      </details>
-    </div>
-    <!-- Sessiz alt serit: isleyisle ilgisi olmayan baglantilar -->
-    <div class="head-meta">
-      <!-- Surum damgasi: "yeni surumu mu goruyorum?" sorusunu tarayici
-           onbellegiyle ugrasmadan cevaplamak icin. Yayinda her seferinde
-           guncelleniyor. -->
-      <span class="build-id" id="buildId" title="build"></span>
-      <a class="privacy-link" href="privacy.html" data-i18n="btn_privacy">Privacy</a>
-    </div>
-  </div>
+      </div>
 
   <div class="nudge" id="cloudNudge" hidden>
     <span class="nudge-dot"></span>
     <span data-i18n="nudge_text">Only this browser knows about this calendar.</span>
     <button class="btn btn-primary btn-sm" id="nudgeCta" data-i18n="nudge_cta">Keep it on every device</button>
     <button class="btn btn-sm" id="nudgeDismiss" data-i18n="nudge_dismiss">Not now</button>
-  </div>
-
-  <!-- Iki calisma alani: takvim "ne zaman", projeler "nerede kaldi".
-       Ayni veriye iki farkli soruyla bakiliyor. -->
-  <div class="tabs" role="tablist">
-    <button type="button" class="tab active" id="tabProjects" role="tab">
-      <svg class="tab-ico" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
-        <path d="M3 6.5A1.5 1.5 0 0 1 4.5 5h4l2 2.4h7A1.5 1.5 0 0 1 19 8.9V18a1.5 1.5 0 0 1-1.5 1.5h-13A1.5 1.5 0 0 1 3 18z"/>
-        <path d="M8.5 13.4l2 2 4-4.3"/>
-      </svg><span data-i18n="tab_projects">Projects</span>
-    </button>
-    <button type="button" class="tab" id="tabCalendar" role="tab">
-      <svg class="tab-ico" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
-        <rect x="3.2" y="5" width="17.6" height="15" rx="2.2"/><path d="M3.2 9.6h17.6M8 3.4v3.2M16 3.4v3.2"/>
-        <rect x="7" y="12.4" width="3" height="3" rx="0.6" fill="currentColor" stroke="none"/>
-      </svg><span data-i18n="tab_calendar">Calendar</span>
-    </button>
-    <button type="button" class="tab" id="tabTemplates" role="tab">
-      <svg class="tab-ico" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
-        <rect x="4" y="3.5" width="16" height="17" rx="2.2"/><path d="M8 8.5h8M8 12.5h8M8 16.5h5"/>
-      </svg><span data-i18n="tab_templates">Templates</span>
-    </button>
   </div>
 
   <div id="projectsPage" hidden>
@@ -1122,6 +1217,17 @@ body.suruklenirken *{cursor:grabbing !important;}
   <div class="cal-table-wrap" id="calTableWrap" hidden></div>
   </div>
 
+    </main>
+  </div>
+
+  <!-- Sayfa alti: isleyisle ilgisi olmayanlar. Surum damgasi burada
+       cunku "yeni surumu mu goruyorum?" sorusu gunde bir kez soruluyor. -->
+  <footer class="site-foot">
+    <span class="build-id" id="buildId" title="build"></span>
+    <a class="privacy-link" href="privacy.html" data-i18n="btn_privacy">Privacy</a>
+    <button class="foot-link" id="exportBtn" data-i18n="btn_export">Export Backup</button>
+    <button class="foot-link" id="resetBtn" data-i18n="btn_reset">Reset Demo</button>
+  </footer>
 </div>
 
 <!-- Klonlama: ayni icerigin farkli gunlerde cikan surumleri. Tarihler tek
@@ -1529,6 +1635,7 @@ const LANG = {
     nudge_text: "Only this browser knows about this calendar.",
     nudge_cta: "Keep it on every device",
     nudge_dismiss: "Not now",
+    btn_signed_in: "☁ Account",
     pitch_hide: "Hide intro",
     pitch_show: "What is Slate?",
     filters_title: "Filter the calendar",
@@ -1814,6 +1921,7 @@ const LANG = {
     nudge_text: "Bu takvimi yalnızca bu tarayıcı biliyor.",
     nudge_cta: "Her cihazda yanımda olsun",
     nudge_dismiss: "Şimdi değil",
+    btn_signed_in: "☁ Hesabım",
     pitch_hide: "Tanıtımı gizle",
     pitch_show: "Slate nedir?",
     filters_title: "Takvimi filtrele",
@@ -5097,7 +5205,7 @@ document.getElementById('pendingOverlay').addEventListener('click', (e)=>{ if(e.
 
 // Yayina alinan surumun damgasi. Onbellekten eski bir kopya geldiginde bu
 // tarih eski kalir, boylece "guncel mi?" sorusu bakarak cevaplanir.
-const BUILD_STAMP = '2026-09-01 12:40 UTC';
+const BUILD_STAMP = '2026-09-01 13:55 UTC';
 document.getElementById('buildId').textContent = BUILD_STAMP;
 
 // ===== Init =====
@@ -5240,7 +5348,10 @@ function pitchUygula(acik){
   if(!blok || !dugme) return;
   blok.hidden = !acik;
   if(serit) serit.hidden = !acik;
-  document.querySelector('.header').classList.toggle('sade', !acik);
+  // Kartin icinde tanitimdan baska bir sey kalmadi: kapaliyken kart da
+  // kalkiyor, yoksa calisma alaninin tepesinde bos beyaz bir kutu duruyor.
+  const kart = document.getElementById('pitchCard');
+  if(kart) kart.hidden = !acik;
   dugme.textContent = acik ? t('pitch_hide') : t('pitch_show');
   dugme.setAttribute('data-i18n', acik ? 'pitch_hide' : 'pitch_show');
   dugme.setAttribute('aria-expanded', acik ? 'true' : 'false');
@@ -5298,9 +5409,51 @@ function setCloudStatus(durum){
 function refreshAuthUi(){
   const b = document.getElementById('authBtn');
   if(!b) return;
-  b.textContent = session ? '\u2601 ' + session.user.email : t('btn_signin');
-  b.title = session ? t('auth_signed_title') : '';
+  // Serit dar: e-postanin tamami dugmeye sigmiyor, ad ustte ayri satirda
+  // duruyor. Dugme yalnizca eylemi soyluyor.
+  b.textContent = session ? t('btn_signed_in') : t('btn_signin');
+  b.title = session ? session.user.email + ' — ' + t('auth_signed_title') : '';
   if(session) document.getElementById('cloudNudge').hidden = true;
+  kimlikGoster();
+}
+
+// Profil fotografi ve ad. Google ile girildiginde Supabase bunlari zaten
+// veriyor (user_metadata), ayri bir servise gerek yok. E-posta linkiyle
+// girenlerde fotograf olmuyor: bas harfle bir daire ciziliyor. Fotograf
+// yuklenemezse de ayni daireye dusuyor.
+function kullaniciAdi(){
+  if(!session) return '';
+  const m = session.user.user_metadata || {};
+  return (m.full_name || m.name || session.user.email || '').trim();
+}
+function basHarf(){
+  const ad = kullaniciAdi();
+  if(!ad) return '?';
+  const p = ad.replace(/@.*$/, '').split(/[.\s_-]+/).filter(Boolean);
+  const h = (p[0] || '').charAt(0) + (p.length > 1 ? p[p.length-1].charAt(0) : '');
+  return (h || ad.charAt(0)).toLocaleUpperCase(currentLang === 'tr' ? 'tr' : 'en');
+}
+function kimlikGoster(){
+  const daire = document.getElementById('railAvatar');
+  const adEl = document.getElementById('railName');
+  if(!daire || !adEl) return;
+  const ad = kullaniciAdi();
+  adEl.textContent = ad;
+  adEl.hidden = !ad;
+  adEl.title = ad;
+
+  const m = (session && session.user.user_metadata) || {};
+  const foto = m.avatar_url || m.picture || '';
+  daire.textContent = session ? basHarf() : '';
+  daire.classList.toggle('bos', !session);
+  if(session && foto){
+    const img = new Image();
+    img.alt = '';
+    img.referrerPolicy = 'no-referrer';
+    // Yuklenemezse (ag yok, baglanti olmus) bas harf yerinde kaliyor.
+    img.onload = ()=>{ daire.textContent = ''; daire.appendChild(img); };
+    img.src = foto;
+  }
 }
 function openAuth(){
   const st = document.getElementById('authStatus');
