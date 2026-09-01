@@ -51,6 +51,66 @@ Metin taslağı için Claude (kod iskeleti var), görsel için Gemini (yeni
 iş). Bu ortamdan ikisinin de sunucusuna çıkılamıyor, yani yazılan kod
 burada test edilemiyor; ilk denemeyi kullanıcı yapacak.
 
+### Termin hatırlatmaları — iki kanal (kullanıcı kararı, 1 Eylül 2026)
+Bugün uyarı yalnızca sayfa AÇIKKEN var: geciken adım kırmızı, üstte şerit.
+Kullanıcı bakmıyorken haber göndermek için tarayıcının dışında zamanlanmış
+bir iş gerekiyor; Supabase bunu yapabiliyor, ayrı sunucu gerekmiyor.
+
+**Yapılacak 1 — Takvim aboneliği (ICS).**
+Kullanıcının terminleri bir takvim adresi olarak yayınlanıyor; kullanıcı
+bu adresi telefonunun takvimine bir kez ekliyor, hatırlatmayı telefonun
+kendisi yapıyor. Zamanlayıcı gerekmez, mesaj başına maliyet yoktur,
+iPhone/Android/Outlook hepsinde çalışır. Gecikme payı birkaç saat —
+termin için sorun değil.
+
+*Kullanıcının şartı:* takvime bir kez eklendikten sonra SİLİNEBİLMELİ.
+İki ayrı şey ve ikisi de gerekli:
+1. Telefonun takvim uygulamasından abonelikten çıkmak (kullanıcı kendi
+   yapar; bizim tarafta hiçbir şey bozulmaz).
+2. Slate'ten bağlantıyı İPTAL etmek — adresteki gizli anahtar
+   yenilenince eski adres ölür. Adres paylaşılmış ya da sızmışsa tek
+   çare bu. Arayüzde "Bağlantıyı yenile / iptal et" düğmesi olacak.
+
+Teknik not: kişiye özel içerik ürettiği için bu adres GitHub Pages'ta
+duramaz, Supabase Edge Function olacak.
+
+**Yapılacak 2 — Tarayıcı bildirimi.**
+Bilgisayarda ve Android'de sorunsuz. iPhone'da kullanıcının Slate'i ana
+ekrana eklemesi ŞART, yoksa bildirim gelmez — arayüzde bunu söylemek
+gerekiyor. `manifest.json` zaten var; eksik olan service worker dosyası
+ve gönderim tarafı (Supabase zamanlanmış görevi). Mesaj başına maliyet
+sıfır.
+
+**Karar verilecek:** hatırlatma ne zaman gitsin — termin günü mü, bir gün
+önce mi, geciktiğinde mi? Kullanıcı kanal ve zaman seçebilmeli. Küçük
+ama sonradan eklemesi can sıkıcı.
+
+**İSTENMEDİ (şimdilik):** e-posta, SMS, WhatsApp. E-posta kendi alan adı
+alınınca yeniden değerlendirilebilir. SMS ve WhatsApp'ın mesaj başına
+gerçek maliyeti var — ücretsiz pakette zarar yazar, ücretli pakete
+saklanmalı. WhatsApp ayrıca Meta iş doğrulaması + önceden onaylı şablon
+istiyor, kurulumu haftalar sürer. Resmî olmayan WhatsApp kütüphaneleri
+KULLANILMAYACAK: kurallara aykırı, numara kapatılır.
+
+### Kendi alan adı — TÜM İŞ BİTİNCE (kullanıcı kararı, 1 Eylül 2026)
+Kullanıcı alan adını işler tamamlandıktan sonra alacak.
+
+**Önemli:** Alan adı almak "kendi sunucumu kurmam gerekecek" demek
+DEĞİL. Slate duran dosyalardan oluşuyor (tek HTML + ikonlar); GitHub
+Pages ücretsiz olarak kendi alan adını kabul ediyor, HTTPS sertifikası
+da ücretsiz geliyor. Yapılacak tek şey alan adı sağlayıcısında DNS
+kaydı. Supabase zaten kendi adresinde duruyor, taşınmıyor.
+
+Sunucu tarafı iş gerektiğinde (zamanlanmış hatırlatma, ICS adresi,
+gizli anahtar tutmak) Supabase Edge Functions kullanılıyor — yine kendi
+sunucu yok.
+
+Taşınma DÜŞÜNÜLEBİLİR ama zorunlu değil: Cloudflare Pages / Netlify /
+Vercel de ücretsiz katmanda kendi alan adını alır ve yönlendirme,
+başlık ayarı gibi konularda GitHub Pages'tan esnektir. GitHub Pages'ın
+bilinen iki sınırı: ücretsiz planda depo herkese açık olmalı, ve sunucu
+tarafı kod çalıştırılamaz.
+
 ### Çok dillilik — ÖNCE ÖZELLİKLER OTURSUN (kullanıcı kararı, 1 Eylül 2026)
 Bugün iki dil var (en, tr), 273 anahtar, ikisi de eksiksiz. Altyapı çok
 dilli: `LANG_NAMES`'e bir kod eklenince menüye kendiliğinden düşüyor.
