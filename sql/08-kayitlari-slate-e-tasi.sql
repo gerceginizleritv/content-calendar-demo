@@ -28,6 +28,24 @@ begin;
 create table if not exists public.calendar_events_yedek as
   select *, now() as yedek_alindi from public.calendar_events;
 
+-- Yedek tablosu KILITLENIYOR. Supabase yeni tablolari otomatik olarak
+-- API'ye aciyor; kilitlenmezse bu tablo herkesin anahtariyla okunabilir
+-- hale gelir ve icinde butun yayin kayitlarin var. Kimseye politika
+-- verilmiyor: tabloya yalnizca SQL Editor (postgres) erisiyor, ki geri
+-- alma betigi de oradan calisiyor.
+alter table public.calendar_events_yedek enable row level security;
+do $$
+begin
+  -- Roller Supabase'de her zaman var; yine de kontrol ediliyor ki eksik
+  -- bir rol yuzunden butun tasima durmasin.
+  if exists (select 1 from pg_roles where rolname = 'anon') then
+    execute 'revoke all on public.calendar_events_yedek from anon';
+  end if;
+  if exists (select 1 from pg_roles where rolname = 'authenticated') then
+    execute 'revoke all on public.calendar_events_yedek from authenticated';
+  end if;
+end $$;
+
 do $$
 declare n bigint; m bigint;
 begin
