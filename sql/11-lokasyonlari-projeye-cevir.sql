@@ -28,15 +28,34 @@ begin
   end if;
 end $$;
 
+-- Projenin sahibi kim?
+-- Lokasyon tablosunda kullanici sutunu YOK: kayitlar calisma alanina
+-- bagli. Sahibi calisma alanindan okuyoruz. Cozulemeyen tek bir lokasyon
+-- olsa bile is duruyor — sahipsiz proje yazmaktansa durup haber vermek.
+do $$
+declare
+  sahipsiz bigint;
+begin
+  select count(*) into sahipsiz
+    from public.locations l
+    left join public.workspaces w on w.id = l.workspace_id
+   where l.deleted_at is null
+     and w.owner_id is null;
+  if sahipsiz > 0 then
+    raise exception '% lokasyonun calisma alani/sahibi cozulemedi. Once bunu konusalim.', sahipsiz;
+  end if;
+end $$;
+
 -- 1) Lokasyonlar -> projeler
 insert into public.projects
-  (id, user_id, name, keywords, notes, address, type, start_date,
+  (id, user_id, workspace_id, name, keywords, notes, address, type, start_date,
    steps, deadlines,
    topic, district, city, format, permission,
    script_url, drive_url, maps_url, field_notes, cautions, shot_list)
 select
   l.id,
-  l.user_id,
+  w.owner_id,
+  l.workspace_id,
   coalesce(l.name, ''),
   '',
   -- Iptal bilgisi Slate'te karsiligi olmayan tek alan; notun basina
@@ -77,6 +96,7 @@ select
   coalesce(l.script_url, ''), coalesce(l.drive_url, ''), coalesce(l.maps_url, ''),
   coalesce(l.field_notes, ''), coalesce(l.cautions, ''), coalesce(l.shot_list, '')
 from public.locations l
+join public.workspaces w on w.id = l.workspace_id
 where l.deleted_at is null
 on conflict (id) do nothing;   -- var olani EZME
 
