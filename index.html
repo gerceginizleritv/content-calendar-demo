@@ -221,6 +221,12 @@ body{
 .tpl-body{width:100%;padding:9px 11px;border:1px solid var(--line);border-radius:8px;
   background:var(--bg);color:var(--text);font:inherit;font-size:13px;line-height:1.5;resize:vertical;}
 .tpl-note{font-size:11.5px;color:var(--amber);margin-top:6px;}
+.tpl-step{display:inline-flex;align-items:center;justify-content:center;width:20px;height:20px;
+  border-radius:50%;background:var(--accent);color:var(--on-accent);font-size:11px;
+  margin-right:9px;flex-shrink:0;}
+.tpl-h{display:flex;align-items:center;}
+.acc-new-2{grid-template-columns:auto auto;justify-content:start;}
+.tpl-saved{font-size:12px;color:var(--green);align-self:center;}
 /* --- Sablon sayfasi --- */
 .tpl-h{font-size:13px;text-transform:uppercase;letter-spacing:.07em;color:var(--text-dim);
   margin:22px 0 10px;font-weight:600;}
@@ -879,27 +885,43 @@ body.suruklenirken *{cursor:grabbing !important;}
   </div>
 
   <div id="templatesPage" hidden>
-    <p class="hint" data-i18n="tpl_intro">Write your fixed sign-off once. It is added to the caption as soon as you pick the platform on a new entry — and you can still edit it there.</p>
+    <p class="hint" data-i18n="tpl_intro">One text for every caption, with exceptions where you want them. It is added at the END of the caption — your own post text stays on top.</p>
 
+    <h3 class="tpl-h"><span class="tpl-step">1</span><span data-i18n="tpl_accounts_title">My accounts</span></h3>
     <div class="acc-new">
       <select id="acc_platform"></select>
-      <input type="text" id="acc_label" maxlength="80" data-i18n-placeholder="tpl_label_ph" placeholder="Name — e.g. Instagram">
-      <input type="text" id="acc_url" maxlength="300" data-i18n-placeholder="tpl_url_ph" placeholder="Handle or link">
+      <input type="text" id="acc_url" maxlength="200" data-i18n-placeholder="tpl_url_ph" placeholder="Handle or link">
       <button type="button" class="btn btn-primary" id="acc_add" data-i18n="tpl_add_account">+ Add account</button>
     </div>
+    <div id="accountList"></div>
 
-    <!-- Metin kutusu ancak hesap eklendikten sonra cikiyor: bos bir kutu
-         neye ait oldugunu soylemedigi surece kafa karistirir. -->
-    <div class="tpl-draft" id="tplDraft" hidden>
-      <div class="tpl-draft-head" id="tplDraftWho"></div>
-      <textarea id="tplDraftText" rows="6" data-i18n-placeholder="tpl_text_ph" placeholder="The text that will go into the caption…"></textarea>
+    <h3 class="tpl-h"><span class="tpl-step">2</span><span data-i18n="tpl_general_title">The text that goes into every caption</span></h3>
+    <p class="hint" data-i18n="tpl_general_hint">Your accounts are dropped in below — delete the ones you do not want. Write anything else above them.</p>
+    <div class="tpl-draft">
+      <textarea id="tplGeneral" rows="7" data-i18n-placeholder="tpl_text_ph" placeholder="The text that will go into the caption…"></textarea>
       <div class="tpl-draft-actions">
-        <button type="button" class="btn" id="tplDraftCancel" data-i18n="btn_cancel">Cancel</button>
-        <button type="button" class="btn btn-primary" id="tplDraftSave" data-i18n="btn_save">Save</button>
+        <button type="button" class="btn" id="tplFillAccounts" data-i18n="tpl_fill">+ Add my accounts</button>
+        <span class="tpl-saved" id="tplSaved" hidden data-i18n="tpl_saved">Saved</span>
       </div>
     </div>
 
-    <div id="tplList"></div>
+    <h3 class="tpl-h"><span class="tpl-step">3</span><span data-i18n="tpl_custom_title">Different text for a specific account?</span></h3>
+    <p class="hint" data-i18n="tpl_custom_hint">Only if you need it. A platform with its own text stops using the general one; everything else keeps it.</p>
+    <div class="acc-new acc-new-2">
+      <select id="ovr_platform"></select>
+      <button type="button" class="btn" id="ovr_add" data-i18n="tpl_customise">+ Customise this one</button>
+    </div>
+
+    <div class="tpl-draft" id="tplOvrDraft" hidden>
+      <div class="tpl-draft-head" id="tplOvrWho"></div>
+      <textarea id="tplOvrText" rows="6" data-i18n-placeholder="tpl_text_ph" placeholder="The text that will go into the caption…"></textarea>
+      <div class="tpl-draft-actions">
+        <button type="button" class="btn" id="tplOvrCancel" data-i18n="btn_cancel">Cancel</button>
+        <button type="button" class="btn btn-primary" id="tplOvrSave" data-i18n="btn_save">Save</button>
+      </div>
+    </div>
+
+    <div id="tplOverrides"></div>
   </div>
 
   <div id="calendarPage">
@@ -1424,10 +1446,10 @@ const LANG = {
     alert_need_project: "Pick a project first, or create one.",
     alert_select_type: "Tick at least one content type.",
     tab_templates: "Templates",
-    tpl_intro: "Write your fixed sign-off once. It drops into the caption the moment you pick a platform on a new entry — and you can still edit it there.",
+    tpl_intro: "One text for every caption, with exceptions where you want them. It is added at the END of the caption — your own post text stays on top — and it drops in the moment you pick a platform on a new entry.",
     tpl_accounts_title: "My accounts",
     tpl_label_ph: "Name — e.g. Instagram",
-    tpl_url_ph: "Handle or link",
+    tpl_url_ph: "Handle or link — e.g. @yourname",
     tpl_add_account: "+ Add account",
     tpl_no_accounts: "No accounts yet. Add the ones you want mentioned in your captions.",
     tpl_table_title: "What goes where",
@@ -1436,7 +1458,16 @@ const LANG = {
     tpl_fixed_text: "Fixed text",
     tpl_preview: "Goes into the caption",
     tpl_text_ph: "The text that will go into the caption…",
-    tpl_none: "No templates yet. Pick a platform above, add the account, then write the text.",
+    tpl_general_title: "The text that goes into every caption",
+    tpl_general_hint: "Your accounts are dropped in below — delete the ones you do not want. Write anything else above them.",
+    tpl_fill: "+ Add my accounts",
+    tpl_saved: "Saved",
+    tpl_custom_title: "Different text for a specific account?",
+    tpl_custom_hint: "Only if you need it. A platform with its own text stops using the general one; everything else keeps it.",
+    tpl_customise: "+ Customise this one",
+    tpl_only_here: (p)=> `only ${p} gets this`,
+    tpl_use_general: "Back to the general text",
+    tpl_ovr_del_confirm: (p)=> `${p} will go back to the general text. Continue?`,
     tpl_goes_to: (p)=> `goes into ${p} captions`,
     tpl_on: "On — added to captions",
     tpl_off: "Off — not added",
@@ -1679,10 +1710,10 @@ const LANG = {
     alert_need_project: "Önce bir proje seç ya da oluştur.",
     alert_select_type: "En az bir içerik tipi işaretle.",
     tab_templates: "Şablonlar",
-    tpl_intro: "Sabit metnini bir kez yaz. Yeni kayıtta platformu seçer seçmez açıklamaya düşüyor — orada istediğin gibi düzenleyebilirsin.",
+    tpl_intro: "Bütün açıklamalara giden tek bir metin, istersen platform bazında istisnalarla. Açıklamanın SONUNA ekleniyor — üstte senin o posta özel yazın kalıyor. Yeni kayıtta platformu seçer seçmez düşüyor.",
     tpl_accounts_title: "Hesaplarım",
     tpl_label_ph: "Ad — örn. Instagram",
-    tpl_url_ph: "Kullanıcı adı ya da bağlantı",
+    tpl_url_ph: "Kullanıcı adı ya da bağlantı — örn. @adiniz",
     tpl_add_account: "+ Hesap ekle",
     tpl_no_accounts: "Henüz hesap yok. Açıklamalarında geçmesini istediklerini ekle.",
     tpl_table_title: "Nerede ne görünsün",
@@ -1691,7 +1722,16 @@ const LANG = {
     tpl_fixed_text: "Sabit metin",
     tpl_preview: "Açıklamaya giden",
     tpl_text_ph: "Açıklamaya girecek metin…",
-    tpl_none: "Henüz şablon yok. Yukarıdan platformu seç, hesabı ekle, sonra metnini yaz.",
+    tpl_general_title: "Her açıklamaya giden metin",
+    tpl_general_hint: "Hesapların aşağıya kendiliğinden düşüyor — istemediğini sil. Başka ne yazacaksan üstlerine yaz.",
+    tpl_fill: "+ Hesaplarımı ekle",
+    tpl_saved: "Kaydedildi",
+    tpl_custom_title: "Belirli bir hesap için farklı metin?",
+    tpl_custom_hint: "Sadece ihtiyacın varsa. Kendi metni olan platform genel metni kullanmayı bırakır; diğerleri kullanmaya devam eder.",
+    tpl_customise: "+ Bunu özelleştir",
+    tpl_only_here: (p)=> `sadece ${p} bunu alıyor`,
+    tpl_use_general: "Genel metne dön",
+    tpl_ovr_del_confirm: (p)=> `${p} genel metne dönecek. Devam edilsin mi?`,
     tpl_goes_to: (p)=> `${p} açıklamalarına giriyor`,
     tpl_on: "Açık — açıklamaya ekleniyor",
     tpl_off: "Kapalı — eklenmiyor",
@@ -2675,34 +2715,68 @@ document.getElementById('tabProjects').addEventListener('click', ()=>{ track('fu
 document.getElementById('tabTemplates').addEventListener('click', ()=>{ track('funnel/templates-opened'); setPage('templates'); });
 
 document.getElementById('acc_add').addEventListener('click', ()=>{
-  if(sablon.templates.length >= MAX_SABLON){ alert(t('tpl_limit')(MAX_SABLON)); return; }
-  sablonTaslak = {
-    platform: document.getElementById('acc_platform').value,
-    name: document.getElementById('acc_label').value.trim().slice(0,80),
-    link: document.getElementById('acc_url').value.trim().slice(0,300)
-  };
-  renderSablon();
-  const kutu = document.getElementById('tplDraftText');
+  const kutu = document.getElementById('acc_url');
+  const el = hesapBicimle(kutu.value);
+  if(!el){ kutu.focus(); return; }
+  if(sablon.accounts.length >= MAX_HESAP){ alert(t('tpl_limit')(MAX_HESAP)); return; }
+  // Kullanici metne henuz dokunmadiysa (metin bos ya da hala otomatik
+  // uretilen hali) hesap satirlari yeniden uretiliyor. Yalnizca "bos ise"
+  // deseydik ikinci hesap listeye hic girmezdi.
+  const oncekiOtomatik = hesaplarMetni().trim();
+  sablon.accounts.push({ id: yeniHesapId(), platform: document.getElementById('acc_platform').value, handle: el });
   kutu.value = '';
+  const mevcut = (sablon.general || '').trim();
+  if(!mevcut || mevcut === oncekiOtomatik) sablon.general = hesaplarMetni();
+  trackOnce('funnel/account-added');
+  saveSablon(); renderSablon();
+});
+document.getElementById('acc_url').addEventListener('keydown', e=>{
+  if(e.key === 'Enter') document.getElementById('acc_add').click();
+});
+
+let sablonKaydedildiSayac = null;
+function kaydedildiGoster(){
+  const n = document.getElementById('tplSaved');
+  if(!n) return;
+  n.hidden = false;
+  clearTimeout(sablonKaydedildiSayac);
+  sablonKaydedildiSayac = setTimeout(()=>{ n.hidden = true; }, 1400);
+}
+document.getElementById('tplGeneral').addEventListener('input', ()=>{
+  sablon.general = document.getElementById('tplGeneral').value.slice(0,2000);
+  saveSablon(); kaydedildiGoster();
+});
+// Sonradan hesap eklenirse metinde olmayan satirlari ekliyor.
+document.getElementById('tplFillAccounts').addEventListener('click', ()=>{
+  const kutu = document.getElementById('tplGeneral');
+  const eksik = sablon.accounts.map(hesapSatiri).filter(x=> kutu.value.indexOf(x) === -1);
+  if(!eksik.length) return;
+  kutu.value = (kutu.value.trim() ? kutu.value.replace(/\s+$/,'') + '\n' : '') + eksik.join('\n');
+  sablon.general = kutu.value.slice(0,2000);
+  saveSablon(); kaydedildiGoster();
+});
+
+document.getElementById('ovr_add').addEventListener('click', ()=>{
+  const sec = document.getElementById('ovr_platform');
+  if(!sec.value) return;
+  ozelTaslak = { platform: sec.value };
+  renderSablon();
+  const kutu = document.getElementById('tplOvrText');
+  // Ozellestirirken de hesaplar hazir geliyor: kullanici istemedigini
+  // buradan siliyor, sifirdan yazmiyor.
+  kutu.value = (sablon.general || hesaplarMetni());
   kutu.focus();
 });
-document.getElementById('tplDraftCancel').addEventListener('click', ()=>{
-  sablonTaslak = null;
-  renderSablon();
+document.getElementById('tplOvrCancel').addEventListener('click', ()=>{
+  ozelTaslak = null; renderSablon();
 });
-document.getElementById('tplDraftSave').addEventListener('click', ()=>{
-  if(!sablonTaslak) return;
-  const metin = document.getElementById('tplDraftText').value.trim();
-  if(!metin){ document.getElementById('tplDraftText').focus(); return; }
-  sablon.templates.push({
-    id: yeniSablonId(), platform: sablonTaslak.platform,
-    name: sablonTaslak.name, link: sablonTaslak.link,
-    text: metin.slice(0,2000), active: true
-  });
-  sablonTaslak = null;
-  document.getElementById('acc_label').value = '';
-  document.getElementById('acc_url').value = '';
-  trackOnce('funnel/template-added');
+document.getElementById('tplOvrSave').addEventListener('click', ()=>{
+  if(!ozelTaslak) return;
+  const metin = document.getElementById('tplOvrText').value.trim();
+  if(!metin){ document.getElementById('tplOvrText').focus(); return; }
+  sablon.overrides[ozelTaslak.platform] = metin.slice(0,2000);
+  ozelTaslak = null;
+  trackOnce('funnel/template-customised');
   saveSablon(); renderSablon();
 });
 
@@ -2761,51 +2835,78 @@ document.getElementById('p_search').addEventListener('input', renderProjects);
 document.getElementById('f_projectSearch').addEventListener('input', ()=> projeSecimiTazele());
 
 // ===== Aciklama sablonlari =====
-// Bir sablon = bir hesap + o hesap icin sabit metin. Kullanici platformu
-// secip adini ve baglantisini yaziyor, acilan kutuya metnini giriyor,
-// kaydediyor. Kaydedilen sablonlar altta listeleniyor.
+// Model tek cumleyle: BIR genel metin, istege bagli olarak platform
+// bazinda ISTISNALAR.
 //
-// Metin, kaydin platformuna gore aciklamaya giriyor: YouTube sablonu
-// YouTube kayitlarina, Instagram sablonu Instagram kayitlarina.
+//   * Genel metin butun aciklamalara gider.
+//   * Bir platform icin ozel metin yazilmissa, o platforma yalnizca o
+//     gider; digerleri genel metni almaya devam eder.
+//
+// Metin aciklamanin SONUNA ekleniyor, basina degil: ustte kullanicinin o
+// posta ozel yazisi durur.
 const SABLON_KEY = 'demo_templates';
-const MAX_SABLON = 30;
+const MAX_HESAP = 20;
 
-let sablon = { templates: [] };
-let sablonTaslak = null;   // { platform, name, link } — kaydedilmeyi bekleyen
+let sablon = { accounts: [], general: '', overrides: {} };
 
-function yeniSablonId(){ return 'tp_' + Math.random().toString(36).slice(2,9); }
+function yeniHesapId(){ return 'ac_' + Math.random().toString(36).slice(2,9); }
+
+// Kullanici adi @ ile yaziliyor; baglanti yapistirilmissa oldugu gibi
+// birakiliyor.
+function hesapBicimle(v){
+  const s = (v||'').trim();
+  if(!s) return '';
+  if(/^https?:\/\//i.test(s) || s.includes('.')) return s;
+  return s.startsWith('@') ? s : '@' + s;
+}
+function hesapSatiri(a){
+  return [CAL_SM_NAMES[a.platform] || a.platform, a.handle].filter(Boolean).join(': ');
+}
+// Butun hesaplarin satirlari — metin kutulari bununla dolduruluyor.
+function hesaplarMetni(){
+  return sablon.accounts.map(hesapSatiri).join('\n');
+}
 
 function sanitizeSablon(ham){
   const str = (v,max)=> (typeof v === 'string' ? v.slice(0,max) : '');
   const h = (ham && typeof ham === 'object') ? ham : {};
 
-  // Onceki surumde model farkliydi (hesaplar + platform basina metin).
-  // O veri kaybolmasin diye sablona ceviriliyor.
-  let ham2 = Array.isArray(h.templates) ? h.templates : null;
-  if(!ham2 && (Array.isArray(h.accounts) || h.perPlatform)){
-    ham2 = [];
-    const hesaplar = Array.isArray(h.accounts) ? h.accounts : [];
-    Object.keys(h.perPlatform || {}).forEach(p=>{
-      const eski = h.perPlatform[p] || {};
-      const parcalar = [];
-      if(eski.text) parcalar.push(eski.text);
-      hesaplar.filter(a=> (eski.use||{})[a.id])
-              .forEach(a=> parcalar.push([a.label, a.url].filter(Boolean).join(': ')));
-      if(parcalar.length) ham2.push({ platform: p, name: CAL_SM_NAMES[p] || p, link: '', text: parcalar.join('\n\n'), active: true });
-    });
+  let hesaplar = Array.isArray(h.accounts) ? h.accounts : [];
+  let genel = str(h.general, 2000);
+  let istisna = (h.overrides && typeof h.overrides === 'object') ? h.overrides : {};
+
+  // Onceki surumler: (1) sablon listesi, (2) hesaplar + platform basina
+  // metin. Ikisi de istisnaya cevriliyor, veri kaybolmuyor.
+  if(!h.general && !h.overrides){
+    const eskiListe = Array.isArray(h.templates) ? h.templates : null;
+    if(eskiListe){
+      istisna = {};
+      eskiListe.forEach(x=>{
+        if(CAL_SM_PLATFORMS.includes(x.platform) && x.text) istisna[x.platform] = str(x.text, 2000);
+      });
+      hesaplar = eskiListe.map(x=>({ platform:x.platform, handle:x.link || x.name }));
+    }else if(h.perPlatform){
+      istisna = {};
+      Object.keys(h.perPlatform).forEach(p=>{
+        const m = str((h.perPlatform[p]||{}).text, 2000);
+        if(m && CAL_SM_PLATFORMS.includes(p)) istisna[p] = m;
+      });
+      hesaplar = (Array.isArray(h.accounts) ? h.accounts : []).map(a=>({ platform:a.platform, handle:a.url || a.label }));
+    }
   }
 
-  const liste = (ham2 || []).slice(0, MAX_SABLON).map(x=>({
-    id: (typeof x.id === 'string' && /^[A-Za-z0-9_-]{1,32}$/.test(x.id)) ? x.id : yeniSablonId(),
-    platform: CAL_SM_PLATFORMS.includes(x.platform) ? x.platform : 'instagram',
-    name: str(x.name, 80),
-    link: str(x.link, 300),
-    text: str(x.text, 2000),
-    // Kapali sablon listede duruyor ama aciklamaya girmiyor: silmeden
-    // gecici olarak devre disi birakabilmek icin.
-    active: x.active !== false
-  })).filter(x=> x.text || x.name || x.link);
-  return { templates: liste };
+  const temizHesap = hesaplar.slice(0, MAX_HESAP).map(a=>({
+    id: (typeof a.id === 'string' && /^[A-Za-z0-9_-]{1,32}$/.test(a.id)) ? a.id : yeniHesapId(),
+    platform: CAL_SM_PLATFORMS.includes(a.platform) ? a.platform : 'instagram',
+    handle: hesapBicimle(str(a.handle, 200))
+  })).filter(a=>a.handle);
+
+  const temizIstisna = {};
+  CAL_SM_PLATFORMS.forEach(p=>{
+    if(typeof istisna[p] === 'string' && istisna[p].trim()) temizIstisna[p] = str(istisna[p], 2000);
+  });
+
+  return { accounts: temizHesap, general: genel, overrides: temizIstisna };
 }
 
 function sablonKey(){ return session ? SABLON_KEY + '_' + session.user.id : SABLON_KEY; }
@@ -2820,13 +2921,90 @@ function saveSablon(){
   catch(e){ console.error('[sablon] kaydedilemedi', e); }
 }
 
-// Bir platform icin aciklamaya girecek metin: o platformun acik
-// sablonlari, girildikleri sirayla.
+// Bir platformun aciklamasina girecek metin: ozeli varsa o, yoksa genel.
 function sablonMetni(platform){
-  return sablon.templates
-    .filter(x=> x.active && x.platform === platform && (x.text||'').trim())
-    .map(x=> x.text.trim())
-    .join('\n\n');
+  const ozel = sablon.overrides[platform];
+  if(typeof ozel === 'string' && ozel.trim()) return ozel.trim();
+  return (sablon.general || '').trim();
+}
+
+// --- Sablon sayfasi ---------------------------------------------------
+let ozelTaslak = null;   // { platform } — kaydedilmeyi bekleyen istisna
+
+function renderSablon(){
+  const hKap = document.getElementById('accountList');
+  if(!hKap) return;
+
+  // 1. Hesaplar
+  hKap.innerHTML = sablon.accounts.length
+    ? sablon.accounts.map(a=>`<div class="hesap-satir">
+        <span class="hesap-pico" style="color:${CAL_SM_COLORS[a.platform]}" title="${escapeHtml(CAL_SM_NAMES[a.platform])}">${PLATFORM_ICONS[a.platform]||''}</span>
+        <span class="hesap-ad">${escapeHtml(CAL_SM_NAMES[a.platform])}</span>
+        <span class="hesap-url">${escapeHtml(a.handle)}</span>
+        <button type="button" class="btn btn-sm" data-hesap-sil="${escapeHtml(a.id)}">${escapeHtml(t('p_delete'))}</button>
+      </div>`).join('')
+    : '<p class="hint">' + escapeHtml(t('tpl_no_accounts')) + '</p>';
+  hKap.querySelectorAll('[data-hesap-sil]').forEach(el=>{
+    el.addEventListener('click', ()=>{
+      sablon.accounts = sablon.accounts.filter(a=>a.id !== el.dataset.hesapSil);
+      saveSablon(); renderSablon();
+    });
+  });
+
+  // 2. Genel metin — bos ise hesap satirlariyla dolduruluyor.
+  const genelKutu = document.getElementById('tplGeneral');
+  if(genelKutu && document.activeElement !== genelKutu){
+    genelKutu.value = sablon.general || '';
+  }
+
+  // 3. Ozellestirmeler
+  const taslakKap = document.getElementById('tplOvrDraft');
+  if(ozelTaslak){
+    taslakKap.hidden = false;
+    document.getElementById('tplOvrWho').innerHTML =
+      `<span class="hesap-pico" style="color:${CAL_SM_COLORS[ozelTaslak.platform]}">${PLATFORM_ICONS[ozelTaslak.platform]||''}</span>` +
+      `<b>${escapeHtml(CAL_SM_NAMES[ozelTaslak.platform])}</b>`;
+  }else{
+    taslakKap.hidden = true;
+  }
+
+  const oKap = document.getElementById('tplOverrides');
+  const platformlar = CAL_SM_PLATFORMS.filter(p=> typeof sablon.overrides[p] === 'string');
+  oKap.innerHTML = platformlar.length ? platformlar.map(p=>`
+    <div class="tpl-card">
+      <div class="tpl-card-head">
+        <span class="hesap-pico" style="color:${CAL_SM_COLORS[p]}">${PLATFORM_ICONS[p]||''}</span>
+        <span class="hesap-ad">${escapeHtml(CAL_SM_NAMES[p])}</span>
+        <span class="tpl-hedef">${escapeHtml(t('tpl_only_here')(CAL_SM_NAMES[p]))}</span>
+        <button type="button" class="btn btn-sm" data-ovr-sil="${p}">${escapeHtml(t('tpl_use_general'))}</button>
+      </div>
+      <textarea class="tpl-body" data-ovr-body="${p}" rows="4">${escapeHtml(sablon.overrides[p])}</textarea>
+    </div>`).join('') : '';
+
+  oKap.querySelectorAll('[data-ovr-sil]').forEach(el=>{
+    el.addEventListener('click', ()=>{
+      const p = el.dataset.ovrSil;
+      if(!confirm(t('tpl_ovr_del_confirm')(CAL_SM_NAMES[p]))) return;
+      delete sablon.overrides[p];
+      saveSablon(); renderSablon();
+    });
+  });
+  // Metin yazilirken liste bastan cizilmiyor: yazi kutusundan odak kacar,
+  // kullanici her harfte yazmayi keserdi.
+  oKap.querySelectorAll('[data-ovr-body]').forEach(el=>{
+    el.addEventListener('input', ()=>{
+      sablon.overrides[el.dataset.ovrBody] = el.value.slice(0,2000);
+      saveSablon();
+    });
+  });
+
+  // Ozellestirme secicisinde yalnizca henuz ozeli olmayan platformlar
+  const sec = document.getElementById('ovr_platform');
+  if(sec){
+    const kalan = CAL_SM_PLATFORMS.filter(p=> typeof sablon.overrides[p] !== 'string');
+    sec.innerHTML = kalan.map(p=>`<option value="${p}">${escapeHtml(CAL_SM_NAMES[p])}</option>`).join('');
+    document.getElementById('ovr_add').disabled = kalan.length === 0;
+  }
 }
 
 // --- Sablonun modalde canli gorunmesi ---------------------------------
@@ -2847,9 +3025,11 @@ function modalSablonSenkron(){
   if(!kutu) return;
   const secili = Array.from(document.querySelectorAll('#platformChecks input:checked')).map(el=>el.value);
 
-  // Birden fazla platform seciliyse tek bir aciklama kutusunda hangisini
-  // gosterecegimiz belirsiz; her kayit kendi metnini kaydederken aliyor.
-  const yeniBlok = secili.length === 1 ? sablonMetni(secili[0]) : '';
+  // Secili platformlarin metni ayniysa kutuya dusuyor. Farkliysa (biri
+  // ozellestirilmisse) tek kutuda hangisini gosterecegimiz belirsiz;
+  // her kayit kendi metnini kaydederken aliyor.
+  const metinler = [...new Set(secili.map(sablonMetni))];
+  const yeniBlok = metinler.length === 1 ? metinler[0] : '';
 
   let metin = kutu.value;
   if(modalSablonBlogu){
@@ -2864,71 +3044,8 @@ function modalSablonSenkron(){
 
   const not = document.getElementById('captionTplNote');
   if(not){
-    not.hidden = !(secili.length > 1 && secili.some(p=>sablonMetni(p)));
+    not.hidden = !(metinler.length > 1 && metinler.some(Boolean));
   }
-}
-
-// --- Sablon sayfasi ---------------------------------------------------
-function renderSablon(){
-  const taslakKap = document.getElementById('tplDraft');
-  if(!taslakKap) return;
-
-  if(sablonTaslak){
-    taslakKap.hidden = false;
-    document.getElementById('tplDraftWho').innerHTML =
-      `<span class="hesap-pico" style="color:${CAL_SM_COLORS[sablonTaslak.platform]}">${PLATFORM_ICONS[sablonTaslak.platform]||''}</span>` +
-      `<b>${escapeHtml(sablonTaslak.name || CAL_SM_NAMES[sablonTaslak.platform])}</b>` +
-      (sablonTaslak.link ? `<span class="hesap-url">${escapeHtml(sablonTaslak.link)}</span>` : '');
-  }else{
-    taslakKap.hidden = true;
-  }
-
-  const kap = document.getElementById('tplList');
-  if(!sablon.templates.length){
-    kap.innerHTML = '<p class="hint">' + escapeHtml(t('tpl_none')) + '</p>';
-    return;
-  }
-  kap.innerHTML = sablon.templates.map(x=>`
-    <div class="tpl-card ${x.active?'':'pasif'}">
-      <div class="tpl-card-head">
-        <button type="button" class="pflag ${x.active?'on':''}" data-tpl-toggle="${escapeHtml(x.id)}"
-                title="${escapeHtml(t(x.active ? 'tpl_on' : 'tpl_off'))}"><span class="pbox">${x.active?'✓':''}</span></button>
-        <span class="hesap-pico" style="color:${CAL_SM_COLORS[x.platform]}" title="${escapeHtml(CAL_SM_NAMES[x.platform])}">${PLATFORM_ICONS[x.platform]||''}</span>
-        <span class="hesap-ad">${escapeHtml(x.name || CAL_SM_NAMES[x.platform])}</span>
-        ${x.link ? `<span class="hesap-url">${escapeHtml(x.link)}</span>` : ''}
-        <span class="tpl-hedef">${escapeHtml(t('tpl_goes_to')(CAL_SM_NAMES[x.platform]))}</span>
-        <button type="button" class="btn btn-sm" data-tpl-del="${escapeHtml(x.id)}">${escapeHtml(t('p_delete'))}</button>
-      </div>
-      <textarea class="tpl-body" data-tpl-body="${escapeHtml(x.id)}" rows="4">${escapeHtml(x.text)}</textarea>
-    </div>`).join('');
-
-  kap.querySelectorAll('[data-tpl-toggle]').forEach(el=>{
-    el.addEventListener('click', ()=>{
-      const x = sablon.templates.find(y=>y.id === el.dataset.tplToggle);
-      if(!x) return;
-      x.active = !x.active;
-      saveSablon(); renderSablon();
-    });
-  });
-  kap.querySelectorAll('[data-tpl-del]').forEach(el=>{
-    el.addEventListener('click', ()=>{
-      const x = sablon.templates.find(y=>y.id === el.dataset.tplDel);
-      if(!x) return;
-      if(!confirm(t('tpl_del_confirm')(x.name || CAL_SM_NAMES[x.platform]))) return;
-      sablon.templates = sablon.templates.filter(y=>y.id !== x.id);
-      saveSablon(); renderSablon();
-    });
-  });
-  // Metin yazilirken liste bastan cizilmiyor: yazi kutusundan odak kacar,
-  // kullanici her harfte yazmayi keserdi.
-  kap.querySelectorAll('[data-tpl-body]').forEach(el=>{
-    el.addEventListener('input', ()=>{
-      const x = sablon.templates.find(y=>y.id === el.dataset.tplBody);
-      if(!x) return;
-      x.text = el.value.slice(0,2000);
-      saveSablon();
-    });
-  });
 }
 
 // ===== Surukle-birak =====
@@ -4331,7 +4448,7 @@ document.getElementById('pendingOverlay').addEventListener('click', (e)=>{ if(e.
 
 // Yayina alinan surumun damgasi. Onbellekten eski bir kopya geldiginde bu
 // tarih eski kalir, boylece "guncel mi?" sorusu bakarak cevaplanir.
-const BUILD_STAMP = '2026-09-01 04:02 UTC';
+const BUILD_STAMP = '2026-09-01 04:23 UTC';
 document.getElementById('buildId').textContent = BUILD_STAMP;
 
 // ===== Init =====
