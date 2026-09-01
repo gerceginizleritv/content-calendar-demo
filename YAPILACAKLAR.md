@@ -24,7 +24,22 @@ varsayımı yapmadan önce `information_schema`'ya bakılacak.
 uygulaması (`lokasyon.html` ve kendi deposu) çalışır durumda. Kullanıcı
 kararı: bir hafta sorunsuz gidene kadar eski sistem silinmeyecek.
 
-**SIRADAKİ İŞ: Termin hatırlatmaları** (aşağıdaki bölüm). Kullanıcının
+**Fikir → Script zinciri kuruldu (1 Eylül gecesi).** Yol haritasının 02.
+maddesi. Her projenin artık bir **Fikirler** listesi ve bir **Script**
+alanı var; tabloda `FİKİR → SCRIPT` zinciri görünüyor. "Bu fikirlerden
+script yaz" düğmesi bugün fikirleri iskelet olarak script alanına
+yazıyor — AI kapısı açıldığında aynı yeri o dolduracak, arayüz
+değişmeyecek.
+
+İkisi de `project_scripts` tablosunda ama **ayrı zaman damgalarıyla**:
+telefondan fikir eklerken masaüstünde yazılan scriptin geri alınmaması
+için. Proje satırı script taşımıyor; ezme ihtimali yapısal olarak yok.
+
+Sırada (yol haritasındaki sıra): **fikirden üret** (AI anahtarını
+bekliyor) → **script'i caption üretimine bağlam olarak besleme** →
+**Drive'dan getir** → Drive'a dışa aktarma.
+
+**SIRADAKİ İŞ (kullanıcı listesi): Termin hatırlatmaları** (aşağıdaki bölüm). Kullanıcının
 verdiği sıralamada 4. madde; 1, 2 ve 3 bitti (3'ün yerini birleştirme
 aldı).
 

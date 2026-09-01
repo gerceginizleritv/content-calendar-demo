@@ -561,6 +561,9 @@ body.suruklenirken *{cursor:grabbing !important;}
 .pscript:hover{border-style:solid;border-color:var(--accent);color:var(--accent);}
 .pscript.dolu{border-style:solid;border-color:var(--accent);background:var(--accent-soft);
   color:var(--accent);font-weight:600;}
+/* Zincir oku: fikir → script. Iki rozetin arasindaki bu tek isaret,
+   sirayi anlatmanin en ucuz yolu. */
+.pchain{font-size:10px;color:var(--accent-dim);}
 .pmap{font-size:11.5px;color:var(--accent);text-decoration:none;}
 .pmap:hover{text-decoration:underline;}
 .pmap-missing{font-size:11px;color:var(--amber);}
@@ -634,6 +637,29 @@ body.suruklenirken *{cursor:grabbing !important;}
   background:var(--bg);color:var(--text);font:inherit;font-size:14.5px;line-height:1.7;}
 .sc-text:focus{outline:2px solid var(--accent);outline-offset:-2px;}
 .sc-note{font-size:11.5px;color:var(--text-dim);margin:8px 0 2px;}
+/* Script yazarken fikirler goz onunde: katli, yer kaplamiyor. */
+.sc-ideas{margin-bottom:10px;}
+.sc-idea-list{margin:6px 0 0;padding-left:20px;font-size:13px;color:var(--text-dim);}
+.sc-idea-list li{margin:3px 0;}
+
+/* --- Fikir penceresi --- */
+.fk-list{max-height:min(42vh,340px);overflow-y:auto;margin:10px 0 12px;}
+.fk-row{display:grid;grid-template-columns:auto 1fr auto;gap:10px;align-items:start;
+  padding:8px 0;border-bottom:1px solid var(--line-soft);}
+.fk-row:last-child{border-bottom:0;}
+.fk-no{font-size:11px;color:var(--accent-dim);font-variant-numeric:tabular-nums;
+  padding-top:9px;min-width:16px;text-align:right;}
+.fk-text{width:100%;resize:none;overflow:hidden;padding:7px 10px;
+  border:1px solid transparent;border-radius:8px;background:transparent;
+  color:var(--text);font:inherit;font-size:14px;line-height:1.55;}
+.fk-text:hover{border-color:var(--line);}
+.fk-text:focus{outline:0;border-color:var(--accent);background:var(--bg);}
+.fk-new{display:grid;grid-template-columns:1fr auto;gap:8px;}
+.fk-new input{min-width:0;padding:11px 12px;border:1px solid var(--line);border-radius:9px;
+  background:var(--bg);color:var(--text);font:inherit;font-size:14px;}
+.fk-new input:focus{outline:2px solid var(--accent);outline-offset:-2px;}
+#fk_toScript{margin-top:12px;}
+#fk_toScript:disabled{opacity:.5;cursor:default;}
 .dl-row{display:grid;grid-template-columns:1fr auto;align-items:center;gap:12px;
   padding:9px 0;border-bottom:1px solid var(--line-soft);}
 .dl-row:last-child{border-bottom:0;}
@@ -1474,12 +1500,43 @@ body.suruklenirken *{cursor:grabbing !important;}
     </label>
     <!-- Termin penceresine ikinci kapi: tablodaki tarih dugmesi tek yol
          oldugu surece, pencere bir kez kapatilinca geri donulemiyordu. -->
+    <button class="btn btn-wide" id="pe_ideas"><span data-i18n="pe_ideas">Ideas…</span><span class="btn-tag" id="pe_ideasTag"></span></button>
     <button class="btn btn-wide" id="pe_script"><span data-i18n="pe_script">Script…</span><span class="btn-tag" id="pe_scriptTag"></span></button>
     <button class="btn btn-wide" id="pe_deadlines" data-i18n="pe_deadlines">Step deadlines…</button>
     <div class="modal-actions">
       <button class="btn btn-danger" id="pe_delete" data-i18n="p_delete">Delete</button>
       <button class="btn" id="pe_cancel" data-i18n="btn_cancel">Cancel</button>
       <button class="btn btn-primary" id="pe_save" data-i18n="btn_save">Save</button>
+    </div>
+  </div>
+</div>
+
+<!-- Fikir penceresi. Zincirin BASI: once dagilmis fikirler, sonra script.
+     Tek bir buyuk metin kutusu degil LISTE, cunku fikir boyle birikiyor —
+     akla geldikce bir satir. Liste ayrica script'e gecerken hazir bir
+     iskelet veriyor. -->
+<div class="overlay" id="ideaOverlay">
+  <div class="modal modal-lg">
+    <div class="sc-head">
+      <div>
+        <h2 data-i18n="fk_title">Ideas</h2>
+        <div class="sc-who" id="fkWho"></div>
+      </div>
+      <div class="sc-count" id="fkCount"></div>
+    </div>
+    <p class="sc-note" data-i18n="fk_intro">What could this video be about? One line per idea — an angle, a question, a scene, a person to talk to. Practical notes belong in the project’s Notes.</p>
+    <div class="fk-list" id="fkList"></div>
+    <div class="fk-new">
+      <input type="text" id="fk_new" maxlength="600" data-i18n-placeholder="fk_ph"
+             placeholder="One idea — press Enter to add">
+      <button type="button" class="btn btn-primary" id="fk_add" data-i18n="fk_add">+ Add</button>
+    </div>
+    <!-- Zincirin gorunur oldugu yer. AI gelmeden de calisiyor: fikirler
+         script alanina iskelet olarak yaziliyor, kaydetmeden once
+         degistirilebiliyor. -->
+    <button class="btn btn-wide" id="fk_toScript" data-i18n="fk_to_script">Write the script from these →</button>
+    <div class="modal-actions">
+      <button class="btn" id="fk_close" data-i18n="btn_close">Close</button>
     </div>
   </div>
 </div>
@@ -1495,6 +1552,13 @@ body.suruklenirken *{cursor:grabbing !important;}
       </div>
       <div class="sc-count" id="scCount"></div>
     </div>
+    <!-- Fikirler yazarken GORUNUR kalsin: bir pencere kapatip otekini
+         acmak, zinciri kagit uzerinde birakir. -->
+    <details class="fold sc-ideas" id="sc_ideasFold" hidden>
+      <summary><span data-i18n="fk_title">Ideas</span>
+        <span class="fold-count" id="sc_ideasCount"></span></summary>
+      <ul class="sc-idea-list" id="sc_ideasList"></ul>
+    </details>
     <textarea id="sc_text" class="sc-text" rows="18" spellcheck="true"
               data-i18n-placeholder="sc_ph"
               placeholder="Write the script here. It stays with the project."></textarea>
@@ -2012,6 +2076,17 @@ const LANG = {
     p_shoot_title: "Project start date",
     p_start_label: "Start",
     pe_deadlines: "Step deadlines…",
+    pe_ideas: "Ideas…",
+    fk_title: "Ideas",
+    fk_chip: "Idea",
+    fk_open: "Ideas for this project",
+    fk_intro: "What could this video be about? One line per idea — an angle, a question, a scene, a person to talk to. Practical notes belong in the project’s Notes.",
+    fk_ph: "One idea — press Enter to add",
+    fk_add: "+ Add",
+    fk_none: "No ideas yet. The first line is the hardest — write it half-finished.",
+    fk_remove: "Remove",
+    fk_count: (n)=> `${n} ${n===1?'idea':'ideas'}`,
+    fk_to_script: "Write the script from these →",
     pe_script: "Script…",
     sc_title: "Script",
     sc_chip: "Script",
@@ -2334,6 +2409,17 @@ const LANG = {
     p_shoot_title: "Proje başlangıç tarihi",
     p_start_label: "Başlangıç",
     pe_deadlines: "Adım termin tarihleri…",
+    pe_ideas: "Fikirler…",
+    fk_title: "Fikirler",
+    fk_chip: "Fikir",
+    fk_open: "Bu projenin fikirleri",
+    fk_intro: "Bu video ne anlatabilir? Her fikir bir satır — bir açı, bir soru, bir sahne, konuşulacak bir kişi. İşin pratik notları projenin Notlar alanında.",
+    fk_ph: "Bir fikir — eklemek için Enter",
+    fk_add: "+ Ekle",
+    fk_none: "Henüz fikir yok. En zoru ilk satır — yarım da olsa yaz.",
+    fk_remove: "Çıkar",
+    fk_count: (n)=> `${n} fikir`,
+    fk_to_script: "Bu fikirlerden script yaz →",
     pe_script: "Script…",
     sc_title: "Script",
     sc_chip: "Script",
@@ -3178,6 +3264,9 @@ function renderProjects(){
         <button type="button" class="pname" data-proj-edit="${escapeHtml(p.id)}">${escapeHtml(p.name)}</button>${rozet}
         <div class="pname-sub">
           <span class="ptype">${escapeHtml(projTypeName(p.type || 'other'))}</span>
+          <button type="button" class="pscript ${fikirSayisi(p.id)?'dolu':''}" data-fk-open="${escapeHtml(p.id)}"
+                  title="${escapeHtml(t('fk_open'))}">${escapeHtml(t('fk_chip'))}${fikirSayisi(p.id)?' · '+fikirSayisi(p.id):''}</button>
+          <span class="pchain">→</span>
           <button type="button" class="pscript ${scriptVar(p.id)?'dolu':''}" data-sc-open="${escapeHtml(p.id)}"
                   title="${escapeHtml(scriptVar(p.id) ? t('sc_open_full') : t('sc_open_empty'))}">${escapeHtml(t('sc_chip'))}</button>
           ${adres ? `<a class="pmap" href="${escapeHtml(haritaLinki(adres))}" target="_blank" rel="noopener"
@@ -3206,6 +3295,9 @@ function renderProjects(){
       projDirtyIsaretle(p.id);
       saveProjects(); renderProjects();
     });
+  });
+  kap.querySelectorAll('[data-fk-open]').forEach(el=>{
+    el.addEventListener('click', ()=> openIdeas(el.dataset.fkOpen));
   });
   kap.querySelectorAll('[data-sc-open]').forEach(el=>{
     el.addEventListener('click', ()=> openScript(el.dataset.scOpen));
@@ -3288,6 +3380,91 @@ function sahaSayaciniTazele(){
   el.textContent = n ? t('pe_field_filled')(n) : '';
 }
 
+// --- Fikir penceresi --------------------------------------------------
+// Pencere ACIKKEN duzenlenen liste burada tutuluyor; her tuşta kaydetmek
+// yerine "Ekle / cikar / alandan cikinca" anlarinda yaziliyor.
+let fikirProjesi = null;
+let fikirTaslak = [];
+
+function fikirleriCiz(){
+  const kap = document.getElementById('fkList');
+  if(!kap) return;
+  if(!fikirTaslak.length){
+    kap.innerHTML = '<p class="hint">' + escapeHtml(t('fk_none')) + '</p>';
+  }else{
+    kap.innerHTML = fikirTaslak.map((f,i)=>`
+      <div class="fk-row">
+        <span class="fk-no">${i+1}</span>
+        <textarea class="fk-text" rows="1" maxlength="${FIKIR_MAX}" data-fk="${escapeHtml(f.id)}">${escapeHtml(f.text)}</textarea>
+        <button type="button" class="k-del" data-fk-del="${escapeHtml(f.id)}"
+                title="${escapeHtml(t('fk_remove'))}">×</button>
+      </div>`).join('');
+    kap.querySelectorAll('.fk-text').forEach(el=>{
+      const boyutla = ()=>{ el.style.height = 'auto'; el.style.height = (el.scrollHeight + 2) + 'px'; };
+      boyutla();
+      // Yazi tipi gec yuklenirse ilk olcum kisa kalir; bir kare sonra
+      // tekrar olculuyor.
+      requestAnimationFrame(boyutla);
+      el.addEventListener('input', ()=>{
+        boyutla();
+        const f = fikirTaslak.find(x=>x.id === el.dataset.fk);
+        if(f) f.text = el.value;
+      });
+      el.addEventListener('blur', fikirTaslagiKaydet);
+    });
+    kap.querySelectorAll('[data-fk-del]').forEach(el=>{
+      el.addEventListener('click', ()=>{
+        fikirTaslak = fikirTaslak.filter(x=>x.id !== el.dataset.fkDel);
+        fikirTaslagiKaydet(); fikirleriCiz();
+      });
+    });
+  }
+  const sayac = document.getElementById('fkCount');
+  if(sayac) sayac.textContent = fikirTaslak.length ? t('fk_count')(fikirTaslak.length) : t('sc_empty');
+  const ekle = document.getElementById('fk_add');
+  if(ekle) ekle.disabled = fikirTaslak.length >= FIKIR_ADET;
+}
+function fikirTaslagiKaydet(){
+  if(!fikirProjesi) return;
+  if(fikirYaz(fikirProjesi.id, fikirTaslak)) renderProjects();
+}
+function fikirEkle(){
+  const kutu = document.getElementById('fk_new');
+  const metin = kutu.value.trim();
+  if(!metin) return;
+  if(fikirTaslak.length >= FIKIR_ADET) return;
+  fikirTaslak.push({ id: yeniFikirId(), text: metin.slice(0, FIKIR_MAX), ts: Date.now() });
+  kutu.value = '';
+  fikirTaslagiKaydet(); fikirleriCiz();
+  kutu.focus();
+}
+async function openIdeas(id){
+  const p = projectById(id);
+  if(!p) return;
+  fikirProjesi = p;
+  document.getElementById('fkWho').textContent = p.name;
+  document.getElementById('fk_new').value = '';
+  fikirTaslak = fikirler(id).map(f=>({ ...f }));
+  // Once ACILIYOR, sonra ciziliyor: gizli elemanin scrollHeight'i sifirdir,
+  // satirlar tek satirlik kirpik yuksekliklerle kaliyordu.
+  document.getElementById('ideaOverlay').classList.add('open');
+  fikirleriCiz();
+  document.getElementById('fk_new').focus();
+  // Bulutta daha yenisi varsa getir; kullanici bir sey yazmadiysa tazele.
+  await scriptTazele(id);
+  if(fikirProjesi === p && !document.getElementById('fk_new').value.trim()
+     && JSON.stringify(fikirTaslak) !== JSON.stringify(fikirler(id))
+     && !document.getElementById('fkList').querySelector('.fk-text:focus')){
+    fikirTaslak = fikirler(id).map(f=>({ ...f }));
+    fikirleriCiz();
+  }
+}
+function closeIdeas(){
+  fikirTaslagiKaydet();
+  document.getElementById('ideaOverlay').classList.remove('open');
+  fikirProjesi = null; fikirTaslak = [];
+}
+
 // --- Script penceresi -------------------------------------------------
 let scriptProjesi = null;
 
@@ -3295,13 +3472,34 @@ function scriptSayaci(n){
   const el = document.getElementById('scCount');
   if(el) el.textContent = n ? t('sc_chars')(n) : t('sc_empty');
 }
-async function openScript(id){
+// Fikirlerden iskelet: her fikir kendi basligi altinda bos bir bolum.
+// Metnin kendisi degil, yazmaya baslanacak yer. AI kapisi acildiginda
+// ayni yeri o dolduracak.
+function fikirIskeleti(id){
+  const liste = fikirler(id);
+  if(!liste.length) return '';
+  return liste.map((f,i)=> (i+1) + '. ' + f.text.trim()).join('\n\n') + '\n\n';
+}
+function scriptFikirSeridi(id){
+  const kat = document.getElementById('sc_ideasFold');
+  const liste = fikirler(id);
+  kat.hidden = !liste.length;
+  if(!liste.length) return;
+  document.getElementById('sc_ideasCount').textContent = t('fk_count')(liste.length);
+  document.getElementById('sc_ideasList').innerHTML =
+    liste.map(f=>`<li>${escapeHtml(f.text)}</li>`).join('');
+}
+async function openScript(id, iskeletIste){
   const p = projectById(id);
   if(!p) return;
   scriptProjesi = p;
   document.getElementById('scWho').textContent = p.name;
   const alan = document.getElementById('sc_text');
   alan.value = scriptMetni(id);
+  // Iskelet YALNIZCA alan bosken konuyor ve KAYDEDILMIYOR: var olan bir
+  // metnin uzerine yazmak, saatlerce sureni bir tikla yok etmek olurdu.
+  if(iskeletIste && !alan.value.trim()) alan.value = fikirIskeleti(id);
+  scriptFikirSeridi(id);
   scriptSayaci(alan.value.length);
   document.getElementById('scriptOverlay').classList.add('open');
   alan.focus();
@@ -3309,7 +3507,9 @@ async function openScript(id){
   // dokunulmuyor: kendi yazdigini altindan cekmek en kotu surpriz olur.
   const oncekiMetin = alan.value;
   await scriptTazele(id);
-  if(scriptProjesi === p && alan.value === oncekiMetin && scriptMetni(id) !== oncekiMetin){
+  if(scriptProjesi !== p) return;
+  scriptFikirSeridi(id);
+  if(alan.value === oncekiMetin && scriptMetni(id) && scriptMetni(id) !== oncekiMetin){
     alan.value = scriptMetni(id);
     scriptSayaci(alan.value.length);
   }
@@ -3340,6 +3540,8 @@ function openProjectEdit(id){
   document.getElementById('pe_cancelled').checked = p.cancelled === true;
   const uzunluk = scriptMetni(p.id).length;
   document.getElementById('pe_scriptTag').textContent = uzunluk ? t('sc_chars')(uzunluk) : t('sc_empty');
+  const kacFikir = fikirSayisi(p.id);
+  document.getElementById('pe_ideasTag').textContent = kacFikir ? t('fk_count')(kacFikir) : t('sc_empty');
   sahaAlanlariniDoldur(p);
   document.getElementById('pe_address').value = p.address || '';
   const tur = document.getElementById('pe_type');
@@ -3518,22 +3720,49 @@ const SCRIPT_KEY = 'demo_scripts';
 // Ust sinir: tarayici hafizasi (~5 MB) sessizce doluyor, hata vermiyor.
 // 40.000 karakter ~6.500 kelime — en uzun belgesel metnine yeter.
 const SCRIPT_MAX = 40000;
-let scripts = {};                 // { projeKimligi: {text, ts, source} }
+// Fikir kisa olmali. Uzayan bir fikir zaten scripttir; sinir bunu
+// hatirlatiyor.
+const FIKIR_MAX = 600;
+const FIKIR_ADET = 100;
+// Projenin ICERIGI: fikirler ve script tek satirda ama AYRI zaman
+// damgalariyla. Ayni satirda, cunku ikisi de "bu projenin metni" ve
+// ayni pencerelerden yonetiliyor. Ayri damgalarla, cunku telefonda fikir
+// eklerken masaustunde yazilan scriptin ezilmemesi gerekiyor.
+let scripts = {};   // { projeKimligi: {text, ts, source, ideas, ideasTs} }
 const scriptDirty = new Set();
 let scriptPushTimer = null;
 
 function scriptKey(){ return session ? SCRIPT_KEY + '_' + session.user.id : SCRIPT_KEY; }
+function yeniFikirId(){ return 'fk_' + Date.now().toString(36) + '_' + Math.random().toString(36).slice(2,6); }
+function fikirTemizle(ham){
+  if(!Array.isArray(ham)) return [];
+  return ham.map(f=>{
+    if(typeof f === 'string') return { id: yeniFikirId(), text: f.slice(0, FIKIR_MAX), ts: 0 };
+    if(!f || typeof f !== 'object' || typeof f.text !== 'string') return null;
+    return {
+      id: (typeof f.id === 'string' && /^[A-Za-z0-9_-]{1,64}$/.test(f.id)) ? f.id : yeniFikirId(),
+      text: f.text.slice(0, FIKIR_MAX),
+      ts: typeof f.ts === 'number' ? f.ts : 0
+    };
+  }).filter(f=> f && f.text.trim()).slice(0, FIKIR_ADET);
+}
 function scriptTemizle(ham){
   const cikti = {};
   if(!ham || typeof ham !== 'object') return cikti;
   Object.keys(ham).forEach(id=>{
     const v = ham[id];
     if(!v || typeof v !== 'object') return;
-    if(typeof v.text !== 'string' || !v.text) return;
+    const metin = typeof v.text === 'string' ? v.text.slice(0, SCRIPT_MAX) : '';
+    const fikirler = fikirTemizle(v.ideas);
+    // Ikisi de bossa satir hic durmuyor: bos kayit yer kaplar, hicbir sey
+    // anlatmaz ve "var mi yok mu" sorusunu belirsizlestirir.
+    if(!metin.trim() && !fikirler.length) return;
     cikti[id] = {
-      text: v.text.slice(0, SCRIPT_MAX),
+      text: metin,
       ts: typeof v.ts === 'number' ? v.ts : 0,
-      source: v.source === 'drive' || v.source === 'ai' ? v.source : 'manual'
+      source: v.source === 'drive' || v.source === 'ai' ? v.source : 'manual',
+      ideas: fikirler,
+      ideasTs: typeof v.ideasTs === 'number' ? v.ideasTs : 0
     };
   });
   return cikti;
@@ -3550,13 +3779,37 @@ function saveScripts(){
     alert(t('sc_full'));
   }
 }
+function icerikSatiri(id){
+  if(!scripts[id]) scripts[id] = { text:'', ts:0, source:'manual', ideas:[], ideasTs:0 };
+  return scripts[id];
+}
+function icerikTemizleBos(id){
+  const v = scripts[id];
+  if(v && !v.text.trim() && !(v.ideas || []).length) delete scripts[id];
+}
 function scriptMetni(id){ return (scripts[id] && scripts[id].text) || ''; }
 function scriptVar(id){ return !!scriptMetni(id).trim(); }
+function fikirler(id){ return (scripts[id] && scripts[id].ideas) || []; }
+function fikirSayisi(id){ return fikirler(id).length; }
+
 function scriptYaz(id, metin, kaynak){
   const yeni = (metin || '').slice(0, SCRIPT_MAX);
   if(yeni === scriptMetni(id)) return false;   // gercekten degismediyse gonderme
-  if(yeni.trim()) scripts[id] = { text: yeni, ts: Date.now(), source: kaynak || 'manual' };
-  else delete scripts[id];
+  const v = icerikSatiri(id);
+  v.text = yeni; v.ts = Date.now(); v.source = kaynak || 'manual';
+  icerikTemizleBos(id);
+  scriptDirty.add(id);
+  saveScripts();
+  scriptPushKuyrukla();
+  return true;
+}
+function fikirYaz(id, liste){
+  const yeni = fikirTemizle(liste);
+  const eski = fikirler(id);
+  if(JSON.stringify(yeni) === JSON.stringify(eski)) return false;
+  const v = icerikSatiri(id);
+  v.ideas = yeni; v.ideasTs = Date.now();
+  icerikTemizleBos(id);
   scriptDirty.add(id);
   saveScripts();
   scriptPushKuyrukla();
@@ -3569,13 +3822,17 @@ function scriptRowYap(id, uid){
     project_id: id, user_id: uid,
     content: v ? v.text : '',
     source: v ? v.source : 'manual',
-    updated_at: new Date(v ? v.ts : Date.now()).toISOString()
+    updated_at: new Date(v ? (v.ts || Date.now()) : Date.now()).toISOString(),
+    ideas: v ? v.ideas : [],
+    ideas_updated_at: new Date(v ? (v.ideasTs || 0) : 0).toISOString()
   };
 }
 function scriptRowOku(r){
   return { id: r.project_id, text: r.content || '',
            ts: r.updated_at ? Date.parse(r.updated_at) : 0,
-           source: r.source || 'manual' };
+           source: r.source || 'manual',
+           ideas: fikirTemizle(r.ideas),
+           ideasTs: r.ideas_updated_at ? Date.parse(r.ideas_updated_at) : 0 };
 }
 function scriptPushKuyrukla(){
   if(!sb || !session) return;
@@ -3598,8 +3855,32 @@ async function scriptPush(){
   }
 }
 
-// Giris sonrasi eslestirme. Kural sablonlardaki ile ayni: DAHA YENI olan
-// kazanir, bos olan doluyu silmez.
+// Uzak satiri yerelin uzerine ALAN ALAN katiyor: script ve fikirlerin
+// kendi zaman damgalari var. Tek damga olsaydi, telefonda fikir eklemek
+// masaustunde yazilan scripti geri alirdi.
+// Kural sablonlardaki ile ayni: DAHA YENI olan kazanir, bos olan doluyu
+// silmez. Geri donen deger "yereldeki daha yeni, yukari gitmeli" demek.
+function icerikKat(u){
+  const y = scripts[u.id];
+  let degisti = false, yerelDahaYeni = false;
+  if(u.text.trim() && u.ts > ((y && y.ts) || 0)){
+    const v = icerikSatiri(u.id);
+    v.text = u.text.slice(0, SCRIPT_MAX); v.ts = u.ts; v.source = u.source;
+    degisti = true;
+  }else if(y && y.text.trim() && (y.ts || 0) > u.ts){
+    yerelDahaYeni = true;
+  }
+  if(u.ideas.length && u.ideasTs > ((y && y.ideasTs) || 0)){
+    const v = icerikSatiri(u.id);
+    v.ideas = u.ideas; v.ideasTs = u.ideasTs;
+    degisti = true;
+  }else if(y && (y.ideas || []).length && (y.ideasTs || 0) > u.ideasTs){
+    yerelDahaYeni = true;
+  }
+  return { degisti, yerelDahaYeni };
+}
+
+// Giris sonrasi eslestirme.
 async function scriptBulutSenkron(){
   if(!sb || !session) return;
   try{
@@ -3608,15 +3889,9 @@ async function scriptBulutSenkron(){
     if(error) throw error;
     let degisti = false;
     (data || []).forEach(r=>{
-      const u = scriptRowOku(r);
-      if(!u.text.trim()) return;                       // bos bulut satiri doluyu silmiyor
-      const y = scripts[u.id];
-      if(!y || u.ts > (y.ts || 0)){
-        scripts[u.id] = { text: u.text.slice(0, SCRIPT_MAX), ts: u.ts, source: u.source };
-        degisti = true;
-      }else if(u.ts < (y.ts || 0)){
-        scriptDirty.add(u.id);                          // buradaki daha yeni: yukari gitsin
-      }
+      const sonuc = icerikKat(scriptRowOku(r));
+      if(sonuc.degisti) degisti = true;
+      if(sonuc.yerelDahaYeni) scriptDirty.add(r.project_id);
     });
     // Bulutta hic olmayan yereller de gidiyor.
     Object.keys(scripts).forEach(id=>{
@@ -3629,10 +3904,10 @@ async function scriptBulutSenkron(){
   }
 }
 
-// Pencere acilirken TEK satir tazeleniyor. Asil koruma bu: telefondaki
-// eski metni duzenleyip kaydetmek, masaustunde yazilani gercekten yok
-// eder — cunku yeni kaydin damgasi daha yenidir. Once en guncel hali
-// getirip onun uzerine yazdiriyoruz.
+// Pencere acilirken O PROJENIN satiri tazeleniyor. Asil koruma bu:
+// telefondaki eski metni duzenleyip kaydetmek, masaustunde yazilani
+// gercekten yok eder — cunku yeni kaydin damgasi daha yenidir. Once en
+// guncel hali getirip onun uzerine yazdiriyoruz.
 async function scriptTazele(id){
   if(!sb || !session) return;
   try{
@@ -3640,11 +3915,7 @@ async function scriptTazele(id){
       .select('*').eq('project_id', id).maybeSingle();
     if(error) throw error;
     if(!data) return;
-    const u = scriptRowOku(data);
-    if(u.text.trim() && u.ts > ((scripts[id] && scripts[id].ts) || 0)){
-      scripts[id] = { text: u.text.slice(0, SCRIPT_MAX), ts: u.ts, source: u.source };
-      saveScripts();
-    }
+    if(icerikKat(scriptRowOku(data)).degisti) saveScripts();
   }catch(err){
     console.error('[bulut] script tazeleme hatasi', err);
   }
@@ -3654,7 +3925,6 @@ function scriptAfterSignOut(){
   scriptDirty.clear();
   loadScripts();
 }
-
 function readLocalProjects(key){
   try{
     const ham = JSON.parse(localStorage.getItem(key) || 'null');
@@ -3910,6 +4180,29 @@ document.getElementById('pe_save').addEventListener('click', ()=>{
 SAHA_ALANLARI.forEach(([id])=>{
   const el = document.getElementById(id);
   if(el) el.addEventListener('input', sahaSayaciniTazele);
+});
+document.getElementById('fk_add').addEventListener('click', fikirEkle);
+document.getElementById('fk_new').addEventListener('keydown', e=>{
+  if(e.key === 'Enter'){ e.preventDefault(); fikirEkle(); }
+});
+document.getElementById('fk_close').addEventListener('click', closeIdeas);
+document.getElementById('ideaOverlay').addEventListener('click', e=>{ if(e.target.id==='ideaOverlay') closeIdeas(); });
+document.getElementById('fk_toScript').addEventListener('click', ()=>{
+  const p = fikirProjesi;
+  if(!p) return;
+  // Kutuda yazili kalan fikir de kaybolmasin.
+  if(document.getElementById('fk_new').value.trim()) fikirEkle();
+  const kimlik = p.id;
+  closeIdeas();
+  openScript(kimlik, true);
+});
+document.getElementById('pe_ideas').addEventListener('click', ()=>{
+  const p = duzenlenenProje;
+  if(!p) return;
+  const kimlik = p.id;
+  document.getElementById('pe_save').click();
+  if(document.getElementById('projectEditOverlay').classList.contains('open')) return; // kaydedilemedi
+  openIdeas(kimlik);
 });
 document.getElementById('sc_text').addEventListener('input', e=>{
   if(e.target.value.length > SCRIPT_MAX) e.target.value = e.target.value.slice(0, SCRIPT_MAX);
@@ -6181,7 +6474,7 @@ document.getElementById('pendingOverlay').addEventListener('click', (e)=>{ if(e.
 
 // Yayina alinan surumun damgasi. Onbellekten eski bir kopya geldiginde bu
 // tarih eski kalir, boylece "guncel mi?" sorusu bakarak cevaplanir.
-const BUILD_STAMP = '2026-09-01 21:30 UTC';
+const BUILD_STAMP = '2026-09-01 23:10 UTC';
 document.getElementById('buildId').textContent = BUILD_STAMP;
 
 // ===== Init =====
