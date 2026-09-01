@@ -12,12 +12,29 @@
 -- olarak calismaya devam ediyor.
 --
 -- Tekrar calistirilabilir: cevrilmis satir ikinci kez cevrilmez.
--- ONCE YEDEK AL: Supabase panelinde Database -> Backups.
+--
+-- YEDEK: Ucretsiz planda Supabase yedegi yok, o yuzden yedegi bu betik
+-- kendisi aliyor — ayni veritabaninda bir kopya tablo. Geri donmek
+-- gerekirse sql/09-geri-al.sql o kopyadan geri yaziyor.
 --
 -- Supabase panelinde: SQL Editor -> New query -> yapistir -> Run.
 -- =====================================================================
 
 begin;
+
+-- YEDEK once. "if not exists" burada kritik: betik ikinci kez
+-- calistirilirsa yedek TAZELENMEMELI, yoksa elimizdeki tek saglam kopya
+-- cevrilmis veriyle degistirilir ve geri donus imkani kaybolur.
+create table if not exists public.calendar_events_yedek as
+  select *, now() as yedek_alindi from public.calendar_events;
+
+do $$
+declare n bigint; m bigint;
+begin
+  select count(*) into n from public.calendar_events_yedek;
+  select count(*) into m from public.calendar_events;
+  raise notice 'Yedek tablosunda % satir var (canli tabloda %).', n, m;
+end $$;
 
 -- Eski ham kod kayboluyor olmasin: bir kereye mahsus saklaniyor.
 alter table public.calendar_events

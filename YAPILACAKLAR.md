@@ -21,35 +21,42 @@ bilerek ertelendi (sebebi aşağıda).
 
 ## Sırada
 
-### Lokasyon uygulamasına Slate özelliklerini taşı — TAŞIMADAN ÖNCE
-İki dosya karşılaştırıldı (1 Eylül 2026). Lokasyon uygulamasında ZATEN
-var: takvim tablo görünümü, çoklu platform seçimi, saat dilimi, hafta
-görünümü, aranabilir lokasyon listesi, güne tıklayarak kayıt ekleme.
+### Lokasyon uygulamasi Slate'e birlestiriliyor (karar: 1 Eylül 2026)
+Kullanıcı kararı: iki ayrı uygulama yerine tek araç. Sebep: tüm
+geliştirme Slate'te yapılıyor, her özellik iki kez yazılıyordu
+(çoğaltma ve sürükle-bırak fiilen iki kez yazıldı).
 
-Slate'te olup onda OLMAYAN beş şey:
-1. **Sürükle-bırak** (takvimde kaydı başka güne taşıma) — yok.
-2. **Kayıt çoğaltma** (aynı çekimin Reels/Shorts/uzun sürümleri) — yok.
-3. **Açıklama şablonları** — yok. Aynı Supabase projesini kullandıkları
-   için `caption_templates` tablosu hazır; aynı satırı paylaşabilirler
-   (aynı kişi, aynı hesaplar) — bu bir avantaj, karar verilmeli.
-4. **Adım termin tarihleri + gecikince kırmızı** — yok. Lokasyonun
-   adımları var (script/çekim/ses/kurgu/yayın) ama tarihleri yok;
-   `locations` tablosuna `deadlines jsonb` sütunu gerekir.
-5. **Kompakt üretim tablosu** (satır = lokasyon, sütun = adım) — yok;
-   bugün yalnızca kart ve liste görünümü var.
+**Bitti:** Slate kullanıcının bütün yayın kayıtlarını görüyor
+(`workspace_id` filtresi kalktı), sınır hesaptan okunuyor
+(`user_prefs.entry_limit/project_limit`), kayıtların eski platform
+kodları Slate sözlüğüne çevrildi (`sql/08`), geri alma betiği var
+(`sql/09`).
 
-Sıra önerisi: 2 → 1 → 3 → 4 → 5 (risksizden büyüğe).
+**Kapatılan üç veri kaybı riski** — taşımadan önce fark edilmeseydi
+sessizce bozardı:
+1. `toRow` `workspace_id` yazmıyordu → Slate'ten kaydedilen satır
+   lokasyon uygulamasından görünmez olurdu (geri dönüş noktası giderdi).
+2. `pullRemote` `deleted_at` süzmüyordu → orada silinen kayıt Slate'te
+   diri görünürdü.
+3. 63 kaydın platform kodu eskiydi ve türü boştu; Slate tanımadığını
+   varsayılana çevirdiği için türleri/hesapları yanlış görünecekti.
 
-### Lokasyon uygulamasını kendi adresine taşı
-Yeni sürüm `content-calendar-demo/lokasyon.html` adresinde deneme
-kopyası olarak duruyor. Onay gelince `lokasyon-takip` deposunun üzerine
-yazılacak, turuncu şerit kalkacak. Geri dönüş noktası: `github-surumu`
-dalı. GitHub token'ı geçiş bir hafta sorunsuz geçene kadar silinmemeli.
+**Ücretsiz planda Supabase yedeği YOK.** Yedek `sql/08`'in kendisi
+alıyor: aynı veritabanında `calendar_events_yedek` kopya tablosu.
+`create table if not exists` kritik — betik ikinci kez çalışırsa yedek
+TAZELENMEMELİ, yoksa tek sağlam kopya çevrilmiş veriyle değişir.
 
-### Yapay zekâ bağlantısı
-Metin taslağı için Claude (kod iskeleti var), görsel için Gemini (yeni
-iş). Bu ortamdan ikisinin de sunucusuna çıkılamıyor, yani yazılan kod
-burada test edilemiyor; ilk denemeyi kullanıcı yapacak.
+**Sırada:** 43 lokasyon → Slate projeleri. Önce Slate'in proje
+sayfasına lokasyon alanları eklenecek (ilçe, şehir, konu, format, izin,
+script linki, Drive klasörü, saha notları, dikkat edilecekler) —
+**isteğe bağlı ve katlanmış**: boşsa görünmüyor, üründe kalabalık
+yapmıyor.
+
+**İSTENMEDİ:** "Değişiklik Kaydı" (lokasyon uygulamasındaki hareket
+günlüğü) Slate'e taşınmayacak — kullanıcı gerek olmadığını söyledi.
+
+**Lokasyon uygulaması ne olacak:** değişmiyor, aynı satırları okumaya
+devam ediyor, geri dönüş noktası olarak duruyor. Geliştirme yapılmayacak.
 
 ### Yapay zekâ — kullanıcının kendi anahtarı (karar: 1 Eylül 2026)
 **Ücretsiz AI katmanları araştırıldı, ÜRÜNÜN ÇEKİRDEĞİNE KONMAYACAK.**
