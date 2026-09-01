@@ -536,6 +536,20 @@ body.suruklenirken *{cursor:grabbing !important;}
 .pname{font:inherit;font-size:14.5px;font-weight:700;color:var(--text);background:none;
   border:0;padding:0;cursor:pointer;text-align:left;}
 .pname:hover{color:var(--accent);text-decoration:underline;}
+/* Durum rozeti adin yaninda: bitmis iste yesil onay, iptalde etiket. */
+.pbadge{margin-left:7px;font-size:10px;vertical-align:middle;}
+.pbadge.bitti{display:inline-flex;align-items:center;justify-content:center;
+  width:16px;height:16px;border-radius:50%;background:var(--green);color:#fff;
+  font-size:10px;font-weight:700;line-height:1;}
+.pbadge.iptal{text-transform:uppercase;letter-spacing:.06em;color:var(--red);
+  border:1px solid var(--red);border-radius:99px;padding:1px 7px;font-weight:600;}
+/* Biten ve iptal olan satirlar soluk: liste hala tam ama goz once
+   surendeki isi buluyor. Ustune gelinince tam okunurluga donuyor. */
+.proj-table tr.prow-bitti,
+.proj-table tr.prow-iptal{opacity:.55;}
+.proj-table tr.prow-bitti:hover,
+.proj-table tr.prow-iptal:hover{opacity:1;}
+.proj-table tr.prow-iptal .pname{text-decoration:line-through;}
 .pname-sub{display:flex;flex-wrap:wrap;gap:8px;align-items:center;margin-top:5px;}
 .ptype{font-size:10.5px;text-transform:uppercase;letter-spacing:.05em;color:var(--text-dim);
   border:1px solid var(--line);border-radius:99px;padding:1px 8px;}
@@ -601,6 +615,14 @@ body.suruklenirken *{cursor:grabbing !important;}
 .pflag{border:1px solid var(--line);background:var(--bg);border-radius:7px;padding:5px 9px;
   cursor:pointer;margin-bottom:5px;display:inline-flex;}
 .pflag.on{background:var(--accent);border-color:var(--accent);color:var(--on-accent);}
+/* Iptal kutusu: tehlikeli olmadigi icin kirmizi degil, ama silme
+   dugmesiyle karismasin diye kendi cercevesinde. */
+.pe-cancel{display:flex;gap:10px;align-items:flex-start;margin:6px 0 2px;
+  padding:10px 12px;border:1px solid var(--line);border-radius:9px;
+  background:var(--surface-2);cursor:pointer;font-size:13px;}
+.pe-cancel input{margin-top:2px;flex-shrink:0;}
+.pe-cancel small{display:block;margin-top:3px;font-size:11.5px;color:var(--text-dim);
+  font-weight:400;}
 .proj-addr{margin-bottom:14px;}
 .proj-addr input{width:100%;padding:11px 12px;border:1px solid var(--line);border-radius:8px;
   background:var(--surface);color:var(--text);font:inherit;font-size:14px;}
@@ -608,6 +630,26 @@ body.suruklenirken *{cursor:grabbing !important;}
   background:var(--surface);color:var(--text);font:inherit;font-size:14px;}
 .proj-overdue{background:rgba(196,69,60,0.12);border:1px solid var(--red);color:var(--red);
   border-radius:9px;padding:10px 14px;margin-bottom:14px;font-size:13px;font-weight:600;}
+/* Ozet seridi. Kucuk kalmasi bilerek: sayfanin isi tablo, serit yalnizca
+   bir bakis. Kutu sayisi degisebildigi icin izgara degil, saran satir —
+   sabit sutun sayisi tek kutu gizlenince bosluk birakirdi. */
+.proj-stats{display:flex;flex-wrap:wrap;gap:0;margin-bottom:14px;
+  border:1px solid var(--line);border-radius:11px;background:var(--surface);
+  padding:4px 0;overflow:hidden;}
+.pstat{flex:1 1 96px;min-width:96px;padding:8px 12px;text-align:center;
+  border-left:1px solid var(--line-soft);}
+.pstat:first-child{border-left:0;}
+.pstat b{display:block;font-size:20px;font-weight:700;color:var(--accent);
+  line-height:1.15;font-variant-numeric:tabular-nums;}
+.pstat span{display:block;margin-top:2px;font-size:9.5px;text-transform:uppercase;
+  letter-spacing:.07em;color:var(--text-dim);}
+@media(max-width:560px){
+  /* Telefonda alti kutu yan yana okunmaz hale geliyordu; ucerli siralar.
+     Dikey cizgiler kalkiyor: kutular sarinca cizgi satir basinda asili
+     kaliyor ve neyi neden ayirdigi belirsizlesiyor. */
+  .pstat{flex:1 1 33%;min-width:0;padding:8px 4px;border-left:0;}
+  .pstat b{font-size:17px;}
+}
 /* --- Sekmeler --- */
 .tabs{display:flex;gap:4px;margin:0 0 18px;border-bottom:1px solid var(--line);}
 .tab{font:inherit;font-weight:600;font-size:14px;padding:10px 18px;border:0;background:none;
@@ -1172,6 +1214,9 @@ body.suruklenirken *{cursor:grabbing !important;}
     <div class="proj-addr" id="p_addressWrap" hidden>
       <input type="text" id="p_address" maxlength="300" data-i18n-placeholder="p_address_ph" placeholder="Address — where is the shoot?">
     </div>
+    <!-- Ozet seridi: sayfanin ustunde tek bakista durum. Rakam once,
+         etiket altinda — goz once sayiyi buluyor. -->
+    <div class="proj-stats" id="p_stats" hidden></div>
     <div class="proj-overdue" id="p_overdue" hidden></div>
     <div class="proj-tools">
       <input type="search" id="p_search" data-i18n-placeholder="p_search_ph" placeholder="Search projects — name, type or address">
@@ -1389,6 +1434,15 @@ body.suruklenirken *{cursor:grabbing !important;}
       <div class="field"><label data-i18n="pe_fieldnotes">Field notes</label>
         <textarea id="pe_fieldNotes" rows="3" maxlength="4000"></textarea></div>
     </details>
+    <!-- Iptal, silmenin yumusak hali: proje listede kaliyor ama en altta,
+         ustu cizili. Cekim iptal olunca gecmisi de silmek dogru degil. -->
+    <label class="pe-cancel">
+      <input type="checkbox" id="pe_cancelled">
+      <span>
+        <span data-i18n="pe_cancelled">This project is cancelled</span>
+        <small data-i18n="pe_cancelled_hint">It stays in the list, at the bottom, greyed out. Nothing is deleted.</small>
+      </span>
+    </label>
     <!-- Termin penceresine ikinci kapi: tablodaki tarih dugmesi tek yol
          oldugu surece, pencere bir kez kapatilinca geri donulemiyordu. -->
     <button class="btn btn-wide" id="pe_deadlines" data-i18n="pe_deadlines">Step deadlines…</button>
@@ -1906,6 +1960,17 @@ const LANG = {
     p_shoot_title: "Project start date",
     p_start_label: "Start",
     pe_deadlines: "Step deadlines…",
+    pe_cancelled: "This project is cancelled",
+    pe_cancelled_hint: "It stays in the list, at the bottom, greyed out. Nothing is deleted.",
+    p_badge_done: "All steps done",
+    p_badge_cancelled: "Cancelled",
+    ps_total: "Projects",
+    ps_script: "Script ready",
+    ps_filmed: "Filmed",
+    ps_published: "Published",
+    ps_done: "Finished",
+    ps_permission: "Needs permission",
+    ps_cancelled: "Cancelled",
     pe_field_title: "Field details",
     pe_topic: "Topic",
     pe_format: "Format",
@@ -2207,6 +2272,17 @@ const LANG = {
     p_shoot_title: "Proje başlangıç tarihi",
     p_start_label: "Başlangıç",
     pe_deadlines: "Adım termin tarihleri…",
+    pe_cancelled: "Bu proje iptal edildi",
+    pe_cancelled_hint: "Listede kalır, en alta iner, soluklaşır. Hiçbir şey silinmez.",
+    p_badge_done: "Bütün adımlar tamam",
+    p_badge_cancelled: "İptal",
+    ps_total: "Toplam proje",
+    ps_script: "Script hazır",
+    ps_filmed: "Çekildi",
+    ps_published: "Yayında",
+    ps_done: "Tamamlandı",
+    ps_permission: "İzin gerekiyor",
+    ps_cancelled: "İptal edilen",
     pe_field_title: "Saha detayları",
     pe_topic: "Konu",
     pe_format: "Format",
@@ -2743,6 +2819,9 @@ function sanitizeProject(raw){
     type: PROJ_TYPES.indexOf(raw.type) !== -1 ? raw.type : 'other',
     address: str(raw.address, 300),
     createdAt: typeof raw.createdAt === 'number' ? raw.createdAt : Date.now(),
+    // Iptal: proje duruyor ama yapilmayacak. Silmek DEGIL — silinen proje
+    // gecmisi de goturuyor, oysa "neden yapmadik" bilgisi degerli.
+    cancelled: raw.cancelled === true,
     // Saha alanlari: hepsi istege bagli. Bos olan arayuzde gorunmuyor,
     // boylece bu alanlari kullanmayan biri icin urun kalabalik olmuyor.
     topic:      str(raw.topic, 300),
@@ -2765,6 +2844,14 @@ function sanitizeProject(raw){
     p[k] = raw[k] === true;
     p.deadlines[k] = /^\d{4}-\d{2}-\d{2}$/.test(dl[k]) ? dl[k] : '';
   });
+
+  // Lokasyon gocunde iptal bilgisinin gidecek bir yeri yoktu, notun basina
+  // yazilmisti. Artik bayrak var: on ek okunup temizleniyor. Bu okuma her
+  // yuklemede calisiyor ve tekrarlanabilir — on ek bir kez kalkiyor.
+  if(/^\[İPTAL\]\s*/.test(p.notes)){
+    p.cancelled = true;
+    p.notes = p.notes.replace(/^\[İPTAL\]\s*/, '');
+  }
 
   // Adsiz proje bir sey ifade etmiyor; listede bos satir olarak durur.
   return p.name ? p : null;
@@ -2870,6 +2957,9 @@ function adimTarihiYaz(p, k, deger){
   p.deadlines[k] = deger || '';
 }
 function adimGecikti(p, k){
+  // Iptal edilen isin gecikmesi olmaz: yapilmayacak bir adim icin her gun
+  // kirmizi uyari gostermek, uyarinin tamamini anlamsizlastirir.
+  if(p.cancelled) return false;
   const d = adimTarihi(p, k);
   return !!d && !p[k] && d < bugunKey();
 }
@@ -2881,6 +2971,20 @@ function gecikenAdimlar(){
 
 function haritaLinki(adres){
   return 'https://www.google.com/maps/search/?api=1&query=' + encodeURIComponent(adres);
+}
+
+// Butun adimlari isaretli mi? "Bitti" ayri bir kutu degil, adimlarin
+// toplami: yedi adim tamamsa is bitmistir. Ayri bir bayrak olsaydi iki
+// dogruluk kaynagi olur, biri digerini yalanlardi.
+function projeBitti(p){
+  return PROJ_STEPS.every(k=> p[k] === true);
+}
+// 0 = surende, 1 = bitti, 2 = iptal. Sirayi once bu belirliyor: bitmis ve
+// iptal olan is listenin basinda yer kaplamamali.
+function projeDurumu(p){
+  if(p.cancelled) return 2;
+  if(projeBitti(p)) return 1;
+  return 0;
 }
 
 // Sira: gunu en yakin olan ustte. Onceki halde en son eklenen ustteydi;
@@ -2900,6 +3004,9 @@ function projeGunu(p){
   return p.shootDate || '';
 }
 function projeSirasi(a, b){
+  // Once durum: surendeki isler ustte, bitenler altta, iptaller en altta.
+  const da = projeDurumu(a), db = projeDurumu(b);
+  if(da !== db) return da - db;
   const ga = projeGunu(a), gb = projeGunu(b);
   // Tarihi olmayanlar sona: "ne zaman" sorusunun cevabi yok.
   if(!ga && !gb) return b.createdAt - a.createdAt;
@@ -2909,10 +3016,41 @@ function projeSirasi(a, b){
   return b.createdAt - a.createdAt;
 }
 
+// Ozet seridi. Kutucuklar hep ayni sirada duruyor ki goz aliskanlik
+// edinsin. "Izin gerekiyor" ve "iptal" sifirken GIZLENIYOR: bu iki alani
+// hic kullanmayan biri icin serit iki kutu daha kisa oluyor.
+function projeOzeti(){
+  const say = k=> projects.filter(p=>!p.cancelled && p[k] === true).length;
+  return [
+    { anahtar:'ps_total',     deger: projects.length,                              hepsi:true },
+    { anahtar:'ps_script',    deger: say('script') },
+    { anahtar:'ps_filmed',    deger: say('filmed') },
+    { anahtar:'ps_published', deger: say('published') },
+    { anahtar:'ps_done',      deger: projects.filter(p=>!p.cancelled && projeBitti(p)).length },
+    { anahtar:'ps_permission',deger: projects.filter(p=>!p.cancelled && (p.permission||'').trim()).length,
+      sifirsaGizle:true },
+    { anahtar:'ps_cancelled', deger: projects.filter(p=>p.cancelled).length, sifirsaGizle:true }
+  ];
+}
+function renderProjeOzeti(){
+  const serit = document.getElementById('p_stats');
+  if(!serit) return;
+  // Tek proje bile yokken serit sifirlardan ibaret olur; gizleniyor.
+  serit.hidden = projects.length === 0;
+  if(serit.hidden){ serit.innerHTML = ''; return; }
+  serit.innerHTML = projeOzeti()
+    .filter(x=> !(x.sifirsaGizle && !x.deger))
+    .map(x=>`<div class="pstat"><b>${x.deger}</b><span>${escapeHtml(t(x.anahtar))}</span></div>`)
+    .join('');
+}
+
 function renderProjects(){
   const kap = document.getElementById('projectList');
   if(!kap) return;
   const q = (document.getElementById('p_search')||{}).value || '';
+  // Ozet aramadan BAGIMSIZ: filtreye gore degisen bir ozet, "toplam" diye
+  // okunup yanlis anlasilir.
+  renderProjeOzeti();
   const hepsi = projects.slice().sort(projeSirasi);
   const liste = projeAra(hepsi, q);
 
@@ -2957,9 +3095,15 @@ function renderProjects(){
         </button>
       </td>`;
     }).join('');
-    return `<tr>
+    const durum = projeDurumu(p);
+    const rozet = durum === 2
+      ? `<span class="pbadge iptal">${escapeHtml(t('p_badge_cancelled'))}</span>`
+      : durum === 1
+      ? `<span class="pbadge bitti" title="${escapeHtml(t('p_badge_done'))}">✓</span>`
+      : '';
+    return `<tr class="${durum === 2 ? 'prow-iptal' : durum === 1 ? 'prow-bitti' : ''}">
       <th class="pname-col" scope="row">
-        <button type="button" class="pname" data-proj-edit="${escapeHtml(p.id)}">${escapeHtml(p.name)}</button>
+        <button type="button" class="pname" data-proj-edit="${escapeHtml(p.id)}">${escapeHtml(p.name)}</button>${rozet}
         <div class="pname-sub">
           <span class="ptype">${escapeHtml(projTypeName(p.type || 'other'))}</span>
           ${adres ? `<a class="pmap" href="${escapeHtml(haritaLinki(adres))}" target="_blank" rel="noopener"
@@ -3085,6 +3229,7 @@ function openProjectEdit(id){
   document.getElementById('pe_name').value = p.name;
   document.getElementById('pe_keywords').value = p.keywords || '';
   document.getElementById('pe_shoot').value = p.shootDate || '';
+  document.getElementById('pe_cancelled').checked = p.cancelled === true;
   sahaAlanlariniDoldur(p);
   document.getElementById('pe_address').value = p.address || '';
   const tur = document.getElementById('pe_type');
@@ -3153,6 +3298,7 @@ function projToRow(p, uid){
     address: p.address || '', type: p.type || 'other',
     // Bos metin tarih sutununa yazilamaz; yoklugu null ile anlatiliyor.
     start_date: p.shootDate ? p.shootDate : null,
+    cancelled: p.cancelled === true,
     steps: adimlar, deadlines: tarihler,
     topic: p.topic || '', district: p.district || '', city: p.city || '',
     format: p.format || '', permission: p.permission || '',
@@ -3166,6 +3312,7 @@ function projFromRow(r){
     id: r.id, name: r.name || '', keywords: r.keywords || '', notes: r.notes || '',
     address: r.address || '', type: r.type || 'other',
     shootDate: r.start_date || '',
+    cancelled: r.cancelled === true,
     topic: r.topic || '', district: r.district || '', city: r.city || '',
     format: r.format || '', permission: r.permission || '',
     scriptUrl: r.script_url || '', driveUrl: r.drive_url || '',
@@ -3486,6 +3633,7 @@ document.getElementById('pe_save').addEventListener('click', ()=>{
   p.address = document.getElementById('pe_address').value.trim().slice(0,300);
   p.keywords = document.getElementById('pe_keywords').value.slice(0,200);
   p.shootDate = document.getElementById('pe_shoot').value || '';
+  p.cancelled = document.getElementById('pe_cancelled').checked;
   sahaAlanlariniOku(p);
   projDirtyIsaretle(p.id);
   saveProjects();
@@ -5743,7 +5891,7 @@ document.getElementById('pendingOverlay').addEventListener('click', (e)=>{ if(e.
 
 // Yayina alinan surumun damgasi. Onbellekten eski bir kopya geldiginde bu
 // tarih eski kalir, boylece "guncel mi?" sorusu bakarak cevaplanir.
-const BUILD_STAMP = '2026-09-01 18:15 UTC';
+const BUILD_STAMP = '2026-09-01 20:05 UTC';
 document.getElementById('buildId').textContent = BUILD_STAMP;
 
 // ===== Init =====
