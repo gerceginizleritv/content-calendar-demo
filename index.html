@@ -233,8 +233,16 @@ body{
 .acc-new{display:grid;grid-template-columns:auto 1fr auto;gap:8px;margin-bottom:12px;}
 .acc-new select,.acc-new input{min-width:0;padding:10px 12px;border:1px solid var(--line);
   border-radius:8px;background:var(--surface);color:var(--text);font:inherit;font-size:14px;}
-.hesap-satir{display:flex;align-items:center;gap:10px;padding:9px 12px;border:1px solid var(--line);
-  border-radius:9px;background:var(--surface);margin-bottom:7px;}
+/* Hesaplar yan yana kutucuklar: her biri tam genislikte satir olunca
+   dort hesap sayfayi bir ekran boyu uzatiyordu. */
+.hesap-cipler{display:flex;flex-wrap:wrap;gap:8px;margin-bottom:6px;}
+.hesap-cip{display:inline-flex;align-items:center;gap:7px;padding:6px 8px 6px 10px;
+  border:1px solid var(--line);border-radius:99px;background:var(--surface);font-size:13px;}
+.hesap-cip-ad{font-weight:600;}
+.hesap-sil{display:inline-flex;align-items:center;justify-content:center;width:22px;height:22px;
+  padding:0;border:0;border-radius:50%;background:transparent;color:var(--text-dim);cursor:pointer;}
+.hesap-sil svg{width:14px;height:14px;}
+.hesap-sil:hover{background:var(--red);color:#fff;}
 .hesap-pico{width:17px;height:17px;flex-shrink:0;display:inline-flex;}
 .hesap-pico svg{width:100%;height:100%;}
 .hesap-ad{font-weight:600;font-size:13.5px;}
@@ -288,7 +296,7 @@ body.suruklenirken *{cursor:grabbing !important;}
   font-size:10px;text-transform:uppercase;letter-spacing:.08em;color:var(--text-dim);
   font-weight:600;white-space:nowrap;}
 .pname-col{position:sticky;left:0;z-index:3;background:var(--surface-2);
-  width:206px;min-width:206px;border-right:1px solid var(--line);}
+  width:184px;min-width:184px;border-right:1px solid var(--line);}
 .proj-table thead th.pname-col{z-index:4;}
 .pname{font:inherit;font-size:14.5px;font-weight:700;color:var(--text);background:none;
   border:0;padding:0;cursor:pointer;text-align:left;}
@@ -301,12 +309,8 @@ body.suruklenirken *{cursor:grabbing !important;}
 .pmap-missing{font-size:11px;color:var(--amber);}
 /* Baslangic tarihi ad ile sayac arasinda: kucuk etiketi ustunde, kutunun
    ne oldugu yaziyor. */
-.pstart{display:block;margin-top:7px;}
 .pstart-lbl{display:block;font-size:9.5px;text-transform:uppercase;letter-spacing:.07em;
   color:var(--text-dim);margin-bottom:2px;}
-.pstart input{width:100%;padding:4px 5px;border:1px solid var(--line);border-radius:6px;
-  background:var(--bg);color:var(--text);font:inherit;font-size:11px;color-scheme:light;}
-:root:not([data-theme="light"]) .pstart input{color-scheme:dark;}
 .pname-meta{font-size:11px;color:var(--text-dim);margin-top:6px;font-variant-numeric:tabular-nums;}
 /* Tarih kutulari daraltildi: yedi adim + proje sutunu bilgisayarda tek
    ekrana sigsin, tablo yana kaydirilmadan okunabilsin. */
@@ -316,11 +320,28 @@ body.suruklenirken *{cursor:grabbing !important;}
 :root:not([data-theme="light"]) .pdl,
 :root:not([data-theme="light"]) .proj-new select,
 :root:not([data-theme="light"]) .proj-addr input{color-scheme:dark;}
-.pcell{width:108px;min-width:108px;}
+.pcell{width:92px;min-width:92px;}
 .pcell.done{background:var(--accent-soft);}
 /* Tarihi gecmis ve bitmemis adim: hem hucre hem tarih kutusu kirmizi. */
-.pcell.late{background:rgba(196,69,60,0.12);}
-.pcell.late .pdl{border-color:var(--red);color:var(--red);}
+/* Adim hucresi: kutucuk + tarih METNI. Tarih girisi ayri pencerede;
+   yedi tarih kutusu satiri okunmaz hale getiriyordu. */
+.pdate{font:inherit;font-size:11px;padding:3px 7px;border:1px solid transparent;
+  border-radius:6px;background:transparent;color:var(--text-dim);cursor:pointer;
+  font-variant-numeric:tabular-nums;display:block;margin-top:4px;white-space:nowrap;}
+.pdate:hover{border-color:var(--line);color:var(--text);}
+.pdate.bos{color:transparent;}
+.pdate.bos:hover{color:var(--accent-dim);border-color:var(--line);}
+/* Tarihi gecmis ve bitmemis adim: tarih metni kirmizi kutuda. */
+.pdate.late{background:rgba(196,69,60,0.14);border-color:var(--red);color:var(--red);
+  font-weight:600;}
+/* Termin penceresi */
+.dl-row{display:grid;grid-template-columns:1fr auto;align-items:center;gap:12px;
+  padding:9px 0;border-bottom:1px solid var(--line-soft);}
+.dl-row:last-child{border-bottom:0;}
+.dl-step{font-size:13.5px;font-weight:600;}
+.dl-row input{padding:8px 10px;border:1px solid var(--line);border-radius:7px;
+  background:var(--bg);color:var(--text);font:inherit;font-size:13px;color-scheme:light;}
+:root:not([data-theme="light"]) .dl-row input{color-scheme:dark;}
 .pflag{border:1px solid var(--line);background:var(--bg);border-radius:7px;padding:5px 9px;
   cursor:pointer;margin-bottom:5px;display:inline-flex;}
 .pflag.on{background:var(--accent);border-color:var(--accent);color:var(--on-accent);}
@@ -988,6 +1009,22 @@ body.suruklenirken *{cursor:grabbing !important;}
 <!-- Klonlama: ayni icerigin farkli gunlerde cikan surumleri. Tarihler tek
      tek seciliyor; "birer gun arayla" gibi otomatik dagitim gercek yayin
      planlarina uymuyor. -->
+<!-- Termin tarihleri tek pencerede. Onceki halde her adimin kutusu
+     tabloda duruyordu: yedi tarih kutusu satiri okunmaz hale getiriyordu.
+     Tabloda artik yalnizca tarih METNI var, girisi burasi yapiyor. -->
+<div class="overlay" id="deadlineOverlay">
+  <div class="modal">
+    <h2 data-i18n="dl_title">Deadlines</h2>
+    <p class="hint" id="dlWho"></p>
+    <div id="dlRows"></div>
+    <div class="modal-actions">
+      <button class="btn" id="dlClear" data-i18n="dl_clear">Clear all</button>
+      <button class="btn" id="dlCancel" data-i18n="btn_cancel">Cancel</button>
+      <button class="btn btn-primary" id="dlSave" data-i18n="btn_save">Save</button>
+    </div>
+  </div>
+</div>
+
 <div class="overlay" id="projectEditOverlay">
   <div class="modal">
     <h2 data-i18n="pe_title">Edit project</h2>
@@ -1484,6 +1521,9 @@ const LANG = {
     p_map: "Map",
     p_col_project: "Project",
     p_col_shoot: "Start",
+    dl_title: "Deadlines",
+    dl_clear: "Clear all",
+    dl_ask: "Set deadlines for the steps now? You can always do it later from the table.",
     p_deadline_title: "Deadline for this step",
     p_overdue: (n)=> n===1 ? '1 step is past its deadline:' : `${n} steps are past their deadline:`,
     pe_title: "Edit project",
@@ -1748,6 +1788,9 @@ const LANG = {
     p_map: "Harita",
     p_col_project: "Proje",
     p_col_shoot: "Başlangıç",
+    dl_title: "Termin tarihleri",
+    dl_clear: "Hepsini temizle",
+    dl_ask: "Adımlar için teslim tarihi girmek ister misin? Sonradan tablodan da girebilirsin.",
     p_deadline_title: "Bu adımın teslim tarihi",
     p_overdue: (n)=> `${n} adımın teslim tarihi geçti:`,
     pe_title: "Projeyi düzenle",
@@ -2321,6 +2364,14 @@ function bugunKey(){
 
 // Gecmis teslim tarihi: adim bitmemis ve tarih dune ya da oncesine ait.
 // Bugun gecmis sayilmiyor; gunun sonuna kadar zamani var.
+// Tarihi kullanicinin dilinde kisa yaziyoruz: tabloda yer az.
+function tarihMetni(iso){
+  if(!iso) return '';
+  try{
+    return new Date(iso + 'T00:00:00').toLocaleDateString(
+      currentLang === 'tr' ? 'tr-TR' : 'en-US', { day:'2-digit', month:'2-digit', year:'2-digit' });
+  }catch(e){ return iso; }
+}
 function adimTarihi(p, k){ return (p.deadlines || {})[k] || ''; }
 function adimTarihiYaz(p, k, deger){
   p.deadlines = p.deadlines || {};
@@ -2379,11 +2430,13 @@ function renderProjects(){
     const hucreler = PROJ_STEPS.map(k=>{
       const gecti = adimGecikti(p,k);
       const tarih = adimTarihi(p,k);
-      return `<td class="pcell ${p[k]?'done':''} ${gecti?'late':''}">
+      return `<td class="pcell ${p[k]?'done':''}">
         <button type="button" class="pflag ${p[k]?'on':''}" data-proj="${escapeHtml(p.id)}" data-step="${k}"
                 title="${escapeHtml(t('step_'+k))}"><span class="pbox">${p[k]?'✓':''}</span></button>
-        <input type="date" class="pdl" data-proj-dl="${escapeHtml(p.id)}" data-step="${k}"
-               value="${escapeHtml(tarih)}" title="${escapeHtml(t('p_deadline_title'))}">
+        <button type="button" class="pdate ${gecti?'late':''} ${tarih?'':'bos'}"
+                data-dl-open="${escapeHtml(p.id)}" title="${escapeHtml(t('p_deadline_title'))}">
+          ${tarih ? escapeHtml(tarihMetni(tarih)) : '+'}
+        </button>
       </td>`;
     }).join('');
     return `<tr>
@@ -2392,14 +2445,10 @@ function renderProjects(){
         <div class="pname-sub">
           <span class="ptype">${escapeHtml(projTypeName(p.type || 'other'))}</span>
           ${adres ? `<a class="pmap" href="${escapeHtml(haritaLinki(adres))}" target="_blank" rel="noopener"
-                        title="${escapeHtml(adres)}">📍 ${escapeHtml(t('p_map'))}</a>` : ''}
+                        title="${escapeHtml(adres)}">📍</a>` : ''}
           ${adresGerekir(p.type) && !adres ? `<span class="pmap-missing">${escapeHtml(t('p_addr_missing'))}</span>` : ''}
         </div>
-        <label class="pstart">
-          <span class="pstart-lbl">${escapeHtml(t('p_start_label'))}</span>
-          <input type="date" data-proj-date="${escapeHtml(p.id)}" value="${escapeHtml(p.shootDate||'')}">
-        </label>
-        <div class="pname-meta">${escapeHtml(t('p_entries')(kayitlar.length, yayinlanan))}</div>
+        <div class="pname-meta">${p.shootDate ? escapeHtml(t('p_start_label') + ' ' + tarihMetni(p.shootDate)) + ' · ' : ''}${escapeHtml(t('p_entries')(kayitlar.length, yayinlanan))}</div>
       </th>
       ${hucreler}
     </tr>`;
@@ -2422,28 +2471,35 @@ function renderProjects(){
       saveProjects(); renderProjects();
     });
   });
-  kap.querySelectorAll('.pdl').forEach(el=>{
-    el.addEventListener('change', ()=>{
-      const p = projectById(el.dataset.projDl);
-      if(!p) return;
-      adimTarihiYaz(p, el.dataset.step, el.value);
-      projDirtyIsaretle(p.id);
-      saveProjects(); renderProjects();
-    });
-  });
-  kap.querySelectorAll('[data-proj-date]').forEach(el=>{
-    el.addEventListener('change', ()=>{
-      const p = projectById(el.dataset.projDate);
-      if(!p) return;
-      p.shootDate = el.value || '';
-      projDirtyIsaretle(p.id);
-      saveProjects();
-    });
+  kap.querySelectorAll('[data-dl-open]').forEach(el=>{
+    el.addEventListener('click', ()=> openDeadlines(el.dataset.dlOpen));
   });
   kap.querySelectorAll('[data-proj-edit]').forEach(el=>{
     el.addEventListener('click', ()=> openProjectEdit(el.dataset.projEdit));
   });
 
+}
+
+// --- Termin tarihleri penceresi --------------------------------------
+// Butun adimlarin tarihi tek yerde giriliyor. Tabloda yedi tarih kutusu
+// tutmak satiri okunmaz hale getiriyordu; tabloda artik yalnizca metin var.
+let terminProjesi = null;
+
+function openDeadlines(id){
+  const p = projectById(id);
+  if(!p) return;
+  terminProjesi = p;
+  document.getElementById('dlWho').textContent = p.name;
+  document.getElementById('dlRows').innerHTML = PROJ_STEPS.map(k=>`
+    <label class="dl-row">
+      <span class="dl-step">${escapeHtml(t('step_'+k))}</span>
+      <input type="date" data-dl-step="${k}" value="${escapeHtml(adimTarihi(p,k))}">
+    </label>`).join('');
+  document.getElementById('deadlineOverlay').classList.add('open');
+}
+function closeDeadlines(){
+  document.getElementById('deadlineOverlay').classList.remove('open');
+  terminProjesi = null;
 }
 
 // --- Proje duzenleme penceresi ---------------------------------------
@@ -2722,11 +2778,12 @@ document.getElementById('acc_add').addEventListener('click', ()=>{
   // Kullanici metne henuz dokunmadiysa (metin bos ya da hala otomatik
   // uretilen hali) hesap satirlari yeniden uretiliyor. Yalnizca "bos ise"
   // deseydik ikinci hesap listeye hic girmezdi.
-  const oncekiOtomatik = hesaplarMetni().trim();
+  const oncekiOtomatik = otomatikGenel();
   sablon.accounts.push({ id: yeniHesapId(), platform: document.getElementById('acc_platform').value, handle: el });
   kutu.value = '';
-  const mevcut = (sablon.general || '').trim();
-  if(!mevcut || mevcut === oncekiOtomatik) sablon.general = hesaplarMetni();
+  // Kullanici metne dokunmadiysa (bos ya da hala otomatik uretilen hali)
+  // liste yeniden uretiliyor.
+  if(!(sablon.general||'').trim() || sablon.general === oncekiOtomatik) sablon.general = otomatikGenel();
   trackOnce('funnel/account-added');
   saveSablon(); renderSablon();
 });
@@ -2798,11 +2855,29 @@ document.getElementById('p_add').addEventListener('click', ()=>{
   document.getElementById('p_shoot').value = '';
   trackOnce('funnel/project-created');
   renderProjects();
+  // Termin tarihleri hemen soruluyor: proje kurulurken akil oradadir.
+  // Hayir demek serbest, sonradan tablodan da acilabiliyor.
+  if(confirm(t('dl_ask'))) openDeadlines(p.id);
 });
 document.getElementById('p_type').addEventListener('change', ()=>
   adresAlaniniTazele(document.getElementById('p_type'), document.getElementById('p_addressWrap')));
 document.getElementById('pe_type').addEventListener('change', ()=>
   adresAlaniniTazele(document.getElementById('pe_type'), document.getElementById('pe_addressWrap')));
+document.getElementById('dlCancel').addEventListener('click', closeDeadlines);
+document.getElementById('deadlineOverlay').addEventListener('click', e=>{ if(e.target.id==='deadlineOverlay') closeDeadlines(); });
+document.getElementById('dlClear').addEventListener('click', ()=>{
+  document.querySelectorAll('#dlRows input').forEach(el=>{ el.value = ''; });
+});
+document.getElementById('dlSave').addEventListener('click', ()=>{
+  const p = terminProjesi;
+  if(!p) return;
+  document.querySelectorAll('#dlRows input').forEach(el=>{
+    adimTarihiYaz(p, el.dataset.dlStep, el.value);
+  });
+  projDirtyIsaretle(p.id);
+  saveProjects(); closeDeadlines(); renderProjects();
+});
+
 document.getElementById('pe_cancel').addEventListener('click', closeProjectEdit);
 document.getElementById('pe_delete').addEventListener('click', ()=>{
   const p = duzenlenenProje;
@@ -2866,6 +2941,12 @@ function hesapSatiri(a){
 function hesaplarMetni(){
   return sablon.accounts.map(hesapSatiri).join('\n');
 }
+// Hesap satirlari kutunun tepesinden degil, uc satir asagidan basliyor:
+// ustte bos yer gorunce kullanici oraya kendi metnini yazacagini anliyor.
+function otomatikGenel(){
+  const h = hesaplarMetni();
+  return h ? '\n\n\n' + h : '';
+}
 
 function sanitizeSablon(ham){
   const str = (v,max)=> (typeof v === 'string' ? v.slice(0,max) : '');
@@ -2910,11 +2991,31 @@ function sanitizeSablon(ham){
 }
 
 function sablonKey(){ return session ? SABLON_KEY + '_' + session.user.id : SABLON_KEY; }
+function okuSablon(key){
+  try{ return JSON.parse(localStorage.getItem(key) || 'null'); }
+  catch(e){ return null; }
+}
 function loadSablon(){
-  let ham = null;
-  try{ ham = JSON.parse(localStorage.getItem(sablonKey()) || localStorage.getItem(SABLON_KEY) || 'null'); }
-  catch(e){ ham = null; }
-  sablon = sanitizeSablon(ham);
+  sablon = sanitizeSablon(okuSablon(sablonKey()) || okuSablon(SABLON_KEY));
+}
+
+// Giris cozuldugunde sablonlar hesabin anahtarindan yeniden okunuyor.
+// Hesapta hicbir sey yoksa bu tarayicidaki calisma oraya tasiniyor:
+// giris yapmadan once girilen sablonlar kaybolmasin.
+function sablonAfterSignIn(){
+  const hesabinKopyasi = okuSablon(sablonKey());
+  if(hesabinKopyasi){
+    sablon = sanitizeSablon(hesabinKopyasi);
+  }else{
+    const anonim = okuSablon(SABLON_KEY);
+    if(anonim) sablon = sanitizeSablon(anonim);
+    saveSablon();
+  }
+  renderSablon();
+}
+function sablonAfterSignOut(){
+  sablon = sanitizeSablon(okuSablon(SABLON_KEY));
+  renderSablon();
 }
 function saveSablon(){
   try{ localStorage.setItem(sablonKey(), JSON.stringify(sablon)); }
@@ -2936,13 +3037,18 @@ function renderSablon(){
   if(!hKap) return;
 
   // 1. Hesaplar
+  // Yan yana kutucuklar: her hesap icin tam genislikte bir satir, dort
+  // hesapta sayfayi bir ekran boyu uzatiyordu.
   hKap.innerHTML = sablon.accounts.length
-    ? sablon.accounts.map(a=>`<div class="hesap-satir">
+    ? '<div class="hesap-cipler">' + sablon.accounts.map(a=>`<span class="hesap-cip">
         <span class="hesap-pico" style="color:${CAL_SM_COLORS[a.platform]}" title="${escapeHtml(CAL_SM_NAMES[a.platform])}">${PLATFORM_ICONS[a.platform]||''}</span>
-        <span class="hesap-ad">${escapeHtml(CAL_SM_NAMES[a.platform])}</span>
-        <span class="hesap-url">${escapeHtml(a.handle)}</span>
-        <button type="button" class="btn btn-sm" data-hesap-sil="${escapeHtml(a.id)}">${escapeHtml(t('p_delete'))}</button>
-      </div>`).join('')
+        <span class="hesap-cip-ad">${escapeHtml(a.handle)}</span>
+        <button type="button" class="hesap-sil" data-hesap-sil="${escapeHtml(a.id)}"
+                title="${escapeHtml(t('p_delete'))}" aria-label="${escapeHtml(t('p_delete'))}">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round">
+            <path d="M4 7h16M10 7V5h4v2M6 7l1 13h10l1-13M10 11v6M14 11v6"/></svg>
+        </button>
+      </span>`).join('') + '</div>'
     : '<p class="hint">' + escapeHtml(t('tpl_no_accounts')) + '</p>';
   hKap.querySelectorAll('[data-hesap-sil]').forEach(el=>{
     el.addEventListener('click', ()=>{
@@ -4448,7 +4554,7 @@ document.getElementById('pendingOverlay').addEventListener('click', (e)=>{ if(e.
 
 // Yayina alinan surumun damgasi. Onbellekten eski bir kopya geldiginde bu
 // tarih eski kalir, boylece "guncel mi?" sorusu bakarak cevaplanir.
-const BUILD_STAMP = '2026-09-01 04:23 UTC';
+const BUILD_STAMP = '2026-09-01 04:42 UTC';
 document.getElementById('buildId').textContent = BUILD_STAMP;
 
 // ===== Init =====
@@ -4702,6 +4808,7 @@ async function afterSignIn(){
     // Projeler kayitlardan SONRA: kayitlar hangi projeye bagli oldugunu
     // biliyor, projeler once gelseydi bir an sahipsiz gorunurlerdi.
     await projAfterSignIn();
+    sablonAfterSignIn();
     renderCal();
     setCloudStatus('ok');
     trackOnce('funnel/cloud-connected');
@@ -4717,6 +4824,7 @@ function afterSignOut(){
   const anonim = readLocal(STORAGE_KEY);
   events = anonim || seedData();
   projAfterSignOut();
+  sablonAfterSignOut();
   renderCal();
   setCloudStatus('');
   showToast(t('auth_signed_out'));

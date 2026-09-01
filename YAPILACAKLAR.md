@@ -1,23 +1,40 @@
 # Slate — Yapılacaklar ve Değerlendirilenler
 
-Bu dosya oturumlar arasında hafıza görevi görüyor. Konuşulan ama henüz
-yapılmayan işler burada duruyor; neden ertelendiği de yazıyor ki aynı
-tartışma baştan yapılmasın.
+Bu dosya oturumlar arasında hafıza görevi görüyor. Claude'un hafızası
+oturumlar arasında taşınmıyor; konuşulan ama yapılmayan işler burada
+duruyor, neden ertelendiği de yazıyor ki aynı tartışma baştan yapılmasın.
+
+---
+
+## Nerede kaldık (1 Eylül 2026)
+
+**Bitti:** Projeler sayfası (üretim takibi, termin tarihleri, tür/adres,
+harita bağlantısı), takvim tablo görünümü, sürükle-bırak, açıklama
+şablonları, projelerin buluta senkronu, kayıt çoğaltma, saat dilimi.
+
+**Sırada:** aşağıdaki listeler.
 
 ---
 
 ## Sırada
 
-### Projeleri buluta taşı
-Projeler şu an yalnızca tarayıcının deposunda (`localStorage`). Aynı
-tarayıcıda kalıcı ama başka cihaza geçmiyor ve site verisi temizlenirse
-gidiyor. Kayıtlar (`calendar_events`) zaten Supabase'de; projeler için
-yeni bir tablo ve istemci tarafında senkron gerekiyor.
-
 ### Şablonları buluta taşı
 Açıklama şablonları ve hesap listesi şu an yalnızca tarayıcının
 deposunda. Projelerde olduğu gibi bir tablo ve senkron gerekiyor.
 Tek satırlık bir veri olduğu için projelerden daha küçük bir iş.
+
+**Dikkat:** Bu alanda bir kez veri kaybı yaşandı. Sebebi, verinin
+açılışta oturum çözülmeden okunmasıydı: anahtar o an anonim anahtardı,
+kaydetme ise girişten sonra hesabın anahtarına yazıyordu. Okuma bir daha
+oraya bakmadığı için girişliyken girilen her şey yenilemede yok
+görünüyordu. Aynı tuzağa düşmemek için: **oturum durumu değiştiğinde
+veriyi yeniden oku.**
+
+### Lokasyon uygulamasını kendi adresine taşı
+Yeni sürüm `content-calendar-demo/lokasyon.html` adresinde deneme
+kopyası olarak duruyor. Onay gelince `lokasyon-takip` deposunun üzerine
+yazılacak, turuncu şerit kalkacak. Geri dönüş noktası: `github-surumu`
+dalı. GitHub token'ı geçiş bir hafta sorunsuz geçene kadar silinmemeli.
 
 ### Yapay zekâ bağlantısı
 Metin taslağı için Claude (kod iskeleti var), görsel için Gemini (yeni
