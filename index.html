@@ -1012,6 +1012,9 @@ body.suruklenirken *{cursor:grabbing !important;}
 
 /* Gecmis gunleri geri plana atiyoruz ama icerigi okunur birakiyoruz —
    "gecen hafta ne yayinlamistim" bu takvimin sik sorulan sorusu. */
+/* Komsu ayin gunleri: gorunur ama geri planda. */
+.cal-out{opacity:.5;}
+.cal-out .cal-day-num{font-weight:400;}
 .cal-past{background:var(--surface-2);}
 .cal-past .cal-day-num{opacity:.55;font-weight:400;}
 .cal-past .cal-chip{opacity:.8;}
@@ -2361,6 +2364,8 @@ const activeTzFilters = new Set();
 let weekOffset = 0;  // 0 = icinde bulunulan hafta (pencere buradan baslar)
 // Gun gorunumu gun gun ilerliyor; hafta cipasi burada islemiyor.
 let gunKaymasi = 0;
+// Ay gorunumu gercek bir ayi gosteriyor; ay ay ilerliyor.
+let ayKaymasi = 0;
 // 'month' = CAL_WEEKS haftalik pencere, 'week' = tek hafta. Tek haftada hucre
 // uzun oldugu icin kayitlar katlanmadan gorunuyor.
 let viewMode = 'month';
@@ -2551,6 +2556,24 @@ function getPlatform(ev){ return ev.platform; }
 // ayin son haftasinda bugun en alt satira dusuyor ve onundeki hicbir sey
 // gorunmuyordu — bir icerik takviminde onemli olan tam da o taraf.
 // weekOffset 0 iken ilk satir her zaman bu haftadir.
+// Ay gorunumunun penceresi: ayin 1'inden onceki (ya da ayni gune denk
+// gelen) Pazartesi'den, ayin son gununden sonraki Pazar'a kadar. Boylece
+// izgara tam haftalardan olusuyor ama SADECE o ay gosteriliyor.
+// Onceki halde pencere haftaya cipaliydi ve "31 Ağustos – 11 Ekim" gibi
+// iki aya yayilan bir aralik cikiyordu.
+function ayPenceresi(){
+  const bugun = new Date();
+  const ilk = new Date(bugun.getFullYear(), bugun.getMonth() + ayKaymasi, 1);
+  ilk.setHours(0,0,0,0);
+  const bas = new Date(ilk);
+  bas.setDate(ilk.getDate() - ((ilk.getDay() + 6) % 7));   // once gelen Pazartesi
+  const son = new Date(ilk.getFullYear(), ilk.getMonth() + 1, 0);  // ayin son gunu
+  const bit = new Date(son);
+  bit.setDate(son.getDate() + (7 - ((son.getDay() + 6) % 7) - 1)); // sonraki Pazar
+  const gun = Math.round((bit - bas) / 86400000) + 1;
+  return { bas, gun, ay: ilk.getMonth(), yil: ilk.getFullYear() };
+}
+
 function calWindowStart(){
   const d = new Date();
   // Gun gorunumu haftaya cipalanmiyor: tek bir gun gosteriyor ve gun gun
@@ -2560,6 +2583,7 @@ function calWindowStart(){
     d.setHours(0,0,0,0);
     return d;
   }
+  if(viewMode === 'month') return ayPenceresi().bas;
   const mondayOffset = (d.getDay() + 6) % 7; // Pazar(0)->6, Pazartesi(1)->0
   d.setDate(d.getDate() - mondayOffset + weekOffset * 7);
   d.setHours(0,0,0,0);
@@ -2573,7 +2597,7 @@ function calCellCount(){
   if(viewMode === 'day') return 1;
   if(viewMode === 'week') return 7;
   if(viewMode === 'table') return 14;
-  return CAL_WEEKS * 7;
+  return ayPenceresi().gun;
 }
 // Son gun (dahil), aralik etiketi icin.
 function calWindowEnd(){
@@ -4438,6 +4462,13 @@ function renderSaatIzgarasi(gunSayisi){
 
 function araligiYaz(){
   const locale = currentLang === 'tr' ? 'tr-TR' : 'en-US';
+  // Ayda aralik degil ayin ADI yaziliyor: pencere zaten tam o ay.
+  if(viewMode === 'month'){
+    const a = ayPenceresi();
+    document.getElementById('rangeLabel').textContent =
+      new Date(a.yil, a.ay, 1).toLocaleDateString(locale, {month:'long', year:'numeric'});
+    return;
+  }
   // Tek gunde aralik yazmak anlamsiz: gunun tam adi yaziliyor.
   if(viewMode === 'day'){
     document.getElementById('rangeLabel').textContent =
@@ -4524,9 +4555,13 @@ function renderCal(){
     const key = fmtKey(d);
     const cell = document.createElement('div');
     const gecmis = d < today;
+    // Tam haftalar icin izgaraya komsu aylardan birkac gun giriyor; onlar
+    // soluk duruyor ki "hangi ay" sorusu bir bakista cevaplansin.
+    const ayDisi = viewMode === 'month' && d.getMonth() !== ayPenceresi().ay;
     cell.className = 'cal-day'
       + (d.toDateString()===today.toDateString() ? ' today' : '')
-      + (gecmis ? ' cal-past' : '');
+      + (gecmis ? ' cal-past' : '')
+      + (ayDisi ? ' cal-out' : '');
     // Pencerede ay adi hicbir yerde yazmadigi icin gecisi hucre tasiyor:
     // ayin 1'i ve penceredeki ilk gun ay adiyla birlikte cikiyor.
     const ayEtiketi = (d.getDate() === 1 || i === 0)
@@ -4873,6 +4908,7 @@ function navAdim(){
 function takvimKaydir(yon){
   trackOnce('funnel/month-navigated');
   if(viewMode === 'day') gunKaymasi += yon;
+  else if(viewMode === 'month') ayKaymasi += yon;
   else weekOffset += yon * navAdim();
   renderCal();
 }
@@ -4891,7 +4927,7 @@ document.getElementById('viewMonthBtn').addEventListener('click', ()=> setView('
 document.getElementById('viewWeekBtn').addEventListener('click', ()=> setView('week'));
 document.getElementById('viewDayBtn').addEventListener('click', ()=> setView('day'));
 document.getElementById('viewTableBtn').addEventListener('click', ()=> setView('table'));
-document.getElementById('todayBtn').addEventListener('click', ()=>{ weekOffset = 0; gunKaymasi = 0; renderCal(); });
+document.getElementById('todayBtn').addEventListener('click', ()=>{ weekOffset = 0; gunKaymasi = 0; ayKaymasi = 0; renderCal(); });
 
 document.getElementById('exportBtn').addEventListener('click', ()=>{
   const blob = new Blob([JSON.stringify(events,null,2)], {type:'application/json'});
@@ -5461,7 +5497,7 @@ document.getElementById('pendingOverlay').addEventListener('click', (e)=>{ if(e.
 
 // Yayina alinan surumun damgasi. Onbellekten eski bir kopya geldiginde bu
 // tarih eski kalir, boylece "guncel mi?" sorusu bakarak cevaplanir.
-const BUILD_STAMP = '2026-09-01 15:10 UTC';
+const BUILD_STAMP = '2026-09-01 15:35 UTC';
 document.getElementById('buildId').textContent = BUILD_STAMP;
 
 // ===== Init =====
