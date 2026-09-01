@@ -381,20 +381,77 @@ Script bu yüzden en yüksek kaldıraçlı halka: aşağıdaki bütün alanları
 besleyen tek çıktı o. Kurgu, thumbnail üretimi, video barındırma
 aşamaları BAĞLANACAK, içeri alınmayacak.
 
-#### Mühendislik notu — bu alan diğerlerinden tehlikeli
+#### Script nereden gelirse gelsin AYNI ALANA düşer (kullanıcı kararı)
 
-Bu dosyada iki veri kaybı yazılı (aşağıda, şablonlar maddesi) ve ikisi
-de aynı kökten: boş bir hâl dolunun üzerine yazdı. **Script'te bunun
-bedeli kıyas kabul etmez** — kaybolan şey 2000 kelimelik emek. Bu yüzden:
+Üç giriş kapısı var ve üçü de eşit meşru:
 
-1. Şablonlardaki "boş dolunun üzerine YAZAMAZ" kuralı script için de,
-   baştan kurulacak.
-2. **Sürüm geçmişi gerekiyor.** En azından: AI yeniden üretmeden ÖNCEKİ
-   hâlin anlık kopyası alınacak. Aksi hâlde bir "yeniden üret" tıklaması
-   elle yapılmış bütün düzeltmeleri siler ve geri dönüşü olmaz.
-3. **Yerel depo sınırı:** 100 proje × ~12.000 karakter ≈ 1,2 MB.
-   localStorage'ın ~5 MB'ına yakınsıyor. Script eklendiği anda buluta
-   senkron "iyi olur" olmaktan çıkıp zorunlu hâle geliyor.
+1. **Drive'dan getir** — kullanıcı fikrini/scriptini zaten Docs'a yazmış.
+2. **Doğrudan yaz** — Slate'in içinde elle.
+3. **Fikirden üret** — `notes`'a fikrini yazar, AI script'i üretir.
+
+**Kural: üçü de tek bir `script` alanına yazar.** Kapılar o kutunun
+üstündeki üç düğmeden ibaret. Havada kalmamasının sebebi bu — script'in
+yaşadığı tek bir yer var, oraya nasıl geldiği ayrı bir mesele.
+
+Kaynak `scriptSource` olarak saklanacak (`drive` / `manual` / `ai`):
+ucuz, ve arayüzü doğru davrandırıyor — Drive'dan geldiyse "dosyayı
+yeniden getir" ve belgeye bağlantı, AI ürettiyse "yeniden üret" ve
+"önceki hâle dön". Elle düzeltildikten sonra karışık hâle gelir; davranış
+kaynağa KİLİTLENMEYECEK, düğmeler açık kalır.
+
+**Drive kopya olacak, canlı bağlantı DEĞİL.** İki yönlü senkron tuzak:
+çakışma çözümü gerekir ve bu ekip zaten iki kez veri kaybetti. "Drive'dan
+getir" o anda metni kopyalar, biter. Belge sonradan değişirse kullanıcı
+düğmeye tekrar basar, üzerine yazmadan önce sorulur. Arka planda
+kendiliğinden senkron YOK.
+
+#### Mühendislik notu — üç düzenleme, üçü de ŞİMDİ yapılmalı
+
+Bunlar engel değil; sonradan eklenmesi acı veren, baştan yapılması küçük
+olan üç karar. Kullanıcı haklı: değişiklik yapılacaksa düzenleme ona göre
+kurulmalı.
+
+**1. Telefon bilgisayardaki scripti ezmesin.**
+Senkron bugün projeyi SATIR SATIR gönderiyor (`projToRow`,
+`index.html:2743`) ve satırın tamamını yazıyor. Yani: bilgisayarda
+scripti yazdın; sonra telefondan aynı projeyi açıp sadece termin
+tarihini değiştirdin — telefon projenin TAMAMINI gönderir, içinde kendi
+eski/boş script kopyasıyla. Script geri gider.
+
+Bugün bu önemsiz, çünkü projedeki her şey kısa ve yeniden yazılabilir.
+Script değil.
+
+Çözüm, şablonlarda zaten kullanılan yöntem: **script'e KENDİ zaman
+damgası** (`script_updated_at`), projeninkinden ayrı. Damgası daha yeni
+olan kazanır. Script'e dokunmamış telefonun damgası eski kalacağı için
+üzerine yazamaz. Ayrıca script yalnızca gerçekten değiştiyse gönderilir.
+
+Not: `projects` senkronu `caption_templates`'ten zaten daha güvenli —
+kullanıcı başına tek satır değil, proje başına satır ve "kirli" işareti
+var. Yani buradaki risk şablonlardaki kadar geniş değil; tehlike "boş
+dolunun üzerine yazar" değil, **"eski dolunun üzerine yazar"**. Damga
+bunu kapatıyor.
+
+**2. "Yeniden üret" iki saatlik emeği silmesin.**
+Kullanıcı AI'dan script aldı, sonra elle uzun uzun düzeltti, sonra
+(belki yanlışlıkla) "yeniden üret"e bastı. Yeni metin eskinin üstüne
+yazar ve geri dönüş yok. Çözüm bir satır: üretmeden önce mevcut hâli bir
+kenara koy, ekranda "önceki hâle dön" dursun.
+
+**3. Tarayıcı hafızası sessizce dolar.**
+Her şey bugün tarayıcının hafızasında (localStorage), sınırı ~5 MB.
+Caption'lar küçük olduğu için hiç sorun çıkmadı. Script büyük: 100 proje
+× ~12.000 karakter ≈ 1,2 MB. Tek başına patlatmaz ama sınıra yaklaşır —
+ve localStorage dolduğunda **hata gösterip durmaz, sessizce yazmaz**;
+kullanıcı kaydettim sanır. Çözüm: script'in asıl yeri bulut olacak,
+tarayıcı emniyet ağı olarak kopyayı tutacak (altyapı hazır, `projects`
+tablosu zaten senkron), ve script alanına üst sınır konacak (~40.000
+karakter ≈ 6.000 kelime; gerçek script'in çok üstünde, ama yanlışlıkla
+yapıştırılan bir kitap bütçeyi yemesin).
+
+**İşin boyutu küçük:** `projects` tablosuna bir `script` sütunu (+
+`script_updated_at`), `projToRow` ve `projFromRow`'a birer satır,
+`sanitizeProject`'e bir alan. Senkron altyapısı olduğu gibi çalışıyor.
 
 #### Maliyet
 
