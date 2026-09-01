@@ -217,6 +217,92 @@ altında, tarayıcıya özel.
    ulaşılıyor. Ayarlara/"Daha fazla" bölümüne de bir giriş konacak ki
    kullanıcı anahtarını kayıt açmadan değiştirip silebilsin.
 
+### Google Drive bağlantısı ve yapay zekânın eksik bağlamı (1 Eylül 2026)
+
+**Kullanıcının koyduğu sorun:** Yapay zekâ başlık/açıklama üretecekse
+içeriğin ne olduğunu bilmesi lazım. Peki içerik nereden gelecek?
+
+#### Önce teşhis: bugün AI'ya bağlam GİTMİYOR
+
+`buildDraftPrompt` (`index.html:4976`) modele yalnızca üç şey
+gönderiyor: içerik türü, platform ve başlık alanına yazılan metin.
+Videonun ne anlattığını bilmiyor. Çıkan taslağın jenerik olmasının
+sebebi anahtar ya da model değil, **bağlam yokluğu**. Yapay zekâ
+katmanının değeri bu doldurulmadan düşük kalır — önce bu çözülmeli,
+prompt'u güzelleştirmek değil.
+
+Not: "ücretsiz yapay zekâ" sorusunun cevabı zaten yukarıdaki anahtar
+maddesinde: kullanıcı kendi Gemini anahtarını giriyor, Google AI Studio
+kredi kartsız veriyor, yani **kullanıcı için ücretsiz**. Yeni bir karar
+gerekmiyor.
+
+#### Drive, sosyal medyanın AKSİNE, ucuz
+
+Yayın entegrasyonunda "sunucu şart, doğrulama şart, token sorumluluğu"
+diyen gerekçelerin hiçbiri burada geçerli değil — tek şartla:
+**`drive.file` kapsamı** kullanılacak.
+
+* **Google Picker** tarayıcıda çalışıyor; kullanıcı dosyayı kendi
+  Drive'ından kendi eliyle seçiyor.
+* `drive.file` **hassas olmayan** kapsam: uygulama yalnızca kullanıcının
+  seçtiği ya da kendi oluşturduğu dosyaları görür. `drive.readonly` ve
+  tam `drive` için zorunlu olan pahalı güvenlik denetimini
+  İSTEMİYOR. Google geliştiricileri bilerek bu yola itiyor.
+* Google Identity Services'in tarayıcı token akışı **client secret
+  istemiyor** → **Supabase Edge Function bile gerekmiyor.**
+* Drive API ücretsiz, kotası geniş.
+
+Ayrıca ürünün gizlilik vaadiyle örtüşüyor: uygulama kullanıcının
+Drive'ını göremez, yalnızca parmağıyla gösterdiği dosyayı görür.
+
+Doğrulama linkleri:
+`developers.google.com/workspace/drive/api/guides/api-specific-auth` ve
+`.../oauth2/production-readiness/restricted-scope-verification`.
+
+#### İki yön eşit değil
+
+| Yön | Değer | Zorluk |
+|---|---|---|
+| Script'i Drive'dan ÇEK | Yüksek — AI'ın eksik bağlamını tam olarak bu doldurur | Düşük (Google Docs `files.export` ile düz metin) |
+| Hazır içeriği Drive'a YÜKLE | Düşük | Orta-yüksek (büyük video, resumable upload) |
+
+**Yükleme tarafında karar: Slate yükleyici olmayacak, BAĞLAYICI olacak.**
+Kullanıcı dosyayı zaten Drive'a koyuyor; Picker'la seçsin, Slate kaydın
+içine dosya kimliğini/bağlantısını iliştirsin. Kaydın yanında "script",
+"kurgu", "kapak" tek tıkla açılsın. %10 iş, %90 fayda. Kayıt şemasına
+dosya bağlantısı alanı gerekir (bugün YOK).
+
+#### Neden bu iş önemli — ürün tezine oturuyor
+
+Ortaya çıkan zincir: Drive'daki script → Slate okur → AI'ya bağlam
+verir → başlık, açıklama, hashtag, kapak promptu üretir → yayın modunda
+tek ekranda kopyalanır.
+
+Bunu Buffer/Later yapamaz, çünkü senin scriptini bilmiyorlar. "Asıl fark
+yayının ÖNCESİNDE" tezinin en somut hâli bu. Üstelik "iki yere aynı şeyi
+yazma" sorununu öbür uçtan da azaltıyor: içerik elle girilmek yerine
+kendiliğinden geliyor.
+
+**Maliyet:** 2000 kelimelik script ≈ 2.700 token. Haiku 4.5 ile
+($1 / $5 per 1M) taslak başına yarım kuruşun altında; kullanıcının kendi
+Gemini anahtarıyla sıfır.
+
+#### Bilinen sınırlar (tasarlarken hesaba katılacak)
+
+* Tarayıcı token'ı ~1 saatlik ve **yenileme token'ı yok** — kullanıcı her
+  oturumda bir kez izin verir. Arayüz bunu doğal göstermeli.
+* `drive.file` yalnızca seçilmiş dosyayı görür; "tüm Drive'ımı tara"
+  diyen bir özellik TASARLANAMAZ (ve tasarlanmamalı).
+* Çok uzun script'lerde metnin tamamı gönderilmemeli; sınır konmalı.
+
+#### Sıra
+
+1. Kayda **Drive dosyası bağlama** (Picker + `drive.file`) — dosya adı ve
+   bağlantı kayıtta dursun. Tek başına bile faydalı.
+2. Bağlı Google Docs'u **düz metin olarak okuma** (`files.export`).
+3. `buildDraftPrompt`'u okunan script'le **besleme** — asıl kazanç burada.
+4. Yüklemeye şimdilik girilmeyecek.
+
 ### Termin hatırlatmaları — iki kanal (kullanıcı kararı, 1 Eylül 2026)
 Bugün uyarı yalnızca sayfa AÇIKKEN var: geciken adım kırmızı, üstte şerit.
 Kullanıcı bakmıyorken haber göndermek için tarayıcının dışında zamanlanmış
