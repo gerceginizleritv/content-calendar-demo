@@ -51,6 +51,69 @@ Metin taslağı için Claude (kod iskeleti var), görsel için Gemini (yeni
 iş). Bu ortamdan ikisinin de sunucusuna çıkılamıyor, yani yazılan kod
 burada test edilemiyor; ilk denemeyi kullanıcı yapacak.
 
+### Yapay zekâ — kullanıcının kendi anahtarı (karar: 1 Eylül 2026)
+**Ücretsiz AI katmanları araştırıldı, ÜRÜNÜN ÇEKİRDEĞİNE KONMAYACAK.**
+NVIDIA (build.nvidia.com), Groq, Cerebras, Mistral, Cloudflare, OpenRouter
+ve Google AI Studio'nun ücretsiz katmanları var. Satılacak bir üründe üç
+duvara çarpıyorlar:
+
+1. **Şartlar:** çoğu "deneme / kişisel kullanım" için; bir ürünün içine
+   koyup satmak açıkça yasak olabiliyor. Kullanmadan önce o servisin
+   şartları okunmalı.
+2. **Tek kova:** ücretsiz sınır ANAHTAR başına. Tek anahtar koyulursa
+   bütün kullanıcılar aynı sınırı paylaşır; on kullanıcıda hepsi birden
+   tıkanır.
+3. **Veri:** bazıları girdiyi eğitimde kullanıyor. Slate'in ekranda yazan
+   gizlilik vaadi ("anahtarını da yazdıklarını da görmeyiz") bozulur.
+
+Ek teknik engel: Slate'in sunucusu yok, istek doğrudan tarayıcıdan
+gidiyor. Her sağlayıcı tarayıcıdan doğrudan çağrılmaya izin vermiyor
+(Anthropic özel bir başlık istiyor, kodda var). İzin vermeyen sağlayıcı
+için araya Supabase fonksiyonu gerekir — o da anahtarı BİZİM ödediğimiz
+anahtar yapar.
+
+**Maliyet gerçeği:** Bir caption taslağı çok küçük bir istek. Claude'un
+en ucuz modeliyle bir dolara ~500 taslak düşüyor. Ücretsiz katmanın
+riskini bu tasarruf için almak mantıksız.
+
+**Karar:** Bugünkü tasarım korunuyor — kullanıcı kendi anahtarını girer,
+anahtar yalnızca kendi tarayıcısında durur. Ücretli pakette anahtar
+Supabase fonksiyonunun arkasına konur, parasını ürün öder, pakete yazılır.
+
+**Kodda hazır olan:** `aiSettingsOverlay` penceresi, `callClaude`,
+`callGemini`, `buildDraftPrompt`, caption alanının yanındaki "AI ile
+Taslak" düğmesi, anahtarı silme düğmesi. Anahtar `demo_ai_settings`
+altında, tarayıcıya özel.
+
+**Düzeltilecek (küçük):** `callClaude` model adı tarihli yazılmış
+(`claude-haiku-4-5-20251001`); doğrusu tarihsiz `claude-haiku-4-5`.
+
+**YAPILACAK — anahtarı kullanıcıya nasıl girdireceğiz:**
+1. **Sorma anı doğru, korunacak:** anahtar kayıt sırasında değil,
+   kullanıcı ilk kez "AI ile Taslak" düğmesine bastığında isteniyor.
+   Değeri gördüğü an soruluyor.
+2. **Varsayılan sağlayıcı Gemini olacak.** Google AI Studio kredi kartı
+   istemeden, Google hesabıyla ücretsiz anahtar veriyor; Anthropic'te
+   fatura kurmak gerekiyor. Ücretsiz yolu varsayılan yapmak dönüşümü
+   artırır. Claude ikinci seçenek olarak kalır.
+3. **Pencerede 3 adımlık resimli yönerge:** "API anahtarı" kelimesi
+   teknik olmayan kullanıcıya hiçbir şey ifade etmiyor. Adım adım
+   anlatılacak: bağlantıya git → Google ile gir → "Create API key" →
+   kopyala → buraya yapıştır.
+4. **Anahtar kaydedilirken DOĞRULANACAK.** Şu an doğrulama yok; yanlış
+   anahtar giren bunu ancak taslak isterken ham bir hata mesajıyla
+   anlıyor. Kaydette küçük bir deneme isteği atılıp "çalışıyor" ya da
+   sade Türkçe hata gösterilecek.
+5. **Telefonda yapıştırma kolaylığı:** anahtar uzun; geniş alan,
+   yapıştır düğmesi.
+6. **"Bu cihaza özel" açıkça yazılacak.** Anahtar tarayıcıda duruyor;
+   telefonda ayrıca girilmesi gerekiyor. **Anahtar BULUTA
+   TAŞINMAYACAK** — kullanıcıların API anahtarlarını veritabanımızda
+   tutmak hem sorumluluk hem de "anahtarını görmeyiz" vaadinin ihlali.
+7. **İkinci bir kapı:** bugün pencereye yalnızca taslak düğmesinden
+   ulaşılıyor. Ayarlara/"Daha fazla" bölümüne de bir giriş konacak ki
+   kullanıcı anahtarını kayıt açmadan değiştirip silebilsin.
+
 ### Termin hatırlatmaları — iki kanal (kullanıcı kararı, 1 Eylül 2026)
 Bugün uyarı yalnızca sayfa AÇIKKEN var: geciken adım kırmızı, üstte şerit.
 Kullanıcı bakmıyorken haber göndermek için tarayıcının dışında zamanlanmış
