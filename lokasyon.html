@@ -525,6 +525,45 @@ select{
 .field-row-5 .field label{font-size:8.5px;letter-spacing:0.5px;}
 .field-row-5 .field select{padding:9px 4px;font-size:12px;}
 .modal-actions{display:flex;justify-content:flex-end;gap:10px;margin-top:18px;}
+/* Surukle-birak: kaydi baska bir gune tasima. */
+body.suruklenirken{user-select:none;}
+body.suruklenirken *{cursor:grabbing !important;}
+.surukle-hayalet{
+  position:fixed;z-index:10000;pointer-events:none;
+  background:var(--gold);color:var(--ink);
+  font:600 12px/1.3 'Poppins',sans-serif;padding:6px 10px;
+  max-width:240px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;
+  box-shadow:0 6px 18px rgba(0,0,0,0.45);
+}
+.surukle-hedef{outline:2px solid var(--gold);outline-offset:-2px;
+  background:rgba(200,162,74,0.10) !important;}
+
+/* Cogaltma satiri: ayni cekimden cikan farkli surumler. Tarihler tek tek
+   seciliyor; "birer gun arayla" gibi otomatik dagitim gercek yayin
+   planlarina uymuyor. */
+.clone-row{
+  display:grid;grid-template-columns:1fr 1fr 130px 96px 34px;gap:8px;
+  align-items:center;padding:8px 0;border-bottom:1px solid var(--line);
+}
+.clone-row:last-child{border-bottom:0;}
+.clone-row select, .clone-row input{
+  width:100%;background:var(--ink);border:1px solid var(--line);
+  color:var(--parchment);padding:8px 8px;font-family:'Poppins',sans-serif;font-size:12.5px;
+}
+.clone-row input[type=date], .clone-row input[type=time]{color-scheme:dark;}
+.k-del{
+  background:none;border:1px solid var(--red-dim);color:var(--red);
+  cursor:pointer;padding:7px 0;font-size:13px;line-height:1;
+}
+.k-del:hover{background:rgba(180,48,43,0.12);}
+.clone-source{
+  font-family:'JetBrains Mono',monospace;font-size:11px;color:var(--parchment-dim);
+  margin:0 0 10px;
+}
+@media(max-width:640px){
+  .clone-row{grid-template-columns:1fr 1fr;gap:6px;}
+  .k-del{grid-column:1 / -1;}
+}
 .modal-wide{max-width:760px;}
 .pkg-section{
   border-top:1px solid var(--line);
@@ -1129,6 +1168,9 @@ select{
 
     <div class="modal-actions">
       <button class="btn btn-danger" id="calDeleteBtn" style="display:none;">Sil</button>
+      <!-- Ayni cekim Reels, Shorts ve uzun video olarak cikiyor; her biri
+           icin bastan kayit acmak yerine cogaltiliyor. -->
+      <button class="btn btn-ghost" id="calCloneBtn" style="display:none;">⧉ Çoğalt</button>
       <button class="btn btn-ghost" id="calCancelBtn">Vazgeç</button>
       <button class="btn" id="calSaveBtn">Kaydet</button>
     </div>
@@ -1230,6 +1272,23 @@ select{
       <button class="icon-btn" id="deleteBtn" style="display:none;border-color:var(--red-dim);color:var(--red);" data-i18n="btn_delete">Sil</button>
       <button class="btn btn-ghost" id="cancelBtn" data-i18n="btn_cancel">Vazgeç</button>
       <button class="btn" id="saveBtn" data-i18n="btn_save">Kaydet</button>
+    </div>
+  </div>
+</div>
+
+<!-- Cogaltma penceresi: kaynak kaydin icerigi kopyalaniyor, yalnizca tur,
+     hesap, tarih ve saat yeniden seciliyor. -->
+<div class="overlay" id="cloneOverlay">
+  <div class="modal modal-wide">
+    <h2>Kaydı Çoğalt</h2>
+    <p class="clone-source" id="cloneSource"></p>
+    <div id="cloneRows"></div>
+    <div class="modal-actions" style="justify-content:space-between;">
+      <button class="btn btn-ghost" id="cloneAddRow">+ Satır ekle</button>
+      <span style="display:flex;gap:10px;">
+        <button class="btn btn-ghost" id="cloneCancel">Vazgeç</button>
+        <button class="btn" id="cloneSave">Oluştur</button>
+      </span>
     </div>
   </div>
 </div>
@@ -2137,6 +2196,8 @@ function renderCalGrid(){
 
     const cell = document.createElement('div');
     cell.className = 'cal-day';
+    // Surukleme hedefi bu damgadan bulunuyor.
+    cell.dataset.gun = key;
     if(d.toDateString() === today.toDateString()) cell.classList.add('today');
     const isExpanded = calExpandedDays.has(key);
     if(isExpanded) cell.classList.add('expanded');
@@ -2188,7 +2249,7 @@ function renderCalGrid(){
         chip.innerHTML = `<span class="cal-badge" style="background:${CAL_SM_COLORS[evPlatform]};" title="${CAL_SM_NAMES[evPlatform]}">${CAL_TYPE_LABELS[evType]}</span>
           <span class="cal-chip-mid"><span class="cal-chip-time">${escapeHtml(ev.time||'')}</span><span class="cal-chip-title">${escapeHtml(ev.title||'')}</span></span>
           <span class="cal-status-icon">${icon}</span>${cokDilim ? `<span class="cal-tz-tag">${escapeHtml(tzKisa(evTz(ev)))}</span>` : ''}`;
-        chip.addEventListener('click', ()=> openCalDetail(ev));
+        suruklenebilirYap(chip, ev);
         rowDiv.appendChild(chip);
       });
       cell.appendChild(rowDiv);
@@ -2250,6 +2311,12 @@ function renderCalTable(){
 
     platformOrder.forEach(p=>{
       const td = document.createElement('td');
+      td.dataset.gun = key;
+      // Tabloda sutun = hesap. Kaydi baska hesabin sutununa birakmak
+      // "hesabini da degistir" demek olurdu; surukleme yalnizca TARIHI
+      // degistirdigi icin bu yaniltici olur. O yuzden hedef, kaydin kendi
+      // sutunuyla sinirli.
+      td.dataset.platform = p;
       const dayPlatformEvents = calendarEvents.filter(e=>e.date===key
         && getEventPlatform(e)===p
         && (calActiveTypeFilters.size===0 || calActiveTypeFilters.has(getEventType(e)))
@@ -2266,7 +2333,7 @@ function renderCalTable(){
           chip.className = 'cal-cell-chip ' + status;
           chip.title = calDisplayName(ev) + (cokDilimTablo ? ' · ' + evTz(ev) : '');
           chip.innerHTML = `<span class="cctime">${escapeHtml(ev.time||'')}<span>${icon}</span></span><span class="cal-cell-type-badge" style="background:${CAL_SM_COLORS[p]};">${CAL_TYPE_LABELS[evType]}</span><span class="cctitle">${escapeHtml(ev.title||'')}</span>${cokDilimTablo ? `<span class="cal-tz-tag">${escapeHtml(tzKisa(evTz(ev)))}</span>` : ''}`;
-          chip.addEventListener('click', ()=> openCalDetail(ev));
+          suruklenebilirYap(chip, ev);
           td.appendChild(chip);
         });
       }
@@ -2377,6 +2444,9 @@ function openCalDetail(ev, varsayilanTarih){
   document.getElementById('calDBadge').textContent = ev ? CAL_TYPE_LABELS[evType] : '+';
   document.getElementById('calDBadge').title = ev ? calDisplayName(ev) : '';
   document.getElementById('calDeleteBtn').style.display = isNew ? 'none' : '';
+  // Cogaltma yalnizca kayitli bir girise ait: henuz olusmamis bir seyin
+  // kopyasi cikarilamaz.
+  document.getElementById('calCloneBtn').style.display = isNew ? 'none' : '';
   document.getElementById('calPlatformMultiWrap').style.display = isNew ? '' : 'none';
   document.getElementById('calPlatformSingleWrap').style.display = isNew ? 'none' : '';
 
@@ -2670,6 +2740,305 @@ document.getElementById('calSaveBtn').addEventListener('click', async ()=>{
   }
   await persist();
   closeCalModal();
+  renderCal();
+});
+
+// ===== Surukle-birak =====
+// Planlar kayar. Bir kaydi basili tutup baska bir gune tasimak, pencereyi
+// acip tarihi elle degistirmekten hizli. YALNIZCA TARIH degisiyor: hesap,
+// tur, icerik ve "yayinlandi" isareti oldugu gibi kaliyor. Isaret de
+// degisseydi bir elin kaymasiyla gercekten paylasilmis bir kayit
+// paylasilmamis gorunurdu.
+//
+// Fare ve dokunmatik ayri ele aliniyor: tarayicinin standart surukle-birak
+// destegi telefonda calismiyor. Telefonda ayrica basili tutmak gerekiyor,
+// yoksa sayfayi kaydirmak imkansiz olurdu.
+const BASILI_TUTMA = 260;
+const SURUKLE_ESIGI = 5;
+
+let surukle = null;
+
+function surukleBaslat(ev, e, kaynak){
+  surukle = {
+    ev, kaynak,
+    x: e.clientX, y: e.clientY,
+    bx: e.clientX, by: e.clientY,
+    aktif: false, sayac: null, isaretci: e.pointerId
+  };
+  // Yakalama hemen: aksi halde fare rozetin ustunden ayrilinca hareket
+  // olaylari baska elemana gider ve surukleme hic baslamaz.
+  try{ kaynak.setPointerCapture(e.pointerId); }catch(err){}
+  const baslat = ()=>{
+    if(!surukle || surukle.aktif) return;
+    surukle.aktif = true;
+    document.body.classList.add('suruklenirken');
+    const h = document.createElement('div');
+    h.className = 'surukle-hayalet';
+    h.textContent = (ev.title || CAL_TYPE_NAMES[getEventType(ev)] || '') + ' · ' + (ev.time || '');
+    document.body.appendChild(h);
+    surukle.hayalet = h;
+    hayaletiTasi(surukle.x, surukle.y);
+  };
+  if(e.pointerType === 'touch') surukle.sayac = setTimeout(baslat, BASILI_TUTMA);
+  else surukle.baslatFn = baslat;
+}
+
+function hayaletiTasi(x, y){
+  if(!surukle || !surukle.hayalet) return;
+  surukle.hayalet.style.left = (x + 12) + 'px';
+  surukle.hayalet.style.top  = (y + 12) + 'px';
+}
+
+// Hedef hucre. Tabloda sutun = hesap oldugu icin, kaydin kendi sutunu
+// disindaki hucreler hedef sayilmiyor.
+function hedefHucre(x, y, ev){
+  const el = document.elementFromPoint(x, y);
+  if(!el) return null;
+  const hucre = el.closest('[data-gun]');
+  if(!hucre) return null;
+  const sutun = hucre.dataset.platform;
+  if(sutun && ev && sutun !== getEventPlatform(ev)) return null;
+  return hucre;
+}
+
+function hedefiIsaretle(x, y){
+  document.querySelectorAll('.surukle-hedef').forEach(n=>n.classList.remove('surukle-hedef'));
+  const hucre = hedefHucre(x, y, surukle && surukle.ev);
+  if(hucre) hucre.classList.add('surukle-hedef');
+}
+
+async function surukleBitir(iptal){
+  if(!surukle) return false;
+  clearTimeout(surukle.sayac);
+  const s = surukle;
+  surukle = null;
+  document.body.classList.remove('suruklenirken');
+  document.querySelectorAll('.surukle-hedef').forEach(n=>n.classList.remove('surukle-hedef'));
+  if(s.hayalet) s.hayalet.remove();
+  try{ s.kaynak.releasePointerCapture(s.isaretci); }catch(err){}
+  if(!s.aktif || iptal) return false;
+
+  const hucre = hedefHucre(s.x, s.y, s.ev);
+  const gun = hucre && hucre.dataset.gun;
+  if(!gun || gun === s.ev.date) return false;
+  const eski = s.ev.date;
+  s.ev.date = gun;
+  logActivity(`Takvim girişi taşındı: "${s.ev.title}" ${eski} → ${gun}.`);
+  await persist();
+  renderCal();
+  return true;
+}
+
+// Tiklama davranisi bozulmuyor: surukleme baslamadiysa tiklama eskisi gibi
+// kaydi aciyor.
+function suruklenebilirYap(el, ev){
+  // Kayit acma tek yerden geciyor. Isaretci akisiyla acildiysa hemen
+  // ardindan gelen 'click' olayi kaydi IKINCI kez acmasin diye zaman
+  // damgasi tutuluyor.
+  let sonIsaretci = 0;
+  const kaydiAc = kaynak=>{
+    if(kaynak === 'isaretci') sonIsaretci = Date.now();
+    openCalDetail(ev);
+  };
+  // Fare/dokunma disindan gelen tiklama (yardimci teknoloji, otomasyon,
+  // klavye) da kaydi acabilmeli: eskiden buradaki tek baglanti 'click'
+  // idi ve surukleme eklenince bu yol kapanmisti.
+  el.addEventListener('click', ()=>{
+    if(Date.now() - sonIsaretci < 700) return;
+    if(surukle && surukle.aktif) return;
+    openCalDetail(ev);
+  });
+
+  // ---- Fare / kalem ----
+  el.addEventListener('pointerdown', e=>{
+    if(e.pointerType === 'touch') return;
+    if(e.button !== undefined && e.button !== 0) return;
+    surukleBaslat(ev, e, el);
+  });
+  el.addEventListener('pointermove', e=>{
+    if(e.pointerType === 'touch') return;
+    if(!surukle || surukle.ev !== ev) return;
+    surukle.x = e.clientX; surukle.y = e.clientY;
+    if(!surukle.aktif && surukle.baslatFn){
+      const d = Math.hypot(e.clientX - surukle.bx, e.clientY - surukle.by);
+      if(d > SURUKLE_ESIGI) surukle.baslatFn();
+    }
+    if(surukle.aktif){
+      e.preventDefault();
+      hayaletiTasi(e.clientX, e.clientY);
+      hedefiIsaretle(e.clientX, e.clientY);
+    }
+  });
+  el.addEventListener('pointerup', async e=>{
+    if(e.pointerType === 'touch') return;
+    if(!surukle || surukle.ev !== ev) return;
+    surukle.x = e.clientX; surukle.y = e.clientY;
+    const tasindi = await surukleBitir(false);
+    // Surukleme gerceklestiyse tiklama sayilmiyor; aksi halde kaydi
+    // birakir birakmaz duzenleme penceresi acilirdi.
+    if(tasindi) e.preventDefault(); else kaydiAc('isaretci');
+  });
+  el.addEventListener('pointercancel', e=>{
+    if(e.pointerType === 'touch') return;
+    surukleBitir(true);
+  });
+
+  // ---- Dokunmatik ----
+  // Isaretci olaylari dokunmatikte yetmiyor: tarayici parmak hareketini
+  // sayfa kaydirma saniyor ve surukleme yarida iptal oluyor. Dokunma
+  // olaylarinda hareket preventDefault ile durdurulabiliyor.
+  el.addEventListener('touchstart', e=>{
+    if(e.touches.length !== 1) return;
+    const p = e.touches[0];
+    surukleBaslat(ev, { clientX:p.clientX, clientY:p.clientY, pointerType:'touch', pointerId:0 }, el);
+  }, { passive:true });
+
+  el.addEventListener('touchmove', e=>{
+    if(!surukle || surukle.ev !== ev) return;
+    const p = e.touches[0];
+    if(!p) return;
+    surukle.x = p.clientX; surukle.y = p.clientY;
+    if(!surukle.aktif){
+      // Basili tutma dolmadan parmak kaydiysa kullanici sayfayi kaydirmak
+      // istiyordur; surukleme hic baslamasin.
+      const d = Math.hypot(p.clientX - surukle.bx, p.clientY - surukle.by);
+      if(d > SURUKLE_ESIGI * 2) surukleBitir(true);
+      return;
+    }
+    e.preventDefault();
+    hayaletiTasi(p.clientX, p.clientY);
+    hedefiIsaretle(p.clientX, p.clientY);
+  }, { passive:false });
+
+  el.addEventListener('touchend', async e=>{
+    if(!surukle || surukle.ev !== ev) return;
+    const p = e.changedTouches && e.changedTouches[0];
+    if(p){ surukle.x = p.clientX; surukle.y = p.clientY; }
+    const aktifti = surukle.aktif;
+    const tasindi = await surukleBitir(false);
+    if(aktifti) e.preventDefault();
+    else if(!tasindi) kaydiAc('isaretci');
+  }, { passive:false });
+
+  el.addEventListener('touchcancel', ()=> surukleBitir(true));
+}
+
+// ===== Cogaltma =====
+// Ayni cekimden cikan farkli surumler: bir uzun video, bir Reels, bir Shorts.
+// Kaynagin icerigi (caption, hashtag, kapak metni) oldugu gibi kopyalaniyor;
+// tur, hesap, tarih ve saat yeniden seciliyor.
+let klonKaynak = null;
+
+function klonSatiriEkle(varsayilan){
+  const kap = document.getElementById('cloneRows');
+  const sira = document.createElement('div');
+  sira.className = 'clone-row';
+  sira.innerHTML =
+    '<select class="k-type"></select>' +
+    '<select class="k-platform"></select>' +
+    '<input type="date" class="k-date">' +
+    '<input type="time" class="k-time">' +
+    '<button type="button" class="k-del" title="Bu satırı çıkar">✕</button>';
+  sira.querySelector('.k-type').innerHTML =
+    CAL_TYPES.map(x=>`<option value="${x}">${escapeHtml(CAL_TYPE_NAMES[x] || x)}</option>`).join('');
+  sira.querySelector('.k-platform').innerHTML =
+    CAL_SM_PLATFORMS.map(x=>`<option value="${x}">${escapeHtml(CAL_SM_NAMES[x] || x)}</option>`).join('');
+  sira.querySelector('.k-type').value = varsayilan.type;
+  sira.querySelector('.k-platform').value = varsayilan.platform;
+  sira.querySelector('.k-date').value = varsayilan.date;
+  sira.querySelector('.k-time').value = varsayilan.time || '00:00';
+  sira.querySelector('.k-del').addEventListener('click', ()=>{
+    sira.remove();
+    klonDurumunuTazele();
+  });
+  kap.appendChild(sira);
+  klonDurumunuTazele();
+}
+
+function klonDurumunuTazele(){
+  const adet = document.querySelectorAll('#cloneRows .clone-row').length;
+  document.getElementById('cloneSave').disabled = adet === 0;
+  const bilgi = document.getElementById('cloneSource');
+  if(!klonKaynak || !bilgi) return;
+  bilgi.textContent = 'Kaynak: ' + (klonKaynak.title || '(başlıksız)') +
+    ' — ' + adet + ' kopya oluşturulacak';
+}
+
+function openClone(ev){
+  if(!ev) return;
+  klonKaynak = ev;
+  document.getElementById('cloneRows').innerHTML = '';
+  // Ilk satir kaynagin bir gun sonrasiyla aciliyor: ayni gune ayni hesaba
+  // birebir kopya cikarmak neredeyse hicbir zaman istenen sey degil.
+  const ertesi = new Date(ev.date + 'T00:00:00');
+  ertesi.setDate(ertesi.getDate() + 1);
+  const p2 = n => String(n).padStart(2,'0');
+  const tarih = `${ertesi.getFullYear()}-${p2(ertesi.getMonth()+1)}-${p2(ertesi.getDate())}`;
+  klonSatiriEkle({ type:getEventType(ev), platform:getEventPlatform(ev), date:tarih, time:ev.time });
+  document.getElementById('cloneOverlay').classList.add('open');
+  const kutu = document.querySelector('#cloneOverlay .modal');
+  if(kutu) kutu.scrollTop = 0;
+}
+function closeClone(){
+  document.getElementById('cloneOverlay').classList.remove('open');
+  klonKaynak = null;
+}
+
+document.getElementById('calCloneBtn').addEventListener('click', ()=>{
+  const kaynak = calCurrentEvent;
+  closeCalModal();
+  openClone(kaynak);
+});
+document.getElementById('cloneAddRow').addEventListener('click', ()=>{
+  const sonuncu = document.querySelector('#cloneRows .clone-row:last-child');
+  const temel = sonuncu
+    ? { type: sonuncu.querySelector('.k-type').value,
+        platform: sonuncu.querySelector('.k-platform').value,
+        date: sonuncu.querySelector('.k-date').value,
+        time: sonuncu.querySelector('.k-time').value }
+    : { type:getEventType(klonKaynak), platform:getEventPlatform(klonKaynak),
+        date:klonKaynak.date, time:klonKaynak.time };
+  klonSatiriEkle(temel);
+});
+document.getElementById('cloneCancel').addEventListener('click', closeClone);
+document.getElementById('cloneOverlay').addEventListener('click', e=>{
+  if(e.target.id === 'cloneOverlay') closeClone();
+});
+
+document.getElementById('cloneSave').addEventListener('click', async ()=>{
+  if(!klonKaynak) return;
+  const satirlar = [...document.querySelectorAll('#cloneRows .clone-row')].map(sr=>({
+    type: sr.querySelector('.k-type').value,
+    platform: sr.querySelector('.k-platform').value,
+    date: sr.querySelector('.k-date').value,
+    time: sr.querySelector('.k-time').value
+  }));
+  if(!satirlar.length){ closeClone(); return; }
+  if(satirlar.some(x=>!x.date)){ alert('Her satır için tarih gerekli.'); return; }
+  if(calendarEvents.length + satirlar.length > MAX_EVENTS){
+    alert('Kayıt sınırına ulaşıldı.'); return;
+  }
+
+  const kaynak = klonKaynak;
+  satirlar.forEach((x, i)=>{
+    calendarEvents.push({
+      id: 'cal_'+Date.now()+'_k'+i,
+      locationId: kaynak.locationId,
+      type: x.type, platform: x.platform,
+      title: kaynak.title,
+      date: x.date, time: x.time || '00:00',
+      // Kopya her zaman yayinlanmamis doguyor: kaynagin "yayinlandi"
+      // isareti kopyaya gecseydi, hic paylasilmamis bir kayit paylasilmis
+      // gorunurdu.
+      uploaded: false,
+      // Saat dilimi content.timezone icinde duruyor; derin kopya onu
+      // zaten tasiyor, ayrica ust duzey bir alan yok.
+      content: JSON.parse(JSON.stringify(kaynak.content || {}))
+    });
+  });
+  logActivity(`Kayıt çoğaltıldı: "${kaynak.title}" — ${satirlar.length} yeni giriş.`);
+  await persist();
+  closeClone();
   renderCal();
 });
 
