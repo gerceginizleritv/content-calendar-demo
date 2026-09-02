@@ -932,6 +932,12 @@ body.suruklenirken *{cursor:grabbing !important;}
 :root:not([data-theme="light"]) .proj-new input,
 :root:not([data-theme="light"]) .proj-tools input{color-scheme:dark;}
 .proj-tools{display:flex;align-items:center;gap:12px;margin-bottom:14px;}
+.proj-tools .btn{flex-shrink:0;}
+/* Hic proje yokken: aciklama ve tek bir dugme, ortada. */
+.proj-empty{display:flex;flex-direction:column;align-items:center;gap:12px;
+  padding:34px 20px;border:1px dashed var(--line);border-radius:12px;
+  background:var(--surface);text-align:center;}
+.proj-empty .hint{max-width:46ch;margin:0;}
 .proj-tools input{flex:1;min-width:0;padding:9px 12px;border:1px solid var(--line);border-radius:8px;
   background:var(--surface);color:var(--text);font:inherit;font-size:13.5px;color-scheme:light;}
 .proj-count{font-size:12px;color:var(--text-dim);white-space:nowrap;
@@ -1513,21 +1519,11 @@ body.suruklenirken *{cursor:grabbing !important;}
     <div id="sc_list"></div>
   </div>
 
+  <!-- Sayfa ozet -> arac cubugu -> tablo. Proje OLUSTURMA formu buradan
+       kalkti: sayfada iki buyuk metin kutusu yan yana duruyordu (biri
+       "proje adi yaz", oteki "proje ara") ve hangisinin ne oldugu
+       anlasilmiyordu. Olusturma artik kendi penceresinde. -->
   <div id="projectsPage" hidden>
-    <div class="proj-new">
-      <input type="text" id="p_name" maxlength="120" data-i18n-placeholder="p_name_ph" placeholder="Project name — e.g. Autumn Studio Shoot">
-      <select id="p_type"></select>
-      <label class="pnew-date">
-        <span class="pstart-lbl" data-i18n="p_shoot_title">Project start date</span>
-        <input type="date" id="p_shoot">
-      </label>
-      <button type="button" class="btn btn-primary" id="p_add" data-i18n="p_add">+ Create project</button>
-    </div>
-    <!-- Adres yalnizca saha isinde soruluyor; studyo isinde bos bir alan
-         gostermenin anlami yok. -->
-    <div class="proj-addr" id="p_addressWrap" hidden>
-      <input type="text" id="p_address" maxlength="300" data-i18n-placeholder="p_address_ph" placeholder="Address — where is the shoot?">
-    </div>
     <!-- Ozet seridi: sayfanin ustunde tek bakista durum. Rakam once,
          etiket altinda — goz once sayiyi buluyor. -->
     <div class="proj-stats" id="p_stats" hidden></div>
@@ -1535,6 +1531,7 @@ body.suruklenirken *{cursor:grabbing !important;}
     <div class="proj-tools">
       <input type="search" id="p_search" data-i18n-placeholder="p_search_ph" placeholder="Search projects — name, type or address">
       <span class="proj-count" id="p_count"></span>
+      <button type="button" class="btn btn-primary" id="p_openNew" data-i18n="p_add">+ Create project</button>
     </div>
     <div id="projectList"></div>
   </div>
@@ -1691,6 +1688,33 @@ body.suruklenirken *{cursor:grabbing !important;}
       <button class="btn" id="dlClear" data-i18n="dl_clear">Clear all</button>
       <button class="btn" id="dlCancel" data-i18n="btn_cancel">Cancel</button>
       <button class="btn btn-primary" id="dlSave" data-i18n="btn_save">Save</button>
+    </div>
+  </div>
+</div>
+
+<!-- Proje olusturma. Duzenleme penceresiyle ayni kalipta: alanlar alt
+     alta, adres yalnizca saha isinde. -->
+<div class="overlay" id="projectNewOverlay">
+  <div class="modal">
+    <h2 data-i18n="p_new_title">New project</h2>
+    <div class="field"><label data-i18n="pe_name">Project name</label>
+      <input type="text" id="p_name" maxlength="120" data-i18n-placeholder="p_name_ph"
+             placeholder="Project name — e.g. Autumn Studio Shoot"></div>
+    <div class="row2">
+      <div class="field"><label data-i18n="pe_type">Type</label><select id="p_type"></select></div>
+      <div class="field"><label data-i18n="p_shoot_title">Project start date</label>
+        <input type="date" id="p_shoot"></div>
+    </div>
+    <!-- Adres yalnizca saha isinde soruluyor; studyo isinde bos bir alan
+         gostermenin anlami yok. -->
+    <div class="field" id="p_addressWrap" hidden>
+      <label data-i18n="pe_address">Address</label>
+      <input type="text" id="p_address" maxlength="300" data-i18n-placeholder="p_address_ph"
+             placeholder="Address — where is the shoot?">
+    </div>
+    <div class="modal-actions">
+      <button class="btn" id="p_newCancel" data-i18n="btn_cancel">Cancel</button>
+      <button class="btn btn-primary" id="p_add" data-i18n="p_add">+ Create project</button>
     </div>
   </div>
 </div>
@@ -2374,7 +2398,8 @@ const LANG = {
     ptype_review: "Product review",
     ptype_desk: "Desk / graphics",
     ptype_other: "Other",
-    p_shoot_title: "Project start date",
+    p_shoot_title: "Project start date",
+    p_new_title: "New project",
     p_start_label: "Start",
     pe_deadlines: "Step deadlines…",
     tab_ideas: "Ideas",
@@ -2476,7 +2501,7 @@ const LANG = {
     p_add: "+ Create project",
     p_search_ph: "Search projects — name, type or address",
     p_delete: "Delete",
-    p_none: "No projects yet. Create one above — a project is the shoot, the brand job, the series that your posts come out of.",
+    p_none: "No projects yet. A project is the shoot, the brand job, the series that your posts come out of.",
     p_none_match: "No project matches that search.",
     p_count_all: (n)=> `${n} ${n===1?'project':'projects'}`,
     p_count_filtered: (n,tum)=> `${n} / ${tum} projects`,
@@ -2766,7 +2791,8 @@ const LANG = {
     ptype_review: "Ürün inceleme",
     ptype_desk: "Masabaşı / grafik",
     ptype_other: "Diğer",
-    p_shoot_title: "Proje başlangıç tarihi",
+    p_shoot_title: "Proje başlangıç tarihi",
+    p_new_title: "Yeni proje",
     p_start_label: "Başlangıç",
     pe_deadlines: "Adım termin tarihleri…",
     tab_ideas: "Fikirler",
@@ -2868,7 +2894,7 @@ const LANG = {
     p_add: "+ Proje oluştur",
     p_search_ph: "Proje ara — ad, tür ya da adres",
     p_delete: "Sil",
-    p_none: "Henüz proje yok. Yukarıdan oluştur — proje, paylaşımlarının çıktığı çekim, marka işi ya da seri demek.",
+    p_none: "Henüz proje yok. Proje; paylaşımlarının çıktığı çekim, marka işi ya da seri demek.",
     p_none_match: "Bu aramaya uyan proje yok.",
     p_count_all: (n)=> `${n} proje`,
     p_count_filtered: (n,tum)=> `${n} / ${tum} proje`,
@@ -3654,7 +3680,14 @@ function renderProjects(){
   }
 
   if(!liste.length){
-    kap.innerHTML = '<p class="hint">' + escapeHtml(hepsi.length ? t('p_none_match') : t('p_none')) + '</p>';
+    // Hic proje yokken yol gosteren dugme burada: olusturma formu artik
+    // sayfada durmuyor, "yukaridan olustur" demenin karsiligi yok.
+    kap.innerHTML = hepsi.length
+      ? '<p class="hint">' + escapeHtml(t('p_none_match')) + '</p>'
+      : '<div class="proj-empty"><p class="hint">' + escapeHtml(t('p_none')) + '</p>' +
+        '<button type="button" class="btn btn-primary" id="p_emptyNew">' + escapeHtml(t('p_add')) + '</button></div>';
+    const bos = document.getElementById('p_emptyNew');
+    if(bos) bos.addEventListener('click', ()=> openProjectNew());
     return;
   }
 
@@ -5446,6 +5479,22 @@ document.getElementById('tplOvrSave').addEventListener('click', ()=>{
   sablonDegisti(); renderSablon();
 });
 
+function openProjectNew(ad){
+  document.getElementById('p_name').value = ad || '';
+  document.getElementById('p_address').value = '';
+  document.getElementById('p_shoot').value = '';
+  const tur = document.getElementById('p_type');
+  projTypeSelectDoldur(tur, tur.value || 'outdoor');
+  adresAlaniniTazele(tur, document.getElementById('p_addressWrap'));
+  document.getElementById('projectNewOverlay').classList.add('open');
+  document.getElementById('p_name').focus();
+}
+function closeProjectNew(){
+  document.getElementById('projectNewOverlay').classList.remove('open');
+}
+document.getElementById('p_openNew').addEventListener('click', ()=> openProjectNew());
+document.getElementById('p_newCancel').addEventListener('click', closeProjectNew);
+document.getElementById('projectNewOverlay').addEventListener('click', e=>{ if(e.target.id==='projectNewOverlay') closeProjectNew(); });
 document.getElementById('p_add').addEventListener('click', ()=>{
   const ad = document.getElementById('p_name').value.trim();
   if(!ad){ document.getElementById('p_name').focus(); return; }
@@ -5462,6 +5511,7 @@ document.getElementById('p_add').addEventListener('click', ()=>{
   document.getElementById('p_name').value = '';
   document.getElementById('p_address').value = '';
   document.getElementById('p_shoot').value = '';
+  closeProjectNew();
   trackOnce('funnel/project-created');
   renderProjects();
   // Termin tarihleri hemen soruluyor: proje kurulurken akil oradadir.
@@ -7861,7 +7911,7 @@ document.getElementById('pendingOverlay').addEventListener('click', (e)=>{ if(e.
 
 // Yayina alinan surumun damgasi. Onbellekten eski bir kopya geldiginde bu
 // tarih eski kalir, boylece "guncel mi?" sorusu bakarak cevaplanir.
-const BUILD_STAMP = '2026-09-02 22:45 UTC';
+const BUILD_STAMP = '2026-09-02 23:40 UTC';
 document.getElementById('buildId').textContent = BUILD_STAMP;
 
 // ===== Init =====
