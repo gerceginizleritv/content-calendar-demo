@@ -6,6 +6,39 @@ duruyor, neden ertelendiği de yazıyor ki aynı tartışma baştan yapılmasın
 
 ---
 
+## Nerede kaldık (3 Eylül 2026, gece)
+
+**AI üretim yüzeyi yapıldı.** Zincirin tamamı artık modele gidiyor.
+
+- **Script penceresinde "✨ AI ile yaz".** Bağlam: seçili proje (ad, tür,
+  anahtar kelimeler, adres, notlar), o projenin fikirleri (birleşik
+  kartların her parçası ayrı satır) ve script başlığı. Üretmeden önce
+  mevcut metin bir kenara konuyor, "önceki hâle dön" onu geri getiriyor;
+  dolu metnin üstüne sorulmadan yazılmıyor.
+- **Kayıtta üç alan:** açıklama (vardı), video başlığı ve kapak yazısı
+  (yeni). Bağlam: proje + o projenin SCRIPT'i + fikirleri + tür, platform,
+  tarih. Önceki prompt yalnızca türü, platformu ve başlığı görüyordu —
+  asıl kayıp oradaydı.
+- Model çıktısı alana konmadan temizleniyor (tırnak, "Başlık:" öneki,
+  markdown yıldızı; tek satırlık alanlarda ilk satır).
+- Dayanak yoksa (başlık da proje de fikir de yok) istek HİÇ gitmiyor,
+  sebebi yazıyor. Anahtar yoksa ayar ekranı açılıyor.
+- `source` alanı artık 'ai' de olabiliyor ve doğru yazılıyor: anlık
+  görüntüyü Drive ile AI paylaştığı için kaynak ayrı değişkende tutuluyor.
+
+**Gemini anahtar biçimi.** Google artık AI Studio'dan `AQ.` ile başlayan
+anahtarlar veriyor; yalnızca `AIza` kabul eden kontrol GEÇERLİ anahtarları
+reddediyordu. İkisi de kabul ediliyor. Rehber metinleri ve yer tutucu da
+güncellendi.
+
+**Eskimiş iki test silindi/yenilendi:** `script.test.js` ve
+`script-bulut.test.js` `10ac299`'da kalkan eski veri modelini (projeye
+gömülü script, `scriptYaz`, `demo_scripts`) test ediyordu — bugünkü
+değişikliklerin sebep olduğu bir kırılma değil. Yerlerine `script2` ve
+`script-bulut2` yazıldı.
+
+---
+
 ## Nerede kaldık (3 Eylül 2026)
 
 Bugün düzeltilen üç şey:

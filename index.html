@@ -1865,6 +1865,10 @@ body.suruklenirken *{cursor:grabbing !important;}
       </button>
       <button type="button" class="btn btn-sm" id="sc_drivePush" hidden data-i18n="sc_drive_push">Write to Drive</button>
       <button type="button" class="btn btn-sm" id="sc_driveUndo" hidden data-i18n="sc_drive_undo">Back to the previous text</button>
+      <!-- AI ile yazma. Baglam pencerede zaten duruyor: baslik, proje ve
+           projenin fikirleri. Uretmeden ONCE mevcut metin bir kenara
+           konuyor; "onceki hale don" ayni dugme. -->
+      <button type="button" class="btn btn-sm ai-btn" id="sc_ai" data-i18n="sc_ai">✨ Write with AI</button>
       <span class="sc-drive-durum" id="sc_driveStatus"></span>
     </div>
     <textarea id="sc_text" class="sc-text" rows="18" spellcheck="true"
@@ -2020,7 +2024,10 @@ body.suruklenirken *{cursor:grabbing !important;}
     <div class="field" id="videoTitleWrap" style="display:none;">
       <div class="field-header">
         <label data-i18n="f_videotitle_label">Video Title (public — what viewers see in search/suggested)</label>
-        <button type="button" class="copy-btn" data-copy="f_videotitle" data-i18n="btn_copy">Copy</button>
+        <span style="display:flex;gap:6px;">
+          <button type="button" class="copy-btn ai-btn" id="aiTitleBtn" data-i18n="btn_ai_write">✨ AI</button>
+          <button type="button" class="copy-btn" data-copy="f_videotitle" data-i18n="btn_copy">Copy</button>
+        </span>
       </div>
       <textarea id="f_videotitle" maxlength="150" style="min-height:34px;" data-i18n-placeholder="f_videotitle_ph" placeholder="The actual title that goes on the upload — different from the note above"></textarea>
     </div>
@@ -2028,7 +2035,10 @@ body.suruklenirken *{cursor:grabbing !important;}
     <div class="field" id="shortTitleWrap" style="display:none;">
       <div class="field-header">
         <label data-i18n="f_shorttitle_label">Cover Short Text (3–5 words to put ON the thumbnail)</label>
-        <button type="button" class="copy-btn" data-copy="f_shorttitle" data-i18n="btn_copy">Copy</button>
+        <span style="display:flex;gap:6px;">
+          <button type="button" class="copy-btn ai-btn" id="aiShortBtn" data-i18n="btn_ai_write">✨ AI</button>
+          <button type="button" class="copy-btn" data-copy="f_shorttitle" data-i18n="btn_copy">Copy</button>
+        </span>
       </div>
       <textarea id="f_shorttitle" maxlength="100" style="min-height:34px;" data-i18n-placeholder="f_shorttitle_ph" placeholder="e.g. IT'S FINALLY HERE"></textarea>
     </div>
@@ -2081,7 +2091,7 @@ body.suruklenirken *{cursor:grabbing !important;}
           <a class="ai-step-link" href="https://aistudio.google.com/apikey" target="_blank" rel="noopener" data-i18n="ai_step_1_link">Open AI Studio →</a>
         </li>
         <li data-i18n="ai_step_2">Click the “Create API key” button.</li>
-        <li data-i18n="ai_step_3">Copy the key it gives you — a long line starting with AIza.</li>
+        <li data-i18n="ai_step_3">Copy the key it gives you — a long line starting with AQ. or AIza.</li>
         <li data-i18n="ai_step_4">Paste it in the box below and press Save.</li>
       </ol>
       <p class="ai-warn" data-i18n="ai_howto_note">Free, and it does not ask for a credit card. Careful: a paid ChatGPT or Gemini subscription is a different thing — it does not give you a key. The key comes from the page above.</p>
@@ -2089,7 +2099,7 @@ body.suruklenirken *{cursor:grabbing !important;}
 
     <div class="field">
       <label data-i18n="ai_key_label">Gemini API key</label>
-      <input type="password" id="ai_key" placeholder="AIza...">
+      <input type="password" id="ai_key" placeholder="AQ.… / AIza…">
       <p class="ai-key-hint" id="ai_key_hint"></p>
     </div>
     <div class="modal-actions">
@@ -2352,6 +2362,14 @@ const LANG = {
     f_caption_ph: "Write the caption for this post...",
     btn_ai_draft: "✨ Draft with AI",
     btn_ai_settings: "✨ AI (Gemini)",
+    btn_ai_write: "✨ AI",
+    sc_ai: "✨ Write with AI",
+    sc_ai_working: "Writing…",
+    sc_ai_done: "Written with Gemini. Edit it as you like — “Back to the previous text” brings your old text back.",
+    sc_ai_overwrite: "There is already text here. Shall the AI write over it? Your old text stays behind “Back to the previous text”.",
+    ai_field_overwrite: "This field is not empty. Shall the AI write over it?",
+    ai_no_context: "Give the AI something to work from first: a title, a project, or an idea.",
+    ai_field_done: "Written with Gemini.",
     btn_copy: "Copy",
     btn_copied: "Copied",
     f_hashtags_label: "Hashtags / Tags (comma-separated, no #)",
@@ -2578,10 +2596,10 @@ const LANG = {
     ai_step_1: "Open Google AI Studio and sign in with your Google account.",
     ai_step_1_link: "Open AI Studio →",
     ai_step_2: "Click the “Create API key” button.",
-    ai_step_3: "Copy the key it gives you — a long line starting with AIza.",
+    ai_step_3: "Copy the key it gives you — a long line starting with AQ. or AIza.",
     ai_step_4: "Paste it in the box below and press Save.",
     ai_howto_note: "Free, and it does not ask for a credit card. Careful: a paid ChatGPT or Gemini subscription is a different thing — it does not give you a key. The key comes from the page above.",
-    ai_key_shape: "This does not look like a Gemini key. A Gemini key starts with AIza — copy it from the AI Studio page above.",
+    ai_key_shape: "This does not look like a Gemini key. A Gemini key starts with AQ. or AIza — copy it from the AI Studio page above with the “Copy key” button.",
     ai_key_checking: "Checking the key…",
     ai_key_bad: (m)=> `The key did not work. Google says: ${m}`,
     ai_no_key: "Don't have a key? Get one free at",
@@ -2748,6 +2766,14 @@ const LANG = {
     f_caption_ph: "Bu paylaşım için caption'ı yaz...",
     btn_ai_draft: "✨ AI ile Taslak Oluştur",
     btn_ai_settings: "✨ AI (Gemini)",
+    btn_ai_write: "✨ AI",
+    sc_ai: "✨ AI ile yaz",
+    sc_ai_working: "Yazıyor…",
+    sc_ai_done: "Gemini yazdı. Dilediğin gibi düzenle — “önceki hâle dön” eski metnini geri getiriyor.",
+    sc_ai_overwrite: "Burada zaten bir metin var. AI bunun üzerine yazsın mı? Eski metnin “önceki hâle dön” düğmesinde duruyor.",
+    ai_field_overwrite: "Bu alan boş değil. AI üzerine yazsın mı?",
+    ai_no_context: "AI'ya önce bir dayanak ver: başlık, proje ya da fikir.",
+    ai_field_done: "Gemini yazdı.",
     btn_copy: "Kopyala",
     btn_copied: "Kopyalandı",
     f_hashtags_label: "Hashtag / Etiket (virgülle ayrılmış, # olmadan)",
@@ -2974,10 +3000,10 @@ const LANG = {
     ai_step_1: "Google AI Studio'yu aç ve Google hesabınla giriş yap.",
     ai_step_1_link: "AI Studio'yu aç →",
     ai_step_2: "“Create API key” düğmesine bas.",
-    ai_step_3: "Verdiği anahtarı kopyala — AIza ile başlayan uzun bir satır.",
+    ai_step_3: "Verdiği anahtarı kopyala — AQ. ya da AIza ile başlayan uzun bir satır.",
     ai_step_4: "Aşağıdaki kutuya yapıştır ve Kaydet'e bas.",
     ai_howto_note: "Ücretsiz, kredi kartı istemiyor. Dikkat: paralı ChatGPT ya da Gemini aboneliği bambaşka bir şey — o abonelik sana anahtar vermiyor. Anahtar yukarıdaki sayfadan alınıyor.",
-    ai_key_shape: "Bu bir Gemini anahtarına benzemiyor. Gemini anahtarı AIza ile başlar — yukarıdaki AI Studio sayfasından kopyala.",
+    ai_key_shape: "Bu bir Gemini anahtarına benzemiyor. Gemini anahtarı AQ. ya da AIza ile başlar — yukarıdaki AI Studio sayfasından “Copy key” ile kopyala.",
     ai_key_checking: "Anahtar deneniyor…",
     ai_key_bad: (m)=> `Anahtar çalışmadı. Google'ın söylediği: ${m}`,
     ai_no_key: "Anahtarın yok mu? Ücretsiz almak için:",
@@ -4384,7 +4410,11 @@ async function driveDegisimZamani(kimlik, token){
   return await cevap.json();
 }
 
-let driveOncekiMetin = null;   // "onceki hale don" icin
+let driveOncekiMetin = null;   // "onceki hale don" icin — Drive de AI de kullaniyor
+// Metni EN SON kim yazdi: 'drive' | 'ai' | null. Kayitta source olarak
+// duruyor. Anlik goruntunun varligindan cikarilamaz, cunku ayni goruntuyu
+// iki ozellik de kullaniyor.
+let scriptMetinKaynagi = null;
 // Pencerede acik olan scriptin bagli oldugu Drive belgesi.
 let driveBaglantisi = { id:'', ad:'', zaman:'' };
 async function driveGetir(){
@@ -4406,6 +4436,7 @@ async function driveGetir(){
       return;
     }
     driveOncekiMetin = alan.value;
+    scriptMetinKaynagi = 'drive';
     alan.value = metin.slice(0, SCRIPT_MAX);
     scriptSayaci(alan.value.length);
     const baslik = document.getElementById('sc_title');
@@ -4608,6 +4639,59 @@ function scriptFikirSeridi(pid){
 }
 function scriptPencereProje(){ return document.getElementById('sc_proj').value; }
 
+// Script icin baglam: pencerede duran baslik, secili proje ve O PROJENIN
+// fikirleri. Fikir yoksa bile baslik tek basina yeter; ikisi de yoksa
+// modele gonderilecek bir sey yok, uydurmasin diye engelleniyor.
+function aiScriptPrompt(){
+  const pid = scriptPencereProje();
+  const satir = aiProjeSatirlari(pid);
+  const baslik = document.getElementById('sc_title').value.trim();
+  if(baslik) satir.push('What this script is for: ' + baslik);
+  const fk = aiFikirSatiri(pid);
+  if(fk) satir.push(fk);
+  const baglam = satir.join('\n');
+  if(!baglam.trim()) return null;
+  return 'Here is what the creator is planning:\n\n' + baglam
+    + '\n\nWrite the script for this video, using the ideas above as the material — do not invent facts that contradict them.'
+    + ' Write it the way it will be spoken, not as an essay: short sentences, spoken rhythm, a hook in the first two sentences.'
+    + ' Mark the sections with plain headings on their own line (opening, middle, closing) so the creator can find their place while shooting.'
+    + ' Do not write camera directions, shot lists or timecodes unless the ideas above ask for them.'
+    + ' Write it in ' + aiDilAdi() + '.'
+    + ' Return ONLY the script text — no preamble, no explanation of what you did.';
+}
+
+async function scriptAiYaz(){
+  const alan = document.getElementById('sc_text');
+  const durumEl = document.getElementById('sc_driveStatus');
+  durumEl.dataset.temelSinif = 'sc-drive-durum';
+  const prompt = aiScriptPrompt();
+  if(!prompt){
+    durumEl.textContent = t('ai_no_context');
+    durumEl.className = 'sc-drive-durum error';
+    return;
+  }
+  // Saatlerce surmus bir metnin ustune SORMADAN yazilmiyor; Drive'dan
+  // getirmede de ayni kural var.
+  if(alan.value.trim() && !confirm(t('sc_ai_overwrite'))) return;
+  const dugme = document.getElementById('sc_ai');
+  const ham = await aiCalistir(dugme, durumEl, t('sc_ai_working'), prompt);
+  if(ham === null) return;
+  const temiz = aiTemizle(ham, false);
+  if(!temiz){
+    durumEl.textContent = t('ai_error_prefix') + 'boş yanıt' + t('ai_error_suffix');
+    durumEl.className = 'sc-drive-durum error';
+    return;
+  }
+  driveOncekiMetin = alan.value;
+  scriptMetinKaynagi = 'ai';
+  alan.value = temiz.slice(0, SCRIPT_MAX);
+  scriptSayaci(alan.value.length);
+  document.getElementById('sc_driveUndo').hidden = false;
+  trackOnce('funnel/ai-script-generated');
+  durumEl.textContent = t('sc_ai_done');
+  durumEl.className = 'sc-drive-durum ok';
+}
+
 // id verilirse o script aciliyor; verilmezse yeni bir taslak baslatiliyor
 // (baslangic degerleriyle: bir fikirden ya da fikir listesinden gelmis
 // olabilir).
@@ -4628,6 +4712,7 @@ function openScript(id, baslangic){
   // Drive durumu her pencerede sifirdan: onceki scriptin mesaji burada
   // kalmasin, "onceki hale don" yanlis metni geri getirmesin.
   driveOncekiMetin = null;
+  scriptMetinKaynagi = null;
   document.getElementById('sc_driveUndo').hidden = true;
   driveBaglantisi = { id: (veri.driveFileId || ''), ad: (veri.driveFileName || ''),
                       zaman: (veri.driveModified || '') };
@@ -4647,8 +4732,8 @@ function scriptKaydet(){
   if(!metin.trim() && !baslik.trim()){ closeScript(); return; }   // bos taslak: kaydedecek bir sey yok
   // Metin Drive'dan geldiyse kaynagi oyle kaydediliyor; ileride
   // "bu nereden geldi" sorusunun cevabi kayitta dursun.
-  const kaynak = (driveOncekiMetin !== null || document.getElementById('sc_driveStatus').classList.contains('ok'))
-                 ? 'drive' : undefined;
+  const kaynak = scriptMetinKaynagi
+                 || (document.getElementById('sc_driveStatus').classList.contains('ok') ? 'drive' : undefined);
   const bag = { driveFileId: driveBaglantisi.id, driveFileName: driveBaglantisi.ad,
                 driveModified: driveBaglantisi.zaman };
   if(acikScriptId) scriptGuncelle(acikScriptId, { title: baslik, text: metin, projectId: pid, source: kaynak, ...bag });
@@ -5696,10 +5781,12 @@ document.getElementById('sc_driveUndo').addEventListener('click', ()=>{
   const alan = document.getElementById('sc_text');
   alan.value = driveOncekiMetin;
   driveOncekiMetin = null;
+  scriptMetinKaynagi = null;
   scriptSayaci(alan.value.length);
   document.getElementById('sc_driveUndo').hidden = true;
   driveDurum('');
 });
+document.getElementById('sc_ai').addEventListener('click', scriptAiYaz);
 document.getElementById('sc_cancel').addEventListener('click', closeScript);
 document.getElementById('scriptOverlay').addEventListener('click', e=>{ if(e.target.id==='scriptOverlay') closeScript(); });
 document.getElementById('sc_save').addEventListener('click', scriptKaydet);
@@ -7844,9 +7931,12 @@ document.getElementById('aiSettingsSaveBtn').addEventListener('click', async ()=
   const key = kutu.value.trim();
   const ipucu = document.getElementById('ai_key_hint');
   if(!key){ ipucu.textContent = t('ai_alert_need_key'); ipucu.className = 'ai-key-hint error'; kutu.focus(); return; }
-  // Bicim kontrolu once: Google anahtarlari AIza ile basliyor. Kullanici
-  // yanlis yerden bir sey yapistirdiysa aga cikmadan soyleniyor.
-  if(!/^AIza[0-9A-Za-z_\-]{10,}$/.test(key)){
+  // Bicim kontrolu once: kullanici yanlis yerden bir sey yapistirdiysa
+  // aga cikmadan soyleniyor. IKI bicim de gecerli — Google eski
+  // anahtarlari "AIza..." diye, AI Studio'nun bugun verdiklerini
+  // "AQ...." diye uretiyor. Yalnizca AIza kabul eden kontrol, gecerli
+  // yeni anahtarlari reddediyordu.
+  if(!/^(AIza[0-9A-Za-z_\-]{10,}|AQ[._][0-9A-Za-z_\-.]{10,})$/.test(key)){
     ipucu.textContent = t('ai_key_shape'); ipucu.className = 'ai-key-hint error';
     kutu.focus(); return;
   }
@@ -7879,12 +7969,112 @@ async function callGemini(apiKey, prompt){
   return parts.map(p=>p.text||'').join('').trim();
 }
 
-function buildDraftPrompt(){
-  const type = typeName(document.getElementById('f_type').value);
-  const platform = currentEvent ? CAL_SM_NAMES[document.getElementById('f_platform').value] : 'social media';
-  const title = document.getElementById('f_title').value || '(no title given)';
-  const langInstruction = currentLang === 'tr' ? ' Write the caption in Turkish.' : ' Write the caption in English.';
-  return `Write a short, natural social media caption for a ${type} post on ${platform}. The post is about: "${title}". Keep it in the creator's own voice — casual, direct, no corporate tone, no more than 3-4 short sentences, end with a light call to action if it fits naturally.${langInstruction} Return ONLY the caption text, nothing else — no preamble, no quotation marks around it.`;
+// ===== AI baglami ======================================================
+// Onceki surumde modele YALNIZCA tur, platform ve baslik gidiyordu:
+// kullanicinin haftalarca biriktirdigi fikirler ve yazdigi script modelin
+// gozunun onunde degildi, ciktilar da o yuzden genel geciyordu. Baglam
+// artik zincirin tamamindan toplaniyor: proje → fikirler → script → kayit.
+const AI_FIKIR_SINIR  = 3000;
+const AI_SCRIPT_SINIR = 6000;
+
+function aiKisalt(metin, n){
+  const x = (metin || '').trim();
+  return x.length > n ? x.slice(0, n) + '\n…' : x;
+}
+function aiDilAdi(){ return currentLang === 'tr' ? 'Turkish' : 'English'; }
+
+// Modelin ciktisini kutudaki alana koymadan once temizliyor: modeller
+// istenmese de tirnak, "Baslik:" onu ya da markdown yildizi ekleyebiliyor.
+function aiTemizle(metin, tekSatir){
+  let x = (metin || '').trim();
+  x = x.replace(/^```[a-z]*\s*/i, '').replace(/```$/, '').trim();
+  if(tekSatir) x = x.split('\n').map(y=>y.trim()).filter(Boolean)[0] || '';
+  x = x.replace(/^(title|baslik|başlık|caption|açıklama|aciklama)\s*[:：]\s*/i, '');
+  x = x.replace(/^\*+\s*/, '').replace(/\s*\*+$/, '');
+  if(/^["“'‘].*["”'’]$/.test(x)) x = x.slice(1, -1).trim();
+  return x;
+}
+
+// Projeden gelen her sey: ad, tur, anahtar kelimeler, notlar, adres.
+function aiProjeSatirlari(pid){
+  const p = pid && pid !== '__yeni__' ? projectById(pid) : null;
+  const satir = [];
+  if(!p) return satir;
+  satir.push('Project: ' + p.name);
+  if(p.type)     satir.push('Project kind: ' + projTypeName(p.type));
+  if(p.keywords) satir.push('Keywords: ' + p.keywords);
+  if(p.address)  satir.push('Location: ' + p.address);
+  if(p.notes)    satir.push('Project notes: ' + aiKisalt(p.notes, 1200));
+  return satir;
+}
+// Fikirler: birlestirilmis kartlarin parcalari da tek tek gidiyor.
+function aiFikirSatiri(pid){
+  if(!pid || pid === '__yeni__') return '';
+  const metin = projeFikirleri(pid)
+    .map(f => (f.parts && f.parts.length ? f.parts.map(x=>x.text) : [f.text]))
+    .reduce((a,b)=>a.concat(b), [])
+    .map(x => (x || '').trim()).filter(Boolean)
+    .map(x => '- ' + x).join('\n');
+  return metin ? 'Ideas the creator collected for this project:\n' + aiKisalt(metin, AI_FIKIR_SINIR) : '';
+}
+// Script: kayit icin metin uretirken en degerli baglam bu.
+function aiScriptSatiri(pid){
+  if(!pid || pid === '__yeni__') return '';
+  const metin = projeScriptleri(pid).map(x=>x.text).filter(x=>x && x.trim()).join('\n\n');
+  return metin ? 'The script for this project:\n' + aiKisalt(metin, AI_SCRIPT_SINIR) : '';
+}
+
+// Kayit penceresindeki baglam.
+function aiKayitBaglami(){
+  const pid = document.getElementById('f_project').value;
+  const satir = aiProjeSatirlari(pid);
+  satir.push('Post format: ' + typeName(document.getElementById('f_type').value));
+  const plat = document.getElementById('f_platform');
+  if(plat && plat.value && CAL_SM_NAMES[plat.value]) satir.push('Platform: ' + CAL_SM_NAMES[plat.value]);
+  const baslik = document.getElementById('f_title').value.trim();
+  if(baslik) satir.push('What this post is about: ' + baslik);
+  const tarih = document.getElementById('f_date').value;
+  if(tarih) satir.push('Planned publish date: ' + tarih);
+  const sc = aiScriptSatiri(pid);   if(sc) satir.push(sc);
+  const fk = aiFikirSatiri(pid);    if(fk) satir.push(fk);
+  return satir.join('\n');
+}
+
+// "Uretecek bir sey var mi": baslik da proje de fikir de yoksa model
+// bosluktan uydurur, kullanici da neden sacmaladigini anlamaz.
+function aiBaglamVarMi(baglam){
+  return /What this post is about:|^Project:|Ideas the creator|The script for/m.test(baglam);
+}
+
+const AI_ALAN_TARIFI = {
+  caption:    (dil)=> `Write the caption that goes with this post. Keep it in the creator's own voice — casual, direct, no corporate tone, no more than 3-4 short sentences, end with a light call to action only if it fits naturally. Write it in ${dil}. Return ONLY the caption text — no preamble, no quotation marks around it, no hashtags.`,
+  videoTitle: (dil)=> `Write the public title of this video — the one viewers see in search and suggested. One line, at most 70 characters, concrete and specific to what the video actually shows. No clickbait promises the video does not keep, no emoji, no quotation marks. Write it in ${dil}. Return ONLY the title.`,
+  shortTitle: (dil)=> `Write the short text that goes ON the cover image — 3 to 5 words, at most 30 characters. It is read at a glance on a small thumbnail, so it must be short, punchy and readable. No punctuation at the end, no emoji, no quotation marks. Write it in ${dil}. Return ONLY that text.`
+};
+
+function aiAlanPrompt(alan){
+  return 'Here is what the creator is planning:\n\n' + aiKayitBaglami()
+       + '\n\n' + AI_ALAN_TARIFI[alan](aiDilAdi());
+}
+
+// Tek gecit: anahtar kontrolu, dugme kilidi, hata mesaji hep ayni yerde.
+async function aiCalistir(dugme, durumEl, calisanEtiket, prompt){
+  const ayar = getAiSettings();
+  if(!ayar || !ayar.key){ openAiSettings(); return null; }
+  const eskiEtiket = dugme.textContent;
+  dugme.disabled = true; dugme.textContent = calisanEtiket;
+  if(durumEl){ durumEl.textContent = ''; durumEl.className = durumEl.dataset.temelSinif || durumEl.className.split(' ')[0]; }
+  try{
+    return await callGemini(ayar.key, prompt);
+  }catch(err){
+    if(durumEl){
+      durumEl.textContent = t('ai_error_prefix') + err.message + t('ai_error_suffix');
+      durumEl.className = (durumEl.dataset.temelSinif || durumEl.className.split(' ')[0]) + ' error';
+    }
+    return null;
+  }finally{
+    dugme.disabled = false; dugme.textContent = eskiEtiket;
+  }
 }
 
 // Ekran her acildiginda: anahtar alani bos kaliyor (ekranda gostermenin
@@ -7908,31 +8098,41 @@ document.getElementById('aiForgetBtn').addEventListener('click', ()=>{
   showToast(t('ai_forgotten'));
 });
 
-async function runAiDraft(){
-  const settings = getAiSettings();
-  const statusEl = document.getElementById('aiStatus');
-  if(!settings || !settings.key){
-    openAiSettings();
+// Kayit penceresindeki uc alan da ayni yoldan uretiliyor: aciklama,
+// video basligi ve kapak yazisi. Uretimden once DOLU alan sorulmadan
+// ezilmiyor — elle yazilmis bir basligi tek tikla kaybetmek olurdu.
+async function aiAlanUret(alan, alanId, dugmeId, calisanEtiket){
+  const durumEl = document.getElementById('aiStatus');
+  durumEl.dataset.temelSinif = 'ai-status';
+  const baglam = aiKayitBaglami();
+  if(!aiBaglamVarMi(baglam)){
+    durumEl.textContent = t('ai_no_context');
+    durumEl.className = 'ai-status error';
     return;
   }
-  const btn = document.getElementById('aiDraftBtn');
-  btn.disabled = true; btn.textContent = t('ai_drafting');
-  statusEl.textContent = ''; statusEl.className = 'ai-status';
-  try{
-    const prompt = buildDraftPrompt();
-    const text = await callGemini(settings.key, prompt);
-    document.getElementById('f_caption').value = text;
-    trackOnce('funnel/ai-draft-generated');
-    statusEl.textContent = t('ai_drafted_prefix') + 'Gemini' + t('ai_drafted_suffix');
-    statusEl.className = 'ai-status ok';
-  }catch(err){
-    statusEl.textContent = t('ai_error_prefix') + err.message + t('ai_error_suffix');
-    statusEl.className = 'ai-status error';
-  }finally{
-    btn.disabled = false; btn.textContent = t('btn_ai_draft');
+  const kutu = document.getElementById(alanId);
+  if(kutu.value.trim().length > 3 && !confirm(t('ai_field_overwrite'))) return;
+  const dugme = document.getElementById(dugmeId);
+  const ham = await aiCalistir(dugme, durumEl, calisanEtiket, aiAlanPrompt(alan));
+  if(ham === null) return;
+  const temiz = aiTemizle(ham, alan !== 'caption');
+  if(!temiz){
+    durumEl.textContent = t('ai_error_prefix') + 'boş yanıt' + t('ai_error_suffix');
+    durumEl.className = 'ai-status error';
+    return;
   }
+  kutu.value = temiz.slice(0, kutu.maxLength > 0 ? kutu.maxLength : temiz.length);
+  trackOnce('funnel/ai-draft-generated');
+  durumEl.textContent = alan === 'caption'
+    ? t('ai_drafted_prefix') + 'Gemini' + t('ai_drafted_suffix')
+    : t('ai_field_done');
+  durumEl.className = 'ai-status ok';
 }
+
+function runAiDraft(){ return aiAlanUret('caption', 'f_caption', 'aiDraftBtn', t('ai_drafting')); }
 document.getElementById('aiDraftBtn').addEventListener('click', runAiDraft);
+document.getElementById('aiTitleBtn').addEventListener('click', ()=> aiAlanUret('videoTitle','f_videotitle','aiTitleBtn', t('ai_drafting')));
+document.getElementById('aiShortBtn').addEventListener('click', ()=> aiAlanUret('shortTitle','f_shorttitle','aiShortBtn', t('ai_drafting')));
 
 // ===== Pending / Not Yet Posted popup =====
 let pendingAutoShown = false; // auto popup only ever fires once per page load
@@ -8002,7 +8202,7 @@ document.getElementById('pendingOverlay').addEventListener('click', (e)=>{ if(e.
 
 // Yayina alinan surumun damgasi. Onbellekten eski bir kopya geldiginde bu
 // tarih eski kalir, boylece "guncel mi?" sorusu bakarak cevaplanir.
-const BUILD_STAMP = '2026-09-03 01:55 UTC';
+const BUILD_STAMP = '2026-09-03 03:30 UTC';
 document.getElementById('buildId').textContent = BUILD_STAMP;
 
 // ===== Init =====
