@@ -2628,6 +2628,9 @@ const LANG = {
     ai_step_3: "Copy the key it gives you — a long line starting with AQ. or AIza.",
     ai_step_4: "Paste it in the box below and press Save.",
     ai_howto_note: "Free, and it does not ask for a credit card. Careful: a paid ChatGPT or Gemini subscription is a different thing — it does not give you a key. The key comes from the page above.",
+    ai_busy: "Google's model is busy right now. This is nothing to do with your key — try again in a few minutes.",
+    ai_quota: "Your free quota with Google looks used up for now. It will work again once Google's limit resets.",
+    ai_key_saved_busy: "Key saved. Google's model is busy right now so we could not try it — the ✨ AI buttons are ready, give it a few minutes.",
     ai_timeout_secs: (sn)=> `No answer came back in ${sn} seconds.`,
     ai_checking_secs: (sn)=> `Trying the key… ${sn} s`,
     ai_timeout: "No answer came back in time. Check the connection — a content blocker or a VPN may be cutting off generativelanguage.googleapis.com.",
@@ -3045,6 +3048,9 @@ const LANG = {
     ai_step_3: "Verdiği anahtarı kopyala — AQ. ya da AIza ile başlayan uzun bir satır.",
     ai_step_4: "Aşağıdaki kutuya yapıştır ve Kaydet'e bas.",
     ai_howto_note: "Ücretsiz, kredi kartı istemiyor. Dikkat: paralı ChatGPT ya da Gemini aboneliği bambaşka bir şey — o abonelik sana anahtar vermiyor. Anahtar yukarıdaki sayfadan alınıyor.",
+    ai_busy: "Google'ın modeli şu an yoğun. Bu senin anahtarınla ilgili değil — birkaç dakika sonra tekrar dene.",
+    ai_quota: "Google'daki ücretsiz kotan şimdilik dolmuş görünüyor. Limit sıfırlanınca yeniden çalışacak.",
+    ai_key_saved_busy: "Anahtar kaydedildi. Google'ın modeli şu an yoğun olduğu için deneyemedik — ✨ AI düğmeleri hazır, birkaç dakika sonra dene.",
     ai_timeout_secs: (sn)=> `${sn} saniyede yanıt gelmedi.`,
     ai_checking_secs: (sn)=> `Anahtar deneniyor… ${sn} sn`,
     ai_timeout: "Yanıt zamanında gelmedi. Bağlantını kontrol et — bir içerik engelleyici ya da VPN generativelanguage.googleapis.com adresini kesiyor olabilir.",
@@ -8080,6 +8086,17 @@ document.getElementById('aiSettingsSaveBtn').addEventListener('click', async ()=
     else showToast(t('ai_key_ok'));
   }catch(err){
     console.error('[ai] anahtar denemesi', err);
+    // Model yogun ya da kota dolu: bunlar anahtarin BOZUK oldugunu
+    // gostermiyor. Calisan bir anahtari Google mesgul diye reddetmek
+    // kullaniciyi bos yere kilitlerdi — kaydediliyor ve durum
+    // durustce soyleniyor.
+    if(err && err.gecici){
+      saveAiSettings({ provider:'gemini', key });
+      trackOnce('funnel/ai-key-connected');
+      document.getElementById('aiSettingsOverlay').classList.remove('open');
+      showToast(t('ai_key_saved_busy'));
+      return;
+    }
     // Zaman asimi ve ag hatasi bizim cumlemiz: "Google'in soyledigi"
     // diye sunmak yaniltici olurdu, Google hicbir sey soylemedi.
     ipucu.textContent = err && err.yerel ? err.message : t('ai_key_bad')(err.message || '');
@@ -8104,45 +8121,75 @@ const AI_DENEME_ZAMAN_ASIMI = 45000; // anahtar denemesi
 // aciklama, baslik ve script — derin akil yurutme degil, hiz gerekiyor.
 const AI_DUSUNME = 'low';
 
+// Model listesi: ilki yogunsa ikincisine geciliyor. "Bu model su an
+// cok talep goruyor" hatasi kullanicinin anahtariyla ilgili DEGIL ve
+// bekleyip tekrar denemesini istemek yerine calisan bir modele gecmek
+// dogru cevap. Ikisi de ayni ayarlari (thinkingLevel) destekliyor.
+const AI_MODELLER = ['gemini-3.7-flash', 'gemini-3.6-flash'];
+
+// Yogunluk / kota: ikisi de "anahtar bozuk" DEGIL, ikisi de baska bir
+// modelde calisabilir. Ayri ayri anlatiliyor cunku kullanicinin yapacagi
+// sey farkli: biri beklemek, oteki ertesi gunu beklemek.
+function aiGecici(durum, mesaj){
+  const m = String(mesaj || '');
+  if(durum === 503 || /high demand|overloaded|unavailable/i.test(m)) return 'yogun';
+  if(durum === 429 || /resource_exhausted|quota|rate limit/i.test(m)) return 'kota';
+  return '';
+}
+
 async function callGemini(apiKey, prompt, secenek){
   // Ucuncu parametre eskiden dogrudan sure idi; sayi gelirse oyle
   // yorumlaniyor ki eski cagrilar bozulmasin.
   const s = (typeof secenek === 'number') ? { sure: secenek } : (secenek || {});
-  const kes = new AbortController();
-  const sayac = setTimeout(()=> kes.abort(), s.sure || AI_ZAMAN_ASIMI);
   const govde = {
     contents:[{ parts:[{ text: prompt }] }],
     generationConfig: { thinkingConfig: { thinkingLevel: s.dusunme || AI_DUSUNME } }
   };
   if(s.enCokJeton) govde.generationConfig.maxOutputTokens = s.enCokJeton;
-  try{
-    let res;
+  const govdeMetni = JSON.stringify(govde);
+
+  let sonGecici = '';
+  for(let i = 0; i < AI_MODELLER.length; i++){
+    const kes = new AbortController();
+    const sayac = setTimeout(()=> kes.abort(), s.sure || AI_ZAMAN_ASIMI);
     try{
-      res = await fetch('https://generativelanguage.googleapis.com/v1beta/models/gemini-3.7-flash:generateContent', {
-        method:'POST', signal: kes.signal,
-        headers:{ 'x-goog-api-key': apiKey, 'content-type':'application/json' },
-        body: JSON.stringify(govde)
-      });
-    }catch(err){
-      // Sure doldu ya da fetch'in kendisi patladi (aga hic cikilamadi).
-      // Ikisi de "bir seyler ters gitti" degil, ne yapilacagi belli olan
-      // iki ayri durum.
-      // Kac saniye beklendigi mesajda yaziyor: "zamanında gelmedi"
-      // tek basina ne kadar beklendigini soylemiyordu.
-      const bizim = new Error(err && err.name === 'AbortError'
-        ? t('ai_timeout_secs')(Math.round((s.sure || AI_ZAMAN_ASIMI)/1000)) + ' ' + t('ai_timeout')
-        : t('ai_net'));
-      bizim.yerel = true;   // Google'dan gelen bir cevap DEGIL
-      throw bizim;
-    }
-    if(!res.ok){
-      const hata = await res.json().catch(()=>({}));
-      throw new Error((hata.error && hata.error.message) || ('HTTP '+res.status));
-    }
-    const data = await res.json();
-    const parts = (data.candidates && data.candidates[0] && data.candidates[0].content && data.candidates[0].content.parts) || [];
-    return parts.map(p=>p.text||'').join('').trim();
-  }finally{ clearTimeout(sayac); }
+      let res;
+      try{
+        res = await fetch('https://generativelanguage.googleapis.com/v1beta/models/'
+                          + AI_MODELLER[i] + ':generateContent', {
+          method:'POST', signal: kes.signal,
+          headers:{ 'x-goog-api-key': apiKey, 'content-type':'application/json' },
+          body: govdeMetni
+        });
+      }catch(err){
+        // Sure doldu ya da fetch'in kendisi patladi (aga hic cikilamadi).
+        // Ikisi de "bir seyler ters gitti" degil, ne yapilacagi belli olan
+        // iki ayri durum. Kac saniye beklendigi mesajda yaziyor.
+        const bizim = new Error(err && err.name === 'AbortError'
+          ? t('ai_timeout_secs')(Math.round((s.sure || AI_ZAMAN_ASIMI)/1000)) + ' ' + t('ai_timeout')
+          : t('ai_net'));
+        bizim.yerel = true;   // Google'dan gelen bir cevap DEGIL
+        throw bizim;
+      }
+      if(!res.ok){
+        const hata = await res.json().catch(()=>({}));
+        const mesaj = (hata.error && hata.error.message) || ('HTTP '+res.status);
+        const gecici = aiGecici(res.status, mesaj);
+        // Gecici bir durumsa siradaki modeli dene; degilse (gecersiz
+        // anahtar, izin, bozuk istek) tekrar denemenin anlami yok.
+        if(gecici){ sonGecici = gecici; continue; }
+        throw new Error(mesaj);
+      }
+      const data = await res.json();
+      const parts = (data.candidates && data.candidates[0] && data.candidates[0].content && data.candidates[0].content.parts) || [];
+      return parts.map(p=>p.text||'').join('').trim();
+    }finally{ clearTimeout(sayac); }
+  }
+  // Butun modeller mesgul. Anahtar saglam; kullaniciya oyle soyleniyor.
+  const bizim = new Error(sonGecici === 'kota' ? t('ai_quota') : t('ai_busy'));
+  bizim.yerel = true;
+  bizim.gecici = sonGecici || 'yogun';
+  throw bizim;
 }
 
 // ===== AI baglami ======================================================
@@ -8380,7 +8427,7 @@ document.getElementById('pendingOverlay').addEventListener('click', (e)=>{ if(e.
 
 // Yayina alinan surumun damgasi. Onbellekten eski bir kopya geldiginde bu
 // tarih eski kalir, boylece "guncel mi?" sorusu bakarak cevaplanir.
-const BUILD_STAMP = '2026-09-03 07:15 UTC';
+const BUILD_STAMP = '2026-09-03 07:50 UTC';
 document.getElementById('buildId').textContent = BUILD_STAMP;
 
 // ===== Init =====

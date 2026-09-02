@@ -51,6 +51,22 @@ gecikmesi.
 **Ders:** yeni bir modele geçerken varsayılan gecikme davranışı da
 kontrol edilecek. Model kimliğinin doğru olması yetmiyor.
 
+**Sonra çıkan gerçek hata:** *"This model is currently experiencing high
+demand."* Anahtar sağlammış, model yoğunmuş. Yapılan:
+
+- **Yedek model.** `AI_MODELLER = ['gemini-3.7-flash','gemini-3.6-flash']`.
+  İlki yoğunsa ikincisi deneniyor; ikisi de `thinkingLevel` destekliyor.
+- **Geçici hata ayrımı.** 503 / "high demand" → *yoğun*; 429 /
+  RESOURCE_EXHAUSTED → *kota*. İkisi de "anahtar bozuk" DEĞİL. Geçersiz
+  anahtar (400/401) yedek modeli hiç denemiyor — boşuna istek yok.
+- **Yoğunluk yüzünden çalışan bir anahtar reddedilmiyor.** Eskiden Google
+  meşgul olduğu için anahtar kaydedilmiyordu ve kullanıcı hiçbir zaman
+  ilerleyemezdi. Artık kaydediliyor ve durum dürüstçe söyleniyor:
+  "Anahtar kaydedildi, model şu an yoğun, birkaç dakika sonra dene."
+
+**İlke:** sağlayıcının geçici sorunu ile kullanıcının hatası birbirinden
+ayrılmalı. Birincisi kullanıcıyı asla kilitlememeli.
+
 ---
 
 ## Nerede kaldık (3 Eylül 2026, gece — telefon)
