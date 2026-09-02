@@ -1264,10 +1264,16 @@ body.suruklenirken *{cursor:grabbing !important;}
 .ai-durum.var{border-color:var(--green);color:var(--text);}
 .ai-test-satir{display:flex;align-items:center;gap:10px;flex-wrap:wrap;margin-top:10px;}
 .ai-test-satir .ai-status{margin-top:0;flex:1;min-width:180px;}
-.ai-test-liste{list-style:none;margin:10px 0 0;padding:0;display:flex;flex-direction:column;gap:4px;}
-.ai-test-liste li{display:flex;align-items:baseline;gap:8px;font-size:12px;
-  font-family:'JetBrains Mono',monospace;color:var(--text-dim);}
-.ai-test-liste .tm-ad{flex:1;min-width:0;overflow-wrap:anywhere;}
+.ai-test-liste{list-style:none;margin:10px 0 0;padding:0;display:flex;flex-direction:column;gap:6px;}
+/* Satirlar ALT ALTA: model adi ustte, sonuc altinda. Yan yana
+   duzendeyken Google'in uzun hata cumlesi sikismiyor, yerine model
+   adini eziyordu — ad harf harf alt alta dusuyordu. */
+.ai-test-liste li{display:flex;flex-direction:column;gap:2px;min-width:0;
+  padding:7px 9px;border:1px solid var(--line);border-radius:7px;}
+.ai-test-liste .tm-ad{font-family:'JetBrains Mono',monospace;font-size:11px;
+  color:var(--text-dim);overflow-wrap:anywhere;}
+.ai-test-liste .tm-sonuc{font-size:12.5px;line-height:1.45;color:var(--text-dim);
+  overflow-wrap:anywhere;}
 .ai-test-liste .tm-ok{color:var(--green);}
 .ai-test-liste .tm-hata{color:var(--red);}
 .ai-durum .ai-durum-key{font-family:'JetBrains Mono',monospace;font-size:11px;color:var(--text-dim);}
@@ -8275,15 +8281,64 @@ const AI_DUSUNME = 'low';
 // Testin bulduğu calisan model. Bulunduysa denemeye ONDAN basliyoruz:
 // tikali bir modeli her seferinde bastan denemek dakikalar yiyor.
 let aiCalisanModel = '';
+// Sirayla deneniyor: once en iyisi, sonra sirasiyla daha az yuklu
+// olanlar. Sonuncusu "lite" sinifi — kucuk ve hizli oldugu icin yogun
+// saatlerde ayakta kalan genelde o oluyor. Aciklama, baslik ve script
+// icin fazlasiyla yeterli.
 const AI_MODELLER = [
   { ad:'gemini-3.7-flash', dusunme:true },
   { ad:'gemini-3.6-flash', dusunme:true },
-  { ad:'gemini-2.5-flash', dusunme:false }
+  { ad:'gemini-3.5-flash', dusunme:true },
+  { ad:'gemini-3.5-flash-lite', dusunme:true }
 ];
+
+// Anahtara ACIK model listesi. Bir kez aliniyor ve saklaniyor.
+//
+// Neden gerekli: model kimlikleri zamanla degisiyor. "gemini-2.5-flash"
+// yedek olarak yazilmisti, Google onu yeni anahtarlara kapatti ve istek
+// "bu model artik yeni kullanicilara acik degil" diye geri dondu. Sabit
+// bir liste bu yuzden tek basina yetmiyor: adaylar, anahtarin gercekten
+// gorebildigi modellere gore suzuluyor. Liste alinamazsa sabit listeyle
+// devam ediliyor — teshis ugruna uretimi durdurmuyoruz.
+let aiModelListesi = null;
+async function aiAcikModeller(key){
+  if(aiModelListesi) return aiModelListesi;
+  const kes = new AbortController();
+  const zaman = setTimeout(()=> kes.abort(), 8000);
+  try{
+    const res = await fetch('https://generativelanguage.googleapis.com/v1beta/models', {
+      headers:{ 'x-goog-api-key': key }, signal: kes.signal });
+    if(!res.ok) return null;
+    const d = await res.json();
+    aiModelListesi = (Array.isArray(d.models) ? d.models : [])
+      .map(m => String(m.name || '').replace(/^models\//, ''));
+    return aiModelListesi;
+  }catch(e){ return null; }
+  finally{ clearTimeout(zaman); }
+}
+
+// Sabit adaylarin hicbiri acik degilse listeden metin yazabilecek bir
+// flash modeli seciliyor: gorsel, ses ve gomme modelleri eleniyor.
+function aiListedenAday(acik){
+  return acik.filter(ad => /flash/i.test(ad)
+      && !/(image|vision|tts|audio|embedding|aqa|live|native)/i.test(ad))
+    .sort().reverse().slice(0, 3)
+    .map(ad => ({ ad, dusunme: /gemini-3/i.test(ad) }));
+}
 
 // Yogunluk / kota: ikisi de "anahtar bozuk" DEGIL, ikisi de baska bir
 // modelde calisabilir. Ayri ayri anlatiliyor cunku kullanicinin yapacagi
 // sey farkli: biri beklemek, oteki ertesi gunu beklemek.
+// Model KAPALI / yok: bu istek bir daha calismaz ama SIRADAKI model
+// calisabilir. Onceki halde butun deneme burada duruyordu — kullanici
+// "gemini-2.5-flash artik yeni kullanicilara acik degil" hatasini
+// goruyor, oysa listedeki oteki modeller denenmemis oluyordu.
+function aiModelKapali(durum, mesaj){
+  const m = String(mesaj || '');
+  return durum === 404
+    || /no longer available|not found|does not exist|not supported|is not available/i.test(m);
+}
+
 function aiGecici(durum, mesaj){
   const m = String(mesaj || '');
   if(durum === 503 || /high demand|overloaded|unavailable/i.test(m)) return 'yogun';
@@ -8304,12 +8359,22 @@ async function callGemini(apiKey, prompt, secenek){
 
   const toplamSure = s.sure || AI_ZAMAN_ASIMI;
   const bitis = Date.now() + toplamSure;
+  // Adaylar once anahtara ACIK olanlara suzuluyor: kapatilmis bir modele
+  // istek gondermek bosuna sure yiyor ve kullaniciya anlamsiz bir hata
+  // gosteriyor.
+  let adaylar = AI_MODELLER;
+  const acik = await aiAcikModeller(apiKey);
+  if(acik && acik.length){
+    const suzulmus = AI_MODELLER.filter(m => acik.indexOf(m.ad) !== -1);
+    adaylar = suzulmus.length ? suzulmus : (aiListedenAday(acik).length ? aiListedenAday(acik) : AI_MODELLER);
+  }
   // Test bir modelin calistigini gosterdiyse sira ONDAN basliyor.
   const sirali = aiCalisanModel
-    ? AI_MODELLER.slice().sort((a,b)=> (b.ad === aiCalisanModel) - (a.ad === aiCalisanModel))
-    : AI_MODELLER;
+    ? adaylar.slice().sort((a,b)=> (b.ad === aiCalisanModel) - (a.ad === aiCalisanModel))
+    : adaylar;
   let sonGecici = '';
   let sonBeklenmeyen = null;
+  let sonModelHatasi = '';
   let denendi = 0;
   for(let i = 0; i < sirali.length; i++){
     // Sure TOPLAM: iki model de denense kullanicinin bekledigi sure
@@ -8362,6 +8427,8 @@ async function callGemini(apiKey, prompt, secenek){
         // Gecici bir durumsa siradaki modeli dene; degilse (gecersiz
         // anahtar, izin, bozuk istek) tekrar denemenin anlami yok.
         if(gecici){ sonGecici = gecici; continue; }
+        // Model kapali: bu model bir daha calismaz, ama siradaki calisabilir.
+        if(aiModelKapali(res.status, mesaj)){ sonModelHatasi = mesaj; continue; }
         throw new Error(mesaj);
       }
       const data = await res.json();
@@ -8372,6 +8439,9 @@ async function callGemini(apiKey, prompt, secenek){
   // Hepsi zaman asimina dustuyse o hatayi aynen veriyoruz: "yogun" demek
   // dogru olmaz, cevap hic gelmedi.
   if(!sonGecici && sonBeklenmeyen) throw sonBeklenmeyen;
+  // Hicbiri calismadi ve sebep "model kapali" ise Google'in kendi
+  // cumlesi gosteriliyor: yogunluk demek yanlis olurdu.
+  if(!sonGecici && sonModelHatasi) throw new Error(sonModelHatasi);
   // Hicbir istek gitmediyse Google hakkinda bir sey soyleyemeyiz.
   if(!denendi){
     const bos = new Error(t('ai_timeout_secs')(Math.round(toplamSure/1000)) + ' ' + t('ai_timeout'));
@@ -8534,6 +8604,16 @@ function aiDurumTazele(){
 function openAiSettings(){
   const s = getAiSettings();
   aiDurumTazele();
+  // Rehber anahtari OLMAYAN icin var. Anahtar kayitliyken acik durursa
+  // ekranin yarisini kaplayip anahtar kutusunu ve test sonuclarini
+  // asagi itiyor.
+  const rehber = document.querySelector('#aiSettingsOverlay .ai-howto');
+  if(rehber) rehber.open = !(s && s.key);
+  // Onceki denemenin sonuclari yeni acilista durmasin.
+  const cikti = document.getElementById('ai_test_out');
+  if(cikti){ cikti.textContent = ''; cikti.className = 'ai-status'; }
+  const liste = document.getElementById('ai_test_list');
+  if(liste){ liste.innerHTML = ''; liste.hidden = true; }
   document.getElementById('ai_key').value = '';
   document.getElementById('ai_key_hint').textContent = '';
   document.getElementById('ai_key_hint').className = 'ai-key-hint';
@@ -8594,12 +8674,18 @@ document.getElementById('aiTestBtn').addEventListener('click', async ()=>{
 async function aiModelleriDene(key, mevcutAdlar){
   const liste = document.getElementById('ai_test_list');
   liste.hidden = false;
-  liste.innerHTML = AI_MODELLER.map(m=>
+  aiModelListesi = mevcutAdlar && mevcutAdlar.length ? mevcutAdlar : aiModelListesi;
+  // Sabit adaylarin hicbiri anahtara acik degilse listeden secilenler
+  // deneniyor: "hicbiri calismiyor" demek yerine calisani buluyoruz.
+  const acikOlanlar = AI_MODELLER.filter(m => !mevcutAdlar.length || mevcutAdlar.indexOf(m.ad) !== -1);
+  const denenecek = acikOlanlar.length ? AI_MODELLER
+                  : (aiListedenAday(mevcutAdlar).length ? aiListedenAday(mevcutAdlar) : AI_MODELLER);
+  liste.innerHTML = denenecek.map(m=>
     `<li data-tm="${escapeHtml(m.ad)}"><span class="tm-ad">${escapeHtml(m.ad)}</span>`
     + `<span class="tm-sonuc">…</span></li>`).join('');
 
   let calisan = '';
-  for(const m of AI_MODELLER){
+  for(const m of denenecek){
     const satir = liste.querySelector('[data-tm="' + m.ad + '"] .tm-sonuc');
     // Anahtara acik olmayan modeli denemenin anlami yok.
     if(mevcutAdlar.length && mevcutAdlar.indexOf(m.ad) === -1){
@@ -8790,7 +8876,7 @@ document.addEventListener('keydown', (e)=>{
 
 // Yayina alinan surumun damgasi. Onbellekten eski bir kopya geldiginde bu
 // tarih eski kalir, boylece "guncel mi?" sorusu bakarak cevaplanir.
-const BUILD_STAMP = '2026-09-03 12:00 UTC';
+const BUILD_STAMP = '2026-09-03 13:35 UTC';
 document.getElementById('buildId').textContent = BUILD_STAMP;
 
 // ===== Init =====

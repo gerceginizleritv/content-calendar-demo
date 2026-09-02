@@ -6,6 +6,45 @@ duruyor, neden ertelendiği de yazıyor ki aynı tartışma baştan yapılmasın
 
 ---
 
+## Nerede kaldık (3 Eylül 2026, gece — AI modelleri)
+
+Kullanıcının kendi teşhis çıktısı tabloyu tamamladı:
+
+```
+gemini-3.7-flash   15 sn'de yanıt yok
+gemini-3.6-flash   yoğun / 15 sn'de yanıt yok
+gemini-2.5-flash   "no longer available to new users"
+```
+
+Yani ağ ve anahtar sağlam, üç modelin üçü de ayrı sebeplerle çalışmıyordu.
+
+- **Model listesi artık ANAHTARA açık olanlardan süzülüyor.** Üretimden
+  önce `GET /v1beta/models` bir kez alınıyor (kullanıcıda 0.3 sn) ve
+  adaylar ona göre eleniyor. Kapatılmış bir modele istek göndermek hem
+  süre yiyor hem anlamsız hata gösteriyordu. Liste alınamazsa sabit
+  listeyle devam ediliyor — teşhis uğruna üretim durmuyor.
+- **Sabit adaylar güncellendi:** 3.7-flash → 3.6-flash → 3.5-flash →
+  **3.5-flash-lite**. Sonuncusu küçük ve hızlı; yoğun saatlerde ayakta
+  kalan genelde o oluyor.
+- **Sabit adayların hiçbiri açık değilse** listeden bir flash modeli
+  seçiliyor (`aiListedenAday`); görsel/ses/gömme modelleri eleniyor.
+- **"Model kapalı" hatası artık denemeyi DURDURMUYOR.** `aiModelKapali()`
+  404 ve "no longer available / not found" mesajlarını tanıyor ve
+  sıradaki modele geçiyor. Kullanıcının gördüğü hata tam olarak buydu:
+  2.5-flash kapalı diye bütün deneme orada bitiyordu.
+- **Teşhis listesi tasarımı düzeltildi.** Model adı ile sonuç yan yanaydı;
+  Google'ın uzun hata cümlesi sıkışmayınca model adını eziyor, ad harf
+  harf alt alta düşüyordu. Satırlar artık alt alta.
+- **AI ekranı:** anahtar kayıtlıyken rehber kapalı başlıyor (anahtar
+  kutusu ve test sonucu kaydırmadan görünsün), ve ekran her açılışta
+  önceki test sonuçlarını temizliyor.
+
+**Ders:** sağlayıcının model kimlikleri kalıcı değil. Sabit bir liste tek
+başına yetmiyor; adaylar çalışma anında anahtarın gördüğü listeye göre
+süzülmeli ve "bu model yok" hatası bir sonraki adaya geçmeyi engellememeli.
+
+---
+
 ## Nerede kaldık (3 Eylül 2026, akşam)
 
 **Teşhis sonucu:** kullanıcının "Bağlantıyı test et" çıktısı → *0.3 sn,
