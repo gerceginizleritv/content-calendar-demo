@@ -694,13 +694,25 @@ başlık ayarı gibi konularda GitHub Pages'tan esnektir. GitHub Pages'ın
 bilinen iki sınırı: ücretsiz planda depo herkese açık olmalı, ve sunucu
 tarafı kod çalıştırılamaz.
 
-### Çok dillilik — ÖNCE ÖZELLİKLER OTURSUN (kullanıcı kararı, 1 Eylül 2026)
+---
+
+## Ertelenenler (sebebiyle)
+
+### Çok dillilik (ertelendi: 3 Eylül 2026)
 Bugün iki dil var (en, tr), 273 anahtar, ikisi de eksiksiz. Altyapı çok
 dilli: `LANG_NAMES`'e bir kod eklenince menüye kendiliğinden düşüyor.
 Lokasyon uygulamasında üçüncü dil (ru) zaten çalışıyor.
 
-**Karar:** Ürün hâlâ hızla değişiyor; şimdi çeviri yapılırsa her yeni
-özellik altı dilde birden güncellenmek zorunda kalır. Diller özellikler
+**Erteleme sebebi (3 Eylül 2026):** Kullanıcı boyut maliyetini sordu,
+ölçüldü ve mesele boyut çıkmadı — dil başına ~32 KB ham / ~11 KB
+indirilen; 4 dil daha eklense sayfa 144 KB'den ~188 KB'ye çıkar,
+açılışta fark edilmez. Sınır ~8-10 dil: orada dilleri ayrı dosyalara
+alıp yalnızca seçileni indirmek gerekir, o da tek dosyalık yapıyı bozar.
+Asıl maliyet **bakım**: her yeni özellik altı dilde birden yazılır.
+Kullanıcı bunun üzerine erteledi.
+
+**Önceki karar (1 Eylül 2026):** Ürün hâlâ hızla değişiyor; şimdi çeviri
+yapılırsa her yeni özellik altı dilde birden güncellenmek zorunda kalır. Diller özellikler
 oturduktan SONRA.
 
 **Dil eklemeden önce yapılması gereken:** Kodda 8 yerde
@@ -717,8 +729,6 @@ içerikleri de çevrilmeli, yoksa çevrilmiş arayüzde İngilizce caption'lar
 görünür.
 
 ---
-
-## Ertelenenler (sebebiyle)
 
 ### Roller ve yetkilendirme (salt okunur / sınırlı kullanıcı)
 Arayüz değil güvenlik işi: kimin neyi göreceği veritabanı seviyesinde
