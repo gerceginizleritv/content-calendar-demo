@@ -1143,6 +1143,25 @@ body.suruklenirken *{cursor:grabbing !important;}
   padding:26px;width:100%;max-width:600px;max-height:88vh;overflow-y:auto;border-radius:8px;
 }
 .modal h2{font-family:'Archivo',sans-serif;font-size:16px;font-weight:800;letter-spacing:-0.2px;margin:0 0 18px;}
+/* Modalin kendisi kayiyor (max-height + overflow-y). Baslik serit halinde
+   yapisiyor ki uzun listede kapatma dugmesi hep gorunur kalsin. Negatif
+   kenar boslugu modalin 26px ic boslugunu tersine ceviriyor, serit
+   kenardan kenara oturuyor. */
+.modal-head{
+  /* top:-26px, 0 DEGIL: yapiskan kutu kapsayicinin IC BOSLUGUNA gore
+     hizalaniyor, top:0 basligi 26px asagi kenetliyordu. */
+  position:sticky;top:-26px;z-index:2;background:var(--surface);
+  display:flex;align-items:flex-start;justify-content:space-between;gap:12px;
+  margin:-26px -26px 18px;padding:26px 26px 12px;
+}
+.modal-head h2{margin:0;}
+.modal-x{
+  flex:none;width:32px;height:32px;border-radius:6px;cursor:pointer;
+  background:transparent;border:1px solid var(--line);color:var(--text-dim);
+  font-size:18px;line-height:1;display:inline-flex;align-items:center;justify-content:center;
+}
+.modal-x:hover{border-color:var(--red);color:var(--red);}
+.modal-x:focus-visible{outline:2px solid var(--accent);outline-offset:2px;}
 .field{margin-bottom:15px;}
 .field label{display:block;font-family:'IBM Plex Mono',monospace;font-size:10.5px;text-transform:uppercase;letter-spacing:1.2px;color:var(--accent-dim);margin-bottom:6px;}
 .field input,.field select,.field textarea{
@@ -2125,6 +2144,7 @@ body.suruklenirken *{cursor:grabbing !important;}
     </div>
     <div class="modal-actions">
       <button class="btn btn-danger" id="aiForgetBtn" data-i18n="ai_forget" hidden>Remove key</button>
+      <button class="btn" id="aiSaveAnywayBtn" data-i18n="ai_save_anyway" hidden>Save without testing</button>
       <button class="btn" id="aiSettingsCancelBtn" data-i18n="btn_cancel">Cancel</button>
       <button class="btn btn-primary" id="aiSettingsSaveBtn" data-i18n="ai_save_connect">Save & Connect</button>
     </div>
@@ -2150,7 +2170,13 @@ body.suruklenirken *{cursor:grabbing !important;}
 
 <div class="overlay" id="pendingOverlay">
   <div class="modal" style="max-width:640px;">
-    <h2 data-i18n="pending_title">Not Yet Posted</h2>
+    <!-- Baslik SABIT duruyor ve kapatma dugmesi yaninda: liste uzun
+         oldugunda kapatmak icin en alta kadar kaydirmak gerekiyordu. -->
+    <div class="modal-head">
+      <h2 data-i18n="pending_title">Not Yet Posted</h2>
+      <button type="button" class="modal-x" id="pendingX"
+              data-i18n-title="btn_close" data-i18n-aria="btn_close" title="Close">×</button>
+    </div>
     <div id="pendingBody"></div>
     <div class="modal-actions">
       <button class="btn btn-primary" id="pendingCloseBtn" data-i18n="btn_close">Close</button>
@@ -2628,6 +2654,8 @@ const LANG = {
     ai_step_3: "Copy the key it gives you — a long line starting with AQ. or AIza.",
     ai_step_4: "Paste it in the box below and press Save.",
     ai_howto_note: "Free, and it does not ask for a credit card. Careful: a paid ChatGPT or Gemini subscription is a different thing — it does not give you a key. The key comes from the page above.",
+    ai_save_anyway: "Save without testing",
+    ai_saved_untested: "Key saved without testing. If it does not work, the ✨ AI buttons will say why.",
     ai_busy: "Google's model is busy right now. This is nothing to do with your key — try again in a few minutes.",
     ai_quota: "Your free quota with Google looks used up for now. It will work again once Google's limit resets.",
     ai_key_saved_busy: "Key saved. Google's model is busy right now so we could not try it — the ✨ AI buttons are ready, give it a few minutes.",
@@ -3048,6 +3076,8 @@ const LANG = {
     ai_step_3: "Verdiği anahtarı kopyala — AQ. ya da AIza ile başlayan uzun bir satır.",
     ai_step_4: "Aşağıdaki kutuya yapıştır ve Kaydet'e bas.",
     ai_howto_note: "Ücretsiz, kredi kartı istemiyor. Dikkat: paralı ChatGPT ya da Gemini aboneliği bambaşka bir şey — o abonelik sana anahtar vermiyor. Anahtar yukarıdaki sayfadan alınıyor.",
+    ai_save_anyway: "Denemeden kaydet",
+    ai_saved_untested: "Anahtar denenmeden kaydedildi. Çalışmazsa ✨ AI düğmeleri sebebini söyleyecek.",
     ai_busy: "Google'ın modeli şu an yoğun. Bu senin anahtarınla ilgili değil — birkaç dakika sonra tekrar dene.",
     ai_quota: "Google'daki ücretsiz kotan şimdilik dolmuş görünüyor. Limit sıfırlanınca yeniden çalışacak.",
     ai_key_saved_busy: "Anahtar kaydedildi. Google'ın modeli şu an yoğun olduğu için deneyemedik — ✨ AI düğmeleri hazır, birkaç dakika sonra dene.",
@@ -3129,6 +3159,14 @@ function applyStaticI18n(){
   });
   document.querySelectorAll('[data-i18n-placeholder]').forEach(el=>{
     el.placeholder = t(el.dataset.i18nPlaceholder);
+  });
+  // Metni olmayan dugmeler (kapatma carpisi gibi) anlamini title ve
+  // aria-label'da tasiyor; onlar da cevriliyor.
+  document.querySelectorAll('[data-i18n-title]').forEach(el=>{
+    el.title = t(el.dataset.i18nTitle);
+  });
+  document.querySelectorAll('[data-i18n-aria]').forEach(el=>{
+    el.setAttribute('aria-label', t(el.dataset.i18nAria));
   });
   document.documentElement.lang = currentLang;
   // Oznitelikle yazilan tek metin: applyStaticI18n textContent'e bakiyor,
@@ -8101,6 +8139,10 @@ document.getElementById('aiSettingsSaveBtn').addEventListener('click', async ()=
     // diye sunmak yaniltici olurdu, Google hicbir sey soylemedi.
     ipucu.textContent = err && err.yerel ? err.message : t('ai_key_bad')(err.message || '');
     ipucu.className = 'ai-key-hint error';
+    // Hata anahtarla ilgili DEGILSE kullaniciya bir cikis birakiliyor:
+    // Google'in kotu bir gunu onun cikmazi olmamali. Gercekten gecersiz
+    // bir anahtarda bu dugme cikmiyor.
+    document.getElementById('aiSaveAnywayBtn').hidden = aiAnahtarSuclu(err);
   }finally{
     clearInterval(sayac);
     dugme.disabled = false;
@@ -8113,7 +8155,7 @@ document.getElementById('aiSettingsSaveBtn').addEventListener('click', async ()=
 // icerik engelleyicinin arkasinda istek gercekten asili kalabiliyor.
 const AI_ZAMAN_ASIMI = 60000;        // uretim
 const AI_SCRIPT_ZAMAN_ASIMI = 90000; // script: uzun metin
-const AI_DENEME_ZAMAN_ASIMI = 45000; // anahtar denemesi
+const AI_DENEME_ZAMAN_ASIMI = 25000; // anahtar denemesi (dusuk dusunme + 32 jeton)
 
 // DUSUNME SEVIYESI. gemini-3.7-flash varsayilan olarak "medium" ile
 // calisiyor; tek kelimelik bir istek bile onlarca saniye surebiliyor ve
@@ -8149,6 +8191,7 @@ async function callGemini(apiKey, prompt, secenek){
   const govdeMetni = JSON.stringify(govde);
 
   let sonGecici = '';
+  let sonBeklenmeyen = null;
   for(let i = 0; i < AI_MODELLER.length; i++){
     const kes = new AbortController();
     const sayac = setTimeout(()=> kes.abort(), s.sure || AI_ZAMAN_ASIMI);
@@ -8169,6 +8212,12 @@ async function callGemini(apiKey, prompt, secenek){
           ? t('ai_timeout_secs')(Math.round((s.sure || AI_ZAMAN_ASIMI)/1000)) + ' ' + t('ai_timeout')
           : t('ai_net'));
         bizim.yerel = true;   // Google'dan gelen bir cevap DEGIL
+        // Bir model asili kaldiysa OTEKI denenmeli: sikisik olan genelde
+        // tek model oluyor. Ag hatasinda denemenin anlami yok, adres
+        // ikisi icin de ayni.
+        if(err && err.name === 'AbortError' && i < AI_MODELLER.length - 1){
+          sonBeklenmeyen = bizim; continue;
+        }
         throw bizim;
       }
       if(!res.ok){
@@ -8185,6 +8234,9 @@ async function callGemini(apiKey, prompt, secenek){
       return parts.map(p=>p.text||'').join('').trim();
     }finally{ clearTimeout(sayac); }
   }
+  // Hepsi zaman asimina dustuyse o hatayi aynen veriyoruz: "yogun" demek
+  // dogru olmaz, cevap hic gelmedi.
+  if(!sonGecici && sonBeklenmeyen) throw sonBeklenmeyen;
   // Butun modeller mesgul. Anahtar saglam; kullaniciya oyle soyleniyor.
   const bizim = new Error(sonGecici === 'kota' ? t('ai_quota') : t('ai_busy'));
   bizim.yerel = true;
@@ -8304,16 +8356,32 @@ async function aiCalistir(dugme, durumEl, calisanEtiket, prompt, secenek){
 
 // Ekran her acildiginda: anahtar alani bos kaliyor (ekranda gostermenin
 // faydasi yok), silme dugmesi yalnizca kayitli anahtar varken cikiyor.
+function aiAnahtarSuclu(err){
+  const m = String((err && err.message) || '');
+  if(err && err.yerel) return false;          // zaman asimi / ag / yogunluk
+  return /api[ _-]?key|api_key_invalid|unauthorized|permission denied|not valid|forbidden/i.test(m);
+}
+
 function openAiSettings(){
   const s = getAiSettings();
   document.getElementById('ai_key').value = '';
   document.getElementById('ai_key_hint').textContent = '';
   document.getElementById('ai_key_hint').className = 'ai-key-hint';
   document.getElementById('aiForgetBtn').hidden = !(s && s.key);
+  document.getElementById('aiSaveAnywayBtn').hidden = true;
   document.getElementById('aiSettingsOverlay').classList.add('open');
 }
 
 document.getElementById('aiSettingsBtn').addEventListener('click', openAiSettings);
+
+document.getElementById('aiSaveAnywayBtn').addEventListener('click', ()=>{
+  const key = document.getElementById('ai_key').value.trim();
+  if(!key) return;
+  saveAiSettings({ provider:'gemini', key });
+  trackOnce('funnel/ai-key-connected');
+  document.getElementById('aiSettingsOverlay').classList.remove('open');
+  showToast(t('ai_saved_untested'));
+});
 
 document.getElementById('aiForgetBtn').addEventListener('click', ()=>{
   if(!confirm(t('ai_forget_confirm'))) return;
@@ -8361,9 +8429,25 @@ document.getElementById('aiShortBtn').addEventListener('click', ()=> aiAlanUret(
 
 // ===== Pending / Not Yet Posted popup =====
 let pendingAutoShown = false; // auto popup only ever fires once per page load
+
+// Bir kez kapatildiktan sonra KENDILIGINDEN bir daha acilmiyor. Kayit
+// sessionStorage'da: sayfa yenilense de acilmiyor, tarayici sekmesi
+// kapanip yeniden acildiginda (yani gercekten yeniden baslatildiginda)
+// tekrar cikiyor. localStorage olsaydi bir daha hic gorunmezdi ve
+// "bekleyenler" listesinin varlik sebebi ortadan kalkardi.
+const BEKLEYEN_KAPALI_ANAHTARI = 'demo_pending_dismissed';
+function bekleyenKapatildiMi(){
+  try{ return sessionStorage.getItem(BEKLEYEN_KAPALI_ANAHTARI) === '1'; }catch(e){ return false; }
+}
+function bekleyeniKapat(){
+  pendingAutoShown = true;
+  try{ sessionStorage.setItem(BEKLEYEN_KAPALI_ANAHTARI, '1'); }catch(e){ /* onemsiz */ }
+  document.getElementById('pendingOverlay').classList.remove('open');
+}
+
 function showPendingPopup(autoMode){
   if(autoMode){
-    if(pendingAutoShown) return;
+    if(pendingAutoShown || bekleyenKapatildiMi()) return;
     pendingAutoShown = true;
   }
   const now = new Date();
@@ -8417,8 +8501,12 @@ function showPendingPopup(autoMode){
   document.getElementById('pendingOverlay').classList.add('open');
 }
 document.getElementById('pendingBtn').addEventListener('click', ()=>{ trackOnce('funnel/pending-opened'); showPendingPopup(false); });
-document.getElementById('pendingCloseBtn').addEventListener('click', ()=> document.getElementById('pendingOverlay').classList.remove('open'));
-document.getElementById('pendingOverlay').addEventListener('click', (e)=>{ if(e.target.id==='pendingOverlay') document.getElementById('pendingOverlay').classList.remove('open'); });
+document.getElementById('pendingCloseBtn').addEventListener('click', bekleyeniKapat);
+document.getElementById('pendingX').addEventListener('click', bekleyeniKapat);
+document.getElementById('pendingOverlay').addEventListener('click', (e)=>{ if(e.target.id==='pendingOverlay') bekleyeniKapat(); });
+document.addEventListener('keydown', (e)=>{
+  if(e.key === 'Escape' && document.getElementById('pendingOverlay').classList.contains('open')) bekleyeniKapat();
+});
 
 // ===== Browser storage usage indicator =====
 // localStorage quotas vary by browser (commonly ~5MB, some allow more) — we
@@ -8427,7 +8515,7 @@ document.getElementById('pendingOverlay').addEventListener('click', (e)=>{ if(e.
 
 // Yayina alinan surumun damgasi. Onbellekten eski bir kopya geldiginde bu
 // tarih eski kalir, boylece "guncel mi?" sorusu bakarak cevaplanir.
-const BUILD_STAMP = '2026-09-03 07:50 UTC';
+const BUILD_STAMP = '2026-09-03 09:05 UTC';
 document.getElementById('buildId').textContent = BUILD_STAMP;
 
 // ===== Init =====

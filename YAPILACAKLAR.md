@@ -67,6 +67,39 @@ demand."* Anahtar sağlammış, model yoğunmuş. Yapılan:
 **İlke:** sağlayıcının geçici sorunu ile kullanıcının hatası birbirinden
 ayrılmalı. Birincisi kullanıcıyı asla kilitlememeli.
 
+**Sonra: düşük düşünme + 32 jetonla bile 45 sn'de yanıt gelmedi.** Yani
+Google tarafı o sırada gerçekten sıkışıktı (aynı anahtar birkaç dakika
+önce "high demand" almıştı). Yapılanlar:
+
+- Zaman aşımı da geçici sayılıyor: bir model asılı kalırsa öteki
+  deneniyor. (Ağ hatasında denenmiyor — adres ikisi için de aynı.)
+- Anahtar denemesi süresi 25 sn'ye indi (düşük düşünme + 32 jeton ile
+  saniyeler sürmeli).
+- **"Denemeden kaydet"** düğmesi: hata GERÇEKTEN anahtarla ilgili
+  değilse çıkıyor ve anahtarı canlı deneme olmadan kaydediyor.
+  `aiAnahtarSuclu()` ayrımı yapıyor — Google açıkça "API key not valid"
+  derse düğme çıkmıyor. Google'ın kötü bir günü kullanıcının çıkmazı
+  olmamalı.
+
+### Bekleyenler popup'ı (kullanıcı isteği, 3 Eylül 2026)
+- Başlık artık yapışkan bir şerit (`.modal-head`) ve sağ üstünde **×**
+  var: uzun listede kapatmak için en alta kadar kaydırmak gerekiyordu.
+  `top:-26px` şart — `top:0` başlığı modalin iç boşluğu kadar aşağı
+  kenetliyor.
+- Kapatıldıktan sonra **kendiliğinden bir daha açılmıyor**. İşaret
+  `sessionStorage`'da: sayfa yenilense de çıkmıyor, sekme kapanıp
+  yeniden açıldığında (gerçekten yeniden başlatınca) tekrar çıkıyor.
+  `localStorage` olsaydı bir daha hiç görünmez, listenin varlık sebebi
+  ortadan kalkardı.
+- Kapatma yollarının hepsi aynı kapıdan geçiyor: ×, Kapat, dışarı
+  tıklama, Escape.
+- `data-i18n-title` ve `data-i18n-aria` desteği eklendi: metni olmayan
+  düğmeler anlamını bu özniteliklerde taşıyor.
+
+---
+
+
+
 ---
 
 ## Nerede kaldık (3 Eylül 2026, gece — telefon)
