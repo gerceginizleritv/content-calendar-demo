@@ -521,8 +521,14 @@ body.suruklenirken *{cursor:grabbing !important;}
 /* --- Proje tablosu ---
    Sol sutun sabit: alti adim sagda uzuyor, hangi projede oldugunu
    gormeden gezmek zor. */
-.proj-table-wrap{overflow-x:auto;border:1px solid var(--line);border-radius:11px;background:var(--surface);}
-.proj-table{border-collapse:collapse;width:max-content;min-width:100%;font-size:13px;}
+/* Cerceve tabloyu SARIYOR, satiri degil. Onceden tablo min-width:100% ile
+   geriliyordu; artan yer sutunlara icerik genisligine gore dagiliyor,
+   dil degisince etiketler uzayinca pay degisiyor ve proje sutunu
+   kendiliginden kayiyordu. Simdi sutunlar sabit, tablo kendi genisliginde
+   duruyor. Dar ekranda max-width devreye giriyor ve tablo yana kayiyor. */
+.proj-table-wrap{overflow-x:auto;border:1px solid var(--line);border-radius:11px;
+  background:var(--surface);width:max-content;max-width:100%;}
+.proj-table{border-collapse:collapse;width:max-content;font-size:13px;}
 .proj-table th,.proj-table td{border-bottom:1px solid var(--line-soft);
   border-right:1px solid var(--line-soft);padding:9px 9px;vertical-align:top;text-align:left;}
 .proj-table tr:last-child th,.proj-table tr:last-child td{border-bottom:0;}
@@ -591,10 +597,6 @@ body.suruklenirken *{cursor:grabbing !important;}
 :root:not([data-theme="light"]) .proj-new select,
 :root:not([data-theme="light"]) .proj-addr input{color-scheme:dark;}
 .proj-table td.pcell{width:92px;min-width:92px;text-align:center;}
-/* Artan yeri yutan bos kuyruk sutunu. Onceden artan yer butun sutunlara
-   icerik genisligine gore dagiliyordu; dil degisince etiketler uzuyor,
-   pay degisiyor ve proje sutunu kendiliginden kayiyordu. */
-.proj-table .pfill{width:100%;padding:0;border-right:0;}
 /* Secici tabloya baglandi: .pcell (0,1,0) ile .proj-table td (0,1,1)
    yarisiyordu, td kazaniyordu ve ortalama hic uygulanmiyordu. */
 .proj-table thead th:not(.pname-col){text-align:center;}
@@ -3399,7 +3401,6 @@ function renderProjects(){
         <div class="pname-meta">${p.shootDate ? escapeHtml(t('p_start_label') + ' ' + tarihMetni(p.shootDate)) + ' · ' : ''}${escapeHtml(t('p_entries')(kayitlar.length, yayinlanan))}</div>
       </th>
       ${hucreler}
-      <td class="pfill"></td>
     </tr>`;
   }).join('');
 
@@ -3407,7 +3408,6 @@ function renderProjects(){
     <thead><tr>
       <th class="pname-col">${escapeHtml(t('p_col_project'))}</th>
       ${basliklar}
-      <th class="pfill"></th>
     </tr></thead>
     <tbody>${satirlar}</tbody>
   </table></div>`;
@@ -6828,7 +6828,7 @@ document.getElementById('pendingOverlay').addEventListener('click', (e)=>{ if(e.
 
 // Yayina alinan surumun damgasi. Onbellekten eski bir kopya geldiginde bu
 // tarih eski kalir, boylece "guncel mi?" sorusu bakarak cevaplanir.
-const BUILD_STAMP = '2026-09-02 10:35 UTC';
+const BUILD_STAMP = '2026-09-02 11:40 UTC';
 document.getElementById('buildId').textContent = BUILD_STAMP;
 
 // ===== Init =====
@@ -6855,12 +6855,18 @@ adresAlaniniTazele(document.getElementById('p_type'), document.getElementById('p
 renderLegend();
 renderCal();
 renderProjects();
-// Sekme secimi hatirlaniyor: proje sayfasinda calisan biri her acilista
-// takvime dusmesin.
-// Is projeyle basliyor, takvim onun ciktisi: acilis projeler sayfasi.
-// Takvimde calisan biri icin secim yine hatirlaniyor.
+// Sekme secimi hatirlaniyor: bir sayfada calisan biri her yenilemede
+// baskasina dusmesin. Ilk gelis icin varsayilan projeler sayfasi.
+//
+// Gecerli sayfalar SAYFALAR listesinden okunuyor. Onceden burada elle
+// yazilmis kisa bir liste vardi ('calendar' ve 'templates'); yeni
+// sayfalar eklenince kimse bu satiri hatirlamadi ve Fikirler/Scriptler
+// sayfasinda yenileyen herkes projelere dusuyordu.
 let acilisSayfasi = 'projects';
-try{ const v = localStorage.getItem('demo_page'); if(v === 'calendar' || v === 'templates') acilisSayfasi = v; }catch(e){}
+try{
+  const v = localStorage.getItem('demo_page');
+  if(SAYFALAR.some(x=> x[0] === v)) acilisSayfasi = v;
+}catch(e){}
 setPage(acilisSayfasi);
 // Every time the demo loads: "How this works" tour first, then — once that's
 // closed (skipped or finished) — the Pending popup, so a first-time visitor
