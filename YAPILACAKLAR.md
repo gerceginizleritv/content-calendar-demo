@@ -6,6 +6,39 @@ duruyor, neden ertelendiği de yazıyor ki aynı tartışma baştan yapılmasın
 
 ---
 
+## Nerede kaldık (3 Eylül 2026, gece — AI çalıştı)
+
+**AI script yazma ÇALIŞIYOR.** Kullanıcı ilk scriptini üretti. Sonrasında
+gelen istekler ve düzeltmeler:
+
+- **Kelime sayacı.** Karakterin yanında kelime de yazıyor: video süresi
+  kelimeyle hesaplanıyor ve AI'dan uzunluk istendiğinde tutup tutmadığı
+  ancak böyle görünüyor. (400 kelime istenmiş, 346 gelmişti.)
+- **Uzunluk ALT SINIR sayılıyor.** Tarifte kelime sayısı geçiyorsa modele
+  "bunu hedef değil taban say, üstüne çık, erken bitirme" deniyor.
+  Modeller kelime sayamıyor; bu yüzden hedef yerine taban vermek daha iyi
+  sonuç veriyor.
+- **Fikirden doğrudan script.** Script penceresindeki fikir şeridinde her
+  fikrin yanında ✨ düğmesi var: tarif kutusunu o fikirle doldurup üretimi
+  başlatıyor. Birleşik kartın bütün parçaları tarife giriyor. Tarif
+  görünür kalıyor — kullanıcı düzenleyip tekrar çalıştırabiliyor.
+- **Pencereden çıkmadan fikir ekleme.** Fikir şeridinin altında bir kutu
+  ve "+ Ekle". Fikir seçili projeye bağlanıyor ve Fikirler sayfasında da
+  anında görünüyor (aynı kayıt). Şerit artık proje seçiliyse fikir olmasa
+  da görünüyor ve AÇIK açılıyor — kapalıyken ekleme kutusu görünmüyordu.
+
+**CSS tuzağı ÜÇÜNCÜ kez:** `@media(min-width:701px){ .fold{margin-bottom:0} }`
+tek sınıfla yazılan her boşluğu eziyor. Fikirler kutusu ile Drive şeridi
+bu yüzden bitişik görünüyordu. `.fold.sc-ideas` (iki sınıf) gerekiyor.
+Aynı tuzağa `.modal` / `.modal-lg` ve `.modal` / `.sc-modal` çiftlerinde
+de düşülmüştü. **Kural: bu dosyada tek sınıflı bir kuralı ezmek isteyen
+her yeni kural iki sınıfla yazılmalı.**
+
+Alçak ekranda (≤780px) pencere yine kaymaya başlıyordu: yardımcı metin ve
+boşluklar kısılıyor, yazma alanı korunuyor.
+
+---
+
 ## Nerede kaldık (3 Eylül 2026, gece — AI modelleri)
 
 Kullanıcının kendi teşhis çıktısı tabloyu tamamladı:

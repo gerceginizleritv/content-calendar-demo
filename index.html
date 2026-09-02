@@ -690,7 +690,19 @@ body.suruklenirken *{cursor:grabbing !important;}
    kaliyor, metin kutusu buyuyecek bos alan bulamiyordu. */
 .modal.sc-modal{display:flex;flex-direction:column;height:100%;max-height:100%;overflow:hidden;}
 .sc-modal > *{flex:none;}
-.sc-modal .sc-text{flex:1 1 auto;min-height:140px;overflow-y:auto;resize:none;}
+.sc-modal .sc-text{flex:1 1 auto;min-height:110px;overflow-y:auto;resize:none;}
+/* Fikir listesi cok uzarsa metin kutusunu ezmesin: kendi icinde kayiyor. */
+.sc-modal .sc-idea-list{max-height:22vh;overflow-y:auto;}
+/* Alcak ekranda pencere yine kaymaya basliyordu: yardimci metin ve
+   bosluklar kisiliyor, yazma alani korunuyor. Aciklama satiri bir ipucu,
+   kontrol degil — once o gidiyor. */
+@media(max-height:780px){
+  .modal.sc-modal{padding:16px;}
+  .sc-modal .sc-ai-not{display:none;}
+  .fold.sc-ideas{margin-bottom:12px;}
+  .sc-modal .sc-idea-list{max-height:14vh;}
+  .sc-modal .modal-actions{margin-top:12px;}
+}
 .sc-head{display:flex;justify-content:space-between;align-items:flex-start;gap:14px;
   margin-bottom:10px;}
 .sc-head h2{margin:0;}
@@ -704,7 +716,7 @@ body.suruklenirken *{cursor:grabbing !important;}
 .sc-note{font-size:11.5px;color:var(--text-dim);margin:8px 0 2px;}
 /* Drive seridi metin alaninin hemen ustunde: metnin nereden gelecegi,
    metnin yaninda dursun. */
-.sc-bar{display:flex;align-items:center;gap:8px;flex-wrap:wrap;margin-bottom:8px;}
+.sc-bar{display:flex;align-items:center;gap:8px;flex-wrap:wrap;margin:0 0 8px;}
 .sc-bar .btn{display:inline-flex;align-items:center;gap:7px;}
 .sc-drive-ico{width:15px;height:15px;flex-shrink:0;}
 .sc-drive-durum{font-size:11.5px;color:var(--text-dim);}
@@ -745,9 +757,29 @@ body.suruklenirken *{cursor:grabbing !important;}
 .dw-secim:has(input:disabled) > span > span:first-child{color:var(--text-dim);}
 .dw-secim:has(input:checked){border-color:var(--accent);background:var(--accent-soft);}
 /* Script yazarken fikirler goz onunde: katli, yer kaplamiyor. */
-.sc-ideas{margin-bottom:10px;}
+/* Katlanan kutunun ICINDE yan ve alt bosluk yok: liste ve ekleme satiri
+   cerceveye yapisiyor, altindaki Drive dugmeleri de kutuya bitisik
+   gorunuyordu. Bosluk hem iceride hem kutunun altinda. */
+/* .fold.sc-ideas (iki sinif) SART: masaustu kurali
+   "@media(min-width:701px){ .fold{margin-bottom:0} }" tek sinifla yazilan
+   her boslugu eziyor. Bu dosyada ucuncu kez ayni tuzak. */
+.fold.sc-ideas{margin-bottom:18px;}
+.sc-ideas .sc-idea-list,
+.sc-ideas .sc-idea-ekle{margin-left:14px;margin-right:14px;}
+.sc-ideas .sc-idea-ekle{margin-bottom:14px;}
 .sc-idea-list{margin:6px 0 0;padding-left:20px;font-size:13px;color:var(--text-dim);}
-.sc-idea-list li{margin:3px 0;}
+.sc-idea-list li{margin:3px 0;display:flex;align-items:flex-start;gap:8px;}
+.sc-idea-metin{flex:1;min-width:0;overflow-wrap:anywhere;}
+/* Fikrin kendi "yaz" dugmesi: kucuk, satirin sonunda. */
+.sc-idea-ai{flex:none;padding:2px 8px;min-height:24px;font-size:12px;line-height:1;}
+.sc-idea-ekle{display:flex;gap:8px;margin:8px 0 2px;}
+.sc-idea-ekle input{
+  flex:1;min-width:0;background:var(--bg);color:var(--text);
+  border:1px solid var(--line);border-radius:7px;padding:7px 10px;
+  font-family:'IBM Plex Sans',sans-serif;font-size:13px;
+}
+.sc-idea-ekle input:focus{outline:none;border-color:var(--accent);}
+.sc-idea-ekle .btn{flex:none;}
 
 /* --- Fikir penceresi --- */
 .fk-list{max-height:min(42vh,340px);overflow-y:auto;margin:10px 0 12px;}
@@ -1932,6 +1964,14 @@ body.suruklenirken *{cursor:grabbing !important;}
       <summary><span data-i18n="fk_title">Ideas</span>
         <span class="fold-count" id="sc_ideasCount"></span></summary>
       <ul class="sc-idea-list" id="sc_ideasList"></ul>
+      <!-- Fikir buradan da eklenebiliyor: aklina gelen bir seyi not etmek
+           icin pencereyi kapatip Fikirler sayfasina gitmek zorunda
+           kalmasin. Eklenen fikir SECILI projeye bagli. -->
+      <div class="sc-idea-ekle">
+        <input type="text" id="sc_newIdea" maxlength="600"
+               data-i18n-placeholder="sc_idea_new_ph" placeholder="A new idea…">
+        <button type="button" class="btn btn-sm" id="sc_addIdea" data-i18n="sc_idea_add">+ Add</button>
+      </div>
     </details>
     <!-- Drive'dan getirme: metni O AN kopyalar, biter. Canli bag degil.
          Cift yonlu senkron cakisma cozumu ister ve bu uygulamada iki kez
@@ -2480,6 +2520,13 @@ const LANG = {
     btn_ai_draft: "✨ Draft with AI",
     btn_ai_settings: "✨ AI (Gemini)",
     btn_ai_write: "✨ AI",
+    sc_words: (n)=> `${n} words`,
+    sc_idea_ai: "Write a script from this idea",
+    sc_idea_new_ph: "A new idea — jot it down without leaving this window",
+    sc_idea_add: "+ Add",
+    sc_idea_need_project: "Pick a project first — the idea is attached to it.",
+    sc_idea_added: "Idea added.",
+    sc_idea_brief: (metin)=> `Write the script around this idea: ${metin}`,
     sc_ai: "✨ Write with AI",
     sc_ai_brief_ph: "What should the AI write? e.g. a 1800-word script on how easy this is",
     sc_ai_note: "The AI writes into the box below. Your project and its ideas already go with it — here you only say what you want.",
@@ -2917,6 +2964,13 @@ const LANG = {
     btn_ai_draft: "✨ AI ile Taslak Oluştur",
     btn_ai_settings: "✨ AI (Gemini)",
     btn_ai_write: "✨ AI",
+    sc_words: (n)=> `${n} kelime`,
+    sc_idea_ai: "Bu fikirden script yaz",
+    sc_idea_new_ph: "Yeni bir fikir — bu pencereden çıkmadan not et",
+    sc_idea_add: "+ Ekle",
+    sc_idea_need_project: "Önce bir proje seç — fikir ona bağlanıyor.",
+    sc_idea_added: "Fikir eklendi.",
+    sc_idea_brief: (metin)=> `Şu fikri işleyen bir script yaz: ${metin}`,
     sc_ai: "✨ AI ile yaz",
     sc_ai_brief_ph: "AI ne yazsın? Örn: bunun ne kadar kolay olduğunu anlatan 1800 kelimelik bir script",
     sc_ai_note: "AI aşağıdaki kutuya yazıyor. Projen ve fikirlerin zaten onunla birlikte gidiyor — buraya sadece ne istediğini yaz.",
@@ -4870,9 +4924,19 @@ async function driveYaz(){
 let acikScriptId = null;
 let yeniScriptTaslak = null;   // { text, title, projectId } — kaydedilmemis
 
+// Kelime sayisi karakterden daha ise yarar bir olcu: video suresi
+// kelimeyle hesaplaniyor ve AI'dan uzunluk istendiginde tutup tutmadigi
+// ancak boyle gorunuyor. Karakter de duruyor, ikisi yan yana.
+function kelimeSay(metin){
+  const t = (metin || '').trim();
+  return t ? t.split(/\s+/).length : 0;
+}
 function scriptSayaci(n){
   const el = document.getElementById('scCount');
-  if(el) el.textContent = n ? t('sc_chars')(n) : t('sc_empty');
+  if(!el) return;
+  if(!n){ el.textContent = t('sc_empty'); return; }
+  const kelime = kelimeSay(document.getElementById('sc_text').value);
+  el.textContent = t('sc_words')(kelime) + ' · ' + t('sc_chars')(n);
 }
 // Fikirlerden iskelet: her fikir numarali bir satir. Metnin kendisi degil,
 // yazmaya baslanacak yer. AI kapisi acildiginda ayni yeri o dolduracak.
@@ -4884,12 +4948,62 @@ function fikirIskeleti(liste){
 // acmak zinciri kagit uzerinde birakiyordu.
 function scriptFikirSeridi(pid){
   const kat = document.getElementById('sc_ideasFold');
-  const liste = pid ? projeFikirleri(pid) : [];
-  kat.hidden = !liste.length;
-  if(!liste.length) return;
-  document.getElementById('sc_ideasCount').textContent = t('fk_count')(liste.length);
+  const gecerli = pid && pid !== '__yeni__';
+  const liste = gecerli ? projeFikirleri(pid) : [];
+  // Proje seciliyse fikir olmasa da serit duruyor: ekleme kutusu orada.
+  // Proje yoksa fikrin baglanacagi yer de yok, serit gizli kaliyor.
+  kat.hidden = !gecerli;
+  if(!gecerli) return;
+  // Serit ACIK aciliyor: kapaliyken ne fikirler ne de ekleme kutusu
+  // gorunuyor, kullanici buradan fikir eklenebildigini fark etmiyordu.
+  kat.open = true;
+  document.getElementById('sc_ideasCount').textContent =
+    liste.length ? t('fk_count')(liste.length) : t('sc_empty');
+  // Her fikrin yaninda kendi dugmesi: fikirler zaten baglama giriyor ama
+  // "SU fikri isle" demek baska bir sey — hangisinden yola cikildigini
+  // kullanici seciyor.
   document.getElementById('sc_ideasList').innerHTML =
-    liste.map(f=>`<li>${escapeHtml(f.text)}</li>`).join('');
+    liste.map(f=>`<li>
+      <span class="sc-idea-metin">${escapeHtml(f.text)}</span>
+      <button type="button" class="btn btn-sm ai-btn sc-idea-ai" data-fikir-ai="${escapeHtml(f.id)}"
+              data-i18n-title="sc_idea_ai" data-i18n-aria="sc_idea_ai"
+              title="Write a script from this idea">✨</button>
+    </li>`).join('');
+  document.getElementById('sc_ideasList').querySelectorAll('[data-fikir-ai]').forEach(el=>{
+    el.addEventListener('click', ()=> fikirdenScriptYaz(el.dataset.fikirAi));
+  });
+  applyStaticI18n();
+}
+
+// Bir fikirden dogrudan script: fikrin metni tarif kutusuna yaziliyor ve
+// uretim baslatiliyor. Tarif GORUNUR kaliyor — kullanici neyin
+// istendigini goruyor, isterse duzenleyip tekrar calistiriyor.
+// Pencereden cikmadan fikir ekleme. Fikir SECILI projeye bagli;
+// Fikirler sayfasinda da aninda gorunuyor cunku ayni kayit.
+function scriptPencereFikirEkle(){
+  const kutu = document.getElementById('sc_newIdea');
+  const metin = kutu.value.trim();
+  if(!metin) return;
+  const pid = scriptPencereProje();
+  if(!pid || pid === '__yeni__'){ showToast(t('sc_idea_need_project')); return; }
+  const yeni = fikirEkle(metin, pid);
+  if(!yeni) return;
+  kutu.value = '';
+  scriptFikirSeridi(pid);
+  document.getElementById('sc_ideasFold').open = true;
+  renderFikirler();
+  showToast(t('sc_idea_added'));
+  kutu.focus();
+}
+
+function fikirdenScriptYaz(fikirId){
+  const f = fikirler.find(x=>x.id === fikirId);
+  if(!f) return;
+  const parcalar = (f.parts && f.parts.length ? f.parts.map(x=>x.text) : [f.text])
+    .map(x=>(x||'').trim()).filter(Boolean);
+  const kutu = document.getElementById('sc_aiBrief');
+  kutu.value = t('sc_idea_brief')(parcalar.join(' · ')).slice(0, 600);
+  scriptAiYaz();
 }
 function scriptPencereProje(){ return document.getElementById('sc_proj').value; }
 
@@ -4919,7 +5033,11 @@ function aiScriptPrompt(){
     + ' Write it the way it will be spoken, not as an essay: short sentences, spoken rhythm, a hook in the first two sentences.'
     + ' Mark the sections with plain headings on their own line so the creator can find their place while shooting.'
     + ' Do not write camera directions, shot lists or timecodes unless asked above.'
-    + (tarif ? ' Where the request above sets a length, a tone or an audience, follow it exactly.' : '')
+    + (tarif ? ' Where the request above sets a tone or an audience, follow it exactly.'
+             + ' Where it sets a length in words, treat that number as a MINIMUM, not a target:'
+             + ' count as you write and end up slightly above it, never below.'
+             + ' Keep writing until you are past that number — do not stop early because the'
+             + ' outline feels complete.' : '')
     + ' Write it in ' + aiDilAdi() + '.'
     + ' Return ONLY the script text — no preamble, no explanation of what you did.');
   return parca.join('\n\n');
@@ -4980,6 +5098,7 @@ function openScript(id, baslangic){
   driveOncekiMetin = null;
   scriptMetinKaynagi = null;
   document.getElementById('sc_aiBrief').value = '';
+  document.getElementById('sc_newIdea').value = '';
   document.getElementById('sc_driveUndo').hidden = true;
   driveBaglantisi = { id: (veri.driveFileId || ''), ad: (veri.driveFileName || ''),
                       zaman: (veri.driveModified || '') };
@@ -6053,9 +6172,17 @@ document.getElementById('sc_driveUndo').addEventListener('click', ()=>{
   document.getElementById('sc_driveUndo').hidden = true;
   driveDurum('');
 });
+document.getElementById('sc_proj').addEventListener('change', ()=>{
+  const pid = scriptPencereProje();
+  scriptFikirSeridi(pid === '__yeni__' ? '' : pid);
+});
 document.getElementById('sc_ai').addEventListener('click', scriptAiYaz);
 document.getElementById('sc_aiBrief').addEventListener('keydown', e=>{
   if(e.key === 'Enter'){ e.preventDefault(); scriptAiYaz(); }
+});
+document.getElementById('sc_addIdea').addEventListener('click', scriptPencereFikirEkle);
+document.getElementById('sc_newIdea').addEventListener('keydown', e=>{
+  if(e.key === 'Enter'){ e.preventDefault(); scriptPencereFikirEkle(); }
 });
 document.getElementById('sc_cancel').addEventListener('click', closeScript);
 document.getElementById('scriptOverlay').addEventListener('click', e=>{ if(e.target.id==='scriptOverlay') closeScript(); });
@@ -8876,7 +9003,7 @@ document.addEventListener('keydown', (e)=>{
 
 // Yayina alinan surumun damgasi. Onbellekten eski bir kopya geldiginde bu
 // tarih eski kalir, boylece "guncel mi?" sorusu bakarak cevaplanir.
-const BUILD_STAMP = '2026-09-03 13:35 UTC';
+const BUILD_STAMP = '2026-09-03 15:20 UTC';
 document.getElementById('buildId').textContent = BUILD_STAMP;
 
 // ===== Init =====
