@@ -6,6 +6,22 @@ duruyor, neden ertelendiği de yazıyor ki aynı tartışma baştan yapılmasın
 
 ---
 
+## Nerede kaldık (3 Eylül 2026, akşam — tur ve fikir seçimi)
+
+**Fikir → script akışı düzeltildi.** Fikirlerin yanındaki ✨ düğmesi
+"bu fikri AI ile yaz" gibi okunuyordu; oysa doğru akış şu: kullanıcı
+script'e girecek fikirleri SEÇİYOR, ne istediğini altta bir cümleyle
+söylüyor. Artık her fikrin bir seçim kutusu var, "tümünü seç" bağlantısı
+ve tarif kutusunun yanında "N fikir seçili — script bunların üzerine
+kurulacak" notu. Seçilen fikirler prompt'a MALZEME olarak giriyor
+("must be BUILT ON these ideas"); hiç seçilmezse eskisi gibi hepsi arka
+plan bağlamı oluyor. Proje değişince ve yeni pencerede seçim sıfırlanıyor.
+
+**Tur baştan yazıldı** — ayrıntısı "Bu nasıl çalışır turu — YAPILDI"
+maddesinde.
+
+---
+
 ## Nerede kaldık (3 Eylül 2026, gece — AI çalıştı)
 
 **AI script yazma ÇALIŞIYOR.** Kullanıcı ilk scriptini üretti. Sonrasında
@@ -557,57 +573,34 @@ tam WYSIWYG değil. Sebep dört tane ve hepsi bu üründe zaten yaşanmış
 **Karar verilecek:** önizleme ayrı sekme mi, yan yana mı. Telefonda yan
 yana sığmaz; muhtemelen sekme.
 
-### "Bu nasıl çalışır" turu güncellenecek (kullanıcı kararı, 2 Eylül 2026)
-Kullanıcı: *"proje çalışmamız için how to bölümünü update etmemiz
-gerekecek. Şimdi yapmayacağız."*
+### "Bu nasıl çalışır" turu — YAPILDI (3 Eylül 2026)
+Tur baştan yazıldı. On adım, her biri BİR ÖZELLİK: başlık + ne işe
+yaradığını anlatan bir paragraf + üç madde.
 
-**Neden gerekiyor:** tur (`TOUR_STEPS_I18N`, on adım) ürünün eski hâlini
-anlatıyor. O yazıldığında Slate üç sekmeliydi ve iş projeyle başlıyordu.
-Bugün beş sekme var ve **iş fikirle başlıyor**. Turda hiç geçmeyen ya da
-yanlış anlatılan şeyler:
+1. Fikirden yayına giden yol (zincir ve sıranın zorunlu olmadığı)
+2. Fikirler: kart duvarı, birleştirme, parça çıkarma
+3. Scriptler: bağımsız kayıt, Drive'dan getir / Drive'a yaz
+4. AI ile yaz: kendi Gemini anahtarı, fikir seçimi, tarif alanı
+5. Projeler: yedi adım, özet şeridi, biten/iptal
+6. Terminler: adım başına tarih, geciken kırmızı
+7. Takvim: iki bağımsız etiket, görünümler, saat dilimi
+8. Kayıt penceresi: alanlar, ✨ AI düğmeleri, çoğaltma
+9. Şablonlar: kapanış metni ve platform istisnası
+10. Bulut: her cihazda aynı plan, bekleyenler listesi
 
-- **Fikirler** ve **Scriptler** diye iki sayfa var; ikisi de projeden
-  bağımsız. Turun ikinci adımı hâlâ "Tek çekim, tüm prodüksiyon" diyerek
-  işin projeyle başladığını anlatıyor.
-- Zincir: fikir → script → proje → takvim. Menü sırası bunu anlatıyor
-  ama tur anlatmıyor.
-- Fikir kartlarını birleştirme/ayırma, tek parçayı sürükleyip çıkarma.
-- Script yazınca "script" adımının kendiliğinden işaretlenmesi.
-- Projelerde iptal işareti ve üstteki özet şeridi.
-- Gün görünümü ve saat ızgarası (09:00–00:00).
-
-**Not:** turdaki her adımın kendi SVG çizimi var (`TOUR_ART`); yeni
-adımlar için de çizim gerekecek, yoksa aradaki adımlar boş görünür.
-
-**Karar verilecek:** tur on adımdan uzun olmamalı. Yeni maddeler
-eklenirken hangi eski adımların birleşeceği ya da düşeceği seçilecek —
-"her özelliği anlat" listesi turu kimsenin okumadığı bir slayt gösterisi
-yapar.
-
-### Karşılama (landing) sayfası (kullanıcı kararı, 3 Eylül 2026)
-Kullanıcı: *"Slate'e tıklayınca introlu bölüm geliyor. Bunu şimdilik
-kaldır ama bir landing page yapacağız ilk giriş için."*
-
-**Yapıldı:** uygulamanın içindeki tanıtım (`#pitch`, `#pitchBanner`,
-"Slate nedir?" düğmesi) kapatıldı — `PITCH_ACIK = false`. Metinler ve
-düzenek SİLİNMEDİ, karşılama sayfasında yeniden kullanılacak.
-
-**Yapılacak:** ayrı bir `karsilama.html` (ya da `index.html` kök,
-uygulama `app.html`). İçinde kullanılabilecek, halihazırda yazılmış ve
-iki dilde duran metinler:
-
-- `h1` — "Tek çekim on posta dönüşür. Slate onunu da tek panoda tutar."
-- `h1_sub` — aynı çekimin Reel/Short/carousel/story olarak çıkması.
-- `promise_tag` — "Planlama panosu — otomatik paylaşan bir araç değil."
-  (Ziyaretçinin en olası yanlış varsayımını baştan kesen cümle; karşılama
-  sayfasında da mutlaka bulunsun.)
-- `banner_bold1` + `banner_rest` — "bu çalışan bir demo, hesapsız da
-  çalışıyor, 100 kayıt sınırı".
-
-**Karar verilecek:** karşılama sayfası ile uygulama aynı adreste mi
-duracak (`/` tanıtım, `/app` uygulama) yoksa tanıtım kendi alan adında mı.
-Bu, "Kendi alan adı" maddesiyle birlikte kararlaştırılmalı — ikisi aynı
-karar.
+Yapısal değişiklikler:
+- Metinler artık `TOUR_STEPS_I18N` içinde (başlık + gövde + maddeler bir
+  arada); ayrı `tourN_body` anahtarları kaldırıldı.
+- Pencere script penceresi gibi: `.modal.tour-modal` ekrana sığıyor,
+  kayan tek şey ortadaki içerik, başlık ve düğmeler sabit. Genişlik
+  1040px, çizim 560px'e kadar.
+- **Gövde metni artık `--text`.** Önceki hâlde `--text-dim` idi ve koyu
+  zeminde okunmuyordu. Maddeler sol kenarı vurgulu kartlar hâlinde.
+- Sağ üstte kapatma × eklendi.
+- Çizimler yeniden çizildi: 460x180 sahne, ortak yardımcı kümesi
+  (`TV.sahne/zemin/kart/vurgu/cip/tik/yildiz/satir`), hepsi tema
+  değişkenleriyle. `tur2.test.js` on adımı iki dilde ve üç ekran boyunda
+  geziyor; kontrastı hesaplanan renkten ölçüyor.
 
 ### Termin hatırlatmaları — iki kanal (kullanıcı kararı, 1 Eylül 2026)
 Bugün uyarı yalnızca sayfa AÇIKKEN var: geciken adım kırmızı, üstte şerit.
