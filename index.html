@@ -68,6 +68,15 @@
   --p-threads:#8A94A2; --p-x:#9AA4B2; --p-pinterest:#D4685F; --p-linkedin:#4E9AC8;
 }
 *{box-sizing:border-box;}
+/* hidden ozniteligi HER ZAMAN kazanir.
+   Bu dosyada bir suru bicim kurali display veriyor (flex, inline-flex,
+   grid) ve display kurali [hidden]'i eziyor: eleman gizlenmesi gerekirken
+   ekranda kaliyor. Ayni hata alti ayri yerde tek tek yamandi — filtre
+   rozeti, tanitim blogu, takvim izgarasi, kullanici adi, ipucu seridi...
+   Yedincisinde (Drive'in "onceki hale don" dugmesi) yamayi birakip kurali
+   bir kez koyuyoruz. !important burada dogru arac: "gizle" dedigimizde
+   hicbir bicim kurali buna itiraz edememeli. */
+[hidden]{display:none !important;}
 body{
   margin:0; background:var(--bg); color:var(--text);
   font-family:'IBM Plex Sans',-apple-system,sans-serif;
@@ -107,7 +116,6 @@ body{
 .avatar.bos svg{width:28px;height:28px;display:block;}
 .rail-name{font-size:12.5px;font-weight:600;text-align:center;
   max-width:100%;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;}
-.rail-name[hidden]{display:none;}
 .btn.rail-auth{width:100%;justify-content:center;}
 
 .rail-nav{display:flex;flex-direction:column;gap:2px;}
@@ -154,7 +162,10 @@ body{
   .btn.rail-auth{width:auto;}
   .rail-nav{flex-direction:row;gap:4px;width:100%;
     border-top:1px solid var(--line-soft);padding-top:8px;}
-  .rail-nav .tab{width:auto;flex:1;justify-content:center;padding:8px 6px;
+  /* min-width:0 SART: flex ogeleri varsayilan olarak icerikten dar
+     olmuyor. Uc sekmeyken siga geliyordu, bes olunca satir tasti ve
+     BUTUN SAYFA yana kaydi. */
+  .rail-nav .tab{width:auto;flex:1 1 0;min-width:0;justify-content:center;padding:8px 6px;
     border-left:0;border-bottom:2px solid transparent;}
   .rail-nav .tab.active{border-left-color:transparent;border-bottom-color:var(--accent);}
   .rail-foot{flex-direction:row;flex-wrap:wrap;align-items:center;width:100%;
@@ -230,11 +241,7 @@ body{
   border:1px solid var(--line);background:var(--surface-2);
   font-family:'IBM Plex Mono',monospace;font-size:11px;color:var(--text-dim);
 }
-/* [hidden] tek basina yetmiyor olabilir: bu dosyada display kurallarinin
-   hidden'i ezdigi birkac kez yasandi. */
-#pitch[hidden], #pitchBanner[hidden]{display:none;}
 /* Tanitim kapaliyken ust blok bir arac cubuguna donuyor. */
-#pitchCard[hidden]{display:none;}
 .head-actions{display:flex;gap:8px;flex-wrap:wrap;align-items:center;margin-top:14px;}
 .head-meta{
   display:flex;gap:14px;align-items:center;justify-content:flex-end;
@@ -293,9 +300,7 @@ body{
   background:var(--accent);color:var(--on-accent);
   font-family:'JetBrains Mono',monospace;font-size:10.5px;font-weight:700;
 }
-/* display:inline-flex, hidden ozniteligini eziyor: bu kural olmadan
-   rozet hicbir filtre secili degilken de bos bir nokta olarak duruyordu. */
-.fbadge[hidden]{display:none;}
+
 .fcaret{color:var(--text-dim);font-size:10px;}
 .fdrop.open .fcaret{color:var(--accent);}
 .fpanel{
@@ -657,6 +662,14 @@ body.suruklenirken *{cursor:grabbing !important;}
   background:var(--bg);color:var(--text);font:inherit;font-size:14.5px;line-height:1.7;}
 .sc-text:focus{outline:2px solid var(--accent);outline-offset:-2px;}
 .sc-note{font-size:11.5px;color:var(--text-dim);margin:8px 0 2px;}
+/* Drive seridi metin alaninin hemen ustunde: metnin nereden gelecegi,
+   metnin yaninda dursun. */
+.sc-bar{display:flex;align-items:center;gap:8px;flex-wrap:wrap;margin-bottom:8px;}
+.sc-bar .btn{display:inline-flex;align-items:center;gap:7px;}
+.sc-drive-ico{width:15px;height:15px;flex-shrink:0;}
+.sc-drive-durum{font-size:11.5px;color:var(--text-dim);}
+.sc-drive-durum.ok{color:var(--green);}
+.sc-drive-durum.error{color:var(--red);}
 /* Script yazarken fikirler goz onunde: katli, yer kaplamiyor. */
 .sc-ideas{margin-bottom:10px;}
 .sc-idea-list{margin:6px 0 0;padding-left:20px;font-size:13px;color:var(--text-dim);}
@@ -814,6 +827,16 @@ body.suruklenirken *{cursor:grabbing !important;}
   .fk-grid{grid-template-columns:repeat(auto-fill,minmax(150px,1fr));gap:10px;}
   .fk-card{min-height:130px;padding:10px;}
 }
+/* Telefonda bes sekme yan yana sigmiyor: ikon ustte, yazi altta —
+   telefonlardaki alt sekme cubuklari gibi. Yazilari kisaltmak ya da
+   sekmeleri kaydirmali yapmak yerine bu secildi: bes sekme de gorunur
+   kaliyor, hicbiri ekran disina dusmuyor. */
+@media(max-width:560px){
+  .rail-nav .tab{flex-direction:column;gap:3px;padding:7px 2px;
+    font-size:10px;letter-spacing:0;line-height:1.2;text-align:center;}
+  .rail-nav .tab span{overflow:hidden;text-overflow:ellipsis;max-width:100%;}
+  .rail-nav .tab-ico{width:16px;height:16px;}
+}
 .dl-row{display:grid;grid-template-columns:1fr auto;align-items:center;gap:12px;
   padding:9px 0;border-bottom:1px solid var(--line-soft);}
 .dl-row:last-child{border-bottom:0;}
@@ -952,7 +975,6 @@ body.suruklenirken *{cursor:grabbing !important;}
 /* ---- Tablo gorunumu ----
    Gunler satir, platformlar sutun. Genis olabildigi icin sayfayi degil
    kendi kabini kaydiriyor; govde asla yana kaymiyor. */
-.cal-grid[hidden],.cal-table-wrap[hidden]{display:none;}
 .cal-table-wrap{overflow-x:auto;border:1px solid var(--line);border-radius:8px;background:var(--surface);}
 .cal-table{border-collapse:collapse;width:max-content;min-width:100%;font-size:12px;}
 .cal-table th,.cal-table td{border-bottom:1px solid var(--line-soft);border-right:1px solid var(--line-soft);
@@ -1177,6 +1199,11 @@ body.suruklenirken *{cursor:grabbing !important;}
   .row2{grid-template-columns:1fr;}
   .header h1{font-size:26px;}
   .cal-nav{display:flex;flex-wrap:wrap;gap:8px;justify-content:center;}
+  /* Ic gruplar da sarmali: cal-nav sariyordu ama icindeki "gorunum
+     secici + geri dugmesi" tek parca kaliyordu ve 320px'lik telefonda
+     (Ingilizce etiketler daha uzun) sayfayi yana kaydiriyordu. */
+  .cal-nav-left,.cal-nav-right{flex-wrap:wrap;justify-content:center;max-width:100%;}
+  .view-toggle{max-width:100%;}
   .cal-range{order:-1;width:100%;text-align:center;margin-bottom:4px;}
 }
 
@@ -1206,7 +1233,6 @@ body.suruklenirken *{cursor:grabbing !important;}
   background:var(--surface);border:1px solid var(--line);border-left:3px solid var(--accent);
   border-radius:0 8px 8px 0;padding:11px 14px;margin-bottom:12px;font-size:13px;color:var(--text-dim);
 }
-.nudge[hidden]{display:none;}
 .nudge-dot{width:7px;height:7px;border-radius:50%;background:var(--accent);flex:none;}
 .btn-sm{min-height:32px;padding:5px 11px;font-size:12px;}
 .cloud-ok{color:var(--green);}
@@ -1737,6 +1763,24 @@ body.suruklenirken *{cursor:grabbing !important;}
         <span class="fold-count" id="sc_ideasCount"></span></summary>
       <ul class="sc-idea-list" id="sc_ideasList"></ul>
     </details>
+    <!-- Drive'dan getirme: metni O AN kopyalar, biter. Canli bag degil.
+         Cift yonlu senkron cakisma cozumu ister ve bu uygulamada iki kez
+         veri kaybettik. -->
+    <div class="sc-bar">
+      <button type="button" class="btn btn-sm" id="sc_drive">
+        <svg viewBox="0 0 24 24" aria-hidden="true" class="sc-drive-ico">
+          <path fill="#0066DA" d="M2.4 17.4 3.8 19.8c.3.5.7.9 1.2 1.1L9.3 13H1.1c0 .6.1 1.1.4 1.6z"/>
+          <path fill="#00AC47" d="M12 7 7.9 0C7.4.3 7 .7 6.7 1.2L1.5 10.2c-.3.5-.4 1-.4 1.6h8.2z"/>
+          <path fill="#EA4335" d="M18.9 20.9c.5-.3.9-.7 1.2-1.1l.6-1 2.8-4.9c.3-.5.4-1 .4-1.6h-8.2l1.7 3.4z"/>
+          <path fill="#00832D" d="M12 7 16.1 0h-8.2L12 7z"/>
+          <path fill="#2684FC" d="M15.8 13H8.2l-3.2 8.9c.5.3 1 .4 1.6.4h10.8c.6 0 1.1-.2 1.6-.4z"/>
+          <path fill="#FFBA00" d="M18.9 7.5 16.3 3c-.3-.5-.7-.9-1.2-1.1L12 7l3.8 6h8.2c0-.6-.1-1.1-.4-1.6z"/>
+        </svg>
+        <span data-i18n="sc_drive">Bring it from Drive</span>
+      </button>
+      <button type="button" class="btn btn-sm" id="sc_driveUndo" hidden data-i18n="sc_drive_undo">Back to the previous text</button>
+      <span class="sc-drive-durum" id="sc_driveStatus"></span>
+    </div>
     <textarea id="sc_text" class="sc-text" rows="18" spellcheck="true"
               data-i18n-placeholder="sc_ph"
               placeholder="Write the script here. It stays with the project."></textarea>
@@ -2284,6 +2328,15 @@ const LANG = {
     fk_none_match: "No idea here yet.",
     fk_limit: (n)=> `Slate holds up to ${n} ideas.`,
     sc_new: "+ New script",
+    sc_drive: "Bring it from Drive",
+    sc_drive_undo: "Back to the previous text",
+    sc_drive_wait: "Waiting for Google…",
+    sc_drive_reading: "Reading the document…",
+    sc_drive_ok: (ad)=> `Copied from “${ad}”. Formatting does not come across — plain text only.`,
+    sc_drive_overwrite: (ad)=> `There is already text here. Replace it with “${ad}”?\n\nYou can undo right after.`,
+    sc_drive_denied: "Google permission was not granted, so nothing was brought.",
+    sc_drive_type: "Only Google Docs and plain text files can be read.",
+    sc_drive_err: "Could not reach Drive. Check your connection and try again.",
     sc_title_ph: "Title — what is this script for?",
     sc_project: "Project",
     sc_untitled: "Untitled script",
@@ -2643,6 +2696,15 @@ const LANG = {
     fk_none_match: "Burada henüz fikir yok.",
     fk_limit: (n)=> `Slate en fazla ${n} fikir tutuyor.`,
     sc_new: "+ Yeni script",
+    sc_drive: "Drive'dan getir",
+    sc_drive_undo: "Önceki hâle dön",
+    sc_drive_wait: "Google bekleniyor…",
+    sc_drive_reading: "Belge okunuyor…",
+    sc_drive_ok: (ad)=> `“${ad}” belgesinden kopyalandı. Biçimlendirme gelmez — düz metin.`,
+    sc_drive_overwrite: (ad)=> `Burada zaten metin var. “${ad}” ile değiştirilsin mi?\n\nHemen ardından geri alabilirsin.`,
+    sc_drive_denied: "Google izni verilmedi, bu yüzden hiçbir şey getirilmedi.",
+    sc_drive_type: "Yalnızca Google Docs belgeleri ve düz metin dosyaları okunabiliyor.",
+    sc_drive_err: "Drive'a ulaşılamadı. Bağlantını kontrol edip tekrar dene.",
     sc_title_ph: "Başlık — bu script ne için?",
     sc_project: "Proje",
     sc_untitled: "Başlıksız script",
@@ -3995,6 +4057,148 @@ function renderScriptler(){
     el.addEventListener('click', ()=> openScript(el.dataset.scOpen));
   });
 }
+// --- Google Drive'dan script getirme ----------------------------------
+// Slate YUKLEYICI degil, BAGLAYICI. Belge Drive'da kaliyor; buradaki
+// dugme metnin O ANKI halini kopyaliyor, biter. Canli bag kurulmuyor:
+// cift yonlu senkron cakisma cozumu ister ve bu uygulamada iki kez veri
+// kaybettik.
+//
+// Izin kapsami YALNIZCA drive.file: Slate senin Drive'ini degil, o an
+// SECTIGIN dosyayi gorur. Bu hem "her seyi gorebilir" iznine gore cok
+// daha az soz veriyor hem de Google'in haftalar suren inceleme surecine
+// girmiyor. Kimlikler acikta duruyor ama sifir degil kimlik: guvenlik
+// adres kisitinda ve kullanicinin verdigi izinde.
+const DRIVE_CLIENT_ID = '600126485767-ae0ts8k4ldqjp4qmairuafsl6a0uk1jq.apps.googleusercontent.com';
+const DRIVE_API_KEY   = 'AIzaSyCpvLQQ4OlOTAwwtBZUFjvs0oP8M-bytNo';
+const DRIVE_SCOPE     = 'https://www.googleapis.com/auth/drive.file';
+// Token YALNIZCA bellekte. Diske de buluta da yazilmiyor; sekme
+// kapaninca gidiyor ve izin bir daha isteniyor.
+let driveToken = null;
+let driveScriptYukleniyor = null;
+
+function driveDurum(metin, tur){
+  const el = document.getElementById('sc_driveStatus');
+  if(!el) return;
+  el.textContent = metin || '';
+  el.className = 'sc-drive-durum' + (tur ? ' ' + tur : '');
+}
+// Google'in betikleri ANCAK dugmeye basilinca yukleniyor. Sayfayi acan
+// herkese Google'dan betik cektirmek, Drive'i hic kullanmayacak biri
+// icin gereksiz bir baglanti demek.
+function betikYukle(src){
+  return new Promise((coz, red)=>{
+    if(document.querySelector(`script[src="${src}"]`)) return coz();
+    const el = document.createElement('script');
+    el.src = src; el.async = true;
+    el.onload = ()=> coz();
+    el.onerror = ()=> red(new Error('yuklenemedi: ' + src));
+    document.head.appendChild(el);
+  });
+}
+function driveBetikleri(){
+  if(!driveScriptYukleniyor){
+    driveScriptYukleniyor = Promise.all([
+      betikYukle('https://accounts.google.com/gsi/client'),
+      betikYukle('https://apis.google.com/js/api.js')
+    ]).catch(err=>{ driveScriptYukleniyor = null; throw err; });
+  }
+  return driveScriptYukleniyor;
+}
+function driveIzinIste(){
+  return new Promise((coz, red)=>{
+    if(driveToken) return coz(driveToken);
+    const istemci = google.accounts.oauth2.initTokenClient({
+      client_id: DRIVE_CLIENT_ID,
+      scope: DRIVE_SCOPE,
+      callback: (cevap)=>{
+        if(cevap && cevap.access_token){ driveToken = cevap.access_token; coz(driveToken); }
+        else red(new Error('izin verilmedi'));
+      },
+      error_callback: ()=> red(new Error('izin penceresi kapatildi'))
+    });
+    // prompt:'' — ilk seferden sonra sessizce yenileniyor.
+    istemci.requestAccessToken({ prompt: '' });
+  });
+}
+function drivePickerAc(token){
+  return new Promise((coz)=>{
+    gapi.load('picker', ()=>{
+      const gorunum = new google.picker.DocsView(google.picker.ViewId.DOCS)
+        .setIncludeFolders(false)
+        .setSelectFolderEnabled(false);
+      const picker = new google.picker.PickerBuilder()
+        .setAppId(DRIVE_CLIENT_ID.split('-')[0])
+        .setOAuthToken(token)
+        .setDeveloperKey(DRIVE_API_KEY)
+        .setOrigin(window.location.protocol + '//' + window.location.host)
+        .addView(gorunum)
+        .setCallback(veri=>{
+          if(veri.action === google.picker.Action.PICKED) coz(veri.docs && veri.docs[0]);
+          else if(veri.action === google.picker.Action.CANCEL) coz(null);
+        })
+        .build();
+      picker.setVisible(true);
+    });
+  });
+}
+// Belgenin DUZ METNI. Google Docs'ta bicimlendirme (baslik, kalin) duz
+// metne dusuyor — script icin sorun degil, ama sasirtmasin diye
+// arayuzde de soyleniyor.
+async function driveMetniAl(dosya, token){
+  const kimlik = dosya.id;
+  const tur = dosya.mimeType || '';
+  const bas = { Authorization: 'Bearer ' + token };
+  let url;
+  if(tur === 'application/vnd.google-apps.document'){
+    url = 'https://www.googleapis.com/drive/v3/files/' + encodeURIComponent(kimlik) +
+          '/export?mimeType=text%2Fplain';
+  }else if(tur.indexOf('text/') === 0){
+    url = 'https://www.googleapis.com/drive/v3/files/' + encodeURIComponent(kimlik) + '?alt=media';
+  }else{
+    throw new Error('desteklenmeyen tur');
+  }
+  const cevap = await fetch(url, { headers: bas });
+  if(!cevap.ok) throw new Error('okunamadi: ' + cevap.status);
+  return await cevap.text();
+}
+
+let driveOncekiMetin = null;   // "onceki hale don" icin
+async function driveGetir(){
+  const dugme = document.getElementById('sc_drive');
+  dugme.disabled = true;
+  driveDurum(t('sc_drive_wait'));
+  try{
+    await driveBetikleri();
+    const token = await driveIzinIste();
+    const dosya = await drivePickerAc(token);
+    if(!dosya){ driveDurum(''); return; }             // vazgecildi
+    driveDurum(t('sc_drive_reading'));
+    const metin = await driveMetniAl(dosya, token);
+    const alan = document.getElementById('sc_text');
+    // Dolu bir metnin uzerine SORMADAN yazilmiyor: saatlerce sureni bir
+    // tikla yok etmek olurdu.
+    if(alan.value.trim() && !confirm(t('sc_drive_overwrite')(dosya.name || ''))){
+      driveDurum('');
+      return;
+    }
+    driveOncekiMetin = alan.value;
+    alan.value = metin.slice(0, SCRIPT_MAX);
+    scriptSayaci(alan.value.length);
+    const baslik = document.getElementById('sc_title');
+    if(!baslik.value.trim() && dosya.name) baslik.value = dosya.name.slice(0, 160);
+    document.getElementById('sc_driveUndo').hidden = false;
+    driveDurum(t('sc_drive_ok')(dosya.name || ''), 'ok');
+  }catch(err){
+    console.error('[drive] getirme hatasi', err);
+    const mesaj = /desteklenmeyen/.test(err.message) ? t('sc_drive_type')
+                : /izin/.test(err.message)           ? t('sc_drive_denied')
+                :                                      t('sc_drive_err');
+    driveDurum(mesaj, 'error');
+  }finally{
+    dugme.disabled = false;
+  }
+}
+
 // --- Script penceresi -------------------------------------------------
 // Pencere hem VAR OLAN bir scripti aciyor hem de YENI bir tane baslatiyor.
 // Yeni script kaydedilene kadar listeye girmiyor: vazgecilen bir taslak
@@ -4042,6 +4246,11 @@ function openScript(id, baslangic){
   scriptSayaci((veri.text || '').length);
   // Silme yalnizca var olan bir kayit icin anlamli.
   document.getElementById('sc_delete').hidden = !sc;
+  // Drive durumu her pencerede sifirdan: onceki scriptin mesaji burada
+  // kalmasin, "onceki hale don" yanlis metni geri getirmesin.
+  driveOncekiMetin = null;
+  document.getElementById('sc_driveUndo').hidden = true;
+  driveDurum('');
   document.getElementById('scriptOverlay').classList.add('open');
   (veri.text ? document.getElementById('sc_text') : document.getElementById('sc_title')).focus();
 }
@@ -4054,8 +4263,12 @@ function scriptKaydet(){
   const metin = document.getElementById('sc_text').value;
   const pid = scriptPencereProje() === '__yeni__' ? '' : scriptPencereProje();
   if(!metin.trim() && !baslik.trim()){ closeScript(); return; }   // bos taslak: kaydedecek bir sey yok
-  if(acikScriptId) scriptGuncelle(acikScriptId, { title: baslik, text: metin, projectId: pid });
-  else scriptEkle({ title: baslik, text: metin, projectId: pid });
+  // Metin Drive'dan geldiyse kaynagi oyle kaydediliyor; ileride
+  // "bu nereden geldi" sorusunun cevabi kayitta dursun.
+  const kaynak = (driveOncekiMetin !== null || document.getElementById('sc_driveStatus').classList.contains('ok'))
+                 ? 'drive' : undefined;
+  if(acikScriptId) scriptGuncelle(acikScriptId, { title: baslik, text: metin, projectId: pid, source: kaynak });
+  else scriptEkle({ title: baslik, text: metin, projectId: pid, source: kaynak });
   closeScript();
   renderScriptler(); renderFikirler(); renderProjects();
 }
@@ -4583,6 +4796,7 @@ function scriptGuncelle(id, alanlar){
     const yeni = projeBagiTemiz(alanlar.projectId);
     if(yeni !== s.projectId){ s.projectId = yeni; degisti = true; }
   }
+  if(alanlar.source && alanlar.source !== s.source){ s.source = alanlar.source; degisti = true; }
   if(!degisti) return false;
   s.updatedAt = Date.now();
   scriptDirty.add(id);
@@ -5049,6 +5263,16 @@ document.getElementById('sc_proj').addEventListener('change', e=>{
   const pid = secimdenProje(e.target, '');
   e.target.innerHTML = projeSecenekleri(pid, t('fk_no_project'));
   scriptFikirSeridi(pid);
+});
+document.getElementById('sc_drive').addEventListener('click', driveGetir);
+document.getElementById('sc_driveUndo').addEventListener('click', ()=>{
+  if(driveOncekiMetin === null) return;
+  const alan = document.getElementById('sc_text');
+  alan.value = driveOncekiMetin;
+  driveOncekiMetin = null;
+  scriptSayaci(alan.value.length);
+  document.getElementById('sc_driveUndo').hidden = true;
+  driveDurum('');
 });
 document.getElementById('sc_cancel').addEventListener('click', closeScript);
 document.getElementById('scriptOverlay').addEventListener('click', e=>{ if(e.target.id==='scriptOverlay') closeScript(); });
@@ -7300,7 +7524,7 @@ document.getElementById('pendingOverlay').addEventListener('click', (e)=>{ if(e.
 
 // Yayina alinan surumun damgasi. Onbellekten eski bir kopya geldiginde bu
 // tarih eski kalir, boylece "guncel mi?" sorusu bakarak cevaplanir.
-const BUILD_STAMP = '2026-09-02 15:30 UTC';
+const BUILD_STAMP = '2026-09-02 17:45 UTC';
 document.getElementById('buildId').textContent = BUILD_STAMP;
 
 // ===== Init =====
