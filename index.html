@@ -670,6 +670,16 @@ body.suruklenirken *{cursor:grabbing !important;}
 .sc-drive-durum{font-size:11.5px;color:var(--text-dim);}
 .sc-drive-durum.ok{color:var(--green);}
 .sc-drive-durum.error{color:var(--red);}
+/* Yazma penceresindeki iki secenek. Kutunun tamami tiklanabilir:
+   kucuk radyo dugmesini nisan almak zorunda kalmasin. */
+.dw-secim{display:flex;gap:10px;align-items:flex-start;margin-bottom:10px;
+  padding:11px 13px;border:1px solid var(--line);border-radius:9px;
+  background:var(--surface-2);cursor:pointer;font-size:13.5px;}
+.dw-secim input{margin-top:3px;flex-shrink:0;}
+.dw-secim small{display:block;margin-top:4px;font-size:11.5px;color:var(--text-dim);}
+.dw-secim .dw-ad{display:block;margin-top:2px;font-size:12.5px;color:var(--accent);
+  overflow:hidden;text-overflow:ellipsis;white-space:nowrap;}
+.dw-secim:has(input:checked){border-color:var(--accent);background:var(--accent-soft);}
 /* Script yazarken fikirler goz onunde: katli, yer kaplamiyor. */
 .sc-ideas{margin-bottom:10px;}
 .sc-idea-list{margin:6px 0 0;padding-left:20px;font-size:13px;color:var(--text-dim);}
@@ -1778,6 +1788,7 @@ body.suruklenirken *{cursor:grabbing !important;}
         </svg>
         <span data-i18n="sc_drive">Bring it from Drive</span>
       </button>
+      <button type="button" class="btn btn-sm" id="sc_drivePush" hidden data-i18n="sc_drive_push">Write to Drive</button>
       <button type="button" class="btn btn-sm" id="sc_driveUndo" hidden data-i18n="sc_drive_undo">Back to the previous text</button>
       <span class="sc-drive-durum" id="sc_driveStatus"></span>
     </div>
@@ -1789,6 +1800,39 @@ body.suruklenirken *{cursor:grabbing !important;}
       <button class="btn btn-danger" id="sc_delete" data-i18n="p_delete">Delete</button>
       <button class="btn" id="sc_cancel" data-i18n="btn_cancel">Cancel</button>
       <button class="btn btn-primary" id="sc_save" data-i18n="btn_save">Save</button>
+    </div>
+  </div>
+</div>
+
+<!-- Drive'a yazma: karar kullanicinin. Varsayilan YENI BELGE, cunku
+     ustune yazmak Docs'taki bicimlendirmeyi, gorselleri ve yorumlari
+     siliyor — geri alinabilir ama fark edilmeden olmamali. -->
+<div class="overlay" id="driveWriteOverlay">
+  <div class="modal">
+    <h2 data-i18n="dw_title">Write to Drive</h2>
+    <label class="dw-secim" id="dw_overwriteWrap" hidden>
+      <input type="radio" name="dwmod" id="dw_overwrite">
+      <span>
+        <span data-i18n="dw_overwrite">Replace the document</span>
+        <b class="dw-ad" id="dw_overwriteName"></b>
+        <small data-i18n="dw_overwrite_note">Formatting, images and comments in the document are lost. Google Docs keeps version history, so it can be restored.</small>
+      </span>
+    </label>
+    <label class="dw-secim">
+      <input type="radio" name="dwmod" id="dw_new" checked>
+      <span>
+        <span data-i18n="dw_new">Save as a new document</span>
+        <small data-i18n="dw_new_note">Nothing existing is touched.</small>
+      </span>
+    </label>
+    <div class="field">
+      <label data-i18n="dw_name">Name of the new document</label>
+      <input type="text" id="dw_name" maxlength="120">
+    </div>
+    <p class="sc-drive-durum" id="dw_status"></p>
+    <div class="modal-actions">
+      <button class="btn" id="dw_cancel" data-i18n="btn_cancel">Cancel</button>
+      <button class="btn btn-primary" id="dw_go" data-i18n="dw_go">Write</button>
     </div>
   </div>
 </div>
@@ -2329,6 +2373,18 @@ const LANG = {
     fk_limit: (n)=> `Slate holds up to ${n} ideas.`,
     sc_new: "+ New script",
     sc_drive: "Bring it from Drive",
+    sc_drive_push: "Write to Drive",
+    dw_title: "Write to Drive",
+    dw_overwrite: "Replace the document",
+    dw_overwrite_note: "Formatting, images and comments in the document are lost. Google Docs keeps version history, so it can be restored.",
+    dw_new: "Save as a new document",
+    dw_new_note: "Nothing existing is touched.",
+    dw_name: "Name of the new document",
+    dw_go: "Write",
+    dw_confirm_overwrite: (ad)=> `“${ad}” will be replaced with this text.\n\nFormatting, images and comments in the document are lost. You can restore it from Google Docs version history.\n\nGo ahead?`,
+    dw_changed: (ad)=> `“${ad}” has changed on Drive since you brought it in. Writing over it discards that change.\n\nGo ahead?`,
+    dw_ok: (ad)=> `Written to “${ad}”.`,
+    dw_err: "Could not write to Drive. Check your connection and try again.",
     sc_drive_undo: "Back to the previous text",
     sc_drive_wait: "Waiting for Google…",
     sc_drive_reading: "Reading the document…",
@@ -2697,6 +2753,18 @@ const LANG = {
     fk_limit: (n)=> `Slate en fazla ${n} fikir tutuyor.`,
     sc_new: "+ Yeni script",
     sc_drive: "Drive'dan getir",
+    sc_drive_push: "Drive'a yaz",
+    dw_title: "Drive'a yaz",
+    dw_overwrite: "Belgenin üzerine yaz",
+    dw_overwrite_note: "Belgedeki biçimlendirme, görseller ve yorumlar silinir. Google Docs sürüm geçmişi tuttuğu için geri alınabilir.",
+    dw_new: "Yeni belge olarak kaydet",
+    dw_new_note: "Var olan hiçbir belgeye dokunulmaz.",
+    dw_name: "Yeni belgenin adı",
+    dw_go: "Yaz",
+    dw_confirm_overwrite: (ad)=> `“${ad}” belgesinin içeriği bu metinle değiştirilecek.\n\nBelgedeki biçimlendirme, görseller ve yorumlar silinir. Google Docs sürüm geçmişinden geri alabilirsin.\n\nDevam edilsin mi?`,
+    dw_changed: (ad)=> `“${ad}” belgesi sen getirdikten sonra Drive'da değişmiş. Üzerine yazmak o değişikliği siler.\n\nDevam edilsin mi?`,
+    dw_ok: (ad)=> `“${ad}” belgesine yazıldı.`,
+    dw_err: "Drive'a yazılamadı. Bağlantını kontrol edip tekrar dene.",
     sc_drive_undo: "Önceki hâle dön",
     sc_drive_wait: "Google bekleniyor…",
     sc_drive_reading: "Belge okunuyor…",
@@ -4162,7 +4230,19 @@ async function driveMetniAl(dosya, token){
   return await cevap.text();
 }
 
+// Belgenin son degistirilme zamani. Geri yazmadan once "sen aldiktan
+// sonra baskasi degistirdi mi" sorusunun cevabi bu.
+async function driveDegisimZamani(kimlik, token){
+  const cevap = await fetch('https://www.googleapis.com/drive/v3/files/' +
+    encodeURIComponent(kimlik) + '?fields=modifiedTime,name',
+    { headers: { Authorization: 'Bearer ' + token } });
+  if(!cevap.ok) return null;
+  return await cevap.json();
+}
+
 let driveOncekiMetin = null;   // "onceki hale don" icin
+// Pencerede acik olan scriptin bagli oldugu Drive belgesi.
+let driveBaglantisi = { id:'', ad:'', zaman:'' };
 async function driveGetir(){
   const dugme = document.getElementById('sc_drive');
   dugme.disabled = true;
@@ -4187,6 +4267,13 @@ async function driveGetir(){
     const baslik = document.getElementById('sc_title');
     if(!baslik.value.trim() && dosya.name) baslik.value = dosya.name.slice(0, 160);
     document.getElementById('sc_driveUndo').hidden = false;
+    // Bag kuruluyor: "Drive'a yaz" bundan sonra ustune yazmayi da
+    // onerebilecek. Zaman damgasi alinamazsa bos kaliyor; o zaman geri
+    // yazarken degisiklik kontrolu yapilamadigi soyleniyor.
+    const bilgi = await driveDegisimZamani(dosya.id, token).catch(()=>null);
+    driveBaglantisi = { id: dosya.id, ad: (bilgi && bilgi.name) || dosya.name || '',
+                        zaman: (bilgi && bilgi.modifiedTime) || '' };
+    driveYazDugmesiTazele();
     driveDurum(t('sc_drive_ok')(dosya.name || ''), 'ok');
   }catch(err){
     console.error('[drive] getirme hatasi', err);
@@ -4194,6 +4281,113 @@ async function driveGetir(){
                 : /izin/.test(err.message)           ? t('sc_drive_denied')
                 :                                      t('sc_drive_err');
     driveDurum(mesaj, 'error');
+  }finally{
+    dugme.disabled = false;
+  }
+}
+
+// --- Drive'a geri yazma ------------------------------------------------
+// Kullanicinin kararina birakiliyor: BELGENIN USTUNE mi yazilsin, yoksa
+// YENI bir belge mi olsun? Ustune yazmak Docs'taki bicimlendirmeyi,
+// gorselleri ve yorumlari siliyor — bu geri alinabilir (Docs surum
+// gecmisi tutuyor) ama fark edilmeden olmamali. O yuzden varsayilan
+// secim YENI BELGE.
+function driveYazDugmesiTazele(){
+  const dugme = document.getElementById('sc_drivePush');
+  if(!dugme) return;
+  // Metin yoksa yazacak bir sey de yok.
+  dugme.hidden = !document.getElementById('sc_text').value.trim();
+}
+function driveYazPenceresiAc(){
+  const metin = document.getElementById('sc_text').value;
+  if(!metin.trim()) return;
+  const bagliVar = !!driveBaglantisi.id;
+  document.getElementById('dw_overwriteWrap').hidden = !bagliVar;
+  document.getElementById('dw_overwriteName').textContent = driveBaglantisi.ad || '';
+  document.getElementById('dw_new').checked = true;
+  // Ad her seferinde soruluyor, kutu dolu geliyor: yazmak zorunda
+  // kalmadan Enter'a basip gecebilsin.
+  const varsayilan = (document.getElementById('sc_title').value.trim()
+                      || driveBaglantisi.ad
+                      || metin.trim().split('\n')[0]).slice(0, 120);
+  document.getElementById('dw_name').value = varsayilan;
+  document.getElementById('dw_status').textContent = '';
+  document.getElementById('dw_status').className = 'sc-drive-durum';
+  document.getElementById('driveWriteOverlay').classList.add('open');
+  document.getElementById('dw_name').focus();
+}
+function driveYazPenceresiKapat(){
+  document.getElementById('driveWriteOverlay').classList.remove('open');
+}
+function dwDurum(metin, tur){
+  const el = document.getElementById('dw_status');
+  el.textContent = metin || '';
+  el.className = 'sc-drive-durum' + (tur ? ' ' + tur : '');
+}
+// Yeni belge: coklu parcali gonderim. Ust veri (ad, tur) ve metin tek
+// istekte gidiyor.
+async function driveYeniBelge(ad, metin, token){
+  const sinir = '-slate-' + Date.now();
+  const govde =
+    '--' + sinir + '\r\nContent-Type: application/json; charset=UTF-8\r\n\r\n' +
+    JSON.stringify({ name: ad, mimeType: 'application/vnd.google-apps.document' }) + '\r\n' +
+    '--' + sinir + '\r\nContent-Type: text/plain; charset=UTF-8\r\n\r\n' +
+    metin + '\r\n' +
+    '--' + sinir + '--';
+  const cevap = await fetch(
+    'https://www.googleapis.com/upload/drive/v3/files?uploadType=multipart&fields=id,name,modifiedTime',
+    { method:'POST',
+      headers:{ Authorization:'Bearer ' + token,
+                'Content-Type':'multipart/related; boundary=' + sinir },
+      body: govde });
+  if(!cevap.ok) throw new Error('yazilamadi: ' + cevap.status);
+  return await cevap.json();
+}
+async function driveUstuneYaz(kimlik, metin, token){
+  const cevap = await fetch(
+    'https://www.googleapis.com/upload/drive/v3/files/' + encodeURIComponent(kimlik) +
+    '?uploadType=media&fields=id,name,modifiedTime',
+    { method:'PATCH',
+      headers:{ Authorization:'Bearer ' + token, 'Content-Type':'text/plain; charset=UTF-8' },
+      body: metin });
+  if(!cevap.ok) throw new Error('yazilamadi: ' + cevap.status);
+  return await cevap.json();
+}
+async function driveYaz(){
+  const dugme = document.getElementById('dw_go');
+  const metin = document.getElementById('sc_text').value;
+  const ustune = document.getElementById('dw_overwrite') &&
+                 document.getElementById('dw_overwrite').checked;
+  dugme.disabled = true;
+  dwDurum(t('sc_drive_wait'));
+  try{
+    await driveBetikleri();
+    const token = await driveIzinIste();
+    let sonuc;
+    if(ustune){
+      // Belge sen aldiktan sonra degistiyse once haber ver. Sessizce
+      // ezmek, baskasinin (ya da telefondan kendinin) yazdigini yok eder.
+      if(driveBaglantisi.zaman){
+        const bilgi = await driveDegisimZamani(driveBaglantisi.id, token).catch(()=>null);
+        if(bilgi && bilgi.modifiedTime && bilgi.modifiedTime !== driveBaglantisi.zaman){
+          if(!confirm(t('dw_changed')(bilgi.name || driveBaglantisi.ad))){ dwDurum(''); return; }
+        }
+      }
+      if(!confirm(t('dw_confirm_overwrite')(driveBaglantisi.ad))){ dwDurum(''); return; }
+      sonuc = await driveUstuneYaz(driveBaglantisi.id, metin, token);
+    }else{
+      const ad = document.getElementById('dw_name').value.trim();
+      if(!ad){ document.getElementById('dw_name').focus(); dwDurum(''); return; }
+      sonuc = await driveYeniBelge(ad, metin, token);
+    }
+    // Yeni belge olustuysa bag ona geciyor: bir sonraki yazma onun
+    // uzerine onerilecek.
+    driveBaglantisi = { id: sonuc.id, ad: sonuc.name || '', zaman: sonuc.modifiedTime || '' };
+    driveYazPenceresiKapat();
+    driveDurum(t('dw_ok')(sonuc.name || ''), 'ok');
+  }catch(err){
+    console.error('[drive] yazma hatasi', err);
+    dwDurum(/izin/.test(err.message) ? t('sc_drive_denied') : t('dw_err'), 'error');
   }finally{
     dugme.disabled = false;
   }
@@ -4250,6 +4444,9 @@ function openScript(id, baslangic){
   // kalmasin, "onceki hale don" yanlis metni geri getirmesin.
   driveOncekiMetin = null;
   document.getElementById('sc_driveUndo').hidden = true;
+  driveBaglantisi = { id: (veri.driveFileId || ''), ad: (veri.driveFileName || ''),
+                      zaman: (veri.driveModified || '') };
+  driveYazDugmesiTazele();
   driveDurum('');
   document.getElementById('scriptOverlay').classList.add('open');
   (veri.text ? document.getElementById('sc_text') : document.getElementById('sc_title')).focus();
@@ -4267,8 +4464,10 @@ function scriptKaydet(){
   // "bu nereden geldi" sorusunun cevabi kayitta dursun.
   const kaynak = (driveOncekiMetin !== null || document.getElementById('sc_driveStatus').classList.contains('ok'))
                  ? 'drive' : undefined;
-  if(acikScriptId) scriptGuncelle(acikScriptId, { title: baslik, text: metin, projectId: pid, source: kaynak });
-  else scriptEkle({ title: baslik, text: metin, projectId: pid, source: kaynak });
+  const bag = { driveFileId: driveBaglantisi.id, driveFileName: driveBaglantisi.ad,
+                driveModified: driveBaglantisi.zaman };
+  if(acikScriptId) scriptGuncelle(acikScriptId, { title: baslik, text: metin, projectId: pid, source: kaynak, ...bag });
+  else scriptEkle({ title: baslik, text: metin, projectId: pid, source: kaynak, ...bag });
   closeScript();
   renderScriptler(); renderFikirler(); renderProjects();
 }
@@ -4554,6 +4753,12 @@ function scriptTemizle(ham){
     text: metin,
     source: ham.source === 'drive' || ham.source === 'ai' ? ham.source : 'manual',
     projectId: typeof ham.projectId === 'string' ? ham.projectId : '',
+    // Metin bir Drive belgesinden geldiyse hangisinden geldigi burada.
+    // Geri yazabilmek icin gerekiyor; ayrica "sen aldiktan sonra belge
+    // degisti mi" sorusunun cevabi driveModified'da duruyor.
+    driveFileId: typeof ham.driveFileId === 'string' ? ham.driveFileId.slice(0, 120) : '',
+    driveFileName: typeof ham.driveFileName === 'string' ? ham.driveFileName.slice(0, 300) : '',
+    driveModified: typeof ham.driveModified === 'string' ? ham.driveModified.slice(0, 40) : '',
     createdAt: typeof ham.createdAt === 'number' ? ham.createdAt : Date.now(),
     updatedAt: typeof ham.updatedAt === 'number' ? ham.updatedAt : Date.now()
   };
@@ -4792,6 +4997,9 @@ function scriptGuncelle(id, alanlar){
       if(yeni !== s[k]){ s[k] = yeni; degisti = true; }
     }
   });
+  ['driveFileId','driveFileName','driveModified'].forEach(k=>{
+    if(typeof alanlar[k] === 'string' && alanlar[k] !== s[k]){ s[k] = alanlar[k]; degisti = true; }
+  });
   if(typeof alanlar.projectId === 'string'){
     const yeni = projeBagiTemiz(alanlar.projectId);
     if(yeni !== s.projectId){ s.projectId = yeni; degisti = true; }
@@ -4861,12 +5069,18 @@ function fikirRowOku(r){
 function scriptRowYap(s, uid){
   return { id: s.id, user_id: uid, title: s.title, content: s.text, source: s.source,
            project_id: s.projectId || null, deleted_at: null,
+           drive_file_id: s.driveFileId || null,
+           drive_file_name: s.driveFileName || null,
+           drive_modified: s.driveModified || null,
            created_at: new Date(s.createdAt).toISOString(),
            updated_at: new Date(s.updatedAt).toISOString() };
 }
 function scriptRowOku(r){
   return scriptTemizle({ id: r.id, title: r.title || '', text: r.content || '',
                          source: r.source, projectId: r.project_id || '',
+                         driveFileId: r.drive_file_id || '',
+                         driveFileName: r.drive_file_name || '',
+                         driveModified: r.drive_modified || '',
                          createdAt: r.created_at ? Date.parse(r.created_at) : Date.now(),
                          updatedAt: r.updated_at ? Date.parse(r.updated_at) : 0 });
 }
@@ -5258,6 +5472,7 @@ document.getElementById('pe_script').addEventListener('click', ()=>{
 document.getElementById('sc_text').addEventListener('input', e=>{
   if(e.target.value.length > SCRIPT_MAX) e.target.value = e.target.value.slice(0, SCRIPT_MAX);
   scriptSayaci(e.target.value.length);
+  driveYazDugmesiTazele();
 });
 document.getElementById('sc_proj').addEventListener('change', e=>{
   const pid = secimdenProje(e.target, '');
@@ -5265,6 +5480,14 @@ document.getElementById('sc_proj').addEventListener('change', e=>{
   scriptFikirSeridi(pid);
 });
 document.getElementById('sc_drive').addEventListener('click', driveGetir);
+document.getElementById('sc_drivePush').addEventListener('click', driveYazPenceresiAc);
+document.getElementById('dw_cancel').addEventListener('click', driveYazPenceresiKapat);
+document.getElementById('driveWriteOverlay').addEventListener('click', e=>{ if(e.target.id==='driveWriteOverlay') driveYazPenceresiKapat(); });
+document.getElementById('dw_go').addEventListener('click', driveYaz);
+// Ad kutusuna yazmak "yeni belge" secenegini kendiliginden secsin:
+// kullanici ad yazip Yaz'a bastiginda ustune yazilmasi surpriz olur.
+document.getElementById('dw_name').addEventListener('input', ()=>{ document.getElementById('dw_new').checked = true; });
+document.getElementById('dw_name').addEventListener('keydown', e=>{ if(e.key === 'Enter'){ e.preventDefault(); driveYaz(); } });
 document.getElementById('sc_driveUndo').addEventListener('click', ()=>{
   if(driveOncekiMetin === null) return;
   const alan = document.getElementById('sc_text');
@@ -7524,7 +7747,7 @@ document.getElementById('pendingOverlay').addEventListener('click', (e)=>{ if(e.
 
 // Yayina alinan surumun damgasi. Onbellekten eski bir kopya geldiginde bu
 // tarih eski kalir, boylece "guncel mi?" sorusu bakarak cevaplanir.
-const BUILD_STAMP = '2026-09-02 17:45 UTC';
+const BUILD_STAMP = '2026-09-02 19:20 UTC';
 document.getElementById('buildId').textContent = BUILD_STAMP;
 
 // ===== Init =====

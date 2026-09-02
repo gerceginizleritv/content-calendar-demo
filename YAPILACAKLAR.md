@@ -160,6 +160,30 @@ altında, tarayıcıya özel.
    ulaşılıyor. Ayarlara/"Daha fazla" bölümüne de bir giriş konacak ki
    kullanıcı anahtarını kayıt açmadan değiştirip silebilsin.
 
+### Script alanına metin biçimlendirme (kullanıcı isteği, 2 Eylül 2026)
+Kullanıcı: *"basit bir metin düzenleme aracı eklenebilir mi? Metin
+boyutu, başlık, italik vs."* Karar: **şimdilik değil**, önce Drive'a geri
+yazma bitecek.
+
+**Sıra geldiğinde önerilen yol — düğme çubuğu + Markdown + önizleme,**
+tam WYSIWYG değil. Sebep dört tane ve hepsi bu üründe zaten yaşanmış
+şeylere dayanıyor:
+
+1. **Depolanan şey düz metin kalıyor.** Bugün script `text` alanında düz
+   metin; Drive'dan gelen de düz metin. WYSIWYG'e geçmek zengin metin
+   (HTML) demek, o da Drive'a gidiş-dönüşte, aramada ve AI'a bağlam
+   olarak beslemede ayrı ayrı dönüştürme demek.
+2. **AI kapısı bu metni okuyacak.** Markdown'ı model doğrudan anlıyor;
+   HTML gürültü.
+3. **Arama basit kalıyor.** Fikir/script aramasında etiketleri temizleme
+   derdi çıkmıyor.
+4. **İş küçük.** Kalın/italik/başlık/liste düğmeleri seçili metnin
+   etrafına işaret koyuyor, bir de "önizleme" sekmesi. WYSIWYG'de imleç
+   yönetimi, yapıştırma temizliği ve geri alma baştan yazılır.
+
+**Karar verilecek:** önizleme ayrı sekme mi, yan yana mı. Telefonda yan
+yana sığmaz; muhtemelen sekme.
+
 ### "Bu nasıl çalışır" turu güncellenecek (kullanıcı kararı, 2 Eylül 2026)
 Kullanıcı: *"proje çalışmamız için how to bölümünü update etmemiz
 gerekecek. Şimdi yapmayacağız."*
