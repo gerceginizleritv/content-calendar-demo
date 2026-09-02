@@ -530,8 +530,16 @@ body.suruklenirken *{cursor:grabbing !important;}
 .proj-table thead th{position:sticky;top:0;z-index:2;background:var(--surface-2);
   font-size:10px;text-transform:uppercase;letter-spacing:.08em;color:var(--text-dim);
   font-weight:600;white-space:nowrap;}
+/* Proje sutunu SABIT genislikte. Tablo width:max-content oldugu icin
+   sutunlar icerigin en genis haline gore buyuyordu: dil degisince rozet
+   yazilari uzuyor ("Dış çekim" -> "On location") ve sutun kendiliginden
+   genisliyordu. Icerik artik bu genisligin icinde satir atliyor; tablo
+   hangi dilde olursa olsun ayni duruyor. */
 .pname-col{position:sticky;left:0;z-index:3;background:var(--surface-2);
-  width:184px;min-width:184px;border-right:1px solid var(--line);}
+  width:var(--pname-w,200px);min-width:var(--pname-w,200px);max-width:var(--pname-w,200px);
+  border-right:1px solid var(--line);}
+.pname-col > *{max-width:var(--pname-w,200px);}
+.pname{overflow-wrap:anywhere;}
 .proj-table thead th.pname-col{z-index:4;}
 .pname{font:inherit;font-size:14.5px;font-weight:700;color:var(--text);background:none;
   border:0;padding:0;cursor:pointer;text-align:left;}
@@ -561,9 +569,11 @@ body.suruklenirken *{cursor:grabbing !important;}
 .pscript:hover{border-style:solid;border-color:var(--accent);color:var(--accent);}
 .pscript.dolu{border-style:solid;border-color:var(--accent);background:var(--accent-soft);
   color:var(--accent);font-weight:600;}
-/* Zincir oku: fikir → script. Iki rozetin arasindaki bu tek isaret,
-   sirayi anlatmanin en ucuz yolu. */
-.pchain{font-size:10px;color:var(--accent-dim);}
+/* Zincir kendi satirinda ve BOLUNMEZ: tur etiketiyle ayni satirda
+   oldugunda dar sutunda ok tek basina alt satira dusuyordu. */
+.pname-chain{display:flex;align-items:center;margin-top:5px;}
+.pchain{font-size:10px;color:var(--accent-dim);padding:0 5px;flex-shrink:0;}
+.pname-chain .pscript{flex-shrink:0;}
 .pmap{font-size:11.5px;color:var(--accent);text-decoration:none;}
 .pmap:hover{text-decoration:underline;}
 .pmap-missing{font-size:11px;color:var(--amber);}
@@ -581,6 +591,10 @@ body.suruklenirken *{cursor:grabbing !important;}
 :root:not([data-theme="light"]) .proj-new select,
 :root:not([data-theme="light"]) .proj-addr input{color-scheme:dark;}
 .proj-table td.pcell{width:92px;min-width:92px;text-align:center;}
+/* Artan yeri yutan bos kuyruk sutunu. Onceden artan yer butun sutunlara
+   icerik genisligine gore dagiliyordu; dil degisince etiketler uzuyor,
+   pay degisiyor ve proje sutunu kendiliginden kayiyordu. */
+.proj-table .pfill{width:100%;padding:0;border-right:0;}
 /* Secici tabloya baglandi: .pcell (0,1,0) ile .proj-table td (0,1,1)
    yarisiyordu, td kazaniyordu ve ortalama hic uygulanmiyordu. */
 .proj-table thead th:not(.pname-col){text-align:center;}
@@ -660,6 +674,50 @@ body.suruklenirken *{cursor:grabbing !important;}
 .fk-new input:focus{outline:2px solid var(--accent);outline-offset:-2px;}
 #fk_toScript{margin-top:12px;}
 #fk_toScript:disabled{opacity:.5;cursor:default;}
+/* Fikirler sayfasi: ekleme satiri, filtre, liste. */
+#ideasPage .fk-new{grid-template-columns:1fr auto auto;margin-bottom:10px;}
+.fk-proj-sel{min-width:0;max-width:190px;padding:9px 10px;border:1px solid var(--line);
+  border-radius:8px;background:var(--surface);color:var(--text);font:inherit;font-size:13px;}
+.fk-filter{padding:9px 12px;border:1px solid var(--line);border-radius:8px;
+  background:var(--surface);color:var(--text);font:inherit;font-size:13.5px;flex:1;min-width:0;}
+#ideasPage .fk-row,#ideasPage .fk-list{border:0;}
+#ideasPage .fk-row{grid-template-columns:1fr auto;gap:12px;align-items:start;
+  padding:12px;margin-bottom:8px;border:1px solid var(--line);border-radius:10px;
+  background:var(--surface);}
+#ideasPage .fk-text{font-size:14.5px;}
+.fk-side{display:flex;align-items:center;gap:8px;}
+.fk-mini{font:inherit;font-size:11px;text-transform:uppercase;letter-spacing:.05em;
+  border:1px solid var(--line);border-radius:99px;padding:5px 11px;cursor:pointer;
+  background:none;color:var(--accent-dim);}
+.fk-mini:hover{border-color:var(--accent);color:var(--accent);}
+/* Scriptler sayfasi: kart listesi. */
+.sc-tools{display:flex;align-items:center;gap:12px;margin-bottom:14px;}
+.sc-card{display:flex;flex-direction:column;gap:6px;width:100%;text-align:left;
+  font:inherit;padding:14px;margin-bottom:8px;border:1px solid var(--line);
+  border-radius:10px;background:var(--surface);color:var(--text);cursor:pointer;}
+.sc-card:hover{border-color:var(--accent);}
+.sc-card-name{font-size:15px;font-weight:700;}
+.sc-card-meta{display:flex;flex-wrap:wrap;gap:10px;align-items:center;
+  font-size:11.5px;color:var(--text-dim);font-variant-numeric:tabular-nums;}
+.sc-card-proj{border:1px solid var(--accent);color:var(--accent);background:var(--accent-soft);
+  border-radius:99px;padding:1px 9px;font-size:10.5px;text-transform:uppercase;letter-spacing:.05em;}
+.sc-card-proj.bos{border-color:var(--line);color:var(--text-dim);background:none;}
+/* Script penceresinde baslik ve proje secimi. */
+.sc-title{width:100%;padding:11px 13px;border:1px solid var(--line);border-radius:9px;
+  background:var(--bg);color:var(--text);font:inherit;font-size:15px;font-weight:600;
+  margin-bottom:10px;}
+.sc-title:focus{outline:2px solid var(--accent);outline-offset:-2px;}
+.sc-proj{display:flex;align-items:center;gap:10px;margin-bottom:12px;}
+.sc-proj label{font-family:'IBM Plex Mono',monospace;font-size:10.5px;text-transform:uppercase;
+  letter-spacing:1.2px;color:var(--accent-dim);}
+.sc-proj select{flex:1;min-width:0;padding:9px 11px;border:1px solid var(--line);
+  border-radius:8px;background:var(--surface);color:var(--text);font:inherit;font-size:13.5px;}
+@media(max-width:640px){
+  #ideasPage .fk-new{grid-template-columns:1fr;}
+  #ideasPage .fk-row{grid-template-columns:1fr;}
+  .fk-side{justify-content:space-between;}
+  .fk-proj-sel{max-width:none;flex:1;}
+}
 .dl-row{display:grid;grid-template-columns:1fr auto;align-items:center;gap:12px;
   padding:9px 0;border-bottom:1px solid var(--line-soft);}
 .dl-row:last-child{border-bottom:0;}
@@ -1206,7 +1264,20 @@ body.suruklenirken *{cursor:grabbing !important;}
         <button class="btn btn-sm rail-auth" id="authBtn" data-i18n="btn_signin">☁ Sign in</button>
       </div>
 
+      <!-- Sira isin akisi: fikir -> script -> proje -> takvim. Menunun
+           kendisi urunun nasil kullanildigini anlatiyor. -->
       <nav class="rail-nav" role="tablist">
+        <button type="button" class="tab" id="tabIdeas" role="tab">
+          <svg class="tab-ico" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+            <path d="M9 18h6M10 21h4"/>
+            <path d="M12 3a6 6 0 0 0-3.6 10.8c.5.4.8 1 .9 1.6l.1.6h5.2l.1-.6c.1-.6.4-1.2.9-1.6A6 6 0 0 0 12 3z"/>
+          </svg><span data-i18n="tab_ideas">Ideas</span>
+        </button>
+        <button type="button" class="tab" id="tabScripts" role="tab">
+          <svg class="tab-ico" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+            <path d="M6.5 3.5h8L19 8v12.5H6.5z"/><path d="M14 3.5V8h5"/><path d="M9.5 12.5h6M9.5 16h4"/>
+          </svg><span data-i18n="tab_scripts">Scripts</span>
+        </button>
 <button type="button" class="tab active" id="tabProjects" role="tab">
           <svg class="tab-ico" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
             <path d="M3 6.5A1.5 1.5 0 0 1 4.5 5h4l2 2.4h7A1.5 1.5 0 0 1 19 8.9V18a1.5 1.5 0 0 1-1.5 1.5h-13A1.5 1.5 0 0 1 3 18z"/>
@@ -1260,6 +1331,33 @@ body.suruklenirken *{cursor:grabbing !important;}
     <span data-i18n="nudge_text">Only this browser knows about this calendar.</span>
     <button class="btn btn-primary btn-sm" id="nudgeCta" data-i18n="nudge_cta">Keep it on every device</button>
     <button class="btn btn-sm" id="nudgeDismiss" data-i18n="nudge_dismiss">Not now</button>
+  </div>
+
+  <!-- FIKIRLER. Projeden bagimsiz: is cogu zaman burada basliyor. -->
+  <div id="ideasPage" hidden>
+    <div class="fk-new">
+      <input type="text" id="fk_new" maxlength="600" data-i18n-placeholder="fk_ph"
+             placeholder="One idea — press Enter to add">
+      <select id="fk_newProj" class="fk-proj-sel"></select>
+      <button type="button" class="btn btn-primary" id="fk_add" data-i18n="fk_add">+ Add</button>
+    </div>
+    <p class="hint hint-top" data-i18n="fk_intro">What could this video be about? One line per idea — an angle, a question, a scene, a person to talk to. A project is optional; you can attach one later, or create one from here.</p>
+    <div class="proj-tools">
+      <select id="fk_filter" class="fk-filter"></select>
+      <span class="proj-count" id="fk_count"></span>
+    </div>
+    <div id="fk_list"></div>
+    <button class="btn btn-wide" id="fk_toScript" data-i18n="fk_to_script" hidden>Write a script from these →</button>
+  </div>
+
+  <!-- SCRIPTLER. Bir script projesiz de dogabilir; bagi sonra kurulur. -->
+  <div id="scriptsPage" hidden>
+    <div class="sc-tools">
+      <button type="button" class="btn btn-primary" id="sc_newBtn" data-i18n="sc_new">+ New script</button>
+      <select id="sc_filter" class="fk-filter"></select>
+      <span class="proj-count" id="sc_count"></span>
+    </div>
+    <div id="sc_list"></div>
   </div>
 
   <div id="projectsPage" hidden>
@@ -1509,7 +1607,7 @@ body.suruklenirken *{cursor:grabbing !important;}
     <!-- Termin penceresine ikinci kapi: tablodaki tarih dugmesi tek yol
          oldugu surece, pencere bir kez kapatilinca geri donulemiyordu. -->
     <button class="btn btn-wide" id="pe_ideas"><span data-i18n="pe_ideas">Ideas…</span><span class="btn-tag" id="pe_ideasTag"></span></button>
-    <button class="btn btn-wide" id="pe_script"><span data-i18n="pe_script">Script…</span><span class="btn-tag" id="pe_scriptTag"></span></button>
+    <button class="btn btn-wide" id="pe_script"><span data-i18n="pe_script">Scripts…</span><span class="btn-tag" id="pe_scriptTag"></span></button>
     <button class="btn btn-wide" id="pe_deadlines" data-i18n="pe_deadlines">Step deadlines…</button>
     <div class="modal-actions">
       <button class="btn btn-danger" id="pe_delete" data-i18n="p_delete">Delete</button>
@@ -1519,46 +1617,21 @@ body.suruklenirken *{cursor:grabbing !important;}
   </div>
 </div>
 
-<!-- Fikir penceresi. Zincirin BASI: once dagilmis fikirler, sonra script.
-     Tek bir buyuk metin kutusu degil LISTE, cunku fikir boyle birikiyor —
-     akla geldikce bir satir. Liste ayrica script'e gecerken hazir bir
-     iskelet veriyor. -->
-<div class="overlay" id="ideaOverlay">
-  <div class="modal modal-lg">
-    <div class="sc-head">
-      <div>
-        <h2 data-i18n="fk_title">Ideas</h2>
-        <div class="sc-who" id="fkWho"></div>
-      </div>
-      <div class="sc-count" id="fkCount"></div>
-    </div>
-    <p class="sc-note" data-i18n="fk_intro">What could this video be about? One line per idea — an angle, a question, a scene, a person to talk to. Practical notes belong in the project’s Notes.</p>
-    <div class="fk-list" id="fkList"></div>
-    <div class="fk-new">
-      <input type="text" id="fk_new" maxlength="600" data-i18n-placeholder="fk_ph"
-             placeholder="One idea — press Enter to add">
-      <button type="button" class="btn btn-primary" id="fk_add" data-i18n="fk_add">+ Add</button>
-    </div>
-    <!-- Zincirin gorunur oldugu yer. AI gelmeden de calisiyor: fikirler
-         script alanina iskelet olarak yaziliyor, kaydetmeden once
-         degistirilebiliyor. -->
-    <button class="btn btn-wide" id="fk_toScript" data-i18n="fk_to_script">Write the script from these →</button>
-    <div class="modal-actions">
-      <button class="btn" id="fk_close" data-i18n="btn_close">Close</button>
-    </div>
-  </div>
-</div>
-
 <!-- Script penceresi: genis ve yalin. Ic ice form alanlari degil, tek bir
      yazma alani — burada yapilan is yazmak. -->
 <div class="overlay" id="scriptOverlay">
   <div class="modal modal-lg">
     <div class="sc-head">
-      <div>
-        <h2 data-i18n="sc_title">Script</h2>
-        <div class="sc-who" id="scWho"></div>
-      </div>
+      <h2 data-i18n="sc_title">Script</h2>
       <div class="sc-count" id="scCount"></div>
+    </div>
+    <input type="text" id="sc_title" class="sc-title" maxlength="160"
+           data-i18n-placeholder="sc_title_ph" placeholder="Title — what is this script for?">
+    <!-- Proje bagi istege bagli. Buradan yeni proje de acilabiliyor:
+         "once script yazdim, sonra projeye baslarim" akisi bu. -->
+    <div class="sc-proj">
+      <label data-i18n="sc_project">Project</label>
+      <select id="sc_proj"></select>
     </div>
     <!-- Fikirler yazarken GORUNUR kalsin: bir pencere kapatip otekini
          acmak, zinciri kagit uzerinde birakir. -->
@@ -1572,6 +1645,7 @@ body.suruklenirken *{cursor:grabbing !important;}
               placeholder="Write the script here. It stays with the project."></textarea>
     <p class="sc-note" data-i18n="sc_note">Once there is text here, the “Script” step is ticked on its own.</p>
     <div class="modal-actions">
+      <button class="btn btn-danger" id="sc_delete" data-i18n="p_delete">Delete</button>
       <button class="btn" id="sc_cancel" data-i18n="btn_cancel">Cancel</button>
       <button class="btn btn-primary" id="sc_save" data-i18n="btn_save">Save</button>
     </div>
@@ -2084,18 +2158,39 @@ const LANG = {
     p_shoot_title: "Project start date",
     p_start_label: "Start",
     pe_deadlines: "Step deadlines…",
+    tab_ideas: "Ideas",
+    tab_scripts: "Scripts",
     pe_ideas: "Ideas…",
     fk_title: "Ideas",
     fk_chip: "Idea",
     fk_open: "Ideas for this project",
-    fk_intro: "What could this video be about? One line per idea — an angle, a question, a scene, a person to talk to. Practical notes belong in the project’s Notes.",
+    fk_intro: "What could this video be about? One line per idea — an angle, a question, a scene, a person to talk to. A project is optional; attach one later, or create one from here.",
     fk_ph: "One idea — press Enter to add",
     fk_add: "+ Add",
     fk_none: "No ideas yet. The first line is the hardest — write it half-finished.",
     fk_remove: "Remove",
     fk_count: (n)=> `${n} ${n===1?'idea':'ideas'}`,
-    fk_to_script: "Write the script from these →",
-    pe_script: "Script…",
+    fk_to_script: "Write a script from these →",
+    fk_one_to_script: "Script",
+    fk_no_project: "— no project —",
+    fk_new_project: "+ New project…",
+    fk_new_project_ask: "Name of the new project:",
+    fk_filter_all: "All ideas",
+    fk_filter_none: "Without a project",
+    fk_count_filtered: (n,tum)=> `${n} / ${tum} ideas`,
+    fk_none_match: "No idea here yet.",
+    fk_limit: (n)=> `Slate holds up to ${n} ideas.`,
+    sc_new: "+ New script",
+    sc_title_ph: "Title — what is this script for?",
+    sc_project: "Project",
+    sc_untitled: "Untitled script",
+    sc_count: (n)=> `${n} ${n===1?'script':'scripts'}`,
+    sc_count_filtered: (n,tum)=> `${n} / ${tum} scripts`,
+    sc_none: "No scripts yet. A script does not need a project — write it now, attach it later.",
+    sc_none_match: "No script here yet.",
+    sc_limit: (n)=> `Slate holds up to ${n} scripts.`,
+    sc_del_confirm: (ad)=> `Delete the script “${ad}”?`,
+    pe_script: "Scripts…",
     sc_title: "Script",
     sc_chip: "Script",
     sc_ph: "Write the script here. It stays with the project.",
@@ -2103,7 +2198,6 @@ const LANG = {
     sc_chars: (n)=> `${n.toLocaleString('en-US')} characters`,
     sc_empty: "empty",
     sc_open_full: "Open the script",
-    sc_open_empty: "No script yet — write one",
     sc_full: "Browser storage is full, so the script was NOT saved. Sign in so it goes to the cloud, or shorten the text.",
     pe_cancelled: "This project is cancelled",
     pe_cancelled_hint: "It stays in the list, at the bottom, greyed out. Nothing is deleted.",
@@ -2417,18 +2511,39 @@ const LANG = {
     p_shoot_title: "Proje başlangıç tarihi",
     p_start_label: "Başlangıç",
     pe_deadlines: "Adım termin tarihleri…",
+    tab_ideas: "Fikirler",
+    tab_scripts: "Scriptler",
     pe_ideas: "Fikirler…",
     fk_title: "Fikirler",
     fk_chip: "Fikir",
     fk_open: "Bu projenin fikirleri",
-    fk_intro: "Bu video ne anlatabilir? Her fikir bir satır — bir açı, bir soru, bir sahne, konuşulacak bir kişi. İşin pratik notları projenin Notlar alanında.",
+    fk_intro: "Bu video ne anlatabilir? Her fikir bir satır — bir açı, bir soru, bir sahne, konuşulacak bir kişi. Proje şart değil; bağını sonra kurabilir, buradan yeni proje de açabilirsin.",
     fk_ph: "Bir fikir — eklemek için Enter",
     fk_add: "+ Ekle",
     fk_none: "Henüz fikir yok. En zoru ilk satır — yarım da olsa yaz.",
     fk_remove: "Çıkar",
     fk_count: (n)=> `${n} fikir`,
     fk_to_script: "Bu fikirlerden script yaz →",
-    pe_script: "Script…",
+    fk_one_to_script: "Script",
+    fk_no_project: "— proje yok —",
+    fk_new_project: "+ Yeni proje…",
+    fk_new_project_ask: "Yeni projenin adı:",
+    fk_filter_all: "Bütün fikirler",
+    fk_filter_none: "Projesiz olanlar",
+    fk_count_filtered: (n,tum)=> `${n} / ${tum} fikir`,
+    fk_none_match: "Burada henüz fikir yok.",
+    fk_limit: (n)=> `Slate en fazla ${n} fikir tutuyor.`,
+    sc_new: "+ Yeni script",
+    sc_title_ph: "Başlık — bu script ne için?",
+    sc_project: "Proje",
+    sc_untitled: "Başlıksız script",
+    sc_count: (n)=> `${n} script`,
+    sc_count_filtered: (n,tum)=> `${n} / ${tum} script`,
+    sc_none: "Henüz script yok. Bir scriptin projesi olmak zorunda değil — şimdi yaz, bağını sonra kur.",
+    sc_none_match: "Burada henüz script yok.",
+    sc_limit: (n)=> `Slate en fazla ${n} script tutuyor.`,
+    sc_del_confirm: (ad)=> `“${ad}” scriptini silmek istiyor musun?`,
+    pe_script: "Scriptler…",
     sc_title: "Script",
     sc_chip: "Script",
     sc_ph: "Scripti buraya yaz. Projenin yanında durur.",
@@ -2436,7 +2551,6 @@ const LANG = {
     sc_chars: (n)=> `${n.toLocaleString('tr-TR')} karakter`,
     sc_empty: "boş",
     sc_open_full: "Scripti aç",
-    sc_open_empty: "Henüz script yok — yaz",
     sc_full: "Tarayıcı hafızası dolu, script KAYDEDİLMEDİ. Giriş yaparsan buluta gider; ya da metni kısalt.",
     pe_cancelled: "Bu proje iptal edildi",
     pe_cancelled_hint: "Listede kalır, en alta iner, soluklaşır. Hiçbir şey silinmez.",
@@ -3270,13 +3384,14 @@ function renderProjects(){
     return `<tr class="${durum === 2 ? 'prow-iptal' : durum === 1 ? 'prow-bitti' : ''}">
       <th class="pname-col" scope="row">
         <button type="button" class="pname" data-proj-edit="${escapeHtml(p.id)}">${escapeHtml(p.name)}</button>${rozet}
+        <div class="pname-chain">
+          <button type="button" class="pscript ${fikirSayisi(p.id)?'dolu':''}" data-proj-ideas="${escapeHtml(p.id)}"
+                  title="${escapeHtml(t('fk_open'))}">${escapeHtml(t('fk_chip'))}${fikirSayisi(p.id)?' · '+fikirSayisi(p.id):''}</button><span class="pchain">→</span><button
+                  type="button" class="pscript ${scriptSayisi(p.id)?'dolu':''}" data-proj-scripts="${escapeHtml(p.id)}"
+                  title="${escapeHtml(t('sc_open_full'))}">${escapeHtml(t('sc_chip'))}${scriptSayisi(p.id)?' · '+scriptSayisi(p.id):''}</button>
+        </div>
         <div class="pname-sub">
           <span class="ptype">${escapeHtml(projTypeName(p.type || 'other'))}</span>
-          <button type="button" class="pscript ${fikirSayisi(p.id)?'dolu':''}" data-fk-open="${escapeHtml(p.id)}"
-                  title="${escapeHtml(t('fk_open'))}">${escapeHtml(t('fk_chip'))}${fikirSayisi(p.id)?' · '+fikirSayisi(p.id):''}</button>
-          <span class="pchain">→</span>
-          <button type="button" class="pscript ${scriptVar(p.id)?'dolu':''}" data-sc-open="${escapeHtml(p.id)}"
-                  title="${escapeHtml(scriptVar(p.id) ? t('sc_open_full') : t('sc_open_empty'))}">${escapeHtml(t('sc_chip'))}</button>
           ${adres ? `<a class="pmap" href="${escapeHtml(haritaLinki(adres))}" target="_blank" rel="noopener"
                         title="${escapeHtml(adres)}">📍</a>` : ''}
           ${adresGerekir(p.type) && !adres ? `<span class="pmap-missing">${escapeHtml(t('p_addr_missing'))}</span>` : ''}
@@ -3284,6 +3399,7 @@ function renderProjects(){
         <div class="pname-meta">${p.shootDate ? escapeHtml(t('p_start_label') + ' ' + tarihMetni(p.shootDate)) + ' · ' : ''}${escapeHtml(t('p_entries')(kayitlar.length, yayinlanan))}</div>
       </th>
       ${hucreler}
+      <td class="pfill"></td>
     </tr>`;
   }).join('');
 
@@ -3291,6 +3407,7 @@ function renderProjects(){
     <thead><tr>
       <th class="pname-col">${escapeHtml(t('p_col_project'))}</th>
       ${basliklar}
+      <th class="pfill"></th>
     </tr></thead>
     <tbody>${satirlar}</tbody>
   </table></div>`;
@@ -3304,11 +3421,12 @@ function renderProjects(){
       saveProjects(); renderProjects();
     });
   });
-  kap.querySelectorAll('[data-fk-open]').forEach(el=>{
-    el.addEventListener('click', ()=> openIdeas(el.dataset.fkOpen));
+  // Rozetler kendi sayfalarina goturuyor, o projeye suzulmus halde.
+  kap.querySelectorAll('[data-proj-ideas]').forEach(el=>{
+    el.addEventListener('click', ()=>{ fikirFiltresi = el.dataset.projIdeas; setPage('ideas'); });
   });
-  kap.querySelectorAll('[data-sc-open]').forEach(el=>{
-    el.addEventListener('click', ()=> openScript(el.dataset.scOpen));
+  kap.querySelectorAll('[data-proj-scripts]').forEach(el=>{
+    el.addEventListener('click', ()=>{ scriptFiltresi = el.dataset.projScripts; setPage('scripts'); });
   });
   kap.querySelectorAll('[data-dl-open]').forEach(el=>{
     el.addEventListener('click', ()=> openDeadlines(el.dataset.dlOpen));
@@ -3388,145 +3506,222 @@ function sahaSayaciniTazele(){
   el.textContent = n ? t('pe_field_filled')(n) : '';
 }
 
-// --- Fikir penceresi --------------------------------------------------
-// Pencere ACIKKEN duzenlenen liste burada tutuluyor; her tuşta kaydetmek
-// yerine "Ekle / cikar / alandan cikinca" anlarinda yaziliyor.
-let fikirProjesi = null;
-let fikirTaslak = [];
+// --- Fikirler sayfasi -------------------------------------------------
+// Fikir listesi projeden bagimsiz duruyor; proje bagi bir alan, bir kap
+// degil. Filtre ise projeye gore bakmayi saglıyor — "Kariye'nin fikirleri"
+// diye ayri bir yer acmadan.
+let fikirFiltresi = '';   // '' = tumu, '-' = projesiz, aksi halde proje kimligi
 
-function fikirleriCiz(){
-  const kap = document.getElementById('fkList');
+function projeSecenekleri(secili, bosEtiket){
+  const secenekler = [`<option value="">${escapeHtml(bosEtiket)}</option>`];
+  projects.slice().sort((a,b)=> a.name.localeCompare(b.name, 'tr'))
+    .forEach(p=> secenekler.push(
+      `<option value="${escapeHtml(p.id)}"${p.id === secili ? ' selected' : ''}>${escapeHtml(p.name)}</option>`));
+  secenekler.push(`<option value="__yeni__">${escapeHtml(t('fk_new_project'))}</option>`);
+  return secenekler.join('');
+}
+function filtreSecenekleri(secili){
+  return [
+    `<option value=""${secili===''?' selected':''}>${escapeHtml(t('fk_filter_all'))}</option>`,
+    `<option value="-"${secili==='-'?' selected':''}>${escapeHtml(t('fk_filter_none'))}</option>`
+  ].concat(projects.slice().sort((a,b)=> a.name.localeCompare(b.name, 'tr'))
+    .map(p=>`<option value="${escapeHtml(p.id)}"${p.id===secili?' selected':''}>${escapeHtml(p.name)}</option>`)
+  ).join('');
+}
+// Yeni proje secildiginde adi soruluyor ve proje ORADA aciliyor: kullanici
+// fikir yazarken proje sayfasina gidip geri donmek zorunda kalmasin.
+function secimdenProje(sel, oncekiDeger){
+  if(sel.value !== '__yeni__') return sel.value;
+  const ad = (prompt(t('fk_new_project_ask')) || '').trim();
+  if(!ad){ sel.value = oncekiDeger || ''; return oncekiDeger || ''; }
+  const p = projeEkle(ad, '', '', 'other', '');
+  if(!p){ sel.value = oncekiDeger || ''; return oncekiDeger || ''; }
+  return p.id;
+}
+
+function fikirleriSuz(){
+  if(fikirFiltresi === '') return fikirler;
+  if(fikirFiltresi === '-') return fikirler.filter(f=>!f.projectId);
+  return fikirler.filter(f=>f.projectId === fikirFiltresi);
+}
+
+function renderFikirler(){
+  const kap = document.getElementById('fk_list');
   if(!kap) return;
-  if(!fikirTaslak.length){
-    kap.innerHTML = '<p class="hint">' + escapeHtml(t('fk_none')) + '</p>';
-  }else{
-    kap.innerHTML = fikirTaslak.map((f,i)=>`
-      <div class="fk-row">
-        <span class="fk-no">${i+1}</span>
-        <textarea class="fk-text" rows="1" maxlength="${FIKIR_MAX}" data-fk="${escapeHtml(f.id)}">${escapeHtml(f.text)}</textarea>
+  // Filtre listesindeki proje adlari degismis olabilir; her cizimde
+  // yeniden kuruluyor.
+  const filtre = document.getElementById('fk_filter');
+  filtre.innerHTML = filtreSecenekleri(fikirFiltresi);
+  const yeniSel = document.getElementById('fk_newProj');
+  const oncekiYeni = yeniSel.value;
+  yeniSel.innerHTML = projeSecenekleri(
+    oncekiYeni && oncekiYeni !== '__yeni__' ? oncekiYeni : (fikirFiltresi !== '-' ? fikirFiltresi : ''),
+    t('fk_no_project'));
+
+  const liste = fikirleriSuz();
+  document.getElementById('fk_count').textContent =
+    liste.length === fikirler.length ? t('fk_count')(fikirler.length)
+                                     : t('fk_count_filtered')(liste.length, fikirler.length);
+  // "Bu fikirlerden script yaz" yalnizca gosterilen bir sey varken
+  // anlamli; bos listede dugmenin ne yapacagi belirsiz.
+  document.getElementById('fk_toScript').hidden = liste.length === 0;
+
+  if(!liste.length){
+    kap.innerHTML = '<p class="hint">' + escapeHtml(fikirler.length ? t('fk_none_match') : t('fk_none')) + '</p>';
+    return;
+  }
+  kap.innerHTML = liste.map(f=>`
+    <div class="fk-row" data-fk-row="${escapeHtml(f.id)}">
+      <textarea class="fk-text" rows="1" maxlength="${FIKIR_MAX}" data-fk="${escapeHtml(f.id)}">${escapeHtml(f.text)}</textarea>
+      <div class="fk-side">
+        <select class="fk-proj-sel" data-fk-proj="${escapeHtml(f.id)}">${projeSecenekleri(f.projectId, t('fk_no_project'))}</select>
+        <button type="button" class="fk-mini" data-fk-script="${escapeHtml(f.id)}"
+                title="${escapeHtml(t('fk_one_to_script'))}">${escapeHtml(t('fk_one_to_script'))}</button>
         <button type="button" class="k-del" data-fk-del="${escapeHtml(f.id)}"
                 title="${escapeHtml(t('fk_remove'))}">×</button>
-      </div>`).join('');
-    kap.querySelectorAll('.fk-text').forEach(el=>{
-      const boyutla = ()=>{ el.style.height = 'auto'; el.style.height = (el.scrollHeight + 2) + 'px'; };
-      boyutla();
-      // Yazi tipi gec yuklenirse ilk olcum kisa kalir; bir kare sonra
-      // tekrar olculuyor.
-      requestAnimationFrame(boyutla);
-      el.addEventListener('input', ()=>{
-        boyutla();
-        const f = fikirTaslak.find(x=>x.id === el.dataset.fk);
-        if(f) f.text = el.value;
-      });
-      el.addEventListener('blur', fikirTaslagiKaydet);
+      </div>
+    </div>`).join('');
+
+  kap.querySelectorAll('.fk-text').forEach(el=>{
+    const boyutla = ()=>{ el.style.height = 'auto'; el.style.height = (el.scrollHeight + 2) + 'px'; };
+    boyutla(); requestAnimationFrame(boyutla);
+    el.addEventListener('input', boyutla);
+    el.addEventListener('blur', ()=>{ if(fikirGuncelle(el.dataset.fk, { text: el.value })) renderProjects(); });
+  });
+  kap.querySelectorAll('[data-fk-proj]').forEach(sel=>{
+    const f = fikirById(sel.dataset.fkProj);
+    sel.addEventListener('change', ()=>{
+      const pid = secimdenProje(sel, f ? f.projectId : '');
+      fikirGuncelle(sel.dataset.fkProj, { projectId: pid });
+      renderFikirler(); renderProjects();
     });
-    kap.querySelectorAll('[data-fk-del]').forEach(el=>{
-      el.addEventListener('click', ()=>{
-        fikirTaslak = fikirTaslak.filter(x=>x.id !== el.dataset.fkDel);
-        fikirTaslagiKaydet(); fikirleriCiz();
-      });
+  });
+  kap.querySelectorAll('[data-fk-script]').forEach(el=>{
+    el.addEventListener('click', ()=>{
+      const f = fikirById(el.dataset.fkScript);
+      if(!f) return;
+      openScript(null, { text: f.text.trim() + '\n\n', projectId: f.projectId, title: f.text.trim().slice(0,60) });
     });
-  }
-  const sayac = document.getElementById('fkCount');
-  if(sayac) sayac.textContent = fikirTaslak.length ? t('fk_count')(fikirTaslak.length) : t('sc_empty');
-  const ekle = document.getElementById('fk_add');
-  if(ekle) ekle.disabled = fikirTaslak.length >= FIKIR_ADET;
-}
-function fikirTaslagiKaydet(){
-  if(!fikirProjesi) return;
-  if(fikirYaz(fikirProjesi.id, fikirTaslak)) renderProjects();
-}
-function fikirEkle(){
-  const kutu = document.getElementById('fk_new');
-  const metin = kutu.value.trim();
-  if(!metin) return;
-  if(fikirTaslak.length >= FIKIR_ADET) return;
-  fikirTaslak.push({ id: yeniFikirId(), text: metin.slice(0, FIKIR_MAX), ts: Date.now() });
-  kutu.value = '';
-  fikirTaslagiKaydet(); fikirleriCiz();
-  kutu.focus();
-}
-async function openIdeas(id){
-  const p = projectById(id);
-  if(!p) return;
-  fikirProjesi = p;
-  document.getElementById('fkWho').textContent = p.name;
-  document.getElementById('fk_new').value = '';
-  fikirTaslak = fikirler(id).map(f=>({ ...f }));
-  // Once ACILIYOR, sonra ciziliyor: gizli elemanin scrollHeight'i sifirdir,
-  // satirlar tek satirlik kirpik yuksekliklerle kaliyordu.
-  document.getElementById('ideaOverlay').classList.add('open');
-  fikirleriCiz();
-  document.getElementById('fk_new').focus();
-  // Bulutta daha yenisi varsa getir; kullanici bir sey yazmadiysa tazele.
-  await scriptTazele(id);
-  if(fikirProjesi === p && !document.getElementById('fk_new').value.trim()
-     && JSON.stringify(fikirTaslak) !== JSON.stringify(fikirler(id))
-     && !document.getElementById('fkList').querySelector('.fk-text:focus')){
-    fikirTaslak = fikirler(id).map(f=>({ ...f }));
-    fikirleriCiz();
-  }
-}
-function closeIdeas(){
-  fikirTaslagiKaydet();
-  document.getElementById('ideaOverlay').classList.remove('open');
-  fikirProjesi = null; fikirTaslak = [];
+  });
+  kap.querySelectorAll('[data-fk-del]').forEach(el=>{
+    el.addEventListener('click', ()=>{ fikirSil(el.dataset.fkDel); renderFikirler(); renderProjects(); });
+  });
 }
 
+function fikirEkleTiklandi(){
+  const kutu = document.getElementById('fk_new');
+  const sel = document.getElementById('fk_newProj');
+  const metin = kutu.value.trim();
+  if(!metin){ kutu.focus(); return; }
+  const pid = secimdenProje(sel, '');
+  if(!fikirEkle(metin, pid)) return;
+  kutu.value = '';
+  // Yeni fikir hangi projeye baglandiysa listede gorunsun.
+  if(fikirFiltresi && fikirFiltresi !== '-' && pid && pid !== fikirFiltresi) fikirFiltresi = pid;
+  if(fikirFiltresi === '-' && pid) fikirFiltresi = pid;
+  renderFikirler(); renderProjects();
+  kutu.focus();
+}
+
+// --- Scriptler sayfasi ------------------------------------------------
+let scriptFiltresi = '';
+
+function scriptleriSuz(){
+  if(scriptFiltresi === '') return scriptler;
+  if(scriptFiltresi === '-') return scriptler.filter(s=>!s.projectId);
+  return scriptler.filter(s=>s.projectId === scriptFiltresi);
+}
+function renderScriptler(){
+  const kap = document.getElementById('sc_list');
+  if(!kap) return;
+  document.getElementById('sc_filter').innerHTML = filtreSecenekleri(scriptFiltresi);
+  const liste = scriptleriSuz().slice().sort((a,b)=> b.updatedAt - a.updatedAt);
+  document.getElementById('sc_count').textContent =
+    liste.length === scriptler.length ? t('sc_count')(scriptler.length)
+                                      : t('sc_count_filtered')(liste.length, scriptler.length);
+  if(!liste.length){
+    kap.innerHTML = '<p class="hint">' + escapeHtml(scriptler.length ? t('sc_none_match') : t('sc_none')) + '</p>';
+    return;
+  }
+  kap.innerHTML = liste.map(sc=>{
+    const p = sc.projectId ? projectById(sc.projectId) : null;
+    return `<button type="button" class="sc-card" data-sc-open="${escapeHtml(sc.id)}">
+      <span class="sc-card-name">${escapeHtml(scriptAdi(sc))}</span>
+      <span class="sc-card-meta">
+        ${p ? `<span class="sc-card-proj">${escapeHtml(p.name)}</span>`
+            : `<span class="sc-card-proj bos">${escapeHtml(t('fk_no_project'))}</span>`}
+        <span>${escapeHtml(sc.text.length ? t('sc_chars')(sc.text.length) : t('sc_empty'))}</span>
+      </span>
+    </button>`;
+  }).join('');
+  kap.querySelectorAll('[data-sc-open]').forEach(el=>{
+    el.addEventListener('click', ()=> openScript(el.dataset.scOpen));
+  });
+}
 // --- Script penceresi -------------------------------------------------
-let scriptProjesi = null;
+// Pencere hem VAR OLAN bir scripti aciyor hem de YENI bir tane baslatiyor.
+// Yeni script kaydedilene kadar listeye girmiyor: vazgecilen bir taslak
+// listede yer kaplamamali.
+let acikScriptId = null;
+let yeniScriptTaslak = null;   // { text, title, projectId } — kaydedilmemis
 
 function scriptSayaci(n){
   const el = document.getElementById('scCount');
   if(el) el.textContent = n ? t('sc_chars')(n) : t('sc_empty');
 }
-// Fikirlerden iskelet: her fikir kendi basligi altinda bos bir bolum.
-// Metnin kendisi degil, yazmaya baslanacak yer. AI kapisi acildiginda
-// ayni yeri o dolduracak.
-function fikirIskeleti(id){
-  const liste = fikirler(id);
+// Fikirlerden iskelet: her fikir numarali bir satir. Metnin kendisi degil,
+// yazmaya baslanacak yer. AI kapisi acildiginda ayni yeri o dolduracak.
+function fikirIskeleti(liste){
   if(!liste.length) return '';
   return liste.map((f,i)=> (i+1) + '. ' + f.text.trim()).join('\n\n') + '\n\n';
 }
-function scriptFikirSeridi(id){
+// Bagli projenin fikirleri pencerede goz onunde: pencere kapatip otekini
+// acmak zinciri kagit uzerinde birakiyordu.
+function scriptFikirSeridi(pid){
   const kat = document.getElementById('sc_ideasFold');
-  const liste = fikirler(id);
+  const liste = pid ? projeFikirleri(pid) : [];
   kat.hidden = !liste.length;
   if(!liste.length) return;
   document.getElementById('sc_ideasCount').textContent = t('fk_count')(liste.length);
   document.getElementById('sc_ideasList').innerHTML =
     liste.map(f=>`<li>${escapeHtml(f.text)}</li>`).join('');
 }
-async function openScript(id, iskeletIste){
-  const p = projectById(id);
-  if(!p) return;
-  scriptProjesi = p;
-  document.getElementById('scWho').textContent = p.name;
-  const alan = document.getElementById('sc_text');
-  alan.value = scriptMetni(id);
-  // Iskelet YALNIZCA alan bosken konuyor ve KAYDEDILMIYOR: var olan bir
-  // metnin uzerine yazmak, saatlerce sureni bir tikla yok etmek olurdu.
-  if(iskeletIste && !alan.value.trim()) alan.value = fikirIskeleti(id);
-  scriptFikirSeridi(id);
-  scriptSayaci(alan.value.length);
+function scriptPencereProje(){ return document.getElementById('sc_proj').value; }
+
+// id verilirse o script aciliyor; verilmezse yeni bir taslak baslatiliyor
+// (baslangic degerleriyle: bir fikirden ya da fikir listesinden gelmis
+// olabilir).
+function openScript(id, baslangic){
+  const sc = id ? scriptById(id) : null;
+  acikScriptId = sc ? sc.id : null;
+  yeniScriptTaslak = sc ? null : Object.assign({ text:'', title:'', projectId:'' }, baslangic || {});
+  const veri = sc || yeniScriptTaslak;
+
+  document.getElementById('sc_title').value = veri.title || '';
+  document.getElementById('sc_text').value  = veri.text || '';
+  const sel = document.getElementById('sc_proj');
+  sel.innerHTML = projeSecenekleri(veri.projectId || '', t('fk_no_project'));
+  scriptFikirSeridi(veri.projectId || '');
+  scriptSayaci((veri.text || '').length);
+  // Silme yalnizca var olan bir kayit icin anlamli.
+  document.getElementById('sc_delete').hidden = !sc;
   document.getElementById('scriptOverlay').classList.add('open');
-  alan.focus();
-  // Bulutta daha yenisi varsa getir. Kullanici yazmaya BASLAMISSA
-  // dokunulmuyor: kendi yazdigini altindan cekmek en kotu surpriz olur.
-  const oncekiMetin = alan.value;
-  await scriptTazele(id);
-  if(scriptProjesi !== p) return;
-  scriptFikirSeridi(id);
-  if(alan.value === oncekiMetin && scriptMetni(id) && scriptMetni(id) !== oncekiMetin){
-    alan.value = scriptMetni(id);
-    scriptSayaci(alan.value.length);
-  }
+  (veri.text ? document.getElementById('sc_text') : document.getElementById('sc_title')).focus();
 }
 function closeScript(){
   document.getElementById('scriptOverlay').classList.remove('open');
-  scriptProjesi = null;
+  acikScriptId = null; yeniScriptTaslak = null;
 }
-
+function scriptKaydet(){
+  const baslik = document.getElementById('sc_title').value;
+  const metin = document.getElementById('sc_text').value;
+  const pid = scriptPencereProje() === '__yeni__' ? '' : scriptPencereProje();
+  if(!metin.trim() && !baslik.trim()){ closeScript(); return; }   // bos taslak: kaydedecek bir sey yok
+  if(acikScriptId) scriptGuncelle(acikScriptId, { title: baslik, text: metin, projectId: pid });
+  else scriptEkle({ title: baslik, text: metin, projectId: pid });
+  closeScript();
+  renderScriptler(); renderFikirler(); renderProjects();
+}
 // --- Proje duzenleme penceresi ---------------------------------------
 let duzenlenenProje = null;
 function projTypeSelectDoldur(sel, deger){
@@ -3546,8 +3741,8 @@ function openProjectEdit(id){
   document.getElementById('pe_keywords').value = p.keywords || '';
   document.getElementById('pe_shoot').value = p.shootDate || '';
   document.getElementById('pe_cancelled').checked = p.cancelled === true;
-  const uzunluk = scriptMetni(p.id).length;
-  document.getElementById('pe_scriptTag').textContent = uzunluk ? t('sc_chars')(uzunluk) : t('sc_empty');
+  const kacScript = scriptSayisi(p.id);
+  document.getElementById('pe_scriptTag').textContent = kacScript ? t('sc_count')(kacScript) : t('sc_empty');
   const kacFikir = fikirSayisi(p.id);
   document.getElementById('pe_ideasTag').textContent = kacFikir ? t('fk_count')(kacFikir) : t('sc_empty');
   sahaAlanlariniDoldur(p);
@@ -3724,214 +3919,347 @@ function projAfterSignOut(){
 //      gidiyor; ezme ihtimali yapisal olarak yok.
 //   2) Script buyuk (bir metin 12.000 karakter olabilir). Proje satirinin
 //      icinde olsaydi her kucuk degisiklikte kilobaytlar bosa gidiyordu.
-const SCRIPT_KEY = 'demo_scripts';
-// Ust sinir: tarayici hafizasi (~5 MB) sessizce doluyor, hata vermiyor.
-// 40.000 karakter ~6.500 kelime — en uzun belgesel metnine yeter.
-const SCRIPT_MAX = 40000;
+// ---- Fikirler ve scriptler --------------------------------------------
+// Neden projenin ICINDE degil, kendi baslarina:
+// Is her zaman ayni sirayla gelmiyor. Bazen once bir fikir not ediliyor,
+// projesi gunler sonra aciliyor. Bazen once script yaziliyor. Fikir ve
+// script projenin altinda yasasaydi, proje acilmadan hicbiri var
+// olamazdi — oysa is cogu zaman tam orada basliyor.
+//
+// Proje bagi ISTEGE BAGLI bir alan: bos olabilir, sonradan kurulabilir,
+// degistirilebilir.
+const FIKIR_KEY  = 'demo_ideas';
+const SCRIPT_KEY = 'demo_scripts_v2';
+// Bir onceki bicim: projeye gomulu { projeKimligi: {text, ideas} } haritasi.
+// Acilista bir kez okunup yeni bicime tasiniyor.
+const ESKI_SCRIPT_KEY = 'demo_scripts';
 // Fikir kisa olmali. Uzayan bir fikir zaten scripttir; sinir bunu
 // hatirlatiyor.
-const FIKIR_MAX = 600;
-const FIKIR_ADET = 100;
-// Projenin ICERIGI: fikirler ve script tek satirda ama AYRI zaman
-// damgalariyla. Ayni satirda, cunku ikisi de "bu projenin metni" ve
-// ayni pencerelerden yonetiliyor. Ayri damgalarla, cunku telefonda fikir
-// eklerken masaustunde yazilan scriptin ezilmemesi gerekiyor.
-let scripts = {};   // { projeKimligi: {text, ts, source, ideas, ideasTs} }
-const scriptDirty = new Set();
-let scriptPushTimer = null;
+const FIKIR_MAX = 600, FIKIR_ADET = 500;
+// Ust sinir: tarayici hafizasi (~5 MB) sessizce doluyor, hata vermiyor.
+// 40.000 karakter ~6.500 kelime — en uzun belgesel metnine yeter.
+const SCRIPT_MAX = 40000, SCRIPT_ADET = 300;
 
+let fikirler  = [];   // [{id, text, projectId, createdAt, updatedAt}]
+let scriptler = [];   // [{id, title, text, source, projectId, createdAt, updatedAt}]
+const fikirDirty = new Set(),  fikirRemoved = new Set();
+const scriptDirty = new Set(), scriptRemoved = new Set();
+let fikirPushTimer = null, scriptPushTimer = null;
+
+function fikirKey(){  return session ? FIKIR_KEY  + '_' + session.user.id : FIKIR_KEY; }
 function scriptKey(){ return session ? SCRIPT_KEY + '_' + session.user.id : SCRIPT_KEY; }
-function yeniFikirId(){ return 'fk_' + Date.now().toString(36) + '_' + Math.random().toString(36).slice(2,6); }
+function yeniFikirId(){  return 'fk_' + Date.now().toString(36) + '_' + Math.random().toString(36).slice(2,6); }
+function yeniScriptId(){ return 'sc_' + Date.now().toString(36) + '_' + Math.random().toString(36).slice(2,6); }
+
+// Proje bagi: var olmayan bir projeye bagli kalmak, kaydi listelerde
+// gorunmez yapardi. Bilinmeyen kimlik bosa dusuyor.
+function projeBagiTemiz(pid){
+  if(typeof pid !== 'string' || !pid) return '';
+  return projects.some(p=>p.id === pid) ? pid : '';
+}
 function fikirTemizle(ham){
-  if(!Array.isArray(ham)) return [];
-  return ham.map(f=>{
-    if(typeof f === 'string') return { id: yeniFikirId(), text: f.slice(0, FIKIR_MAX), ts: 0 };
-    if(!f || typeof f !== 'object' || typeof f.text !== 'string') return null;
-    return {
-      id: (typeof f.id === 'string' && /^[A-Za-z0-9_-]{1,64}$/.test(f.id)) ? f.id : yeniFikirId(),
-      text: f.text.slice(0, FIKIR_MAX),
-      ts: typeof f.ts === 'number' ? f.ts : 0
-    };
-  }).filter(f=> f && f.text.trim()).slice(0, FIKIR_ADET);
-}
-function scriptTemizle(ham){
-  const cikti = {};
-  if(!ham || typeof ham !== 'object') return cikti;
-  Object.keys(ham).forEach(id=>{
-    const v = ham[id];
-    if(!v || typeof v !== 'object') return;
-    const metin = typeof v.text === 'string' ? v.text.slice(0, SCRIPT_MAX) : '';
-    const fikirler = fikirTemizle(v.ideas);
-    // Ikisi de bossa satir hic durmuyor: bos kayit yer kaplar, hicbir sey
-    // anlatmaz ve "var mi yok mu" sorusunu belirsizlestirir.
-    if(!metin.trim() && !fikirler.length) return;
-    cikti[id] = {
-      text: metin,
-      ts: typeof v.ts === 'number' ? v.ts : 0,
-      source: v.source === 'drive' || v.source === 'ai' ? v.source : 'manual',
-      ideas: fikirler,
-      ideasTs: typeof v.ideasTs === 'number' ? v.ideasTs : 0
-    };
-  });
-  return cikti;
-}
-function loadScripts(){
-  try{ scripts = scriptTemizle(JSON.parse(localStorage.getItem(scriptKey()) || 'null')); }
-  catch(e){ scripts = {}; }
-}
-function saveScripts(){
-  try{ localStorage.setItem(scriptKey(), JSON.stringify(scripts)); }
-  catch(e){
-    // Kota doldu. Sessizce yutulursa kullanici "kaydettim" sanir.
-    console.error('[script] kaydedilemedi', e);
-    alert(t('sc_full'));
-  }
-}
-function icerikSatiri(id){
-  if(!scripts[id]) scripts[id] = { text:'', ts:0, source:'manual', ideas:[], ideasTs:0 };
-  return scripts[id];
-}
-function icerikTemizleBos(id){
-  const v = scripts[id];
-  if(v && !v.text.trim() && !(v.ideas || []).length) delete scripts[id];
-}
-function scriptMetni(id){ return (scripts[id] && scripts[id].text) || ''; }
-function scriptVar(id){ return !!scriptMetni(id).trim(); }
-function fikirler(id){ return (scripts[id] && scripts[id].ideas) || []; }
-function fikirSayisi(id){ return fikirler(id).length; }
-
-function scriptYaz(id, metin, kaynak){
-  const yeni = (metin || '').slice(0, SCRIPT_MAX);
-  if(yeni === scriptMetni(id)) return false;   // gercekten degismediyse gonderme
-  const v = icerikSatiri(id);
-  v.text = yeni; v.ts = Date.now(); v.source = kaynak || 'manual';
-  icerikTemizleBos(id);
-  scriptDirty.add(id);
-  saveScripts();
-  scriptPushKuyrukla();
-  return true;
-}
-function fikirYaz(id, liste){
-  const yeni = fikirTemizle(liste);
-  const eski = fikirler(id);
-  if(JSON.stringify(yeni) === JSON.stringify(eski)) return false;
-  const v = icerikSatiri(id);
-  v.ideas = yeni; v.ideasTs = Date.now();
-  icerikTemizleBos(id);
-  scriptDirty.add(id);
-  saveScripts();
-  scriptPushKuyrukla();
-  return true;
-}
-
-function scriptRowYap(id, uid){
-  const v = scripts[id];
+  if(!ham || typeof ham !== 'object' || typeof ham.text !== 'string') return null;
+  const metin = ham.text.slice(0, FIKIR_MAX);
+  if(!metin.trim()) return null;
   return {
-    project_id: id, user_id: uid,
-    content: v ? v.text : '',
-    source: v ? v.source : 'manual',
-    updated_at: new Date(v ? (v.ts || Date.now()) : Date.now()).toISOString(),
-    ideas: v ? v.ideas : [],
-    ideas_updated_at: new Date(v ? (v.ideasTs || 0) : 0).toISOString()
+    id: (typeof ham.id === 'string' && /^[A-Za-z0-9_-]{1,64}$/.test(ham.id)) ? ham.id : yeniFikirId(),
+    text: metin,
+    projectId: typeof ham.projectId === 'string' ? ham.projectId : '',
+    createdAt: typeof ham.createdAt === 'number' ? ham.createdAt : Date.now(),
+    updatedAt: typeof ham.updatedAt === 'number' ? ham.updatedAt : Date.now()
   };
 }
+function scriptTemizle(ham){
+  if(!ham || typeof ham !== 'object') return null;
+  const metin = typeof ham.text === 'string' ? ham.text.slice(0, SCRIPT_MAX) : '';
+  const baslik = typeof ham.title === 'string' ? ham.title.slice(0, 160) : '';
+  // Basligi da metni de bos olan script bir sey ifade etmiyor.
+  if(!metin.trim() && !baslik.trim()) return null;
+  return {
+    id: (typeof ham.id === 'string' && /^[A-Za-z0-9_-]{1,64}$/.test(ham.id)) ? ham.id : yeniScriptId(),
+    title: baslik,
+    text: metin,
+    source: ham.source === 'drive' || ham.source === 'ai' ? ham.source : 'manual',
+    projectId: typeof ham.projectId === 'string' ? ham.projectId : '',
+    createdAt: typeof ham.createdAt === 'number' ? ham.createdAt : Date.now(),
+    updatedAt: typeof ham.updatedAt === 'number' ? ham.updatedAt : Date.now()
+  };
+}
+
+function loadFikirScript(){
+  try{
+    const f = JSON.parse(localStorage.getItem(fikirKey()) || 'null');
+    fikirler = Array.isArray(f) ? f.map(fikirTemizle).filter(Boolean).slice(0, FIKIR_ADET) : [];
+  }catch(e){ fikirler = []; }
+  try{
+    const s = JSON.parse(localStorage.getItem(scriptKey()) || 'null');
+    scriptler = Array.isArray(s) ? s.map(scriptTemizle).filter(Boolean).slice(0, SCRIPT_ADET) : [];
+  }catch(e){ scriptler = []; }
+  eskiBicimiTasi();
+}
+
+// Bir onceki bicimden tasima. Bir kez calisiyor: tasinan anahtar
+// yeniden adlandiriliyor, ikinci acilista bulunamiyor. Silmiyoruz —
+// tasima yanlis giderse eski hal duruyor.
+function eskiBicimiTasi(){
+  const anahtar = session ? ESKI_SCRIPT_KEY + '_' + session.user.id : ESKI_SCRIPT_KEY;
+  let harita = null;
+  try{ harita = JSON.parse(localStorage.getItem(anahtar) || 'null'); }catch(e){ return; }
+  if(!harita || typeof harita !== 'object' || Array.isArray(harita)) return;
+  let degisti = false;
+  Object.keys(harita).forEach(pid=>{
+    const v = harita[pid];
+    if(!v || typeof v !== 'object') return;
+    (Array.isArray(v.ideas) ? v.ideas : []).forEach(f=>{
+      const yeni = fikirTemizle({ ...f, projectId: pid });
+      if(yeni && !fikirler.some(x=>x.id === yeni.id)){ fikirler.push(yeni); fikirDirty.add(yeni.id); degisti = true; }
+    });
+    if(typeof v.text === 'string' && v.text.trim()){
+      const proje = projects.find(p=>p.id === pid);
+      const yeni = scriptTemizle({
+        id: 'sc_' + pid, title: proje ? proje.name : '', text: v.text,
+        source: v.source, projectId: pid,
+        createdAt: v.ts || Date.now(), updatedAt: v.ts || Date.now()
+      });
+      if(yeni && !scriptler.some(x=>x.id === yeni.id)){ scriptler.push(yeni); scriptDirty.add(yeni.id); degisti = true; }
+    }
+  });
+  try{
+    localStorage.setItem(anahtar + '_v1_tasindi', JSON.stringify(harita));
+    localStorage.removeItem(anahtar);
+  }catch(e){ /* tasima yine de yapildi */ }
+  if(degisti){ saveFikirler(); saveScriptler(); }
+}
+
+function kotaHatasi(e){
+  console.error('[fikir/script] kaydedilemedi', e);
+  alert(t('sc_full'));
+}
+function saveFikirler(){
+  try{ localStorage.setItem(fikirKey(), JSON.stringify(fikirler)); }catch(e){ kotaHatasi(e); }
+  if(session){ clearTimeout(fikirPushTimer); fikirPushTimer = setTimeout(fikirPush, 700); }
+}
+function saveScriptler(){
+  try{ localStorage.setItem(scriptKey(), JSON.stringify(scriptler)); }catch(e){ kotaHatasi(e); }
+  if(session){ clearTimeout(scriptPushTimer); scriptPushTimer = setTimeout(scriptPush, 700); }
+}
+
+// --- Sorgular ---------------------------------------------------------
+function projeFikirleri(pid){ return fikirler.filter(f=>f.projectId === pid); }
+function projeScriptleri(pid){ return scriptler.filter(s=>s.projectId === pid); }
+function fikirSayisi(pid){ return projeFikirleri(pid).length; }
+function scriptSayisi(pid){ return projeScriptleri(pid).length; }
+function scriptVar(pid){ return projeScriptleri(pid).some(s=>s.text.trim()); }
+function scriptById(id){ return scriptler.find(s=>s.id === id) || null; }
+function fikirById(id){ return fikirler.find(f=>f.id === id) || null; }
+function scriptAdi(s){
+  if(s.title.trim()) return s.title.trim();
+  const ilk = s.text.trim().split('\n')[0].trim();
+  return ilk ? ilk.slice(0, 60) : t('sc_untitled');
+}
+
+// --- Degistirme -------------------------------------------------------
+function fikirEkle(metin, pid){
+  const yeni = fikirTemizle({ text: metin, projectId: projeBagiTemiz(pid) });
+  if(!yeni) return null;
+  if(fikirler.length >= FIKIR_ADET){ alert(t('fk_limit')(FIKIR_ADET)); return null; }
+  fikirler.unshift(yeni);
+  fikirDirty.add(yeni.id);
+  saveFikirler();
+  return yeni;
+}
+function fikirGuncelle(id, alanlar){
+  const f = fikirById(id);
+  if(!f) return false;
+  let degisti = false;
+  if(typeof alanlar.text === 'string' && alanlar.text.slice(0, FIKIR_MAX) !== f.text){
+    f.text = alanlar.text.slice(0, FIKIR_MAX); degisti = true;
+  }
+  if(typeof alanlar.projectId === 'string' && alanlar.projectId !== f.projectId){
+    f.projectId = projeBagiTemiz(alanlar.projectId); degisti = true;
+  }
+  if(!degisti) return false;
+  f.updatedAt = Date.now();
+  fikirDirty.add(id);
+  saveFikirler();
+  return true;
+}
+function fikirSil(id){
+  const i = fikirler.findIndex(f=>f.id === id);
+  if(i < 0) return;
+  fikirler.splice(i, 1);
+  fikirDirty.delete(id); fikirRemoved.add(id);
+  saveFikirler();
+}
+function scriptEkle(alanlar){
+  if(scriptler.length >= SCRIPT_ADET){ alert(t('sc_limit')(SCRIPT_ADET)); return null; }
+  const yeni = scriptTemizle({ ...alanlar, projectId: projeBagiTemiz(alanlar.projectId) });
+  if(!yeni) return null;
+  const oncedenVardi = projeninScriptiVarMi(yeni.projectId, yeni.id);
+  scriptler.unshift(yeni);
+  scriptDirty.add(yeni.id);
+  saveScriptler();
+  scriptAdimiIsaretle(yeni, oncedenVardi);
+  return yeni;
+}
+function scriptGuncelle(id, alanlar){
+  const s = scriptById(id);
+  if(!s) return false;
+  // Degisiklikten ONCEKI hal: isaretin konup konmayacagini bu belirliyor.
+  const oncekiProje = s.projectId, oncekiMetinVardi = !!s.text.trim();
+  let degisti = false;
+  ['title','text'].forEach(k=>{
+    if(typeof alanlar[k] === 'string'){
+      const yeni = alanlar[k].slice(0, k === 'text' ? SCRIPT_MAX : 160);
+      if(yeni !== s[k]){ s[k] = yeni; degisti = true; }
+    }
+  });
+  if(typeof alanlar.projectId === 'string'){
+    const yeni = projeBagiTemiz(alanlar.projectId);
+    if(yeni !== s.projectId){ s.projectId = yeni; degisti = true; }
+  }
+  if(!degisti) return false;
+  s.updatedAt = Date.now();
+  scriptDirty.add(id);
+  saveScriptler();
+  // Proje ayni kaldi ve zaten metni vardiysa gecis yok: isarete dokunma.
+  const oncedenVardi = (oncekiProje === s.projectId && oncekiMetinVardi)
+                       || projeninScriptiVarMi(s.projectId, id);
+  scriptAdimiIsaretle(s, oncedenVardi);
+  return true;
+}
+function scriptSil(id){
+  const i = scriptler.findIndex(s=>s.id === id);
+  if(i < 0) return;
+  scriptler.splice(i, 1);
+  scriptDirty.delete(id); scriptRemoved.add(id);
+  saveScriptler();
+}
+
+// Bir proje ILK KEZ metni olan bir scripte kavustugunda "script" adimi
+// kendiliginden isaretleniyor.
+//
+// Yalnizca GECIS aninda: proje zaten metinli bir scripte sahipse sonraki
+// duzenlemeler isarete dokunmuyor. Aksi halde kullanicinin elle kaldirdigi
+// isaret, scripte yazilan bir cumleyle geri gelirdi — "dilersen kaldir"
+// sozu bos cikardi.
+//
+// Tersi de yok: script silinince ya da bagi kopunca isaret kalkmiyor.
+// Metin baska bir yerde yazilmis olabilir; isareti kaldirmak kullanicinin
+// isi.
+function scriptAdimiIsaretle(s, oncedenVardi){
+  if(!s || !s.projectId || !s.text.trim()) return;
+  if(oncedenVardi) return;
+  const p = projectById(s.projectId);
+  if(!p || p.script) return;
+  p.script = true;
+  projDirtyIsaretle(p.id);
+  saveProjects();
+}
+// Bu projede, verilen script HARIC, metni olan baska bir script var mi?
+function projeninScriptiVarMi(pid, haricId){
+  return !!pid && scriptler.some(s=> s.projectId === pid && s.id !== haricId && s.text.trim());
+}
+
+// --- Bulut ------------------------------------------------------------
+function fikirRowYap(f, uid){
+  return { id: f.id, user_id: uid, text: f.text, project_id: f.projectId || null,
+           created_at: new Date(f.createdAt).toISOString(),
+           updated_at: new Date(f.updatedAt).toISOString() };
+}
+function fikirRowOku(r){
+  return fikirTemizle({ id: r.id, text: r.text || '', projectId: r.project_id || '',
+                        createdAt: r.created_at ? Date.parse(r.created_at) : Date.now(),
+                        updatedAt: r.updated_at ? Date.parse(r.updated_at) : 0 });
+}
+function scriptRowYap(s, uid){
+  return { id: s.id, user_id: uid, title: s.title, content: s.text, source: s.source,
+           project_id: s.projectId || null,
+           created_at: new Date(s.createdAt).toISOString(),
+           updated_at: new Date(s.updatedAt).toISOString() };
+}
 function scriptRowOku(r){
-  return { id: r.project_id, text: r.content || '',
-           ts: r.updated_at ? Date.parse(r.updated_at) : 0,
-           source: r.source || 'manual',
-           ideas: fikirTemizle(r.ideas),
-           ideasTs: r.ideas_updated_at ? Date.parse(r.ideas_updated_at) : 0 };
+  return scriptTemizle({ id: r.id, title: r.title || '', text: r.content || '',
+                         source: r.source, projectId: r.project_id || '',
+                         createdAt: r.created_at ? Date.parse(r.created_at) : Date.now(),
+                         updatedAt: r.updated_at ? Date.parse(r.updated_at) : 0 });
 }
-function scriptPushKuyrukla(){
+
+async function fikirPush(){ await kayitPush('ideas', fikirler, fikirDirty, fikirRemoved, fikirRowYap); }
+async function scriptPush(){ await kayitPush('scripts', scriptler, scriptDirty, scriptRemoved, scriptRowYap); }
+
+// Iki tablo icin ayni gonderim: mezar tasi + degisenlerin upsert'i.
+// Kimlikler basta sabitleniyor; gonderim surerken yapilan yeni degisiklik
+// kuyrukta kaliyor, sonraki turda gidiyor.
+async function kayitPush(tablo, liste, kirli, silinen, satirYap){
   if(!sb || !session) return;
-  clearTimeout(scriptPushTimer);
-  scriptPushTimer = setTimeout(scriptPush, 900);
-}
-async function scriptPush(){
-  if(!sb || !session || !scriptDirty.size) return;
   const uid = session.user.id;
-  const gonderilecek = [...scriptDirty];
+  const silinecek = [...silinen];
+  const yazilacak = [...kirli];
   try{
-    const rows = gonderilecek.map(id=> scriptRowYap(id, uid));
-    const { error } = await sb.from('project_scripts')
-      .upsert(rows, { onConflict: 'project_id' });
-    if(error) throw error;
-    gonderilecek.forEach(id=> scriptDirty.delete(id));
+    if(silinecek.length){
+      const { error } = await sb.from(tablo)
+        .update({ deleted_at: new Date().toISOString() }).in('id', silinecek);
+      if(error) throw error;
+      silinecek.forEach(id=> silinen.delete(id));
+    }
+    if(yazilacak.length){
+      const rows = liste.filter(x=> yazilacak.indexOf(x.id) !== -1).map(x=> satirYap(x, uid));
+      if(rows.length){
+        const { error } = await sb.from(tablo).upsert(rows, { onConflict: 'id' });
+        if(error) throw error;
+      }
+      yazilacak.forEach(id=> kirli.delete(id));
+    }
   }catch(err){
-    // Kimlikler kuyrukta kaliyor; sonraki degisiklik tekrar deniyor.
-    console.error('[bulut] script yazma hatasi', err);
+    console.error('[bulut] ' + tablo + ' yazma hatasi', err);
   }
 }
 
-// Uzak satiri yerelin uzerine ALAN ALAN katiyor: script ve fikirlerin
-// kendi zaman damgalari var. Tek damga olsaydi, telefonda fikir eklemek
-// masaustunde yazilan scripti geri alirdi.
-// Kural sablonlardaki ile ayni: DAHA YENI olan kazanir, bos olan doluyu
-// silmez. Geri donen deger "yereldeki daha yeni, yukari gitmeli" demek.
-function icerikKat(u){
-  const y = scripts[u.id];
-  let degisti = false, yerelDahaYeni = false;
-  if(u.text.trim() && u.ts > ((y && y.ts) || 0)){
-    const v = icerikSatiri(u.id);
-    v.text = u.text.slice(0, SCRIPT_MAX); v.ts = u.ts; v.source = u.source;
-    degisti = true;
-  }else if(y && y.text.trim() && (y.ts || 0) > u.ts){
-    yerelDahaYeni = true;
-  }
-  if(u.ideas.length && u.ideasTs > ((y && y.ideasTs) || 0)){
-    const v = icerikSatiri(u.id);
-    v.ideas = u.ideas; v.ideasTs = u.ideasTs;
-    degisti = true;
-  }else if(y && (y.ideas || []).length && (y.ideasTs || 0) > u.ideasTs){
-    yerelDahaYeni = true;
-  }
-  return { degisti, yerelDahaYeni };
-}
-
-// Giris sonrasi eslestirme.
-async function scriptBulutSenkron(){
+// Giris sonrasi eslestirme. Satir satir, DAHA YENI olan kazanir:
+// bir cihazda duzenlenen fikir, otekindeki eski kopyayla ezilmiyor.
+async function fikirScriptBulutSenkron(){
   if(!sb || !session) return;
   try{
-    const { data, error } = await sb.from('project_scripts')
-      .select('*').eq('user_id', session.user.id);
-    if(error) throw error;
-    let degisti = false;
-    (data || []).forEach(r=>{
-      const sonuc = icerikKat(scriptRowOku(r));
-      if(sonuc.degisti) degisti = true;
-      if(sonuc.yerelDahaYeni) scriptDirty.add(r.project_id);
-    });
-    // Bulutta hic olmayan yereller de gidiyor.
-    Object.keys(scripts).forEach(id=>{
-      if(!(data || []).some(r=> r.project_id === id)) scriptDirty.add(id);
-    });
-    if(degisti){ saveScripts(); renderProjects(); }
-    if(scriptDirty.size) await scriptPush();
+    const [f, s] = await Promise.all([
+      sb.from('ideas').select('*').is('deleted_at', null),
+      sb.from('scripts').select('*').is('deleted_at', null)
+    ]);
+    if(f.error) throw f.error;
+    if(s.error) throw s.error;
+    const degistiF = listeKat(fikirler,  (f.data || []).map(fikirRowOku).filter(Boolean),  fikirDirty);
+    const degistiS = listeKat(scriptler, (s.data || []).map(scriptRowOku).filter(Boolean), scriptDirty);
+    if(degistiF) saveFikirler();
+    if(degistiS) saveScriptler();
+    if(degistiF || degistiS){ renderFikirler(); renderScriptler(); renderProjects(); }
+    await fikirPush(); await scriptPush();
   }catch(err){
-    console.error('[bulut] script okuma hatasi', err);
+    console.error('[bulut] fikir/script okuma hatasi', err);
   }
 }
-
-// Pencere acilirken O PROJENIN satiri tazeleniyor. Asil koruma bu:
-// telefondaki eski metni duzenleyip kaydetmek, masaustunde yazilani
-// gercekten yok eder — cunku yeni kaydin damgasi daha yenidir. Once en
-// guncel hali getirip onun uzerine yazdiriyoruz.
-async function scriptTazele(id){
-  if(!sb || !session) return;
-  try{
-    const { data, error } = await sb.from('project_scripts')
-      .select('*').eq('project_id', id).maybeSingle();
-    if(error) throw error;
-    if(!data) return;
-    if(icerikKat(scriptRowOku(data)).degisti) saveScripts();
-  }catch(err){
-    console.error('[bulut] script tazeleme hatasi', err);
-  }
+function listeKat(yerel, uzak, kirli){
+  let degisti = false;
+  uzak.forEach(u=>{
+    const i = yerel.findIndex(x=>x.id === u.id);
+    if(i < 0){
+      // Burada silinmis olabilir: mezar tasi kuyrukta bekliyorsa geri
+      // getirmiyoruz.
+      yerel.push(u); degisti = true;
+    }else if(u.updatedAt > yerel[i].updatedAt){
+      yerel[i] = u; degisti = true;
+    }else if(u.updatedAt < yerel[i].updatedAt){
+      kirli.add(u.id);
+    }
+  });
+  // Bulutta hic olmayan yereller yukari gidiyor.
+  yerel.forEach(y=>{ if(!uzak.some(u=>u.id === y.id)) kirli.add(y.id); });
+  return degisti;
 }
 
-function scriptAfterSignOut(){
-  scriptDirty.clear();
-  loadScripts();
+function fikirScriptAfterSignOut(){
+  fikirDirty.clear(); fikirRemoved.clear();
+  scriptDirty.clear(); scriptRemoved.clear();
+  loadFikirScript();
 }
 function readLocalProjects(key){
   try{
@@ -4026,22 +4354,31 @@ function secilenTipler(){
 // --- Sekmeler --------------------------------------------------------
 // Takvim "ne zaman cikacak", projeler "nerede kaldi" sorusunun cevabi.
 // Ayni veri, iki farkli soru.
+const SAYFALAR = [
+  ['ideas',     'ideasPage',     'tabIdeas'],
+  ['scripts',   'scriptsPage',   'tabScripts'],
+  ['projects',  'projectsPage',  'tabProjects'],
+  ['calendar',  'calendarPage',  'tabCalendar'],
+  ['templates', 'templatesPage', 'tabTemplates']
+];
 function setPage(ad){
-  if(ad !== 'projects' && ad !== 'calendar' && ad !== 'templates') ad = 'projects';
-  document.getElementById('projectsPage').hidden  = ad !== 'projects';
-  document.getElementById('calendarPage').hidden  = ad !== 'calendar';
-  document.getElementById('templatesPage').hidden = ad !== 'templates';
-  document.getElementById('tabProjects').classList.toggle('active', ad === 'projects');
-  document.getElementById('tabCalendar').classList.toggle('active', ad === 'calendar');
-  document.getElementById('tabTemplates').classList.toggle('active', ad === 'templates');
+  if(!SAYFALAR.some(x=>x[0] === ad)) ad = 'projects';
+  SAYFALAR.forEach(([anahtar, sayfa, sekme])=>{
+    document.getElementById(sayfa).hidden = anahtar !== ad;
+    document.getElementById(sekme).classList.toggle('active', anahtar === ad);
+  });
   try{ localStorage.setItem('demo_page', ad); }catch(e){ /* onemsiz */ }
   if(ad === 'projects') renderProjects();
   if(ad === 'templates') renderSablon();
+  if(ad === 'ideas') renderFikirler();
+  if(ad === 'scripts') renderScriptler();
 }
 
 document.getElementById('tabCalendar').addEventListener('click', ()=> setPage('calendar'));
 document.getElementById('tabProjects').addEventListener('click', ()=>{ track('funnel/projects-opened'); setPage('projects'); });
 document.getElementById('tabTemplates').addEventListener('click', ()=>{ track('funnel/templates-opened'); setPage('templates'); });
+document.getElementById('tabIdeas').addEventListener('click', ()=>{ track('funnel/ideas-opened'); setPage('ideas'); });
+document.getElementById('tabScripts').addEventListener('click', ()=>{ track('funnel/scripts-opened'); setPage('scripts'); });
 
 document.getElementById('acc_add').addEventListener('click', ()=>{
   const kutu = document.getElementById('acc_url');
@@ -4189,20 +4526,32 @@ SAHA_ALANLARI.forEach(([id])=>{
   const el = document.getElementById(id);
   if(el) el.addEventListener('input', sahaSayaciniTazele);
 });
-document.getElementById('fk_add').addEventListener('click', fikirEkle);
+document.getElementById('fk_add').addEventListener('click', fikirEkleTiklandi);
 document.getElementById('fk_new').addEventListener('keydown', e=>{
-  if(e.key === 'Enter'){ e.preventDefault(); fikirEkle(); }
+  if(e.key === 'Enter'){ e.preventDefault(); fikirEkleTiklandi(); }
 });
-document.getElementById('fk_close').addEventListener('click', closeIdeas);
-document.getElementById('ideaOverlay').addEventListener('click', e=>{ if(e.target.id==='ideaOverlay') closeIdeas(); });
+document.getElementById('fk_newProj').addEventListener('change', e=>{
+  if(e.target.value === '__yeni__'){ secimdenProje(e.target, ''); renderFikirler(); renderProjects(); }
+});
+document.getElementById('fk_filter').addEventListener('change', e=>{
+  fikirFiltresi = e.target.value; renderFikirler();
+});
+// Gosterilen fikirlerden tek bir script. Kaydedilmeden once duzenlenebiliyor.
 document.getElementById('fk_toScript').addEventListener('click', ()=>{
-  const p = fikirProjesi;
-  if(!p) return;
-  // Kutuda yazili kalan fikir de kaybolmasin.
-  if(document.getElementById('fk_new').value.trim()) fikirEkle();
-  const kimlik = p.id;
-  closeIdeas();
-  openScript(kimlik, true);
+  if(document.getElementById('fk_new').value.trim()) fikirEkleTiklandi();
+  const liste = fikirleriSuz();
+  if(!liste.length) return;
+  // Hepsi ayni projeye bagliysa script de o projeye bagli dogsun.
+  const projeler = [...new Set(liste.map(f=>f.projectId))];
+  const pid = projeler.length === 1 ? projeler[0] : '';
+  const proje = pid ? projectById(pid) : null;
+  openScript(null, { text: fikirIskeleti(liste), projectId: pid, title: proje ? proje.name : '' });
+});
+document.getElementById('sc_newBtn').addEventListener('click', ()=>{
+  openScript(null, { projectId: scriptFiltresi && scriptFiltresi !== '-' ? scriptFiltresi : '' });
+});
+document.getElementById('sc_filter').addEventListener('change', e=>{
+  scriptFiltresi = e.target.value; renderScriptler();
 });
 document.getElementById('pe_ideas').addEventListener('click', ()=>{
   const p = duzenlenenProje;
@@ -4210,29 +4559,7 @@ document.getElementById('pe_ideas').addEventListener('click', ()=>{
   const kimlik = p.id;
   document.getElementById('pe_save').click();
   if(document.getElementById('projectEditOverlay').classList.contains('open')) return; // kaydedilemedi
-  openIdeas(kimlik);
-});
-document.getElementById('sc_text').addEventListener('input', e=>{
-  if(e.target.value.length > SCRIPT_MAX) e.target.value = e.target.value.slice(0, SCRIPT_MAX);
-  scriptSayaci(e.target.value.length);
-});
-document.getElementById('sc_cancel').addEventListener('click', closeScript);
-document.getElementById('scriptOverlay').addEventListener('click', e=>{ if(e.target.id==='scriptOverlay') closeScript(); });
-document.getElementById('sc_save').addEventListener('click', ()=>{
-  const p = scriptProjesi;
-  if(!p) return;
-  const metin = document.getElementById('sc_text').value;
-  scriptYaz(p.id, metin, 'manual');
-  // Adim baglantisi: metin varsa "script" adimi kendiliginden isaretleniyor.
-  // Ters yonu YOK — metni silmek adimi geri almiyor. Script baska bir yerde
-  // yazilmis olabilir ve kullanicinin eliyle koydugu isareti bir silme
-  // isleminin kaldirmasi, isaretin anlamini belirsizlestirirdi.
-  if(metin.trim() && !p.script){
-    p.script = true;
-    projDirtyIsaretle(p.id);
-    saveProjects();
-  }
-  closeScript(); renderProjects();
+  fikirFiltresi = kimlik; setPage('ideas');
 });
 document.getElementById('pe_script').addEventListener('click', ()=>{
   const p = duzenlenenProje;
@@ -4240,7 +4567,26 @@ document.getElementById('pe_script').addEventListener('click', ()=>{
   const kimlik = p.id;
   document.getElementById('pe_save').click();
   if(document.getElementById('projectEditOverlay').classList.contains('open')) return; // kaydedilemedi
-  openScript(kimlik);
+  scriptFiltresi = kimlik; setPage('scripts');
+});
+document.getElementById('sc_text').addEventListener('input', e=>{
+  if(e.target.value.length > SCRIPT_MAX) e.target.value = e.target.value.slice(0, SCRIPT_MAX);
+  scriptSayaci(e.target.value.length);
+});
+document.getElementById('sc_proj').addEventListener('change', e=>{
+  const pid = secimdenProje(e.target, '');
+  e.target.innerHTML = projeSecenekleri(pid, t('fk_no_project'));
+  scriptFikirSeridi(pid);
+});
+document.getElementById('sc_cancel').addEventListener('click', closeScript);
+document.getElementById('scriptOverlay').addEventListener('click', e=>{ if(e.target.id==='scriptOverlay') closeScript(); });
+document.getElementById('sc_save').addEventListener('click', scriptKaydet);
+document.getElementById('sc_delete').addEventListener('click', ()=>{
+  if(!acikScriptId) return;
+  const sc = scriptById(acikScriptId);
+  if(!confirm(t('sc_del_confirm')(sc ? scriptAdi(sc) : ''))) return;
+  scriptSil(acikScriptId);
+  closeScript(); renderScriptler(); renderProjects();
 });
 document.getElementById('pe_deadlines').addEventListener('click', ()=>{
   const p = duzenlenenProje;
@@ -6482,7 +6828,7 @@ document.getElementById('pendingOverlay').addEventListener('click', (e)=>{ if(e.
 
 // Yayina alinan surumun damgasi. Onbellekten eski bir kopya geldiginde bu
 // tarih eski kalir, boylece "guncel mi?" sorusu bakarak cevaplanir.
-const BUILD_STAMP = '2026-09-02 06:40 UTC';
+const BUILD_STAMP = '2026-09-02 10:35 UTC';
 document.getElementById('buildId').textContent = BUILD_STAMP;
 
 // ===== Init =====
@@ -6496,7 +6842,7 @@ applyStaticI18n();
 populateSelects();
 load();
 loadProjects();
-loadScripts();
+loadFikirScript();
 // Bir onceki surumde proje serbest metindi; o kayitlar gercek projeye
 // cevriliyor. Kayitlar yuklendikten SONRA calismali.
 projeleriGocur();
@@ -6815,12 +7161,12 @@ async function afterSignIn(){
   sablonAfterSignIn();
   // Scriptler de buluttan BAGIMSIZ yukleniyor: hesaba ozel anahtar bu
   // noktada belli oldu. Sablonlarda bunun tersi bir kez veri kaybettirdi.
-  loadScripts();
+  loadFikirScript();
   // Bulut eslestirmesi BEKLENMEDEN baslatiliyor: kendi try/catch'i var,
   // gerektiginde ekrani kendisi tazeliyor. Await edilseydi takvim tek
   // satirlik bir sorgu yuzunden gec acilirdi.
   sablonBulutSenkron();
-  scriptBulutSenkron();
+  fikirScriptBulutSenkron();
   tercihSenkron();
   try{
     const uzak = await pullRemote();
@@ -6875,7 +7221,7 @@ function afterSignOut(){
   events = anonim || seedData();
   projAfterSignOut();
   sablonAfterSignOut();
-  scriptAfterSignOut();
+  fikirScriptAfterSignOut();
   renderCal();
   setCloudStatus('');
   showToast(t('auth_signed_out'));
