@@ -521,14 +521,16 @@ body.suruklenirken *{cursor:grabbing !important;}
 /* --- Proje tablosu ---
    Sol sutun sabit: alti adim sagda uzuyor, hangi projede oldugunu
    gormeden gezmek zor. */
-/* Cerceve tabloyu SARIYOR, satiri degil. Onceden tablo min-width:100% ile
-   geriliyordu; artan yer sutunlara icerik genisligine gore dagiliyor,
-   dil degisince etiketler uzayinca pay degisiyor ve proje sutunu
-   kendiliginden kayiyordu. Simdi sutunlar sabit, tablo kendi genisliginde
-   duruyor. Dar ekranda max-width devreye giriyor ve tablo yana kayiyor. */
+/* Sutun genisligi SABIT duzende belirleniyor (table-layout:fixed).
+   Onceden icerige gore hesaplaniyordu: dil degisince etiketler uzuyor
+   ("Dış çekim" -> "On location"), paylar degisiyor ve proje sutunu
+   kendiliginden kayiyordu. Simdi proje sutunu 200px, kalan genislik yedi
+   adim sutununa ESIT bolunuyor — tablo bosluk birakmadan yayiliyor.
+   Dar ekranda min-width devreye giriyor ve tablo kendi icinde kayiyor. */
 .proj-table-wrap{overflow-x:auto;border:1px solid var(--line);border-radius:11px;
-  background:var(--surface);width:max-content;max-width:100%;}
-.proj-table{border-collapse:collapse;width:max-content;font-size:13px;}
+  background:var(--surface);}
+.proj-table{border-collapse:collapse;table-layout:fixed;width:100%;
+  min-width:calc(var(--pname-w,200px) + 7 * 92px);font-size:13px;}
 .proj-table th,.proj-table td{border-bottom:1px solid var(--line-soft);
   border-right:1px solid var(--line-soft);padding:9px 9px;vertical-align:top;text-align:left;}
 .proj-table tr:last-child th,.proj-table tr:last-child td{border-bottom:0;}
@@ -596,7 +598,9 @@ body.suruklenirken *{cursor:grabbing !important;}
 :root:not([data-theme="light"]) .pdl,
 :root:not([data-theme="light"]) .proj-new select,
 :root:not([data-theme="light"]) .proj-addr input{color-scheme:dark;}
-.proj-table td.pcell{width:92px;min-width:92px;text-align:center;}
+/* Sabit duzende genislik VERILMIYOR: kalan yeri yedi sutun esit
+   paylasiyor. min-width tablonun kendisinde. */
+.proj-table td.pcell{text-align:center;}
 /* Secici tabloya baglandi: .pcell (0,1,0) ile .proj-table td (0,1,1)
    yarisiyordu, td kazaniyordu ve ortalama hic uygulanmiyordu. */
 .proj-table thead th:not(.pname-col){text-align:center;}
@@ -676,22 +680,93 @@ body.suruklenirken *{cursor:grabbing !important;}
 .fk-new input:focus{outline:2px solid var(--accent);outline-offset:-2px;}
 #fk_toScript{margin-top:12px;}
 #fk_toScript:disabled{opacity:.5;cursor:default;}
-/* Fikirler sayfasi: ekleme satiri, filtre, liste. */
-#ideasPage .fk-new{grid-template-columns:1fr auto auto;margin-bottom:10px;}
-.fk-proj-sel{min-width:0;max-width:190px;padding:9px 10px;border:1px solid var(--line);
-  border-radius:8px;background:var(--surface);color:var(--text);font:inherit;font-size:13px;}
-.fk-filter{padding:9px 12px;border:1px solid var(--line);border-radius:8px;
-  background:var(--surface);color:var(--text);font:inherit;font-size:13.5px;flex:1;min-width:0;}
-#ideasPage .fk-row,#ideasPage .fk-list{border:0;}
-#ideasPage .fk-row{grid-template-columns:1fr auto;gap:12px;align-items:start;
-  padding:12px;margin-bottom:8px;border:1px solid var(--line);border-radius:10px;
-  background:var(--surface);}
-#ideasPage .fk-text{font-size:14.5px;}
-.fk-side{display:flex;align-items:center;gap:8px;}
-.fk-mini{font:inherit;font-size:11px;text-transform:uppercase;letter-spacing:.05em;
-  border:1px solid var(--line);border-radius:99px;padding:5px 11px;cursor:pointer;
-  background:none;color:var(--accent-dim);}
+/* --- Fikir duvari --- */
+/* Kartlar, tek satirlik kutunun anlatamadigini anlatiyor: bir fikrin ne
+   kadar yer kapladigini gormek, ne kadar yazilabilecegini de gosteriyor. */
+.fk-tools{display:flex;align-items:center;gap:10px;margin-bottom:14px;flex-wrap:wrap;}
+.fk-tools input[type="search"]{flex:2 1 220px;min-width:0;padding:9px 12px;
+  border:1px solid var(--line);border-radius:8px;background:var(--surface);
+  color:var(--text);font:inherit;font-size:13.5px;}
+.fk-filter{flex:1 1 170px;min-width:0;padding:9px 12px;border:1px solid var(--line);
+  border-radius:8px;background:var(--surface);color:var(--text);font:inherit;font-size:13.5px;}
+.fk-proj-sel{min-width:0;max-width:100%;padding:6px 8px;border:1px solid var(--line);
+  border-radius:7px;background:var(--surface);color:var(--text);font:inherit;font-size:12px;}
+.fk-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(228px,1fr));
+  gap:14px;align-items:start;}
+.fk-empty{grid-column:1/-1;}
+.fk-card{position:relative;display:flex;flex-direction:column;gap:8px;
+  border:1px solid var(--line);border-radius:12px;background:var(--surface);
+  padding:12px;min-height:150px;color:var(--text);font:inherit;text-align:left;}
+.fk-card[draggable="true"]{cursor:grab;}
+.fk-card.surukleniyor{opacity:.4;}
+/* Ortada birakmak BIRLESTIRIR, kenarda birakmak SIRALAR. Isaret de buna
+   gore degisiyor ki kullanici birakmadan once ne olacagini gorsun. */
+.fk-card.uzerinde{outline:2px solid var(--accent);outline-offset:2px;}
+.fk-card.once{box-shadow:-4px 0 0 var(--accent);}
+.fk-card.sonra{box-shadow:4px 0 0 var(--accent);}
+.fk-card-top{display:flex;align-items:center;gap:6px;}
+.fk-proj-chip{flex:1;min-width:0;font:inherit;font-size:10.5px;text-transform:uppercase;
+  letter-spacing:.05em;font-weight:700;border:0;border-radius:6px;padding:4px 9px;
+  background:var(--fk-tag);color:var(--fk-tag-text);cursor:pointer;text-align:left;
+  overflow:hidden;text-overflow:ellipsis;white-space:nowrap;}
+.fk-proj-chip{background:var(--surface-2);color:var(--text-dim);}
+.fk-card[class*="renk"] .fk-proj-chip{background:var(--fk-tag);color:var(--fk-tag-text);}
+.fk-proj-chip.bos{background:transparent;border:1px dashed var(--line);
+  color:var(--text-dim);font-weight:500;}
+.fk-x{border:0;background:none;color:var(--text-dim);font-size:17px;line-height:1;
+  padding:2px 4px;cursor:pointer;border-radius:6px;flex-shrink:0;}
+.fk-x:hover{color:var(--red);background:var(--surface);}
+.fk-card-body{flex:1;font-size:13.5px;line-height:1.55;cursor:text;
+  overflow-wrap:anywhere;}
+.fk-card-body p{margin:0 0 8px;}
+.fk-card-body p:last-child{margin-bottom:0;}
+/* Birlesik kartta parcalar arasinda ince bir cizgi: kacinin birlestigi
+   sayidan degil, bakisla anlasiliyor. */
+.fk-card.birlesik .fk-card-body p + p{border-top:1px solid var(--line);padding-top:8px;}
+.fk-card-foot{display:flex;flex-wrap:wrap;gap:6px;align-items:center;}
+.fk-mini{font:inherit;font-size:10.5px;text-transform:uppercase;letter-spacing:.05em;
+  border:1px solid var(--line);border-radius:99px;padding:4px 10px;cursor:pointer;
+  background:none;color:var(--text-dim);}
 .fk-mini:hover{border-color:var(--accent);color:var(--accent);}
+.fk-add-text{width:100%;flex:1;resize:vertical;min-height:96px;padding:8px 9px;
+  border:1px solid var(--line);border-radius:8px;background:var(--surface);
+  color:var(--text);font:inherit;font-size:13.5px;line-height:1.55;}
+.fk-add-text:focus{outline:2px solid var(--accent);outline-offset:-2px;}
+/* Ekleme karti duvarin ilk kutusu: "buraya fikir eklenir" yazmaya gerek
+   birakmiyor, kutunun kendisi soyluyor. Kesik cizgi bunun bir fikir
+   DEGIL, bir yer oldugunu anlatiyor. */
+.fk-card.fk-add{background:transparent;border-color:var(--accent-dim);
+  border-style:dashed;align-items:center;justify-content:center;cursor:pointer;
+  color:var(--accent);gap:6px;}
+.fk-card.fk-add:hover{border-color:var(--accent);background:var(--accent-soft);}
+.fk-card.fk-add.acik{background:var(--surface);border-style:solid;border-color:var(--line);
+  align-items:stretch;justify-content:flex-start;cursor:default;}
+.fk-add-plus{font-size:26px;line-height:1;font-weight:300;}
+.fk-add-label{font-size:12px;text-transform:uppercase;letter-spacing:.06em;font-weight:600;}
+/* Alti yumusak ton. Renk kimlikten turetiliyor: ayni fikir her acilista
+   ayni renkte, duvar yenilemede baskalasmiyor. */
+.fk-card.renk0{--fk-tag:#C4453C;--fk-tag-text:#fff;}
+.fk-card.renk1{--fk-tag:#A86A12;--fk-tag-text:#fff;}
+.fk-card.renk2{--fk-tag:#2E8B62;--fk-tag-text:#fff;}
+.fk-card.renk3{--fk-tag:#7A6810;--fk-tag-text:#fff;}
+.fk-card.renk4{--fk-tag:#6A4BB0;--fk-tag-text:#fff;}
+.fk-card.renk5{--fk-tag:#4A5A6E;--fk-tag-text:#fff;}
+/* Koyu temada rozet tonlari biraz aciliyor. Medya sorgusu SART:
+   :root:not([data-theme="light"]) tek basina acik temada da esleser. */
+@media (prefers-color-scheme: dark){
+  :root:not([data-theme="light"]) .fk-card.renk0{--fk-tag:#C4453C;}
+  :root:not([data-theme="light"]) .fk-card.renk1{--fk-tag:#B87A1E;}
+  :root:not([data-theme="light"]) .fk-card.renk2{--fk-tag:#2E8B62;}
+  :root:not([data-theme="light"]) .fk-card.renk3{--fk-tag:#8E7A15;}
+  :root:not([data-theme="light"]) .fk-card.renk4{--fk-tag:#6A4BB0;}
+  :root:not([data-theme="light"]) .fk-card.renk5{--fk-tag:#5B6B7F;}
+}
+:root[data-theme="dark"] .fk-card.renk0{--fk-tag:#C4453C;}
+:root[data-theme="dark"] .fk-card.renk1{--fk-tag:#B87A1E;}
+:root[data-theme="dark"] .fk-card.renk2{--fk-tag:#2E8B62;}
+:root[data-theme="dark"] .fk-card.renk3{--fk-tag:#8E7A15;}
+:root[data-theme="dark"] .fk-card.renk4{--fk-tag:#6A4BB0;}
+:root[data-theme="dark"] .fk-card.renk5{--fk-tag:#5B6B7F;}
 /* Scriptler sayfasi: kart listesi. */
 .sc-tools{display:flex;align-items:center;gap:12px;margin-bottom:14px;}
 .sc-card{display:flex;flex-direction:column;gap:6px;width:100%;text-align:left;
@@ -715,10 +790,8 @@ body.suruklenirken *{cursor:grabbing !important;}
 .sc-proj select{flex:1;min-width:0;padding:9px 11px;border:1px solid var(--line);
   border-radius:8px;background:var(--surface);color:var(--text);font:inherit;font-size:13.5px;}
 @media(max-width:640px){
-  #ideasPage .fk-new{grid-template-columns:1fr;}
-  #ideasPage .fk-row{grid-template-columns:1fr;}
-  .fk-side{justify-content:space-between;}
-  .fk-proj-sel{max-width:none;flex:1;}
+  .fk-grid{grid-template-columns:repeat(auto-fill,minmax(150px,1fr));gap:10px;}
+  .fk-card{min-height:130px;padding:10px;}
 }
 .dl-row{display:grid;grid-template-columns:1fr auto;align-items:center;gap:12px;
   padding:9px 0;border-bottom:1px solid var(--line-soft);}
@@ -1335,20 +1408,21 @@ body.suruklenirken *{cursor:grabbing !important;}
     <button class="btn btn-sm" id="nudgeDismiss" data-i18n="nudge_dismiss">Not now</button>
   </div>
 
-  <!-- FIKIRLER. Projeden bagimsiz: is cogu zaman burada basliyor. -->
+  <!-- FIKIRLER. Projeden bagimsiz: is cogu zaman burada basliyor.
+       Kartlar halinde, cunku bir fikrin ne kadar yer kapladigini gormek
+       ne kadar yazilabilecegini de anlatiyor. Tek uzun satirda bu bilgi
+       yoktu. -->
   <div id="ideasPage" hidden>
-    <div class="fk-new">
-      <input type="text" id="fk_new" maxlength="600" data-i18n-placeholder="fk_ph"
-             placeholder="One idea — press Enter to add">
-      <select id="fk_newProj" class="fk-proj-sel"></select>
-      <button type="button" class="btn btn-primary" id="fk_add" data-i18n="fk_add">+ Add</button>
-    </div>
-    <p class="hint hint-top" data-i18n="fk_intro">What could this video be about? One line per idea — an angle, a question, a scene, a person to talk to. A project is optional; you can attach one later, or create one from here.</p>
-    <div class="proj-tools">
-      <select id="fk_filter" class="fk-filter"></select>
+    <p class="hint hint-top" data-i18n="fk_intro">What could this video be about? One card per idea — an angle, a question, a scene, a person to talk to. A project is optional; attach one later, or create one from here. Drop one card on another to merge them.</p>
+    <!-- Iki ayri filtre: biri fikirlerin METNINDE arar, oteki projeye
+         gore suzer. Onceden tek acilir liste vardi ve "Butun fikirler"
+         yaziyor ama icinde projeler cikiyordu. -->
+    <div class="fk-tools">
+      <input type="search" id="fk_search" data-i18n-placeholder="fk_search_ph" placeholder="Search ideas…">
+      <select id="fk_filter" class="fk-filter" aria-label="Project"></select>
       <span class="proj-count" id="fk_count"></span>
     </div>
-    <div id="fk_list"></div>
+    <div class="fk-grid" id="fk_list"></div>
     <button class="btn btn-wide" id="fk_toScript" data-i18n="fk_to_script" hidden>Write a script from these →</button>
   </div>
 
@@ -2166,10 +2240,15 @@ const LANG = {
     fk_title: "Ideas",
     fk_chip: "Idea",
     fk_open: "Ideas for this project",
-    fk_intro: "What could this video be about? One line per idea — an angle, a question, a scene, a person to talk to. A project is optional; attach one later, or create one from here.",
-    fk_ph: "One idea — press Enter to add",
-    fk_add: "+ Add",
+    fk_intro: "What could this video be about? One card per idea — an angle, a question, a scene, a person to talk to. A project is optional; attach one later, or create one from here. Drop one card on another to merge them; drop it on the edge to reorder.",
+    fk_ph: "One idea — Enter adds it, Shift+Enter starts a new line",
+    fk_add: "Add",
+    fk_add_open: "New idea",
+    fk_search_ph: "Search ideas…",
+    fk_project_title: "Which project? Click to change",
+    fk_split: (n)=> `Split into ${n}`,
     fk_none: "No ideas yet. The first line is the hardest — write it half-finished.",
+    fk_none_all: "No ideas yet.",
     fk_remove: "Remove",
     fk_count: (n)=> `${n} ${n===1?'idea':'ideas'}`,
     fk_to_script: "Write a script from these →",
@@ -2177,7 +2256,7 @@ const LANG = {
     fk_no_project: "— no project —",
     fk_new_project: "+ New project…",
     fk_new_project_ask: "Name of the new project:",
-    fk_filter_all: "All ideas",
+    fk_filter_all: "Every project",
     fk_filter_none: "Without a project",
     fk_count_filtered: (n,tum)=> `${n} / ${tum} ideas`,
     fk_none_match: "No idea here yet.",
@@ -2519,10 +2598,15 @@ const LANG = {
     fk_title: "Fikirler",
     fk_chip: "Fikir",
     fk_open: "Bu projenin fikirleri",
-    fk_intro: "Bu video ne anlatabilir? Her fikir bir satır — bir açı, bir soru, bir sahne, konuşulacak bir kişi. Proje şart değil; bağını sonra kurabilir, buradan yeni proje de açabilirsin.",
-    fk_ph: "Bir fikir — eklemek için Enter",
-    fk_add: "+ Ekle",
+    fk_intro: "Bu video ne anlatabilir? Her fikir bir kart — bir açı, bir soru, bir sahne, konuşulacak bir kişi. Proje şart değil; bağını sonra kurabilir, buradan yeni proje de açabilirsin. Bir kartı ötekinin üstüne bırakınca birleşirler; kenarına bırakınca sıra değişir.",
+    fk_ph: "Bir fikir — Enter ekler, Shift+Enter satır atlar",
+    fk_add: "Ekle",
+    fk_add_open: "Yeni fikir",
+    fk_search_ph: "Fikirlerde ara…",
+    fk_project_title: "Hangi proje? Değiştirmek için tıkla",
+    fk_split: (n)=> `${n} parçaya ayır`,
     fk_none: "Henüz fikir yok. En zoru ilk satır — yarım da olsa yaz.",
+    fk_none_all: "Henüz fikir yok.",
     fk_remove: "Çıkar",
     fk_count: (n)=> `${n} fikir`,
     fk_to_script: "Bu fikirlerden script yaz →",
@@ -2530,7 +2614,7 @@ const LANG = {
     fk_no_project: "— proje yok —",
     fk_new_project: "+ Yeni proje…",
     fk_new_project_ask: "Yeni projenin adı:",
-    fk_filter_all: "Bütün fikirler",
+    fk_filter_all: "Bütün projeler",
     fk_filter_none: "Projesiz olanlar",
     fk_count_filtered: (n,tum)=> `${n} / ${tum} fikir`,
     fk_none_match: "Burada henüz fikir yok.",
@@ -2735,6 +2819,10 @@ function setLanguage(lang, buluttanGeldi){
   const pet = document.getElementById('pe_type');
   if(pet) projTypeSelectDoldur(pet, pet.value);
   renderProjects();
+  // Fikir ve script sayfalarindaki acilir listeler kod icinde uretiliyor
+  // ("— proje yok —" gibi); dil degisince yeniden cizilmeleri gerekiyor.
+  renderFikirler();
+  renderScriptler();
   renderLegend();
   renderCal();
 }
@@ -3507,10 +3595,16 @@ function sahaSayaciniTazele(){
 }
 
 // --- Fikirler sayfasi -------------------------------------------------
-// Fikir listesi projeden bagimsiz duruyor; proje bagi bir alan, bir kap
-// degil. Filtre ise projeye gore bakmayi saglıyor — "Kariye'nin fikirleri"
-// diye ayri bir yer acmadan.
+// Fikirler kart duvari. Kart, tek satirlik bir kutunun anlatamadigini
+// anlatiyor: bir fikrin ne kadar yer kapladigini gorunce ne kadar
+// yazilabilecegi de anlasiliyor.
+//
+// Filtreler iki tane ve ayri: biri METINDE arar, oteki projeye gore
+// suzer. Onceden tek acilir liste vardi, uzerinde "Butun fikirler"
+// yaziyordu ama icinde projeler cikiyordu — dogru okunmasi mumkun degildi.
 let fikirFiltresi = '';   // '' = tumu, '-' = projesiz, aksi halde proje kimligi
+let fikirArama = '';
+let fikirTaslakAcik = false;   // ekleme karti acik mi
 
 function projeSecenekleri(secili, bosEtiket){
   const secenekler = [`<option value="">${escapeHtml(bosEtiket)}</option>`];
@@ -3528,6 +3622,7 @@ function filtreSecenekleri(secili){
     .map(p=>`<option value="${escapeHtml(p.id)}"${p.id===secili?' selected':''}>${escapeHtml(p.name)}</option>`)
   ).join('');
 }
+
 // Yeni proje secildiginde adi soruluyor ve proje ORADA aciliyor: kullanici
 // fikir yazarken proje sayfasina gidip geri donmek zorunda kalmasin.
 function secimdenProje(sel, oncekiDeger){
@@ -3539,90 +3634,238 @@ function secimdenProje(sel, oncekiDeger){
   return p.id;
 }
 
+function fikirSiraliListe(){
+  return fikirler.slice().sort((a,b)=> a.sort - b.sort || b.createdAt - a.createdAt);
+}
 function fikirleriSuz(){
-  if(fikirFiltresi === '') return fikirler;
-  if(fikirFiltresi === '-') return fikirler.filter(f=>!f.projectId);
-  return fikirler.filter(f=>f.projectId === fikirFiltresi);
+  const q = fikirArama.trim().toLocaleLowerCase('tr');
+  return fikirSiraliListe().filter(f=>{
+    if(fikirFiltresi === '-' && f.projectId) return false;
+    if(fikirFiltresi && fikirFiltresi !== '-' && f.projectId !== fikirFiltresi) return false;
+    if(!q) return true;
+    // Arama metinde VE proje adinda: "Kariye" yazan biri o projenin
+    // fikirlerini de bulmak istiyordur.
+    const proje = f.projectId ? projectById(f.projectId) : null;
+    return (f.text + ' ' + (proje ? proje.name : '')).toLocaleLowerCase('tr').indexOf(q) !== -1;
+  });
+}
+
+// Renk PROJEDEN geliyor, fikirden degil: ayni projenin fikirleri ayni
+// renkte oluyor ve duvara bakinca hangi kartin nereye ait oldugu tek
+// bakista anlasiliyor. Fikir kimliginden turetilseydi renk hicbir sey
+// anlatmayan bir susleme olurdu.
+//
+// Renk yalnizca ust rozette. Kartin govdesi uygulamanin geri kalaniyla
+// ayni yuzey: alti farkli renkte dolu kutu duvari, urunun sakin diline
+// uymuyordu.
+const FIKIR_RENK = 6;
+function fikirRengi(pid){
+  if(!pid) return -1;               // projesiz: notr, kesik cizgili
+  let n = 0;
+  for(let i = 0; i < pid.length; i++) n = (n * 31 + pid.charCodeAt(i)) % 1000003;
+  return n % FIKIR_RENK;
+}
+
+function fikirKartiHtml(f){
+  const proje = f.projectId ? projectById(f.projectId) : null;
+  const parcali = f.parts.length > 1;
+  const renk = fikirRengi(f.projectId);
+  return `<article class="fk-card${renk >= 0 ? ' renk' + renk : ''}${parcali ? ' birlesik' : ''}"
+           data-fk-card="${escapeHtml(f.id)}" draggable="true">
+    <div class="fk-card-top">
+      <button type="button" class="fk-proj-chip${proje ? '' : ' bos'}" data-fk-projbtn="${escapeHtml(f.id)}"
+              title="${escapeHtml(t('fk_project_title'))}">${escapeHtml(proje ? proje.name : t('fk_no_project'))}</button>
+      <button type="button" class="fk-x" data-fk-del="${escapeHtml(f.id)}"
+              title="${escapeHtml(t('fk_remove'))}">×</button>
+    </div>
+    <div class="fk-card-body">
+      ${f.parts.map(x=>`<p>${escapeHtml(x.text)}</p>`).join('')}
+    </div>
+    <div class="fk-card-foot">
+      ${parcali ? `<button type="button" class="fk-mini" data-fk-split="${escapeHtml(f.id)}">${escapeHtml(t('fk_split')(f.parts.length))}</button>` : ''}
+      <button type="button" class="fk-mini" data-fk-script="${escapeHtml(f.id)}">${escapeHtml(t('fk_one_to_script'))}</button>
+    </div>
+  </article>`;
 }
 
 function renderFikirler(){
   const kap = document.getElementById('fk_list');
   if(!kap) return;
-  // Filtre listesindeki proje adlari degismis olabilir; her cizimde
-  // yeniden kuruluyor.
   const filtre = document.getElementById('fk_filter');
   filtre.innerHTML = filtreSecenekleri(fikirFiltresi);
-  const yeniSel = document.getElementById('fk_newProj');
-  const oncekiYeni = yeniSel.value;
-  yeniSel.innerHTML = projeSecenekleri(
-    oncekiYeni && oncekiYeni !== '__yeni__' ? oncekiYeni : (fikirFiltresi !== '-' ? fikirFiltresi : ''),
-    t('fk_no_project'));
+  const aramaKutusu = document.getElementById('fk_search');
+  if(aramaKutusu.value !== fikirArama) aramaKutusu.value = fikirArama;
 
   const liste = fikirleriSuz();
   document.getElementById('fk_count').textContent =
     liste.length === fikirler.length ? t('fk_count')(fikirler.length)
                                      : t('fk_count_filtered')(liste.length, fikirler.length);
-  // "Bu fikirlerden script yaz" yalnizca gosterilen bir sey varken
-  // anlamli; bos listede dugmenin ne yapacagi belirsiz.
   document.getElementById('fk_toScript').hidden = liste.length === 0;
 
-  if(!liste.length){
-    kap.innerHTML = '<p class="hint">' + escapeHtml(fikirler.length ? t('fk_none_match') : t('fk_none')) + '</p>';
-    return;
-  }
-  kap.innerHTML = liste.map(f=>`
-    <div class="fk-row" data-fk-row="${escapeHtml(f.id)}">
-      <textarea class="fk-text" rows="1" maxlength="${FIKIR_MAX}" data-fk="${escapeHtml(f.id)}">${escapeHtml(f.text)}</textarea>
-      <div class="fk-side">
-        <select class="fk-proj-sel" data-fk-proj="${escapeHtml(f.id)}">${projeSecenekleri(f.projectId, t('fk_no_project'))}</select>
-        <button type="button" class="fk-mini" data-fk-script="${escapeHtml(f.id)}"
-                title="${escapeHtml(t('fk_one_to_script'))}">${escapeHtml(t('fk_one_to_script'))}</button>
-        <button type="button" class="k-del" data-fk-del="${escapeHtml(f.id)}"
-                title="${escapeHtml(t('fk_remove'))}">×</button>
-      </div>
-    </div>`).join('');
+  // Ekleme karti duvarin ILK kutusu: "buraya fikir eklenir" yazmaya
+  // gerek kalmiyor, kutunun kendisi soyluyor.
+  const ekleme = fikirTaslakAcik
+    ? `<article class="fk-card fk-add acik">
+         <textarea id="fk_new" class="fk-add-text" rows="4" maxlength="${FIKIR_MAX}"
+                   data-i18n-placeholder="fk_ph" placeholder="${escapeHtml(t('fk_ph'))}"></textarea>
+         <div class="fk-card-foot">
+           <select id="fk_newProj" class="fk-proj-sel"></select>
+           <button type="button" class="btn btn-sm" id="fk_addCancel">${escapeHtml(t('btn_cancel'))}</button>
+           <button type="button" class="btn btn-sm btn-primary" id="fk_add">${escapeHtml(t('fk_add'))}</button>
+         </div>
+       </article>`
+    : `<button type="button" class="fk-card fk-add" id="fk_openAdd">
+         <span class="fk-add-plus">+</span>
+         <span class="fk-add-label">${escapeHtml(t('fk_add_open'))}</span>
+       </button>`;
 
-  kap.querySelectorAll('.fk-text').forEach(el=>{
-    const boyutla = ()=>{ el.style.height = 'auto'; el.style.height = (el.scrollHeight + 2) + 'px'; };
-    boyutla(); requestAnimationFrame(boyutla);
-    el.addEventListener('input', boyutla);
-    el.addEventListener('blur', ()=>{ if(fikirGuncelle(el.dataset.fk, { text: el.value })) renderProjects(); });
+  const kartlar = liste.map(fikirKartiHtml).join('');
+  const bos = !liste.length
+    ? `<p class="hint fk-empty">${escapeHtml(fikirler.length ? t('fk_none_match') : t('fk_none'))}</p>`
+    : '';
+  kap.innerHTML = ekleme + kartlar + bos;
+
+  if(fikirTaslakAcik){
+    const alan = document.getElementById('fk_new');
+    // Yeni fikir VARSAYILAN OLARAK PROJESIZ aciliyor. Filtreye gore
+    // secmek "hangi projeye yaziyorum" sorusunu sessizce cevapliyordu.
+    document.getElementById('fk_newProj').innerHTML = projeSecenekleri('', t('fk_no_project'));
+    alan.focus();
+  }
+  fikirKartOlaylari(kap);
+}
+
+function fikirKartOlaylari(kap){
+  const ac = document.getElementById('fk_openAdd');
+  if(ac) ac.addEventListener('click', ()=>{ fikirTaslakAcik = true; renderFikirler(); });
+  const vazgec = document.getElementById('fk_addCancel');
+  if(vazgec) vazgec.addEventListener('click', ()=>{ fikirTaslakAcik = false; renderFikirler(); });
+  const ekle = document.getElementById('fk_add');
+  if(ekle) ekle.addEventListener('click', fikirEkleTiklandi);
+  const alan = document.getElementById('fk_new');
+  if(alan) alan.addEventListener('keydown', e=>{
+    // Enter ekler, Shift+Enter satir atlar: fikir cogu zaman tek satir.
+    if(e.key === 'Enter' && !e.shiftKey){ e.preventDefault(); fikirEkleTiklandi(); }
+    if(e.key === 'Escape'){ fikirTaslakAcik = false; renderFikirler(); }
   });
-  kap.querySelectorAll('[data-fk-proj]').forEach(sel=>{
-    const f = fikirById(sel.dataset.fkProj);
-    sel.addEventListener('change', ()=>{
-      const pid = secimdenProje(sel, f ? f.projectId : '');
-      fikirGuncelle(sel.dataset.fkProj, { projectId: pid });
-      renderFikirler(); renderProjects();
-    });
+  const yeniSel = document.getElementById('fk_newProj');
+  if(yeniSel) yeniSel.addEventListener('change', ()=>{
+    const pid = secimdenProje(yeniSel, '');
+    yeniSel.innerHTML = projeSecenekleri(pid, t('fk_no_project'));
+  });
+
+  kap.querySelectorAll('[data-fk-del]').forEach(el=>{
+    el.addEventListener('click', e=>{ e.stopPropagation(); fikirSil(el.dataset.fkDel); renderFikirler(); renderProjects(); });
+  });
+  kap.querySelectorAll('[data-fk-split]').forEach(el=>{
+    el.addEventListener('click', e=>{ e.stopPropagation(); fikirAyir(el.dataset.fkSplit); renderFikirler(); });
   });
   kap.querySelectorAll('[data-fk-script]').forEach(el=>{
-    el.addEventListener('click', ()=>{
+    el.addEventListener('click', e=>{
+      e.stopPropagation();
       const f = fikirById(el.dataset.fkScript);
       if(!f) return;
-      openScript(null, { text: f.text.trim() + '\n\n', projectId: f.projectId, title: f.text.trim().slice(0,60) });
+      openScript(null, { text: f.text.trim() + '\n\n', projectId: f.projectId,
+                         title: f.parts[0].text.trim().slice(0, 60) });
     });
   });
-  kap.querySelectorAll('[data-fk-del]').forEach(el=>{
-    el.addEventListener('click', ()=>{ fikirSil(el.dataset.fkDel); renderFikirler(); renderProjects(); });
+  // Proje rozetine tiklayinca yerinde bir acilir liste beliriyor: ayri
+  // bir pencere acmak bir satirlik is icin fazla.
+  kap.querySelectorAll('[data-fk-projbtn]').forEach(el=>{
+    el.addEventListener('click', e=>{
+      e.stopPropagation();
+      const f = fikirById(el.dataset.fkProjbtn);
+      if(!f) return;
+      const sel = document.createElement('select');
+      sel.className = 'fk-proj-sel fk-proj-inline';
+      sel.innerHTML = projeSecenekleri(f.projectId, t('fk_no_project'));
+      el.replaceWith(sel);
+      sel.focus();
+      const bitir = ()=>{ renderFikirler(); renderProjects(); };
+      sel.addEventListener('change', ()=>{
+        const pid = secimdenProje(sel, f.projectId);
+        fikirGuncelle(f.id, { projectId: pid });
+        bitir();
+      });
+      sel.addEventListener('blur', bitir);
+    });
+  });
+  // Kart govdesine tiklayinca metin yerinde duzenleniyor.
+  kap.querySelectorAll('.fk-card-body').forEach(el=>{
+    el.addEventListener('click', ()=>{
+      const kart = el.closest('[data-fk-card]');
+      const f = fikirById(kart.dataset.fkCard);
+      if(!f) return;
+      const ta = document.createElement('textarea');
+      ta.className = 'fk-add-text';
+      ta.maxLength = FIKIR_MAX * 20;
+      ta.value = f.text;
+      el.replaceWith(ta);
+      kart.draggable = false;
+      ta.focus(); ta.setSelectionRange(ta.value.length, ta.value.length);
+      const bitir = ()=>{
+        if(fikirGuncelle(f.id, { text: ta.value })) renderProjects();
+        renderFikirler();
+      };
+      ta.addEventListener('blur', bitir);
+      ta.addEventListener('keydown', e=>{ if(e.key === 'Escape'){ ta.value = f.text; ta.blur(); } });
+    });
+  });
+  fikirSuruklemeKur(kap);
+}
+
+// --- Kartlari surukleme ------------------------------------------------
+// Iki is birden: bir kartin uzerine birakmak BIRLESTIRIYOR, iki kartin
+// arasina birakmak SIRALIYOR. Takvimdeki surukleme ile ayni his.
+let surukFikirId = null;
+function fikirSuruklemeKur(kap){
+  kap.querySelectorAll('[data-fk-card]').forEach(kart=>{
+    kart.addEventListener('dragstart', e=>{
+      surukFikirId = kart.dataset.fkCard;
+      kart.classList.add('surukleniyor');
+      try{ e.dataTransfer.setData('text/plain', surukFikirId); e.dataTransfer.effectAllowed = 'move'; }catch(x){}
+    });
+    kart.addEventListener('dragend', ()=>{
+      surukFikirId = null;
+      kap.querySelectorAll('.fk-card').forEach(x=> x.classList.remove('surukleniyor','uzerinde','once','sonra'));
+    });
+    kart.addEventListener('dragover', e=>{
+      if(!surukFikirId || kart.dataset.fkCard === surukFikirId) return;
+      e.preventDefault();
+      const r = kart.getBoundingClientRect();
+      const oran = (e.clientX - r.left) / r.width;
+      kart.classList.remove('uzerinde','once','sonra');
+      // Kenarlarda siralama, ORTADA birlestirme: iki isi ayirmanin en
+      // dogal yolu, kullanicinin nisan aldigi yer.
+      if(oran < 0.25) kart.classList.add('once');
+      else if(oran > 0.75) kart.classList.add('sonra');
+      else kart.classList.add('uzerinde');
+    });
+    kart.addEventListener('dragleave', ()=> kart.classList.remove('uzerinde','once','sonra'));
+    kart.addEventListener('drop', e=>{
+      e.preventDefault();
+      if(!surukFikirId || kart.dataset.fkCard === surukFikirId) return;
+      const kaynak = surukFikirId;
+      if(kart.classList.contains('uzerinde')) fikirBirlestir(kart.dataset.fkCard, kaynak);
+      else fikirSirala(kaynak, kart.dataset.fkCard, kart.classList.contains('once'));
+      surukFikirId = null;
+      renderFikirler(); renderProjects();
+    });
   });
 }
 
 function fikirEkleTiklandi(){
   const kutu = document.getElementById('fk_new');
   const sel = document.getElementById('fk_newProj');
+  if(!kutu) return;
   const metin = kutu.value.trim();
   if(!metin){ kutu.focus(); return; }
-  const pid = secimdenProje(sel, '');
+  const pid = sel ? (sel.value === '__yeni__' ? '' : sel.value) : '';
   if(!fikirEkle(metin, pid)) return;
-  kutu.value = '';
-  // Yeni fikir hangi projeye baglandiysa listede gorunsun.
-  if(fikirFiltresi && fikirFiltresi !== '-' && pid && pid !== fikirFiltresi) fikirFiltresi = pid;
-  if(fikirFiltresi === '-' && pid) fikirFiltresi = pid;
+  // Kart acik kaliyor: fikir tek tek degil, seri halinde geliyor.
+  fikirTaslakAcik = true;
   renderFikirler(); renderProjects();
-  kutu.focus();
 }
-
 // --- Scriptler sayfasi ------------------------------------------------
 let scriptFiltresi = '';
 
@@ -3957,14 +4200,37 @@ function projeBagiTemiz(pid){
   if(typeof pid !== 'string' || !pid) return '';
   return projects.some(p=>p.id === pid) ? pid : '';
 }
+// Bir fikir bir ya da BIRDEN COK parcadan olusuyor. Iki fikir ust uste
+// birakilinca birlesiyorlar; parcalar ayri ayri duruyor ki sonradan geri
+// ayrilabilsinler. Metni birlestirip parcalari atsaydik, ayirma islemi
+// "nereden bolecegiz" sorusuna dusup tahmin yurutmek zorunda kalirdi.
+function parcaTemizle(ham, yedekId, yedekMetin){
+  const liste = Array.isArray(ham) ? ham : [];
+  const cikti = liste.map(x=>{
+    if(!x || typeof x !== 'object' || typeof x.text !== 'string') return null;
+    if(!x.text.trim()) return null;
+    return { id: (typeof x.id === 'string' && /^[A-Za-z0-9_-]{1,64}$/.test(x.id)) ? x.id : yeniFikirId(),
+             text: x.text.slice(0, FIKIR_MAX) };
+  }).filter(Boolean).slice(0, 20);
+  if(cikti.length) return cikti;
+  return yedekMetin.trim() ? [{ id: yedekId, text: yedekMetin }] : [];
+}
+function parcaMetni(parcalar){ return parcalar.map(x=>x.text.trim()).join('\n\n'); }
+
 function fikirTemizle(ham){
-  if(!ham || typeof ham !== 'object' || typeof ham.text !== 'string') return null;
-  const metin = ham.text.slice(0, FIKIR_MAX);
-  if(!metin.trim()) return null;
+  if(!ham || typeof ham !== 'object') return null;
+  const kimlik = (typeof ham.id === 'string' && /^[A-Za-z0-9_-]{1,64}$/.test(ham.id)) ? ham.id : yeniFikirId();
+  const metin = typeof ham.text === 'string' ? ham.text.slice(0, FIKIR_MAX * 20) : '';
+  const parcalar = parcaTemizle(ham.parts, kimlik, metin);
+  if(!parcalar.length) return null;
   return {
-    id: (typeof ham.id === 'string' && /^[A-Za-z0-9_-]{1,64}$/.test(ham.id)) ? ham.id : yeniFikirId(),
-    text: metin,
+    id: kimlik,
+    parts: parcalar,
+    text: parcaMetni(parcalar),
     projectId: typeof ham.projectId === 'string' ? ham.projectId : '',
+    // Sira kullanicinin surukleyerek verdigi duzen. Kesirli: iki kartin
+    // arasina birakinca yalnizca TEK satir degisiyor, butun liste degil.
+    sort: typeof ham.sort === 'number' && isFinite(ham.sort) ? ham.sort : 0,
     createdAt: typeof ham.createdAt === 'number' ? ham.createdAt : Date.now(),
     updatedAt: typeof ham.updatedAt === 'number' ? ham.updatedAt : Date.now()
   };
@@ -4059,8 +4325,11 @@ function scriptAdi(s){
 }
 
 // --- Degistirme -------------------------------------------------------
+function enKucukSira(){
+  return fikirler.length ? Math.min(...fikirler.map(f=>f.sort)) : 0;
+}
 function fikirEkle(metin, pid){
-  const yeni = fikirTemizle({ text: metin, projectId: projeBagiTemiz(pid) });
+  const yeni = fikirTemizle({ text: metin, projectId: projeBagiTemiz(pid), sort: enKucukSira() - 1 });
   if(!yeni) return null;
   if(fikirler.length >= FIKIR_ADET){ alert(t('fk_limit')(FIKIR_ADET)); return null; }
   fikirler.unshift(yeni);
@@ -4068,12 +4337,72 @@ function fikirEkle(metin, pid){
   saveFikirler();
   return yeni;
 }
+// Iki fikri birlestir: kaynak hedefin altina ekleniyor, kendisi gidiyor.
+function fikirBirlestir(hedefId, kaynakId){
+  const hedef = fikirById(hedefId), kaynak = fikirById(kaynakId);
+  if(!hedef || !kaynak || hedef === kaynak) return false;
+  if(hedef.parts.length + kaynak.parts.length > 20) return false;
+  hedef.parts = hedef.parts.concat(kaynak.parts);
+  hedef.text = parcaMetni(hedef.parts);
+  // Hedefin projesi yoksa kaynagin projesi devraliniyor: birinin bagi
+  // varsa onu atmanin anlami yok.
+  if(!hedef.projectId && kaynak.projectId) hedef.projectId = kaynak.projectId;
+  hedef.updatedAt = Date.now();
+  fikirDirty.add(hedef.id);
+  fikirSil(kaynakId);
+  saveFikirler();
+  return true;
+}
+// Birlestirilmis fikri geri ayir: her parca yeniden kendi fikri oluyor.
+// Parcalarin kimligi korundugu icin ayirma birlesmeden ONCEKI hale
+// donuyor, benzerine degil.
+function fikirAyir(id){
+  const f = fikirById(id);
+  if(!f || f.parts.length < 2) return false;
+  const [ilk, ...kalan] = f.parts;
+  f.parts = [ilk];
+  f.text = ilk.text;
+  f.updatedAt = Date.now();
+  fikirDirty.add(f.id);
+  const yer = fikirler.indexOf(f);
+  kalan.forEach((parca, i)=>{
+    const yeni = fikirTemizle({ id: parca.id, text: parca.text, parts: [parca],
+                                projectId: f.projectId, sort: f.sort + (i + 1) * 0.001 });
+    if(!yeni) return;
+    fikirler.splice(yer + 1 + i, 0, yeni);
+    fikirDirty.add(yeni.id);
+    fikirRemoved.delete(yeni.id);   // daha once mezar tasi konmus olabilir
+  });
+  saveFikirler();
+  return true;
+}
+// Suruklenen karti hedefin oncesine/sonrasina koy. Yalnizca suruklenenin
+// sira degeri degisiyor.
+function fikirSirala(id, hedefId, oncesine){
+  const f = fikirById(id), h = fikirById(hedefId);
+  if(!f || !h || f === h) return false;
+  const sirali = fikirler.slice().sort((a,b)=> a.sort - b.sort || a.createdAt - b.createdAt);
+  const i = sirali.indexOf(h);
+  const komsu = oncesine ? sirali[i-1] : sirali[i+1];
+  f.sort = komsu ? (h.sort + komsu.sort) / 2 : (oncesine ? h.sort - 1 : h.sort + 1);
+  f.updatedAt = Date.now();
+  fikirDirty.add(f.id);
+  saveFikirler();
+  return true;
+}
 function fikirGuncelle(id, alanlar){
   const f = fikirById(id);
   if(!f) return false;
   let degisti = false;
-  if(typeof alanlar.text === 'string' && alanlar.text.slice(0, FIKIR_MAX) !== f.text){
-    f.text = alanlar.text.slice(0, FIKIR_MAX); degisti = true;
+  if(typeof alanlar.text === 'string'){
+    const yeni = alanlar.text.slice(0, FIKIR_MAX * 20);
+    if(yeni.trim() && yeni !== f.text){
+      f.text = yeni;
+      // Duzenleme birlesmis fikri tek parcaya indiriyor: kullanici metnin
+      // tamamini elden gecirdi, eski bolunme noktalari artik dogru degil.
+      f.parts = [{ id: f.parts[0].id, text: yeni }];
+      degisti = true;
+    }
   }
   if(typeof alanlar.projectId === 'string' && alanlar.projectId !== f.projectId){
     f.projectId = projeBagiTemiz(alanlar.projectId); degisti = true;
@@ -4163,18 +4492,25 @@ function projeninScriptiVarMi(pid, haricId){
 
 // --- Bulut ------------------------------------------------------------
 function fikirRowYap(f, uid){
-  return { id: f.id, user_id: uid, text: f.text, project_id: f.projectId || null,
+  // deleted_at null yaziliyor: ayirma islemi daha once silinmis bir
+  // kimligi geri getirebiliyor. Yazilmasaydi satir mezar tasiyla kalir,
+  // fikir bir sonraki eslestirmede sessizce kaybolurdu.
+  return { id: f.id, user_id: uid, text: f.text, parts: f.parts,
+           project_id: f.projectId || null, sort_index: f.sort,
+           deleted_at: null,
            created_at: new Date(f.createdAt).toISOString(),
            updated_at: new Date(f.updatedAt).toISOString() };
 }
 function fikirRowOku(r){
-  return fikirTemizle({ id: r.id, text: r.text || '', projectId: r.project_id || '',
+  return fikirTemizle({ id: r.id, text: r.text || '', parts: r.parts,
+                        projectId: r.project_id || '',
+                        sort: typeof r.sort_index === 'number' ? r.sort_index : 0,
                         createdAt: r.created_at ? Date.parse(r.created_at) : Date.now(),
                         updatedAt: r.updated_at ? Date.parse(r.updated_at) : 0 });
 }
 function scriptRowYap(s, uid){
   return { id: s.id, user_id: uid, title: s.title, content: s.text, source: s.source,
-           project_id: s.projectId || null,
+           project_id: s.projectId || null, deleted_at: null,
            created_at: new Date(s.createdAt).toISOString(),
            updated_at: new Date(s.updatedAt).toISOString() };
 }
@@ -4526,19 +4862,19 @@ SAHA_ALANLARI.forEach(([id])=>{
   const el = document.getElementById(id);
   if(el) el.addEventListener('input', sahaSayaciniTazele);
 });
-document.getElementById('fk_add').addEventListener('click', fikirEkleTiklandi);
-document.getElementById('fk_new').addEventListener('keydown', e=>{
-  if(e.key === 'Enter'){ e.preventDefault(); fikirEkleTiklandi(); }
-});
-document.getElementById('fk_newProj').addEventListener('change', e=>{
-  if(e.target.value === '__yeni__'){ secimdenProje(e.target, ''); renderFikirler(); renderProjects(); }
-});
+// Ekleme kutusu ve kart dugmeleri her cizimde yeniden olustugu icin
+// olaylari fikirKartOlaylari() bagliyor. Burada yalnizca sayfada SABIT
+// duran ogeler var.
 document.getElementById('fk_filter').addEventListener('change', e=>{
   fikirFiltresi = e.target.value; renderFikirler();
 });
+document.getElementById('fk_search').addEventListener('input', e=>{
+  fikirArama = e.target.value; renderFikirler();
+});
 // Gosterilen fikirlerden tek bir script. Kaydedilmeden once duzenlenebiliyor.
 document.getElementById('fk_toScript').addEventListener('click', ()=>{
-  if(document.getElementById('fk_new').value.trim()) fikirEkleTiklandi();
+  const kutu = document.getElementById('fk_new');
+  if(kutu && kutu.value.trim()) fikirEkleTiklandi();
   const liste = fikirleriSuz();
   if(!liste.length) return;
   // Hepsi ayni projeye bagliysa script de o projeye bagli dogsun.
@@ -6828,7 +7164,7 @@ document.getElementById('pendingOverlay').addEventListener('click', (e)=>{ if(e.
 
 // Yayina alinan surumun damgasi. Onbellekten eski bir kopya geldiginde bu
 // tarih eski kalir, boylece "guncel mi?" sorusu bakarak cevaplanir.
-const BUILD_STAMP = '2026-09-02 11:40 UTC';
+const BUILD_STAMP = '2026-09-02 14:20 UTC';
 document.getElementById('buildId').textContent = BUILD_STAMP;
 
 // ===== Init =====
