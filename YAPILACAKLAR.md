@@ -6,6 +6,38 @@ duruyor, neden ertelendiği de yazıyor ki aynı tartışma baştan yapılmasın
 
 ---
 
+## Nerede kaldık (3 Eylül 2026, gece — telefon)
+
+**Bulut okunamayınca ekranda DEMO verisi kalıyordu.** Kullanıcı telefondan
+hesabına girdi, kayıtları gelmedi. Koda bakınca çıkan gerçek kusur:
+`afterSignIn` içindeki `catch` yalnızca birkaç saniyelik bir bildirim
+gösteriyor, ekranda açılışta üretilen demo tohumu duruyordu. Kullanıcı
+kendi verisinin kaybolduğunu sanıyor. Dahası: o hâldeyken bir kayda
+dokunup kaydetseydi demo satırları `demo_cal_<uid>` anahtarına yazılıyor
+ve `pushChanges` ile HESABINA gidiyordu.
+
+Yapılan:
+- Okuma başarısızsa ekran boşaltılıyor, kuyruk temizleniyor.
+- Kırmızı bir şerit çıkıyor: ne olduğu + "hiçbir şey kaybolmadı,
+  kayıtlar hesabında" + **Tekrar dene**.
+- `save()` ve `pushChanges()` o hâlde hiçbir şey yazmıyor (iki ayrı kapı).
+- Yeni kayıt girişi kapalı, sebebi düğmenin üstünde yazıyor.
+- Şablon / fikir / script / tercih senkronu ETKİLENMİYOR — ayrı veri
+  kümeleri, kendi hata yönetimleri var.
+- Tekrar denenince kilit okuma başarılı olur olmaz kalkıyor. (İlk yazışımda
+  kilidi en sonda kaldırmıştım; aradaki `save()` erken dönüyor ve hesabın
+  yerel kopyası hiç yazılmıyordu. Kendi testim yakaladı.)
+
+`bulut-hata.test.js` telefon boyutunda çalışıyor.
+
+**HÂLÂ BİLİNMİYOR:** kullanıcının telefonunda okumanın NEDEN başarısız
+olduğu (ya da başka bir sebep mi). Sorulacaklar: (1) telefonda hangi
+hesapla girildi — Google mı e-posta linki mi; masaüstündekiyle aynı mı?
+(2) üstteki hesap düğmesi kırmızı mı yeşil mi? Yeni şerit bunu artık
+kendisi söyleyecek.
+
+---
+
 ## Nerede kaldık (3 Eylül 2026, gece)
 
 **AI üretim yüzeyi yapıldı.** Zincirin tamamı artık modele gidiyor.

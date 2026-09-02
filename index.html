@@ -1290,6 +1290,8 @@ body.suruklenirken *{cursor:grabbing !important;}
   border-radius:0 8px 8px 0;padding:11px 14px;margin-bottom:12px;font-size:13px;color:var(--text-dim);
 }
 .nudge-dot{width:7px;height:7px;border-radius:50%;background:var(--accent);flex:none;}
+.nudge-error{border-left-color:var(--red);color:var(--text);}
+.nudge-error .nudge-dot{background:var(--red);}
 .btn-sm{min-height:32px;padding:5px 11px;font-size:12px;}
 .cloud-ok{color:var(--green);}
 .cloud-error{color:var(--red);}
@@ -1507,6 +1509,16 @@ body.suruklenirken *{cursor:grabbing !important;}
     <p class="promise-tag" data-i18n="promise_tag">A planning board — not an auto-poster.</p>
     </div>
       </div>
+
+  <!-- Bulut okumasi basarisiz oldugunda. Onceki halde ekranda DEMO
+       kayitlari kaliyordu ve tek uyari birkac saniyelik bir bildirimdi:
+       kullanici kendi verisinin gittigini saniyordu. Simdi ne oldugu
+       yaziyor ve tekrar denenebiliyor. -->
+  <div class="nudge nudge-error" id="cloudError" hidden>
+    <span class="nudge-dot"></span>
+    <span data-i18n="cloud_err_text">Your entries could not be loaded. Nothing is lost — they are in your account.</span>
+    <button class="btn btn-primary btn-sm" id="cloudRetry" data-i18n="cloud_err_retry">Try again</button>
+  </div>
 
   <div class="nudge" id="cloudNudge" hidden>
     <span class="nudge-dot"></span>
@@ -2289,6 +2301,9 @@ const LANG = {
     auth_moved: (n)=> `${n} entries moved to your account.`,
     auth_move_ask: (n)=> `This browser has ${n} entries that were made without an account. Move them into this account?\n\nChoose Cancel if they are not yours.`,
     auth_signed_out: "Signed out. You are back to this browser only.",
+    cloud_err_text: "Your entries could not be loaded — the connection or the server. Nothing is lost: they are in your account, this device just could not read them.",
+    cloud_err_retry: "Try again",
+    cloud_err_blocked: "Nothing is saved until your entries load — so that this device cannot write over what is in your account.",
     nudge_text: "Only this browser knows about this calendar.",
     nudge_cta: "Keep it on every device",
     nudge_dismiss: "Not now",
@@ -2693,6 +2708,9 @@ const LANG = {
     auth_moved: (n)=> `${n} kayıt hesabına taşındı.`,
     auth_move_ask: (n)=> `Bu tarayıcıda hesapsız oluşturulmuş ${n} kayıt var. Bu hesaba taşınsın mı?\n\nSana ait değilse İptal'e bas.`,
     auth_signed_out: "Çıkış yapıldı. Yalnızca bu tarayıcıya döndün.",
+    cloud_err_text: "Kayıtların yüklenemedi — bağlantı ya da sunucu. Hiçbir şey kaybolmadı: kayıtlar hesabında duruyor, bu cihaz okuyamadı.",
+    cloud_err_retry: "Tekrar dene",
+    cloud_err_blocked: "Kayıtların yüklenene kadar hiçbir şey kaydedilmiyor — bu cihaz hesabındakinin üzerine yazmasın diye.",
     nudge_text: "Bu takvimi yalnızca bu tarayıcı biliyor.",
     nudge_cta: "Her cihazda yanımda olsun",
     nudge_dismiss: "Şimdi değil",
@@ -3078,6 +3096,9 @@ function applyStaticI18n(){
     el.placeholder = t(el.dataset.i18nPlaceholder);
   });
   document.documentElement.lang = currentLang;
+  // Oznitelikle yazilan tek metin: applyStaticI18n textContent'e bakiyor,
+  // bu yuzden dil degisince elle tazeleniyor.
+  if(typeof bulutOkumaBasarisiz !== 'undefined') bulutHatasiUygula(bulutOkumaBasarisiz);
 }
 function populateLangSelect(){
   const sel = document.getElementById('langSelect');
@@ -3359,6 +3380,9 @@ function load(){
 // Giris yapilmissa degisen satirlar ayrica buluta gonderiliyor.
 let pushTimer = null;
 function save(){
+  // Hesabin verisi okunamadiysa yazmiyoruz: ekrandaki sey kullanicinin
+  // verisi degil, onu hesabin kopyasina yazmak gercek kaybi olustururdu.
+  if(bulutOkumaBasarisiz) return;
   localStorage.setItem(storageKey(), JSON.stringify(events));
   if(session){
     clearTimeout(pushTimer);
@@ -3368,6 +3392,9 @@ function save(){
 
 async function pushChanges(){
   if(!sb || !session) return;
+  // Ikinci kapi: save() disindan cagrilan yollar da (otomatik kuyruk)
+  // hesabin verisi gelmeden hicbir sey gondermesin.
+  if(bulutOkumaBasarisiz) return;
   const uid = session.user.id;
   // Gonderilecek kimlikler basta sabitleniyor. Eskiden await bittikten sonra
   // dirtyIds/removedIds topluca temizleniyordu; yazma surerken kullanici yeni
@@ -3405,6 +3432,29 @@ async function pushChanges(){
 // deleted_at SART: lokasyon uygulamasi silmeyi "mezar tasi" ile yapiyor
 // (satir kaliyor, deleted_at doluyor). Bu filtre olmadan orada silinen
 // kayitlar Slate'te diri gorunurdu.
+// Hesabin kayitlari HENUZ GELMEDIYSE ekranda ne varsa kullaniciya ait
+// degil: acilista uretilen demo tohumu ya da anonim calisma. Bu durumda
+// iki sey yapiliyor:
+//   1) Demo kayitlari ekranda birakilmiyor. Onceki halde birakiliyordu ve
+//      birkac saniyelik bir bildirim disinda hicbir sey soylenmiyordu:
+//      kullanici kendi verisinin gittigini saniyordu.
+//   2) Hicbir sey buluta gonderilmiyor ve hesabin yerel kopyasina
+//      yazilmiyor. Yoksa kullanici bir kayda dokundugu anda demo satirlari
+//      kendi hesabina gidiyordu.
+let bulutOkumaBasarisiz = false;
+function bulutHatasiUygula(acik){
+  bulutOkumaBasarisiz = acik;
+  const serit = document.getElementById('cloudError');
+  if(serit) serit.hidden = !acik;
+  // Yeni kayit girisi kapali: girilse buluta gidemez, tazelemede de
+  // kaybolurdu. Sebebini dugmenin ustunde yaziyor.
+  const ekle = document.getElementById('addBtn');
+  if(ekle){
+    ekle.disabled = acik;
+    ekle.title = acik ? t('cloud_err_blocked') : '';
+  }
+}
+
 async function pullRemote(){
   const { data, error } = await sb.from('calendar_events')
     .select('*').is('deleted_at', null);
@@ -8202,7 +8252,7 @@ document.getElementById('pendingOverlay').addEventListener('click', (e)=>{ if(e.
 
 // Yayina alinan surumun damgasi. Onbellekten eski bir kopya geldiginde bu
 // tarih eski kalir, boylece "guncel mi?" sorusu bakarak cevaplanir.
-const BUILD_STAMP = '2026-09-03 03:30 UTC';
+const BUILD_STAMP = '2026-09-03 04:40 UTC';
 document.getElementById('buildId').textContent = BUILD_STAMP;
 
 // ===== Init =====
@@ -8557,6 +8607,9 @@ async function afterSignIn(){
   tercihSenkron();
   try{
     const uzak = await pullRemote();
+    // Okuma basarili: kilit hemen kalkiyor. Sonda kaldirilsaydi asagidaki
+    // save() erken doner, hesabin yerel kopyasi hic yazilmazdi.
+    bulutHatasiUygula(false);
 
     if(uzak.length){
       // Hesapta veri var: esas olan o.
@@ -8594,6 +8647,13 @@ async function afterSignIn(){
     trackOnce('funnel/cloud-connected');
   }catch(err){
     console.error('[bulut] okuma hatasi', err);
+    // Ekranda kalan demo tohumu kullanicinin verisi DEGIL: temizleniyor.
+    // Kuyruk da bosaltiliyor, yoksa bir sonraki save() demo satirlarini
+    // hesaba gonderirdi.
+    events = [];
+    dirtyIds.clear(); removedIds.clear();
+    renderCal();
+    bulutHatasiUygula(true);
     setCloudStatus('error');
   }
   // Basarili da olsa hatali da olsa: artik ekrandaki veri nihai.
@@ -8603,6 +8663,7 @@ async function afterSignIn(){
 // Cikista onceki hesabin verisi ekranda kalmamali.
 function afterSignOut(){
   dirtyIds.clear(); removedIds.clear();
+  bulutHatasiUygula(false);
   sinirlariSifirla();
   const anonim = readLocal(STORAGE_KEY);
   events = anonim || seedData();
@@ -8645,6 +8706,13 @@ if(window.supabase){
   // Bulut kutuphanesi hic yuklenmedi: yalnizca tarayicidaki veri var.
   veriHazirIsaretle();
 }
+
+document.getElementById('cloudRetry').addEventListener('click', async ()=>{
+  const dugme = document.getElementById('cloudRetry');
+  dugme.disabled = true;
+  try{ await afterSignIn(); }
+  finally{ dugme.disabled = false; }
+});
 
 document.getElementById('authBtn').addEventListener('click', ()=>{
   if(session){
