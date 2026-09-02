@@ -30,6 +30,27 @@ anahtarları native uç noktada `x-goog-api-key` başlığıyla ÇALIŞIYOR —
 sorun çıkardıkları yer OpenAI-uyumlu uç nokta ve `Authorization: Bearer`.
 Slate zaten doğru yolu kullanıyor.
 
+**ASIL SEBEP: düşünme seviyesi.** Kullanıcı "VPN kullanmıyorum" deyince
+zaman aşımının ağ kaynaklı olmadığı anlaşıldı. `gemini-3.7-flash`
+varsayılan olarak **`thinkingLevel: MEDIUM`** ile çalışıyor; "Tek
+kelimeyle cevap ver: test" gibi bir istek bile onlarca saniye sürebiliyor
+ve 20 saniyelik anahtar denemesi zaman aşımına düşüyordu. Ağ değil, model
+gecikmesi.
+
+- İsteklerde artık `generationConfig.thinkingConfig.thinkingLevel = 'low'`
+  gidiyor. Bu üründe üretilen şey açıklama, başlık ve script — derin akıl
+  yürütme değil, hız gerekiyor. (`MINIMAL` bu modelde geçersiz, doğrulama
+  hatası veriyor.)
+- Anahtar denemesi ayrıca `maxOutputTokens: 32` ile sınırlı: cevabın
+  içeriği önemli değil, 200 dönmesi anahtarın çalıştığını kanıtlıyor.
+- Süreler yükseltildi: deneme 45 sn, üretim 60 sn, script 90 sn.
+- Deneme sırasında **geçen saniye ekranda sayıyor** ("Anahtar deneniyor…
+  12 sn") ve zaman aşımı mesajı kaç saniye beklendiğini yazıyor. "Donmuş
+  mu, yavaş mı" belirsizliği kalktı.
+
+**Ders:** yeni bir modele geçerken varsayılan gecikme davranışı da
+kontrol edilecek. Model kimliğinin doğru olması yetmiyor.
+
 ---
 
 ## Nerede kaldık (3 Eylül 2026, gece — telefon)

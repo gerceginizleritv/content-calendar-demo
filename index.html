@@ -2628,6 +2628,8 @@ const LANG = {
     ai_step_3: "Copy the key it gives you — a long line starting with AQ. or AIza.",
     ai_step_4: "Paste it in the box below and press Save.",
     ai_howto_note: "Free, and it does not ask for a credit card. Careful: a paid ChatGPT or Gemini subscription is a different thing — it does not give you a key. The key comes from the page above.",
+    ai_timeout_secs: (sn)=> `No answer came back in ${sn} seconds.`,
+    ai_checking_secs: (sn)=> `Trying the key… ${sn} s`,
     ai_timeout: "No answer came back in time. Check the connection — a content blocker or a VPN may be cutting off generativelanguage.googleapis.com.",
     ai_net: "Google could not be reached. There may be no connection, or something on this device is blocking generativelanguage.googleapis.com.",
     ai_key_ok: "Key saved. The ✨ AI buttons are ready.",
@@ -3043,6 +3045,8 @@ const LANG = {
     ai_step_3: "Verdiği anahtarı kopyala — AQ. ya da AIza ile başlayan uzun bir satır.",
     ai_step_4: "Aşağıdaki kutuya yapıştır ve Kaydet'e bas.",
     ai_howto_note: "Ücretsiz, kredi kartı istemiyor. Dikkat: paralı ChatGPT ya da Gemini aboneliği bambaşka bir şey — o abonelik sana anahtar vermiyor. Anahtar yukarıdaki sayfadan alınıyor.",
+    ai_timeout_secs: (sn)=> `${sn} saniyede yanıt gelmedi.`,
+    ai_checking_secs: (sn)=> `Anahtar deneniyor… ${sn} sn`,
     ai_timeout: "Yanıt zamanında gelmedi. Bağlantını kontrol et — bir içerik engelleyici ya da VPN generativelanguage.googleapis.com adresini kesiyor olabilir.",
     ai_net: "Google'a ulaşılamadı. Ya bağlantı yok ya da bu cihazdaki bir şey generativelanguage.googleapis.com adresini kesiyor.",
     ai_key_ok: "Anahtar kaydedildi. ✨ AI düğmeleri hazır.",
@@ -4788,7 +4792,8 @@ async function scriptAiYaz(){
   // getirmede de ayni kural var.
   if(alan.value.trim() && !confirm(t('sc_ai_overwrite'))) return;
   const dugme = document.getElementById('sc_ai');
-  const ham = await aiCalistir(dugme, durumEl, t('sc_ai_working'), prompt);
+  const ham = await aiCalistir(dugme, durumEl, t('sc_ai_working'), prompt,
+                               { sure: AI_SCRIPT_ZAMAN_ASIMI });
   if(ham === null) return;
   const temiz = aiTemizle(ham, false);
   if(!temiz){
@@ -8056,8 +8061,15 @@ document.getElementById('aiSettingsSaveBtn').addEventListener('click', async ()=
   }
   dugme.disabled = true;
   ipucu.textContent = t('ai_key_checking'); ipucu.className = 'ai-key-hint';
+  // Gecen saniye ekranda: bekleyen bir istek ile donmus bir ekran
+  // birbirinden ayirt edilemiyordu.
+  const basladi = Date.now();
+  const sayac = setInterval(()=>{
+    ipucu.textContent = t('ai_checking_secs')(Math.round((Date.now()-basladi)/1000));
+  }, 1000);
   try{
-    await callGemini(key, 'Tek kelimeyle cevap ver: test', AI_DENEME_ZAMAN_ASIMI);
+    await callGemini(key, 'Tek kelimeyle cevap ver: test',
+                     { sure: AI_DENEME_ZAMAN_ASIMI, dusunme:'low', enCokJeton: 32 });
     saveAiSettings({ provider:'gemini', key });
     trackOnce('funnel/ai-key-connected');
     document.getElementById('aiSettingsOverlay').classList.remove('open');
@@ -8073,6 +8085,7 @@ document.getElementById('aiSettingsSaveBtn').addEventListener('click', async ()=
     ipucu.textContent = err && err.yerel ? err.message : t('ai_key_bad')(err.message || '');
     ipucu.className = 'ai-key-hint error';
   }finally{
+    clearInterval(sayac);
     dugme.disabled = false;
   }
 });
@@ -8081,25 +8094,44 @@ document.getElementById('aiSettingsSaveBtn').addEventListener('click', async ()=
 // kalirsa dugme sonsuza kadar kilitli, ekranda "Anahtar deneniyor..."
 // yaziyor ve kullanici neyi bekledigini bilmiyordu. Telefonda ya da bir
 // icerik engelleyicinin arkasinda istek gercekten asili kalabiliyor.
-const AI_ZAMAN_ASIMI = 45000;        // uretim: uzun metin yazabilir
-const AI_DENEME_ZAMAN_ASIMI = 20000; // anahtar denemesi: tek kelimelik
+const AI_ZAMAN_ASIMI = 60000;        // uretim
+const AI_SCRIPT_ZAMAN_ASIMI = 90000; // script: uzun metin
+const AI_DENEME_ZAMAN_ASIMI = 45000; // anahtar denemesi
 
-async function callGemini(apiKey, prompt, sureMs){
+// DUSUNME SEVIYESI. gemini-3.7-flash varsayilan olarak "medium" ile
+// calisiyor; tek kelimelik bir istek bile onlarca saniye surebiliyor ve
+// anahtar denemesi zaman asimina dusuyordu. Bu urunde uretilen sey
+// aciklama, baslik ve script — derin akil yurutme degil, hiz gerekiyor.
+const AI_DUSUNME = 'low';
+
+async function callGemini(apiKey, prompt, secenek){
+  // Ucuncu parametre eskiden dogrudan sure idi; sayi gelirse oyle
+  // yorumlaniyor ki eski cagrilar bozulmasin.
+  const s = (typeof secenek === 'number') ? { sure: secenek } : (secenek || {});
   const kes = new AbortController();
-  const sayac = setTimeout(()=> kes.abort(), sureMs || AI_ZAMAN_ASIMI);
+  const sayac = setTimeout(()=> kes.abort(), s.sure || AI_ZAMAN_ASIMI);
+  const govde = {
+    contents:[{ parts:[{ text: prompt }] }],
+    generationConfig: { thinkingConfig: { thinkingLevel: s.dusunme || AI_DUSUNME } }
+  };
+  if(s.enCokJeton) govde.generationConfig.maxOutputTokens = s.enCokJeton;
   try{
     let res;
     try{
       res = await fetch('https://generativelanguage.googleapis.com/v1beta/models/gemini-3.7-flash:generateContent', {
         method:'POST', signal: kes.signal,
         headers:{ 'x-goog-api-key': apiKey, 'content-type':'application/json' },
-        body: JSON.stringify({ contents:[{ parts:[{ text: prompt }] }] })
+        body: JSON.stringify(govde)
       });
     }catch(err){
       // Sure doldu ya da fetch'in kendisi patladi (aga hic cikilamadi).
       // Ikisi de "bir seyler ters gitti" degil, ne yapilacagi belli olan
       // iki ayri durum.
-      const bizim = new Error(err && err.name === 'AbortError' ? t('ai_timeout') : t('ai_net'));
+      // Kac saniye beklendigi mesajda yaziyor: "zamanında gelmedi"
+      // tek basina ne kadar beklendigini soylemiyordu.
+      const bizim = new Error(err && err.name === 'AbortError'
+        ? t('ai_timeout_secs')(Math.round((s.sure || AI_ZAMAN_ASIMI)/1000)) + ' ' + t('ai_timeout')
+        : t('ai_net'));
       bizim.yerel = true;   // Google'dan gelen bir cevap DEGIL
       throw bizim;
     }
@@ -8202,14 +8234,14 @@ function aiAlanPrompt(alan){
 }
 
 // Tek gecit: anahtar kontrolu, dugme kilidi, hata mesaji hep ayni yerde.
-async function aiCalistir(dugme, durumEl, calisanEtiket, prompt){
+async function aiCalistir(dugme, durumEl, calisanEtiket, prompt, secenek){
   const ayar = getAiSettings();
   if(!ayar || !ayar.key){ openAiSettings(); return null; }
   const eskiEtiket = dugme.textContent;
   dugme.disabled = true; dugme.textContent = calisanEtiket;
   if(durumEl){ durumEl.textContent = ''; durumEl.className = durumEl.dataset.temelSinif || durumEl.className.split(' ')[0]; }
   try{
-    return await callGemini(ayar.key, prompt);
+    return await callGemini(ayar.key, prompt, secenek);
   }catch(err){
     if(durumEl){
       durumEl.textContent = err && err.yerel
@@ -8348,7 +8380,7 @@ document.getElementById('pendingOverlay').addEventListener('click', (e)=>{ if(e.
 
 // Yayina alinan surumun damgasi. Onbellekten eski bir kopya geldiginde bu
 // tarih eski kalir, boylece "guncel mi?" sorusu bakarak cevaplanir.
-const BUILD_STAMP = '2026-09-03 06:15 UTC';
+const BUILD_STAMP = '2026-09-03 07:15 UTC';
 document.getElementById('buildId').textContent = BUILD_STAMP;
 
 // ===== Init =====
