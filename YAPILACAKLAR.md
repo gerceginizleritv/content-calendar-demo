@@ -160,6 +160,33 @@ altında, tarayıcıya özel.
    ulaşılıyor. Ayarlara/"Daha fazla" bölümüne de bir giriş konacak ki
    kullanıcı anahtarını kayıt açmadan değiştirip silebilsin.
 
+### "Bu nasıl çalışır" turu güncellenecek (kullanıcı kararı, 2 Eylül 2026)
+Kullanıcı: *"proje çalışmamız için how to bölümünü update etmemiz
+gerekecek. Şimdi yapmayacağız."*
+
+**Neden gerekiyor:** tur (`TOUR_STEPS_I18N`, on adım) ürünün eski hâlini
+anlatıyor. O yazıldığında Slate üç sekmeliydi ve iş projeyle başlıyordu.
+Bugün beş sekme var ve **iş fikirle başlıyor**. Turda hiç geçmeyen ya da
+yanlış anlatılan şeyler:
+
+- **Fikirler** ve **Scriptler** diye iki sayfa var; ikisi de projeden
+  bağımsız. Turun ikinci adımı hâlâ "Tek çekim, tüm prodüksiyon" diyerek
+  işin projeyle başladığını anlatıyor.
+- Zincir: fikir → script → proje → takvim. Menü sırası bunu anlatıyor
+  ama tur anlatmıyor.
+- Fikir kartlarını birleştirme/ayırma, tek parçayı sürükleyip çıkarma.
+- Script yazınca "script" adımının kendiliğinden işaretlenmesi.
+- Projelerde iptal işareti ve üstteki özet şeridi.
+- Gün görünümü ve saat ızgarası (09:00–00:00).
+
+**Not:** turdaki her adımın kendi SVG çizimi var (`TOUR_ART`); yeni
+adımlar için de çizim gerekecek, yoksa aradaki adımlar boş görünür.
+
+**Karar verilecek:** tur on adımdan uzun olmamalı. Yeni maddeler
+eklenirken hangi eski adımların birleşeceği ya da düşeceği seçilecek —
+"her özelliği anlat" listesi turu kimsenin okumadığı bir slayt gösterisi
+yapar.
+
 ### Termin hatırlatmaları — iki kanal (kullanıcı kararı, 1 Eylül 2026)
 Bugün uyarı yalnızca sayfa AÇIKKEN var: geciken adım kırmızı, üstte şerit.
 Kullanıcı bakmıyorken haber göndermek için tarayıcının dışında zamanlanmış
