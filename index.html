@@ -713,16 +713,37 @@ body.suruklenirken *{cursor:grabbing !important;}
 .fk-card[class*="renk"] .fk-proj-chip{background:var(--fk-tag);color:var(--fk-tag-text);}
 .fk-proj-chip.bos{background:transparent;border:1px dashed var(--line);
   color:var(--text-dim);font-weight:500;}
-.fk-x{border:0;background:none;color:var(--text-dim);font-size:17px;line-height:1;
-  padding:2px 4px;cursor:pointer;border-radius:6px;flex-shrink:0;}
-.fk-x:hover{color:var(--red);background:var(--surface);}
+/* Silme dugmesi cop kutusu: × "kapat" gibi okunuyordu, oysa kartin
+   kendisi siliniyor. */
+.fk-x{border:0;background:none;color:var(--text-dim);line-height:0;
+  padding:4px;cursor:pointer;border-radius:6px;flex-shrink:0;}
+.fk-x svg{width:15px;height:15px;display:block;}
+.fk-x:hover{color:var(--red);background:var(--surface-2);}
 .fk-card-body{flex:1;font-size:13.5px;line-height:1.55;cursor:text;
   overflow-wrap:anywhere;}
 .fk-card-body p{margin:0 0 8px;}
 .fk-card-body p:last-child{margin-bottom:0;}
 /* Birlesik kartta parcalar arasinda ince bir cizgi: kacinin birlestigi
    sayidan degil, bakisla anlasiliyor. */
-.fk-card.birlesik .fk-card-body p + p{border-top:1px solid var(--line);padding-top:8px;}
+/* Birlesik kartta her parca kendi satiri: ayri ayri suruklenebiliyor ve
+   aralarindaki cizgi kacinin birlestigini bakisla anlatiyor. */
+.fk-part{position:relative;display:flex;align-items:flex-start;gap:6px;
+  border-radius:8px;padding:4px 4px 4px 6px;margin:0 -4px;cursor:grab;}
+.fk-part + .fk-part{border-top:1px solid var(--line);margin-top:6px;padding-top:10px;}
+.fk-part:hover{background:var(--surface-2);}
+.fk-part.surukleniyor{opacity:.4;}
+.fk-part p{flex:1;margin:0;}
+/* Cikar dugmesi yalnizca fare ustune gelince: dokunmatikte hep gorunuyor,
+   cunku orada "ustune gelme" diye bir sey yok. */
+.fk-part-out{border:0;background:none;color:var(--text-dim);font-size:13px;
+  line-height:1;padding:3px 5px;cursor:pointer;border-radius:6px;flex-shrink:0;
+  opacity:0;transition:opacity .12s;}
+.fk-part:hover .fk-part-out{opacity:1;}
+.fk-part-out:hover{color:var(--accent);background:var(--surface);}
+@media(hover:none){ .fk-part-out{opacity:.7;} }
+/* Parca suruklenirken duvarin bos alani birakma hedefi oluyor. */
+.fk-grid.birakmaya-hazir{outline:2px dashed var(--accent-dim);outline-offset:8px;
+  border-radius:12px;}
 .fk-card-foot{display:flex;flex-wrap:wrap;gap:6px;align-items:center;}
 .fk-mini{font:inherit;font-size:10.5px;text-transform:uppercase;letter-spacing:.05em;
   border:1px solid var(--line);border-radius:99px;padding:4px 10px;cursor:pointer;
@@ -2240,13 +2261,14 @@ const LANG = {
     fk_title: "Ideas",
     fk_chip: "Idea",
     fk_open: "Ideas for this project",
-    fk_intro: "What could this video be about? One card per idea — an angle, a question, a scene, a person to talk to. A project is optional; attach one later, or create one from here. Drop one card on another to merge them; drop it on the edge to reorder.",
+    fk_intro: "What could this video be about? One card per idea — an angle, a question, a scene, a person to talk to. A project is optional; attach one later, or create one from here. Drop one card on another to merge them, on its edge to reorder. Inside a merged card you can drag a single piece back out.",
     fk_ph: "One idea — Enter adds it, Shift+Enter starts a new line",
     fk_add: "Add",
     fk_add_open: "New idea",
     fk_search_ph: "Search ideas…",
     fk_project_title: "Which project? Click to change",
-    fk_split: (n)=> `Split into ${n}`,
+    fk_split: (n)=> `Split all ${n}`,
+    fk_part_out: "Pull this one out — or drag it",
     fk_none: "No ideas yet. The first line is the hardest — write it half-finished.",
     fk_none_all: "No ideas yet.",
     fk_remove: "Remove",
@@ -2598,13 +2620,14 @@ const LANG = {
     fk_title: "Fikirler",
     fk_chip: "Fikir",
     fk_open: "Bu projenin fikirleri",
-    fk_intro: "Bu video ne anlatabilir? Her fikir bir kart — bir açı, bir soru, bir sahne, konuşulacak bir kişi. Proje şart değil; bağını sonra kurabilir, buradan yeni proje de açabilirsin. Bir kartı ötekinin üstüne bırakınca birleşirler; kenarına bırakınca sıra değişir.",
+    fk_intro: "Bu video ne anlatabilir? Her fikir bir kart — bir açı, bir soru, bir sahne, konuşulacak bir kişi. Proje şart değil; bağını sonra kurabilir, buradan yeni proje de açabilirsin. Bir kartı ötekinin üstüne bırakınca birleşirler, kenarına bırakınca sıra değişir. Birleşik karttaki tek bir parçayı da sürükleyip çıkarabilirsin.",
     fk_ph: "Bir fikir — Enter ekler, Shift+Enter satır atlar",
     fk_add: "Ekle",
     fk_add_open: "Yeni fikir",
     fk_search_ph: "Fikirlerde ara…",
     fk_project_title: "Hangi proje? Değiştirmek için tıkla",
-    fk_split: (n)=> `${n} parçaya ayır`,
+    fk_split: (n)=> `${n} parçanın hepsini ayır`,
+    fk_part_out: "Bunu dışarı çıkar — sürükleyerek de olur",
     fk_none: "Henüz fikir yok. En zoru ilk satır — yarım da olsa yaz.",
     fk_none_all: "Henüz fikir yok.",
     fk_remove: "Çıkar",
@@ -3676,10 +3699,23 @@ function fikirKartiHtml(f){
       <button type="button" class="fk-proj-chip${proje ? '' : ' bos'}" data-fk-projbtn="${escapeHtml(f.id)}"
               title="${escapeHtml(t('fk_project_title'))}">${escapeHtml(proje ? proje.name : t('fk_no_project'))}</button>
       <button type="button" class="fk-x" data-fk-del="${escapeHtml(f.id)}"
-              title="${escapeHtml(t('fk_remove'))}">×</button>
+              title="${escapeHtml(t('fk_remove'))}" aria-label="${escapeHtml(t('fk_remove'))}">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"
+             stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+          <path d="M4 7h16M10 4.5h4M9.5 7v11M14.5 7v11M6.5 7l.8 12.2a1.5 1.5 0 0 0 1.5 1.3h6.4a1.5 1.5 0 0 0 1.5-1.3L17.5 7"/>
+        </svg>
+      </button>
     </div>
     <div class="fk-card-body">
-      ${f.parts.map(x=>`<p>${escapeHtml(x.text)}</p>`).join('')}
+      ${parcali
+        ? f.parts.map(x=>`<div class="fk-part" draggable="true"
+              data-fk-part="${escapeHtml(x.id)}" data-fk-owner="${escapeHtml(f.id)}">
+              <p>${escapeHtml(x.text)}</p>
+              <button type="button" class="fk-part-out" data-fk-out="${escapeHtml(x.id)}"
+                      data-fk-outowner="${escapeHtml(f.id)}"
+                      title="${escapeHtml(t('fk_part_out'))}">↗</button>
+            </div>`).join('')
+        : `<p>${escapeHtml(f.text)}</p>`}
     </div>
     <div class="fk-card-foot">
       ${parcali ? `<button type="button" class="fk-mini" data-fk-split="${escapeHtml(f.id)}">${escapeHtml(t('fk_split')(f.parts.length))}</button>` : ''}
@@ -3757,6 +3793,13 @@ function fikirKartOlaylari(kap){
   kap.querySelectorAll('[data-fk-del]').forEach(el=>{
     el.addEventListener('click', e=>{ e.stopPropagation(); fikirSil(el.dataset.fkDel); renderFikirler(); renderProjects(); });
   });
+  kap.querySelectorAll('[data-fk-out]').forEach(el=>{
+    el.addEventListener('click', e=>{
+      e.stopPropagation();
+      fikirParcaCikar(el.dataset.fkOutowner, el.dataset.fkOut);
+      renderFikirler(); renderProjects();
+    });
+  });
   kap.querySelectorAll('[data-fk-split]').forEach(el=>{
     el.addEventListener('click', e=>{ e.stopPropagation(); fikirAyir(el.dataset.fkSplit); renderFikirler(); });
   });
@@ -3792,7 +3835,9 @@ function fikirKartOlaylari(kap){
   });
   // Kart govdesine tiklayinca metin yerinde duzenleniyor.
   kap.querySelectorAll('.fk-card-body').forEach(el=>{
-    el.addEventListener('click', ()=>{
+    el.addEventListener('click', e=>{
+      // Parca cikarma dugmesi ve surukleme tutamagi duzenlemeyi acmasin.
+      if(e.target.closest('.fk-part-out')) return;
       const kart = el.closest('[data-fk-card]');
       const f = fikirById(kart.dataset.fkCard);
       if(!f) return;
@@ -3818,18 +3863,58 @@ function fikirKartOlaylari(kap){
 // Iki is birden: bir kartin uzerine birakmak BIRLESTIRIYOR, iki kartin
 // arasina birakmak SIRALIYOR. Takvimdeki surukleme ile ayni his.
 let surukFikirId = null;
+let surukParca = null;   // { fikirId, parcaId } — birlesik karttan cekilen parca
+function suruklemeBitti(kap){
+  surukFikirId = null; surukParca = null;
+  kap.querySelectorAll('.fk-card').forEach(x=> x.classList.remove('surukleniyor','uzerinde','once','sonra'));
+  kap.classList.remove('birakmaya-hazir');
+}
 function fikirSuruklemeKur(kap){
+  // Birlesik karttaki her parca kendi basina surukleniyor: baska bir
+  // karta birakinca oraya gecıyor, bos alana birakinca kendi karti oluyor.
+  // Onceden tek yol "hepsini ayir"di; uc fikri birlestirip icinden birini
+  // geri almak isteyen once hepsini dagitmak zorundaydi.
+  kap.querySelectorAll('[data-fk-part]').forEach(parca=>{
+    parca.addEventListener('dragstart', e=>{
+      e.stopPropagation();
+      surukParca = { fikirId: parca.dataset.fkOwner, parcaId: parca.dataset.fkPart };
+      surukFikirId = null;
+      parca.classList.add('surukleniyor');
+      kap.classList.add('birakmaya-hazir');
+      try{ e.dataTransfer.setData('text/plain', surukParca.parcaId); e.dataTransfer.effectAllowed = 'move'; }catch(x){}
+    });
+    parca.addEventListener('dragend', e=>{ e.stopPropagation(); parca.classList.remove('surukleniyor'); suruklemeBitti(kap); });
+  });
+  // Bos alana birakmak parcayi kendi kartina cikariyor.
+  kap.addEventListener('dragover', e=>{
+    if(!surukParca) return;
+    if(e.target.closest('[data-fk-card]')) return;   // kartin uzerindeyse kart karar versin
+    e.preventDefault();
+  });
+  kap.addEventListener('drop', e=>{
+    if(!surukParca) return;
+    if(e.target.closest('[data-fk-card]')) return;
+    e.preventDefault();
+    fikirParcaCikar(surukParca.fikirId, surukParca.parcaId);
+    suruklemeBitti(kap);
+    renderFikirler(); renderProjects();
+  });
   kap.querySelectorAll('[data-fk-card]').forEach(kart=>{
     kart.addEventListener('dragstart', e=>{
       surukFikirId = kart.dataset.fkCard;
       kart.classList.add('surukleniyor');
       try{ e.dataTransfer.setData('text/plain', surukFikirId); e.dataTransfer.effectAllowed = 'move'; }catch(x){}
     });
-    kart.addEventListener('dragend', ()=>{
-      surukFikirId = null;
-      kap.querySelectorAll('.fk-card').forEach(x=> x.classList.remove('surukleniyor','uzerinde','once','sonra'));
-    });
+    kart.addEventListener('dragend', ()=> suruklemeBitti(kap));
     kart.addEventListener('dragover', e=>{
+      // Parca suruklenirken kart yalnizca "buraya tasi" hedefi oluyor;
+      // siralama isareti gostermenin anlami yok.
+      if(surukParca){
+        if(kart.dataset.fkCard === surukParca.fikirId) return;
+        e.preventDefault();
+        kart.classList.add('uzerinde');
+        return;
+      }
       if(!surukFikirId || kart.dataset.fkCard === surukFikirId) return;
       e.preventDefault();
       const r = kart.getBoundingClientRect();
@@ -3844,11 +3929,20 @@ function fikirSuruklemeKur(kap){
     kart.addEventListener('dragleave', ()=> kart.classList.remove('uzerinde','once','sonra'));
     kart.addEventListener('drop', e=>{
       e.preventDefault();
+      e.stopPropagation();
+      if(surukParca){
+        if(kart.dataset.fkCard !== surukParca.fikirId){
+          fikirParcaTasi(surukParca.fikirId, surukParca.parcaId, kart.dataset.fkCard);
+        }
+        suruklemeBitti(kap);
+        renderFikirler(); renderProjects();
+        return;
+      }
       if(!surukFikirId || kart.dataset.fkCard === surukFikirId) return;
       const kaynak = surukFikirId;
       if(kart.classList.contains('uzerinde')) fikirBirlestir(kart.dataset.fkCard, kaynak);
       else fikirSirala(kaynak, kart.dataset.fkCard, kart.classList.contains('once'));
-      surukFikirId = null;
+      suruklemeBitti(kap);
       renderFikirler(); renderProjects();
     });
   });
@@ -4353,6 +4447,48 @@ function fikirBirlestir(hedefId, kaynakId){
   saveFikirler();
   return true;
 }
+// TEK bir parcayi kartindan cikar: kendi fikri oluyor, kartin geri kalani
+// oldugu gibi kaliyor. "Hepsini ayir" varken buna da ihtiyac var, cunku
+// uc fikri birlestirip icinden yalnizca birini geri almak isteyen biri
+// aksi halde hepsini dagitip yeniden birlestirmek zorunda kaliyordu.
+function fikirParcaCikar(fikirId, parcaId){
+  const f = fikirById(fikirId);
+  if(!f || f.parts.length < 2) return false;
+  const i = f.parts.findIndex(x=>x.id === parcaId);
+  if(i < 0) return false;
+  const [parca] = f.parts.splice(i, 1);
+  f.text = parcaMetni(f.parts);
+  f.updatedAt = Date.now();
+  fikirDirty.add(f.id);
+  const yeni = fikirTemizle({ id: parca.id, text: parca.text, parts: [parca],
+                              projectId: f.projectId, sort: f.sort + 0.001 });
+  if(yeni){
+    fikirler.splice(fikirler.indexOf(f) + 1, 0, yeni);
+    fikirDirty.add(yeni.id);
+    fikirRemoved.delete(yeni.id);   // birlesirken mezar tasi konmus olabilir
+  }
+  saveFikirler();
+  return true;
+}
+// Bir parcayi BASKA bir karta tasi: cikar + oraya ekle, tek adimda.
+function fikirParcaTasi(fikirId, parcaId, hedefId){
+  const f = fikirById(fikirId), h = fikirById(hedefId);
+  if(!f || !h || f === h) return false;
+  const i = f.parts.findIndex(x=>x.id === parcaId);
+  if(i < 0) return false;
+  if(f.parts.length < 2) return fikirBirlestir(hedefId, fikirId);  // tek parcaliysa kartin kendisi tasiniyor
+  if(h.parts.length + 1 > 20) return false;
+  const [parca] = f.parts.splice(i, 1);
+  f.text = parcaMetni(f.parts);
+  f.updatedAt = Date.now();
+  h.parts.push(parca);
+  h.text = parcaMetni(h.parts);
+  h.updatedAt = Date.now();
+  fikirDirty.add(f.id); fikirDirty.add(h.id);
+  saveFikirler();
+  return true;
+}
+
 // Birlestirilmis fikri geri ayir: her parca yeniden kendi fikri oluyor.
 // Parcalarin kimligi korundugu icin ayirma birlesmeden ONCEKI hale
 // donuyor, benzerine degil.
@@ -7164,7 +7300,7 @@ document.getElementById('pendingOverlay').addEventListener('click', (e)=>{ if(e.
 
 // Yayina alinan surumun damgasi. Onbellekten eski bir kopya geldiginde bu
 // tarih eski kalir, boylece "guncel mi?" sorusu bakarak cevaplanir.
-const BUILD_STAMP = '2026-09-02 14:20 UTC';
+const BUILD_STAMP = '2026-09-02 15:30 UTC';
 document.getElementById('buildId').textContent = BUILD_STAMP;
 
 // ===== Init =====
