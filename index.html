@@ -1334,7 +1334,10 @@ body.suruklenirken *{cursor:grabbing !important;}
 .tour-basliklar{min-width:0;}
 .tour-eyebrow{font-size:10.5px;letter-spacing:1.6px;color:var(--accent);margin-bottom:5px;}
 .tour-modal h2{font-size:20px;line-height:1.25;text-wrap:balance;}
-.tour-icerik{flex:1 1 auto;min-height:0;overflow-y:auto;padding-right:4px;}
+.tour-icerik{flex:1 1 auto;min-height:0;overflow-y:auto;padding-right:4px;
+  /* Kisa adimlarda icerik dikeyde ortaliyor; "safe" olmadan uzun bir
+     adimda ust taraf kirpiliyordu. */
+  display:flex;flex-direction:column;justify-content:safe center;}
 /* Govde yazisi --text: onceki halde --text-dim idi ve koyu zeminde
    okunmuyordu. Kullanicinin okumasini bekledigimiz metin gri olmamali. */
 .tour-text{color:var(--text);font-size:14.5px;line-height:1.7;margin:0 0 14px;}
@@ -1354,7 +1357,7 @@ body.suruklenirken *{cursor:grabbing !important;}
      karti uzerinde duruyor. Onceki halde --bg idi ve cizim sayfaya
      yapisiyordu. */
   box-shadow:0 1px 2px rgba(0,0,0,0.04);}
-.tour-visual svg{width:100%;height:auto;display:block;max-width:560px;}
+.tour-visual svg{width:100%;height:auto;display:block;max-width:720px;}
 @media(max-height:780px){
   .modal.tour-modal{padding:16px;}
   .tour-visual{margin-bottom:12px;}
@@ -8162,255 +8165,334 @@ const TOUR_STEPS_I18N = {
 // KONTRAST KURALI: --text-dim ve --accent-dim BIRER GRI. Okunmasi gereken
 // hicbir yazi onlarla boyanmiyor; yazilar --text ya da --accent, griler
 // yalnizca cizgi ve cerceve icin.
+// Tur cizimleri. Hepsi sayfanin renk degiskenlerini kullaniyor: acik ve
+// koyu temada kendiliginden dogru duruyor, ayri bir gorsel dosyasi yok.
+//
+// ISCILIK: derinlik gercek gorunmesi icin uc katman var — zemin degrade,
+// kartlarda ust-alt degrade ve altlarinda yumusak golge. Duz renk dolgulu
+// kutular ucuz duruyordu; sikayet buydu.
+//
+// KONTRAST KURALI: --text-dim ve --accent-dim BIRER GRI. Okunmasi gereken
+// hicbir yazi onlarla boyanmiyor; yazilar --text ya da --accent, griler
+// yalnizca cizgi, cerceve ve metin yerine gecen cubuklar icin.
 const TV = {
-  // Sahne 460x180. Butun cizimler ayni olcude: adimlar arasi geciste
+  // Sahne 900x340. Butun cizimler ayni olcude: adimlar arasi geciste
   // kutunun boyu ziplamiyor.
-  sahne: (ic) => `<svg viewBox="0 0 460 180" xmlns="http://www.w3.org/2000/svg" role="img">${ic}</svg>`,
-  zemin: () => `<rect x="0" y="0" width="460" height="180" rx="18" fill="var(--accent-soft)"/>`,
-  kart: (x,y,w,h,ek='') => `<rect x="${x}" y="${y}" width="${w}" height="${h}" rx="10" fill="var(--surface)" stroke="var(--line)" ${ek}/>`,
-  vurgu: (x,y,w,h,ek='') => `<rect x="${x}" y="${y}" width="${w}" height="${h}" rx="10" fill="var(--surface)" stroke="var(--accent)" stroke-width="1.8" ${ek}/>`,
-  goz:  (x,y,m,ek='') => `<text x="${x}" y="${y}" font-family="JetBrains Mono, monospace" font-size="9" letter-spacing="1.5" fill="var(--accent)" ${ek}>${m}</text>`,
-  yazi: (x,y,m,ek='') => `<text x="${x}" y="${y}" font-family="IBM Plex Sans, sans-serif" font-size="11" fill="var(--text)" ${ek}>${m}</text>`,
-  kucuk:(x,y,m,ek='') => `<text x="${x}" y="${y}" font-family="IBM Plex Sans, sans-serif" font-size="9.5" fill="var(--text)" ${ek}>${m}</text>`,
-  // Metin yerine gecen cizgiler: okunmayacak sahte yazi yerine cubuk.
-  satir:(x,y,w,o=1) => `<rect x="${x}" y="${y}" width="${w}" height="4" rx="2" fill="var(--text-dim)" opacity="${o*0.45}"/>`,
-  ok:   (id,renk='var(--accent)') => `<marker id="${id}" markerWidth="9" markerHeight="9" refX="6.5" refY="3" orient="auto"><path d="M0,0 L6.5,3 L0,6 Z" fill="${renk}"/></marker>`,
-  tik:  (x,y,renk='var(--green)') => `<g transform="translate(${x},${y})"><circle cx="0" cy="0" r="7.5" fill="${renk}" opacity="0.16"/><path d="M-3.4,0.2 L-1,2.6 L3.6,-2.4" stroke="${renk}" stroke-width="2" fill="none" stroke-linecap="round" stroke-linejoin="round"/></g>`,
-  bos:  (x,y) => `<circle cx="${x}" cy="${y}" r="7" fill="none" stroke="var(--line)" stroke-width="1.6"/>`,
-  cip:  (x,y,w,m,renk='var(--accent)') => `<g transform="translate(${x},${y})"><rect width="${w}" height="18" rx="6" fill="${renk}" opacity="0.16"/><text x="${w/2}" y="12.5" font-family="JetBrains Mono, monospace" font-size="8.5" letter-spacing="0.8" fill="${renk}" text-anchor="middle">${m}</text></g>`,
-  yildiz:(x,y,r=8) => `<g transform="translate(${x},${y})"><path d="M0,${-r} L${r*0.28},${-r*0.28} L${r},0 L${r*0.28},${r*0.28} L0,${r} L${-r*0.28},${r*0.28} L${-r},0 L${-r*0.28},${-r*0.28} Z" fill="var(--accent)"/></g>`
+  W: 900, H: 340,
+  sahne: (n, ic) => `<svg viewBox="0 0 900 340" xmlns="http://www.w3.org/2000/svg" role="img">
+    <defs>
+      <linearGradient id="zg${n}" x1="0" y1="0" x2="0" y2="1">
+        <stop offset="0" stop-color="var(--accent)" stop-opacity="0.11"/>
+        <stop offset="1" stop-color="var(--accent)" stop-opacity="0.02"/>
+      </linearGradient>
+      <linearGradient id="kg${n}" x1="0" y1="0" x2="0.35" y2="1">
+        <stop offset="0" stop-color="var(--surface)"/>
+        <stop offset="1" stop-color="var(--surface-2)"/>
+      </linearGradient>
+      <linearGradient id="ip${n}" x1="0" y1="0" x2="1" y2="0">
+        <stop offset="0" stop-color="var(--accent)" stop-opacity="0.12"/>
+        <stop offset="0.5" stop-color="var(--accent)" stop-opacity="0.85"/>
+        <stop offset="1" stop-color="var(--accent)" stop-opacity="0.12"/>
+      </linearGradient>
+      <filter id="dr${n}" x="-25%" y="-25%" width="150%" height="170%">
+        <feDropShadow dx="0" dy="9" stdDeviation="11" flood-color="#000" flood-opacity="0.17"/>
+      </filter>
+      <marker id="mk${n}" markerWidth="9" markerHeight="9" refX="7" refY="3" orient="auto">
+        <path d="M0,0 L7,3 L0,6 Z" fill="var(--accent)"/>
+      </marker>
+    </defs>
+    <rect x="0" y="0" width="900" height="340" rx="22" fill="url(#zg${n})"/>
+    ${ic}</svg>`,
+  // Kart: ust-alt degrade + ince cerceve. vurgu=true olan kart accent
+  // cerceveli ve arkasinda hafif bir hare var.
+  kart: (n,x,y,w,h,vurgu) => (vurgu
+      ? `<rect x="${x-7}" y="${y-7}" width="${w+14}" height="${h+14}" rx="24" fill="var(--accent)" opacity="0.09"/>
+         <rect x="${x}" y="${y}" width="${w}" height="${h}" rx="18" fill="url(#kg${n})" stroke="var(--accent)" stroke-width="2"/>`
+      : `<rect x="${x}" y="${y}" width="${w}" height="${h}" rx="18" fill="url(#kg${n})" stroke="var(--line)"/>`),
+  baslik: (x,y,m,ek='') => `<text x="${x}" y="${y}" font-family="Archivo, sans-serif" font-size="15" font-weight="600" fill="var(--text)" ${ek}>${m}</text>`,
+  mono:   (x,y,m,ek='') => `<text x="${x}" y="${y}" font-family="JetBrains Mono, monospace" font-size="10.5" letter-spacing="1.5" fill="var(--accent)" ${ek}>${m}</text>`,
+  yazi:   (x,y,m,ek='') => `<text x="${x}" y="${y}" font-family="IBM Plex Sans, sans-serif" font-size="13" fill="var(--text)" ${ek}>${m}</text>`,
+  // Metin yerine gecen cubuk: okunmayacak sahte yazi yazmaktansa cizgi.
+  satir: (x,y,w,o=1) => `<rect x="${x}" y="${y}" width="${w}" height="5" rx="2.5" fill="var(--text-dim)" opacity="${o*0.42}"/>`,
+  tik:   (x,y,r=11) => `<g transform="translate(${x},${y})"><circle r="${r}" fill="var(--green)" opacity="0.17"/><path d="M${-r*0.42},${r*0.03} L${-r*0.12},${r*0.34} L${r*0.44},${-r*0.32}" stroke="var(--green)" stroke-width="2.4" fill="none" stroke-linecap="round" stroke-linejoin="round"/></g>`,
+  bos:   (x,y,r=10) => `<circle cx="${x}" cy="${y}" r="${r}" fill="none" stroke="var(--line)" stroke-width="2"/>`,
+  pil:   (x,y,w,m,renk='var(--accent)',h=24) => `<g transform="translate(${x},${y})"><rect width="${w}" height="${h}" rx="${h/2}" fill="${renk}" opacity="0.16"/><text x="${w/2}" y="${h/2+4}" font-family="JetBrains Mono, monospace" font-size="10" letter-spacing="1.1" fill="${renk}" text-anchor="middle">${m}</text></g>`,
+  kutu:  (n,x,y,w,h) => `<rect x="${x}" y="${y}" width="${w}" height="${h}" rx="9" fill="var(--bg)" stroke="var(--line)"/>`,
+  isaretli: (x,y) => `<g transform="translate(${x},${y})"><rect width="18" height="18" rx="5" fill="var(--accent)"/><path d="M4.5,9.4 L7.8,12.6 L13.6,6" stroke="var(--surface)" stroke-width="2.2" fill="none" stroke-linecap="round" stroke-linejoin="round"/></g>`,
+  isaretsiz: (x,y) => `<rect x="${x}" y="${y}" width="18" height="18" rx="5" fill="none" stroke="var(--line)" stroke-width="2"/>`,
+  yildiz: (x,y,r=13) => `<g transform="translate(${x},${y})"><circle r="${r*1.7}" fill="var(--accent)" opacity="0.13"/><path d="M0,${-r} L${r*0.3},${-r*0.3} L${r},0 L${r*0.3},${r*0.3} L0,${r} L${-r*0.3},${r*0.3} L${-r},0 L${-r*0.3},${-r*0.3} Z" fill="var(--accent)"/></g>`,
 };
 
 const TOUR_VISUALS = [
   // 1 — Zincir: fikir → script → proje → takvim.
-  () => TV.sahne(`
-    ${TV.zemin()}
-    ${[['fikir',18],['script',128],['proje',238],['takvim',348]].map(([ad,x],i)=>`
-      <g transform="translate(${x},46)">
-        ${i===3 ? TV.vurgu(0,0,94,64) : TV.kart(0,0,94,64)}
-        ${TV.goz(12,20,String(i+1))}
-        ${TV.yazi(47,40,t('tour_v_chain_'+i),'text-anchor="middle" font-weight="600"')}
-        ${TV.satir(20,50,54,0.8)}
-      </g>`).join('')}
-    ${[112,222,332].map(x=>`<line x1="${x}" y1="78" x2="${x+14}" y2="78" stroke="var(--accent)" stroke-width="2" marker-end="url(#tvA1)"/>`).join('')}
-    ${TV.goz(18,150,t('tour_v_chain_note'))}
-    <defs>${TV.ok('tvA1')}</defs>`),
-
-  // 2 — Fikir kartlari: surukleyip birlestirme.
-  () => TV.sahne(`
-    ${TV.zemin()}
-    <g transform="translate(24,26)">
-      ${TV.kart(0,0,120,54)}
-      ${TV.satir(14,20,86)}${TV.satir(14,32,60,0.7)}
-    </g>
-    <g transform="translate(24,96)">
-      ${TV.kart(0,0,120,54)}
-      ${TV.satir(14,20,74)}${TV.satir(14,32,88,0.7)}
-    </g>
-    <line x1="152" y1="90" x2="188" y2="90" stroke="var(--accent)" stroke-width="2" marker-end="url(#tvA2)"/>
-    <g transform="translate(206,26)">
-      ${TV.vurgu(0,0,150,124)}
-      <rect x="0" y="0" width="150" height="24" rx="10" fill="var(--accent)" opacity="0.18"/>
-      <rect x="0" y="16" width="150" height="8" fill="var(--accent)" opacity="0.18"/>
-      ${TV.goz(12,16,t('tour_v_merged'))}
-      ${TV.satir(14,44,110)}${TV.satir(14,56,78,0.7)}
-      <line x1="12" y1="72" x2="138" y2="72" stroke="var(--line)" stroke-dasharray="3 3"/>
-      ${TV.satir(14,86,96)}${TV.satir(14,98,64,0.7)}
-    </g>
-    <g transform="translate(372,74)">
-      ${TV.kart(0,0,66,32)}
-      ${TV.kucuk(33,20,t('tour_v_split'),'text-anchor="middle" fill="var(--accent)"')}
-    </g>
-    <defs>${TV.ok('tvA2')}</defs>`),
-
-  // 3 — Script: bagimsiz kayit + Drive iki yonlu.
-  () => TV.sahne(`
-    ${TV.zemin()}
-    <g transform="translate(140,18)">
-      ${TV.vurgu(0,0,180,144)}
-      <rect x="0" y="0" width="180" height="26" rx="10" fill="var(--accent)" opacity="0.16"/>
-      <rect x="0" y="18" width="180" height="8" fill="var(--accent)" opacity="0.16"/>
-      ${TV.goz(12,17,'SCRIPT')}
-      ${[46,60,74,88,102,116].map((y,i)=>TV.satir(14,y,[150,132,146,120,140,96][i],0.85)).join('')}
-    </g>
-    <g transform="translate(18,56)">
-      ${TV.kart(0,0,102,68)}
-      ${TV.goz(12,22,t('tour_v_project'))}
-      ${TV.satir(12,36,72)}${TV.satir(12,48,54,0.7)}
-    </g>
-    <line x1="122" y1="90" x2="136" y2="90" stroke="var(--accent)" stroke-width="2" marker-end="url(#tvA3)"/>
-    <g transform="translate(340,56)">
-      ${TV.kart(0,0,102,68)}
-      <g transform="translate(38,16) scale(0.9)">
-        <path d="M6.5 12 3 18l3.5 6h13l-3.5-6H6.5z" fill="#00AC47"/>
-        <path d="M12.5 1 9 7l6.5 11h7L16 7l-3.5-6z" fill="#0066DA"/>
-        <path d="M16 7 12.5 1h7l3.5 6-3.5 6L16 7z" fill="#FFBA00"/>
+  () => TV.sahne(1, `
+    <g filter="url(#dr1)">
+      <g transform="translate(48,94)">
+        ${TV.kart(1,0,0,152,152)}
+        <circle cx="76" cy="58" r="27" fill="var(--accent)" opacity="0.12"/>
+        <path d="M76,40 a17,17 0 0,1 10,30 v7 h-20 v-7 a17,17 0 0,1 10,-30 z" fill="none" stroke="var(--accent)" stroke-width="2.4" stroke-linejoin="round"/>
+        <line x1="68" y1="84" x2="84" y2="84" stroke="var(--accent)" stroke-width="2.4" stroke-linecap="round"/>
+        ${TV.baslik(76,116,t('tour_v_chain_0'),'text-anchor="middle"')}
+        ${TV.satir(46,128,60,0.8)}
       </g>
-      ${TV.kucuk(51,58,'Drive','text-anchor="middle"')}
+      <g transform="translate(246,94)">
+        ${TV.kart(1,0,0,152,152)}
+        <rect x="52" y="32" width="48" height="58" rx="7" fill="var(--accent)" opacity="0.12"/>
+        <rect x="52" y="32" width="48" height="58" rx="7" fill="none" stroke="var(--accent)" stroke-width="2.2"/>
+        <line x1="62" y1="48" x2="90" y2="48" stroke="var(--accent)" stroke-width="2.2" stroke-linecap="round"/>
+        <line x1="62" y1="60" x2="90" y2="60" stroke="var(--accent)" stroke-width="2.2" stroke-linecap="round"/>
+        <line x1="62" y1="72" x2="80" y2="72" stroke="var(--accent)" stroke-width="2.2" stroke-linecap="round"/>
+        ${TV.baslik(76,116,t('tour_v_chain_1'),'text-anchor="middle"')}
+        ${TV.satir(46,128,60,0.8)}
+      </g>
+      <g transform="translate(444,94)">
+        ${TV.kart(1,0,0,152,152)}
+        <g transform="translate(48,34)">
+          <rect x="0" y="14" width="56" height="42" rx="7" fill="var(--accent)" opacity="0.12"/>
+          <rect x="0" y="14" width="56" height="42" rx="7" fill="none" stroke="var(--accent)" stroke-width="2.2"/>
+          <path d="M0,14 L8,2 L34,2 L26,14 Z" fill="var(--accent)" opacity="0.55"/>
+          <path d="M30,14 L38,2 L60,2 L52,14 Z" fill="var(--accent)" opacity="0.28"/>
+        </g>
+        ${TV.baslik(76,116,t('tour_v_chain_2'),'text-anchor="middle"')}
+        ${TV.satir(46,128,60,0.8)}
+      </g>
+      <g transform="translate(648,80)">
+        ${TV.kart(1,0,0,164,168,true)}
+        <g transform="translate(34,32)">
+          <rect width="96" height="72" rx="8" fill="none" stroke="var(--accent)" stroke-width="2.2"/>
+          <line x1="0" y1="20" x2="96" y2="20" stroke="var(--accent)" stroke-width="2.2"/>
+          <line x1="32" y1="20" x2="32" y2="72" stroke="var(--line)"/>
+          <line x1="64" y1="20" x2="64" y2="72" stroke="var(--line)"/>
+          <line x1="0" y1="46" x2="96" y2="46" stroke="var(--line)"/>
+          <rect x="6" y="26" width="20" height="14" rx="4" fill="var(--accent)" opacity="0.6"/>
+          <rect x="38" y="52" width="20" height="14" rx="4" fill="var(--amber)" opacity="0.8"/>
+          <rect x="70" y="26" width="20" height="14" rx="4" fill="var(--green)" opacity="0.6"/>
+        </g>
+        ${TV.baslik(82,132,t('tour_v_chain_3'),'text-anchor="middle"')}
+        ${TV.satir(52,144,60,0.8)}
+      </g>
     </g>
-    <line x1="326" y1="80" x2="340" y2="80" stroke="var(--accent)" stroke-width="2" marker-end="url(#tvA3)"/>
-    <line x1="340" y1="102" x2="326" y2="102" stroke="var(--accent)" stroke-width="2" marker-end="url(#tvA3)"/>
-    <defs>${TV.ok('tvA3')}</defs>`),
+    ${[[206,240],[404,438],[602,640]].map(([a,b])=>
+      `<path d="M${a},170 H${b}" stroke="var(--accent)" stroke-width="2.5" fill="none" marker-end="url(#mk1)"/>`).join('')}
+    ${TV.mono(48,296,t('tour_v_chain_note'))}`),
 
-  // 4 — AI: secilen fikirler + tarif → script.
-  () => TV.sahne(`
-    ${TV.zemin()}
-    <g transform="translate(18,18)">
-      ${TV.kart(0,0,168,86)}
-      ${TV.goz(12,20,t('tour_v_ideas'))}
-      ${[34,54,74].map((y,i)=>`
-        ${i<2 ? `<rect x="12" y="${y-9}" width="12" height="12" rx="3" fill="var(--accent)"/>
-                 <path d="M15,${y-3.5} L17.4,${y-1} L21,${y-5}" stroke="var(--surface)" stroke-width="1.7" fill="none" stroke-linecap="round"/>`
-              : TV.bos(18,y-3).replace('r="7"','r="5.6"')}
-        ${TV.satir(32,y-5,[112,96,86][i], i<2?0.9:0.45)}`).join('')}
+  // 2 — Iki kart birlesiyor, birinden parca cikiyor.
+  () => TV.sahne(2, `
+    <g filter="url(#dr2)">
+      <g transform="translate(44,54)">
+        ${TV.kart(2,0,0,176,86)}
+        ${TV.satir(20,30,124)}${TV.satir(20,48,88,0.7)}
+      </g>
+      <g transform="translate(44,166)">
+        ${TV.kart(2,0,0,176,86)}
+        ${TV.satir(20,30,104)}${TV.satir(20,48,132,0.7)}
+      </g>
+      <g transform="translate(352,44)">
+        ${TV.kart(2,0,0,240,252,true)}
+        <rect x="1" y="1" width="238" height="42" rx="17" fill="var(--accent)" opacity="0.16"/>
+        <rect x="1" y="26" width="238" height="17" fill="var(--accent)" opacity="0.16"/>
+        ${TV.mono(20,28,t('tour_v_merged'))}
+        ${TV.satir(22,74,180)}${TV.satir(22,92,128,0.7)}
+        <line x1="20" y1="126" x2="220" y2="126" stroke="var(--line)" stroke-dasharray="4 4"/>
+        ${TV.satir(22,152,164)}${TV.satir(22,170,196,0.7)}
+        ${TV.satir(22,188,110,0.7)}
+      </g>
+      <g transform="translate(688,120)">
+        <rect width="168" height="100" rx="18" fill="url(#kg2)" stroke="var(--accent)" stroke-dasharray="7 5" stroke-width="2"/>
+        ${TV.satir(22,34,110)}${TV.satir(22,52,80,0.7)}
+        ${TV.mono(22,82,t('tour_v_split'))}
+      </g>
     </g>
-    <g transform="translate(18,116)">
-      <rect width="168" height="42" rx="10" fill="var(--surface)" stroke="var(--accent)" stroke-dasharray="5 4"/>
-      ${TV.kucuk(12,18,t('tour_v_brief'),'fill="var(--accent)"')}
-      ${TV.satir(12,26,132,0.8)}
-    </g>
-    <g transform="translate(206,72)">
-      ${TV.yildiz(14,14,11)}
-      <line x1="30" y1="14" x2="58" y2="14" stroke="var(--accent)" stroke-width="2" marker-end="url(#tvA4)"/>
-    </g>
-    <g transform="translate(276,22)">
-      ${TV.vurgu(0,0,164,136)}
-      <rect x="0" y="0" width="164" height="24" rx="10" fill="var(--accent)" opacity="0.16"/>
-      <rect x="0" y="16" width="164" height="8" fill="var(--accent)" opacity="0.16"/>
-      ${TV.goz(12,16,'SCRIPT')}
-      ${[42,56,70,84,98,112,126].map((y,i)=>TV.satir(14,y,[136,120,132,108,128,116,88][i],0.85)).join('')}
-    </g>
-    <defs>${TV.ok('tvA4')}</defs>`),
+    <path d="M236,140 H340" stroke="var(--accent)" stroke-width="2.5" fill="none" marker-end="url(#mk2)"/>
+    <path d="M604,170 H676" stroke="var(--accent)" stroke-width="2.5" stroke-dasharray="6 5" fill="none" marker-end="url(#mk2)"/>`),
 
-  // 5 — Proje satiri: yedi adim + ust ozet.
-  () => TV.sahne(`
-    ${TV.zemin()}
-    <g transform="translate(18,14)">
-      ${[[0,'12'],[70,'5'],[140,'3'],[210,'2']].map(([x,n],i)=>`
-        <g transform="translate(${x},0)">
-          ${TV.kart(0,0,62,38)}
-          ${TV.yazi(31,20,n,'text-anchor="middle" font-size="15" font-weight="700"')}
-          ${TV.goz(31,32,t('tour_v_stat_'+i),'text-anchor="middle"')}
-        </g>`).join('')}
+  // 3 — Script kaydi ortada, solda proje, sagda Drive (iki yon).
+  () => TV.sahne(3, `
+    <g filter="url(#dr3)">
+      <g transform="translate(300,36)">
+        ${TV.kart(3,0,0,300,268,true)}
+        <rect x="1" y="1" width="298" height="44" rx="17" fill="var(--accent)" opacity="0.16"/>
+        <rect x="1" y="28" width="298" height="17" fill="var(--accent)" opacity="0.16"/>
+        ${TV.mono(22,29,'SCRIPT')}
+        ${[76,98,120,142,164,186,208,230].map((y,i)=>TV.satir(24,y,[252,214,244,196,236,224,248,152][i],0.85)).join('')}
+      </g>
+      <g transform="translate(44,116)">
+        ${TV.kart(3,0,0,196,110)}
+        ${TV.mono(22,36,t('tour_v_project'))}
+        ${TV.satir(22,54,132)}${TV.satir(22,72,96,0.7)}
+      </g>
+      <g transform="translate(660,116)">
+        ${TV.kart(3,0,0,196,110)}
+        <g transform="translate(76,24) scale(1.8)">
+          <path d="M6.5 12 3 18l3.5 6h13l-3.5-6H6.5z" fill="#00AC47"/>
+          <path d="M12.5 1 9 7l6.5 11h7L16 7l-3.5-6z" fill="#0066DA"/>
+          <path d="M16 7 12.5 1h7l3.5 6-3.5 6L16 7z" fill="#FFBA00"/>
+        </g>
+        ${TV.baslik(98,92,'Google Drive','text-anchor="middle"')}
+      </g>
     </g>
-    <g transform="translate(18,66)">
-      ${TV.kart(0,0,424,44)}
-      ${TV.yazi(14,20,t('tour_v_proj_name'),'font-weight="600"')}
-      ${TV.goz(14,34,t('tour_v_proj_type'))}
-      ${[0,1,2,3,4,5,6].map(i=>`
-        <g transform="translate(${168+i*36},22)">
-          ${i<4 ? TV.tik(0,0) : TV.bos(0,0)}
-        </g>`).join('')}
+    <path d="M252,170 H288" stroke="var(--accent)" stroke-width="2.5" fill="none" marker-end="url(#mk3)"/>
+    <path d="M612,150 H648" stroke="var(--accent)" stroke-width="2.5" fill="none" marker-end="url(#mk3)"/>
+    <path d="M648,192 H612" stroke="var(--accent)" stroke-width="2.5" fill="none" marker-end="url(#mk3)"/>`),
+
+  // 4 — Secilen fikirler + tarif → script.
+  () => TV.sahne(4, `
+    <g filter="url(#dr4)">
+      <g transform="translate(44,34)">
+        ${TV.kart(4,0,0,268,166)}
+        ${TV.mono(22,34,t('tour_v_ideas'))}
+        ${[[56,1],[92,1],[128,0]].map(([y,se])=>`
+          ${se ? TV.isaretli(22,y-14) : TV.isaretsiz(22,y-14)}
+          ${TV.satir(52,y-9,[186,158,140][[56,92,128].indexOf(y)], se?0.9:0.4)}`).join('')}
+      </g>
+      <g transform="translate(44,216)">
+        <rect width="268" height="80" rx="16" fill="url(#kg4)" stroke="var(--accent)" stroke-dasharray="7 5" stroke-width="2"/>
+        ${TV.mono(22,34,t('tour_v_brief'))}
+        ${TV.satir(22,48,212,0.85)}${TV.satir(22,62,148,0.6)}
+      </g>
+      <g transform="translate(560,36)">
+        ${TV.kart(4,0,0,296,268,true)}
+        <rect x="1" y="1" width="294" height="42" rx="17" fill="var(--accent)" opacity="0.16"/>
+        <rect x="1" y="26" width="294" height="17" fill="var(--accent)" opacity="0.16"/>
+        ${TV.mono(22,28,'SCRIPT')}
+        ${[76,98,120,142,164,186,208,230].map((y,i)=>TV.satir(24,y,[248,210,240,192,232,220,244,148][i],0.85)).join('')}
+      </g>
     </g>
-    <g transform="translate(18,122)">
-      ${TV.kart(0,0,424,44,'opacity="0.55"')}
-      ${TV.yazi(14,26,t('tour_v_proj_done'),'font-weight="600" opacity="0.75"')}
-      ${TV.cip(126,13,54,t('tour_v_done'),'var(--green)')}
-      ${[0,1,2,3,4,5,6].map(i=>TV.tik(200+i*32,22)).join('')}
+    ${TV.yildiz(410,170)}
+    <path d="M340,170 H378" stroke="var(--accent)" stroke-width="2.5" fill="none" marker-end="url(#mk4)"/>
+    <path d="M442,170 H540" stroke="var(--accent)" stroke-width="2.5" fill="none" marker-end="url(#mk4)"/>`),
+
+  // 5 — Ozet seridi + iki proje satiri.
+  () => TV.sahne(5, `
+    <g filter="url(#dr5)">
+      ${[[0,'12',0],[132,'5',1],[264,'3',2],[396,'2',3]].map(([x,n,i])=>`
+        <g transform="translate(${44+x},32)">
+          ${TV.kart(5,0,0,116,72)}
+          <text x="58" y="38" text-anchor="middle" font-family="Archivo, sans-serif" font-size="24" font-weight="800" fill="var(--text)">${n}</text>
+          ${TV.mono(58,58,t('tour_v_stat_'+i),'text-anchor="middle"')}
+        </g>`).join('')}
+      <g transform="translate(44,134)">
+        ${TV.kart(5,0,0,812,78)}
+        ${TV.baslik(28,36,t('tour_v_proj_name'))}
+        ${TV.mono(28,58,t('tour_v_proj_type'))}
+        ${[0,1,2,3,4,5,6].map(i=>i<4 ? TV.tik(320+i*72,40) : TV.bos(320+i*72,40)).join('')}
+      </g>
+      <g transform="translate(44,232)">
+        ${TV.kart(5,0,0,812,78)}
+        ${TV.baslik(28,46,t('tour_v_proj_done'),'opacity="0.7"')}
+        ${TV.pil(238,28,66,t('tour_v_done'),'var(--green)')}
+        ${[0,1,2,3,4,5,6].map(i=>TV.tik(348+i*68,40)).join('')}
+      </g>
     </g>`),
 
-  // 6 — Terminler: gecen tarih kirmizi.
-  () => TV.sahne(`
-    ${TV.zemin()}
-    <g transform="translate(24,20)">
-      ${TV.kart(0,0,412,140)}
-      ${TV.goz(16,26,t('tour_v_deadlines'))}
-      ${[[48,0],[74,1],[100,2],[126,3]].map(([y,i])=>`
-        <g transform="translate(16,${y})">
-          ${i===1 ? TV.bos(8,0) : TV.tik(8,0)}
-          ${TV.yazi(26,4,t('tour_v_step_'+i))}
-          <rect x="286" y="-11" width="94" height="22" rx="7"
-                fill="${i===1?'var(--red)':'var(--surface-2)'}" opacity="${i===1?0.18:1}"
-                stroke="${i===1?'var(--red)':'var(--line)'}"/>
-          ${TV.kucuk(333,3,t('tour_v_date_'+i),`text-anchor="middle" fill="${i===1?'var(--red)':'var(--text)'}"`)}
-        </g>`).join('')}
+  // 6 — Terminler; gecen tarih kirmizi.
+  () => TV.sahne(6, `
+    <g filter="url(#dr6)">
+      <g transform="translate(56,30)">
+        ${TV.kart(6,0,0,788,280)}
+        ${TV.mono(32,44,t('tour_v_deadlines'))}
+        ${[0,1,2,3].map(i=>{
+          const y = 92 + i*54, gec = i===1;
+          return `${gec ? TV.bos(48,y) : TV.tik(48,y)}
+            ${TV.yazi(80,y+5,t('tour_v_step_'+i))}
+            <rect x="560" y="${y-17}" width="180" height="34" rx="11"
+                  fill="${gec?'var(--red)':'var(--surface-2)'}" opacity="${gec?0.16:1}"
+                  stroke="${gec?'var(--red)':'var(--line)'}" stroke-width="${gec?1.6:1}"/>
+            <text x="650" y="${y+5}" text-anchor="middle" font-family="JetBrains Mono, monospace"
+                  font-size="12.5" fill="${gec?'var(--red)':'var(--text)'}">${t('tour_v_date_'+i)}</text>`;
+        }).join('')}
+      </g>
     </g>`),
 
-  // 7 — Takvim: iki bagimsiz etiket ve filtreler.
-  () => TV.sahne(`
-    ${TV.zemin()}
-    <g transform="translate(18,14)">
-      ${['REEL','SHORT','VID','STORY'].map((m,i)=>TV.cip(i*56,0,50,m,'var(--accent)')).join('')}
-      ${['YT','IG','TT','FB'].map((m,i)=>TV.cip(238+i*46,0,40,m,'var(--p-youtube)')).join('')}
+  // 7 — Iki bagimsiz etiket ve hafta izgarasi.
+  () => TV.sahne(7, `
+    <g transform="translate(44,26)">
+      ${['REEL','SHORT','VID','STORY'].map((m,i)=>TV.pil(i*84,0,74,m,'var(--accent)',26)).join('')}
+      ${['YT','IG','TT','FB'].map((m,i)=>TV.pil(452+i*72,0,62,m,['var(--p-youtube)','var(--p-instagram)','var(--p-tiktok)','var(--p-facebook)'][i],26)).join('')}
     </g>
-    <g transform="translate(18,46)">
-      ${TV.kart(0,0,424,120)}
-      ${[0,1,2,3,4].map(i=>`<line x1="${(i+1)*70.6}" y1="0" x2="${(i+1)*70.6}" y2="120" stroke="var(--line)"/>`).join('')}
-      <rect x="0" y="0" width="424" height="22" rx="10" fill="var(--surface-2)"/>
-      <rect x="0" y="14" width="424" height="8" fill="var(--surface-2)"/>
-      ${[0,1,2,3,4,5].map(i=>TV.goz(12+i*70.6,15,t('tour_v_day_'+i))).join('')}
-      ${[[6,34],[80,34],[80,62],[150,34],[292,34],[292,62],[362,34]].map(([x,y],i)=>`
-        <g transform="translate(${x+6},${y})">
-          <rect width="58" height="22" rx="7" fill="var(--accent)" opacity="0.16"/>
-          <rect x="0" y="0" width="3" height="22" rx="1.5" fill="${['var(--p-youtube)','var(--p-instagram)','var(--p-tiktok)','var(--p-youtube)','var(--p-instagram)','var(--p-facebook)','var(--p-youtube)'][i]}"/>
-          ${TV.satir(10,9,38,0.9)}
-        </g>`).join('')}
+    <g filter="url(#dr7)">
+      <g transform="translate(44,80)">
+        ${TV.kart(7,0,0,812,232)}
+        <rect x="1" y="1" width="810" height="42" rx="17" fill="var(--surface-2)"/>
+        <rect x="1" y="26" width="810" height="17" fill="var(--surface-2)"/>
+        ${[0,1,2,3,4,5].map(i=>`<line x1="${(i+1)*135}" y1="1" x2="${(i+1)*135}" y2="231" stroke="var(--line)"/>`).join('')}
+        ${[0,1,2,3,4,5].map(i=>TV.mono(24+i*135,28,t('tour_v_day_'+i))).join('')}
+        ${[[0,62],[135,62],[135,110],[270,62],[540,62],[540,110],[675,62]].map(([x,y],i)=>`
+          <g transform="translate(${x+18},${y})">
+            <rect width="102" height="34" rx="10" fill="var(--accent)" opacity="0.15"/>
+            <rect width="4" height="34" rx="2" fill="${['var(--p-youtube)','var(--p-instagram)','var(--p-tiktok)','var(--p-youtube)','var(--p-instagram)','var(--p-facebook)','var(--p-youtube)'][i]}"/>
+            ${TV.satir(16,15,66,0.9)}
+          </g>`).join('')}
+      </g>
     </g>`),
 
   // 8 — Kayit penceresi: alanlar ve AI dugmeleri.
-  () => TV.sahne(`
-    ${TV.zemin()}
-    <g transform="translate(56,14)">
-      ${TV.kart(0,0,348,152)}
-      ${TV.goz(16,24,t('tour_v_entry'))}
-      ${[[40,'tour_v_f_title'],[74,'tour_v_f_caption'],[108,'tour_v_f_cover']].map(([y,anahtar],i)=>`
-        <g transform="translate(16,${y})">
-          ${TV.kucuk(0,8,t(anahtar))}
-          <rect x="86" y="-4" width="168" height="${i===1?26:18}" rx="6" fill="var(--bg)" stroke="var(--line)"/>
-          ${TV.satir(94,i===1?4:3,[120,140,96][i],0.8)}
-          <g transform="translate(266,-4)">
-            <rect width="46" height="18" rx="6" fill="var(--accent)" opacity="0.16"/>
-            ${TV.kucuk(23,12.5,'✨ AI','text-anchor="middle" fill="var(--accent)"')}
-          </g>
-        </g>`).join('')}
+  () => TV.sahne(8, `
+    <g filter="url(#dr8)">
+      <g transform="translate(120,28)">
+        ${TV.kart(8,0,0,660,284,true)}
+        ${TV.mono(32,44,t('tour_v_entry'))}
+        ${[[80,'tour_v_f_title',0],[146,'tour_v_f_caption',1],[218,'tour_v_f_cover',2]].map(([y,anahtar,i])=>`
+          ${TV.yazi(32,y+16,t(anahtar))}
+          ${TV.kutu(8,150,y,340,i===1?52:36)}
+          ${TV.satir(166,y+ (i===1?16:15),[236,268,190][i],0.8)}
+          ${i===1 ? TV.satir(166,y+32,196,0.6) : ''}
+          <g transform="translate(516,${y})">
+            <rect width="104" height="36" rx="11" fill="var(--accent)" opacity="0.15"/>
+            <text x="52" y="23" text-anchor="middle" font-family="IBM Plex Sans, sans-serif"
+                  font-size="12.5" fill="var(--accent)">✨ AI</text>
+          </g>`).join('')}
+      </g>
     </g>`),
 
-  // 9 — Sablon: tek metin, platform istisnasi.
-  () => TV.sahne(`
-    ${TV.zemin()}
-    <g transform="translate(20,26)">
-      ${TV.vurgu(0,0,168,60)}
-      ${TV.goz(14,22,t('tour_v_template'))}
-      ${TV.satir(14,34,138)}${TV.satir(14,46,104,0.7)}
-    </g>
-    <g transform="translate(20,102)">
-      ${TV.kart(0,0,168,56)}
-      ${TV.cip(14,12,52,'YT','var(--p-youtube)')}
-      ${TV.kucuk(76,26,t('tour_v_exception'),'fill="var(--accent)"')}
-      ${TV.satir(14,42,138,0.7)}
-    </g>
-    <line x1="196" y1="90" x2="228" y2="90" stroke="var(--accent)" stroke-width="2" marker-end="url(#tvA9)"/>
-    ${[0,1,2].map(i=>`
-      <g transform="translate(246,${20+i*52})">
-        ${TV.kart(0,0,192,44)}
-        <rect x="0" y="0" width="3.5" height="44" rx="1.75" fill="${['var(--p-youtube)','var(--p-instagram)','var(--p-tiktok)'][i]}"/>
-        ${TV.satir(16,14,150,0.9)}
-        ${TV.satir(16,26,i===0?120:104,0.6)}
-        ${i===0 ? TV.kucuk(150,36,t('tour_v_exception'),'fill="var(--accent)" font-size="8.5"') : ''}
-      </g>`).join('')}
-    <defs>${TV.ok('tvA9')}</defs>`),
-
-  // 10 — Bulut: ayni plan her cihazda + bekleyenler.
-  () => TV.sahne(`
-    ${TV.zemin()}
-    <g transform="translate(166,10)">
-      ${TV.vurgu(0,0,128,50)}
-      <g transform="translate(6,-6) scale(0.82)">
-        <path d="M34,32 a13,13 0 0,1 13,-13 a16,16 0 0,1 30,4 a11,11 0 0,1 -2,22 H36 a12,12 0 0,1 -2,-13 z"
-              fill="var(--accent)" opacity="0.2" stroke="var(--accent)" stroke-width="1.6"/>
+  // 9 — Tek kapanis metni, uc platform, birinde istisna.
+  () => TV.sahne(9, `
+    <g filter="url(#dr9)">
+      <g transform="translate(44,54)">
+        ${TV.kart(9,0,0,300,104,true)}
+        ${TV.mono(24,36,t('tour_v_template'))}
+        ${TV.satir(24,56,244)}${TV.satir(24,74,180,0.7)}
       </g>
-      ${TV.goz(64,45,t('tour_v_cloud'),'text-anchor="middle"')}
+      <g transform="translate(44,190)">
+        ${TV.kart(9,0,0,300,100)}
+        ${TV.pil(24,20,64,'YT','var(--p-youtube)')}
+        ${TV.mono(104,38,t('tour_v_exception'))}
+        ${TV.satir(24,66,244,0.7)}
+      </g>
+      ${[0,1,2].map(i=>`
+        <g transform="translate(560,${34+i*94})">
+          ${TV.kart(9,0,0,296,76)}
+          <rect x="1" y="1" width="5" height="74" rx="2.5" fill="${['var(--p-youtube)','var(--p-instagram)','var(--p-tiktok)'][i]}"/>
+          ${TV.satir(28,24,224,0.9)}
+          ${TV.satir(28,42,i===0?176:196,0.6)}
+          ${i===0 ? TV.mono(28,64,t('tour_v_exception')) : TV.satir(28,60,140,0.35)}
+        </g>`).join('')}
     </g>
-    ${[[26,'tour_v_dev_phone'],[166,'tour_v_dev_laptop'],[306,'tour_v_dev_tablet']].map(([x,anahtar],i)=>`
-      <g transform="translate(${x},104)">
-        ${TV.kart(0,0,128,62)}
-        ${TV.goz(64,20,t(anahtar),'text-anchor="middle"')}
-        ${TV.satir(18,32,92,0.8)}
-        ${i===2 ? TV.cip(18,42,74,t('tour_v_wait'),'var(--amber)')
-                : TV.satir(18,44,68,0.6)}
-      </g>`).join('')}
-    ${[[90,104],[230,104],[370,104]].map(([x,y])=>`<line x1="${x}" y1="${y-4}" x2="${x<230?200:(x>230?260:230)}" y2="64" stroke="var(--accent)" stroke-width="1.6" opacity="0.8" marker-end="url(#tvA10)"/>`).join('')}
-    <defs>${TV.ok('tvA10')}</defs>`),
+    <path d="M360,170 H540" stroke="var(--accent)" stroke-width="2.5" opacity="0.85" fill="none" marker-end="url(#mk9)"/>`),
+
+  // 10 — Hesap bulutu ve uc cihaz.
+  () => TV.sahne(10, `
+    <g filter="url(#dr10)">
+      <g transform="translate(348,20)">
+        ${TV.kart(10,0,0,204,96,true)}
+        <g transform="translate(60,14) scale(0.92)">
+          <path d="M22,52 a17,17 0 0,1 17,-17 a21,21 0 0,1 39,5 a14,14 0 0,1 -3,29 H25 a15,15 0 0,1 -3,-17 z"
+                fill="var(--accent)" opacity="0.18" stroke="var(--accent)" stroke-width="2"/>
+        </g>
+        ${TV.mono(102,84,t('tour_v_cloud'),'text-anchor="middle"')}
+      </g>
+      ${[[44,'tour_v_dev_phone',0],[348,'tour_v_dev_laptop',1],[652,'tour_v_dev_tablet',2]].map(([x,anahtar,i])=>`
+        <g transform="translate(${x},204)">
+          ${TV.kart(10,0,0,204,110)}
+          ${TV.mono(102,34,t(anahtar),'text-anchor="middle"')}
+          ${TV.satir(32,52,140,0.8)}
+          ${i===2 ? TV.pil(32,66,118,t('tour_v_wait'),'var(--amber)')
+                  : TV.satir(32,72,104,0.6)}
+        </g>`).join('')}
+    </g>
+    <path d="M146,196 C146,150 300,150 380,124" stroke="var(--accent)" stroke-width="2" opacity="0.75" fill="none" marker-end="url(#mk10)"/>
+    <path d="M450,196 V128" stroke="var(--accent)" stroke-width="2" opacity="0.75" fill="none" marker-end="url(#mk10)"/>
+    <path d="M754,196 C754,150 600,150 520,124" stroke="var(--accent)" stroke-width="2" opacity="0.75" fill="none" marker-end="url(#mk10)"/>`),
 ];
 
 let tourIndex = 0;
@@ -9169,7 +9251,7 @@ document.addEventListener('keydown', (e)=>{
 
 // Yayina alinan surumun damgasi. Onbellekten eski bir kopya geldiginde bu
 // tarih eski kalir, boylece "guncel mi?" sorusu bakarak cevaplanir.
-const BUILD_STAMP = '2026-09-03 17:40 UTC';
+const BUILD_STAMP = '2026-09-03 19:05 UTC';
 document.getElementById('buildId').textContent = BUILD_STAMP;
 
 // ===== Init =====

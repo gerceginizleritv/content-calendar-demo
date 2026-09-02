@@ -597,10 +597,28 @@ Yapısal değişiklikler:
 - **Gövde metni artık `--text`.** Önceki hâlde `--text-dim` idi ve koyu
   zeminde okunmuyordu. Maddeler sol kenarı vurgulu kartlar hâlinde.
 - Sağ üstte kapatma × eklendi.
-- Çizimler yeniden çizildi: 460x180 sahne, ortak yardımcı kümesi
-  (`TV.sahne/zemin/kart/vurgu/cip/tik/yildiz/satir`), hepsi tema
-  değişkenleriyle. `tur2.test.js` on adımı iki dilde ve üç ekran boyunda
-  geziyor; kontrastı hesaplanan renkten ölçüyor.
+- **Çizimler ikinci kez, çok daha yüksek işçilikle yeniden çizildi**
+  (kullanıcı: "cheesy ve cheap duruyor" — haklıydı). Sahne 460x180'den
+  **900x340**'a çıktı, `.tour-visual svg` en fazla 720px.
+  Üç katmanlı derinlik: zemin degradesi, kartlarda üst-alt degrade ve
+  altlarında `feDropShadow`. Vurgulu kartın arkasında hafif bir hare var.
+  Ortak yardımcı küme: `TV.sahne/kart/baslik/mono/yazi/satir/tik/bos/
+  pil/kutu/isaretli/isaretsiz/yildiz`. Her sahnenin kendi `defs` kimliği
+  (`zg1`, `kg1`, `dr1`, `mk1` …) — tek sahne render edildiği için
+  çakışma yok ama numaralandırmak ileride kırılmayı önlüyor.
+- **Seçenek kararı (3 Eylül):** kullanıcıya üç yol sunuldu — (A) ürünün
+  gerçek ekran görüntüleri, (B) yeniden çizim, (C) yapay zekâ görselleri.
+  **B seçildi.** C'nin reddedilme sebepleri kayıt için: üretilen
+  görsellerde yazı bozuk çıkıyor, tema takip etmiyor, ürünü göstermiyor
+  ve on görsel 3–5 MB tutuyor. Gemini ile örnek üretilemedi (anahtar
+  kullanıcıda ve paylaşılması istenmedi).
+- Yakalanan iki hata: zincir çizgisi kartların ARKASINDA kaldığı için
+  görünmüyordu (aradaki boşluklara kartların üstüne kısa oklar kondu);
+  `.tour-icerik` kısa adımlarda yukarı yapışıyordu
+  (`justify-content:safe center` — "safe" olmadan uzun adımda üst
+  kırpılıyor).
+- `tur2.test.js` on adımı iki dilde ve üç ekran boyunda geziyor;
+  kontrastı hesaplanan renkten ölçüyor.
 
 ### Termin hatırlatmaları — iki kanal (kullanıcı kararı, 1 Eylül 2026)
 Bugün uyarı yalnızca sayfa AÇIKKEN var: geciken adım kırmızı, üstte şerit.
