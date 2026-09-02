@@ -30,11 +30,25 @@ Yapılan:
 
 `bulut-hata.test.js` telefon boyutunda çalışıyor.
 
-**HÂLÂ BİLİNMİYOR:** kullanıcının telefonunda okumanın NEDEN başarısız
-olduğu (ya da başka bir sebep mi). Sorulacaklar: (1) telefonda hangi
-hesapla girildi — Google mı e-posta linki mi; masaüstündekiyle aynı mı?
-(2) üstteki hesap düğmesi kırmızı mı yeşil mi? Yeni şerit bunu artık
-kendisi söyleyecek.
+Kullanıcı "Buluta ulaşılamadı" dedi — yani okuma gerçekten başarısız.
+Bunun üzerine şerit artık SEBEBİ ayırt ediyor:
+
+- **ağ** (`fetch` patlıyor: "Failed to fetch"): "Bu cihaz buluta ulaşamadı"
+  + içerik engelleyici / VPN / kurum ağı ihtimali. Telefonda en sık sebep.
+- **oturum** (401/403 ya da JWT/expired): Slate **kendiliğinden bir kez
+  `refreshSession()` deniyor** ve başarılıysa kullanıcı hiçbir şey
+  görmüyor. Olmazsa "çıkıp yeniden gir" diyor.
+- **sunucu** (RLS/izin vb.): "Sunucu isteği geri çevirdi".
+
+Her üçünde de sunucunun KENDİ cümlesi küçük mono bir satırda yazıyor —
+"bir şeyler ters gitti" ne kullanıcıya ne bize bir şey söylüyordu.
+"Tekrar dene" önce oturumu tazeliyor, sonra yeniden okuyor.
+
+**HÂLÂ BİLİNMİYOR:** kullanıcının telefonunda hangi cins hata olduğu.
+Yeni şerit bunu kendisi söyleyecek; cevabı gelince buraya yazılacak.
+Eğer "ağ" çıkarsa sıradaki adım muhtemelen içerik engelleyici; "oturum"
+çıkıp tazeleme de olmuyorsa Supabase'in refresh token ayarlarına
+bakılacak; "sunucu" çıkarsa RLS politikası.
 
 ---
 

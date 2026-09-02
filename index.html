@@ -1292,6 +1292,9 @@ body.suruklenirken *{cursor:grabbing !important;}
 .nudge-dot{width:7px;height:7px;border-radius:50%;background:var(--accent);flex:none;}
 .nudge-error{border-left-color:var(--red);color:var(--text);}
 .nudge-error .nudge-dot{background:var(--red);}
+.cloud-err-body{display:flex;flex-direction:column;gap:3px;min-width:0;flex:1;}
+.cloud-err-detail{font-family:'JetBrains Mono',monospace;font-size:11px;color:var(--text-dim);
+  overflow-wrap:anywhere;}
 .btn-sm{min-height:32px;padding:5px 11px;font-size:12px;}
 .cloud-ok{color:var(--green);}
 .cloud-error{color:var(--red);}
@@ -1516,7 +1519,13 @@ body.suruklenirken *{cursor:grabbing !important;}
        yaziyor ve tekrar denenebiliyor. -->
   <div class="nudge nudge-error" id="cloudError" hidden>
     <span class="nudge-dot"></span>
-    <span data-i18n="cloud_err_text">Your entries could not be loaded. Nothing is lost — they are in your account.</span>
+    <span class="cloud-err-body">
+      <b id="cloudErrWhy" data-i18n="cloud_err_server">The server refused the request.</b>
+      <span data-i18n="cloud_err_safe">Nothing is lost: your entries are in your account, this device just could not read them.</span>
+      <!-- Sunucunun KENDI cumlesi. Genel bir "bir seyler ters gitti"
+           mesaji ne kullaniciya ne bize bir sey soyluyor. -->
+      <code class="cloud-err-detail" id="cloudErrDetail" hidden></code>
+    </span>
     <button class="btn btn-primary btn-sm" id="cloudRetry" data-i18n="cloud_err_retry">Try again</button>
   </div>
 
@@ -2297,11 +2306,16 @@ const LANG = {
     auth_signed_as: "Signed in as",
     auth_signout: "Sign out",
     auth_synced: "Saved to your account.",
-    auth_sync_err: "Could not reach the cloud — your work is still saved in this browser.",
+    auth_sync_err: "Could not reach the cloud — the reason is on the red bar above.",
     auth_moved: (n)=> `${n} entries moved to your account.`,
     auth_move_ask: (n)=> `This browser has ${n} entries that were made without an account. Move them into this account?\n\nChoose Cancel if they are not yours.`,
     auth_signed_out: "Signed out. You are back to this browser only.",
-    cloud_err_text: "Your entries could not be loaded — the connection or the server. Nothing is lost: they are in your account, this device just could not read them.",
+    cloud_err_safe: "Nothing is lost: your entries are in your account, this device just could not read them.",
+    cloud_err_net: "This device could not reach the cloud.",
+    cloud_err_net_more: "There may be no connection, or something on this device is blocking supabase.co — a content blocker, a VPN, or a company network. Try another connection.",
+    cloud_err_auth: "Your session had expired.",
+    cloud_err_auth_more: "Slate tried to refresh it. If this keeps happening, sign out and sign in again.",
+    cloud_err_server: "The server refused the request.",
     cloud_err_retry: "Try again",
     cloud_err_blocked: "Nothing is saved until your entries load — so that this device cannot write over what is in your account.",
     nudge_text: "Only this browser knows about this calendar.",
@@ -2704,11 +2718,16 @@ const LANG = {
     auth_signed_as: "Giriş yapıldı:",
     auth_signout: "Çıkış yap",
     auth_synced: "Hesabına kaydedildi.",
-    auth_sync_err: "Buluta ulaşılamadı — çalışman bu tarayıcıda duruyor.",
+    auth_sync_err: "Buluta ulaşılamadı — sebebi yukarıdaki kırmızı şeritte.",
     auth_moved: (n)=> `${n} kayıt hesabına taşındı.`,
     auth_move_ask: (n)=> `Bu tarayıcıda hesapsız oluşturulmuş ${n} kayıt var. Bu hesaba taşınsın mı?\n\nSana ait değilse İptal'e bas.`,
     auth_signed_out: "Çıkış yapıldı. Yalnızca bu tarayıcıya döndün.",
-    cloud_err_text: "Kayıtların yüklenemedi — bağlantı ya da sunucu. Hiçbir şey kaybolmadı: kayıtlar hesabında duruyor, bu cihaz okuyamadı.",
+    cloud_err_safe: "Hiçbir şey kaybolmadı: kayıtlar hesabında duruyor, bu cihaz okuyamadı.",
+    cloud_err_net: "Bu cihaz buluta ulaşamadı.",
+    cloud_err_net_more: "Ya bağlantı yok ya da bu cihazdaki bir şey supabase.co adresini kesiyor — içerik engelleyici, VPN ya da kurum ağı. Başka bir bağlantıyla dene.",
+    cloud_err_auth: "Oturumunun süresi dolmuştu.",
+    cloud_err_auth_more: "Slate tazelemeyi denedi. Tekrarlıyorsa çıkıp yeniden gir.",
+    cloud_err_server: "Sunucu isteği geri çevirdi.",
     cloud_err_retry: "Tekrar dene",
     cloud_err_blocked: "Kayıtların yüklenene kadar hiçbir şey kaydedilmiyor — bu cihaz hesabındakinin üzerine yazmasın diye.",
     nudge_text: "Bu takvimi yalnızca bu tarayıcı biliyor.",
@@ -3442,10 +3461,49 @@ async function pushChanges(){
 //      yazilmiyor. Yoksa kullanici bir kayda dokundugu anda demo satirlari
 //      kendi hesabina gidiyordu.
 let bulutOkumaBasarisiz = false;
+let bulutHataCinsiSon = 'sunucu';
+let bulutHataMetni = '';
+// Oturum tazeleme bir kez deneniyor; suresi dolmus bir belirtecle sonsuz
+// dongu kurmayalim.
+let oturumTazelemeDenendi = false;
+
+// Hatanin CINSI. "Bir seyler ters gitti" ne kullaniciya ne bize bir sey
+// soyluyor; ne yapacagini soylemek gerekiyor.
+function bulutHataCinsi(err){
+  const m = String((err && (err.message || err.error_description)) || '').toLowerCase();
+  const kod = String((err && (err.status || err.statusCode || err.code)) || '');
+  // Aga hic cikilamadi: fetch'in kendisi patliyor. Telefonda en sik sebep
+  // bir icerik engelleyici ya da VPN.
+  if((typeof TypeError !== 'undefined' && err instanceof TypeError)
+     || /failed to fetch|load failed|networkerror|network request failed|err_/.test(m)) return 'ag';
+  if(kod === '401' || kod === '403'
+     || /jwt|expired|token|unauthorized|not authenticated|invalid claim/.test(m)) return 'oturum';
+  return 'sunucu';
+}
+
 function bulutHatasiUygula(acik){
   bulutOkumaBasarisiz = acik;
   const serit = document.getElementById('cloudError');
   if(serit) serit.hidden = !acik;
+  const neden = document.getElementById('cloudErrWhy');
+  if(neden && acik){
+    const anahtar = bulutHataCinsiSon === 'ag' ? 'cloud_err_net'
+                  : bulutHataCinsiSon === 'oturum' ? 'cloud_err_auth' : 'cloud_err_server';
+    neden.textContent = t(anahtar);
+    // Dil degistiginde applyStaticI18n dogru metni bulsun diye oznitelik
+    // de guncelleniyor.
+    neden.setAttribute('data-i18n', anahtar);
+  }
+  const ayrinti = document.getElementById('cloudErrDetail');
+  if(ayrinti){
+    // Ne yapilacagini anlatan cumle + sunucunun kendi cumlesi. Ikincisi
+    // olmadan "neden olmuyor" sorusu cevapsiz kaliyor.
+    const ek = bulutHataCinsiSon === 'ag' ? t('cloud_err_net_more')
+             : bulutHataCinsiSon === 'oturum' ? t('cloud_err_auth_more') : '';
+    const satir = [ek, bulutHataMetni].filter(Boolean).join('  ·  ');
+    ayrinti.textContent = satir;
+    ayrinti.hidden = !acik || !satir;
+  }
   // Yeni kayit girisi kapali: girilse buluta gidemez, tazelemede de
   // kaybolurdu. Sebebini dugmenin ustunde yaziyor.
   const ekle = document.getElementById('addBtn');
@@ -8252,7 +8310,7 @@ document.getElementById('pendingOverlay').addEventListener('click', (e)=>{ if(e.
 
 // Yayina alinan surumun damgasi. Onbellekten eski bir kopya geldiginde bu
 // tarih eski kalir, boylece "guncel mi?" sorusu bakarak cevaplanir.
-const BUILD_STAMP = '2026-09-03 04:40 UTC';
+const BUILD_STAMP = '2026-09-03 05:15 UTC';
 document.getElementById('buildId').textContent = BUILD_STAMP;
 
 // ===== Init =====
@@ -8609,6 +8667,7 @@ async function afterSignIn(){
     const uzak = await pullRemote();
     // Okuma basarili: kilit hemen kalkiyor. Sonda kaldirilsaydi asagidaki
     // save() erken doner, hesabin yerel kopyasi hic yazilmazdi.
+    oturumTazelemeDenendi = false;
     bulutHatasiUygula(false);
 
     if(uzak.length){
@@ -8647,6 +8706,18 @@ async function afterSignIn(){
     trackOnce('funnel/cloud-connected');
   }catch(err){
     console.error('[bulut] okuma hatasi', err);
+    bulutHataCinsiSon = bulutHataCinsi(err);
+    bulutHataMetni = String((err && err.message) || err || '').slice(0, 200);
+    // Suresi dolmus belirtec: kullaniciyi ugrastirmadan BIR KEZ tazeleyip
+    // yeniden deniyoruz. Cikip girmek zorunda kalmasin.
+    if(bulutHataCinsiSon === 'oturum' && !oturumTazelemeDenendi && sb && sb.auth
+       && typeof sb.auth.refreshSession === 'function'){
+      oturumTazelemeDenendi = true;
+      try{
+        const { error: tazeHata } = await sb.auth.refreshSession();
+        if(!tazeHata){ await afterSignIn(); return; }
+      }catch(e){ console.error('[bulut] oturum tazelenemedi', e); }
+    }
     // Ekranda kalan demo tohumu kullanicinin verisi DEGIL: temizleniyor.
     // Kuyruk da bosaltiliyor, yoksa bir sonraki save() demo satirlarini
     // hesaba gonderirdi.
@@ -8710,8 +8781,15 @@ if(window.supabase){
 document.getElementById('cloudRetry').addEventListener('click', async ()=>{
   const dugme = document.getElementById('cloudRetry');
   dugme.disabled = true;
-  try{ await afterSignIn(); }
-  finally{ dugme.disabled = false; }
+  // Elle denemede tazeleme hakki sifirlaniyor: kullanici dugmeye bastiginda
+  // aradan zaman gecmis oluyor, belirtec o sirada da dolmus olabilir.
+  oturumTazelemeDenendi = false;
+  try{
+    if(sb && sb.auth && typeof sb.auth.refreshSession === 'function'){
+      await sb.auth.refreshSession().catch(()=>{});
+    }
+    await afterSignIn();
+  }finally{ dugme.disabled = false; }
 });
 
 document.getElementById('authBtn').addEventListener('click', ()=>{
