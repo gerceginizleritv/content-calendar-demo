@@ -6,6 +6,30 @@ duruyor, neden ertelendiği de yazıyor ki aynı tartışma baştan yapılmasın
 
 ---
 
+## Nerede kaldık (3 Eylül 2026, öğle)
+
+Kullanıcı: *"kayıt etti mi etmedi mi bilmiyorum? Scripti de yazmadı, hiçbir
+ilerleme yok."* İkisi de gerçek kusurdu:
+
+1. **Anahtar kayıtlı mı belli değildi.** `openAiSettings()` kutuyu
+   boşaltıyordu, tek ipucu "Anahtarı sil" düğmesinin varlığıydı. Artık
+   ekranın tepesinde durum kutusu var: yeşil ✅ "Bu cihazda bir anahtar
+   kayıtlı …wxyz" (son 4 hane) ya da "Kayıtlı anahtar yok". Kaydetme ve
+   silme sonrası hemen tazeleniyor.
+2. **Üretim sırasında hiçbir ilerleme görünmüyordu.** Sadece düğme metni
+   değişiyordu. Artık durum satırında **geçen saniye sayıyor** ("Yazıyor…
+   12 sn") — script, başlık, kısa başlık, açıklama, hepsinde.
+3. **Süre modeller arasında bölünüyor.** Önceki halde her modele ayrı
+   süre düşüyordu: iki model × 90 sn = 3 dakikaya kadar sessizlik. Artık
+   `toplamSure` bir bütçe; son modele kalanın tamamı veriliyor.
+4. **Hiç istek gitmeden "model yoğun" deniyordu.** Bütçe 2 sn'nin altına
+   düşerse döngü hiç dönmüyor, sonra da genel "yoğun" hatası fırlıyordu —
+   Google'a hiç sorulmadan Google suçlanıyordu. İlk model artık HER ZAMAN
+   deneniyor; hiç deneme yapılmadıysa "yoğun" değil zaman aşımı deniyor.
+   (Kendi testim yakaladı.)
+
+---
+
 ## Nerede kaldık (3 Eylül 2026, sabah)
 
 **"Anahtar deneniyor…" ekranda çakılı kaldı.** `callGemini`'de zaman aşımı

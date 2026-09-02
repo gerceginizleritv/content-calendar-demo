@@ -1232,6 +1232,13 @@ body.suruklenirken *{cursor:grabbing !important;}
 /* Giris ve kayit ayni islem oldugu icin dugmede iki kelime yazmak yerine
    burada bir satirla soyleniyor. */
 .auth-hint{font-size:11.5px;color:var(--text-dim);margin:10px 0 0;line-height:1.5;}
+.ai-durum{
+  display:flex;align-items:center;gap:8px;margin:0 0 14px;padding:9px 11px;
+  border-radius:8px;font-size:12.5px;line-height:1.45;
+  background:var(--surface-2);border:1px solid var(--line);color:var(--text-dim);
+}
+.ai-durum.var{border-color:var(--green);color:var(--text);}
+.ai-durum .ai-durum-key{font-family:'JetBrains Mono',monospace;font-size:11px;color:var(--text-dim);}
 .ai-status{font-size:11.5px;color:var(--text-dim);margin-top:6px;min-height:14px;}
 .ai-status.error{color:var(--red);}
 .ai-status.ok{color:var(--green);}
@@ -2108,6 +2115,9 @@ body.suruklenirken *{cursor:grabbing !important;}
 <div class="overlay" id="aiSettingsOverlay">
   <div class="modal" style="max-width:440px;">
     <h2 data-i18n="ai_title">Connect Your Own AI</h2>
+    <!-- Kayitli anahtar ekranda GORUNUYOR. Onceki halde kutu bosaltiliyordu
+         ve kullanici anahtarin kaydedilip kaydedilmedigini anlayamiyordu. -->
+    <div class="ai-durum" id="ai_state"></div>
     <p class="ai-lead" data-i18n="ai_lead">Optional. Everything else in the demo works without it.</p>
     <!-- Yeni tanisilan bir demoda API anahtari istemek mesru bir tereddut
          yaratir. Ne oldugunu kucuk gri bir paragrafta degil, okunur uc madde
@@ -2654,6 +2664,8 @@ const LANG = {
     ai_step_3: "Copy the key it gives you — a long line starting with AQ. or AIza.",
     ai_step_4: "Paste it in the box below and press Save.",
     ai_howto_note: "Free, and it does not ask for a credit card. Careful: a paid ChatGPT or Gemini subscription is a different thing — it does not give you a key. The key comes from the page above.",
+    ai_state_none: "No key saved yet — the ✨ AI buttons will ask for one.",
+    ai_state_have: "A key is saved on this device.",
     ai_save_anyway: "Save without testing",
     ai_saved_untested: "Key saved without testing. If it does not work, the ✨ AI buttons will say why.",
     ai_busy: "Google's model is busy right now. This is nothing to do with your key — try again in a few minutes.",
@@ -3076,6 +3088,8 @@ const LANG = {
     ai_step_3: "Verdiği anahtarı kopyala — AQ. ya da AIza ile başlayan uzun bir satır.",
     ai_step_4: "Aşağıdaki kutuya yapıştır ve Kaydet'e bas.",
     ai_howto_note: "Ücretsiz, kredi kartı istemiyor. Dikkat: paralı ChatGPT ya da Gemini aboneliği bambaşka bir şey — o abonelik sana anahtar vermiyor. Anahtar yukarıdaki sayfadan alınıyor.",
+    ai_state_none: "Kayıtlı anahtar yok — ✨ AI düğmeleri seni buraya yönlendirir.",
+    ai_state_have: "Bu cihazda bir anahtar kayıtlı.",
     ai_save_anyway: "Denemeden kaydet",
     ai_saved_untested: "Anahtar denenmeden kaydedildi. Çalışmazsa ✨ AI düğmeleri sebebini söyleyecek.",
     ai_busy: "Google'ın modeli şu an yoğun. Bu senin anahtarınla ilgili değil — birkaç dakika sonra tekrar dene.",
@@ -8190,11 +8204,30 @@ async function callGemini(apiKey, prompt, secenek){
   if(s.enCokJeton) govde.generationConfig.maxOutputTokens = s.enCokJeton;
   const govdeMetni = JSON.stringify(govde);
 
+  const toplamSure = s.sure || AI_ZAMAN_ASIMI;
+  const bitis = Date.now() + toplamSure;
   let sonGecici = '';
   let sonBeklenmeyen = null;
+  let denendi = 0;
   for(let i = 0; i < AI_MODELLER.length; i++){
+    // Sure TOPLAM: iki model de denense kullanicinin bekledigi sure
+    // toplamSure'yi asmiyor. Onceki halde her modele ayri sure dusuyor,
+    // en kotu halde iki kati sessizlik oluyordu.
+    //
+    // Sure modeller arasinda PAYLASILIYOR: ilki asili kalirsa butun
+    // butceyi yiyip ikinciye sira birakmiyordu. Son modele kalanin
+    // tamami veriliyor.
+    const kalan = bitis - Date.now();
+    // ILK model her zaman deneniyor. Butce ne olursa olsun tek bir istek
+    // bile gondermeden "model yogun" demek kullaniciya yalan soylemek
+    // olurdu — Google'a hic sorulmamis oluyordu.
+    if(i > 0 && kalan < 2000) break;
+    const dilim = Math.max(5000, Math.floor(toplamSure / AI_MODELLER.length));
+    const enAz = Math.max(kalan, 2000);
+    const sure = (i === AI_MODELLER.length - 1) ? enAz : Math.min(dilim, enAz);
+    denendi++;
     const kes = new AbortController();
-    const sayac = setTimeout(()=> kes.abort(), s.sure || AI_ZAMAN_ASIMI);
+    const sayac = setTimeout(()=> kes.abort(), sure);
     try{
       let res;
       try{
@@ -8209,7 +8242,7 @@ async function callGemini(apiKey, prompt, secenek){
         // Ikisi de "bir seyler ters gitti" degil, ne yapilacagi belli olan
         // iki ayri durum. Kac saniye beklendigi mesajda yaziyor.
         const bizim = new Error(err && err.name === 'AbortError'
-          ? t('ai_timeout_secs')(Math.round((s.sure || AI_ZAMAN_ASIMI)/1000)) + ' ' + t('ai_timeout')
+          ? t('ai_timeout_secs')(Math.round(toplamSure/1000)) + ' ' + t('ai_timeout')
           : t('ai_net'));
         bizim.yerel = true;   // Google'dan gelen bir cevap DEGIL
         // Bir model asili kaldiysa OTEKI denenmeli: sikisik olan genelde
@@ -8237,6 +8270,12 @@ async function callGemini(apiKey, prompt, secenek){
   // Hepsi zaman asimina dustuyse o hatayi aynen veriyoruz: "yogun" demek
   // dogru olmaz, cevap hic gelmedi.
   if(!sonGecici && sonBeklenmeyen) throw sonBeklenmeyen;
+  // Hicbir istek gitmediyse Google hakkinda bir sey soyleyemeyiz.
+  if(!denendi){
+    const bos = new Error(t('ai_timeout_secs')(Math.round(toplamSure/1000)) + ' ' + t('ai_timeout'));
+    bos.yerel = true;
+    throw bos;
+  }
   // Butun modeller mesgul. Anahtar saglam; kullaniciya oyle soyleniyor.
   const bizim = new Error(sonGecici === 'kota' ? t('ai_quota') : t('ai_busy'));
   bizim.yerel = true;
@@ -8338,7 +8377,19 @@ async function aiCalistir(dugme, durumEl, calisanEtiket, prompt, secenek){
   if(!ayar || !ayar.key){ openAiSettings(); return null; }
   const eskiEtiket = dugme.textContent;
   dugme.disabled = true; dugme.textContent = calisanEtiket;
-  if(durumEl){ durumEl.textContent = ''; durumEl.className = durumEl.dataset.temelSinif || durumEl.className.split(' ')[0]; }
+  const temel = durumEl ? (durumEl.dataset.temelSinif || durumEl.className.split(' ')[0]) : '';
+  // Gecen saniye YAZIYOR. Onceki halde uretim sirasinda ekranda hicbir
+  // sey degismiyordu: kullanici dugmenin calisip calismadigini bile
+  // anlamiyordu ve dakikalarca bosluga bakiyordu.
+  let sayac = null;
+  if(durumEl){
+    const basladi = Date.now();
+    durumEl.textContent = calisanEtiket;
+    durumEl.className = temel;
+    sayac = setInterval(()=>{
+      durumEl.textContent = calisanEtiket + ' ' + Math.round((Date.now()-basladi)/1000) + ' sn';
+    }, 1000);
+  }
   try{
     return await callGemini(ayar.key, prompt, secenek);
   }catch(err){
@@ -8346,10 +8397,11 @@ async function aiCalistir(dugme, durumEl, calisanEtiket, prompt, secenek){
       durumEl.textContent = err && err.yerel
         ? err.message
         : t('ai_error_prefix') + err.message + t('ai_error_suffix');
-      durumEl.className = (durumEl.dataset.temelSinif || durumEl.className.split(' ')[0]) + ' error';
+      durumEl.className = temel + ' error';
     }
     return null;
   }finally{
+    if(sayac) clearInterval(sayac);
     dugme.disabled = false; dugme.textContent = eskiEtiket;
   }
 }
@@ -8362,8 +8414,24 @@ function aiAnahtarSuclu(err){
   return /api[ _-]?key|api_key_invalid|unauthorized|permission denied|not valid|forbidden/i.test(m);
 }
 
+function aiDurumTazele(){
+  const kutu = document.getElementById('ai_state');
+  if(!kutu) return;
+  const s = getAiSettings();
+  if(s && s.key){
+    const kuyruk = s.key.slice(-4);
+    kutu.className = 'ai-durum var';
+    kutu.innerHTML = '<span aria-hidden="true">✅</span><span>' + escapeHtml(t('ai_state_have'))
+                   + ' <span class="ai-durum-key">…' + escapeHtml(kuyruk) + '</span></span>';
+  }else{
+    kutu.className = 'ai-durum';
+    kutu.innerHTML = '<span aria-hidden="true">•</span><span>' + escapeHtml(t('ai_state_none')) + '</span>';
+  }
+}
+
 function openAiSettings(){
   const s = getAiSettings();
+  aiDurumTazele();
   document.getElementById('ai_key').value = '';
   document.getElementById('ai_key_hint').textContent = '';
   document.getElementById('ai_key_hint').className = 'ai-key-hint';
@@ -8388,6 +8456,7 @@ document.getElementById('aiForgetBtn').addEventListener('click', ()=>{
   try{ localStorage.removeItem('demo_ai_settings'); }catch(e){}
   track('funnel/ai-key-removed');
   document.getElementById('aiForgetBtn').hidden = true;
+  aiDurumTazele();
   showToast(t('ai_forgotten'));
 });
 
@@ -8406,7 +8475,8 @@ async function aiAlanUret(alan, alanId, dugmeId, calisanEtiket){
   const kutu = document.getElementById(alanId);
   if(kutu.value.trim().length > 3 && !confirm(t('ai_field_overwrite'))) return;
   const dugme = document.getElementById(dugmeId);
-  const ham = await aiCalistir(dugme, durumEl, calisanEtiket, aiAlanPrompt(alan));
+  const ham = await aiCalistir(dugme, durumEl, calisanEtiket, aiAlanPrompt(alan),
+                               { sure: AI_ZAMAN_ASIMI });
   if(ham === null) return;
   const temiz = aiTemizle(ham, alan !== 'caption');
   if(!temiz){
@@ -8515,7 +8585,7 @@ document.addEventListener('keydown', (e)=>{
 
 // Yayina alinan surumun damgasi. Onbellekten eski bir kopya geldiginde bu
 // tarih eski kalir, boylece "guncel mi?" sorusu bakarak cevaplanir.
-const BUILD_STAMP = '2026-09-03 09:05 UTC';
+const BUILD_STAMP = '2026-09-03 09:45 UTC';
 document.getElementById('buildId').textContent = BUILD_STAMP;
 
 // ===== Init =====
