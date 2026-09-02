@@ -564,12 +564,19 @@ body.suruklenirken *{cursor:grabbing !important;}
   font-size:10px;font-weight:700;line-height:1;}
 .pbadge.iptal{text-transform:uppercase;letter-spacing:.06em;color:var(--red);
   border:1px solid var(--red);border-radius:99px;padding:1px 7px;font-weight:600;}
-/* Biten ve iptal olan satirlar soluk: liste hala tam ama goz once
-   surendeki isi buluyor. Ustune gelinince tam okunurluga donuyor. */
-.proj-table tr.prow-bitti,
-.proj-table tr.prow-iptal{opacity:.55;}
-.proj-table tr.prow-bitti:hover,
-.proj-table tr.prow-iptal:hover{opacity:1;}
+/* Biten ve iptal olan satirlar geri cekiliyor ama KAYBOLMUYOR.
+   Onceden butun satira opacity:.55 veriliyordu; koyu temada proje adi
+   okunmaz hale geliyordu ve arama sonucunda cikan bitmis proje "yok"
+   gibi gorunuyordu. Artik saydamlik yalnizca ADIM HUCRELERINDE; proje
+   adi saydam degil, yalnizca soluk RENKTE — yani her temada okunuyor. */
+.proj-table tr.prow-bitti .pname,
+.proj-table tr.prow-iptal .pname{color:var(--text-dim);}
+.proj-table tr.prow-bitti .pcell,
+.proj-table tr.prow-iptal .pcell{opacity:.5;}
+.proj-table tr.prow-bitti:hover .pcell,
+.proj-table tr.prow-iptal:hover .pcell{opacity:1;}
+.proj-table tr.prow-bitti:hover .pname,
+.proj-table tr.prow-iptal:hover .pname{color:var(--text);}
 .proj-table tr.prow-iptal .pname{text-decoration:line-through;}
 .pname-sub{display:flex;flex-wrap:wrap;gap:8px;align-items:center;margin-top:5px;}
 .ptype{font-size:10.5px;text-transform:uppercase;letter-spacing:.05em;color:var(--text-dim);
@@ -670,6 +677,16 @@ body.suruklenirken *{cursor:grabbing !important;}
 .sc-drive-durum{font-size:11.5px;color:var(--text-dim);}
 .sc-drive-durum.ok{color:var(--green);}
 .sc-drive-durum.error{color:var(--red);}
+/* Anahtar rehberi. Numarali adimlar bilerek: "API anahtari" sozunu ilk
+   kez duyan biri icin bir paragraf degil, sirayla yapilacak dort is. */
+.ai-howto{margin-bottom:12px;}
+.ai-steps{margin:10px 14px 0;padding-left:20px;font-size:13px;line-height:1.6;}
+.ai-steps li{margin-bottom:7px;}
+.ai-step-link{display:inline-block;margin-left:6px;color:var(--accent);font-size:12.5px;}
+.ai-warn{margin:10px 14px 12px;padding:9px 11px;border-radius:8px;
+  background:var(--wait-soft);color:var(--wait);font-size:12px;line-height:1.55;}
+.ai-key-hint{margin:6px 0 0;font-size:12px;color:var(--text-dim);line-height:1.5;}
+.ai-key-hint.error{color:var(--red);}
 /* Yazma penceresindeki iki secenek. Kutunun tamami tiklanabilir:
    kucuk radyo dugmesini nisan almak zorunda kalmasin. */
 .dw-secim{display:flex;gap:10px;align-items:flex-start;margin-bottom:10px;
@@ -1992,24 +2009,33 @@ body.suruklenirken *{cursor:grabbing !important;}
          hâlinde soyluyoruz ve dogrulamak isteyene gizlilik sayfasini veriyoruz. -->
     <ul class="trust-list">
       <li data-i18n="ai_trust_1">Your key is saved only in this browser. It never reaches our servers, because we do not have any.</li>
-      <li data-i18n="ai_trust_2">Requests go straight from your browser to Anthropic or Google. We never see your key or your prompts.</li>
+      <li data-i18n="ai_trust_2">Requests go straight from your browser to Google. We never see your key or your prompts.</li>
       <li data-i18n="ai_trust_3">You can remove the key from this screen at any time.</li>
     </ul>
     <a class="trust-link" href="privacy.html" target="_blank" rel="noopener" data-i18n="ai_privacy_link">Read exactly what we store →</a>
+
+    <!-- Anahtari HIC BILMEYEN biri icin adim adim. Bu bolum acik
+         basliyor: "API anahtari" sozunu ilk kez duyan biri icin en buyuk
+         engel, ne yapacagini bilmemek. Katlanmis bir yardim metni bu
+         engeli kaldirmiyor, sadece gizliyor. -->
+    <details class="fold fold-modal ai-howto" open>
+      <summary><span data-i18n="ai_howto_title">How do I get a key? (free, 2 minutes)</span></summary>
+      <ol class="ai-steps">
+        <li>
+          <span data-i18n="ai_step_1">Open Google AI Studio and sign in with your Google account.</span>
+          <a class="ai-step-link" href="https://aistudio.google.com/apikey" target="_blank" rel="noopener" data-i18n="ai_step_1_link">Open AI Studio →</a>
+        </li>
+        <li data-i18n="ai_step_2">Click the “Create API key” button.</li>
+        <li data-i18n="ai_step_3">Copy the key it gives you — a long line starting with AIza.</li>
+        <li data-i18n="ai_step_4">Paste it in the box below and press Save.</li>
+      </ol>
+      <p class="ai-warn" data-i18n="ai_howto_note">Free, and it does not ask for a credit card. Careful: a paid ChatGPT or Gemini subscription is a different thing — it does not give you a key. The key comes from the page above.</p>
+    </details>
+
     <div class="field">
-      <label data-i18n="ai_provider_label">Provider</label>
-      <select id="ai_provider">
-        <option value="claude">Claude (Anthropic)</option>
-        <option value="gemini">Gemini (Google)</option>
-      </select>
-    </div>
-    <div class="field">
-      <label data-i18n="ai_key_label">API Key</label>
-      <input type="password" id="ai_key" placeholder="sk-ant-... or AIza...">
-    </div>
-    <div class="field" style="font-size:12px;color:var(--text-dim);">
-      <span data-i18n="ai_no_key">Don't have a key? Get one free at</span>
-      <a href="https://console.anthropic.com/settings/keys" target="_blank" style="color:var(--accent);" id="ai_key_link">console.anthropic.com</a>.
+      <label data-i18n="ai_key_label">Gemini API key</label>
+      <input type="password" id="ai_key" placeholder="AIza...">
+      <p class="ai-key-hint" id="ai_key_hint"></p>
     </div>
     <div class="modal-actions">
       <button class="btn btn-danger" id="aiForgetBtn" data-i18n="ai_forget" hidden>Remove key</button>
@@ -2482,14 +2508,23 @@ const LANG = {
     ai_title: "Connect Your Own AI",
     ai_lead: "Optional. Everything else in the demo works without it.",
     ai_trust_1: "Your key is saved only in this browser. It never reaches our servers, because we do not have any.",
-    ai_trust_2: "Requests go straight from your browser to Anthropic or Google. We never see your key or your prompts.",
+    ai_trust_2: "Requests go straight from your browser to Google. We never see your key or your prompts.",
     ai_trust_3: "You can remove the key from this screen at any time.",
     ai_privacy_link: "Read exactly what we store →",
     ai_forget: "Remove key",
     ai_forget_confirm: "Remove the saved API key from this browser?",
     ai_forgotten: "Key removed from this browser.",
-    ai_provider_label: "Provider",
-    ai_key_label: "API Key",
+    ai_key_label: "Gemini API key",
+    ai_howto_title: "How do I get a key? (free, 2 minutes)",
+    ai_step_1: "Open Google AI Studio and sign in with your Google account.",
+    ai_step_1_link: "Open AI Studio →",
+    ai_step_2: "Click the “Create API key” button.",
+    ai_step_3: "Copy the key it gives you — a long line starting with AIza.",
+    ai_step_4: "Paste it in the box below and press Save.",
+    ai_howto_note: "Free, and it does not ask for a credit card. Careful: a paid ChatGPT or Gemini subscription is a different thing — it does not give you a key. The key comes from the page above.",
+    ai_key_shape: "This does not look like a Gemini key. A Gemini key starts with AIza — copy it from the AI Studio page above.",
+    ai_key_checking: "Checking the key…",
+    ai_key_bad: (m)=> `The key did not work. Google says: ${m}`,
     ai_no_key: "Don't have a key? Get one free at",
     ai_save_connect: "Save & Connect",
     tour_skip: "Skip tour",
@@ -2865,14 +2900,23 @@ const LANG = {
     ai_title: "Kendi AI'ını Bağla",
     ai_lead: "İsteğe bağlı. Demonun geri kalanı bu olmadan da çalışır.",
     ai_trust_1: "Anahtarın yalnızca bu tarayıcıda saklanır. Sunucularımıza hiç ulaşmaz, çünkü sunucumuz yok.",
-    ai_trust_2: "İstekler doğrudan tarayıcından Anthropic ya da Google'a gider. Anahtarını da yazdıklarını da görmüyoruz.",
+    ai_trust_2: "İstekler doğrudan tarayıcından Google'a gider. Anahtarını da yazdıklarını da görmüyoruz.",
     ai_trust_3: "Anahtarı bu ekrandan istediğin an silebilirsin.",
     ai_privacy_link: "Neyi sakladığımızı buradan oku →",
     ai_forget: "Anahtarı sil",
     ai_forget_confirm: "Kayıtlı API anahtarı bu tarayıcıdan silinsin mi?",
     ai_forgotten: "Anahtar bu tarayıcıdan silindi.",
-    ai_provider_label: "Sağlayıcı",
-    ai_key_label: "API Anahtarı",
+    ai_key_label: "Gemini API anahtarı",
+    ai_howto_title: "Anahtarı nereden alacağım? (ücretsiz, 2 dakika)",
+    ai_step_1: "Google AI Studio'yu aç ve Google hesabınla giriş yap.",
+    ai_step_1_link: "AI Studio'yu aç →",
+    ai_step_2: "“Create API key” düğmesine bas.",
+    ai_step_3: "Verdiği anahtarı kopyala — AIza ile başlayan uzun bir satır.",
+    ai_step_4: "Aşağıdaki kutuya yapıştır ve Kaydet'e bas.",
+    ai_howto_note: "Ücretsiz, kredi kartı istemiyor. Dikkat: paralı ChatGPT ya da Gemini aboneliği bambaşka bir şey — o abonelik sana anahtar vermiyor. Anahtar yukarıdaki sayfadan alınıyor.",
+    ai_key_shape: "Bu bir Gemini anahtarına benzemiyor. Gemini anahtarı AIza ile başlar — yukarıdaki AI Studio sayfasından kopyala.",
+    ai_key_checking: "Anahtar deneniyor…",
+    ai_key_bad: (m)=> `Anahtar çalışmadı. Google'ın söylediği: ${m}`,
     ai_no_key: "Anahtarın yok mu? Ücretsiz almak için:",
     ai_save_connect: "Kaydet ve Bağlan",
     tour_skip: "Turu atla",
@@ -7628,45 +7672,62 @@ document.getElementById('tourSkip').addEventListener('click', ()=> closeTour(fal
 document.getElementById('tourOverlay').addEventListener('click', (e)=>{ if(e.target.id==='tourOverlay') closeTour(false); });
 document.getElementById('tourBtn').addEventListener('click', ()=>{ track('funnel/tour-reopened'); tourAutoSequence = false; openTour(); });
 
-// ===== Bring-your-own-key AI drafting (Claude or Gemini, called directly from the browser) =====
+// ===== Kullanicinin kendi anahtariyla AI =====
+// TEK saglayici: Gemini. Sebep secim degil, ulasilabilirlik:
+//   - Google AI Studio ucretsiz anahtar veriyor ve kredi karti istemiyor.
+//     OpenAI'da API ayri bir hesap ve karti sart kosuyor.
+//   - Tarayicidan dogrudan cagrilabiliyor. Slate'in sunucusu yok; sunucu
+//     gerektiren bir saglayici, anahtarin bizden gecmesi demek olurdu ve
+//     "anahtarini gormeyiz" sozu bozulurdu.
+// Bir saglayici daha eklemek buradaki cagri fonksiyonundan ibaret; liste
+// bilerek kisa tutuluyor, cunku her secenek kullaniciya bir karar daha
+// yukluyor.
 function getAiSettings(){
-  try{ return JSON.parse(localStorage.getItem('demo_ai_settings') || 'null'); }catch(e){ return null; }
+  try{
+    const s = JSON.parse(localStorage.getItem('demo_ai_settings') || 'null');
+    if(!s || !s.key) return null;
+    // Eski surumde baska bir saglayici secilmis olabilir; o anahtar
+    // Gemini'ye gonderilemez. Yok sayiliyor, kullanicidan yenisi isteniyor.
+    if(s.provider && s.provider !== 'gemini') return null;
+    return { provider:'gemini', key:s.key };
+  }catch(e){ return null; }
 }
 function saveAiSettings(s){ localStorage.setItem('demo_ai_settings', JSON.stringify(s)); }
 
-document.getElementById('ai_provider').addEventListener('change', ()=>{
-  const p = document.getElementById('ai_provider').value;
-  const link = document.getElementById('ai_key_link');
-  link.href = p === 'claude' ? 'https://console.anthropic.com/settings/keys' : 'https://aistudio.google.com/apikey';
-  link.textContent = p === 'claude' ? 'console.anthropic.com' : 'aistudio.google.com';
-});
 document.getElementById('aiSettingsCancelBtn').addEventListener('click', ()=> document.getElementById('aiSettingsOverlay').classList.remove('open'));
 document.getElementById('aiSettingsOverlay').addEventListener('click', (e)=>{ if(e.target.id==='aiSettingsOverlay') document.getElementById('aiSettingsOverlay').classList.remove('open'); });
-document.getElementById('aiSettingsSaveBtn').addEventListener('click', ()=>{
-  const provider = document.getElementById('ai_provider').value;
-  const key = document.getElementById('ai_key').value.trim();
-  if(!key){ alert(t('ai_alert_need_key')); return; }
-  saveAiSettings({ provider, key });
-  trackOnce('funnel/ai-key-connected');
-  document.getElementById('aiSettingsOverlay').classList.remove('open');
-  runAiDraft();
+// Anahtar KAYDEDILMEDEN once gercekten calisiyor mu diye deneniyor.
+// Yanlis yapistirilmis bir anahtar aksi halde ancak ilk taslakta,
+// anlasilmaz bir hatayla ortaya cikiyordu.
+document.getElementById('aiSettingsSaveBtn').addEventListener('click', async ()=>{
+  const dugme = document.getElementById('aiSettingsSaveBtn');
+  const kutu = document.getElementById('ai_key');
+  const key = kutu.value.trim();
+  const ipucu = document.getElementById('ai_key_hint');
+  if(!key){ ipucu.textContent = t('ai_alert_need_key'); ipucu.className = 'ai-key-hint error'; kutu.focus(); return; }
+  // Bicim kontrolu once: Google anahtarlari AIza ile basliyor. Kullanici
+  // yanlis yerden bir sey yapistirdiysa aga cikmadan soyleniyor.
+  if(!/^AIza[0-9A-Za-z_\-]{10,}$/.test(key)){
+    ipucu.textContent = t('ai_key_shape'); ipucu.className = 'ai-key-hint error';
+    kutu.focus(); return;
+  }
+  dugme.disabled = true;
+  ipucu.textContent = t('ai_key_checking'); ipucu.className = 'ai-key-hint';
+  try{
+    await callGemini(key, 'Tek kelimeyle cevap ver: test');
+    saveAiSettings({ provider:'gemini', key });
+    trackOnce('funnel/ai-key-connected');
+    document.getElementById('aiSettingsOverlay').classList.remove('open');
+    runAiDraft();
+  }catch(err){
+    console.error('[ai] anahtar denemesi', err);
+    ipucu.textContent = t('ai_key_bad')(err.message || '');
+    ipucu.className = 'ai-key-hint error';
+  }finally{
+    dugme.disabled = false;
+  }
 });
 
-async function callClaude(apiKey, prompt){
-  const res = await fetch('https://api.anthropic.com/v1/messages', {
-    method:'POST',
-    headers:{
-      'x-api-key': apiKey,
-      'anthropic-version': '2023-06-01',
-      'content-type': 'application/json',
-      'anthropic-dangerous-direct-browser-access': 'true'
-    },
-    body: JSON.stringify({ model:'claude-haiku-4-5-20251001', max_tokens:400, messages:[{role:'user', content:prompt}] })
-  });
-  if(!res.ok){ const err = await res.json().catch(()=>({})); throw new Error((err.error && err.error.message) || ('HTTP '+res.status)); }
-  const data = await res.json();
-  return (data.content||[]).map(b=>b.text||'').join('').trim();
-}
 async function callGemini(apiKey, prompt){
   const res = await fetch('https://generativelanguage.googleapis.com/v1beta/models/gemini-3.7-flash:generateContent', {
     method:'POST',
@@ -7687,14 +7748,13 @@ function buildDraftPrompt(){
   return `Write a short, natural social media caption for a ${type} post on ${platform}. The post is about: "${title}". Keep it in the creator's own voice — casual, direct, no corporate tone, no more than 3-4 short sentences, end with a light call to action if it fits naturally.${langInstruction} Return ONLY the caption text, nothing else — no preamble, no quotation marks around it.`;
 }
 
-// Ekran her acildiginda: kayitli saglayici secili gelsin, anahtar alani bos
-// kalsin (ekranda gostermenin faydasi yok), silme dugmesi yalnizca kayitli
-// anahtar varken cikssin.
+// Ekran her acildiginda: anahtar alani bos kaliyor (ekranda gostermenin
+// faydasi yok), silme dugmesi yalnizca kayitli anahtar varken cikiyor.
 function openAiSettings(){
   const s = getAiSettings();
-  const prov = document.getElementById('ai_provider');
-  if(s && s.provider) prov.value = s.provider;
   document.getElementById('ai_key').value = '';
+  document.getElementById('ai_key_hint').textContent = '';
+  document.getElementById('ai_key_hint').className = 'ai-key-hint';
   document.getElementById('aiForgetBtn').hidden = !(s && s.key);
   document.getElementById('aiSettingsOverlay').classList.add('open');
 }
@@ -7719,12 +7779,10 @@ async function runAiDraft(){
   statusEl.textContent = ''; statusEl.className = 'ai-status';
   try{
     const prompt = buildDraftPrompt();
-    const text = settings.provider === 'claude'
-      ? await callClaude(settings.key, prompt)
-      : await callGemini(settings.key, prompt);
+    const text = await callGemini(settings.key, prompt);
     document.getElementById('f_caption').value = text;
     trackOnce('funnel/ai-draft-generated');
-    statusEl.textContent = t('ai_drafted_prefix') + (settings.provider === 'claude' ? 'Claude' : 'Gemini') + t('ai_drafted_suffix');
+    statusEl.textContent = t('ai_drafted_prefix') + 'Gemini' + t('ai_drafted_suffix');
     statusEl.className = 'ai-status ok';
   }catch(err){
     statusEl.textContent = t('ai_error_prefix') + err.message + t('ai_error_suffix');
@@ -7803,7 +7861,7 @@ document.getElementById('pendingOverlay').addEventListener('click', (e)=>{ if(e.
 
 // Yayina alinan surumun damgasi. Onbellekten eski bir kopya geldiginde bu
 // tarih eski kalir, boylece "guncel mi?" sorusu bakarak cevaplanir.
-const BUILD_STAMP = '2026-09-02 20:30 UTC';
+const BUILD_STAMP = '2026-09-02 22:45 UTC';
 document.getElementById('buildId').textContent = BUILD_STAMP;
 
 // ===== Init =====
