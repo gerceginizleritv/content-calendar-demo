@@ -6,6 +6,32 @@ duruyor, neden ertelendiği de yazıyor ki aynı tartışma baştan yapılmasın
 
 ---
 
+## Nerede kaldık (3 Eylül 2026, sabah)
+
+**"Anahtar deneniyor…" ekranda çakılı kaldı.** `callGemini`'de zaman aşımı
+yoktu: istek asılı kalırsa `fetch` hiç dönmüyor, düğme sonsuza kadar
+kilitli kalıyor ve kullanıcı neyi beklediğini bilmiyordu.
+
+- `AbortController` + zaman aşımı: üretimde 45 sn, anahtar denemesinde
+  20 sn.
+- Zaman aşımı ve "ağa hiç çıkılamadı" ayrı ayrı anlatılıyor; ikisi de
+  içerik engelleyici / VPN ihtimalini söylüyor.
+- Bu iki hata BİZİM cümlemiz, `err.yerel = true` ile işaretleniyor:
+  "Google'ın söylediği: …" diye sunulmuyor, çünkü Google hiçbir şey
+  söylemedi.
+- Anahtar kaydedildikten sonra `runAiDraft()` **yalnızca kayıt penceresi
+  açıksa** çalışıyor. Sol menüden girildiğinde kayıt penceresi kapalı:
+  üretim görünmez bir alana yazıyor, durum mesajı da görünmüyordu. Onun
+  yerine "Anahtar kaydedildi, ✨ AI düğmeleri hazır" bildirimi.
+
+**Doğrulandı (2026-09-03):** `gemini-3.7-flash` geçerli ve güncel model
+kimliği (13 Ağustos 2026'da çıktı). `AQ.` ön ekli yeni AI Studio
+anahtarları native uç noktada `x-goog-api-key` başlığıyla ÇALIŞIYOR —
+sorun çıkardıkları yer OpenAI-uyumlu uç nokta ve `Authorization: Bearer`.
+Slate zaten doğru yolu kullanıyor.
+
+---
+
 ## Nerede kaldık (3 Eylül 2026, gece — telefon)
 
 **Bulut okunamayınca ekranda DEMO verisi kalıyordu.** Kullanıcı telefondan
