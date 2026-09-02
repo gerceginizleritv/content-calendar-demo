@@ -6,6 +6,46 @@ duruyor, neden ertelendiği de yazıyor ki aynı tartışma baştan yapılmasın
 
 ---
 
+## Nerede kaldık (3 Eylül 2026)
+
+Bugün düzeltilen üç şey:
+
+1. **Takvimdeki proje filtresi.** Uzun listede ad aramak mümkün değildi;
+   panelin en üstüne arama kutusu geldi (sekiz projeden azsa çıkmıyor,
+   kısa listede yer kaplamasın diye). Her projenin kaç kaydı olduğu da
+   listede yazıyor.
+2. **Filtre panelindeki "yana kayma".** `.legend`'in tabanı
+   `flex-wrap:wrap`; yüksekliği sınırlı bir SÜTUN'da wrap, sığmayan
+   öğeleri **ikinci bir sütuna** atıyordu — panelin altında yatay
+   kaydırma çubuğu çıkıyor, liste iki kolona bölünüyordu. Kullanıcı bunu
+   "bitenler / devam edenler gibi ama anlamadım" diye tarif etti.
+   `flex-wrap:nowrap` + `overflow-x:hidden`. Bu bütün filtre panellerini
+   ilgilendiriyordu (tür, platform, durum, pazar).
+3. **Kaydın proje bağı yüklemede düşüyordu — VERİ KAYBI.** Başka bir
+   oturumdan gelen rapor doğru çıktı. İki ayrı eksik vardı:
+   - `sanitizeEvent` içindeki `content` beyaz listesinde `projectId`
+     yoktu; beyaz listede olmayan her alan sessizce düşüyor.
+   - `fromRow` buluttaki ayrı `project_id` sütununu `content`'e geri
+     yazmıyordu.
+   Kaybı `projeleriGocur()` örtüyordu: aynı ADI taşıyan projeye yeniden
+   bağlıyor. Proje adı (`content.concept`) boşsa ya da farklı yazılmışsa
+   bağ gidiyordu — Projeler sayfası "0 kayıt" diyor, kayıt açılınca
+   listenin **ilk projesi** seçili geliyor ve kaydedilince gerçek proje
+   sessizce eziliyordu. Teşhis, düzeltmeden ÖNCE testle kanıtlandı
+   (`proje-bagi.test.js`).
+
+Ayrıca: uygulama içindeki tanıtım bloğu kaldırıldı (karşılama sayfası
+maddesine bakın) ve **AI ayarları sol menüye taşındı** — o ekrana daha
+önce yalnızca kayıt düzenlerken "AI ile taslak" düğmesinden ve yalnızca
+anahtar YOKKEN gidilebiliyordu, kullanıcı ekranı bulamadı.
+
+**Ders (yeni hata sınıfı):** beyaz listeyle temizlenen bir nesneye alan
+eklerken beyaz listeyi güncellemek ZORUNLU; unutulursa alan sessizce
+düşer ve kayıp, onu telafi eden başka bir mekanizma (burada ad
+eşleştirme) yüzünden aylarca fark edilmeyebilir.
+
+---
+
 ## Nerede kaldık (1 Eylül 2026, akşam)
 
 **Lokasyon göçü TAMAMLANDI.** `sql/07`–`sql/11` sırayla çalıştırıldı.
@@ -210,6 +250,31 @@ adımlar için de çizim gerekecek, yoksa aradaki adımlar boş görünür.
 eklenirken hangi eski adımların birleşeceği ya da düşeceği seçilecek —
 "her özelliği anlat" listesi turu kimsenin okumadığı bir slayt gösterisi
 yapar.
+
+### Karşılama (landing) sayfası (kullanıcı kararı, 3 Eylül 2026)
+Kullanıcı: *"Slate'e tıklayınca introlu bölüm geliyor. Bunu şimdilik
+kaldır ama bir landing page yapacağız ilk giriş için."*
+
+**Yapıldı:** uygulamanın içindeki tanıtım (`#pitch`, `#pitchBanner`,
+"Slate nedir?" düğmesi) kapatıldı — `PITCH_ACIK = false`. Metinler ve
+düzenek SİLİNMEDİ, karşılama sayfasında yeniden kullanılacak.
+
+**Yapılacak:** ayrı bir `karsilama.html` (ya da `index.html` kök,
+uygulama `app.html`). İçinde kullanılabilecek, halihazırda yazılmış ve
+iki dilde duran metinler:
+
+- `h1` — "Tek çekim on posta dönüşür. Slate onunu da tek panoda tutar."
+- `h1_sub` — aynı çekimin Reel/Short/carousel/story olarak çıkması.
+- `promise_tag` — "Planlama panosu — otomatik paylaşan bir araç değil."
+  (Ziyaretçinin en olası yanlış varsayımını baştan kesen cümle; karşılama
+  sayfasında da mutlaka bulunsun.)
+- `banner_bold1` + `banner_rest` — "bu çalışan bir demo, hesapsız da
+  çalışıyor, 100 kayıt sınırı".
+
+**Karar verilecek:** karşılama sayfası ile uygulama aynı adreste mi
+duracak (`/` tanıtım, `/app` uygulama) yoksa tanıtım kendi alan adında mı.
+Bu, "Kendi alan adı" maddesiyle birlikte kararlaştırılmalı — ikisi aynı
+karar.
 
 ### Termin hatırlatmaları — iki kanal (kullanıcı kararı, 1 Eylül 2026)
 Bugün uyarı yalnızca sayfa AÇIKKEN var: geciken adım kırmızı, üstte şerit.

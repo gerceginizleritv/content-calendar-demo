@@ -310,10 +310,30 @@ body{
   box-shadow:0 12px 32px rgba(0,0,0,0.18);padding:8px;
 }
 /* Panel icinde liste dikey: acilir menude yan yana rozet okumak zor. */
-.fpanel .legend{flex-direction:column;align-items:stretch;gap:2px;margin:0;
-  max-height:min(52vh,340px);overflow-y:auto;}
-.fpanel .legend-item{width:100%;justify-content:flex-start;}
+/* flex-wrap:nowrap SART: .legend'in tabani "wrap". Yuksekligi sinirli bir
+   SUTUN'da wrap, sigmayan ogeleri IKINCI BIR SUTUNA atiyor — liste yana
+   dogru buyuyup panelin altinda yatay kaydirma cubugu cikariyordu.
+   overflow-x:hidden de gerekli: overflow-y:auto yazilinca tarayici
+   overflow-x'i "auto" sayiyor. Liste yalnizca ASAGI kayiyor. */
+.fpanel .legend{flex-direction:column;flex-wrap:nowrap;align-items:stretch;gap:2px;margin:0;
+  max-height:min(52vh,340px);overflow-y:auto;overflow-x:hidden;}
+.fpanel .legend-item{width:100%;min-width:0;justify-content:flex-start;
+  text-align:left;overflow-wrap:anywhere;}
+/* Kayit sayisi: "hangi proje dolu" sorusu listeye bakarken soruluyor. */
+.lcount{margin-left:auto;flex-shrink:0;padding-left:8px;
+  font-family:'JetBrains Mono',monospace;font-size:10.5px;color:var(--text-dim);}
 .fpanel .legend-reset{display:none;}
+/* Panel ici arama: liste kaydirilirken kutu yerinde kalsin diye
+   listenin DISINDA, panelin en ustunde duruyor. */
+.fsearch{
+  width:100%;box-sizing:border-box;margin:0 0 8px;padding:8px 10px;
+  background:var(--bg);color:var(--text);
+  border:1px solid var(--line);border-radius:8px;
+  font-family:'IBM Plex Sans',sans-serif;font-size:13px;
+}
+.fsearch:focus{outline:none;border-color:var(--accent);}
+.fsearch::placeholder{color:var(--text-dim);}
+.fnomatch{padding:8px 6px;font-size:12px;color:var(--text-dim);}
 .fclear{
   background:none;border:0;cursor:pointer;padding:6px 4px;
   font-family:'IBM Plex Sans',sans-serif;font-size:12px;font-weight:600;
@@ -1458,8 +1478,12 @@ body.suruklenirken *{cursor:grabbing !important;}
       <!-- Alt grup: her zaman erisilebilir olmasi gereken ama sik
            kullanilmayan seyler. -->
       <div class="rail-foot">
-        <button class="rail-link" id="pitchToggle" aria-expanded="true" data-i18n="pitch_hide">Hide intro</button>
+        <!-- Tanitim blogu simdilik kapali: bu is uygulamanin tepesinde
+             degil, ayri bir karsilama sayfasinda anlatilacak. Metin ve
+             duzenek silinmedi, oradan tekrar kullanilacak. -->
+        <button class="rail-link" id="pitchToggle" aria-expanded="false" data-i18n="pitch_show" hidden>What is Slate?</button>
         <button class="rail-link" id="tourBtn" data-i18n="btn_tour">? How this works</button>
+        <button class="rail-link" id="aiSettingsBtn" data-i18n="btn_ai_settings">✨ AI (Gemini)</button>
         <button class="rail-link" id="feedbackBtn" data-i18n="btn_feedback">💬 Feedback</button>
         <div class="rail-prefs">
           <select id="langSelect" class="lang-select" aria-label="Language"></select>
@@ -1631,7 +1655,14 @@ body.suruklenirken *{cursor:grabbing !important;}
       <button type="button" class="fbtn" aria-expanded="false" aria-haspopup="true">
         <span data-i18n="filter_project">Project</span><span class="fbadge" hidden></span><span class="fcaret" aria-hidden="true">▾</span>
       </button>
-      <div class="fpanel" hidden><div class="legend" id="conceptLegend"></div></div>
+      <div class="fpanel" hidden>
+        <!-- Proje sayisi buyuyunce liste icinde ad aramak elle kaydirmakla
+             mumkun degil: kutu yalnizca liste uzunken cikiyor. -->
+        <input type="search" class="fsearch" id="conceptSearch" hidden
+               data-i18n-placeholder="filter_search_ph" placeholder="Search project" autocomplete="off">
+        <div class="legend" id="conceptLegend"></div>
+        <div class="fnomatch" id="conceptNoMatch" hidden data-i18n="filter_no_match">No project by that name</div>
+      </div>
     </div>
     <!-- Pazar dugmesi yalnizca birden cok saat dilimi varsa cikiyor. -->
     <div class="fdrop" data-drop="tz" hidden>
@@ -2259,6 +2290,8 @@ const LANG = {
     filter_type: "Type",
     filter_platform: "Platform",
     filter_project: "Project",
+    filter_search_ph: "Search project",
+    filter_no_match: "No project by that name",
     filter_market: "Market",
     filter_status: "Status",
     filter_clear_all: "Clear all filters",
@@ -2318,6 +2351,7 @@ const LANG = {
     f_caption_label: "Caption",
     f_caption_ph: "Write the caption for this post...",
     btn_ai_draft: "✨ Draft with AI",
+    btn_ai_settings: "✨ AI (Gemini)",
     btn_copy: "Copy",
     btn_copied: "Copied",
     f_hashtags_label: "Hashtags / Tags (comma-separated, no #)",
@@ -2652,6 +2686,8 @@ const LANG = {
     filter_type: "Tür",
     filter_platform: "Platform",
     filter_project: "Proje",
+    filter_search_ph: "Proje ara",
+    filter_no_match: "Bu adda proje yok",
     filter_market: "Pazar",
     filter_status: "Durum",
     filter_clear_all: "Filtreleri temizle",
@@ -2711,6 +2747,7 @@ const LANG = {
     f_caption_label: "Caption",
     f_caption_ph: "Bu paylaşım için caption'ı yaz...",
     btn_ai_draft: "✨ AI ile Taslak Oluştur",
+    btn_ai_settings: "✨ AI (Gemini)",
     btn_copy: "Kopyala",
     btn_copied: "Kopyalandı",
     f_hashtags_label: "Hashtag / Etiket (virgülle ayrılmış, # olmadan)",
@@ -3196,9 +3233,16 @@ function toRow(e, uid){
            project_id: (e.content && e.content.projectId) || null };
 }
 function fromRow(r){
+  // project_id AYRI BIR SUTUN; content icindeki kopyasi bos gelebiliyor
+  // (lokasyon uygulamasinin yazdigi satirlarda ve gocurulen kayitlarda
+  // oyle). Sutun geri yazilmazsa kaydin projesi yuklemede dusuyor,
+  // Projeler sayfasi "0 kayit" diyor ve kayit acilip kaydedilince proje
+  // listenin ilkiyle SESSIZCE degisiyordu.
+  const icerik = (r.content && typeof r.content === 'object') ? {...r.content} : {};
+  if(!icerik.projectId && r.project_id) icerik.projectId = r.project_id;
   return { id: r.id, type: r.type, platform: r.platform, title: r.title || '',
            date: r.post_date, time: (r.post_time || '').slice(0,5),
-           uploaded: !!r.uploaded, content: r.content || {},
+           uploaded: !!r.uploaded, content: icerik,
            workspaceId: r.workspace_id || null };
 }
 // Saat dilimi dogrulamasi desenle degil, Intl'in kendisiyle yapiliyor.
@@ -3248,6 +3292,15 @@ function sanitizeEvent(raw){
       // Proje adi content icinde: veritabaninda yeni sutun gerektirmiyor,
       // beyaz listede olmasaydi sanitize onu sessizce duserdi.
       concept:      str(c.concept, 120),
+      // KAYDIN PROJE BAGI. Beyaz listede olmadigi icin her yuklemede
+      // dusuyordu; ayni addaki projeye yeniden baglama (projeleriGocur)
+      // kaybi ortuyordu, ama proje adi bos ya da farkli yazilmissa bag
+      // gidiyordu: Projeler sayfasi "0 kayit" diyor, kayit acilinca
+      // listenin ILK projesi secili geliyor ve kaydedince gercek proje
+      // sessizce ezilerek degisiyordu.
+      // typeof kontrolu sart: regex.test degeri once metne cevirir.
+      projectId:    (typeof c.projectId === 'string'
+                     && /^[A-Za-z0-9_-]{1,64}$/.test(c.projectId)) ? c.projectId : '',
       // 9 x 5000 tek basina 45 KB ediyordu; bir gorsel prompt'u icin 2000
       // fazlasiyla yeterli ve arayuzdeki sinir zaten 1000.
       slidePrompts: Array.isArray(c.slidePrompts) ? c.slidePrompts.slice(0,9).map(x=>str(x,2000)) : []
@@ -6543,9 +6596,13 @@ function renderLegend(){
     // Projesi olmayan kayitlar icin ayri bir secenek: aksi halde proje
     // filtresi aciklandiginda plan disi kalanlar gorunmez oluyordu.
     const secenekler = konseptler.concat(projesiz ? [''] : []);
+    // Her projenin kac kaydi oldugu listede yaziyor: uzun listede "hangisi
+    // dolu" sorusunu tiklamadan cevapliyor.
+    const sayim = new Map();
+    events.forEach(e=>{ const k = evKonsept(e) || ''; sayim.set(k, (sayim.get(k)||0) + 1); });
     konseptEl.innerHTML = secenekler.map(k=>`
       <span class="legend-item ${activeConceptFilters.has(k)?'active':''}" data-concept="${escapeHtml(k)}" title="${escapeHtml(k || t('concept_none'))}">
-        <span class="tcode">PRJ</span>${escapeHtml(k || t('concept_none'))}
+        <span class="tcode">PRJ</span>${escapeHtml(k || t('concept_none'))}<span class="lcount">${sayim.get(k)||0}</span>
       </span>`).join('') + `<span class="legend-reset ${activeConceptFilters.size?'show':''}" id="conceptReset">${escapeHtml(t('btn_clear_filter'))}</span>`;
     konseptEl.querySelectorAll('.legend-item').forEach(el=>{
       el.addEventListener('click', ()=>{
@@ -6557,6 +6614,7 @@ function renderLegend(){
     });
     konseptEl.querySelector('#conceptReset').addEventListener('click', ()=>{ activeConceptFilters.clear(); renderLegend(); renderCal(); });
   }
+  konseptAramasiUygula();
 
   const statusEl = document.getElementById('statusLegend');
   const statuses = [
@@ -6616,12 +6674,41 @@ function filtreSeridiniTazele(){
   if(ozet) ozet.textContent = toplam ? t('filter_summary')(toplam) : '';
 }
 
+// Proje panelinde ad arama. Liste kisayken kutu hic cikmiyor: alti
+// projede arama kutusu yer kaplamaktan baska is gormuyor.
+const KONSEPT_ARAMA_ESIGI = 8;
+function konseptAramasiUygula(){
+  const kutu   = document.getElementById('conceptSearch');
+  const liste  = document.getElementById('conceptLegend');
+  const bosNot = document.getElementById('conceptNoMatch');
+  if(!kutu || !liste) return;
+  const ogeler = [...liste.querySelectorAll('.legend-item')];
+  kutu.hidden = ogeler.length < KONSEPT_ARAMA_ESIGI;
+  if(kutu.hidden) kutu.value = '';
+  const dil = currentLang === 'tr' ? 'tr' : 'en';
+  const q = kutu.value.trim().toLocaleLowerCase(dil);
+  let gorunen = 0;
+  ogeler.forEach(el=>{
+    const ad = (el.dataset.concept || t('concept_none')).toLocaleLowerCase(dil);
+    // Secili proje aramaya uymasa da listede duruyor: yoksa acilmis bir
+    // filtreyi geri kapatmanin yolu kalmiyordu.
+    const uyar = !q || ad.indexOf(q) !== -1 || el.classList.contains('active');
+    el.hidden = !uyar;
+    if(uyar) gorunen++;
+  });
+  if(bosNot) bosNot.hidden = gorunen > 0;
+}
+
 function filtrePaneliKapat(){
   document.querySelectorAll('#filterBar .fdrop.open').forEach(kap=>{
     kap.classList.remove('open');
     kap.querySelector('.fpanel').hidden = true;
     kap.querySelector('.fbtn').setAttribute('aria-expanded','false');
   });
+  // Kapanan panel bir dahaki acilista tam listeyi gostersin: yarim kalmis
+  // bir arama yuzunden "projelerim kayboldu" denmesin.
+  const kutu = document.getElementById('conceptSearch');
+  if(kutu && kutu.value){ kutu.value = ''; konseptAramasiUygula(); }
 }
 (function filtreSeridiKur(){
   const serit = document.getElementById('filterBar');
@@ -6642,6 +6729,8 @@ function filtrePaneliKapat(){
     // Panel icindeki tiklama seridi kapatmasin: coklu secim yapiliyor.
     panel.addEventListener('click', e=> e.stopPropagation());
   });
+  const konseptKutu = document.getElementById('conceptSearch');
+  if(konseptKutu) konseptKutu.addEventListener('input', konseptAramasiUygula);
   document.addEventListener('click', filtrePaneliKapat);
   document.addEventListener('keydown', e=>{ if(e.key === 'Escape') filtrePaneliKapat(); });
   const temizle = document.getElementById('filterClearAll');
@@ -7809,6 +7898,8 @@ function openAiSettings(){
   document.getElementById('aiSettingsOverlay').classList.add('open');
 }
 
+document.getElementById('aiSettingsBtn').addEventListener('click', openAiSettings);
+
 document.getElementById('aiForgetBtn').addEventListener('click', ()=>{
   if(!confirm(t('ai_forget_confirm'))) return;
   try{ localStorage.removeItem('demo_ai_settings'); }catch(e){}
@@ -7911,7 +8002,7 @@ document.getElementById('pendingOverlay').addEventListener('click', (e)=>{ if(e.
 
 // Yayina alinan surumun damgasi. Onbellekten eski bir kopya geldiginde bu
 // tarih eski kalir, boylece "guncel mi?" sorusu bakarak cevaplanir.
-const BUILD_STAMP = '2026-09-02 23:40 UTC';
+const BUILD_STAMP = '2026-09-03 01:55 UTC';
 document.getElementById('buildId').textContent = BUILD_STAMP;
 
 // ===== Init =====
@@ -8076,9 +8167,16 @@ function pitchAcikMi(){
   if(v === null){ pitchYaz('gorundu'); return true; }
   return v === 'acik';
 }
+// Tanitim uygulamanin icinden kaldirildi: uygulamayi acan kisi ne
+// oldugunu zaten biliyor, anlatim ayri bir karsilama sayfasina tasinacak.
+// Blok ve metinler duruyor; PITCH_ACIK'i true yapinca geri geliyor.
+const PITCH_ACIK = false;
 (function(){
-  pitchUygula(pitchAcikMi());
-  document.getElementById('pitchToggle').addEventListener('click', ()=>{
+  pitchUygula(PITCH_ACIK && pitchAcikMi());
+  const dugme = document.getElementById('pitchToggle');
+  if(!PITCH_ACIK){ if(dugme) dugme.hidden = true; return; }
+  dugme.hidden = false;
+  dugme.addEventListener('click', ()=>{
     const acik = document.getElementById('pitch').hidden;   // simdi acilacak
     pitchYaz(acik ? 'acik' : 'kapali');
     pitchUygula(acik);
