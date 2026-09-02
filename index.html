@@ -1100,6 +1100,14 @@ body.suruklenirken *{cursor:grabbing !important;}
      buradan bir sey secip kayit olusturacaklarini saniyordu. */
   .filter-fold{border:1px solid var(--line);background:var(--surface);border-radius:8px;}
   .filter-fold > summary{display:flex;}
+  /* Pencere icindeki katlar da istisna. .fold aslinda FILTRE PANELI icin
+     yazilmisti: telefonda katlaniyor, masaustunde acik duruyor. Pencere
+     icinde ise <details> acik degilse yalnizca basligi gorunur — baslik da
+     gizlenince bolum masaustunde TAMAMEN kayboluyordu. "Saha detaylari"
+     bos bir projede acilmiyordu; script penceresindeki fikir seridi de
+     hic gorunmuyordu. */
+  .fold-modal{border:1px solid var(--line);background:var(--surface);}
+  .fold-modal > summary{display:flex;}
   .filter-fold .legend{margin-left:14px;margin-right:14px;}
   .filter-fold .status-row{margin-left:14px;margin-right:14px;}
   .filter-fold .status-row .legend{margin-left:0;margin-right:0;}
@@ -1455,7 +1463,7 @@ body.suruklenirken *{cursor:grabbing !important;}
     <!-- Saha detaylari: saha cekimi yapan ekiplerin ihtiyaci olan alanlar.
          KATLI basliyor ve bos alan hicbir yerde gorunmuyor; bu alanlari
          kullanmayan biri icin pencere eskisi gibi kaliyor. -->
-    <details class="fold" id="pe_fieldFold">
+    <details class="fold fold-modal" id="pe_fieldFold">
       <summary><span data-i18n="pe_field_title">Field details</span>
         <span class="fold-count" id="pe_fieldCount"></span></summary>
       <div class="row2">
@@ -1554,7 +1562,7 @@ body.suruklenirken *{cursor:grabbing !important;}
     </div>
     <!-- Fikirler yazarken GORUNUR kalsin: bir pencere kapatip otekini
          acmak, zinciri kagit uzerinde birakir. -->
-    <details class="fold sc-ideas" id="sc_ideasFold" hidden>
+    <details class="fold fold-modal sc-ideas" id="sc_ideasFold" hidden>
       <summary><span data-i18n="fk_title">Ideas</span>
         <span class="fold-count" id="sc_ideasCount"></span></summary>
       <ul class="sc-idea-list" id="sc_ideasList"></ul>
@@ -6286,7 +6294,7 @@ function closeTour(completed){
   localStorage.setItem('demo_seen_intro','1');
   if(tourAutoSequence){
     tourAutoSequence = false;
-    setTimeout(()=> showPendingPopup(true), 300);
+    setTimeout(otomatikBekleyenler, 300);
   }
 }
 document.getElementById('tourNextBtn').addEventListener('click', ()=>{
@@ -6474,7 +6482,7 @@ document.getElementById('pendingOverlay').addEventListener('click', (e)=>{ if(e.
 
 // Yayina alinan surumun damgasi. Onbellekten eski bir kopya geldiginde bu
 // tarih eski kalir, boylece "guncel mi?" sorusu bakarak cevaplanir.
-const BUILD_STAMP = '2026-09-01 23:10 UTC';
+const BUILD_STAMP = '2026-09-02 06:40 UTC';
 document.getElementById('buildId').textContent = BUILD_STAMP;
 
 // ===== Init =====
@@ -6775,6 +6783,29 @@ function refreshProviders(){
 
 // Giris yapildiginda tarayicidaki calisma kaybolmamali: bulut bossa yerel
 // veri yukarı tasiniyor, doluysa hesaptaki veri esas aliniyor.
+// Veri "yerine oturdu" mu?
+// Sayfa acilirken elimizde yalnizca tarayicidaki kopya var. Giris
+// yapilmissa gercek veri buluttan birkac yuz milisaniye sonra geliyor ve
+// events'in yerini aliyor. Otomatik acilan pencereler bunu beklemeyince
+// kullaniciya DEMO kayitlarini gosteriyorlardi — takviminde hic olmayan
+// satirlari. Bir yenilemede demo, otekinde gercek veri cikmasinin sebebi
+// buydu: yaris.
+let veriHazirCoz = null;
+const veriHazir = new Promise(coz=>{ veriHazirCoz = coz; });
+function veriHazirIsaretle(){ if(veriHazirCoz){ veriHazirCoz(); veriHazirCoz = null; } }
+// Bulut hic cevap vermezse pencere sonsuza kadar beklemesin: elimizdeki
+// neyse onu gostermek, hic gostermemekten iyidir.
+setTimeout(veriHazirIsaretle, 8000);
+
+// Otomatik acilan "Bekleyenler" penceresi. Elle acilan (pendingBtn) bunu
+// beklemiyor: kullanici tikladiysa o an ne varsa onu gormek istiyordur.
+async function otomatikBekleyenler(){
+  await veriHazir;
+  // Beklerken kullanici bir pencere actiysa ustune binme.
+  if(document.querySelector('.overlay.open')) return;
+  showPendingPopup(true);
+}
+
 async function afterSignIn(){
   dirtyIds.clear(); removedIds.clear();
   // Sablonlar buluta degil tarayiciya yaziliyor, bu yuzden bulut
@@ -6832,6 +6863,8 @@ async function afterSignIn(){
     console.error('[bulut] okuma hatasi', err);
     setCloudStatus('error');
   }
+  // Basarili da olsa hatali da olsa: artik ekrandaki veri nihai.
+  veriHazirIsaretle();
 }
 
 // Cikista onceki hesabin verisi ekranda kalmamali.
@@ -6846,6 +6879,7 @@ function afterSignOut(){
   renderCal();
   setCloudStatus('');
   showToast(t('auth_signed_out'));
+  veriHazirIsaretle();
 }
 
 // getSession() ve onAuthStateChange ikisi de oturumu bildiriyor; Google
@@ -6868,9 +6902,15 @@ function oturumBildirildi(s){
 if(window.supabase){
   sb = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
   sb.auth.getSession().then(({data})=>{
+    // Oturum varsa afterSignIn bitince isaretlenecek; yoksa beklenecek
+    // bir sey yok, ekrandaki veri zaten nihai.
     if(data && data.session) oturumBildirildi(data.session);
-  });
+    else veriHazirIsaretle();
+  }).catch(veriHazirIsaretle);
   sb.auth.onAuthStateChange((olay, s)=> oturumBildirildi(s));
+}else{
+  // Bulut kutuphanesi hic yuklenmedi: yalnizca tarayicidaki veri var.
+  veriHazirIsaretle();
 }
 
 document.getElementById('authBtn').addEventListener('click', ()=>{
@@ -7028,7 +7068,7 @@ document.getElementById('fbSendBtn').addEventListener('click', async ()=>{
 let turuGordu = false;
 try{ turuGordu = !!localStorage.getItem('demo_seen_intro'); }catch(e){}
 if(turuGordu){
-  setTimeout(()=> showPendingPopup(true), 500);
+  setTimeout(otomatikBekleyenler, 500);
 }else{
   tourAutoSequence = true;
   setTimeout(openTour, 400);
