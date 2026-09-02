@@ -6,6 +6,33 @@ duruyor, neden ertelendiği de yazıyor ki aynı tartışma baştan yapılmasın
 
 ---
 
+## Nerede kaldık (3 Eylül 2026, öğleden sonra)
+
+Kullanıcı: anahtar kayıtlı görünüyor, ✨ AI ile yaz istek gönderiyor ve
+sayaç sayıyor — ama **90 saniyede iki modelden de cevap gelmiyor**.
+Daha önce aynı anahtarla Google'ın kendi "high demand" hatası gelmişti,
+yani ağ yolu AÇIK. Yapılanlar:
+
+- **Üçüncü model, bir önceki nesilden:** `gemini-2.5-flash`. Yeni
+  modeller serbest katmanda yoğunken çalışan bir seçenek kalsın diye.
+  `AI_MODELLER` artık nesne listesi (`{ad, dusunme}`) — eski nesil
+  `thinkingLevel`'i tanımıyor, gönderilirse isteği geri çevirir, o yüzden
+  her model kendi ayarını taşıyor.
+- **"Bağlantıyı test et" düğmesi** (AI ekranında). `GET /v1beta/models`
+  çağırıyor: küçük ve hızlı bir istek. Dönerse ağ da anahtar da sağlam
+  demektir ve geriye tek ihtimal kalır — modelin yoğunluğu. Sonuç kaç
+  saniye sürdüğünü ve kaç model listelendiğini yazıyor. "Sorun bende mi
+  Google'da mı" sorusunu tahminle değil ölçümle cevaplıyor.
+
+**Sıradaki adım (cevap beklenen):** kullanıcı bu testi çalıştıracak.
+- Test HIZLI dönerse → ağ ve anahtar sağlam, sorun model kapasitesi;
+  `gemini-2.5-flash` yedeği devrede olduğu için yazma çalışmalı.
+- Test de takılırsa → sorun bu cihazın Google'a çıkışında; o zaman ağ
+  tarafına bakılacak (telefondaki Supabase sorunuyla ortak bir sebep
+  olabilir).
+
+---
+
 ## Nerede kaldık (3 Eylül 2026, öğle)
 
 Kullanıcı: *"kayıt etti mi etmedi mi bilmiyorum? Scripti de yazmadı, hiçbir

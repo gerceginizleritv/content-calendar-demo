@@ -1238,6 +1238,8 @@ body.suruklenirken *{cursor:grabbing !important;}
   background:var(--surface-2);border:1px solid var(--line);color:var(--text-dim);
 }
 .ai-durum.var{border-color:var(--green);color:var(--text);}
+.ai-test-satir{display:flex;align-items:center;gap:10px;flex-wrap:wrap;margin-top:10px;}
+.ai-test-satir .ai-status{margin-top:0;flex:1;min-width:180px;}
 .ai-durum .ai-durum-key{font-family:'JetBrains Mono',monospace;font-size:11px;color:var(--text-dim);}
 .ai-status{font-size:11.5px;color:var(--text-dim);margin-top:6px;min-height:14px;}
 .ai-status.error{color:var(--red);}
@@ -2151,6 +2153,10 @@ body.suruklenirken *{cursor:grabbing !important;}
       <label data-i18n="ai_key_label">Gemini API key</label>
       <input type="password" id="ai_key" placeholder="AQ.… / AIza…">
       <p class="ai-key-hint" id="ai_key_hint"></p>
+      <div class="ai-test-satir">
+        <button type="button" class="btn btn-sm" id="aiTestBtn" data-i18n="ai_test">Test the connection</button>
+        <span class="ai-status" id="ai_test_out"></span>
+      </div>
     </div>
     <div class="modal-actions">
       <button class="btn btn-danger" id="aiForgetBtn" data-i18n="ai_forget" hidden>Remove key</button>
@@ -2664,6 +2670,10 @@ const LANG = {
     ai_step_3: "Copy the key it gives you — a long line starting with AQ. or AIza.",
     ai_step_4: "Paste it in the box below and press Save.",
     ai_howto_note: "Free, and it does not ask for a credit card. Careful: a paid ChatGPT or Gemini subscription is a different thing — it does not give you a key. The key comes from the page above.",
+    ai_test: "Test the connection",
+    ai_test_working: "Testing…",
+    ai_test_ok: (sn, n)=> `Connection works — Google answered in ${sn} s and listed ${n} models. Your key and your network are fine; if writing still fails, the model itself is busy.`,
+    ai_test_fail: "Google could not be reached at all. Then it is the connection, not the model — try another network.",
     ai_state_none: "No key saved yet — the ✨ AI buttons will ask for one.",
     ai_state_have: "A key is saved on this device.",
     ai_save_anyway: "Save without testing",
@@ -3088,6 +3098,10 @@ const LANG = {
     ai_step_3: "Verdiği anahtarı kopyala — AQ. ya da AIza ile başlayan uzun bir satır.",
     ai_step_4: "Aşağıdaki kutuya yapıştır ve Kaydet'e bas.",
     ai_howto_note: "Ücretsiz, kredi kartı istemiyor. Dikkat: paralı ChatGPT ya da Gemini aboneliği bambaşka bir şey — o abonelik sana anahtar vermiyor. Anahtar yukarıdaki sayfadan alınıyor.",
+    ai_test: "Bağlantıyı test et",
+    ai_test_working: "Deneniyor…",
+    ai_test_ok: (sn, n)=> `Bağlantı çalışıyor — Google ${sn} sn'de yanıt verdi ve ${n} model listeledi. Anahtarın da ağın da sağlam; yazma yine olmuyorsa sorun modelin yoğunluğunda.`,
+    ai_test_fail: "Google'a hiç ulaşılamadı. O zaman sorun modelde değil bağlantıda — başka bir ağla dene.",
     ai_state_none: "Kayıtlı anahtar yok — ✨ AI düğmeleri seni buraya yönlendirir.",
     ai_state_have: "Bu cihazda bir anahtar kayıtlı.",
     ai_save_anyway: "Denemeden kaydet",
@@ -8181,7 +8195,15 @@ const AI_DUSUNME = 'low';
 // cok talep goruyor" hatasi kullanicinin anahtariyla ilgili DEGIL ve
 // bekleyip tekrar denemesini istemek yerine calisan bir modele gecmek
 // dogru cevap. Ikisi de ayni ayarlari (thinkingLevel) destekliyor.
-const AI_MODELLER = ['gemini-3.7-flash', 'gemini-3.6-flash'];
+// Sirayla deneniyor. Ucuncusu bir onceki nesil: yeni modeller serbest
+// katmanda yogun oldugunda calisan bir sey kalmasi icin. Eski nesil
+// thinkingLevel'i TANIMIYOR, gonderilirse istegi geri cevirir; her model
+// kendi ayarini tasiyor.
+const AI_MODELLER = [
+  { ad:'gemini-3.7-flash', dusunme:true },
+  { ad:'gemini-3.6-flash', dusunme:true },
+  { ad:'gemini-2.5-flash', dusunme:false }
+];
 
 // Yogunluk / kota: ikisi de "anahtar bozuk" DEGIL, ikisi de baska bir
 // modelde calisabilir. Ayri ayri anlatiliyor cunku kullanicinin yapacagi
@@ -8197,12 +8219,12 @@ async function callGemini(apiKey, prompt, secenek){
   // Ucuncu parametre eskiden dogrudan sure idi; sayi gelirse oyle
   // yorumlaniyor ki eski cagrilar bozulmasin.
   const s = (typeof secenek === 'number') ? { sure: secenek } : (secenek || {});
-  const govde = {
-    contents:[{ parts:[{ text: prompt }] }],
-    generationConfig: { thinkingConfig: { thinkingLevel: s.dusunme || AI_DUSUNME } }
-  };
-  if(s.enCokJeton) govde.generationConfig.maxOutputTokens = s.enCokJeton;
-  const govdeMetni = JSON.stringify(govde);
+  function govdeYap(model){
+    const g = { contents:[{ parts:[{ text: prompt }] }], generationConfig:{} };
+    if(model.dusunme) g.generationConfig.thinkingConfig = { thinkingLevel: s.dusunme || AI_DUSUNME };
+    if(s.enCokJeton) g.generationConfig.maxOutputTokens = s.enCokJeton;
+    return JSON.stringify(g);
+  }
 
   const toplamSure = s.sure || AI_ZAMAN_ASIMI;
   const bitis = Date.now() + toplamSure;
@@ -8232,10 +8254,10 @@ async function callGemini(apiKey, prompt, secenek){
       let res;
       try{
         res = await fetch('https://generativelanguage.googleapis.com/v1beta/models/'
-                          + AI_MODELLER[i] + ':generateContent', {
+                          + AI_MODELLER[i].ad + ':generateContent', {
           method:'POST', signal: kes.signal,
           headers:{ 'x-goog-api-key': apiKey, 'content-type':'application/json' },
-          body: govdeMetni
+          body: govdeYap(AI_MODELLER[i])
         });
       }catch(err){
         // Sure doldu ya da fetch'in kendisi patladi (aga hic cikilamadi).
@@ -8442,6 +8464,47 @@ function openAiSettings(){
 
 document.getElementById('aiSettingsBtn').addEventListener('click', openAiSettings);
 
+// Model listesi: kucuk ve hizli bir istek. Donerse ag da anahtar da
+// saglam demektir ve geriye tek ihtimal kalir — modelin yogunlugu.
+// "Sorun bende mi Google'da mi" sorusunu tahminle degil olcumle
+// cevapliyor.
+document.getElementById('aiTestBtn').addEventListener('click', async ()=>{
+  const dugme = document.getElementById('aiTestBtn');
+  const cikti = document.getElementById('ai_test_out');
+  const key = document.getElementById('ai_key').value.trim() || ((getAiSettings()||{}).key || '');
+  if(!key){ cikti.textContent = t('ai_alert_need_key'); cikti.className = 'ai-status error'; return; }
+  dugme.disabled = true;
+  const basladi = Date.now();
+  cikti.className = 'ai-status';
+  cikti.textContent = t('ai_test_working');
+  const sayac = setInterval(()=>{
+    cikti.textContent = t('ai_test_working') + ' ' + Math.round((Date.now()-basladi)/1000) + ' sn';
+  }, 1000);
+  const kes = new AbortController();
+  const zaman = setTimeout(()=> kes.abort(), 20000);
+  try{
+    const res = await fetch('https://generativelanguage.googleapis.com/v1beta/models', {
+      headers:{ 'x-goog-api-key': key }, signal: kes.signal
+    });
+    const sn = ((Date.now()-basladi)/1000).toFixed(1);
+    if(!res.ok){
+      const hata = await res.json().catch(()=>({}));
+      cikti.textContent = t('ai_key_bad')((hata.error && hata.error.message) || ('HTTP '+res.status));
+      cikti.className = 'ai-status error';
+      return;
+    }
+    const data = await res.json();
+    const adet = Array.isArray(data.models) ? data.models.length : 0;
+    cikti.textContent = t('ai_test_ok')(sn, adet);
+    cikti.className = 'ai-status ok';
+  }catch(err){
+    cikti.textContent = t('ai_test_fail');
+    cikti.className = 'ai-status error';
+  }finally{
+    clearTimeout(zaman); clearInterval(sayac); dugme.disabled = false;
+  }
+});
+
 document.getElementById('aiSaveAnywayBtn').addEventListener('click', ()=>{
   const key = document.getElementById('ai_key').value.trim();
   if(!key) return;
@@ -8585,7 +8648,7 @@ document.addEventListener('keydown', (e)=>{
 
 // Yayina alinan surumun damgasi. Onbellekten eski bir kopya geldiginde bu
 // tarih eski kalir, boylece "guncel mi?" sorusu bakarak cevaplanir.
-const BUILD_STAMP = '2026-09-03 09:45 UTC';
+const BUILD_STAMP = '2026-09-03 10:30 UTC';
 document.getElementById('buildId').textContent = BUILD_STAMP;
 
 // ===== Init =====
