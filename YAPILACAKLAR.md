@@ -6,6 +6,41 @@ duruyor, neden ertelendiği de yazıyor ki aynı tartışma baştan yapılmasın
 
 ---
 
+## Nerede kaldık (3 Eylül 2026, akşam)
+
+**Teşhis sonucu:** kullanıcının "Bağlantıyı test et" çıktısı → *0.3 sn,
+50 model*. Yani ağ da anahtar da kusursuz; takılan tek şey
+`generateContent`. Bunun üzerine:
+
+- **Test artık model model deniyor.** Model listesi geldikten sonra her
+  aday model tek kelimelik bir istekle deneniyor ve satır satır sonuç
+  yazıyor: çalışıyor (n sn) / Google'ın hata cümlesi / "bu anahtara açık
+  değil" (listede yoksa hiç denenmiyor) / "15 sn'de yanıt yok".
+- **Çalışan model hatırlanıyor** (`aiCalisanModel`) ve yazma ONDAN
+  başlıyor. Tıkalı bir modeli her seferinde baştan denemek dakikalar
+  yiyordu.
+
+**Script penceresinde AI tarifi ayrı alana taşındı** (kullanıcı isteği).
+Tek kutu varken kullanıcı "1800 kelimelik bir script yaz" diye tarif
+yazınca o metin scriptin kendisi gibi duruyordu — prompt mu script mi
+belli olmuyordu. Artık:
+- `#sc_aiBrief` — kesikli çerçeveli, script kutusundan görsel olarak ayrı.
+- Tarif prompt'un EN BAŞINA giriyor; uzunluk/ton/hedef kitle söylenmişse
+  "tam uygula" deniyor. Proje ve fikirler bağlam olarak altında.
+- Tarif yoksa eski davranış (proje + fikir + başlık bağlamı) sürüyor.
+- Enter doğrudan yazdırıyor. Yeni pencerede tarif sıfırlanıyor.
+
+**Script penceresi yerleşimi.** Pencerenin kendisi kayıyordu; uzun bir
+scriptte Kaydet'i bulmak için en alta inmek gerekiyordu. Artık pencere
+ekrana sığıyor, kayan tek şey metin kutusu. İki CSS tuzağı:
+- `.modal-lg` ile `.modal` aynı özgüllükte ve `.modal` daha sonra
+  tanımlı — 600px'lik sınır genişliği eziyordu. `.modal.modal-lg`.
+- `height:100%` şart; yalnızca `max-height` verilince pencere içeriğe
+  göre kalıyor ve metin kutusu büyüyecek boş alan bulamıyor.
+Genişlik 1040px. `sc-yerlesim.test.js` üç ekran boyunda ölçüyor.
+
+---
+
 ## Nerede kaldık (3 Eylül 2026, öğleden sonra)
 
 Kullanıcı: anahtar kayıtlı görünüyor, ✨ AI ile yaz istek gönderiyor ve

@@ -677,14 +677,27 @@ body.suruklenirken *{cursor:grabbing !important;}
 /* --- Script penceresi --- */
 /* Yazma alani, formdan farkli olarak ekranin buyuk bolumunu istiyor:
    bir metnin nasil aktigini gormeden duzenlemek zor. */
-.modal-lg{max-width:820px;width:min(820px,96vw);}
+/* .modal-lg ile .modal ayni ozgullukte ve .modal DAHA SONRA tanimli:
+   tek sinifla yazilinca 600px'lik sinir bunu eziyordu. Iki sinif birlikte
+   yazilarak ozgulluk yukseltiliyor. */
+.modal.modal-lg{max-width:1040px;width:min(1040px,96vw);}
+/* Script penceresi ekrana SIGIYOR: kayan tek sey metin kutusu.
+   Onceki halde pencerenin kendisi kayiyordu — baslik, proje ve dugmeler
+   yukari kaciyor, uzun bir scriptte kaydet dugmesini bulmak icin en alta
+   inmek gerekiyordu. Basliktan dugmelere kadar her sey sabit, metin
+   aradaki bosluğu doldurup KENDI icinde kayiyor. */
+/* height:100% SART: yalnizca max-height verilince pencere icerige gore
+   kaliyor, metin kutusu buyuyecek bos alan bulamiyordu. */
+.modal.sc-modal{display:flex;flex-direction:column;height:100%;max-height:100%;overflow:hidden;}
+.sc-modal > *{flex:none;}
+.sc-modal .sc-text{flex:1 1 auto;min-height:140px;overflow-y:auto;resize:none;}
 .sc-head{display:flex;justify-content:space-between;align-items:flex-start;gap:14px;
   margin-bottom:10px;}
 .sc-head h2{margin:0;}
 .sc-who{font-size:13px;color:var(--text-dim);margin-top:3px;}
 .sc-count{font-size:11.5px;color:var(--text-dim);white-space:nowrap;
   font-variant-numeric:tabular-nums;padding-top:6px;}
-.sc-text{width:100%;min-height:min(58vh,460px);resize:vertical;
+.sc-text{width:100%;min-height:min(58vh,460px);resize:vertical;box-sizing:border-box;
   padding:14px 15px;border:1px solid var(--line);border-radius:10px;
   background:var(--bg);color:var(--text);font:inherit;font-size:14.5px;line-height:1.7;}
 .sc-text:focus{outline:2px solid var(--accent);outline-offset:-2px;}
@@ -697,6 +710,17 @@ body.suruklenirken *{cursor:grabbing !important;}
 .sc-drive-durum{font-size:11.5px;color:var(--text-dim);}
 .sc-drive-durum.ok{color:var(--green);}
 .sc-drive-durum.error{color:var(--red);}
+/* AI tarifi: script kutusundan gorunus olarak AYRI dursun ki hangisinin
+   ne oldugu bir bakista anlasilsin. */
+.sc-ai-satir{display:flex;gap:8px;align-items:center;flex-wrap:wrap;margin:12px 0 6px;}
+.sc-ai-brief{
+  flex:1;min-width:220px;background:var(--bg);color:var(--text);
+  border:1px dashed var(--accent-dim);border-radius:7px;padding:9px 11px;
+  font-family:'IBM Plex Sans',sans-serif;font-size:13px;
+}
+.sc-ai-brief:focus{outline:none;border-style:solid;border-color:var(--accent);}
+.sc-ai-brief::placeholder{color:var(--text-dim);}
+.sc-ai-not{margin:0 0 10px;font-size:11.5px;color:var(--text-dim);line-height:1.45;}
 /* Anahtar rehberi. Numarali adimlar bilerek: "API anahtari" sozunu ilk
    kez duyan biri icin bir paragraf degil, sirayla yapilacak dort is. */
 .ai-howto{margin-bottom:12px;}
@@ -1240,6 +1264,12 @@ body.suruklenirken *{cursor:grabbing !important;}
 .ai-durum.var{border-color:var(--green);color:var(--text);}
 .ai-test-satir{display:flex;align-items:center;gap:10px;flex-wrap:wrap;margin-top:10px;}
 .ai-test-satir .ai-status{margin-top:0;flex:1;min-width:180px;}
+.ai-test-liste{list-style:none;margin:10px 0 0;padding:0;display:flex;flex-direction:column;gap:4px;}
+.ai-test-liste li{display:flex;align-items:baseline;gap:8px;font-size:12px;
+  font-family:'JetBrains Mono',monospace;color:var(--text-dim);}
+.ai-test-liste .tm-ad{flex:1;min-width:0;overflow-wrap:anywhere;}
+.ai-test-liste .tm-ok{color:var(--green);}
+.ai-test-liste .tm-hata{color:var(--red);}
 .ai-durum .ai-durum-key{font-family:'JetBrains Mono',monospace;font-size:11px;color:var(--text-dim);}
 .ai-status{font-size:11.5px;color:var(--text-dim);margin-top:6px;min-height:14px;}
 .ai-status.error{color:var(--red);}
@@ -1877,7 +1907,7 @@ body.suruklenirken *{cursor:grabbing !important;}
 <!-- Script penceresi: genis ve yalin. Ic ice form alanlari degil, tek bir
      yazma alani — burada yapilan is yazmak. -->
 <div class="overlay" id="scriptOverlay">
-  <div class="modal modal-lg">
+  <div class="modal modal-lg sc-modal">
     <div class="sc-head">
       <h2 data-i18n="sc_title">Script</h2>
       <div class="sc-count" id="scCount"></div>
@@ -1914,12 +1944,19 @@ body.suruklenirken *{cursor:grabbing !important;}
       </button>
       <button type="button" class="btn btn-sm" id="sc_drivePush" hidden data-i18n="sc_drive_push">Write to Drive</button>
       <button type="button" class="btn btn-sm" id="sc_driveUndo" hidden data-i18n="sc_drive_undo">Back to the previous text</button>
-      <!-- AI ile yazma. Baglam pencerede zaten duruyor: baslik, proje ve
-           projenin fikirleri. Uretmeden ONCE mevcut metin bir kenara
-           konuyor; "onceki hale don" ayni dugme. -->
-      <button type="button" class="btn btn-sm ai-btn" id="sc_ai" data-i18n="sc_ai">✨ Write with AI</button>
       <span class="sc-drive-durum" id="sc_driveStatus"></span>
     </div>
+    <!-- AI'ya verilen tarif AYRI bir alanda. Onceki halde tek kutu vardi
+         ve kullanici "1800 kelimelik bir script yaz" diye tarif yazinca
+         o metin scriptin KENDISI gibi duruyordu: prompt mu script mi
+         belli olmuyordu. Tarif burada, sonuc asagida. -->
+    <div class="sc-ai-satir">
+      <input type="text" id="sc_aiBrief" maxlength="600" class="sc-ai-brief"
+             data-i18n-placeholder="sc_ai_brief_ph"
+             placeholder="What should the AI write? e.g. a 1800-word script explaining…">
+      <button type="button" class="btn btn-sm ai-btn" id="sc_ai" data-i18n="sc_ai">✨ Write with AI</button>
+    </div>
+    <p class="sc-ai-not" data-i18n="sc_ai_note">The AI writes into the box below. Your project and its ideas already go with it — here you only say what you want.</p>
     <textarea id="sc_text" class="sc-text" rows="18" spellcheck="true"
               data-i18n-placeholder="sc_ph"
               placeholder="Write the script here. It stays with the project."></textarea>
@@ -2157,6 +2194,9 @@ body.suruklenirken *{cursor:grabbing !important;}
         <button type="button" class="btn btn-sm" id="aiTestBtn" data-i18n="ai_test">Test the connection</button>
         <span class="ai-status" id="ai_test_out"></span>
       </div>
+      <!-- Model model sonuc: "calismiyor" demek yetmiyor, HANGISININ
+           calismadigini gormek gerekiyor. -->
+      <ul class="ai-test-liste" id="ai_test_list" hidden></ul>
     </div>
     <div class="modal-actions">
       <button class="btn btn-danger" id="aiForgetBtn" data-i18n="ai_forget" hidden>Remove key</button>
@@ -2435,6 +2475,8 @@ const LANG = {
     btn_ai_settings: "✨ AI (Gemini)",
     btn_ai_write: "✨ AI",
     sc_ai: "✨ Write with AI",
+    sc_ai_brief_ph: "What should the AI write? e.g. a 1800-word script on how easy this is",
+    sc_ai_note: "The AI writes into the box below. Your project and its ideas already go with it — here you only say what you want.",
     sc_ai_working: "Writing…",
     sc_ai_done: "Written with Gemini. Edit it as you like — “Back to the previous text” brings your old text back.",
     sc_ai_overwrite: "There is already text here. Shall the AI write over it? Your old text stays behind “Back to the previous text”.",
@@ -2672,6 +2714,13 @@ const LANG = {
     ai_howto_note: "Free, and it does not ask for a credit card. Careful: a paid ChatGPT or Gemini subscription is a different thing — it does not give you a key. The key comes from the page above.",
     ai_test: "Test the connection",
     ai_test_working: "Testing…",
+    ai_test_models: "Now trying each model with a one-word request:",
+    ai_test_missing: "not offered to this key",
+    ai_test_trying: "trying…",
+    ai_test_m_ok: (sn)=> `works (${sn} s)`,
+    ai_test_m_slow: (sn)=> `no answer in ${sn} s`,
+    ai_test_done_ok: (ad)=> `Done. ${ad} answers — writing will use it.`,
+    ai_test_done_none: "Done. None of the models answered. Your key and network are fine, so this is on Google's side right now — try again later.",
     ai_test_ok: (sn, n)=> `Connection works — Google answered in ${sn} s and listed ${n} models. Your key and your network are fine; if writing still fails, the model itself is busy.`,
     ai_test_fail: "Google could not be reached at all. Then it is the connection, not the model — try another network.",
     ai_state_none: "No key saved yet — the ✨ AI buttons will ask for one.",
@@ -2863,6 +2912,8 @@ const LANG = {
     btn_ai_settings: "✨ AI (Gemini)",
     btn_ai_write: "✨ AI",
     sc_ai: "✨ AI ile yaz",
+    sc_ai_brief_ph: "AI ne yazsın? Örn: bunun ne kadar kolay olduğunu anlatan 1800 kelimelik bir script",
+    sc_ai_note: "AI aşağıdaki kutuya yazıyor. Projen ve fikirlerin zaten onunla birlikte gidiyor — buraya sadece ne istediğini yaz.",
     sc_ai_working: "Yazıyor…",
     sc_ai_done: "Gemini yazdı. Dilediğin gibi düzenle — “önceki hâle dön” eski metnini geri getiriyor.",
     sc_ai_overwrite: "Burada zaten bir metin var. AI bunun üzerine yazsın mı? Eski metnin “önceki hâle dön” düğmesinde duruyor.",
@@ -3100,6 +3151,13 @@ const LANG = {
     ai_howto_note: "Ücretsiz, kredi kartı istemiyor. Dikkat: paralı ChatGPT ya da Gemini aboneliği bambaşka bir şey — o abonelik sana anahtar vermiyor. Anahtar yukarıdaki sayfadan alınıyor.",
     ai_test: "Bağlantıyı test et",
     ai_test_working: "Deneniyor…",
+    ai_test_models: "Şimdi her modeli tek kelimelik bir istekle deniyorum:",
+    ai_test_missing: "bu anahtara açık değil",
+    ai_test_trying: "deneniyor…",
+    ai_test_m_ok: (sn)=> `çalışıyor (${sn} sn)`,
+    ai_test_m_slow: (sn)=> `${sn} sn'de yanıt yok`,
+    ai_test_done_ok: (ad)=> `Bitti. ${ad} yanıt veriyor — yazma bunu kullanacak.`,
+    ai_test_done_none: "Bitti. Hiçbir model yanıt vermedi. Anahtarın da ağın da sağlam olduğuna göre şu an sorun Google tarafında — bir süre sonra tekrar dene.",
     ai_test_ok: (sn, n)=> `Bağlantı çalışıyor — Google ${sn} sn'de yanıt verdi ve ${n} model listeledi. Anahtarın da ağın da sağlam; yazma yine olmuyorsa sorun modelin yoğunluğunda.`,
     ai_test_fail: "Google'a hiç ulaşılamadı. O zaman sorun modelde değil bağlantıda — başka bir ağla dene.",
     ai_state_none: "Kayıtlı anahtar yok — ✨ AI düğmeleri seni buraya yönlendirir.",
@@ -4839,15 +4897,26 @@ function aiScriptPrompt(){
   if(baslik) satir.push('What this script is for: ' + baslik);
   const fk = aiFikirSatiri(pid);
   if(fk) satir.push(fk);
+  const tarif = (document.getElementById('sc_aiBrief').value || '').trim();
   const baglam = satir.join('\n');
-  if(!baglam.trim()) return null;
-  return 'Here is what the creator is planning:\n\n' + baglam
-    + '\n\nWrite the script for this video, using the ideas above as the material — do not invent facts that contradict them.'
+  // Tarif de baglam da yoksa modele gonderilecek bir sey yok.
+  if(!tarif && !baglam.trim()) return null;
+
+  const parca = [];
+  // Kullanicinin TARIFI en basta: model once ne istendigini okusun.
+  // Uzunluk, ton, hedef kitle gibi seyleri kullanici burada soyluyor ve
+  // asagidaki genel kurallar onu ezmemeli.
+  if(tarif) parca.push('The creator asks for this:\n' + aiKisalt(tarif, 600));
+  if(baglam.trim()) parca.push('Here is what the creator is planning:\n' + baglam);
+  parca.push('Write the script.'
+    + (baglam.trim() ? ' Use the material above — do not invent facts that contradict it.' : '')
     + ' Write it the way it will be spoken, not as an essay: short sentences, spoken rhythm, a hook in the first two sentences.'
-    + ' Mark the sections with plain headings on their own line (opening, middle, closing) so the creator can find their place while shooting.'
-    + ' Do not write camera directions, shot lists or timecodes unless the ideas above ask for them.'
+    + ' Mark the sections with plain headings on their own line so the creator can find their place while shooting.'
+    + ' Do not write camera directions, shot lists or timecodes unless asked above.'
+    + (tarif ? ' Where the request above sets a length, a tone or an audience, follow it exactly.' : '')
     + ' Write it in ' + aiDilAdi() + '.'
-    + ' Return ONLY the script text — no preamble, no explanation of what you did.';
+    + ' Return ONLY the script text — no preamble, no explanation of what you did.');
+  return parca.join('\n\n');
 }
 
 async function scriptAiYaz(){
@@ -4904,6 +4973,7 @@ function openScript(id, baslangic){
   // kalmasin, "onceki hale don" yanlis metni geri getirmesin.
   driveOncekiMetin = null;
   scriptMetinKaynagi = null;
+  document.getElementById('sc_aiBrief').value = '';
   document.getElementById('sc_driveUndo').hidden = true;
   driveBaglantisi = { id: (veri.driveFileId || ''), ad: (veri.driveFileName || ''),
                       zaman: (veri.driveModified || '') };
@@ -5978,6 +6048,9 @@ document.getElementById('sc_driveUndo').addEventListener('click', ()=>{
   driveDurum('');
 });
 document.getElementById('sc_ai').addEventListener('click', scriptAiYaz);
+document.getElementById('sc_aiBrief').addEventListener('keydown', e=>{
+  if(e.key === 'Enter'){ e.preventDefault(); scriptAiYaz(); }
+});
 document.getElementById('sc_cancel').addEventListener('click', closeScript);
 document.getElementById('scriptOverlay').addEventListener('click', e=>{ if(e.target.id==='scriptOverlay') closeScript(); });
 document.getElementById('sc_save').addEventListener('click', scriptKaydet);
@@ -8199,6 +8272,9 @@ const AI_DUSUNME = 'low';
 // katmanda yogun oldugunda calisan bir sey kalmasi icin. Eski nesil
 // thinkingLevel'i TANIMIYOR, gonderilirse istegi geri cevirir; her model
 // kendi ayarini tasiyor.
+// Testin bulduğu calisan model. Bulunduysa denemeye ONDAN basliyoruz:
+// tikali bir modeli her seferinde bastan denemek dakikalar yiyor.
+let aiCalisanModel = '';
 const AI_MODELLER = [
   { ad:'gemini-3.7-flash', dusunme:true },
   { ad:'gemini-3.6-flash', dusunme:true },
@@ -8228,10 +8304,14 @@ async function callGemini(apiKey, prompt, secenek){
 
   const toplamSure = s.sure || AI_ZAMAN_ASIMI;
   const bitis = Date.now() + toplamSure;
+  // Test bir modelin calistigini gosterdiyse sira ONDAN basliyor.
+  const sirali = aiCalisanModel
+    ? AI_MODELLER.slice().sort((a,b)=> (b.ad === aiCalisanModel) - (a.ad === aiCalisanModel))
+    : AI_MODELLER;
   let sonGecici = '';
   let sonBeklenmeyen = null;
   let denendi = 0;
-  for(let i = 0; i < AI_MODELLER.length; i++){
+  for(let i = 0; i < sirali.length; i++){
     // Sure TOPLAM: iki model de denense kullanicinin bekledigi sure
     // toplamSure'yi asmiyor. Onceki halde her modele ayri sure dusuyor,
     // en kotu halde iki kati sessizlik oluyordu.
@@ -8244,9 +8324,9 @@ async function callGemini(apiKey, prompt, secenek){
     // bile gondermeden "model yogun" demek kullaniciya yalan soylemek
     // olurdu — Google'a hic sorulmamis oluyordu.
     if(i > 0 && kalan < 2000) break;
-    const dilim = Math.max(5000, Math.floor(toplamSure / AI_MODELLER.length));
+    const dilim = Math.max(5000, Math.floor(toplamSure / sirali.length));
     const enAz = Math.max(kalan, 2000);
-    const sure = (i === AI_MODELLER.length - 1) ? enAz : Math.min(dilim, enAz);
+    const sure = (i === sirali.length - 1) ? enAz : Math.min(dilim, enAz);
     denendi++;
     const kes = new AbortController();
     const sayac = setTimeout(()=> kes.abort(), sure);
@@ -8254,10 +8334,10 @@ async function callGemini(apiKey, prompt, secenek){
       let res;
       try{
         res = await fetch('https://generativelanguage.googleapis.com/v1beta/models/'
-                          + AI_MODELLER[i].ad + ':generateContent', {
+                          + sirali[i].ad + ':generateContent', {
           method:'POST', signal: kes.signal,
           headers:{ 'x-goog-api-key': apiKey, 'content-type':'application/json' },
-          body: govdeYap(AI_MODELLER[i])
+          body: govdeYap(sirali[i])
         });
       }catch(err){
         // Sure doldu ya da fetch'in kendisi patladi (aga hic cikilamadi).
@@ -8270,7 +8350,7 @@ async function callGemini(apiKey, prompt, secenek){
         // Bir model asili kaldiysa OTEKI denenmeli: sikisik olan genelde
         // tek model oluyor. Ag hatasinda denemenin anlami yok, adres
         // ikisi icin de ayni.
-        if(err && err.name === 'AbortError' && i < AI_MODELLER.length - 1){
+        if(err && err.name === 'AbortError' && i < sirali.length - 1){
           sonBeklenmeyen = bizim; continue;
         }
         throw bizim;
@@ -8494,9 +8574,12 @@ document.getElementById('aiTestBtn').addEventListener('click', async ()=>{
       return;
     }
     const data = await res.json();
-    const adet = Array.isArray(data.models) ? data.models.length : 0;
-    cikti.textContent = t('ai_test_ok')(sn, adet);
+    const adlar = (Array.isArray(data.models) ? data.models : [])
+      .map(m => String(m.name || '').replace(/^models\//, ''));
+    cikti.textContent = t('ai_test_ok')(sn, adlar.length) + ' ' + t('ai_test_models');
     cikti.className = 'ai-status ok';
+    clearInterval(sayac);
+    await aiModelleriDene(key, adlar);
   }catch(err){
     cikti.textContent = t('ai_test_fail');
     cikti.className = 'ai-status error';
@@ -8504,6 +8587,65 @@ document.getElementById('aiTestBtn').addEventListener('click', async ()=>{
     clearTimeout(zaman); clearInterval(sayac); dugme.disabled = false;
   }
 });
+
+// Her modeli TEK KELIMELIK bir istekle deniyor ve sonucu satir satir
+// yaziyor. "Calismiyor" demek yetmiyordu: hangisinin calismadigini
+// gormeden dogru modele gecilemiyor.
+async function aiModelleriDene(key, mevcutAdlar){
+  const liste = document.getElementById('ai_test_list');
+  liste.hidden = false;
+  liste.innerHTML = AI_MODELLER.map(m=>
+    `<li data-tm="${escapeHtml(m.ad)}"><span class="tm-ad">${escapeHtml(m.ad)}</span>`
+    + `<span class="tm-sonuc">…</span></li>`).join('');
+
+  let calisan = '';
+  for(const m of AI_MODELLER){
+    const satir = liste.querySelector('[data-tm="' + m.ad + '"] .tm-sonuc');
+    // Anahtara acik olmayan modeli denemenin anlami yok.
+    if(mevcutAdlar.length && mevcutAdlar.indexOf(m.ad) === -1){
+      satir.textContent = t('ai_test_missing');
+      satir.className = 'tm-sonuc tm-hata';
+      continue;
+    }
+    satir.textContent = t('ai_test_trying');
+    satir.className = 'tm-sonuc';
+    const basladi = Date.now();
+    const kes = new AbortController();
+    const SINIR = 15000;
+    const zamanlayici = setTimeout(()=> kes.abort(), SINIR);
+    try{
+      const govde = { contents:[{ parts:[{ text:'Tek kelimeyle cevap ver: test' }] }],
+                      generationConfig:{ maxOutputTokens: 32 } };
+      if(m.dusunme) govde.generationConfig.thinkingConfig = { thinkingLevel: AI_DUSUNME };
+      const res = await fetch('https://generativelanguage.googleapis.com/v1beta/models/'
+                              + m.ad + ':generateContent', {
+        method:'POST', signal: kes.signal,
+        headers:{ 'x-goog-api-key': key, 'content-type':'application/json' },
+        body: JSON.stringify(govde)
+      });
+      const sn = ((Date.now()-basladi)/1000).toFixed(1);
+      if(res.ok){
+        satir.textContent = t('ai_test_m_ok')(sn);
+        satir.className = 'tm-sonuc tm-ok';
+        if(!calisan) calisan = m.ad;
+      }else{
+        const h = await res.json().catch(()=>({}));
+        satir.textContent = ((h.error && h.error.message) || ('HTTP '+res.status)).slice(0, 90);
+        satir.className = 'tm-sonuc tm-hata';
+      }
+    }catch(err){
+      satir.textContent = t('ai_test_m_slow')(Math.round(SINIR/1000));
+      satir.className = 'tm-sonuc tm-hata';
+    }finally{ clearTimeout(zamanlayici); }
+  }
+
+  const cikti = document.getElementById('ai_test_out');
+  cikti.textContent = calisan ? t('ai_test_done_ok')(calisan) : t('ai_test_done_none');
+  cikti.className = 'ai-status ' + (calisan ? 'ok' : 'error');
+  // Calisan model bulunduysa yazma ONU kullaniyor: listenin basindaki
+  // model tikaliyken her seferinde bastan denemenin anlami yok.
+  if(calisan) aiCalisanModel = calisan;
+}
 
 document.getElementById('aiSaveAnywayBtn').addEventListener('click', ()=>{
   const key = document.getElementById('ai_key').value.trim();
@@ -8648,7 +8790,7 @@ document.addEventListener('keydown', (e)=>{
 
 // Yayina alinan surumun damgasi. Onbellekten eski bir kopya geldiginde bu
 // tarih eski kalir, boylece "guncel mi?" sorusu bakarak cevaplanir.
-const BUILD_STAMP = '2026-09-03 10:30 UTC';
+const BUILD_STAMP = '2026-09-03 12:00 UTC';
 document.getElementById('buildId').textContent = BUILD_STAMP;
 
 // ===== Init =====
