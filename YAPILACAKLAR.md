@@ -449,6 +449,20 @@ bilerek ertelendi (sebebi aşağıda).
 
 ## Sırada
 
+### Karşılama (landing) sayfası (kullanıcı isteği, 3 Eylül 2026)
+Kullanıcı: *"What is Slate'e tıklayınca introlu bölüm geliyor. Bunu
+şimdilik kaldır ama bir landing page yapacağız ilk giriş için."*
+Uygulama içindeki tanıtım bloğu kaldırıldı; metinler kaybolmasın diye
+sözlükte duruyor: `h1`, `h1_sub`, `promise_tag`, `banner_bold1`,
+`banner_rest`.
+
+**Yapılacak:** ayrı bir `karsilama.html` — ürünün ne olduğunu anlatan,
+"Başla" ile uygulamaya giren tek sayfa.
+
+**Karar verilecek:** aynı alan adını mı paylaşacak (`/` tanıtım, `/app`
+uygulama) yoksa ayrı mı duracak. Kendi alan adı maddesiyle birlikte
+düşünülmeli.
+
 ### Lokasyon uygulamasi Slate'e birlestiriliyor (karar: 1 Eylül 2026)
 Kullanıcı kararı: iki ayrı uygulama yerine tek araç. Sebep: tüm
 geliştirme Slate'te yapılıyor, her özellik iki kez yazılıyordu
