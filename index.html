@@ -679,6 +679,9 @@ body.suruklenirken *{cursor:grabbing !important;}
 .dw-secim small{display:block;margin-top:4px;font-size:11.5px;color:var(--text-dim);}
 .dw-secim .dw-ad{display:block;margin-top:2px;font-size:12.5px;color:var(--accent);
   overflow:hidden;text-overflow:ellipsis;white-space:nowrap;}
+.dw-pick{margin-top:5px;}
+/* Belge secilmemisken satir soluk: tiklanamayacagi bakisla anlasilsin. */
+.dw-secim:has(input:disabled) > span > span:first-child{color:var(--text-dim);}
 .dw-secim:has(input:checked){border-color:var(--accent);background:var(--accent-soft);}
 /* Script yazarken fikirler goz onunde: katli, yer kaplamiyor. */
 .sc-ideas{margin-bottom:10px;}
@@ -1810,11 +1813,16 @@ body.suruklenirken *{cursor:grabbing !important;}
 <div class="overlay" id="driveWriteOverlay">
   <div class="modal">
     <h2 data-i18n="dw_title">Write to Drive</h2>
-    <label class="dw-secim" id="dw_overwriteWrap" hidden>
+    <!-- Ustune yazma HER ZAMAN gorunuyor. Onceden yalnizca Slate belgeyi
+         taniyorsa cikiyordu; oysa Slate'te sifirdan yazilan bir metni de
+         var olan bir belgeye yazmak istenebilir. Belge bilinmiyorsa
+         "Belge seç" ile seciliyor. -->
+    <label class="dw-secim" id="dw_overwriteWrap">
       <input type="radio" name="dwmod" id="dw_overwrite">
       <span>
         <span data-i18n="dw_overwrite">Replace the document</span>
         <b class="dw-ad" id="dw_overwriteName"></b>
+        <button type="button" class="fk-mini dw-pick" id="dw_pick" data-i18n="dw_pick">Choose the document…</button>
         <small data-i18n="dw_overwrite_note">Formatting, images and comments in the document are lost. Google Docs keeps version history, so it can be restored.</small>
       </span>
     </label>
@@ -2379,6 +2387,9 @@ const LANG = {
     dw_overwrite_note: "Formatting, images and comments in the document are lost. Google Docs keeps version history, so it can be restored.",
     dw_new: "Save as a new document",
     dw_new_note: "Nothing existing is touched.",
+    dw_pick: "Choose the document…",
+    dw_pick_change: "Choose another…",
+    dw_pick_type: "Only a Google Docs document can be replaced.",
     dw_name: "Name of the new document",
     dw_go: "Write",
     dw_confirm_overwrite: (ad)=> `“${ad}” will be replaced with this text.\n\nFormatting, images and comments in the document are lost. You can restore it from Google Docs version history.\n\nGo ahead?`,
@@ -2759,6 +2770,9 @@ const LANG = {
     dw_overwrite_note: "Belgedeki biçimlendirme, görseller ve yorumlar silinir. Google Docs sürüm geçmişi tuttuğu için geri alınabilir.",
     dw_new: "Yeni belge olarak kaydet",
     dw_new_note: "Var olan hiçbir belgeye dokunulmaz.",
+    dw_pick: "Belge seç…",
+    dw_pick_change: "Başka belge seç…",
+    dw_pick_type: "Yalnızca bir Google Docs belgesinin üzerine yazılabilir.",
     dw_name: "Yeni belgenin adı",
     dw_go: "Yaz",
     dw_confirm_overwrite: (ad)=> `“${ad}” belgesinin içeriği bu metinle değiştirilecek.\n\nBelgedeki biçimlendirme, görseller ve yorumlar silinir. Google Docs sürüm geçmişinden geri alabilirsin.\n\nDevam edilsin mi?`,
@@ -4301,9 +4315,7 @@ function driveYazDugmesiTazele(){
 function driveYazPenceresiAc(){
   const metin = document.getElementById('sc_text').value;
   if(!metin.trim()) return;
-  const bagliVar = !!driveBaglantisi.id;
-  document.getElementById('dw_overwriteWrap').hidden = !bagliVar;
-  document.getElementById('dw_overwriteName').textContent = driveBaglantisi.ad || '';
+  dwUstuneSatiriTazele();
   document.getElementById('dw_new').checked = true;
   // Ad her seferinde soruluyor, kutu dolu geliyor: yazmak zorunda
   // kalmadan Enter'a basip gecebilsin.
@@ -4316,6 +4328,49 @@ function driveYazPenceresiAc(){
   document.getElementById('driveWriteOverlay').classList.add('open');
   document.getElementById('dw_name').focus();
 }
+// Ustune yazma satirinin gorunumu: belge secilmisse adi ve "degistir",
+// secilmemisse "Belge sec".
+function dwUstuneSatiriTazele(){
+  const ad = document.getElementById('dw_overwriteName');
+  const sec = document.getElementById('dw_pick');
+  const kutu = document.getElementById('dw_overwrite');
+  const bagliVar = !!driveBaglantisi.id;
+  ad.textContent = bagliVar ? driveBaglantisi.ad : '';
+  ad.hidden = !bagliVar;
+  sec.textContent = bagliVar ? t('dw_pick_change') : t('dw_pick');
+  // Belge secilmeden ustune yazilamaz: neyin uzerine yazildigi belirsiz
+  // bir islem, en tehlikeli islem olmamali.
+  kutu.disabled = !bagliVar;
+}
+// Picker'i acip hedef belgeyi sectiriyor. Getirmeden farki: metin
+// OKUNMUYOR, yalnizca hedef belirleniyor.
+async function dwBelgeSec(){
+  const dugme = document.getElementById('dw_pick');
+  dugme.disabled = true;
+  dwDurum(t('sc_drive_wait'));
+  try{
+    await driveBetikleri();
+    const token = await driveIzinIste();
+    const dosya = await drivePickerAc(token);
+    if(!dosya){ dwDurum(''); return; }
+    if((dosya.mimeType || '') !== 'application/vnd.google-apps.document'){
+      dwDurum(t('dw_pick_type'), 'error');
+      return;
+    }
+    const bilgi = await driveDegisimZamani(dosya.id, token).catch(()=>null);
+    driveBaglantisi = { id: dosya.id, ad: (bilgi && bilgi.name) || dosya.name || '',
+                        zaman: (bilgi && bilgi.modifiedTime) || '' };
+    dwUstuneSatiriTazele();
+    document.getElementById('dw_overwrite').checked = true;
+    dwDurum('');
+  }catch(err){
+    console.error('[drive] belge secilemedi', err);
+    dwDurum(/izin/.test(err.message) ? t('sc_drive_denied') : t('dw_err'), 'error');
+  }finally{
+    dugme.disabled = false;
+  }
+}
+
 function driveYazPenceresiKapat(){
   document.getElementById('driveWriteOverlay').classList.remove('open');
 }
@@ -5484,6 +5539,7 @@ document.getElementById('sc_drivePush').addEventListener('click', driveYazPencer
 document.getElementById('dw_cancel').addEventListener('click', driveYazPenceresiKapat);
 document.getElementById('driveWriteOverlay').addEventListener('click', e=>{ if(e.target.id==='driveWriteOverlay') driveYazPenceresiKapat(); });
 document.getElementById('dw_go').addEventListener('click', driveYaz);
+document.getElementById('dw_pick').addEventListener('click', e=>{ e.preventDefault(); dwBelgeSec(); });
 // Ad kutusuna yazmak "yeni belge" secenegini kendiliginden secsin:
 // kullanici ad yazip Yaz'a bastiginda ustune yazilmasi surpriz olur.
 document.getElementById('dw_name').addEventListener('input', ()=>{ document.getElementById('dw_new').checked = true; });
@@ -7747,7 +7803,7 @@ document.getElementById('pendingOverlay').addEventListener('click', (e)=>{ if(e.
 
 // Yayina alinan surumun damgasi. Onbellekten eski bir kopya geldiginde bu
 // tarih eski kalir, boylece "guncel mi?" sorusu bakarak cevaplanir.
-const BUILD_STAMP = '2026-09-02 19:20 UTC';
+const BUILD_STAMP = '2026-09-02 20:30 UTC';
 document.getElementById('buildId').textContent = BUILD_STAMP;
 
 // ===== Init =====
