@@ -883,6 +883,20 @@ geliyor, ilk test onları kaçırıyordu). Bulunanlar:
   gibi), tonlu zeminler .16 → .12 opaklığa indirildi.
 Sonuç: dört durumda da (açık/koyu × EN/TR) eşiğin altında kalan metin yok.
 
+**Kahraman panosu da canlı (kullanıcı isteği):** Kayıtlar panoya sırayla
+düşüyor, biri kalkıp başka güne taşınıyor (hedef gün önce işaretleniyor),
+ikisi yayınlandı tikini alıyor. 13 saniyelik döngü.
+
+Bunu yaparken **eskiden beri duran bir yerleşim hatası** ortaya çıktı:
+`.izgara`'nın sütunları düz `1fr` idi. Düz `1fr`, sütunun en küçük boyutunu
+İÇERİĞE bağlıyor; uzun bir kayıt adı bütün ızgarayı genişletiyordu ve son
+sütun panonun `overflow:hidden`'ı altında kesiliyordu — sayfa yatay
+kaymadığı için testler bunu görmüyordu. Üç yerden düzeltildi:
+`grid-template-columns:repeat(7,minmax(0,1fr))`, hücreye `min-width:0`,
+kayıt kutusuna `min-width:0;overflow:hidden`. Kayıt adları da hücreye
+sığacak şekilde kısaltıldı (platform rengi zaten nereye gideceğini
+söylüyor). `izgara.test.js` bunu dört ekran boyutunda sınıyor.
+
 **Ders:** Kontrastı gözle değil ölçerek doğrula, ve SVG metnini ayrı ölç —
 `getComputedStyle(el).color` SVG `<text>` için gerçek rengi vermiyor.
 

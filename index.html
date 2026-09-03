@@ -127,7 +127,7 @@ a{color:inherit;}
 
 /* ---------- kahraman ---------- */
 .kahraman{padding:76px 0 62px;}
-.kahraman-izgara{display:grid;grid-template-columns:minmax(0,1.05fr) minmax(0,1fr);gap:56px;align-items:center;}
+.kahraman-izgara{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1.12fr);gap:48px;align-items:center;}
 .rozet{
   display:inline-flex;align-items:center;gap:8px;background:var(--mavi-soft);color:var(--mavi);
   border-radius:999px;padding:6px 14px;margin-bottom:22px;
@@ -159,23 +159,81 @@ a{color:inherit;}
   font-family:'IBM Plex Mono',monospace;font-size:10px;letter-spacing:.6px;font-weight:500;
   text-transform:uppercase;color:var(--solgun);text-align:center;
 }
-.izgara{display:grid;grid-template-columns:repeat(7,1fr);gap:5px;}
+/* minmax(0,1fr): duz "1fr" sutunun en kucuk boyutunu ICERIGE baglar,
+   uzun bir kayit adi butun izgarayi genisletiyordu. */
+.izgara{display:grid;grid-template-columns:repeat(7,minmax(0,1fr));gap:5px;}
 .hucre{
-  min-height:66px;background:var(--kagit);border:1px solid var(--cizgi-soft);border-radius:7px;
+  min-width:0;min-height:66px;background:var(--kagit);border:1px solid var(--cizgi-soft);border-radius:7px;
   padding:5px;display:flex;flex-direction:column;gap:3px;
 }
 .hucre-no{font-family:'IBM Plex Mono',monospace;font-size:10px;color:var(--solgun);line-height:1;}
 /* Kayit metni platform renginin USTUNDE degil, YANINDA duruyor: 9-10 piksellik
    beyaz yazi renkli zeminde okunmuyordu, koyu temada iyice kayboluyordu. */
 .kayit{
+  display:flex;align-items:center;gap:4px;
   font-size:9.5px;line-height:1.3;font-weight:600;border-radius:4px;padding:3px 5px;
   background:var(--yuzey);color:var(--murekkep);
   border:1px solid var(--cizgi-soft);border-left:3px solid var(--p);
-  overflow:hidden;text-overflow:ellipsis;white-space:nowrap;
-  opacity:0;transform:translateY(4px);animation:bel .5s ease forwards;
+  min-width:0;overflow:hidden;
 }
-@keyframes bel{to{opacity:1;transform:none;}}
-@media (prefers-reduced-motion: reduce){.kayit{animation:none;opacity:1;transform:none;}}
+.kayit-ad{overflow:hidden;text-overflow:ellipsis;white-space:nowrap;min-width:0;}
+
+/* "Yayinlandi" tiki */
+.f0ok{
+  flex:none;width:9px;height:9px;border-radius:50%;background:var(--yesil);position:relative;
+}
+.f0ok::after{
+  content:"";position:absolute;left:2.3px;top:3.2px;width:3.4px;height:1.7px;
+  border-left:1.2px solid #fff;border-bottom:1.2px solid #fff;transform:rotate(-45deg);
+}
+
+/* ===== Kahraman panosu: kayitlar dusuyor, biri baska gune tasiniyor,
+   ikisi yayinlandi olarak isaretleniyor. Tek dongu 13 saniye. ===== */
+.pano.canli .hucre{position:relative;}
+.pano.canli .f0hedef{transition:none;}
+.canli.oyna .f0k,.canli.oyna .f0tasi,.canli.oyna .f0gelen,
+.canli.oyna .f0ok,.canli.oyna .f0hedef{animation-duration:13s;}
+.canli.oyna .f0k{animation-name:f0k;animation-delay:var(--g);animation-timing-function:cubic-bezier(.22,.75,.3,1);}
+.canli.oyna .f0tasi{animation-name:f0tasi;animation-timing-function:cubic-bezier(.4,0,.2,1);}
+.canli.oyna .f0gelen{animation-name:f0gelen;animation-timing-function:cubic-bezier(.22,.75,.3,1);}
+.canli.oyna .f0hedef{animation-name:f0hedef;}
+.canli.oyna .f0ok{animation-name:f0ok;animation-delay:var(--t);}
+.pano.canli .f0gelen{opacity:0;}
+.pano.canli .f0ok{opacity:0;}
+.pano.canli .f0k,.pano.canli .f0tasi,.pano.canli .f0gelen{transform-origin:left center;}
+
+@keyframes f0k{
+  0%,3%{opacity:0;transform:translateY(-9px) scale(.94);}
+  9%,92%{opacity:1;transform:none;}
+  98%,100%{opacity:0;transform:translateY(-5px) scale(.97);}
+}
+/* Tasinan kayit: once yerinde duruyor, sonra kalkiyor ve kayboluyor */
+@keyframes f0tasi{
+  0%,3%{opacity:0;transform:translateY(-9px) scale(.94);}
+  9%,38%{opacity:1;transform:none;box-shadow:none;}
+  44%{opacity:1;transform:translateY(-5px) scale(1.07) rotate(-2deg);
+      box-shadow:0 6px 14px -4px rgba(20,28,39,.35);}
+  50%,100%{opacity:0;transform:translateY(-3px) scale(1.02) rotate(-1deg);box-shadow:none;}
+}
+/* Hedef gun: kayit gelmeden once isaretleniyor */
+@keyframes f0hedef{
+  0%,36%{box-shadow:none;}
+  42%,54%{box-shadow:inset 0 0 0 1.5px var(--mavi);}
+  62%,100%{box-shadow:none;}
+}
+/* Yeni gununde beliriyor */
+@keyframes f0gelen{
+  0%,48%{opacity:0;transform:translateY(-8px) scale(.94);}
+  55%,92%{opacity:1;transform:none;}
+  98%,100%{opacity:0;transform:translateY(-5px) scale(.97);}
+}
+/* Yayinlandi tikleri */
+@keyframes f0ok{
+  0%,66%{opacity:0;transform:scale(.3);}
+  71%{opacity:1;transform:scale(1.35);}
+  75%,92%{opacity:1;transform:scale(1);}
+  98%,100%{opacity:0;transform:scale(.3);}
+}
 .pano-alt{
   display:flex;flex-wrap:wrap;gap:12px;padding:11px 14px;border-top:1px solid var(--cizgi);
   background:var(--yuzey2);font-family:'IBM Plex Mono',monospace;font-size:11px;
@@ -657,7 +715,7 @@ a{color:inherit;}
         <p class="kahraman-not" data-i18n="hero_note">It works without an account too — your calendar stays in that browser. Sign in and the same plan follows you to your phone.</p>
       </div>
 
-      <div class="pano" data-i18n-attr="aria-label:aria_board">
+      <div class="pano canli" id="kahramanPano" data-i18n-attr="aria-label:aria_board">
         <div class="pano-cubuk">
           <span class="pano-nokta"></span><span class="pano-nokta"></span><span class="pano-nokta"></span>
           <span class="pano-baslik" data-i18n="board_title">March · Month view</span>
@@ -670,20 +728,20 @@ a{color:inherit;}
             <span class="gun-ad" data-i18n="d7">Sun</span>
           </div>
           <div class="izgara">
-            <div class="hucre"><span class="hucre-no">3</span><span class="kayit" style="--p:var(--yt);animation-delay:.05s" data-i18n="e1">Long video</span></div>
+            <div class="hucre"><span class="hucre-no">3</span><span class="f0k kayit" style="--p:var(--yt);--g:0.10s"><span class="kayit-ad" data-i18n="e1">Video</span><i class="f0ok" style="--t:0s"></i></span></div>
             <div class="hucre"><span class="hucre-no">4</span></div>
-            <div class="hucre"><span class="hucre-no">5</span><span class="kayit" style="--p:var(--ig);animation-delay:.12s" data-i18n="e2">Reel · behind the scenes</span></div>
-            <div class="hucre"><span class="hucre-no">6</span><span class="kayit" style="--p:var(--tt);animation-delay:.19s" data-i18n="e3">Short · same footage</span></div>
+            <div class="hucre"><span class="hucre-no">5</span><span class="f0k kayit" style="--p:var(--ig);--g:0.22s"><span class="kayit-ad" data-i18n="e2">Reel</span><i class="f0ok" style="--t:.45s"></i></span></div>
+            <div class="hucre"><span class="hucre-no">6</span><span class="f0k kayit" style="--p:var(--tt);--g:0.34s"><span class="kayit-ad" data-i18n="e3">Short</span></span></div>
             <div class="hucre"><span class="hucre-no">7</span></div>
-            <div class="hucre"><span class="hucre-no">8</span><span class="kayit" style="--p:var(--fb);animation-delay:.26s" data-i18n="e4">Carousel</span></div>
-            <div class="hucre"><span class="hucre-no">9</span></div>
-            <div class="hucre"><span class="hucre-no">10</span><span class="kayit" style="--p:var(--ig);animation-delay:.33s" data-i18n="e5">Story</span></div>
-            <div class="hucre"><span class="hucre-no">11</span><span class="kayit" style="--p:var(--li);animation-delay:.4s" data-i18n="e6">Text post</span></div>
+            <div class="hucre"><span class="hucre-no">8</span><span class="f0k kayit f0tasi" style="--p:var(--fb);--g:0.46s"><span class="kayit-ad" data-i18n="e4">Carousel</span></span></div>
+            <div class="hucre f0hedef"><span class="hucre-no">9</span><span class="f0gelen kayit" style="--p:var(--fb)"><span class="kayit-ad" data-i18n="e4">Carousel</span></span></div>
+            <div class="hucre"><span class="hucre-no">10</span><span class="f0k kayit" style="--p:var(--ig);--g:0.58s"><span class="kayit-ad" data-i18n="e5">Story</span></span></div>
+            <div class="hucre"><span class="hucre-no">11</span><span class="f0k kayit" style="--p:var(--li);--g:0.70s"><span class="kayit-ad" data-i18n="e6">Text</span></span></div>
             <div class="hucre"><span class="hucre-no">12</span></div>
-            <div class="hucre"><span class="hucre-no">13</span><span class="kayit" style="--p:var(--yt);animation-delay:.47s" data-i18n="e7">Short</span></div>
-            <div class="hucre"><span class="hucre-no">14</span><span class="kayit" style="--p:var(--tt);animation-delay:.54s" data-i18n="e8">Short · v2</span></div>
+            <div class="hucre"><span class="hucre-no">13</span><span class="f0k kayit" style="--p:var(--yt);--g:0.82s"><span class="kayit-ad" data-i18n="e7">Short</span></span></div>
+            <div class="hucre"><span class="hucre-no">14</span><span class="f0k kayit" style="--p:var(--tt);--g:0.94s"><span class="kayit-ad" data-i18n="e8">Short v2</span></span></div>
             <div class="hucre"><span class="hucre-no">15</span></div>
-            <div class="hucre"><span class="hucre-no">16</span><span class="kayit" style="--p:var(--ig);animation-delay:.61s" data-i18n="e9">Reel · recap</span></div>
+            <div class="hucre"><span class="hucre-no">16</span><span class="f0k kayit" style="--p:var(--ig);--g:1.06s"><span class="kayit-ad" data-i18n="e9">Reel</span></span></div>
           </div>
         </div>
         <div class="pano-alt">
@@ -1469,8 +1527,8 @@ var METIN = {
 
     board_title:"Mart · Ay görünümü",
     d1:"Pzt", d2:"Sal", d3:"Çar", d4:"Per", d5:"Cum", d6:"Cmt", d7:"Paz",
-    e1:"Uzun video", e2:"Reel · kamera arkası", e3:"Kısa · aynı çekim", e4:"Carousel",
-    e5:"Hikâye", e6:"Metin postu", e7:"Short", e8:"Kısa · v2", e9:"Reel · özet",
+    e1:"Video", e2:"Reel", e3:"Kısa", e4:"Carousel",
+    e5:"Hikâye", e6:"Metin", e7:"Short", e8:"Kısa v2", e9:"Reel",
 
     what_eyebrow:"Slate nedir",
     what_h2:"İçerik üreten bir ekibin plan masası.",
