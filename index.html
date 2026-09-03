@@ -450,6 +450,144 @@ a{color:inherit;}
   .sahne-bas h3{font-size:15px;}
 }
 
+/* ===== Ozellik gorselleri: her biri anlattigi seyi yapiyor ===== */
+.canli [class^="f"]{animation-iteration-count:infinite;animation-fill-mode:both;}
+.canli:not(.oyna) [class^="f"]{animation:none!important;}
+@media (prefers-reduced-motion: reduce){ .canli [class^="f"]{animation:none!important;} }
+
+/* 01 — iki kart birlesiyor, sonra bir parca ayriliyor */
+.canli.oyna .f1a,.canli.oyna .f1b,.canli.oyna .f1c,.canli.oyna .f1d,
+.canli.oyna .f1ok,.canli.oyna .f1e1,.canli.oyna .f1e2,
+.canli.oyna .f1cizgi,.canli.oyna .f1parca,.canli.oyna .f1n1,.canli.oyna .f1n2{animation-duration:10s;}
+.canli.oyna .f1a{animation-name:f1a;}
+.canli.oyna .f1b{animation-name:f1b;}
+.canli.oyna .f1c{animation-name:f1c;}
+.canli.oyna .f1d{animation-name:f1d;}
+.canli.oyna .f1cizgi{animation-name:f1cizgi;}
+.canli.oyna .f1parca{animation-name:f1parca;}
+.canli.oyna .f1e1{animation-name:f1e1;}
+.canli.oyna .f1e2{animation-name:f1e2;}
+.canli.oyna .f1n1{animation-name:f1e1;}
+.canli.oyna .f1n2{animation-name:f1c;}
+.canli .f1a,.canli .f1b,.canli .f1c,.canli .f1d{transform-box:fill-box;transform-origin:center;}
+.canli .f1e2{opacity:0;}   /* iki etiket ayni noktada: durgun halde "birleştir" gorunsun */
+@keyframes f1a{ 0%,14%{opacity:1;transform:none;} 24%,100%{opacity:.18;transform:scale(.96);} }
+@keyframes f1b{ 0%,14%{opacity:1;transform:none;} 22%{opacity:.5;transform:translateY(-52px) scale(.96);} 26%,100%{opacity:0;transform:translateY(-60px) scale(.9);} }
+@keyframes f1c{ 0%,20%{opacity:0;transform:scale(.9);} 28%,100%{opacity:1;transform:none;} }
+@keyframes f1cizgi{ 0%,44%{opacity:0;} 52%,84%{opacity:.75;} 92%,100%{opacity:0;} }
+@keyframes f1parca{ 0%,52%{opacity:1;transform:none;} 64%,88%{opacity:0;transform:translateX(30px);} 96%,100%{opacity:1;transform:none;} }
+@keyframes f1d{ 0%,54%{opacity:0;transform:translateX(-40px) scale(.85);} 66%,88%{opacity:1;transform:none;} 96%,100%{opacity:0;transform:translateX(-30px) scale(.9);} }
+@keyframes f1e1{ 0%,42%{opacity:1;} 48%,100%{opacity:0;} }
+@keyframes f1e2{ 0%,48%{opacity:0;} 56%,90%{opacity:1;} 96%,100%{opacity:0;} }
+
+/* 02 — belge Drive'dan geliyor, duzenleniyor, geri gidiyor */
+.canli.oyna .f2y1,.canli.oyna .f2y2,.canli.oyna .f2belge,.canli.oyna .f2s{animation-duration:9s;}
+.canli.oyna .f2y1{animation-name:f2y1;}
+.canli.oyna .f2y2{animation-name:f2y2;}
+.canli.oyna .f2belge{animation-name:f2belge;animation-timing-function:cubic-bezier(.5,0,.3,1);}
+.canli.oyna .f2s{animation-name:f2s;animation-delay:var(--g);}
+.canli .f2belge{opacity:0;}
+@keyframes f2y1{ 0%,6%{stroke-dashoffset:64;} 20%,58%{stroke-dashoffset:0;} 70%,100%{stroke-dashoffset:64;} }
+@keyframes f2y2{ 0%,58%{stroke-dashoffset:-64;} 72%,92%{stroke-dashoffset:0;} 99%,100%{stroke-dashoffset:-64;} }
+@keyframes f2belge{
+  0%,8%{opacity:0;transform:translate(120px,78px) scale(.7);}
+  12%{opacity:1;transform:translate(150px,78px) scale(1);}
+  24%{opacity:1;transform:translate(300px,78px) scale(1);}
+  30%,60%{opacity:0;transform:translate(320px,90px) scale(.7);}
+  66%{opacity:1;transform:translate(280px,132px) scale(1);}
+  80%{opacity:1;transform:translate(150px,132px) scale(1);}
+  86%,100%{opacity:0;transform:translate(120px,132px) scale(.7);}
+}
+@keyframes f2s{ 0%,30%{opacity:.25;} 40%,100%{opacity:1;} }
+
+/* 03 — fikirler isaretlenir, tusa basilir, script yazilir */
+.canli.oyna .f3f,.canli.oyna .f3yaz,.canli.oyna .f3dug,
+.canli.oyna .f3sat,.canli.oyna .f3imlec,.canli.oyna .f3yildiz{animation-duration:10s;}
+.canli.oyna .f3f{animation-name:f3f;animation-delay:var(--g);}
+.canli.oyna .f3yaz{animation-name:f3yaz;}
+.canli.oyna .f3dug{animation-name:f3dug;}
+.canli.oyna .f3sat{animation-name:f3sat;animation-delay:var(--g);}
+.canli.oyna .f3imlec{animation-name:f3imlec;animation-duration:1s;animation-timing-function:steps(2,end);}
+.canli.oyna .f3yildiz{animation-name:f3yildiz;}
+.canli .f3f,.canli .f3dug,.canli .f3yildiz{transform-box:fill-box;transform-origin:center;}
+.canli .f3yaz{transform-box:fill-box;transform-origin:left center;}
+@keyframes f3f{ 0%,4%{opacity:.3;transform:scale(.97);} 10%{opacity:1;transform:scale(1.04);} 14%,100%{opacity:1;transform:none;} }
+@keyframes f3yaz{ 0%,18%{transform:scaleX(0);} 30%,100%{transform:scaleX(1);} }
+@keyframes f3dug{ 0%,34%{transform:scale(1);} 38%{transform:scale(.88);} 42%,100%{transform:scale(1);} }
+@keyframes f3yildiz{ 0%,38%{opacity:.35;transform:scale(.8) rotate(-25deg);} 46%{opacity:1;transform:scale(1.15) rotate(0);} 52%,100%{opacity:1;transform:scale(1) rotate(0);} }
+@keyframes f3sat{ 0%,46%{opacity:0;transform:scaleX(.05);} 56%,100%{opacity:1;transform:scaleX(1);} }
+.canli .f3sat{transform-box:fill-box;transform-origin:left center;}
+@keyframes f3imlec{ 0%,49%{opacity:1;} 50%,100%{opacity:0;} }
+
+/* 04 — yedi adim tek tek yesile doner, ust serit sayar */
+.canli.oyna .f4d,.canli.oyna .f4c{animation-duration:10s;}
+.canli.oyna .f4d{animation-name:f4d;animation-delay:var(--g);}
+.canli.oyna .f4c{animation-name:f4c;animation-delay:var(--g);}
+.canli .f4d{transform-box:fill-box;transform-origin:center;}
+@keyframes f4d{ 0%,3%{opacity:0;transform:scale(.4);} 8%{opacity:1;transform:scale(1.35);} 12%,90%{opacity:1;transform:scale(1);} 97%,100%{opacity:0;transform:scale(.4);} }
+@keyframes f4c{ 0%,3%{opacity:0;} 10%,90%{opacity:1;} 97%,100%{opacity:0;} }
+
+/* 05 — tarihler yesile doner, geciken kirmizi yanip soner */
+.canli.oyna .f5ok{animation-name:f5ok;animation-duration:10s;animation-delay:var(--g);}
+.canli.oyna .f5gec{animation-name:f5gec;animation-duration:1.7s;animation-delay:2.6s;}
+.canli .f5ok{transform-box:fill-box;transform-origin:center;}
+@keyframes f5ok{ 0%,2%{opacity:0;transform:scale(.4);} 7%{opacity:1;transform:scale(1.4);} 11%,90%{opacity:1;transform:scale(1);} 97%,100%{opacity:0;transform:scale(.4);} }
+@keyframes f5gec{ 0%,100%{opacity:1;} 50%{opacity:.32;} }
+
+/* 06 — once tur, sonra platform secilir; karsiligi olan kayit one cikar */
+.canli.oyna .f6t1,.canli.oyna .f6t2,.canli.oyna .f6p1,.canli.oyna .f6p2,
+.canli.oyna .f6c1,.canli.oyna .f6c2,.canli.oyna .f6c3{animation-duration:12s;}
+.canli.oyna .f6t1{animation-name:f6ilk;}
+.canli.oyna .f6p1{animation-name:f6ilkGec;}
+.canli.oyna .f6c1{animation-name:f6kartA;}
+.canli.oyna .f6t2{animation-name:f6ikinci;}
+.canli.oyna .f6p2{animation-name:f6ikinciGec;}
+.canli.oyna .f6c2{animation-name:f6kartB;}
+.canli.oyna .f6c3{animation-name:f6kartC;}
+.canli .f6t1,.canli .f6t2,.canli .f6p1,.canli .f6p2{opacity:0;transform-box:fill-box;transform-origin:center;}
+.canli .f6c1,.canli .f6c2,.canli .f6c3{transform-box:fill-box;transform-origin:center;}
+@keyframes f6ilk{ 0%,4%{opacity:0;transform:scale(.9);} 9%{opacity:1;transform:scale(1.08);} 12%,44%{opacity:1;transform:scale(1);} 50%,100%{opacity:0;transform:scale(.95);} }
+@keyframes f6ilkGec{ 0%,12%{opacity:0;transform:scale(.9);} 17%{opacity:1;transform:scale(1.08);} 20%,44%{opacity:1;transform:scale(1);} 50%,100%{opacity:0;transform:scale(.95);} }
+@keyframes f6kartA{ 0%,20%{opacity:.35;transform:scale(.985);} 26%,44%{opacity:1;transform:scale(1.02);} 52%,100%{opacity:.35;transform:scale(.985);} }
+@keyframes f6ikinci{ 0%,52%{opacity:0;transform:scale(.9);} 57%{opacity:1;transform:scale(1.08);} 60%,92%{opacity:1;transform:scale(1);} 98%,100%{opacity:0;transform:scale(.95);} }
+@keyframes f6ikinciGec{ 0%,60%{opacity:0;transform:scale(.9);} 65%{opacity:1;transform:scale(1.08);} 68%,92%{opacity:1;transform:scale(1);} 98%,100%{opacity:0;transform:scale(.95);} }
+@keyframes f6kartB{ 0%,68%{opacity:.35;transform:scale(.985);} 74%,92%{opacity:1;transform:scale(1.02);} 98%,100%{opacity:.35;transform:scale(.985);} }
+@keyframes f6kartC{ 0%,100%{opacity:.35;transform:scale(.985);} }
+
+/* 07 — bir paylasimin alanlari sirayla doluyor, kopyalandi isareti yanip sonuyor */
+.canli.oyna .f7d,.canli.oyna .f7ai,.canli.oyna .f7kop,.canli.oyna .f7ok{animation-duration:10s;}
+.canli.oyna .f7d{animation-name:f7d;animation-delay:var(--g);}
+.canli.oyna .f7ai{animation-name:f7ai;animation-delay:var(--g);}
+.canli.oyna .f7kop{animation-name:f7kop;animation-delay:var(--g);}
+.canli.oyna .f7ok{animation-name:f7ok;animation-delay:var(--g);}
+.canli .f7d{transform-box:fill-box;transform-origin:left center;}
+.canli .f7ai{transform-box:fill-box;transform-origin:center;}
+.canli .f7ok{opacity:0;}
+@keyframes f7d{ 0%,4%{transform:scaleX(0);opacity:.4;} 14%,100%{transform:scaleX(1);opacity:1;} }
+@keyframes f7ai{ 0%,2%{transform:scale(1);} 6%{transform:scale(1.2);} 10%,100%{transform:scale(1);} }
+@keyframes f7kop{ 0%,58%{opacity:1;} 62%,74%{opacity:0;} 78%,100%{opacity:1;} }
+@keyframes f7ok{ 0%,58%{opacity:0;} 62%,74%{opacity:1;} 78%,100%{opacity:0;} }
+
+/* 08 — sablon acikamanin SONUNA iniyor */
+.canli.oyna .f8ok,.canli.oyna .f8ust,.canli.oyna .f8ayrac,.canli.oyna .f8alt,.canli.oyna .f8not{animation-duration:9s;}
+.canli.oyna .f8ok{animation-name:f8ok;}
+.canli.oyna .f8ust{animation-name:f8ust;}
+.canli.oyna .f8ayrac{animation-name:f8ayrac;}
+.canli.oyna .f8alt{animation-name:f8alt;}
+.canli.oyna .f8not{animation-name:f8ayrac;}
+@keyframes f8ok{ 0%,18%{stroke-dashoffset:40;} 32%,88%{stroke-dashoffset:0;} 96%,100%{stroke-dashoffset:40;} }
+@keyframes f8ust{ 0%,6%{opacity:0;transform:translateY(-6px);} 16%,100%{opacity:1;transform:none;} }
+@keyframes f8ayrac{ 0%,38%{opacity:0;} 48%,88%{opacity:1;} 96%,100%{opacity:0;} }
+@keyframes f8alt{ 0%,34%{opacity:0;transform:translate(-118px,34px) scale(.94);} 52%,88%{opacity:1;transform:none;} 96%,100%{opacity:0;transform:translate(-118px,34px) scale(.94);} }
+
+/* 09 — plan uc cihaza akiyor */
+.canli.oyna .f9p{animation-name:f9p;animation-duration:6s;animation-delay:var(--g);animation-timing-function:cubic-bezier(.4,0,.5,1);}
+.canli.oyna .f9c{animation-name:f9c;animation-duration:6s;animation-delay:var(--g);}
+.canli .f9c{transform-box:fill-box;transform-origin:center;}
+.canli .f9p{stroke-dashoffset:0;opacity:0;}
+@keyframes f9p{ 0%{stroke-dashoffset:18;opacity:0;} 4%{opacity:1;} 22%{stroke-dashoffset:-300;opacity:1;} 26%,100%{opacity:0;stroke-dashoffset:-300;} }
+@keyframes f9c{ 0%,4%{opacity:0;transform:scale(.7);} 11%{opacity:1;transform:scale(1.18);} 16%,92%{opacity:1;transform:scale(1);} 99%,100%{opacity:0;transform:scale(.7);} }
+
 /* ---------- dar ekran ---------- */
 @media (max-width:960px){
   .kahraman-izgara,.nedir-kart,.ozellik,.giris-kart{grid-template-columns:1fr;gap:34px;}
@@ -805,29 +943,50 @@ a{color:inherit;}
             <li data-i18n="f1c">An idea doesn't have to belong to a project. Link it when it earns one.</li>
           </ul>
         </div>
-        <div class="ozellik-gorsel">
-          <svg viewBox="0 0 420 210" role="img" data-i18n-attr="aria-label:g1">
-            <rect x="8" y="14" width="118" height="70" rx="8" fill="var(--kagit)" stroke="var(--cizgi)"/>
-            <rect x="20" y="28" width="72" height="6" rx="3" fill="var(--mavi)" opacity=".55"/>
-            <rect x="20" y="42" width="90" height="5" rx="2.5" fill="var(--cizgi)"/>
-            <rect x="20" y="54" width="60" height="5" rx="2.5" fill="var(--cizgi)"/>
-            <rect x="8" y="98" width="118" height="52" rx="8" fill="var(--kagit)" stroke="var(--cizgi)"/>
-            <rect x="20" y="112" width="58" height="6" rx="3" fill="var(--ig)" opacity=".7"/>
-            <rect x="20" y="126" width="82" height="5" rx="2.5" fill="var(--cizgi)"/>
-            <path d="M140 88 L188 88" stroke="var(--mavi)" stroke-width="2" stroke-linecap="round"/>
-            <path d="M181 82 L189 88 L181 94" fill="none" stroke="var(--mavi)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
-            <text x="164" y="76" text-anchor="middle" font-family="IBM Plex Mono, monospace" font-size="10.5" fill="var(--solgun)" data-i18n="g1a">merge</text>
-            <rect x="202" y="14" width="140" height="136" rx="9" fill="var(--yuzey)" stroke="var(--mavi)" stroke-width="1.5"/>
-            <rect x="216" y="30" width="80" height="6" rx="3" fill="var(--mavi)" opacity=".55"/>
-            <rect x="216" y="44" width="110" height="5" rx="2.5" fill="var(--cizgi)"/>
-            <rect x="216" y="56" width="72" height="5" rx="2.5" fill="var(--cizgi)"/>
-            <line x1="216" y1="76" x2="328" y2="76" stroke="var(--cizgi)" stroke-dasharray="3 3"/>
-            <rect x="216" y="90" width="62" height="6" rx="3" fill="var(--ig)" opacity=".7"/>
-            <rect x="216" y="104" width="100" height="5" rx="2.5" fill="var(--cizgi)"/>
-            <rect x="216" y="116" width="56" height="5" rx="2.5" fill="var(--cizgi)"/>
-            <text x="272" y="176" text-anchor="middle" font-family="IBM Plex Mono, monospace" font-size="10.5" fill="var(--solgun)" data-i18n="g1b">one card, two pieces</text>
-            <rect x="354" y="14" width="58" height="70" rx="8" fill="var(--kagit)" stroke="var(--cizgi)" stroke-dasharray="4 4"/>
-            <text x="383" y="55" text-anchor="middle" font-family="IBM Plex Mono, monospace" font-size="20" fill="var(--solgun)">+</text>
+        <div class="ozellik-gorsel canli">
+          <svg viewBox="0 0 420 214" role="img" data-i18n-attr="aria-label:g1">
+            <!-- ayri iki kart -->
+            <g class="f1a">
+              <rect x="12" y="26" width="122" height="62" rx="9" fill="var(--kagit)" stroke="var(--cizgi)"/>
+              <rect x="26" y="40" width="72" height="6" rx="3" fill="var(--mavi)" opacity=".6"/>
+              <rect x="26" y="54" width="94" height="5" rx="2.5" fill="var(--cizgi)"/>
+              <rect x="26" y="66" width="62" height="5" rx="2.5" fill="var(--cizgi)"/>
+            </g>
+            <g class="f1b">
+              <rect x="12" y="102" width="122" height="52" rx="9" fill="var(--kagit)" stroke="var(--ig)" stroke-opacity=".5"/>
+              <rect x="26" y="116" width="58" height="6" rx="3" fill="var(--ig)" opacity=".7"/>
+              <rect x="26" y="130" width="86" height="5" rx="2.5" fill="var(--cizgi)"/>
+            </g>
+
+            <path class="f1ok" d="M150 90 L196 90" stroke="var(--mavi)" stroke-width="2" stroke-linecap="round"/>
+            <path class="f1ok" d="M189 84 L197 90 L189 96" fill="none" stroke="var(--mavi)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+            <text class="f1e1" x="173" y="78" text-anchor="middle" font-family="IBM Plex Mono, monospace" font-size="10.5" fill="var(--solgun)" data-i18n="g1a">merge</text>
+            <text class="f1e2" x="173" y="78" text-anchor="middle" font-family="IBM Plex Mono, monospace" font-size="10.5" fill="var(--solgun)" data-i18n="g1c">pull apart</text>
+
+            <!-- birlesik kart -->
+            <g class="f1c">
+              <rect x="212" y="26" width="140" height="128" rx="10" fill="var(--yuzey)" stroke="var(--mavi)" stroke-width="1.5"/>
+              <rect x="226" y="42" width="80" height="6" rx="3" fill="var(--mavi)" opacity=".6"/>
+              <rect x="226" y="56" width="110" height="5" rx="2.5" fill="var(--cizgi)"/>
+              <rect x="226" y="68" width="72" height="5" rx="2.5" fill="var(--cizgi)"/>
+              <line class="f1cizgi" x1="226" y1="88" x2="338" y2="88" stroke="var(--mavi)" stroke-dasharray="4 3" opacity=".7"/>
+              <g class="f1parca">
+                <rect x="226" y="102" width="62" height="6" rx="3" fill="var(--ig)" opacity=".7"/>
+                <rect x="226" y="116" width="100" height="5" rx="2.5" fill="var(--cizgi)"/>
+                <rect x="226" y="128" width="56" height="5" rx="2.5" fill="var(--cizgi)"/>
+              </g>
+            </g>
+
+            <!-- ayrilan kart -->
+            <g class="f1d">
+              <rect x="362" y="96" width="52" height="58" rx="9" fill="var(--kagit)" stroke="var(--ig)" stroke-opacity=".6"/>
+              <rect x="372" y="110" width="30" height="5" rx="2.5" fill="var(--ig)" opacity=".7"/>
+              <rect x="372" y="122" width="34" height="4" rx="2" fill="var(--cizgi)"/>
+              <rect x="372" y="132" width="22" height="4" rx="2" fill="var(--cizgi)"/>
+            </g>
+
+            <text class="f1n1" x="73" y="176" text-anchor="middle" font-family="IBM Plex Mono, monospace" font-size="10" fill="var(--solgun)" data-i18n="g1d">two cards</text>
+            <text class="f1n2" x="282" y="176" text-anchor="middle" font-family="IBM Plex Mono, monospace" font-size="10" fill="var(--solgun)" data-i18n="g1b">one card, two pieces</text>
           </svg>
         </div>
       </section>
@@ -843,7 +1002,7 @@ a{color:inherit;}
             <li data-i18n="f2c">Writing a script ticks the project's “script” step for you.</li>
           </ul>
         </div>
-        <div class="ozellik-gorsel">
+        <div class="ozellik-gorsel canli">
           <svg viewBox="0 0 420 210" role="img" data-i18n-attr="aria-label:g2">
             <rect x="10" y="30" width="150" height="150" rx="10" fill="var(--kagit)" stroke="var(--cizgi)"/>
             <text x="85" y="20" text-anchor="middle" font-family="IBM Plex Mono, monospace" font-size="10.5" fill="var(--solgun)">GOOGLE DRIVE</text>
@@ -853,19 +1012,30 @@ a{color:inherit;}
             <rect x="28" y="96" width="70" height="6" rx="3" fill="var(--cizgi-soft)"/>
             <rect x="28" y="118" width="104" height="6" rx="3" fill="var(--cizgi-soft)"/>
             <rect x="28" y="132" width="86" height="6" rx="3" fill="var(--cizgi-soft)"/>
-            <path d="M178 78 L242 78" stroke="var(--mavi)" stroke-width="2" stroke-linecap="round"/>
-            <path d="M235 72 L243 78 L235 84" fill="none" stroke="var(--mavi)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
-            <text x="210" y="68" text-anchor="middle" font-family="IBM Plex Mono, monospace" font-size="10" fill="var(--solgun)" data-i18n="g2a">pull</text>
-            <path d="M242 132 L178 132" stroke="var(--yesil)" stroke-width="2" stroke-linecap="round"/>
-            <path d="M185 126 L177 132 L185 138" fill="none" stroke="var(--yesil)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+
+            <path class="f2y1" d="M178 78 L242 78" stroke="var(--mavi)" stroke-width="2" stroke-linecap="round" stroke-dasharray="64" stroke-dashoffset="64"/>
+            <path class="f2y1" d="M235 72 L243 78 L235 84" fill="none" stroke="var(--mavi)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+            <text x="210" y="66" text-anchor="middle" font-family="IBM Plex Mono, monospace" font-size="10" fill="var(--solgun)" data-i18n="g2a">pull</text>
+
+            <path class="f2y2" d="M242 132 L178 132" stroke="var(--yesil)" stroke-width="2" stroke-linecap="round" stroke-dasharray="64" stroke-dashoffset="-64"/>
+            <path class="f2y2" d="M185 126 L177 132 L185 138" fill="none" stroke="var(--yesil)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
             <text x="210" y="152" text-anchor="middle" font-family="IBM Plex Mono, monospace" font-size="10" fill="var(--solgun)" data-i18n="g2b">write back</text>
+
+            <!-- giden gelen belge -->
+            <g class="f2belge">
+              <rect x="-9" y="-11" width="18" height="22" rx="2.5" fill="var(--yuzey)" stroke="var(--mavi)" stroke-width="1.6"/>
+              <line x1="-5" y1="-5" x2="5" y2="-5" stroke="var(--mavi)" stroke-width="1.4" stroke-linecap="round"/>
+              <line x1="-5" y1="0" x2="5" y2="0" stroke="var(--mavi)" stroke-width="1.4" stroke-linecap="round"/>
+              <line x1="-5" y1="5" x2="1" y2="5" stroke="var(--mavi)" stroke-width="1.4" stroke-linecap="round"/>
+            </g>
+
             <rect x="260" y="30" width="150" height="150" rx="10" fill="var(--yuzey)" stroke="var(--mavi)" stroke-width="1.5"/>
             <text x="335" y="20" text-anchor="middle" font-family="IBM Plex Mono, monospace" font-size="10.5" fill="var(--mavi)">SLATE · SCRIPT</text>
             <rect x="278" y="50" width="100" height="8" rx="4" fill="var(--mavi)" opacity=".5"/>
-            <rect x="278" y="68" width="114" height="6" rx="3" fill="var(--cizgi)"/>
-            <rect x="278" y="82" width="96" height="6" rx="3" fill="var(--cizgi)"/>
-            <rect x="278" y="96" width="112" height="6" rx="3" fill="var(--cizgi)"/>
-            <rect x="278" y="110" width="64" height="6" rx="3" fill="var(--cizgi)"/>
+            <rect class="f2s" style="--g:0s" x="278" y="68" width="114" height="6" rx="3" fill="var(--cizgi)"/>
+            <rect class="f2s" style="--g:.12s" x="278" y="82" width="96" height="6" rx="3" fill="var(--cizgi)"/>
+            <rect class="f2s" style="--g:.24s" x="278" y="96" width="112" height="6" rx="3" fill="var(--cizgi)"/>
+            <rect class="f2s" style="--g:.36s" x="278" y="110" width="64" height="6" rx="3" fill="var(--cizgi)"/>
             <rect x="278" y="130" width="60" height="20" rx="6" fill="var(--mavi-soft)"/>
             <text x="308" y="144" text-anchor="middle" font-family="IBM Plex Mono, monospace" font-size="10" fill="var(--mavi)" data-i18n="g2c">1 248 words</text>
           </svg>
@@ -883,37 +1053,48 @@ a{color:inherit;}
             <li data-i18n="f3c">Title, cover text and caption each have their own ✨ button.</li>
           </ul>
         </div>
-        <div class="ozellik-gorsel">
+        <div class="ozellik-gorsel canli">
           <svg viewBox="0 0 420 210" role="img" data-i18n-attr="aria-label:g3">
             <rect x="10" y="18" width="176" height="174" rx="10" fill="var(--kagit)" stroke="var(--cizgi)"/>
             <text x="26" y="38" font-family="IBM Plex Mono, monospace" font-size="9.5" fill="var(--solgun)" data-i18n="g3a">IDEAS ON THIS PROJECT</text>
-            <rect x="26" y="48" width="144" height="24" rx="6" fill="var(--yuzey)" stroke="var(--mavi)"/>
-            <rect x="34" y="56" width="9" height="9" rx="2.5" fill="var(--mavi)"/>
-            <path d="M36 60.5 l2 2 l3.4 -4" stroke="var(--uzeri)" stroke-width="1.4" fill="none" stroke-linecap="round" stroke-linejoin="round"/>
-            <rect x="50" y="57" width="96" height="6" rx="3" fill="var(--cizgi)"/>
-            <rect x="26" y="78" width="144" height="24" rx="6" fill="var(--yuzey)" stroke="var(--mavi)"/>
-            <rect x="34" y="86" width="9" height="9" rx="2.5" fill="var(--mavi)"/>
-            <path d="M36 90.5 l2 2 l3.4 -4" stroke="var(--uzeri)" stroke-width="1.4" fill="none" stroke-linecap="round" stroke-linejoin="round"/>
-            <rect x="50" y="87" width="78" height="6" rx="3" fill="var(--cizgi)"/>
+
+            <g class="f3f" style="--g:0s">
+              <rect x="26" y="48" width="144" height="24" rx="6" fill="var(--yuzey)" stroke="var(--mavi)"/>
+              <rect x="34" y="56" width="9" height="9" rx="2.5" fill="var(--mavi)"/>
+              <path d="M36 60.5 l2 2 l3.4 -4" stroke="var(--uzeri)" stroke-width="1.4" fill="none" stroke-linecap="round" stroke-linejoin="round"/>
+              <rect x="50" y="57" width="96" height="6" rx="3" fill="var(--cizgi)"/>
+            </g>
+            <g class="f3f" style="--g:.5s">
+              <rect x="26" y="78" width="144" height="24" rx="6" fill="var(--yuzey)" stroke="var(--mavi)"/>
+              <rect x="34" y="86" width="9" height="9" rx="2.5" fill="var(--mavi)"/>
+              <path d="M36 90.5 l2 2 l3.4 -4" stroke="var(--uzeri)" stroke-width="1.4" fill="none" stroke-linecap="round" stroke-linejoin="round"/>
+              <rect x="50" y="87" width="78" height="6" rx="3" fill="var(--cizgi)"/>
+            </g>
             <rect x="26" y="108" width="144" height="24" rx="6" fill="var(--yuzey)" stroke="var(--cizgi)"/>
             <rect x="34" y="116" width="9" height="9" rx="2.5" fill="none" stroke="var(--cizgi)"/>
             <rect x="50" y="117" width="88" height="6" rx="3" fill="var(--cizgi-soft)"/>
+
             <rect x="26" y="142" width="144" height="34" rx="7" fill="var(--yuzey)" stroke="var(--cizgi)" stroke-dasharray="4 3"/>
             <text x="36" y="157" font-family="IBM Plex Mono, monospace" font-size="9" fill="var(--solgun)" data-i18n="g3b">WHAT DO YOU WANT?</text>
-            <rect x="36" y="163" width="112" height="5" rx="2.5" fill="var(--cizgi)"/>
-            <path d="M200 100 L250 100" stroke="var(--mavi)" stroke-width="2" stroke-linecap="round"/>
-            <path d="M243 94 L251 100 L243 106" fill="none" stroke="var(--mavi)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
-            <text x="225" y="90" text-anchor="middle" font-family="IBM Plex Mono, monospace" font-size="10" fill="var(--solgun)" data-i18n="g3c">write</text>
+            <rect class="f3yaz" x="36" y="163" width="112" height="5" rx="2.5" fill="var(--mavi)" opacity=".55"/>
+
+            <g class="f3dug">
+              <rect x="196" y="88" width="58" height="26" rx="8" fill="var(--mavi)"/>
+              <path d="M210 101 l1.8 4.1 l4.1 1.8 l-4.1 1.8 l-1.8 4.1 l-1.8 -4.1 l-4.1 -1.8 l4.1 -1.8 z" fill="var(--uzeri)" transform="translate(0,-6)"/>
+              <text x="232" y="105" text-anchor="middle" font-family="IBM Plex Mono, monospace" font-size="9.5" fill="var(--uzeri)" data-i18n="g3c">write</text>
+            </g>
+
             <rect x="266" y="18" width="144" height="174" rx="10" fill="var(--yuzey)" stroke="var(--mavi)" stroke-width="1.5"/>
-            <path d="M290 42 l3.6 8.4 l8.4 3.6 l-8.4 3.6 l-3.6 8.4 l-3.6 -8.4 l-8.4 -3.6 l8.4 -3.6 z" fill="var(--mavi)"/>
+            <path class="f3yildiz" d="M290 42 l3.6 8.4 l8.4 3.6 l-8.4 3.6 l-3.6 8.4 l-3.6 -8.4 l-8.4 -3.6 l8.4 -3.6 z" fill="var(--mavi)"/>
             <text x="310" y="58" font-family="IBM Plex Mono, monospace" font-size="10" fill="var(--mavi)" data-i18n="g3d">DRAFT</text>
-            <rect x="282" y="80" width="112" height="6" rx="3" fill="var(--cizgi)"/>
-            <rect x="282" y="94" width="96" height="6" rx="3" fill="var(--cizgi)"/>
-            <rect x="282" y="108" width="110" height="6" rx="3" fill="var(--cizgi)"/>
-            <rect x="282" y="122" width="84" height="6" rx="3" fill="var(--cizgi)"/>
-            <rect x="282" y="136" width="104" height="6" rx="3" fill="var(--cizgi)"/>
-            <rect x="282" y="154" width="106" height="20" rx="6" fill="var(--mavi-soft)"/>
-            <text x="335" y="168" text-anchor="middle" font-family="IBM Plex Mono, monospace" font-size="9.5" fill="var(--mavi)" data-i18n="g3e">your key, your browser</text>
+            <rect class="f3sat" style="--g:0s"    x="282" y="80"  width="112" height="6" rx="3" fill="var(--cizgi)"/>
+            <rect class="f3sat" style="--g:.22s"  x="282" y="94"  width="96"  height="6" rx="3" fill="var(--cizgi)"/>
+            <rect class="f3sat" style="--g:.44s"  x="282" y="108" width="110" height="6" rx="3" fill="var(--cizgi)"/>
+            <rect class="f3sat" style="--g:.66s"  x="282" y="122" width="84"  height="6" rx="3" fill="var(--cizgi)"/>
+            <rect class="f3sat" style="--g:.88s"  x="282" y="136" width="104" height="6" rx="3" fill="var(--cizgi)"/>
+            <rect class="f3imlec" x="282" y="150" width="2.5" height="8" rx="1.25" fill="var(--mavi)"/>
+            <rect x="282" y="166" width="106" height="18" rx="6" fill="var(--mavi-soft)"/>
+            <text x="335" y="179" text-anchor="middle" font-family="IBM Plex Mono, monospace" font-size="9.5" fill="var(--mavi)" data-i18n="g3e">your key, your browser</text>
           </svg>
         </div>
       </section>
@@ -929,50 +1110,30 @@ a{color:inherit;}
             <li data-i18n="f4c">Each project's row says how many ideas and how many scripts it has.</li>
           </ul>
         </div>
-        <div class="ozellik-gorsel">
+        <div class="ozellik-gorsel canli">
           <svg viewBox="0 0 420 210" role="img" data-i18n-attr="aria-label:g4">
             <g font-family="IBM Plex Mono, monospace" font-size="8.5" fill="var(--solgun)">
               <text x="126" y="22" data-i18n="g4s1">SCR</text><text x="166" y="22" data-i18n="g4s2">FLM</text><text x="206" y="22" data-i18n="g4s3">AUD</text>
               <text x="246" y="22" data-i18n="g4s4">EDT</text><text x="286" y="22" data-i18n="g4s5">APR</text><text x="326" y="22" data-i18n="g4s6">PKG</text><text x="364" y="22" data-i18n="g4s7">PUB</text>
             </g>
-            <g>
-              <rect x="10" y="32" width="400" height="34" rx="8" fill="var(--kagit)" stroke="var(--cizgi)"/>
-              <rect x="22" y="44" width="86" height="8" rx="4" fill="var(--mavi)" opacity=".55"/>
-              <circle cx="136" cy="49" r="8" fill="var(--yesil)"/><circle cx="176" cy="49" r="8" fill="var(--yesil)"/>
-              <circle cx="216" cy="49" r="8" fill="var(--yesil)"/><circle cx="256" cy="49" r="8" fill="var(--yesil)"/>
-              <circle cx="296" cy="49" r="8" fill="var(--yesil)"/><circle cx="336" cy="49" r="8" fill="var(--yesil)"/>
-              <circle cx="374" cy="49" r="8" fill="var(--yesil)"/>
-            </g>
-            <g>
-              <rect x="10" y="74" width="400" height="34" rx="8" fill="var(--kagit)" stroke="var(--cizgi)"/>
-              <rect x="22" y="86" width="70" height="8" rx="4" fill="var(--ig)" opacity=".65"/>
-              <circle cx="136" cy="91" r="8" fill="var(--yesil)"/><circle cx="176" cy="91" r="8" fill="var(--yesil)"/>
-              <circle cx="216" cy="91" r="8" fill="var(--yesil)"/>
-              <circle cx="256" cy="91" r="8" fill="var(--amber)"/>
-              <circle cx="296" cy="91" r="8" fill="none" stroke="var(--cizgi)" stroke-width="1.5"/>
-              <circle cx="336" cy="91" r="8" fill="none" stroke="var(--cizgi)" stroke-width="1.5"/>
-              <circle cx="374" cy="91" r="8" fill="none" stroke="var(--cizgi)" stroke-width="1.5"/>
-            </g>
-            <g>
-              <rect x="10" y="116" width="400" height="34" rx="8" fill="var(--kagit)" stroke="var(--cizgi)"/>
-              <rect x="22" y="128" width="94" height="8" rx="4" fill="var(--tt)" opacity=".65"/>
-              <circle cx="136" cy="133" r="8" fill="var(--yesil)"/>
-              <circle cx="176" cy="133" r="8" fill="var(--kirmizi)"/>
-              <circle cx="216" cy="133" r="8" fill="none" stroke="var(--cizgi)" stroke-width="1.5"/>
-              <circle cx="256" cy="133" r="8" fill="none" stroke="var(--cizgi)" stroke-width="1.5"/>
-              <circle cx="296" cy="133" r="8" fill="none" stroke="var(--cizgi)" stroke-width="1.5"/>
-              <circle cx="336" cy="133" r="8" fill="none" stroke="var(--cizgi)" stroke-width="1.5"/>
-              <circle cx="374" cy="133" r="8" fill="none" stroke="var(--cizgi)" stroke-width="1.5"/>
-            </g>
+            <rect x="10" y="32" width="400" height="34" rx="8" fill="var(--kagit)" stroke="var(--cizgi)"/><rect x="22" y="44" width="86" height="8" rx="4" fill="var(--mavi)" opacity=".6"/><circle cx="136" cy="49" r="8" fill="none" stroke="var(--cizgi)" stroke-width="1.5"/><circle class="f4d" style="--g:0.00s" cx="136" cy="49" r="8" fill="var(--yesil)"/><path class="f4d" style="--g:0.00s" d="M132.6 49.3 l2.4 2.4 l4.4 -5" fill="none" stroke="var(--uzeri)" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/><circle cx="176" cy="49" r="8" fill="none" stroke="var(--cizgi)" stroke-width="1.5"/><circle class="f4d" style="--g:0.28s" cx="176" cy="49" r="8" fill="var(--yesil)"/><path class="f4d" style="--g:0.28s" d="M172.6 49.3 l2.4 2.4 l4.4 -5" fill="none" stroke="var(--uzeri)" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/><circle cx="216" cy="49" r="8" fill="none" stroke="var(--cizgi)" stroke-width="1.5"/><circle class="f4d" style="--g:0.56s" cx="216" cy="49" r="8" fill="var(--yesil)"/><path class="f4d" style="--g:0.56s" d="M212.6 49.3 l2.4 2.4 l4.4 -5" fill="none" stroke="var(--uzeri)" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/><circle cx="256" cy="49" r="8" fill="none" stroke="var(--cizgi)" stroke-width="1.5"/><circle class="f4d" style="--g:0.84s" cx="256" cy="49" r="8" fill="var(--yesil)"/><path class="f4d" style="--g:0.84s" d="M252.6 49.3 l2.4 2.4 l4.4 -5" fill="none" stroke="var(--uzeri)" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/><circle cx="296" cy="49" r="8" fill="none" stroke="var(--cizgi)" stroke-width="1.5"/><circle class="f4d" style="--g:1.12s" cx="296" cy="49" r="8" fill="var(--yesil)"/><path class="f4d" style="--g:1.12s" d="M292.6 49.3 l2.4 2.4 l4.4 -5" fill="none" stroke="var(--uzeri)" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/><circle cx="336" cy="49" r="8" fill="none" stroke="var(--cizgi)" stroke-width="1.5"/><circle class="f4d" style="--g:1.40s" cx="336" cy="49" r="8" fill="var(--yesil)"/><path class="f4d" style="--g:1.40s" d="M332.6 49.3 l2.4 2.4 l4.4 -5" fill="none" stroke="var(--uzeri)" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/><circle cx="374" cy="49" r="8" fill="none" stroke="var(--cizgi)" stroke-width="1.5"/><circle class="f4d" style="--g:1.68s" cx="374" cy="49" r="8" fill="var(--yesil)"/><path class="f4d" style="--g:1.68s" d="M370.6 49.3 l2.4 2.4 l4.4 -5" fill="none" stroke="var(--uzeri)" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/>
+            <rect x="10" y="74" width="400" height="34" rx="8" fill="var(--kagit)" stroke="var(--cizgi)"/><rect x="22" y="86" width="70" height="8" rx="4" fill="var(--ig)" opacity=".6"/><circle cx="136" cy="91" r="8" fill="none" stroke="var(--cizgi)" stroke-width="1.5"/><circle class="f4d" style="--g:0.50s" cx="136" cy="91" r="8" fill="var(--yesil)"/><path class="f4d" style="--g:0.50s" d="M132.6 91.3 l2.4 2.4 l4.4 -5" fill="none" stroke="var(--uzeri)" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/><circle cx="176" cy="91" r="8" fill="none" stroke="var(--cizgi)" stroke-width="1.5"/><circle class="f4d" style="--g:0.78s" cx="176" cy="91" r="8" fill="var(--yesil)"/><path class="f4d" style="--g:0.78s" d="M172.6 91.3 l2.4 2.4 l4.4 -5" fill="none" stroke="var(--uzeri)" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/><circle cx="216" cy="91" r="8" fill="none" stroke="var(--cizgi)" stroke-width="1.5"/><circle class="f4d" style="--g:1.06s" cx="216" cy="91" r="8" fill="var(--yesil)"/><path class="f4d" style="--g:1.06s" d="M212.6 91.3 l2.4 2.4 l4.4 -5" fill="none" stroke="var(--uzeri)" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/><circle cx="256" cy="91" r="8" fill="none" stroke="var(--cizgi)" stroke-width="1.5"/><circle class="f4d" style="--g:1.34s" cx="256" cy="91" r="8" fill="var(--amber)"/><circle cx="296" cy="91" r="8" fill="none" stroke="var(--cizgi)" stroke-width="1.5"/><circle cx="336" cy="91" r="8" fill="none" stroke="var(--cizgi)" stroke-width="1.5"/><circle cx="374" cy="91" r="8" fill="none" stroke="var(--cizgi)" stroke-width="1.5"/>
+            <rect x="10" y="116" width="400" height="34" rx="8" fill="var(--kagit)" stroke="var(--cizgi)"/><rect x="22" y="128" width="94" height="8" rx="4" fill="var(--tt)" opacity=".6"/><circle cx="136" cy="133" r="8" fill="none" stroke="var(--cizgi)" stroke-width="1.5"/><circle class="f4d" style="--g:1.00s" cx="136" cy="133" r="8" fill="var(--yesil)"/><path class="f4d" style="--g:1.00s" d="M132.6 133.3 l2.4 2.4 l4.4 -5" fill="none" stroke="var(--uzeri)" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/><circle cx="176" cy="133" r="8" fill="none" stroke="var(--cizgi)" stroke-width="1.5"/><circle class="f4d" style="--g:1.28s" cx="176" cy="133" r="8" fill="var(--kirmizi)"/><circle cx="216" cy="133" r="8" fill="none" stroke="var(--cizgi)" stroke-width="1.5"/><circle cx="256" cy="133" r="8" fill="none" stroke="var(--cizgi)" stroke-width="1.5"/><circle cx="296" cy="133" r="8" fill="none" stroke="var(--cizgi)" stroke-width="1.5"/><circle cx="336" cy="133" r="8" fill="none" stroke="var(--cizgi)" stroke-width="1.5"/><circle cx="374" cy="133" r="8" fill="none" stroke="var(--cizgi)" stroke-width="1.5"/>
             <g font-family="IBM Plex Mono, monospace" font-size="9.5" font-weight="500">
               <rect x="10" y="166" width="88" height="22" rx="6" fill="var(--mavi-soft)"/>
               <text x="54" y="180" text-anchor="middle" fill="var(--mavi)" data-i18n="g4t1">12 projects</text>
-              <rect x="106" y="166" width="94" height="22" rx="6" fill="var(--kagit)" stroke="var(--cizgi)"/>
-              <text x="153" y="180" text-anchor="middle" fill="var(--solgun)" data-i18n="g4t2">4 published</text>
-              <rect x="208" y="166" width="108" height="22" rx="6" fill="var(--amber-soft)"/>
-              <text x="262" y="180" text-anchor="middle" fill="var(--amber)" data-i18n="g4t3">2 awaiting approval</text>
-              <rect x="324" y="166" width="86" height="22" rx="6" fill="var(--kagit)" stroke="var(--cizgi)"/>
-              <text x="367" y="180" text-anchor="middle" fill="var(--solgun)" data-i18n="g4t4">1 late</text>
+              <g class="f4c" style="--g:2.1s">
+                <rect x="106" y="166" width="94" height="22" rx="6" fill="var(--kagit)" stroke="var(--cizgi)"/>
+                <text x="153" y="180" text-anchor="middle" fill="var(--solgun)" data-i18n="g4t2">4 published</text>
+              </g>
+              <g class="f4c" style="--g:2.4s">
+                <rect x="208" y="166" width="108" height="22" rx="6" fill="var(--amber-soft)"/>
+                <text x="262" y="180" text-anchor="middle" fill="var(--amber)" data-i18n="g4t3">2 awaiting approval</text>
+              </g>
+              <g class="f4c" style="--g:2.7s">
+                <rect x="324" y="166" width="86" height="22" rx="6" fill="var(--kagit)" stroke="var(--cizgi)"/>
+                <text x="367" y="180" text-anchor="middle" fill="var(--solgun)" data-i18n="g4t4">1 late</text>
+              </g>
             </g>
           </svg>
         </div>
@@ -989,32 +1150,11 @@ a{color:inherit;}
             <li data-i18n="f5c">Ticking the step closes the matter — the date stops nudging you.</li>
           </ul>
         </div>
-        <div class="ozellik-gorsel">
+        <div class="ozellik-gorsel canli">
           <svg viewBox="0 0 420 210" role="img" data-i18n-attr="aria-label:g5">
             <rect x="60" y="12" width="300" height="186" rx="12" fill="var(--kagit)" stroke="var(--cizgi)"/>
             <text x="80" y="36" font-family="IBM Plex Mono, monospace" font-size="10" fill="var(--solgun)" data-i18n="g5t">DEADLINES</text>
-            <g font-family="IBM Plex Sans, sans-serif" font-size="11" fill="var(--murekkep)">
-              <text x="80" y="60" data-i18n="g5a">Script</text>
-              <text x="80" y="86" data-i18n="g5b">Filming</text>
-              <text x="80" y="112" data-i18n="g5c">Audio</text>
-              <text x="80" y="138" data-i18n="g5d">Edit</text>
-              <text x="80" y="164" data-i18n="g5e">Approval</text>
-            </g>
-            <rect x="238" y="49" width="92" height="18" rx="5" fill="var(--yuzey)" stroke="var(--cizgi)"/>
-            <text x="284" y="62" text-anchor="middle" font-family="IBM Plex Mono, monospace" font-size="10" fill="var(--solgun)">04.03</text>
-            <rect x="238" y="75" width="92" height="18" rx="5" fill="var(--yuzey)" stroke="var(--cizgi)"/>
-            <text x="284" y="88" text-anchor="middle" font-family="IBM Plex Mono, monospace" font-size="10" fill="var(--solgun)">09.03</text>
-            <rect x="238" y="101" width="92" height="18" rx="5" fill="var(--yuzey)" stroke="var(--cizgi)"/>
-            <text x="284" y="114" text-anchor="middle" font-family="IBM Plex Mono, monospace" font-size="10" fill="var(--solgun)">11.03</text>
-            <rect x="238" y="127" width="92" height="18" rx="5" fill="var(--kirmizi)" fill-opacity=".09" stroke="var(--kirmizi)"/>
-            <text x="284" y="140" text-anchor="middle" font-family="IBM Plex Mono, monospace" font-size="10" fill="var(--kirmizi)" data-i18n="g5f">15.03 · late</text>
-            <rect x="238" y="153" width="92" height="18" rx="5" fill="var(--yuzey)" stroke="var(--cizgi)" stroke-dasharray="3 3"/>
-            <text x="284" y="166" text-anchor="middle" font-family="IBM Plex Mono, monospace" font-size="10" fill="var(--solgun)">—</text>
-            <circle cx="212" cy="55" r="6" fill="var(--yesil)"/>
-            <circle cx="212" cy="81" r="6" fill="var(--yesil)"/>
-            <circle cx="212" cy="107" r="6" fill="var(--yesil)"/>
-            <circle cx="212" cy="133" r="6" fill="none" stroke="var(--kirmizi)" stroke-width="1.5"/>
-            <circle cx="212" cy="159" r="6" fill="none" stroke="var(--cizgi)" stroke-width="1.5"/>
+            <text x="80" y="60" font-family="IBM Plex Sans, sans-serif" font-size="11" fill="var(--murekkep)" data-i18n="g5a">Script</text><rect x="238" y="49" width="92" height="18" rx="5" fill="var(--yuzey)" stroke="var(--cizgi)"/><text x="284" y="62" text-anchor="middle" font-family="IBM Plex Mono, monospace" font-size="10" fill="var(--solgun)">04.03</text><circle cx="212" cy="55" r="6" fill="none" stroke="var(--cizgi)" stroke-width="1.5"/><g class="f5ok" style="--g:0.40s"><circle cx="212" cy="55" r="6" fill="var(--yesil)"/><path d="M209 55.3 l2 2 l3.6 -4.2" fill="none" stroke="var(--uzeri)" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></g><text x="80" y="86" font-family="IBM Plex Sans, sans-serif" font-size="11" fill="var(--murekkep)" data-i18n="g5b">Filming</text><rect x="238" y="75" width="92" height="18" rx="5" fill="var(--yuzey)" stroke="var(--cizgi)"/><text x="284" y="88" text-anchor="middle" font-family="IBM Plex Mono, monospace" font-size="10" fill="var(--solgun)">09.03</text><circle cx="212" cy="81" r="6" fill="none" stroke="var(--cizgi)" stroke-width="1.5"/><g class="f5ok" style="--g:0.90s"><circle cx="212" cy="81" r="6" fill="var(--yesil)"/><path d="M209 81.3 l2 2 l3.6 -4.2" fill="none" stroke="var(--uzeri)" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></g><text x="80" y="112" font-family="IBM Plex Sans, sans-serif" font-size="11" fill="var(--murekkep)" data-i18n="g5c">Audio</text><rect x="238" y="101" width="92" height="18" rx="5" fill="var(--yuzey)" stroke="var(--cizgi)"/><text x="284" y="114" text-anchor="middle" font-family="IBM Plex Mono, monospace" font-size="10" fill="var(--solgun)">11.03</text><circle cx="212" cy="107" r="6" fill="none" stroke="var(--cizgi)" stroke-width="1.5"/><g class="f5ok" style="--g:1.40s"><circle cx="212" cy="107" r="6" fill="var(--yesil)"/><path d="M209 107.3 l2 2 l3.6 -4.2" fill="none" stroke="var(--uzeri)" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></g><text x="80" y="138" font-family="IBM Plex Sans, sans-serif" font-size="11" fill="var(--murekkep)" data-i18n="g5d">Edit</text><g class="f5gec"><rect x="238" y="127" width="92" height="18" rx="5" fill="var(--kirmizi)" fill-opacity=".09" stroke="var(--kirmizi)"/><text x="284" y="140" text-anchor="middle" font-family="IBM Plex Mono, monospace" font-size="10" fill="var(--kirmizi)" data-i18n="g5f">15.03 · late</text></g><circle cx="212" cy="133" r="6" fill="none" stroke="var(--kirmizi)" stroke-width="1.5"/><text x="80" y="164" font-family="IBM Plex Sans, sans-serif" font-size="11" fill="var(--murekkep)" data-i18n="g5e">Approval</text><rect x="238" y="153" width="92" height="18" rx="5" fill="var(--yuzey)" stroke="var(--cizgi)" stroke-dasharray="3 3"/><text x="284" y="166" text-anchor="middle" font-family="IBM Plex Mono, monospace" font-size="10" fill="var(--solgun)">—</text><circle cx="212" cy="159" r="6" fill="none" stroke="var(--cizgi)" stroke-width="1.5"/>
           </svg>
         </div>
       </section>
@@ -1030,42 +1170,46 @@ a{color:inherit;}
             <li data-i18n="f6c">Planning for several countries? Give the entry its own time zone.</li>
           </ul>
         </div>
-        <div class="ozellik-gorsel">
+        <div class="ozellik-gorsel canli">
           <svg viewBox="0 0 420 210" role="img" data-i18n-attr="aria-label:g6">
             <rect x="10" y="16" width="180" height="76" rx="9" fill="var(--kagit)" stroke="var(--cizgi)"/>
             <text x="26" y="36" font-family="IBM Plex Mono, monospace" font-size="9.5" fill="var(--solgun)" data-i18n="g6a">TYPE — WHAT IT IS</text>
             <g font-family="IBM Plex Sans, sans-serif" font-size="10" fill="var(--murekkep)">
               <rect x="26" y="46" width="44" height="18" rx="9" fill="var(--yuzey)" stroke="var(--cizgi)"/><text x="48" y="59" text-anchor="middle" data-i18n="g6v">Video</text>
-              <rect x="76" y="46" width="42" height="18" rx="9" fill="var(--mavi-soft)" stroke="var(--mavi)"/><text x="97" y="59" text-anchor="middle" fill="var(--mavi)">Reel</text>
+              <rect x="76" y="46" width="42" height="18" rx="9" fill="var(--yuzey)" stroke="var(--cizgi)"/><text x="97" y="59" text-anchor="middle">Reel</text>
               <rect x="124" y="46" width="46" height="18" rx="9" fill="var(--yuzey)" stroke="var(--cizgi)"/><text x="147" y="59" text-anchor="middle">Short</text>
               <rect x="26" y="68" width="60" height="18" rx="9" fill="var(--yuzey)" stroke="var(--cizgi)"/><text x="56" y="81" text-anchor="middle">Carousel</text>
               <rect x="92" y="68" width="50" height="18" rx="9" fill="var(--yuzey)" stroke="var(--cizgi)"/><text x="117" y="81" text-anchor="middle" data-i18n="g6s">Story</text>
+              <g class="f6t1"><rect x="76" y="46" width="42" height="18" rx="9" fill="var(--mavi-soft)" stroke="var(--mavi)"/><text x="97" y="59" text-anchor="middle" fill="var(--mavi)">Reel</text></g>
+              <g class="f6t2"><rect x="124" y="46" width="46" height="18" rx="9" fill="var(--mavi-soft)" stroke="var(--mavi)"/><text x="147" y="59" text-anchor="middle" fill="var(--mavi)">Short</text></g>
             </g>
             <rect x="10" y="106" width="180" height="88" rx="9" fill="var(--kagit)" stroke="var(--cizgi)"/>
             <text x="26" y="126" font-family="IBM Plex Mono, monospace" font-size="9.5" fill="var(--solgun)" data-i18n="g6b">PLATFORM — WHERE IT GOES</text>
             <g font-family="IBM Plex Sans, sans-serif" font-size="10" font-weight="600">
-              <rect x="26" y="136" width="62" height="18" rx="9" fill="var(--yt)" fill-opacity=".12" stroke="var(--yt)"/><text x="57" y="149" text-anchor="middle" fill="var(--yt)">YouTube</text>
-              <rect x="94" y="136" width="70" height="18" rx="9" fill="var(--ig)" fill-opacity=".12" stroke="var(--ig)"/><text x="129" y="149" text-anchor="middle" fill="var(--ig)">Instagram</text>
-              <rect x="26" y="160" width="54" height="18" rx="9" fill="var(--tt)" fill-opacity=".12" stroke="var(--tt)"/><text x="53" y="173" text-anchor="middle" fill="var(--tt)">TikTok</text>
-              <rect x="86" y="160" width="66" height="18" rx="9" fill="var(--fb)" fill-opacity=".12" stroke="var(--fb)"/><text x="119" y="173" text-anchor="middle" fill="var(--fb)">Facebook</text>
+              <rect x="26" y="136" width="62" height="18" rx="9" fill="var(--yuzey)" stroke="var(--cizgi)"/><text x="57" y="149" text-anchor="middle" fill="var(--solgun)">YouTube</text>
+              <rect x="94" y="136" width="70" height="18" rx="9" fill="var(--yuzey)" stroke="var(--cizgi)"/><text x="129" y="149" text-anchor="middle" fill="var(--solgun)">Instagram</text>
+              <rect x="26" y="160" width="54" height="18" rx="9" fill="var(--yuzey)" stroke="var(--cizgi)"/><text x="53" y="173" text-anchor="middle" fill="var(--solgun)">TikTok</text>
+              <rect x="86" y="160" width="66" height="18" rx="9" fill="var(--yuzey)" stroke="var(--cizgi)"/><text x="119" y="173" text-anchor="middle" fill="var(--solgun)">Facebook</text>
+              <g class="f6p1"><rect x="94" y="136" width="70" height="18" rx="9" fill="var(--ig)" fill-opacity=".12" stroke="var(--ig)"/><text x="129" y="149" text-anchor="middle" fill="var(--ig)">Instagram</text></g>
+              <g class="f6p2"><rect x="26" y="136" width="62" height="18" rx="9" fill="var(--yt)" fill-opacity=".12" stroke="var(--yt)"/><text x="57" y="149" text-anchor="middle" fill="var(--yt)">YouTube</text></g>
             </g>
             <path d="M204 105 L232 105" stroke="var(--mavi)" stroke-width="2" stroke-linecap="round"/>
             <path d="M225 99 L233 105 L225 111" fill="none" stroke="var(--mavi)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
             <rect x="246" y="16" width="164" height="178" rx="10" fill="var(--yuzey)" stroke="var(--mavi)" stroke-width="1.5"/>
             <text x="262" y="36" font-family="IBM Plex Mono, monospace" font-size="9.5" fill="var(--mavi)" data-i18n="g6c">ONE SHOOT, THREE EXITS</text>
-            <g>
+            <g class="f6c1">
               <rect x="262" y="48" width="132" height="38" rx="7" fill="var(--kagit)" stroke="var(--cizgi)"/>
               <rect x="272" y="57" width="8" height="20" rx="2" fill="var(--ig)"/>
               <text x="288" y="65" font-family="IBM Plex Sans, sans-serif" font-size="10" fill="var(--murekkep)">Instagram · Reel</text>
               <text x="288" y="78" font-family="IBM Plex Mono, monospace" font-size="9" fill="var(--solgun)">05.03 · 18:00</text>
             </g>
-            <g>
+            <g class="f6c2">
               <rect x="262" y="94" width="132" height="38" rx="7" fill="var(--kagit)" stroke="var(--cizgi)"/>
               <rect x="272" y="103" width="8" height="20" rx="2" fill="var(--yt)"/>
               <text x="288" y="111" font-family="IBM Plex Sans, sans-serif" font-size="10" fill="var(--murekkep)">YouTube · Short</text>
               <text x="288" y="124" font-family="IBM Plex Mono, monospace" font-size="9" fill="var(--solgun)">06.03 · 12:00</text>
             </g>
-            <g>
+            <g class="f6c3">
               <rect x="262" y="140" width="132" height="38" rx="7" fill="var(--kagit)" stroke="var(--cizgi)"/>
               <rect x="272" y="149" width="8" height="20" rx="2" fill="var(--tt)"/>
               <text x="288" y="157" font-family="IBM Plex Sans, sans-serif" font-size="10" fill="var(--murekkep)">TikTok · Short</text>
@@ -1086,44 +1230,14 @@ a{color:inherit;}
             <li data-i18n="f7c">You tick “published” yourself — Slate doesn't listen to the platforms.</li>
           </ul>
         </div>
-        <div class="ozellik-gorsel">
+        <div class="ozellik-gorsel canli">
           <svg viewBox="0 0 420 210" role="img" data-i18n-attr="aria-label:g7">
             <rect x="40" y="10" width="340" height="190" rx="12" fill="var(--kagit)" stroke="var(--cizgi)"/>
             <path d="M40 22 a12 12 0 0 1 12 -12 h316 a12 12 0 0 1 12 12 v22 h-340 z" fill="var(--yuzey2)"/>
             <text x="58" y="32" font-family="IBM Plex Mono, monospace" font-size="10" fill="var(--solgun)">05.03 · 18:00 · INSTAGRAM · REEL</text>
-            <g font-family="IBM Plex Mono, monospace" font-size="9" fill="var(--solgun)">
-              <text x="58" y="62" data-i18n="g7a">TITLE</text>
-              <text x="58" y="102" data-i18n="g7b">COVER TEXT</text>
-              <text x="58" y="142" data-i18n="g7c">CAPTION</text>
-            </g>
-            <rect x="58" y="68" width="240" height="18" rx="5" fill="var(--yuzey)" stroke="var(--cizgi)"/>
-            <rect x="66" y="74" width="150" height="6" rx="3" fill="var(--cizgi)"/>
-            <rect x="58" y="108" width="240" height="18" rx="5" fill="var(--yuzey)" stroke="var(--cizgi)"/>
-            <rect x="66" y="114" width="98" height="6" rx="3" fill="var(--cizgi)"/>
-            <rect x="58" y="148" width="240" height="38" rx="5" fill="var(--yuzey)" stroke="var(--cizgi)"/>
-            <rect x="66" y="156" width="200" height="6" rx="3" fill="var(--cizgi)"/>
-            <rect x="66" y="168" width="168" height="6" rx="3" fill="var(--cizgi)"/>
-            <g>
-              <rect x="308" y="68" width="26" height="18" rx="5" fill="var(--mavi-soft)" stroke="var(--mavi)"/>
-              <path d="M321 72.5 l1.9 4.3 l4.3 1.9 l-4.3 1.9 l-1.9 4.3 l-1.9 -4.3 l-4.3 -1.9 l4.3 -1.9 z" fill="var(--mavi)"/>
-              <rect x="340" y="68" width="26" height="18" rx="5" fill="var(--yuzey)" stroke="var(--cizgi)"/>
-              <rect x="348" y="74" width="10" height="7" rx="1.5" fill="none" stroke="var(--solgun)" stroke-width="1.2"/>
-              <rect x="350.5" y="71.5" width="10" height="7" rx="1.5" fill="var(--yuzey)" stroke="var(--solgun)" stroke-width="1.2"/>
-            </g>
-            <g>
-              <rect x="308" y="108" width="26" height="18" rx="5" fill="var(--mavi-soft)" stroke="var(--mavi)"/>
-              <path d="M321 112.5 l1.9 4.3 l4.3 1.9 l-4.3 1.9 l-1.9 4.3 l-1.9 -4.3 l-4.3 -1.9 l4.3 -1.9 z" fill="var(--mavi)"/>
-              <rect x="340" y="108" width="26" height="18" rx="5" fill="var(--yuzey)" stroke="var(--cizgi)"/>
-              <rect x="348" y="114" width="10" height="7" rx="1.5" fill="none" stroke="var(--solgun)" stroke-width="1.2"/>
-              <rect x="350.5" y="111.5" width="10" height="7" rx="1.5" fill="var(--yuzey)" stroke="var(--solgun)" stroke-width="1.2"/>
-            </g>
-            <g>
-              <rect x="308" y="148" width="26" height="18" rx="5" fill="var(--mavi-soft)" stroke="var(--mavi)"/>
-              <path d="M321 152.5 l1.9 4.3 l4.3 1.9 l-4.3 1.9 l-1.9 4.3 l-1.9 -4.3 l-4.3 -1.9 l4.3 -1.9 z" fill="var(--mavi)"/>
-              <rect x="340" y="148" width="26" height="18" rx="5" fill="var(--yuzey)" stroke="var(--cizgi)"/>
-              <rect x="348" y="154" width="10" height="7" rx="1.5" fill="none" stroke="var(--solgun)" stroke-width="1.2"/>
-              <rect x="350.5" y="151.5" width="10" height="7" rx="1.5" fill="var(--yuzey)" stroke="var(--solgun)" stroke-width="1.2"/>
-            </g>
+            <text x="58" y="56" font-family="IBM Plex Mono, monospace" font-size="9" fill="var(--solgun)" data-i18n="g7a">TITLE</text><rect x="58" y="62" width="240" height="18" rx="5" fill="var(--yuzey)" stroke="var(--cizgi)"/><rect class="f7d" style="--g:0.30s" x="66" y="70" width="150" height="6" rx="3" fill="var(--cizgi)"/><g class="f7ai" style="--g:0.30s"><rect x="308" y="62" width="26" height="18" rx="5" fill="var(--mavi-soft)" stroke="var(--mavi)"/><path d="M321 66.5 l1.9 4.3 l4.3 1.9 l-4.3 1.9 l-1.9 4.3 l-1.9 -4.3 l-4.3 -1.9 l4.3 -1.9 z" fill="var(--mavi)"/></g><g class="f7kop" style="--g:0.80s"><rect x="340" y="62" width="26" height="18" rx="5" fill="var(--yuzey)" stroke="var(--cizgi)"/><rect x="348" y="68" width="10" height="7" rx="1.5" fill="none" stroke="var(--solgun)" stroke-width="1.2"/><rect x="350.5" y="65.5" width="10" height="7" rx="1.5" fill="var(--yuzey)" stroke="var(--solgun)" stroke-width="1.2"/></g><g class="f7ok" style="--g:0.80s"><rect x="340" y="62" width="26" height="18" rx="5" fill="var(--yesil)" fill-opacity=".16" stroke="var(--yesil)"/><path d="M348 71.2 l3 3 l6 -7" fill="none" stroke="var(--yesil)" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></g>
+            <text x="58" y="98" font-family="IBM Plex Mono, monospace" font-size="9" fill="var(--solgun)" data-i18n="g7b">COVER TEXT</text><rect x="58" y="104" width="240" height="18" rx="5" fill="var(--yuzey)" stroke="var(--cizgi)"/><rect class="f7d" style="--g:1.10s" x="66" y="112" width="98" height="6" rx="3" fill="var(--cizgi)"/><g class="f7ai" style="--g:1.10s"><rect x="308" y="104" width="26" height="18" rx="5" fill="var(--mavi-soft)" stroke="var(--mavi)"/><path d="M321 108.5 l1.9 4.3 l4.3 1.9 l-4.3 1.9 l-1.9 4.3 l-1.9 -4.3 l-4.3 -1.9 l4.3 -1.9 z" fill="var(--mavi)"/></g><g class="f7kop" style="--g:1.60s"><rect x="340" y="104" width="26" height="18" rx="5" fill="var(--yuzey)" stroke="var(--cizgi)"/><rect x="348" y="110" width="10" height="7" rx="1.5" fill="none" stroke="var(--solgun)" stroke-width="1.2"/><rect x="350.5" y="107.5" width="10" height="7" rx="1.5" fill="var(--yuzey)" stroke="var(--solgun)" stroke-width="1.2"/></g><g class="f7ok" style="--g:1.60s"><rect x="340" y="104" width="26" height="18" rx="5" fill="var(--yesil)" fill-opacity=".16" stroke="var(--yesil)"/><path d="M348 113.2 l3 3 l6 -7" fill="none" stroke="var(--yesil)" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></g>
+            <text x="58" y="142" font-family="IBM Plex Mono, monospace" font-size="9" fill="var(--solgun)" data-i18n="g7c">CAPTION</text><rect x="58" y="148" width="240" height="38" rx="5" fill="var(--yuzey)" stroke="var(--cizgi)"/><rect class="f7d" style="--g:1.90s" x="66" y="156" width="200" height="6" rx="3" fill="var(--cizgi)"/><rect class="f7d" style="--g:2.08s" x="66" y="168" width="168" height="6" rx="3" fill="var(--cizgi)"/><g class="f7ai" style="--g:1.90s"><rect x="308" y="148" width="26" height="18" rx="5" fill="var(--mavi-soft)" stroke="var(--mavi)"/><path d="M321 152.5 l1.9 4.3 l4.3 1.9 l-4.3 1.9 l-1.9 4.3 l-1.9 -4.3 l-4.3 -1.9 l4.3 -1.9 z" fill="var(--mavi)"/></g><g class="f7kop" style="--g:2.40s"><rect x="340" y="148" width="26" height="18" rx="5" fill="var(--yuzey)" stroke="var(--cizgi)"/><rect x="348" y="154" width="10" height="7" rx="1.5" fill="none" stroke="var(--solgun)" stroke-width="1.2"/><rect x="350.5" y="151.5" width="10" height="7" rx="1.5" fill="var(--yuzey)" stroke="var(--solgun)" stroke-width="1.2"/></g><g class="f7ok" style="--g:2.40s"><rect x="340" y="148" width="26" height="18" rx="5" fill="var(--yesil)" fill-opacity=".16" stroke="var(--yesil)"/><path d="M348 157.2 l3 3 l6 -7" fill="none" stroke="var(--yesil)" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></g>
           </svg>
         </div>
       </section>
@@ -1139,30 +1253,37 @@ a{color:inherit;}
             <li data-i18n="f8c">It drops in the moment you pick a platform on a new entry.</li>
           </ul>
         </div>
-        <div class="ozellik-gorsel">
+        <div class="ozellik-gorsel canli">
           <svg viewBox="0 0 420 210" role="img" data-i18n-attr="aria-label:g8">
-            <rect x="26" y="20" width="150" height="80" rx="9" fill="var(--kagit)" stroke="var(--cizgi)"/>
-            <text x="42" y="40" font-family="IBM Plex Mono, monospace" font-size="9" fill="var(--solgun)" data-i18n="g8a">WHAT YOU WROTE</text>
-            <rect x="42" y="50" width="118" height="6" rx="3" fill="var(--cizgi)"/>
-            <rect x="42" y="62" width="96" height="6" rx="3" fill="var(--cizgi)"/>
-            <rect x="42" y="74" width="110" height="6" rx="3" fill="var(--cizgi)"/>
-            <rect x="26" y="116" width="150" height="72" rx="9" fill="var(--mavi-soft)" stroke="var(--mavi)"/>
-            <text x="42" y="136" font-family="IBM Plex Mono, monospace" font-size="9" fill="var(--mavi)" data-i18n="g8b">TEMPLATE · ONCE</text>
-            <rect x="42" y="146" width="104" height="6" rx="3" fill="var(--mavi)" opacity=".5"/>
-            <rect x="42" y="158" width="88" height="6" rx="3" fill="var(--mavi)" opacity=".5"/>
-            <rect x="42" y="170" width="112" height="6" rx="3" fill="var(--mavi)" opacity=".5"/>
-            <path d="M192 104 L232 104" stroke="var(--mavi)" stroke-width="2" stroke-linecap="round"/>
-            <path d="M225 98 L233 104 L225 110" fill="none" stroke="var(--mavi)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
-            <rect x="248" y="20" width="150" height="168" rx="9" fill="var(--yuzey)" stroke="var(--mavi)" stroke-width="1.5"/>
-            <text x="264" y="40" font-family="IBM Plex Mono, monospace" font-size="9" fill="var(--solgun)" data-i18n="g8c">THE CAPTION THAT GOES OUT</text>
-            <rect x="264" y="50" width="118" height="6" rx="3" fill="var(--cizgi)"/>
-            <rect x="264" y="62" width="96" height="6" rx="3" fill="var(--cizgi)"/>
-            <rect x="264" y="74" width="110" height="6" rx="3" fill="var(--cizgi)"/>
-            <line x1="264" y1="94" x2="382" y2="94" stroke="var(--mavi)" stroke-dasharray="3 3"/>
-            <rect x="264" y="108" width="104" height="6" rx="3" fill="var(--mavi)" opacity=".5"/>
-            <rect x="264" y="120" width="88" height="6" rx="3" fill="var(--mavi)" opacity=".5"/>
-            <rect x="264" y="132" width="112" height="6" rx="3" fill="var(--mavi)" opacity=".5"/>
-            <text x="323" y="168" text-anchor="middle" font-family="IBM Plex Mono, monospace" font-size="9.5" fill="var(--solgun)" data-i18n="g8d">the template is always last</text>
+            <rect x="20" y="20" width="150" height="80" rx="9" fill="var(--kagit)" stroke="var(--cizgi)"/>
+            <text x="36" y="40" font-family="IBM Plex Mono, monospace" font-size="9" fill="var(--solgun)" data-i18n="g8a">WHAT YOU WROTE</text>
+            <rect x="36" y="50" width="118" height="6" rx="3" fill="var(--cizgi)"/>
+            <rect x="36" y="62" width="96" height="6" rx="3" fill="var(--cizgi)"/>
+            <rect x="36" y="74" width="110" height="6" rx="3" fill="var(--cizgi)"/>
+
+            <rect x="20" y="118" width="150" height="72" rx="9" fill="var(--mavi-soft)" stroke="var(--mavi)"/>
+            <text x="36" y="138" font-family="IBM Plex Mono, monospace" font-size="9" fill="var(--mavi)" data-i18n="g8b">TEMPLATE · ONCE</text>
+            <rect x="36" y="148" width="104" height="6" rx="3" fill="var(--mavi)" opacity=".5"/>
+            <rect x="36" y="160" width="88" height="6" rx="3" fill="var(--mavi)" opacity=".5"/>
+            <rect x="36" y="172" width="112" height="6" rx="3" fill="var(--mavi)" opacity=".5"/>
+
+            <path class="f8ok" d="M186 104 L226 104" stroke="var(--mavi)" stroke-width="2" stroke-linecap="round" stroke-dasharray="40" stroke-dashoffset="40"/>
+            <path class="f8ok" d="M219 98 L227 104 L219 110" fill="none" stroke="var(--mavi)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+
+            <rect x="242" y="20" width="158" height="170" rx="9" fill="var(--yuzey)" stroke="var(--mavi)" stroke-width="1.5"/>
+            <text x="258" y="40" font-family="IBM Plex Mono, monospace" font-size="8.5" fill="var(--solgun)" data-i18n="g8c">CAPTION AS SENT</text>
+            <g class="f8ust">
+              <rect x="258" y="50" width="118" height="6" rx="3" fill="var(--cizgi)"/>
+              <rect x="258" y="62" width="96" height="6" rx="3" fill="var(--cizgi)"/>
+              <rect x="258" y="74" width="110" height="6" rx="3" fill="var(--cizgi)"/>
+            </g>
+            <line class="f8ayrac" x1="258" y1="94" x2="384" y2="94" stroke="var(--mavi)" stroke-dasharray="3 3"/>
+            <g class="f8alt">
+              <rect x="258" y="108" width="104" height="6" rx="3" fill="var(--mavi)" opacity=".5"/>
+              <rect x="258" y="120" width="88" height="6" rx="3" fill="var(--mavi)" opacity=".5"/>
+              <rect x="258" y="132" width="112" height="6" rx="3" fill="var(--mavi)" opacity=".5"/>
+            </g>
+            <text class="f8not" x="321" y="168" text-anchor="middle" font-family="IBM Plex Mono, monospace" font-size="8.5" fill="var(--solgun)" data-i18n="g8d">template always last</text>
           </svg>
         </div>
       </section>
@@ -1178,36 +1299,42 @@ a{color:inherit;}
             <li data-i18n="f9c">The pending list can be dismissed for the session; the ⏳ button reopens it.</li>
           </ul>
         </div>
-        <div class="ozellik-gorsel">
+        <div class="ozellik-gorsel canli">
           <svg viewBox="0 0 420 210" role="img" data-i18n-attr="aria-label:g9">
             <rect x="150" y="14" width="120" height="46" rx="12" fill="var(--mavi-soft)" stroke="var(--mavi)"/>
             <text x="210" y="42" text-anchor="middle" font-family="IBM Plex Mono, monospace" font-size="10.5" fill="var(--mavi)" data-i18n="g9a">ONE PLAN</text>
-            <path d="M210 62 L210 78 M210 78 L70 78 L70 96 M210 78 L210 96 M210 78 L350 78 L350 96"
-                  stroke="var(--cizgi)" stroke-width="1.5" fill="none" stroke-linecap="round"/>
+
+            <path id="y1" d="M210 62 L210 78 L70 78 L70 96" stroke="var(--cizgi)" stroke-width="1.5" fill="none" stroke-linecap="round"/>
+            <path id="y2" d="M210 62 L210 96" stroke="var(--cizgi)" stroke-width="1.5" fill="none" stroke-linecap="round"/>
+            <path id="y3" d="M210 62 L210 78 L350 78 L350 96" stroke="var(--cizgi)" stroke-width="1.5" fill="none" stroke-linecap="round"/>
+            <path class="f9p" style="--g:0s"   d="M210 62 L210 78 L70 78 L70 96"  stroke="var(--mavi)" stroke-width="2" fill="none" stroke-linecap="round" stroke-dasharray="18 300"/>
+            <path class="f9p" style="--g:.35s" d="M210 62 L210 96"                stroke="var(--mavi)" stroke-width="2" fill="none" stroke-linecap="round" stroke-dasharray="18 300"/>
+            <path class="f9p" style="--g:.7s"  d="M210 62 L210 78 L350 78 L350 96" stroke="var(--mavi)" stroke-width="2" fill="none" stroke-linecap="round" stroke-dasharray="18 300"/>
+
             <g>
               <rect x="16" y="96" width="108" height="76" rx="7" fill="var(--kagit)" stroke="var(--cizgi)"/>
               <path d="M16 103 a7 7 0 0 1 7 -7 h94 a7 7 0 0 1 7 7 v7 h-108 z" fill="var(--yuzey2)"/>
-              <rect x="26" y="120" width="42" height="14" rx="3" fill="var(--yt)" opacity=".85"/>
-              <rect x="72" y="120" width="42" height="14" rx="3" fill="var(--ig)" opacity=".85"/>
-              <rect x="26" y="140" width="42" height="14" rx="3" fill="var(--tt)" opacity=".85"/>
-              <rect x="72" y="140" width="42" height="14" rx="3" fill="var(--fb)" opacity=".85"/>
+              <g class="f9c" style="--g:1.15s"><rect x="26" y="120" width="42" height="14" rx="3" fill="var(--yt)" opacity=".85"/></g>
+              <g class="f9c" style="--g:1.25s"><rect x="72" y="120" width="42" height="14" rx="3" fill="var(--ig)" opacity=".85"/></g>
+              <g class="f9c" style="--g:1.35s"><rect x="26" y="140" width="42" height="14" rx="3" fill="var(--tt)" opacity=".85"/></g>
+              <g class="f9c" style="--g:1.45s"><rect x="72" y="140" width="42" height="14" rx="3" fill="var(--fb)" opacity=".85"/></g>
               <rect x="52" y="176" width="36" height="4" rx="2" fill="var(--cizgi)"/>
               <text x="70" y="198" text-anchor="middle" font-family="IBM Plex Mono, monospace" font-size="9.5" fill="var(--solgun)" data-i18n="g9b">computer</text>
             </g>
             <g>
               <rect x="184" y="96" width="52" height="76" rx="8" fill="var(--kagit)" stroke="var(--cizgi)"/>
-              <rect x="192" y="108" width="36" height="12" rx="3" fill="var(--ig)" opacity=".85"/>
-              <rect x="192" y="124" width="36" height="12" rx="3" fill="var(--yt)" opacity=".85"/>
-              <rect x="192" y="140" width="36" height="12" rx="3" fill="var(--tt)" opacity=".85"/>
+              <g class="f9c" style="--g:1.50s"><rect x="192" y="108" width="36" height="12" rx="3" fill="var(--ig)" opacity=".85"/></g>
+              <g class="f9c" style="--g:1.60s"><rect x="192" y="124" width="36" height="12" rx="3" fill="var(--yt)" opacity=".85"/></g>
+              <g class="f9c" style="--g:1.70s"><rect x="192" y="140" width="36" height="12" rx="3" fill="var(--tt)" opacity=".85"/></g>
               <rect x="200" y="160" width="20" height="3" rx="1.5" fill="var(--cizgi)"/>
               <text x="210" y="198" text-anchor="middle" font-family="IBM Plex Mono, monospace" font-size="9.5" fill="var(--solgun)" data-i18n="g9c">phone</text>
             </g>
             <g>
               <rect x="298" y="96" width="104" height="76" rx="8" fill="var(--kagit)" stroke="var(--cizgi)"/>
-              <rect x="310" y="110" width="38" height="14" rx="3" fill="var(--fb)" opacity=".85"/>
-              <rect x="352" y="110" width="38" height="14" rx="3" fill="var(--li)" opacity=".85"/>
-              <rect x="310" y="130" width="38" height="14" rx="3" fill="var(--yt)" opacity=".85"/>
-              <rect x="352" y="130" width="38" height="14" rx="3" fill="var(--ig)" opacity=".85"/>
+              <g class="f9c" style="--g:1.85s"><rect x="310" y="110" width="38" height="14" rx="3" fill="var(--fb)" opacity=".85"/></g>
+              <g class="f9c" style="--g:1.95s"><rect x="352" y="110" width="38" height="14" rx="3" fill="var(--li)" opacity=".85"/></g>
+              <g class="f9c" style="--g:2.05s"><rect x="310" y="130" width="38" height="14" rx="3" fill="var(--yt)" opacity=".85"/></g>
+              <g class="f9c" style="--g:2.15s"><rect x="352" y="130" width="38" height="14" rx="3" fill="var(--ig)" opacity=".85"/></g>
               <rect x="336" y="158" width="28" height="3" rx="1.5" fill="var(--cizgi)"/>
               <text x="350" y="198" text-anchor="middle" font-family="IBM Plex Mono, monospace" font-size="9.5" fill="var(--solgun)" data-i18n="g9d">tablet</text>
             </g>
@@ -1384,6 +1511,7 @@ var METIN = {
     f1b:"Projeye göre süzme ve arama — iki ayrı filtre.",
     f1c:"Fikrin projesi olmak zorunda değil. Hak edince bağlarsın.",
     g1:"Fikir kartlarının birleşmesi", g1a:"birleştir", g1b:"tek kart, iki parça",
+    g1c:"ayır", g1d:"iki kart",
 
     f2n:"02 — Scriptler", f2h:"Metnin ve Google Drive",
     f2p:"Script, projenin içindeki bir alan değil, kendi başına bir kayıttır. Yani proje daha yokken yazabilirsin ve bir projenin birden fazla script'i olabilir. Metni bir Google Doc'tan getirebilir, düzenledikten sonra geri yazabilirsin — yeni belge olarak mı yoksa üstüne mi, her seferinde sen seçersin.",
