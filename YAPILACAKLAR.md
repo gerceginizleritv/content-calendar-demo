@@ -601,6 +601,21 @@ maddenin sonunda parantez içinde duruyor.
    ve HTTPS de aynı taşımayla geliyor, ikisini birlikte yapmak mantıklı.
    Yarım gün.
 
+0. **Gelen kutusu çoklu kullanıcıya hazır değil — DENEME ENGELİ**
+   (3 Eylül 2026, başka bir oturumun eklediği özellik)
+   `gelenKutusunuIsle()` `if(!session) return;` ile korunuyor, yani
+   ziyaretçiye gitmiyor. Ama **giriş yapan HERKESE** gidiyor: deneme
+   kullanıcısı hesabını açtığında `gelen/kayitlar.json` içindeki
+   Nuruosmaniye kayıtları onun takvimine yazılıyor. Deneyiciye başkasının
+   içerik planını göndermek, denemenin ilk beş dakikasını bozar.
+
+   **Önerilen çözüm — e-posta GÖMÜLMEYECEK.** Hesap sınırının çözüldüğü
+   yolu izle: `user_prefs.prefs` içine `gelen_kutusu: true` bayrağı,
+   yalnızca sahibin hesabında açık. Kod bayrağa bakar. Böylece kaynağa
+   e-posta ya da kullanıcı kimliği gömülmez (1 Eylül'de konan kural).
+   Alternatif ve daha temizi: kutuyu dosyadan veritabanına taşımak —
+   hedef kullanıcı başına bir satır. Daha fazla iş.
+
 ### KAPI 2 — Denemeyi kazanan özellikler
 
 7. **Termin hatırlatmaları — SIRADAKİ İŞ** (rapor: Öncelik 2)
@@ -864,6 +879,14 @@ kritik:** indirilen `.ics` dosyası Google Takvim'e ayrı ayrı olay olarak
 girer, kaldırmak için kullanıcının o olayları TEK TEK silmesi gerekir.
 Abonelik ise tek kalemde iptal edilir. Yani dosya bir başlangıç, asıl
 istenen abonelik. İkisi birlikte sunulacak, arayüzde farkı yazacak.
+
+**DÜZELTME (3 Eylül 2026): Edge Function GEREKMİYOR.** Supabase Storage
+dosyayı doğru `Content-Type` ile herkese açık bir adresten sunuyor. Uygulama
+`.ics` metnini üretip Storage'a yazıyor, adres sabit kalıyor, terminler
+değişince dosya güncelleniyor (`saveProjects()` tek kapı). İptal = dosyayı
+sil + jetonu yenile. Kurulum tek SQL betiği: `sql/19-takvim-abonelik.sql`.
+Sunucu tarafı kod yok. Aşağıdaki eski gerekçe neden REST ve Pages'ın
+yetmediğini anlatıyor, o kısım geçerli:
 
 **Neden Edge Function şart:** Google Takvim aboneliği, `text/calendar`
 döndüren ve başlık (header) istemeyen bir adres istiyor. Supabase'in

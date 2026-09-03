@@ -1551,6 +1551,34 @@ body.suruklenirken *{cursor:grabbing !important;}
   .lang-select{min-height:44px;}
   .copy-btn{min-height:44px;}
 }
+
+/* ===== Termin hatirlatmalari ===== */
+.rm-lead{color:var(--text-dim);font-size:13.5px;line-height:1.6;margin:0 0 16px;}
+.rm-bolum{border:1px solid var(--line);border-radius:10px;padding:14px;margin-bottom:14px;}
+.rm-bas{display:flex;align-items:center;gap:10px;margin-bottom:8px;}
+.rm-bas h3{margin:0;font-size:14.5px;font-weight:600;flex:1;}
+.rm-not{color:var(--text-dim);font-size:12.5px;line-height:1.55;margin:8px 0 0;}
+.rm-anahtar{display:flex;align-items:center;gap:9px;font-size:13.5px;cursor:pointer;padding:4px 0;}
+.rm-anahtar input{width:16px;height:16px;flex:none;cursor:pointer;}
+.rm-zaman{display:flex;flex-direction:column;gap:2px;margin-top:4px;}
+/* Kapali kanalin altindaki ayarlar soluk: hangisinin ise yaradigi belli olsun. */
+.rm-kapali{opacity:.45;pointer-events:none;}
+.rm-uyari{
+  background:var(--amber-soft);color:var(--amber);border:1px solid var(--amber);
+  border-radius:8px;padding:10px 12px;font-size:12.5px;line-height:1.6;margin:0 0 10px;
+}
+.rm-durum{font-size:12.5px;line-height:1.55;margin:8px 0 0;}
+.rm-durum.ok{color:var(--green);}
+.rm-durum.hata{color:var(--red);}
+.rm-adres{display:flex;gap:8px;margin-top:10px;}
+.rm-adres input{
+  flex:1;min-width:0;font-family:'IBM Plex Mono',monospace;font-size:11.5px;
+  padding:8px 10px;border:1px solid var(--line);border-radius:8px;
+  background:var(--surface-2);color:var(--text);
+}
+.rm-dugmeler{display:flex;gap:8px;flex-wrap:wrap;margin-top:10px;}
+.rm-nasil{margin-top:10px;}
+.rm-nasil ul{margin:8px 0 0;padding-left:18px;color:var(--text-dim);font-size:12.5px;line-height:1.7;}
 </style>
 <script>
 // Kayitli tema tercihini ilk boyamadan once uygula — aksi halde acik temayi
@@ -1623,6 +1651,7 @@ body.suruklenirken *{cursor:grabbing !important;}
         <button class="rail-link" id="pitchToggle" aria-expanded="false" data-i18n="pitch_show" hidden>What is Slate?</button>
         <button class="rail-link" id="tourBtn" data-i18n="btn_tour">? How this works</button>
         <button class="rail-link" id="aiSettingsBtn" data-i18n="btn_ai_settings">✨ AI (Gemini)</button>
+        <button class="rail-link" id="remindersBtn" data-i18n="rm_btn">🔔 Reminders</button>
         <button class="rail-link" id="feedbackBtn" data-i18n="btn_feedback">💬 Feedback</button>
         <div class="rail-prefs">
           <select id="langSelect" class="lang-select" aria-label="Language"></select>
@@ -2294,6 +2323,80 @@ body.suruklenirken *{cursor:grabbing !important;}
   </div>
 </div>
 
+<!-- Termin hatirlatmalari. Iki kanal ve her biri AYRI aciliyor (kullanici
+     karari, 3 Eylul 2026). Takvim tarafinda ABONELIK ana yol; dosya
+     indirme yalnizca uyarili yedek, cunku indirilen dosyanin olaylari
+     takvimden tek tek silinmek zorunda. -->
+<div class="overlay" id="remindersOverlay">
+  <div class="modal" style="max-width:520px;">
+    <h2 data-i18n="rm_title">Deadline reminders</h2>
+    <p class="rm-lead" data-i18n="rm_lead">Slate can tell you about a step before its deadline passes.</p>
+
+    <div class="rm-bolum">
+      <div class="rm-bas"><h3 data-i18n="rm_when_title">When should it remind you?</h3></div>
+      <div class="rm-zaman">
+        <label class="rm-anahtar"><input type="checkbox" id="rm_once"><span data-i18n="rm_when_once">The day before</span></label>
+        <label class="rm-anahtar"><input type="checkbox" id="rm_gun"><span data-i18n="rm_when_gun">On the deadline day</span></label>
+        <label class="rm-anahtar"><input type="checkbox" id="rm_gecikti"><span data-i18n="rm_when_gecikti">When a step is already late</span></label>
+      </div>
+      <p class="rm-durum hata" id="rm_when_warn" hidden data-i18n="rm_when_none">Pick at least one moment.</p>
+    </div>
+
+    <div class="rm-bolum">
+      <div class="rm-bas">
+        <h3 data-i18n="rm_ch_browser">Browser notification</h3>
+        <label class="rm-anahtar"><input type="checkbox" id="rm_tarayici"></label>
+      </div>
+      <p class="rm-not" data-i18n="rm_ch_browser_lead">Works on computers and Android.</p>
+      <div class="rm-dugmeler">
+        <button type="button" class="btn btn-sm" id="rm_izinBtn" data-i18n="rm_ch_browser_ask" hidden>Allow notifications</button>
+      </div>
+      <p class="rm-durum" id="rm_izinDurum"></p>
+      <p class="rm-not" data-i18n="rm_ch_browser_note">For now the notification arrives when you open Slate.</p>
+    </div>
+
+    <div class="rm-bolum">
+      <div class="rm-bas">
+        <h3 data-i18n="rm_ch_cal">Your own calendar</h3>
+        <label class="rm-anahtar"><input type="checkbox" id="rm_takvim"></label>
+      </div>
+      <p class="rm-not" data-i18n="rm_ch_cal_lead">Your deadlines are published as a calendar address.</p>
+      <div class="rm-adres" id="rm_adresSatir" hidden>
+        <input type="text" id="rm_adres" readonly>
+        <button type="button" class="btn btn-sm" id="rm_kopyaBtn" data-i18n="rm_cal_copy">Copy address</button>
+      </div>
+      <div class="rm-dugmeler">
+        <button type="button" class="btn btn-sm btn-primary" id="rm_kurBtn" data-i18n="rm_cal_start">Create the calendar address</button>
+        <button type="button" class="btn btn-sm" id="rm_yenileBtn" data-i18n="rm_cal_renew" hidden>Renew / cancel</button>
+      </div>
+      <p class="rm-durum" id="rm_takvimDurum"></p>
+      <details class="fold fold-modal rm-nasil">
+        <summary><span data-i18n="rm_cal_how">How do I add it?</span></summary>
+        <ul>
+          <li data-i18n="rm_cal_how_g">Google Calendar: Other calendars → Subscribe to calendar → From URL.</li>
+          <li data-i18n="rm_cal_how_i">iPhone: Settings → Calendar → Accounts → Add Subscribed Calendar.</li>
+          <li data-i18n="rm_cal_how_o">Outlook: Add calendar → Subscribe from web.</li>
+        </ul>
+      </details>
+      <p class="rm-not" data-i18n="rm_cal_lag">Calendars check the address on their own schedule.</p>
+      <p class="rm-not" data-i18n="rm_cal_remove">To remove it later you unsubscribe in your calendar app.</p>
+    </div>
+
+    <!-- Dosya indirme KASITLI olarak katli ve uyarili: kullanici bunu
+         tiklamadan once ne olacagini gormus olsun. -->
+    <details class="fold fold-modal">
+      <summary><span data-i18n="rm_file_title">Or: download a file (not recommended)</span></summary>
+      <p class="rm-uyari" data-i18n="rm_file_warn">A downloaded file enters your calendar as separate one-off events.</p>
+      <button type="button" class="btn btn-sm" id="rm_dosyaBtn" data-i18n="rm_file_btn">Download the .ics file anyway</button>
+      <p class="rm-durum" id="rm_dosyaDurum"></p>
+    </details>
+
+    <div class="modal-actions">
+      <button class="btn btn-primary" id="rm_kapatBtn" data-i18n="btn_close">Close</button>
+    </div>
+  </div>
+</div>
+
 <div class="overlay" id="tourOverlay">
   <!-- Tur penceresi script penceresi gibi: ekrana siğiyor, kayan tek sey
        ortadaki icerik. Baslik ve dugmeler hep yerinde. -->
@@ -2789,6 +2892,49 @@ const LANG = {
     step_approved: "Approved",
     step_package: "Package",
     step_published: "Published",
+    rm_btn: "🔔 Reminders",
+    rm_title: "Deadline reminders",
+    rm_lead: "Slate can tell you about a step before its deadline passes. Two channels, each switched on separately.",
+    rm_when_title: "When should it remind you?",
+    rm_when_once: "The day before",
+    rm_when_gun: "On the deadline day",
+    rm_when_gecikti: "When a step is already late",
+    rm_when_none: "Pick at least one moment, otherwise nothing is sent.",
+    rm_ch_browser: "Browser notification",
+    rm_ch_browser_lead: "Works on computers and Android. On iPhone you must add Slate to the home screen first, otherwise iOS sends no notification.",
+    rm_ch_browser_on: "Notifications are on for this browser.",
+    rm_ch_browser_ask: "Allow notifications",
+    rm_ch_browser_denied: "This browser has blocked notifications for Slate. Allow them again from the padlock icon in the address bar.",
+    rm_ch_browser_none: "This browser cannot show notifications.",
+    rm_ch_browser_note: "For now the notification arrives when you open Slate. Sending while Slate is closed is the next step.",
+    rm_ch_cal: "Your own calendar",
+    rm_ch_cal_lead: "Your deadlines are published as a calendar address. You add it to Google Calendar, your phone or Outlook once, and the reminder is done by the calendar itself.",
+    rm_cal_name: "Slate — deadlines",
+    rm_cal_on: "Subscription is on",
+    rm_cal_start: "Create the calendar address",
+    rm_cal_copy: "Copy address",
+    rm_cal_copied: "Address copied.",
+    rm_cal_renew: "Renew / cancel",
+    rm_cal_renew_ask: "The old address will stop working immediately, and the calendar that uses it will empty out. A new address is created. Continue?",
+    rm_cal_off_ask: "Cancel the subscription? The old address stops working and the calendar that uses it empties out.",
+    rm_cal_how: "How do I add it?",
+    rm_cal_how_g: "Google Calendar: Other calendars → Subscribe to calendar → From URL → paste the address.",
+    rm_cal_how_i: "iPhone: Settings → Calendar → Accounts → Add Account → Other → Add Subscribed Calendar.",
+    rm_cal_how_o: "Outlook: Add calendar → Subscribe from web.",
+    rm_cal_lag: "Calendars check the address on their own schedule, so a change can take a few hours to appear. That is fine for deadlines.",
+    rm_cal_remove: "To remove it later you unsubscribe in your calendar app, or press Renew / cancel here — that kills the address itself.",
+    rm_cal_need_login: "The calendar address is tied to your account. Sign in first.",
+    rm_cal_need_sql: "The storage area is not ready yet. Run sql/19-takvim-abonelik.sql in Supabase, then try again.",
+    rm_cal_err: "The address could not be created. Try again in a moment?",
+    rm_file_title: "Or: download a file (not recommended)",
+    rm_file_warn: "Read this first. A downloaded file enters your calendar as separate one-off events. To remove them you have to delete each event by hand — there is no single undo. The subscription above is removed in one step. Use the file only if you cannot set up a subscription.",
+    rm_file_btn: "Download the .ics file anyway",
+    rm_file_none: "There is no deadline to put in a calendar yet.",
+    rm_note_title: (n)=> n===1 ? "1 deadline needs you" : `${n} deadlines need you`,
+    rm_note_late: "late",
+    rm_note_today: "today",
+    rm_note_tomorrow: "tomorrow",
+    rm_saved: "Saved.",
     concept_none: "No project",
     btn_clear_filter: "Clear",
     clone_title: "Duplicate entry",
@@ -3243,6 +3389,49 @@ const LANG = {
     step_approved: "Onay",
     step_package: "Yayın Paketi",
     step_published: "Yayın",
+    rm_btn: "🔔 Hatırlatmalar",
+    rm_title: "Termin hatırlatmaları",
+    rm_lead: "Slate bir adımın termini geçmeden sana haber verebilir. İki kanal var, her biri ayrı ayrı açılıyor.",
+    rm_when_title: "Ne zaman hatırlatsın?",
+    rm_when_once: "Bir gün önce",
+    rm_when_gun: "Termin günü",
+    rm_when_gecikti: "Adım geciktiğinde",
+    rm_when_none: "En az bir an seç, yoksa hiçbir şey gönderilmez.",
+    rm_ch_browser: "Tarayıcı bildirimi",
+    rm_ch_browser_lead: "Bilgisayarda ve Android'de çalışıyor. iPhone'da önce Slate'i ana ekrana eklemen ŞART, yoksa iOS bildirim göndermiyor.",
+    rm_ch_browser_on: "Bu tarayıcıda bildirimler açık.",
+    rm_ch_browser_ask: "Bildirimlere izin ver",
+    rm_ch_browser_denied: "Bu tarayıcı Slate'in bildirimlerini engellemiş. Adres çubuğundaki kilit simgesinden yeniden izin verebilirsin.",
+    rm_ch_browser_none: "Bu tarayıcı bildirim gösteremiyor.",
+    rm_ch_browser_note: "Şimdilik bildirim, Slate'i açtığında geliyor. Slate kapalıyken gönderim sonraki adım.",
+    rm_ch_cal: "Kendi takvimin",
+    rm_ch_cal_lead: "Terminlerin bir takvim adresi olarak yayınlanıyor. Bu adresi Google Takvim'e, telefonuna ya da Outlook'a bir kez ekliyorsun; hatırlatmayı takvimin kendisi yapıyor.",
+    rm_cal_name: "Slate — terminler",
+    rm_cal_on: "Abonelik açık",
+    rm_cal_start: "Takvim adresini oluştur",
+    rm_cal_copy: "Adresi kopyala",
+    rm_cal_copied: "Adres kopyalandı.",
+    rm_cal_renew: "Yenile / iptal et",
+    rm_cal_renew_ask: "Eski adres hemen çalışmayı bırakacak ve onu kullanan takvim boşalacak. Yeni bir adres oluşturulacak. Devam edilsin mi?",
+    rm_cal_off_ask: "Abonelik iptal edilsin mi? Eski adres çalışmayı bırakır ve onu kullanan takvim boşalır.",
+    rm_cal_how: "Nasıl eklerim?",
+    rm_cal_how_g: "Google Takvim: Diğer takvimler → Takvime abone ol → URL'den → adresi yapıştır.",
+    rm_cal_how_i: "iPhone: Ayarlar → Takvim → Hesaplar → Hesap Ekle → Diğer → Abone Olunan Takvim Ekle.",
+    rm_cal_how_o: "Outlook: Takvim ekle → Web'den abone ol.",
+    rm_cal_lag: "Takvimler adrese kendi bildikleri sıklıkta bakıyor, o yüzden bir değişikliğin görünmesi birkaç saat sürebilir. Termin için sorun değil.",
+    rm_cal_remove: "Sonradan kaldırmak için takvim uygulamasından abonelikten çıkarsın, ya da burada “Yenile / iptal et” e basarsın — o adresin kendisini öldürür.",
+    rm_cal_need_login: "Takvim adresi hesabına bağlı. Önce giriş yap.",
+    rm_cal_need_sql: "Depolama alanı henüz hazır değil. Supabase'de sql/19-takvim-abonelik.sql betiğini çalıştırıp tekrar dene.",
+    rm_cal_err: "Adres oluşturulamadı. Biraz sonra tekrar dener misin?",
+    rm_file_title: "Ya da: dosya indir (önerilmez)",
+    rm_file_warn: "Önce bunu oku. İndirilen dosya takvimine ayrı ayrı, tek seferlik olaylar olarak girer. Kaldırmak için o olayları TEK TEK silmen gerekir; toptan geri alma yok. Yukarıdaki abonelik ise tek hamlede kaldırılıyor. Dosyayı ancak abonelik kuramıyorsan kullan.",
+    rm_file_btn: "Yine de .ics dosyasını indir",
+    rm_file_none: "Takvime konacak bir termin yok henüz.",
+    rm_note_title: (n)=> n===1 ? "1 termin seni bekliyor" : `${n} termin seni bekliyor`,
+    rm_note_late: "gecikti",
+    rm_note_today: "bugün",
+    rm_note_tomorrow: "yarın",
+    rm_saved: "Kaydedildi.",
     concept_none: "Projesiz",
     btn_clear_filter: "Temizle",
     clone_title: "Kaydı çoğalt",
@@ -3936,6 +4125,10 @@ function saveProjects(){
     clearTimeout(projPushTimer);
     projPushTimer = setTimeout(projPushChanges, 400);
   }
+  // Terminler burada degisiyor (termin penceresi, adim isaretleme,
+  // iptal). Abonelik dosyasi bu tek kapidan tazeleniyor; kendisi
+  // kanal kapaliysa hicbir sey yapmiyor.
+  if(typeof takvimTazeleKuyrukla === 'function') takvimTazeleKuyrukla();
 }
 
 function projectById(id){
@@ -6556,6 +6749,13 @@ function gelenAlinanOku(satir){
 function tercihPrefsYap(){
   const prefs = { lang: currentLang };
   if(gelenAlinan.length) prefs.gelen_alinan = gelenAlinan;
+  // Hatirlatma ayarlari hesaba bagli, ama TARAYICI anahtari yerel
+  // kaliyor: bildirim izni tarayiciya ozel, baska cihazda "acik"
+  // yazmak calismayan bir ayari acik gostermek olurdu.
+  prefs.reminders = {
+    takvim: hatirlatma.takvim, once: hatirlatma.once,
+    gun: hatirlatma.gun, gecikti: hatirlatma.gecikti, jeton: hatirlatma.jeton
+  };
   return prefs;
 }
 
@@ -6628,6 +6828,7 @@ async function tercihSenkron(){
       .select('*').eq('user_id', session.user.id).maybeSingle();
     if(error) throw error;
     sinirlariUygula(data);
+    hatirlatmaBuluttan(data && data.prefs && data.prefs.reminders);
     gelenAlinanOku(data);
     const uzakDil = data && data.prefs && data.prefs.lang;
     const uzakTs = data && data.updated_at ? Date.parse(data.updated_at) : 0;
@@ -8633,6 +8834,7 @@ function closeTour(completed){
   if(tourAutoSequence){
     tourAutoSequence = false;
     setTimeout(otomatikBekleyenler, 300);
+    setTimeout(acilistaBildirim, 1200);
   }
 }
 document.getElementById('tourNextBtn').addEventListener('click', ()=>{
@@ -9460,6 +9662,432 @@ function maybeAskFeedback(){
   setTimeout(()=> openFeedback('auto'), 1400);
 }
 
+
+// ===== Termin hatirlatmalari =====
+// Iki kanal, HER BIRI AYRI aciliyor (kullanici karari, 3 Eylul 2026).
+// Zaman secimi de kullaniciya ait: bir gun once / termin gunu / geciktiginde.
+//
+// tarayici anahtari BULUTA GITMIYOR, bilerek: bildirim izni tarayiciya
+// ozel. Bulutta "acik" yazip izin verilmemis bir cihazda acmak, calismayan
+// bir ayari acik gostermek olurdu.
+const HATIRLATMA_ANAHTARI = 'demo_reminders';
+const HATIRLATMA_SON = 'demo_reminded_on';
+const HATIRLATMA_VARSAYILAN = { tarayici:false, takvim:false, once:true, gun:false, gecikti:true, jeton:'' };
+let hatirlatma = Object.assign({}, HATIRLATMA_VARSAYILAN);
+
+function hatirlatmaTemizle(h){
+  const t = Object.assign({}, HATIRLATMA_VARSAYILAN);
+  if(!h || typeof h !== 'object') return t;
+  ['tarayici','takvim','once','gun','gecikti'].forEach(k=>{
+    if(typeof h[k] === 'boolean') t[k] = h[k];
+  });
+  // Jeton dosya adina giriyor: yalnizca UUID bicimi kabul ediliyor ki
+  // bozuk bir deger yol gezinmesine (../) donusmesin.
+  if(typeof h.jeton === 'string' && /^[0-9a-f-]{0,64}$/i.test(h.jeton)) t.jeton = h.jeton;
+  return t;
+}
+function hatirlatmaYukle(){
+  try{ hatirlatma = hatirlatmaTemizle(JSON.parse(localStorage.getItem(HATIRLATMA_ANAHTARI) || '{}')); }
+  catch(e){ hatirlatma = Object.assign({}, HATIRLATMA_VARSAYILAN); }
+}
+function hatirlatmaKaydet(){
+  try{ localStorage.setItem(HATIRLATMA_ANAHTARI, JSON.stringify(hatirlatma)); }catch(e){}
+  tercihPushKuyrukla();
+}
+// Buluttan gelen ayar: tarayici anahtari HARIC.
+function hatirlatmaBuluttan(uzak){
+  if(!uzak || typeof uzak !== 'object') return;
+  const t = hatirlatmaTemizle(uzak);
+  hatirlatma.takvim  = t.takvim;
+  hatirlatma.once    = t.once;
+  hatirlatma.gun     = t.gun;
+  hatirlatma.gecikti = t.gecikti;
+  hatirlatma.jeton   = t.jeton;
+  try{ localStorage.setItem(HATIRLATMA_ANAHTARI, JSON.stringify(hatirlatma)); }catch(e){}
+  hatirlatmaEkraniTazele();
+}
+
+function jetonUret(){
+  if(window.crypto && crypto.randomUUID) return crypto.randomUUID();
+  return 'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g, c=>{
+    const r = Math.random()*16|0;
+    return (c === 'x' ? r : (r & 0x3 | 0x8)).toString(16);
+  });
+}
+
+function gunEkleKey(key, n){
+  const [y,m,g] = key.split('-').map(Number);
+  const d = new Date(y, m-1, g);
+  d.setDate(d.getDate() + n);
+  return fmtKey(d);
+}
+
+// Ayarlardan bagimsiz olarak "seni bekleyen" terminler.
+function hatirlatilacaklar(){
+  const bugun = bugunKey();
+  const yarin = gunEkleKey(bugun, 1);
+  const liste = [];
+  projects.forEach(p=>{
+    if(p.cancelled) return;
+    PROJ_STEPS.forEach(k=>{
+      const d = adimTarihi(p, k);
+      if(!d || p[k]) return;
+      let cins = '';
+      if(d < bugun) cins = 'gecikti';
+      else if(d === bugun) cins = 'bugun';
+      else if(d === yarin) cins = 'yarin';
+      if(cins) liste.push({ p, k, d, cins });
+    });
+  });
+  return liste;
+}
+function hatirlatmaSecili(){
+  return hatirlatilacaklar().filter(x=>
+    (x.cins === 'gecikti' && hatirlatma.gecikti) ||
+    (x.cins === 'bugun'   && hatirlatma.gun) ||
+    (x.cins === 'yarin'   && hatirlatma.once));
+}
+
+// ---- .ics uretimi ----------------------------------------------------
+// Icine YALNIZCA proje adi, adim adi ve tarih giriyor. Script metni,
+// aciklama, hesap adlari GIRMIYOR: abonelik adresi sizsa bile kullanicinin
+// icerigi disariya cikmasin.
+function icsKacir(v){
+  return String(v == null ? '' : v)
+    .replace(/\\/g, '\\\\').replace(/;/g, '\;')
+    .replace(/,/g, '\\,').replace(/\r?\n/g, '\\n');
+}
+// RFC 5545: satirlar 75 oktetten uzun olmamali. Turkce harfler iki oktet
+// oldugu icin karakter degil OKTET sayiliyor; yoksa uzun proje adlari
+// bazi takvim uygulamalarinda satiri bozuyor.
+function icsKatla(satir){
+  const enc = new TextEncoder();
+  if(enc.encode(satir).length <= 75) return satir;
+  const parcalar = [];
+  let cur = '', curLen = 0, ilk = true;
+  for(const ch of satir){
+    const n = enc.encode(ch).length;
+    const sinir = ilk ? 75 : 74;         // devam satirlari bir bosluk ile basliyor
+    if(curLen + n > sinir){
+      parcalar.push(cur); cur = ''; curLen = 0; ilk = false;
+    }
+    cur += ch; curLen += n;
+  }
+  if(cur) parcalar.push(cur);
+  return parcalar.join('\r\n ');
+}
+function icsZaman(d){
+  const p2 = n=>String(n).padStart(2,'0');
+  return d.getUTCFullYear() + p2(d.getUTCMonth()+1) + p2(d.getUTCDate()) + 'T'
+       + p2(d.getUTCHours()) + p2(d.getUTCMinutes()) + p2(d.getUTCSeconds()) + 'Z';
+}
+function icsMetni(){
+  const damga = icsZaman(new Date());
+  const sat = ['BEGIN:VCALENDAR','VERSION:2.0','PRODID:-//Slate//Terminler//TR',
+               'CALSCALE:GREGORIAN','METHOD:PUBLISH',
+               'X-WR-CALNAME:' + icsKacir(t('rm_cal_name')),
+               // Takvim uygulamasina "alti saatte bir bak" onerisi. Uymak
+               // zorunda degil, o yuzden arayuzde gecikme payi yaziyor.
+               'REFRESH-INTERVAL;VALUE=DURATION:PT6H','X-PUBLISHED-TTL:PT6H'];
+  let sayi = 0;
+  projects.forEach(p=>{
+    if(p.cancelled) return;
+    PROJ_STEPS.forEach(k=>{
+      const d = adimTarihi(p, k);
+      if(!d || p[k]) return;          // bitmis adim takvimde durmasin
+      sayi++;
+      const bas = d.replace(/-/g, '');
+      const bit = gunEkleKey(d, 1).replace(/-/g, '');
+      sat.push('BEGIN:VEVENT');
+      // UID adime SABIT: tarih degisince ayni olay guncelleniyor, yeni bir
+      // kopya olusmuyor. Dosya indirme yolunda da tekrari bu engelliyor.
+      sat.push('UID:slate-' + icsKacir(p.id) + '-' + k + '@slate');
+      sat.push('DTSTAMP:' + damga);
+      sat.push('DTSTART;VALUE=DATE:' + bas);
+      sat.push('DTEND;VALUE=DATE:' + bit);
+      sat.push('SUMMARY:' + icsKacir(p.name + ' — ' + t('step_' + k)));
+      sat.push('STATUS:CONFIRMED');
+      // Gun boyu olay gunu doldurmasin.
+      sat.push('TRANSP:TRANSPARENT');
+      // Alarmlar kullanicinin zaman secimine gore. Gun boyu olayda tetik
+      // gun basindan sayiliyor: -PT15H = onceki gun 09:00, PT9H = o gun 09:00.
+      if(hatirlatma.once){
+        sat.push('BEGIN:VALARM','ACTION:DISPLAY',
+                 'DESCRIPTION:' + icsKacir(p.name + ' — ' + t('step_' + k)),
+                 'TRIGGER;VALUE=DURATION:-PT15H','END:VALARM');
+      }
+      if(hatirlatma.gun){
+        sat.push('BEGIN:VALARM','ACTION:DISPLAY',
+                 'DESCRIPTION:' + icsKacir(p.name + ' — ' + t('step_' + k)),
+                 'TRIGGER;VALUE=DURATION:PT9H','END:VALARM');
+      }
+      sat.push('END:VEVENT');
+    });
+  });
+  sat.push('END:VCALENDAR');
+  return sat.map(icsKatla).join('\r\n') + '\r\n';
+}
+function icsOlaySayisi(){
+  let n = 0;
+  projects.forEach(p=>{ if(!p.cancelled) PROJ_STEPS.forEach(k=>{
+    if(adimTarihi(p,k) && !p[k]) n++;
+  }); });
+  return n;
+}
+
+// ---- Abonelik: Storage'a yaziliyor -----------------------------------
+// Edge Function GEREKMIYOR: Storage dosyayi dogru Content-Type ile
+// herkese acik bir adresten suniyor. Kova ve politikalar
+// sql/19-takvim-abonelik.sql ile kuruluyor.
+function takvimAdresi(){
+  if(!session || !hatirlatma.jeton) return '';
+  return SUPABASE_URL + '/storage/v1/object/public/takvim/'
+       + session.user.id + '/' + hatirlatma.jeton + '.ics';
+}
+function takvimYolu(jeton){
+  return session.user.id + '/' + (jeton || hatirlatma.jeton) + '.ics';
+}
+async function takvimYayinla(){
+  if(!sb || !session){ const e = new Error('giris'); e.anahtar = 'rm_cal_need_login'; throw e; }
+  if(!hatirlatma.jeton){ hatirlatma.jeton = jetonUret(); hatirlatmaKaydet(); }
+  const govde = new Blob([icsMetni()], { type:'text/calendar;charset=utf-8' });
+  const { error } = await sb.storage.from('takvim').upload(takvimYolu(), govde, {
+    contentType: 'text/calendar; charset=utf-8', upsert: true, cacheControl: '600'
+  });
+  if(error){
+    // Kova yoksa sebebi soylenmeli: kullanicinin yapacagi is belli
+    // (sql/19 betigini calistirmak), "hata olustu" demek onu bosa dusurur.
+    const m = String(error.message || '');
+    if(/not found|does not exist|bucket/i.test(m)){ error.anahtar = 'rm_cal_need_sql'; }
+    throw error;
+  }
+  return takvimAdresi();
+}
+async function takvimSil(jeton){
+  if(!sb || !session || !jeton) return;
+  try{ await sb.storage.from('takvim').remove([takvimYolu(jeton)]); }
+  catch(e){ console.error('[takvim] eski dosya silinemedi', e); }
+}
+// Terminler degistiginde abonelik dosyasini tazele. Her tusa basista
+// yazmamak icin kuyrukta bekliyor.
+let takvimYazTimer = null;
+function takvimTazeleKuyrukla(){
+  if(!hatirlatma.takvim || !hatirlatma.jeton || !sb || !session) return;
+  clearTimeout(takvimYazTimer);
+  takvimYazTimer = setTimeout(()=>{ takvimYayinla().catch(e=>console.error('[takvim] tazelenemedi', e)); }, 1500);
+}
+
+// ---- Tarayici bildirimi ----------------------------------------------
+function bildirimDurumu(){
+  if(!('Notification' in window)) return 'yok';
+  return Notification.permission;              // 'granted' | 'denied' | 'default'
+}
+async function bildirimIzniIste(){
+  if(!('Notification' in window)) return 'yok';
+  try{ return await Notification.requestPermission(); }catch(e){ return bildirimDurumu(); }
+}
+// Bildirim SLATE ACILDIGINDA gonderiliyor; kapaliyken gonderim sonraki
+// adim. Gunde bir kez: her yenilemede tekrar cikan bildirim, bildirimi
+// kapatilir hale getirir.
+async function terminBildirimi(){
+  if(!hatirlatma.tarayici || bildirimDurumu() !== 'granted') return;
+  const bugun = bugunKey();
+  try{ if(localStorage.getItem(HATIRLATMA_SON) === bugun) return; }catch(e){}
+  const liste = hatirlatmaSecili();
+  if(!liste.length) return;
+  const etiketi = { gecikti:t('rm_note_late'), bugun:t('rm_note_today'), yarin:t('rm_note_tomorrow') };
+  const govde = liste.slice(0, 4)
+    .map(x=> x.p.name + ' — ' + t('step_' + x.k) + ' (' + etiketi[x.cins] + ')')
+    .join('\n') + (liste.length > 4 ? '\n…' : '');
+  const secenek = { body: govde, icon: './icons/icon-192.png',
+                    badge: './icons/icon-192.png', tag: 'slate-termin' };
+  try{
+    const kayit = navigator.serviceWorker && await navigator.serviceWorker.getRegistration();
+    if(kayit) await kayit.showNotification(t('rm_note_title')(liste.length), secenek);
+    else new Notification(t('rm_note_title')(liste.length), secenek);
+    try{ localStorage.setItem(HATIRLATMA_SON, bugun); }catch(e){}
+    track('funnel/reminder-shown');
+  }catch(err){ console.error('[bildirim] gosterilemedi', err); }
+}
+
+// ---- Ekran -----------------------------------------------------------
+function hatirlatmaEkraniTazele(){
+  const el = id => document.getElementById(id);
+  if(!el('rm_once')) return;
+  el('rm_once').checked = hatirlatma.once;
+  el('rm_gun').checked = hatirlatma.gun;
+  el('rm_gecikti').checked = hatirlatma.gecikti;
+  el('rm_tarayici').checked = hatirlatma.tarayici;
+  el('rm_takvim').checked = hatirlatma.takvim;
+  el('rm_when_warn').hidden = (hatirlatma.once || hatirlatma.gun || hatirlatma.gecikti);
+
+  // Tarayici kanali
+  const durum = bildirimDurumu();
+  const izinDurum = el('rm_izinDurum');
+  const izinBtn = el('rm_izinBtn');
+  izinBtn.hidden = true; izinDurum.textContent = ''; izinDurum.className = 'rm-durum';
+  if(durum === 'yok'){
+    izinDurum.textContent = t('rm_ch_browser_none'); izinDurum.className = 'rm-durum hata';
+    el('rm_tarayici').disabled = true;
+  }else if(durum === 'denied'){
+    izinDurum.textContent = t('rm_ch_browser_denied'); izinDurum.className = 'rm-durum hata';
+  }else if(durum === 'granted'){
+    izinDurum.textContent = t('rm_ch_browser_on'); izinDurum.className = 'rm-durum ok';
+  }else if(hatirlatma.tarayici){
+    izinBtn.hidden = false;
+  }
+
+  // Takvim kanali
+  const adres = takvimAdresi();
+  el('rm_adresSatir').hidden = !(hatirlatma.takvim && adres);
+  if(adres) el('rm_adres').value = adres;
+  el('rm_kurBtn').hidden = !hatirlatma.takvim || !!adres;
+  el('rm_yenileBtn').hidden = !hatirlatma.takvim || !adres;
+  const tv = el('rm_takvimDurum');
+  if(hatirlatma.takvim && adres){ tv.textContent = t('rm_cal_on'); tv.className = 'rm-durum ok'; }
+  else if(hatirlatma.takvim && !session){ tv.textContent = t('rm_cal_need_login'); tv.className = 'rm-durum hata'; }
+  else { tv.textContent = ''; tv.className = 'rm-durum'; }
+}
+function hatirlatmaAyariniOku(){
+  hatirlatma.once = document.getElementById('rm_once').checked;
+  hatirlatma.gun = document.getElementById('rm_gun').checked;
+  hatirlatma.gecikti = document.getElementById('rm_gecikti').checked;
+  hatirlatmaKaydet();
+  hatirlatmaEkraniTazele();
+  takvimTazeleKuyrukla();          // alarm zamanlari .ics icinde
+}
+function hatirlatmalariAc(){
+  hatirlatmaEkraniTazele();
+  document.getElementById('remindersOverlay').classList.add('open');
+  track('funnel/reminders-opened');
+}
+
+
+// Ayarlar once yukleniyor: asagidaki dinleyiciler ve acilis bildirimi
+// bunlara bakiyor. const/let tanimlarindan SONRA olmasi zorunlu.
+hatirlatmaYukle();
+
+document.getElementById('remindersBtn').addEventListener('click', hatirlatmalariAc);
+document.getElementById('rm_kapatBtn').addEventListener('click',
+  ()=> document.getElementById('remindersOverlay').classList.remove('open'));
+document.getElementById('remindersOverlay').addEventListener('click', (e)=>{
+  if(e.target.id === 'remindersOverlay') e.currentTarget.classList.remove('open');
+});
+
+['rm_once','rm_gun','rm_gecikti'].forEach(id=>{
+  document.getElementById(id).addEventListener('change', hatirlatmaAyariniOku);
+});
+
+document.getElementById('rm_tarayici').addEventListener('change', async (e)=>{
+  hatirlatma.tarayici = e.target.checked;
+  hatirlatmaKaydet();
+  // Acarken izin YOKSA hemen soruluyor: ayri bir dugmeye basmak zorunda
+  // kalmak, kullanicinin "actim ama gelmiyor" demesine yol aciyordu.
+  if(hatirlatma.tarayici && bildirimDurumu() === 'default') await bildirimIzniIste();
+  hatirlatmaEkraniTazele();
+  if(hatirlatma.tarayici) terminBildirimi();
+});
+document.getElementById('rm_izinBtn').addEventListener('click', async ()=>{
+  await bildirimIzniIste();
+  hatirlatmaEkraniTazele();
+  terminBildirimi();
+});
+
+document.getElementById('rm_takvim').addEventListener('change', async (e)=>{
+  const acik = e.target.checked;
+  if(!acik && hatirlatma.jeton){
+    // Kapatmak ADRESI OLDURUYOR. Kullanicinin sarti buydu: "ekledikten bir
+    // sure sonra kaldirabilir". Ne olacagini onceden soyluyoruz.
+    if(!confirm(t('rm_cal_off_ask'))){ e.target.checked = true; return; }
+    const eski = hatirlatma.jeton;
+    hatirlatma.jeton = '';
+    hatirlatma.takvim = false;
+    hatirlatmaKaydet();
+    await takvimSil(eski);
+    hatirlatmaEkraniTazele();
+    return;
+  }
+  hatirlatma.takvim = acik;
+  hatirlatmaKaydet();
+  hatirlatmaEkraniTazele();
+});
+
+document.getElementById('rm_kurBtn').addEventListener('click', async ()=>{
+  const btn = document.getElementById('rm_kurBtn');
+  const cikti = document.getElementById('rm_takvimDurum');
+  btn.disabled = true;
+  try{
+    await takvimYayinla();
+    hatirlatmaEkraniTazele();
+    track('funnel/calendar-subscribed');
+  }catch(err){
+    console.error('[takvim] adres olusturulamadi', err);
+    cikti.textContent = t(err && err.anahtar ? err.anahtar : 'rm_cal_err');
+    cikti.className = 'rm-durum hata';
+  }finally{ btn.disabled = false; }
+});
+
+document.getElementById('rm_yenileBtn').addEventListener('click', async ()=>{
+  if(!confirm(t('rm_cal_renew_ask'))) return;
+  const btn = document.getElementById('rm_yenileBtn');
+  const cikti = document.getElementById('rm_takvimDurum');
+  btn.disabled = true;
+  const eski = hatirlatma.jeton;
+  try{
+    hatirlatma.jeton = jetonUret();
+    hatirlatmaKaydet();
+    await takvimYayinla();
+    // Yeni adres yazildiktan SONRA eskisi siliniyor: sira tersse ve yazma
+    // duserse kullanici hicbir adresi olmayan bir durumda kalirdi.
+    await takvimSil(eski);
+    hatirlatmaEkraniTazele();
+  }catch(err){
+    console.error('[takvim] yenilenemedi', err);
+    hatirlatma.jeton = eski;
+    hatirlatmaKaydet();
+    cikti.textContent = t(err && err.anahtar ? err.anahtar : 'rm_cal_err');
+    cikti.className = 'rm-durum hata';
+    hatirlatmaEkraniTazele();
+  }finally{ btn.disabled = false; }
+});
+
+document.getElementById('rm_kopyaBtn').addEventListener('click', async ()=>{
+  const cikti = document.getElementById('rm_takvimDurum');
+  try{
+    await navigator.clipboard.writeText(takvimAdresi());
+    cikti.textContent = t('rm_cal_copied'); cikti.className = 'rm-durum ok';
+  }catch(e){
+    // Pano izni yoksa metni sec: kullanici Ctrl+C ile alabilsin.
+    const kutu = document.getElementById('rm_adres');
+    kutu.focus(); kutu.select();
+  }
+});
+
+document.getElementById('rm_dosyaBtn').addEventListener('click', ()=>{
+  const cikti = document.getElementById('rm_dosyaDurum');
+  if(!icsOlaySayisi()){
+    cikti.textContent = t('rm_file_none'); cikti.className = 'rm-durum hata';
+    return;
+  }
+  const blob = new Blob([icsMetni()], { type:'text/calendar;charset=utf-8' });
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a');
+  a.href = url; a.download = 'slate-terminler.ics';
+  document.body.appendChild(a); a.click(); a.remove();
+  setTimeout(()=> URL.revokeObjectURL(url), 4000);
+  cikti.textContent = ''; cikti.className = 'rm-durum';
+  track('funnel/calendar-file');
+});
+
+// Service worker: cevrimdisi acilis ve bildirimin tiklanmasi icin.
+// Yalnizca https ve localhost'ta kayit oluyor; dosyadan acilan sayfada
+// tarayici izin vermiyor ve konsola hata yaziyor.
+if('serviceWorker' in navigator && (location.protocol === 'https:' || location.hostname === 'localhost' || location.hostname === '127.0.0.1')){
+  window.addEventListener('load', ()=>{
+    navigator.serviceWorker.register('./sw.js').catch(err=> console.error('[sw] kaydedilemedi', err));
+  });
+}
+
 // ===== Tema =====
 // Varsayilan acik; kullanici isterse koyuya gecer ve tercihi hatirlanir.
 // Hic secim yapmadiysa isletim sisteminin tercihi gecerli olur.
@@ -9684,6 +10312,12 @@ setTimeout(veriHazirIsaretle, 8000);
 
 // Otomatik acilan "Bekleyenler" penceresi. Elle acilan (pendingBtn) bunu
 // beklemiyor: kullanici tikladiysa o an ne varsa onu gormek istiyordur.
+// Bildirim, veri YUKLENDIKTEN sonra gonderiliyor: erken cagrilirsa
+// proje listesi bos olur ve hicbir termin gorunmez.
+async function acilistaBildirim(){
+  try{ await veriHazir; }catch(e){}
+  terminBildirimi();
+}
 async function otomatikBekleyenler(){
   await veriHazir;
   // Beklerken kullanici bir pencere actiysa ustune binme.
@@ -9998,6 +10632,7 @@ let turuGordu = false;
 try{ turuGordu = !!localStorage.getItem('demo_seen_intro'); }catch(e){}
 if(turuGordu){
   setTimeout(otomatikBekleyenler, 500);
+  setTimeout(acilistaBildirim, 1400);
 }else{
   tourAutoSequence = true;
   setTimeout(openTour, 400);
