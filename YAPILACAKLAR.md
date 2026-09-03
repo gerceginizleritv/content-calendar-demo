@@ -6,6 +6,25 @@ duruyor, neden ertelendiği de yazıyor ki aynı tartışma baştan yapılmasın
 
 ---
 
+## İçerik çalışması sohbetten (3 Eylül 2026)
+
+İçerik işleri (kayıt ekleme, yayın paketi) artık bu sohbet üzerinden de
+yürüyor. Sohbetin elinde oturum anahtarı yok, o yüzden kayıt tarayıcıdan
+değil **SQL betiğiyle** yazılıyor: betik `sql/` altına giriyor, kullanıcı
+Supabase SQL Editor'de koşturuyor. Betikler tekrar koşulabilir; tarih/saat
+ve "yayınlandı" bayrağı ikinci koşumda EZİLMİYOR, yalnızca paket güncelleniyor.
+
+- `sql/19-nuruosmaniye-18-eylul.sql` — Nuruosmaniye uzun videosu, YouTube,
+  **18 Eylül 2026 18:00**. Paket Drive'daki script v1'den türetildi (boş
+  türbe, Simeon kalfa, kazıklı temel, ilk Barok cami, 270 yıllık mahzen).
+  Yerel Postgres 16'da sahte şemayla iki kez koşturulup doğrulandı.
+
+Kaynak: yayın paketi biçimi için `lokasyon.html` içindeki Zeyrek / Rumeli
+Hisarı kayıtları örnek alındı (hook → madde listesi → "Rivayet değil,
+kayıt." → kaynaklar → hesaplar → hashtagler).
+
+---
+
 ## Test takımı — koşum düzeni ve emekliye ayrılanlar (3 Eylül 2026)
 
 **Testler bir kusur ortaya çıkardı (düzeltildi):** Takvimden "+ yeni proje"
