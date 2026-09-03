@@ -5,6 +5,8 @@
 **Yöntem:** Kod tabanı ve hafıza dosyası incelendi; uygulamanın ekran görüntüleri alındı; üç paralel araştırma koluyla yaklaşık 160 web araması yapıldı (rakipler ve fiyatlar, talep sinyalleri, iş modeli ve Türkiye'den satış); vidIQ'dan YouTube arama hacmi çekildi; GitHub üzerinden resmî dokümantasyon kaynakları (GitHub Pages, Supabase, Polar, Gumroad, Dodo Payments, Obsidian) doğrudan okundu.
 **Sınırlılık:** Oturumun ağ kısıtı yüzünden satıcı siteleri, inceleme siteleri ve Reddit doğrudan açılamadı. Fiyatlar 2026 tarihli üçüncü taraf fiyat takipçilerinden alındı ve mümkün olduğunda iki kaynakla çaprazlandı. Her bilginin yanında güven işareti var: **[D]** doğrudan doğrulandı, **[Ö]** yalnızca arama özeti görüldü, **[B]** belirsiz veya çelişkili.
 
+**Not (3 Eylül 2026):** Bu rapordan sonra ürün **Shootboard** olarak yeniden adlandırıldı ve shootboard.app alan adı alındı. Rapor, yazıldığı tarihteki adı olan Slate'i kullanır.
+
 ---
 
 ## 0. Kısa cevap

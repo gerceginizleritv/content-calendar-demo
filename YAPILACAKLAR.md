@@ -1,8 +1,51 @@
-# Slate — Yapılacaklar ve Değerlendirilenler
+# Shootboard (eski adı Slate) — Yapılacaklar ve Değerlendirilenler
 
 Bu dosya oturumlar arasında hafıza görevi görüyor. Claude'un hafızası
 oturumlar arasında taşınmıyor; konuşulan ama yapılmayan işler burada
 duruyor, neden ertelendiği de yazıyor ki aynı tartışma baştan yapılmasın.
+
+---
+
+## Nerede kaldık (3 Eylül 2026, gece — yeniden adlandırma ve alan adı)
+
+**Ürünün adı Slate → Shootboard.** Sebep: pazar araştırması (`docs/pazar-arastirmasi.md`)
+"Slate" adının içerik üretimi kategorisinde başka bir şirket tarafından
+kullanıldığını gösterdi. Aday isimler DNS ön kontrolüyle elendi; kullanıcı
+Shootboard'u seçti. TÜRKPATENT taramasında birebir ya da ayırt edilemeyecek
+kadar benzer marka çıkmadı; 9 ve 42. sınıflarda "shoot90" (Shoot90 Bilişim,
+aktif yazılım şirketi) ve "shootid" (42) yayın döneminde itiraz edebilecek
+markalar olarak not edildi. Savunma: aynı sınıflarda "shoot" ile başlayan
+yedi marka yıllardır yan yana, kelime zayıf unsur.
+
+**Marka tescili ERTELENDİ (kullanıcı kararı, maliyet):** ilk gelirle birlikte,
+EPATS'tan kendisi, önce yalnızca 42. sınıf; 9 ayrı başvuruyla sonra; EUIPO
+ancak AB müşterisi olunca; USPTO ancak ABD geliri olunca. Tescilsiz dönemde
+tarihli kullanım kanıtı klasörü tutulacak (alan adı kaydı, ilk duyuru,
+paylaşımlar, faturalar). Ürün adında ™ kullanılabilir, ® kullanılamaz.
+
+**shootboard.app alındı (3 Eylül 2026).** Bu commit'te yapılanlar:
+- Kullanıcıya görünen bütün "Slate" metinleri Shootboard oldu (index.html,
+  privacy.html, manifest.json); Türkçe ekler ünlü uyumuna göre çevrildi
+  (Slate'e → Shootboard'a, Slate'in → Shootboard'un, Slate'te → Shootboard'da).
+- Depo köküne `CNAME` dosyası eklendi: `shootboard.app`.
+- DEĞİŞMEYENLER, bilerek: localStorage anahtarları (`demo_*`), Supabase
+  tablo ve sütun adları, GoatCounter site kodu (`slate-demo`), CSS/JS
+  tanımlayıcıları. Bunları değiştirmek veri kaybettirir ya da ölçümü koparır.
+
+**Kullanıcının yapacakları (kod dışı):**
+1. Alan adı panelinde DNS: `@` için dört A kaydı (185.199.108.153,
+   185.199.109.153, 185.199.110.153, 185.199.111.153) ve `www` için
+   CNAME → gerceginizleritv.github.io. Cloudflare'deyse proxy KAPALI.
+2. GitHub → Settings → Pages → Custom domain: shootboard.app; DNS kontrolü
+   geçince "Enforce HTTPS". Bu dal main'e alınmadan Pages değişmez.
+3. Supabase → Authentication → URL Configuration: Site URL
+   https://shootboard.app; Redirect URLs listesine https://shootboard.app/**
+   (eski github.io adresi geçiş süresince kalsın).
+4. Google Cloud → OAuth istemcisi (DRIVE_CLIENT_ID) → Authorized JavaScript
+   origins: https://shootboard.app eklenmezse Drive getir/yaz yeni adreste
+   çalışmaz.
+5. İsteğe bağlı: GoatCounter'da yeni site kodu; GitHub hesap düzeyinde alan
+   adı doğrulaması (TXT kaydı) ele geçirmeye karşı.
 
 ---
 
