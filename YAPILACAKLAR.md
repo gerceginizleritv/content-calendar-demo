@@ -6,6 +6,22 @@ duruyor, neden ertelendiği de yazıyor ki aynı tartışma baştan yapılmasın
 
 ---
 
+## Nerede kaldık (3 Eylül 2026, gece — karşılama sayfası)
+
+**DİKKAT — dosya adları değişti.** Uygulama artık `index.html` DEĞİL,
+**`app.html`**. `index.html` karşılama (tanıtım) sayfası. CRLF satır sonu
+kuralı bundan sonra **`app.html`** için geçerli; `index.html` (karşılama)
+diğer sayfalar gibi LF.
+
+Yapılanlar: `/` adresine karşılama sayfası kondu (bkz. "Karşılama sayfası
+— YAPILDI"), giriş orada gerçekten çalışıyor, dil (varsayılan İngilizce)
+ve tema düğmeleri eklendi, tüm metinlerin kontrastı ölçülüp düzeltildi.
+
+Sırada bekleyenler: termin hatırlatmaları, script alanına metin
+biçimlendirme, kendi alan adı.
+
+---
+
 ## Nerede kaldık (3 Eylül 2026, akşam — tur ve fikir seçimi)
 
 **Fikir → script akışı düzeltildi.** Fikirlerin yanındaki ✨ düğmesi
@@ -449,20 +465,6 @@ bilerek ertelendi (sebebi aşağıda).
 
 ## Sırada
 
-### Karşılama (landing) sayfası (kullanıcı isteği, 3 Eylül 2026)
-Kullanıcı: *"What is Slate'e tıklayınca introlu bölüm geliyor. Bunu
-şimdilik kaldır ama bir landing page yapacağız ilk giriş için."*
-Uygulama içindeki tanıtım bloğu kaldırıldı; metinler kaybolmasın diye
-sözlükte duruyor: `h1`, `h1_sub`, `promise_tag`, `banner_bold1`,
-`banner_rest`.
-
-**Yapılacak:** ayrı bir `karsilama.html` — ürünün ne olduğunu anlatan,
-"Başla" ile uygulamaya giren tek sayfa.
-
-**Karar verilecek:** aynı alan adını mı paylaşacak (`/` tanıtım, `/app`
-uygulama) yoksa ayrı mı duracak. Kendi alan adı maddesiyle birlikte
-düşünülmeli.
-
 ### Lokasyon uygulamasi Slate'e birlestiriliyor (karar: 1 Eylül 2026)
 Kullanıcı kararı: iki ayrı uygulama yerine tek araç. Sebep: tüm
 geliştirme Slate'te yapılıyor, her özellik iki kez yazılıyordu
@@ -775,6 +777,69 @@ doğru kurulursa kullanıcı başına maliyet küçük kalır.
 ---
 
 ## Yapıldı — kararın gerekçesiyle birlikte
+
+### Karşılama sayfası — YAPILDI (3 Eylül 2026)
+Kullanıcı: *"giren kişi ne olduğunu anlamadan direkt olarak demo sayfasına
+geliyor... profesyonel bir web sitesi gibi görünsün. Özellikleri tıkladıkça
+detayları anlatan yere gitsin. Mutlaka sayfada login bölümü olsun."*
+
+**Adresler değişti — EN ÖNEMLİ NOKTA:**
+- `/` (yani `index.html`) artık **karşılama sayfası**.
+- Uygulama **`app.html`** adresine taşındı (`git mv`, CRLF korundu).
+- `manifest.json` → `start_url: ./app.html` (telefona eklenen kısayol
+  uygulamayı açsın, tanıtım sayfasını değil).
+- `privacy.html` içindeki "Slate'e dön" bağlantıları `app.html`'e döndü.
+
+**Giriş nasıl çalışıyor (Supabase ayarına DOKUNULMADI):**
+Karşılama sayfası uygulamayla aynı Supabase projesini ve aynı publishable
+anahtarı kullanıyor. Google ve e-posta linki için dönüş adresi HER ZAMAN
+karşılama sayfasının kendisi (`location.origin + location.pathname`).
+Sebep: Supabase'de izin verilen dönüş adresi listesine yeni bir satır
+eklemek gerekmesin — site kökü zaten izinliydi. Giriş tamamlanınca sayfa
+oturumu görüp `app.html`'e geçiriyor.
+
+İki yönlendirme kapısı var, çünkü tek başına ikisi de yetmiyor:
+1. Adres çubuğunda `access_token` / `code` varsa (e-posta linki, başka
+   cihazdan da gelinebilir),
+2. `sessionStorage['slate_giris_donus']` bayrağı varsa (giriş bu sayfadan
+   başlatılmıştı; bazı akışlarda adres çubuğu temiz dönüyor).
+
+Oturumu açık olan biri `/` adresine normal yolla girerse **zorla
+yönlendirilmiyor** — tanıtımı okuyabilsin diye giriş kutusunun yerinde
+"Slate'e git" ve "Çıkış yap" görünüyor.
+
+**Dil:** Varsayılan **İngilizce** (kullanıcı kararı). Sayfanın HTML'i
+İngilizce yazıldı; JavaScript çalışmazsa da okunur bir sayfa kalıyor.
+Türkçe sözlük `METIN.tr` içinde, `data-i18n` / `data-i18n-html` /
+`data-i18n-attr` nitelikleriyle uygulanıyor. Dil seçimi uygulamayla AYNI
+anahtarda (`demo_ui_language`), tema da aynı anahtarda (`demo_theme`) —
+iki sayfa arasında seçim taşınıyor.
+
+**Okunabilirlik (kullanıcı şikâyeti: "yazıların bazılarının renkleri arka
+plan ile çok karışıyor"):** İki ölçüm testi yazıldı — biri HTML metinleri,
+biri SVG `<text>` etiketleri için (SVG'de renk `color` değil `fill`'den
+geliyor, ilk test onları kaçırıyordu). Bulunanlar:
+- `--solgun` #5B6B7F → #4C5C70 (4.85:1 → 6.1:1).
+- 11 piksellik mono etiketlerin ağırlığı 500/600'e çıkarıldı.
+- Kart numaraları (`.dizin-no`) #8B9AAB idi — 2.9:1. Vurgu mavisine alındı.
+- **Mini takvimdeki kayıtlar:** 9,5 piksellik beyaz yazı platform renginin
+  ÜSTÜNDE duruyordu (TikTok'ta 4.4:1, koyu temada daha kötü). Renk artık
+  zemin değil, solda 3 piksellik şerit; yazı normal metin renginde.
+- Açık temada uyarı ve platform renkleri koyulaştırıldı (#C63A31 → #B03329
+  gibi), tonlu zeminler .16 → .12 opaklığa indirildi.
+Sonuç: dört durumda da (açık/koyu × EN/TR) eşiğin altında kalan metin yok.
+
+**Ders:** Kontrastı gözle değil ölçerek doğrula, ve SVG metnini ayrı ölç —
+`getComputedStyle(el).color` SVG `<text>` için gerçek rengi vermiyor.
+
+**Testler:** `karsilama.test.js` (52 kontrol: varsayılan dil, dil değişimi
+ve geri dönüş, ortak dil/tema anahtarı, tema ilk boyamada, dokuz özellik
+bağlantısı, app.html bağlantıları, e-posta linki, Google, açık oturum,
+girişten dönüşte yönlendirme, bulut yüklenemezse, üç ekran boyutunda yatay
+taşma), `kontrast.test.js`, `kontrast-svg.test.js`.
+
+**Sırada bu sayfa için:** kendi alan adı alınınca Supabase'deki Site URL
+kontrol edilecek; şimdilik bir şey yapmak gerekmiyor.
 
 ### Şablonları buluta taşı — YAPILDI (1 Eylül 2026)
 Tablo: `caption_templates`, kullanıcı başına TEK satır (`user_id` birincil
