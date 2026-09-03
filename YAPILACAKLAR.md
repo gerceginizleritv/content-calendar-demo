@@ -6,6 +6,48 @@ duruyor, neden ertelendiği de yazıyor ki aynı tartışma baştan yapılmasın
 
 ---
 
+## Test takımı — koşum düzeni ve emekliye ayrılanlar (3 Eylül 2026)
+
+Testler `index.html` yerine artık **`app.html`**'e bakıyor. Koşum düzeni tek
+tip DEĞİL; koşturucu her teste beklediğini vermeli:
+
+| Tip | argv | Örnek |
+|---|---|---|
+| fikstür/ekran görüntüsü dizini | `argv[2]` = dizin | `node arama.test.js .` |
+| port | `argv[2]` = port (varsayılan 8098) | `node proje-arama.test.js` |
+| tam adres | `argv[2]` = URL (varsayılan app.html) | `node sayfa-hafiza.test.js` |
+| lokasyon testleri | `argv[2]` = dizin, `argv[3]` = port | `node lok-klon.test.js . 8099` |
+
+Sunucular: **8098** = depo kökü (Slate), **8099** = lokasyon uygulaması
+(`lokasyon.html`'in `index.html` adıyla sunulduğu bir sembolik bağ dizini),
+**8097** = eski Slate anlık görüntüsü (`eski/`).
+
+**Emekliye ayrılanlar** (kod değil, testin kendisi eskimişti — gerekçeleri
+`scratchpad/emekli/NEDEN.md` dosyasında):
+- `win.test.js` — takvimin eski 42 günlük sabit penceresini doğruluyordu;
+  uygulama gerçek ay penceresine geçti (`ay.test.js` sınıyor).
+- `fikir.test.js` — fikirlerin projeler tablosundan açılan bir pencerede
+  yaşadığı eski mimariyi sınıyordu; fikirler kendi sayfasına taşındı
+  (`akis`, `kart`, `parca`, `parca-surukle`, `fikir-secim`, `sc-fikir-ekle`
+  testleri geçiyor).
+- `donusum.test.js` — koşulamıyor: lokasyon uygulamasının özgün yedek
+  dosyasını istiyor, o dosya artık yok. Göç bir kez yapıldı ve doğrulandı.
+- `push.onceki.test.js` — GEÇMESİ BEKLENMİYOR. Eski yapıdaki veri kaybını
+  kanıtlıyor, teşhisin kaydı olarak duruyor.
+
+**Tazelenen testler** (iddiaları eskimişti):
+- `push.test.js` — `pushChanges` artık bulut koruma bayrağını okuyor.
+- `ai-tarif.test.js` — yer tutucudaki örnek kelime sayısını sabitlemişti.
+- `dokunmatik.test.js` — hafta görünümü saat ızgarasına dönüştü; gün
+  hücreleriyle sürükleme ay görünümünde sınanıyor (saat ızgarasını
+  `saat.test.js` sınıyor).
+
+**Ders:** Bir test düşünce önce "kod mu bozuldu, test mi eskidi" sorusunu
+sor. Bu turda düşen 16 testin **hiçbiri** üründe bir bozulma değildi:
+koşum düzeni, taşınan dosya adı ya da eskimiş iddia.
+
+---
+
 ## Nerede kaldık (3 Eylül 2026, gece — karşılama sayfası)
 
 **DİKKAT — dosya adları değişti.** Uygulama artık `index.html` DEĞİL,
