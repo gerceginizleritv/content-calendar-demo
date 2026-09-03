@@ -519,6 +519,110 @@ bilerek ertelendi (sebebi aşağıda).
 
 ## Sırada
 
+Sıralama **deneme sürecine** göre. Kullanıcı kararı (3 Eylül 2026):
+*"Bugün yani 0'ıncı günde ürünü satmayı planlamıyorum. Amaç ilk önce
+kullanıcılara ürünü denettirmek, bu nedenle bir deneme süreci başlayacak."*
+Pazar araştırması raporunun (2 Eylül 2026, bölüm 10) maddeleri bu listeye
+katıldı; rapor "satılabilirlik" sırasına göre yazılmıştı, burada
+"denenebilirlik" sırasına çevrildi. Raporun kendi öncelik etiketi her
+maddenin sonunda parantez içinde duruyor.
+
+### KAPI 1 — Deneyici gelmeden önce olması gerekenler
+
+1. **Supabase'i ücretsiz katmandan çıkarmak** (rapor: Öncelik 1)
+   Ücretsiz projede YEDEK YOK ve bir hafta hareketsizlikte proje duruyor.
+   Denemeyi baltalayan madde bu: on gün sonra dönen deneyicinin verisi
+   donmuş olur. Aylık 25 dolar, kurulumu bir saat. **Para almadan önce
+   değil, deneyici gelmeden önce.**
+
+2. **Testleri depoya almak** (rapor: Öncelik 1)
+   Bugün 83 test var ve HİÇBİRİ depoda değil — hepsi oturumla silinen
+   geçici bir klasörde. Bugün o testler iki gerçek kusur yakaladı (boş
+   proje, ızgara taşması). Oturum kapanınca bu ağ yok oluyor. Yarım gün.
+   Raporun gerekçesi: *"satılan üründe geri dönüşü olmayan hatalar (veri
+   kaybı) iki kez yaşanmış."*
+
+3. **Hesabı kendi kendine silme** (rapor: Öncelik 1)
+   Bugün silme e-posta ile. Deneyici "verimi geri alamıyorum" hissine
+   kapılmamalı; KVKK/GDPR için de gerekli. Yarım gün. Kodda yok
+   (3 Eylül 2026'da doğrulandı).
+
+4. **Kullanım şartları + veri işleme + iade politikası** (rapor: Öncelik 1)
+   `privacy.html` var, şartlar yok. Deneme sürecinde bile "verim ne
+   olacak" sorusunun yazılı cevabı olmalı. 1 gün.
+
+5. **Mobilde takvimin katlanması** (rapor: Öncelik 1)
+   İlk kayıt kaydırmadan görünmeli. Kodda `.cal-day.collapsed` ve telefon
+   medya sorgusu VAR; gerçek telefonda doğrulanmalı. Yarım gün.
+
+6. **Barındırmayı taşımak — Cloudflare Pages / Netlify** (rapor: Öncelik 1)
+   GitHub Pages ticari SaaS'a izin vermiyor. Ücretsiz denemede henüz
+   ticari satış yok, o yüzden 0. gün için ACİL DEĞİL; ama kendi alan adı
+   ve HTTPS de aynı taşımayla geliyor, ikisini birlikte yapmak mantıklı.
+   Yarım gün.
+
+### KAPI 2 — Denemeyi kazanan özellikler
+
+7. **Termin hatırlatmaları — SIRADAKİ İŞ** (rapor: Öncelik 2)
+   Ayrıntılı tasarım aşağıda kendi bölümünde. Raporun gerekçesi:
+   *"ürünü 'arada bir açılan pano' olmaktan çıkarıp günlük alışkanlığa
+   çeviren özellik bu."* Deneme sürecinde en çok işe yarayacak madde,
+   çünkü kullanıcıyı geri getiriyor.
+
+8. **Hazır proje şablonları** (rapor: Öncelik 2)
+   "Belgesel bölümü", "haftalık vlog", "ürün lansmanı", "etkinlik çekimi"
+   gibi yedi adımı ve paylaşım setini önceden dolduran şablonlar. Boş
+   uygulama sorununu çözer — deneyicinin ilk beş dakikası bu.
+
+9. **İçe aktarma — CSV / Google Sheets / Notion** (rapor: Öncelik 2)
+   Deneyicinin çoğu bugün bir tabloda çalışıyor; elini boşaltmadan
+   geçemezse denemez. Kodda hiç yok.
+
+10. **Paylaşılabilir salt okunur takvim bağlantısı** (rapor: Öncelik 2)
+    Kurgucuya/müşteriye plan göstermek. Ekip özelliklerinin en ucuz ilk
+    adımı ve deneyiciyi başkasına gösterten şey. Kodda hiç yok.
+
+11. **Service worker** (rapor: Öncelik 2)
+    Çevrimdışı açılış + bildirim altyapısı. 7. maddenin tarayıcı
+    bildirimi bacağı buna dayanıyor, o yüzden onunla birlikte gelecek.
+    `sw.js` yok.
+
+12. **Script alanına metin biçimlendirme** (kullanıcı isteği, 2 Eylül)
+    Düğme çubuğu + Markdown + önizleme. Gerekçesi aşağıda kendi bölümünde.
+
+### KAPI 3 — Para almaya geçerken
+
+13. **Yeniden adlandırma + kendi alan adı** (rapor: Öncelik 1)
+    "Slate" adı aynı kategoride kullanılıyor; marka ve arama görünürlüğü
+    riski. 1-2 gün. **Not:** hafızada bu madde "TÜM İŞ BİTİNCE" diye
+    duruyordu, rapor ise "para almadan önce zorunlu" diyor. Çelişki değil,
+    farklı hedefe bakıyorlar — deneme için ad yeterli, satış için değil.
+
+14. **Fiyat sayfası + bekleme listesi** (rapor: Öncelik 1)
+    Karşılama sayfası yapıldı (3 Eylül), fiyat ve bekleme listesi yok.
+
+15. **Ödeme — Paddle veya Lemon Squeezy** (rapor: Öncelik 1)
+    Merchant of record; KDV ve fatura onlarda. Türkiye'den satıcı
+    uygunluğu raporun 9. bölümünde. 2-3 gün.
+
+16. **Ücretli pakette AI'yı ürünün karşılaması** (rapor: Öncelik 2)
+    Bugün kullanıcı kendi Gemini anahtarını giriyor. Rapor bunu *"teknik
+    olmayan üreticinin en büyük terk noktası"* diyor. Ücretli kullanıcı
+    için Supabase Edge Function arkasında ürünün kendi anahtarı.
+    **Deneme sürecinde ölçülecek:** kaç deneyici anahtar adımında
+    düşüyor? Cevap buysa bu madde KAPI 2'ye taşınır.
+
+### KAPI 4 — Talep kanıtlanınca
+
+17. **YouTube Data API ile "yayınlandı mı" otomatik işaretleme**
+    (rapor: Öncelik 3) Yalnızca okuma; yayın yapmadan platformu dinlemenin
+    ucuz yolu. Hafızada hiç yoktu, rapordan geldi.
+18. **Roller ve yetkilendirme** — şema hazır, kullanılmıyor (rapor: Öncelik 3)
+19. **Google Places adres tamamlama** — sunucu tarafı anahtar gerekiyor
+    (rapor: Öncelik 3)
+20. **Üçüncü ve sonraki diller** (rapor: Öncelik 3) — ayrıntılı gerekçe
+    "Ertelenenler" bölümünde; boyut engel değil, bakım maliyeti engel.
+
 ### Lokasyon uygulamasi Slate'e birlestiriliyor (karar: 1 Eylül 2026)
 Kullanıcı kararı: iki ayrı uygulama yerine tek araç. Sebep: tüm
 geliştirme Slate'te yapılıyor, her özellik iki kez yazılıyordu
@@ -690,7 +794,42 @@ Yapısal değişiklikler:
 - `tur2.test.js` on adımı iki dilde ve üç ekran boyunda geziyor;
   kontrastı hesaplanan renkten ölçüyor.
 
-### Termin hatırlatmaları — iki kanal (kullanıcı kararı, 1 Eylül 2026)
+### Termin hatırlatmaları — SIRADAKİ İŞ (karar tazelendi: 3 Eylül 2026)
+
+**3 Eylül 2026 — kullanıcı iki şey netleştirdi:**
+
+1. **İki kanal BİRBİRİNDEN BAĞIMSIZ açılıp kapanacak.** *"Kullanıcı hem
+   tarayıcı hem de takvim bildirimlerini açıp kapatabilmeli."* Yani tek
+   bir "hatırlatmalar açık" düğmesi değil; takvim ve tarayıcı ayrı ayrı.
+2. **Takvim bağlantısı sonradan kaldırılabilecek.** *"Dilerse takvime
+   ekleyebilir ya da ekledikten bir süre sonra kaldırabilir."* Bu, 1
+   Eylül'de yazılan şartın aynısı ve iki mekanizma da gerekli (aşağıda).
+
+**Açık karar kapandı:** hatırlatma zamanı da kullanıcıya bırakılıyor, üç
+ayrı anahtar olarak: *bir gün önce*, *termin günü*, *geciktiğinde*.
+Varsayılan: bir gün önce + geciktiğinde açık, termin günü kapalı.
+
+**Uygulama sırası — neyin sunucu gerektirdiği önemli:**
+
+| Parça | Sunucu gerekiyor mu | Kim yapar |
+|---|---|---|
+| Ayarlar arayüzü (kanal + zaman anahtarları), `user_prefs`'e yazma | Hayır | Claude |
+| `.ics` DOSYASI indirme ("takvime ekle") | Hayır | Claude |
+| Service worker + bildirim izni + uygulama açılırken bildirim | Hayır | Claude |
+| Canlı takvim ABONELİĞİ (webcal adresi, kendiliğinden güncellenen) | **Evet** — Edge Function | Claude yazar, KULLANICI kurar |
+| Uygulama kapalıyken zamanlanmış bildirim (push) | **Evet** — Edge Function + zamanlanmış görev + VAPID | Claude yazar, KULLANICI kurar |
+
+**Dosya ile abonelik arasındaki fark, kullanıcının şartı açısından
+kritik:** indirilen `.ics` dosyası Google Takvim'e ayrı ayrı olay olarak
+girer, kaldırmak için kullanıcının o olayları TEK TEK silmesi gerekir.
+Abonelik ise tek kalemde iptal edilir. Yani dosya bir başlangıç, asıl
+istenen abonelik. İkisi birlikte sunulacak, arayüzde farkı yazacak.
+
+**Neden Edge Function şart:** Google Takvim aboneliği, `text/calendar`
+döndüren ve başlık (header) istemeyen bir adres istiyor. Supabase'in
+hazır REST arayüzü JSON döndürüyor ve `apikey` başlığı istiyor; GitHub
+Pages ise statik. Üçüncü bir yol yok.
+
 Bugün uyarı yalnızca sayfa AÇIKKEN var: geciken adım kırmızı, üstte şerit.
 Kullanıcı bakmıyorken haber göndermek için tarayıcının dışında zamanlanmış
 bir iş gerekiyor; Supabase bunu yapabiliyor, ayrı sunucu gerekmiyor.
@@ -731,7 +870,11 @@ saklanmalı. WhatsApp ayrıca Meta iş doğrulaması + önceden onaylı şablon
 istiyor, kurulumu haftalar sürer. Resmî olmayan WhatsApp kütüphaneleri
 KULLANILMAYACAK: kurallara aykırı, numara kapatılır.
 
-### Kendi alan adı — TÜM İŞ BİTİNCE (kullanıcı kararı, 1 Eylül 2026)
+### Kendi alan adı (karar tazelendi: 3 Eylül 2026 — KAPI 3)
+1 Eylül'de "tüm iş bitince" denmişti. Pazar araştırması bunu "para
+almadan önce zorunlu" diyor. İkisi çelişmiyor: DENEME için mevcut adres
+yeterli, SATIŞ için değil. Barındırma taşımasıyla (KAPI 1, madde 6)
+birlikte yapılacak — aynı iş.
 Kullanıcı alan adını işler tamamlandıktan sonra alacak.
 
 **Önemli:** Alan adı almak "kendi sunucumu kurmam gerekecek" demek
