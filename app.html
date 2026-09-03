@@ -2486,6 +2486,7 @@ const LANG = {
     auth_signed_as: "Signed in as",
     auth_signout: "Sign out",
     auth_synced: "Saved to your account.",
+    inbox_imported: n => n === 1 ? "1 entry arrived from the inbox and was saved to your account." : `${n} entries arrived from the inbox and were saved to your account.`,
     auth_sync_err: "Could not reach the cloud — the reason is on the red bar above.",
     auth_moved: (n)=> `${n} entries moved to your account.`,
     auth_move_ask: (n)=> `This browser has ${n} entries that were made without an account. Move them into this account?\n\nChoose Cancel if they are not yours.`,
@@ -2641,7 +2642,7 @@ const LANG = {
     tpl_off: "Off — not added",
     tpl_del_confirm: (ad)=> `Delete the template for “${ad}”?`,
     tpl_multi_note: "Each platform gets its own template text when you save.",
-    tpl_limit: (n)=> `Up to ${n} templates.`,
+    tpl_limit: (n)=> `Up to ${n} templates.`,
     tab_calendar: "Calendar",
     tab_projects: "Projects",
     p_name_ph: "Project name — e.g. Autumn Studio Shoot",
@@ -2654,7 +2655,7 @@ const LANG = {
     p_col_shoot: "Start",
     dl_title: "Deadlines",
     dl_clear: "Clear all",
-    dl_ask: "Set deadlines for the steps now? You can always do it later from the table.",
+    dl_ask: "Set deadlines for the steps now? You can always do it later from the table.",
     p_deadline_title: "Deadline for this step",
     p_overdue: (n)=> n===1 ? '1 step is past its deadline:' : `${n} steps are past their deadline:`,
     pe_title: "Edit project",
@@ -2670,7 +2671,7 @@ const LANG = {
     ptype_desk: "Desk / graphics",
     ptype_other: "Other",
     p_shoot_title: "Project start date",
-    p_new_title: "New project",
+    p_new_title: "New project",
     p_start_label: "Start",
     pe_deadlines: "Step deadlines…",
     tab_ideas: "Ideas",
@@ -2785,7 +2786,7 @@ const LANG = {
     step_filmed: "Filmed",
     step_audio: "Audio",
     step_edited: "Edited",
-    step_approved: "Approved",
+    step_approved: "Approved",
     step_package: "Package",
     step_published: "Published",
     concept_none: "No project",
@@ -2939,6 +2940,7 @@ const LANG = {
     auth_signed_as: "Giriş yapıldı:",
     auth_signout: "Çıkış yap",
     auth_synced: "Hesabına kaydedildi.",
+    inbox_imported: n => n === 1 ? "Gelen kutusundan 1 kayıt alındı, hesabına kaydedildi." : `Gelen kutusundan ${n} kayıt alındı, hesabına kaydedildi.`,
     auth_sync_err: "Buluta ulaşılamadı — sebebi yukarıdaki kırmızı şeritte.",
     auth_moved: (n)=> `${n} kayıt hesabına taşındı.`,
     auth_move_ask: (n)=> `Bu tarayıcıda hesapsız oluşturulmuş ${n} kayıt var. Bu hesaba taşınsın mı?\n\nSana ait değilse İptal'e bas.`,
@@ -3094,7 +3096,7 @@ const LANG = {
     tpl_off: "Kapalı — eklenmiyor",
     tpl_del_confirm: (ad)=> `“${ad}” şablonu silinsin mi?`,
     tpl_multi_note: "Birden fazla platform seçili; her kayıt kendi şablon metnini kaydederken alacak.",
-    tpl_limit: (n)=> `En fazla ${n} şablon.`,
+    tpl_limit: (n)=> `En fazla ${n} şablon.`,
     tab_calendar: "Takvim",
     tab_projects: "Projeler",
     p_name_ph: "Proje adı — örn. Güz Stüdyo Çekimi",
@@ -3107,7 +3109,7 @@ const LANG = {
     p_col_shoot: "Başlangıç",
     dl_title: "Termin tarihleri",
     dl_clear: "Hepsini temizle",
-    dl_ask: "Adımlar için teslim tarihi girmek ister misin? Sonradan tablodan da girebilirsin.",
+    dl_ask: "Adımlar için teslim tarihi girmek ister misin? Sonradan tablodan da girebilirsin.",
     p_deadline_title: "Bu adımın teslim tarihi",
     p_overdue: (n)=> `${n} adımın teslim tarihi geçti:`,
     pe_title: "Projeyi düzenle",
@@ -3123,7 +3125,7 @@ const LANG = {
     ptype_desk: "Masabaşı / grafik",
     ptype_other: "Diğer",
     p_shoot_title: "Proje başlangıç tarihi",
-    p_new_title: "Yeni proje",
+    p_new_title: "Yeni proje",
     p_start_label: "Başlangıç",
     pe_deadlines: "Adım termin tarihleri…",
     tab_ideas: "Fikirler",
@@ -3238,7 +3240,7 @@ const LANG = {
     step_filmed: "Çekim",
     step_audio: "Ses",
     step_edited: "Kurgu",
-    step_approved: "Onay",
+    step_approved: "Onay",
     step_package: "Yayın Paketi",
     step_published: "Yayın",
     concept_none: "Projesiz",
@@ -6502,7 +6504,10 @@ async function tercihPush(){
   try{
     const { error } = await sb.from('user_prefs').upsert([{
       user_id: session.user.id,
-      prefs: { lang: currentLang },
+      // Tercih satiri butun olarak gidiyor: gelen kutusu defteri de
+      // burada tasinmali, yoksa dil degisikligi defteri siler ve alinmis
+      // kayitlar bir sonraki acilista ikinci kez gelir.
+      prefs: tercihPrefsYap(),
       updated_at: new Date(dilDamgasi() || Date.now()).toISOString()
     }], { onConflict: 'user_id' });
     if(error) throw error;
@@ -6527,6 +6532,95 @@ function sinirlariSifirla(){
   MAX_PROJECTS = VARSAYILAN_PROJE_SINIRI;
 }
 
+// ===== Gelen kutusu =====
+// Sohbette (Claude ile) hazirlanan kayitlar depoya gelen/kayitlar.json
+// olarak giriyor. Slate disaridan yazilamiyor: veriler hesabin arkasinda,
+// sohbetin oturum anahtari yok. O yuzden dosya buraya yaziliyor, Slate
+// acilista okuyup KULLANICININ oturumuyla hesaba geciriyor. Eski lokasyon
+// uygulamasinda kayitlar dosyanin icindeydi ve ayni is dosyayi
+// duzenlemekle bitiyordu; bu, o akisin Slate karsiligi.
+//
+// Iki kez alinmasin: alinan kimlikler hesabin tercih satirinda
+// (user_prefs.prefs.gelen_alinan) duruyor. Tarayici deposunda olsaydi
+// ikinci cihaz ayni kaydi bir daha alirdi; yalnizca tabloya bakilsaydi
+// kullanicinin Slate'te SILDIGI kayit her acilista geri gelirdi.
+const GELEN_KUTUSU_URL = 'gelen/kayitlar.json';
+let gelenAlinan = [];          // alinmis kimlikler (defter)
+let gelenDefterHazir = false;  // defter buluttan okunabildi mi
+
+function gelenAlinanOku(satir){
+  const liste = satir && satir.prefs && satir.prefs.gelen_alinan;
+  gelenAlinan = Array.isArray(liste) ? liste.filter(x=> typeof x === 'string').slice(0, 5000) : [];
+  gelenDefterHazir = true;
+}
+function tercihPrefsYap(){
+  const prefs = { lang: currentLang };
+  if(gelenAlinan.length) prefs.gelen_alinan = gelenAlinan;
+  return prefs;
+}
+
+// Proje adi -> hesaptaki proje. Once tam ad, sonra bas harfleri (dosyada
+// "Nuruosmaniye" yazar, hesapta "Nuruosmaniye Camii" durur). Buyuk/kucuk
+// harf ve Turkce I/i farki onemsenmiyor.
+function gelenProjeBul(ad){
+  const kucult = v => String(v||'').trim().toLocaleLowerCase('tr');
+  const aranan = kucult(ad);
+  if(!aranan) return null;
+  return projects.find(p=> kucult(p.name) === aranan)
+      || projects.find(p=> kucult(p.name).startsWith(aranan))
+      || null;
+}
+
+// Dosyadaki kayitlari isler. sanitizeEvent beyaz listeden geciriyor:
+// bilinmeyen platform/tur varsayilana duser. Kimlik desene uymazsa
+// sanitize yenisini uretirdi ama o zaman defter tutmaz; o yuzden desene
+// uymayan kimlik atlaniyor. Kac kayit alindigini dondurur.
+function gelenKayitlariIsle(kayitlar){
+  if(!Array.isArray(kayitlar)) return 0;
+  let alinan = 0;
+  for(const ham of kayitlar){
+    if(!ham || typeof ham.id !== 'string' || !/^[A-Za-z0-9_-]{1,64}$/.test(ham.id)) continue;
+    if(gelenAlinan.includes(ham.id)) continue;
+    if(events.some(e=> e.id === ham.id)){ gelenAlinan.push(ham.id); continue; }
+    if(events.length >= MAX_ENTRIES) break;   // hesabin siniri; kalanlar sonraki acilisa
+    const proje = gelenProjeBul(ham.proje);
+    const icerik = Object.assign({}, ham.content || {});
+    if(proje){ icerik.projectId = proje.id; icerik.concept = proje.name; }
+    else { icerik.projectId = ''; icerik.concept = String(ham.proje || icerik.concept || '').slice(0,120); }
+    const ev = sanitizeEvent(Object.assign({}, ham, { content: icerik, uploaded: false }));
+    if(!ev) continue;
+    events.push(ev); markDirty(ev.id);
+    gelenAlinan.push(ev.id);
+    alinan++;
+  }
+  return alinan;
+}
+
+async function gelenKutusunuIsle(){
+  if(!session) return;
+  // Defter okunamadiysa (ag, oturum) hic dokunma: ikinci kopya uretmek,
+  // bir acilis gec almaktan kotu.
+  if(!gelenDefterHazir || bulutOkumaBasarisiz) return;
+  let veri;
+  try{
+    const cevap = await fetch(GELEN_KUTUSU_URL, { cache: 'no-store' });
+    if(!cevap.ok) return;           // dosya yok: kutu bos demek
+    veri = await cevap.json();
+  }catch(err){
+    console.warn('[gelen] kutu okunamadi', err);
+    return;
+  }
+  const oncekiDefter = gelenAlinan.length;
+  const alinan = gelenKayitlariIsle(veri && veri.kayitlar);
+  if(alinan){
+    save();
+    showToast(t('inbox_imported')(alinan));
+    trackOnce('funnel/inbox-imported');
+  }
+  // Defter degistiyse (yeni alinan ya da zaten hesapta olan) buluta yaz.
+  if(gelenAlinan.length !== oncekiDefter) await tercihPush();
+}
+
 async function tercihSenkron(){
   if(!sb || !session) return;
   try{
@@ -6534,6 +6628,7 @@ async function tercihSenkron(){
       .select('*').eq('user_id', session.user.id).maybeSingle();
     if(error) throw error;
     sinirlariUygula(data);
+    gelenAlinanOku(data);
     const uzakDil = data && data.prefs && data.prefs.lang;
     const uzakTs = data && data.updated_at ? Date.parse(data.updated_at) : 0;
     if(uzakDil && LANG[uzakDil] && uzakTs > dilDamgasi()){
@@ -9611,7 +9706,9 @@ async function afterSignIn(){
   // satirlik bir sorgu yuzunden gec acilirdi.
   sablonBulutSenkron();
   fikirScriptBulutSenkron();
-  tercihSenkron();
+  // Sozu tutuyoruz: gelen kutusu, "hangi kayitlar daha once alindi"
+  // defterini bu okumadan ogreniyor; defter gelmeden kutu islenmez.
+  const tercihSozu = tercihSenkron();
   try{
     const uzak = await pullRemote();
     // Okuma basarili: kilit hemen kalkiyor. Sonda kaldirilsaydi asagidaki
@@ -9650,6 +9747,10 @@ async function afterSignIn(){
     // Projeler kayitlardan SONRA: kayitlar hangi projeye bagli oldugunu
     // biliyor, projeler once gelseydi bir an sahipsiz gorunurlerdi.
     await projAfterSignIn();
+    // Gelen kutusu en sonda: kayitlar da projeler de geldi, artik "bu
+    // kayit hesapta var mi" ve "hangi projeye bagli" sorulari cevaplanabilir.
+    await tercihSozu;
+    await gelenKutusunuIsle();
     renderCal();
     setCloudStatus('ok');
     trackOnce('funnel/cloud-connected');
