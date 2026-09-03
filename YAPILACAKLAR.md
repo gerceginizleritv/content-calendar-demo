@@ -6,6 +6,46 @@ duruyor, neden ertelendiği de yazıyor ki aynı tartışma baştan yapılmasın
 
 ---
 
+## İçerik çalışması sohbetten (3 Eylül 2026)
+
+İçerik işleri (kayıt ekleme, yayın paketi) artık bu sohbet üzerinden de
+yürüyor. Eski lokasyon uygulamasında kayıtlar dosyanın içindeydi, Claude
+dosyayı düzenliyordu. Slate'te veri Supabase'de ve sohbetin oturum anahtarı
+yok; bu ortamdan `supabase.co` adresine ağ da kapalı (vekil 403 veriyor).
+
+**Çözüm: gelen kutusu.** Kayıtlar `gelen/kayitlar.json` dosyasına yazılıyor.
+Slate, giriş yapılmış açılışta (afterSignIn'in sonunda, kayıtlar ve
+projeler geldikten sonra) dosyayı `cache:'no-store'` ile okuyor, hesapta
+olmayan kayıtları kullanıcının oturumuyla buluta yazıyor ve toast gösteriyor.
+
+- Alınan kimlikler **`user_prefs.prefs.gelen_alinan`** defterinde. Tabloya
+  bakılsaydı kullanıcının Slate'te sildiği kayıt her açılışta geri gelirdi;
+  tarayıcı deposunda olsaydı ikinci cihaz bir daha alırdı. Bu yüzden
+  `tercihPush` artık prefs'i `tercihPrefsYap()` ile kuruyor (dil + defter);
+  eskiden `{lang}` yazıp defteri silerdi.
+- Defter okunamadıysa (`gelenDefterHazir` false) kutu HİÇ işlenmiyor: çift
+  kopya, bir açılış gecikmesinden kötü. `tercihSenkron` artık sözü tutulup
+  gelen kutusundan önce bekleniyor.
+- `proje` alanı proje ADI; tam ad, yoksa baş harfleriyle eşleşiyor
+  ("Nuruosmaniye" → "Nuruosmaniye Camii"). Kimlik desene uymayan kayıt
+  atlanıyor (yoksa sanitize yeni kimlik üretir, defter tutmaz).
+- Anonim modda çalışmıyor: demo verisine karışmasın.
+- Kutuda duran kayıt: **Nuruosmaniye** uzun video, YouTube **18 Eylül 2026
+  20:00** + Facebook paylaşımı **21:00**. Paket Drive'daki script v1'den.
+- Yayına çıkması için dal main'e alınmalı (GitHub Pages). Headless testte
+  (`scratchpad/gelen.test.js`) iki kayıt alınıyor, ikinci koşum 0,
+  silinmiş kayıt geri gelmiyor.
+
+`sql/19` betiği bu yüzden kaldırıldı; aynı kayıt kutuda, kimlik aynı
+(`ev_nuruosmaniye_yt_20260918`), betik koşulmuş olsa bile çift oluşmaz.
+
+Kaynak: yayın paketi biçimi için `lokasyon.html` içindeki Zeyrek / Rumeli
+Hisarı kayıtları örnek alındı (hook → madde listesi → "Rivayet değil,
+kayıt." → kaynaklar → hesaplar → hashtagler; Facebook'ta kısa hook +
+"🎬 TAM BELGESELİ İZLEMEK İÇİN" + "Sayfamda Abonelikler açık").
+
+---
+
 ## Test takımı — koşum düzeni ve emekliye ayrılanlar (3 Eylül 2026)
 
 **Testler bir kusur ortaya çıkardı (düzeltildi):** Takvimden "+ yeni proje"
