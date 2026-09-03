@@ -8,6 +8,18 @@ duruyor, neden ertelendiği de yazıyor ki aynı tartışma baştan yapılmasın
 
 ## Test takımı — koşum düzeni ve emekliye ayrılanlar (3 Eylül 2026)
 
+**Testler bir kusur ortaya çıkardı (düzeltildi):** Takvimden "+ yeni proje"
+seçip platform seçmeyi unutan kişi "En az bir platform seç" uyarısını
+alıyordu — ama proje ÇOKTAN oluşmuştu. Vazgeçince geride adı sorulmuş, boşa
+düşmüş bir proje kalıyordu. Sebep sıraydı: `secilenProjeyiCoz()` projeyi
+kuruyor, platform/tür doğrulaması ondan SONRA geliyordu. Doğrulama öne
+alındı. Teşhis, düzeltmeden önceki yapıda testle kanıtlandı
+(`yeniproje-bos.test.js`: düzeltmeden önce 0 → 1 proje, sonra 0 → 0).
+
+**Ders:** Yan etkisi olan bir adımı (kayıt oluşturma, ad sorma) doğrulamadan
+önce çalıştırma. Doğrulama başarısız olunca geri alınacak bir şey kalmasın.
+
+
 Testler `index.html` yerine artık **`app.html`**'e bakıyor. Koşum düzeni tek
 tip DEĞİL; koşturucu her teste beklediğini vermeli:
 

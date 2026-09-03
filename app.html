@@ -7901,6 +7901,14 @@ document.getElementById('saveBtn').addEventListener('click', ()=>{
     if(ilk) ilk.focus();
     return;
   }
+  // Platform ve tur secimi, PROJE OLUSMADAN once dogrulaniyor. Onceden
+  // "+ yeni proje" secip platform secmeyi unutan kisi uyariyi aliyordu ama
+  // proje coktan olusmus oluyordu: vazgecince geride bos bir proje kaliyordu.
+  if(!currentEvent){
+    const secilenPlatformlar = Array.from(document.querySelectorAll('#platformChecks input:checked'));
+    if(secilenPlatformlar.length === 0){ alert(t('alert_select_platform')); return; }
+    if(secilenTipler().length === 0){ alert(t('alert_select_type')); return; }
+  }
   // Proje once cozuluyor: "+ yeni proje" secildiyse burada olusuyor.
   // Iptal edilirse kayit hic olusmuyor, yarim bir kayit kalmiyor.
   const proje = secilenProjeyiCoz();
