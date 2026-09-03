@@ -1,3 +1,9 @@
 
 # Playwright testleri cikti klasoru verilmeden calistirildiginda buraya yaziyor
 undefined/
+
+# lojistik-dashboard
+lojistik-dashboard/__pycache__/
+lojistik-dashboard/*.xls
+lojistik-dashboard/*.xlsx
+lojistik-dashboard/.streamlit/secrets.toml
