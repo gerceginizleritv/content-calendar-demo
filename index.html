@@ -338,6 +338,118 @@ a{color:inherit;}
 .dip-ic a:hover{color:var(--murekkep);}
 .dip-sag{margin-left:auto;}
 
+/* ---------- sahneler: sayfa icinde cizilen animasyonlar ----------------
+   Video dosyasi degil: SVG + CSS. Yuklenme maliyeti yok, her ekranda net,
+   iki temaya da uyuyor. Animasyon yalnizca sahne ekrana girince basliyor
+   (.oyna sinifi), hareket istemeyen kullanicida hic calismiyor ve sahne
+   bitmis halinde duruyor.                                              */
+.sahne{
+  margin-top:20px;background:var(--yuzey);border:1px solid var(--cizgi);
+  border-radius:16px;padding:24px 26px 18px;box-shadow:var(--golge);
+}
+.sahne-bas{display:flex;align-items:baseline;gap:14px;flex-wrap:wrap;margin-bottom:14px;}
+.sahne-bas h3{font-size:16.5px;font-weight:700;letter-spacing:-.3px;}
+.sahne-bas span{
+  font-family:'IBM Plex Mono',monospace;font-size:11px;letter-spacing:1.6px;
+  text-transform:uppercase;color:var(--solgun);font-weight:500;
+}
+.sahne svg{width:100%;height:auto;display:block;}
+.sahne text{font-family:'IBM Plex Mono',monospace;font-weight:500;}
+.sahne .adi{font-family:'IBM Plex Sans',sans-serif;font-weight:600;}
+
+/* Sahne oynamiyorken her sey BITMIS halde duruyor; animasyon 0%'da
+   gizleyip getiriyor. Boylece hareket kapaliyken de sahne dolu gorunuyor. */
+@media (prefers-reduced-motion: reduce){
+  .sahne .oynak{animation:none!important;}
+}
+
+/* ===== Sahne 1: tek cekim -> on paylasim ===== */
+.s1 .oynak{animation-duration:11s;animation-iteration-count:infinite;animation-timing-function:cubic-bezier(.22,.61,.36,1);}
+.s1.oyna .serit{animation-name:s1serit;}
+.s1.oyna .bas{animation-name:s1bas;animation-timing-function:cubic-bezier(.65,0,.35,1);}
+.s1.oyna .bag{animation-name:s1bag;animation-delay:var(--g);}
+.s1.oyna .kart{animation-name:s1kart;animation-delay:var(--g);}
+.s1.oyna .sayac{animation-name:s1sayac;}
+.s1 .bag{stroke-dasharray:var(--u);stroke-dashoffset:0;}
+.s1 .kart,.s1 .serit{transform-box:fill-box;transform-origin:center;}
+
+@keyframes s1serit{
+  0%,2%{opacity:0;transform:translateY(-12px);}
+  9%,90%{opacity:1;transform:none;}
+  97%,100%{opacity:0;transform:translateY(-8px);}
+}
+@keyframes s1bas{
+  0%,7%{transform:translateX(0);opacity:0;}
+  9%{opacity:1;}
+  21%{transform:translateX(806px);opacity:1;}
+  25%,100%{transform:translateX(806px);opacity:0;}
+}
+@keyframes s1bag{
+  0%,16%{stroke-dashoffset:var(--u);opacity:0;}
+  17%{opacity:1;}
+  26%,88%{stroke-dashoffset:0;opacity:1;}
+  96%,100%{stroke-dashoffset:0;opacity:0;}
+}
+@keyframes s1kart{
+  0%,20%{opacity:0;transform:translateY(-22px) scale(.88);}
+  27%{opacity:1;transform:translateY(3px) scale(1.03);}
+  31%,88%{opacity:1;transform:none;}
+  96%,100%{opacity:0;transform:translateY(-10px) scale(.95);}
+}
+@keyframes s1sayac{
+  0%,40%{opacity:0;transform:translateY(7px);}
+  47%,88%{opacity:1;transform:none;}
+  96%,100%{opacity:0;transform:translateY(4px);}
+}
+
+/* ===== Sahne 2: fikirden yayina ===== */
+.s2 .oynak{animation-duration:13s;animation-iteration-count:infinite;animation-timing-function:cubic-bezier(.4,0,.2,1);}
+.s2.oyna .ray{animation-name:s2ray;}
+.s2.oyna .gezgin{animation-name:s2gezgin;}
+.s2.oyna .durak{animation-name:s2durak;animation-delay:var(--g);}
+.s2.oyna .ayrinti{animation-name:s2ayrinti;animation-delay:var(--g);}
+.s2.oyna .adim7{animation-name:s2adim;animation-delay:var(--g);}
+.s2 .ray{stroke-dasharray:var(--u);stroke-dashoffset:0;}
+.s2 .durak,.s2 .adim7{transform-box:fill-box;transform-origin:center;}
+
+@keyframes s2ray{
+  0%,4%{stroke-dashoffset:var(--u);}
+  16%,92%{stroke-dashoffset:0;}
+  99%,100%{stroke-dashoffset:var(--u);}
+}
+@keyframes s2gezgin{
+  0%,6%{transform:translateX(0);opacity:0;}
+  9%{opacity:1;}
+  10%,15%{transform:translateX(0);}
+  22%,29%{transform:translateX(195px);}
+  36%,48%{transform:translateX(390px);}
+  55%,63%{transform:translateX(585px);}
+  70%,92%{transform:translateX(780px);}
+  98%,100%{transform:translateX(780px);opacity:0;}
+}
+@keyframes s2durak{
+  0%,8%{opacity:.35;transform:scale(.94);}
+  13%{opacity:1;transform:scale(1.08);}
+  17%,92%{opacity:1;transform:scale(1);}
+  99%,100%{opacity:.35;transform:scale(.94);}
+}
+@keyframes s2ayrinti{
+  0%,10%{opacity:0;transform:translateY(8px);}
+  16%,92%{opacity:1;transform:none;}
+  99%,100%{opacity:0;transform:translateY(5px);}
+}
+@keyframes s2adim{
+  0%,36%{opacity:.22;transform:scale(.8);}
+  41%{opacity:1;transform:scale(1.25);}
+  45%,92%{opacity:1;transform:scale(1);}
+  99%,100%{opacity:.22;transform:scale(.8);}
+}
+
+@media (max-width:640px){
+  .sahne{padding:18px 16px 12px;}
+  .sahne-bas h3{font-size:15px;}
+}
+
 /* ---------- dar ekran ---------- */
 @media (max-width:960px){
   .kahraman-izgara,.nedir-kart,.ozellik,.giris-kart{grid-template-columns:1fr;gap:34px;}
@@ -467,6 +579,97 @@ a{color:inherit;}
           </ul>
         </div>
       </div>
+      <div class="sahne s1" id="sahne1">
+        <div class="sahne-bas">
+          <h3 data-i18n="s1_h">One shoot, ten posts</h3>
+          <span data-i18n="s1_e">The same footage, ten different exits</span>
+        </div>
+        <svg viewBox="0 0 960 436" role="img" data-i18n-attr="aria-label:s1_alt">
+          <g class="oynak serit">
+            <rect x="70" y="26" width="820" height="96" rx="10" fill="var(--yuzey)" stroke="var(--cizgi)" stroke-width="1.5"/>
+            <rect x="78" y="31" width="12" height="5" rx="2" fill="var(--cizgi)"/><rect x="78" y="111" width="12" height="5" rx="2" fill="var(--cizgi)"/><rect x="104" y="31" width="12" height="5" rx="2" fill="var(--cizgi)"/><rect x="104" y="111" width="12" height="5" rx="2" fill="var(--cizgi)"/><rect x="130" y="31" width="12" height="5" rx="2" fill="var(--cizgi)"/><rect x="130" y="111" width="12" height="5" rx="2" fill="var(--cizgi)"/><rect x="156" y="31" width="12" height="5" rx="2" fill="var(--cizgi)"/><rect x="156" y="111" width="12" height="5" rx="2" fill="var(--cizgi)"/><rect x="182" y="31" width="12" height="5" rx="2" fill="var(--cizgi)"/><rect x="182" y="111" width="12" height="5" rx="2" fill="var(--cizgi)"/><rect x="208" y="31" width="12" height="5" rx="2" fill="var(--cizgi)"/><rect x="208" y="111" width="12" height="5" rx="2" fill="var(--cizgi)"/><rect x="234" y="31" width="12" height="5" rx="2" fill="var(--cizgi)"/><rect x="234" y="111" width="12" height="5" rx="2" fill="var(--cizgi)"/><rect x="260" y="31" width="12" height="5" rx="2" fill="var(--cizgi)"/><rect x="260" y="111" width="12" height="5" rx="2" fill="var(--cizgi)"/><rect x="286" y="31" width="12" height="5" rx="2" fill="var(--cizgi)"/><rect x="286" y="111" width="12" height="5" rx="2" fill="var(--cizgi)"/><rect x="312" y="31" width="12" height="5" rx="2" fill="var(--cizgi)"/><rect x="312" y="111" width="12" height="5" rx="2" fill="var(--cizgi)"/><rect x="338" y="31" width="12" height="5" rx="2" fill="var(--cizgi)"/><rect x="338" y="111" width="12" height="5" rx="2" fill="var(--cizgi)"/><rect x="364" y="31" width="12" height="5" rx="2" fill="var(--cizgi)"/><rect x="364" y="111" width="12" height="5" rx="2" fill="var(--cizgi)"/><rect x="390" y="31" width="12" height="5" rx="2" fill="var(--cizgi)"/><rect x="390" y="111" width="12" height="5" rx="2" fill="var(--cizgi)"/><rect x="416" y="31" width="12" height="5" rx="2" fill="var(--cizgi)"/><rect x="416" y="111" width="12" height="5" rx="2" fill="var(--cizgi)"/><rect x="442" y="31" width="12" height="5" rx="2" fill="var(--cizgi)"/><rect x="442" y="111" width="12" height="5" rx="2" fill="var(--cizgi)"/><rect x="468" y="31" width="12" height="5" rx="2" fill="var(--cizgi)"/><rect x="468" y="111" width="12" height="5" rx="2" fill="var(--cizgi)"/><rect x="494" y="31" width="12" height="5" rx="2" fill="var(--cizgi)"/><rect x="494" y="111" width="12" height="5" rx="2" fill="var(--cizgi)"/><rect x="520" y="31" width="12" height="5" rx="2" fill="var(--cizgi)"/><rect x="520" y="111" width="12" height="5" rx="2" fill="var(--cizgi)"/><rect x="546" y="31" width="12" height="5" rx="2" fill="var(--cizgi)"/><rect x="546" y="111" width="12" height="5" rx="2" fill="var(--cizgi)"/><rect x="572" y="31" width="12" height="5" rx="2" fill="var(--cizgi)"/><rect x="572" y="111" width="12" height="5" rx="2" fill="var(--cizgi)"/><rect x="598" y="31" width="12" height="5" rx="2" fill="var(--cizgi)"/><rect x="598" y="111" width="12" height="5" rx="2" fill="var(--cizgi)"/><rect x="624" y="31" width="12" height="5" rx="2" fill="var(--cizgi)"/><rect x="624" y="111" width="12" height="5" rx="2" fill="var(--cizgi)"/><rect x="650" y="31" width="12" height="5" rx="2" fill="var(--cizgi)"/><rect x="650" y="111" width="12" height="5" rx="2" fill="var(--cizgi)"/><rect x="676" y="31" width="12" height="5" rx="2" fill="var(--cizgi)"/><rect x="676" y="111" width="12" height="5" rx="2" fill="var(--cizgi)"/><rect x="702" y="31" width="12" height="5" rx="2" fill="var(--cizgi)"/><rect x="702" y="111" width="12" height="5" rx="2" fill="var(--cizgi)"/><rect x="728" y="31" width="12" height="5" rx="2" fill="var(--cizgi)"/><rect x="728" y="111" width="12" height="5" rx="2" fill="var(--cizgi)"/><rect x="754" y="31" width="12" height="5" rx="2" fill="var(--cizgi)"/><rect x="754" y="111" width="12" height="5" rx="2" fill="var(--cizgi)"/><rect x="780" y="31" width="12" height="5" rx="2" fill="var(--cizgi)"/><rect x="780" y="111" width="12" height="5" rx="2" fill="var(--cizgi)"/><rect x="806" y="31" width="12" height="5" rx="2" fill="var(--cizgi)"/><rect x="806" y="111" width="12" height="5" rx="2" fill="var(--cizgi)"/><rect x="832" y="31" width="12" height="5" rx="2" fill="var(--cizgi)"/><rect x="832" y="111" width="12" height="5" rx="2" fill="var(--cizgi)"/><rect x="858" y="31" width="12" height="5" rx="2" fill="var(--cizgi)"/><rect x="858" y="111" width="12" height="5" rx="2" fill="var(--cizgi)"/>
+            <rect x="78" y="46" width="66" height="56" rx="4" fill="var(--yuzey2)"/><rect x="160" y="46" width="66" height="56" rx="4" fill="var(--yuzey2)"/><rect x="242" y="46" width="66" height="56" rx="4" fill="var(--yuzey2)"/><rect x="324" y="46" width="66" height="56" rx="4" fill="var(--yuzey2)"/><rect x="406" y="46" width="66" height="56" rx="4" fill="var(--yuzey2)"/><rect x="488" y="46" width="66" height="56" rx="4" fill="var(--yuzey2)"/><rect x="570" y="46" width="66" height="56" rx="4" fill="var(--yuzey2)"/><rect x="652" y="46" width="66" height="56" rx="4" fill="var(--yuzey2)"/><rect x="734" y="46" width="66" height="56" rx="4" fill="var(--yuzey2)"/><rect x="816" y="46" width="66" height="56" rx="4" fill="var(--yuzey2)"/>
+            <line x1="152" y1="42" x2="152" y2="106" stroke="var(--cizgi)" stroke-width="1" opacity=".7"/><line x1="234" y1="42" x2="234" y2="106" stroke="var(--cizgi)" stroke-width="1" opacity=".7"/><line x1="316" y1="42" x2="316" y2="106" stroke="var(--cizgi)" stroke-width="1" opacity=".7"/><line x1="398" y1="42" x2="398" y2="106" stroke="var(--cizgi)" stroke-width="1" opacity=".7"/><line x1="480" y1="42" x2="480" y2="106" stroke="var(--cizgi)" stroke-width="1" opacity=".7"/><line x1="562" y1="42" x2="562" y2="106" stroke="var(--cizgi)" stroke-width="1" opacity=".7"/><line x1="644" y1="42" x2="644" y2="106" stroke="var(--cizgi)" stroke-width="1" opacity=".7"/><line x1="726" y1="42" x2="726" y2="106" stroke="var(--cizgi)" stroke-width="1" opacity=".7"/><line x1="808" y1="42" x2="808" y2="106" stroke="var(--cizgi)" stroke-width="1" opacity=".7"/>
+            <text x="70" y="18" font-size="10" fill="var(--solgun)" data-i18n="s1_serit">MASTER FOOTAGE · 42:18</text>
+          </g>
+          <g class="oynak bas">
+            <rect x="76" y="22" width="2.5" height="104" rx="1.25" fill="var(--mavi)"/>
+            <circle cx="77" cy="20" r="4" fill="var(--mavi)"/>
+          </g>
+      <path class="oynak bag" style="--g:0.00s;--u:185" d="M111.0,122 C111.0,178 75,188 75,246" fill="none" stroke="var(--mavi)" stroke-width="1.4" opacity=".55" stroke-linecap="round"/>
+      <path class="oynak bag" style="--g:0.10s;--u:180" d="M193.0,122 C193.0,178 165,188 165,246" fill="none" stroke="var(--mavi)" stroke-width="1.4" opacity=".55" stroke-linecap="round"/>
+      <path class="oynak bag" style="--g:0.20s;--u:176" d="M275.0,122 C275.0,178 255,188 255,246" fill="none" stroke="var(--mavi)" stroke-width="1.4" opacity=".55" stroke-linecap="round"/>
+      <path class="oynak bag" style="--g:0.30s;--u:171" d="M357.0,122 C357.0,178 345,188 345,246" fill="none" stroke="var(--mavi)" stroke-width="1.4" opacity=".55" stroke-linecap="round"/>
+      <path class="oynak bag" style="--g:0.40s;--u:166" d="M439.0,122 C439.0,178 435,188 435,246" fill="none" stroke="var(--mavi)" stroke-width="1.4" opacity=".55" stroke-linecap="round"/>
+      <path class="oynak bag" style="--g:0.50s;--u:166" d="M521.0,122 C521.0,178 525,188 525,246" fill="none" stroke="var(--mavi)" stroke-width="1.4" opacity=".55" stroke-linecap="round"/>
+      <path class="oynak bag" style="--g:0.60s;--u:171" d="M603.0,122 C603.0,178 615,188 615,246" fill="none" stroke="var(--mavi)" stroke-width="1.4" opacity=".55" stroke-linecap="round"/>
+      <path class="oynak bag" style="--g:0.70s;--u:176" d="M685.0,122 C685.0,178 705,188 705,246" fill="none" stroke="var(--mavi)" stroke-width="1.4" opacity=".55" stroke-linecap="round"/>
+      <path class="oynak bag" style="--g:0.80s;--u:180" d="M767.0,122 C767.0,178 795,188 795,246" fill="none" stroke="var(--mavi)" stroke-width="1.4" opacity=".55" stroke-linecap="round"/>
+      <path class="oynak bag" style="--g:0.90s;--u:185" d="M849.0,122 C849.0,178 885,188 885,246" fill="none" stroke="var(--mavi)" stroke-width="1.4" opacity=".55" stroke-linecap="round"/>
+      <g transform="translate(36,250)"><g class="oynak kart" style="--g:0.00s">
+        <rect width="78" height="140" rx="10" fill="var(--kagit)" stroke="var(--cizgi)"/>
+        <rect x="13" y="13" width="26" height="5" rx="2.5" fill="var(--yt)"/>
+        <rect x="11" y="42" width="56" height="34" rx="5" fill="var(--yuzey2)"/><path d="M32 51 l13 8 l-13 8 z" fill="var(--yt)" opacity=".85"/><rect x="11" y="84" width="40" height="4" rx="2" fill="var(--cizgi)"/>
+        <text x="39" y="126" text-anchor="middle" font-size="8.5" fill="var(--solgun)" data-i18n="s1k0">Video</text>
+      </g></g>
+      <g transform="translate(126,250)"><g class="oynak kart" style="--g:0.10s">
+        <rect width="78" height="140" rx="10" fill="var(--kagit)" stroke="var(--cizgi)"/>
+        <rect x="13" y="13" width="26" height="5" rx="2.5" fill="var(--yt)"/>
+        <rect x="17" y="30" width="44" height="64" rx="6" fill="var(--yuzey2)"/><path d="M34 51 l14 9 l-14 9 z" fill="var(--yt)" opacity=".85"/>
+        <text x="39" y="126" text-anchor="middle" font-size="8.5" fill="var(--solgun)" data-i18n="s1k1">Short</text>
+      </g></g>
+      <g transform="translate(216,250)"><g class="oynak kart" style="--g:0.20s">
+        <rect width="78" height="140" rx="10" fill="var(--kagit)" stroke="var(--cizgi)"/>
+        <rect x="13" y="13" width="26" height="5" rx="2.5" fill="var(--ig)"/>
+        <rect x="17" y="30" width="44" height="64" rx="6" fill="var(--yuzey2)"/><path d="M34 51 l14 9 l-14 9 z" fill="var(--ig)" opacity=".85"/>
+        <text x="39" y="126" text-anchor="middle" font-size="8.5" fill="var(--solgun)" data-i18n="s1k2">Reel</text>
+      </g></g>
+      <g transform="translate(306,250)"><g class="oynak kart" style="--g:0.30s">
+        <rect width="78" height="140" rx="10" fill="var(--kagit)" stroke="var(--cizgi)"/>
+        <rect x="13" y="13" width="26" height="5" rx="2.5" fill="var(--ig)"/>
+        <rect x="21" y="28" width="42" height="54" rx="5" fill="var(--yuzey2)" opacity=".55"/><rect x="17" y="32" width="42" height="54" rx="5" fill="var(--yuzey2)" opacity=".8"/><rect x="13" y="36" width="42" height="54" rx="5" fill="var(--yuzey2)"/><circle cx="30" cy="98" r="2.4" fill="var(--ig)"/><circle cx="39" cy="98" r="2.4" fill="var(--cizgi)"/><circle cx="48" cy="98" r="2.4" fill="var(--cizgi)"/>
+        <text x="39" y="126" text-anchor="middle" font-size="8.5" fill="var(--solgun)" data-i18n="s1k3">Carousel</text>
+      </g></g>
+      <g transform="translate(396,250)"><g class="oynak kart" style="--g:0.40s">
+        <rect width="78" height="140" rx="10" fill="var(--kagit)" stroke="var(--cizgi)"/>
+        <rect x="13" y="13" width="26" height="5" rx="2.5" fill="var(--ig)"/>
+        <rect x="17" y="30" width="44" height="64" rx="6" fill="var(--yuzey2)"/><path d="M34 51 l14 9 l-14 9 z" fill="var(--ig)" opacity=".85"/>
+        <text x="39" y="126" text-anchor="middle" font-size="8.5" fill="var(--solgun)" data-i18n="s1k4">Story</text>
+      </g></g>
+      <g transform="translate(486,250)"><g class="oynak kart" style="--g:0.50s">
+        <rect width="78" height="140" rx="10" fill="var(--kagit)" stroke="var(--cizgi)"/>
+        <rect x="13" y="13" width="26" height="5" rx="2.5" fill="var(--tt)"/>
+        <rect x="17" y="30" width="44" height="64" rx="6" fill="var(--yuzey2)"/><path d="M34 51 l14 9 l-14 9 z" fill="var(--tt)" opacity=".85"/>
+        <text x="39" y="126" text-anchor="middle" font-size="8.5" fill="var(--solgun)" data-i18n="s1k5">Short</text>
+      </g></g>
+      <g transform="translate(576,250)"><g class="oynak kart" style="--g:0.60s">
+        <rect width="78" height="140" rx="10" fill="var(--kagit)" stroke="var(--cizgi)"/>
+        <rect x="13" y="13" width="26" height="5" rx="2.5" fill="var(--fb)"/>
+        <rect x="21" y="28" width="42" height="54" rx="5" fill="var(--yuzey2)" opacity=".55"/><rect x="17" y="32" width="42" height="54" rx="5" fill="var(--yuzey2)" opacity=".8"/><rect x="13" y="36" width="42" height="54" rx="5" fill="var(--yuzey2)"/><circle cx="30" cy="98" r="2.4" fill="var(--fb)"/><circle cx="39" cy="98" r="2.4" fill="var(--cizgi)"/><circle cx="48" cy="98" r="2.4" fill="var(--cizgi)"/>
+        <text x="39" y="126" text-anchor="middle" font-size="8.5" fill="var(--solgun)" data-i18n="s1k6">Carousel</text>
+      </g></g>
+      <g transform="translate(666,250)"><g class="oynak kart" style="--g:0.70s">
+        <rect width="78" height="140" rx="10" fill="var(--kagit)" stroke="var(--cizgi)"/>
+        <rect x="13" y="13" width="26" height="5" rx="2.5" fill="var(--li)"/>
+        <rect x="13" y="34" width="52" height="6" rx="3" fill="var(--cizgi)"/><rect x="13" y="46" width="44" height="6" rx="3" fill="var(--cizgi)"/><rect x="13" y="58" width="50" height="6" rx="3" fill="var(--cizgi)"/><rect x="13" y="70" width="30" height="6" rx="3" fill="var(--cizgi)"/><rect x="13" y="86" width="18" height="6" rx="3" fill="var(--li)" opacity=".7"/>
+        <text x="39" y="126" text-anchor="middle" font-size="8.5" fill="var(--solgun)" data-i18n="s1k7">Text post</text>
+      </g></g>
+      <g transform="translate(756,250)"><g class="oynak kart" style="--g:0.80s">
+        <rect width="78" height="140" rx="10" fill="var(--kagit)" stroke="var(--cizgi)"/>
+        <rect x="13" y="13" width="26" height="5" rx="2.5" fill="var(--li)"/>
+        <rect x="13" y="34" width="52" height="6" rx="3" fill="var(--cizgi)"/><rect x="13" y="46" width="44" height="6" rx="3" fill="var(--cizgi)"/><rect x="13" y="58" width="50" height="6" rx="3" fill="var(--cizgi)"/><rect x="13" y="70" width="30" height="6" rx="3" fill="var(--cizgi)"/><rect x="13" y="86" width="18" height="6" rx="3" fill="var(--li)" opacity=".7"/>
+        <text x="39" y="126" text-anchor="middle" font-size="8.5" fill="var(--solgun)" data-i18n="s1k8">Quote</text>
+      </g></g>
+      <g transform="translate(846,250)"><g class="oynak kart" style="--g:0.90s">
+        <rect width="78" height="140" rx="10" fill="var(--kagit)" stroke="var(--cizgi)"/>
+        <rect x="13" y="13" width="26" height="5" rx="2.5" fill="var(--tt)"/>
+        <rect x="13" y="34" width="52" height="46" rx="5" fill="var(--yuzey2)"/><circle cx="27" cy="47" r="5" fill="var(--tt)" opacity=".8"/><path d="M15 74 l14 -16 l11 12 l8 -8 l15 12 z" fill="var(--cizgi)"/><rect x="13" y="86" width="34" height="5" rx="2.5" fill="var(--cizgi)"/>
+        <text x="39" y="126" text-anchor="middle" font-size="8.5" fill="var(--solgun)" data-i18n="s1k9">Cover</text>
+      </g></g>
+          <text class="oynak sayac" x="480" y="424" text-anchor="middle" font-size="12.5"
+                fill="var(--mavi)" data-i18n="s1_sayac">1 shoot → 10 posts</text>
+        </svg>
+      </div>
     </div>
   </section>
 
@@ -478,6 +681,63 @@ a{color:inherit;}
         <h2 data-i18n="how_h2">From an idea to a published post</h2>
         <p data-i18n="how_p">Slate follows the order the work actually happens in. But that order isn't mandatory: a script can exist without a project, and a project can start without a single idea.</p>
       </div>
+
+      <div class="sahne s2" id="sahne2">
+        <div class="sahne-bas">
+          <h3 data-i18n="s2_h">One idea, all the way through</h3>
+          <span data-i18n="s2_e">The order is the work's own — not a rule</span>
+        </div>
+        <svg viewBox="0 26 960 180" role="img" data-i18n-attr="aria-label:s2_alt">
+          <line x1="90" y1="120" x2="870" y2="120" stroke="var(--cizgi)" stroke-width="2.5" stroke-linecap="round"/>
+          <line class="oynak ray" style="--u:780" x1="90" y1="120" x2="870" y2="120"
+                stroke="var(--mavi)" stroke-width="2.5" stroke-linecap="round" opacity=".55"/>
+      <g transform="translate(90,86)"><g class="oynak ayrinti" style="--g:0.90s"><rect x="-46" y="-42" width="92" height="42" rx="7" fill="var(--kagit)" stroke="var(--cizgi)"/><rect x="-36" y="-32" width="46" height="5" rx="2.5" fill="var(--mavi)" opacity=".6"/><rect x="-36" y="-22" width="66" height="4.5" rx="2.25" fill="var(--cizgi)"/><rect x="-36" y="-14" width="40" height="4.5" rx="2.25" fill="var(--cizgi)"/></g></g>
+      <g transform="translate(285,86)"><g class="oynak ayrinti" style="--g:2.62s"><rect x="-42" y="-48" width="84" height="48" rx="7" fill="var(--kagit)" stroke="var(--cizgi)"/><rect x="-32" y="-38" width="64" height="4.5" rx="2.25" fill="var(--cizgi)"/><rect x="-32" y="-30" width="48" height="4.5" rx="2.25" fill="var(--cizgi)"/><rect x="-32" y="-22" width="64" height="4.5" rx="2.25" fill="var(--cizgi)"/><rect x="-32" y="-14" width="48" height="4.5" rx="2.25" fill="var(--cizgi)"/><rect x="-32" y="-6" width="64" height="4.5" rx="2.25" fill="var(--cizgi)"/></g></g>
+      <g transform="translate(480,86)"><g class="oynak ayrinti" style="--g:4.34s"><rect x="-62" y="-40" width="124" height="38" rx="8" fill="var(--kagit)" stroke="var(--cizgi)"/><rect x="-52" y="-25" width="26" height="6" rx="3" fill="var(--mavi)" opacity=".55"/><circle class="oynak adim7" style="--g:4.84s" cx="-18" cy="-22" r="4.4" fill="var(--yesil)"/><circle class="oynak adim7" style="--g:5.00s" cx="-7" cy="-22" r="4.4" fill="var(--yesil)"/><circle class="oynak adim7" style="--g:5.16s" cx="4" cy="-22" r="4.4" fill="var(--yesil)"/><circle class="oynak adim7" style="--g:5.32s" cx="15" cy="-22" r="4.4" fill="var(--yesil)"/><circle class="oynak adim7" style="--g:5.48s" cx="26" cy="-22" r="4.4" fill="var(--yesil)"/><circle class="oynak adim7" style="--g:5.64s" cx="37" cy="-22" r="4.4" fill="var(--yesil)"/><circle class="oynak adim7" style="--g:5.80s" cx="48" cy="-22" r="4.4" fill="var(--yesil)"/></g></g>
+      <g transform="translate(675,86)"><g class="oynak ayrinti" style="--g:6.06s"><rect x="-56" y="-48" width="112" height="48" rx="7" fill="var(--kagit)" stroke="var(--cizgi)"/><rect x="-46" y="-40" width="20" height="15" rx="3" fill="var(--yuzey2)"/><rect x="-22" y="-40" width="20" height="15" rx="3" fill="var(--yuzey2)"/><rect x="2" y="-40" width="20" height="15" rx="3" fill="var(--yuzey2)"/><rect x="26" y="-40" width="20" height="15" rx="3" fill="var(--yuzey2)"/><rect x="-46" y="-21" width="20" height="15" rx="3" fill="var(--yuzey2)"/><rect x="-22" y="-21" width="20" height="15" rx="3" fill="var(--yuzey2)"/><rect x="2" y="-21" width="20" height="15" rx="3" fill="var(--yuzey2)"/><rect x="26" y="-21" width="20" height="15" rx="3" fill="var(--yuzey2)"/><rect class="oynak adim7" style="--g:6.51s" x="-43" y="-36" width="14" height="7" rx="2" fill="var(--yt)"/><rect class="oynak adim7" style="--g:6.71s" x="-19" y="-17" width="14" height="7" rx="2" fill="var(--ig)"/><rect class="oynak adim7" style="--g:6.91s" x="29" y="-36" width="14" height="7" rx="2" fill="var(--tt)"/></g></g>
+      <g transform="translate(870,86)"><g class="oynak ayrinti" style="--g:7.78s"><rect x="-46" y="-40" width="92" height="38" rx="7" fill="var(--kagit)" stroke="var(--cizgi)"/><circle cx="-30" cy="-21" r="7.5" fill="var(--yesil)" fill-opacity=".18"/><path d="M-33.5 -21.2 l2.6 2.6 L-26 -25" fill="none" stroke="var(--yesil)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/><rect x="-16" y="-26" width="52" height="5" rx="2.5" fill="var(--yesil)" opacity=".5"/><rect x="-16" y="-17" width="34" height="4.5" rx="2.25" fill="var(--cizgi)"/></g></g>
+      <g transform="translate(90,120)"><g class="oynak durak" style="--g:0.90s">
+        <circle r="27" fill="var(--yuzey)" stroke="var(--mavi)" stroke-width="2"/>
+        <circle r="27" fill="var(--mavi)" fill-opacity=".10"/>
+        <path d="M0 -9 a9 9 0 0 1 9 9 c0 4 -2.6 6.4 -4.4 8.4 l-0.6 2.6 h-8 l-0.6 -2.6 C-6.4 6.4 -9 4 -9 0 a9 9 0 0 1 9 -9 z" fill="none" stroke="var(--mavi)" stroke-width="2" transform="translate(0,-2)"/><rect x="-4" y="10" width="8" height="2.4" rx="1.2" fill="var(--mavi)"/>
+      </g></g>
+      <g transform="translate(285,120)"><g class="oynak durak" style="--g:2.62s">
+        <circle r="27" fill="var(--yuzey)" stroke="var(--mavi)" stroke-width="2"/>
+        <circle r="27" fill="var(--mavi)" fill-opacity=".10"/>
+        <rect x="-8" y="-11" width="16" height="22" rx="2.5" fill="none" stroke="var(--mavi)" stroke-width="2"/><line x1="-4.5" y1="-5" x2="4.5" y2="-5" stroke="var(--mavi)" stroke-width="1.8" stroke-linecap="round"/><line x1="-4.5" y1="0" x2="4.5" y2="0" stroke="var(--mavi)" stroke-width="1.8" stroke-linecap="round"/><line x1="-4.5" y1="5" x2="1" y2="5" stroke="var(--mavi)" stroke-width="1.8" stroke-linecap="round"/>
+      </g></g>
+      <g transform="translate(480,120)"><g class="oynak durak" style="--g:4.34s">
+        <circle r="27" fill="var(--yuzey)" stroke="var(--mavi)" stroke-width="2"/>
+        <circle r="27" fill="var(--mavi)" fill-opacity=".10"/>
+        <rect x="-11" y="-7" width="22" height="14" rx="4" fill="none" stroke="var(--mavi)" stroke-width="2"/><circle cx="-5" cy="0" r="1.9" fill="var(--mavi)"/><circle cx="0" cy="0" r="1.9" fill="var(--mavi)"/><circle cx="5" cy="0" r="1.9" fill="var(--mavi)"/>
+      </g></g>
+      <g transform="translate(675,120)"><g class="oynak durak" style="--g:6.06s">
+        <circle r="27" fill="var(--yuzey)" stroke="var(--mavi)" stroke-width="2"/>
+        <circle r="27" fill="var(--mavi)" fill-opacity=".10"/>
+        <rect x="-10" y="-9" width="20" height="19" rx="3" fill="none" stroke="var(--mavi)" stroke-width="2"/><line x1="-10" y1="-3" x2="10" y2="-3" stroke="var(--mavi)" stroke-width="2"/><line x1="-5" y1="-13" x2="-5" y2="-9" stroke="var(--mavi)" stroke-width="2" stroke-linecap="round"/><line x1="5" y1="-13" x2="5" y2="-9" stroke="var(--mavi)" stroke-width="2" stroke-linecap="round"/><rect x="-6" y="1" width="5" height="5" rx="1" fill="var(--mavi)"/>
+      </g></g>
+      <g transform="translate(870,120)"><g class="oynak durak" style="--g:7.78s">
+        <circle r="27" fill="var(--yuzey)" stroke="var(--yesil)" stroke-width="2"/>
+        <circle r="27" fill="var(--yesil)" fill-opacity=".10"/>
+        <circle cx="0" cy="0" r="11" fill="none" stroke="var(--yesil)" stroke-width="2"/><path d="M-5 0.4 l3.6 3.6 L6 -3.4" fill="none" stroke="var(--yesil)" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"/>
+      </g></g>
+          <g transform="translate(90,120)"><g class="oynak gezgin">
+            <circle r="9" fill="var(--mavi)" fill-opacity=".22"/>
+            <circle r="4.5" fill="var(--mavi)"/>
+          </g></g>
+      <text class="adi" x="90" y="172" text-anchor="middle" font-size="13.5" fill="var(--murekkep)" data-i18n="s2b0">Idea</text>
+      <text x="90" y="189" text-anchor="middle" font-size="9.5" fill="var(--solgun)" data-i18n="s2a0">a scene, an angle</text>
+      <text class="adi" x="285" y="172" text-anchor="middle" font-size="13.5" fill="var(--murekkep)" data-i18n="s2b1">Script</text>
+      <text x="285" y="189" text-anchor="middle" font-size="9.5" fill="var(--solgun)" data-i18n="s2a1">the text, or AI</text>
+      <text class="adi" x="480" y="172" text-anchor="middle" font-size="13.5" fill="var(--murekkep)" data-i18n="s2b2">Project</text>
+      <text x="480" y="189" text-anchor="middle" font-size="9.5" fill="var(--solgun)" data-i18n="s2a2">seven steps</text>
+      <text class="adi" x="675" y="172" text-anchor="middle" font-size="13.5" fill="var(--murekkep)" data-i18n="s2b3">Calendar</text>
+      <text x="675" y="189" text-anchor="middle" font-size="9.5" fill="var(--solgun)" data-i18n="s2a3">a day and a time</text>
+      <text class="adi" x="870" y="172" text-anchor="middle" font-size="13.5" fill="var(--murekkep)" data-i18n="s2b4">Published</text>
+      <text x="870" y="189" text-anchor="middle" font-size="9.5" fill="var(--solgun)" data-i18n="s2a4">you tick it off</text>
+        </svg>
+      </div>
+
       <div class="adimlar">
         <div class="adim">
           <div class="adim-no">1</div>
@@ -1057,6 +1317,18 @@ a{color:inherit;}
 // sayfa kaliyor. Sozluk yalnizca Turkce'yi tasiyor.
 var METIN = {
   tr: {
+    s1_h:"Tek çekim, on paylaşım", s1_e:"Aynı çekim, on ayrı çıkış",
+    s1_serit:"HAM ÇEKİM · 42:18", s1_sayac:"1 çekim → 10 paylaşım",
+    s1_alt:"Tek bir uzun çekimin on ayrı paylaşıma dönüşmesi",
+    s1k0:"Video", s1k1:"Short", s1k2:"Reel", s1k3:"Carousel", s1k4:"Hikâye",
+    s1k5:"Kısa", s1k6:"Carousel", s1k7:"Metin postu", s1k8:"Alıntı", s1k9:"Kapak",
+
+    s2_h:"Bir fikir, baştan sona", s2_e:"Bu sıra işin kendi sırası — kural değil",
+    s2_alt:"Bir fikrin script, proje ve takvimden geçip yayına ulaşması",
+    s2b0:"Fikir", s2b1:"Script", s2b2:"Proje", s2b3:"Takvim", s2b4:"Yayında",
+    s2a0:"bir sahne, bir açı", s2a1:"metin ya da AI", s2a2:"yedi adım",
+    s2a3:"bir gün, bir saat", s2a4:"sen işaretlersin",
+
     nav_what:"Nedir", nav_how:"Nasıl çalışır", nav_features:"Özellikler", nav_ai:"AI", nav_login:"Giriş",
     btn_open:"Demoyu aç",
     aria_lang:"Dili değiştir", aria_theme:"Temayı değiştir", aria_board:"Örnek yayın takvimi",
@@ -1330,6 +1602,22 @@ window.matchMedia('(prefers-color-scheme: dark)').addEventListener('change', fun
     });
   }, { rootMargin: '-70px 0px -60% 0px', threshold: 0 });
   hedefler.forEach(function(h){ if(h) goz.observe(h); });
+})();
+
+// ---------- Sahneler: ekrana girince oynasin -----------------------------
+// Sayfa acilir acilmaz hepsi birden donmesin; hem dikkat dagitiyor hem de
+// gorulmeyen animasyon bosuna is. Sahne ekrandan cikinca duruyor.
+(function(){
+  var sahneler = document.querySelectorAll('.sahne, .canli');
+  if(!sahneler.length) return;
+  if(!window.IntersectionObserver){
+    Array.prototype.forEach.call(sahneler, function(s){ s.classList.add('oyna'); });
+    return;
+  }
+  var goz = new IntersectionObserver(function(girisler){
+    girisler.forEach(function(g){ g.target.classList.toggle('oyna', g.isIntersecting); });
+  }, { rootMargin: '0px 0px -12% 0px', threshold: 0.15 });
+  Array.prototype.forEach.call(sahneler, function(s){ goz.observe(s); });
 })();
 
 // ---------- Giris ------------------------------------------------------
