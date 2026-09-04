@@ -1,0 +1,5 @@
+# app.html CRLF ile tutuluyor. Bu satır olmadan farklı araçlarla çalışan iki
+# oturum dosyayı LF ve CRLF arasında gidip getiriyor; git o zaman DOSYANIN
+# TAMAMINI değişmiş sayıyor ve birleştirme tek büyük çakışmaya dönüşüyor.
+# Bir kez yaşandı (3 Eylül 2026), sebebi bulunması yarım saat aldı.
+app.html text eol=crlf
