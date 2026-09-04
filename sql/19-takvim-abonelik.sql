@@ -37,12 +37,16 @@
 -- 1) Kova. Herkese acik okuma; yazma asagidaki politikalarla sinirli.
 --    5 MB dosya siniri: bir .ics bunun binde biri kadar, kotu niyetli
 --    yuklemeye karsi ust sinir.
+--    Izinli tur listesinde IKI yazilis da var: tarayici dosyayi
+--    "text/calendar; charset=utf-8" olarak gonderiyor, listede yalnizca
+--    "text/calendar" olsaydi yukleme reddedilebilirdi.
 insert into storage.buckets (id, name, public, file_size_limit, allowed_mime_types)
-values ('takvim', 'takvim', true, 5242880, array['text/calendar'])
+values ('takvim', 'takvim', true, 5242880,
+        array['text/calendar', 'text/calendar; charset=utf-8'])
 on conflict (id) do update
   set public = true,
       file_size_limit = 5242880,
-      allowed_mime_types = array['text/calendar'];
+      allowed_mime_types = array['text/calendar', 'text/calendar; charset=utf-8'];
 
 -- 2) Politikalar. Her kullanici YALNIZCA kendi kullanici-id'si adindaki
 --    klasore yazabiliyor. storage.foldername(name) yol parcalarini dizi
