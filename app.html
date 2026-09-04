@@ -9686,13 +9686,14 @@ function maybeAskFeedback(){
 // bir ayari acik gostermek olurdu.
 const HATIRLATMA_ANAHTARI = 'demo_reminders';
 const HATIRLATMA_SON = 'demo_reminded_on';
-const HATIRLATMA_VARSAYILAN = { tarayici:false, takvim:false, once:true, gun:false, gecikti:true, jeton:'' };
+const HATIRLATMA_VARSAYILAN = { tarayici:false, takvim:false, once:true, gun:false, gecikti:true,
+                                jeton:'', yayinlandi:false };
 let hatirlatma = Object.assign({}, HATIRLATMA_VARSAYILAN);
 
 function hatirlatmaTemizle(h){
   const t = Object.assign({}, HATIRLATMA_VARSAYILAN);
   if(!h || typeof h !== 'object') return t;
-  ['tarayici','takvim','once','gun','gecikti'].forEach(k=>{
+  ['tarayici','takvim','once','gun','gecikti','yayinlandi'].forEach(k=>{
     if(typeof h[k] === 'boolean') t[k] = h[k];
   });
   // Jeton dosya adina giriyor: yalnizca UUID bicimi kabul ediliyor ki
@@ -9887,8 +9888,15 @@ async function takvimYayinla(){
     // oldugunda kullaniciyi bosuna bekletiyordu; AI anahtari ekraninda
     // Google'in cumlesini gosteren duzen burada da uygulaniyor.
     else if(m){ error.sunucu = m; }
+    hatirlatma.yayinlandi = false;
+    hatirlatmaKaydet();
     throw error;
   }
+  // Dosya GERCEKTEN yazildi. Adres ancak bundan sonra gosteriliyor:
+  // once jeton uretilir uretilmez gosteriliyordu ve kullanici, yazilmamis
+  // bir dosyanin adresini takvimine ekleyebiliyordu — o adres olu doguyordu.
+  hatirlatma.yayinlandi = true;
+  hatirlatmaKaydet();
   return takvimAdresi();
 }
 async function takvimSil(jeton){
@@ -9967,7 +9975,7 @@ function hatirlatmaEkraniTazele(){
 
   // Takvim kanali
   const adres = takvimAdresi();
-  el('rm_adresSatir').hidden = !(hatirlatma.takvim && adres);
+  el('rm_adresSatir').hidden = !(hatirlatma.takvim && adres && hatirlatma.yayinlandi);
   if(adres) el('rm_adres').value = adres;
   el('rm_kurBtn').hidden = !hatirlatma.takvim || !!adres;
   el('rm_yenileBtn').hidden = !hatirlatma.takvim || !adres;
@@ -10029,6 +10037,7 @@ document.getElementById('rm_takvim').addEventListener('change', async (e)=>{
     if(!confirm(t('rm_cal_off_ask'))){ e.target.checked = true; return; }
     const eski = hatirlatma.jeton;
     hatirlatma.jeton = '';
+    hatirlatma.yayinlandi = false;
     hatirlatma.takvim = false;
     hatirlatmaKaydet();
     await takvimSil(eski);
