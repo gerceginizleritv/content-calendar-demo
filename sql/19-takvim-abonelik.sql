@@ -37,43 +37,36 @@
 -- 1) Kova. Herkese acik okuma; yazma asagidaki politikalarla sinirli.
 --    5 MB dosya siniri: bir .ics bunun binde biri kadar, kotu niyetli
 --    yuklemeye karsi ust sinir.
+--    Izinli tur listesinde IKI yazilis da var: tarayici dosyayi
+--    "text/calendar; charset=utf-8" olarak gonderiyor, listede yalnizca
+--    "text/calendar" olsaydi yukleme reddedilebilirdi.
 insert into storage.buckets (id, name, public, file_size_limit, allowed_mime_types)
-values ('takvim', 'takvim', true, 5242880, array['text/calendar'])
+values ('takvim', 'takvim', true, 5242880,
+        array['text/calendar', 'text/calendar; charset=utf-8'])
 on conflict (id) do update
   set public = true,
       file_size_limit = 5242880,
-      allowed_mime_types = array['text/calendar'];
+      allowed_mime_types = array['text/calendar', 'text/calendar; charset=utf-8'];
 
--- 2) Politikalar. Her kullanici YALNIZCA kendi kullanici-id'si adindaki
---    klasore yazabiliyor. storage.foldername(name) yol parcalarini dizi
---    olarak veriyor; ilk parca klasor adi.
+-- 2) Politika. TEK politika, dort islemi de kapsiyor (for all).
+--    Once uc ayri politika vardi ve kullanicida "new row violates row-level
+--    security policy" hatasi verdi (3 Eylul 2026). Sebep ne olursa olsun
+--    (politikalarin biri kurulmamis ya da storage.foldername surum farki),
+--    dogru cozum ayni sarti tek yerde ve en basit bicimde yazmak:
+--    dosya adi "<kullanici-id>/" ile basliyorsa o kullanicinindir.
 --
---    Tekrar calistirilabilir olsun diye once dusuruluyor.
+--    "name like auth.uid() || '/%'" storage.foldername'e hic dokunmuyor;
+--    yalnizca metin karsilastirmasi, her surumde ayni calisiyor.
 
 drop policy if exists "takvim: kendi klasorune yazar"     on storage.objects;
 drop policy if exists "takvim: kendi dosyasini gunceller" on storage.objects;
 drop policy if exists "takvim: kendi dosyasini siler"     on storage.objects;
+drop policy if exists "takvim: kendi klasoru"             on storage.objects;
 
-create policy "takvim: kendi klasorune yazar"
-  on storage.objects for insert to authenticated
-  with check (
-    bucket_id = 'takvim'
-    and (storage.foldername(name))[1] = auth.uid()::text
-  );
-
-create policy "takvim: kendi dosyasini gunceller"
-  on storage.objects for update to authenticated
-  using (
-    bucket_id = 'takvim'
-    and (storage.foldername(name))[1] = auth.uid()::text
-  );
-
-create policy "takvim: kendi dosyasini siler"
-  on storage.objects for delete to authenticated
-  using (
-    bucket_id = 'takvim'
-    and (storage.foldername(name))[1] = auth.uid()::text
-  );
+create policy "takvim: kendi klasoru"
+  on storage.objects for all to authenticated
+  using      (bucket_id = 'takvim' and name like auth.uid()::text || '/%')
+  with check (bucket_id = 'takvim' and name like auth.uid()::text || '/%');
 
 -- Okuma politikasi YAZILMIYOR: kova public olduğu icin okuma zaten
 -- anonim olarak calisiyor. Abonelik adresinin basliksiz istekle
@@ -86,9 +79,7 @@ create policy "takvim: kendi dosyasini siler"
 --
 --   delete from storage.objects where bucket_id = 'takvim';
 --   delete from storage.buckets where id = 'takvim';
---   drop policy if exists "takvim: kendi klasorune yazar"     on storage.objects;
---   drop policy if exists "takvim: kendi dosyasini gunceller" on storage.objects;
---   drop policy if exists "takvim: kendi dosyasini siler"     on storage.objects;
+--   drop policy if exists "takvim: kendi klasoru" on storage.objects;
 --
 -- Kullanicilarin takvimlerindeki abonelik o anda "bulunamadi" durumuna
 -- duser; olaylar kendiliginden kaybolur, veri kaybi olmaz.

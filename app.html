@@ -1570,6 +1570,14 @@ body.suruklenirken *{cursor:grabbing !important;}
 .rm-durum{font-size:12.5px;line-height:1.55;margin:8px 0 0;}
 .rm-durum.ok{color:var(--green);}
 .rm-durum.hata{color:var(--red);}
+.rm-kapsam{margin:-6px 0 18px;font-size:13.5px;line-height:1.6;color:var(--text-dim);
+  border-left:3px solid var(--accent);padding-left:14px;}
+.rm-saat{display:flex;align-items:center;gap:10px;flex-wrap:wrap;margin:12px 0 4px;}
+.rm-saat label{font-size:13.5px;color:var(--text);}
+.rm-saat input{padding:6px 9px;border-radius:8px;border:1px solid var(--line);
+  background:var(--bg);color:var(--text);font-family:inherit;font-size:14px;}
+.rm-saat .rm-not{margin:0;}
+.rm-adres-et{margin:14px 0 6px;font-size:12.5px;color:var(--text-dim);}
 .rm-adres{display:flex;gap:8px;margin-top:10px;}
 .rm-adres input{
   flex:1;min-width:0;font-family:'IBM Plex Mono',monospace;font-size:11.5px;
@@ -2331,6 +2339,7 @@ body.suruklenirken *{cursor:grabbing !important;}
   <div class="modal" style="max-width:520px;">
     <h2 data-i18n="rm_title">Deadline reminders</h2>
     <p class="rm-lead" data-i18n="rm_lead">Shootboard can tell you about a step before its deadline passes.</p>
+    <p class="rm-kapsam" data-i18n-html="rm_kapsam">These reminders are for <b>project step deadlines</b> — script, filming, audio, edit, approval, packaging, publishing. The posts on your publishing calendar are not included; you open Shootboard for those.</p>
 
     <div class="rm-bolum">
       <div class="rm-bas"><h3 data-i18n="rm_when_title">When should it remind you?</h3></div>
@@ -2339,6 +2348,7 @@ body.suruklenirken *{cursor:grabbing !important;}
         <label class="rm-anahtar"><input type="checkbox" id="rm_gun"><span data-i18n="rm_when_gun">On the deadline day</span></label>
         <label class="rm-anahtar"><input type="checkbox" id="rm_gecikti"><span data-i18n="rm_when_gecikti">When a step is already late</span></label>
       </div>
+      <p class="rm-not" data-i18n="rm_when_gecikti_note">“When a step is already late” works in the browser notification only. A calendar file writes its reminders in advance, so it cannot know later that a step slipped.</p>
       <p class="rm-durum hata" id="rm_when_warn" hidden data-i18n="rm_when_none">Pick at least one moment.</p>
     </div>
 
@@ -2360,10 +2370,18 @@ body.suruklenirken *{cursor:grabbing !important;}
         <h3 data-i18n="rm_ch_cal">Your own calendar</h3>
         <label class="rm-anahtar"><input type="checkbox" id="rm_takvim"></label>
       </div>
+      <div class="rm-saat" id="rm_saatSatir">
+        <label for="rm_saat" data-i18n="rm_saat_et">Reminder time</label>
+        <input type="time" id="rm_saat" value="09:00" step="300">
+        <span class="rm-not" data-i18n="rm_saat_not">Applies to calendar reminders.</span>
+      </div>
       <p class="rm-not" data-i18n="rm_ch_cal_lead">Your deadlines are published as a calendar address.</p>
-      <div class="rm-adres" id="rm_adresSatir" hidden>
-        <input type="text" id="rm_adres" readonly>
-        <button type="button" class="btn btn-sm" id="rm_kopyaBtn" data-i18n="rm_cal_copy">Copy address</button>
+      <div id="rm_adresSatir" hidden>
+        <p class="rm-adres-et" data-i18n="rm_adres_et">This is the address you paste into your calendar:</p>
+        <div class="rm-adres">
+          <input type="text" id="rm_adres" readonly>
+          <button type="button" class="btn btn-sm" id="rm_kopyaBtn" data-i18n="rm_cal_copy">Copy address</button>
+        </div>
       </div>
       <div class="rm-dugmeler">
         <button type="button" class="btn btn-sm btn-primary" id="rm_kurBtn" data-i18n="rm_cal_start">Create the calendar address</button>
@@ -2372,12 +2390,14 @@ body.suruklenirken *{cursor:grabbing !important;}
       <p class="rm-durum" id="rm_takvimDurum"></p>
       <details class="fold fold-modal rm-nasil">
         <summary><span data-i18n="rm_cal_how">How do I add it?</span></summary>
+        <p class="rm-not" data-i18n-html="rm_cal_how_0">First press <b>Copy address</b> above. Then, in your calendar:</p>
         <ul>
-          <li data-i18n="rm_cal_how_g">Google Calendar: Other calendars → Subscribe to calendar → From URL.</li>
-          <li data-i18n="rm_cal_how_i">iPhone: Settings → Calendar → Accounts → Add Subscribed Calendar.</li>
-          <li data-i18n="rm_cal_how_o">Outlook: Add calendar → Subscribe from web.</li>
+          <li data-i18n-html="rm_cal_how_g">Google Calendar: Other calendars → Subscribe to calendar → From URL.</li>
+          <li data-i18n-html="rm_cal_how_i">iPhone: Settings → Calendar → Accounts → Add Subscribed Calendar.</li>
+          <li data-i18n-html="rm_cal_how_o">Outlook: Add calendar → Subscribe from web.</li>
         </ul>
       </details>
+      <p class="rm-not rm-ilk" data-i18n="rm_cal_first">Google Calendar does not fetch a new subscription right away — the first time, it can take a few hours to appear. That is Google's own schedule, not a mistake on your side.</p>
       <p class="rm-not" data-i18n="rm_cal_lag">Calendars check the address on their own schedule.</p>
       <p class="rm-not" data-i18n="rm_cal_remove">To remove it later you unsubscribe in your calendar app.</p>
     </div>
@@ -2904,6 +2924,10 @@ const LANG = {
     rm_when_once: "The day before",
     rm_when_gun: "On the deadline day",
     rm_when_gecikti: "When a step is already late",
+    rm_when_gecikti_note: "“When a step is already late” works in the browser notification only. A calendar file writes its reminders in advance, so it cannot know later that a step slipped.",
+    rm_kapsam: "These reminders are for <b>project step deadlines</b> — script, filming, audio, edit, approval, packaging, publishing. The posts on your publishing calendar are not included; you open Shootboard for those.",
+    rm_saat_et: "Reminder time",
+    rm_saat_not: "Applies to calendar reminders.",
     rm_when_none: "Pick at least one moment, otherwise nothing is sent.",
     rm_ch_browser: "Browser notification",
     rm_ch_browser_lead: "Works on computers and Android. On iPhone you must add Shootboard to the home screen first, otherwise iOS sends no notification.",
@@ -2923,14 +2947,18 @@ const LANG = {
     rm_cal_renew_ask: "The old address will stop working immediately, and the calendar that uses it will empty out. A new address is created. Continue?",
     rm_cal_off_ask: "Cancel the subscription? The old address stops working and the calendar that uses it empties out.",
     rm_cal_how: "How do I add it?",
-    rm_cal_how_g: "Google Calendar: Other calendars → Subscribe to calendar → From URL → paste the address.",
-    rm_cal_how_i: "iPhone: Settings → Calendar → Accounts → Add Account → Other → Add Subscribed Calendar.",
-    rm_cal_how_o: "Outlook: Add calendar → Subscribe from web.",
+    rm_adres_et: "This is the address you paste into your calendar:",
+    rm_cal_how_0: "First press <b>Copy address</b> above. Then, in your calendar:",
+    rm_cal_how_g: "Google Calendar (on a computer): left menu → <b>Other calendars</b> + → <b>From URL</b> → paste the address → <b>Add calendar</b>. The box asks for nothing else; leave “Make the calendar publicly accessible” unticked.",
+    rm_cal_how_i: "iPhone: Settings → Apps → Calendar → Calendar Accounts → Add Account → Other → <b>Add Subscribed Calendar</b> → paste the address.",
+    rm_cal_how_o: "Outlook: Add calendar → <b>Subscribe from web</b> → paste the address.",
+    rm_cal_first: "Google Calendar does not fetch a new subscription right away — the first time, it can take a few hours to appear. That is Google's own schedule, not a mistake on your side.",
     rm_cal_lag: "Calendars check the address on their own schedule, so a change can take a few hours to appear. That is fine for deadlines.",
     rm_cal_remove: "To remove it later you unsubscribe in your calendar app, or press Renew / cancel here — that kills the address itself.",
     rm_cal_need_login: "The calendar address is tied to your account. Sign in first.",
     rm_cal_need_sql: "The storage area is not ready yet. Run sql/19-takvim-abonelik.sql in Supabase, then try again.",
     rm_cal_err: "The address could not be created. Try again in a moment?",
+    rm_cal_err_server: "The address could not be created. The server said:",
     rm_file_title: "Or: download a file (not recommended)",
     rm_file_warn: "Read this first. A downloaded file enters your calendar as separate one-off events. To remove them you have to delete each event by hand — there is no single undo. The subscription above is removed in one step. Use the file only if you cannot set up a subscription.",
     rm_file_btn: "Download the .ics file anyway",
@@ -3402,6 +3430,10 @@ const LANG = {
     rm_when_once: "Bir gün önce",
     rm_when_gun: "Termin günü",
     rm_when_gecikti: "Adım geciktiğinde",
+    rm_when_gecikti_note: "“Adım geciktiğinde” yalnızca tarayıcı bildiriminde çalışır. Takvim dosyası hatırlatmalarını önceden yazıyor, bu yüzden bir adımın sonradan geciktiğini bilemez.",
+    rm_kapsam: "Bu hatırlatmalar <b>proje adımlarının terminleri</b> içindir — script, çekim, ses, kurgu, onay, paketleme, yayın. Yayın takvimindeki paylaşımlar eklenmez; onlar için Shootboard'u açarsın.",
+    rm_saat_et: "Hatırlatma saati",
+    rm_saat_not: "Takvim hatırlatmaları için geçerli.",
     rm_when_none: "En az bir an seç, yoksa hiçbir şey gönderilmez.",
     rm_ch_browser: "Tarayıcı bildirimi",
     rm_ch_browser_lead: "Bilgisayarda ve Android'de çalışıyor. iPhone'da önce Shootboard'u ana ekrana eklemen ŞART, yoksa iOS bildirim göndermiyor.",
@@ -3421,14 +3453,18 @@ const LANG = {
     rm_cal_renew_ask: "Eski adres hemen çalışmayı bırakacak ve onu kullanan takvim boşalacak. Yeni bir adres oluşturulacak. Devam edilsin mi?",
     rm_cal_off_ask: "Abonelik iptal edilsin mi? Eski adres çalışmayı bırakır ve onu kullanan takvim boşalır.",
     rm_cal_how: "Nasıl eklerim?",
-    rm_cal_how_g: "Google Takvim: Diğer takvimler → Takvime abone ol → URL'den → adresi yapıştır.",
-    rm_cal_how_i: "iPhone: Ayarlar → Takvim → Hesaplar → Hesap Ekle → Diğer → Abone Olunan Takvim Ekle.",
-    rm_cal_how_o: "Outlook: Takvim ekle → Web'den abone ol.",
+    rm_adres_et: "Takvimine yapıştıracağın adres bu:",
+    rm_cal_how_0: "Önce yukarıdaki <b>Adresi kopyala</b> düğmesine bas. Sonra takviminde:",
+    rm_cal_how_g: "Google Takvim (bilgisayardan): sol menüde <b>Diğer takvimler</b> + → <b>URL'den</b> → adresi yapıştır → <b>Takvim ekle</b>. O pencere başka bir şey istemiyor; “Takvimi herkese açık yap” kutusunu işaretleme.",
+    rm_cal_how_i: "iPhone: Ayarlar → Uygulamalar → Takvim → Takvim Hesapları → Hesap Ekle → Diğer → <b>Abone Olunan Takvim Ekle</b> → adresi yapıştır.",
+    rm_cal_how_o: "Outlook: Takvim ekle → <b>Web'den abone ol</b> → adresi yapıştır.",
+    rm_cal_first: "Google Takvim yeni aboneliği hemen çekmiyor — ilk seferde görünmesi birkaç saat sürebilir. Bu Google'ın kendi sıklığı, sende bir hata olduğu anlamına gelmiyor.",
     rm_cal_lag: "Takvimler adrese kendi bildikleri sıklıkta bakıyor, o yüzden bir değişikliğin görünmesi birkaç saat sürebilir. Termin için sorun değil.",
     rm_cal_remove: "Sonradan kaldırmak için takvim uygulamasından abonelikten çıkarsın, ya da burada “Yenile / iptal et” e basarsın — o adresin kendisini öldürür.",
     rm_cal_need_login: "Takvim adresi hesabına bağlı. Önce giriş yap.",
     rm_cal_need_sql: "Depolama alanı henüz hazır değil. Supabase'de sql/19-takvim-abonelik.sql betiğini çalıştırıp tekrar dene.",
     rm_cal_err: "Adres oluşturulamadı. Biraz sonra tekrar dener misin?",
+    rm_cal_err_server: "Adres oluşturulamadı. Sunucunun söylediği:",
     rm_file_title: "Ya da: dosya indir (önerilmez)",
     rm_file_warn: "Önce bunu oku. İndirilen dosya takvimine ayrı ayrı, tek seferlik olaylar olarak girer. Kaldırmak için o olayları TEK TEK silmen gerekir; toptan geri alma yok. Yukarıdaki abonelik ise tek hamlede kaldırılıyor. Dosyayı ancak abonelik kuramıyorsan kullan.",
     rm_file_btn: "Yine de .ics dosyasını indir",
@@ -9680,18 +9716,22 @@ function maybeAskFeedback(){
 // bir ayari acik gostermek olurdu.
 const HATIRLATMA_ANAHTARI = 'demo_reminders';
 const HATIRLATMA_SON = 'demo_reminded_on';
-const HATIRLATMA_VARSAYILAN = { tarayici:false, takvim:false, once:true, gun:false, gecikti:true, jeton:'' };
+const HATIRLATMA_VARSAYILAN = { tarayici:false, takvim:false, once:true, gun:false, gecikti:true,
+                                jeton:'', yayinlandi:false, saat:'09:00' };
 let hatirlatma = Object.assign({}, HATIRLATMA_VARSAYILAN);
 
 function hatirlatmaTemizle(h){
   const t = Object.assign({}, HATIRLATMA_VARSAYILAN);
   if(!h || typeof h !== 'object') return t;
-  ['tarayici','takvim','once','gun','gecikti'].forEach(k=>{
+  ['tarayici','takvim','once','gun','gecikti','yayinlandi'].forEach(k=>{
     if(typeof h[k] === 'boolean') t[k] = h[k];
   });
   // Jeton dosya adina giriyor: yalnizca UUID bicimi kabul ediliyor ki
   // bozuk bir deger yol gezinmesine (../) donusmesin.
   if(typeof h.jeton === 'string' && /^[0-9a-f-]{0,64}$/i.test(h.jeton)) t.jeton = h.jeton;
+  // Saat: yalnizca SS:DD. Bozuk deger tetik hesabini kirar, o yuzden
+  // bicime uymayan her sey varsayilana dusuyor.
+  if(typeof h.saat === 'string' && /^([01]\d|2[0-3]):[0-5]\d$/.test(h.saat)) t.saat = h.saat;
   return t;
 }
 function hatirlatmaYukle(){
@@ -9789,6 +9829,18 @@ function icsZaman(d){
   return d.getUTCFullYear() + p2(d.getUTCMonth()+1) + p2(d.getUTCDate()) + 'T'
        + p2(d.getUTCHours()) + p2(d.getUTCMinutes()) + p2(d.getUTCSeconds()) + 'Z';
 }
+// Gun boyu olayda tetik, olayin BASINDAN (o gunun 00:00'i) sayiliyor.
+// Termin gunu 08:30 istiyorsa tetik +PT8H30M; bir gun once 08:30 istiyorsa
+// 24 saat geriden, yani -PT15H30M. Saat kullanicidan geliyor.
+function icsTetik(oncekiGun){
+  const [ss, dd] = String(hatirlatma.saat || '09:00').split(':').map(Number);
+  const dakika = ss * 60 + dd;
+  const fark = oncekiGun ? (24 * 60 - dakika) : dakika;
+  const s2 = Math.floor(fark / 60), d2 = fark % 60;
+  // "PT0M" gecerli ama "PT" degil: sifir dakika icin en az bir birim sart.
+  const govde = (s2 ? s2 + 'H' : '') + (d2 || !s2 ? d2 + 'M' : '');
+  return (oncekiGun ? '-PT' : 'PT') + govde;
+}
 function icsMetni(){
   const damga = icsZaman(new Date());
   const sat = ['BEGIN:VCALENDAR','VERSION:2.0','PRODID:-//Shootboard//Terminler//TR',
@@ -9822,12 +9874,12 @@ function icsMetni(){
       if(hatirlatma.once){
         sat.push('BEGIN:VALARM','ACTION:DISPLAY',
                  'DESCRIPTION:' + icsKacir(p.name + ' — ' + t('step_' + k)),
-                 'TRIGGER;VALUE=DURATION:-PT15H','END:VALARM');
+                 'TRIGGER;VALUE=DURATION:' + icsTetik(true),'END:VALARM');
       }
       if(hatirlatma.gun){
         sat.push('BEGIN:VALARM','ACTION:DISPLAY',
                  'DESCRIPTION:' + icsKacir(p.name + ' — ' + t('step_' + k)),
-                 'TRIGGER;VALUE=DURATION:PT9H','END:VALARM');
+                 'TRIGGER;VALUE=DURATION:' + icsTetik(false),'END:VALARM');
       }
       sat.push('END:VEVENT');
     });
@@ -9855,6 +9907,15 @@ function takvimAdresi(){
 function takvimYolu(jeton){
   return session.user.id + '/' + (jeton || hatirlatma.jeton) + '.ics';
 }
+// Hata ekrani: bilinen bir sebep varsa onu, yoksa SUNUCUNUN kendi
+// cumlesini gosteriyor. Genel "tekrar dene" yalnizca hicbir bilgi
+// yoksa kaliyor — kullanicinin duzeltebilecegi bir ayar hatasini
+// "biraz sonra dene" diye saklamak onu bosuna bekletiyor.
+function hataMetni(err){
+  if(err && err.anahtar) return t(err.anahtar);
+  if(err && err.sunucu)  return t('rm_cal_err_server') + ' ' + err.sunucu;
+  return t('rm_cal_err');
+}
 async function takvimYayinla(){
   if(!sb || !session){ const e = new Error('giris'); e.anahtar = 'rm_cal_need_login'; throw e; }
   if(!hatirlatma.jeton){ hatirlatma.jeton = jetonUret(); hatirlatmaKaydet(); }
@@ -9867,8 +9928,20 @@ async function takvimYayinla(){
     // (sql/19 betigini calistirmak), "hata olustu" demek onu bosa dusurur.
     const m = String(error.message || '');
     if(/not found|does not exist|bucket/i.test(m)){ error.anahtar = 'rm_cal_need_sql'; }
+    // Geri kalan her sey icin sunucunun KENDI cumlesi gosteriliyor.
+    // "Biraz sonra tekrar dene" demek, sebebi duzeltilebilir bir ayar
+    // oldugunda kullaniciyi bosuna bekletiyordu; AI anahtari ekraninda
+    // Google'in cumlesini gosteren duzen burada da uygulaniyor.
+    else if(m){ error.sunucu = m; }
+    hatirlatma.yayinlandi = false;
+    hatirlatmaKaydet();
     throw error;
   }
+  // Dosya GERCEKTEN yazildi. Adres ancak bundan sonra gosteriliyor:
+  // once jeton uretilir uretilmez gosteriliyordu ve kullanici, yazilmamis
+  // bir dosyanin adresini takvimine ekleyebiliyordu — o adres olu doguyordu.
+  hatirlatma.yayinlandi = true;
+  hatirlatmaKaydet();
   return takvimAdresi();
 }
 async function takvimSil(jeton){
@@ -9927,6 +10000,8 @@ function hatirlatmaEkraniTazele(){
   el('rm_gecikti').checked = hatirlatma.gecikti;
   el('rm_tarayici').checked = hatirlatma.tarayici;
   el('rm_takvim').checked = hatirlatma.takvim;
+  el('rm_saat').value = hatirlatma.saat;
+  el('rm_saatSatir').hidden = !hatirlatma.takvim;
   el('rm_when_warn').hidden = (hatirlatma.once || hatirlatma.gun || hatirlatma.gecikti);
 
   // Tarayici kanali
@@ -9947,7 +10022,7 @@ function hatirlatmaEkraniTazele(){
 
   // Takvim kanali
   const adres = takvimAdresi();
-  el('rm_adresSatir').hidden = !(hatirlatma.takvim && adres);
+  el('rm_adresSatir').hidden = !(hatirlatma.takvim && adres && hatirlatma.yayinlandi);
   if(adres) el('rm_adres').value = adres;
   el('rm_kurBtn').hidden = !hatirlatma.takvim || !!adres;
   el('rm_yenileBtn').hidden = !hatirlatma.takvim || !adres;
@@ -10009,6 +10084,7 @@ document.getElementById('rm_takvim').addEventListener('change', async (e)=>{
     if(!confirm(t('rm_cal_off_ask'))){ e.target.checked = true; return; }
     const eski = hatirlatma.jeton;
     hatirlatma.jeton = '';
+    hatirlatma.yayinlandi = false;
     hatirlatma.takvim = false;
     hatirlatmaKaydet();
     await takvimSil(eski);
@@ -10020,6 +10096,16 @@ document.getElementById('rm_takvim').addEventListener('change', async (e)=>{
   hatirlatmaEkraniTazele();
 });
 
+// Saat degisince ayarla birlikte TAKVIM DOSYASI da yeniden yaziliyor:
+// yalnizca ayari kaydetmek, kullanicinin takviminde eski saati birakirdi.
+document.getElementById('rm_saat').addEventListener('change', (e)=>{
+  const v = e.target.value;
+  if(!/^([01]\d|2[0-3]):[0-5]\d$/.test(v)){ e.target.value = hatirlatma.saat; return; }
+  hatirlatma.saat = v;
+  hatirlatmaKaydet();
+  takvimTazeleKuyrukla();
+});
+
 document.getElementById('rm_kurBtn').addEventListener('click', async ()=>{
   const btn = document.getElementById('rm_kurBtn');
   const cikti = document.getElementById('rm_takvimDurum');
@@ -10027,10 +10113,15 @@ document.getElementById('rm_kurBtn').addEventListener('click', async ()=>{
   try{
     await takvimYayinla();
     hatirlatmaEkraniTazele();
+    // Adres olusur olusmaz "nasil eklerim" katini AC: kullanicinin adrese
+    // ihtiyaci olan tek an bu, talimat kapali durursa adresi alip ne
+    // yapacagini bilmiyor.
+    const nasil = document.querySelector('.rm-nasil');
+    if(nasil) nasil.open = true;
     track('funnel/calendar-subscribed');
   }catch(err){
     console.error('[takvim] adres olusturulamadi', err);
-    cikti.textContent = t(err && err.anahtar ? err.anahtar : 'rm_cal_err');
+    cikti.textContent = hataMetni(err);
     cikti.className = 'rm-durum hata';
   }finally{ btn.disabled = false; }
 });
@@ -10053,7 +10144,7 @@ document.getElementById('rm_yenileBtn').addEventListener('click', async ()=>{
     console.error('[takvim] yenilenemedi', err);
     hatirlatma.jeton = eski;
     hatirlatmaKaydet();
-    cikti.textContent = t(err && err.anahtar ? err.anahtar : 'rm_cal_err');
+    cikti.textContent = hataMetni(err);
     cikti.className = 'rm-durum hata';
     hatirlatmaEkraniTazele();
   }finally{ btn.disabled = false; }

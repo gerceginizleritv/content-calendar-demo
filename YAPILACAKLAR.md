@@ -136,6 +136,51 @@ kayıt." → kaynaklar → hesaplar → hashtagler; Facebook'ta kısa hook +
 
 ---
 
+## Nerede kaldık (3 Eylül 2026, gece — takvim aboneliği çalıştı)
+
+**Takvim aboneliği artık uçtan uca çalışıyor.** Kullanıcı gerçek Supabase
+projesinde kurdu ve doğruladı. Yolda üç şey çıktı, üçü de düzeltildi:
+
+1. **İzin kuralı tutmadı** — "new row violates row-level security policy".
+   Üç ayrı politika yerine TEK politika yazıldı ve şart en basit biçime
+   indirildi: `name like auth.uid()::text || '/%'`. `storage.foldername`
+   kullanılmıyor artık; yalnızca metin karşılaştırması, sürüm farkından
+   etkilenmiyor.
+2. **İzinli dosya türü listesi fazla dardı** — uygulama dosyayı
+   `text/calendar; charset=utf-8` olarak yüklüyor, listede yalnızca
+   `text/calendar` vardı. İki yazılış da eklendi.
+3. **Yazılmamış adres gösteriliyordu** — kullanıcı fark etti ("açtığımda
+   otomatik bir adres geliyor"). Jeton üretilir üretilmez adres
+   görünüyordu; dosya hiç yazılmamış olabilirdi ve o adres ölü doğuyordu.
+   Artık `hatirlatma.yayinlandi` bayrağı var, adres yalnızca yükleme
+   başarılıysa görünüyor.
+
+**Hata mesajı düzeni değişti:** "Biraz sonra tekrar dene" sebebi
+düzeltilebilir bir ayar hatasıyken kullanıcıyı boşuna bekletiyordu. Artık
+bilinen bir sebep varsa o, yoksa SUNUCUNUN kendi cümlesi gösteriliyor.
+Kullanıcı tam olarak buna takıldı ve gerçek mesajı görünce iş tek adımda
+çözüldü.
+
+**Ders:** Yan etkisi olan bir adımın (dosya yazma) sonucunu, kullanıcıya
+gösterilen duruma (adres) bağlamadan önce DOĞRULA. Ve bir hata mesajını
+genelleştirirken, kullanıcının düzeltebileceği bilgiyi yutma.
+
+### Kullanıcı isteğiyle eklenenler (aynı gün)
+- Pencerenin başına **kapsam cümlesi**: hatırlatmalar yalnızca proje
+  adımlarının terminleri için; yayın takvimindeki paylaşımlar girmiyor.
+  Kullanıcı kararı: paylaşımlar bilerek girmiyor — "uygulamayı gelip
+  kullanmalarını isterim".
+- **"Adım geciktiğinde"** seçeneğinin yanına notu: yalnızca tarayıcı
+  bildiriminde çalışıyor. Takvim dosyası hatırlatmaları önceden yazdığı
+  için sonradan gecikmeyi bilemiyor.
+- **Hatırlatma saati ayarlanabilir** oldu (varsayılan 09:00). Gün boyu
+  olayda tetik olayın başından sayılıyor: termin günü 08:30 → `PT8H30M`,
+  bir gün önce 08:30 → `-PT15H30M`. Saat değişince takvim dosyası
+  yeniden yazılıyor; yalnızca ayarı kaydetmek kullanıcının takviminde
+  eski saati bırakırdı.
+
+---
+
 ## Test takımı — koşum düzeni ve emekliye ayrılanlar (3 Eylül 2026)
 
 **Testler bir kusur ortaya çıkardı (düzeltildi):** Takvimden "+ yeni proje"
