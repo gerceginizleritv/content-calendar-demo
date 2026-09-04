@@ -3,8 +3,8 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Slate — One Shoot, Every Post</title>
-<meta name="description" content="One shoot becomes ten posts. Slate keeps every Reel, Short, carousel and story on one board with its own caption, cover text and time slot — a planning board, not an auto-poster.">
+<title>Shootboard — One Shoot, Every Post</title>
+<meta name="description" content="One shoot becomes ten posts. Shootboard keeps every Reel, Short, carousel and story on one board with its own caption, cover text and time slot — a planning board, not an auto-poster.">
 <link rel="manifest" href="manifest.json">
 <meta name="theme-color" content="#10131C">
 <link rel="icon" href="favicon.svg" type="image/svg+xml">
@@ -14,12 +14,12 @@
 <link rel="apple-touch-icon" sizes="180x180" href="apple-touch-icon.png">
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
-<meta name="apple-mobile-web-app-title" content="Slate">
+<meta name="apple-mobile-web-app-title" content="Shootboard">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Archivo:wght@500;600;700;800&family=IBM+Plex+Sans:wght@400;500;600&family=IBM+Plex+Mono:wght@400;500;600&display=swap" rel="stylesheet">
 <style>
-/* Slate — temel palet acik tema. Token adlari korundu, sadece degerler
+/* Shootboard — temel palet acik tema. Token adlari korundu, sadece degerler
    degisti; boylece butun bilesen kurallari tek noktadan yeniden renklendi. */
 /* Tema data-theme ile degistiriliyor ama tarayiciya bildirilmiyordu; bu yuzden
    onay kutulari ve tarih/saat secicileri gibi yerel denetimler yanlis semada
@@ -110,7 +110,7 @@ body{
   font:700 18px/1 'Archivo',sans-serif;color:var(--text-dim);
 }
 .avatar img{width:100%;height:100%;object-fit:cover;display:block;}
-/* Giris yapilmamisken dairede Slate isareti duruyor: bos bir daire
+/* Giris yapilmamisken dairede Shootboard isareti duruyor: bos bir daire
    "yuklenmedi mi?" izlenimi veriyordu. */
 .avatar.bos{background:var(--surface-2);}
 .avatar.bos svg{width:28px;height:28px;display:block;}
@@ -1600,7 +1600,7 @@ body.suruklenirken *{cursor:grabbing !important;}
        basliyordu). Hepsi sola tasindi; ust taraf tamamen bosaldi. -->
   <div class="shell">
     <aside class="rail" id="rail">
-      <div class="rail-brand"><div class="lockup"><span class="mark"><svg viewBox="0 0 64 64" aria-hidden="true"><rect x="6" y="24" width="52" height="34" rx="7" fill="var(--text)"/><g transform="rotate(-9 32 17)"><rect x="6" y="7" width="52" height="15" rx="3.5" fill="var(--accent)"/><path d="M17 7 L22.5 7 L14.5 22 L9 22 Z" fill="var(--bg)"/><path d="M33 7 L38.5 7 L30.5 22 L25 22 Z" fill="var(--bg)"/><path d="M49 7 L54.5 7 L46.5 22 L41 22 Z" fill="var(--bg)"/></g><rect x="15" y="34" width="26" height="3.4" rx="1.7" fill="var(--text-dim)"/><rect x="15" y="43" width="17" height="3.4" rx="1.7" fill="var(--amber)"/></svg></span><span class="wordmark">Slate</span></div></div>
+      <div class="rail-brand"><div class="lockup"><span class="mark"><svg viewBox="0 0 64 64" aria-hidden="true"><rect x="6" y="24" width="52" height="34" rx="7" fill="var(--text)"/><g transform="rotate(-9 32 17)"><rect x="6" y="7" width="52" height="15" rx="3.5" fill="var(--accent)"/><path d="M17 7 L22.5 7 L14.5 22 L9 22 Z" fill="var(--bg)"/><path d="M33 7 L38.5 7 L30.5 22 L25 22 Z" fill="var(--bg)"/><path d="M49 7 L54.5 7 L46.5 22 L41 22 Z" fill="var(--bg)"/></g><rect x="15" y="34" width="26" height="3.4" rx="1.7" fill="var(--text-dim)"/><rect x="15" y="43" width="17" height="3.4" rx="1.7" fill="var(--amber)"/></svg></span><span class="wordmark">Shootboard</span></div></div>
 
       <!-- Kimlik: fotograf, ad, ve hemen ALTINDA giris dugmesi. -->
       <div class="rail-me">
@@ -1648,7 +1648,7 @@ body.suruklenirken *{cursor:grabbing !important;}
         <!-- Tanitim blogu simdilik kapali: bu is uygulamanin tepesinde
              degil, ayri bir karsilama sayfasinda anlatilacak. Metin ve
              duzenek silinmedi, oradan tekrar kullanilacak. -->
-        <button class="rail-link" id="pitchToggle" aria-expanded="false" data-i18n="pitch_show" hidden>What is Slate?</button>
+        <button class="rail-link" id="pitchToggle" aria-expanded="false" data-i18n="pitch_show" hidden>What is Shootboard?</button>
         <button class="rail-link" id="tourBtn" data-i18n="btn_tour">? How this works</button>
         <button class="rail-link" id="aiSettingsBtn" data-i18n="btn_ai_settings">✨ AI (Gemini)</button>
         <button class="rail-link" id="remindersBtn" data-i18n="rm_btn">🔔 Reminders</button>
@@ -1668,8 +1668,8 @@ body.suruklenirken *{cursor:grabbing !important;}
       <div class="header" id="pitchCard">
     <div id="pitch">
     <div class="eyebrow"><span class="tally"></span><span data-i18n="eyebrow">QUEUE — NEXT 6 WEEKS</span></div>
-    <h1 data-i18n="h1">One shoot becomes ten posts. Slate keeps all ten on one board.</h1>
-    <p data-i18n="h1_sub">The same footage goes out as a Reel, a Short, a carousel and a story — each with its own caption, cover text and time slot. You tick them off as they go out; Slate keeps the list of what is still waiting.</p>
+    <h1 data-i18n="h1">One shoot becomes ten posts. Shootboard keeps all ten on one board.</h1>
+    <p data-i18n="h1_sub">The same footage goes out as a Reel, a Short, a carousel and a story — each with its own caption, cover text and time slot. You tick them off as they go out; Shootboard keeps the list of what is still waiting.</p>
     <!-- Beklentiyi bir bakista kuran etiket: ziyaretcilerin en olasi yanlis
          varsayimi "benim yerime paylasir" olurdu. -->
     <p class="promise-tag" data-i18n="promise_tag">A planning board — not an auto-poster.</p>
@@ -2091,8 +2091,8 @@ body.suruklenirken *{cursor:grabbing !important;}
 <div class="overlay" id="driveWriteOverlay">
   <div class="modal">
     <h2 data-i18n="dw_title">Write to Drive</h2>
-    <!-- Ustune yazma HER ZAMAN gorunuyor. Onceden yalnizca Slate belgeyi
-         taniyorsa cikiyordu; oysa Slate'te sifirdan yazilan bir metni de
+    <!-- Ustune yazma HER ZAMAN gorunuyor. Onceden yalnizca Shootboard belgeyi
+         taniyorsa cikiyordu; oysa Shootboard'da sifirdan yazilan bir metni de
          var olan bir belgeye yazmak istenebilir. Belge bilinmiyorsa
          "Belge seç" ile seciliyor. -->
     <label class="dw-secim" id="dw_overwriteWrap">
@@ -2198,7 +2198,7 @@ body.suruklenirken *{cursor:grabbing !important;}
     </div>
     <!-- Yanlis beklentinin patladigi an tam olarak burasi: kullanici isaretin
          kendiliginden degismesini bekliyorsa once burada fark eder. -->
-    <p class="posted-hint" data-i18n="posted_hint">Tick this after you publish. Slate does not listen to the platforms — you mark it.</p>
+    <p class="posted-hint" data-i18n="posted_hint">Tick this after you publish. Shootboard does not listen to the platforms — you mark it.</p>
 
     <div class="field">
       <div class="field-header">
@@ -2330,7 +2330,7 @@ body.suruklenirken *{cursor:grabbing !important;}
 <div class="overlay" id="remindersOverlay">
   <div class="modal" style="max-width:520px;">
     <h2 data-i18n="rm_title">Deadline reminders</h2>
-    <p class="rm-lead" data-i18n="rm_lead">Slate can tell you about a step before its deadline passes.</p>
+    <p class="rm-lead" data-i18n="rm_lead">Shootboard can tell you about a step before its deadline passes.</p>
 
     <div class="rm-bolum">
       <div class="rm-bas"><h3 data-i18n="rm_when_title">When should it remind you?</h3></div>
@@ -2352,7 +2352,7 @@ body.suruklenirken *{cursor:grabbing !important;}
         <button type="button" class="btn btn-sm" id="rm_izinBtn" data-i18n="rm_ch_browser_ask" hidden>Allow notifications</button>
       </div>
       <p class="rm-durum" id="rm_izinDurum"></p>
-      <p class="rm-not" data-i18n="rm_ch_browser_note">For now the notification arrives when you open Slate.</p>
+      <p class="rm-not" data-i18n="rm_ch_browser_note">For now the notification arrives when you open Shootboard.</p>
     </div>
 
     <div class="rm-bolum">
@@ -2560,8 +2560,8 @@ const LANG = {
     banner_bold1: "This is a live, working demo.",
     banner_rest: "Click any day to add an entry, or any entry to edit it. It all works <b>without an account</b> — your calendar stays in this browser. Sign in with Google or an email link only if you want the same calendar on your phone too. The demo holds up to 100 entries.",
     eyebrow: "QUEUE — NEXT 6 WEEKS",
-    h1: "One shoot becomes ten posts. Slate keeps all ten on one board.",
-    h1_sub: "The same footage goes out as a Reel, a Short, a carousel and a story — each with its own caption, cover text and time slot. You tick them off as they go out; Slate keeps the list of what is still waiting.",
+    h1: "One shoot becomes ten posts. Shootboard keeps all ten on one board.",
+    h1_sub: "The same footage goes out as a Reel, a Short, a carousel and a story — each with its own caption, cover text and time slot. You tick them off as they go out; Shootboard keeps the list of what is still waiting.",
     btn_new: "+ New Entry",
     btn_pending: "⏳ Pending",
     btn_export: "Export Backup",
@@ -2598,7 +2598,7 @@ const LANG = {
     cloud_err_net: "This device could not reach the cloud.",
     cloud_err_net_more: "There may be no connection, or something on this device is blocking supabase.co — a content blocker, a VPN, or a company network. Try another connection.",
     cloud_err_auth: "Your session had expired.",
-    cloud_err_auth_more: "Slate tried to refresh it. If this keeps happening, sign out and sign in again.",
+    cloud_err_auth_more: "Shootboard tried to refresh it. If this keeps happening, sign out and sign in again.",
     cloud_err_server: "The server refused the request.",
     cloud_err_retry: "Try again",
     cloud_err_blocked: "Nothing is saved until your entries load — so that this device cannot write over what is in your account.",
@@ -2607,7 +2607,7 @@ const LANG = {
     nudge_dismiss: "Not now",
     btn_signed_in: "☁ Account",
     pitch_hide: "Hide intro",
-    pitch_show: "What is Slate?",
+    pitch_show: "What is Shootboard?",
     filters_title: "Filter the calendar",
     filters_sub: "show only what you pick — nothing is deleted",
     filter_type: "Type",
@@ -2804,7 +2804,7 @@ const LANG = {
     fk_filter_none: "Without a project",
     fk_count_filtered: (n,tum)=> `${n} / ${tum} ideas`,
     fk_none_match: "No idea here yet.",
-    fk_limit: (n)=> `Slate holds up to ${n} ideas.`,
+    fk_limit: (n)=> `Shootboard holds up to ${n} ideas.`,
     sc_new: "+ New script",
     sc_drive: "Bring it from Drive",
     sc_drive_push: "Write to Drive",
@@ -2837,7 +2837,7 @@ const LANG = {
     sc_count_filtered: (n,tum)=> `${n} / ${tum} scripts`,
     sc_none: "No scripts yet. A script does not need a project — write it now, attach it later.",
     sc_none_match: "No script here yet.",
-    sc_limit: (n)=> `Slate holds up to ${n} scripts.`,
+    sc_limit: (n)=> `Shootboard holds up to ${n} scripts.`,
     sc_del_confirm: (ad)=> `Delete the script “${ad}”?`,
     pe_script: "Scripts…",
     sc_title: "Script",
@@ -2894,22 +2894,22 @@ const LANG = {
     step_published: "Published",
     rm_btn: "🔔 Reminders",
     rm_title: "Deadline reminders",
-    rm_lead: "Slate can tell you about a step before its deadline passes. Two channels, each switched on separately.",
+    rm_lead: "Shootboard can tell you about a step before its deadline passes. Two channels, each switched on separately.",
     rm_when_title: "When should it remind you?",
     rm_when_once: "The day before",
     rm_when_gun: "On the deadline day",
     rm_when_gecikti: "When a step is already late",
     rm_when_none: "Pick at least one moment, otherwise nothing is sent.",
     rm_ch_browser: "Browser notification",
-    rm_ch_browser_lead: "Works on computers and Android. On iPhone you must add Slate to the home screen first, otherwise iOS sends no notification.",
+    rm_ch_browser_lead: "Works on computers and Android. On iPhone you must add Shootboard to the home screen first, otherwise iOS sends no notification.",
     rm_ch_browser_on: "Notifications are on for this browser.",
     rm_ch_browser_ask: "Allow notifications",
-    rm_ch_browser_denied: "This browser has blocked notifications for Slate. Allow them again from the padlock icon in the address bar.",
+    rm_ch_browser_denied: "This browser has blocked notifications for Shootboard. Allow them again from the padlock icon in the address bar.",
     rm_ch_browser_none: "This browser cannot show notifications.",
-    rm_ch_browser_note: "For now the notification arrives when you open Slate. Sending while Slate is closed is the next step.",
+    rm_ch_browser_note: "For now the notification arrives when you open Shootboard. Sending while Shootboard is closed is the next step.",
     rm_ch_cal: "Your own calendar",
     rm_ch_cal_lead: "Your deadlines are published as a calendar address. You add it to Google Calendar, your phone or Outlook once, and the reminder is done by the calendar itself.",
-    rm_cal_name: "Slate — deadlines",
+    rm_cal_name: "Shootboard — deadlines",
     rm_cal_on: "Subscription is on",
     rm_cal_start: "Create the calendar address",
     rm_cal_copy: "Copy address",
@@ -3048,7 +3048,7 @@ const LANG = {
     tour_visual_ourserver: "our server",
     tour_visual_combine: "combine",
     promise_tag: "A planning board — not an auto-poster.",
-    posted_hint: "Tick this after you publish. Slate does not listen to the platforms — you mark it.",
+    posted_hint: "Tick this after you publish. Shootboard does not listen to the platforms — you mark it.",
     tour_visual_market: "MARKETS",
     tour_visual_general: "GENERAL",
     tour_visual_exception: "EXCEPTION",
@@ -3057,8 +3057,8 @@ const LANG = {
     banner_bold1: "Bu, canlı ve çalışan bir demodur.",
     banner_rest: "Bir güne tıklayarak kayıt ekle, bir kayda tıklayarak düzenle. Hepsi <b>hesapsız çalışır</b> — takvimin bu tarayıcıda kalır. Aynı takvimi telefonunda da istiyorsan Google ya da e-posta linkiyle giriş yap. Demo 100 kayıt tutar.",
     eyebrow: "SIRADAKİLER — ÖNÜMÜZDEKİ 6 HAFTA",
-    h1: "Tek çekim on paylaşıma dönüşür. Slate onunu da tek panoda tutar.",
-    h1_sub: "Aynı çekim; Reels, Shorts, carousel ve hikaye olarak çıkar — her biri kendi caption'ı, kapak metni ve saatiyle. Yayınladıkça işaretlersin; Slate bekleyenlerin listesini tutar.",
+    h1: "Tek çekim on paylaşıma dönüşür. Shootboard onunu da tek panoda tutar.",
+    h1_sub: "Aynı çekim; Reels, Shorts, carousel ve hikaye olarak çıkar — her biri kendi caption'ı, kapak metni ve saatiyle. Yayınladıkça işaretlersin; Shootboard bekleyenlerin listesini tutar.",
     btn_new: "+ Yeni Giriş",
     btn_pending: "⏳ Bekleyenler",
     btn_export: "Yedek Dışa Aktar",
@@ -3095,7 +3095,7 @@ const LANG = {
     cloud_err_net: "Bu cihaz buluta ulaşamadı.",
     cloud_err_net_more: "Ya bağlantı yok ya da bu cihazdaki bir şey supabase.co adresini kesiyor — içerik engelleyici, VPN ya da kurum ağı. Başka bir bağlantıyla dene.",
     cloud_err_auth: "Oturumunun süresi dolmuştu.",
-    cloud_err_auth_more: "Slate tazelemeyi denedi. Tekrarlıyorsa çıkıp yeniden gir.",
+    cloud_err_auth_more: "Shootboard tazelemeyi denedi. Tekrarlıyorsa çıkıp yeniden gir.",
     cloud_err_server: "Sunucu isteği geri çevirdi.",
     cloud_err_retry: "Tekrar dene",
     cloud_err_blocked: "Kayıtların yüklenene kadar hiçbir şey kaydedilmiyor — bu cihaz hesabındakinin üzerine yazmasın diye.",
@@ -3104,7 +3104,7 @@ const LANG = {
     nudge_dismiss: "Şimdi değil",
     btn_signed_in: "☁ Hesabım",
     pitch_hide: "Tanıtımı gizle",
-    pitch_show: "Slate nedir?",
+    pitch_show: "Shootboard nedir?",
     filters_title: "Takvimi filtrele",
     filters_sub: "sadece seçtiklerini gösterir — hiçbir şey silinmez",
     filter_type: "Tür",
@@ -3301,7 +3301,7 @@ const LANG = {
     fk_filter_none: "Projesiz olanlar",
     fk_count_filtered: (n,tum)=> `${n} / ${tum} fikir`,
     fk_none_match: "Burada henüz fikir yok.",
-    fk_limit: (n)=> `Slate en fazla ${n} fikir tutuyor.`,
+    fk_limit: (n)=> `Shootboard en fazla ${n} fikir tutuyor.`,
     sc_new: "+ Yeni script",
     sc_drive: "Drive'dan getir",
     sc_drive_push: "Drive'a yaz",
@@ -3334,7 +3334,7 @@ const LANG = {
     sc_count_filtered: (n,tum)=> `${n} / ${tum} script`,
     sc_none: "Henüz script yok. Bir scriptin projesi olmak zorunda değil — şimdi yaz, bağını sonra kur.",
     sc_none_match: "Burada henüz script yok.",
-    sc_limit: (n)=> `Slate en fazla ${n} script tutuyor.`,
+    sc_limit: (n)=> `Shootboard en fazla ${n} script tutuyor.`,
     sc_del_confirm: (ad)=> `“${ad}” scriptini silmek istiyor musun?`,
     pe_script: "Scriptler…",
     sc_title: "Script",
@@ -3391,22 +3391,22 @@ const LANG = {
     step_published: "Yayın",
     rm_btn: "🔔 Hatırlatmalar",
     rm_title: "Termin hatırlatmaları",
-    rm_lead: "Slate bir adımın termini geçmeden sana haber verebilir. İki kanal var, her biri ayrı ayrı açılıyor.",
+    rm_lead: "Shootboard bir adımın termini geçmeden sana haber verebilir. İki kanal var, her biri ayrı ayrı açılıyor.",
     rm_when_title: "Ne zaman hatırlatsın?",
     rm_when_once: "Bir gün önce",
     rm_when_gun: "Termin günü",
     rm_when_gecikti: "Adım geciktiğinde",
     rm_when_none: "En az bir an seç, yoksa hiçbir şey gönderilmez.",
     rm_ch_browser: "Tarayıcı bildirimi",
-    rm_ch_browser_lead: "Bilgisayarda ve Android'de çalışıyor. iPhone'da önce Slate'i ana ekrana eklemen ŞART, yoksa iOS bildirim göndermiyor.",
+    rm_ch_browser_lead: "Bilgisayarda ve Android'de çalışıyor. iPhone'da önce Shootboard'u ana ekrana eklemen ŞART, yoksa iOS bildirim göndermiyor.",
     rm_ch_browser_on: "Bu tarayıcıda bildirimler açık.",
     rm_ch_browser_ask: "Bildirimlere izin ver",
-    rm_ch_browser_denied: "Bu tarayıcı Slate'in bildirimlerini engellemiş. Adres çubuğundaki kilit simgesinden yeniden izin verebilirsin.",
+    rm_ch_browser_denied: "Bu tarayıcı Shootboard'un bildirimlerini engellemiş. Adres çubuğundaki kilit simgesinden yeniden izin verebilirsin.",
     rm_ch_browser_none: "Bu tarayıcı bildirim gösteremiyor.",
-    rm_ch_browser_note: "Şimdilik bildirim, Slate'i açtığında geliyor. Slate kapalıyken gönderim sonraki adım.",
+    rm_ch_browser_note: "Şimdilik bildirim, Shootboard'u açtığında geliyor. Shootboard kapalıyken gönderim sonraki adım.",
     rm_ch_cal: "Kendi takvimin",
     rm_ch_cal_lead: "Terminlerin bir takvim adresi olarak yayınlanıyor. Bu adresi Google Takvim'e, telefonuna ya da Outlook'a bir kez ekliyorsun; hatırlatmayı takvimin kendisi yapıyor.",
-    rm_cal_name: "Slate — terminler",
+    rm_cal_name: "Shootboard — terminler",
     rm_cal_on: "Abonelik açık",
     rm_cal_start: "Takvim adresini oluştur",
     rm_cal_copy: "Adresi kopyala",
@@ -3545,7 +3545,7 @@ const LANG = {
     tour_visual_ourserver: "bizim sunucumuz",
     tour_visual_combine: "birleştir",
     promise_tag: "Planlama panosu — otomatik paylaşım değil.",
-    posted_hint: "Yayınladıktan sonra buraya tıkla. Slate platformları dinlemez; işaretleyen sensin.",
+    posted_hint: "Yayınladıktan sonra buraya tıkla. Shootboard platformları dinlemez; işaretleyen sensin.",
     tour_visual_market: "PAZARLAR",
     tour_visual_general: "GENEL",
     tour_visual_exception: "İSTİSNA",
@@ -3751,7 +3751,7 @@ function toRow(e, uid){
            title: e.title || '', post_date: e.date, post_time: e.time || null,
            uploaded: !!e.uploaded, content: e.content || {},
            // Calisma alani AYNEN geri yaziliyor. Lokasyon uygulamasi
-           // satirlarini workspace_id ile buluyor; Slate bunu bos
+           // satirlarini workspace_id ile buluyor; Shootboard bunu bos
            // gonderseydi ayni kayitlar orada gorunmez olurdu ve geri
            // donus noktamiz elimizden giderdi.
            workspace_id: e.workspaceId || null,
@@ -3905,13 +3905,13 @@ async function pushChanges(){
   }
 }
 
-// Slate artik kullanicinin BUTUN kayitlarini goruyor — lokasyon
+// Shootboard artik kullanicinin BUTUN kayitlarini goruyor — lokasyon
 // uygulamasindan gelenler dahil. Onceden workspace_id'si bos olanlarla
-// sinirliydi; iki uygulama ayri dursun diye. Artik tek arac Slate.
+// sinirliydi; iki uygulama ayri dursun diye. Artik tek arac Shootboard.
 //
 // deleted_at SART: lokasyon uygulamasi silmeyi "mezar tasi" ile yapiyor
 // (satir kaliyor, deleted_at doluyor). Bu filtre olmadan orada silinen
-// kayitlar Slate'te diri gorunurdu.
+// kayitlar Shootboard'da diri gorunurdu.
 // Hesabin kayitlari HENUZ GELMEDIYSE ekranda ne varsa kullaniciya ait
 // degil: acilista uretilen demo tohumu ya da anonim calisma. Bu durumda
 // iki sey yapiliyor:
@@ -4869,12 +4869,12 @@ function renderScriptler(){
   });
 }
 // --- Google Drive'dan script getirme ----------------------------------
-// Slate YUKLEYICI degil, BAGLAYICI. Belge Drive'da kaliyor; buradaki
+// Shootboard YUKLEYICI degil, BAGLAYICI. Belge Drive'da kaliyor; buradaki
 // dugme metnin O ANKI halini kopyaliyor, biter. Canli bag kurulmuyor:
 // cift yonlu senkron cakisma cozumu ister ve bu uygulamada iki kez veri
 // kaybettik.
 //
-// Izin kapsami YALNIZCA drive.file: Slate senin Drive'ini degil, o an
+// Izin kapsami YALNIZCA drive.file: Shootboard senin Drive'ini degil, o an
 // SECTIGIN dosyayi gorur. Bu hem "her seyi gorebilir" iznine gore cok
 // daha az soz veriyor hem de Google'in haftalar suren inceleme surecine
 // girmiyor. Kimlikler acikta duruyor ama sifir degil kimlik: guvenlik
@@ -6727,16 +6727,16 @@ function sinirlariSifirla(){
 
 // ===== Gelen kutusu =====
 // Sohbette (Claude ile) hazirlanan kayitlar depoya gelen/kayitlar.json
-// olarak giriyor. Slate disaridan yazilamiyor: veriler hesabin arkasinda,
-// sohbetin oturum anahtari yok. O yuzden dosya buraya yaziliyor, Slate
+// olarak giriyor. Shootboard disaridan yazilamiyor: veriler hesabin arkasinda,
+// sohbetin oturum anahtari yok. O yuzden dosya buraya yaziliyor, Shootboard
 // acilista okuyup KULLANICININ oturumuyla hesaba geciriyor. Eski lokasyon
 // uygulamasinda kayitlar dosyanin icindeydi ve ayni is dosyayi
-// duzenlemekle bitiyordu; bu, o akisin Slate karsiligi.
+// duzenlemekle bitiyordu; bu, o akisin Shootboard karsiligi.
 //
 // Iki kez alinmasin: alinan kimlikler hesabin tercih satirinda
 // (user_prefs.prefs.gelen_alinan) duruyor. Tarayici deposunda olsaydi
 // ikinci cihaz ayni kaydi bir daha alirdi; yalnizca tabloya bakilsaydi
-// kullanicinin Slate'te SILDIGI kayit her acilista geri gelirdi.
+// kullanicinin Shootboard'da SILDIGI kayit her acilista geri gelirdi.
 const GELEN_KUTUSU_URL = 'gelen/kayitlar.json';
 let gelenAlinan = [];          // alinmis kimlikler (defter)
 let gelenDefterHazir = false;  // defter buluttan okunabildi mi
@@ -8348,7 +8348,7 @@ document.addEventListener('click', (e)=>{
 const TOUR_STEPS_I18N = {
   en: [
     { title:"From an idea to a published post",
-      body:"Slate follows the order the work actually happens in. You note an idea, turn it into a script, open a project when the shoot becomes real, and place the posts on the calendar. Nothing forces that order — a script can exist before any project, and a project can start without a single idea.",
+      body:"Shootboard follows the order the work actually happens in. You note an idea, turn it into a script, open a project when the shoot becomes real, and place the posts on the calendar. Nothing forces that order — a script can exist before any project, and a project can start without a single idea.",
       points:["Ideas and Scripts live on their own pages, not under a project.",
               "Attaching a project is optional and can be done later.",
               "The left rail follows the same order: Ideas, Scripts, Projects, Calendar, Templates."] },
@@ -8363,7 +8363,7 @@ const TOUR_STEPS_I18N = {
               "“Back to the previous text” restores what was there before an import or an AI pass.",
               "Writing a script ticks the project's Script step for you — untick it if you disagree."] },
     { title:"Write with AI — using your own key",
-      body:"Connect a free Google Gemini key from the left rail and Slate can draft for you. Tick the ideas the script should be built on, say what you want in one sentence, and press Write. Your project, its type, keywords and the ideas you picked all travel with the request; the key stays in your browser and the request goes straight to Google.",
+      body:"Connect a free Google Gemini key from the left rail and Shootboard can draft for you. Tick the ideas the script should be built on, say what you want in one sentence, and press Write. Your project, its type, keywords and the ideas you picked all travel with the request; the key stays in your browser and the request goes straight to Google.",
       points:["Tick ideas → they become the material, not just background.",
               "Say a length in words and it is treated as a minimum.",
               "Titles, cover text and captions have their own ✨ buttons on an entry."] },
@@ -8386,21 +8386,21 @@ const TOUR_STEPS_I18N = {
       body:"Open any slot and you get the caption, hashtags, the public video title, the short text that goes on the cover, and the cover image prompt — each one a tap from copied. The same shoot going out three ways? Duplicate it and just set the new dates.",
       points:["✨ AI next to the title, the cover text and the caption.",
               "Duplicate keeps everything and only asks for the new dates.",
-              "Tick “posted” yourself — Slate never listens to the platforms."] },
+              "Tick “posted” yourself — Shootboard never listens to the platforms."] },
     { title:"Templates: write the closing once",
       body:"Your standard caption ending — handles, links, a call to action — is written once and added to the end of every caption, leaving your own post text on top. Where one platform needs different wording, give that platform an exception and the rest keep the general text.",
       points:["Added at the END; your own text always stays first.",
               "Per-platform exceptions where you want them.",
               "It drops in the moment you pick a platform on a new entry."] },
     { title:"The same plan on every device",
-      body:"Sign in and your calendar, projects, ideas, scripts and templates follow you to any device. Signed out, everything still works — it just stays in that one browser. When you open Slate, anything still unposted greets you in a list, so nothing quietly slips past its date.",
+      body:"Sign in and your calendar, projects, ideas, scripts and templates follow you to any device. Signed out, everything still works — it just stays in that one browser. When you open Shootboard, anything still unposted greets you in a list, so nothing quietly slips past its date.",
       points:["Google or an email link — no password to invent.",
               "Delete is a tombstone, not a hole: nothing comes back from the dead.",
               "The pending list can be dismissed for the session; the ⏳ button always reopens it."] },
   ],
   tr: [
     { title:"Fikirden yayına giden yol",
-      body:"Slate işin gerçekte olduğu sırayı izliyor. Bir fikri not ediyorsun, onu script'e çeviriyorsun, çekim somutlaşınca proje açıyorsun ve paylaşımları takvime yerleştiriyorsun. Bu sıra zorunlu değil: script proje olmadan da var olabilir, proje de tek bir fikir olmadan başlayabilir.",
+      body:"Shootboard işin gerçekte olduğu sırayı izliyor. Bir fikri not ediyorsun, onu script'e çeviriyorsun, çekim somutlaşınca proje açıyorsun ve paylaşımları takvime yerleştiriyorsun. Bu sıra zorunlu değil: script proje olmadan da var olabilir, proje de tek bir fikir olmadan başlayabilir.",
       points:["Fikirler ve Scriptler kendi sayfalarında yaşıyor, projenin altında değil.",
               "Projeye bağlamak isteğe bağlı ve sonradan da yapılabiliyor.",
               "Sol menü aynı sırayı izliyor: Fikirler, Scriptler, Projeler, Takvim, Şablonlar."] },
@@ -8415,7 +8415,7 @@ const TOUR_STEPS_I18N = {
               "“Önceki hâle dön”, içeri aktarmadan ya da AI'dan önceki metni geri getiriyor.",
               "Script yazınca projenin “script” adımı kendiliğinden işaretleniyor — katılmıyorsan kaldır."] },
     { title:"AI ile yaz — kendi anahtarınla",
-      body:"Sol menüden ücretsiz bir Google Gemini anahtarı bağlıyorsun ve Slate senin için taslak yazıyor. Script'in üzerine kurulacağı fikirleri işaretle, ne istediğini tek cümleyle söyle, Yaz'a bas. Projen, türü, anahtar kelimeleri ve seçtiğin fikirler istekle birlikte gidiyor; anahtar tarayıcında kalıyor ve istek doğrudan Google'a çıkıyor.",
+      body:"Sol menüden ücretsiz bir Google Gemini anahtarı bağlıyorsun ve Shootboard senin için taslak yazıyor. Script'in üzerine kurulacağı fikirleri işaretle, ne istediğini tek cümleyle söyle, Yaz'a bas. Projen, türü, anahtar kelimeleri ve seçtiğin fikirler istekle birlikte gidiyor; anahtar tarayıcında kalıyor ve istek doğrudan Google'a çıkıyor.",
       points:["Fikirleri işaretle → arka plan değil, script'in malzemesi olurlar.",
               "Kelime sayısı söylersen bu bir taban olarak uygulanıyor.",
               "Başlık, kapak yazısı ve açıklamanın kayıt penceresinde kendi ✨ düğmeleri var."] },
@@ -8438,14 +8438,14 @@ const TOUR_STEPS_I18N = {
       body:"Bir kutucuğu açtığında açıklama, etiketler, izleyicinin göreceği video başlığı, kapağa yazılacak kısa metin ve kapak görseli tarifi karşında — hepsi tek dokunuşla kopyalanıyor. Aynı çekim üç ayrı yerden mi çıkacak? Çoğalt ve sadece yeni tarihleri gir.",
       points:["Başlığın, kapak yazısının ve açıklamanın yanında ✨ AI.",
               "Çoğaltma her şeyi koruyor, senden yalnızca yeni tarihleri istiyor.",
-              "“Yayınlandı”yı sen işaretliyorsun — Slate platformları dinlemiyor."] },
+              "“Yayınlandı”yı sen işaretliyorsun — Shootboard platformları dinlemiyor."] },
     { title:"Şablonlar: kapanışı bir kez yaz",
       body:"Açıklamanın standart kapanışı — hesap adların, linkler, bir çağrı — bir kez yazılıyor ve her açıklamanın SONUNA ekleniyor; o posta özel yazın hep üstte kalıyor. Bir platformda farklı bir metin gerekiyorsa o platforma istisna tanımlıyorsun, kalanlar genel metinle devam ediyor.",
       points:["SONA ekleniyor; senin yazın her zaman önde.",
               "İstediğin platforma özel istisna.",
               "Yeni kayıtta platformu seçer seçmez düşüyor."] },
     { title:"Her cihazda aynı plan",
-      body:"Giriş yaptığında takvimin, projelerin, fikirlerin, scriptlerin ve şablonların seninle birlikte her cihaza geliyor. Giriş yapmadan da her şey çalışıyor — sadece o tarayıcıda kalıyor. Slate'i açtığında hâlâ yayınlanmamış olanlar bir listeyle karşına çıkıyor, böylece hiçbir şey tarihini sessizce geçmiyor.",
+      body:"Giriş yaptığında takvimin, projelerin, fikirlerin, scriptlerin ve şablonların seninle birlikte her cihaza geliyor. Giriş yapmadan da her şey çalışıyor — sadece o tarayıcıda kalıyor. Shootboard'u açtığında hâlâ yayınlanmamış olanlar bir listeyle karşına çıkıyor, böylece hiçbir şey tarihini sessizce geçmiyor.",
       points:["Google ya da e-posta linki — uydurulacak şifre yok.",
               "Silme bir mezar taşı bırakıyor: silinen bir daha geri dirilmiyor.",
               "Bekleyenler listesi o oturum için kapatılabiliyor; ⏳ düğmesi her zaman geri açıyor."] },
@@ -8852,7 +8852,7 @@ document.getElementById('tourBtn').addEventListener('click', ()=>{ track('funnel
 // TEK saglayici: Gemini. Sebep secim degil, ulasilabilirlik:
 //   - Google AI Studio ucretsiz anahtar veriyor ve kredi karti istemiyor.
 //     OpenAI'da API ayri bir hesap ve karti sart kosuyor.
-//   - Tarayicidan dogrudan cagrilabiliyor. Slate'in sunucusu yok; sunucu
+//   - Tarayicidan dogrudan cagrilabiliyor. Shootboard'un sunucusu yok; sunucu
 //     gerektiren bir saglayici, anahtarin bizden gecmesi demek olurdu ve
 //     "anahtarini gormeyiz" sozu bozulurdu.
 // Bir saglayici daha eklemek buradaki cagri fonksiyonundan ibaret; liste
@@ -9783,7 +9783,7 @@ function icsZaman(d){
 }
 function icsMetni(){
   const damga = icsZaman(new Date());
-  const sat = ['BEGIN:VCALENDAR','VERSION:2.0','PRODID:-//Slate//Terminler//TR',
+  const sat = ['BEGIN:VCALENDAR','VERSION:2.0','PRODID:-//Shootboard//Terminler//TR',
                'CALSCALE:GREGORIAN','METHOD:PUBLISH',
                'X-WR-CALNAME:' + icsKacir(t('rm_cal_name')),
                // Takvim uygulamasina "alti saatte bir bak" onerisi. Uymak
@@ -10237,7 +10237,7 @@ function kimlikGoster(){
   const m = (session && session.user.user_metadata) || {};
   const foto = m.avatar_url || m.picture || '';
   daire.classList.toggle('bos', !session);
-  // Giris yoksa Slate isareti, varsa bas harf (fotograf gelirse onun
+  // Giris yoksa Shootboard isareti, varsa bas harf (fotograf gelirse onun
   // uzerine yaziliyor).
   if(session){ daire.textContent = basHarf(); }
   else { daire.innerHTML = SLATE_ISARET; }
@@ -10587,8 +10587,8 @@ document.getElementById('fbSendBtn').addEventListener('click', async ()=>{
     // labels that get read in the inbox.
     const payload = {
       access_key: FEEDBACK_KEY,
-      subject: 'Slate feedback — ' + uses.join(', '),
-      from_name: 'Slate demo',
+      subject: 'Shootboard feedback — ' + uses.join(', '),
+      from_name: 'Shootboard demo',
       'Uses today': uses.map(k=> LANG.en[FB_USE_KEY[k]] || k).join(', '),
       'Biggest pain': pain || '(blank)',
       'Wants early access': email || '(not given)',

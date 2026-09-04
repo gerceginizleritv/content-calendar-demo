@@ -1,8 +1,56 @@
-# Slate — Yapılacaklar ve Değerlendirilenler
+# Shootboard (eski adı Slate) — Yapılacaklar ve Değerlendirilenler
 
 Bu dosya oturumlar arasında hafıza görevi görüyor. Claude'un hafızası
 oturumlar arasında taşınmıyor; konuşulan ama yapılmayan işler burada
 duruyor, neden ertelendiği de yazıyor ki aynı tartışma baştan yapılmasın.
+
+---
+
+## Nerede kaldık (3 Eylül 2026, gece — yeniden adlandırma ve alan adı)
+
+**Ürünün adı Slate → Shootboard.** Sebep: pazar araştırması (`docs/pazar-arastirmasi.md`)
+"Slate" adının içerik üretimi kategorisinde başka bir şirket tarafından
+kullanıldığını gösterdi. Aday isimler DNS ön kontrolüyle elendi; kullanıcı
+Shootboard'u seçti. TÜRKPATENT taramasında birebir ya da ayırt edilemeyecek
+kadar benzer marka çıkmadı; 9 ve 42. sınıflarda "shoot90" (Shoot90 Bilişim,
+aktif yazılım şirketi) ve "shootid" (42) yayın döneminde itiraz edebilecek
+markalar olarak not edildi. Savunma: aynı sınıflarda "shoot" ile başlayan
+yedi marka yıllardır yan yana, kelime zayıf unsur.
+
+**Marka tescili ERTELENDİ (kullanıcı kararı, maliyet):** ilk gelirle birlikte,
+EPATS'tan kendisi, önce yalnızca 42. sınıf; 9 ayrı başvuruyla sonra; EUIPO
+ancak AB müşterisi olunca; USPTO ancak ABD geliri olunca. Tescilsiz dönemde
+tarihli kullanım kanıtı klasörü tutulacak (alan adı kaydı, ilk duyuru,
+paylaşımlar, faturalar). Ürün adında ™ kullanılabilir, ® kullanılamaz.
+
+**shootboard.app Cloudflare'den alındı (3 Eylül 2026); DNS A ve www CNAME
+kayıtları girildi.** Bu birleştirmede yapılanlar:
+- Kullanıcıya görünen bütün "Slate" metinleri Shootboard oldu: karşılama
+  sayfası (index.html, çizimdeki "SLATE · SCRIPT" etiketi dahil), uygulama
+  (app.html), privacy.html, manifest.json, sw.js bildirim başlığı. Türkçe
+  ekler ünlü uyumuna göre çevrildi (Slate'e → Shootboard'a, Slate'in →
+  Shootboard'un, Slate'te → Shootboard'da).
+- Depo köküne `CNAME` dosyası eklendi: `shootboard.app`.
+- DEĞİŞMEYENLER, bilerek: localStorage anahtarları (`demo_*`,
+  `slate_giris_donus`), service worker önbellek adı (`slate-v1`), bildirim
+  etiketi (`slate-termin`), Supabase tablo ve sütun adları, ICS takvim
+  adları, GoatCounter site kodu (`slate-demo`), kod tanımlayıcıları
+  (`SLATE_ISARET`), gelen/kayitlar.json. Bunları değiştirmek veri
+  kaybettirir, önbelleği ya da ölçümü koparır.
+
+**Kullanıcının yapacakları (kod dışı), birleştirmeden sonra:**
+1. GitHub → Settings → Pages → Custom domain: shootboard.app; DNS kontrolü
+   geçince "Enforce HTTPS". CNAME main'e girince eski github.io adresi yeni
+   alan adına yönlenir; sertifika gelene kadar site kısa süre açılmayabilir.
+2. Supabase → Authentication → URL Configuration: Site URL
+   https://shootboard.app; Redirect URLs listesine https://shootboard.app/**
+   (eski github.io adresi geçiş süresince kalsın). Giriş `redirectTo:
+   location.href` kullanıyor, yani liste şart.
+3. Google Cloud → OAuth istemcisi (DRIVE_CLIENT_ID) → Authorized JavaScript
+   origins: https://shootboard.app; yoksa Drive getir/yaz yeni adreste
+   çalışmaz.
+4. İsteğe bağlı: GoatCounter'da yeni site kodu; GitHub hesap düzeyinde alan
+   adı doğrulaması (TXT kaydı) ele geçirmeye karşı.
 
 ---
 

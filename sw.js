@@ -1,5 +1,5 @@
 /* =====================================================================
-   Slate — service worker
+   Shootboard — service worker
    =====================================================================
    Iki is yapiyor:
 
@@ -105,7 +105,7 @@ self.addEventListener('push', (olay)=>{
   try{ veri = olay.data ? olay.data.json() : null; }catch(e){ veri = null; }
   if(!veri || !veri.govde) return;
   olay.waitUntil(
-    self.registration.showNotification(veri.baslik || 'Slate', {
+    self.registration.showNotification(veri.baslik || 'Shootboard', {
       body: veri.govde,
       icon: './icons/icon-192.png',
       badge: './icons/icon-192.png',
