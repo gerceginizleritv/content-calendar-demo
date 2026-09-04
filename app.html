@@ -1570,6 +1570,13 @@ body.suruklenirken *{cursor:grabbing !important;}
 .rm-durum{font-size:12.5px;line-height:1.55;margin:8px 0 0;}
 .rm-durum.ok{color:var(--green);}
 .rm-durum.hata{color:var(--red);}
+.rm-kapsam{margin:-6px 0 18px;font-size:13.5px;line-height:1.6;color:var(--text-dim);
+  border-left:3px solid var(--accent);padding-left:14px;}
+.rm-saat{display:flex;align-items:center;gap:10px;flex-wrap:wrap;margin:12px 0 4px;}
+.rm-saat label{font-size:13.5px;color:var(--text);}
+.rm-saat input{padding:6px 9px;border-radius:8px;border:1px solid var(--line);
+  background:var(--bg);color:var(--text);font-family:inherit;font-size:14px;}
+.rm-saat .rm-not{margin:0;}
 .rm-adres-et{margin:14px 0 6px;font-size:12.5px;color:var(--text-dim);}
 .rm-adres{display:flex;gap:8px;margin-top:10px;}
 .rm-adres input{
@@ -2332,6 +2339,7 @@ body.suruklenirken *{cursor:grabbing !important;}
   <div class="modal" style="max-width:520px;">
     <h2 data-i18n="rm_title">Deadline reminders</h2>
     <p class="rm-lead" data-i18n="rm_lead">Shootboard can tell you about a step before its deadline passes.</p>
+    <p class="rm-kapsam" data-i18n-html="rm_kapsam">These reminders are for <b>project step deadlines</b> — script, filming, audio, edit, approval, packaging, publishing. The posts on your publishing calendar are not included; you open Shootboard for those.</p>
 
     <div class="rm-bolum">
       <div class="rm-bas"><h3 data-i18n="rm_when_title">When should it remind you?</h3></div>
@@ -2340,6 +2348,7 @@ body.suruklenirken *{cursor:grabbing !important;}
         <label class="rm-anahtar"><input type="checkbox" id="rm_gun"><span data-i18n="rm_when_gun">On the deadline day</span></label>
         <label class="rm-anahtar"><input type="checkbox" id="rm_gecikti"><span data-i18n="rm_when_gecikti">When a step is already late</span></label>
       </div>
+      <p class="rm-not" data-i18n="rm_when_gecikti_note">“When a step is already late” works in the browser notification only. A calendar file writes its reminders in advance, so it cannot know later that a step slipped.</p>
       <p class="rm-durum hata" id="rm_when_warn" hidden data-i18n="rm_when_none">Pick at least one moment.</p>
     </div>
 
@@ -2360,6 +2369,11 @@ body.suruklenirken *{cursor:grabbing !important;}
       <div class="rm-bas">
         <h3 data-i18n="rm_ch_cal">Your own calendar</h3>
         <label class="rm-anahtar"><input type="checkbox" id="rm_takvim"></label>
+      </div>
+      <div class="rm-saat" id="rm_saatSatir">
+        <label for="rm_saat" data-i18n="rm_saat_et">Reminder time</label>
+        <input type="time" id="rm_saat" value="09:00" step="300">
+        <span class="rm-not" data-i18n="rm_saat_not">Applies to calendar reminders.</span>
       </div>
       <p class="rm-not" data-i18n="rm_ch_cal_lead">Your deadlines are published as a calendar address.</p>
       <div id="rm_adresSatir" hidden>
@@ -2905,6 +2919,10 @@ const LANG = {
     rm_when_once: "The day before",
     rm_when_gun: "On the deadline day",
     rm_when_gecikti: "When a step is already late",
+    rm_when_gecikti_note: "“When a step is already late” works in the browser notification only. A calendar file writes its reminders in advance, so it cannot know later that a step slipped.",
+    rm_kapsam: "These reminders are for <b>project step deadlines</b> — script, filming, audio, edit, approval, packaging, publishing. The posts on your publishing calendar are not included; you open Shootboard for those.",
+    rm_saat_et: "Reminder time",
+    rm_saat_not: "Applies to calendar reminders.",
     rm_when_none: "Pick at least one moment, otherwise nothing is sent.",
     rm_ch_browser: "Browser notification",
     rm_ch_browser_lead: "Works on computers and Android. On iPhone you must add Shootboard to the home screen first, otherwise iOS sends no notification.",
@@ -3406,6 +3424,10 @@ const LANG = {
     rm_when_once: "Bir gün önce",
     rm_when_gun: "Termin günü",
     rm_when_gecikti: "Adım geciktiğinde",
+    rm_when_gecikti_note: "“Adım geciktiğinde” yalnızca tarayıcı bildiriminde çalışır. Takvim dosyası hatırlatmalarını önceden yazıyor, bu yüzden bir adımın sonradan geciktiğini bilemez.",
+    rm_kapsam: "Bu hatırlatmalar <b>proje adımlarının terminleri</b> içindir — script, çekim, ses, kurgu, onay, paketleme, yayın. Yayın takvimindeki paylaşımlar eklenmez; onlar için Shootboard'u açarsın.",
+    rm_saat_et: "Hatırlatma saati",
+    rm_saat_not: "Takvim hatırlatmaları için geçerli.",
     rm_when_none: "En az bir an seç, yoksa hiçbir şey gönderilmez.",
     rm_ch_browser: "Tarayıcı bildirimi",
     rm_ch_browser_lead: "Bilgisayarda ve Android'de çalışıyor. iPhone'da önce Shootboard'u ana ekrana eklemen ŞART, yoksa iOS bildirim göndermiyor.",
@@ -9687,7 +9709,7 @@ function maybeAskFeedback(){
 const HATIRLATMA_ANAHTARI = 'demo_reminders';
 const HATIRLATMA_SON = 'demo_reminded_on';
 const HATIRLATMA_VARSAYILAN = { tarayici:false, takvim:false, once:true, gun:false, gecikti:true,
-                                jeton:'', yayinlandi:false };
+                                jeton:'', yayinlandi:false, saat:'09:00' };
 let hatirlatma = Object.assign({}, HATIRLATMA_VARSAYILAN);
 
 function hatirlatmaTemizle(h){
@@ -9699,6 +9721,9 @@ function hatirlatmaTemizle(h){
   // Jeton dosya adina giriyor: yalnizca UUID bicimi kabul ediliyor ki
   // bozuk bir deger yol gezinmesine (../) donusmesin.
   if(typeof h.jeton === 'string' && /^[0-9a-f-]{0,64}$/i.test(h.jeton)) t.jeton = h.jeton;
+  // Saat: yalnizca SS:DD. Bozuk deger tetik hesabini kirar, o yuzden
+  // bicime uymayan her sey varsayilana dusuyor.
+  if(typeof h.saat === 'string' && /^([01]\d|2[0-3]):[0-5]\d$/.test(h.saat)) t.saat = h.saat;
   return t;
 }
 function hatirlatmaYukle(){
@@ -9796,6 +9821,18 @@ function icsZaman(d){
   return d.getUTCFullYear() + p2(d.getUTCMonth()+1) + p2(d.getUTCDate()) + 'T'
        + p2(d.getUTCHours()) + p2(d.getUTCMinutes()) + p2(d.getUTCSeconds()) + 'Z';
 }
+// Gun boyu olayda tetik, olayin BASINDAN (o gunun 00:00'i) sayiliyor.
+// Termin gunu 08:30 istiyorsa tetik +PT8H30M; bir gun once 08:30 istiyorsa
+// 24 saat geriden, yani -PT15H30M. Saat kullanicidan geliyor.
+function icsTetik(oncekiGun){
+  const [ss, dd] = String(hatirlatma.saat || '09:00').split(':').map(Number);
+  const dakika = ss * 60 + dd;
+  const fark = oncekiGun ? (24 * 60 - dakika) : dakika;
+  const s2 = Math.floor(fark / 60), d2 = fark % 60;
+  // "PT0M" gecerli ama "PT" degil: sifir dakika icin en az bir birim sart.
+  const govde = (s2 ? s2 + 'H' : '') + (d2 || !s2 ? d2 + 'M' : '');
+  return (oncekiGun ? '-PT' : 'PT') + govde;
+}
 function icsMetni(){
   const damga = icsZaman(new Date());
   const sat = ['BEGIN:VCALENDAR','VERSION:2.0','PRODID:-//Shootboard//Terminler//TR',
@@ -9829,12 +9866,12 @@ function icsMetni(){
       if(hatirlatma.once){
         sat.push('BEGIN:VALARM','ACTION:DISPLAY',
                  'DESCRIPTION:' + icsKacir(p.name + ' — ' + t('step_' + k)),
-                 'TRIGGER;VALUE=DURATION:-PT15H','END:VALARM');
+                 'TRIGGER;VALUE=DURATION:' + icsTetik(true),'END:VALARM');
       }
       if(hatirlatma.gun){
         sat.push('BEGIN:VALARM','ACTION:DISPLAY',
                  'DESCRIPTION:' + icsKacir(p.name + ' — ' + t('step_' + k)),
-                 'TRIGGER;VALUE=DURATION:PT9H','END:VALARM');
+                 'TRIGGER;VALUE=DURATION:' + icsTetik(false),'END:VALARM');
       }
       sat.push('END:VEVENT');
     });
@@ -9955,6 +9992,8 @@ function hatirlatmaEkraniTazele(){
   el('rm_gecikti').checked = hatirlatma.gecikti;
   el('rm_tarayici').checked = hatirlatma.tarayici;
   el('rm_takvim').checked = hatirlatma.takvim;
+  el('rm_saat').value = hatirlatma.saat;
+  el('rm_saatSatir').hidden = !hatirlatma.takvim;
   el('rm_when_warn').hidden = (hatirlatma.once || hatirlatma.gun || hatirlatma.gecikti);
 
   // Tarayici kanali
@@ -10047,6 +10086,16 @@ document.getElementById('rm_takvim').addEventListener('change', async (e)=>{
   hatirlatma.takvim = acik;
   hatirlatmaKaydet();
   hatirlatmaEkraniTazele();
+});
+
+// Saat degisince ayarla birlikte TAKVIM DOSYASI da yeniden yaziliyor:
+// yalnizca ayari kaydetmek, kullanicinin takviminde eski saati birakirdi.
+document.getElementById('rm_saat').addEventListener('change', (e)=>{
+  const v = e.target.value;
+  if(!/^([01]\d|2[0-3]):[0-5]\d$/.test(v)){ e.target.value = hatirlatma.saat; return; }
+  hatirlatma.saat = v;
+  hatirlatmaKaydet();
+  takvimTazeleKuyrukla();
 });
 
 document.getElementById('rm_kurBtn').addEventListener('click', async ()=>{
