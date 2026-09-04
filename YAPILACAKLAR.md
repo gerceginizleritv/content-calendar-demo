@@ -14,17 +14,26 @@ info@ ve welcome@shootboard.app Gmail'e yönleniyor. Gönderim için Gmail
 
 **Bu PR'da yazılanlar (kullanıcı isteği: "kayıt olana otomatik e-posta"):**
 - `supabase/email/confirm-signup.html` ve `magic-link.html`: Supabase'in giriş
-  e-postaları için iki dilli şablonlar (Supabase şablonu kullanıcı başına dil
-  seçemiyor, o yüzden iki dilli). Konu satırları README'de.
+  e-postaları. Go şablon koşuluyla (`{{ if eq (printf "%v" .Data.lang) "tr" }}`)
+  hesabın `lang` meta verisine göre TEK dilli; `lang` hiç yoksa iki dilli.
+  Selamlama `.Data.full_name` varsa adla. Konu satırları `KONULAR.txt`; konu
+  alanı şablon kabul etmezse düz sürümleri orada. Kullanıcı kararı (3 Eylül):
+  iki dilli e-posta varsayılan OLMAYACAK, herkes kendi dilinde alacak.
 - `supabase/functions/hosgeldin/`: hoşgeldin e-postasını Resend API ile gönderen
   Edge Function (`index.ts`) ve metinler (`sablonlar.js`, düz ESM; Node ile
   önizleme üretilebiliyor, `supabase/email/onizleme/`). Dil:
-  `raw_user_meta_data.lang` tr/en ise o dil, yoksa iki dilli. Idempotency-Key
-  = kullanıcı kimliği; tetikleyici iki kez çalışsa da ikinci e-posta gitmez.
-  Kimlik doğrulama `x-webhook-secret` başlığıyla; `--no-verify-jwt` şart.
-- `sql/20-hosgeldin-webhook.sql`: auth.users INSERT → supabase_functions.http_request.
-- `app.html`: `signInWithOtp` artık `data:{lang}` yazıyor; `afterSignIn` başında
-  `dilMetaVerisiniYaz()` Google hesaplarına dili sonradan ekliyor.
+  `raw_user_meta_data.lang`; yoksa GÖNDERMİYOR (tetikleyici dil yazılınca
+  yeniden çağırıyor). Idempotency-Key = kullanıcı kimliği; iki tetikleyici
+  aynı kullanıcı için çalışsa da ikinci e-posta gitmez. Kimlik doğrulama
+  `x-webhook-secret` başlığıyla; `--no-verify-jwt` şart.
+- `sql/20-hosgeldin-webhook.sql`: iki tetikleyici. INSERT (lang varsa: e-posta
+  girişi) ve raw_user_meta_data UPDATE (lang null→dolu: Google girişinde ilk
+  açılış). Her kullanıcıya tek dilli e-posta.
+- `app.html`: giriş formuna isteğe bağlı ad alanı (`#authName`, i18n
+  `auth_name_label`); `signInWithOtp` `data:{lang, full_name}` yazıyor ve adı
+  `demo_auth_ad`'a saklıyor; `afterSignIn` başında `hesapMetaVerisiniTamamla()`
+  eksik lang/full_name'i tamamlıyor; `setLanguage` kullanıcı seçiminde meta
+  veriyi güncelliyor ki sonraki e-postalar yeni dilde gitsin.
 - `privacy.html`: iletişim adresi hello@shootboard.app; Resend servis tablosuna
   eklendi; 3. bölüme hoşgeldin e-postası cümlesi; tarih 3 Eylül 2026.
 - `supabase/email/README.md`: Resend alan adı, Supabase SMTP, şablon yapıştırma,

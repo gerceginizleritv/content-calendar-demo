@@ -1,0 +1,11 @@
+Supabase → Email Templates → Subject heading alanına yapıştırılacak konu satırları
+
+Confirm sign up:
+{{ if eq (printf "%v" .Data.lang) "tr" }}Shootboard hesabını aç{{ else if eq (printf "%v" .Data.lang) "en" }}Confirm your Shootboard account{{ else }}Shootboard hesabını aç · Confirm your Shootboard account{{ end }}
+
+Magic Link:
+{{ if eq (printf "%v" .Data.lang) "tr" }}Shootboard'a giriş bağlantın{{ else if eq (printf "%v" .Data.lang) "en" }}Your Shootboard sign-in link{{ else }}Shootboard'a giriş bağlantın · Your Shootboard sign-in link{{ end }}
+
+Konu alanı şablon sözdizimini kabul etmezse (gelen e-postada süslü parantezler görünürse) düz sürümleri kullan:
+Confirm sign up: Shootboard hesabını aç · Confirm your Shootboard account
+Magic Link: Shootboard'a giriş bağlantın · Your Shootboard sign-in link

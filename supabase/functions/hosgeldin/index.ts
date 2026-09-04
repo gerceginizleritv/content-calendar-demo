@@ -1,7 +1,9 @@
 // Hoşgeldin e-postası — Supabase Edge Function.
 //
-// Ne yapar: auth.users tablosuna yeni satır girince (sql/20-hosgeldin-webhook.sql
-// tetikleyicisi) çağrılır ve Resend üzerinden hoşgeldin e-postasını gönderir.
+// Ne yapar: yeni hesabın dili belli olunca (sql/20-hosgeldin-webhook.sql'deki
+// iki tetikleyici: INSERT ile dil geldiyse hemen, Google hesabında dil ilk
+// açılışta yazılınca UPDATE ile) çağrılır ve Resend üzerinden, o dilde,
+// hoşgeldin e-postasını gönderir.
 //
 // Gizli ayarlar (supabase secrets set ...):
 //   RESEND_API_KEY            Resend API anahtarı (re_...)
@@ -15,9 +17,10 @@
 // (--no-verify-jwt şart: tetikleyici kullanıcı JWT'si taşımaz, kimlik doğrulama
 //  yukarıdaki gizli anahtarla yapılır.)
 //
-// Dil: hesap e-posta bağlantısıyla açıldıysa app.html kayıt sırasında
-// raw_user_meta_data.lang yazıyor (tr/en) ve e-posta o dilde gider. Google ile
-// açılan hesapta bu alan yoktur; e-posta iki dilli gider.
+// Dil: raw_user_meta_data.lang (tr/en). app.html bunu e-posta girişinde kayıt
+// anında, Google girişinde ilk açılışta yazıyor. Dil yoksa e-posta GİTMEZ;
+// tetikleyici dil yazılınca yeniden çağırır. Beklenmedik bir değer gelirse
+// iki dilli gider.
 //
 // Tekrar güvenliği: Resend'e Idempotency-Key olarak kullanıcı kimliği gidiyor;
 // tetikleyici bir sebeple iki kez çalışsa da ikinci e-posta gönderilmez.
@@ -52,9 +55,9 @@ Deno.serve(async (req: Request) => {
   let yuk: any;
   try { yuk = await req.json(); } catch { return json({ ok: false, sebep: 'gecersiz JSON' }, 400); }
 
-  // Yalnızca auth.users INSERT olayı ilgilendiriyor; başka olay gelirse
+  // auth.users üzerindeki INSERT ve UPDATE olayları; başka olay gelirse
   // sessizce atlanır (200), tetikleyici hata sanmasın.
-  if (yuk?.type !== 'INSERT' || yuk?.table !== 'users' || yuk?.schema !== 'auth') {
+  if ((yuk?.type !== 'INSERT' && yuk?.type !== 'UPDATE') || yuk?.table !== 'users' || yuk?.schema !== 'auth') {
     return json({ ok: true, atlandi: 'ilgisiz olay' });
   }
   const kayit = yuk.record ?? {};
@@ -62,6 +65,9 @@ Deno.serve(async (req: Request) => {
   if (!email) return json({ ok: true, atlandi: 'e-posta yok' });
 
   const meta = kayit.raw_user_meta_data ?? {};
+  // Dil henüz yoksa gönderme: Google hesabında dil ilk açılışta yazılır ve
+  // tetikleyici o anda yeniden çağırır. Tanınmayan bir değer gelirse iki dilli.
+  if (meta.lang == null || meta.lang === '') return json({ ok: true, atlandi: 'dil henuz yok' });
   const lang: 'tr' | 'en' | 'both' = meta.lang === 'tr' || meta.lang === 'en' ? meta.lang : 'both';
   const ad = ilkAd(meta.full_name ?? meta.name ?? '');
   const e = hosgeldinEposta({ lang, ad, appUrl: APP_URL });

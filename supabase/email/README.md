@@ -44,18 +44,28 @@ değerini 30'a çıkar; özel SMTP'de bu sınır senin.
 
 ## 3. Şablonlar: Authentication → Email Templates
 
-İki şablonu yapıştır. "Body" alanına dosyanın tamamı, "Subject" alanına
-aşağıdaki başlık.
+İki şablonu yapıştır. "Message body" alanına dosyanın tamamı, "Subject
+heading" alanına `KONULAR.txt` içindeki ilgili satır.
 
-| Supabase şablonu | Dosya | Subject |
-|---|---|---|
-| Confirm signup | `confirm-signup.html` | `Shootboard hesabını aç · Confirm your Shootboard account` |
-| Magic Link | `magic-link.html` | `Shootboard'a giriş bağlantın · Your Shootboard sign-in link` |
+| Supabase şablonu | Dosya |
+|---|---|
+| Confirm sign up | `confirm-signup.html` |
+| Magic Link | `magic-link.html` |
 
-E-posta bağlantısıyla giriş isteyen kişi hesabı yoksa "Confirm signup",
-varsa "Magic Link" şablonunu alır. İkisi de iki dilli; Supabase şablonu kullanıcı
-başına dil seçemediği için bilerek böyle. `{{ .ConfirmationURL }}` ve
-`{{ .Email }}` Supabase'in yerleştirdiği değerler, silme.
+E-posta bağlantısıyla giriş isteyen kişinin hesabı yoksa "Confirm sign up",
+varsa "Magic Link" şablonu gider. **Her e-posta tek dilde gider:** şablon,
+hesabın meta verisindeki `lang` alanına bakar (uygulama e-posta girişinde
+kayıt anında, Google girişinde ilk açılışta yazıyor; dil değiştirilince
+güncelliyor). `lang` hiç yoksa, yani daha uygulamayı hiç açmamış eski bir
+hesapsa, iki dilli gider. Giriş formuna yazılan ad varsa e-posta o adla
+seslenir.
+
+Konu satırı da aynı kuralla dile göre seçilir. Test e-postasında konu
+satırında süslü parantez görürsen Supabase'in konu alanı şablon kabul
+etmiyordur; `KONULAR.txt` içindeki düz sürümleri kullan.
+
+`{{ ... }}` ile yazılan her şey Supabase'in doldurduğu yer tutucudur; silme,
+değiştirme. Önizlemeler `onizleme/` klasöründe.
 
 ## 4. Edge Function: hoşgeldin e-postası
 
@@ -84,8 +94,9 @@ npx supabase functions deploy hosgeldin --no-verify-jwt
 
 1. Supabase panel → **Database → Webhooks** → "Enable Database Webhooks".
 2. **SQL Editor**'de `sql/20-hosgeldin-webhook.sql` dosyasını aç, içindeki
-   `DEGISTIR_GIZLI_ANAHTAR` yerine HOSGELDIN_WEBHOOK_SECRET'in birebir aynısını
-   yaz, çalıştır.
+   `DEGISTIR_GIZLI_ANAHTAR` (iki yerde) yerine HOSGELDIN_WEBHOOK_SECRET'in
+   birebir aynısını yaz, çalıştır. İki tetikleyici kurulur: e-posta ile açılan
+   hesapta hemen, Google ile açılan hesapta uygulama ilk açılıp dili yazınca.
 
 ## 6. Test
 
@@ -96,9 +107,11 @@ npx supabase functions deploy hosgeldin --no-verify-jwt
 3. Supabase → **Edge Functions → hosgeldin → Logs**: `[hosgeldin] gonderildi`
    satırı. `gizli anahtar uyusmuyor` görürsen SQL'deki anahtar ile secret farklı.
 
-Hoşgeldin e-postası, hesap Google ile açıldıysa iki dilli, e-posta bağlantısıyla
-açıldıysa arayüzün o anki dilinde gider (app.html kayıt sırasında `lang`
-yazıyor).
+Hoşgeldin e-postası her zaman tek dilde gider: e-posta ile açılan hesapta
+kayıt anındaki arayüz dili, Google ile açılan hesapta uygulamanın ilk
+açılışındaki dil. Google hesabında e-posta, kullanıcı yönlendirmeden
+uygulamaya döndüğü saniyede gider. Selamlama, giriş formuna yazılan ada ya da
+Google'dan gelen ada göre.
 
 ## 7. Metinleri değiştirmek
 
