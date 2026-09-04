@@ -6,6 +6,39 @@ duruyor, neden ertelendiği de yazıyor ki aynı tartışma baştan yapılmasın
 
 ---
 
+## Nerede kaldık (3 Eylül 2026, gece — e-posta: giriş bağlantıları ve hoşgeldin)
+
+**Alan adı e-postası kuruldu (kullanıcı, Cloudflare Email Routing):** hello@,
+info@ ve welcome@shootboard.app Gmail'e yönleniyor. Gönderim için Gmail
+"şu adresten posta gönder" ayarı uygulama şifresiyle yapıldı.
+
+**Bu PR'da yazılanlar (kullanıcı isteği: "kayıt olana otomatik e-posta"):**
+- `supabase/email/confirm-signup.html` ve `magic-link.html`: Supabase'in giriş
+  e-postaları için iki dilli şablonlar (Supabase şablonu kullanıcı başına dil
+  seçemiyor, o yüzden iki dilli). Konu satırları README'de.
+- `supabase/functions/hosgeldin/`: hoşgeldin e-postasını Resend API ile gönderen
+  Edge Function (`index.ts`) ve metinler (`sablonlar.js`, düz ESM; Node ile
+  önizleme üretilebiliyor, `supabase/email/onizleme/`). Dil:
+  `raw_user_meta_data.lang` tr/en ise o dil, yoksa iki dilli. Idempotency-Key
+  = kullanıcı kimliği; tetikleyici iki kez çalışsa da ikinci e-posta gitmez.
+  Kimlik doğrulama `x-webhook-secret` başlığıyla; `--no-verify-jwt` şart.
+- `sql/20-hosgeldin-webhook.sql`: auth.users INSERT → supabase_functions.http_request.
+- `app.html`: `signInWithOtp` artık `data:{lang}` yazıyor; `afterSignIn` başında
+  `dilMetaVerisiniYaz()` Google hesaplarına dili sonradan ekliyor.
+- `privacy.html`: iletişim adresi hello@shootboard.app; Resend servis tablosuna
+  eklendi; 3. bölüme hoşgeldin e-postası cümlesi; tarih 3 Eylül 2026.
+- `supabase/email/README.md`: Resend alan adı, Supabase SMTP, şablon yapıştırma,
+  fonksiyon dağıtımı (panel ve CLI), tetikleyici, test.
+
+**Kullanıcının yapacakları:** README'deki 1–6. adımlar. Kod tarafında bekleyen
+iş yok. Bir sonraki e-posta işi, istenirse, "3. gün / 7. gün" dizi e-postaları;
+onun için Kit ya da Loops önerildi, tetikleyici aynı.
+
+**Karar:** tanıtım/bülten e-postası YOK; yalnızca işlemsel. Bülten istenirse
+kayıt ekranına onay kutusu ve İYS kaydı gerekir.
+
+---
+
 ## Nerede kaldık (3 Eylül 2026, gece — yeniden adlandırma ve alan adı)
 
 **Ürünün adı Slate → Shootboard.** Sebep: pazar araştırması (`docs/pazar-arastirmasi.md`)

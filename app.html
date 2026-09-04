@@ -10325,8 +10325,19 @@ async function otomatikBekleyenler(){
   showPendingPopup(true);
 }
 
+// Google ile acilan hesapta dil meta verisi yok; ilk giriste arayuzun dili
+// yaziliyor ki ileride gonderilecek e-postalar dogru dilde gitsin. Basarisiz
+// olursa onemsiz: e-posta iki dilli gider.
+async function dilMetaVerisiniYaz(){
+  try{
+    const u = session && session.user;
+    if(!u || (u.user_metadata && u.user_metadata.lang)) return;
+    await sb.auth.updateUser({ data: { lang: currentLang } });
+  }catch(e){ /* sessiz */ }
+}
 async function afterSignIn(){
   dirtyIds.clear(); removedIds.clear();
+  dilMetaVerisiniYaz();
   // Sablonlar buluta degil tarayiciya yaziliyor, bu yuzden bulut
   // okumasindan ONCE ve onun disinda yukleniyor. Eskiden en sonda,
   // try blogunun icindeydi: pullRemote() bir kez hata verdiginde
@@ -10521,7 +10532,10 @@ document.getElementById('authSendBtn').addEventListener('click', async ()=>{
   try{
     const { error } = await sb.auth.signInWithOtp({
       email,
-      options: { emailRedirectTo: location.href.split('#')[0] }
+      // Hesap ilk kez aciliyorsa arayuzun dili meta veriye yaziliyor: hosgeldin
+      // e-postasi (supabase/functions/hosgeldin) o dilde gidiyor. Mevcut
+      // hesapta Supabase bu alani degistirmiyor.
+      options: { emailRedirectTo: location.href.split('#')[0], data: { lang: currentLang } }
     });
     if(error) throw error;
     st.textContent = t('auth_sent'); st.className = 'ai-status ok';
