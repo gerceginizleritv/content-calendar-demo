@@ -2,7 +2,7 @@
   "name": "Shootboard — Content Publishing Calendar",
   "short_name": "Shootboard",
   "description": "One shoot becomes ten posts. Plan content type and platform as two independent signals, give each post its own caption, cover text, time slot and time zone. A planning board — you publish, Shootboard keeps the plan straight.",
-  "start_url": "./index.html",
+  "start_url": "./app.html",
   "scope": "./",
   "display": "standalone",
   "orientation": "portrait-primary",

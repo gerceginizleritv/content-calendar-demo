@@ -23,29 +23,144 @@ ancak AB müşterisi olunca; USPTO ancak ABD geliri olunca. Tescilsiz dönemde
 tarihli kullanım kanıtı klasörü tutulacak (alan adı kaydı, ilk duyuru,
 paylaşımlar, faturalar). Ürün adında ™ kullanılabilir, ® kullanılamaz.
 
-**shootboard.app alındı (3 Eylül 2026).** Bu commit'te yapılanlar:
-- Kullanıcıya görünen bütün "Slate" metinleri Shootboard oldu (index.html,
-  privacy.html, manifest.json); Türkçe ekler ünlü uyumuna göre çevrildi
-  (Slate'e → Shootboard'a, Slate'in → Shootboard'un, Slate'te → Shootboard'da).
+**shootboard.app Cloudflare'den alındı (3 Eylül 2026); DNS A ve www CNAME
+kayıtları girildi.** Bu birleştirmede yapılanlar:
+- Kullanıcıya görünen bütün "Slate" metinleri Shootboard oldu: karşılama
+  sayfası (index.html, çizimdeki "SLATE · SCRIPT" etiketi dahil), uygulama
+  (app.html), privacy.html, manifest.json, sw.js bildirim başlığı. Türkçe
+  ekler ünlü uyumuna göre çevrildi (Slate'e → Shootboard'a, Slate'in →
+  Shootboard'un, Slate'te → Shootboard'da).
 - Depo köküne `CNAME` dosyası eklendi: `shootboard.app`.
-- DEĞİŞMEYENLER, bilerek: localStorage anahtarları (`demo_*`), Supabase
-  tablo ve sütun adları, GoatCounter site kodu (`slate-demo`), CSS/JS
-  tanımlayıcıları. Bunları değiştirmek veri kaybettirir ya da ölçümü koparır.
+- DEĞİŞMEYENLER, bilerek: localStorage anahtarları (`demo_*`,
+  `slate_giris_donus`), service worker önbellek adı (`slate-v1`), bildirim
+  etiketi (`slate-termin`), Supabase tablo ve sütun adları, ICS takvim
+  adları, GoatCounter site kodu (`slate-demo`), kod tanımlayıcıları
+  (`SLATE_ISARET`), gelen/kayitlar.json. Bunları değiştirmek veri
+  kaybettirir, önbelleği ya da ölçümü koparır.
 
-**Kullanıcının yapacakları (kod dışı):**
-1. Alan adı panelinde DNS: `@` için dört A kaydı (185.199.108.153,
-   185.199.109.153, 185.199.110.153, 185.199.111.153) ve `www` için
-   CNAME → gerceginizleritv.github.io. Cloudflare'deyse proxy KAPALI.
-2. GitHub → Settings → Pages → Custom domain: shootboard.app; DNS kontrolü
-   geçince "Enforce HTTPS". Bu dal main'e alınmadan Pages değişmez.
-3. Supabase → Authentication → URL Configuration: Site URL
+**Kullanıcının yapacakları (kod dışı), birleştirmeden sonra:**
+1. GitHub → Settings → Pages → Custom domain: shootboard.app; DNS kontrolü
+   geçince "Enforce HTTPS". CNAME main'e girince eski github.io adresi yeni
+   alan adına yönlenir; sertifika gelene kadar site kısa süre açılmayabilir.
+2. Supabase → Authentication → URL Configuration: Site URL
    https://shootboard.app; Redirect URLs listesine https://shootboard.app/**
-   (eski github.io adresi geçiş süresince kalsın).
-4. Google Cloud → OAuth istemcisi (DRIVE_CLIENT_ID) → Authorized JavaScript
-   origins: https://shootboard.app eklenmezse Drive getir/yaz yeni adreste
+   (eski github.io adresi geçiş süresince kalsın). Giriş `redirectTo:
+   location.href` kullanıyor, yani liste şart.
+3. Google Cloud → OAuth istemcisi (DRIVE_CLIENT_ID) → Authorized JavaScript
+   origins: https://shootboard.app; yoksa Drive getir/yaz yeni adreste
    çalışmaz.
-5. İsteğe bağlı: GoatCounter'da yeni site kodu; GitHub hesap düzeyinde alan
+4. İsteğe bağlı: GoatCounter'da yeni site kodu; GitHub hesap düzeyinde alan
    adı doğrulaması (TXT kaydı) ele geçirmeye karşı.
+
+---
+
+## İçerik çalışması sohbetten (3 Eylül 2026)
+
+İçerik işleri (kayıt ekleme, yayın paketi) artık bu sohbet üzerinden de
+yürüyor. Eski lokasyon uygulamasında kayıtlar dosyanın içindeydi, Claude
+dosyayı düzenliyordu. Slate'te veri Supabase'de ve sohbetin oturum anahtarı
+yok; bu ortamdan `supabase.co` adresine ağ da kapalı (vekil 403 veriyor).
+
+**Çözüm: gelen kutusu.** Kayıtlar `gelen/kayitlar.json` dosyasına yazılıyor.
+Slate, giriş yapılmış açılışta (afterSignIn'in sonunda, kayıtlar ve
+projeler geldikten sonra) dosyayı `cache:'no-store'` ile okuyor, hesapta
+olmayan kayıtları kullanıcının oturumuyla buluta yazıyor ve toast gösteriyor.
+
+- Alınan kimlikler **`user_prefs.prefs.gelen_alinan`** defterinde. Tabloya
+  bakılsaydı kullanıcının Slate'te sildiği kayıt her açılışta geri gelirdi;
+  tarayıcı deposunda olsaydı ikinci cihaz bir daha alırdı. Bu yüzden
+  `tercihPush` artık prefs'i `tercihPrefsYap()` ile kuruyor (dil + defter);
+  eskiden `{lang}` yazıp defteri silerdi.
+- Defter okunamadıysa (`gelenDefterHazir` false) kutu HİÇ işlenmiyor: çift
+  kopya, bir açılış gecikmesinden kötü. `tercihSenkron` artık sözü tutulup
+  gelen kutusundan önce bekleniyor.
+- `proje` alanı proje ADI; tam ad, yoksa baş harfleriyle eşleşiyor
+  ("Nuruosmaniye" → "Nuruosmaniye Camii"). Kimlik desene uymayan kayıt
+  atlanıyor (yoksa sanitize yeni kimlik üretir, defter tutmaz).
+- Anonim modda çalışmıyor: demo verisine karışmasın.
+- Kutuda duran kayıt: **Nuruosmaniye** uzun video, YouTube **18 Eylül 2026
+  20:00** + Facebook paylaşımı **21:00**. Paket Drive'daki script v1'den.
+- Yayına çıkması için dal main'e alınmalı (GitHub Pages). Headless testte
+  (`scratchpad/gelen.test.js`) iki kayıt alınıyor, ikinci koşum 0,
+  silinmiş kayıt geri gelmiyor.
+
+`sql/19` betiği bu yüzden kaldırıldı; aynı kayıt kutuda, kimlik aynı
+(`ev_nuruosmaniye_yt_20260918`), betik koşulmuş olsa bile çift oluşmaz.
+
+Kaynak: yayın paketi biçimi için `lokasyon.html` içindeki Zeyrek / Rumeli
+Hisarı kayıtları örnek alındı (hook → madde listesi → "Rivayet değil,
+kayıt." → kaynaklar → hesaplar → hashtagler; Facebook'ta kısa hook +
+"🎬 TAM BELGESELİ İZLEMEK İÇİN" + "Sayfamda Abonelikler açık").
+
+---
+
+## Test takımı — koşum düzeni ve emekliye ayrılanlar (3 Eylül 2026)
+
+**Testler bir kusur ortaya çıkardı (düzeltildi):** Takvimden "+ yeni proje"
+seçip platform seçmeyi unutan kişi "En az bir platform seç" uyarısını
+alıyordu — ama proje ÇOKTAN oluşmuştu. Vazgeçince geride adı sorulmuş, boşa
+düşmüş bir proje kalıyordu. Sebep sıraydı: `secilenProjeyiCoz()` projeyi
+kuruyor, platform/tür doğrulaması ondan SONRA geliyordu. Doğrulama öne
+alındı. Teşhis, düzeltmeden önceki yapıda testle kanıtlandı
+(`yeniproje-bos.test.js`: düzeltmeden önce 0 → 1 proje, sonra 0 → 0).
+
+**Ders:** Yan etkisi olan bir adımı (kayıt oluşturma, ad sorma) doğrulamadan
+önce çalıştırma. Doğrulama başarısız olunca geri alınacak bir şey kalmasın.
+
+
+Testler `index.html` yerine artık **`app.html`**'e bakıyor. Koşum düzeni tek
+tip DEĞİL; koşturucu her teste beklediğini vermeli:
+
+| Tip | argv | Örnek |
+|---|---|---|
+| fikstür/ekran görüntüsü dizini | `argv[2]` = dizin | `node arama.test.js .` |
+| port | `argv[2]` = port (varsayılan 8098) | `node proje-arama.test.js` |
+| tam adres | `argv[2]` = URL (varsayılan app.html) | `node sayfa-hafiza.test.js` |
+| lokasyon testleri | `argv[2]` = dizin, `argv[3]` = port | `node lok-klon.test.js . 8099` |
+
+Sunucular: **8098** = depo kökü (Slate), **8099** = lokasyon uygulaması
+(`lokasyon.html`'in `index.html` adıyla sunulduğu bir sembolik bağ dizini),
+**8097** = eski Slate anlık görüntüsü (`eski/`).
+
+**Emekliye ayrılanlar** (kod değil, testin kendisi eskimişti — gerekçeleri
+`scratchpad/emekli/NEDEN.md` dosyasında):
+- `win.test.js` — takvimin eski 42 günlük sabit penceresini doğruluyordu;
+  uygulama gerçek ay penceresine geçti (`ay.test.js` sınıyor).
+- `fikir.test.js` — fikirlerin projeler tablosundan açılan bir pencerede
+  yaşadığı eski mimariyi sınıyordu; fikirler kendi sayfasına taşındı
+  (`akis`, `kart`, `parca`, `parca-surukle`, `fikir-secim`, `sc-fikir-ekle`
+  testleri geçiyor).
+- `donusum.test.js` — koşulamıyor: lokasyon uygulamasının özgün yedek
+  dosyasını istiyor, o dosya artık yok. Göç bir kez yapıldı ve doğrulandı.
+- `push.onceki.test.js` — GEÇMESİ BEKLENMİYOR. Eski yapıdaki veri kaybını
+  kanıtlıyor, teşhisin kaydı olarak duruyor.
+
+**Tazelenen testler** (iddiaları eskimişti):
+- `push.test.js` — `pushChanges` artık bulut koruma bayrağını okuyor.
+- `ai-tarif.test.js` — yer tutucudaki örnek kelime sayısını sabitlemişti.
+- `dokunmatik.test.js` — hafta görünümü saat ızgarasına dönüştü; gün
+  hücreleriyle sürükleme ay görünümünde sınanıyor (saat ızgarasını
+  `saat.test.js` sınıyor).
+
+**Ders:** Bir test düşünce önce "kod mu bozuldu, test mi eskidi" sorusunu
+sor. Bu turda düşen 16 testin **hiçbiri** üründe bir bozulma değildi:
+koşum düzeni, taşınan dosya adı ya da eskimiş iddia.
+
+---
+
+## Nerede kaldık (3 Eylül 2026, gece — karşılama sayfası)
+
+**DİKKAT — dosya adları değişti.** Uygulama artık `index.html` DEĞİL,
+**`app.html`**. `index.html` karşılama (tanıtım) sayfası. CRLF satır sonu
+kuralı bundan sonra **`app.html`** için geçerli; `index.html` (karşılama)
+diğer sayfalar gibi LF.
+
+Yapılanlar: `/` adresine karşılama sayfası kondu (bkz. "Karşılama sayfası
+— YAPILDI"), giriş orada gerçekten çalışıyor, dil (varsayılan İngilizce)
+ve tema düğmeleri eklendi, tüm metinlerin kontrastı ölçülüp düzeltildi.
+
+Sırada bekleyenler: termin hatırlatmaları, script alanına metin
+biçimlendirme, kendi alan adı.
 
 ---
 
@@ -492,19 +607,124 @@ bilerek ertelendi (sebebi aşağıda).
 
 ## Sırada
 
-### Karşılama (landing) sayfası (kullanıcı isteği, 3 Eylül 2026)
-Kullanıcı: *"What is Slate'e tıklayınca introlu bölüm geliyor. Bunu
-şimdilik kaldır ama bir landing page yapacağız ilk giriş için."*
-Uygulama içindeki tanıtım bloğu kaldırıldı; metinler kaybolmasın diye
-sözlükte duruyor: `h1`, `h1_sub`, `promise_tag`, `banner_bold1`,
-`banner_rest`.
+Sıralama **deneme sürecine** göre. Kullanıcı kararı (3 Eylül 2026):
+*"Bugün yani 0'ıncı günde ürünü satmayı planlamıyorum. Amaç ilk önce
+kullanıcılara ürünü denettirmek, bu nedenle bir deneme süreci başlayacak."*
+Pazar araştırması raporunun (2 Eylül 2026, bölüm 10) maddeleri bu listeye
+katıldı; rapor "satılabilirlik" sırasına göre yazılmıştı, burada
+"denenebilirlik" sırasına çevrildi. Raporun kendi öncelik etiketi her
+maddenin sonunda parantez içinde duruyor.
 
-**Yapılacak:** ayrı bir `karsilama.html` — ürünün ne olduğunu anlatan,
-"Başla" ile uygulamaya giren tek sayfa.
+### KAPI 1 — Deneyici gelmeden önce olması gerekenler
 
-**Karar verilecek:** aynı alan adını mı paylaşacak (`/` tanıtım, `/app`
-uygulama) yoksa ayrı mı duracak. Kendi alan adı maddesiyle birlikte
-düşünülmeli.
+1. **Supabase'i ücretsiz katmandan çıkarmak** (rapor: Öncelik 1)
+   Ücretsiz projede YEDEK YOK ve bir hafta hareketsizlikte proje duruyor.
+   Denemeyi baltalayan madde bu: on gün sonra dönen deneyicinin verisi
+   donmuş olur. Aylık 25 dolar, kurulumu bir saat. **Para almadan önce
+   değil, deneyici gelmeden önce.**
+
+2. **Testleri depoya almak** (rapor: Öncelik 1)
+   Bugün 83 test var ve HİÇBİRİ depoda değil — hepsi oturumla silinen
+   geçici bir klasörde. Bugün o testler iki gerçek kusur yakaladı (boş
+   proje, ızgara taşması). Oturum kapanınca bu ağ yok oluyor. Yarım gün.
+   Raporun gerekçesi: *"satılan üründe geri dönüşü olmayan hatalar (veri
+   kaybı) iki kez yaşanmış."*
+
+3. **Hesabı kendi kendine silme** (rapor: Öncelik 1)
+   Bugün silme e-posta ile. Deneyici "verimi geri alamıyorum" hissine
+   kapılmamalı; KVKK/GDPR için de gerekli. Yarım gün. Kodda yok
+   (3 Eylül 2026'da doğrulandı).
+
+4. **Kullanım şartları + veri işleme + iade politikası** (rapor: Öncelik 1)
+   `privacy.html` var, şartlar yok. Deneme sürecinde bile "verim ne
+   olacak" sorusunun yazılı cevabı olmalı. 1 gün.
+
+5. **Mobilde takvimin katlanması** (rapor: Öncelik 1)
+   İlk kayıt kaydırmadan görünmeli. Kodda `.cal-day.collapsed` ve telefon
+   medya sorgusu VAR; gerçek telefonda doğrulanmalı. Yarım gün.
+
+6. **Barındırmayı taşımak — Cloudflare Pages / Netlify** (rapor: Öncelik 1)
+   GitHub Pages ticari SaaS'a izin vermiyor. Ücretsiz denemede henüz
+   ticari satış yok, o yüzden 0. gün için ACİL DEĞİL; ama kendi alan adı
+   ve HTTPS de aynı taşımayla geliyor, ikisini birlikte yapmak mantıklı.
+   Yarım gün.
+
+0. **Gelen kutusu çoklu kullanıcıya hazır değil — DENEME ENGELİ**
+   (3 Eylül 2026, başka bir oturumun eklediği özellik)
+   `gelenKutusunuIsle()` `if(!session) return;` ile korunuyor, yani
+   ziyaretçiye gitmiyor. Ama **giriş yapan HERKESE** gidiyor: deneme
+   kullanıcısı hesabını açtığında `gelen/kayitlar.json` içindeki
+   Nuruosmaniye kayıtları onun takvimine yazılıyor. Deneyiciye başkasının
+   içerik planını göndermek, denemenin ilk beş dakikasını bozar.
+
+   **Önerilen çözüm — e-posta GÖMÜLMEYECEK.** Hesap sınırının çözüldüğü
+   yolu izle: `user_prefs.prefs` içine `gelen_kutusu: true` bayrağı,
+   yalnızca sahibin hesabında açık. Kod bayrağa bakar. Böylece kaynağa
+   e-posta ya da kullanıcı kimliği gömülmez (1 Eylül'de konan kural).
+   Alternatif ve daha temizi: kutuyu dosyadan veritabanına taşımak —
+   hedef kullanıcı başına bir satır. Daha fazla iş.
+
+### KAPI 2 — Denemeyi kazanan özellikler
+
+7. **Termin hatırlatmaları — SIRADAKİ İŞ** (rapor: Öncelik 2)
+   Ayrıntılı tasarım aşağıda kendi bölümünde. Raporun gerekçesi:
+   *"ürünü 'arada bir açılan pano' olmaktan çıkarıp günlük alışkanlığa
+   çeviren özellik bu."* Deneme sürecinde en çok işe yarayacak madde,
+   çünkü kullanıcıyı geri getiriyor.
+
+8. **Hazır proje şablonları** (rapor: Öncelik 2)
+   "Belgesel bölümü", "haftalık vlog", "ürün lansmanı", "etkinlik çekimi"
+   gibi yedi adımı ve paylaşım setini önceden dolduran şablonlar. Boş
+   uygulama sorununu çözer — deneyicinin ilk beş dakikası bu.
+
+9. **İçe aktarma — CSV / Google Sheets / Notion** (rapor: Öncelik 2)
+   Deneyicinin çoğu bugün bir tabloda çalışıyor; elini boşaltmadan
+   geçemezse denemez. Kodda hiç yok.
+
+10. **Paylaşılabilir salt okunur takvim bağlantısı** (rapor: Öncelik 2)
+    Kurgucuya/müşteriye plan göstermek. Ekip özelliklerinin en ucuz ilk
+    adımı ve deneyiciyi başkasına gösterten şey. Kodda hiç yok.
+
+11. **Service worker** (rapor: Öncelik 2)
+    Çevrimdışı açılış + bildirim altyapısı. 7. maddenin tarayıcı
+    bildirimi bacağı buna dayanıyor, o yüzden onunla birlikte gelecek.
+    `sw.js` yok.
+
+12. **Script alanına metin biçimlendirme** (kullanıcı isteği, 2 Eylül)
+    Düğme çubuğu + Markdown + önizleme. Gerekçesi aşağıda kendi bölümünde.
+
+### KAPI 3 — Para almaya geçerken
+
+13. **Yeniden adlandırma + kendi alan adı** (rapor: Öncelik 1)
+    "Slate" adı aynı kategoride kullanılıyor; marka ve arama görünürlüğü
+    riski. 1-2 gün. **Not:** hafızada bu madde "TÜM İŞ BİTİNCE" diye
+    duruyordu, rapor ise "para almadan önce zorunlu" diyor. Çelişki değil,
+    farklı hedefe bakıyorlar — deneme için ad yeterli, satış için değil.
+
+14. **Fiyat sayfası + bekleme listesi** (rapor: Öncelik 1)
+    Karşılama sayfası yapıldı (3 Eylül), fiyat ve bekleme listesi yok.
+
+15. **Ödeme — Paddle veya Lemon Squeezy** (rapor: Öncelik 1)
+    Merchant of record; KDV ve fatura onlarda. Türkiye'den satıcı
+    uygunluğu raporun 9. bölümünde. 2-3 gün.
+
+16. **Ücretli pakette AI'yı ürünün karşılaması** (rapor: Öncelik 2)
+    Bugün kullanıcı kendi Gemini anahtarını giriyor. Rapor bunu *"teknik
+    olmayan üreticinin en büyük terk noktası"* diyor. Ücretli kullanıcı
+    için Supabase Edge Function arkasında ürünün kendi anahtarı.
+    **Deneme sürecinde ölçülecek:** kaç deneyici anahtar adımında
+    düşüyor? Cevap buysa bu madde KAPI 2'ye taşınır.
+
+### KAPI 4 — Talep kanıtlanınca
+
+17. **YouTube Data API ile "yayınlandı mı" otomatik işaretleme**
+    (rapor: Öncelik 3) Yalnızca okuma; yayın yapmadan platformu dinlemenin
+    ucuz yolu. Hafızada hiç yoktu, rapordan geldi.
+18. **Roller ve yetkilendirme** — şema hazır, kullanılmıyor (rapor: Öncelik 3)
+19. **Google Places adres tamamlama** — sunucu tarafı anahtar gerekiyor
+    (rapor: Öncelik 3)
+20. **Üçüncü ve sonraki diller** (rapor: Öncelik 3) — ayrıntılı gerekçe
+    "Ertelenenler" bölümünde; boyut engel değil, bakım maliyeti engel.
 
 ### Lokasyon uygulamasi Slate'e birlestiriliyor (karar: 1 Eylül 2026)
 Kullanıcı kararı: iki ayrı uygulama yerine tek araç. Sebep: tüm
@@ -677,7 +897,50 @@ Yapısal değişiklikler:
 - `tur2.test.js` on adımı iki dilde ve üç ekran boyunda geziyor;
   kontrastı hesaplanan renkten ölçüyor.
 
-### Termin hatırlatmaları — iki kanal (kullanıcı kararı, 1 Eylül 2026)
+### Termin hatırlatmaları — SIRADAKİ İŞ (karar tazelendi: 3 Eylül 2026)
+
+**3 Eylül 2026 — kullanıcı iki şey netleştirdi:**
+
+1. **İki kanal BİRBİRİNDEN BAĞIMSIZ açılıp kapanacak.** *"Kullanıcı hem
+   tarayıcı hem de takvim bildirimlerini açıp kapatabilmeli."* Yani tek
+   bir "hatırlatmalar açık" düğmesi değil; takvim ve tarayıcı ayrı ayrı.
+2. **Takvim bağlantısı sonradan kaldırılabilecek.** *"Dilerse takvime
+   ekleyebilir ya da ekledikten bir süre sonra kaldırabilir."* Bu, 1
+   Eylül'de yazılan şartın aynısı ve iki mekanizma da gerekli (aşağıda).
+
+**Açık karar kapandı:** hatırlatma zamanı da kullanıcıya bırakılıyor, üç
+ayrı anahtar olarak: *bir gün önce*, *termin günü*, *geciktiğinde*.
+Varsayılan: bir gün önce + geciktiğinde açık, termin günü kapalı.
+
+**Uygulama sırası — neyin sunucu gerektirdiği önemli:**
+
+| Parça | Sunucu gerekiyor mu | Kim yapar |
+|---|---|---|
+| Ayarlar arayüzü (kanal + zaman anahtarları), `user_prefs`'e yazma | Hayır | Claude |
+| `.ics` DOSYASI indirme ("takvime ekle") | Hayır | Claude |
+| Service worker + bildirim izni + uygulama açılırken bildirim | Hayır | Claude |
+| Canlı takvim ABONELİĞİ (webcal adresi, kendiliğinden güncellenen) | **Evet** — Edge Function | Claude yazar, KULLANICI kurar |
+| Uygulama kapalıyken zamanlanmış bildirim (push) | **Evet** — Edge Function + zamanlanmış görev + VAPID | Claude yazar, KULLANICI kurar |
+
+**Dosya ile abonelik arasındaki fark, kullanıcının şartı açısından
+kritik:** indirilen `.ics` dosyası Google Takvim'e ayrı ayrı olay olarak
+girer, kaldırmak için kullanıcının o olayları TEK TEK silmesi gerekir.
+Abonelik ise tek kalemde iptal edilir. Yani dosya bir başlangıç, asıl
+istenen abonelik. İkisi birlikte sunulacak, arayüzde farkı yazacak.
+
+**DÜZELTME (3 Eylül 2026): Edge Function GEREKMİYOR.** Supabase Storage
+dosyayı doğru `Content-Type` ile herkese açık bir adresten sunuyor. Uygulama
+`.ics` metnini üretip Storage'a yazıyor, adres sabit kalıyor, terminler
+değişince dosya güncelleniyor (`saveProjects()` tek kapı). İptal = dosyayı
+sil + jetonu yenile. Kurulum tek SQL betiği: `sql/19-takvim-abonelik.sql`.
+Sunucu tarafı kod yok. Aşağıdaki eski gerekçe neden REST ve Pages'ın
+yetmediğini anlatıyor, o kısım geçerli:
+
+**Neden Edge Function şart:** Google Takvim aboneliği, `text/calendar`
+döndüren ve başlık (header) istemeyen bir adres istiyor. Supabase'in
+hazır REST arayüzü JSON döndürüyor ve `apikey` başlığı istiyor; GitHub
+Pages ise statik. Üçüncü bir yol yok.
+
 Bugün uyarı yalnızca sayfa AÇIKKEN var: geciken adım kırmızı, üstte şerit.
 Kullanıcı bakmıyorken haber göndermek için tarayıcının dışında zamanlanmış
 bir iş gerekiyor; Supabase bunu yapabiliyor, ayrı sunucu gerekmiyor.
@@ -718,7 +981,11 @@ saklanmalı. WhatsApp ayrıca Meta iş doğrulaması + önceden onaylı şablon
 istiyor, kurulumu haftalar sürer. Resmî olmayan WhatsApp kütüphaneleri
 KULLANILMAYACAK: kurallara aykırı, numara kapatılır.
 
-### Kendi alan adı — TÜM İŞ BİTİNCE (kullanıcı kararı, 1 Eylül 2026)
+### Kendi alan adı (karar tazelendi: 3 Eylül 2026 — KAPI 3)
+1 Eylül'de "tüm iş bitince" denmişti. Pazar araştırması bunu "para
+almadan önce zorunlu" diyor. İkisi çelişmiyor: DENEME için mevcut adres
+yeterli, SATIŞ için değil. Barındırma taşımasıyla (KAPI 1, madde 6)
+birlikte yapılacak — aynı iş.
 Kullanıcı alan adını işler tamamlandıktan sonra alacak.
 
 **Önemli:** Alan adı almak "kendi sunucumu kurmam gerekecek" demek
@@ -818,6 +1085,83 @@ doğru kurulursa kullanıcı başına maliyet küçük kalır.
 ---
 
 ## Yapıldı — kararın gerekçesiyle birlikte
+
+### Karşılama sayfası — YAPILDI (3 Eylül 2026)
+Kullanıcı: *"giren kişi ne olduğunu anlamadan direkt olarak demo sayfasına
+geliyor... profesyonel bir web sitesi gibi görünsün. Özellikleri tıkladıkça
+detayları anlatan yere gitsin. Mutlaka sayfada login bölümü olsun."*
+
+**Adresler değişti — EN ÖNEMLİ NOKTA:**
+- `/` (yani `index.html`) artık **karşılama sayfası**.
+- Uygulama **`app.html`** adresine taşındı (`git mv`, CRLF korundu).
+- `manifest.json` → `start_url: ./app.html` (telefona eklenen kısayol
+  uygulamayı açsın, tanıtım sayfasını değil).
+- `privacy.html` içindeki "Slate'e dön" bağlantıları `app.html`'e döndü.
+
+**Giriş nasıl çalışıyor (Supabase ayarına DOKUNULMADI):**
+Karşılama sayfası uygulamayla aynı Supabase projesini ve aynı publishable
+anahtarı kullanıyor. Google ve e-posta linki için dönüş adresi HER ZAMAN
+karşılama sayfasının kendisi (`location.origin + location.pathname`).
+Sebep: Supabase'de izin verilen dönüş adresi listesine yeni bir satır
+eklemek gerekmesin — site kökü zaten izinliydi. Giriş tamamlanınca sayfa
+oturumu görüp `app.html`'e geçiriyor.
+
+İki yönlendirme kapısı var, çünkü tek başına ikisi de yetmiyor:
+1. Adres çubuğunda `access_token` / `code` varsa (e-posta linki, başka
+   cihazdan da gelinebilir),
+2. `sessionStorage['slate_giris_donus']` bayrağı varsa (giriş bu sayfadan
+   başlatılmıştı; bazı akışlarda adres çubuğu temiz dönüyor).
+
+Oturumu açık olan biri `/` adresine normal yolla girerse **zorla
+yönlendirilmiyor** — tanıtımı okuyabilsin diye giriş kutusunun yerinde
+"Slate'e git" ve "Çıkış yap" görünüyor.
+
+**Dil:** Varsayılan **İngilizce** (kullanıcı kararı). Sayfanın HTML'i
+İngilizce yazıldı; JavaScript çalışmazsa da okunur bir sayfa kalıyor.
+Türkçe sözlük `METIN.tr` içinde, `data-i18n` / `data-i18n-html` /
+`data-i18n-attr` nitelikleriyle uygulanıyor. Dil seçimi uygulamayla AYNI
+anahtarda (`demo_ui_language`), tema da aynı anahtarda (`demo_theme`) —
+iki sayfa arasında seçim taşınıyor.
+
+**Okunabilirlik (kullanıcı şikâyeti: "yazıların bazılarının renkleri arka
+plan ile çok karışıyor"):** İki ölçüm testi yazıldı — biri HTML metinleri,
+biri SVG `<text>` etiketleri için (SVG'de renk `color` değil `fill`'den
+geliyor, ilk test onları kaçırıyordu). Bulunanlar:
+- `--solgun` #5B6B7F → #4C5C70 (4.85:1 → 6.1:1).
+- 11 piksellik mono etiketlerin ağırlığı 500/600'e çıkarıldı.
+- Kart numaraları (`.dizin-no`) #8B9AAB idi — 2.9:1. Vurgu mavisine alındı.
+- **Mini takvimdeki kayıtlar:** 9,5 piksellik beyaz yazı platform renginin
+  ÜSTÜNDE duruyordu (TikTok'ta 4.4:1, koyu temada daha kötü). Renk artık
+  zemin değil, solda 3 piksellik şerit; yazı normal metin renginde.
+- Açık temada uyarı ve platform renkleri koyulaştırıldı (#C63A31 → #B03329
+  gibi), tonlu zeminler .16 → .12 opaklığa indirildi.
+Sonuç: dört durumda da (açık/koyu × EN/TR) eşiğin altında kalan metin yok.
+
+**Kahraman panosu da canlı (kullanıcı isteği):** Kayıtlar panoya sırayla
+düşüyor, biri kalkıp başka güne taşınıyor (hedef gün önce işaretleniyor),
+ikisi yayınlandı tikini alıyor. 13 saniyelik döngü.
+
+Bunu yaparken **eskiden beri duran bir yerleşim hatası** ortaya çıktı:
+`.izgara`'nın sütunları düz `1fr` idi. Düz `1fr`, sütunun en küçük boyutunu
+İÇERİĞE bağlıyor; uzun bir kayıt adı bütün ızgarayı genişletiyordu ve son
+sütun panonun `overflow:hidden`'ı altında kesiliyordu — sayfa yatay
+kaymadığı için testler bunu görmüyordu. Üç yerden düzeltildi:
+`grid-template-columns:repeat(7,minmax(0,1fr))`, hücreye `min-width:0`,
+kayıt kutusuna `min-width:0;overflow:hidden`. Kayıt adları da hücreye
+sığacak şekilde kısaltıldı (platform rengi zaten nereye gideceğini
+söylüyor). `izgara.test.js` bunu dört ekran boyutunda sınıyor.
+
+**Ders:** Kontrastı gözle değil ölçerek doğrula, ve SVG metnini ayrı ölç —
+`getComputedStyle(el).color` SVG `<text>` için gerçek rengi vermiyor.
+
+**Testler:** `karsilama.test.js` (52 kontrol: varsayılan dil, dil değişimi
+ve geri dönüş, ortak dil/tema anahtarı, tema ilk boyamada, dokuz özellik
+bağlantısı, app.html bağlantıları, e-posta linki, Google, açık oturum,
+girişten dönüşte yönlendirme, bulut yüklenemezse, üç ekran boyutunda yatay
+taşma), `kontrast.test.js`, `kontrast-svg.test.js`.
+
+**Sırada bu sayfa için:** kendi alan adı alınınca Supabase'deki Site URL
+kontrol edilecek; şimdilik bir şey yapmak gerekmiyor.
 
 ### Şablonları buluta taşı — YAPILDI (1 Eylül 2026)
 Tablo: `caption_templates`, kullanıcı başına TEK satır (`user_id` birincil
