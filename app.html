@@ -2935,6 +2935,7 @@ const LANG = {
     rm_cal_need_login: "The calendar address is tied to your account. Sign in first.",
     rm_cal_need_sql: "The storage area is not ready yet. Run sql/19-takvim-abonelik.sql in Supabase, then try again.",
     rm_cal_err: "The address could not be created. Try again in a moment?",
+    rm_cal_err_server: "The address could not be created. The server said:",
     rm_file_title: "Or: download a file (not recommended)",
     rm_file_warn: "Read this first. A downloaded file enters your calendar as separate one-off events. To remove them you have to delete each event by hand — there is no single undo. The subscription above is removed in one step. Use the file only if you cannot set up a subscription.",
     rm_file_btn: "Download the .ics file anyway",
@@ -3435,6 +3436,7 @@ const LANG = {
     rm_cal_need_login: "Takvim adresi hesabına bağlı. Önce giriş yap.",
     rm_cal_need_sql: "Depolama alanı henüz hazır değil. Supabase'de sql/19-takvim-abonelik.sql betiğini çalıştırıp tekrar dene.",
     rm_cal_err: "Adres oluşturulamadı. Biraz sonra tekrar dener misin?",
+    rm_cal_err_server: "Adres oluşturulamadı. Sunucunun söylediği:",
     rm_file_title: "Ya da: dosya indir (önerilmez)",
     rm_file_warn: "Önce bunu oku. İndirilen dosya takvimine ayrı ayrı, tek seferlik olaylar olarak girer. Kaldırmak için o olayları TEK TEK silmen gerekir; toptan geri alma yok. Yukarıdaki abonelik ise tek hamlede kaldırılıyor. Dosyayı ancak abonelik kuramıyorsan kullan.",
     rm_file_btn: "Yine de .ics dosyasını indir",
@@ -9859,6 +9861,15 @@ function takvimAdresi(){
 function takvimYolu(jeton){
   return session.user.id + '/' + (jeton || hatirlatma.jeton) + '.ics';
 }
+// Hata ekrani: bilinen bir sebep varsa onu, yoksa SUNUCUNUN kendi
+// cumlesini gosteriyor. Genel "tekrar dene" yalnizca hicbir bilgi
+// yoksa kaliyor — kullanicinin duzeltebilecegi bir ayar hatasini
+// "biraz sonra dene" diye saklamak onu bosuna bekletiyor.
+function hataMetni(err){
+  if(err && err.anahtar) return t(err.anahtar);
+  if(err && err.sunucu)  return t('rm_cal_err_server') + ' ' + err.sunucu;
+  return t('rm_cal_err');
+}
 async function takvimYayinla(){
   if(!sb || !session){ const e = new Error('giris'); e.anahtar = 'rm_cal_need_login'; throw e; }
   if(!hatirlatma.jeton){ hatirlatma.jeton = jetonUret(); hatirlatmaKaydet(); }
@@ -9871,6 +9882,11 @@ async function takvimYayinla(){
     // (sql/19 betigini calistirmak), "hata olustu" demek onu bosa dusurur.
     const m = String(error.message || '');
     if(/not found|does not exist|bucket/i.test(m)){ error.anahtar = 'rm_cal_need_sql'; }
+    // Geri kalan her sey icin sunucunun KENDI cumlesi gosteriliyor.
+    // "Biraz sonra tekrar dene" demek, sebebi duzeltilebilir bir ayar
+    // oldugunda kullaniciyi bosuna bekletiyordu; AI anahtari ekraninda
+    // Google'in cumlesini gosteren duzen burada da uygulaniyor.
+    else if(m){ error.sunucu = m; }
     throw error;
   }
   return takvimAdresi();
@@ -10039,7 +10055,7 @@ document.getElementById('rm_kurBtn').addEventListener('click', async ()=>{
     track('funnel/calendar-subscribed');
   }catch(err){
     console.error('[takvim] adres olusturulamadi', err);
-    cikti.textContent = t(err && err.anahtar ? err.anahtar : 'rm_cal_err');
+    cikti.textContent = hataMetni(err);
     cikti.className = 'rm-durum hata';
   }finally{ btn.disabled = false; }
 });
@@ -10062,7 +10078,7 @@ document.getElementById('rm_yenileBtn').addEventListener('click', async ()=>{
     console.error('[takvim] yenilenemedi', err);
     hatirlatma.jeton = eski;
     hatirlatmaKaydet();
-    cikti.textContent = t(err && err.anahtar ? err.anahtar : 'rm_cal_err');
+    cikti.textContent = hataMetni(err);
     cikti.className = 'rm-durum hata';
     hatirlatmaEkraniTazele();
   }finally{ btn.disabled = false; }
