@@ -1570,6 +1570,7 @@ body.suruklenirken *{cursor:grabbing !important;}
 .rm-durum{font-size:12.5px;line-height:1.55;margin:8px 0 0;}
 .rm-durum.ok{color:var(--green);}
 .rm-durum.hata{color:var(--red);}
+.rm-adres-et{margin:14px 0 6px;font-size:12.5px;color:var(--text-dim);}
 .rm-adres{display:flex;gap:8px;margin-top:10px;}
 .rm-adres input{
   flex:1;min-width:0;font-family:'IBM Plex Mono',monospace;font-size:11.5px;
@@ -2361,9 +2362,12 @@ body.suruklenirken *{cursor:grabbing !important;}
         <label class="rm-anahtar"><input type="checkbox" id="rm_takvim"></label>
       </div>
       <p class="rm-not" data-i18n="rm_ch_cal_lead">Your deadlines are published as a calendar address.</p>
-      <div class="rm-adres" id="rm_adresSatir" hidden>
-        <input type="text" id="rm_adres" readonly>
-        <button type="button" class="btn btn-sm" id="rm_kopyaBtn" data-i18n="rm_cal_copy">Copy address</button>
+      <div id="rm_adresSatir" hidden>
+        <p class="rm-adres-et" data-i18n="rm_adres_et">This is the address you paste into your calendar:</p>
+        <div class="rm-adres">
+          <input type="text" id="rm_adres" readonly>
+          <button type="button" class="btn btn-sm" id="rm_kopyaBtn" data-i18n="rm_cal_copy">Copy address</button>
+        </div>
       </div>
       <div class="rm-dugmeler">
         <button type="button" class="btn btn-sm btn-primary" id="rm_kurBtn" data-i18n="rm_cal_start">Create the calendar address</button>
@@ -2372,12 +2376,14 @@ body.suruklenirken *{cursor:grabbing !important;}
       <p class="rm-durum" id="rm_takvimDurum"></p>
       <details class="fold fold-modal rm-nasil">
         <summary><span data-i18n="rm_cal_how">How do I add it?</span></summary>
+        <p class="rm-not" data-i18n-html="rm_cal_how_0">First press <b>Copy address</b> above. Then, in your calendar:</p>
         <ul>
-          <li data-i18n="rm_cal_how_g">Google Calendar: Other calendars → Subscribe to calendar → From URL.</li>
-          <li data-i18n="rm_cal_how_i">iPhone: Settings → Calendar → Accounts → Add Subscribed Calendar.</li>
-          <li data-i18n="rm_cal_how_o">Outlook: Add calendar → Subscribe from web.</li>
+          <li data-i18n-html="rm_cal_how_g">Google Calendar: Other calendars → Subscribe to calendar → From URL.</li>
+          <li data-i18n-html="rm_cal_how_i">iPhone: Settings → Calendar → Accounts → Add Subscribed Calendar.</li>
+          <li data-i18n-html="rm_cal_how_o">Outlook: Add calendar → Subscribe from web.</li>
         </ul>
       </details>
+      <p class="rm-not rm-ilk" data-i18n="rm_cal_first">Google Calendar does not fetch a new subscription right away — the first time, it can take a few hours to appear. That is Google's own schedule, not a mistake on your side.</p>
       <p class="rm-not" data-i18n="rm_cal_lag">Calendars check the address on their own schedule.</p>
       <p class="rm-not" data-i18n="rm_cal_remove">To remove it later you unsubscribe in your calendar app.</p>
     </div>
@@ -2918,9 +2924,12 @@ const LANG = {
     rm_cal_renew_ask: "The old address will stop working immediately, and the calendar that uses it will empty out. A new address is created. Continue?",
     rm_cal_off_ask: "Cancel the subscription? The old address stops working and the calendar that uses it empties out.",
     rm_cal_how: "How do I add it?",
-    rm_cal_how_g: "Google Calendar: Other calendars → Subscribe to calendar → From URL → paste the address.",
-    rm_cal_how_i: "iPhone: Settings → Calendar → Accounts → Add Account → Other → Add Subscribed Calendar.",
-    rm_cal_how_o: "Outlook: Add calendar → Subscribe from web.",
+    rm_adres_et: "This is the address you paste into your calendar:",
+    rm_cal_how_0: "First press <b>Copy address</b> above. Then, in your calendar:",
+    rm_cal_how_g: "Google Calendar (on a computer): left menu → <b>Other calendars</b> + → <b>From URL</b> → paste the address → <b>Add calendar</b>. The box asks for nothing else; leave “Make the calendar publicly accessible” unticked.",
+    rm_cal_how_i: "iPhone: Settings → Apps → Calendar → Calendar Accounts → Add Account → Other → <b>Add Subscribed Calendar</b> → paste the address.",
+    rm_cal_how_o: "Outlook: Add calendar → <b>Subscribe from web</b> → paste the address.",
+    rm_cal_first: "Google Calendar does not fetch a new subscription right away — the first time, it can take a few hours to appear. That is Google's own schedule, not a mistake on your side.",
     rm_cal_lag: "Calendars check the address on their own schedule, so a change can take a few hours to appear. That is fine for deadlines.",
     rm_cal_remove: "To remove it later you unsubscribe in your calendar app, or press Renew / cancel here — that kills the address itself.",
     rm_cal_need_login: "The calendar address is tied to your account. Sign in first.",
@@ -3415,9 +3424,12 @@ const LANG = {
     rm_cal_renew_ask: "Eski adres hemen çalışmayı bırakacak ve onu kullanan takvim boşalacak. Yeni bir adres oluşturulacak. Devam edilsin mi?",
     rm_cal_off_ask: "Abonelik iptal edilsin mi? Eski adres çalışmayı bırakır ve onu kullanan takvim boşalır.",
     rm_cal_how: "Nasıl eklerim?",
-    rm_cal_how_g: "Google Takvim: Diğer takvimler → Takvime abone ol → URL'den → adresi yapıştır.",
-    rm_cal_how_i: "iPhone: Ayarlar → Takvim → Hesaplar → Hesap Ekle → Diğer → Abone Olunan Takvim Ekle.",
-    rm_cal_how_o: "Outlook: Takvim ekle → Web'den abone ol.",
+    rm_adres_et: "Takvimine yapıştıracağın adres bu:",
+    rm_cal_how_0: "Önce yukarıdaki <b>Adresi kopyala</b> düğmesine bas. Sonra takviminde:",
+    rm_cal_how_g: "Google Takvim (bilgisayardan): sol menüde <b>Diğer takvimler</b> + → <b>URL'den</b> → adresi yapıştır → <b>Takvim ekle</b>. O pencere başka bir şey istemiyor; “Takvimi herkese açık yap” kutusunu işaretleme.",
+    rm_cal_how_i: "iPhone: Ayarlar → Uygulamalar → Takvim → Takvim Hesapları → Hesap Ekle → Diğer → <b>Abone Olunan Takvim Ekle</b> → adresi yapıştır.",
+    rm_cal_how_o: "Outlook: Takvim ekle → <b>Web'den abone ol</b> → adresi yapıştır.",
+    rm_cal_first: "Google Takvim yeni aboneliği hemen çekmiyor — ilk seferde görünmesi birkaç saat sürebilir. Bu Google'ın kendi sıklığı, sende bir hata olduğu anlamına gelmiyor.",
     rm_cal_lag: "Takvimler adrese kendi bildikleri sıklıkta bakıyor, o yüzden bir değişikliğin görünmesi birkaç saat sürebilir. Termin için sorun değil.",
     rm_cal_remove: "Sonradan kaldırmak için takvim uygulamasından abonelikten çıkarsın, ya da burada “Yenile / iptal et” e basarsın — o adresin kendisini öldürür.",
     rm_cal_need_login: "Takvim adresi hesabına bağlı. Önce giriş yap.",
@@ -10019,6 +10031,11 @@ document.getElementById('rm_kurBtn').addEventListener('click', async ()=>{
   try{
     await takvimYayinla();
     hatirlatmaEkraniTazele();
+    // Adres olusur olusmaz "nasil eklerim" katini AC: kullanicinin adrese
+    // ihtiyaci olan tek an bu, talimat kapali durursa adresi alip ne
+    // yapacagini bilmiyor.
+    const nasil = document.querySelector('.rm-nasil');
+    if(nasil) nasil.open = true;
     track('funnel/calendar-subscribed');
   }catch(err){
     console.error('[takvim] adres olusturulamadi', err);
