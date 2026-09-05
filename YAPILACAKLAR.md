@@ -96,6 +96,19 @@ kayıtları girildi.** Bu birleştirmede yapılanlar:
 
 ---
 
+## Kaydırma hareketi ve yapışık Kaydet (5 Eylül 2026)
+
+- **Kaydırma:** `#calGridWrap` üzerinde touchstart/touchend. Yatay yol ≥60px
+  ve dikeyin 1,5 katından büyükse `takvimKaydir(±1)`. Tablo görünümünde
+  kapalı (tablo kendi içinde yana kayıyor). `passive:true`, kaydırmayı
+  engellemiyor.
+- **Yapışık Kaydet:** telefonda `.modal .modal-actions{position:sticky;
+  bottom:0}`; pencerenin alt boşluğu şeride taşındı (safe-area dahil).
+  Düğmeler tam genişlik 48px. `#dlgOverlay` istisna (küçük diyalog).
+- Test: `scratchpad/swipe.test.js` (9 iddia). Diğer takımlar yeniden geçti.
+
+---
+
 ## Takvim başlığı telefonda yerel takvim düzeni (5 Eylül 2026)
 
 Kullanıcı canlı siteden ekran görüntüsü attı: koca mavi "+ Yeni Giriş"

@@ -1702,6 +1702,22 @@ body.suruklenirken *{cursor:grabbing !important;}
   .modal-head{top:-16px;margin:-16px -16px 14px;padding:16px 16px 10px;}
   .modal .modal-xbar{top:-16px;margin:-16px -16px 6px;padding:10px 12px 4px;}
   .modal-x{width:40px;height:40px;font-size:22px;}
+  /* Kaydet / Vazgec seridi alta yapisik: uzun formda dugmeye inmek icin
+     kaydirmak gerekmiyor. Pencere kendi icinde kaydigi icin sticky
+     pencerenin alt kenarina tutunuyor; alt bosluk seride tasindi ki
+     safe-area payi da onun altinda kalsin. */
+  .modal{padding-bottom:0;}
+  .modal .modal-actions{
+    position:sticky;bottom:0;z-index:2;
+    margin:16px -16px 0;padding:12px 16px calc(14px + env(safe-area-inset-bottom));
+    background:var(--surface);border-top:1px solid var(--line-soft);
+    flex-wrap:wrap;
+  }
+  .modal .modal-actions .btn{flex:1 1 auto;min-height:48px;}
+  /* Diyalog kucuk: yapisik serit ve cizgi gereksiz. */
+  #dlgOverlay .modal{padding-bottom:18px;}
+  #dlgOverlay .modal-actions{position:static;margin:16px 0 0;padding:0;border-top:0;background:transparent;}
+  #dlgOverlay .modal-actions .btn{flex:0 1 auto;}
   body.sheet-open{overflow:hidden;}
 }
 
@@ -8733,6 +8749,30 @@ function takvimKaydir(yon){
 }
 document.getElementById('prevBtn').addEventListener('click', ()=> takvimKaydir(-1));
 document.getElementById('nextBtn').addEventListener('click', ()=> takvimKaydir(1));
+
+// Telefonda takvimi parmakla kaydirmak: sola cek -> sonraki, saga cek ->
+// onceki. Yerel takvim uygulamalarinin alışkanlığı. Dikey kaydirma ile
+// karismasin diye yatay yol 60px'i gecmeli ve dikey yoldan belirgin buyuk
+// olmali. Tablo gorunumu kendi icinde yana kaydigi icin orada kapali;
+// aksi halde tabloyu kaydirmak ay degistirirdi.
+(function takvimKaydirmaHareketi(){
+  const kap = document.getElementById('calGridWrap');
+  if(!kap) return;
+  let x0 = 0, y0 = 0, izleniyor = false;
+  kap.addEventListener('touchstart', e=>{
+    if(viewMode === 'table' || e.touches.length !== 1){ izleniyor = false; return; }
+    x0 = e.touches[0].clientX; y0 = e.touches[0].clientY; izleniyor = true;
+  }, { passive:true });
+  kap.addEventListener('touchend', e=>{
+    if(!izleniyor) return;
+    izleniyor = false;
+    const t = e.changedTouches && e.changedTouches[0];
+    if(!t) return;
+    const dx = t.clientX - x0, dy = t.clientY - y0;
+    if(Math.abs(dx) < 60 || Math.abs(dx) < Math.abs(dy) * 1.5) return;
+    takvimKaydir(dx < 0 ? 1 : -1);
+  }, { passive:true });
+})();
 
 function setView(mod){
   if(mod !== 'week' && mod !== 'month' && mod !== 'table' && mod !== 'day') return;
