@@ -1327,10 +1327,16 @@ body.suruklenirken *{cursor:grabbing !important;}
 .guc-1 .guc-dolgu{width:33%;background:var(--red);}
 .guc-2 .guc-dolgu{width:66%;background:var(--amber);}
 .guc-3 .guc-dolgu{width:100%;background:var(--green);}
-.guc-yazi{font-size:12px;line-height:1.5;margin:0 0 4px;color:var(--text-dim);min-height:18px;}
+.guc-yazi{font-size:12px;line-height:1.5;margin:0;color:var(--text-dim);min-height:0;}
+.guc-yazi:not(:empty){margin:0 0 4px;}
 /* Kural listesi. Isaret ::before ile geliyor; ayri bir eleman koymak
    yerine tek satirlik bir <li> yetiyor. */
-.kurallar{list-style:none;margin:0 0 4px;padding:0;display:grid;gap:3px;}
+.kurallar{list-style:none;margin:0;padding:0;display:grid;gap:3px 14px;
+  grid-template-columns:repeat(2,minmax(0,1fr));
+  max-height:0;overflow:hidden;opacity:0;transition:max-height .18s,opacity .18s,margin .18s;}
+/* Kutuya dokunulunca aciliyor: bos dururken dort satirin soyleyecek bir
+   seyi yok, pencereyi uzatiyordu. */
+.kurallar.acik{max-height:80px;opacity:1;margin:4px 0 2px;}
 .kurallar li{font-size:12px;line-height:1.5;color:var(--text-dim);display:flex;gap:7px;align-items:baseline;}
 .kurallar li::before{content:"○";font-size:11px;line-height:1.5;flex:none;}
 .kurallar li.tamam{color:var(--green);}
@@ -11431,7 +11437,15 @@ function authGucuYaz(){
   sifreOlcusunuCiz(document.getElementById('authKayitPass').value,
                    'authKayitPanel', 'authGucDolgu', 'authGucYazi', 'authKurallar');
 }
-document.getElementById('authKayitPass').addEventListener('input', authGucuYaz);
+// Kural listesi kutuya dokunulunca aciliyor; icinde yazi varsa odak
+// gidince de acik kaliyor ki eksigi gormeye devam etsin.
+function kurallariBagla(kutuId, listeId, ciz){
+  const kutu = document.getElementById(kutuId), liste = document.getElementById(listeId);
+  kutu.addEventListener('focus', ()=> liste.classList.add('acik'));
+  kutu.addEventListener('blur',  ()=> { if(!kutu.value) liste.classList.remove('acik'); });
+  kutu.addEventListener('input', ()=> { liste.classList.add('acik'); ciz(); });
+}
+kurallariBagla('authKayitPass', 'authKurallar', authGucuYaz);
 document.getElementById('authKayitPassGoster').addEventListener('click', ()=>{
   const kutu = document.getElementById('authKayitPass');
   const gizli = kutu.type === 'password';
@@ -11552,11 +11566,12 @@ function sifreOlcuyuYaz(){
   const cikti = document.getElementById('sifreOlcu');
   if(g >= 2) cikti.textContent += ' ' + t('sifre_kaydet_uyari');
 }
-document.getElementById('sifreYeni').addEventListener('input', sifreOlcuyuYaz);
+kurallariBagla('sifreYeni', 'sifreKurallar', sifreOlcuyuYaz);
 document.getElementById('sifreUret').addEventListener('click', ()=>{
   const kutu = document.getElementById('sifreYeni');
   kutu.value = sifreUretVer();
   kutu.select();
+  document.getElementById('sifreKurallar').classList.add('acik');
   sifreOlcuyuYaz();
   // Ayri bir 'uretildi' satiri yok: guc olcusu zaten kaydetmeyi soyluyor.
   document.getElementById('sifreDurum').textContent = '';

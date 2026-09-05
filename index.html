@@ -338,12 +338,12 @@ a{color:inherit;}
 .giris-liste{list-style:none;margin:0;padding:0;display:flex;flex-direction:column;gap:12px;}
 .giris-liste li{display:flex;gap:11px;font-size:14.5px;color:var(--solgun);line-height:1.5;}
 .giris-liste svg{flex:none;margin-top:3px;color:var(--yesil);}
-.giris-sag{padding:44px 42px;display:flex;flex-direction:column;justify-content:center;}
+.giris-sag{padding:24px 34px;display:flex;flex-direction:column;justify-content:center;}
 /* Kayit / Giris sekmeleri. Iki isin ayri oldugu bir bakista gorulsun. */
 .sekmeler{display:flex;gap:4px;background:none;border:1px solid var(--cizgi);
-  border-radius:10px;padding:4px;margin-bottom:20px;}
+  border-radius:10px;padding:3px;margin-bottom:14px;}
 .sekme{flex:1;border:0;background:none;font:inherit;font-size:14px;font-weight:600;
-  color:var(--solgun);padding:9px 8px;border-radius:7px;cursor:pointer;}
+  color:var(--solgun);padding:8px;border-radius:7px;cursor:pointer;}
 .sekme.secili{background:var(--mavi-soft);color:var(--mavi);}
 .sekme:hover:not(.secili){color:var(--murekkep);}
 /* Sifre gucu: ince bir cubuk ve altinda tek satir. Renk tek basina yeterli
@@ -354,9 +354,13 @@ a{color:inherit;}
 .guc-1 .guc-dolgu{width:33%;background:var(--kirmizi);}
 .guc-2 .guc-dolgu{width:66%;background:var(--amber);}
 .guc-3 .guc-dolgu{width:100%;background:var(--yesil);}
-.guc-yazi{font-size:12px;line-height:1.5;margin:0 0 6px;color:var(--solgun);min-height:18px;}
+.guc-yazi{font-size:12px;line-height:1.5;margin:0;color:var(--solgun);min-height:0;}
+.guc-yazi:not(:empty){margin:0 0 5px;}
 /* Kural listesi. Isaret ::before ile geliyor; ayri bir eleman gerekmiyor. */
-.kurallar{list-style:none;margin:0 0 14px;padding:0;display:grid;gap:3px;}
+.kurallar{list-style:none;margin:0;padding:0;display:grid;gap:3px 14px;
+  grid-template-columns:repeat(2,minmax(0,1fr));
+  max-height:0;overflow:hidden;opacity:0;transition:max-height .18s,opacity .18s,margin .18s;}
+.kurallar.acik{max-height:80px;opacity:1;margin:0 0 10px;}
 .kurallar li{font-size:12px;line-height:1.5;color:var(--solgun);display:flex;gap:7px;align-items:baseline;}
 .kurallar li::before{content:"○";font-size:11px;line-height:1.5;flex:none;}
 .kurallar li.tamam{color:var(--yesil);}
@@ -364,38 +368,41 @@ a{color:inherit;}
 .guc-1 .guc-yazi{color:var(--kirmizi);}
 .guc-3 .guc-yazi{color:var(--yesil);}
 .giris-baslik{font-family:'Archivo',sans-serif;font-weight:700;font-size:20px;margin-bottom:6px;letter-spacing:-.4px;}
-.giris-alt{font-size:14px;color:var(--solgun);margin:0 0 22px;}
+.giris-alt{font-size:13.5px;color:var(--solgun);margin:0 0 14px;}
 .google-dug{
   display:flex;align-items:center;justify-content:center;gap:10px;width:100%;
-  padding:13px;border-radius:10px;border:1px solid var(--cizgi);background:var(--yuzey);
+  padding:11px;border-radius:10px;border:1px solid var(--cizgi);background:var(--yuzey);
   color:var(--murekkep);font-family:inherit;font-size:14.5px;font-weight:600;cursor:pointer;
   transition:border-color .15s,background .15s;
 }
 .google-dug:hover:not(:disabled){border-color:var(--mavi);background:var(--yuzey2);}
 .google-dug:disabled,.dug:disabled{opacity:.55;cursor:default;}
-.ayirac{display:flex;align-items:center;gap:12px;margin:20px 0;color:var(--solgun);}
+.ayirac{display:flex;align-items:center;gap:12px;margin:13px 0;color:var(--solgun);}
 .ayirac::before,.ayirac::after{content:"";flex:1;height:1px;background:var(--cizgi);}
 .ayirac span{font-family:'IBM Plex Mono',monospace;font-size:11px;letter-spacing:1.6px;text-transform:uppercase;font-weight:500;}
 .alan-et{
   display:block;font-family:'IBM Plex Mono',monospace;font-size:11px;letter-spacing:1.4px;
-  text-transform:uppercase;color:var(--solgun);margin-bottom:7px;font-weight:500;
+  text-transform:uppercase;color:var(--solgun);margin-bottom:5px;font-weight:500;
 }
 .alan{
-  width:100%;padding:12px 13px;border-radius:10px;border:1px solid var(--cizgi);
+  width:100%;padding:10px 13px;border-radius:10px;border:1px solid var(--cizgi);
   background:var(--kagit);color:var(--murekkep);font-family:inherit;font-size:14.5px;
 }
 .alan::placeholder{color:var(--hayalet);}
+/* Ad kutusunun etiketi yok (yer kazanmak icin); yer tutucu etiket
+   gorevi goruyor, ekran okuyucu icin aria-label var. */
+.alan-ad{margin-bottom:8px;}
 .alan:focus{outline:2px solid var(--mavi);outline-offset:1px;border-color:var(--mavi);}
-.giris-sag .dug-birincil{width:100%;margin-top:12px;padding:13px;}
+.giris-sag .dug-birincil{width:100%;margin-top:10px;padding:12px;}
 /* Ikinci yol (baglanti gonder) birinciyle ayni genislikte: daralinca
    ikinci sinif bir secenek gibi duruyor, oysa sifresi olmayan herkesin
    yolu bu. Kart icindeki digerlerine (Google, Goster) dokunulmuyor. */
 .giris-sag #linkDug{width:100%;margin-top:8px;padding:12px;}
 /* Sifre kutusu ile "Goster" dugmesi tek satirda; kutu kalan yeri aliyor. */
-.sifre-satir{display:flex;gap:8px;align-items:stretch;margin-bottom:10px;}
+.sifre-satir{display:flex;gap:8px;align-items:stretch;margin-bottom:6px;}
 .sifre-satir .alan{flex:1;min-width:0;margin-bottom:0;}
 .sifre-goz{flex:0 0 auto;white-space:nowrap;padding:0 14px;font-size:13px;}
-.giris-ince{margin:18px 0 0;font-size:13px;color:var(--solgun);line-height:1.5;text-align:center;}
+.giris-ince{margin:9px 0 0;font-size:12.5px;color:var(--solgun);line-height:1.5;text-align:center;}
 .giris-ince a{color:var(--mavi);font-weight:600;}
 .durum{
   margin:14px 0 0;padding:10px 12px;border-radius:8px;font-size:13.5px;line-height:1.5;
@@ -1482,9 +1489,9 @@ a{color:inherit;}
                 <span data-i18n="google_signup">Sign up with Google</span>
               </button>
               <div class="ayirac"><span data-i18n="or">or</span></div>
-              <label class="alan-et" for="kAd" data-i18n="name_label">Your name, optional</label>
-              <input class="alan" id="kAd" type="text" maxlength="40" autocomplete="name"
-                     data-i18n-attr="placeholder:name_ph" placeholder="How should we greet you?">
+              <input class="alan alan-ad" id="kAd" type="text" maxlength="40" autocomplete="name"
+                     data-i18n-attr="placeholder:name_ph,aria-label:name_label"
+                     placeholder="Your name (optional)" aria-label="Your name, optional">
               <label class="alan-et" for="kEposta" data-i18n="email_label">Your email address</label>
               <input class="alan" id="kEposta" type="email" autocomplete="email"
                      data-i18n-attr="placeholder:email_ph" placeholder="you@example.com">
@@ -1743,7 +1750,7 @@ var METIN = {
     signin_sub:"Tekrar hoş geldin.",
     google_signup:"Google ile kayıt ol",
     name_label:"Adın, isteğe bağlı",
-    name_ph:"Sana nasıl seslenelim?",
+    name_ph:"Adın (isteğe bağlı)",
     pass_new_label:"Bir şifre belirle",
     pass_new_ph:"En az 8 karakter",
     signup_btn:"Hesap oluştur",
@@ -2129,7 +2136,15 @@ function gucuYaz(){
   dolgu.style.width = (g === 1) ? Math.round(tamam / SIFRE_KURALLARI.length * 55) + '%' : '';
   yazi.textContent = metin('guc_' + g, GUC_YEDEK[g]);
 }
-kSifre.addEventListener('input', gucuYaz);
+// Liste bos dururken dort satir yer kapliyordu ve soyleyecek bir seyi yoktu;
+// artik kutuya dokunuldugunda aciliyor. Odak gidince yazilmis bir sifre varsa
+// acik kaliyor: kullanici neyi eksik biraktigini gormeye devam etsin.
+var kKurallar = document.getElementById('kKurallar');
+function kurallariGoster(){ kKurallar.classList.add('acik'); }
+function kurallariGizle(){ if(!kSifre.value) kKurallar.classList.remove('acik'); }
+kSifre.addEventListener('focus', kurallariGoster);
+kSifre.addEventListener('blur', kurallariGizle);
+kSifre.addEventListener('input', function(){ kurallariGoster(); gucuYaz(); });
 document.getElementById('kSifreGoz').addEventListener('click', function(){
   var gizli = kSifre.type === 'password';
   kSifre.type = gizli ? 'text' : 'password';
