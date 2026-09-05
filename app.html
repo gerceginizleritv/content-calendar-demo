@@ -117,6 +117,12 @@ body{
 .rail-name{font-size:12.5px;font-weight:600;text-align:center;
   max-width:100%;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;}
 .btn.rail-auth{width:100%;justify-content:center;}
+/* Duz bir baglanti gibi: kimlik blogunda ikinci bir dugme gorunumu
+   istemiyoruz, bu ikincil bir islem. */
+.rail-sifre{display:block;width:100%;margin-top:6px;background:none;border:0;
+  padding:2px 0;color:var(--text-dim);font:inherit;font-size:11.5px;
+  text-decoration:underline;cursor:pointer;}
+.rail-sifre:hover{color:var(--accent);}
 
 .rail-nav{display:flex;flex-direction:column;gap:2px;}
 /* Serit icindeki sekme: alt cizgi yerine sol vurgu, ve tam genislik. */
@@ -1817,6 +1823,7 @@ body.suruklenirken *{cursor:grabbing !important;}
         <div class="avatar" id="railAvatar" aria-hidden="true"></div>
         <div class="rail-name" id="railName" hidden></div>
         <button class="btn btn-sm rail-auth" id="authBtn" data-i18n="btn_signin">☁ Sign in</button>
+        <button type="button" class="rail-sifre" id="railSifreBtn" data-i18n="sifre_change" hidden>Change password</button>
       </div>
 
       <!-- Sira isin akisi: fikir -> script -> proje -> takvim. Menunun
@@ -2883,6 +2890,7 @@ const LANG = {
     sifre_uret: "Generate",
     sifre_save: "Save password",
     sifre_later: "Not now",
+    sifre_change: "Change password",
     sifre_saving: "Saving...",
     sifre_ok: "Password saved. You can now sign in with your email and this password.",
     sifre_err: "Could not save the password. Try again in a moment.",
@@ -3423,6 +3431,7 @@ const LANG = {
     sifre_uret: "Üret",
     sifre_save: "Şifreyi kaydet",
     sifre_later: "Şimdi değil",
+    sifre_change: "Şifreyi değiştir",
     sifre_saving: "Kaydediliyor...",
     sifre_ok: "Şifre kaydedildi. Artık e-postan ve bu şifreyle girebilirsin.",
     sifre_err: "Şifre kaydedilemedi. Biraz sonra tekrar dene.",
@@ -10891,6 +10900,14 @@ function kimlikGoster(){
   adEl.hidden = !ad;
   adEl.title = ad;
 
+  // Sifre baglantisi yalnizca e-posta hesabinda: Google ile girende sifre
+  // Google'da, buradan degistirilmiyor.
+  const sifreBtn = document.getElementById('railSifreBtn');
+  if(sifreBtn){
+    const saglayici = session && session.user.app_metadata && session.user.app_metadata.provider;
+    sifreBtn.hidden = !session || saglayici === 'google';
+  }
+
   const m = (session && session.user.user_metadata) || {};
   const foto = m.avatar_url || m.picture || '';
   daire.classList.toggle('bos', !session);
@@ -11359,14 +11376,21 @@ function sifreSorulsunMu(){
   }catch(e){}
   return true;
 }
-function sifreSor(){
-  if(!sifreSorulsunMu()) return;
-  if(document.querySelector('.overlay.open')) return;
+document.getElementById('railSifreBtn').addEventListener('click', ()=> sifrePenceresiniAc());
+
+function sifrePenceresiniAc(){
   const d = document.getElementById('sifreDurum');
   d.textContent = ''; d.className = 'ai-status';
+  document.getElementById('sifreYeni').value = '';
+  document.getElementById('sifreOlcu').textContent = '';
   document.getElementById('sifreKaydet').disabled = false;
   document.getElementById('sifreOverlay').classList.add('open');
   document.getElementById('sifreYeni').focus();
+}
+function sifreSor(){
+  if(!sifreSorulsunMu()) return;
+  if(document.querySelector('.overlay.open')) return;
+  sifrePenceresiniAc();
   track('funnel/password-asked');
 }
 
