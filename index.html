@@ -326,7 +326,8 @@ a{color:inherit;}
 .ozellik-gorsel text{font-weight:500;}
 
 /* ---------- giris ---------- */
-.giris{padding:70px 0;}
+/* Yapiskan tepe serit formun ilk satirini ortmesin. */
+.giris{padding:70px 0;scroll-margin-top:74px;}
 .giris-kart{
   background:var(--yuzey);border:1px solid var(--cizgi);border-radius:18px;
   box-shadow:var(--golge-guclu);overflow:hidden;
@@ -685,11 +686,16 @@ a{color:inherit;}
 @keyframes f9p{ 0%{stroke-dashoffset:18;opacity:0;} 4%{opacity:1;} 22%{stroke-dashoffset:-300;opacity:1;} 26%,100%{opacity:0;stroke-dashoffset:-300;} }
 @keyframes f9c{ 0%,4%{opacity:0;transform:scale(.7);} 11%{opacity:1;transform:scale(1.18);} 16%,92%{opacity:1;transform:scale(1);} 99%,100%{opacity:0;transform:scale(.7);} }
 
+.dar-yazi{display:none;}
 /* ---------- dar ekran ---------- */
 @media (max-width:960px){
   .kahraman-izgara,.nedir-kart,.ozellik,.giris-kart{grid-template-columns:1fr;gap:34px;}
   .ozellik:nth-of-type(even) .ozellik-gorsel{order:0;}
-  .giris-sol{border-right:none;border-bottom:1px solid var(--cizgi);}
+  /* Telefonda FORM USTTE. Iki sutun tek sutuna inince anlatim once
+     geliyordu: "Giris yap" dugmesine basan kisi bir ekran dolusu yaziya
+     dusuyor, form asagida kaliyordu. Masaustunde sira degismiyor. */
+  .giris-sag{order:-1;}
+  .giris-sol{border-right:none;border-top:1px solid var(--cizgi);}
   .adimlar{grid-template-columns:repeat(2,1fr);gap:26px 18px;}
   .adim::after{display:none;}
   .dizin-izgara{grid-template-columns:repeat(2,1fr);}
@@ -699,11 +705,15 @@ a{color:inherit;}
   .sar{padding:0 18px;}
   .kahraman{padding:48px 0 42px;}
   .nedir-kart{padding:28px 24px;}
-  .giris-sol,.giris-sag{padding:32px 24px;}
+  .giris-sol,.giris-sag{padding:26px 20px;}
+  .giris{padding:22px 0;scroll-margin-top:66px;}
+  .giris-kart{gap:0;}
   .dizin-izgara{grid-template-columns:1fr;}
   .adimlar{grid-template-columns:1fr;}
   .marka-ad{font-size:17px;}
   .tepe-ic{gap:12px;}
+  .genis-yazi{display:none;}
+  .dar-yazi{display:inline;}
 }
 </style>
 </head>
@@ -733,7 +743,7 @@ a{color:inherit;}
       <button class="ikon-dug" id="temaDug" type="button" data-i18n-attr="aria-label:aria_theme">
         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true" id="temaIkon"></svg>
       </button>
-      <a class="dug dug-birincil dug-kucuk" href="#giris" data-i18n="btn_open">Sign in / Sign up</a>
+      <a class="dug dug-birincil dug-kucuk" href="#giris"><span class="genis-yazi" data-i18n="btn_open">Sign in / Sign up</span><span class="dar-yazi" data-i18n="btn_open_kisa">Sign in</span></a>
     </div>
   </div>
 </header>
@@ -1612,6 +1622,7 @@ var METIN = {
 
     nav_what:"Nedir", nav_how:"Nasıl çalışır", nav_features:"Özellikler", nav_ai:"AI", nav_login:"Giriş",
     btn_open:"Giriş yap / Kayıt ol",
+    btn_open_kisa:"Giriş",
     aria_lang:"Dili değiştir", aria_theme:"Temayı değiştir", aria_board:"Örnek yayın takvimi",
 
     hero_tag:"Planlama panosu — otomatik paylaşım değil",
