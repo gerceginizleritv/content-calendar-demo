@@ -568,11 +568,14 @@ body.suruklenirken *{cursor:grabbing !important;}
    yazilari uzuyor ("Dış çekim" -> "On location") ve sutun kendiliginden
    genisliyordu. Icerik artik bu genisligin icinde satir atliyor; tablo
    hangi dilde olursa olsun ayni duruyor. */
+/* 200 piksel KEYFI DEGIL: yedi adim sutunu + bu sutun 900 piksellik bir
+   ekrana tam sigsin diye secildi. Genisletmek tabloyu kaydirtiyor
+   (tablo-genislik.test.js bunu olcuyor). Kalabaligin cozumu genislik
+   degil, hiyerarsiydi. */
 .pname-col{position:sticky;left:0;z-index:3;background:var(--surface-2);
   width:var(--pname-w,200px);min-width:var(--pname-w,200px);max-width:var(--pname-w,200px);
   border-right:1px solid var(--line);}
-.pname-col > *{max-width:var(--pname-w,240px);}
-@media (min-width:1400px){ .proj-table{--pname-w:270px;} }
+.pname-col > *{max-width:var(--pname-w,200px);}
 .pname{overflow-wrap:anywhere;}
 .proj-table thead th.pname-col{z-index:4;}
 .pname{font:inherit;font-size:14.5px;font-weight:700;color:var(--text);background:none;
