@@ -6,6 +6,59 @@ duruyor, neden ertelendiği de yazıyor ki aynı tartışma baştan yapılmasın
 
 ---
 
+## Giriş: kayıt/giriş ayrımı ve şifre (5 Eylül 2026)
+
+Giriş yalnızca e-posta bağlantısıyla yapılıyordu. Gerçek denemede iki kez
+tökezledi: bağlantı Gmail'de spam'e düştü, Hotmail'de ikinci sefer hiç
+gelmedi. Bağlantıya bağlı tek yol kırılgan.
+
+Yapılanlar (uygulama ve karşılama sayfası, ikisinde de):
+
+- **Kayıt ol / Giriş yap iki ayrı sekme.** Tek kartta toplandığında
+  kullanıcı hangisini yaptığını anlamıyordu.
+- **Kayıt:** Google ile tek tık, ya da ad + e-posta + şifre (`signUp`).
+  Adres zaten kayıtlıysa Supabase hata vermez, boş `identities` döner;
+  bu yakalanıp kullanıcı giriş sekmesine yönlendiriliyor.
+- **Giriş:** Google, ya da e-posta + şifre. Şifresini unutan için giriş
+  bağlantısı aynı panelde duruyor — kimse kilitli kalmıyor.
+- **Şifre gücü** yazarken görünüyor: ince çubuk + ne yapılması gerektiğini
+  söyleyen bir satır. **Zayıf şifre kabul edilmiyor** (kısa, tek karakter
+  tekrarı, `password/şifre/1234/qwerty` gibi kalıplar). Aynı ölçü,
+  bağlantıyla girene sorulan şifre penceresinde de geçerli.
+- Bağlantıyla giren kişiye bir kez **şifre belirle** penceresi açılıyor
+  (üretici + güç ölçüsü). "Şimdi değil" bir hafta susturuyor. Google ile
+  girene sorulmuyor. Sonradan değiştirmek için sol taraftaki isimlerin
+  altında bir bağlantı var.
+- **Spam uyarısı** bağlantı gönderildiğinde mesajın içinde.
+- Karşılama sayfasının çağrı düğmeleri artık boş uygulamaya değil giriş
+  bölümüne götürüyor; **çıkış yapan da karşılama sayfasına dönüyor.**
+
+Yol boyunca çıkan üç kusur: bulut yüklenmediğinde giriş düğmeleri sessizce
+hiçbir şey yapmıyordu; koyu temada seçili sekme seçilmemişten daha koyu
+çıkıyordu (oluk `--yuzey2`, pil `--yuzey` — ilişki tema değişince tersine
+dönüyor); kapatma şeridinin negatif kenar boşluğu `.modal`'ın 26 pikseline
+göreydi, dlg penceresi 22 kullanıyor, serit dört piksel taşıyordu.
+
+Aynı gün iki oturum aynı sorunu ayrı çözmüştü: biri uygulamadaki tüm
+`confirm/alert/prompt` çağrılarını karşılayan genel bir pencere, diğeri
+yalnızca iki auth sorusu için başlıklı bir pencere. Genel olan esas alındı;
+`onayla()` artık metin ya da `{baslik, govde, vurgu, not, tamam}` alıyor.
+
+**E-posta tarafı (5 Eylül):** Resend bağlandı, SMTP kuruldu, şablonlar
+Supabase'e girildi, `hosgeldin` fonksiyonu dağıtıldı, `sql/20` çalıştırıldı.
+`hello@shootboard.app` Cloudflare Email Routing ile Gmail'e düşüyor.
+**Kalan:** `_dmarc` TXT kaydı (`v=DMARC1; p=none;`) — ilk e-posta Gmail'de
+spam'e düştü, asıl sebebi bu.
+
+Panelden kurulum iki kez düştü: ad kutusu rastgele bir isimle (`dynamic-task`)
+dolu geliyor ve değiştirilmezse tetikleyicinin çağırdığı adla uyuşmuyor;
+editörde ikinci dosya (`sablonlar.js`) eklenmeden Deploy'a basılınca
+"Module not found" veriyor. İkisi de `supabase/email/README.md`'ye yazıldı,
+ayrıca tek dosyalık sürüm üretildi: `supabase/functions/hosgeldin/tek-dosya.ts`
+(elle değil `birlestir.py` ile üretiliyor, iki sürüm ayrışmasın).
+
+---
+
 ## Nerede kaldık (3 Eylül 2026, gece — e-posta: giriş bağlantıları ve hoşgeldin)
 
 **Alan adı e-postası kuruldu (kullanıcı, Cloudflare Email Routing):** hello@,
