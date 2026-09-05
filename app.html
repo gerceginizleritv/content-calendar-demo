@@ -1306,6 +1306,14 @@ body.suruklenirken *{cursor:grabbing !important;}
 .posted-hint{font-size:11.5px;color:var(--text-dim);margin:-9px 0 15px;line-height:1.5;}
 .section-title{font-family:'Archivo',sans-serif;color:var(--accent);font-weight:700;font-size:12px;text-transform:uppercase;letter-spacing:1px;margin:20px 0 12px;border-top:1px solid var(--line);padding-top:16px;}
 .modal-actions{display:flex;justify-content:flex-end;gap:9px;margin-top:20px;}
+/* Onay penceresi digerlerinden dar: tek bir soru soruyor, 600 pikselde
+   satirlar okunmayacak kadar uzuyordu. */
+.onay-modal{max-width:420px;}
+.onay-govde{margin:0;font-size:14.5px;line-height:1.55;color:var(--text);}
+/* E-posta adresi tasmasin: dar pencerede tek kelime olarak duruyor. */
+.onay-vurgu{margin:8px 0 0;font-size:14.5px;font-weight:600;word-break:break-all;color:var(--text);}
+.onay-not{margin:12px 0 0;}
+.onay-vurgu:empty,.onay-not:empty{display:none;}
 .btn-danger{border-color:var(--red);color:var(--red);}
 .btn-danger:hover{background:rgba(232,93,93,0.08);}
 .ai-btn{color:var(--accent);border-color:var(--accent-dim);}
@@ -2530,6 +2538,23 @@ body.suruklenirken *{cursor:grabbing !important;}
   </div>
 </div>
 
+<!-- Ortak onay penceresi. Onceden tarayicinin kendi confirm() kutusu vardi:
+     uygulamanin disinda duran, uzun metinde yatay kaydirma cubugu cikaran ve
+     soruyu tek blok halinde gosteren bir kutu. Bu pencere diger pencerelerle
+     ayni govdeyi kullaniyor; baslik, soru ve aciklama ayri satirlarda. -->
+<div class="overlay" id="onayOverlay">
+  <div class="modal onay-modal">
+    <h2 id="onayBaslik"></h2>
+    <p class="onay-govde" id="onayGovde"></p>
+    <p class="onay-vurgu" id="onayVurgu"></p>
+    <p class="hint onay-not" id="onayNot"></p>
+    <div class="modal-actions">
+      <button type="button" class="btn" id="onayVazgec" data-i18n="btn_cancel">Cancel</button>
+      <button type="button" class="btn btn-primary" id="onayTamam"></button>
+    </div>
+  </div>
+</div>
+
 <div class="overlay" id="fbOverlay">
   <div class="modal" style="max-width:520px;">
     <h2 data-i18n="fb_title">Two questions, 20 seconds</h2>
@@ -2651,11 +2676,15 @@ const LANG = {
     auth_name_label: "Your name, optional",
     auth_signed_as: "Signed in as",
     auth_signout: "Sign out",
+    auth_signout_note: "Your entries stay in the cloud. Sign back in and everything is where you left it.",
+    auth_move_title: "Move these entries into your account?",
+    auth_move_text: (n)=> `This browser holds ${n} ${n === 1 ? 'entry' : 'entries'} that were made without an account.`,
+    auth_move_note: "If they are not yours, choose Cancel — they stay in this browser and never touch your account.",
+    auth_move_yes: "Move them",
     auth_synced: "Saved to your account.",
     inbox_imported: n => n === 1 ? "1 entry arrived from the inbox and was saved to your account." : `${n} entries arrived from the inbox and were saved to your account.`,
     auth_sync_err: "Could not reach the cloud — the reason is on the red bar above.",
     auth_moved: (n)=> `${n} entries moved to your account.`,
-    auth_move_ask: (n)=> `This browser has ${n} entries that were made without an account. Move them into this account?\n\nChoose Cancel if they are not yours.`,
     auth_signed_out: "Signed out. You are back to this browser only.",
     cloud_err_safe: "Nothing is lost: your entries are in your account, this device just could not read them.",
     cloud_err_net: "This device could not reach the cloud.",
@@ -3023,6 +3052,7 @@ const LANG = {
     clone_over_limit: (kalan)=> `only ${kalan} left in this demo`,
     clone_need_date: "Every copy needs a date.",
     btn_cancel: "Cancel",
+    btn_ok: "OK",
     btn_save: "Save",
     ai_title: "Connect Your Own AI",
     ai_lead: "Optional. Everything else in the demo works without it.",
@@ -3162,11 +3192,15 @@ const LANG = {
     auth_name_label: "Adın, isteğe bağlı",
     auth_signed_as: "Giriş yapıldı:",
     auth_signout: "Çıkış yap",
+    auth_signout_note: "Kayıtların bulutta kalır. Tekrar giriş yaptığında bıraktığın yerden devam edersin.",
+    auth_move_title: "Bu kayıtlar hesabına taşınsın mı?",
+    auth_move_text: (n)=> `Bu tarayıcıda hesapsız oluşturulmuş ${n} kayıt duruyor.`,
+    auth_move_note: "Sana ait değilse Vazgeç'e bas; kayıtlar hesabına girmeden bu tarayıcıda kalır.",
+    auth_move_yes: "Taşı",
     auth_synced: "Hesabına kaydedildi.",
     inbox_imported: n => n === 1 ? "Gelen kutusundan 1 kayıt alındı, hesabına kaydedildi." : `Gelen kutusundan ${n} kayıt alındı, hesabına kaydedildi.`,
     auth_sync_err: "Buluta ulaşılamadı — sebebi yukarıdaki kırmızı şeritte.",
     auth_moved: (n)=> `${n} kayıt hesabına taşındı.`,
-    auth_move_ask: (n)=> `Bu tarayıcıda hesapsız oluşturulmuş ${n} kayıt var. Bu hesaba taşınsın mı?\n\nSana ait değilse İptal'e bas.`,
     auth_signed_out: "Çıkış yapıldı. Yalnızca bu tarayıcıya döndün.",
     cloud_err_safe: "Hiçbir şey kaybolmadı: kayıtlar hesabında duruyor, bu cihaz okuyamadı.",
     cloud_err_net: "Bu cihaz buluta ulaşamadı.",
@@ -3534,6 +3568,7 @@ const LANG = {
     clone_over_limit: (kalan)=> `bu demoda ${kalan} kayıtlık yer kaldı`,
     clone_need_date: "Her kopyanın tarihi olmalı.",
     btn_cancel: "Vazgeç",
+    btn_ok: "Tamam",
     btn_save: "Kaydet",
     ai_title: "Kendi AI'ını Bağla",
     ai_lead: "İsteğe bağlı. Demonun geri kalanı bu olmadan da çalışır.",
@@ -10382,6 +10417,42 @@ const PITCH_ACIK = false;
 // Kisa bildirim. Bulut akisinda cagriliyordu ama hic tanimlanmamisti; try
 // blogunun icinde patlayip hatayi "buluta ulasilamadi" gibi gostermisti.
 let toastTimer = null;
+// Tarayicinin confirm() kutusu yerine uygulamanin kendi penceresi. confirm()
+// hem uygulamanin disinda duruyor hem uzun metinde yatay kaydirma cubugu
+// cikariyordu; bir de dugme yazilari tarayicinin dilinden geliyor, arayuzun
+// "Vazgeç"i ile metindeki "Iptal" birbirini tutmuyordu.
+// await onayla({...}) -> true (onaylandi) / false (vazgecildi).
+function onayla({ baslik, govde = '', vurgu = '', not = '', tamam = '', tehlike = false }){
+  // el() bu dosyada genel bir yardimci degil, tek bir islevin icinde
+  // tanimli; burada dogrudan getElementById kullaniliyor.
+  const bul = id => document.getElementById(id);
+  const kat = bul('onayOverlay'), dTamam = bul('onayTamam'), dVazgec = bul('onayVazgec');
+  bul('onayBaslik').textContent = baslik;
+  bul('onayGovde').textContent  = govde;
+  bul('onayVurgu').textContent  = vurgu;
+  bul('onayNot').textContent    = not;
+  dTamam.textContent = tamam || t('btn_ok');
+  dTamam.classList.toggle('btn-danger', !!tehlike);
+  dVazgec.textContent = t('btn_cancel');
+  kat.classList.add('open');
+  dTamam.focus();
+  return new Promise(cevapla => {
+    function kapat(sonuc){
+      kat.classList.remove('open');
+      dTamam.onclick = dVazgec.onclick = kat.onclick = null;
+      document.removeEventListener('keydown', tus);
+      cevapla(sonuc);
+    }
+    // Esc ve disariya tiklamak vazgecmek sayiliyor; pencerenin ICINE
+    // tiklamak kapatmasin diye hedef kontrol ediliyor.
+    function tus(e){ if(e.key === 'Escape'){ e.preventDefault(); kapat(false); } }
+    dTamam.onclick  = ()=> kapat(true);
+    dVazgec.onclick = ()=> kapat(false);
+    kat.onclick = (e)=> { if(e.target === kat) kapat(false); };
+    document.addEventListener('keydown', tus);
+  });
+}
+
 function showToast(mesaj){
   if(!mesaj) return;
   let el = document.getElementById('toast');
@@ -10595,7 +10666,12 @@ async function afterSignIn(){
         events = kimlikleriTazele(hesabinKendiKopyasi);
         markAllDirty();
         await pushChanges();
-      }else if(anonim.length && confirm(t('auth_move_ask')(anonim.length))){
+      }else if(anonim.length && await onayla({
+        baslik: t('auth_move_title'),
+        govde:  t('auth_move_text')(anonim.length),
+        not:    t('auth_move_note'),
+        tamam:  t('auth_move_yes')
+      })){
         // Kimlikleri yeniden uretiyoruz: baska bir hesabin satirlariyla
         // birincil anahtar cakismasi olmasin.
         events = anonim.map(e => ({...e, id: newId(), content: JSON.parse(JSON.stringify(e.content||{}))}));
@@ -10705,9 +10781,15 @@ document.getElementById('cloudRetry').addEventListener('click', async ()=>{
   }finally{ dugme.disabled = false; }
 });
 
-document.getElementById('authBtn').addEventListener('click', ()=>{
+document.getElementById('authBtn').addEventListener('click', async ()=>{
   if(session){
-    if(confirm(t('auth_signed_as') + ' ' + session.user.email + '\n\n' + t('auth_signout') + '?')){
+    if(await onayla({
+      baslik: t('auth_signout'),
+      govde:  t('auth_signed_as'),
+      vurgu:  session.user.email,
+      not:    t('auth_signout_note'),
+      tamam:  t('auth_signout')
+    })){
       sb.auth.signOut();
       track('funnel/signed-out');
     }
