@@ -96,6 +96,114 @@ kayıtları girildi.** Bu birleştirmede yapılanlar:
 
 ---
 
+## Kaydırma hareketi ve yapışık Kaydet (5 Eylül 2026)
+
+- **Kaydırma:** `#calGridWrap` üzerinde touchstart/touchend. Yatay yol ≥60px
+  ve dikeyin 1,5 katından büyükse `takvimKaydir(±1)`. Tablo görünümünde
+  kapalı (tablo kendi içinde yana kayıyor). `passive:true`, kaydırmayı
+  engellemiyor.
+- **Yapışık Kaydet:** telefonda `.modal .modal-actions{position:sticky;
+  bottom:0}`; pencerenin alt boşluğu şeride taşındı (safe-area dahil).
+  Düğmeler tam genişlik 48px. `#dlgOverlay` istisna (küçük diyalog).
+- Test: `scratchpad/swipe.test.js` (9 iddia). Diğer takımlar yeniden geçti.
+
+---
+
+## Takvim başlığı telefonda yerel takvim düzeni (5 Eylül 2026)
+
+Kullanıcı canlı siteden ekran görüntüsü attı: koca mavi "+ Yeni Giriş"
+şeridi, demo sayacı, üç satıra dağılmış Ay/Hafta/Gün/Tablo + Önceki +
+Bugün + Sonraki, ayırıcı çizgili filtre düğmeleri. "Karışık, native
+görünmesin" dedi. Yalnızca `max-width:700px` bloğunda:
+
+- Başlık satırı `‹  Eylül 2026   Bugün  ›`: oklar yuvarlak 44px, yazısız
+  (`font-size:0` + `::before` ‹ ›; i18n metni ekran okuyucuda duruyor),
+  ay adı Archivo 19px başlık. Grid `grid-template-areas` ile, `.cal-nav-left/
+  right{display:contents}`.
+- Segment kontrolü tam genişlik, iOS tarzı: gri zemin, seçili mavi hap.
+- "+ Yeni Giriş" sağ altta 56px yuvarlak sabit düğme, sekme şeridinin
+  üstünde. Özgüllük tuzağı: genel kural `.btn.btn-new` yazılı, telefon
+  kuralı da `.btn.btn-new` olmalı; tek sınıfla metin görünür kaldı.
+- Demo notu ve "Erken erişim iste" telefonda gizli, sayaç 11px soluk.
+- Filtreler yuvarlak çip, ayırıcı ve özet yazısı gizli, tek satır kayar.
+
+Test: `scratchpad/gorunum.js` (oklar/başlık aynı satır, FAB sekme
+şeridinin üstünde, ok ve Bugün çalışıyor, segment seçimi, FAB pencereyi
+açıyor). Diğer üç takım yeniden geçti.
+
+---
+
+## Yerel diyaloglar kaldırıldı: alert/confirm/prompt yok (5 Eylül 2026)
+
+Kullanıcı bildirdi: kaydederken açılan yerel tarayıcı diyaloğu sayfayı
+kilitliyor, "diyalogları engelle" seçilince `confirm` hep `false` dönüp
+kayıt sessizce düşüyor; proje iki kez böyle kayboldu. Kenar çubuğundaki
+hesap düğmesi de (`confirm` ile çıkış sorusu) aynı şekilde donuyordu.
+
+**Kural (kalıcı):** `alert`, `confirm`, `prompt` bir daha KULLANILMAYACAK.
+Yerine `uyari(msg)`, `onayla(msg)` → Promise<boolean>, `sor(msg, varsayılan)`
+→ Promise<string|null>. Üçü de `#dlgOverlay` penceresini açıyor (z-index 80,
+kayıt penceresinin üstüne çıkar). Çağıran fonksiyon `async` olmalı ve
+`await` etmeli; 39 çağrı yeri çevrildi, `node --check` ile doğrulandı.
+
+Dönüşüm notları:
+- `alert(x)` → `uyari(x)` (await gerekmez, çağıranlar zaten `return` ediyor).
+- `confirm(x)` → `await onayla(x)`; `prompt(x)` → `await sor(x)`. Bu yüzden
+  `secimdenProje`, `projeSil`, `secilenProjeyiCoz` ve 10 kadar click/change
+  dinleyicisi `async` oldu; `secimdenProje` ve `secilenProjeyiCoz`
+  çağıranları `await` ediyor.
+- Tek düğmeli uyarıda perde de Tamam sayılır; onay/soru penceresinde perde
+  ve Escape iptal, Enter Tamam. Aynı anda ikinci diyalog istenirse ilki
+  iptal sayılıp kapanır.
+- Test: `scratchpad/dlg.test.js` (16 iddia: proje adres sorusu, termin
+  sorusu, hesap düğmesi, kayıt silme onayı pencere üstünde, eksik alan
+  uyarısı; sıfır yerel diyalog, sıfır sayfa hatası).
+
+---
+
+## Telefon: uygulama gibi (5 Eylül 2026)
+
+Kullanıcı sahadan bildirdi: shootboard.app telefonda "bazı menüler açılınca
+kapanmıyor, takvimde filtreler doğru çalışmıyor". iPhone 12 Pro ölçüsünde
+(390×844) Playwright ile yeniden üretildi. Teşhis:
+
+1. **Filtre paneli** telefonda ekranın altına sabitleniyordu ama arkasında
+   perde yoktu. Kapatmanın tek yolu "dışarıya dokunmak"tı; o dokunuş
+   ALTTAKİ güne isabet edip yeni kayıt penceresi açıyordu (testte
+   `editOverlay` açıldı). iOS Safari'de ise tıklanabilir olmayan alana
+   dokunulunca `document`'e `click` hiç gelmiyor, panel hiç kapanmıyordu.
+   Filtre mantığının kendisi doğruydu (seçim 8 → 1 kayıt); sorun kapanma.
+2. **Kayıt, proje, klon vb. pencerelerde kapatma düğmesi yoktu.** Sadece
+   perdeye tıklamak ya da formun en altındaki Vazgeç'e inmek gerekiyordu.
+   Telefonda pencere ekranı kapladığı için perde yok; 1.800 px'lik formda
+   Vazgeç ekran dışında. "Menüyü açtım, kapatamıyorum" bu.
+3. Üst şerit 750 px yer yiyordu; 5 sekme + 4 bağlantı + dil + tema.
+
+Çözüm (`app.html`, yalnızca `max-width:700px` bloğu + küçük JS):
+- Sekmeler altta sabit şerit (`.rail-nav{position:fixed;bottom:0}`),
+  `safe-area-inset-bottom` payıyla; `.wrap`'a alt boşluk, toast yukarı.
+- Filtre paneli: `.fbackdrop` perdesi (JS ekliyor, kendi click dinleyicisi
+  var, dokunuş alta geçmiyor), panelin üstünde başlık + Kapat (`.fpanel-head`,
+  masaüstünde `display:none`). `body.sheet-open` ile gövde kaymıyor.
+- Her `.overlay .modal`'a, `.modal-head`'i yoksa JS ile yapışkan bir
+  `.modal-xbar` + `×` ekleniyor. Düğme pencerenin KENDİ kapanma yolunu
+  kullanıyor: perdeye tıklanmış gibi `overlay.dispatchEvent(click)`; böylece
+  `closeModal`, `closeClone` vb. temizlikler aynen çalışıyor. Masaüstünde
+  de görünüyor (tutarlılık); test edildi, kırılan yok.
+- Pencereler alttan açılan sayfa: `align-items:flex-end`, üst köşeler
+  yuvarlak, `92dvh`. Takvim gezintisi 3 satır ızgara (görünüm / aralık /
+  önceki-bugün-sonraki). Filtre şeridi tek satır yana kayar.
+- MutationObserver overlay sınıflarını izleyip `sheet-open` düşürüyor.
+
+**Tuzak (yaşandı):** Medya bloğundan SONRA yazılan genel kural aynı
+özgüllükte olduğu için telefon kuralını eziyordu (`.fpanel-head` hiç
+görünmedi). Çözüm: medya içinde `.fpanel .fpanel-head`, `.modal .modal-xbar`.
+
+Test: `scratchpad/mobil5.js` (22 iddia, hepsi geçti), `desk.js` (masaüstü
+açılır menü ve pencere değişmedi), `gelen.test.js` (regresyon yok).
+
+---
+
 ## İçerik çalışması sohbetten (3 Eylül 2026)
 
 İçerik işleri (kayıt ekleme, yayın paketi) artık bu sohbet üzerinden de

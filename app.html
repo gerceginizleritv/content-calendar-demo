@@ -1317,6 +1317,17 @@ body.suruklenirken *{cursor:grabbing !important;}
 .trust-list li{margin-bottom:5px;}
 .trust-link{font-size:12px;color:var(--accent);display:inline-block;margin-bottom:4px;}
 .modal-actions #aiForgetBtn{margin-right:auto;}
+/* Uygulama ici diyalog: oteki pencerelerin USTUNE cikiyor (kayit
+   penceresinden silme onayi gibi), o yuzden z-index daha yuksek. */
+#dlgOverlay{z-index:80;align-items:center;padding:20px;}
+#dlgOverlay .modal-dlg{max-width:420px;border-radius:12px;padding:22px 22px 18px;}
+.dlg-msg{margin:0 0 6px;font-size:14.5px;line-height:1.55;white-space:pre-line;}
+.dlg-input{width:100%;box-sizing:border-box;margin-top:10px;padding:10px 12px;
+  background:var(--bg);color:var(--text);border:1px solid var(--line);border-radius:6px;
+  font-family:'IBM Plex Sans',sans-serif;font-size:14px;}
+.dlg-input:focus{outline:none;border-color:var(--accent);}
+#dlgOverlay .modal-actions{margin-top:16px;}
+#dlgOverlay .btn{min-height:44px;}
 /* Google dugmesi tam genislikte ve email alanindan once duruyor: tek tikla
    biten yol once gelsin, link isteyen asagi baksin. */
 .btn-google{width:100%;gap:9px;min-height:44px;font-weight:600;background:var(--surface);}
@@ -1585,6 +1596,146 @@ body.suruklenirken *{cursor:grabbing !important;}
   .lang-select{min-height:44px;}
   .copy-btn{min-height:44px;}
 }
+
+/* ===== Telefon: uygulama gibi ==========================================
+   Telefonda sayfa degil uygulama hissi: sekmeler altta sabit bir serit,
+   ust kisim yalnizca marka ve hesap; pencereler alttan acilan, kapatma
+   dugmesi olan sayfalar; filtre paneli arkasi karartilmis bir alt sayfa.
+   Sahada tek elle, basparmakla kullaniliyor — hedefler 44px ve altta. */
+@media(max-width:700px){
+  /* Ust serit sikisik: marka + hesap tek satir, ikincil baglantilar tek
+     satirda yana kayar. */
+  .rail{padding:8px 12px;gap:8px;}
+  .rail-foot{flex-wrap:nowrap;overflow-x:auto;-webkit-overflow-scrolling:touch;
+    padding-bottom:4px;scrollbar-width:none;}
+  .rail-foot::-webkit-scrollbar{display:none;}
+  .rail-link{white-space:nowrap;flex:none;}
+  .rail-prefs{flex:none;}
+
+  /* Sekmeler altta, sabit. Basparmagin dogal menzili. */
+  .rail-nav{
+    position:fixed;left:0;right:0;bottom:0;z-index:40;
+    background:var(--surface);border-top:1px solid var(--line);
+    padding:6px 6px calc(6px + env(safe-area-inset-bottom));
+    box-shadow:0 -6px 24px -12px rgba(0,0,0,.35);
+    width:auto;gap:2px;margin:0;
+  }
+  .rail-nav .tab{flex-direction:column;gap:3px;padding:6px 2px;font-size:10.5px;
+    border-bottom:0;border-radius:8px;min-height:52px;}
+  .rail-nav .tab .tab-ico{width:22px;height:22px;}
+  .rail-nav .tab.active{background:var(--accent-soft);border-bottom-color:transparent;}
+  /* Alt seridin arkasinda icerik kalmasin. */
+  .wrap{padding-bottom:calc(84px + env(safe-area-inset-bottom));}
+  .toast{bottom:calc(84px + env(safe-area-inset-bottom));}
+
+  /* Yeni giris: sag altta yuvarlak sabit dugme, sekme seridinin ustunde.
+     Koca mavi serit ekranin ustunu kapliyordu; yerel uygulamalarda "ekle"
+     basparmagin altinda durur. Metin gizli, isaret ::before ile; etiket
+     ekran okuyucu icin butonun metninde duruyor. */
+  .work-row{margin-bottom:4px;}
+  /* .btn.btn-new ozgullugu SART: genel kural da bu ozgullukte yaziliyor
+     ve font-size veriyor; tek sinifla yazilsa metin gorunur kalirdi. */
+  .btn.btn-new{
+    position:fixed;right:16px;bottom:calc(88px + env(safe-area-inset-bottom));z-index:39;
+    width:56px;height:56px;min-height:56px;border-radius:50%;padding:0;font-size:0;line-height:0;
+    box-shadow:0 10px 26px -8px rgba(0,0,0,.55);
+  }
+  .btn.btn-new::before{content:'+';font-size:32px;line-height:1;font-weight:400;}
+  /* Demo notu ve erken erisim baglantisi telefonda gurultu; sayac kucuk. */
+  .work-meta .count-note,.work-meta .early-link{display:none;}
+  .work-meta .entry-count{font-size:11px;font-weight:500;color:var(--text-dim);}
+
+  /* Takvim basligi, yerel takvim uygulamasi gibi:
+       ‹  Eylül 2026            Bugün  ›
+       [ Ay | Hafta | Gün | Tablo ]
+     Oklar yuvarlak, yazisiz; ay adi baslik. Segment tam genislik. */
+  .cal-nav{
+    display:grid;grid-template-columns:44px 1fr auto 44px;
+    grid-template-areas:"prev range today next" "seg seg seg seg";
+    gap:10px 8px;align-items:center;margin-bottom:12px;
+  }
+  .cal-nav-left,.cal-nav-right{display:contents;}
+  #prevBtn{grid-area:prev;} #nextBtn{grid-area:next;} #todayBtn{grid-area:today;}
+  .cal-range{grid-area:range;} .view-toggle{grid-area:seg;}
+  #prevBtn,#nextBtn{font-size:0;padding:0;width:44px;height:44px;border-radius:50%;}
+  #prevBtn::before,#nextBtn::before{font-size:28px;line-height:1;color:var(--text);
+    font-family:'IBM Plex Sans',sans-serif;position:relative;top:-2px;}
+  #prevBtn::before{content:'\2039';} #nextBtn::before{content:'\203A';}
+  #todayBtn{padding:0 12px;min-height:34px;font-size:12px;border-radius:17px;}
+  .cal-range{
+    font-family:'Archivo',sans-serif;font-size:19px;font-weight:800;letter-spacing:-.01em;
+    color:var(--text);text-align:left;order:0;width:auto;margin:0;padding-left:4px;
+    overflow:hidden;text-overflow:ellipsis;
+  }
+  .view-toggle{display:flex;background:var(--surface-2);border:0;border-radius:11px;padding:3px;overflow:visible;}
+  .view-btn{flex:1 1 0;min-height:38px;border-radius:8px;background:transparent;padding:0 4px;font-size:13px;}
+  .view-btn + .view-btn{border-left:0;}
+  .view-btn.active{background:var(--accent);color:var(--on-accent);}
+
+  /* Filtre seridi: yuvarlak cipler, tek satir, yana kayar. Ayirici cizgi
+     ve ozet yazisi telefonda yer kaplamaktan baska is gormuyor. */
+  .filter-bar{flex-wrap:nowrap;overflow-x:auto;-webkit-overflow-scrolling:touch;
+    padding-bottom:4px;scrollbar-width:none;gap:6px;margin-bottom:8px;}
+  .filter-bar::-webkit-scrollbar{display:none;}
+  .filter-sep,.fsummary{display:none;}
+  .fbtn,.fclear,.btn-pending{white-space:nowrap;flex:none;}
+  .fbtn,.btn-pending{border-radius:18px;min-height:36px;padding:0 12px;}
+  .fdrop{position:static;}   /* panel sabit konumlu, kapsayici kaydirilabilir */
+
+  /* Filtre paneli: arkasi karartilmis alt sayfa, basligi ve Kapat dugmesi
+     var. Disariya dokunmak paneli kapatir ve ALTTAKI takvime gecmez —
+     eskiden dokunus gune isabet edip yeni kayit penceresi aciyordu. */
+  .fbackdrop.open{display:block;}
+  .fpanel{z-index:61;bottom:0;left:0;right:0;border-radius:14px 14px 0 0;
+    padding:0 12px calc(12px + env(safe-area-inset-bottom));max-height:70vh;max-height:70dvh;}
+  /* .fpanel on eki SART: genel kural (.fpanel-head{display:none}) bu
+     bloktan sonra geliyor; ayni ozgullukte olsaydi telefonda basligi
+     gizlerdi. */
+  .fpanel .fpanel-head{display:flex;}
+
+  /* Pencereler alttan acilan sayfalar: tam genislik, ustte tutamac,
+     her zaman gorunur kapatma dugmesi. */
+  .overlay{align-items:flex-end;padding:0;}
+  .modal{max-width:none;max-height:92vh;max-height:92dvh;border-radius:14px 14px 0 0;
+    border-left:0;border-right:0;border-bottom:0;
+    padding:16px 16px calc(18px + env(safe-area-inset-bottom));}
+  .modal-head{top:-16px;margin:-16px -16px 14px;padding:16px 16px 10px;}
+  .modal .modal-xbar{top:-16px;margin:-16px -16px 6px;padding:10px 12px 4px;}
+  .modal-x{width:40px;height:40px;font-size:22px;}
+  /* Kaydet / Vazgec seridi alta yapisik: uzun formda dugmeye inmek icin
+     kaydirmak gerekmiyor. Pencere kendi icinde kaydigi icin sticky
+     pencerenin alt kenarina tutunuyor; alt bosluk seride tasindi ki
+     safe-area payi da onun altinda kalsin. */
+  .modal{padding-bottom:0;}
+  .modal .modal-actions{
+    position:sticky;bottom:0;z-index:2;
+    margin:16px -16px 0;padding:12px 16px calc(14px + env(safe-area-inset-bottom));
+    background:var(--surface);border-top:1px solid var(--line-soft);
+    flex-wrap:wrap;
+  }
+  .modal .modal-actions .btn{flex:1 1 auto;min-height:48px;}
+  /* Diyalog kucuk: yapisik serit ve cizgi gereksiz. */
+  #dlgOverlay .modal{padding-bottom:18px;}
+  #dlgOverlay .modal-actions{position:static;margin:16px 0 0;padding:0;border-top:0;background:transparent;}
+  #dlgOverlay .modal-actions .btn{flex:0 1 auto;}
+  body.sheet-open{overflow:hidden;}
+}
+
+/* Filtre paneli basligi ve arka perdesi: masaustunde gorunmez (acilir
+   menu dugmeye yaslanir), telefonda alt sayfanin parcasi. */
+.fbackdrop{display:none;position:fixed;inset:0;z-index:58;background:rgba(4,5,10,.45);}
+.fpanel-head{display:none;align-items:center;justify-content:space-between;gap:10px;
+  position:sticky;top:0;z-index:2;background:var(--surface);
+  margin:0 -12px 6px;padding:10px 12px 8px;border-bottom:1px solid var(--line-soft);}
+.fpanel-head::before{content:'';position:absolute;left:50%;top:6px;width:40px;height:4px;
+  border-radius:2px;background:var(--line);transform:translateX(-50%);}
+.fpanel-title{font-family:'IBM Plex Mono',monospace;font-size:11px;letter-spacing:.1em;
+  text-transform:uppercase;color:var(--text-dim);padding-top:8px;}
+.fpanel-close{margin-top:8px;}
+/* Kapatma dugmesi seridi: basligi olmayan pencerelerde JS ekliyor.
+   .modal-head ile ayni yapiskan mantik: pencere kayarken ustte kalir. */
+.modal-xbar{position:sticky;top:-26px;z-index:2;background:var(--surface);
+  display:flex;justify-content:flex-end;margin:-26px -26px 8px;padding:14px 16px 4px;}
 
 /* ===== Termin hatirlatmalari ===== */
 .rm-lead{color:var(--text-dim);font-size:13.5px;line-height:1.6;margin:0 0 16px;}
@@ -2165,6 +2316,21 @@ body.suruklenirken *{cursor:grabbing !important;}
     <div class="modal-actions">
       <button class="btn" id="dw_cancel" data-i18n="btn_cancel">Cancel</button>
       <button class="btn btn-primary" id="dw_go" data-i18n="dw_go">Write</button>
+    </div>
+  </div>
+</div>
+
+<!-- Uygulama ici diyalog: alert / confirm / prompt yerine. Yerel tarayici
+     diyaloglari sayfayi kilitliyordu; telefonda "diyaloglari engelle"
+     secilince confirm hep false donuyor ve kayit sessizce dusuyordu.
+     Bu pencere hicbir seyi kilitlemiyor, sonucu bir Promise ile veriyor. -->
+<div class="overlay" id="dlgOverlay" role="alertdialog" aria-modal="true" aria-labelledby="dlgMsg">
+  <div class="modal modal-dlg">
+    <p class="dlg-msg" id="dlgMsg"></p>
+    <input type="text" id="dlgInput" class="dlg-input" hidden autocomplete="off">
+    <div class="modal-actions">
+      <button type="button" class="btn" id="dlgCancel" data-i18n="btn_cancel">Cancel</button>
+      <button type="button" class="btn btn-primary" id="dlgOk" data-i18n="dlg_ok">OK</button>
     </div>
   </div>
 </div>
@@ -3093,6 +3259,7 @@ const LANG = {
     btn_next: "Next",
     pending_title: "Not Yet Posted",
     btn_close: "Close",
+    dlg_ok: "OK",
     alert_fill_required: "Please fill in title, date and time.",
     alert_fill_missing: (alanlar)=> `Still missing: ${alanlar}.`,
     count_label: (n, max)=> `${n} / ${max} entries`,
@@ -3604,6 +3771,7 @@ const LANG = {
     btn_next: "İleri",
     pending_title: "Henüz Yüklenmemiş",
     btn_close: "Kapat",
+    dlg_ok: "Tamam",
     alert_fill_required: "Lütfen başlık, tarih ve saati doldur.",
     alert_fill_missing: (alanlar)=> `Şu alan eksik: ${alanlar}.`,
     count_label: (n, max)=> `${n} / ${max} kayıt`,
@@ -4675,9 +4843,9 @@ function filtreSecenekleri(secili){
 
 // Yeni proje secildiginde adi soruluyor ve proje ORADA aciliyor: kullanici
 // fikir yazarken proje sayfasina gidip geri donmek zorunda kalmasin.
-function secimdenProje(sel, oncekiDeger){
+async function secimdenProje(sel, oncekiDeger){
   if(sel.value !== '__yeni__') return sel.value;
-  const ad = (prompt(t('fk_new_project_ask')) || '').trim();
+  const ad = (await sor(t('fk_new_project_ask')) || '').trim();
   if(!ad){ sel.value = oncekiDeger || ''; return oncekiDeger || ''; }
   const p = projeEkle(ad, '', '', 'other', '');
   if(!p){ sel.value = oncekiDeger || ''; return oncekiDeger || ''; }
@@ -4812,8 +4980,8 @@ function fikirKartOlaylari(kap){
     if(e.key === 'Escape'){ fikirTaslakAcik = false; renderFikirler(); }
   });
   const yeniSel = document.getElementById('fk_newProj');
-  if(yeniSel) yeniSel.addEventListener('change', ()=>{
-    const pid = secimdenProje(yeniSel, '');
+  if(yeniSel) yeniSel.addEventListener('change', async ()=>{
+    const pid = await secimdenProje(yeniSel, '');
     yeniSel.innerHTML = projeSecenekleri(pid, t('fk_no_project'));
   });
 
@@ -4852,8 +5020,8 @@ function fikirKartOlaylari(kap){
       el.replaceWith(sel);
       sel.focus();
       const bitir = ()=>{ renderFikirler(); renderProjects(); };
-      sel.addEventListener('change', ()=>{
-        const pid = secimdenProje(sel, f.projectId);
+      sel.addEventListener('change', async ()=>{
+        const pid = await secimdenProje(sel, f.projectId);
         fikirGuncelle(f.id, { projectId: pid });
         bitir();
       });
@@ -5161,7 +5329,7 @@ async function driveGetir(){
     const alan = document.getElementById('sc_text');
     // Dolu bir metnin uzerine SORMADAN yazilmiyor: saatlerce sureni bir
     // tikla yok etmek olurdu.
-    if(alan.value.trim() && !confirm(t('sc_drive_overwrite')(dosya.name || ''))){
+    if(alan.value.trim() && !await onayla(t('sc_drive_overwrite')(dosya.name || ''))){
       driveDurum('');
       return;
     }
@@ -5316,10 +5484,10 @@ async function driveYaz(){
       if(driveBaglantisi.zaman){
         const bilgi = await driveDegisimZamani(driveBaglantisi.id, token).catch(()=>null);
         if(bilgi && bilgi.modifiedTime && bilgi.modifiedTime !== driveBaglantisi.zaman){
-          if(!confirm(t('dw_changed')(bilgi.name || driveBaglantisi.ad))){ dwDurum(''); return; }
+          if(!await onayla(t('dw_changed')(bilgi.name || driveBaglantisi.ad))){ dwDurum(''); return; }
         }
       }
-      if(!confirm(t('dw_confirm_overwrite')(driveBaglantisi.ad))){ dwDurum(''); return; }
+      if(!await onayla(t('dw_confirm_overwrite')(driveBaglantisi.ad))){ dwDurum(''); return; }
       sonuc = await driveUstuneYaz(driveBaglantisi.id, metin, token);
     }else{
       const ad = document.getElementById('dw_name').value.trim();
@@ -5500,7 +5668,7 @@ async function scriptAiYaz(){
   }
   // Saatlerce surmus bir metnin ustune SORMADAN yazilmiyor; Drive'dan
   // getirmede de ayni kural var.
-  if(alan.value.trim() && !confirm(t('sc_ai_overwrite'))) return;
+  if(alan.value.trim() && !await onayla(t('sc_ai_overwrite'))) return;
   const dugme = document.getElementById('sc_ai');
   const ham = await aiCalistir(dugme, durumEl, t('sc_ai_working'), prompt,
                                { sure: AI_SCRIPT_ZAMAN_ASIMI });
@@ -5603,13 +5771,13 @@ function openProjectEdit(id){
   adresAlaniniTazele(tur, document.getElementById('pe_addressWrap'));
   document.getElementById('projectEditOverlay').classList.add('open');
 }
-function projeSil(p){
+async function projeSil(p){
   if(!p) return;
   const bagli = projeIcinKayitlar(p.id).length;
   // Projeyi silmek kayitlari silmiyor; kayitlar projesiz kaliyor. Bir
   // projeyi kapatirken haftalarca girilmis yayin planinin da gitmesi
   // geri alinamayacak bir surpriz olurdu.
-  if(!confirm(bagli ? t('p_del_confirm_linked')(p.name, bagli) : t('p_del_confirm')(p.name))) return;
+  if(!await onayla(bagli ? t('p_del_confirm_linked')(p.name, bagli) : t('p_del_confirm')(p.name))) return;
   projeIcinKayitlar(p.id).forEach(e=>{
     delete e.content.projectId; delete e.content.concept; markDirty(e.id);
   });
@@ -5627,11 +5795,11 @@ function closeProjectEdit(){
 function projeEkle(ad, anahtar, cekim, tur, adres){
   const p = sanitizeProject({ name: ad, keywords: anahtar, shootDate: cekim, type: tur, address: adres });
   if(!p) return null;
-  if(projects.length >= MAX_PROJECTS){ alert(t('p_limit')(MAX_PROJECTS)); return null; }
+  if(projects.length >= MAX_PROJECTS){ uyari(t('p_limit')(MAX_PROJECTS)); return null; }
   // Ayni ad iki kez girilmesin: "Stüdyo çekimi" ile "stüdyo Çekimi" ayri
   // iki proje olarak dururdu.
   const var_ = projects.find(x=>x.name.toLocaleLowerCase() === p.name.toLocaleLowerCase());
-  if(var_){ alert(t('p_exists')(var_.name)); return var_; }
+  if(var_){ uyari(t('p_exists')(var_.name)); return var_; }
   projects.push(p);
   projDirtyIsaretle(p.id);
   saveProjects();
@@ -5913,7 +6081,7 @@ function eskiBicimiTasi(){
 
 function kotaHatasi(e){
   console.error('[fikir/script] kaydedilemedi', e);
-  alert(t('sc_full'));
+  uyari(t('sc_full'));
 }
 function saveFikirler(){
   try{ localStorage.setItem(fikirKey(), JSON.stringify(fikirler)); }catch(e){ kotaHatasi(e); }
@@ -5945,7 +6113,7 @@ function enKucukSira(){
 function fikirEkle(metin, pid){
   const yeni = fikirTemizle({ text: metin, projectId: projeBagiTemiz(pid), sort: enKucukSira() - 1 });
   if(!yeni) return null;
-  if(fikirler.length >= FIKIR_ADET){ alert(t('fk_limit')(FIKIR_ADET)); return null; }
+  if(fikirler.length >= FIKIR_ADET){ uyari(t('fk_limit')(FIKIR_ADET)); return null; }
   fikirler.unshift(yeni);
   fikirDirty.add(yeni.id);
   saveFikirler();
@@ -6077,7 +6245,7 @@ function fikirSil(id){
   saveFikirler();
 }
 function scriptEkle(alanlar){
-  if(scriptler.length >= SCRIPT_ADET){ alert(t('sc_limit')(SCRIPT_ADET)); return null; }
+  if(scriptler.length >= SCRIPT_ADET){ uyari(t('sc_limit')(SCRIPT_ADET)); return null; }
   const yeni = scriptTemizle({ ...alanlar, projectId: projeBagiTemiz(alanlar.projectId) });
   if(!yeni) return null;
   const oncedenVardi = projeninScriptiVarMi(yeni.projectId, yeni.id);
@@ -6325,7 +6493,7 @@ function projeSecimiTazele(seciliId){
 }
 
 // Secim "+ yeni proje" ise adini sorup olusturuyor ve secili birakiyor.
-function secilenProjeyiCoz(){
+async function secilenProjeyiCoz(){
   const sel = document.getElementById('f_project');
   if(!sel) return null;
   if(sel.value !== YENI_PROJE) return projectById(sel.value);
@@ -6333,7 +6501,7 @@ function secilenProjeyiCoz(){
   // zaten yazdi ve acilir listede "«...» oluştur" yazdigini gordu.
   const kutu = document.getElementById('f_projectSearch');
   const yazilan = ((kutu && kutu.value) || '').trim();
-  const ad = yazilan || (window.prompt(t('f_project_prompt')) || '').trim();
+  const ad = yazilan || (await sor(t('f_project_prompt')) || '').trim();
   if(!ad) return null;
   const p = projeEkle(ad, '', '');
   if(!p) return null;
@@ -6386,7 +6554,7 @@ document.getElementById('acc_add').addEventListener('click', ()=>{
   const kutu = document.getElementById('acc_url');
   const el = hesapBicimle(kutu.value);
   if(!el){ kutu.focus(); return; }
-  if(sablon.accounts.length >= MAX_HESAP){ alert(t('tpl_limit')(MAX_HESAP)); return; }
+  if(sablon.accounts.length >= MAX_HESAP){ uyari(t('tpl_limit')(MAX_HESAP)); return; }
   // Kullanici metne henuz dokunmadiysa (metin bos ya da hala otomatik
   // uretilen hali) hesap satirlari yeniden uretiliyor. Yalnizca "bos ise"
   // deseydik ikinci hesap listeye hic girmezdi.
@@ -6465,14 +6633,14 @@ function closeProjectNew(){
 document.getElementById('p_openNew').addEventListener('click', ()=> openProjectNew());
 document.getElementById('p_newCancel').addEventListener('click', closeProjectNew);
 document.getElementById('projectNewOverlay').addEventListener('click', e=>{ if(e.target.id==='projectNewOverlay') closeProjectNew(); });
-document.getElementById('p_add').addEventListener('click', ()=>{
+document.getElementById('p_add').addEventListener('click', async ()=>{
   const ad = document.getElementById('p_name').value.trim();
   if(!ad){ document.getElementById('p_name').focus(); return; }
   const tur = document.getElementById('p_type').value;
   const adres = document.getElementById('p_address').value.trim();
   // Saha isinde adres olmadan devam edilebiliyor ama bir kez soruluyor:
   // engel degil, hatirlatma.
-  if(adresGerekir(tur) && !adres && !confirm(t('p_addr_confirm'))){
+  if(adresGerekir(tur) && !adres && !await onayla(t('p_addr_confirm'))){
     document.getElementById('p_address').focus();
     return;
   }
@@ -6486,7 +6654,7 @@ document.getElementById('p_add').addEventListener('click', ()=>{
   renderProjects();
   // Termin tarihleri hemen soruluyor: proje kurulurken akil oradadir.
   // Hayir demek serbest, sonradan tablodan da acilabiliyor.
-  if(confirm(t('dl_ask'))) openDeadlines(p.id);
+  if(await onayla(t('dl_ask'))) openDeadlines(p.id);
 });
 document.getElementById('p_type').addEventListener('change', ()=>
   adresAlaniniTazele(document.getElementById('p_type'), document.getElementById('p_addressWrap')));
@@ -6521,7 +6689,7 @@ document.getElementById('pe_save').addEventListener('click', ()=>{
   const ad = document.getElementById('pe_name').value.trim();
   if(!ad){ document.getElementById('pe_name').focus(); return; }
   const cakisan = projects.find(x=>x.id !== p.id && x.name.toLocaleLowerCase() === ad.toLocaleLowerCase());
-  if(cakisan){ alert(t('p_exists')(cakisan.name)); return; }
+  if(cakisan){ uyari(t('p_exists')(cakisan.name)); return; }
   p.name = ad.slice(0,120);
   p.type = document.getElementById('pe_type').value;
   p.address = document.getElementById('pe_address').value.trim().slice(0,300);
@@ -6593,8 +6761,8 @@ document.getElementById('sc_text').addEventListener('input', e=>{
   scriptSayaci(e.target.value.length);
   driveYazDugmesiTazele();
 });
-document.getElementById('sc_proj').addEventListener('change', e=>{
-  const pid = secimdenProje(e.target, '');
+document.getElementById('sc_proj').addEventListener('change', async e=>{
+  const pid = await secimdenProje(e.target, '');
   e.target.innerHTML = projeSecenekleri(pid, t('fk_no_project'));
   scriptFikirSeridi(pid);
 });
@@ -6642,10 +6810,10 @@ document.getElementById('sc_newIdea').addEventListener('keydown', e=>{
 document.getElementById('sc_cancel').addEventListener('click', closeScript);
 document.getElementById('scriptOverlay').addEventListener('click', e=>{ if(e.target.id==='scriptOverlay') closeScript(); });
 document.getElementById('sc_save').addEventListener('click', scriptKaydet);
-document.getElementById('sc_delete').addEventListener('click', ()=>{
+document.getElementById('sc_delete').addEventListener('click', async ()=>{
   if(!acikScriptId) return;
   const sc = scriptById(acikScriptId);
-  if(!confirm(t('sc_del_confirm')(sc ? scriptAdi(sc) : ''))) return;
+  if(!await onayla(t('sc_del_confirm')(sc ? scriptAdi(sc) : ''))) return;
   scriptSil(acikScriptId);
   closeScript(); renderScriptler(); renderProjects();
 });
@@ -7139,9 +7307,9 @@ function renderSablon(){
     </div>`).join('') : '';
 
   oKap.querySelectorAll('[data-ovr-sil]').forEach(el=>{
-    el.addEventListener('click', ()=>{
+    el.addEventListener('click', async ()=>{
       const p = el.dataset.ovrSil;
-      if(!confirm(t('tpl_ovr_del_confirm')(CAL_SM_NAMES[p]))) return;
+      if(!await onayla(t('tpl_ovr_del_confirm')(CAL_SM_NAMES[p]))) return;
       delete sablon.overrides[p];
       sablonDegisti(); renderSablon();
     });
@@ -7478,12 +7646,12 @@ document.getElementById('cloneSave').addEventListener('click', ()=>{
   }));
   if(!satirlar.length){ closeClone(); return; }
   const eksikTarih = satirlar.some(x=>!x.date);
-  if(eksikTarih){ alert(t('clone_need_date')); return; }
+  if(eksikTarih){ uyari(t('clone_need_date')); return; }
 
   const kalan = MAX_ENTRIES - events.length;
   if(satirlar.length > kalan){
     track('funnel/limit-hit');
-    alert(kalan > 0 ? t('alert_limit_near')(kalan, satirlar.length) : t('alert_limit_full')(MAX_ENTRIES));
+    uyari(kalan > 0 ? t('alert_limit_near')(kalan, satirlar.length) : t('alert_limit_full')(MAX_ENTRIES));
     if(kalan <= 0){ closeClone(); openFeedback('limit'); }
     return;
   }
@@ -7745,6 +7913,10 @@ function filtrePaneliKapat(){
     kap.querySelector('.fpanel').hidden = true;
     kap.querySelector('.fbtn').setAttribute('aria-expanded','false');
   });
+  const perde = document.querySelector('.fbackdrop');
+  if(perde) perde.classList.remove('open');
+  // Baska bir pencere acik degilse govde yeniden kayabilir.
+  if(!document.querySelector('.overlay.open')) document.body.classList.remove('sheet-open');
   // Kapanan panel bir dahaki acilista tam listeyi gostersin: yarim kalmis
   // bir arama yuzunden "projelerim kayboldu" denmesin.
   const kutu = document.getElementById('conceptSearch');
@@ -7753,9 +7925,33 @@ function filtrePaneliKapat(){
 (function filtreSeridiKur(){
   const serit = document.getElementById('filterBar');
   if(!serit) return;
+  // Arka perde: telefonda panel acikken takvimin ustunu ortuyor. Disariya
+  // dokunus perdeye geliyor, paneli kapatiyor ve ALTTAKI gune ulasmiyor.
+  // Perde olmadan iki sorun vardi: iOS Safari tiklanabilir olmayan bir
+  // alana dokunulunca document'e click gondermiyor, panel hic kapanmiyordu;
+  // Android'de ise dokunus gune gecip yeni kayit penceresi aciyordu.
+  const perde = document.createElement('div');
+  perde.className = 'fbackdrop';
+  perde.addEventListener('click', e=>{ e.stopPropagation(); filtrePaneliKapat(); });
+  document.body.appendChild(perde);
   serit.querySelectorAll('.fdrop').forEach(kap=>{
     const dugme = kap.querySelector('.fbtn');
     const panel = kap.querySelector('.fpanel');
+    // Panel basligi + Kapat: yalnizca telefonda gorunuyor (CSS).
+    const bas = document.createElement('div');
+    bas.className = 'fpanel-head';
+    const baslik = document.createElement('span');
+    baslik.className = 'fpanel-title';
+    const etiket = dugme.querySelector('[data-i18n]');
+    baslik.textContent = etiket ? etiket.textContent : dugme.textContent.trim();
+    const kapat = document.createElement('button');
+    kapat.type = 'button';
+    kapat.className = 'modal-x fpanel-close';
+    kapat.setAttribute('aria-label', t('btn_close'));
+    kapat.textContent = '×';
+    kapat.addEventListener('click', e=>{ e.stopPropagation(); filtrePaneliKapat(); });
+    bas.append(baslik, kapat);
+    panel.prepend(bas);
     dugme.addEventListener('click', e=>{
       e.stopPropagation();
       const acik = kap.classList.contains('open');
@@ -7764,6 +7960,8 @@ function filtrePaneliKapat(){
         kap.classList.add('open');
         panel.hidden = false;
         dugme.setAttribute('aria-expanded','true');
+        perde.classList.add('open');
+        document.body.classList.add('sheet-open');
       }
     });
     // Panel icindeki tiklama seridi kapatmasin: coklu secim yapiliyor.
@@ -7773,6 +7971,106 @@ function filtrePaneliKapat(){
   if(konseptKutu) konseptKutu.addEventListener('input', konseptAramasiUygula);
   document.addEventListener('click', filtrePaneliKapat);
   document.addEventListener('keydown', e=>{ if(e.key === 'Escape') filtrePaneliKapat(); });
+})();
+
+// ===== Uygulama ici diyaloglar: uyari / onayla / sor =====
+// alert, confirm ve prompt'un yerine. Yerel diyaloglar butun sayfayi
+// kilitliyordu; telefonda kullanici "bu sayfa baska diyalog acmasin"
+// dediginde confirm HEP false donuyordu ve kaydet akisi sessizce
+// vazgeciyordu: proje iki kez boyle kayboldu. Kenar cubugundaki hesap
+// dugmesi de ayni sebeple donuyordu.
+//
+// Ucu de Promise donduruyor; cagiran taraf await ediyor. Ayni anda tek
+// diyalog acik olabiliyor; ikincisi istenirse ilki iptal sayilip kapaniyor.
+let dlgCoz = null;
+function dlgKapat(sonuc){
+  const ov = document.getElementById('dlgOverlay');
+  ov.classList.remove('open');
+  const coz = dlgCoz; dlgCoz = null;
+  if(coz) coz(sonuc);
+}
+function dlgAc(mesaj, secenek){
+  if(dlgCoz) dlgKapat(secenek.iptal);
+  const ov = document.getElementById('dlgOverlay');
+  document.getElementById('dlgMsg').textContent = mesaj;
+  const giris = document.getElementById('dlgInput');
+  giris.hidden = !secenek.girisli;
+  giris.value = secenek.varsayilan || '';
+  const iptalDugme = document.getElementById('dlgCancel');
+  iptalDugme.hidden = !secenek.iptalli;
+  document.getElementById('dlgOk').textContent = t('dlg_ok');
+  iptalDugme.textContent = t('btn_cancel');
+  ov.classList.add('open');
+  // Odak: girisli ise kutuya, degilse Tamam'a. Klavye ve ekran okuyucu
+  // dogrudan dogru yere gelsin.
+  setTimeout(()=>{ (secenek.girisli ? giris : document.getElementById('dlgOk')).focus(); }, 0);
+  return new Promise(resolve=>{ dlgCoz = resolve; });
+}
+function uyari(mesaj){ return dlgAc(String(mesaj), { iptalli:false, girisli:false, iptal:undefined }); }
+function onayla(mesaj){ return dlgAc(String(mesaj), { iptalli:true, girisli:false, iptal:false }).then(v=> v === true); }
+function sor(mesaj, varsayilan){ return dlgAc(String(mesaj), { iptalli:true, girisli:true, varsayilan, iptal:null }); }
+(function dlgKur(){
+  const ov = document.getElementById('dlgOverlay');
+  const giris = document.getElementById('dlgInput');
+  const tamam = ()=> dlgKapat(giris.hidden ? true : giris.value);
+  document.getElementById('dlgOk').addEventListener('click', tamam);
+  document.getElementById('dlgCancel').addEventListener('click', ()=> dlgKapat(giris.hidden ? false : null));
+  // Perde ve Escape: iptal. Tek dugmeli uyarida perde de "Tamam" sayilir,
+  // cunku iptal edilecek bir sey yok.
+  ov.addEventListener('click', e=>{
+    if(e.target.id !== 'dlgOverlay') return;
+    const iptalli = !document.getElementById('dlgCancel').hidden;
+    dlgKapat(!iptalli ? true : (giris.hidden ? false : null));
+  });
+  giris.addEventListener('keydown', e=>{ if(e.key === 'Enter'){ e.preventDefault(); tamam(); } });
+  document.addEventListener('keydown', e=>{
+    if(!ov.classList.contains('open')) return;
+    if(e.key === 'Escape'){ e.stopPropagation(); document.getElementById('dlgCancel').hidden ? tamam() : dlgKapat(giris.hidden ? false : null); }
+    else if(e.key === 'Enter' && giris.hidden){ e.preventDefault(); tamam(); }
+  }, true);
+})();
+
+// ===== Pencereler telefonda kapanabilir olsun =====
+// Kayit, proje, klon gibi pencerelerin kapatma dugmesi yoktu; disariya
+// tiklamak ya da en alttaki Vazgec'e inmek gerekiyordu. Telefonda pencere
+// ekrani kapladigi icin "disarisi" yok, uzun formda Vazgec de ekran disinda.
+// Sonuc: "menuyu actim, kapatamiyorum". Basligi (.modal-head) olmayan her
+// pencereye yapiskan bir kapatma seridi ekleniyor. Dugme pencerenin KENDI
+// kapanma yolunu kullaniyor: perdeye tiklanmis gibi davraniyor, boylece
+// her pencerenin kapanirken yaptigi temizlik (closeModal, closeClone...)
+// aynen calisiyor.
+(function pencereKapatmaSeridiKur(){
+  document.querySelectorAll('.overlay').forEach(ov=>{
+    const modal = ov.querySelector('.modal');
+    if(!modal || modal.querySelector('.modal-head') || modal.querySelector('.modal-x')) return;
+    const serit = document.createElement('div');
+    serit.className = 'modal-xbar';
+    const x = document.createElement('button');
+    x.type = 'button';
+    x.className = 'modal-x';
+    x.setAttribute('aria-label', t('btn_close'));
+    x.textContent = '×';
+    x.addEventListener('click', e=>{
+      e.stopPropagation();
+      // Perdeye tiklama: her pencerenin kendi "disariya tiklandi" yolu.
+      // Dinleyici e.target.id'ye bakiyor, o yuzden olay perdenin kendisinden
+      // gonderiliyor.
+      const oncesi = ov.classList.contains('open');
+      ov.dispatchEvent(new MouseEvent('click', { bubbles:true, cancelable:true }));
+      // Perde yolu olmayan pencere icin son care.
+      if(oncesi && ov.classList.contains('open')) ov.classList.remove('open');
+    });
+    serit.appendChild(x);
+    modal.prepend(serit);
+  });
+  // Bir pencere acikken govde kaymasin (telefonda alt sayfa hissi; CSS
+  // yalnizca dar ekranda uyguluyor). Sinif degisimi izleniyor, cunku
+  // pencereler on ayri yerden aciliyor.
+  const izle = new MutationObserver(()=>{
+    const acik = !!document.querySelector('.overlay.open') || !!document.querySelector('.fbackdrop.open');
+    document.body.classList.toggle('sheet-open', acik);
+  });
+  document.querySelectorAll('.overlay').forEach(ov=> izle.observe(ov, { attributes:true, attributeFilter:['class'] }));
   const temizle = document.getElementById('filterClearAll');
   if(temizle) temizle.addEventListener('click', e=>{
     e.stopPropagation();
@@ -8325,16 +8623,16 @@ document.getElementById('cancelBtn').addEventListener('click', closeModal);
 document.getElementById('editOverlay').addEventListener('click', (e)=>{ if(e.target.id==='editOverlay') closeModal(); });
 document.getElementById('uploadToggle').addEventListener('click', ()=> setUploadToggle(document.getElementById('uploadToggle').dataset.val !== '1'));
 
-document.getElementById('deleteBtn').addEventListener('click', ()=>{
+document.getElementById('deleteBtn').addEventListener('click', async ()=>{
   if(!currentEvent) return;
-  if(!confirm(t('confirm_delete'))) return;
+  if(!await onayla(t('confirm_delete'))) return;
   markRemoved(currentEvent.id);
   events = events.filter(e=>e.id!==currentEvent.id);
   track('funnel/entry-deleted');
   save(); closeModal(); renderCal();
 });
 
-document.getElementById('saveBtn').addEventListener('click', ()=>{
+document.getElementById('saveBtn').addEventListener('click', async ()=>{
   const title = document.getElementById('f_title').value.trim();
   const date = document.getElementById('f_date').value;
   const time = document.getElementById('f_time').value;
@@ -8346,7 +8644,7 @@ document.getElementById('saveBtn').addEventListener('click', ()=>{
   if(!date)  eksikler.push(['f_date',  t('f_date_label')]);
   if(!time)  eksikler.push(['f_time',  t('f_time_label')]);
   if(eksikler.length){
-    alert(t('alert_fill_missing')(eksikler.map(x=>x[1]).join(', ')));
+    uyari(t('alert_fill_missing')(eksikler.map(x=>x[1]).join(', ')));
     const ilk = document.getElementById(eksikler[0][0]);
     if(ilk) ilk.focus();
     return;
@@ -8356,13 +8654,13 @@ document.getElementById('saveBtn').addEventListener('click', ()=>{
   // proje coktan olusmus oluyordu: vazgecince geride bos bir proje kaliyordu.
   if(!currentEvent){
     const secilenPlatformlar = Array.from(document.querySelectorAll('#platformChecks input:checked'));
-    if(secilenPlatformlar.length === 0){ alert(t('alert_select_platform')); return; }
-    if(secilenTipler().length === 0){ alert(t('alert_select_type')); return; }
+    if(secilenPlatformlar.length === 0){ uyari(t('alert_select_platform')); return; }
+    if(secilenTipler().length === 0){ uyari(t('alert_select_type')); return; }
   }
   // Proje once cozuluyor: "+ yeni proje" secildiyse burada olusuyor.
   // Iptal edilirse kayit hic olusmuyor, yarim bir kayit kalmiyor.
-  const proje = secilenProjeyiCoz();
-  if(!proje){ alert(t('alert_need_project')); return; }
+  const proje = await secilenProjeyiCoz();
+  if(!proje){ uyari(t('alert_need_project')); return; }
 
   const type = currentEvent
     ? document.getElementById('f_type').value
@@ -8388,11 +8686,11 @@ document.getElementById('saveBtn').addEventListener('click', ()=>{
     trackOnce('funnel/entry-edited');
   } else {
     const platforms = Array.from(document.querySelectorAll('#platformChecks input:checked')).map(el=>el.value);
-    if(platforms.length===0){ alert(t('alert_select_platform')); return; }
+    if(platforms.length===0){ uyari(t('alert_select_platform')); return; }
     // Tur de coklu: ayni cekimden hem Reels hem Story cikabiliyor. Her
     // tur-platform ciftine bir kayit dusuyor.
     const tipler = secilenTipler();
-    if(tipler.length===0){ alert(t('alert_select_type')); return; }
+    if(tipler.length===0){ uyari(t('alert_select_type')); return; }
     const ciftler = [];
     tipler.forEach(tp=> platforms.forEach(pf=> ciftler.push({type:tp, platform:pf})));
     // Bir modaldan secilen her platform icin ayri kayit cikiyor; sinir toplam
@@ -8401,7 +8699,7 @@ document.getElementById('saveBtn').addEventListener('click', ()=>{
     const kalan = MAX_ENTRIES - events.length;
     if(ciftler.length > kalan){
       track('funnel/limit-hit');
-      alert(kalan > 0
+      uyari(kalan > 0
         ? t('alert_limit_near')(kalan, ciftler.length)
         : t('alert_limit_full')(MAX_ENTRIES));
       if(kalan <= 0){ closeModal(); openFeedback('limit'); }
@@ -8452,6 +8750,30 @@ function takvimKaydir(yon){
 document.getElementById('prevBtn').addEventListener('click', ()=> takvimKaydir(-1));
 document.getElementById('nextBtn').addEventListener('click', ()=> takvimKaydir(1));
 
+// Telefonda takvimi parmakla kaydirmak: sola cek -> sonraki, saga cek ->
+// onceki. Yerel takvim uygulamalarinin alışkanlığı. Dikey kaydirma ile
+// karismasin diye yatay yol 60px'i gecmeli ve dikey yoldan belirgin buyuk
+// olmali. Tablo gorunumu kendi icinde yana kaydigi icin orada kapali;
+// aksi halde tabloyu kaydirmak ay degistirirdi.
+(function takvimKaydirmaHareketi(){
+  const kap = document.getElementById('calGridWrap');
+  if(!kap) return;
+  let x0 = 0, y0 = 0, izleniyor = false;
+  kap.addEventListener('touchstart', e=>{
+    if(viewMode === 'table' || e.touches.length !== 1){ izleniyor = false; return; }
+    x0 = e.touches[0].clientX; y0 = e.touches[0].clientY; izleniyor = true;
+  }, { passive:true });
+  kap.addEventListener('touchend', e=>{
+    if(!izleniyor) return;
+    izleniyor = false;
+    const t = e.changedTouches && e.changedTouches[0];
+    if(!t) return;
+    const dx = t.clientX - x0, dy = t.clientY - y0;
+    if(Math.abs(dx) < 60 || Math.abs(dx) < Math.abs(dy) * 1.5) return;
+    takvimKaydir(dx < 0 ? 1 : -1);
+  }, { passive:true });
+})();
+
 function setView(mod){
   if(mod !== 'week' && mod !== 'month' && mod !== 'table' && mod !== 'day') return;
   if(viewMode === mod) return;
@@ -8475,8 +8797,8 @@ document.getElementById('exportBtn').addEventListener('click', ()=>{
   document.body.appendChild(a); a.click(); document.body.removeChild(a);
   URL.revokeObjectURL(url);
 });
-document.getElementById('resetBtn').addEventListener('click', ()=>{
-  if(!confirm(t('confirm_reset'))) return;
+document.getElementById('resetBtn').addEventListener('click', async ()=>{
+  if(!await onayla(t('confirm_reset'))) return;
   events.forEach(e=>markRemoved(e.id));
   events = seedData(); markAllDirty(); save(); renderCal();
 });
@@ -9576,8 +9898,8 @@ document.getElementById('aiSaveAnywayBtn').addEventListener('click', ()=>{
   showToast(t('ai_saved_untested'));
 });
 
-document.getElementById('aiForgetBtn').addEventListener('click', ()=>{
-  if(!confirm(t('ai_forget_confirm'))) return;
+document.getElementById('aiForgetBtn').addEventListener('click', async ()=>{
+  if(!await onayla(t('ai_forget_confirm'))) return;
   try{ localStorage.removeItem('demo_ai_settings'); }catch(e){}
   track('funnel/ai-key-removed');
   document.getElementById('aiForgetBtn').hidden = true;
@@ -9598,7 +9920,7 @@ async function aiAlanUret(alan, alanId, dugmeId, calisanEtiket){
     return;
   }
   const kutu = document.getElementById(alanId);
-  if(kutu.value.trim().length > 3 && !confirm(t('ai_field_overwrite'))) return;
+  if(kutu.value.trim().length > 3 && !await onayla(t('ai_field_overwrite'))) return;
   const dugme = document.getElementById(dugmeId);
   const ham = await aiCalistir(dugme, durumEl, calisanEtiket, aiAlanPrompt(alan),
                                { sure: AI_ZAMAN_ASIMI });
@@ -10191,7 +10513,7 @@ document.getElementById('rm_takvim').addEventListener('change', async (e)=>{
   if(!acik && hatirlatma.jeton){
     // Kapatmak ADRESI OLDURUYOR. Kullanicinin sarti buydu: "ekledikten bir
     // sure sonra kaldirabilir". Ne olacagini onceden soyluyoruz.
-    if(!confirm(t('rm_cal_off_ask'))){ e.target.checked = true; return; }
+    if(!await onayla(t('rm_cal_off_ask'))){ e.target.checked = true; return; }
     const eski = hatirlatma.jeton;
     hatirlatma.jeton = '';
     hatirlatma.yayinlandi = false;
@@ -10237,7 +10559,7 @@ document.getElementById('rm_kurBtn').addEventListener('click', async ()=>{
 });
 
 document.getElementById('rm_yenileBtn').addEventListener('click', async ()=>{
-  if(!confirm(t('rm_cal_renew_ask'))) return;
+  if(!await onayla(t('rm_cal_renew_ask'))) return;
   const btn = document.getElementById('rm_yenileBtn');
   const cikti = document.getElementById('rm_takvimDurum');
   btn.disabled = true;
@@ -10595,7 +10917,7 @@ async function afterSignIn(){
         events = kimlikleriTazele(hesabinKendiKopyasi);
         markAllDirty();
         await pushChanges();
-      }else if(anonim.length && confirm(t('auth_move_ask')(anonim.length))){
+      }else if(anonim.length && await onayla(t('auth_move_ask')(anonim.length))){
         // Kimlikleri yeniden uretiyoruz: baska bir hesabin satirlariyla
         // birincil anahtar cakismasi olmasin.
         events = anonim.map(e => ({...e, id: newId(), content: JSON.parse(JSON.stringify(e.content||{}))}));
@@ -10705,9 +11027,9 @@ document.getElementById('cloudRetry').addEventListener('click', async ()=>{
   }finally{ dugme.disabled = false; }
 });
 
-document.getElementById('authBtn').addEventListener('click', ()=>{
+document.getElementById('authBtn').addEventListener('click', async ()=>{
   if(session){
-    if(confirm(t('auth_signed_as') + ' ' + session.user.email + '\n\n' + t('auth_signout') + '?')){
+    if(await onayla(t('auth_signed_as') + ' ' + session.user.email + '\n\n' + t('auth_signout') + '?')){
       sb.auth.signOut();
       track('funnel/signed-out');
     }
