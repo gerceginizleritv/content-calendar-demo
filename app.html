@@ -1586,6 +1586,92 @@ body.suruklenirken *{cursor:grabbing !important;}
   .copy-btn{min-height:44px;}
 }
 
+/* ===== Telefon: uygulama gibi ==========================================
+   Telefonda sayfa degil uygulama hissi: sekmeler altta sabit bir serit,
+   ust kisim yalnizca marka ve hesap; pencereler alttan acilan, kapatma
+   dugmesi olan sayfalar; filtre paneli arkasi karartilmis bir alt sayfa.
+   Sahada tek elle, basparmakla kullaniliyor — hedefler 44px ve altta. */
+@media(max-width:700px){
+  /* Ust serit sikisik: marka + hesap tek satir, ikincil baglantilar tek
+     satirda yana kayar. */
+  .rail{padding:8px 12px;gap:8px;}
+  .rail-foot{flex-wrap:nowrap;overflow-x:auto;-webkit-overflow-scrolling:touch;
+    padding-bottom:4px;scrollbar-width:none;}
+  .rail-foot::-webkit-scrollbar{display:none;}
+  .rail-link{white-space:nowrap;flex:none;}
+  .rail-prefs{flex:none;}
+
+  /* Sekmeler altta, sabit. Basparmagin dogal menzili. */
+  .rail-nav{
+    position:fixed;left:0;right:0;bottom:0;z-index:40;
+    background:var(--surface);border-top:1px solid var(--line);
+    padding:6px 6px calc(6px + env(safe-area-inset-bottom));
+    box-shadow:0 -6px 24px -12px rgba(0,0,0,.35);
+    width:auto;gap:2px;margin:0;
+  }
+  .rail-nav .tab{flex-direction:column;gap:3px;padding:6px 2px;font-size:10.5px;
+    border-bottom:0;border-radius:8px;min-height:52px;}
+  .rail-nav .tab .tab-ico{width:22px;height:22px;}
+  .rail-nav .tab.active{background:var(--accent-soft);border-bottom-color:transparent;}
+  /* Alt seridin arkasinda icerik kalmasin. */
+  .wrap{padding-bottom:calc(84px + env(safe-area-inset-bottom));}
+  .toast{bottom:calc(84px + env(safe-area-inset-bottom));}
+
+  /* Takvim gezintisi: 1. satir gorunumler, 2. satir aralik, 3. satir
+     onceki / bugun / sonraki. Kutular yerine tek duzgun izgara. */
+  .cal-nav{display:grid;grid-template-columns:1fr 1fr 1fr;gap:8px;}
+  .cal-nav-left,.cal-nav-right{display:contents;}
+  .view-toggle{grid-column:1/-1;order:-2;display:flex;}
+  .view-btn{flex:1 1 0;padding:0 4px;}
+  .cal-range{grid-column:1/-1;order:-1;width:auto;margin:0;}
+  .cal-nav-btn{padding:8px 6px;font-size:12.5px;}
+
+  /* Filtre seridi tek satir, yana kayar; sarip yer yemesin. */
+  .filter-bar{flex-wrap:nowrap;overflow-x:auto;-webkit-overflow-scrolling:touch;
+    padding-bottom:4px;scrollbar-width:none;}
+  .filter-bar::-webkit-scrollbar{display:none;}
+  .fbtn,.fclear,.fsummary,.btn-pending{white-space:nowrap;flex:none;}
+  .fdrop{position:static;}   /* panel sabit konumlu, kapsayici kaydirilabilir */
+
+  /* Filtre paneli: arkasi karartilmis alt sayfa, basligi ve Kapat dugmesi
+     var. Disariya dokunmak paneli kapatir ve ALTTAKI takvime gecmez —
+     eskiden dokunus gune isabet edip yeni kayit penceresi aciyordu. */
+  .fbackdrop.open{display:block;}
+  .fpanel{z-index:61;bottom:0;left:0;right:0;border-radius:14px 14px 0 0;
+    padding:0 12px calc(12px + env(safe-area-inset-bottom));max-height:70vh;max-height:70dvh;}
+  /* .fpanel on eki SART: genel kural (.fpanel-head{display:none}) bu
+     bloktan sonra geliyor; ayni ozgullukte olsaydi telefonda basligi
+     gizlerdi. */
+  .fpanel .fpanel-head{display:flex;}
+
+  /* Pencereler alttan acilan sayfalar: tam genislik, ustte tutamac,
+     her zaman gorunur kapatma dugmesi. */
+  .overlay{align-items:flex-end;padding:0;}
+  .modal{max-width:none;max-height:92vh;max-height:92dvh;border-radius:14px 14px 0 0;
+    border-left:0;border-right:0;border-bottom:0;
+    padding:16px 16px calc(18px + env(safe-area-inset-bottom));}
+  .modal-head{top:-16px;margin:-16px -16px 14px;padding:16px 16px 10px;}
+  .modal .modal-xbar{top:-16px;margin:-16px -16px 6px;padding:10px 12px 4px;}
+  .modal-x{width:40px;height:40px;font-size:22px;}
+  body.sheet-open{overflow:hidden;}
+}
+
+/* Filtre paneli basligi ve arka perdesi: masaustunde gorunmez (acilir
+   menu dugmeye yaslanir), telefonda alt sayfanin parcasi. */
+.fbackdrop{display:none;position:fixed;inset:0;z-index:58;background:rgba(4,5,10,.45);}
+.fpanel-head{display:none;align-items:center;justify-content:space-between;gap:10px;
+  position:sticky;top:0;z-index:2;background:var(--surface);
+  margin:0 -12px 6px;padding:10px 12px 8px;border-bottom:1px solid var(--line-soft);}
+.fpanel-head::before{content:'';position:absolute;left:50%;top:6px;width:40px;height:4px;
+  border-radius:2px;background:var(--line);transform:translateX(-50%);}
+.fpanel-title{font-family:'IBM Plex Mono',monospace;font-size:11px;letter-spacing:.1em;
+  text-transform:uppercase;color:var(--text-dim);padding-top:8px;}
+.fpanel-close{margin-top:8px;}
+/* Kapatma dugmesi seridi: basligi olmayan pencerelerde JS ekliyor.
+   .modal-head ile ayni yapiskan mantik: pencere kayarken ustte kalir. */
+.modal-xbar{position:sticky;top:-26px;z-index:2;background:var(--surface);
+  display:flex;justify-content:flex-end;margin:-26px -26px 8px;padding:14px 16px 4px;}
+
 /* ===== Termin hatirlatmalari ===== */
 .rm-lead{color:var(--text-dim);font-size:13.5px;line-height:1.6;margin:0 0 16px;}
 .rm-bolum{border:1px solid var(--line);border-radius:10px;padding:14px;margin-bottom:14px;}
@@ -7745,6 +7831,10 @@ function filtrePaneliKapat(){
     kap.querySelector('.fpanel').hidden = true;
     kap.querySelector('.fbtn').setAttribute('aria-expanded','false');
   });
+  const perde = document.querySelector('.fbackdrop');
+  if(perde) perde.classList.remove('open');
+  // Baska bir pencere acik degilse govde yeniden kayabilir.
+  if(!document.querySelector('.overlay.open')) document.body.classList.remove('sheet-open');
   // Kapanan panel bir dahaki acilista tam listeyi gostersin: yarim kalmis
   // bir arama yuzunden "projelerim kayboldu" denmesin.
   const kutu = document.getElementById('conceptSearch');
@@ -7753,9 +7843,33 @@ function filtrePaneliKapat(){
 (function filtreSeridiKur(){
   const serit = document.getElementById('filterBar');
   if(!serit) return;
+  // Arka perde: telefonda panel acikken takvimin ustunu ortuyor. Disariya
+  // dokunus perdeye geliyor, paneli kapatiyor ve ALTTAKI gune ulasmiyor.
+  // Perde olmadan iki sorun vardi: iOS Safari tiklanabilir olmayan bir
+  // alana dokunulunca document'e click gondermiyor, panel hic kapanmiyordu;
+  // Android'de ise dokunus gune gecip yeni kayit penceresi aciyordu.
+  const perde = document.createElement('div');
+  perde.className = 'fbackdrop';
+  perde.addEventListener('click', e=>{ e.stopPropagation(); filtrePaneliKapat(); });
+  document.body.appendChild(perde);
   serit.querySelectorAll('.fdrop').forEach(kap=>{
     const dugme = kap.querySelector('.fbtn');
     const panel = kap.querySelector('.fpanel');
+    // Panel basligi + Kapat: yalnizca telefonda gorunuyor (CSS).
+    const bas = document.createElement('div');
+    bas.className = 'fpanel-head';
+    const baslik = document.createElement('span');
+    baslik.className = 'fpanel-title';
+    const etiket = dugme.querySelector('[data-i18n]');
+    baslik.textContent = etiket ? etiket.textContent : dugme.textContent.trim();
+    const kapat = document.createElement('button');
+    kapat.type = 'button';
+    kapat.className = 'modal-x fpanel-close';
+    kapat.setAttribute('aria-label', t('btn_close'));
+    kapat.textContent = '×';
+    kapat.addEventListener('click', e=>{ e.stopPropagation(); filtrePaneliKapat(); });
+    bas.append(baslik, kapat);
+    panel.prepend(bas);
     dugme.addEventListener('click', e=>{
       e.stopPropagation();
       const acik = kap.classList.contains('open');
@@ -7764,6 +7878,8 @@ function filtrePaneliKapat(){
         kap.classList.add('open');
         panel.hidden = false;
         dugme.setAttribute('aria-expanded','true');
+        perde.classList.add('open');
+        document.body.classList.add('sheet-open');
       }
     });
     // Panel icindeki tiklama seridi kapatmasin: coklu secim yapiliyor.
@@ -7773,6 +7889,49 @@ function filtrePaneliKapat(){
   if(konseptKutu) konseptKutu.addEventListener('input', konseptAramasiUygula);
   document.addEventListener('click', filtrePaneliKapat);
   document.addEventListener('keydown', e=>{ if(e.key === 'Escape') filtrePaneliKapat(); });
+})();
+
+// ===== Pencereler telefonda kapanabilir olsun =====
+// Kayit, proje, klon gibi pencerelerin kapatma dugmesi yoktu; disariya
+// tiklamak ya da en alttaki Vazgec'e inmek gerekiyordu. Telefonda pencere
+// ekrani kapladigi icin "disarisi" yok, uzun formda Vazgec de ekran disinda.
+// Sonuc: "menuyu actim, kapatamiyorum". Basligi (.modal-head) olmayan her
+// pencereye yapiskan bir kapatma seridi ekleniyor. Dugme pencerenin KENDI
+// kapanma yolunu kullaniyor: perdeye tiklanmis gibi davraniyor, boylece
+// her pencerenin kapanirken yaptigi temizlik (closeModal, closeClone...)
+// aynen calisiyor.
+(function pencereKapatmaSeridiKur(){
+  document.querySelectorAll('.overlay').forEach(ov=>{
+    const modal = ov.querySelector('.modal');
+    if(!modal || modal.querySelector('.modal-head') || modal.querySelector('.modal-x')) return;
+    const serit = document.createElement('div');
+    serit.className = 'modal-xbar';
+    const x = document.createElement('button');
+    x.type = 'button';
+    x.className = 'modal-x';
+    x.setAttribute('aria-label', t('btn_close'));
+    x.textContent = '×';
+    x.addEventListener('click', e=>{
+      e.stopPropagation();
+      // Perdeye tiklama: her pencerenin kendi "disariya tiklandi" yolu.
+      // Dinleyici e.target.id'ye bakiyor, o yuzden olay perdenin kendisinden
+      // gonderiliyor.
+      const oncesi = ov.classList.contains('open');
+      ov.dispatchEvent(new MouseEvent('click', { bubbles:true, cancelable:true }));
+      // Perde yolu olmayan pencere icin son care.
+      if(oncesi && ov.classList.contains('open')) ov.classList.remove('open');
+    });
+    serit.appendChild(x);
+    modal.prepend(serit);
+  });
+  // Bir pencere acikken govde kaymasin (telefonda alt sayfa hissi; CSS
+  // yalnizca dar ekranda uyguluyor). Sinif degisimi izleniyor, cunku
+  // pencereler on ayri yerden aciliyor.
+  const izle = new MutationObserver(()=>{
+    const acik = !!document.querySelector('.overlay.open') || !!document.querySelector('.fbackdrop.open');
+    document.body.classList.toggle('sheet-open', acik);
+  });
+  document.querySelectorAll('.overlay').forEach(ov=> izle.observe(ov, { attributes:true, attributeFilter:['class'] }));
   const temizle = document.getElementById('filterClearAll');
   if(temizle) temizle.addEventListener('click', e=>{
     e.stopPropagation();
