@@ -96,6 +96,34 @@ kayıtları girildi.** Bu birleştirmede yapılanlar:
 
 ---
 
+## Yerel diyaloglar kaldırıldı: alert/confirm/prompt yok (5 Eylül 2026)
+
+Kullanıcı bildirdi: kaydederken açılan yerel tarayıcı diyaloğu sayfayı
+kilitliyor, "diyalogları engelle" seçilince `confirm` hep `false` dönüp
+kayıt sessizce düşüyor; proje iki kez böyle kayboldu. Kenar çubuğundaki
+hesap düğmesi de (`confirm` ile çıkış sorusu) aynı şekilde donuyordu.
+
+**Kural (kalıcı):** `alert`, `confirm`, `prompt` bir daha KULLANILMAYACAK.
+Yerine `uyari(msg)`, `onayla(msg)` → Promise<boolean>, `sor(msg, varsayılan)`
+→ Promise<string|null>. Üçü de `#dlgOverlay` penceresini açıyor (z-index 80,
+kayıt penceresinin üstüne çıkar). Çağıran fonksiyon `async` olmalı ve
+`await` etmeli; 39 çağrı yeri çevrildi, `node --check` ile doğrulandı.
+
+Dönüşüm notları:
+- `alert(x)` → `uyari(x)` (await gerekmez, çağıranlar zaten `return` ediyor).
+- `confirm(x)` → `await onayla(x)`; `prompt(x)` → `await sor(x)`. Bu yüzden
+  `secimdenProje`, `projeSil`, `secilenProjeyiCoz` ve 10 kadar click/change
+  dinleyicisi `async` oldu; `secimdenProje` ve `secilenProjeyiCoz`
+  çağıranları `await` ediyor.
+- Tek düğmeli uyarıda perde de Tamam sayılır; onay/soru penceresinde perde
+  ve Escape iptal, Enter Tamam. Aynı anda ikinci diyalog istenirse ilki
+  iptal sayılıp kapanır.
+- Test: `scratchpad/dlg.test.js` (16 iddia: proje adres sorusu, termin
+  sorusu, hesap düğmesi, kayıt silme onayı pencere üstünde, eksik alan
+  uyarısı; sıfır yerel diyalog, sıfır sayfa hatası).
+
+---
+
 ## Telefon: uygulama gibi (5 Eylül 2026)
 
 Kullanıcı sahadan bildirdi: shootboard.app telefonda "bazı menüler açılınca

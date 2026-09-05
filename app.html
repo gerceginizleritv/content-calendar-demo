@@ -1317,6 +1317,17 @@ body.suruklenirken *{cursor:grabbing !important;}
 .trust-list li{margin-bottom:5px;}
 .trust-link{font-size:12px;color:var(--accent);display:inline-block;margin-bottom:4px;}
 .modal-actions #aiForgetBtn{margin-right:auto;}
+/* Uygulama ici diyalog: oteki pencerelerin USTUNE cikiyor (kayit
+   penceresinden silme onayi gibi), o yuzden z-index daha yuksek. */
+#dlgOverlay{z-index:80;align-items:center;padding:20px;}
+#dlgOverlay .modal-dlg{max-width:420px;border-radius:12px;padding:22px 22px 18px;}
+.dlg-msg{margin:0 0 6px;font-size:14.5px;line-height:1.55;white-space:pre-line;}
+.dlg-input{width:100%;box-sizing:border-box;margin-top:10px;padding:10px 12px;
+  background:var(--bg);color:var(--text);border:1px solid var(--line);border-radius:6px;
+  font-family:'IBM Plex Sans',sans-serif;font-size:14px;}
+.dlg-input:focus{outline:none;border-color:var(--accent);}
+#dlgOverlay .modal-actions{margin-top:16px;}
+#dlgOverlay .btn{min-height:44px;}
 /* Google dugmesi tam genislikte ve email alanindan once duruyor: tek tikla
    biten yol once gelsin, link isteyen asagi baksin. */
 .btn-google{width:100%;gap:9px;min-height:44px;font-weight:600;background:var(--surface);}
@@ -2255,6 +2266,21 @@ body.suruklenirken *{cursor:grabbing !important;}
   </div>
 </div>
 
+<!-- Uygulama ici diyalog: alert / confirm / prompt yerine. Yerel tarayici
+     diyaloglari sayfayi kilitliyordu; telefonda "diyaloglari engelle"
+     secilince confirm hep false donuyor ve kayit sessizce dusuyordu.
+     Bu pencere hicbir seyi kilitlemiyor, sonucu bir Promise ile veriyor. -->
+<div class="overlay" id="dlgOverlay" role="alertdialog" aria-modal="true" aria-labelledby="dlgMsg">
+  <div class="modal modal-dlg">
+    <p class="dlg-msg" id="dlgMsg"></p>
+    <input type="text" id="dlgInput" class="dlg-input" hidden autocomplete="off">
+    <div class="modal-actions">
+      <button type="button" class="btn" id="dlgCancel" data-i18n="btn_cancel">Cancel</button>
+      <button type="button" class="btn btn-primary" id="dlgOk" data-i18n="dlg_ok">OK</button>
+    </div>
+  </div>
+</div>
+
 <div class="overlay" id="cloneOverlay">
   <div class="modal">
     <h2 data-i18n="clone_title">Duplicate entry</h2>
@@ -3179,6 +3205,7 @@ const LANG = {
     btn_next: "Next",
     pending_title: "Not Yet Posted",
     btn_close: "Close",
+    dlg_ok: "OK",
     alert_fill_required: "Please fill in title, date and time.",
     alert_fill_missing: (alanlar)=> `Still missing: ${alanlar}.`,
     count_label: (n, max)=> `${n} / ${max} entries`,
@@ -3690,6 +3717,7 @@ const LANG = {
     btn_next: "İleri",
     pending_title: "Henüz Yüklenmemiş",
     btn_close: "Kapat",
+    dlg_ok: "Tamam",
     alert_fill_required: "Lütfen başlık, tarih ve saati doldur.",
     alert_fill_missing: (alanlar)=> `Şu alan eksik: ${alanlar}.`,
     count_label: (n, max)=> `${n} / ${max} kayıt`,
@@ -4761,9 +4789,9 @@ function filtreSecenekleri(secili){
 
 // Yeni proje secildiginde adi soruluyor ve proje ORADA aciliyor: kullanici
 // fikir yazarken proje sayfasina gidip geri donmek zorunda kalmasin.
-function secimdenProje(sel, oncekiDeger){
+async function secimdenProje(sel, oncekiDeger){
   if(sel.value !== '__yeni__') return sel.value;
-  const ad = (prompt(t('fk_new_project_ask')) || '').trim();
+  const ad = (await sor(t('fk_new_project_ask')) || '').trim();
   if(!ad){ sel.value = oncekiDeger || ''; return oncekiDeger || ''; }
   const p = projeEkle(ad, '', '', 'other', '');
   if(!p){ sel.value = oncekiDeger || ''; return oncekiDeger || ''; }
@@ -4898,8 +4926,8 @@ function fikirKartOlaylari(kap){
     if(e.key === 'Escape'){ fikirTaslakAcik = false; renderFikirler(); }
   });
   const yeniSel = document.getElementById('fk_newProj');
-  if(yeniSel) yeniSel.addEventListener('change', ()=>{
-    const pid = secimdenProje(yeniSel, '');
+  if(yeniSel) yeniSel.addEventListener('change', async ()=>{
+    const pid = await secimdenProje(yeniSel, '');
     yeniSel.innerHTML = projeSecenekleri(pid, t('fk_no_project'));
   });
 
@@ -4938,8 +4966,8 @@ function fikirKartOlaylari(kap){
       el.replaceWith(sel);
       sel.focus();
       const bitir = ()=>{ renderFikirler(); renderProjects(); };
-      sel.addEventListener('change', ()=>{
-        const pid = secimdenProje(sel, f.projectId);
+      sel.addEventListener('change', async ()=>{
+        const pid = await secimdenProje(sel, f.projectId);
         fikirGuncelle(f.id, { projectId: pid });
         bitir();
       });
@@ -5247,7 +5275,7 @@ async function driveGetir(){
     const alan = document.getElementById('sc_text');
     // Dolu bir metnin uzerine SORMADAN yazilmiyor: saatlerce sureni bir
     // tikla yok etmek olurdu.
-    if(alan.value.trim() && !confirm(t('sc_drive_overwrite')(dosya.name || ''))){
+    if(alan.value.trim() && !await onayla(t('sc_drive_overwrite')(dosya.name || ''))){
       driveDurum('');
       return;
     }
@@ -5402,10 +5430,10 @@ async function driveYaz(){
       if(driveBaglantisi.zaman){
         const bilgi = await driveDegisimZamani(driveBaglantisi.id, token).catch(()=>null);
         if(bilgi && bilgi.modifiedTime && bilgi.modifiedTime !== driveBaglantisi.zaman){
-          if(!confirm(t('dw_changed')(bilgi.name || driveBaglantisi.ad))){ dwDurum(''); return; }
+          if(!await onayla(t('dw_changed')(bilgi.name || driveBaglantisi.ad))){ dwDurum(''); return; }
         }
       }
-      if(!confirm(t('dw_confirm_overwrite')(driveBaglantisi.ad))){ dwDurum(''); return; }
+      if(!await onayla(t('dw_confirm_overwrite')(driveBaglantisi.ad))){ dwDurum(''); return; }
       sonuc = await driveUstuneYaz(driveBaglantisi.id, metin, token);
     }else{
       const ad = document.getElementById('dw_name').value.trim();
@@ -5586,7 +5614,7 @@ async function scriptAiYaz(){
   }
   // Saatlerce surmus bir metnin ustune SORMADAN yazilmiyor; Drive'dan
   // getirmede de ayni kural var.
-  if(alan.value.trim() && !confirm(t('sc_ai_overwrite'))) return;
+  if(alan.value.trim() && !await onayla(t('sc_ai_overwrite'))) return;
   const dugme = document.getElementById('sc_ai');
   const ham = await aiCalistir(dugme, durumEl, t('sc_ai_working'), prompt,
                                { sure: AI_SCRIPT_ZAMAN_ASIMI });
@@ -5689,13 +5717,13 @@ function openProjectEdit(id){
   adresAlaniniTazele(tur, document.getElementById('pe_addressWrap'));
   document.getElementById('projectEditOverlay').classList.add('open');
 }
-function projeSil(p){
+async function projeSil(p){
   if(!p) return;
   const bagli = projeIcinKayitlar(p.id).length;
   // Projeyi silmek kayitlari silmiyor; kayitlar projesiz kaliyor. Bir
   // projeyi kapatirken haftalarca girilmis yayin planinin da gitmesi
   // geri alinamayacak bir surpriz olurdu.
-  if(!confirm(bagli ? t('p_del_confirm_linked')(p.name, bagli) : t('p_del_confirm')(p.name))) return;
+  if(!await onayla(bagli ? t('p_del_confirm_linked')(p.name, bagli) : t('p_del_confirm')(p.name))) return;
   projeIcinKayitlar(p.id).forEach(e=>{
     delete e.content.projectId; delete e.content.concept; markDirty(e.id);
   });
@@ -5713,11 +5741,11 @@ function closeProjectEdit(){
 function projeEkle(ad, anahtar, cekim, tur, adres){
   const p = sanitizeProject({ name: ad, keywords: anahtar, shootDate: cekim, type: tur, address: adres });
   if(!p) return null;
-  if(projects.length >= MAX_PROJECTS){ alert(t('p_limit')(MAX_PROJECTS)); return null; }
+  if(projects.length >= MAX_PROJECTS){ uyari(t('p_limit')(MAX_PROJECTS)); return null; }
   // Ayni ad iki kez girilmesin: "Stüdyo çekimi" ile "stüdyo Çekimi" ayri
   // iki proje olarak dururdu.
   const var_ = projects.find(x=>x.name.toLocaleLowerCase() === p.name.toLocaleLowerCase());
-  if(var_){ alert(t('p_exists')(var_.name)); return var_; }
+  if(var_){ uyari(t('p_exists')(var_.name)); return var_; }
   projects.push(p);
   projDirtyIsaretle(p.id);
   saveProjects();
@@ -5999,7 +6027,7 @@ function eskiBicimiTasi(){
 
 function kotaHatasi(e){
   console.error('[fikir/script] kaydedilemedi', e);
-  alert(t('sc_full'));
+  uyari(t('sc_full'));
 }
 function saveFikirler(){
   try{ localStorage.setItem(fikirKey(), JSON.stringify(fikirler)); }catch(e){ kotaHatasi(e); }
@@ -6031,7 +6059,7 @@ function enKucukSira(){
 function fikirEkle(metin, pid){
   const yeni = fikirTemizle({ text: metin, projectId: projeBagiTemiz(pid), sort: enKucukSira() - 1 });
   if(!yeni) return null;
-  if(fikirler.length >= FIKIR_ADET){ alert(t('fk_limit')(FIKIR_ADET)); return null; }
+  if(fikirler.length >= FIKIR_ADET){ uyari(t('fk_limit')(FIKIR_ADET)); return null; }
   fikirler.unshift(yeni);
   fikirDirty.add(yeni.id);
   saveFikirler();
@@ -6163,7 +6191,7 @@ function fikirSil(id){
   saveFikirler();
 }
 function scriptEkle(alanlar){
-  if(scriptler.length >= SCRIPT_ADET){ alert(t('sc_limit')(SCRIPT_ADET)); return null; }
+  if(scriptler.length >= SCRIPT_ADET){ uyari(t('sc_limit')(SCRIPT_ADET)); return null; }
   const yeni = scriptTemizle({ ...alanlar, projectId: projeBagiTemiz(alanlar.projectId) });
   if(!yeni) return null;
   const oncedenVardi = projeninScriptiVarMi(yeni.projectId, yeni.id);
@@ -6411,7 +6439,7 @@ function projeSecimiTazele(seciliId){
 }
 
 // Secim "+ yeni proje" ise adini sorup olusturuyor ve secili birakiyor.
-function secilenProjeyiCoz(){
+async function secilenProjeyiCoz(){
   const sel = document.getElementById('f_project');
   if(!sel) return null;
   if(sel.value !== YENI_PROJE) return projectById(sel.value);
@@ -6419,7 +6447,7 @@ function secilenProjeyiCoz(){
   // zaten yazdi ve acilir listede "«...» oluştur" yazdigini gordu.
   const kutu = document.getElementById('f_projectSearch');
   const yazilan = ((kutu && kutu.value) || '').trim();
-  const ad = yazilan || (window.prompt(t('f_project_prompt')) || '').trim();
+  const ad = yazilan || (await sor(t('f_project_prompt')) || '').trim();
   if(!ad) return null;
   const p = projeEkle(ad, '', '');
   if(!p) return null;
@@ -6472,7 +6500,7 @@ document.getElementById('acc_add').addEventListener('click', ()=>{
   const kutu = document.getElementById('acc_url');
   const el = hesapBicimle(kutu.value);
   if(!el){ kutu.focus(); return; }
-  if(sablon.accounts.length >= MAX_HESAP){ alert(t('tpl_limit')(MAX_HESAP)); return; }
+  if(sablon.accounts.length >= MAX_HESAP){ uyari(t('tpl_limit')(MAX_HESAP)); return; }
   // Kullanici metne henuz dokunmadiysa (metin bos ya da hala otomatik
   // uretilen hali) hesap satirlari yeniden uretiliyor. Yalnizca "bos ise"
   // deseydik ikinci hesap listeye hic girmezdi.
@@ -6551,14 +6579,14 @@ function closeProjectNew(){
 document.getElementById('p_openNew').addEventListener('click', ()=> openProjectNew());
 document.getElementById('p_newCancel').addEventListener('click', closeProjectNew);
 document.getElementById('projectNewOverlay').addEventListener('click', e=>{ if(e.target.id==='projectNewOverlay') closeProjectNew(); });
-document.getElementById('p_add').addEventListener('click', ()=>{
+document.getElementById('p_add').addEventListener('click', async ()=>{
   const ad = document.getElementById('p_name').value.trim();
   if(!ad){ document.getElementById('p_name').focus(); return; }
   const tur = document.getElementById('p_type').value;
   const adres = document.getElementById('p_address').value.trim();
   // Saha isinde adres olmadan devam edilebiliyor ama bir kez soruluyor:
   // engel degil, hatirlatma.
-  if(adresGerekir(tur) && !adres && !confirm(t('p_addr_confirm'))){
+  if(adresGerekir(tur) && !adres && !await onayla(t('p_addr_confirm'))){
     document.getElementById('p_address').focus();
     return;
   }
@@ -6572,7 +6600,7 @@ document.getElementById('p_add').addEventListener('click', ()=>{
   renderProjects();
   // Termin tarihleri hemen soruluyor: proje kurulurken akil oradadir.
   // Hayir demek serbest, sonradan tablodan da acilabiliyor.
-  if(confirm(t('dl_ask'))) openDeadlines(p.id);
+  if(await onayla(t('dl_ask'))) openDeadlines(p.id);
 });
 document.getElementById('p_type').addEventListener('change', ()=>
   adresAlaniniTazele(document.getElementById('p_type'), document.getElementById('p_addressWrap')));
@@ -6607,7 +6635,7 @@ document.getElementById('pe_save').addEventListener('click', ()=>{
   const ad = document.getElementById('pe_name').value.trim();
   if(!ad){ document.getElementById('pe_name').focus(); return; }
   const cakisan = projects.find(x=>x.id !== p.id && x.name.toLocaleLowerCase() === ad.toLocaleLowerCase());
-  if(cakisan){ alert(t('p_exists')(cakisan.name)); return; }
+  if(cakisan){ uyari(t('p_exists')(cakisan.name)); return; }
   p.name = ad.slice(0,120);
   p.type = document.getElementById('pe_type').value;
   p.address = document.getElementById('pe_address').value.trim().slice(0,300);
@@ -6679,8 +6707,8 @@ document.getElementById('sc_text').addEventListener('input', e=>{
   scriptSayaci(e.target.value.length);
   driveYazDugmesiTazele();
 });
-document.getElementById('sc_proj').addEventListener('change', e=>{
-  const pid = secimdenProje(e.target, '');
+document.getElementById('sc_proj').addEventListener('change', async e=>{
+  const pid = await secimdenProje(e.target, '');
   e.target.innerHTML = projeSecenekleri(pid, t('fk_no_project'));
   scriptFikirSeridi(pid);
 });
@@ -6728,10 +6756,10 @@ document.getElementById('sc_newIdea').addEventListener('keydown', e=>{
 document.getElementById('sc_cancel').addEventListener('click', closeScript);
 document.getElementById('scriptOverlay').addEventListener('click', e=>{ if(e.target.id==='scriptOverlay') closeScript(); });
 document.getElementById('sc_save').addEventListener('click', scriptKaydet);
-document.getElementById('sc_delete').addEventListener('click', ()=>{
+document.getElementById('sc_delete').addEventListener('click', async ()=>{
   if(!acikScriptId) return;
   const sc = scriptById(acikScriptId);
-  if(!confirm(t('sc_del_confirm')(sc ? scriptAdi(sc) : ''))) return;
+  if(!await onayla(t('sc_del_confirm')(sc ? scriptAdi(sc) : ''))) return;
   scriptSil(acikScriptId);
   closeScript(); renderScriptler(); renderProjects();
 });
@@ -7225,9 +7253,9 @@ function renderSablon(){
     </div>`).join('') : '';
 
   oKap.querySelectorAll('[data-ovr-sil]').forEach(el=>{
-    el.addEventListener('click', ()=>{
+    el.addEventListener('click', async ()=>{
       const p = el.dataset.ovrSil;
-      if(!confirm(t('tpl_ovr_del_confirm')(CAL_SM_NAMES[p]))) return;
+      if(!await onayla(t('tpl_ovr_del_confirm')(CAL_SM_NAMES[p]))) return;
       delete sablon.overrides[p];
       sablonDegisti(); renderSablon();
     });
@@ -7564,12 +7592,12 @@ document.getElementById('cloneSave').addEventListener('click', ()=>{
   }));
   if(!satirlar.length){ closeClone(); return; }
   const eksikTarih = satirlar.some(x=>!x.date);
-  if(eksikTarih){ alert(t('clone_need_date')); return; }
+  if(eksikTarih){ uyari(t('clone_need_date')); return; }
 
   const kalan = MAX_ENTRIES - events.length;
   if(satirlar.length > kalan){
     track('funnel/limit-hit');
-    alert(kalan > 0 ? t('alert_limit_near')(kalan, satirlar.length) : t('alert_limit_full')(MAX_ENTRIES));
+    uyari(kalan > 0 ? t('alert_limit_near')(kalan, satirlar.length) : t('alert_limit_full')(MAX_ENTRIES));
     if(kalan <= 0){ closeClone(); openFeedback('limit'); }
     return;
   }
@@ -7889,6 +7917,63 @@ function filtrePaneliKapat(){
   if(konseptKutu) konseptKutu.addEventListener('input', konseptAramasiUygula);
   document.addEventListener('click', filtrePaneliKapat);
   document.addEventListener('keydown', e=>{ if(e.key === 'Escape') filtrePaneliKapat(); });
+})();
+
+// ===== Uygulama ici diyaloglar: uyari / onayla / sor =====
+// alert, confirm ve prompt'un yerine. Yerel diyaloglar butun sayfayi
+// kilitliyordu; telefonda kullanici "bu sayfa baska diyalog acmasin"
+// dediginde confirm HEP false donuyordu ve kaydet akisi sessizce
+// vazgeciyordu: proje iki kez boyle kayboldu. Kenar cubugundaki hesap
+// dugmesi de ayni sebeple donuyordu.
+//
+// Ucu de Promise donduruyor; cagiran taraf await ediyor. Ayni anda tek
+// diyalog acik olabiliyor; ikincisi istenirse ilki iptal sayilip kapaniyor.
+let dlgCoz = null;
+function dlgKapat(sonuc){
+  const ov = document.getElementById('dlgOverlay');
+  ov.classList.remove('open');
+  const coz = dlgCoz; dlgCoz = null;
+  if(coz) coz(sonuc);
+}
+function dlgAc(mesaj, secenek){
+  if(dlgCoz) dlgKapat(secenek.iptal);
+  const ov = document.getElementById('dlgOverlay');
+  document.getElementById('dlgMsg').textContent = mesaj;
+  const giris = document.getElementById('dlgInput');
+  giris.hidden = !secenek.girisli;
+  giris.value = secenek.varsayilan || '';
+  const iptalDugme = document.getElementById('dlgCancel');
+  iptalDugme.hidden = !secenek.iptalli;
+  document.getElementById('dlgOk').textContent = t('dlg_ok');
+  iptalDugme.textContent = t('btn_cancel');
+  ov.classList.add('open');
+  // Odak: girisli ise kutuya, degilse Tamam'a. Klavye ve ekran okuyucu
+  // dogrudan dogru yere gelsin.
+  setTimeout(()=>{ (secenek.girisli ? giris : document.getElementById('dlgOk')).focus(); }, 0);
+  return new Promise(resolve=>{ dlgCoz = resolve; });
+}
+function uyari(mesaj){ return dlgAc(String(mesaj), { iptalli:false, girisli:false, iptal:undefined }); }
+function onayla(mesaj){ return dlgAc(String(mesaj), { iptalli:true, girisli:false, iptal:false }).then(v=> v === true); }
+function sor(mesaj, varsayilan){ return dlgAc(String(mesaj), { iptalli:true, girisli:true, varsayilan, iptal:null }); }
+(function dlgKur(){
+  const ov = document.getElementById('dlgOverlay');
+  const giris = document.getElementById('dlgInput');
+  const tamam = ()=> dlgKapat(giris.hidden ? true : giris.value);
+  document.getElementById('dlgOk').addEventListener('click', tamam);
+  document.getElementById('dlgCancel').addEventListener('click', ()=> dlgKapat(giris.hidden ? false : null));
+  // Perde ve Escape: iptal. Tek dugmeli uyarida perde de "Tamam" sayilir,
+  // cunku iptal edilecek bir sey yok.
+  ov.addEventListener('click', e=>{
+    if(e.target.id !== 'dlgOverlay') return;
+    const iptalli = !document.getElementById('dlgCancel').hidden;
+    dlgKapat(!iptalli ? true : (giris.hidden ? false : null));
+  });
+  giris.addEventListener('keydown', e=>{ if(e.key === 'Enter'){ e.preventDefault(); tamam(); } });
+  document.addEventListener('keydown', e=>{
+    if(!ov.classList.contains('open')) return;
+    if(e.key === 'Escape'){ e.stopPropagation(); document.getElementById('dlgCancel').hidden ? tamam() : dlgKapat(giris.hidden ? false : null); }
+    else if(e.key === 'Enter' && giris.hidden){ e.preventDefault(); tamam(); }
+  }, true);
 })();
 
 // ===== Pencereler telefonda kapanabilir olsun =====
@@ -8484,16 +8569,16 @@ document.getElementById('cancelBtn').addEventListener('click', closeModal);
 document.getElementById('editOverlay').addEventListener('click', (e)=>{ if(e.target.id==='editOverlay') closeModal(); });
 document.getElementById('uploadToggle').addEventListener('click', ()=> setUploadToggle(document.getElementById('uploadToggle').dataset.val !== '1'));
 
-document.getElementById('deleteBtn').addEventListener('click', ()=>{
+document.getElementById('deleteBtn').addEventListener('click', async ()=>{
   if(!currentEvent) return;
-  if(!confirm(t('confirm_delete'))) return;
+  if(!await onayla(t('confirm_delete'))) return;
   markRemoved(currentEvent.id);
   events = events.filter(e=>e.id!==currentEvent.id);
   track('funnel/entry-deleted');
   save(); closeModal(); renderCal();
 });
 
-document.getElementById('saveBtn').addEventListener('click', ()=>{
+document.getElementById('saveBtn').addEventListener('click', async ()=>{
   const title = document.getElementById('f_title').value.trim();
   const date = document.getElementById('f_date').value;
   const time = document.getElementById('f_time').value;
@@ -8505,7 +8590,7 @@ document.getElementById('saveBtn').addEventListener('click', ()=>{
   if(!date)  eksikler.push(['f_date',  t('f_date_label')]);
   if(!time)  eksikler.push(['f_time',  t('f_time_label')]);
   if(eksikler.length){
-    alert(t('alert_fill_missing')(eksikler.map(x=>x[1]).join(', ')));
+    uyari(t('alert_fill_missing')(eksikler.map(x=>x[1]).join(', ')));
     const ilk = document.getElementById(eksikler[0][0]);
     if(ilk) ilk.focus();
     return;
@@ -8515,13 +8600,13 @@ document.getElementById('saveBtn').addEventListener('click', ()=>{
   // proje coktan olusmus oluyordu: vazgecince geride bos bir proje kaliyordu.
   if(!currentEvent){
     const secilenPlatformlar = Array.from(document.querySelectorAll('#platformChecks input:checked'));
-    if(secilenPlatformlar.length === 0){ alert(t('alert_select_platform')); return; }
-    if(secilenTipler().length === 0){ alert(t('alert_select_type')); return; }
+    if(secilenPlatformlar.length === 0){ uyari(t('alert_select_platform')); return; }
+    if(secilenTipler().length === 0){ uyari(t('alert_select_type')); return; }
   }
   // Proje once cozuluyor: "+ yeni proje" secildiyse burada olusuyor.
   // Iptal edilirse kayit hic olusmuyor, yarim bir kayit kalmiyor.
-  const proje = secilenProjeyiCoz();
-  if(!proje){ alert(t('alert_need_project')); return; }
+  const proje = await secilenProjeyiCoz();
+  if(!proje){ uyari(t('alert_need_project')); return; }
 
   const type = currentEvent
     ? document.getElementById('f_type').value
@@ -8547,11 +8632,11 @@ document.getElementById('saveBtn').addEventListener('click', ()=>{
     trackOnce('funnel/entry-edited');
   } else {
     const platforms = Array.from(document.querySelectorAll('#platformChecks input:checked')).map(el=>el.value);
-    if(platforms.length===0){ alert(t('alert_select_platform')); return; }
+    if(platforms.length===0){ uyari(t('alert_select_platform')); return; }
     // Tur de coklu: ayni cekimden hem Reels hem Story cikabiliyor. Her
     // tur-platform ciftine bir kayit dusuyor.
     const tipler = secilenTipler();
-    if(tipler.length===0){ alert(t('alert_select_type')); return; }
+    if(tipler.length===0){ uyari(t('alert_select_type')); return; }
     const ciftler = [];
     tipler.forEach(tp=> platforms.forEach(pf=> ciftler.push({type:tp, platform:pf})));
     // Bir modaldan secilen her platform icin ayri kayit cikiyor; sinir toplam
@@ -8560,7 +8645,7 @@ document.getElementById('saveBtn').addEventListener('click', ()=>{
     const kalan = MAX_ENTRIES - events.length;
     if(ciftler.length > kalan){
       track('funnel/limit-hit');
-      alert(kalan > 0
+      uyari(kalan > 0
         ? t('alert_limit_near')(kalan, ciftler.length)
         : t('alert_limit_full')(MAX_ENTRIES));
       if(kalan <= 0){ closeModal(); openFeedback('limit'); }
@@ -8634,8 +8719,8 @@ document.getElementById('exportBtn').addEventListener('click', ()=>{
   document.body.appendChild(a); a.click(); document.body.removeChild(a);
   URL.revokeObjectURL(url);
 });
-document.getElementById('resetBtn').addEventListener('click', ()=>{
-  if(!confirm(t('confirm_reset'))) return;
+document.getElementById('resetBtn').addEventListener('click', async ()=>{
+  if(!await onayla(t('confirm_reset'))) return;
   events.forEach(e=>markRemoved(e.id));
   events = seedData(); markAllDirty(); save(); renderCal();
 });
@@ -9735,8 +9820,8 @@ document.getElementById('aiSaveAnywayBtn').addEventListener('click', ()=>{
   showToast(t('ai_saved_untested'));
 });
 
-document.getElementById('aiForgetBtn').addEventListener('click', ()=>{
-  if(!confirm(t('ai_forget_confirm'))) return;
+document.getElementById('aiForgetBtn').addEventListener('click', async ()=>{
+  if(!await onayla(t('ai_forget_confirm'))) return;
   try{ localStorage.removeItem('demo_ai_settings'); }catch(e){}
   track('funnel/ai-key-removed');
   document.getElementById('aiForgetBtn').hidden = true;
@@ -9757,7 +9842,7 @@ async function aiAlanUret(alan, alanId, dugmeId, calisanEtiket){
     return;
   }
   const kutu = document.getElementById(alanId);
-  if(kutu.value.trim().length > 3 && !confirm(t('ai_field_overwrite'))) return;
+  if(kutu.value.trim().length > 3 && !await onayla(t('ai_field_overwrite'))) return;
   const dugme = document.getElementById(dugmeId);
   const ham = await aiCalistir(dugme, durumEl, calisanEtiket, aiAlanPrompt(alan),
                                { sure: AI_ZAMAN_ASIMI });
@@ -10350,7 +10435,7 @@ document.getElementById('rm_takvim').addEventListener('change', async (e)=>{
   if(!acik && hatirlatma.jeton){
     // Kapatmak ADRESI OLDURUYOR. Kullanicinin sarti buydu: "ekledikten bir
     // sure sonra kaldirabilir". Ne olacagini onceden soyluyoruz.
-    if(!confirm(t('rm_cal_off_ask'))){ e.target.checked = true; return; }
+    if(!await onayla(t('rm_cal_off_ask'))){ e.target.checked = true; return; }
     const eski = hatirlatma.jeton;
     hatirlatma.jeton = '';
     hatirlatma.yayinlandi = false;
@@ -10396,7 +10481,7 @@ document.getElementById('rm_kurBtn').addEventListener('click', async ()=>{
 });
 
 document.getElementById('rm_yenileBtn').addEventListener('click', async ()=>{
-  if(!confirm(t('rm_cal_renew_ask'))) return;
+  if(!await onayla(t('rm_cal_renew_ask'))) return;
   const btn = document.getElementById('rm_yenileBtn');
   const cikti = document.getElementById('rm_takvimDurum');
   btn.disabled = true;
@@ -10754,7 +10839,7 @@ async function afterSignIn(){
         events = kimlikleriTazele(hesabinKendiKopyasi);
         markAllDirty();
         await pushChanges();
-      }else if(anonim.length && confirm(t('auth_move_ask')(anonim.length))){
+      }else if(anonim.length && await onayla(t('auth_move_ask')(anonim.length))){
         // Kimlikleri yeniden uretiyoruz: baska bir hesabin satirlariyla
         // birincil anahtar cakismasi olmasin.
         events = anonim.map(e => ({...e, id: newId(), content: JSON.parse(JSON.stringify(e.content||{}))}));
@@ -10864,9 +10949,9 @@ document.getElementById('cloudRetry').addEventListener('click', async ()=>{
   }finally{ dugme.disabled = false; }
 });
 
-document.getElementById('authBtn').addEventListener('click', ()=>{
+document.getElementById('authBtn').addEventListener('click', async ()=>{
   if(session){
-    if(confirm(t('auth_signed_as') + ' ' + session.user.email + '\n\n' + t('auth_signout') + '?')){
+    if(await onayla(t('auth_signed_as') + ' ' + session.user.email + '\n\n' + t('auth_signout') + '?')){
       sb.auth.signOut();
       track('funnel/signed-out');
     }
