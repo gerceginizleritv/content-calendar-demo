@@ -96,6 +96,30 @@ kayıtları girildi.** Bu birleştirmede yapılanlar:
 
 ---
 
+## Takvim başlığı telefonda yerel takvim düzeni (5 Eylül 2026)
+
+Kullanıcı canlı siteden ekran görüntüsü attı: koca mavi "+ Yeni Giriş"
+şeridi, demo sayacı, üç satıra dağılmış Ay/Hafta/Gün/Tablo + Önceki +
+Bugün + Sonraki, ayırıcı çizgili filtre düğmeleri. "Karışık, native
+görünmesin" dedi. Yalnızca `max-width:700px` bloğunda:
+
+- Başlık satırı `‹  Eylül 2026   Bugün  ›`: oklar yuvarlak 44px, yazısız
+  (`font-size:0` + `::before` ‹ ›; i18n metni ekran okuyucuda duruyor),
+  ay adı Archivo 19px başlık. Grid `grid-template-areas` ile, `.cal-nav-left/
+  right{display:contents}`.
+- Segment kontrolü tam genişlik, iOS tarzı: gri zemin, seçili mavi hap.
+- "+ Yeni Giriş" sağ altta 56px yuvarlak sabit düğme, sekme şeridinin
+  üstünde. Özgüllük tuzağı: genel kural `.btn.btn-new` yazılı, telefon
+  kuralı da `.btn.btn-new` olmalı; tek sınıfla metin görünür kaldı.
+- Demo notu ve "Erken erişim iste" telefonda gizli, sayaç 11px soluk.
+- Filtreler yuvarlak çip, ayırıcı ve özet yazısı gizli, tek satır kayar.
+
+Test: `scratchpad/gorunum.js` (oklar/başlık aynı satır, FAB sekme
+şeridinin üstünde, ok ve Bugün çalışıyor, segment seçimi, FAB pencereyi
+açıyor). Diğer üç takım yeniden geçti.
+
+---
+
 ## Yerel diyaloglar kaldırıldı: alert/confirm/prompt yok (5 Eylül 2026)
 
 Kullanıcı bildirdi: kaydederken açılan yerel tarayıcı diyaloğu sayfayı

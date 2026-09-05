@@ -1628,20 +1628,58 @@ body.suruklenirken *{cursor:grabbing !important;}
   .wrap{padding-bottom:calc(84px + env(safe-area-inset-bottom));}
   .toast{bottom:calc(84px + env(safe-area-inset-bottom));}
 
-  /* Takvim gezintisi: 1. satir gorunumler, 2. satir aralik, 3. satir
-     onceki / bugun / sonraki. Kutular yerine tek duzgun izgara. */
-  .cal-nav{display:grid;grid-template-columns:1fr 1fr 1fr;gap:8px;}
-  .cal-nav-left,.cal-nav-right{display:contents;}
-  .view-toggle{grid-column:1/-1;order:-2;display:flex;}
-  .view-btn{flex:1 1 0;padding:0 4px;}
-  .cal-range{grid-column:1/-1;order:-1;width:auto;margin:0;}
-  .cal-nav-btn{padding:8px 6px;font-size:12.5px;}
+  /* Yeni giris: sag altta yuvarlak sabit dugme, sekme seridinin ustunde.
+     Koca mavi serit ekranin ustunu kapliyordu; yerel uygulamalarda "ekle"
+     basparmagin altinda durur. Metin gizli, isaret ::before ile; etiket
+     ekran okuyucu icin butonun metninde duruyor. */
+  .work-row{margin-bottom:4px;}
+  /* .btn.btn-new ozgullugu SART: genel kural da bu ozgullukte yaziliyor
+     ve font-size veriyor; tek sinifla yazilsa metin gorunur kalirdi. */
+  .btn.btn-new{
+    position:fixed;right:16px;bottom:calc(88px + env(safe-area-inset-bottom));z-index:39;
+    width:56px;height:56px;min-height:56px;border-radius:50%;padding:0;font-size:0;line-height:0;
+    box-shadow:0 10px 26px -8px rgba(0,0,0,.55);
+  }
+  .btn.btn-new::before{content:'+';font-size:32px;line-height:1;font-weight:400;}
+  /* Demo notu ve erken erisim baglantisi telefonda gurultu; sayac kucuk. */
+  .work-meta .count-note,.work-meta .early-link{display:none;}
+  .work-meta .entry-count{font-size:11px;font-weight:500;color:var(--text-dim);}
 
-  /* Filtre seridi tek satir, yana kayar; sarip yer yemesin. */
+  /* Takvim basligi, yerel takvim uygulamasi gibi:
+       ‹  Eylül 2026            Bugün  ›
+       [ Ay | Hafta | Gün | Tablo ]
+     Oklar yuvarlak, yazisiz; ay adi baslik. Segment tam genislik. */
+  .cal-nav{
+    display:grid;grid-template-columns:44px 1fr auto 44px;
+    grid-template-areas:"prev range today next" "seg seg seg seg";
+    gap:10px 8px;align-items:center;margin-bottom:12px;
+  }
+  .cal-nav-left,.cal-nav-right{display:contents;}
+  #prevBtn{grid-area:prev;} #nextBtn{grid-area:next;} #todayBtn{grid-area:today;}
+  .cal-range{grid-area:range;} .view-toggle{grid-area:seg;}
+  #prevBtn,#nextBtn{font-size:0;padding:0;width:44px;height:44px;border-radius:50%;}
+  #prevBtn::before,#nextBtn::before{font-size:28px;line-height:1;color:var(--text);
+    font-family:'IBM Plex Sans',sans-serif;position:relative;top:-2px;}
+  #prevBtn::before{content:'\2039';} #nextBtn::before{content:'\203A';}
+  #todayBtn{padding:0 12px;min-height:34px;font-size:12px;border-radius:17px;}
+  .cal-range{
+    font-family:'Archivo',sans-serif;font-size:19px;font-weight:800;letter-spacing:-.01em;
+    color:var(--text);text-align:left;order:0;width:auto;margin:0;padding-left:4px;
+    overflow:hidden;text-overflow:ellipsis;
+  }
+  .view-toggle{display:flex;background:var(--surface-2);border:0;border-radius:11px;padding:3px;overflow:visible;}
+  .view-btn{flex:1 1 0;min-height:38px;border-radius:8px;background:transparent;padding:0 4px;font-size:13px;}
+  .view-btn + .view-btn{border-left:0;}
+  .view-btn.active{background:var(--accent);color:var(--on-accent);}
+
+  /* Filtre seridi: yuvarlak cipler, tek satir, yana kayar. Ayirici cizgi
+     ve ozet yazisi telefonda yer kaplamaktan baska is gormuyor. */
   .filter-bar{flex-wrap:nowrap;overflow-x:auto;-webkit-overflow-scrolling:touch;
-    padding-bottom:4px;scrollbar-width:none;}
+    padding-bottom:4px;scrollbar-width:none;gap:6px;margin-bottom:8px;}
   .filter-bar::-webkit-scrollbar{display:none;}
-  .fbtn,.fclear,.fsummary,.btn-pending{white-space:nowrap;flex:none;}
+  .filter-sep,.fsummary{display:none;}
+  .fbtn,.fclear,.btn-pending{white-space:nowrap;flex:none;}
+  .fbtn,.btn-pending{border-radius:18px;min-height:36px;padding:0 12px;}
   .fdrop{position:static;}   /* panel sabit konumlu, kapsayici kaydirilabilir */
 
   /* Filtre paneli: arkasi karartilmis alt sayfa, basligi ve Kapat dugmesi
