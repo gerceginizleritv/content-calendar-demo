@@ -14,16 +14,26 @@ Aşağıdaki adımların hepsi bir kez yapılır; toplam yarım saat.
 
 ## 1. Resend hesabı ve alan adı
 
-1. https://resend.com adresinde hesap aç (ücretsiz plan: ayda 3.000, günde 100 e-posta).
-2. **Domains → Add Domain** → `shootboard.app`. Bölge olarak Avrupa'yı seç.
-3. Resend üç DNS kaydı verir: `send` alt alan adı için bir **MX** ve bir **TXT**
-   (SPF), bir de `resend._domainkey` için **TXT** (DKIM). Üçünü Cloudflare'de
-   DNS → Records'a aynen ekle; proxy durumu **DNS only**. Cloudflare'in Email
-   Routing için kilitlediği MX kayıtlarına dokunulmaz; Resend farklı bir alt
-   alan adı kullanır, ikisi birlikte çalışır.
-4. Resend'de **Verify** de. Genellikle birkaç dakikada doğrulanır.
-5. **API Keys → Create API Key**: ad "supabase", izin "Sending access", alan adı
+Panelin sol menüsündeki bölüm adlarını da yazdım; link açılmazsa oradan bulunur.
+
+1. **Hesap aç:** https://resend.com/signup — ücretsiz plan: ayda 3.000, günde 100
+   e-posta. (Giriş: https://resend.com/login)
+2. **Alan adını ekle:** https://resend.com/domains — sol menü **Domains** →
+   **Add Domain** → `shootboard.app`, region **EU (Ireland)**.
+3. **DNS kayıtları:** Resend üç kayıt verir: `send` alt alan adı için bir **MX** ve
+   bir **TXT** (SPF), bir de `resend._domainkey` için **TXT** (DKIM). Üçünü
+   https://dash.cloudflare.com → `shootboard.app` → **DNS → Records → Add record**
+   ile kopyala-yapıştır ekle. Değerler her hesapta farklıdır, Resend'deki
+   tablodan aynen alınır. Proxy durumu **DNS only** (gri bulut). Cloudflare'de
+   duran başka MX kayıtlarına dokunulmaz; Resend ayrı bir alt alan adı
+   kullandığı için ikisi birlikte çalışır.
+4. **Doğrula:** Resend'de **Verify DNS Records**. Genellikle 1-5 dakikada üç satır
+   da **Verified** olur; olmazsa on dakika sonra tekrar denenir.
+5. **API anahtarı:** https://resend.com/api-keys — sol menü **API Keys** →
+   **Create API Key**: ad "supabase", izin **Sending access**, alan adı
    shootboard.app. Anahtar `re_` ile başlar ve bir kez gösterilir; kopyala.
+6. **Gönderim kayıtları:** https://resend.com/emails — sol menü **Emails**. Test
+   ederken "Delivered" satırlarına buradan bakılır.
 
 ## 2. Supabase SMTP: giriş e-postaları hello@ adresinden gitsin
 
@@ -103,7 +113,8 @@ npx supabase functions deploy hosgeldin --no-verify-jwt
 1. Daha önce kullanılmamış bir e-posta adresiyle Shootboard'a e-posta
    bağlantısıyla gir. Gelen kutusunda önce "Confirm signup" e-postası, giriş
    yaptıktan hemen sonra hoşgeldin e-postası olmalı.
-2. Resend → **Logs**: iki gönderim de "Delivered" görünmeli.
+2. Resend → **Emails** (https://resend.com/emails): iki gönderim de
+   "Delivered" görünmeli.
 3. Supabase → **Edge Functions → hosgeldin → Logs**: `[hosgeldin] gonderildi`
    satırı. `gizli anahtar uyusmuyor` görürsen SQL'deki anahtar ile secret farklı.
 
