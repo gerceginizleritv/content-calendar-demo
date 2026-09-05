@@ -610,45 +610,49 @@ body.suruklenirken *{cursor:grabbing !important;}
 .pfilt-n{font-family:'IBM Plex Mono',monospace;font-size:11px;font-variant-numeric:tabular-nums;
   opacity:.8;}
 .pfilt.acik .pfilt-n{opacity:1;}
-/* Adres KENDI satirinda ve okunur. Once yalnizca bir 📍 vardi ve adres
-   metni tooltip'te kaliyordu: lokasyon adi hicbir yerde gorunmuyordu. */
-.pname-adres{margin-top:5px;font-size:11.5px;line-height:1.4;}
-.pname-adres .pmap{display:inline-block;max-width:100%;overflow:hidden;
-  text-overflow:ellipsis;white-space:nowrap;vertical-align:bottom;}
-/* Baglanti rozetleri: yalnizca DOLU olanlar cikiyor. */
 /* Baglantilar SIMGE: metinle yazilinca ad sutununu tasiriyordu. Ne
    olduklari title ve aria-label'da. */
-.plink{font-size:12px;text-decoration:none;line-height:1;margin-left:6px;flex-shrink:0;
-  border:1px solid var(--line);border-radius:99px;padding:2px 5px;}
-.plink:hover{border-color:var(--accent);}
-.pname-sub{display:flex;flex-wrap:wrap;gap:8px;align-items:center;margin-top:5px;}
-.ptype{font-size:10.5px;text-transform:uppercase;letter-spacing:.05em;color:var(--text-dim);
-  border:1px solid var(--line);border-radius:99px;padding:1px 8px;}
-/* Script rozeti hem gosterge hem dugme: dolu ise vurgulu, bos ise kesik
-   cizgili. Tablodan tek tikla metne giriliyor. */
-.pscript{font:inherit;font-size:10.5px;text-transform:uppercase;letter-spacing:.05em;
-  border:1px dashed var(--line);border-radius:99px;padding:1px 8px;cursor:pointer;
-  background:none;color:var(--accent-dim);}
-.pscript:hover{border-style:solid;border-color:var(--accent);color:var(--accent);}
-.pscript.dolu{border-style:solid;border-color:var(--accent);background:var(--accent-soft);
-  color:var(--accent);font-weight:600;}
-/* Zincir kendi satirinda ve BOLUNMEZ: tur etiketiyle ayni satirda
-   oldugunda dar sutunda ok tek basina alt satira dusuyordu. */
-.pname-chain{display:flex;align-items:center;gap:0;margin-top:5px;flex-wrap:nowrap;}
-.pchain{font-size:10px;color:var(--accent-dim);padding:0 5px;flex-shrink:0;}
-.pname-chain .pscript{flex-shrink:0;}
-.pmap{font-size:11.5px;color:var(--accent);text-decoration:none;}
-.pmap:hover{text-decoration:underline;}
-.pmap-missing{font-size:11px;color:var(--amber);}
-/* Baslangic tarihi ad ile sayac arasinda: kucuk etiketi ustunde, kutunun
-   ne oldugu yaziyor. */
-.pstart-lbl{display:block;font-size:9.5px;text-transform:uppercase;letter-spacing:.07em;
-  color:var(--text-dim);margin-bottom:2px;}
-.pname-meta{font-size:11px;color:var(--text-dim);margin-top:6px;font-variant-numeric:tabular-nums;
-  display:flex;align-items:center;gap:5px;flex-wrap:wrap;}
-.pname-meta .ptype{flex-shrink:0;}
-/* Ayraclar metnin ICINDE: dis ayrac satir basina dusuyordu. */
-.pmeta-txt{min-width:0;}
+.plink{font-size:12px;text-decoration:none;line-height:1;flex-shrink:0;
+  padding:2px 0;opacity:.75;}
+.plink:first-of-type{padding-left:9px;border-left:1px solid var(--line);}
+.plink:hover{opacity:1;}
+/* ===== Ad sutunu: HIYERARSI =====
+   Onceki halde her sey ~10.5px ve hepsi hap seklindeydi; dort satir
+   birbiriyle yarisiyor, goz nereye bakacagini bulamiyordu. Artik boyut
+   ve renk bir merdiven: ad > konum > islem > kunye. */
+/* Hucre bir <th>: tarayici varsayilani KALIN ve tum icerik bunu miras
+   aliyordu. Dort satirin da kalin cikmasinin asil sebebi buydu. Sutun
+   normale cekiliyor, kalinligi yalnizca ad tasiyor. */
+.pname-col{font-weight:400;}
+.pname-col > * + *{margin-top:4px;}
+.pn-ad{display:flex;align-items:center;gap:6px;flex-wrap:wrap;}
+/* 1 — AD: en buyuk ve tek kalin oge. */
+.pname{font-size:14px;font-weight:650;line-height:1.3;text-align:left;overflow-wrap:anywhere;}
+/* 2 — KONUM: projeyi tanitan ikinci bilgi. Vurgu rengi YOK; nokta
+   isareti emoji degil, cizgiyle ayni ailede duran bir gliftir. */
+.pn-yer{font-size:12px;line-height:1.35;}
+.pn-yer .pmap{display:inline-flex;align-items:baseline;gap:5px;max-width:100%;
+  color:var(--text-dim);text-decoration:none;}
+.pn-yer .pmap > *:last-child,
+.pn-yer .pmap{overflow:hidden;text-overflow:ellipsis;white-space:nowrap;}
+.pn-yer .pmap:hover{color:var(--accent);}
+.pn-pin{color:var(--accent);font-size:10px;flex-shrink:0;}
+/* 3 — ISLEMLER: gezinme, bilgi degil. Bos olanlar cerceve TASIMIYOR;
+   dolu olanlar sayilariyla hafifce one cikiyor. */
+.pn-islem{display:flex;align-items:center;gap:5px;flex-wrap:wrap;margin-top:6px;}
+.pchip{font:inherit;font-size:10.5px;letter-spacing:.03em;text-transform:uppercase;
+  border:none;background:none;padding:2px 0;cursor:pointer;color:var(--accent-dim);
+  display:inline-flex;align-items:center;gap:4px;}
+.pchip + .pchip{padding-left:9px;border-left:1px solid var(--line);}
+.pchip:hover{color:var(--accent);}
+.pchip b{font-family:'IBM Plex Mono',monospace;font-size:10px;font-weight:600;
+  background:var(--surface-2);border-radius:99px;padding:0 5px;line-height:1.5;}
+.pchip.dolu{color:var(--accent);font-weight:600;}
+.pchip.dolu b{background:var(--accent-soft);}
+/* 4 — KUNYE: en kucuk, en sessiz. Hic hap yok. */
+.pn-meta{font-size:10.5px;color:var(--text-dim);font-variant-numeric:tabular-nums;
+  line-height:1.45;opacity:.9;}
+.pmap-missing{font-size:12px;color:var(--amber);}
 /* Tarih kutulari daraltildi: yedi adim + proje sutunu bilgisayarda tek
    ekrana sigsin, tablo yana kaydirilmadan okunabilsin. */
 .pdl{padding:4px 4px;border:1px solid var(--line);border-radius:6px;
@@ -4500,10 +4504,10 @@ function renderProjects(){
     // Adres KENDI satirinda ve OKUNUR: once yalnizca bir 📍 vardi, adres
     // metni tooltip'te kaliyordu — lokasyon adi hicbir yerde gorunmuyordu.
     const adresSatiri = adres
-      ? `<div class="pname-adres"><a class="pmap" href="${escapeHtml(haritaLinki(adres))}" target="_blank"
-           rel="noopener" title="${escapeHtml(adres)}">📍 ${escapeHtml(adres)}</a></div>`
+      ? `<div class="pn-yer"><a class="pmap" href="${escapeHtml(haritaLinki(adres))}" target="_blank"
+           rel="noopener" title="${escapeHtml(adres)}"><span class="pn-pin">◍</span>${escapeHtml(adres)}</a></div>`
       : (adresGerekir(p.type)
-          ? `<div class="pname-adres"><span class="pmap-missing">${escapeHtml(t('p_addr_missing'))}</span></div>`
+          ? `<div class="pn-yer"><span class="pmap-missing">${escapeHtml(t('p_addr_missing'))}</span></div>`
           : '');
 
     const durum = projeDurumu(p);
@@ -4514,19 +4518,22 @@ function renderProjects(){
       : '';
     return `<tr class="${durum === 2 ? 'prow-iptal' : durum === 1 ? 'prow-bitti' : ''}">
       <th class="pname-col" scope="row">
-        <button type="button" class="pname" data-proj-edit="${escapeHtml(p.id)}">${escapeHtml(p.name)}</button>${rozet}
-        <div class="pname-chain">
-          <button type="button" class="pscript ${fikirSayisi(p.id)?'dolu':''}" data-proj-ideas="${escapeHtml(p.id)}"
-                  title="${escapeHtml(t('fk_open'))}">${escapeHtml(t('fk_chip'))}${fikirSayisi(p.id)?' · '+fikirSayisi(p.id):''}</button><span class="pchain">→</span><button
-                  type="button" class="pscript ${scriptSayisi(p.id)?'dolu':''}" data-proj-scripts="${escapeHtml(p.id)}"
-                  title="${escapeHtml(t('sc_open_full'))}">${escapeHtml(t('sc_chip'))}${scriptSayisi(p.id)?' · '+scriptSayisi(p.id):''}</button>
-          ${baglar}
+        <div class="pn-ad">
+          <button type="button" class="pname" data-proj-edit="${escapeHtml(p.id)}">${escapeHtml(p.name)}</button>${rozet}
         </div>
         ${adresSatiri}
-        <div class="pname-meta"><span class="ptype">${escapeHtml(projTypeName(p.type || 'other'))}</span><span class="pmeta-txt">${
-          [p.shootDate ? escapeHtml(t('p_start_label') + ' ' + tarihMetni(p.shootDate)) : '',
-           escapeHtml(t('p_entries')(kayitlar.length, yayinlanan))].filter(Boolean).join(' · ')
-        }</span></div>
+        <div class="pn-islem">
+          <button type="button" class="pchip ${fikirSayisi(p.id)?'dolu':''}" data-proj-ideas="${escapeHtml(p.id)}"
+                  title="${escapeHtml(t('fk_open'))}">${escapeHtml(t('fk_chip'))}${fikirSayisi(p.id)?'<b>'+fikirSayisi(p.id)+'</b>':''}</button>
+          <button type="button" class="pchip ${scriptSayisi(p.id)?'dolu':''}" data-proj-scripts="${escapeHtml(p.id)}"
+                  title="${escapeHtml(t('sc_open_full'))}">${escapeHtml(t('sc_chip'))}${scriptSayisi(p.id)?'<b>'+scriptSayisi(p.id)+'</b>':''}</button>
+          ${baglar}
+        </div>
+        <div class="pn-meta">${[
+          escapeHtml(projTypeName(p.type || 'other')),
+          p.shootDate ? escapeHtml(tarihMetni(p.shootDate)) : '',
+          escapeHtml(t('p_entries')(kayitlar.length, yayinlanan))
+        ].filter(Boolean).join(' · ')}</div>
       </th>
       ${hucreler}
     </tr>`;
