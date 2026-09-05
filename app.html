@@ -1313,11 +1313,26 @@ body.suruklenirken *{cursor:grabbing !important;}
 .section-title{font-family:'Archivo',sans-serif;color:var(--accent);font-weight:700;font-size:12px;text-transform:uppercase;letter-spacing:1px;margin:20px 0 12px;border-top:1px solid var(--line);padding-top:16px;}
 .modal-actions{display:flex;justify-content:flex-end;gap:9px;margin-top:20px;}
 /* Sifre kutusu ile yanindaki dugme tek satirda; kutu kalan yeri aliyor. */
+/* Kayit / Giris sekmeleri: iki isin ayri oldugu bir bakista gorulsun. */
+.sekmeler{display:flex;gap:4px;background:none;border:1px solid var(--line);
+  border-radius:10px;padding:4px;margin:0 0 18px;}
+.sekme{flex:1;border:0;background:none;font:inherit;font-size:13.5px;font-weight:600;
+  color:var(--text-dim);padding:8px;border-radius:7px;cursor:pointer;}
+.sekme.secili{background:var(--accent-soft);color:var(--accent);}
+.sekme:hover:not(.secili){color:var(--text);}
+/* Sifre gucu: ince cubuk, altinda tek satir. Renk tek basina yeterli degil;
+   yazi ne yapilmasi gerektigini de soyluyor. */
+.guc{height:4px;border-radius:2px;background:var(--bg);overflow:hidden;margin:8px 0 6px;}
+.guc-dolgu{display:block;height:100%;width:0;border-radius:2px;transition:width .18s,background .18s;}
+.guc-1 .guc-dolgu{width:33%;background:var(--red);}
+.guc-2 .guc-dolgu{width:66%;background:var(--amber);}
+.guc-3 .guc-dolgu{width:100%;background:var(--green);}
+.guc-yazi{font-size:12px;line-height:1.5;margin:0 0 4px;color:var(--text-dim);min-height:18px;}
+.guc-1 .guc-yazi{color:var(--red);}
+.guc-3 .guc-yazi{color:var(--green);}
 .sifre-satir{display:flex;gap:8px;align-items:stretch;}
 .sifre-satir input{flex:1;min-width:0;}
 .sifre-goz{flex:0 0 auto;white-space:nowrap;font-size:12.5px;padding:0 12px;}
-.sifre-olcu-zayif{color:var(--red);}
-.sifre-olcu-iyi{color:var(--green);}
 /* Pencerenin uc istege bagli parcasi: baslik, vurgu (uzun bir e-posta
    adresi gibi tek bir deger) ve altta gri aciklama. Hicbiri verilmezse
    pencere eskisi gibi tek paragraf kaliyor. */
@@ -2706,30 +2721,58 @@ body.suruklenirken *{cursor:grabbing !important;}
       </button>
       <div class="auth-or"><span data-i18n="auth_or">or</span></div>
     </div>
-    <div class="field">
-      <label data-i18n="auth_name_label">Your name, optional</label>
-      <input type="text" id="authName" autocomplete="name" maxlength="40">
+    <!-- Kayit ve giris ayri sekmeler. Tek formda toplandiginda kullanici
+         hangisini yaptigini anlamiyordu. Google dugmesi ikisinin de ustunde:
+         hesabi yoksa aciyor, varsa giriyor. -->
+    <div class="sekmeler" role="tablist">
+      <button type="button" class="sekme secili" id="authTabKayit" role="tab" aria-selected="true" data-i18n="tab_signup">Create account</button>
+      <button type="button" class="sekme" id="authTabGiris" role="tab" aria-selected="false" data-i18n="tab_signin">Sign in</button>
     </div>
-    <div class="field">
-      <label data-i18n="auth_email_label">Your email</label>
-      <input type="email" id="authEmail" placeholder="you@example.com" autocomplete="email">
-    </div>
-    <!-- Sifre alani. Once yalnizca giris baglantisi vardi; baglanti spam'e
-         dusen ya da hic gelmeyen kullanicilar disarida kaliyordu. Sifresi
-         olmayan bos birakip baglanti isteyebiliyor. -->
-    <div class="field">
-      <label data-i18n="auth_pass_label">Password</label>
-      <div class="sifre-satir">
-        <input type="password" id="authPass" autocomplete="current-password" data-i18n-attr="placeholder:auth_pass_ph" placeholder="If you have set one">
-        <button type="button" class="btn sifre-goz" id="authPassGoster" data-i18n="auth_pass_show">Show</button>
+
+    <div id="authKayitPanel" role="tabpanel">
+      <div class="field">
+        <label data-i18n="auth_name_label">Your name, optional</label>
+        <input type="text" id="authName" autocomplete="name" maxlength="40">
       </div>
+      <div class="field">
+        <label data-i18n="auth_email_label">Your email</label>
+        <input type="email" id="authKayitEmail" placeholder="you@example.com" autocomplete="email">
+      </div>
+      <div class="field">
+        <label data-i18n="pass_new_label">Choose a password</label>
+        <div class="sifre-satir">
+          <input type="password" id="authKayitPass" autocomplete="new-password" data-i18n-attr="placeholder:sifre_ph" placeholder="At least 8 characters">
+          <button type="button" class="btn sifre-goz" id="authKayitPassGoster" data-i18n="auth_pass_show">Show</button>
+        </div>
+        <!-- Guc gostergesi yaziyla da anlatiyor: renk tek basina yeterli
+             degil. Zayif sifreyle hesap acilmiyor. -->
+        <div class="guc" aria-hidden="true"><span class="guc-dolgu" id="authGucDolgu"></span></div>
+        <p class="guc-yazi" id="authGucYazi"></p>
+      </div>
+      <p class="auth-hint" data-i18n="signup_fine">We send one email to confirm the address. Nothing else, ever.</p>
     </div>
-    <p class="auth-hint" data-i18n="auth_signup_hint">New here? Leave the password empty and we email you a link — that link opens your account.</p>
+
+    <div id="authGirisPanel" role="tabpanel" hidden>
+      <div class="field">
+        <label data-i18n="auth_email_label">Your email</label>
+        <input type="email" id="authEmail" placeholder="you@example.com" autocomplete="email">
+      </div>
+      <div class="field">
+        <label data-i18n="auth_pass_label">Password</label>
+        <div class="sifre-satir">
+          <input type="password" id="authPass" autocomplete="current-password" data-i18n-attr="placeholder:pass_ph" placeholder="Your password">
+          <button type="button" class="btn sifre-goz" id="authPassGoster" data-i18n="auth_pass_show">Show</button>
+        </div>
+      </div>
+      <p class="auth-hint" data-i18n="auth_forgot_hint">Forgotten it? Ask for a sign-in link instead — it always works.</p>
+    </div>
+
     <div class="ai-status" id="authStatus"></div>
     <div class="modal-actions">
       <button class="btn" id="authCancelBtn" data-i18n="btn_close">Close</button>
       <button class="btn" id="authSendBtn" data-i18n="auth_send">Send me the link</button>
       <button class="btn btn-primary" id="authPassBtn" data-i18n="auth_pass_signin">Sign in</button>
+      <button class="btn btn-primary" id="authKayitBtn" data-i18n="signup_btn">Create account</button>
     </div>
   </div>
 </div>
@@ -2749,7 +2792,8 @@ body.suruklenirken *{cursor:grabbing !important;}
         <input type="text" id="sifreYeni" autocomplete="new-password" spellcheck="false" data-i18n-attr="placeholder:sifre_ph" placeholder="At least 8 characters">
         <button type="button" class="btn sifre-goz" id="sifreUret" data-i18n="sifre_uret">Generate</button>
       </div>
-      <p class="auth-hint" id="sifreOlcu"></p>
+      <div class="guc" aria-hidden="true"><span class="guc-dolgu" id="sifreGucDolgu"></span></div>
+      <p class="guc-yazi" id="sifreOlcu"></p>
     </div>
     <div class="ai-status" id="sifreDurum"></div>
     <div class="modal-actions">
@@ -2866,7 +2910,7 @@ const LANG = {
     auth_signed_title: "Signed in — click to sign out",
     btn_privacy: "Privacy",
     auth_title: "Keep this on every device",
-    auth_intro: "Sign in with your password, or let us email you a link. Everything you have built so far moves with you.",
+    auth_intro: "Create an account or sign in. Everything you have built so far moves with you.",
     auth_intro_google: "Sign in with Google, or we send you a link — no password to invent, none to forget. Everything you have built so far moves with you.",
     auth_google: "Continue with Google",
     auth_or: "or",
@@ -2874,6 +2918,23 @@ const LANG = {
     auth_email_label: "Your email",
     auth_send: "Send me the link",
     auth_pass_label: "Password",
+    tab_signup: "Create account",
+    tab_signin: "Sign in",
+    pass_new_label: "Choose a password",
+    signup_btn: "Create account",
+    signup_fine: "We send one email to confirm the address. Nothing else, ever.",
+    auth_forgot_hint: "Forgotten it? Ask for a sign-in link instead — it always works.",
+    pass_ph: "Your password",
+    guc_0: "At least 8 characters.",
+    guc_1: "Weak — easy to guess. Add a capital, a digit or a second word.",
+    guc_2: "Good enough. Longer would be better.",
+    guc_3: "Strong.",
+    sifre_kaydet_uyari: "Save it somewhere before you close this.",
+    auth_weak: "That password is too weak. Clear the warning above and try again.",
+    auth_signup_wait: "Creating your account...",
+    auth_signup_ok: "Account created. Click the link in the email we just sent. Nothing after a few minutes? Look in spam or junk.",
+    auth_signup_exists: "An account with this address already exists. Use the Sign in tab; if you do not know the password, ask for a link there.",
+    auth_signup_err: "The account could not be created. Try again in a moment.",
     auth_pass_ph: "If you have set one",
     auth_pass_show: "Show",
     auth_pass_hide: "Hide",
@@ -2894,10 +2955,6 @@ const LANG = {
     sifre_saving: "Saving...",
     sifre_ok: "Password saved. You can now sign in with your email and this password.",
     sifre_err: "Could not save the password. Try again in a moment.",
-    sifre_short: "At least 8 characters.",
-    sifre_weak: "Add a number or a second word to make it harder to guess.",
-    sifre_strong: "Strong. Save it in your password manager before you close this.",
-    sifre_generated: "Generated. Copy it somewhere safe before you save.",
     auth_sending: "Sending...",
     auth_sent: "Link sent. Check your inbox — you can close this tab.",
     auth_err: "Could not send the link. Check the address and try again.",
@@ -3407,7 +3464,7 @@ const LANG = {
     auth_signed_title: "Giriş yapıldı — çıkmak için tıkla",
     btn_privacy: "Gizlilik",
     auth_title: "Her cihazda yanında olsun",
-    auth_intro: "Şifrenle gir ya da sana bir giriş bağlantısı gönderelim. Şu ana kadar kurduğun her şey seninle geliyor.",
+    auth_intro: "Hesap aç ya da giriş yap. Şu ana kadar kurduğun her şey seninle geliyor.",
     auth_intro_google: "Google ile gir, ya da sana bir giriş linki gönderelim — uydurulacak da unutulacak da bir şifre yok. Şu ana kadar kurduğun her şey seninle geliyor.",
     auth_google: "Google ile devam et",
     auth_or: "veya",
@@ -3415,6 +3472,23 @@ const LANG = {
     auth_email_label: "E-postan",
     auth_send: "Linki gönder",
     auth_pass_label: "Şifre",
+    tab_signup: "Kayıt ol",
+    tab_signin: "Giriş yap",
+    pass_new_label: "Bir şifre belirle",
+    signup_btn: "Hesap oluştur",
+    signup_fine: "Adresi doğrulamak için tek bir e-posta gönderiyoruz. Başka hiçbir şey göndermiyoruz.",
+    auth_forgot_hint: "Unuttun mu? Bunun yerine giriş bağlantısı iste — o her zaman çalışır.",
+    pass_ph: "Şifren",
+    guc_0: "En az 8 karakter olmalı.",
+    guc_1: "Zayıf — tahmin edilmesi kolay. Büyük harf, rakam ya da ikinci bir kelime ekle.",
+    guc_2: "İdare eder. Uzatırsan daha iyi olur.",
+    guc_3: "Güçlü.",
+    sifre_kaydet_uyari: "Kapatmadan önce bir yere kaydet.",
+    auth_weak: "Bu şifre çok zayıf. Yukarıdaki uyarıyı geçince hesabı açabilirsin.",
+    auth_signup_wait: "Hesap oluşturuluyor...",
+    auth_signup_ok: "Hesabın açıldı. Şimdi gönderdiğimiz e-postadaki bağlantıya tıkla. Birkaç dakikada gelmezse spam / gereksiz klasörüne bak.",
+    auth_signup_exists: "Bu adresle bir hesap zaten var. Giriş yap sekmesinden gir; şifreni bilmiyorsan oradan bağlantı iste.",
+    auth_signup_err: "Hesap açılamadı. Biraz sonra tekrar dene.",
     auth_pass_ph: "Şifre belirlediysen",
     auth_pass_show: "Göster",
     auth_pass_hide: "Gizle",
@@ -3435,10 +3509,6 @@ const LANG = {
     sifre_saving: "Kaydediliyor...",
     sifre_ok: "Şifre kaydedildi. Artık e-postan ve bu şifreyle girebilirsin.",
     sifre_err: "Şifre kaydedilemedi. Biraz sonra tekrar dene.",
-    sifre_short: "En az 8 karakter olmalı.",
-    sifre_weak: "Bir rakam ya da ikinci bir kelime ekle, tahmin edilmesi zorlaşsın.",
-    sifre_strong: "Güçlü. Kapatmadan önce şifre yöneticine kaydet.",
-    sifre_generated: "Üretildi. Kaydetmeden önce güvenli bir yere kopyala.",
     auth_sending: "Gönderiliyor...",
     auth_sent: "Link gönderildi. Gelen kutuna bak — bu sekmeyi kapatabilirsin.",
     auth_err: "Link gönderilemedi. Adresi kontrol edip tekrar dene.",
@@ -10929,6 +10999,8 @@ function openAuth(){
   st.textContent = ''; st.className = 'ai-status';
   document.getElementById('authSendBtn').disabled = false;
   document.getElementById('authPassBtn').disabled = false;
+  document.getElementById('authKayitBtn').disabled = false;
+  authSekme(true);
   document.getElementById('authGoogleBtn').disabled = false;
   document.getElementById('authOverlay').classList.add('open');
   refreshProviders();
@@ -11261,6 +11333,110 @@ document.getElementById('authSendBtn').addEventListener('click', async ()=>{
 // disarida kaliyordu. Artik baglanti hesabi ACIYOR, sifre ise her seferinde
 // e-posta beklemeden girmeyi sagliyor.
 
+// ---- Kayit / Giris sekmeleri ----
+// Tek formda toplandiginda kullanici kayit mi oluyor giris mi yapiyor
+// anlamiyordu. Dugmeler de sekmeye gore degisiyor.
+function authSekme(kayitMi){
+  const g = id => document.getElementById(id);
+  g('authTabKayit').classList.toggle('secili', kayitMi);
+  g('authTabGiris').classList.toggle('secili', !kayitMi);
+  g('authTabKayit').setAttribute('aria-selected', String(kayitMi));
+  g('authTabGiris').setAttribute('aria-selected', String(!kayitMi));
+  g('authKayitPanel').hidden = !kayitMi;
+  g('authGirisPanel').hidden = kayitMi;
+  g('authKayitBtn').hidden = !kayitMi;
+  g('authPassBtn').hidden  = kayitMi;
+  // Baglanti gonderme yalnizca giriste: kayitta sifre zaten belirleniyor.
+  g('authSendBtn').hidden  = kayitMi;
+  const st = g('authStatus');
+  st.textContent = ''; st.className = 'ai-status';
+}
+document.getElementById('authTabKayit').addEventListener('click', ()=> authSekme(true));
+document.getElementById('authTabGiris').addEventListener('click', ()=> authSekme(false));
+
+// ---- Sifre gucu ----
+// 0 = cok kisa, 1 = zayif (kabul edilmiyor), 2 = idare eder, 3 = guclu.
+// Uzunluk tek basina yeterli degil; cesitlilige ve bilindik kaliplara da
+// bakiliyor. Amac puanlama degil, "bunu kirarlar" diyebilmek.
+function sifreGucu(v){
+  if(v.length < 8) return 0;
+  if(/^(1234|12345|qwer|asdf|abcd|password|parola|sifre|şifre|shootboard)/i.test(v)) return 1;
+  if(/^(.)\1+$/.test(v)) return 1;
+  const cesit = (/[a-z]/.test(v) ? 1 : 0) + (/[A-Z]/.test(v) ? 1 : 0)
+              + (/[0-9]/.test(v) ? 1 : 0) + (/[^A-Za-z0-9]/.test(v) ? 1 : 0);
+  if(cesit < 2) return 1;
+  return (v.length >= 12 && cesit >= 3) ? 3 : 2;
+}
+function authGucuYaz(){
+  const v = document.getElementById('authKayitPass').value;
+  const kap = document.getElementById('authKayitPanel');
+  kap.classList.remove('guc-1','guc-2','guc-3');
+  const yazi = document.getElementById('authGucYazi');
+  if(!v){ yazi.textContent = ''; return; }
+  const g = sifreGucu(v);
+  kap.classList.add('guc-' + Math.max(1, g));
+  yazi.textContent = t('guc_' + g);
+}
+document.getElementById('authKayitPass').addEventListener('input', authGucuYaz);
+document.getElementById('authKayitPassGoster').addEventListener('click', ()=>{
+  const kutu = document.getElementById('authKayitPass');
+  const gizli = kutu.type === 'password';
+  kutu.type = gizli ? 'text' : 'password';
+  document.getElementById('authKayitPassGoster').textContent = t(gizli ? 'auth_pass_hide' : 'auth_pass_show');
+  kutu.focus();
+});
+
+document.getElementById('authKayitBtn').addEventListener('click', async ()=>{
+  const email = document.getElementById('authKayitEmail').value.trim();
+  const kutu = document.getElementById('authKayitPass');
+  const st = document.getElementById('authStatus');
+  const btn = document.getElementById('authKayitBtn');
+  if(!/^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(email)){
+    st.textContent = t('auth_bad_email'); st.className = 'ai-status error';
+    document.getElementById('authKayitEmail').focus(); return;
+  }
+  // Zayif sifre KABUL EDILMIYOR: burada durdurmak, uc ay sonra hesabin ele
+  // gecmesinden iyidir.
+  if(sifreGucu(kutu.value) < 2){
+    authGucuYaz();
+    st.textContent = t('auth_weak'); st.className = 'ai-status error';
+    kutu.focus(); return;
+  }
+  const ad = (document.getElementById('authName').value || '').trim().slice(0, 40);
+  const metaVeri = { lang: currentLang };
+  if(ad){ metaVeri.full_name = ad; try{ localStorage.setItem('demo_auth_ad', ad); }catch(e){} }
+  btn.disabled = true;
+  st.textContent = t('auth_signup_wait'); st.className = 'ai-status';
+  try{
+    const { data, error } = await sb.auth.signUp({
+      email, password: kutu.value,
+      options: { emailRedirectTo: location.href.split('#')[0], data: metaVeri }
+    });
+    if(error) throw error;
+    // Supabase, adres zaten kayitliysa hata VERMEZ (hesap sayimi sizmasin
+    // diye); bos bir identities dizisiyle doner.
+    if(data && data.user && data.user.identities && data.user.identities.length === 0){
+      st.textContent = t('auth_signup_exists'); st.className = 'ai-status error';
+      btn.disabled = false; return;
+    }
+    kutu.value = '';
+    // Onay kapaliysa oturum hemen aciliyor; aciksa e-posta bekleniyor.
+    if(data && data.session){
+      document.getElementById('authOverlay').classList.remove('open');
+    }else{
+      st.textContent = t('auth_signup_ok'); st.className = 'ai-status ok';
+    }
+    track('funnel/signed-up');
+  }catch(err){
+    console.error('[bulut] kayit olmadi', err);
+    const m = String((err && err.message) || '').toLowerCase();
+    st.textContent = (m.includes('already registered') || m.includes('already exists'))
+      ? t('auth_signup_exists') : t('auth_signup_err');
+    st.className = 'ai-status error';
+    btn.disabled = false;
+  }
+});
+
 document.getElementById('authPassGoster').addEventListener('click', ()=>{
   const kutu = document.getElementById('authPass');
   const gizli = kutu.type === 'password';
@@ -11306,19 +11482,15 @@ function sifreUretVer(){
   crypto.getRandomValues(sayilar);
   return Array.from(sayilar, x => harfler[x % harfler.length]).join('');
 }
-function sifreOlc(v){
-  if(v.length < 8) return { anahtar: 'sifre_short', iyi: false };
-  const cesit = (/[a-z]/.test(v) ? 1 : 0) + (/[A-Z]/.test(v) ? 1 : 0)
-              + (/\d/.test(v) ? 1 : 0) + (/[^A-Za-z0-9]/.test(v) ? 1 : 0);
-  return cesit >= 2 ? { anahtar: 'sifre_strong', iyi: true } : { anahtar: 'sifre_weak', iyi: false };
-}
 function sifreOlcuyuYaz(){
   const v = document.getElementById('sifreYeni').value;
+  const kap = document.getElementById('sifreOverlay');
+  kap.classList.remove('guc-1','guc-2','guc-3');
   const cikti = document.getElementById('sifreOlcu');
-  if(!v){ cikti.textContent = ''; cikti.className = 'auth-hint'; return; }
-  const o = sifreOlc(v);
-  cikti.textContent = t(o.anahtar);
-  cikti.className = 'auth-hint ' + (o.iyi ? 'sifre-olcu-iyi' : 'sifre-olcu-zayif');
+  if(!v){ cikti.textContent = ''; return; }
+  const g = sifreGucu(v);
+  kap.classList.add('guc-' + Math.max(1, g));
+  cikti.textContent = t('guc_' + g) + (g >= 2 ? ' ' + t('sifre_kaydet_uyari') : '');
 }
 document.getElementById('sifreYeni').addEventListener('input', sifreOlcuyuYaz);
 document.getElementById('sifreUret').addEventListener('click', ()=>{
@@ -11340,7 +11512,8 @@ document.getElementById('sifreKaydet').addEventListener('click', async ()=>{
   const d = document.getElementById('sifreDurum');
   const btn = document.getElementById('sifreKaydet');
   const v = kutu.value;
-  if(v.length < 8){ d.textContent = t('sifre_short'); d.className = 'ai-status error'; kutu.focus(); return; }
+  // Zayif sifre burada da kabul edilmiyor; olcu kayit ekranindakiyle ayni.
+  if(sifreGucu(v) < 2){ sifreOlcuyuYaz(); d.textContent = t('auth_weak'); d.className = 'ai-status error'; kutu.focus(); return; }
   btn.disabled = true;
   d.textContent = t('sifre_saving'); d.className = 'ai-status';
   try{

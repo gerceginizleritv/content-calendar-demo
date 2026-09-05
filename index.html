@@ -339,6 +339,24 @@ a{color:inherit;}
 .giris-liste li{display:flex;gap:11px;font-size:14.5px;color:var(--solgun);line-height:1.5;}
 .giris-liste svg{flex:none;margin-top:3px;color:var(--yesil);}
 .giris-sag{padding:44px 42px;display:flex;flex-direction:column;justify-content:center;}
+/* Kayit / Giris sekmeleri. Iki isin ayri oldugu bir bakista gorulsun. */
+.sekmeler{display:flex;gap:4px;background:none;border:1px solid var(--cizgi);
+  border-radius:10px;padding:4px;margin-bottom:20px;}
+.sekme{flex:1;border:0;background:none;font:inherit;font-size:14px;font-weight:600;
+  color:var(--solgun);padding:9px 8px;border-radius:7px;cursor:pointer;}
+.sekme.secili{background:var(--mavi-soft);color:var(--mavi);}
+.sekme:hover:not(.secili){color:var(--murekkep);}
+/* Sifre gucu: ince bir cubuk ve altinda tek satir. Renk tek basina yeterli
+   degil, yazi da ne yapilmasi gerektigini soyluyor. */
+.guc{height:4px;border-radius:2px;background:var(--yuzey2);
+  overflow:hidden;margin:2px 0 6px;}
+.guc-dolgu{display:block;height:100%;width:0;border-radius:2px;transition:width .18s,background .18s;}
+.guc-1 .guc-dolgu{width:33%;background:var(--kirmizi);}
+.guc-2 .guc-dolgu{width:66%;background:var(--amber);}
+.guc-3 .guc-dolgu{width:100%;background:var(--yesil);}
+.guc-yazi{font-size:12px;line-height:1.5;margin:0 0 14px;color:var(--solgun);min-height:18px;}
+.guc-1 .guc-yazi{color:var(--kirmizi);}
+.guc-3 .guc-yazi{color:var(--yesil);}
 .giris-baslik{font-family:'Archivo',sans-serif;font-weight:700;font-size:20px;margin-bottom:6px;letter-spacing:-.4px;}
 .giris-alt{font-size:14px;color:var(--solgun);margin:0 0 22px;}
 .google-dug{
@@ -1438,34 +1456,74 @@ a{color:inherit;}
         <div class="giris-sag">
           <!-- oturum yokken -->
           <div id="girisFormu">
-            <div class="giris-baslik" data-i18n="login_card_title">Sign in to Shootboard</div>
-            <p class="giris-alt" data-i18n="login_card_sub">If you don't have an account, one opens by itself on your first sign-in.</p>
-            <button class="google-dug" type="button" id="googleDug">
-              <svg width="18" height="18" viewBox="0 0 18 18" aria-hidden="true">
+            <!-- Iki ayri is, iki ayri sekme. Tek kartta toplandiginda
+                 kullanici kayit mi oluyor giris mi yapiyor anlamiyordu. -->
+            <div class="sekmeler" role="tablist">
+              <button class="sekme secili" type="button" id="sekmeKayit" role="tab" aria-selected="true" data-i18n="tab_signup">Create account</button>
+              <button class="sekme" type="button" id="sekmeGiris" role="tab" aria-selected="false" data-i18n="tab_signin">Sign in</button>
+            </div>
+
+            <!-- ===== KAYIT ===== -->
+            <div id="kayitPanel" role="tabpanel">
+              <p class="giris-alt" data-i18n="signup_sub">Takes a minute. Your calendar then follows you to every device.</p>
+              <button class="google-dug" type="button" id="googleKayitDug">
+                <svg width="18" height="18" viewBox="0 0 18 18" aria-hidden="true">
                 <path fill="#4285F4" d="M17.64 9.2c0-.64-.06-1.25-.16-1.84H9v3.48h4.84a4.14 4.14 0 0 1-1.8 2.72v2.26h2.92c1.7-1.57 2.68-3.88 2.68-6.62z"/>
                 <path fill="#34A853" d="M9 18c2.43 0 4.47-.8 5.96-2.18l-2.92-2.26c-.81.54-1.84.86-3.04.86-2.34 0-4.32-1.58-5.03-3.7H.96v2.33A9 9 0 0 0 9 18z"/>
                 <path fill="#FBBC05" d="M3.97 10.72a5.4 5.4 0 0 1 0-3.44V4.95H.96a9 9 0 0 0 0 8.1l3.01-2.33z"/>
                 <path fill="#EA4335" d="M9 3.58c1.32 0 2.5.45 3.44 1.35l2.58-2.58C13.46.9 11.43 0 9 0A9 9 0 0 0 .96 4.95l3.01 2.33C4.68 5.16 6.66 3.58 9 3.58z"/>
               </svg>
-              <span data-i18n="google_btn">Continue with Google</span>
-            </button>
-            <div class="ayirac"><span data-i18n="or">or</span></div>
-            <label class="alan-et" for="ePosta" data-i18n="email_label">Your email address</label>
-            <input class="alan" id="ePosta" type="email" placeholder="you@example.com" autocomplete="email"
-                   data-i18n-attr="placeholder:email_ph">
-            <!-- Sifre alani. Once yalnizca giris baglantisi vardi; baglanti
-                 spam'e dusen kullanici disarida kaliyordu. Sifresi olmayan
-                 burayi bos birakip baglanti istiyor. -->
-            <label class="alan-et" for="sifreAlan" data-i18n="pass_label">Password</label>
-            <div class="sifre-satir">
-              <input class="alan" id="sifreAlan" type="password" autocomplete="current-password"
-                     data-i18n-attr="placeholder:pass_ph" placeholder="If you have set one">
-              <button class="dug dug-ikincil sifre-goz" type="button" id="sifreGozDug" data-i18n="pass_show">Show</button>
+                <span data-i18n="google_signup">Sign up with Google</span>
+              </button>
+              <div class="ayirac"><span data-i18n="or">or</span></div>
+              <label class="alan-et" for="kAd" data-i18n="name_label">Your name, optional</label>
+              <input class="alan" id="kAd" type="text" maxlength="40" autocomplete="name"
+                     data-i18n-attr="placeholder:name_ph" placeholder="How should we greet you?">
+              <label class="alan-et" for="kEposta" data-i18n="email_label">Your email address</label>
+              <input class="alan" id="kEposta" type="email" autocomplete="email"
+                     data-i18n-attr="placeholder:email_ph" placeholder="you@example.com">
+              <label class="alan-et" for="kSifre" data-i18n="pass_new_label">Choose a password</label>
+              <div class="sifre-satir">
+                <input class="alan" id="kSifre" type="password" autocomplete="new-password"
+                       data-i18n-attr="placeholder:pass_new_ph" placeholder="At least 8 characters">
+                <button class="dug dug-ikincil sifre-goz" type="button" id="kSifreGoz" data-i18n="pass_show">Show</button>
+              </div>
+              <!-- Guc gostergesi: kullanici sifresini yazarken sonucu ANINDA
+                   gorsun. Zayif olan kaydedilmiyor. -->
+              <div class="guc" aria-hidden="true"><span class="guc-dolgu" id="kGucDolgu"></span></div>
+              <p class="guc-yazi" id="kGucYazi"></p>
+              <button class="dug dug-birincil" type="button" id="kayitDug" data-i18n="signup_btn">Create account</button>
+              <p class="giris-ince" data-i18n="signup_fine">We send one email to confirm the address. Nothing else, ever.</p>
             </div>
-            <button class="dug dug-birincil" type="button" id="sifreGirisDug" data-i18n="pass_signin">Sign in</button>
-            <button class="dug dug-ikincil" type="button" id="linkDug" data-i18n="send_btn">Email me a sign-in link instead</button>
+
+            <!-- ===== GIRIS ===== -->
+            <div id="girisPanel" role="tabpanel" hidden>
+              <p class="giris-alt" data-i18n="signin_sub">Welcome back.</p>
+              <button class="google-dug" type="button" id="googleDug">
+                <svg width="18" height="18" viewBox="0 0 18 18" aria-hidden="true">
+                <path fill="#4285F4" d="M17.64 9.2c0-.64-.06-1.25-.16-1.84H9v3.48h4.84a4.14 4.14 0 0 1-1.8 2.72v2.26h2.92c1.7-1.57 2.68-3.88 2.68-6.62z"/>
+                <path fill="#34A853" d="M9 18c2.43 0 4.47-.8 5.96-2.18l-2.92-2.26c-.81.54-1.84.86-3.04.86-2.34 0-4.32-1.58-5.03-3.7H.96v2.33A9 9 0 0 0 9 18z"/>
+                <path fill="#FBBC05" d="M3.97 10.72a5.4 5.4 0 0 1 0-3.44V4.95H.96a9 9 0 0 0 0 8.1l3.01-2.33z"/>
+                <path fill="#EA4335" d="M9 3.58c1.32 0 2.5.45 3.44 1.35l2.58-2.58C13.46.9 11.43 0 9 0A9 9 0 0 0 .96 4.95l3.01 2.33C4.68 5.16 6.66 3.58 9 3.58z"/>
+              </svg>
+                <span data-i18n="google_btn">Continue with Google</span>
+              </button>
+              <div class="ayirac"><span data-i18n="or">or</span></div>
+              <label class="alan-et" for="ePosta" data-i18n="email_label">Your email address</label>
+              <input class="alan" id="ePosta" type="email" placeholder="you@example.com" autocomplete="email"
+                     data-i18n-attr="placeholder:email_ph">
+              <label class="alan-et" for="sifreAlan" data-i18n="pass_label">Password</label>
+              <div class="sifre-satir">
+                <input class="alan" id="sifreAlan" type="password" autocomplete="current-password"
+                       data-i18n-attr="placeholder:pass_ph" placeholder="Your password">
+                <button class="dug dug-ikincil sifre-goz" type="button" id="sifreGozDug" data-i18n="pass_show">Show</button>
+              </div>
+              <button class="dug dug-birincil" type="button" id="sifreGirisDug" data-i18n="pass_signin">Sign in</button>
+              <!-- Sifresini unutan disarida kalmasin: baglanti her zaman calisiyor. -->
+              <button class="dug dug-ikincil" type="button" id="linkDug" data-i18n="send_btn">Forgot it? Email me a sign-in link</button>
+            </div>
+
             <p class="giris-ince">
-              <span data-i18n="login_fine">No password yet? Leave it empty and ask for a link — it opens your account.</span>
               <a href="app.html" data-i18n="guest_link">Continue without an account →</a>
             </p>
             <p class="durum" id="girisDurum" hidden></p>
@@ -1666,8 +1724,28 @@ var METIN = {
     or:"veya",
     email_label:"E-posta adresin",
     email_ph:"ad@ornek.com",
+    tab_signup:"Kayıt ol",
+    tab_signin:"Giriş yap",
+    signup_sub:"Bir dakika sürer. Takvimin sonra her cihazda yanında olur.",
+    signin_sub:"Tekrar hoş geldin.",
+    google_signup:"Google ile kayıt ol",
+    name_label:"Adın, isteğe bağlı",
+    name_ph:"Sana nasıl seslenelim?",
+    pass_new_label:"Bir şifre belirle",
+    pass_new_ph:"En az 8 karakter",
+    signup_btn:"Hesap oluştur",
+    signup_fine:"Adresi doğrulamak için tek bir e-posta gönderiyoruz. Başka hiçbir şey göndermiyoruz.",
+    guc_0:"En az 8 karakter olmalı.",
+    guc_1:"Zayıf — tahmin edilmesi kolay. Büyük harf, rakam ya da ikinci bir kelime ekle.",
+    guc_2:"İdare eder. Uzatırsan daha iyi olur.",
+    guc_3:"Güçlü.",
+    st_weak:"Bu şifre çok zayıf. Yukarıdaki uyarıyı geçince hesabı açabilirsin.",
+    st_signup:"Hesap oluşturuluyor…",
+    st_signup_ok:"Hesabın açıldı. Adresi doğrulamak için gönderdiğimiz e-postadaki bağlantıya tıkla — birkaç dakikada gelmezse spam / gereksiz klasörüne bak.",
+    st_signup_var:"Bu adresle bir hesap zaten var. Giriş yap sekmesinden gir; şifreni bilmiyorsan oradan bağlantı iste.",
+    st_signup_err:"Hesap açılamadı. Biraz sonra tekrar dener misin?",
     pass_label:"Şifre",
-    pass_ph:"Şifre belirlediysen",
+    pass_ph:"Şifren",
     pass_show:"Göster",
     pass_hide:"Gizle",
     pass_signin:"Giriş yap",
@@ -1675,7 +1753,7 @@ var METIN = {
     pass_wrong:"E-posta ile şifre eşleşmiyor. Şifre belirlemediysen kutuyu boş bırakıp bağlantı iste.",
     pass_unconfirmed:"Bu hesap henüz onaylanmamış. Önce sana gönderdiğimiz e-postadaki bağlantıyı aç.",
     pass_signing:"Giriş yapılıyor…",
-    send_btn:"Bunun yerine giriş bağlantısı gönder",
+    send_btn:"Şifreni mi unuttun? Giriş bağlantısı gönder",
     login_fine:"Şifren yok mu? Boş bırakıp bağlantı iste — o bağlantı hesabını da açar.",
     guest_link:"Hesapsız devam et →",
     signed_title:"Giriş yaptın",
@@ -1844,6 +1922,7 @@ var formu = document.getElementById('girisFormu');
 var acik = document.getElementById('acikOturum');
 var durumEl = document.getElementById('girisDurum');
 var googleDug = document.getElementById('googleDug');
+var googleKayitDug = document.getElementById('googleKayitDug');
 var linkDug = document.getElementById('linkDug');
 var epostaAlan = document.getElementById('ePosta');
 
@@ -1913,9 +1992,11 @@ if(window.supabase){
   durum('st_no_cloud', 'The cloud connection could not load. Refresh the page and try again?', 'hata');
 }
 
-googleDug.addEventListener('click', function(){
+// Google'da kayit ile giris ayni islem: hesabi yoksa aciliyor, varsa
+// giriliyor. Iki sekmedeki iki dugme de buraya bagli.
+function googleyeGit(dug){
   if(!sb) return;
-  googleDug.disabled = true;
+  dug.disabled = true;
   donusIsaretle();
   sb.auth.signInWithOAuth({
     provider: 'google',
@@ -1925,18 +2006,20 @@ googleDug.addEventListener('click', function(){
   }).catch(function(err){
     console.error('[giris] google baslatilamadi', err);
     durum('st_google_err', 'Google sign-in could not start. Try again in a moment?', 'hata');
-    googleDug.disabled = false;
+    dug.disabled = false;
   });
-});
+}
+googleDug.addEventListener('click', function(){ googleyeGit(googleDug); });
+googleKayitDug.addEventListener('click', function(){ googleyeGit(googleKayitDug); });
 
 function linkGonder(){
-  if(!sb) return;
   var eposta = epostaAlan.value.trim();
   if(!/^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(eposta)){
     durum('st_bad_email', "That email address doesn't look right.", 'hata');
     epostaAlan.focus();
     return;
   }
+  if(!sb){ durum('st_no_cloud', 'The cloud connection could not load. Refresh the page and try again?', 'hata'); return; }
   linkDug.disabled = true;
   durum('st_sending', 'Sending…');
   donusIsaretle();
@@ -1964,8 +2047,114 @@ document.getElementById('sifreGozDug').addEventListener('click', function(){
   sifreAlan.focus();
 });
 
+// ---- Sekmeler ----
+// Kayit ve giris tek kartta karisiyordu: kullanici hangisini yaptigini
+// anlamiyordu. Iki panel, tek seferde biri gorunur.
+function sekmeSec(kayitMi){
+  document.getElementById('sekmeKayit').classList.toggle('secili', kayitMi);
+  document.getElementById('sekmeGiris').classList.toggle('secili', !kayitMi);
+  document.getElementById('sekmeKayit').setAttribute('aria-selected', String(kayitMi));
+  document.getElementById('sekmeGiris').setAttribute('aria-selected', String(!kayitMi));
+  document.getElementById('kayitPanel').hidden = !kayitMi;
+  document.getElementById('girisPanel').hidden = kayitMi;
+  durumEl.hidden = true;
+}
+document.getElementById('sekmeKayit').addEventListener('click', function(){ sekmeSec(true); });
+document.getElementById('sekmeGiris').addEventListener('click', function(){ sekmeSec(false); });
+
+// ---- Sifre gucu ----
+// 0 = cok kisa, 1 = zayif (kabul edilmiyor), 2 = idare eder, 3 = guclu.
+// Uzunluk tek basina yeterli degil; cesitlilik ve bilindik kaliplar da
+// bakiliyor. Amac bir puanlama sistemi degil, "bunu kirarlar" demek.
+function sifreGucu(v){
+  if(v.length < 8) return 0;
+  var kolay = /^(1234|12345|qwer|asdf|abcd|password|parola|sifre|şifre|shootboard)/i.test(v)
+           || /^(.)\1+$/.test(v);
+  if(kolay) return 1;
+  var cesit = (/[a-z]/.test(v) ? 1 : 0) + (/[A-Z]/.test(v) ? 1 : 0)
+            + (/[0-9]/.test(v) ? 1 : 0) + (/[^A-Za-z0-9]/.test(v) ? 1 : 0);
+  if(cesit < 2) return 1;
+  if(v.length >= 12 && cesit >= 3) return 3;
+  return 2;
+}
+var kSifre = document.getElementById('kSifre');
+function gucuYaz(){
+  var g = sifreGucu(kSifre.value);
+  var kap = document.getElementById('kayitPanel');
+  kap.classList.remove('guc-1','guc-2','guc-3');
+  var dolgu = document.getElementById('kGucDolgu');
+  var yazi = document.getElementById('kGucYazi');
+  if(!kSifre.value){ dolgu.style.width = ''; yazi.textContent = ''; return; }
+  kap.classList.add('guc-' + Math.max(1, g));
+  yazi.textContent = metin('guc_' + g, ['At least 8 characters.',
+    'Weak — easy to guess. Add a capital, a digit or a second word.',
+    'Good enough. Longer would be better.', 'Strong.'][g]);
+}
+kSifre.addEventListener('input', gucuYaz);
+document.getElementById('kSifreGoz').addEventListener('click', function(){
+  var gizli = kSifre.type === 'password';
+  kSifre.type = gizli ? 'text' : 'password';
+  this.textContent = metin(gizli ? 'pass_hide' : 'pass_show', gizli ? 'Hide' : 'Show');
+  kSifre.focus();
+});
+
+function kayitOl(){
+  var eposta = document.getElementById('kEposta').value.trim();
+  if(!/^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(eposta)){
+    durum('st_bad_email', "That email address doesn't look right.", 'hata');
+    document.getElementById('kEposta').focus();
+    return;
+  }
+  // Zayif sifre KABUL EDILMIYOR: burada durdurmak, uc ay sonra hesabin
+  // ele gecmesinden iyidir.
+  if(sifreGucu(kSifre.value) < 2){
+    gucuYaz();
+    durum('st_weak', 'That password is too weak. Clear the warning above and try again.', 'hata');
+    kSifre.focus();
+    return;
+  }
+  // Bulut kontrolu en sonda: kullanici once KENDI duzeltebilecegi seyi
+  // gorsun, sonra duzeltemeyecegini.
+  if(!sb){ durum('st_no_cloud', 'The cloud connection could not load. Refresh the page and try again?', 'hata'); return; }
+  var ad = (document.getElementById('kAd').value || '').trim().slice(0, 40);
+  var meta = { lang: dil };
+  if(ad) meta.full_name = ad;
+  var dug = document.getElementById('kayitDug');
+  dug.disabled = true;
+  durum('st_signup', 'Creating your account…');
+  donusIsaretle();
+  sb.auth.signUp({
+    email: eposta,
+    password: kSifre.value,
+    options: { emailRedirectTo: donusAdresi(), data: meta }
+  }).then(function(r){
+    if(r && r.error) throw r.error;
+    // Supabase, adres zaten kayitliysa hata VERMEZ (hesap sayimi sizmasin
+    // diye); bos bir identities dizisiyle doner. Kullaniciyi girise yolluyoruz.
+    var k = r && r.data && r.data.user;
+    if(k && k.identities && k.identities.length === 0){
+      durum('st_signup_var', 'An account with this address already exists. Use the Sign in tab.', 'hata');
+      dug.disabled = false;
+      return;
+    }
+    // Onay kapaliysa oturum hemen aciliyor; aciksa e-posta bekleniyor.
+    if(r.data && r.data.session){ location.href = 'app.html'; return; }
+    durum('st_signup_ok', 'Account created. Click the link in the email we just sent — if nothing arrives in a few minutes, look in spam or junk.', 'ok');
+  }).catch(function(err){
+    console.error('[giris] kayit olmadi', err);
+    var m = String((err && err.message) || '').toLowerCase();
+    if(m.indexOf('already registered') >= 0 || m.indexOf('already exists') >= 0){
+      durum('st_signup_var', 'An account with this address already exists. Use the Sign in tab.', 'hata');
+    }else{
+      durum('st_signup_err', 'The account could not be created. Try again in a moment?', 'hata');
+    }
+    dug.disabled = false;
+  });
+}
+document.getElementById('kayitDug').addEventListener('click', kayitOl);
+kSifre.addEventListener('keydown', function(e){ if(e.key === 'Enter') kayitOl(); });
+
 function sifreyleGir(){
-  if(!sb) return;
   var eposta = epostaAlan.value.trim();
   if(!/^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(eposta)){
     durum('st_bad_email', "That email address doesn't look right.", 'hata');
@@ -1978,6 +2167,7 @@ function sifreyleGir(){
     sifreAlan.focus();
     return;
   }
+  if(!sb){ durum('st_no_cloud', 'The cloud connection could not load. Refresh the page and try again?', 'hata'); return; }
   sifreGirisDug.disabled = true;
   durum('pass_signing', 'Signing in…');
   sb.auth.signInWithPassword({ email: eposta, password: sifreAlan.value }).then(function(r){
