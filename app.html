@@ -1306,6 +1306,19 @@ body.suruklenirken *{cursor:grabbing !important;}
 .posted-hint{font-size:11.5px;color:var(--text-dim);margin:-9px 0 15px;line-height:1.5;}
 .section-title{font-family:'Archivo',sans-serif;color:var(--accent);font-weight:700;font-size:12px;text-transform:uppercase;letter-spacing:1px;margin:20px 0 12px;border-top:1px solid var(--line);padding-top:16px;}
 .modal-actions{display:flex;justify-content:flex-end;gap:9px;margin-top:20px;}
+/* Sifre kutusu ile yanindaki dugme tek satirda; kutu kalan yeri aliyor. */
+.sifre-satir{display:flex;gap:8px;align-items:stretch;}
+.sifre-satir input{flex:1;min-width:0;}
+.sifre-goz{flex:0 0 auto;white-space:nowrap;font-size:12.5px;padding:0 12px;}
+.sifre-olcu-zayif{color:var(--red);}
+.sifre-olcu-iyi{color:var(--green);}
+/* Pencerenin uc istege bagli parcasi: baslik, vurgu (uzun bir e-posta
+   adresi gibi tek bir deger) ve altta gri aciklama. Hicbiri verilmezse
+   pencere eskisi gibi tek paragraf kaliyor. */
+#dlgTitle{margin:0 0 12px;}
+.dlg-vurgu{margin:8px 0 0;font-size:14.5px;font-weight:600;word-break:break-all;color:var(--text);}
+.dlg-not{margin:12px 0 0;}
+.dlg-vurgu:empty,.dlg-not:empty{display:none;}
 .btn-danger{border-color:var(--red);color:var(--red);}
 .btn-danger:hover{background:rgba(232,93,93,0.08);}
 .ai-btn{color:var(--accent);border-color:var(--accent-dim);}
@@ -1321,6 +1334,10 @@ body.suruklenirken *{cursor:grabbing !important;}
    penceresinden silme onayi gibi), o yuzden z-index daha yuksek. */
 #dlgOverlay{z-index:80;align-items:center;padding:20px;}
 #dlgOverlay .modal-dlg{max-width:420px;border-radius:12px;padding:22px 22px 18px;}
+/* Kapatma seridinin negatif kenar boslugu .modal'in 26 piksellik ic
+   bosluguna gore ayarli; bu pencere 22 kullaniyor. Fark duzeltilmezse serit
+   pencereden dort piksel tasip yatay kaydirma cubugu cikariyor. */
+#dlgOverlay .modal-dlg .modal-xbar{top:-22px;margin:-22px -22px 8px;}
 .dlg-msg{margin:0 0 6px;font-size:14.5px;line-height:1.55;white-space:pre-line;}
 .dlg-input{width:100%;box-sizing:border-box;margin-top:10px;padding:10px 12px;
   background:var(--bg);color:var(--text);border:1px solid var(--line);border-radius:6px;
@@ -2326,7 +2343,10 @@ body.suruklenirken *{cursor:grabbing !important;}
      Bu pencere hicbir seyi kilitlemiyor, sonucu bir Promise ile veriyor. -->
 <div class="overlay" id="dlgOverlay" role="alertdialog" aria-modal="true" aria-labelledby="dlgMsg">
   <div class="modal modal-dlg">
+    <h2 id="dlgTitle" hidden></h2>
     <p class="dlg-msg" id="dlgMsg"></p>
+    <p class="dlg-vurgu" id="dlgVurgu"></p>
+    <p class="hint dlg-not" id="dlgNot"></p>
     <input type="text" id="dlgInput" class="dlg-input" hidden autocomplete="off">
     <div class="modal-actions">
       <button type="button" class="btn" id="dlgCancel" data-i18n="btn_cancel">Cancel</button>
@@ -2687,11 +2707,47 @@ body.suruklenirken *{cursor:grabbing !important;}
       <label data-i18n="auth_email_label">Your email</label>
       <input type="email" id="authEmail" placeholder="you@example.com" autocomplete="email">
     </div>
-    <p class="auth-hint" data-i18n="auth_signup_hint">New here? The same link creates your account — there is no separate sign-up.</p>
+    <!-- Sifre alani. Once yalnizca giris baglantisi vardi; baglanti spam'e
+         dusen ya da hic gelmeyen kullanicilar disarida kaliyordu. Sifresi
+         olmayan bos birakip baglanti isteyebiliyor. -->
+    <div class="field">
+      <label data-i18n="auth_pass_label">Password</label>
+      <div class="sifre-satir">
+        <input type="password" id="authPass" autocomplete="current-password" data-i18n-attr="placeholder:auth_pass_ph" placeholder="If you have set one">
+        <button type="button" class="btn sifre-goz" id="authPassGoster" data-i18n="auth_pass_show">Show</button>
+      </div>
+    </div>
+    <p class="auth-hint" data-i18n="auth_signup_hint">New here? Leave the password empty and we email you a link — that link opens your account.</p>
     <div class="ai-status" id="authStatus"></div>
     <div class="modal-actions">
       <button class="btn" id="authCancelBtn" data-i18n="btn_close">Close</button>
-      <button class="btn btn-primary" id="authSendBtn" data-i18n="auth_send">Send me the link</button>
+      <button class="btn" id="authSendBtn" data-i18n="auth_send">Send me the link</button>
+      <button class="btn btn-primary" id="authPassBtn" data-i18n="auth_pass_signin">Sign in</button>
+    </div>
+  </div>
+</div>
+
+<!-- Giris baglantisiyla gelen kisiye bir kez sorulan sifre penceresi.
+     Sebep: baglanti her seferinde e-postaya bagli, e-posta da spam'e
+     dusebiliyor. Sifresi olan bir daha e-posta beklemiyor. -->
+<div class="overlay" id="sifreOverlay">
+  <div class="modal" style="max-width:440px;">
+    <h2 data-i18n="sifre_title">Set a password</h2>
+    <p class="hint" data-i18n="sifre_lead">You are signed in. Set a password now and next time you can sign in without waiting for an email.</p>
+    <div class="field">
+      <label data-i18n="sifre_label">Password</label>
+      <div class="sifre-satir">
+        <!-- Uretilen sifre GORUNUR duruyor: kullanicinin onu bir yere
+             kaydetmesi gerekiyor, yildizlarin arkasinda kopyalayamaz. -->
+        <input type="text" id="sifreYeni" autocomplete="new-password" spellcheck="false" data-i18n-attr="placeholder:sifre_ph" placeholder="At least 8 characters">
+        <button type="button" class="btn sifre-goz" id="sifreUret" data-i18n="sifre_uret">Generate</button>
+      </div>
+      <p class="auth-hint" id="sifreOlcu"></p>
+    </div>
+    <div class="ai-status" id="sifreDurum"></div>
+    <div class="modal-actions">
+      <button class="btn" id="sifreSonra" data-i18n="sifre_later">Not now</button>
+      <button class="btn btn-primary" id="sifreKaydet" data-i18n="sifre_save">Save password</button>
     </div>
   </div>
 </div>
@@ -2799,17 +2855,41 @@ const LANG = {
     cal_more: (n)=> `+${n} more`,
     cal_less: "Show less",
     btn_signin: "☁ Sign in",
-    auth_signup_hint: "New here? The same link creates your account — there is no separate sign-up.",
+    auth_signup_hint: "New here? Leave the password empty and ask for a link — that link opens your account, and you can set a password right after.",
     auth_signed_title: "Signed in — click to sign out",
     btn_privacy: "Privacy",
     auth_title: "Keep this on every device",
-    auth_intro: "We send you a sign-in link — no password to invent, none to forget. Everything you have built so far moves with you.",
+    auth_intro: "Sign in with your password, or let us email you a link. Everything you have built so far moves with you.",
     auth_intro_google: "Sign in with Google, or we send you a link — no password to invent, none to forget. Everything you have built so far moves with you.",
     auth_google: "Continue with Google",
     auth_or: "or",
     auth_google_err: "Could not start Google sign-in. Try the email link below.",
     auth_email_label: "Your email",
     auth_send: "Send me the link",
+    auth_pass_label: "Password",
+    auth_pass_ph: "If you have set one",
+    auth_pass_show: "Show",
+    auth_pass_hide: "Hide",
+    auth_pass_signin: "Sign in",
+    auth_pass_empty: "Type your password, or leave it empty and we will email you a link.",
+    auth_pass_wrong: "That email and password do not match. If you have not set a password, leave it empty and ask for a link.",
+    auth_pass_unconfirmed: "This account has not been confirmed yet. Open the link in the email we sent you first.",
+    auth_pass_signing: "Signing in...",
+    auth_spam_hint: "Nothing after a few minutes? Look in spam or junk — the address is hello@shootboard.app.",
+    sifre_title: "Set a password",
+    sifre_lead: "You are signed in. Set a password now and next time you can sign in straight away, without waiting for an email.",
+    sifre_label: "Password",
+    sifre_ph: "At least 8 characters",
+    sifre_uret: "Generate",
+    sifre_save: "Save password",
+    sifre_later: "Not now",
+    sifre_saving: "Saving...",
+    sifre_ok: "Password saved. You can now sign in with your email and this password.",
+    sifre_err: "Could not save the password. Try again in a moment.",
+    sifre_short: "At least 8 characters.",
+    sifre_weak: "Add a number or a second word to make it harder to guess.",
+    sifre_strong: "Strong. Save it in your password manager before you close this.",
+    sifre_generated: "Generated. Copy it somewhere safe before you save.",
     auth_sending: "Sending...",
     auth_sent: "Link sent. Check your inbox — you can close this tab.",
     auth_err: "Could not send the link. Check the address and try again.",
@@ -2817,11 +2897,15 @@ const LANG = {
     auth_name_label: "Your name, optional",
     auth_signed_as: "Signed in as",
     auth_signout: "Sign out",
+    auth_signout_note: "Your entries stay in the cloud. Sign back in and everything is where you left it.",
+    auth_move_title: "Move these entries into your account?",
+    auth_move_text: (n)=> `This browser holds ${n} ${n === 1 ? 'entry' : 'entries'} that were made without an account.`,
+    auth_move_note: "If they are not yours, choose Cancel — they stay in this browser and never touch your account.",
+    auth_move_yes: "Move them",
     auth_synced: "Saved to your account.",
     inbox_imported: n => n === 1 ? "1 entry arrived from the inbox and was saved to your account." : `${n} entries arrived from the inbox and were saved to your account.`,
     auth_sync_err: "Could not reach the cloud — the reason is on the red bar above.",
     auth_moved: (n)=> `${n} entries moved to your account.`,
-    auth_move_ask: (n)=> `This browser has ${n} entries that were made without an account. Move them into this account?\n\nChoose Cancel if they are not yours.`,
     auth_signed_out: "Signed out. You are back to this browser only.",
     cloud_err_safe: "Nothing is lost: your entries are in your account, this device just could not read them.",
     cloud_err_net: "This device could not reach the cloud.",
@@ -3311,17 +3395,41 @@ const LANG = {
     cal_more: (n)=> `+${n} daha`,
     cal_less: "Daha az",
     btn_signin: "☁ Giriş yap",
-    auth_signup_hint: "İlk kez mi? Aynı link hesabını da oluşturur — ayrı bir kayıt adımı yok.",
+    auth_signup_hint: "İlk kez mi? Şifreyi boş bırakıp bağlantı iste — o bağlantı hesabını da açar, hemen ardından şifre belirleyebilirsin.",
     auth_signed_title: "Giriş yapıldı — çıkmak için tıkla",
     btn_privacy: "Gizlilik",
     auth_title: "Her cihazda yanında olsun",
-    auth_intro: "Sana bir giriş linki gönderiyoruz — uydurulacak da unutulacak da bir şifre yok. Şu ana kadar kurduğun her şey seninle geliyor.",
+    auth_intro: "Şifrenle gir ya da sana bir giriş bağlantısı gönderelim. Şu ana kadar kurduğun her şey seninle geliyor.",
     auth_intro_google: "Google ile gir, ya da sana bir giriş linki gönderelim — uydurulacak da unutulacak da bir şifre yok. Şu ana kadar kurduğun her şey seninle geliyor.",
     auth_google: "Google ile devam et",
     auth_or: "veya",
     auth_google_err: "Google girişi başlatılamadı. Aşağıdaki e-posta linkini deneyebilirsin.",
     auth_email_label: "E-postan",
     auth_send: "Linki gönder",
+    auth_pass_label: "Şifre",
+    auth_pass_ph: "Şifre belirlediysen",
+    auth_pass_show: "Göster",
+    auth_pass_hide: "Gizle",
+    auth_pass_signin: "Giriş yap",
+    auth_pass_empty: "Şifreni yaz; şifren yoksa boş bırak, sana giriş bağlantısı gönderelim.",
+    auth_pass_wrong: "E-posta ile şifre eşleşmiyor. Şifre belirlemediysen kutuyu boş bırakıp bağlantı iste.",
+    auth_pass_unconfirmed: "Bu hesap henüz onaylanmamış. Önce sana gönderdiğimiz e-postadaki bağlantıyı aç.",
+    auth_pass_signing: "Giriş yapılıyor...",
+    auth_spam_hint: "Birkaç dakikada gelmezse spam / gereksiz klasörüne bak — gönderen hello@shootboard.app.",
+    sifre_title: "Şifre belirle",
+    sifre_lead: "Giriş yaptın. Şimdi bir şifre belirlersen bir dahakine e-posta beklemeden doğrudan girersin.",
+    sifre_label: "Şifre",
+    sifre_ph: "En az 8 karakter",
+    sifre_uret: "Üret",
+    sifre_save: "Şifreyi kaydet",
+    sifre_later: "Şimdi değil",
+    sifre_saving: "Kaydediliyor...",
+    sifre_ok: "Şifre kaydedildi. Artık e-postan ve bu şifreyle girebilirsin.",
+    sifre_err: "Şifre kaydedilemedi. Biraz sonra tekrar dene.",
+    sifre_short: "En az 8 karakter olmalı.",
+    sifre_weak: "Bir rakam ya da ikinci bir kelime ekle, tahmin edilmesi zorlaşsın.",
+    sifre_strong: "Güçlü. Kapatmadan önce şifre yöneticine kaydet.",
+    sifre_generated: "Üretildi. Kaydetmeden önce güvenli bir yere kopyala.",
     auth_sending: "Gönderiliyor...",
     auth_sent: "Link gönderildi. Gelen kutuna bak — bu sekmeyi kapatabilirsin.",
     auth_err: "Link gönderilemedi. Adresi kontrol edip tekrar dene.",
@@ -3329,11 +3437,15 @@ const LANG = {
     auth_name_label: "Adın, isteğe bağlı",
     auth_signed_as: "Giriş yapıldı:",
     auth_signout: "Çıkış yap",
+    auth_signout_note: "Kayıtların bulutta kalır. Tekrar giriş yaptığında bıraktığın yerden devam edersin.",
+    auth_move_title: "Bu kayıtlar hesabına taşınsın mı?",
+    auth_move_text: (n)=> `Bu tarayıcıda hesapsız oluşturulmuş ${n} kayıt duruyor.`,
+    auth_move_note: "Sana ait değilse Vazgeç'e bas; kayıtlar hesabına girmeden bu tarayıcıda kalır.",
+    auth_move_yes: "Taşı",
     auth_synced: "Hesabına kaydedildi.",
     inbox_imported: n => n === 1 ? "Gelen kutusundan 1 kayıt alındı, hesabına kaydedildi." : `Gelen kutusundan ${n} kayıt alındı, hesabına kaydedildi.`,
     auth_sync_err: "Buluta ulaşılamadı — sebebi yukarıdaki kırmızı şeritte.",
     auth_moved: (n)=> `${n} kayıt hesabına taşındı.`,
-    auth_move_ask: (n)=> `Bu tarayıcıda hesapsız oluşturulmuş ${n} kayıt var. Bu hesaba taşınsın mı?\n\nSana ait değilse İptal'e bas.`,
     auth_signed_out: "Çıkış yapıldı. Yalnızca bu tarayıcıya döndün.",
     cloud_err_safe: "Hiçbir şey kaybolmadı: kayıtlar hesabında duruyor, bu cihaz okuyamadı.",
     cloud_err_net: "Bu cihaz buluta ulaşamadı.",
@@ -7993,12 +8105,19 @@ function dlgAc(mesaj, secenek){
   if(dlgCoz) dlgKapat(secenek.iptal);
   const ov = document.getElementById('dlgOverlay');
   document.getElementById('dlgMsg').textContent = mesaj;
+  // Istege bagli alanlar. Verilmediginde bosaltiliyor, yoksa bir onceki
+  // pencerenin basligi bir sonrakinde asili kalirdi.
+  const baslikEl = document.getElementById('dlgTitle');
+  baslikEl.textContent = secenek.baslik || '';
+  baslikEl.hidden = !secenek.baslik;
+  document.getElementById('dlgVurgu').textContent = secenek.vurgu || '';
+  document.getElementById('dlgNot').textContent = secenek.not || '';
   const giris = document.getElementById('dlgInput');
   giris.hidden = !secenek.girisli;
   giris.value = secenek.varsayilan || '';
   const iptalDugme = document.getElementById('dlgCancel');
   iptalDugme.hidden = !secenek.iptalli;
-  document.getElementById('dlgOk').textContent = t('dlg_ok');
+  document.getElementById('dlgOk').textContent = secenek.tamam || t('dlg_ok');
   iptalDugme.textContent = t('btn_cancel');
   ov.classList.add('open');
   // Odak: girisli ise kutuya, degilse Tamam'a. Klavye ve ekran okuyucu
@@ -8007,7 +8126,14 @@ function dlgAc(mesaj, secenek){
   return new Promise(resolve=>{ dlgCoz = resolve; });
 }
 function uyari(mesaj){ return dlgAc(String(mesaj), { iptalli:false, girisli:false, iptal:undefined }); }
-function onayla(mesaj){ return dlgAc(String(mesaj), { iptalli:true, girisli:false, iptal:false }).then(v=> v === true); }
+// onayla("tek satir") ya da onayla({baslik, govde, vurgu, not, tamam}).
+// Nesne bicimi cikis gibi tek soruluk pencerelerde kullaniliyor: baslik,
+// soru ve aciklama ayri satirlarda okunuyor, dugme de ne yapacagini yaziyor.
+function onayla(girdi){
+  const o = (girdi && typeof girdi === 'object') ? girdi : { govde: String(girdi) };
+  return dlgAc(o.govde || '', { iptalli:true, girisli:false, iptal:false,
+    baslik:o.baslik, vurgu:o.vurgu, not:o.not, tamam:o.tamam }).then(v=> v === true);
+}
 function sor(mesaj, varsayilan){ return dlgAc(String(mesaj), { iptalli:true, girisli:true, varsayilan, iptal:null }); }
 (function dlgKur(){
   const ov = document.getElementById('dlgOverlay');
@@ -10785,6 +10911,7 @@ function openAuth(){
   const st = document.getElementById('authStatus');
   st.textContent = ''; st.className = 'ai-status';
   document.getElementById('authSendBtn').disabled = false;
+  document.getElementById('authPassBtn').disabled = false;
   document.getElementById('authGoogleBtn').disabled = false;
   document.getElementById('authOverlay').classList.add('open');
   refreshProviders();
@@ -10917,7 +11044,12 @@ async function afterSignIn(){
         events = kimlikleriTazele(hesabinKendiKopyasi);
         markAllDirty();
         await pushChanges();
-      }else if(anonim.length && await onayla(t('auth_move_ask')(anonim.length))){
+      }else if(anonim.length && await onayla({
+        baslik: t('auth_move_title'),
+        govde:  t('auth_move_text')(anonim.length),
+        not:    t('auth_move_note'),
+        tamam:  t('auth_move_yes')
+      })){
         // Kimlikleri yeniden uretiyoruz: baska bir hesabin satirlariyla
         // birincil anahtar cakismasi olmasin.
         events = anonim.map(e => ({...e, id: newId(), content: JSON.parse(JSON.stringify(e.content||{}))}));
@@ -10939,6 +11071,7 @@ async function afterSignIn(){
     renderCal();
     setCloudStatus('ok');
     trackOnce('funnel/cloud-connected');
+    setTimeout(sifreSor, 900);
   }catch(err){
     console.error('[bulut] okuma hatasi', err);
     bulutHataCinsiSon = bulutHataCinsi(err);
@@ -11029,9 +11162,19 @@ document.getElementById('cloudRetry').addEventListener('click', async ()=>{
 
 document.getElementById('authBtn').addEventListener('click', async ()=>{
   if(session){
-    if(await onayla(t('auth_signed_as') + ' ' + session.user.email + '\n\n' + t('auth_signout') + '?')){
-      sb.auth.signOut();
+    if(await onayla({
+      baslik: t('auth_signout'),
+      govde:  t('auth_signed_as'),
+      vurgu:  session.user.email,
+      not:    t('auth_signout_note'),
+      tamam:  t('auth_signout')
+    })){
       track('funnel/signed-out');
+      await sb.auth.signOut();
+      // Cikan kisi bos bir uygulamada kalmasin: karsilama sayfasina
+      // donuyor, giris ve kayit orada. replace() kullaniliyor ki geri
+      // tusu cikilmis oturuma geri getirmesin.
+      location.replace('index.html');
     }
   }else{
     openAuth();
@@ -11082,7 +11225,10 @@ document.getElementById('authSendBtn').addEventListener('click', async ()=>{
       options: { emailRedirectTo: location.href.split('#')[0], data: metaVeri }
     });
     if(error) throw error;
-    st.textContent = t('auth_sent'); st.className = 'ai-status ok';
+    // Spam uyarisi mesajin ICINDE: ilk denemede baglanti spam'e dustu ve
+    // kullanici hic gelmedi sandi.
+    st.textContent = t('auth_sent') + ' ' + t('auth_spam_hint');
+    st.className = 'ai-status ok';
     track('funnel/magic-link-sent');
   }catch(err){
     console.error('[bulut] link gonderilemedi', err);
@@ -11090,6 +11236,139 @@ document.getElementById('authSendBtn').addEventListener('click', async ()=>{
     btn.disabled = false;
   }
 });
+
+
+// ---- Sifre ----------------------------------------------------------------
+// Giris yalnizca e-posta baglantisiyla yapiliyordu. Baglanti spam'e dusunce
+// ya da hic gelmeyince (Outlook yeni alan adlarini sert eliyor) kullanici
+// disarida kaliyordu. Artik baglanti hesabi ACIYOR, sifre ise her seferinde
+// e-posta beklemeden girmeyi sagliyor.
+
+document.getElementById('authPassGoster').addEventListener('click', ()=>{
+  const kutu = document.getElementById('authPass');
+  const gizli = kutu.type === 'password';
+  kutu.type = gizli ? 'text' : 'password';
+  document.getElementById('authPassGoster').textContent = t(gizli ? 'auth_pass_hide' : 'auth_pass_show');
+  kutu.focus();
+});
+
+document.getElementById('authPassBtn').addEventListener('click', async ()=>{
+  const email = document.getElementById('authEmail').value.trim();
+  const sifre = document.getElementById('authPass').value;
+  const st = document.getElementById('authStatus');
+  const btn = document.getElementById('authPassBtn');
+  if(!/^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(email)){
+    st.textContent = t('auth_bad_email'); st.className = 'ai-status error'; return;
+  }
+  // Bos sifre bir hata degil, bir yol ayrimi: kullaniciyi baglantiya yolluyoruz.
+  if(!sifre){
+    st.textContent = t('auth_pass_empty'); st.className = 'ai-status'; return;
+  }
+  btn.disabled = true;
+  st.textContent = t('auth_pass_signing'); st.className = 'ai-status';
+  try{
+    const { error } = await sb.auth.signInWithPassword({ email, password: sifre });
+    if(error) throw error;
+    document.getElementById('authPass').value = '';
+    document.getElementById('authOverlay').classList.remove('open');
+    track('funnel/password-signed-in');
+  }catch(err){
+    console.error('[bulut] sifreyle giris olmadi', err);
+    const m = String((err && err.message) || '').toLowerCase();
+    st.textContent = m.includes('not confirmed') ? t('auth_pass_unconfirmed') : t('auth_pass_wrong');
+    st.className = 'ai-status error';
+    btn.disabled = false;
+  }
+});
+
+// Karistirilan karakterler (I l 1 O 0) disarida: uretilen sifre bir yere elle
+// yazilabilmeli.
+function sifreUretVer(){
+  const harfler = 'ABCDEFGHJKLMNPQRSTUVWXYZabcdefghijkmnopqrstuvwxyz23456789';
+  const sayilar = new Uint32Array(16);
+  crypto.getRandomValues(sayilar);
+  return Array.from(sayilar, x => harfler[x % harfler.length]).join('');
+}
+function sifreOlc(v){
+  if(v.length < 8) return { anahtar: 'sifre_short', iyi: false };
+  const cesit = (/[a-z]/.test(v) ? 1 : 0) + (/[A-Z]/.test(v) ? 1 : 0)
+              + (/\d/.test(v) ? 1 : 0) + (/[^A-Za-z0-9]/.test(v) ? 1 : 0);
+  return cesit >= 2 ? { anahtar: 'sifre_strong', iyi: true } : { anahtar: 'sifre_weak', iyi: false };
+}
+function sifreOlcuyuYaz(){
+  const v = document.getElementById('sifreYeni').value;
+  const cikti = document.getElementById('sifreOlcu');
+  if(!v){ cikti.textContent = ''; cikti.className = 'auth-hint'; return; }
+  const o = sifreOlc(v);
+  cikti.textContent = t(o.anahtar);
+  cikti.className = 'auth-hint ' + (o.iyi ? 'sifre-olcu-iyi' : 'sifre-olcu-zayif');
+}
+document.getElementById('sifreYeni').addEventListener('input', sifreOlcuyuYaz);
+document.getElementById('sifreUret').addEventListener('click', ()=>{
+  const kutu = document.getElementById('sifreYeni');
+  kutu.value = sifreUretVer();
+  kutu.select();
+  sifreOlcuyuYaz();
+  // Ayri bir 'uretildi' satiri yok: guc olcusu zaten kaydetmeyi soyluyor.
+  document.getElementById('sifreDurum').textContent = '';
+});
+document.getElementById('sifreSonra').addEventListener('click', ()=>{
+  document.getElementById('sifreOverlay').classList.remove('open');
+  // Bir hafta boyunca tekrar sorulmuyor: her giriste sormak dayatma olur.
+  try{ localStorage.setItem('demo_sifre_sonra', String(Date.now())); }catch(e){}
+  track('funnel/password-postponed');
+});
+document.getElementById('sifreKaydet').addEventListener('click', async ()=>{
+  const kutu = document.getElementById('sifreYeni');
+  const d = document.getElementById('sifreDurum');
+  const btn = document.getElementById('sifreKaydet');
+  const v = kutu.value;
+  if(v.length < 8){ d.textContent = t('sifre_short'); d.className = 'ai-status error'; kutu.focus(); return; }
+  btn.disabled = true;
+  d.textContent = t('sifre_saving'); d.className = 'ai-status';
+  try{
+    // Bayrak sifrenin KENDISIYLE ayni cagrida yaziliyor: ayri bir cagri
+    // yarida kalirsa pencere her giriste yeniden acilirdi.
+    const { error } = await sb.auth.updateUser({ password: v, data: { sifre_kuruldu: true } });
+    if(error) throw error;
+    d.textContent = t('sifre_ok'); d.className = 'ai-status ok';
+    track('funnel/password-set');
+    setTimeout(()=>{
+      document.getElementById('sifreOverlay').classList.remove('open');
+      kutu.value = ''; d.textContent = '';
+      document.getElementById('sifreOlcu').textContent = '';
+    }, 2200);
+  }catch(err){
+    console.error('[bulut] sifre kaydedilemedi', err);
+    d.textContent = (err && err.message) ? t('sifre_err') + ' ' + err.message : t('sifre_err');
+    d.className = 'ai-status error';
+    btn.disabled = false;
+  }
+});
+
+// Girisin ardindan bir kez soruluyor. Google hesabinda sorulmuyor: orada
+// sifre zaten Google'da. Baska bir pencere acikken de sorulmuyor.
+function sifreSorulsunMu(){
+  const u = session && session.user;
+  if(!u) return false;
+  if((u.app_metadata && u.app_metadata.provider) === 'google') return false;
+  if(u.user_metadata && u.user_metadata.sifre_kuruldu) return false;
+  try{
+    const e = Number(localStorage.getItem('demo_sifre_sonra') || 0);
+    if(e && Date.now() - e < 7 * 24 * 60 * 60 * 1000) return false;
+  }catch(e){}
+  return true;
+}
+function sifreSor(){
+  if(!sifreSorulsunMu()) return;
+  if(document.querySelector('.overlay.open')) return;
+  const d = document.getElementById('sifreDurum');
+  d.textContent = ''; d.className = 'ai-status';
+  document.getElementById('sifreKaydet').disabled = false;
+  document.getElementById('sifreOverlay').classList.add('open');
+  document.getElementById('sifreYeni').focus();
+  track('funnel/password-asked');
+}
 
 // Ziyaretci bir sey urettikten sonra teklif ediliyor — bos takvimde "kaydol"
 // demek erken, uc kayit girmis birine "telefonunda da gorur musun" zamaninda.
