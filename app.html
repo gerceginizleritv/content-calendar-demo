@@ -7286,8 +7286,15 @@ function sinirlariSifirla(){
 const GELEN_KUTUSU_URL = 'gelen/kayitlar.json';
 let gelenAlinan = [];          // alinmis kimlikler (defter)
 let gelenDefterHazir = false;  // defter buluttan okunabildi mi
+// Gelen kutusu HERKESE ACIK DEGIL. Dosya tek ve ortak: acik birakilirsa
+// deneme kullanicisinin takvimine bizim kayitlarimiz dusuyordu. Kutu
+// yalnizca hesabin tercihlerinde gelen_kutusu bayragi olanlarda calisiyor
+// (sql/21-gelen-kutusu.sql). Bayrak veritabaninda duruyor; koda hicbir
+// e-posta ya da kullanici kimligi gomulmuyor.
+let gelenKutusuAcik = false;
 
 function gelenAlinanOku(satir){
+  gelenKutusuAcik = !!(satir && satir.prefs && satir.prefs.gelen_kutusu);
   const liste = satir && satir.prefs && satir.prefs.gelen_alinan;
   gelenAlinan = Array.isArray(liste) ? liste.filter(x=> typeof x === 'string').slice(0, 5000) : [];
   gelenDefterHazir = true;
@@ -7295,6 +7302,9 @@ function gelenAlinanOku(satir){
 function tercihPrefsYap(){
   const prefs = { lang: currentLang };
   if(gelenAlinan.length) prefs.gelen_alinan = gelenAlinan;
+  // Bayrak buradan yazilmiyor, yalnizca KORUNUYOR: bu islev satirin
+  // tamamini yeniden yaziyor, atlanirsa ilk kaydetmede bayrak silinirdi.
+  if(gelenKutusuAcik) prefs.gelen_kutusu = true;
   // Hatirlatma ayarlari hesaba bagli, ama TARAYICI anahtari yerel
   // kaliyor: bildirim izni tarayiciya ozel, baska cihazda "acik"
   // yazmak calismayan bir ayari acik gostermek olurdu.
@@ -7344,6 +7354,7 @@ function gelenKayitlariIsle(kayitlar){
 
 async function gelenKutusunuIsle(){
   if(!session) return;
+  if(!gelenKutusuAcik) return;
   // Defter okunamadiysa (ag, oturum) hic dokunma: ikinci kopya uretmek,
   // bir acilis gec almaktan kotu.
   if(!gelenDefterHazir || bulutOkumaBasarisiz) return;
