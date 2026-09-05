@@ -354,7 +354,13 @@ a{color:inherit;}
 .guc-1 .guc-dolgu{width:33%;background:var(--kirmizi);}
 .guc-2 .guc-dolgu{width:66%;background:var(--amber);}
 .guc-3 .guc-dolgu{width:100%;background:var(--yesil);}
-.guc-yazi{font-size:12px;line-height:1.5;margin:0 0 14px;color:var(--solgun);min-height:18px;}
+.guc-yazi{font-size:12px;line-height:1.5;margin:0 0 6px;color:var(--solgun);min-height:18px;}
+/* Kural listesi. Isaret ::before ile geliyor; ayri bir eleman gerekmiyor. */
+.kurallar{list-style:none;margin:0 0 14px;padding:0;display:grid;gap:3px;}
+.kurallar li{font-size:12px;line-height:1.5;color:var(--solgun);display:flex;gap:7px;align-items:baseline;}
+.kurallar li::before{content:"○";font-size:11px;line-height:1.5;flex:none;}
+.kurallar li.tamam{color:var(--yesil);}
+.kurallar li.tamam::before{content:"✓";font-weight:700;}
 .guc-1 .guc-yazi{color:var(--kirmizi);}
 .guc-3 .guc-yazi{color:var(--yesil);}
 .giris-baslik{font-family:'Archivo',sans-serif;font-weight:700;font-size:20px;margin-bottom:6px;letter-spacing:-.4px;}
@@ -1488,10 +1494,17 @@ a{color:inherit;}
                        data-i18n-attr="placeholder:pass_new_ph" placeholder="At least 8 characters">
                 <button class="dug dug-ikincil sifre-goz" type="button" id="kSifreGoz" data-i18n="pass_show">Show</button>
               </div>
-              <!-- Guc gostergesi: kullanici sifresini yazarken sonucu ANINDA
-                   gorsun. Zayif olan kaydedilmiyor. -->
+              <!-- Guc cubugu "ne kadar iyi" diyor, liste "daha ne eksik"
+                   diyor. Kullanici hangisini ekleyince neyin degistigini
+                   goruyor; dordu de tamamlanmadan hesap acilmiyor. -->
               <div class="guc" aria-hidden="true"><span class="guc-dolgu" id="kGucDolgu"></span></div>
               <p class="guc-yazi" id="kGucYazi"></p>
+              <ul class="kurallar" id="kKurallar">
+                <li data-k="uzunluk" data-i18n="kural_uzunluk">At least 8 characters</li>
+                <li data-k="buyuk" data-i18n="kural_buyuk">One capital letter</li>
+                <li data-k="rakam" data-i18n="kural_rakam">One digit</li>
+                <li data-k="isaret" data-i18n="kural_isaret">One symbol (! ? @ # ...)</li>
+              </ul>
               <button class="dug dug-birincil" type="button" id="kayitDug" data-i18n="signup_btn">Create account</button>
               <p class="giris-ince" data-i18n="signup_fine">We send one email to confirm the address. Nothing else, ever.</p>
             </div>
@@ -1735,11 +1748,14 @@ var METIN = {
     pass_new_ph:"En az 8 karakter",
     signup_btn:"Hesap oluştur",
     signup_fine:"Adresi doğrulamak için tek bir e-posta gönderiyoruz. Başka hiçbir şey göndermiyoruz.",
-    guc_0:"En az 8 karakter olmalı.",
-    guc_1:"Zayıf — tahmin edilmesi kolay. Büyük harf, rakam ya da ikinci bir kelime ekle.",
-    guc_2:"İdare eder. Uzatırsan daha iyi olur.",
+    kural_uzunluk:"En az 8 karakter",
+    kural_buyuk:"Bir büyük harf",
+    kural_rakam:"Bir rakam",
+    kural_isaret:"Bir özel işaret (! ? @ # ...)",
+    guc_1:"Henüz olmadı — aşağıda işaretlenmemiş maddeler duruyor.",
+    guc_2:"İyi. 12 karakteri geçersen kırılması belirgin şekilde zorlaşır.",
     guc_3:"Güçlü.",
-    st_weak:"Bu şifre çok zayıf. Yukarıdaki uyarıyı geçince hesabı açabilirsin.",
+    st_weak:"Bu şifre aşağıdaki maddelerin hepsini karşılamıyor.",
     st_signup:"Hesap oluşturuluyor…",
     st_signup_ok:"Hesabın açıldı. Adresi doğrulamak için gönderdiğimiz e-postadaki bağlantıya tıkla — birkaç dakikada gelmezse spam / gereksiz klasörüne bak.",
     st_signup_var:"Bu adresle bir hesap zaten var. Giriş yap sekmesinden gir; şifreni bilmiyorsan oradan bağlantı iste.",
@@ -2066,29 +2082,52 @@ document.getElementById('sekmeGiris').addEventListener('click', function(){ sekm
 // 0 = cok kisa, 1 = zayif (kabul edilmiyor), 2 = idare eder, 3 = guclu.
 // Uzunluk tek basina yeterli degil; cesitlilik ve bilindik kaliplar da
 // bakiliyor. Amac bir puanlama sistemi degil, "bunu kirarlar" demek.
+// Buyuk harf, rakam ve ozel isaret ZORUNLU. Dordu de saglanmadan hesap
+// acilmiyor; asagidaki liste hangisinin eksik oldugunu gosteriyor.
+var SIFRE_KURALLARI = [
+  ['uzunluk', function(v){ return v.length >= 8; }],
+  ['buyuk',   function(v){ return /[A-ZÇĞİÖŞÜ]/.test(v); }],
+  ['rakam',   function(v){ return /[0-9]/.test(v); }],
+  ['isaret',  function(v){ return /[^A-Za-z0-9ÇĞİÖŞÜçğıöşü]/.test(v); }]
+];
+function sifreKurallari(v){
+  var o = {};
+  SIFRE_KURALLARI.forEach(function(k){ o[k[0]] = k[1](v); });
+  return o;
+}
+// 1 = kurallar eksik (kabul edilmiyor), 2 = tamam, 3 = tamam ve uzun.
 function sifreGucu(v){
-  if(v.length < 8) return 0;
-  var kolay = /^(1234|12345|qwer|asdf|abcd|password|parola|sifre|şifre|shootboard)/i.test(v)
-           || /^(.)\1+$/.test(v);
-  if(kolay) return 1;
-  var cesit = (/[a-z]/.test(v) ? 1 : 0) + (/[A-Z]/.test(v) ? 1 : 0)
-            + (/[0-9]/.test(v) ? 1 : 0) + (/[^A-Za-z0-9]/.test(v) ? 1 : 0);
-  if(cesit < 2) return 1;
-  if(v.length >= 12 && cesit >= 3) return 3;
-  return 2;
+  var k = sifreKurallari(v);
+  var hepsi = SIFRE_KURALLARI.every(function(x){ return k[x[0]]; });
+  if(!hepsi) return 1;
+  // Kurallari saglayan ama bilindik bir kalibin uzerine kurulmus sifre
+  // (Password1! gibi) sozluk saldirisinda ilk denenenlerden.
+  if(/^(1234|12345|qwer|asdf|abcd|password|parola|sifre|şifre|shootboard)/i.test(v)) return 1;
+  if(/^(.)\1+$/.test(v)) return 1;
+  return v.length >= 12 ? 3 : 2;
 }
 var kSifre = document.getElementById('kSifre');
+var GUC_YEDEK = ['', 'Not there yet — the unticked lines below are still missing.',
+                 'Good. Past 12 characters it gets noticeably harder to crack.', 'Strong.'];
 function gucuYaz(){
-  var g = sifreGucu(kSifre.value);
+  var v = kSifre.value;
   var kap = document.getElementById('kayitPanel');
   kap.classList.remove('guc-1','guc-2','guc-3');
-  var dolgu = document.getElementById('kGucDolgu');
+  var k = sifreKurallari(v);
+  var liste = document.getElementById('kKurallar');
+  Array.prototype.forEach.call(liste.children, function(li){
+    li.classList.toggle('tamam', !!k[li.getAttribute('data-k')]);
+  });
   var yazi = document.getElementById('kGucYazi');
-  if(!kSifre.value){ dolgu.style.width = ''; yazi.textContent = ''; return; }
-  kap.classList.add('guc-' + Math.max(1, g));
-  yazi.textContent = metin('guc_' + g, ['At least 8 characters.',
-    'Weak — easy to guess. Add a capital, a digit or a second word.',
-    'Good enough. Longer would be better.', 'Strong.'][g]);
+  var dolgu = document.getElementById('kGucDolgu');
+  if(!v){ yazi.textContent = ''; dolgu.style.width = ''; return; }
+  var g = sifreGucu(v);
+  kap.classList.add('guc-' + g);
+  // Kurallar tamamlanmadan cubuk KAC TANESININ tamam oldugunu gosteriyor;
+  // sabit bir kirmizi cizgi ucte ikisi bitmisken de ayni duruyordu.
+  var tamam = SIFRE_KURALLARI.filter(function(x){ return k[x[0]]; }).length;
+  dolgu.style.width = (g === 1) ? Math.round(tamam / SIFRE_KURALLARI.length * 55) + '%' : '';
+  yazi.textContent = metin('guc_' + g, GUC_YEDEK[g]);
 }
 kSifre.addEventListener('input', gucuYaz);
 document.getElementById('kSifreGoz').addEventListener('click', function(){

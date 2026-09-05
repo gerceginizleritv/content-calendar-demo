@@ -1328,6 +1328,13 @@ body.suruklenirken *{cursor:grabbing !important;}
 .guc-2 .guc-dolgu{width:66%;background:var(--amber);}
 .guc-3 .guc-dolgu{width:100%;background:var(--green);}
 .guc-yazi{font-size:12px;line-height:1.5;margin:0 0 4px;color:var(--text-dim);min-height:18px;}
+/* Kural listesi. Isaret ::before ile geliyor; ayri bir eleman koymak
+   yerine tek satirlik bir <li> yetiyor. */
+.kurallar{list-style:none;margin:0 0 4px;padding:0;display:grid;gap:3px;}
+.kurallar li{font-size:12px;line-height:1.5;color:var(--text-dim);display:flex;gap:7px;align-items:baseline;}
+.kurallar li::before{content:"○";font-size:11px;line-height:1.5;flex:none;}
+.kurallar li.tamam{color:var(--green);}
+.kurallar li.tamam::before{content:"✓";font-weight:700;}
 .guc-1 .guc-yazi{color:var(--red);}
 .guc-3 .guc-yazi{color:var(--green);}
 .sifre-satir{display:flex;gap:8px;align-items:stretch;}
@@ -2744,10 +2751,16 @@ body.suruklenirken *{cursor:grabbing !important;}
           <input type="password" id="authKayitPass" autocomplete="new-password" data-i18n-attr="placeholder:sifre_ph" placeholder="At least 8 characters">
           <button type="button" class="btn sifre-goz" id="authKayitPassGoster" data-i18n="auth_pass_show">Show</button>
         </div>
-        <!-- Guc gostergesi yaziyla da anlatiyor: renk tek basina yeterli
-             degil. Zayif sifreyle hesap acilmiyor. -->
-        <div class="guc" aria-hidden="true"><span class="guc-dolgu" id="authGucDolgu"></span></div>
-        <p class="guc-yazi" id="authGucYazi"></p>
+      <!-- Guc cubugu "ne kadar iyi" diyor, liste "daha ne eksik" diyor.
+           Kullanici hangisini ekleyince neyin degistigini goruyor. -->
+      <div class="guc" aria-hidden="true"><span class="guc-dolgu" id="authGucDolgu"></span></div>
+      <p class="guc-yazi" id="authGucYazi"></p>
+      <ul class="kurallar" id="authKurallar">
+        <li data-k="uzunluk" data-i18n="kural_uzunluk">At least 8 characters</li>
+        <li data-k="buyuk" data-i18n="kural_buyuk">One capital letter</li>
+        <li data-k="rakam" data-i18n="kural_rakam">One digit</li>
+        <li data-k="isaret" data-i18n="kural_isaret">One symbol (! ? @ # ...)</li>
+      </ul>
       </div>
       <p class="auth-hint" data-i18n="signup_fine">We send one email to confirm the address. Nothing else, ever.</p>
     </div>
@@ -2792,8 +2805,16 @@ body.suruklenirken *{cursor:grabbing !important;}
         <input type="text" id="sifreYeni" autocomplete="new-password" spellcheck="false" data-i18n-attr="placeholder:sifre_ph" placeholder="At least 8 characters">
         <button type="button" class="btn sifre-goz" id="sifreUret" data-i18n="sifre_uret">Generate</button>
       </div>
+      <!-- Guc cubugu "ne kadar iyi" diyor, liste "daha ne eksik" diyor.
+           Kullanici hangisini ekleyince neyin degistigini goruyor. -->
       <div class="guc" aria-hidden="true"><span class="guc-dolgu" id="sifreGucDolgu"></span></div>
       <p class="guc-yazi" id="sifreOlcu"></p>
+      <ul class="kurallar" id="sifreKurallar">
+        <li data-k="uzunluk" data-i18n="kural_uzunluk">At least 8 characters</li>
+        <li data-k="buyuk" data-i18n="kural_buyuk">One capital letter</li>
+        <li data-k="rakam" data-i18n="kural_rakam">One digit</li>
+        <li data-k="isaret" data-i18n="kural_isaret">One symbol (! ? @ # ...)</li>
+      </ul>
     </div>
     <div class="ai-status" id="sifreDurum"></div>
     <div class="modal-actions">
@@ -2925,12 +2946,15 @@ const LANG = {
     signup_fine: "We send one email to confirm the address. Nothing else, ever.",
     auth_forgot_hint: "Forgotten it? Ask for a sign-in link instead — it always works.",
     pass_ph: "Your password",
-    guc_0: "At least 8 characters.",
-    guc_1: "Weak — easy to guess. Add a capital, a digit or a second word.",
-    guc_2: "Good enough. Longer would be better.",
+    kural_uzunluk: "At least 8 characters",
+    kural_buyuk: "One capital letter",
+    kural_rakam: "One digit",
+    kural_isaret: "One symbol (! ? @ # ...)",
+    guc_1: "Not there yet — the unticked lines below are still missing.",
+    guc_2: "Good. Past 12 characters it gets noticeably harder to crack.",
     guc_3: "Strong.",
     sifre_kaydet_uyari: "Save it somewhere before you close this.",
-    auth_weak: "That password is too weak. Clear the warning above and try again.",
+    auth_weak: "This password does not meet every line below yet.",
     auth_signup_wait: "Creating your account...",
     auth_signup_ok: "Account created. Click the link in the email we just sent. Nothing after a few minutes? Look in spam or junk.",
     auth_signup_exists: "An account with this address already exists. Use the Sign in tab; if you do not know the password, ask for a link there.",
@@ -3479,12 +3503,15 @@ const LANG = {
     signup_fine: "Adresi doğrulamak için tek bir e-posta gönderiyoruz. Başka hiçbir şey göndermiyoruz.",
     auth_forgot_hint: "Unuttun mu? Bunun yerine giriş bağlantısı iste — o her zaman çalışır.",
     pass_ph: "Şifren",
-    guc_0: "En az 8 karakter olmalı.",
-    guc_1: "Zayıf — tahmin edilmesi kolay. Büyük harf, rakam ya da ikinci bir kelime ekle.",
-    guc_2: "İdare eder. Uzatırsan daha iyi olur.",
+    kural_uzunluk: "En az 8 karakter",
+    kural_buyuk: "Bir büyük harf",
+    kural_rakam: "Bir rakam",
+    kural_isaret: "Bir özel işaret (! ? @ # ...)",
+    guc_1: "Henüz olmadı — aşağıda işaretlenmemiş maddeler duruyor.",
+    guc_2: "İyi. 12 karakteri geçersen kırılması belirgin şekilde zorlaşır.",
     guc_3: "Güçlü.",
     sifre_kaydet_uyari: "Kapatmadan önce bir yere kaydet.",
-    auth_weak: "Bu şifre çok zayıf. Yukarıdaki uyarıyı geçince hesabı açabilirsin.",
+    auth_weak: "Bu şifre aşağıdaki maddelerin hepsini karşılamıyor.",
     auth_signup_wait: "Hesap oluşturuluyor...",
     auth_signup_ok: "Hesabın açıldı. Şimdi gönderdiğimiz e-postadaki bağlantıya tıkla. Birkaç dakikada gelmezse spam / gereksiz klasörüne bak.",
     auth_signup_exists: "Bu adresle bir hesap zaten var. Giriş yap sekmesinden gir; şifreni bilmiyorsan oradan bağlantı iste.",
@@ -11358,24 +11385,51 @@ document.getElementById('authTabGiris').addEventListener('click', ()=> authSekme
 // 0 = cok kisa, 1 = zayif (kabul edilmiyor), 2 = idare eder, 3 = guclu.
 // Uzunluk tek basina yeterli degil; cesitlilige ve bilindik kaliplara da
 // bakiliyor. Amac puanlama degil, "bunu kirarlar" diyebilmek.
+// Buyuk harf, rakam ve ozel isaret ZORUNLU. Dordu de saglanmadan sifre
+// kabul edilmiyor; ekrandaki liste hangisinin eksik oldugunu gosteriyor.
+const SIFRE_KURALLARI = [
+  ['uzunluk', v => v.length >= 8],
+  ['buyuk',   v => /[A-ZÇĞİÖŞÜ]/.test(v)],
+  ['rakam',   v => /[0-9]/.test(v)],
+  ['isaret',  v => /[^A-Za-z0-9ÇĞİÖŞÜçğıöşü]/.test(v)]
+];
+function sifreKurallari(v){
+  const o = {};
+  SIFRE_KURALLARI.forEach(([ad, olcut]) => { o[ad] = olcut(v); });
+  return o;
+}
+// 1 = kurallar eksik (kabul edilmiyor), 2 = tamam, 3 = tamam ve uzun.
 function sifreGucu(v){
-  if(v.length < 8) return 0;
+  const k = sifreKurallari(v);
+  if(!SIFRE_KURALLARI.every(([ad]) => k[ad])) return 1;
+  // Kurallari saglayan ama bilindik bir kalibin uzerine kurulmus sifre
+  // (Password1! gibi) sozluk saldirisinda ilk denenenlerden.
   if(/^(1234|12345|qwer|asdf|abcd|password|parola|sifre|şifre|shootboard)/i.test(v)) return 1;
   if(/^(.)\1+$/.test(v)) return 1;
-  const cesit = (/[a-z]/.test(v) ? 1 : 0) + (/[A-Z]/.test(v) ? 1 : 0)
-              + (/[0-9]/.test(v) ? 1 : 0) + (/[^A-Za-z0-9]/.test(v) ? 1 : 0);
-  if(cesit < 2) return 1;
-  return (v.length >= 12 && cesit >= 3) ? 3 : 2;
+  return v.length >= 12 ? 3 : 2;
+}
+// Listeyi ve cubugu birlikte tazeleyen ortak islev: uc yerde ayni davranis.
+function sifreOlcusunuCiz(deger, kapId, dolguId, yaziId, listeId){
+  const kap = document.getElementById(kapId);
+  kap.classList.remove('guc-1','guc-2','guc-3');
+  const liste = document.getElementById(listeId);
+  const k = sifreKurallari(deger);
+  [...liste.children].forEach(li => li.classList.toggle('tamam', !!k[li.dataset.k]));
+  const yazi = document.getElementById(yaziId);
+  const dolgu = document.getElementById(dolguId);
+  if(!deger){ yazi.textContent = ''; dolgu.style.width = ''; return 0; }
+  const g = sifreGucu(deger);
+  kap.classList.add('guc-' + g);
+  // Kurallar tamamlanmadan cubuk KAC TANESININ tamam oldugunu gosteriyor;
+  // sabit bir kirmizi cizgi ucte ikisi bitmisken de ayni duruyordu.
+  const tamam = SIFRE_KURALLARI.filter(([ad]) => k[ad]).length;
+  dolgu.style.width = (g === 1) ? Math.round(tamam / SIFRE_KURALLARI.length * 55) + '%' : '';
+  yazi.textContent = t('guc_' + g);
+  return g;
 }
 function authGucuYaz(){
-  const v = document.getElementById('authKayitPass').value;
-  const kap = document.getElementById('authKayitPanel');
-  kap.classList.remove('guc-1','guc-2','guc-3');
-  const yazi = document.getElementById('authGucYazi');
-  if(!v){ yazi.textContent = ''; return; }
-  const g = sifreGucu(v);
-  kap.classList.add('guc-' + Math.max(1, g));
-  yazi.textContent = t('guc_' + g);
+  sifreOlcusunuCiz(document.getElementById('authKayitPass').value,
+                   'authKayitPanel', 'authGucDolgu', 'authGucYazi', 'authKurallar');
 }
 document.getElementById('authKayitPass').addEventListener('input', authGucuYaz);
 document.getElementById('authKayitPassGoster').addEventListener('click', ()=>{
@@ -11477,20 +11531,26 @@ document.getElementById('authPassBtn').addEventListener('click', async ()=>{
 // Karistirilan karakterler (I l 1 O 0) disarida: uretilen sifre bir yere elle
 // yazilabilmeli.
 function sifreUretVer(){
-  const harfler = 'ABCDEFGHJKLMNPQRSTUVWXYZabcdefghijkmnopqrstuvwxyz23456789';
-  const sayilar = new Uint32Array(16);
-  crypto.getRandomValues(sayilar);
-  return Array.from(sayilar, x => harfler[x % harfler.length]).join('');
+  // Her kumeden en az bir karakter GARANTI: uretilen sifre kendi
+  // kurallarimizda kalmazsa kullanici uret dugmesine basip reddedilirdi.
+  const KUME = ['ABCDEFGHJKLMNPQRSTUVWXYZ', 'abcdefghijkmnopqrstuvwxyz', '23456789', '!#$%&*+-=?@'];
+  const hepsi = KUME.join('');
+  const rast = n => { const a = new Uint32Array(n); crypto.getRandomValues(a); return a; };
+  const secim = KUME.map((k, i) => k[rast(1)[0] % k.length]);
+  rast(16 - KUME.length).forEach(x => secim.push(hepsi[x % hepsi.length]));
+  // Karistir: kumelerin sirasi tahmin edilebilir olmasin.
+  const kar = rast(secim.length);
+  for(let i = secim.length - 1; i > 0; i--){
+    const j = kar[i] % (i + 1);
+    [secim[i], secim[j]] = [secim[j], secim[i]];
+  }
+  return secim.join('');
 }
 function sifreOlcuyuYaz(){
-  const v = document.getElementById('sifreYeni').value;
-  const kap = document.getElementById('sifreOverlay');
-  kap.classList.remove('guc-1','guc-2','guc-3');
+  const g = sifreOlcusunuCiz(document.getElementById('sifreYeni').value,
+                             'sifreOverlay', 'sifreGucDolgu', 'sifreOlcu', 'sifreKurallar');
   const cikti = document.getElementById('sifreOlcu');
-  if(!v){ cikti.textContent = ''; return; }
-  const g = sifreGucu(v);
-  kap.classList.add('guc-' + Math.max(1, g));
-  cikti.textContent = t('guc_' + g) + (g >= 2 ? ' ' + t('sifre_kaydet_uyari') : '');
+  if(g >= 2) cikti.textContent += ' ' + t('sifre_kaydet_uyari');
 }
 document.getElementById('sifreYeni').addEventListener('input', sifreOlcuyuYaz);
 document.getElementById('sifreUret').addEventListener('click', ()=>{
