@@ -1,0 +1,70 @@
+-- 22 — Hesabı kendi kendine silme
+--
+-- Neden gerekli: bugün silme yolu yoktu. Deneyici "verimi geri alamıyorum"
+-- hissine kapılmamalı; KVKK ve GDPR de bunu istiyor.
+--
+-- Neden Edge Function değil: bir kullanıcıyı silmek yönetici yetkisi
+-- istiyor, o yetki tarayıcıya verilemez. Bu işlev "security definer" ile
+-- çalışıyor: yetkiyi işlevin sahibinden alıyor, çağıran kişiden değil.
+-- Kimin silineceğini çağıran SEÇEMİYOR — auth.uid(), yani oturumu açık
+-- olan kişi siliniyor. Başkasının hesabını silmek mümkün değil.
+--
+-- Nasıl kullanılır: SQL Editor'de çalıştır. Tekrar çalıştırılabilir.
+
+begin;
+
+create or replace function public.hesabi_sil()
+returns void
+language plpgsql
+security definer
+-- search_path sabitleniyor: security definer bir islevde bu yazilmazsa
+-- cagiran kisi kendi semasini one alip baska bir tabloyu sildirebilir.
+set search_path = pg_catalog, public
+as $$
+declare
+  kim uuid := auth.uid();
+  t   text;
+begin
+  if kim is null then
+    raise exception 'Oturum yok.';
+  end if;
+
+  -- Tablo tablo yazmak yerine user_id sutunu OLAN her tablo geziliyor:
+  -- yarin yeni bir tablo eklendiginde bu islev guncellenmeyi unutulursa
+  -- kullanicinin verisi geride kalmaz.
+  for t in
+    select c.table_name
+      from information_schema.columns c
+      join information_schema.tables tt
+        on tt.table_schema = c.table_schema and tt.table_name = c.table_name
+     where c.table_schema = 'public'
+       and c.column_name  = 'user_id'
+       and tt.table_type  = 'BASE TABLE'
+  loop
+    execute format('delete from public.%I where user_id = $1', t) using kim;
+  end loop;
+
+  -- Takvim aboneligi dosyasi (sql/19). Kullanicinin klasoru siliniyor.
+  if to_regclass('storage.objects') is not null then
+    delete from storage.objects
+     where bucket_id = 'takvim'
+       and name like kim::text || '/%';
+  end if;
+
+  -- En son hesabin kendisi.
+  delete from auth.users where id = kim;
+end $$;
+
+-- Yalnizca giris yapmis kullanici cagirabiliyor.
+revoke all on function public.hesabi_sil() from public;
+revoke all on function public.hesabi_sil() from anon;
+grant execute on function public.hesabi_sil() to authenticated;
+
+commit;
+
+-- Kontrol: islev yerinde mi?
+select p.proname as islev,
+       case when p.prosecdef then 'security definer' else 'security invoker' end as yetki
+  from pg_proc p
+  join pg_namespace n on n.oid = p.pronamespace
+ where n.nspname = 'public' and p.proname = 'hesabi_sil';

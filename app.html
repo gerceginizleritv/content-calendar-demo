@@ -1343,6 +1343,20 @@ body.suruklenirken *{cursor:grabbing !important;}
 .kurallar li.tamam::before{content:"✓";font-weight:700;}
 .guc-1 .guc-yazi{color:var(--red);}
 .guc-3 .guc-yazi{color:var(--green);}
+/* Hesap penceresi: her is bir satir, sagda kendi dugmesi. */
+.hesap-satir{display:flex;gap:14px;align-items:center;justify-content:space-between;
+  padding:12px 0;border-top:1px solid var(--line);}
+.hesap-ad{font-size:14px;font-weight:600;}
+.hesap-not{margin:4px 0 0;}
+.hesap-satir .btn{flex:none;}
+/* Silme bolumu gorsel olarak da ayri: yanlislikla basilan bir dugme degil. */
+.hesap-tehlike{margin-top:16px;padding:14px;border:1px solid var(--red);
+  border-radius:10px;background:color-mix(in srgb, var(--red) 7%, transparent);}
+.hesap-onay-et{display:block;font-size:12.5px;color:var(--text-dim);margin:12px 0 6px;}
+#hesapSilKutu{width:100%;box-sizing:border-box;margin-bottom:12px;
+  background:var(--bg);border:1px solid var(--line);color:var(--text);
+  padding:9px 10px;font-size:13px;font-family:'IBM Plex Sans',sans-serif;border-radius:5px;}
+#hesapSilKutu:focus{outline:none;border-color:var(--red);}
 .sifre-satir{display:flex;gap:8px;align-items:stretch;}
 .sifre-satir input{flex:1;min-width:0;}
 .sifre-goz{flex:0 0 auto;white-space:nowrap;font-size:12.5px;padding:0 12px;}
@@ -1851,7 +1865,7 @@ body.suruklenirken *{cursor:grabbing !important;}
         <div class="avatar" id="railAvatar" aria-hidden="true"></div>
         <div class="rail-name" id="railName" hidden></div>
         <button class="btn btn-sm rail-auth" id="authBtn" data-i18n="btn_signin">☁ Sign in</button>
-        <button type="button" class="rail-sifre" id="railSifreBtn" data-i18n="sifre_change" hidden>Change password</button>
+        <button type="button" class="rail-sifre" id="railHesapBtn" data-i18n="hesap_link" hidden>Account</button>
       </div>
 
       <!-- Sira isin akisi: fikir -> script -> proje -> takvim. Menunun
@@ -2799,6 +2813,45 @@ body.suruklenirken *{cursor:grabbing !important;}
 <!-- Giris baglantisiyla gelen kisiye bir kez sorulan sifre penceresi.
      Sebep: baglanti her seferinde e-postaya bagli, e-posta da spam'e
      dusebiliyor. Sifresi olan bir daha e-posta beklemiyor. -->
+<!-- Hesap penceresi. Sifre degistirme ve hesabi silme burada; ikisi de
+     ray uzerinde ayri birer baglanti olsaydi kimlik blogu birikirdi. -->
+<div class="overlay" id="hesapOverlay">
+  <div class="modal" style="max-width:440px;">
+    <h2 data-i18n="hesap_title">Your account</h2>
+    <p class="onay-vurgu" id="hesapEposta"></p>
+
+    <div class="hesap-satir">
+      <div>
+        <div class="hesap-ad" data-i18n="sifre_change">Change password</div>
+        <p class="hint hesap-not" data-i18n="hesap_sifre_not">Set or replace the password you sign in with.</p>
+      </div>
+      <button type="button" class="btn" id="hesapSifreBtn" data-i18n="hesap_ac">Open</button>
+    </div>
+
+    <div class="hesap-satir">
+      <div>
+        <div class="hesap-ad" data-i18n="btn_export">Export Backup</div>
+        <p class="hint hesap-not" data-i18n="hesap_yedek_not">Download everything as a file before you delete anything.</p>
+      </div>
+      <button type="button" class="btn" id="hesapYedekBtn" data-i18n="hesap_ac">Open</button>
+    </div>
+
+    <!-- Geri donusu yok: ayri bir bolumde, kirmizi cerceveli. -->
+    <div class="hesap-tehlike">
+      <div class="hesap-ad" data-i18n="hesap_sil_baslik">Delete your account</div>
+      <p class="hint hesap-not" data-i18n="hesap_sil_not">Your calendar, projects, ideas, scripts and settings are deleted from the server. This cannot be undone.</p>
+      <label class="hesap-onay-et" id="hesapSilEtiket"></label>
+      <input type="text" id="hesapSilKutu" autocomplete="off" spellcheck="false">
+      <div class="ai-status" id="hesapDurum"></div>
+      <button type="button" class="btn btn-danger" id="hesapSilBtn" data-i18n="hesap_sil_btn" disabled>Delete my account</button>
+    </div>
+
+    <div class="modal-actions">
+      <button type="button" class="btn" id="hesapKapat" data-i18n="btn_close">Close</button>
+    </div>
+  </div>
+</div>
+
 <div class="overlay" id="sifreOverlay">
   <div class="modal" style="max-width:440px;">
     <h2 data-i18n="sifre_title">Set a password</h2>
@@ -2982,6 +3035,18 @@ const LANG = {
     sifre_save: "Save password",
     sifre_later: "Not now",
     sifre_change: "Change password",
+    hesap_link: "Account",
+    hesap_title: "Your account",
+    hesap_ac: "Open",
+    hesap_sifre_not: "Set or replace the password you sign in with.",
+    hesap_yedek_not: "Download everything as a file before you delete anything.",
+    hesap_sil_baslik: "Delete your account",
+    hesap_sil_not: "Your calendar, projects, ideas, scripts and settings are deleted from the server. This cannot be undone.",
+    hesap_sil_et: (e)=> `To confirm, type your email address: ${e}`,
+    hesap_sil_btn: "Delete my account",
+    hesap_sil_calisiyor: "Deleting...",
+    hesap_sil_yok: "The server does not know this action yet. Run sql/22-hesap-sil.sql in Supabase and try again.",
+    hesap_sil_err: "The account could not be deleted.",
     sifre_saving: "Saving...",
     sifre_ok: "Password saved. You can now sign in with your email and this password.",
     sifre_err: "Could not save the password. Try again in a moment.",
@@ -3539,6 +3604,18 @@ const LANG = {
     sifre_save: "Şifreyi kaydet",
     sifre_later: "Şimdi değil",
     sifre_change: "Şifreyi değiştir",
+    hesap_link: "Hesap",
+    hesap_title: "Hesabın",
+    hesap_ac: "Aç",
+    hesap_sifre_not: "Giriş yaparken kullandığın şifreyi belirle ya da değiştir.",
+    hesap_yedek_not: "Bir şey silmeden önce her şeyi dosya olarak indir.",
+    hesap_sil_baslik: "Hesabını sil",
+    hesap_sil_not: "Takvimin, projelerin, fikirlerin, scriptlerin ve ayarların sunucudan silinir. Bunun geri dönüşü yok.",
+    hesap_sil_et: (e)=> `Onaylamak için e-posta adresini yaz: ${e}`,
+    hesap_sil_btn: "Hesabımı sil",
+    hesap_sil_calisiyor: "Siliniyor...",
+    hesap_sil_yok: "Sunucu bu işlemi henüz tanımıyor. Supabase'de sql/22-hesap-sil.sql betiğini çalıştırıp tekrar dene.",
+    hesap_sil_err: "Hesap silinemedi.",
     sifre_saving: "Kaydediliyor...",
     sifre_ok: "Şifre kaydedildi. Artık e-postan ve bu şifreyle girebilirsin.",
     sifre_err: "Şifre kaydedilemedi. Biraz sonra tekrar dene.",
@@ -8240,7 +8317,9 @@ function dlgAc(mesaj, secenek){
   giris.value = secenek.varsayilan || '';
   const iptalDugme = document.getElementById('dlgCancel');
   iptalDugme.hidden = !secenek.iptalli;
-  document.getElementById('dlgOk').textContent = secenek.tamam || t('dlg_ok');
+  const okDugme = document.getElementById('dlgOk');
+  okDugme.textContent = secenek.tamam || t('dlg_ok');
+  okDugme.classList.toggle('btn-danger', !!secenek.tehlike);
   iptalDugme.textContent = t('btn_cancel');
   ov.classList.add('open');
   // Odak: girisli ise kutuya, degilse Tamam'a. Klavye ve ekran okuyucu
@@ -8255,7 +8334,8 @@ function uyari(mesaj){ return dlgAc(String(mesaj), { iptalli:false, girisli:fals
 function onayla(girdi){
   const o = (girdi && typeof girdi === 'object') ? girdi : { govde: String(girdi) };
   return dlgAc(o.govde || '', { iptalli:true, girisli:false, iptal:false,
-    baslik:o.baslik, vurgu:o.vurgu, not:o.not, tamam:o.tamam }).then(v=> v === true);
+    baslik:o.baslik, vurgu:o.vurgu, not:o.not, tamam:o.tamam, tehlike:o.tehlike })
+    .then(v=> v === true);
 }
 function sor(mesaj, varsayilan){ return dlgAc(String(mesaj), { iptalli:true, girisli:true, varsayilan, iptal:null }); }
 (function dlgKur(){
@@ -11014,12 +11094,10 @@ function kimlikGoster(){
   adEl.hidden = !ad;
   adEl.title = ad;
 
-  // Sifre baglantisi yalnizca e-posta hesabinda: Google ile girende sifre
-  // Google'da, buradan degistirilmiyor.
-  const sifreBtn = document.getElementById('railSifreBtn');
+  // Hesap penceresi her oturumda gorunuyor: silme herkesin hakki.
+  const sifreBtn = document.getElementById('railHesapBtn');
   if(sifreBtn){
-    const saglayici = session && session.user.app_metadata && session.user.app_metadata.provider;
-    sifreBtn.hidden = !session || saglayici === 'google';
+    sifreBtn.hidden = !session;
   }
 
   const m = (session && session.user.user_metadata) || {};
@@ -11635,7 +11713,81 @@ function sifreSorulsunMu(){
   }catch(e){}
   return true;
 }
-document.getElementById('railSifreBtn').addEventListener('click', ()=> sifrePenceresiniAc());
+// ---- Hesap penceresi ----
+function hesapPenceresiniAc(){
+  const bul = id => document.getElementById(id);
+  const eposta = (session && session.user && session.user.email) || '';
+  bul('hesapEposta').textContent = eposta;
+  bul('hesapSilEtiket').textContent = t('hesap_sil_et')(eposta);
+  // Sifre satiri Google hesabinda gizli: orada sifre Google'da duruyor,
+  // buradan degistirilemez.
+  const saglayici = session && session.user.app_metadata && session.user.app_metadata.provider;
+  bul('hesapSifreBtn').closest('.hesap-satir').hidden = (saglayici === 'google');
+  bul('hesapSilKutu').value = '';
+  bul('hesapSilBtn').disabled = true;
+  const d = bul('hesapDurum'); d.textContent = ''; d.className = 'ai-status';
+  bul('hesapOverlay').classList.add('open');
+}
+document.getElementById('railHesapBtn').addEventListener('click', hesapPenceresiniAc);
+document.getElementById('hesapKapat').addEventListener('click', ()=>
+  document.getElementById('hesapOverlay').classList.remove('open'));
+document.getElementById('hesapOverlay').addEventListener('click', (e)=>{
+  if(e.target.id === 'hesapOverlay') e.currentTarget.classList.remove('open');
+});
+document.getElementById('hesapSifreBtn').addEventListener('click', ()=>{
+  document.getElementById('hesapOverlay').classList.remove('open');
+  sifrePenceresiniAc();
+});
+document.getElementById('hesapYedekBtn').addEventListener('click', ()=>{
+  document.getElementById('hesapOverlay').classList.remove('open');
+  document.getElementById('exportBtn').click();
+});
+
+// Silme dugmesi, kullanici KENDI adresini yazana kadar kapali. Tek bir
+// "emin misin" penceresi bu is icin yeterli degil: geri donusu yok.
+document.getElementById('hesapSilKutu').addEventListener('input', (e)=>{
+  const eposta = ((session && session.user && session.user.email) || '').toLowerCase();
+  document.getElementById('hesapSilBtn').disabled =
+    e.target.value.trim().toLowerCase() !== eposta || !eposta;
+});
+
+document.getElementById('hesapSilBtn').addEventListener('click', async ()=>{
+  const d = document.getElementById('hesapDurum');
+  const btn = document.getElementById('hesapSilBtn');
+  if(!await onayla({
+    baslik: t('hesap_sil_baslik'),
+    govde:  t('hesap_sil_not'),
+    vurgu:  (session && session.user && session.user.email) || '',
+    tamam:  t('hesap_sil_btn'),
+    tehlike: true
+  })) return;
+  btn.disabled = true;
+  d.textContent = t('hesap_sil_calisiyor'); d.className = 'ai-status';
+  try{
+    // Silme sunucuda: bir kullaniciyi silmek yonetici yetkisi istiyor ve o
+    // yetki tarayiciya verilemez. Kimin silinecegini de burasi secmiyor,
+    // islev auth.uid()'e bakiyor (sql/22-hesap-sil.sql).
+    const { error } = await sb.rpc('hesabi_sil');
+    if(error) throw error;
+    track('funnel/account-deleted');
+    // Yerel kopya da gitsin: baska turlu cikis sonrasi ayni tarayicida
+    // silinmis hesabin verisi duruyormus gibi gorunurdu.
+    try{
+      localStorage.removeItem(storageKey());
+      localStorage.removeItem(STORAGE_KEY);
+    }catch(e){}
+    await sb.auth.signOut();
+    location.replace('index.html');
+  }catch(err){
+    console.error('[bulut] hesap silinemedi', err);
+    const m = String((err && err.message) || '');
+    d.textContent = /function|does not exist|schema cache/i.test(m)
+      ? t('hesap_sil_yok') : t('hesap_sil_err') + ' ' + m;
+    d.className = 'ai-status error';
+    btn.disabled = false;
+  }
+});
+
 
 function sifrePenceresiniAc(){
   const d = document.getElementById('sifreDurum');
