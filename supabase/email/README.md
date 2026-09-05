@@ -82,10 +82,14 @@ değiştirme. Önizlemeler `onizleme/` klasöründe.
 İki yol var; ikisi de aynı sonucu verir.
 
 **Panelden (komut satırı yok):** Supabase panel → **Edge Functions → Deploy a
-new function → Via Editor**. Ad: `hosgeldin`. Editörde iki dosya oluştur:
-`index.ts` ve `sablonlar.js`; içeriklerini `supabase/functions/hosgeldin/`
-klasöründeki dosyalardan yapıştır. Fonksiyon ayarlarında **Verify JWT**
-kapalı olmalı. Sonra **Edge Functions → Secrets** bölümünde iki gizli değer ekle:
+new function → Via Editor**. Ad kutusu rastgele bir isimle (`dynamic-task` gibi)
+dolu gelir; sil ve birebir `hosgeldin` yaz — tetikleyici bu adı çağırıyor,
+fonksiyonun adı sonradan değiştirilemiyor. Editördeki tek dosyanın içini sil,
+`supabase/functions/hosgeldin/tek-dosya.ts` dosyasının tamamını yapıştır ve
+**ikinci bir dosya ekleme**: o dosyada index.ts ile sablonlar.js birleşiktir.
+(Editörde iki ayrı dosya oluşturmak da çalışır, ama `sablonlar.js` eklenmeden
+Deploy'a basılırsa dağıtım "Module not found" ile düşer; tek dosyada bu risk
+yok.) Fonksiyon ayarlarında **Verify JWT** kapalı olmalı. Sonra **Edge Functions → Secrets** bölümünde iki gizli değer ekle:
 
 - `RESEND_API_KEY`: Resend anahtarı
 - `HOSGELDIN_WEBHOOK_SECRET`: en az 32 karakterlik rastgele bir metin. Bir parola
