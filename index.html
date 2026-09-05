@@ -363,6 +363,14 @@ a{color:inherit;}
 .alan::placeholder{color:var(--hayalet);}
 .alan:focus{outline:2px solid var(--mavi);outline-offset:1px;border-color:var(--mavi);}
 .giris-sag .dug-birincil{width:100%;margin-top:12px;padding:13px;}
+/* Ikinci yol (baglanti gonder) birinciyle ayni genislikte: daralinca
+   ikinci sinif bir secenek gibi duruyor, oysa sifresi olmayan herkesin
+   yolu bu. Kart icindeki digerlerine (Google, Goster) dokunulmuyor. */
+.giris-sag #linkDug{width:100%;margin-top:8px;padding:12px;}
+/* Sifre kutusu ile "Goster" dugmesi tek satirda; kutu kalan yeri aliyor. */
+.sifre-satir{display:flex;gap:8px;align-items:stretch;margin-bottom:10px;}
+.sifre-satir .alan{flex:1;min-width:0;margin-bottom:0;}
+.sifre-goz{flex:0 0 auto;white-space:nowrap;padding:0 14px;font-size:13px;}
 .giris-ince{margin:18px 0 0;font-size:13px;color:var(--solgun);line-height:1.5;text-align:center;}
 .giris-ince a{color:var(--mavi);font-weight:600;}
 .durum{
@@ -694,7 +702,7 @@ a{color:inherit;}
       <button class="ikon-dug" id="temaDug" type="button" data-i18n-attr="aria-label:aria_theme">
         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true" id="temaIkon"></svg>
       </button>
-      <a class="dug dug-birincil dug-kucuk" href="app.html" data-i18n="btn_open">Open the demo</a>
+      <a class="dug dug-birincil dug-kucuk" href="#giris" data-i18n="btn_open">Sign in / Sign up</a>
     </div>
   </div>
 </header>
@@ -709,7 +717,7 @@ a{color:inherit;}
         <h1 data-i18n="hero_h1">One shoot becomes ten posts. Shootboard keeps all ten on one board.</h1>
         <p class="kahraman-alt" data-i18n="hero_sub">The same footage goes out as a Reel, a Short, a carousel and a story — each with its own caption, cover text and time slot. You tick them off as they go out; Shootboard keeps the list of what is still waiting.</p>
         <div class="kahraman-dug">
-          <a class="dug dug-birincil" href="app.html" data-i18n="hero_cta1">Open the demo — no account needed</a>
+          <a class="dug dug-birincil" href="#giris" data-i18n="hero_cta1">Start free — sign in or sign up</a>
           <a class="dug dug-ikincil" href="#nedir" data-i18n="hero_cta2">What is Shootboard?</a>
         </div>
         <p class="kahraman-not" data-i18n="hero_note">It works without an account too — your calendar stays in that browser. Sign in and the same plan follows you to your phone.</p>
@@ -1409,8 +1417,8 @@ a{color:inherit;}
       <div class="giris-kart">
         <div class="giris-sol">
           <span class="etiket" data-i18n="login_eyebrow">Signing in</span>
-          <h2 data-i18n="login_h2">No password. Two ways in.</h2>
-          <p data-i18n="login_p">You don't create an account to use Shootboard. You come in with Google, or you click the link that arrives in your inbox. Both end up in the same place.</p>
+          <h2 data-i18n="login_h2">Three ways in. All the same place.</h2>
+          <p data-i18n="login_p">Come in with Google, sign in with your password, or click the link that arrives in your inbox. Your account opens by itself on the first sign-in, and you can set a password right after.</p>
           <ul class="giris-liste">
             <li>
               <svg width="16" height="16" viewBox="0 0 16 16" fill="none" aria-hidden="true"><circle cx="8" cy="8" r="7" stroke="currentColor" stroke-width="1.5"/><path d="M5 8.2 l2.2 2.2 L11 6.4" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"/></svg>
@@ -1418,7 +1426,7 @@ a{color:inherit;}
             </li>
             <li>
               <svg width="16" height="16" viewBox="0 0 16 16" fill="none" aria-hidden="true"><circle cx="8" cy="8" r="7" stroke="currentColor" stroke-width="1.5"/><path d="M5 8.2 l2.2 2.2 L11 6.4" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"/></svg>
-              <span data-i18n="login_l2">No password to remember, and none to reset.</span>
+              <span data-i18n="login_l2">Set a password and you never wait for an email again; skip it and the link always works.</span>
             </li>
             <li>
               <svg width="16" height="16" viewBox="0 0 16 16" fill="none" aria-hidden="true"><circle cx="8" cy="8" r="7" stroke="currentColor" stroke-width="1.5"/><path d="M5 8.2 l2.2 2.2 L11 6.4" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"/></svg>
@@ -1445,9 +1453,19 @@ a{color:inherit;}
             <label class="alan-et" for="ePosta" data-i18n="email_label">Your email address</label>
             <input class="alan" id="ePosta" type="email" placeholder="you@example.com" autocomplete="email"
                    data-i18n-attr="placeholder:email_ph">
-            <button class="dug dug-birincil" type="button" id="linkDug" data-i18n="send_btn">Send me a sign-in link</button>
+            <!-- Sifre alani. Once yalnizca giris baglantisi vardi; baglanti
+                 spam'e dusen kullanici disarida kaliyordu. Sifresi olmayan
+                 burayi bos birakip baglanti istiyor. -->
+            <label class="alan-et" for="sifreAlan" data-i18n="pass_label">Password</label>
+            <div class="sifre-satir">
+              <input class="alan" id="sifreAlan" type="password" autocomplete="current-password"
+                     data-i18n-attr="placeholder:pass_ph" placeholder="If you have set one">
+              <button class="dug dug-ikincil sifre-goz" type="button" id="sifreGozDug" data-i18n="pass_show">Show</button>
+            </div>
+            <button class="dug dug-birincil" type="button" id="sifreGirisDug" data-i18n="pass_signin">Sign in</button>
+            <button class="dug dug-ikincil" type="button" id="linkDug" data-i18n="send_btn">Email me a sign-in link instead</button>
             <p class="giris-ince">
-              <span data-i18n="login_fine">Click the link and you're in.</span>
+              <span data-i18n="login_fine">No password yet? Leave it empty and ask for a link — it opens your account.</span>
               <a href="app.html" data-i18n="guest_link">Continue without an account →</a>
             </p>
             <p class="durum" id="girisDurum" hidden></p>
@@ -1471,7 +1489,7 @@ a{color:inherit;}
       <h2 data-i18n="close_h2">Put the next shoot on the board.</h2>
       <p data-i18n="close_p">Open it without signing up, click a day, add an entry. If you like it, sign in and the plan comes with you.</p>
       <div class="kapanis-dug">
-        <a class="dug dug-birincil" href="app.html" data-i18n="close_cta1">Open the demo — no account needed</a>
+        <a class="dug dug-birincil" href="#giris" data-i18n="close_cta1">Start free — sign in or sign up</a>
         <a class="dug dug-ikincil" href="#giris" data-i18n="close_cta2">Sign in</a>
       </div>
     </div>
@@ -1484,7 +1502,7 @@ a{color:inherit;}
     <span data-i18n="footer_tag">Content publishing calendar</span>
     <a href="#nedir" data-i18n="nav_what">What it is</a>
     <a href="#ozellikler" data-i18n="nav_features">Features</a>
-    <a href="app.html" data-i18n="btn_open">Open the demo</a>
+    <a href="#giris" data-i18n="btn_open">Sign in / Sign up</a>
     <a class="dip-sag" href="privacy.html" data-i18n="footer_privacy">Privacy</a>
   </div>
 </footer>
@@ -1515,13 +1533,13 @@ var METIN = {
     s2a3:"bir gün, bir saat", s2a4:"sen işaretlersin",
 
     nav_what:"Nedir", nav_how:"Nasıl çalışır", nav_features:"Özellikler", nav_ai:"AI", nav_login:"Giriş",
-    btn_open:"Demoyu aç",
+    btn_open:"Giriş yap / Kayıt ol",
     aria_lang:"Dili değiştir", aria_theme:"Temayı değiştir", aria_board:"Örnek yayın takvimi",
 
     hero_tag:"Planlama panosu — otomatik paylaşım değil",
     hero_h1:"Tek çekim on paylaşıma dönüşür. Shootboard onunu da tek panoda tutar.",
     hero_sub:"Aynı çekim; Reels, Shorts, carousel ve hikâye olarak çıkar — her biri kendi açıklaması, kapak metni ve saatiyle. Yayınladıkça işaretlersin; Shootboard bekleyenlerin listesini tutar.",
-    hero_cta1:"Demoyu aç — hesap gerekmez",
+    hero_cta1:"Ücretsiz başla — giriş yap ya da kayıt ol",
     hero_cta2:"Shootboard nedir?",
     hero_note:"Hesapsız da çalışır — takvimin o tarayıcıda kalır. Giriş yaptığında aynı plan telefonuna da gelir.",
 
@@ -1637,10 +1655,10 @@ var METIN = {
     g9a:"TEK PLAN", g9b:"bilgisayar", g9c:"telefon", g9d:"tablet",
 
     login_eyebrow:"Giriş",
-    login_h2:"Şifre yok. İki yol var.",
-    login_p:"Shootboard'a girmek için hesap oluşturmuyorsun. Google ile geliyorsun ya da e-posta adresine gelen linke tıklıyorsun. İkisi de aynı yere çıkar.",
+    login_h2:"Üç yol var. Üçü de aynı yere çıkar.",
+    login_p:"Google ile gelirsin, şifrenle girersin ya da e-posta adresine gelen bağlantıya tıklarsın. İlk girişte hesabın kendiliğinden açılır; şifreni hemen ardından belirleyebilirsin.",
     login_l1:"Takvimin, projelerin, fikirlerin ve scriptlerin her cihaza gelir.",
-    login_l2:"Hatırlanacak bir şifre yok, sıfırlanacak bir şifre de yok.",
+    login_l2:"Şifre belirlersen bir daha e-posta beklemezsin; belirlemezsen bağlantı her zaman çalışır.",
     login_l3:"Girmeden de kullanabilirsin — plan o tarayıcıda kalır, sonra taşınır.",
     login_card_title:"Shootboard'a gir",
     login_card_sub:"Hesabın yoksa ilk girişte kendiliğinden açılır.",
@@ -1648,8 +1666,17 @@ var METIN = {
     or:"veya",
     email_label:"E-posta adresin",
     email_ph:"ad@ornek.com",
-    send_btn:"Giriş linki gönder",
-    login_fine:"Linke tıklayınca girersin.",
+    pass_label:"Şifre",
+    pass_ph:"Şifre belirlediysen",
+    pass_show:"Göster",
+    pass_hide:"Gizle",
+    pass_signin:"Giriş yap",
+    pass_empty:"Şifreni yaz; şifren yoksa boş bırak ve giriş bağlantısı iste.",
+    pass_wrong:"E-posta ile şifre eşleşmiyor. Şifre belirlemediysen kutuyu boş bırakıp bağlantı iste.",
+    pass_unconfirmed:"Bu hesap henüz onaylanmamış. Önce sana gönderdiğimiz e-postadaki bağlantıyı aç.",
+    pass_signing:"Giriş yapılıyor…",
+    send_btn:"Bunun yerine giriş bağlantısı gönder",
+    login_fine:"Şifren yok mu? Boş bırakıp bağlantı iste — o bağlantı hesabını da açar.",
     guest_link:"Hesapsız devam et →",
     signed_title:"Giriş yaptın",
     go_app:"Shootboard'a git →",
@@ -1657,7 +1684,7 @@ var METIN = {
 
     st_bad_email:"Bu e-posta adresi geçerli görünmüyor.",
     st_sending:"Gönderiliyor…",
-    st_sent:"Link gönderildi. Gelen kutunu kontrol et — linke tıklayınca Shootboard açılır.",
+    st_sent:"Bağlantı gönderildi. Birkaç dakikada gelmezse spam / gereksiz klasörüne bak — gönderen hello@shootboard.app.",
     st_err:"Link gönderilemedi. Biraz sonra tekrar dener misin?",
     st_google_err:"Google girişi başlatılamadı. Biraz sonra tekrar dener misin?",
     st_no_cloud:"Bulut bağlantısı yüklenemedi. Sayfayı yenileyip tekrar dener misin?",
@@ -1665,7 +1692,7 @@ var METIN = {
 
     close_h2:"Bir sonraki çekimi panoya al.",
     close_p:"Kaydolmadan aç, bir güne tıkla, bir kayıt ekle. Beğenirsen giriş yap, plan seninle gelsin.",
-    close_cta1:"Demoyu aç — hesap gerekmez",
+    close_cta1:"Ücretsiz başla — giriş yap ya da kayıt ol",
     close_cta2:"Giriş yap",
 
     footer_tag:"İçerik yayın takvimi",
@@ -1918,15 +1945,62 @@ function linkGonder(){
     options: { emailRedirectTo: donusAdresi() }
   }).then(function(r){
     if(r && r.error) throw r.error;
-    durum('st_sent', 'Link sent. Check your inbox — clicking it opens Shootboard.', 'ok');
+    durum('st_sent', 'Link sent. Nothing after a few minutes? Look in spam or junk — the sender is hello@shootboard.app.', 'ok');
   }).catch(function(err){
     console.error('[giris] link gonderilemedi', err);
     durum('st_err', 'The link could not be sent. Try again in a moment?', 'hata');
     linkDug.disabled = false;
   });
 }
+// Sifreyle giris. Baglanti spam'e dustugunde ya da hic gelmediginde
+// (Outlook yeni alan adlarini sert eliyor) tek yol buydu; artik degil.
+var sifreAlan = document.getElementById('sifreAlan');
+var sifreGirisDug = document.getElementById('sifreGirisDug');
+
+document.getElementById('sifreGozDug').addEventListener('click', function(){
+  var gizli = sifreAlan.type === 'password';
+  sifreAlan.type = gizli ? 'text' : 'password';
+  this.textContent = metin(gizli ? 'pass_hide' : 'pass_show', gizli ? 'Hide' : 'Show');
+  sifreAlan.focus();
+});
+
+function sifreyleGir(){
+  if(!sb) return;
+  var eposta = epostaAlan.value.trim();
+  if(!/^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(eposta)){
+    durum('st_bad_email', "That email address doesn't look right.", 'hata');
+    epostaAlan.focus();
+    return;
+  }
+  // Bos sifre bir hata degil, bir yol ayrimi: kullaniciyi baglantiya yolluyoruz.
+  if(!sifreAlan.value){
+    durum('pass_empty', 'Type your password, or leave it empty and ask for a link.');
+    sifreAlan.focus();
+    return;
+  }
+  sifreGirisDug.disabled = true;
+  durum('pass_signing', 'Signing in…');
+  sb.auth.signInWithPassword({ email: eposta, password: sifreAlan.value }).then(function(r){
+    if(r && r.error) throw r.error;
+    sifreAlan.value = '';
+    durum('st_going', 'Signed in — opening Shootboard…', 'ok');
+    location.href = 'app.html';
+  }).catch(function(err){
+    console.error('[giris] sifreyle giris olmadi', err);
+    var m = String((err && err.message) || '').toLowerCase();
+    if(m.indexOf('not confirmed') >= 0){
+      durum('pass_unconfirmed', 'This account is not confirmed yet. Open the link in the email we sent you first.', 'hata');
+    }else{
+      durum('pass_wrong', 'That email and password do not match. If you have not set a password, leave it empty and ask for a link.', 'hata');
+    }
+    sifreGirisDug.disabled = false;
+  });
+}
+sifreGirisDug.addEventListener('click', sifreyleGir);
+sifreAlan.addEventListener('keydown', function(e){ if(e.key === 'Enter') sifreyleGir(); });
+
 linkDug.addEventListener('click', linkGonder);
-epostaAlan.addEventListener('keydown', function(e){ if(e.key === 'Enter') linkGonder(); });
+epostaAlan.addEventListener('keydown', function(e){ if(e.key !== 'Enter') return; if(sifreAlan.value) sifreyleGir(); else linkGonder(); });
 
 document.getElementById('cikisDug').addEventListener('click', function(){
   if(!sb) return;
