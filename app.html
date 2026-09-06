@@ -884,6 +884,10 @@ body.suruklenirken *{cursor:grabbing !important;}
 }
 .mk-govde{padding:11px 13px 12px;display:flex;flex-direction:column;flex:1;}
 .mk-foto-satir{display:flex;gap:8px;align-items:center;}
+.mk-onizleme{margin-top:8px;}
+.mk-onizleme img{max-width:100%;max-height:170px;border:1px solid var(--line);
+  border-radius:8px;display:block;}
+.mk-onizleme-yok{font-size:12.5px;color:var(--amber);}
 .mk-foto-satir input{flex:1;min-width:0;}
 /* Vikipedi'den gelen fotografta kaynak gorunuyor: lisans oyle istiyor. */
 .mk-wiki{position:absolute;right:3px;bottom:2px;font-size:9px;font-style:normal;
@@ -2438,7 +2442,7 @@ textarea.sc-ai-brief{min-height:64px;resize:vertical;line-height:1.5;}
         <button type="button" class="fk-mini" id="imp_dosyaBtn" data-i18n="imp_file">Choose a CSV file…</button>
         <input type="file" id="imp_dosya" accept=".csv,.tsv,.txt,text/csv,text/tab-separated-values,text/plain" hidden>
       </div>
-      <textarea id="imp_metin" rows="6" class="sc-text" data-i18n-attr="placeholder:imp_paste_ph"
+      <textarea id="imp_metin" rows="6" class="sc-text" data-i18n-placeholder="imp_paste_ph"
                 placeholder="Date	Time	Platform	Title
 2026-09-10	09:00	Instagram	Mosaics — teaser"></textarea>
     </div>
@@ -2492,7 +2496,7 @@ textarea.sc-ai-brief{min-height:64px;resize:vertical;line-height:1.5;}
     <h2 id="mk_baslik" data-i18n="mk_title">Place</h2>
     <div class="field">
       <label data-i18n="mk_name">Name</label>
-      <input type="text" id="mk_name" maxlength="160" data-i18n-attr="placeholder:mk_name_ph" placeholder="Kariye Museum">
+      <input type="text" id="mk_name" maxlength="160" data-i18n-placeholder="mk_name_ph" placeholder="Kariye Museum">
     </div>
     <div class="mk-ikili">
       <div class="field">
@@ -2514,7 +2518,7 @@ textarea.sc-ai-brief{min-height:64px;resize:vertical;line-height:1.5;}
     </div>
     <div class="field">
       <label data-i18n="mk_cautions">Things to watch out for here</label>
-      <textarea id="mk_cautions" maxlength="2000" rows="3" data-i18n-attr="placeholder:mk_cautions_ph" placeholder="No tripods inside, power only in the courtyard, crowded before noon…"></textarea>
+      <textarea id="mk_cautions" maxlength="2000" rows="3" data-i18n-placeholder="mk_cautions_ph" placeholder="No tripods inside, power only in the courtyard, crowded before noon…"></textarea>
     </div>
     <div class="field">
       <label data-i18n="mk_notes">Notes</label>
@@ -2538,6 +2542,9 @@ textarea.sc-ai-brief{min-height:64px;resize:vertical;line-height:1.5;}
       </div>
       <p class="hint" data-i18n="mk_image_hint">Optional. Without one the card shows the map, so a map link is usually enough.</p>
       <p class="hint" id="mk_fotoNot" hidden></p>
+      <!-- "Bir bak, sonra kaydet" diyorsak bakacak bir sey olmali:
+           adres yazilir yazilmaz fotograf burada gorunuyor. -->
+      <div class="mk-onizleme" id="mk_onizleme" hidden></div>
     </div>
     <p class="hint" id="mk_bagli"></p>
     <div class="modal-actions">
@@ -2567,7 +2574,7 @@ textarea.sc-ai-brief{min-height:64px;resize:vertical;line-height:1.5;}
         <span data-i18n="sc_ideas_step">1 · Which ideas?</span>
         <span class="sc-blok-say" id="sc_ideasCount"></span>
         <input type="search" id="sc_ideaSearch" class="sc-blok-ara"
-               data-i18n-attr="placeholder:sc_idea_search_ph" placeholder="Search ideas">
+               data-i18n-placeholder="sc_idea_search_ph" placeholder="Search ideas">
         <button type="button" class="fk-mini" id="sc_ideasAll" data-i18n="sc_idea_all">Select all</button>
       </div>
       <ul class="sc-idea-list" id="sc_ideasList"></ul>
@@ -3088,7 +3095,7 @@ textarea.sc-ai-brief{min-height:64px;resize:vertical;line-height:1.5;}
       <div class="field">
         <label data-i18n="pass_new_label">Choose a password</label>
         <div class="sifre-satir">
-          <input type="password" id="authKayitPass" autocomplete="new-password" data-i18n-attr="placeholder:sifre_ph" placeholder="At least 8 characters">
+          <input type="password" id="authKayitPass" autocomplete="new-password" data-i18n-placeholder="sifre_ph" placeholder="At least 8 characters">
           <button type="button" class="btn sifre-goz" id="authKayitPassGoster" data-i18n="auth_pass_show">Show</button>
         </div>
       <!-- Guc cubugu "ne kadar iyi" diyor, liste "daha ne eksik" diyor.
@@ -3113,7 +3120,7 @@ textarea.sc-ai-brief{min-height:64px;resize:vertical;line-height:1.5;}
       <div class="field">
         <label data-i18n="auth_pass_label">Password</label>
         <div class="sifre-satir">
-          <input type="password" id="authPass" autocomplete="current-password" data-i18n-attr="placeholder:pass_ph" placeholder="Your password">
+          <input type="password" id="authPass" autocomplete="current-password" data-i18n-placeholder="pass_ph" placeholder="Your password">
           <button type="button" class="btn sifre-goz" id="authPassGoster" data-i18n="auth_pass_show">Show</button>
         </div>
       </div>
@@ -3189,7 +3196,7 @@ textarea.sc-ai-brief{min-height:64px;resize:vertical;line-height:1.5;}
       <div class="sifre-satir">
         <!-- Uretilen sifre GORUNUR duruyor: kullanicinin onu bir yere
              kaydetmesi gerekiyor, yildizlarin arkasinda kopyalayamaz. -->
-        <input type="text" id="sifreYeni" autocomplete="new-password" spellcheck="false" data-i18n-attr="placeholder:sifre_ph" placeholder="At least 8 characters">
+        <input type="text" id="sifreYeni" autocomplete="new-password" spellcheck="false" data-i18n-placeholder="sifre_ph" placeholder="At least 8 characters">
         <button type="button" class="btn sifre-goz" id="sifreUret" data-i18n="sifre_uret">Generate</button>
       </div>
       <!-- Guc cubugu "ne kadar iyi" diyor, liste "daha ne eksik" diyor.
@@ -3672,6 +3679,7 @@ const LANG = {
     mk_photo_scan: (n, t, ad)=> `Looking… ${n}/${t} — ${ad}`,
     mk_photo_scan_done: (b, t)=> b ? `${t} places checked, ${b} photos found.` : `${t} places checked, nothing found. The cards keep their maps.`,
     mk_photo_wiki: "Wikipedia",
+    mk_photo_broken: "That link didn't open an image.",
     mk_empty: "No places yet. Add the ones you shoot at and you will not type the address again.",
     mk_no_match: "No place matches that search.",
     mk_count: (n, t)=> n === t ? `${t} place${t===1?'':'s'}` : `${n} of ${t}`,
@@ -4345,6 +4353,7 @@ const LANG = {
     mk_photo_scan: (n, t, ad)=> `Aranıyor… ${n}/${t} — ${ad}`,
     mk_photo_scan_done: (b, t)=> b ? `${t} mekana bakıldı, ${b} fotoğraf bulundu.` : `${t} mekana bakıldı, bir şey çıkmadı. Kartlarda harita duruyor.`,
     mk_photo_wiki: "Vikipedi",
+    mk_photo_broken: "Bu adres bir görsel açmadı.",
     mk_empty: "Henüz mekan yok. Çekim yaptığın yerleri ekle, adresi bir daha yazmayasın.",
     mk_no_match: "Bu aramaya uyan mekan yok.",
     mk_count: (n, t)=> n === t ? `${t} mekan` : `${t} mekandan ${n} tanesi`,
@@ -6213,6 +6222,7 @@ function mekanPenceresiniAc(id){
   y('mk_maps', m && m.mapsUrl); y('mk_drive', m && m.driveUrl);
   y('mk_image', m && m.imageUrl);
   mkNot('mk_fotoNot', '');
+  mekanOnizleme();
   const kac = m ? mekanProjeleri(m.id).length : 0;
   document.getElementById('mk_bagli').textContent = kac ? t('mk_linked')(kac) : '';
   document.getElementById('mk_delete').hidden = !m;
@@ -6246,6 +6256,24 @@ document.getElementById('pe_place').addEventListener('change', async e=>{
   }
   mekanBilgisiYaz();
 });
+function mekanOnizleme(){
+  const kutu = document.getElementById('mk_onizleme');
+  const adres = disUrl(document.getElementById('mk_image').value.trim());
+  kutu.textContent = '';
+  kutu.hidden = !adres;
+  if(!adres) return;
+  const gorsel = new Image();
+  gorsel.alt = '';
+  // Bozuk ya da erisilemeyen adres sessizce bos bir kutu birakmasin.
+  gorsel.onerror = ()=>{
+    kutu.textContent = t('mk_photo_broken');
+    kutu.className = 'mk-onizleme mk-onizleme-yok';
+  };
+  gorsel.onload = ()=>{ kutu.className = 'mk-onizleme'; };
+  gorsel.src = adres;
+  kutu.appendChild(gorsel);
+}
+document.getElementById('mk_image').addEventListener('input', mekanOnizleme);
 function mekanFotosuzlar(){ return mekanlar.filter(m=> !disUrl(m.imageUrl)); }
 function mkNot(kutu, yazi){
   const e = document.getElementById(kutu);
@@ -6265,6 +6293,7 @@ document.getElementById('mk_fotoAra').addEventListener('click', async ()=>{
   dugme.disabled = false;
   if(bulunan){
     document.getElementById('mk_image').value = bulunan.url;
+    mekanOnizleme();
     mkNot('mk_fotoNot', t('mk_photo_found')(bulunan.baslik));
   }else{
     mkNot('mk_fotoNot', t('mk_photo_none'));
