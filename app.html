@@ -2323,6 +2323,13 @@ textarea.sc-ai-brief{min-height:64px;resize:vertical;line-height:1.5;}
       <div class="field"><label data-i18n="p_shoot_title">Project start date</label>
         <input type="date" id="p_shoot"></div>
     </div>
+    <!-- Mekan burada da soruluyor: proje kurulurken "nerede" akildaki
+         ilk sey oluyor, sonradan duzenlemeye girmek gerekmesin. -->
+    <div class="field" id="p_placeWrap">
+      <label data-i18n="p_place">Place</label>
+      <select id="p_place"></select>
+      <p class="hint" id="p_placeBilgi"></p>
+    </div>
     <!-- Adres yalnizca saha isinde soruluyor; studyo isinde bos bir alan
          gostermenin anlami yok. -->
     <div class="field" id="p_addressWrap" hidden>
@@ -6019,16 +6026,23 @@ function mekanSecenekleri(secili){
   sec.push(`<option value="__yeni__">${escapeHtml(t('p_place_new'))}</option>`);
   return sec.join('');
 }
-function mekanSecimiDoldur(secili){
-  const sel = document.getElementById('pe_place');
+// Ayni secim kutusu iki pencerede birden: proje OLUSTURURKEN (p_) ve
+// duzenlerken (pe_). Onek hangisi oldugunu soyluyor.
+const mekanSonSecim = { pe: '', p: '' };
+function mekanSecimiDoldur(secili, onek){
+  const ek = onek || 'pe';
+  const sel = document.getElementById(ek + '_place');
   if(!sel) return;
   sel.innerHTML = mekanSecenekleri(secili);
-  mekanBilgisiYaz();
+  mekanSonSecim[ek] = sel.value === '__yeni__' ? '' : sel.value;
+  mekanBilgisiYaz(ek);
 }
-function mekanBilgisiYaz(){
-  const el = document.getElementById('pe_placeBilgi');
-  if(!el) return;
-  const m = mekanById(document.getElementById('pe_place').value);
+function mekanBilgisiYaz(onek){
+  const ek = onek || 'pe';
+  const el = document.getElementById(ek + '_placeBilgi');
+  const sel = document.getElementById(ek + '_place');
+  if(!el || !sel) return;
+  const m = mekanById(sel.value);
   if(!m){ el.textContent = t('p_place_hint'); el.classList.remove('mk-uyari'); return; }
   const parca = [m.address, m.permission, m.cautions].filter(Boolean);
   el.textContent = parca.join(' · ');
@@ -6246,16 +6260,21 @@ function mekanKaydet(){
   mekanPenceresiniKapat();
   renderMekanlar(); renderProjects();
 }
-document.getElementById('pe_place').addEventListener('change', async e=>{
-  if(e.target.value === '__yeni__'){
+async function mekanSeciminiIsle(onek){
+  const sel = document.getElementById(onek + '_place');
+  if(sel.value === '__yeni__'){
     const ad = (await sor(t('mk_title_new')) || '').trim();
     const m = ad ? mekanEkle({ name: ad }) : null;
-    mekanSecimiDoldur(m ? m.id : (duzenlenenProje ? duzenlenenProje.placeId || '' : ''));
+    // Vazgecilirse eski secim geri geliyor; liste "+ Yeni mekan"da kalmasin.
+    mekanSecimiDoldur(m ? m.id : mekanSonSecim[onek], onek);
     if(m) renderMekanlar();
     return;
   }
-  mekanBilgisiYaz();
-});
+  mekanSonSecim[onek] = sel.value;
+  mekanBilgisiYaz(onek);
+}
+document.getElementById('pe_place').addEventListener('change', ()=> mekanSeciminiIsle('pe'));
+document.getElementById('p_place').addEventListener('change', ()=> mekanSeciminiIsle('p'));
 function mekanOnizleme(){
   const kutu = document.getElementById('mk_onizleme');
   const adres = disUrl(document.getElementById('mk_image').value.trim());
@@ -7030,8 +7049,12 @@ function closeProjectEdit(){
 }
 
 
-function projeEkle(ad, anahtar, cekim, tur, adres){
-  const p = sanitizeProject({ name: ad, keywords: anahtar, shootDate: cekim, type: tur, address: adres });
+function projeEkle(ad, anahtar, cekim, tur, adres, mekanId){
+  // "__yeni__" bir mekan degil, listedeki komut satiri; kimlik olarak
+  // yazilmasin.
+  const yer = (mekanId && mekanId !== '__yeni__' && mekanById(mekanId)) ? mekanId : '';
+  const p = sanitizeProject({ name: ad, keywords: anahtar, shootDate: cekim, type: tur,
+                              address: adres, placeId: yer });
   if(!p) return null;
   if(projects.length >= MAX_PROJECTS){ uyari(t('p_limit')(MAX_PROJECTS)); return null; }
   // Ayni ad iki kez girilmesin: "Stüdyo çekimi" ile "stüdyo Çekimi" ayri
@@ -8018,6 +8041,7 @@ function openProjectNew(ad){
   document.getElementById('p_name').value = ad || '';
   document.getElementById('p_address').value = '';
   document.getElementById('p_shoot').value = '';
+  mekanSecimiDoldur('', 'p');
   const tur = document.getElementById('p_type');
   projTypeSelectDoldur(tur, tur.value || 'outdoor');
   adresAlaniniTazele(tur, document.getElementById('p_addressWrap'));
@@ -8041,7 +8065,8 @@ document.getElementById('p_add').addEventListener('click', async ()=>{
     document.getElementById('p_address').focus();
     return;
   }
-  const p = projeEkle(ad, '', document.getElementById('p_shoot').value, tur, adres);
+  const p = projeEkle(ad, '', document.getElementById('p_shoot').value, tur, adres,
+                      document.getElementById('p_place').value);
   if(!p) return;
   document.getElementById('p_name').value = '';
   document.getElementById('p_address').value = '';
