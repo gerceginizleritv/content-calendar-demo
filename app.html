@@ -812,6 +812,23 @@ body.suruklenirken *{cursor:grabbing !important;}
    sira numarasiyla. Onceden alanlar alt alta akiyordu ve hangisinin neye
    yaradigi ancak okuyunca anlasiliyordu. */
 /* Ice aktarma: eslesme satirlari iki sutun (etiket + secim). */
+/* Bicimlendirme araclari: kucuk, yan yana, metnin ustunde. */
+.sc-arac{display:flex;gap:3px;margin-left:auto;}
+.sc-arac-dug{background:none;border:1px solid var(--line);border-radius:5px;
+  color:var(--text-dim);font:inherit;font-size:12px;line-height:1;min-width:26px;
+  padding:5px 6px;cursor:pointer;}
+.sc-arac-dug:hover{border-color:var(--accent);color:var(--accent);}
+/* Onizleme metnin YERINE geciyor: ikisi yan yana durunca dar ekranda
+   ikisi de okunmaz oluyordu. */
+.sc-onizleme{border:1px solid var(--line);border-radius:7px;background:var(--bg);
+  padding:14px 16px;min-height:220px;max-height:52vh;overflow-y:auto;line-height:1.65;}
+.sc-onizleme h2{font-size:16px;margin:16px 0 6px;}
+.sc-onizleme h3{font-size:14.5px;margin:14px 0 5px;}
+.sc-onizleme h4,.sc-onizleme h5,.sc-onizleme h6{font-size:13.5px;margin:12px 0 4px;}
+.sc-onizleme h2:first-child,.sc-onizleme h3:first-child{margin-top:0;}
+.sc-onizleme p{margin:0 0 9px;}
+.sc-onizleme ul,.sc-onizleme ol{margin:0 0 9px;padding-left:22px;}
+.sc-onizleme li{margin:2px 0;}
 #imp_metin{min-height:120px;max-height:220px;font-size:12.5px;}
 .imp-esles{display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:8px 16px;}
 .imp-satir{display:flex;align-items:center;gap:10px;font-size:13px;}
@@ -2564,10 +2581,24 @@ textarea.sc-ai-brief{min-height:64px;resize:vertical;line-height:1.5;}
     </div>
 
     <div class="sc-blok sc-blok-duz">
-      <div class="sc-blok-bas"><span data-i18n="sc_text_step">6 · The script</span></div>
+      <div class="sc-blok-bas">
+        <span data-i18n="sc_text_step">6 · The script</span>
+        <!-- Bicimlendirme METNI DEGISTIRMIYOR, isaret ekliyor: script duz
+             metin olarak duruyor. Drive'a giden, AI'a giden ve yedege
+             yazilan sey ayni metin; zengin metin olsaydi ucu de bozulurdu. -->
+        <div class="sc-arac" id="sc_arac">
+          <button type="button" class="sc-arac-dug" data-bicim="kalin" title="Ctrl+B"><b>B</b></button>
+          <button type="button" class="sc-arac-dug" data-bicim="egik" title="Ctrl+I"><i>I</i></button>
+          <button type="button" class="sc-arac-dug" data-bicim="baslik">H</button>
+          <button type="button" class="sc-arac-dug" data-bicim="liste">•</button>
+          <button type="button" class="sc-arac-dug" data-bicim="sirali">1.</button>
+        </div>
+        <button type="button" class="fk-mini" id="sc_onizleDug" data-i18n="sc_preview">Preview</button>
+      </div>
       <textarea id="sc_text" class="sc-text" rows="18" spellcheck="true"
                 data-i18n-placeholder="sc_ph"
                 placeholder="Write the script here. It stays with the project."></textarea>
+      <div class="sc-onizleme" id="sc_onizleme" hidden></div>
       <p class="sc-note" data-i18n="sc_note">Once there is text here, the “Script” step is ticked on its own.</p>
     </div>
     <div class="modal-actions">
@@ -3396,6 +3427,9 @@ const LANG = {
     sc_drive_step: "4 · Drive",
     sc_ai_step: "5 · What should the AI write?",
     sc_text_step: "6 · The script",
+    sc_preview: "Preview",
+    sc_edit: "Write",
+    sc_preview_bos: "Nothing to preview yet.",
     sc_idea_search_ph: "Search ideas",
     sc_idea_no_match: "Nothing matches that search.",
     sc_to_text: "Put the picked ideas into the text ↓",
@@ -4056,6 +4090,9 @@ const LANG = {
     sc_drive_step: "4 · Drive",
     sc_ai_step: "5 · AI ne yazsın?",
     sc_text_step: "6 · Script",
+    sc_preview: "Önizleme",
+    sc_edit: "Yaz",
+    sc_preview_bos: "Önizlenecek bir şey yok.",
     sc_idea_search_ph: "Fikirlerde ara",
     sc_idea_no_match: "Bu aramaya uyan fikir yok.",
     sc_to_text: "Seçilen fikirleri metne dök ↓",
@@ -6614,6 +6651,9 @@ function openScript(id, baslangic){
   // kalmasin, "onceki hale don" yanlis metni geri getirmesin.
   driveOncekiMetin = null;
   scriptMetinKaynagi = null;
+  // Pencere her zaman YAZMA kipinde aciliyor: onceki scriptin onizlemesi
+  // acik kalirsa kullanici yazamiyor ve sebebini anlamiyor.
+  scOnizlemeAcKapa(false);
   document.getElementById('sc_aiBrief').value = '';
   document.getElementById('sc_newIdea').value = '';
   document.getElementById('sc_driveUndo').hidden = true;
@@ -11512,6 +11552,123 @@ function hataMetni(err){
   if(err && err.sunucu)  return t('rm_cal_err_server') + ' ' + err.sunucu;
   return t('rm_cal_err');
 }
+// ---- Script bicimlendirme -------------------------------------------
+// Script DUZ METIN olarak duruyor; bicimlendirme yalnizca isaret ekliyor
+// (** kalin **, ## baslik, - madde). Zengin metin olsaydi Drive'a giden,
+// AI'a giden ve yedege yazilan metin de degisirdi; ucu de duz metin.
+function scSeciliSatirlar(alan){
+  const v = alan.value;
+  let bas = v.lastIndexOf('\n', alan.selectionStart - 1) + 1;
+  let son = v.indexOf('\n', alan.selectionEnd);
+  if(son === -1) son = v.length;
+  return { bas, son, metin: v.slice(bas, son) };
+}
+function scDegistir(alan, bas, son, yeni, imlecBas, imlecSon){
+  alan.setRangeText(yeni, bas, son, 'end');
+  if(imlecBas != null) alan.setSelectionRange(imlecBas, imlecSon == null ? imlecBas : imlecSon);
+  alan.dispatchEvent(new Event('input', { bubbles: true }));
+  alan.focus();
+}
+// Satir basi isareti: yoksa ekliyor, varsa KALDIRIYOR. Ayni dugmeye
+// ikinci kez basmak geri almali.
+function scSatirIsareti(alan, uret, desen){
+  const { bas, son, metin } = scSeciliSatirlar(alan);
+  const satirlar = metin.split('\n');
+  const hepsiVar = satirlar.every(x => !x.trim() || desen.test(x));
+  const yeni = satirlar.map((x, i)=>{
+    if(!x.trim()) return x;
+    return hepsiVar ? x.replace(desen, '') : uret(x.replace(desen, ''), i);
+  }).join('\n');
+  scDegistir(alan, bas, son, yeni, bas, bas + yeni.length);
+}
+function scSarmala(alan, isaret){
+  const { selectionStart: b, selectionEnd: e, value: v } = alan;
+  const secili = v.slice(b, e);
+  const n = isaret.length;
+  // Zaten sarilmissa geri al.
+  if(secili.startsWith(isaret) && secili.endsWith(isaret) && secili.length >= n * 2){
+    const ic = secili.slice(n, -n);
+    scDegistir(alan, b, e, ic, b, b + ic.length);
+    return;
+  }
+  if(v.slice(b - n, b) === isaret && v.slice(e, e + n) === isaret){
+    scDegistir(alan, b - n, e + n, secili, b - n, b - n + secili.length);
+    return;
+  }
+  const yeni = isaret + (secili || '') + isaret;
+  scDegistir(alan, b, e, yeni, b + n, b + n + secili.length);
+}
+function scBicimUygula(tur){
+  const alan = document.getElementById('sc_text');
+  if(tur === 'kalin')  return scSarmala(alan, '**');
+  if(tur === 'egik')   return scSarmala(alan, '*');
+  if(tur === 'baslik') return scSatirIsareti(alan, x => '## ' + x, /^#{1,6}\s+/);
+  if(tur === 'liste')  return scSatirIsareti(alan, x => '- ' + x, /^[-*]\s+/);
+  if(tur === 'sirali') return scSatirIsareti(alan, (x, i) => (i + 1) + '. ' + x, /^\d+\.\s+/);
+}
+document.getElementById('sc_arac').addEventListener('click', e=>{
+  const dug = e.target.closest('[data-bicim]');
+  if(!dug) return;
+  scBicimUygula(dug.dataset.bicim);
+});
+document.getElementById('sc_text').addEventListener('keydown', e=>{
+  if(!(e.ctrlKey || e.metaKey)) return;
+  const k = e.key.toLowerCase();
+  if(k === 'b'){ e.preventDefault(); scBicimUygula('kalin'); }
+  else if(k === 'i'){ e.preventDefault(); scBicimUygula('egik'); }
+});
+
+// Onizleme. Once KACIRILIYOR, sonra isaretler cevriliyor: metin
+// kullanicinin kendi yazdigi sey, HTML olarak calismamali.
+function scOnizlemeHtml(metin){
+  const kacir = x => String(x).replace(/[&<>"']/g, c =>
+    ({ '&':'&amp;', '<':'&lt;', '>':'&gt;', '"':'&quot;', "'":'&#39;' }[c]));
+  const ici = x => kacir(x)
+    .replace(/\*\*([^*\n]+)\*\*/g, '<strong>$1</strong>')
+    .replace(/(^|[^*])\*([^*\n]+)\*(?!\*)/g, '$1<em>$2</em>');
+  const cikti = [];
+  let liste = null;   // 'ul' | 'ol' | null
+  const listeKapat = ()=> { if(liste){ cikti.push('</' + liste + '>'); liste = null; } };
+  String(metin || '').split(/\r?\n/).forEach(satir=>{
+    const s = satir.trim();
+    let m;
+    if(!s){ listeKapat(); return; }
+    if((m = s.match(/^(#{1,6})\s+(.*)$/))){
+      listeKapat();
+      const d = Math.min(m[1].length + 1, 6);   // # -> h2, arayuzde h1 yok
+      cikti.push('<h' + d + '>' + ici(m[2]) + '</h' + d + '>');
+      return;
+    }
+    if((m = s.match(/^[-*]\s+(.*)$/))){
+      if(liste !== 'ul'){ listeKapat(); cikti.push('<ul>'); liste = 'ul'; }
+      cikti.push('<li>' + ici(m[1]) + '</li>');
+      return;
+    }
+    if((m = s.match(/^\d+\.\s+(.*)$/))){
+      if(liste !== 'ol'){ listeKapat(); cikti.push('<ol>'); liste = 'ol'; }
+      cikti.push('<li>' + ici(m[1]) + '</li>');
+      return;
+    }
+    listeKapat();
+    cikti.push('<p>' + ici(s) + '</p>');
+  });
+  listeKapat();
+  return cikti.join('');
+}
+function scOnizlemeAcKapa(zorla){
+  const on = document.getElementById('sc_onizleme');
+  const alan = document.getElementById('sc_text');
+  const acik = zorla != null ? zorla : on.hidden;
+  if(acik){
+    on.innerHTML = scOnizlemeHtml(alan.value) || '<p class="hint">' + escapeHtml(t('sc_preview_bos')) + '</p>';
+  }
+  on.hidden = !acik;
+  alan.hidden = acik;
+  document.getElementById('sc_arac').hidden = acik;
+  document.getElementById('sc_onizleDug').textContent = t(acik ? 'sc_edit' : 'sc_preview');
+}
+document.getElementById('sc_onizleDug').addEventListener('click', ()=> scOnizlemeAcKapa());
+
 // ---- Ice aktarma: CSV / Sheets / Excel / Notion ---------------------
 // Sheets, Excel ve Notion'dan KOPYALANAN sey sekmeyle ayrilmis metin;
 // disa aktarilan sey CSV. Ikisi de ayni cozumleyiciden geciyor: ayirici
