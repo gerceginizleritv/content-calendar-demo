@@ -811,6 +811,23 @@ body.suruklenirken *{cursor:grabbing !important;}
 /* Script penceresi bolum bolum: her adim kendi cercevesinde, basliginda
    sira numarasiyla. Onceden alanlar alt alta akiyordu ve hangisinin neye
    yaradigi ancak okuyunca anlasiliyordu. */
+/* Mekan kartlari: ad ustte, yer ve adres altinda, rozetler en altta. */
+.mk-kart{border:1px solid var(--line);border-radius:10px;padding:12px 14px;margin-bottom:10px;
+  cursor:pointer;background:var(--surface);}
+.mk-kart:hover{border-color:var(--accent-dim);}
+.mk-ad{font-size:15px;font-weight:600;}
+.mk-yer{font-size:12.5px;color:var(--text-dim);margin-top:2px;}
+.mk-adres{font-size:12.5px;color:var(--text-dim);margin-top:2px;overflow-wrap:anywhere;}
+.mk-rozetler{display:flex;gap:6px;flex-wrap:wrap;margin-top:8px;}
+.mk-rozet{font-size:11px;color:var(--text-dim);border:1px solid var(--line);
+  border-radius:20px;padding:2px 8px;text-decoration:none;}
+a.mk-rozet:hover{border-color:var(--accent);color:var(--accent);}
+.mk-dikkat{color:var(--amber);border-color:var(--amber);}
+/* Mekanda "dikkat" notu varsa proje penceresindeki satir da uyariyor. */
+.mk-uyari{color:var(--amber);}
+/* Sehir/ilce ve iki baglanti yan yana: pencere gereksiz uzamasin. */
+.mk-ikili{display:grid;grid-template-columns:1fr 1fr;gap:12px;}
+@media (max-width:560px){ .mk-ikili{grid-template-columns:1fr;} }
 .sc-blok{border:1px solid var(--line);border-radius:10px;padding:12px 14px;margin-bottom:14px;}
 .sc-blok-duz{border:0;padding:0;}
 .sc-blok-bas{display:flex;align-items:center;gap:10px;flex-wrap:wrap;margin-bottom:10px;
@@ -1897,6 +1914,12 @@ textarea.sc-ai-brief{min-height:64px;resize:vertical;line-height:1.5;}
             <path d="M8.5 13.4l2 2 4-4.3"/>
           </svg><span data-i18n="tab_projects">Projects</span>
         </button>
+        <button type="button" class="tab" id="tabPlaces" role="tab">
+          <svg class="tab-ico" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+            <path d="M12 21s6.5-5.6 6.5-10.2A6.5 6.5 0 0 0 5.5 10.8C5.5 15.4 12 21 12 21z"/>
+            <circle cx="12" cy="10.6" r="2.4"/>
+          </svg><span data-i18n="tab_places">Places</span>
+        </button>
         <button type="button" class="tab" id="tabIdeas" role="tab">
           <svg class="tab-ico" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
             <path d="M9 18h6M10 21h4"/>
@@ -1997,6 +2020,17 @@ textarea.sc-ai-brief{min-height:64px;resize:vertical;line-height:1.5;}
   </div>
 
   <!-- SCRIPTLER. Bir script projesiz de dogabilir; bagi sonra kurulur. -->
+  <!-- Mekanlar: cekim yerleri kutuphanesi. Ayni yerde ikinci cekim yapan
+       kisi adresi, izni ve "burada dikkat edilecekler"i bastan yazmasin. -->
+  <div id="placesPage" hidden>
+    <div class="proj-tools">
+      <input type="search" id="mk_search" data-i18n-placeholder="mk_search_ph" placeholder="Search places — name, city or address">
+      <span class="proj-count" id="mk_count"></span>
+      <button type="button" class="btn btn-primary" id="mk_new" data-i18n="mk_add">+ Add a place</button>
+    </div>
+    <div id="mk_list"></div>
+  </div>
+
   <div id="scriptsPage" hidden>
     <div class="sc-tools">
       <button type="button" class="btn btn-primary" id="sc_newBtn" data-i18n="sc_new">+ New script</button>
@@ -2227,6 +2261,14 @@ textarea.sc-ai-brief{min-height:64px;resize:vertical;line-height:1.5;}
       <div class="field"><label data-i18n="pe_type">Type</label><select id="pe_type"></select></div>
       <div class="field"><label data-i18n="p_shoot_title">Shoot date</label><input type="date" id="pe_shoot"></div>
     </div>
+    <!-- Mekan bagi: ayni yerde ikinci cekimde adres, izin ve uyarilar
+         bastan yazilmasin. Mekan secilmemisse asagidaki adres alani
+         eskisi gibi calisiyor. -->
+    <div class="field" id="pe_placeWrap">
+      <label data-i18n="p_place">Place</label>
+      <select id="pe_place"></select>
+      <p class="hint" id="pe_placeBilgi"></p>
+    </div>
     <div class="field" id="pe_addressWrap">
       <label data-i18n="pe_address">Address</label>
       <input type="text" id="pe_address" maxlength="300">
@@ -2295,6 +2337,58 @@ textarea.sc-ai-brief{min-height:64px;resize:vertical;line-height:1.5;}
 
 <!-- Script penceresi: genis ve yalin. Ic ice form alanlari degil, tek bir
      yazma alani — burada yapilan is yazmak. -->
+<div class="overlay" id="placeOverlay">
+  <div class="modal" style="max-width:560px;">
+    <h2 id="mk_baslik" data-i18n="mk_title">Place</h2>
+    <div class="field">
+      <label data-i18n="mk_name">Name</label>
+      <input type="text" id="mk_name" maxlength="160" data-i18n-attr="placeholder:mk_name_ph" placeholder="Kariye Museum">
+    </div>
+    <div class="mk-ikili">
+      <div class="field">
+        <label data-i18n="mk_city">City</label>
+        <input type="text" id="mk_city" maxlength="120">
+      </div>
+      <div class="field">
+        <label data-i18n="mk_district">District</label>
+        <input type="text" id="mk_district" maxlength="120">
+      </div>
+    </div>
+    <div class="field">
+      <label data-i18n="mk_address">Address</label>
+      <input type="text" id="mk_address" maxlength="400">
+    </div>
+    <div class="field">
+      <label data-i18n="mk_permission">Permission — who gives it, how long it takes</label>
+      <input type="text" id="mk_permission" maxlength="400">
+    </div>
+    <div class="field">
+      <label data-i18n="mk_cautions">Things to watch out for here</label>
+      <textarea id="mk_cautions" maxlength="2000" rows="3" data-i18n-attr="placeholder:mk_cautions_ph" placeholder="No tripods inside, power only in the courtyard, crowded before noon…"></textarea>
+    </div>
+    <div class="field">
+      <label data-i18n="mk_notes">Notes</label>
+      <textarea id="mk_notes" maxlength="4000" rows="3"></textarea>
+    </div>
+    <div class="mk-ikili">
+      <div class="field">
+        <label data-i18n="mk_maps">Map link</label>
+        <input type="url" id="mk_maps" maxlength="600" placeholder="https://maps.google.com/…">
+      </div>
+      <div class="field">
+        <label data-i18n="mk_drive">Drive folder</label>
+        <input type="url" id="mk_drive" maxlength="600" placeholder="https://drive.google.com/…">
+      </div>
+    </div>
+    <p class="hint" id="mk_bagli"></p>
+    <div class="modal-actions">
+      <button type="button" class="btn btn-danger" id="mk_delete" data-i18n="p_delete">Delete</button>
+      <button type="button" class="btn" id="mk_cancel" data-i18n="btn_cancel">Cancel</button>
+      <button type="button" class="btn btn-primary" id="mk_save" data-i18n="btn_save">Save</button>
+    </div>
+  </div>
+</div>
+
 <div class="overlay" id="scriptOverlay">
   <div class="modal modal-lg sc-modal">
     <div class="sc-head">
@@ -3332,6 +3426,40 @@ const LANG = {
     pe_deadlines: "Step deadlines…",
     tab_ideas: "Ideas",
     tab_scripts: "Scripts",
+    tab_places: "Places",
+    mk_add: "+ Add a place",
+    mk_search_ph: "Search places — name, city or address",
+    mk_title: "Place",
+    mk_title_new: "New place",
+    mk_title_edit: "Place",
+    mk_name: "Name",
+    mk_name_ph: "Kariye Museum",
+    mk_city: "City",
+    mk_district: "District",
+    mk_address: "Address",
+    mk_permission: "Permission — who gives it, how long it takes",
+    mk_cautions: "Things to watch out for here",
+    mk_cautions_ph: "No tripods inside, power only in the courtyard, crowded before noon…",
+    mk_notes: "Notes",
+    mk_maps: "Map link",
+    mk_drive: "Drive folder",
+    mk_empty: "No places yet. Add the ones you shoot at and you will not type the address again.",
+    mk_no_match: "No place matches that search.",
+    mk_count: (n, t)=> n === t ? `${t} place${t===1?'':'s'}` : `${n} of ${t}`,
+    mk_projects: (n)=> `${n} project${n===1?'':'s'}`,
+    mk_has_permission: "permission noted",
+    mk_has_cautions: "watch out",
+    mk_map: "Map ↗",
+    mk_linked: (n)=> `${n} project${n===1?'':'s'} use this place.`,
+    mk_limit: (n)=> `The place list is full (${n}).`,
+    mk_exists: (ad)=> `“${ad}” is already on the list.`,
+    mk_del_title: "Delete this place?",
+    mk_del_body: "The place is removed from the list.",
+    mk_del_linked: (n)=> `${n} project${n===1?'':'s'} are linked to it. The projects stay; they lose the link and keep their own address.`,
+    p_place: "Place",
+    p_place_none: "— no place —",
+    p_place_new: "+ New place…",
+    p_place_hint: "Pick a place and its address, permission and cautions come with it.",
     pe_ideas: "Ideas…",
     fk_title: "Ideas",
     fk_chip: "Idea",
@@ -3920,6 +4048,40 @@ const LANG = {
     pe_deadlines: "Adım termin tarihleri…",
     tab_ideas: "Fikirler",
     tab_scripts: "Scriptler",
+    tab_places: "Mekanlar",
+    mk_add: "+ Mekan ekle",
+    mk_search_ph: "Mekanlarda ara — ad, şehir ya da adres",
+    mk_title: "Mekan",
+    mk_title_new: "Yeni mekan",
+    mk_title_edit: "Mekan",
+    mk_name: "Adı",
+    mk_name_ph: "Kariye Müzesi",
+    mk_city: "Şehir",
+    mk_district: "İlçe",
+    mk_address: "Adres",
+    mk_permission: "İzin — kimden alınıyor, ne kadar sürüyor",
+    mk_cautions: "Burada dikkat edilecekler",
+    mk_cautions_ph: "İçeride tripod yasak, elektrik sadece avluda, öğleden önce kalabalık…",
+    mk_notes: "Notlar",
+    mk_maps: "Harita bağlantısı",
+    mk_drive: "Drive klasörü",
+    mk_empty: "Henüz mekan yok. Çekim yaptığın yerleri ekle, adresi bir daha yazmayasın.",
+    mk_no_match: "Bu aramaya uyan mekan yok.",
+    mk_count: (n, t)=> n === t ? `${t} mekan` : `${t} mekandan ${n} tanesi`,
+    mk_projects: (n)=> `${n} proje`,
+    mk_has_permission: "izin notu var",
+    mk_has_cautions: "dikkat",
+    mk_map: "Harita ↗",
+    mk_linked: (n)=> `${n} proje bu mekanı kullanıyor.`,
+    mk_limit: (n)=> `Mekan listesi doldu (${n}).`,
+    mk_exists: (ad)=> `“${ad}” listede zaten var.`,
+    mk_del_title: "Bu mekan silinsin mi?",
+    mk_del_body: "Mekan listeden kalkıyor.",
+    mk_del_linked: (n)=> `${n} proje buna bağlı. Projeler duruyor; bağ kopuyor, kendi adresleri kalıyor.`,
+    p_place: "Mekan",
+    p_place_none: "— mekan yok —",
+    p_place_new: "+ Yeni mekan…",
+    p_place_hint: "Mekanı seçince adresi, izni ve uyarıları onunla birlikte geliyor.",
     pe_ideas: "Fikirler…",
     fk_title: "Fikirler",
     fk_chip: "Fikir",
@@ -4728,6 +4890,9 @@ function sanitizeProject(raw){
     // Tur, isin nerede yapildigini soyluyor; saha isiyse adres de isteniyor.
     type: PROJ_TYPES.indexOf(raw.type) !== -1 ? raw.type : 'other',
     address: str(raw.address, 300),
+    // Mekan bagi. Adres alanlari projede DURMAYA devam ediyor: mekani
+    // olmayan projeler ve eski kayitlar bozulmasin.
+    placeId: (typeof raw.placeId === 'string' && /^[A-Za-z0-9_-]{0,64}$/.test(raw.placeId)) ? raw.placeId : '',
     createdAt: typeof raw.createdAt === 'number' ? raw.createdAt : Date.now(),
     // Iptal: proje duruyor ama yapilmayacak. Silmek DEGIL — silinen proje
     // gecmisi de goturuyor, oysa "neden yapmadik" bilgisi degerli.
@@ -5550,6 +5715,137 @@ function fikirEkleTiklandi(){
   fikirTaslakAcik = true;
   renderFikirler(); renderProjects();
 }
+// Proje penceresindeki mekan secimi. Secilen mekanin adresi ve uyarilari
+// alt satirda GORUNUYOR ama projenin kendi adres alanina KOPYALANMIYOR:
+// mekanin adresi degisince proje de guncel kalsin.
+function mekanSecenekleri(secili){
+  const sec = [`<option value="">${escapeHtml(t('p_place_none'))}</option>`];
+  mekanSiraliListe().forEach(m=>{
+    const yer = [m.district, m.city].filter(Boolean).join(', ');
+    sec.push(`<option value="${escapeHtml(m.id)}"${m.id === secili ? ' selected' : ''}>` +
+             escapeHtml(m.name + (yer ? ' — ' + yer : '')) + '</option>');
+  });
+  sec.push(`<option value="__yeni__">${escapeHtml(t('p_place_new'))}</option>`);
+  return sec.join('');
+}
+function mekanSecimiDoldur(secili){
+  const sel = document.getElementById('pe_place');
+  if(!sel) return;
+  sel.innerHTML = mekanSecenekleri(secili);
+  mekanBilgisiYaz();
+}
+function mekanBilgisiYaz(){
+  const el = document.getElementById('pe_placeBilgi');
+  if(!el) return;
+  const m = mekanById(document.getElementById('pe_place').value);
+  if(!m){ el.textContent = t('p_place_hint'); el.classList.remove('mk-uyari'); return; }
+  const parca = [m.address, m.permission, m.cautions].filter(Boolean);
+  el.textContent = parca.join(' · ');
+  el.classList.toggle('mk-uyari', !!m.cautions);
+}
+
+// --- Mekanlar sayfasi -------------------------------------------------
+let mekanArama = '';
+let acikMekanId = null;
+
+function mekanlariSuz(){
+  const q = mekanArama.trim().toLocaleLowerCase('tr');
+  return mekanSiraliListe().filter(m=>{
+    if(!q) return true;
+    return [m.name, m.city, m.district, m.address].join(' ').toLocaleLowerCase('tr').includes(q);
+  });
+}
+function renderMekanlar(){
+  const kutu = document.getElementById('mk_list');
+  if(!kutu) return;
+  const liste = mekanlariSuz();
+  document.getElementById('mk_count').textContent =
+    mekanlar.length ? t('mk_count')(liste.length, mekanlar.length) : '';
+  if(!liste.length){
+    kutu.innerHTML = `<p class="bos-not">${escapeHtml(t(mekanlar.length ? 'mk_no_match' : 'mk_empty'))}</p>`;
+    return;
+  }
+  kutu.innerHTML = liste.map(m=>{
+    const yer = [m.district, m.city].filter(Boolean).join(', ');
+    const kac = mekanProjeleri(m.id).length;
+    return `<div class="mk-kart" data-mk="${escapeHtml(m.id)}">
+      <div class="mk-ad">${escapeHtml(m.name)}</div>
+      ${yer ? `<div class="mk-yer">${escapeHtml(yer)}</div>` : ''}
+      ${m.address ? `<div class="mk-adres">${escapeHtml(m.address)}</div>` : ''}
+      <div class="mk-rozetler">
+        ${kac ? `<span class="mk-rozet">${escapeHtml(t('mk_projects')(kac))}</span>` : ''}
+        ${m.permission ? `<span class="mk-rozet">${escapeHtml(t('mk_has_permission'))}</span>` : ''}
+        ${m.cautions ? `<span class="mk-rozet mk-dikkat">${escapeHtml(t('mk_has_cautions'))}</span>` : ''}
+        ${m.mapsUrl ? `<a class="mk-rozet" href="${escapeHtml(m.mapsUrl)}" target="_blank" rel="noopener" data-dis>${escapeHtml(t('mk_map'))}</a>` : ''}
+      </div>
+    </div>`;
+  }).join('');
+  kutu.querySelectorAll('[data-mk]').forEach(el=>{
+    el.addEventListener('click', e=>{
+      // Harita baglantisina tiklamak pencereyi acmasin.
+      if(e.target.closest('[data-dis]')) return;
+      mekanPenceresiniAc(el.dataset.mk);
+    });
+  });
+}
+
+function mekanPenceresiniAc(id){
+  const m = id ? mekanById(id) : null;
+  acikMekanId = m ? m.id : null;
+  const y = (k, v)=> { document.getElementById(k).value = v || ''; };
+  document.getElementById('mk_baslik').textContent = t(m ? 'mk_title_edit' : 'mk_title_new');
+  y('mk_name', m && m.name); y('mk_city', m && m.city); y('mk_district', m && m.district);
+  y('mk_address', m && m.address); y('mk_permission', m && m.permission);
+  y('mk_cautions', m && m.cautions); y('mk_notes', m && m.notes);
+  y('mk_maps', m && m.mapsUrl); y('mk_drive', m && m.driveUrl);
+  const kac = m ? mekanProjeleri(m.id).length : 0;
+  document.getElementById('mk_bagli').textContent = kac ? t('mk_linked')(kac) : '';
+  document.getElementById('mk_delete').hidden = !m;
+  document.getElementById('placeOverlay').classList.add('open');
+  document.getElementById('mk_name').focus();
+}
+function mekanPenceresiniKapat(){
+  document.getElementById('placeOverlay').classList.remove('open');
+  acikMekanId = null;
+}
+function mekanKaydet(){
+  const al = k => document.getElementById(k).value;
+  const alanlar = { name: al('mk_name'), city: al('mk_city'), district: al('mk_district'),
+                    address: al('mk_address'), permission: al('mk_permission'),
+                    cautions: al('mk_cautions'), notes: al('mk_notes'),
+                    mapsUrl: al('mk_maps'), driveUrl: al('mk_drive') };
+  if(!alanlar.name.trim()){ document.getElementById('mk_name').focus(); return; }
+  if(acikMekanId) mekanGuncelle(acikMekanId, alanlar);
+  else if(!mekanEkle(alanlar)) return;
+  mekanPenceresiniKapat();
+  renderMekanlar(); renderProjects();
+}
+document.getElementById('pe_place').addEventListener('change', async e=>{
+  if(e.target.value === '__yeni__'){
+    const ad = (await sor(t('mk_title_new')) || '').trim();
+    const m = ad ? mekanEkle({ name: ad }) : null;
+    mekanSecimiDoldur(m ? m.id : (duzenlenenProje ? duzenlenenProje.placeId || '' : ''));
+    if(m) renderMekanlar();
+    return;
+  }
+  mekanBilgisiYaz();
+});
+document.getElementById('mk_new').addEventListener('click', ()=> mekanPenceresiniAc(null));
+document.getElementById('mk_cancel').addEventListener('click', mekanPenceresiniKapat);
+document.getElementById('placeOverlay').addEventListener('click', e=>{ if(e.target.id === 'placeOverlay') mekanPenceresiniKapat(); });
+document.getElementById('mk_save').addEventListener('click', mekanKaydet);
+document.getElementById('mk_delete').addEventListener('click', async ()=>{
+  const m = acikMekanId ? mekanById(acikMekanId) : null;
+  if(!m) return;
+  const kac = mekanProjeleri(m.id).length;
+  if(!await onayla({ baslik: t('mk_del_title'), govde: t('mk_del_body'), vurgu: m.name,
+                     not: kac ? t('mk_del_linked')(kac) : '', tamam: t('p_delete'), tehlike: true })) return;
+  mekanSil(m.id);
+  mekanPenceresiniKapat();
+  renderMekanlar(); renderProjects();
+});
+document.getElementById('mk_search').addEventListener('input', e=>{ mekanArama = e.target.value; renderMekanlar(); });
+
 // --- Scriptler sayfasi ------------------------------------------------
 let scriptFiltresi = '';
 
@@ -6211,6 +6507,7 @@ function openProjectEdit(id){
   document.getElementById('pe_ideasTag').textContent = kacFikir ? t('fk_count')(kacFikir) : t('sc_empty');
   sahaAlanlariniDoldur(p);
   document.getElementById('pe_address').value = p.address || '';
+  mekanSecimiDoldur(p.placeId || '');
   const tur = document.getElementById('pe_type');
   projTypeSelectDoldur(tur, p.type || 'other');
   adresAlaniniTazele(tur, document.getElementById('pe_addressWrap'));
@@ -6275,6 +6572,7 @@ function projToRow(p, uid){
     id: p.id, user_id: uid,
     name: p.name || '', keywords: p.keywords || '', notes: p.notes || '',
     address: p.address || '', type: p.type || 'other',
+    place_id: p.placeId || null,
     // Bos metin tarih sutununa yazilamaz; yoklugu null ile anlatiliyor.
     start_date: p.shootDate ? p.shootDate : null,
     cancelled: p.cancelled === true,
@@ -6295,6 +6593,7 @@ function projFromRow(r){
     topic: r.topic || '', district: r.district || '', city: r.city || '',
     format: r.format || '', permission: r.permission || '',
     scriptUrl: r.script_url || '', driveUrl: r.drive_url || '',
+    placeId: r.place_id || '',
     mapsUrl: r.maps_url || '', fieldNotes: r.field_notes || '',
     cautions: r.cautions || '', shotList: r.shot_list || '',
     deadlines: (r.deadlines && typeof r.deadlines === 'object') ? r.deadlines : {},
@@ -6403,6 +6702,102 @@ const FIKIR_MAX = 600, FIKIR_ADET = 500;
 // Ust sinir: tarayici hafizasi (~5 MB) sessizce doluyor, hata vermiyor.
 // 40.000 karakter ~6.500 kelime — en uzun belgesel metnine yeter.
 const SCRIPT_MAX = 40000, SCRIPT_ADET = 300;
+
+// Mekanlar: cekim yerleri. Eski lokasyon takibinde projeler mekanlarin
+// ALTINDA duruyordu; Shootboard'a tasinirken mekan diye bir kayit kalmadi,
+// adres her projenin icine ayri ayri yazildi. Ayni yerde ikinci kez cekim
+// yapan kisi hepsini bastan giriyordu. Mekan artik kendi kaydi; proje ona
+// baglaniyor (projects.placeId).
+const MEKAN_KEY = 'demo_places';
+const MEKAN_ADET = 400;
+let mekanlar = [];   // [{id, name, city, district, address, permission, cautions, notes, mapsUrl, driveUrl}]
+const mekanDirty = new Set(), mekanRemoved = new Set();
+let mekanPushTimer = null;
+function mekanKey(){ return session ? MEKAN_KEY + '_' + session.user.id : MEKAN_KEY; }
+function yeniMekanId(){ return 'mk_' + Date.now().toString(36) + '_' + Math.random().toString(36).slice(2,6); }
+
+function mekanTemizle(ham){
+  if(!ham || typeof ham !== 'object') return null;
+  const y = (v, n)=> (typeof v === 'string' ? v.slice(0, n) : '');
+  const ad = y(ham.name, 160).trim();
+  // Adsiz mekan listede tutunamaz.
+  if(!ad) return null;
+  return {
+    id: (typeof ham.id === 'string' && /^[A-Za-z0-9_-]{1,64}$/.test(ham.id)) ? ham.id : yeniMekanId(),
+    name: ad,
+    city: y(ham.city, 120), district: y(ham.district, 120),
+    address: y(ham.address, 400),
+    permission: y(ham.permission, 400), cautions: y(ham.cautions, 2000),
+    notes: y(ham.notes, 4000),
+    mapsUrl: y(ham.mapsUrl, 600), driveUrl: y(ham.driveUrl, 600),
+    createdAt: typeof ham.createdAt === 'number' ? ham.createdAt : Date.now(),
+    updatedAt: typeof ham.updatedAt === 'number' ? ham.updatedAt : Date.now()
+  };
+}
+function mekanRowYap(m, uid){
+  return { id: m.id, user_id: uid, name: m.name, city: m.city, district: m.district,
+           address: m.address, permission: m.permission, cautions: m.cautions,
+           notes: m.notes, maps_url: m.mapsUrl, drive_url: m.driveUrl, deleted_at: null,
+           created_at: new Date(m.createdAt).toISOString(),
+           updated_at: new Date(m.updatedAt).toISOString() };
+}
+function mekanRowOku(r){
+  return mekanTemizle({ id: r.id, name: r.name || '', city: r.city || '', district: r.district || '',
+                        address: r.address || '', permission: r.permission || '',
+                        cautions: r.cautions || '', notes: r.notes || '',
+                        mapsUrl: r.maps_url || '', driveUrl: r.drive_url || '',
+                        createdAt: r.created_at ? Date.parse(r.created_at) : Date.now(),
+                        updatedAt: r.updated_at ? Date.parse(r.updated_at) : 0 });
+}
+function loadMekanlar(){
+  try{
+    const m = JSON.parse(localStorage.getItem(mekanKey()) || 'null');
+    mekanlar = Array.isArray(m) ? m.map(mekanTemizle).filter(Boolean).slice(0, MEKAN_ADET) : [];
+  }catch(e){ mekanlar = []; }
+}
+function saveMekanlar(){
+  try{ localStorage.setItem(mekanKey(), JSON.stringify(mekanlar)); }catch(e){ kotaHatasi(e); }
+  if(session){ clearTimeout(mekanPushTimer); mekanPushTimer = setTimeout(mekanPush, 700); }
+}
+async function mekanPush(){ await kayitPush('places', mekanlar, mekanDirty, mekanRemoved, mekanRowYap); }
+function mekanById(id){ return mekanlar.find(m=>m.id === id) || null; }
+function mekanSiraliListe(){ return mekanlar.slice().sort((a,b)=> a.name.localeCompare(b.name, 'tr')); }
+// Bir mekana bagli projeler: mekan silinmeden once "burada uc cekim var"
+// diyebilmek icin.
+function mekanProjeleri(id){ return projects.filter(p=>p.placeId === id); }
+
+function mekanEkle(alanlar){
+  const m = mekanTemizle(alanlar);
+  if(!m) return null;
+  if(mekanlar.length >= MEKAN_ADET){ uyari(t('mk_limit')(MEKAN_ADET)); return null; }
+  const ayni = mekanlar.find(x=> x.name.toLocaleLowerCase('tr') === m.name.toLocaleLowerCase('tr'));
+  if(ayni){ uyari(t('mk_exists')(ayni.name)); return ayni; }
+  mekanlar.push(m);
+  mekanDirty.add(m.id);
+  saveMekanlar();
+  return m;
+}
+function mekanGuncelle(id, alanlar){
+  const m = mekanById(id);
+  if(!m) return null;
+  const yeni = mekanTemizle({ ...m, ...alanlar, id: m.id, createdAt: m.createdAt, updatedAt: Date.now() });
+  if(!yeni) return null;
+  Object.assign(m, yeni);
+  mekanDirty.add(m.id);
+  saveMekanlar();
+  return m;
+}
+function mekanSil(id){
+  const i = mekanlar.findIndex(m=>m.id === id);
+  if(i === -1) return;
+  mekanlar.splice(i, 1);
+  mekanDirty.delete(id); mekanRemoved.add(id);
+  // Bagli projeler sahipsiz kalmasin: bag kopuyor, projenin kendi adresi
+  // duruyor.
+  projects.forEach(p=>{ if(p.placeId === id){ p.placeId = ''; projDirtyIsaretle(p.id); } });
+  saveProjects();
+  saveMekanlar();
+}
 
 let fikirler  = [];   // [{id, text, projectId, createdAt, updatedAt}]
 let scriptler = [];   // [{id, title, text, source, projectId, createdAt, updatedAt}]
@@ -6862,18 +7257,26 @@ async function kayitPush(tablo, liste, kirli, silinen, satirYap){
 async function fikirScriptBulutSenkron(){
   if(!sb || !session) return;
   try{
-    const [f, s] = await Promise.all([
+    const [f, s, m] = await Promise.all([
       sb.from('ideas').select('*').is('deleted_at', null),
-      sb.from('scripts').select('*').is('deleted_at', null)
+      sb.from('scripts').select('*').is('deleted_at', null),
+      sb.from('places').select('*').is('deleted_at', null)
     ]);
     if(f.error) throw f.error;
     if(s.error) throw s.error;
+    // Mekanlar tablosu henuz kurulmamis olabilir (sql/24): eksikligi butun
+    // senkronu dusurmesin, digerleri gelmeye devam etsin.
+    if(m.error) console.warn('[bulut] mekanlar okunamadi', m.error);
     const degistiF = listeKat(fikirler,  (f.data || []).map(fikirRowOku).filter(Boolean),  fikirDirty);
     const degistiS = listeKat(scriptler, (s.data || []).map(scriptRowOku).filter(Boolean), scriptDirty);
+    const degistiM = m.error ? false
+      : listeKat(mekanlar, (m.data || []).map(mekanRowOku).filter(Boolean), mekanDirty);
     if(degistiF) saveFikirler();
     if(degistiS) saveScriptler();
-    if(degistiF || degistiS){ renderFikirler(); renderScriptler(); renderProjects(); }
+    if(degistiM) saveMekanlar();
+    if(degistiF || degistiS || degistiM){ renderFikirler(); renderScriptler(); renderMekanlar(); renderProjects(); }
     await fikirPush(); await scriptPush();
+    if(!m.error) await mekanPush();
   }catch(err){
     console.error('[bulut] fikir/script okuma hatasi', err);
   }
@@ -6899,8 +7302,10 @@ function listeKat(yerel, uzak, kirli){
 
 function fikirScriptAfterSignOut(){
   fikirDirty.clear(); fikirRemoved.clear();
+  mekanDirty.clear(); mekanRemoved.clear();
   scriptDirty.clear(); scriptRemoved.clear();
   loadFikirScript();
+  loadMekanlar();
 }
 function readLocalProjects(key){
   try{
@@ -6998,6 +7403,7 @@ function secilenTipler(){
 const SAYFALAR = [
   ['ideas',     'ideasPage',     'tabIdeas'],
   ['scripts',   'scriptsPage',   'tabScripts'],
+  ['places',    'placesPage',    'tabPlaces'],
   ['projects',  'projectsPage',  'tabProjects'],
   ['calendar',  'calendarPage',  'tabCalendar'],
   ['templates', 'templatesPage', 'tabTemplates']
@@ -7013,6 +7419,7 @@ function setPage(ad){
   if(ad === 'templates') renderSablon();
   if(ad === 'ideas') renderFikirler();
   if(ad === 'scripts') renderScriptler();
+  if(ad === 'places') renderMekanlar();
 }
 
 document.getElementById('tabCalendar').addEventListener('click', ()=> setPage('calendar'));
@@ -7020,6 +7427,7 @@ document.getElementById('tabProjects').addEventListener('click', ()=>{ track('fu
 document.getElementById('tabTemplates').addEventListener('click', ()=>{ track('funnel/templates-opened'); setPage('templates'); });
 document.getElementById('tabIdeas').addEventListener('click', ()=>{ track('funnel/ideas-opened'); setPage('ideas'); });
 document.getElementById('tabScripts').addEventListener('click', ()=>{ track('funnel/scripts-opened'); setPage('scripts'); });
+document.getElementById('tabPlaces').addEventListener('click', ()=>{ track('funnel/places-opened'); setPage('places'); });
 
 document.getElementById('acc_add').addEventListener('click', ()=>{
   const kutu = document.getElementById('acc_url');
@@ -7164,6 +7572,7 @@ document.getElementById('pe_save').addEventListener('click', ()=>{
   p.name = ad.slice(0,120);
   p.type = document.getElementById('pe_type').value;
   p.address = document.getElementById('pe_address').value.trim().slice(0,300);
+  p.placeId = document.getElementById('pe_place').value === '__yeni__' ? (p.placeId || '') : document.getElementById('pe_place').value;
   p.keywords = document.getElementById('pe_keywords').value.slice(0,200);
   p.shootDate = document.getElementById('pe_shoot').value || '';
   p.cancelled = document.getElementById('pe_cancelled').checked;
@@ -10619,6 +11028,7 @@ populateSelects();
 load();
 loadProjects();
 loadFikirScript();
+loadMekanlar();
 // Bir onceki surumde proje serbest metindi; o kayitlar gercek projeye
 // cevriliyor. Kayitlar yuklendikten SONRA calismali.
 projeleriGocur();
@@ -11461,6 +11871,7 @@ async function afterSignIn(){
   // Scriptler de buluttan BAGIMSIZ yukleniyor: hesaba ozel anahtar bu
   // noktada belli oldu. Sablonlarda bunun tersi bir kez veri kaybettirdi.
   loadFikirScript();
+  loadMekanlar();
   // Bulut eslestirmesi BEKLENMEDEN baslatiliyor: kendi try/catch'i var,
   // gerektiginde ekrani kendisi tazeliyor. Await edilseydi takvim tek
   // satirlik bir sorgu yuzunden gec acilirdi.
