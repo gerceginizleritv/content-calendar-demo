@@ -727,7 +727,15 @@ body.suruklenirken *{cursor:grabbing !important;}
    kaliyor, metin kutusu buyuyecek bos alan bulamiyordu. */
 .modal.sc-modal{display:flex;flex-direction:column;height:100%;max-height:100%;overflow:hidden;}
 .sc-modal > *{flex:none;}
-.sc-modal .sc-text{flex:1 1 auto;min-height:110px;overflow-y:auto;resize:none;}
+/* Kayan tek yer: adimlarin durdugu govde. Basliktan ve "Kaydet"
+   satirindan cikarildi ki uzun bir scriptte bile kaydet dugmesi
+   aranmasin. min-height:0 sart — flex cocugu varsayilan olarak
+   icerigi kadar kuculuyor, o zaman govde degil pencere kayiyordu. */
+.sc-modal .sc-govde{flex:1 1 auto;min-height:0;overflow-y:auto;
+  padding-right:6px;margin-right:-6px;}
+/* Metin kutusu artik esnek degil: govde kaydigi icin kutuya sabit
+   bir boy verilebiliyor. Kullanici isterse kenardan buyutuyor. */
+.sc-modal .sc-text{min-height:200px;height:34vh;overflow-y:auto;resize:vertical;}
 /* Fikir listesi cok uzarsa metin kutusunu ezmesin: kendi icinde kayiyor. */
 .sc-modal .sc-idea-list,.sc-modal .sc-proj-list{max-height:22vh;overflow-y:auto;}
 /* Alcak ekranda pencere yine kaymaya basliyordu: yardimci metin ve
@@ -2504,6 +2512,10 @@ textarea.sc-ai-brief{min-height:64px;resize:vertical;line-height:1.5;}
          nereye bagli oldugu (projeler), sonra basligi, en sonda metnin
          kendisi. Onceki halde "bu fikirlerden script yaz" butun fikirleri
          dogrudan metne dokuyordu; secim diye bir sey yoktu. -->
+    <!-- Alti adim tek ekrana sigmiyor: sigdirmak icin her birini
+         kisaltmak gerekirdi. Bunun yerine adimlar KENDI icinde
+         kayiyor; baslik ve "Kaydet" disarida, hep gorunur kaliyor. -->
+    <div class="sc-govde">
     <div class="sc-blok">
       <div class="sc-blok-bas">
         <span data-i18n="sc_ideas_step">1 · Which ideas?</span>
@@ -2600,6 +2612,7 @@ textarea.sc-ai-brief{min-height:64px;resize:vertical;line-height:1.5;}
                 placeholder="Write the script here. It stays with the project."></textarea>
       <div class="sc-onizleme" id="sc_onizleme" hidden></div>
       <p class="sc-note" data-i18n="sc_note">Once there is text here, the “Script” step is ticked on its own.</p>
+    </div>
     </div>
     <div class="modal-actions">
       <button class="btn btn-danger" id="sc_delete" data-i18n="p_delete">Delete</button>
