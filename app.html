@@ -729,7 +729,7 @@ body.suruklenirken *{cursor:grabbing !important;}
 .sc-modal > *{flex:none;}
 .sc-modal .sc-text{flex:1 1 auto;min-height:110px;overflow-y:auto;resize:none;}
 /* Fikir listesi cok uzarsa metin kutusunu ezmesin: kendi icinde kayiyor. */
-.sc-modal .sc-idea-list{max-height:22vh;overflow-y:auto;}
+.sc-modal .sc-idea-list,.sc-modal .sc-proj-list{max-height:22vh;overflow-y:auto;}
 /* Alcak ekranda pencere yine kaymaya basliyordu: yardimci metin ve
    bosluklar kisiliyor, yazma alani korunuyor. Aciklama satiri bir ipucu,
    kontrol degil — once o gidiyor. */
@@ -737,7 +737,7 @@ body.suruklenirken *{cursor:grabbing !important;}
   .modal.sc-modal{padding:16px;}
   .sc-modal .sc-ai-not{display:none;}
   .fold.sc-ideas{margin-bottom:12px;}
-  .sc-modal .sc-idea-list{max-height:14vh;}
+  .sc-modal .sc-idea-list,.sc-modal .sc-proj-list{max-height:14vh;}
   .sc-modal .modal-actions{margin-top:12px;}
 }
 .sc-head{display:flex;justify-content:space-between;align-items:flex-start;gap:14px;
@@ -761,7 +761,7 @@ body.suruklenirken *{cursor:grabbing !important;}
 .sc-drive-durum.error{color:var(--red);}
 /* AI tarifi: script kutusundan gorunus olarak AYRI dursun ki hangisinin
    ne oldugu bir bakista anlasilsin. */
-.sc-ai-satir{display:flex;gap:8px;align-items:center;flex-wrap:wrap;margin:12px 0 6px;}
+.sc-ai-satir{display:flex;gap:8px;align-items:flex-start;flex-wrap:wrap;margin:0 0 6px;}
 .sc-ai-brief{
   flex:1;min-width:220px;background:var(--bg);color:var(--text);
   border:1px dashed var(--accent-dim);border-radius:7px;padding:9px 11px;
@@ -804,10 +804,34 @@ body.suruklenirken *{cursor:grabbing !important;}
 .sc-ideas .sc-idea-list,
 .sc-ideas .sc-idea-ekle{margin-left:14px;margin-right:14px;}
 .sc-ideas .sc-idea-ekle{margin-bottom:14px;}
-.sc-idea-list{margin:6px 0 0;padding-left:20px;font-size:13px;color:var(--text-dim);}
-.sc-idea-list li{margin:3px 0;display:flex;align-items:flex-start;gap:8px;}
+.sc-idea-list,.sc-proj-list{margin:6px 0 0;padding-left:20px;font-size:13px;color:var(--text-dim);}
+.sc-idea-list li,.sc-proj-list li{margin:3px 0;display:flex;align-items:flex-start;gap:8px;}
 .sc-idea-metin{flex:1;min-width:0;overflow-wrap:anywhere;}
 /* Secim kutusu: hangi fikirlerin script'e girecegini kullanici seciyor. */
+/* Script penceresi bolum bolum: her adim kendi cercevesinde, basliginda
+   sira numarasiyla. Onceden alanlar alt alta akiyordu ve hangisinin neye
+   yaradigi ancak okuyunca anlasiliyordu. */
+.sc-blok{border:1px solid var(--line);border-radius:10px;padding:12px 14px;margin-bottom:14px;}
+.sc-blok-duz{border:0;padding:0;}
+.sc-blok-bas{display:flex;align-items:center;gap:10px;flex-wrap:wrap;margin-bottom:10px;
+  font-size:12px;font-weight:700;letter-spacing:.03em;color:var(--text-dim);text-transform:uppercase;}
+.sc-blok-say{font-weight:500;text-transform:none;letter-spacing:0;font-size:12px;}
+/* Arama kutusu basligin sagina yapisiyor, kalan yeri aliyor. */
+.sc-blok-ara{flex:1;min-width:120px;max-width:260px;margin-left:auto;
+  background:var(--bg);border:1px solid var(--line);color:var(--text);
+  padding:5px 8px;font-size:12.5px;font-family:inherit;border-radius:5px;}
+.sc-blok-ara:focus{outline:none;border-color:var(--accent-dim);}
+/* Listeler kayiyor: yuzlerce fikri olan birinde pencere uzayip gitmesin. */
+.sc-idea-list,.sc-proj-list{max-height:190px;overflow-y:auto;margin:0;padding:0;list-style:none;}
+.sc-idea-proje{flex:none;font-size:11px;color:var(--text-dim);border:1px solid var(--line);
+  border-radius:20px;padding:1px 7px;white-space:nowrap;}
+.sc-bos{color:var(--text-dim);font-size:12.5px;padding:6px 2px;}
+.sc-iskele{margin-top:8px;}
+.sc-baslik-satir{display:flex;gap:8px;align-items:stretch;}
+.sc-baslik-satir .sc-title{flex:1;min-width:0;margin:0;}
+.sc-baslik-satir .btn{flex:none;}
+/* Tarif kutusu artik cok satirli. */
+textarea.sc-ai-brief{min-height:64px;resize:vertical;line-height:1.5;}
 .sc-idea-sec{display:flex;align-items:flex-start;gap:9px;cursor:pointer;flex:1;min-width:0;}
 .sc-idea-sec input{margin:2px 0 0;accent-color:var(--accent);width:15px;height:15px;flex:none;cursor:pointer;}
 .sc-idea-sec:hover .sc-idea-metin{color:var(--text);}
@@ -2277,35 +2301,54 @@ body.suruklenirken *{cursor:grabbing !important;}
       <h2 data-i18n="sc_title">Script</h2>
       <div class="sc-count" id="scCount"></div>
     </div>
-    <input type="text" id="sc_title" class="sc-title" maxlength="160"
-           data-i18n-placeholder="sc_title_ph" placeholder="Title — what is this script for?">
-    <!-- Proje bagi istege bagli. Buradan yeni proje de acilabiliyor:
-         "once script yazdim, sonra projeye baslarim" akisi bu. -->
-    <div class="sc-proj">
-      <label data-i18n="sc_project">Project</label>
-      <select id="sc_proj"></select>
-    </div>
-    <!-- Fikirler yazarken GORUNUR kalsin: bir pencere kapatip otekini
-         acmak, zinciri kagit uzerinde birakir. -->
-    <details class="fold fold-modal sc-ideas" id="sc_ideasFold" hidden>
-      <summary><span data-i18n="fk_title">Ideas</span>
-        <span class="fold-count" id="sc_ideasCount"></span></summary>
-      <button type="button" class="sc-idea-all" id="sc_ideasAll" hidden
-              data-i18n="sc_idea_all">Select all</button>
+    <!-- Sira, isin sirasi: once neyden yazilacagi (fikirler), sonra
+         nereye bagli oldugu (projeler), sonra basligi, en sonda metnin
+         kendisi. Onceki halde "bu fikirlerden script yaz" butun fikirleri
+         dogrudan metne dokuyordu; secim diye bir sey yoktu. -->
+    <div class="sc-blok">
+      <div class="sc-blok-bas">
+        <span data-i18n="sc_ideas_step">1 · Which ideas?</span>
+        <span class="sc-blok-say" id="sc_ideasCount"></span>
+        <input type="search" id="sc_ideaSearch" class="sc-blok-ara"
+               data-i18n-attr="placeholder:sc_idea_search_ph" placeholder="Search ideas">
+        <button type="button" class="fk-mini" id="sc_ideasAll" data-i18n="sc_idea_all">Select all</button>
+      </div>
       <ul class="sc-idea-list" id="sc_ideasList"></ul>
       <!-- Fikir buradan da eklenebiliyor: aklina gelen bir seyi not etmek
-           icin pencereyi kapatip Fikirler sayfasina gitmek zorunda
-           kalmasin. Eklenen fikir SECILI projeye bagli. -->
+           icin pencereyi kapatip Fikirler sayfasina gitmek gerekmesin. -->
       <div class="sc-idea-ekle">
         <input type="text" id="sc_newIdea" maxlength="600"
                data-i18n-placeholder="sc_idea_new_ph" placeholder="A new idea…">
         <button type="button" class="btn btn-sm" id="sc_addIdea" data-i18n="sc_idea_add">+ Add</button>
       </div>
-    </details>
-    <!-- Drive'dan getirme: metni O AN kopyalar, biter. Canli bag degil.
-         Cift yonlu senkron cakisma cozumu ister ve bu uygulamada iki kez
-         veri kaybettik. -->
-    <div class="sc-bar">
+      <!-- Eski davranis bir dugmeye indi: isteyen secilenleri metne
+           doksun, istemeyen bos sayfayla baslasin. -->
+      <button type="button" class="fk-mini sc-iskele" id="sc_toText" data-i18n="sc_to_text">Put the picked ideas into the text ↓</button>
+    </div>
+
+    <div class="sc-blok">
+      <div class="sc-blok-bas">
+        <span data-i18n="sc_projects_step">2 · Which projects?</span>
+        <span class="sc-blok-say" id="sc_projCount"></span>
+        <button type="button" class="fk-mini" id="sc_projNew" data-i18n="sc_proj_new">+ New project</button>
+      </div>
+      <!-- Coklu secim: bir script iki cekimi birden besleyebiliyor.
+           Listenin ILKI scriptin "asil" projesi sayiliyor (projectId). -->
+      <ul class="sc-proj-list" id="sc_projList"></ul>
+    </div>
+
+    <div class="sc-blok">
+      <div class="sc-blok-bas"><span data-i18n="sc_title_step">3 · Title</span></div>
+      <div class="sc-baslik-satir">
+        <input type="text" id="sc_title" class="sc-title" maxlength="160"
+               data-i18n-placeholder="sc_title_ph" placeholder="Title — what is this script for?">
+        <button type="button" class="btn btn-sm ai-btn" id="sc_titleAi" data-i18n="sc_title_ai">✨ AI</button>
+      </div>
+    </div>
+
+    <div class="sc-blok sc-blok-duz">
+      <div class="sc-blok-bas"><span data-i18n="sc_drive_step">4 · Drive</span></div>
+      <div class="sc-bar">
       <button type="button" class="btn btn-sm" id="sc_drive">
         <svg viewBox="0 0 24 24" aria-hidden="true" class="sc-drive-ico">
           <path fill="#0066DA" d="M2.4 17.4 3.8 19.8c.3.5.7.9 1.2 1.1L9.3 13H1.1c0 .6.1 1.1.4 1.6z"/>
@@ -2319,24 +2362,32 @@ body.suruklenirken *{cursor:grabbing !important;}
       </button>
       <button type="button" class="btn btn-sm" id="sc_drivePush" hidden data-i18n="sc_drive_push">Write to Drive</button>
       <button type="button" class="btn btn-sm" id="sc_driveUndo" hidden data-i18n="sc_drive_undo">Back to the previous text</button>
-      <span class="sc-drive-durum" id="sc_driveStatus"></span>
+        <span class="sc-drive-durum" id="sc_driveStatus"></span>
+      </div>
     </div>
-    <!-- AI'ya verilen tarif AYRI bir alanda. Onceki halde tek kutu vardi
-         ve kullanici "1800 kelimelik bir script yaz" diye tarif yazinca
-         o metin scriptin KENDISI gibi duruyordu: prompt mu script mi
-         belli olmuyordu. Tarif burada, sonuc asagida. -->
-    <div class="sc-ai-satir">
-      <input type="text" id="sc_aiBrief" maxlength="600" class="sc-ai-brief"
-             data-i18n-placeholder="sc_ai_brief_ph"
-             placeholder="What should the AI write? e.g. a 1400-word script covering the ideas I picked">
-      <button type="button" class="btn btn-sm ai-btn" id="sc_ai" data-i18n="sc_ai">✨ Write with AI</button>
+
+    <div class="sc-blok">
+      <div class="sc-blok-bas"><span data-i18n="sc_ai_step">5 · What should the AI write?</span></div>
+      <!-- AI'ya verilen tarif AYRI bir alanda ve genis: kullanici burada
+           uzunluk, ton, hedef kitle, bolum sirasi gibi seyleri yaziyor.
+           Tek satirlik bir kutuda yazdigini goremiyordu. -->
+      <div class="sc-ai-satir">
+        <textarea id="sc_aiBrief" maxlength="1500" class="sc-ai-brief" rows="3"
+                  data-i18n-placeholder="sc_ai_brief_ph"
+                  placeholder="What should the AI write? e.g. a 1400-word script covering the ideas I picked"></textarea>
+        <button type="button" class="btn btn-sm ai-btn" id="sc_ai" data-i18n="sc_ai">✨ Write with AI</button>
+      </div>
+      <div class="sc-idea-picked" id="sc_ideaPicked"></div>
+      <p class="sc-ai-not" data-i18n="sc_ai_note">Tick the ideas above, then say what you want here. The AI writes into the box below; your projects go with it either way.</p>
     </div>
-    <div class="sc-idea-picked" id="sc_ideaPicked"></div>
-    <p class="sc-ai-not" data-i18n="sc_ai_note">The AI writes into the box below. Your project and its ideas already go with it — here you only say what you want.</p>
-    <textarea id="sc_text" class="sc-text" rows="18" spellcheck="true"
-              data-i18n-placeholder="sc_ph"
-              placeholder="Write the script here. It stays with the project."></textarea>
-    <p class="sc-note" data-i18n="sc_note">Once there is text here, the “Script” step is ticked on its own.</p>
+
+    <div class="sc-blok sc-blok-duz">
+      <div class="sc-blok-bas"><span data-i18n="sc_text_step">6 · The script</span></div>
+      <textarea id="sc_text" class="sc-text" rows="18" spellcheck="true"
+                data-i18n-placeholder="sc_ph"
+                placeholder="Write the script here. It stays with the project."></textarea>
+      <p class="sc-note" data-i18n="sc_note">Once there is text here, the “Script” step is ticked on its own.</p>
+    </div>
     <div class="modal-actions">
       <button class="btn btn-danger" id="sc_delete" data-i18n="p_delete">Delete</button>
       <button class="btn" id="sc_cancel" data-i18n="btn_cancel">Cancel</button>
@@ -3157,15 +3208,33 @@ const LANG = {
     btn_ai_write: "✨ AI",
     sc_words: (n)=> `${n} words`,
     sc_idea_all: "Select all / none",
+    sc_ideas_step: "1 · Which ideas?",
+    sc_projects_step: "2 · Which projects?",
+    sc_title_step: "3 · Title",
+    sc_drive_step: "4 · Drive",
+    sc_ai_step: "5 · What should the AI write?",
+    sc_text_step: "6 · The script",
+    sc_idea_search_ph: "Search ideas",
+    sc_idea_no_match: "Nothing matches that search.",
+    sc_to_text: "Put the picked ideas into the text ↓",
+    sc_proj_new: "+ New project",
+    sc_proj_empty: "No projects yet.",
+    sc_proj_picked: (n)=> `${n} project${n===1?'':'s'} picked`,
+    sc_proj_picked_none: "No project — the script stands on its own.",
+    sc_title_ai: "✨ AI",
+    sc_title_ai_working: "Thinking of a title…",
+    sc_title_ai_done: "Title suggested. Change it as you like.",
+    sc_title_ai_bos: "Pick an idea or a project first, or write a little of the script.",
+    sc_title_ai_ustune: "Replace the title that is there?",
     sc_idea_picked: (n)=> `${n} idea${n===1?'':'s'} picked — the script will be built on them.`,
     sc_idea_picked_none: "No idea picked — tick the ones the script should cover.",
+    sc_idea_picked_kisa: (n)=> `${n} picked`,
     sc_idea_new_ph: "A new idea — jot it down without leaving this window",
     sc_idea_add: "+ Add",
-    sc_idea_need_project: "Pick a project first — the idea is attached to it.",
     sc_idea_added: "Idea added.",
     sc_ai: "✨ Write with AI",
     sc_ai_brief_ph: "What should the AI write? e.g. a 1400-word script covering the ideas I picked",
-    sc_ai_note: "Tick the ideas above, then say what you want here. The AI writes into the box below; your project goes with it either way.",
+    sc_ai_note: "Tick the ideas above, then say what you want here. The AI writes into the box below; your projects go with it either way.",
     sc_ai_working: "Writing…",
     sc_ai_done: "Written with Gemini. Edit it as you like — “Back to the previous text” brings your old text back.",
     sc_ai_overwrite: "There is already text here. Shall the AI write over it? Your old text stays behind “Back to the previous text”.",
@@ -3727,11 +3796,29 @@ const LANG = {
     btn_ai_write: "✨ AI",
     sc_words: (n)=> `${n} kelime`,
     sc_idea_all: "Tümünü seç / bırak",
+    sc_ideas_step: "1 · Hangi fikirler?",
+    sc_projects_step: "2 · Hangi projeler?",
+    sc_title_step: "3 · Başlık",
+    sc_drive_step: "4 · Drive",
+    sc_ai_step: "5 · AI ne yazsın?",
+    sc_text_step: "6 · Script",
+    sc_idea_search_ph: "Fikirlerde ara",
+    sc_idea_no_match: "Bu aramaya uyan fikir yok.",
+    sc_to_text: "Seçilen fikirleri metne dök ↓",
+    sc_proj_new: "+ Yeni proje",
+    sc_proj_empty: "Henüz proje yok.",
+    sc_proj_picked: (n)=> `${n} proje seçili`,
+    sc_proj_picked_none: "Proje seçilmedi — script kendi başına duruyor.",
+    sc_title_ai: "✨ AI",
+    sc_title_ai_working: "Başlık düşünülüyor…",
+    sc_title_ai_done: "Başlık önerildi. Dilediğin gibi değiştir.",
+    sc_title_ai_bos: "Önce bir fikir ya da proje seç, ya da scriptten biraz yaz.",
+    sc_title_ai_ustune: "Duran başlığın yerine yazılsın mı?",
     sc_idea_picked: (n)=> `${n} fikir seçili — script bunların üzerine kurulacak.`,
     sc_idea_picked_none: "Hiç fikir seçilmedi — script'in işlemesini istediklerini işaretle.",
+    sc_idea_picked_kisa: (n)=> `${n} seçili`,
     sc_idea_new_ph: "Yeni bir fikir — bu pencereden çıkmadan not et",
     sc_idea_add: "+ Ekle",
-    sc_idea_need_project: "Önce bir proje seç — fikir ona bağlanıyor.",
     sc_idea_added: "Fikir eklendi.",
     sc_ai: "✨ AI ile yaz",
     sc_ai_brief_ph: "AI ne yazsın? Örn: seçtiğim fikirlerin yer aldığı 1400 kelimelik bir script",
@@ -5468,8 +5555,8 @@ let scriptFiltresi = '';
 
 function scriptleriSuz(){
   if(scriptFiltresi === '') return scriptler;
-  if(scriptFiltresi === '-') return scriptler.filter(s=>!s.projectId);
-  return scriptler.filter(s=>s.projectId === scriptFiltresi);
+  if(scriptFiltresi === '-') return scriptler.filter(s=> !scriptProjeleri(s).length);
+  return scriptler.filter(s=> scriptProjeleri(s).indexOf(scriptFiltresi) !== -1);
 }
 function renderScriptler(){
   const kap = document.getElementById('sc_list');
@@ -5616,6 +5703,7 @@ async function driveDegisimZamani(kimlik, token){
 // Script'e girecek fikirler. Pencere her acildiginda sifirlaniyor:
 // onceki scriptin secimi yeni pencereye tasinmamali.
 const seciliFikirler = new Set();
+const seciliProjeler = new Set();
 let driveOncekiMetin = null;   // "onceki hale don" icin — Drive de AI de kullaniyor
 // Metni EN SON kim yazdi: 'drive' | 'ai' | null. Kayitta source olarak
 // duruyor. Anlik goruntunun varligindan cikarilamaz, cunku ayni goruntuyu
@@ -5842,60 +5930,92 @@ function fikirIskeleti(liste){
   if(!liste.length) return '';
   return liste.map((f,i)=> (i+1) + '. ' + f.text.trim()).join('\n\n') + '\n\n';
 }
-// Bagli projenin fikirleri pencerede goz onunde: pencere kapatip otekini
-// acmak zinciri kagit uzerinde birakiyordu.
-function scriptFikirSeridi(pid){
-  const kat = document.getElementById('sc_ideasFold');
-  const gecerli = pid && pid !== '__yeni__';
-  const liste = gecerli ? projeFikirleri(pid) : [];
-  // Proje seciliyse fikir olmasa da serit duruyor: ekleme kutusu orada.
-  // Proje yoksa fikrin baglanacagi yer de yok, serit gizli kaliyor.
-  kat.hidden = !gecerli;
-  if(!gecerli) return;
-  // Serit ACIK aciliyor: kapaliyken ne fikirler ne de ekleme kutusu
-  // gorunuyor, kullanici buradan fikir eklenebildigini fark etmiyordu.
-  kat.open = true;
-  document.getElementById('sc_ideasCount').textContent =
-    liste.length ? t('fk_count')(liste.length) : t('sc_empty');
-  // Fikirlerin yaninda SECIM kutusu var, dugme degil. Onceki halde her
-  // fikrin yaninda bir "yaz" dugmesi vardi ve "bu fikri AI'a yazdir" gibi
-  // okunuyordu. Oysa dogru is akisi su: kullanici script'e girecek
-  // fikirleri SECIYOR, ne istedigini altta bir cumleyle soyluyor.
-  document.getElementById('sc_ideasList').innerHTML =
-    liste.map(f=>`<li>
-      <label class="sc-idea-sec">
-        <input type="checkbox" data-fikir-sec="${escapeHtml(f.id)}"
-               ${seciliFikirler.has(f.id) ? 'checked' : ''}>
-        <span class="sc-idea-metin">${escapeHtml(f.text)}</span>
-      </label>
-    </li>`).join('');
-  document.getElementById('sc_ideasList').querySelectorAll('[data-fikir-sec]').forEach(el=>{
-    el.addEventListener('change', ()=>{
-      const id = el.dataset.fikirSec;
-      el.checked ? seciliFikirler.add(id) : seciliFikirler.delete(id);
-      fikirSecimiYaz();
-    });
+// Pencerede secili olanlar. Fikirler artik BIR projeye bagli degil:
+// kullanici iki farkli cekimin fikirlerini tek bir scriptte
+// birlestirebiliyor. Projeler de coklu.
+let scFikirArama = '';
+
+function scriptFikirListesiCiz(){
+  const q = scFikirArama.trim().toLocaleLowerCase('tr');
+  const hepsi = fikirSiraliListe();
+  const liste = hepsi.filter(f=>{
+    if(!q) return true;
+    const proje = f.projectId ? projectById(f.projectId) : null;
+    return (f.text || '').toLocaleLowerCase('tr').includes(q)
+        || (proje ? proje.name.toLocaleLowerCase('tr').includes(q) : false);
   });
+  const kutu = document.getElementById('sc_ideasList');
+  if(!liste.length){
+    kutu.innerHTML = `<li class="sc-bos">${escapeHtml(t(hepsi.length ? 'sc_idea_no_match' : 'sc_empty'))}</li>`;
+  }else{
+    kutu.innerHTML = liste.map(f=>{
+      const proje = f.projectId ? projectById(f.projectId) : null;
+      return `<li>
+        <label class="sc-idea-sec">
+          <input type="checkbox" data-fikir-sec="${escapeHtml(f.id)}"
+                 ${seciliFikirler.has(f.id) ? 'checked' : ''}>
+          <span class="sc-idea-metin">${escapeHtml(f.text)}</span>
+          ${proje ? `<span class="sc-idea-proje">${escapeHtml(proje.name)}</span>` : ''}
+        </label>
+      </li>`;
+    }).join('');
+    kutu.querySelectorAll('[data-fikir-sec]').forEach(el=>{
+      el.addEventListener('change', ()=>{
+        const id = el.dataset.fikirSec;
+        el.checked ? seciliFikirler.add(id) : seciliFikirler.delete(id);
+        // Fikrin projesi kendiliginden isaretlenmiyor: kullanici bir
+        // cekimin fikrini baska bir projeye yazdirmak isteyebilir.
+        fikirSecimiYaz();
+      });
+    });
+  }
   document.getElementById('sc_ideasAll').hidden = liste.length < 2;
   fikirSecimiYaz();
 }
 
-// Kac fikrin secildigi tarif kutusunun yaninda yaziyor: modele neyin
-// gidecegini kullanici basmadan once gormeli.
+function scriptProjeListesiCiz(){
+  const liste = projects.filter(p=>!p.cancelled);
+  const kutu = document.getElementById('sc_projList');
+  projeSecimiYaz();
+  if(!liste.length){
+    kutu.innerHTML = `<li class="sc-bos">${escapeHtml(t('sc_proj_empty'))}</li>`;
+    return;
+  }
+  kutu.innerHTML = liste.map(p=>`<li>
+    <label class="sc-idea-sec">
+      <input type="checkbox" data-proje-sec="${escapeHtml(p.id)}"
+             ${seciliProjeler.has(p.id) ? 'checked' : ''}>
+      <span class="sc-idea-metin">${escapeHtml(p.name)}</span>
+    </label>
+  </li>`).join('');
+  kutu.querySelectorAll('[data-proje-sec]').forEach(el=>{
+    el.addEventListener('change', ()=>{
+      const id = el.dataset.projeSec;
+      el.checked ? seciliProjeler.add(id) : seciliProjeler.delete(id);
+      projeSecimiYaz();
+    });
+  });
+}
+function projeSecimiYaz(){
+  document.getElementById('sc_projCount').textContent =
+    seciliProjeler.size ? t('sc_proj_picked')(seciliProjeler.size) : t('sc_proj_picked_none');
+}
+
+// Kac fikrin secildigi hem listenin basliginda hem tarif kutusunun
+// yaninda yaziyor: modele neyin gidecegini kullanici basmadan once gormeli.
 function fikirSecimiYaz(){
+  const kac = seciliFikirler.size;
+  const sayEl = document.getElementById('sc_ideasCount');
+  if(sayEl) sayEl.textContent = kac ? t('sc_idea_picked_kisa')(kac) : '';
   const el = document.getElementById('sc_ideaPicked');
   if(!el) return;
-  const pid = scriptPencereProje();
-  const liste = (pid && pid !== '__yeni__') ? projeFikirleri(pid) : [];
-  const kac = liste.filter(f=>seciliFikirler.has(f.id)).length;
   el.textContent = kac ? t('sc_idea_picked')(kac) : t('sc_idea_picked_none');
   el.className = 'sc-idea-picked' + (kac ? ' var' : '');
 }
 
 // Secili fikirlerin metni: script'in uzerine kurulacagi malzeme.
-function seciliFikirMetni(pid){
-  if(!pid || pid === '__yeni__') return '';
-  return projeFikirleri(pid).filter(f=>seciliFikirler.has(f.id))
+function seciliFikirMetni(){
+  return fikirSiraliListe().filter(f=>seciliFikirler.has(f.id))
     .map(f => (f.parts && f.parts.length ? f.parts.map(x=>x.text) : [f.text]))
     .reduce((a,b)=>a.concat(b), [])
     .map(x=>(x||'').trim()).filter(Boolean)
@@ -5911,33 +6031,39 @@ function scriptPencereFikirEkle(){
   const kutu = document.getElementById('sc_newIdea');
   const metin = kutu.value.trim();
   if(!metin) return;
-  const pid = scriptPencereProje();
-  if(!pid || pid === '__yeni__'){ showToast(t('sc_idea_need_project')); return; }
-  const yeni = fikirEkle(metin, pid);
+  // Proje secilmediyse fikir projesiz doguyor: pencerede fikir yazmak
+  // icin once proje secmek zorunda kalmak akisi kesiyordu.
+  const yeni = fikirEkle(metin, scriptPencereProje());
   if(!yeni) return;
   kutu.value = '';
-  scriptFikirSeridi(pid);
-  document.getElementById('sc_ideasFold').open = true;
+  // Yeni fikir kendiliginden SECILI: kullanici onu script icin yaziyor.
+  seciliFikirler.add(yeni.id);
+  scriptFikirListesiCiz();
   renderFikirler();
   showToast(t('sc_idea_added'));
   kutu.focus();
 }
 
-function scriptPencereProje(){ return document.getElementById('sc_proj').value; }
+// Secili projeler. Listenin ILKI scriptin "asil" projesi sayiliyor:
+// eski tek projeli alan (projectId) onunla dolduruluyor.
+function scriptPencereProjeleri(){ return projects.filter(p=>seciliProjeler.has(p.id)).map(p=>p.id); }
+function scriptPencereProje(){ return scriptPencereProjeleri()[0] || ''; }
 
 // Script icin baglam: pencerede duran baslik, secili proje ve O PROJENIN
 // fikirleri. Fikir yoksa bile baslik tek basina yeter; ikisi de yoksa
 // modele gonderilecek bir sey yok, uydurmasin diye engelleniyor.
 function aiScriptPrompt(){
-  const pid = scriptPencereProje();
-  const satir = aiProjeSatirlari(pid);
+  // Secili projelerin HEPSI baglama giriyor: kullanici iki cekimi tek
+  // scriptte birlestirmis olabilir.
+  const projeler = scriptPencereProjeleri();
+  const satir = projeler.reduce((a, pid)=> a.concat(aiProjeSatirlari(pid)), []);
   const baslik = document.getElementById('sc_title').value.trim();
   if(baslik) satir.push('What this script is for: ' + baslik);
   // SECILI fikirler malzeme, secilmemisler yalnizca arka plan. Kullanici
-  // hicbirini secmediyse eskisi gibi hepsi arka plan olarak gidiyor.
-  const secili = seciliFikirMetni(pid);
+  // hicbirini secmediyse projelerin fikirleri arka plan olarak gidiyor.
+  const secili = seciliFikirMetni();
   if(secili) satir.push('The script must be BUILT ON these ideas the creator picked — cover every one of them:\n' + aiKisalt(secili, AI_FIKIR_SINIR));
-  else { const fk = aiFikirSatiri(pid); if(fk) satir.push(fk); }
+  else projeler.forEach(pid=>{ const fk = aiFikirSatiri(pid); if(fk) satir.push(fk); });
   const tarif = (document.getElementById('sc_aiBrief').value || '').trim();
   const baglam = satir.join('\n');
   // Tarif de baglam da yoksa modele gonderilecek bir sey yok.
@@ -6003,15 +6129,22 @@ async function scriptAiYaz(){
 function openScript(id, baslangic){
   const sc = id ? scriptById(id) : null;
   acikScriptId = sc ? sc.id : null;
-  yeniScriptTaslak = sc ? null : Object.assign({ text:'', title:'', projectId:'' }, baslangic || {});
+  yeniScriptTaslak = sc ? null : Object.assign({ text:'', title:'', projectId:'', projectIds:[], ideaIds:[] }, baslangic || {});
   const veri = sc || yeniScriptTaslak;
 
   document.getElementById('sc_title').value = veri.title || '';
   document.getElementById('sc_text').value  = veri.text || '';
-  const sel = document.getElementById('sc_proj');
-  sel.innerHTML = projeSecenekleri(veri.projectId || '', t('fk_no_project'));
+  // Secimler kayitta duruyor: pencere yeniden acildiginda ayni fikirler
+  // ve projeler isaretli geliyor.
   seciliFikirler.clear();
-  scriptFikirSeridi(veri.projectId || '');
+  (veri.ideaIds || []).forEach(id=> seciliFikirler.add(id));
+  seciliProjeler.clear();
+  (veri.projectIds && veri.projectIds.length ? veri.projectIds
+     : (veri.projectId ? [veri.projectId] : [])).forEach(id=> seciliProjeler.add(id));
+  document.getElementById('sc_ideaSearch').value = '';
+  scFikirArama = '';
+  scriptFikirListesiCiz();
+  scriptProjeListesiCiz();
   scriptSayaci((veri.text || '').length);
   // Silme yalnizca var olan bir kayit icin anlamli.
   document.getElementById('sc_delete').hidden = !sc;
@@ -6036,7 +6169,9 @@ function closeScript(){
 function scriptKaydet(){
   const baslik = document.getElementById('sc_title').value;
   const metin = document.getElementById('sc_text').value;
-  const pid = scriptPencereProje() === '__yeni__' ? '' : scriptPencereProje();
+  const pidler = scriptPencereProjeleri();
+  const pid = pidler[0] || '';
+  const fikirIdleri = [...seciliFikirler];
   if(!metin.trim() && !baslik.trim()){ closeScript(); return; }   // bos taslak: kaydedecek bir sey yok
   // Metin Drive'dan geldiyse kaynagi oyle kaydediliyor; ileride
   // "bu nereden geldi" sorusunun cevabi kayitta dursun.
@@ -6044,8 +6179,10 @@ function scriptKaydet(){
                  || (document.getElementById('sc_driveStatus').classList.contains('ok') ? 'drive' : undefined);
   const bag = { driveFileId: driveBaglantisi.id, driveFileName: driveBaglantisi.ad,
                 driveModified: driveBaglantisi.zaman };
-  if(acikScriptId) scriptGuncelle(acikScriptId, { title: baslik, text: metin, projectId: pid, source: kaynak, ...bag });
-  else scriptEkle({ title: baslik, text: metin, projectId: pid, source: kaynak, ...bag });
+  const alanlar = { title: baslik, text: metin, projectId: pid, projectIds: pidler,
+                    ideaIds: fikirIdleri, source: kaynak, ...bag };
+  if(acikScriptId) scriptGuncelle(acikScriptId, alanlar);
+  else scriptEkle(alanlar);
   closeScript();
   renderScriptler(); renderFikirler(); renderProjects();
 }
@@ -6319,6 +6456,14 @@ function fikirTemizle(ham){
     updatedAt: typeof ham.updatedAt === 'number' ? ham.updatedAt : Date.now()
   };
 }
+// Disaridan (bulut, yedek dosyasi) gelen kimlik listelerini suzuyor:
+// dizi degilse bos, kimlik bicimine uymayan eleman atiliyor, tekrar yok.
+function kimlikListesi(x){
+  if(!Array.isArray(x)) return [];
+  const gorulen = new Set();
+  return x.filter(v => typeof v === 'string' && /^[A-Za-z0-9_-]{1,64}$/.test(v)
+                       && !gorulen.has(v) && gorulen.add(v)).slice(0, 60);
+}
 function scriptTemizle(ham){
   if(!ham || typeof ham !== 'object') return null;
   const metin = typeof ham.text === 'string' ? ham.text.slice(0, SCRIPT_MAX) : '';
@@ -6330,7 +6475,18 @@ function scriptTemizle(ham){
     title: baslik,
     text: metin,
     source: ham.source === 'drive' || ham.source === 'ai' ? ham.source : 'manual',
-    projectId: typeof ham.projectId === 'string' ? ham.projectId : '',
+    // projectId listenin ILKI olarak duruyor: eski surumler, proje
+    // silindiginde devreye giren yabanci anahtar ve "scriptin projesi"
+    // diyen her yer bozulmasin. Tam liste projectIds'te.
+    projectId: kimlikListesi(ham.projectIds).length
+                 ? kimlikListesi(ham.projectIds)[0]
+                 : (typeof ham.projectId === 'string' ? ham.projectId : ''),
+    projectIds: kimlikListesi(ham.projectIds).length
+                 ? kimlikListesi(ham.projectIds)
+                 : (typeof ham.projectId === 'string' && ham.projectId ? [ham.projectId] : []),
+    // Scriptin hangi fikirlerden dogdugu: pencere yeniden acildiginda
+    // ayni secimle gelsin.
+    ideaIds: kimlikListesi(ham.ideaIds),
     // Metin bir Drive belgesinden geldiyse hangisinden geldigi burada.
     // Geri yazabilmek icin gerekiyor; ayrica "sen aldiktan sonra belge
     // degisti mi" sorusunun cevabi driveModified'da duruyor.
@@ -6402,7 +6558,12 @@ function saveScriptler(){
 
 // --- Sorgular ---------------------------------------------------------
 function projeFikirleri(pid){ return fikirler.filter(f=>f.projectId === pid); }
-function projeScriptleri(pid){ return scriptler.filter(s=>s.projectId === pid); }
+// Bir script birden cok projeye bagli olabiliyor; eski kayitlarda yalniz
+// projectId dolu. Ikisini de karsilayan tek okuma.
+function scriptProjeleri(s){
+  return (s && s.projectIds && s.projectIds.length) ? s.projectIds : (s && s.projectId ? [s.projectId] : []);
+}
+function projeScriptleri(pid){ return scriptler.filter(s=> scriptProjeleri(s).indexOf(pid) !== -1); }
 function fikirSayisi(pid){ return projeFikirleri(pid).length; }
 function scriptSayisi(pid){ return projeScriptleri(pid).length; }
 function scriptVar(pid){ return projeScriptleri(pid).some(s=>s.text.trim()); }
@@ -6647,6 +6808,7 @@ function fikirRowOku(r){
 function scriptRowYap(s, uid){
   return { id: s.id, user_id: uid, title: s.title, content: s.text, source: s.source,
            project_id: s.projectId || null, deleted_at: null,
+           project_ids: s.projectIds || [], idea_ids: s.ideaIds || [],
            drive_file_id: s.driveFileId || null,
            drive_file_name: s.driveFileName || null,
            drive_modified: s.driveModified || null,
@@ -6656,6 +6818,7 @@ function scriptRowYap(s, uid){
 function scriptRowOku(r){
   return scriptTemizle({ id: r.id, title: r.title || '', text: r.content || '',
                          source: r.source, projectId: r.project_id || '',
+                         projectIds: r.project_ids || [], ideaIds: r.idea_ids || [],
                          driveFileId: r.drive_file_id || '',
                          driveFileName: r.drive_file_name || '',
                          driveModified: r.drive_modified || '',
@@ -7036,11 +7199,13 @@ document.getElementById('fk_toScript').addEventListener('click', ()=>{
   if(kutu && kutu.value.trim()) fikirEkleTiklandi();
   const liste = fikirleriSuz();
   if(!liste.length) return;
-  // Hepsi ayni projeye bagliysa script de o projeye bagli dogsun.
-  const projeler = [...new Set(liste.map(f=>f.projectId))];
-  const pid = projeler.length === 1 ? projeler[0] : '';
-  const proje = pid ? projectById(pid) : null;
-  openScript(null, { text: fikirIskeleti(liste), projectId: pid, title: proje ? proje.name : '' });
+  // Fikirler artik metne DOKULMUYOR, pencerede SECILI geliyor. Eski hali
+  // butun fikirleri sormadan tek bir metne yaziyordu; kullanici hangisini
+  // isteyecegini secemiyordu.
+  const projeler = [...new Set(liste.map(f=>f.projectId).filter(Boolean))];
+  const proje = projeler.length === 1 ? projectById(projeler[0]) : null;
+  openScript(null, { projectIds: projeler, projectId: projeler[0] || '',
+                     ideaIds: liste.map(f=>f.id), title: proje ? proje.name : '' });
 });
 document.getElementById('sc_newBtn').addEventListener('click', ()=>{
   openScript(null, { projectId: scriptFiltresi && scriptFiltresi !== '-' ? scriptFiltresi : '' });
@@ -7069,10 +7234,16 @@ document.getElementById('sc_text').addEventListener('input', e=>{
   scriptSayaci(e.target.value.length);
   driveYazDugmesiTazele();
 });
-document.getElementById('sc_proj').addEventListener('change', async e=>{
-  const pid = await secimdenProje(e.target, '');
-  e.target.innerHTML = projeSecenekleri(pid, t('fk_no_project'));
-  scriptFikirSeridi(pid);
+// Pencereden yeni proje acmak: adi soruluyor, acilan proje kendiliginden
+// seciliyor. Onceden bu is proje acilir kutusunun "__yeni__" secenegiydi.
+document.getElementById('sc_projNew').addEventListener('click', async ()=>{
+  const ad = (await sor(t('fk_new_project_ask')) || '').trim();
+  if(!ad) return;
+  const p = projeEkle(ad, '', '', 'other', '');
+  if(!p) return;
+  seciliProjeler.add(p.id);
+  scriptProjeListesiCiz();
+  renderProjects();
 });
 document.getElementById('sc_drive').addEventListener('click', driveGetir);
 document.getElementById('sc_drivePush').addEventListener('click', driveYazPenceresiAc);
@@ -7094,22 +7265,87 @@ document.getElementById('sc_driveUndo').addEventListener('click', ()=>{
   document.getElementById('sc_driveUndo').hidden = true;
   driveDurum('');
 });
-document.getElementById('sc_proj').addEventListener('change', ()=>{
-  const pid = scriptPencereProje();
-  // Proje degisti: onceki projenin fikir secimi burada gecersiz.
-  seciliFikirler.clear();
-  scriptFikirSeridi(pid === '__yeni__' ? '' : pid);
+document.getElementById('sc_ideaSearch').addEventListener('input', e=>{
+  scFikirArama = e.target.value;
+  scriptFikirListesiCiz();
 });
+// "Hepsini sec" EKRANDA GORUNENLERE bakiyor: arama yapilmisken gorunmeyen
+// bir fikri sessizce secmek sasirtici olurdu.
 document.getElementById('sc_ideasAll').addEventListener('click', ()=>{
-  const pid = scriptPencereProje();
-  const liste = (pid && pid !== '__yeni__') ? projeFikirleri(pid) : [];
+  const q = scFikirArama.trim().toLocaleLowerCase('tr');
+  const liste = fikirSiraliListe().filter(f=>{
+    if(!q) return true;
+    const proje = f.projectId ? projectById(f.projectId) : null;
+    return (f.text || '').toLocaleLowerCase('tr').includes(q)
+        || (proje ? proje.name.toLocaleLowerCase('tr').includes(q) : false);
+  });
   const hepsiSecili = liste.length && liste.every(f=>seciliFikirler.has(f.id));
   liste.forEach(f=> hepsiSecili ? seciliFikirler.delete(f.id) : seciliFikirler.add(f.id));
-  scriptFikirSeridi(pid === '__yeni__' ? '' : pid);
+  scriptFikirListesiCiz();
 });
+// Secilenleri metne dokmek artik bir DUGME. Onceden "bu fikirlerden
+// script yaz" butun fikirleri sormadan metne yaziyordu; kullanici bos bir
+// sayfayla baslamak isteyebiliyor.
+document.getElementById('sc_toText').addEventListener('click', async ()=>{
+  const secili = fikirSiraliListe().filter(f=>seciliFikirler.has(f.id));
+  if(!secili.length){ showToast(t('sc_idea_picked_none')); return; }
+  const alan = document.getElementById('sc_text');
+  const iskele = fikirIskeleti(secili);
+  if(alan.value.trim()){
+    // Var olan metnin ustune yazilmiyor, ALTINA ekleniyor: saatlerce
+    // yazilmis bir metni bir dugme silmemeli.
+    alan.value = alan.value.replace(/\s*$/, '') + '\n\n' + iskele;
+  }else{
+    alan.value = iskele;
+  }
+  alan.value = alan.value.slice(0, SCRIPT_MAX);
+  scriptSayaci(alan.value.length);
+  driveYazDugmesiTazele();
+  alan.focus();
+});
+
+// Baslik onerisi: secili fikirlerden ve projelerden. Scriptin metnini
+// beklemeden calisiyor -- baslik en basta lazim.
+async function scriptBaslikAiYaz(){
+  const durumEl = document.getElementById('sc_driveStatus');
+  durumEl.dataset.temelSinif = 'sc-drive-durum';
+  const satir = scriptPencereProjeleri().reduce((a, pid)=> a.concat(aiProjeSatirlari(pid)), []);
+  const fikir = seciliFikirMetni();
+  if(fikir) satir.push('Ideas the creator picked for this script:\n' + aiKisalt(fikir, AI_FIKIR_SINIR));
+  const metin = (document.getElementById('sc_text').value || '').trim();
+  if(!satir.length && !metin){
+    durumEl.textContent = t('sc_title_ai_bos');
+    durumEl.className = 'sc-drive-durum error';
+    return;
+  }
+  if(metin) satir.push('The beginning of the script:\n' + aiKisalt(metin, 1200));
+  const prompt = 'Here is what a creator is planning:\n' + satir.join('\n')
+    + '\n\nSuggest ONE title for this script. At most eight words.'
+    + ' It names what the script is about; it is not a slogan and not clickbait.'
+    + ' Write it in ' + aiDilAdi() + '.'
+    + ' Return ONLY the title — no quotation marks, no explanation.';
+  const kutu = document.getElementById('sc_title');
+  const eski = kutu.value.trim();
+  if(eski && !await onayla(t('sc_title_ai_ustune'))) return;
+  const ham = await aiCalistir(document.getElementById('sc_titleAi'), durumEl, t('sc_title_ai_working'), prompt);
+  if(ham === null) return;
+  const temiz = aiTemizle(ham, true);
+  if(!temiz){
+    durumEl.textContent = t('ai_error_prefix') + 'boş yanıt' + t('ai_error_suffix');
+    durumEl.className = 'sc-drive-durum error';
+    return;
+  }
+  kutu.value = temiz.replace(/^["'«»]+|["'«»]+$/g, '').slice(0, 160);
+  durumEl.textContent = t('sc_title_ai_done');
+  durumEl.className = 'sc-drive-durum ok';
+}
+document.getElementById('sc_titleAi').addEventListener('click', scriptBaslikAiYaz);
+
 document.getElementById('sc_ai').addEventListener('click', scriptAiYaz);
+// Kutu artik cok satirli: Enter satir atliyor, uretimi Ctrl/Cmd+Enter
+// baslatiyor. Onceki tek satirlik kutuda Enter dogrudan uretiyordu.
 document.getElementById('sc_aiBrief').addEventListener('keydown', e=>{
-  if(e.key === 'Enter'){ e.preventDefault(); scriptAiYaz(); }
+  if(e.key === 'Enter' && (e.ctrlKey || e.metaKey)){ e.preventDefault(); scriptAiYaz(); }
 });
 document.getElementById('sc_addIdea').addEventListener('click', scriptPencereFikirEkle);
 document.getElementById('sc_newIdea').addEventListener('keydown', e=>{
@@ -9163,7 +9399,7 @@ const TOUR_STEPS_I18N = {
       body:"Shootboard follows the order the work actually happens in. You note an idea, turn it into a script, open a project when the shoot becomes real, and place the posts on the calendar. Nothing forces that order — a script can exist before any project, and a project can start without a single idea.",
       points:["Ideas and Scripts live on their own pages, not under a project.",
               "Attaching a project is optional and can be done later.",
-              "The left rail follows the same order: Ideas, Scripts, Projects, Calendar, Templates."] },
+              "The left rail starts with Projects — that is where a shoot is actually run — then Ideas, Scripts, Calendar, Templates."] },
     { title:"Ideas: a wall of cards",
       body:"Every idea is a card — an angle, a question, a scene, a person to talk to. Card size shows you at a glance how much you have written. Drop one card on another and they merge into a single card holding both pieces; drag a piece back out and it becomes its own card again.",
       points:["Drop on the middle to merge, on the edge to reorder.",
@@ -9215,7 +9451,7 @@ const TOUR_STEPS_I18N = {
       body:"Shootboard işin gerçekte olduğu sırayı izliyor. Bir fikri not ediyorsun, onu script'e çeviriyorsun, çekim somutlaşınca proje açıyorsun ve paylaşımları takvime yerleştiriyorsun. Bu sıra zorunlu değil: script proje olmadan da var olabilir, proje de tek bir fikir olmadan başlayabilir.",
       points:["Fikirler ve Scriptler kendi sayfalarında yaşıyor, projenin altında değil.",
               "Projeye bağlamak isteğe bağlı ve sonradan da yapılabiliyor.",
-              "Sol menü aynı sırayı izliyor: Fikirler, Scriptler, Projeler, Takvim, Şablonlar."] },
+              "Sol menü Projeler ile başlıyor — çekim asıl orada yürüyor — sonra Fikirler, Scriptler, Takvim, Şablonlar."] },
     { title:"Fikirler: kartlardan bir duvar",
       body:"Her fikir bir kart — bir açı, bir soru, bir sahne, konuşulacak bir kişi. Kartın boyu ne kadar yazdığını bir bakışta gösteriyor. Bir kartı ötekinin üstüne bırakınca ikisi tek kartta birleşiyor; birleşik karttan bir parçayı sürükleyip çıkarınca yeniden kendi kartı oluyor.",
       points:["Ortasına bırakınca birleşiyor, kenarına bırakınca sıra değişiyor.",
