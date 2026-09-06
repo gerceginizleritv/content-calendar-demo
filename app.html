@@ -811,6 +811,23 @@ body.suruklenirken *{cursor:grabbing !important;}
 /* Script penceresi bolum bolum: her adim kendi cercevesinde, basliginda
    sira numarasiyla. Onceden alanlar alt alta akiyordu ve hangisinin neye
    yaradigi ancak okuyunca anlasiliyordu. */
+/* Ice aktarma: eslesme satirlari iki sutun (etiket + secim). */
+#imp_metin{min-height:120px;max-height:220px;font-size:12.5px;}
+.imp-esles{display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:8px 16px;}
+.imp-satir{display:flex;align-items:center;gap:10px;font-size:13px;}
+.imp-satir > span{flex:0 0 84px;color:var(--text-dim);}
+.imp-satir select{flex:1;min-width:0;background:var(--bg);border:1px solid var(--line);
+  color:var(--text);padding:6px 8px;border-radius:5px;font:inherit;font-size:12.5px;}
+/* Onizleme: ilk bes satir, gelecegi haliyle. */
+.imp-onizleme{display:grid;gap:5px;}
+.imp-sat{display:flex;gap:10px;flex-wrap:wrap;align-items:baseline;font-size:12.5px;
+  border:1px solid var(--line);border-radius:7px;padding:6px 9px;}
+.imp-t{font-family:'IBM Plex Mono',monospace;color:var(--text);}
+.imp-p{color:var(--text-dim);}
+.imp-b{flex:1;min-width:120px;overflow-wrap:anywhere;}
+.imp-pr,.imp-y{font-size:11px;color:var(--text-dim);border:1px solid var(--line);
+  border-radius:20px;padding:1px 8px;}
+.imp-y{color:var(--green);border-color:var(--green);}
 /* Mekan kartlari: ad ustte, yer ve adres altinda, rozetler en altta. */
 .mk-kart{border:1px solid var(--line);border-radius:10px;padding:12px 14px;margin-bottom:10px;
   cursor:pointer;background:var(--surface);}
@@ -2198,6 +2215,7 @@ textarea.sc-ai-brief{min-height:64px;resize:vertical;line-height:1.5;}
     <span class="build-id" id="buildId" title="build"></span>
     <a class="privacy-link" href="sartlar.html" data-i18n="btn_terms">Terms</a>
     <a class="privacy-link" href="privacy.html" data-i18n="btn_privacy">Privacy</a>
+    <button class="foot-link" id="importBtn" data-i18n="imp_btn">Import</button>
     <button class="foot-link" id="exportBtn" data-i18n="btn_export">Export Backup</button>
     <button class="foot-link" id="resetBtn" data-i18n="btn_reset">Reset Demo</button>
   </footer>
@@ -2342,6 +2360,49 @@ textarea.sc-ai-brief{min-height:64px;resize:vertical;line-height:1.5;}
      okuyor: hesabi yok, hicbir sey degistiremiyor. Aciklama, hashtag ve
      kapak tarifleri BILEREK gonderilmiyor -- ekibe "ne zaman ne cikiyor"
      gostermek icin taslak metinlerin disariya gitmesi gerekmiyor. -->
+<!-- Ice aktarma: baska bir yerde plan tutan biri tasiyabilsin. Sheets,
+     Excel ve Notion'dan KOPYALANAN sey sekmeyle ayrilmis metin; CSV
+     dosyasi da ayni isleve giriyor. Sutun eslesmesi kullaniciya
+     birakiliyor -- tahmin ediliyor ama son soz onun. -->
+<div class="overlay" id="importOverlay">
+  <div class="modal modal-lg">
+    <h2 data-i18n="imp_title">Import from a spreadsheet</h2>
+    <p class="hint" data-i18n="imp_lead">Copy the rows from Google Sheets, Excel or Notion and paste them below — or choose a CSV file. The first row must be the column names.</p>
+
+    <div class="sc-blok">
+      <div class="sc-blok-bas">
+        <span data-i18n="imp_step1">1 · The rows</span>
+        <span class="sc-blok-say" id="imp_satirSay"></span>
+        <button type="button" class="fk-mini" id="imp_dosyaBtn" data-i18n="imp_file">Choose a CSV file…</button>
+        <input type="file" id="imp_dosya" accept=".csv,.tsv,.txt,text/csv,text/tab-separated-values,text/plain" hidden>
+      </div>
+      <textarea id="imp_metin" rows="6" class="sc-text" data-i18n-attr="placeholder:imp_paste_ph"
+                placeholder="Date	Time	Platform	Title
+2026-09-10	09:00	Instagram	Mosaics — teaser"></textarea>
+    </div>
+
+    <div class="sc-blok" id="imp_eslesBlok" hidden>
+      <div class="sc-blok-bas"><span data-i18n="imp_step2">2 · Which column is what?</span></div>
+      <div class="imp-esles" id="imp_esles"></div>
+    </div>
+
+    <div class="sc-blok" id="imp_onizlemeBlok" hidden>
+      <div class="sc-blok-bas">
+        <span data-i18n="imp_step3">3 · What will land</span>
+        <span class="sc-blok-say" id="imp_ozet"></span>
+      </div>
+      <div class="imp-onizleme" id="imp_onizleme"></div>
+      <p class="hint" id="imp_uyari"></p>
+    </div>
+
+    <div class="ai-status" id="imp_durum"></div>
+    <div class="modal-actions">
+      <button type="button" class="btn" id="imp_iptal" data-i18n="btn_cancel">Cancel</button>
+      <button type="button" class="btn btn-primary" id="imp_uygula" data-i18n="imp_go" disabled>Import</button>
+    </div>
+  </div>
+</div>
+
 <div class="overlay" id="paylasOverlay">
   <div class="modal" style="max-width:480px;">
     <h2 data-i18n="pay_title">Share a read-only link</h2>
@@ -3455,6 +3516,28 @@ const LANG = {
     tab_scripts: "Scripts",
     tab_places: "Places",
     pay_btn: "Share a read-only link",
+    imp_btn: "Import",
+    imp_title: "Import from a spreadsheet",
+    imp_lead: "Copy the rows from Google Sheets, Excel or Notion and paste them below — or choose a CSV file. The first row must be the column names.",
+    imp_step1: "1 · The rows",
+    imp_step2: "2 · Which column is what?",
+    imp_step3: "3 · What will land",
+    imp_file: "Choose a CSV file…",
+    imp_paste_ph: "Date\tTime\tPlatform\tTitle\n2026-09-10\t09:00\tInstagram\tMosaics — teaser",
+    imp_rows: (n)=> `${n} row${n===1?'':'s'} read`,
+    imp_none: "— not in the file —",
+    imp_f_tarih: "Date", imp_f_saat: "Time", imp_f_tur: "Type", imp_f_platform: "Platform",
+    imp_f_baslik: "Title", imp_f_proje: "Project", imp_f_yayinlandi: "Published",
+    imp_summary: (n)=> `${n} entr${n===1?'y':'ies'} ready`,
+    imp_published: "published",
+    imp_nothing: "Nothing usable yet — check which column holds the date.",
+    imp_skipped: (n)=> `${n} row${n===1?'':'s'} skipped: the date could not be read.`,
+    imp_projects: (n)=> `${n} project${n===1?'':'s'} named in the file will be created if they do not exist.`,
+    imp_bad: "That does not look like a table. The first row must be the column names.",
+    imp_confirm: (n)=> `${n} entries will be added to your calendar. Nothing is replaced.`,
+    imp_go: "Import",
+    imp_done: (n)=> `${n} entries imported.`,
+    imp_limit: (yer, kac)=> `There is room for ${yer} more entries, and the file has ${kac}.`,
     pay_title: "Share a read-only link",
     pay_lead: "Anyone with the link sees the dates, the platforms and the titles. They cannot change anything, and they do not need an account.",
     pay_privacy: "Captions, hashtags and cover prompts are not sent — only what is needed to read the plan.",
@@ -4093,6 +4176,28 @@ const LANG = {
     tab_scripts: "Scriptler",
     tab_places: "Mekanlar",
     pay_btn: "Salt-okunur bağlantı paylaş",
+    imp_btn: "İçe Aktar",
+    imp_title: "Tablodan içe aktar",
+    imp_lead: "Google Sheets, Excel ya da Notion'daki satırları kopyalayıp aşağıya yapıştır — ya da bir CSV dosyası seç. İlk satır sütun adları olmalı.",
+    imp_step1: "1 · Satırlar",
+    imp_step2: "2 · Hangi sütun ne?",
+    imp_step3: "3 · Ne eklenecek",
+    imp_file: "CSV dosyası seç…",
+    imp_paste_ph: "Tarih\tSaat\tPlatform\tBaşlık\n2026-09-10\t09:00\tInstagram\tMozaikler — teaser",
+    imp_rows: (n)=> `${n} satır okundu`,
+    imp_none: "— dosyada yok —",
+    imp_f_tarih: "Tarih", imp_f_saat: "Saat", imp_f_tur: "Tür", imp_f_platform: "Platform",
+    imp_f_baslik: "Başlık", imp_f_proje: "Proje", imp_f_yayinlandi: "Yayınlandı",
+    imp_summary: (n)=> `${n} kayıt hazır`,
+    imp_published: "yayınlandı",
+    imp_nothing: "Henüz kullanılabilir bir şey yok — tarihin hangi sütunda olduğuna bak.",
+    imp_skipped: (n)=> `${n} satır atlandı: tarihi okunamadı.`,
+    imp_projects: (n)=> `Dosyada adı geçen ${n} proje, yoksa açılacak.`,
+    imp_bad: "Bu bir tabloya benzemiyor. İlk satır sütun adları olmalı.",
+    imp_confirm: (n)=> `Takvimine ${n} kayıt eklenecek. Var olan hiçbir şey değişmiyor.`,
+    imp_go: "İçe aktar",
+    imp_done: (n)=> `${n} kayıt içe aktarıldı.`,
+    imp_limit: (yer, kac)=> `${yer} kayıtlık yer kaldı, dosyada ${kac} kayıt var.`,
     pay_title: "Salt-okunur bağlantı paylaş",
     pay_lead: "Bağlantıyı açan kişi tarihleri, platformları ve başlıkları görür. Hiçbir şeyi değiştiremez ve hesap açması gerekmez.",
     pay_privacy: "Açıklama, hashtag ve kapak tarifleri gönderilmiyor — yalnızca planı okumak için gerekenler gidiyor.",
@@ -11407,6 +11512,309 @@ function hataMetni(err){
   if(err && err.sunucu)  return t('rm_cal_err_server') + ' ' + err.sunucu;
   return t('rm_cal_err');
 }
+// ---- Ice aktarma: CSV / Sheets / Excel / Notion ---------------------
+// Sheets, Excel ve Notion'dan KOPYALANAN sey sekmeyle ayrilmis metin;
+// disa aktarilan sey CSV. Ikisi de ayni cozumleyiciden geciyor: ayirici
+// baslik satirina bakilarak seciliyor.
+// Karsilastirma icin kucuk harf. toLocaleLowerCase('tr') BURADA
+// KULLANILAMAZ: "Instagram" -> "ınstagram" oluyor ve Ingilizce anahtar
+// kelimelerle eslesmiyor. Ayrica aksanlar dusuruluyor, boylece "Eylül"
+// ile "eylul", "Şubat" ile "subat" ayni sayiliyor.
+function impKucuk(x){
+  return String(x == null ? '' : x).toLowerCase()
+    .normalize('NFKD').replace(/[\u0300-\u036f]/g, '')
+    .replace(/ı/g, 'i').replace(/ş/g, 's').replace(/ğ/g, 'g').trim();
+}
+const IMP_ALANLAR = ['tarih','saat','tur','platform','baslik','proje','yayinlandi'];
+let impTablo = null;    // { basliklar:[], satirlar:[[]] }
+let impEsleme = {};     // alan -> sutun indeksi (-1 = yok)
+
+// Tirnak icindeki ayirici ve satir sonu metnin PARCASI: "Kariye, Fatih"
+// tek hucre. Elle bolme bunu her seferinde ikiye ayiriyordu.
+function impBol(metin, ayirici){
+  const satirlar = [];
+  let hucre = '', satir = [], tirnakta = false;
+  for(let i = 0; i < metin.length; i++){
+    const c = metin[i];
+    if(tirnakta){
+      if(c === '"'){
+        if(metin[i+1] === '"'){ hucre += '"'; i++; }   // "" -> tek tirnak
+        else tirnakta = false;
+      }else hucre += c;
+      continue;
+    }
+    if(c === '"'){ tirnakta = true; continue; }
+    if(c === ayirici){ satir.push(hucre); hucre = ''; continue; }
+    if(c === '\n' || c === '\r'){
+      if(c === '\r' && metin[i+1] === '\n') i++;
+      satir.push(hucre); satirlar.push(satir); hucre = ''; satir = [];
+      continue;
+    }
+    hucre += c;
+  }
+  if(hucre !== '' || satir.length){ satir.push(hucre); satirlar.push(satir); }
+  return satirlar;
+}
+function impAyirici(ilkSatir){
+  // Baslik satirinda EN COK gecen aday ayirici. Sekme once bakiliyor:
+  // Sheets ve Notion kopyasinda tarih icindeki noktalar sayilmasin.
+  const adaylar = ['\t', ';', ',', '|'];
+  let en = ',', enCok = 0;
+  adaylar.forEach(a=>{
+    const n = ilkSatir.split(a).length - 1;
+    if(n > enCok){ enCok = n; en = a; }
+  });
+  return en;
+}
+function impCozumle(metin){
+  const temiz = String(metin || '').replace(/^﻿/, '').trim();
+  if(!temiz) return null;
+  const ilk = temiz.split(/\r?\n/)[0];
+  const satirlar = impBol(temiz, impAyirici(ilk))
+    .map(r => r.map(h => h.trim()))
+    .filter(r => r.some(h => h !== ''));
+  if(satirlar.length < 2) return null;
+  const basliklar = satirlar[0].map((h, i)=> h || ('#' + (i+1)));
+  return { basliklar, satirlar: satirlar.slice(1) };
+}
+
+// Sutun adindan alan tahmini. Turkce ve Ingilizce adlar, Notion'un
+// varsayilan adlari ve sik kullanilan kisaltmalar.
+const IMP_IPUCU = {
+  tarih:      ['tarih','date','gün','gun','day','yayın tarihi','yayin tarihi','publish date','when','tarih/saat','datetime'],
+  saat:       ['saat','time','hour','clock','yayın saati','yayin saati'],
+  tur:        ['tür','tur','type','format','içerik türü','icerik turu','content type'],
+  platform:   ['platform','kanal','channel','mecra','network','account','hesap'],
+  baslik:     ['başlık','baslik','title','name','ad','konu','post','içerik','icerik','description'],
+  proje:      ['proje','project','kampanya','campaign','seri','series'],
+  yayinlandi: ['yayınlandı','yayinlandi','yüklendi','yuklendi','published','posted','uploaded','done','durum','status']
+};
+function impTahmin(basliklar){
+  const esleme = {};
+  const kullanilan = new Set();
+  IMP_ALANLAR.forEach(alan=>{
+    let bulunan = -1;
+    basliklar.forEach((h, i)=>{
+      if(bulunan !== -1 || kullanilan.has(i)) return;
+      const k = impKucuk(h);
+      if(IMP_IPUCU[alan].some(ip => k === impKucuk(ip))) bulunan = i;
+    });
+    // Tam esleme yoksa iceren aransin: "Yayın tarihi" -> tarih.
+    if(bulunan === -1){
+      basliklar.forEach((h, i)=>{
+        if(bulunan !== -1 || kullanilan.has(i)) return;
+        const k = impKucuk(h);
+        if(IMP_IPUCU[alan].some(ip => k.includes(impKucuk(ip)))) bulunan = i;
+      });
+    }
+    if(bulunan !== -1) kullanilan.add(bulunan);
+    esleme[alan] = bulunan;
+  });
+  return esleme;
+}
+
+const IMP_AY = {
+  ocak:1, şubat:2, subat:2, mart:3, nisan:4, mayıs:5, mayis:5, haziran:6, temmuz:7,
+  ağustos:8, agustos:8, eylül:9, eylul:9, ekim:10, kasım:11, kasim:11, aralık:12, aralik:12,
+  january:1, february:2, march:3, april:4, may:5, june:6, july:7, august:8,
+  september:9, october:10, november:11, december:12,
+  jan:1, feb:2, mar:3, apr:4, jun:6, jul:7, aug:8, sep:9, sept:9, oct:10, nov:11, dec:12
+};
+function impTarih(ham){
+  const v = String(ham || '').trim();
+  if(!v) return '';
+  const iki = n => (n < 10 ? '0' : '') + n;
+  let m;
+  // 2026-09-10 ya da 2026-09-10T09:00
+  if((m = v.match(/^(\d{4})-(\d{1,2})-(\d{1,2})/))) return m[1] + '-' + iki(+m[2]) + '-' + iki(+m[3]);
+  // 10.09.2026 / 10/09/2026 — gun once. Ilk sayi 12'den buyukse zaten
+  // gundur; degilse de Turkce yaziya gore gun kabul ediliyor.
+  if((m = v.match(/^(\d{1,2})[./-](\d{1,2})[./-](\d{4})/))){
+    let g = +m[1], a = +m[2];
+    if(g <= 12 && a > 12){ const t = g; g = a; a = t; }   // 09/25/2026 gibi
+    return m[3] + '-' + iki(a) + '-' + iki(g);
+  }
+  // "September 10, 2026" / "10 Eylül 2026"
+  if((m = v.match(/^([A-Za-zÇĞİÖŞÜçğıöşü]+)\s+(\d{1,2}),?\s+(\d{4})/))){
+    const a = IMP_AY[impKucuk(m[1])];
+    if(a) return m[3] + '-' + iki(a) + '-' + iki(+m[2]);
+  }
+  if((m = v.match(/^(\d{1,2})\s+([A-Za-zÇĞİÖŞÜçğıöşü]+),?\s+(\d{4})/))){
+    const a = IMP_AY[impKucuk(m[2])];
+    if(a) return m[3] + '-' + iki(a) + '-' + iki(+m[1]);
+  }
+  return '';
+}
+function impSaat(ham, tarihHam){
+  // Saat sutunu yoksa tarih hucresinin icinde olabilir: "2026-09-10 09:00".
+  const kaynak = String(ham || '').trim() || String(tarihHam || '');
+  const m = kaynak.match(/(\d{1,2}):(\d{2})/);
+  if(!m) return '';
+  const s = +m[1], d = +m[2];
+  if(s > 23 || d > 59) return '';
+  return (s < 10 ? '0' : '') + s + ':' + (d < 10 ? '0' : '') + d;
+}
+function impTur(ham){
+  const v = impKucuk(ham);
+  if(!v) return 'video';
+  if(/short/.test(v)) return 'shorts';
+  if(/reel/.test(v)) return 'reels';
+  if(/karus|carou/.test(v)) return 'carousel';
+  if(/hikay|story/.test(v)) return 'story';
+  if(/anket|poll/.test(v)) return 'poll';
+  if(/gonderi|post|tweet|metin|text/.test(v)) return 'text_post';
+  return 'video';
+}
+function impPlatform(ham){
+  const v = impKucuk(ham);
+  const eslesme = [['youtube','youtube'], ['yt','youtube'], ['instagram','instagram'], ['ig','instagram'],
+                   ['tiktok','tiktok'], ['tik tok','tiktok'], ['facebook','facebook'], ['fb','facebook'],
+                   ['threads','threads'], ['linkedin','linkedin'], ['pinterest','pinterest'],
+                   ['twitter','x'], [' x','x'], ['x','x']];
+  for(const [ara, sonuc] of eslesme){ if(v === ara || v.includes(ara)) return sonuc; }
+  return 'youtube';
+}
+function impEvet(ham){
+  const v = impKucuk(ham);
+  return ['evet','var','e','yes','y','true','1','x','✓','yayinlandi','published','posted','done','tamam'].indexOf(v) !== -1;
+}
+
+// Cozumlenmis tabloyu kayda cevirme. Tarihi okunamayan satir ATLANIYOR ve
+// kaci atlandi kullaniciya soyleniyor -- sessizce dusurmek en kotusu.
+function impKayitlar(){
+  const sonuc = { kayitlar: [], atlanan: 0, projeAdlari: new Set() };
+  if(!impTablo) return sonuc;
+  const al = (satir, alan)=> { const i = impEsleme[alan]; return i >= 0 ? (satir[i] || '') : ''; };
+  impTablo.satirlar.forEach(satir=>{
+    const tarih = impTarih(al(satir, 'tarih'));
+    if(!tarih){ sonuc.atlanan++; return; }
+    const projeAdi = al(satir, 'proje').trim();
+    if(projeAdi) sonuc.projeAdlari.add(projeAdi);
+    sonuc.kayitlar.push({
+      tarih, saat: impSaat(al(satir, 'saat'), al(satir, 'tarih')),
+      tur: impTur(al(satir, 'tur')), platform: impPlatform(al(satir, 'platform')),
+      baslik: al(satir, 'baslik').slice(0, 300), proje: projeAdi,
+      yayinlandi: impEvet(al(satir, 'yayinlandi'))
+    });
+  });
+  return sonuc;
+}
+
+function impEkraniTazele(){
+  const eslesBlok = document.getElementById('imp_eslesBlok');
+  const onizlemeBlok = document.getElementById('imp_onizlemeBlok');
+  const uygula = document.getElementById('imp_uygula');
+  if(!impTablo){
+    eslesBlok.hidden = true; onizlemeBlok.hidden = true; uygula.disabled = true;
+    document.getElementById('imp_satirSay').textContent = '';
+    return;
+  }
+  document.getElementById('imp_satirSay').textContent = t('imp_rows')(impTablo.satirlar.length);
+  // Eslesme satirlari
+  eslesBlok.hidden = false;
+  document.getElementById('imp_esles').innerHTML = IMP_ALANLAR.map(alan=>{
+    const secenek = ['<option value="-1">' + escapeHtml(t('imp_none')) + '</option>']
+      .concat(impTablo.basliklar.map((h, i)=>
+        `<option value="${i}"${impEsleme[alan] === i ? ' selected' : ''}>${escapeHtml(h)}</option>`));
+    return `<label class="imp-satir">
+      <span>${escapeHtml(t('imp_f_' + alan))}${alan === 'tarih' ? ' *' : ''}</span>
+      <select data-imp-alan="${alan}">${secenek.join('')}</select>
+    </label>`;
+  }).join('');
+  document.getElementById('imp_esles').querySelectorAll('[data-imp-alan]').forEach(sel=>{
+    sel.addEventListener('change', ()=>{
+      impEsleme[sel.dataset.impAlan] = Number(sel.value);
+      impEkraniTazele();
+    });
+  });
+
+  const o = impKayitlar();
+  onizlemeBlok.hidden = false;
+  document.getElementById('imp_ozet').textContent = t('imp_summary')(o.kayitlar.length);
+  document.getElementById('imp_onizleme').innerHTML = o.kayitlar.slice(0, 5).map(k=>
+    `<div class="imp-sat">
+       <span class="imp-t">${escapeHtml(k.tarih)}${k.saat ? ' ' + escapeHtml(k.saat) : ''}</span>
+       <span class="imp-p">${escapeHtml(CAL_SM_NAMES[k.platform] || k.platform)} · ${escapeHtml(typeName(k.tur))}</span>
+       <span class="imp-b">${escapeHtml(k.baslik || '—')}</span>
+       ${k.proje ? `<span class="imp-pr">${escapeHtml(k.proje)}</span>` : ''}
+       ${k.yayinlandi ? `<span class="imp-y">${escapeHtml(t('imp_published'))}</span>` : ''}
+     </div>`).join('') || `<p class="hint">${escapeHtml(t('imp_nothing'))}</p>`;
+  const uyarilar = [];
+  if(o.atlanan) uyarilar.push(t('imp_skipped')(o.atlanan));
+  if(o.projeAdlari.size) uyarilar.push(t('imp_projects')(o.projeAdlari.size));
+  document.getElementById('imp_uyari').textContent = uyarilar.join(' ');
+  uygula.disabled = o.kayitlar.length === 0;
+}
+
+function impPenceresiniAc(){
+  impTablo = null; impEsleme = {};
+  document.getElementById('imp_metin').value = '';
+  const d = document.getElementById('imp_durum');
+  d.textContent = ''; d.className = 'ai-status';
+  impEkraniTazele();
+  document.getElementById('importOverlay').classList.add('open');
+  document.getElementById('imp_metin').focus();
+}
+function impMetinOku(metin){
+  impTablo = impCozumle(metin);
+  impEsleme = impTablo ? impTahmin(impTablo.basliklar) : {};
+  const d = document.getElementById('imp_durum');
+  if(metin.trim() && !impTablo){ d.textContent = t('imp_bad'); d.className = 'ai-status error'; }
+  else { d.textContent = ''; d.className = 'ai-status'; }
+  impEkraniTazele();
+}
+document.getElementById('importBtn').addEventListener('click', impPenceresiniAc);
+document.getElementById('imp_iptal').addEventListener('click', ()=> document.getElementById('importOverlay').classList.remove('open'));
+document.getElementById('importOverlay').addEventListener('click', e=>{ if(e.target.id === 'importOverlay') e.currentTarget.classList.remove('open'); });
+document.getElementById('imp_metin').addEventListener('input', e=> impMetinOku(e.target.value));
+document.getElementById('imp_dosyaBtn').addEventListener('click', ()=> document.getElementById('imp_dosya').click());
+document.getElementById('imp_dosya').addEventListener('change', e=>{
+  const dosya = e.target.files && e.target.files[0];
+  if(!dosya) return;
+  const okuyucu = new FileReader();
+  okuyucu.onload = ()=>{
+    document.getElementById('imp_metin').value = String(okuyucu.result || '').slice(0, 2000000);
+    impMetinOku(document.getElementById('imp_metin').value);
+  };
+  okuyucu.readAsText(dosya, 'utf-8');
+  e.target.value = '';
+});
+document.getElementById('imp_uygula').addEventListener('click', async ()=>{
+  const o = impKayitlar();
+  if(!o.kayitlar.length) return;
+  const yer = MAX_ENTRIES - events.length;
+  if(o.kayitlar.length > yer){
+    uyari(t('imp_limit')(yer, o.kayitlar.length));
+    return;
+  }
+  if(!await onayla({ baslik: t('imp_title'), govde: t('imp_confirm')(o.kayitlar.length),
+                     not: o.projeAdlari.size ? t('imp_projects')(o.projeAdlari.size) : '',
+                     tamam: t('imp_go') })) return;
+  // Proje adlari once: kayit dogarken bagli olacagi proje hazir olsun.
+  const projeKimlik = {};
+  o.projeAdlari.forEach(ad=>{
+    const varOlan = projects.find(p=> impKucuk(p.name) === impKucuk(ad));
+    const p = varOlan || projeEkle(ad, '', '', 'other', '');
+    if(p) projeKimlik[ad] = p.id;
+  });
+  o.kayitlar.forEach(k=>{
+    const yeni = sanitizeEvent({
+      type: k.tur, platform: k.platform, date: k.tarih, time: k.saat,
+      uploaded: k.yayinlandi, title: k.baslik,
+      // Proje bagi content ICINDE duruyor; ust duzeye yazilan projectId
+      // sanitizeEvent'ten sessizce dusuyordu.
+      content: { projectId: k.proje ? (projeKimlik[k.proje] || '') : '' }
+    });
+    if(yeni) events.push(yeni);
+  });
+  markAllDirty();
+  save();
+  renderCal(); renderProjects();
+  document.getElementById('importOverlay').classList.remove('open');
+  showToast(t('imp_done')(o.kayitlar.length));
+  track('funnel/imported');
+});
+
 // ---- Paylasilabilir salt-okunur takvim ------------------------------
 // Takvimin bir kopyasi herkese acik bir kovaya JSON olarak yaziliyor;
 // paylas.html onu okuyup ciziyor. Dosyanin adi tahmin edilemeyecek bir
