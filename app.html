@@ -853,14 +853,40 @@ body.suruklenirken *{cursor:grabbing !important;}
 .imp-pr,.imp-y{font-size:11px;color:var(--text-dim);border:1px solid var(--line);
   border-radius:20px;padding:1px 8px;}
 .imp-y{color:var(--green);border-color:var(--green);}
-/* Mekan kartlari: ad ustte, yer ve adres altinda, rozetler en altta. */
-.mk-kart{border:1px solid var(--line);border-radius:10px;padding:12px 14px;margin-bottom:10px;
-  cursor:pointer;background:var(--surface);}
+/* Mekan kartlari. Tek sutunlu duz bir liste yerine izgara: bir yeri
+   adindan once GORUNTUSUNDEN taniyorsun. Ust seritte sirasiyla su var —
+   varsa fotograf, yoksa harita baglantisindan cikarilan harita karesi,
+   o da yoksa adin bas harfleri. Yani serit hicbir zaman bos degil. */
+#mk_list{display:grid;grid-template-columns:repeat(auto-fill,minmax(230px,1fr));gap:14px;}
+.mk-kart{border:1px solid var(--line);border-radius:10px;overflow:hidden;
+  cursor:pointer;background:var(--surface);display:flex;flex-direction:column;}
 .mk-kart:hover{border-color:var(--accent-dim);}
-.mk-ad{font-size:15px;font-weight:600;}
+.mk-gorsel{position:relative;height:118px;overflow:hidden;background:var(--surface-2);
+  border-bottom:1px solid var(--line);}
+.mk-foto{width:100%;height:100%;object-fit:cover;display:block;}
+/* Dort karo 512px'lik bir blok; blok, yer kutunun tam ortasina gelecek
+   kadar kaydiriliyor. */
+.mk-harita{position:absolute;inset:0;display:block;}
+.mk-blok{position:absolute;width:512px;height:512px;}
+.mk-harita img{position:absolute;width:256px;height:256px;max-width:none;}
+.mk-nokta{position:absolute;left:50%;top:50%;width:11px;height:11px;margin:-6px 0 0 -6px;
+  border-radius:50%;background:var(--accent);border:2px solid #fff;
+  box-shadow:0 1px 3px rgba(0,0,0,.45);}
+/* OpenStreetMap karolari icin kaynak belirtmek lisans geregi. */
+.mk-osm{position:absolute;right:3px;bottom:2px;font-size:9px;font-style:normal;
+  background:rgba(255,255,255,.74);color:#2A3340;padding:0 3px;border-radius:2px;}
+.mk-harf{position:absolute;inset:0;display:flex;align-items:center;justify-content:center;
+  font-family:'Archivo',sans-serif;font-size:32px;font-weight:800;letter-spacing:1px;
+  color:hsl(var(--mk-h) 45% 50%);background:var(--surface-2);}
+/* Renk yuzeyle karistiriliyor: ayni kural hem acik hem koyu temada tutuyor. */
+@supports (background:color-mix(in srgb,red 10%,white)){
+  .mk-harf{background:color-mix(in srgb,hsl(var(--mk-h) 45% 50%) 15%,var(--surface));}
+}
+.mk-govde{padding:11px 13px 12px;display:flex;flex-direction:column;flex:1;}
+.mk-ad{font-size:14.5px;font-weight:600;}
 .mk-yer{font-size:12.5px;color:var(--text-dim);margin-top:2px;}
 .mk-adres{font-size:12.5px;color:var(--text-dim);margin-top:2px;overflow-wrap:anywhere;}
-.mk-rozetler{display:flex;gap:6px;flex-wrap:wrap;margin-top:8px;}
+.mk-rozetler{display:flex;gap:6px;flex-wrap:wrap;margin-top:auto;padding-top:9px;}
 .mk-rozet{font-size:11px;color:var(--text-dim);border:1px solid var(--line);
   border-radius:20px;padding:2px 8px;text-decoration:none;}
 a.mk-rozet:hover{border-color:var(--accent);color:var(--accent);}
@@ -2493,6 +2519,11 @@ textarea.sc-ai-brief{min-height:64px;resize:vertical;line-height:1.5;}
         <input type="url" id="mk_drive" maxlength="600" placeholder="https://drive.google.com/…">
       </div>
     </div>
+    <div class="field">
+      <label data-i18n="mk_image">Photo link</label>
+      <input type="url" id="mk_image" maxlength="600" placeholder="https://…/foto.jpg">
+      <p class="hint" data-i18n="mk_image_hint">Optional. Without one the card shows the map, so a map link is usually enough.</p>
+    </div>
     <p class="hint" id="mk_bagli"></p>
     <div class="modal-actions">
       <button type="button" class="btn btn-danger" id="mk_delete" data-i18n="p_delete">Delete</button>
@@ -3616,6 +3647,8 @@ const LANG = {
     mk_notes: "Notes",
     mk_maps: "Map link",
     mk_drive: "Drive folder",
+    mk_image: "Photo link",
+    mk_image_hint: "Optional. Without one the card shows the map, so a map link is usually enough.",
     mk_empty: "No places yet. Add the ones you shoot at and you will not type the address again.",
     mk_no_match: "No place matches that search.",
     mk_count: (n, t)=> n === t ? `${t} place${t===1?'':'s'}` : `${n} of ${t}`,
@@ -4279,6 +4312,8 @@ const LANG = {
     mk_notes: "Notlar",
     mk_maps: "Harita bağlantısı",
     mk_drive: "Drive klasörü",
+    mk_image: "Fotoğraf bağlantısı",
+    mk_image_hint: "İsteğe bağlı. Koymazsan kartta harita görünür; çoğu zaman harita bağlantısı yeter.",
     mk_empty: "Henüz mekan yok. Çekim yaptığın yerleri ekle, adresi bir daha yazmayasın.",
     mk_no_match: "Bu aramaya uyan mekan yok.",
     mk_count: (n, t)=> n === t ? `${t} mekan` : `${t} mekandan ${n} tanesi`,
@@ -5971,6 +6006,84 @@ function mekanlariSuz(){
     return [m.name, m.city, m.district, m.address].join(' ').toLocaleLowerCase('tr').includes(q);
   });
 }
+// Kullanicinin yapistirdigi adres. Yalnizca http/https geciyor:
+// "javascript:" ile baslayan bir bag karta tiklaninca calisirdi.
+function disUrl(u){
+  const s = String(u || '').trim();
+  return /^https?:\/\//i.test(s) ? s : '';
+}
+// Google Maps baglantisindan koordinat. Uc bicim de cikiyor:
+// ".../@41.03,28.94,17z", "?q=41.03,28.94", "!3d41.03!4d28.94".
+// Kisa baglanti (maps.app.goo.gl) koordinat TASIMIYOR — orada harita
+// karesi yerine bas harfler gorunuyor, sayfa yine de dolu duruyor.
+function mekanKonum(url){
+  const s = String(url || '');
+  const kaliplar = [/@(-?\d{1,3}\.\d+),(-?\d{1,3}\.\d+)/,
+                    /!3d(-?\d{1,3}\.\d+)!4d(-?\d{1,3}\.\d+)/,
+                    /[?&](?:q|query|ll|center)=(-?\d{1,3}\.\d+),\s*(-?\d{1,3}\.\d+)/];
+  for(let i = 0; i < kaliplar.length; i++){
+    const m = s.match(kaliplar[i]);
+    if(m){
+      const en = parseFloat(m[1]), boy = parseFloat(m[2]);
+      if(Math.abs(en) <= 85 && Math.abs(boy) <= 180) return { en, boy };
+    }
+  }
+  return null;
+}
+// Koordinati iceren OpenStreetMap karesi ve karonun icindeki yeri.
+// Anahtar gerektirmiyor, ucretsiz ve kart basina tek istek.
+const MEKAN_Z = 15;
+function haritaKaresi(en, boy){
+  const n = Math.pow(2, MEKAN_Z);
+  const x = (boy + 180) / 360 * n;
+  const r = en * Math.PI / 180;
+  const y = (1 - Math.log(Math.tan(r) + 1 / Math.cos(r)) / Math.PI) / 2 * n;
+  const kx = Math.floor(x), ky = Math.floor(y);
+  const dx = (x - kx) * 256, dy = (y - ky) * 256;
+  // Tek karo yetmiyor: yer karonun kenarina yakin dustugunde kutunun bir
+  // kosesi bos kaliyordu. Nokta karonun hangi yarisindaysa komsu karo o
+  // taraftan ekleniyor; dort karo noktanin her yaninda en az 128px doku
+  // birakiyor, kutu her zaman doluyor.
+  const sx = dx < 128 ? kx - 1 : kx;
+  const sy = dy < 128 ? ky - 1 : ky;
+  const karolar = [];
+  for(let j = 0; j < 2; j++){
+    for(let i = 0; i < 2; i++){
+      // Boylamda dunya doniyor; kutupta karo yoksa o gozu bos birakiyoruz.
+      const cx = ((sx + i) % n + n) % n, cy = sy + j;
+      if(cy < 0 || cy >= n) continue;
+      karolar.push({ url: 'https://tile.openstreetmap.org/' + MEKAN_Z + '/' + cx + '/' + cy + '.png',
+                     x: i * 256, y: j * 256 });
+    }
+  }
+  return { karolar,
+           nx: Math.round((kx - sx) * 256 + dx),
+           ny: Math.round((ky - sy) * 256 + dy) };
+}
+function mekanBasHarf(ad){
+  const k = String(ad || '').trim().split(/\s+/).slice(0, 2);
+  return k.map(x=> x.charAt(0)).join('').toLocaleUpperCase('tr') || '?';
+}
+// Renk addan turuyor: ayni mekan her acilista ayni renkte.
+function mekanRengi(id){
+  let h = 0;
+  for(let i = 0; i < id.length; i++) h = (h * 31 + id.charCodeAt(i)) % 360;
+  return h;
+}
+function mekanGorseli(m){
+  const foto = disUrl(m.imageUrl);
+  if(foto) return `<img class="mk-foto" src="${escapeHtml(foto)}" alt="" loading="lazy">`;
+  const k = mekanKonum(disUrl(m.mapsUrl));
+  if(k){
+    const kare = haritaKaresi(k.en, k.boy);
+    const karolar = kare.karolar.map(c=>
+      `<img src="${escapeHtml(c.url)}" alt="" loading="lazy" style="left:${c.x}px;top:${c.y}px">`).join('');
+    return `<span class="mk-harita">
+      <span class="mk-blok" style="left:calc(50% - ${kare.nx}px);top:calc(50% - ${kare.ny}px)">${karolar}</span>
+      <i class="mk-nokta"></i><em class="mk-osm">© OpenStreetMap</em></span>`;
+  }
+  return `<span class="mk-harf" style="--mk-h:${mekanRengi(m.id)}">${escapeHtml(mekanBasHarf(m.name))}</span>`;
+}
 function renderMekanlar(){
   const kutu = document.getElementById('mk_list');
   if(!kutu) return;
@@ -5984,15 +6097,19 @@ function renderMekanlar(){
   kutu.innerHTML = liste.map(m=>{
     const yer = [m.district, m.city].filter(Boolean).join(', ');
     const kac = mekanProjeleri(m.id).length;
+    const harita = disUrl(m.mapsUrl);
     return `<div class="mk-kart" data-mk="${escapeHtml(m.id)}">
-      <div class="mk-ad">${escapeHtml(m.name)}</div>
-      ${yer ? `<div class="mk-yer">${escapeHtml(yer)}</div>` : ''}
-      ${m.address ? `<div class="mk-adres">${escapeHtml(m.address)}</div>` : ''}
-      <div class="mk-rozetler">
-        ${kac ? `<span class="mk-rozet">${escapeHtml(t('mk_projects')(kac))}</span>` : ''}
-        ${m.permission ? `<span class="mk-rozet">${escapeHtml(t('mk_has_permission'))}</span>` : ''}
-        ${m.cautions ? `<span class="mk-rozet mk-dikkat">${escapeHtml(t('mk_has_cautions'))}</span>` : ''}
-        ${m.mapsUrl ? `<a class="mk-rozet" href="${escapeHtml(m.mapsUrl)}" target="_blank" rel="noopener" data-dis>${escapeHtml(t('mk_map'))}</a>` : ''}
+      <div class="mk-gorsel">${mekanGorseli(m)}</div>
+      <div class="mk-govde">
+        <div class="mk-ad">${escapeHtml(m.name)}</div>
+        ${yer ? `<div class="mk-yer">${escapeHtml(yer)}</div>` : ''}
+        ${m.address ? `<div class="mk-adres">${escapeHtml(m.address)}</div>` : ''}
+        <div class="mk-rozetler">
+          ${kac ? `<span class="mk-rozet">${escapeHtml(t('mk_projects')(kac))}</span>` : ''}
+          ${m.permission ? `<span class="mk-rozet">${escapeHtml(t('mk_has_permission'))}</span>` : ''}
+          ${m.cautions ? `<span class="mk-rozet mk-dikkat">${escapeHtml(t('mk_has_cautions'))}</span>` : ''}
+          ${harita ? `<a class="mk-rozet" href="${escapeHtml(harita)}" target="_blank" rel="noopener" data-dis>${escapeHtml(t('mk_map'))}</a>` : ''}
+        </div>
       </div>
     </div>`;
   }).join('');
@@ -6014,6 +6131,7 @@ function mekanPenceresiniAc(id){
   y('mk_address', m && m.address); y('mk_permission', m && m.permission);
   y('mk_cautions', m && m.cautions); y('mk_notes', m && m.notes);
   y('mk_maps', m && m.mapsUrl); y('mk_drive', m && m.driveUrl);
+  y('mk_image', m && m.imageUrl);
   const kac = m ? mekanProjeleri(m.id).length : 0;
   document.getElementById('mk_bagli').textContent = kac ? t('mk_linked')(kac) : '';
   document.getElementById('mk_delete').hidden = !m;
@@ -6029,7 +6147,8 @@ function mekanKaydet(){
   const alanlar = { name: al('mk_name'), city: al('mk_city'), district: al('mk_district'),
                     address: al('mk_address'), permission: al('mk_permission'),
                     cautions: al('mk_cautions'), notes: al('mk_notes'),
-                    mapsUrl: al('mk_maps'), driveUrl: al('mk_drive') };
+                    mapsUrl: al('mk_maps'), driveUrl: al('mk_drive'),
+                    imageUrl: al('mk_image') };
   if(!alanlar.name.trim()){ document.getElementById('mk_name').focus(); return; }
   if(acikMekanId) mekanGuncelle(acikMekanId, alanlar);
   else if(!mekanEkle(alanlar)) return;
@@ -6954,22 +7073,30 @@ function mekanTemizle(ham){
     permission: y(ham.permission, 400), cautions: y(ham.cautions, 2000),
     notes: y(ham.notes, 4000),
     mapsUrl: y(ham.mapsUrl, 600), driveUrl: y(ham.driveUrl, 600),
+    imageUrl: y(ham.imageUrl, 600),
     createdAt: typeof ham.createdAt === 'number' ? ham.createdAt : Date.now(),
     updatedAt: typeof ham.updatedAt === 'number' ? ham.updatedAt : Date.now()
   };
 }
+// sql/27 (fotograf sutunu) henuz calistirilmadiysa false'a duser: mekan
+// kaydetmek yalnizca fotograf yuzunden bastan asagi durmasin.
+let mekanFotoSutunu = true;
 function mekanRowYap(m, uid){
-  return { id: m.id, user_id: uid, name: m.name, city: m.city, district: m.district,
+  const satir = { id: m.id, user_id: uid, name: m.name, city: m.city, district: m.district,
            address: m.address, permission: m.permission, cautions: m.cautions,
-           notes: m.notes, maps_url: m.mapsUrl, drive_url: m.driveUrl, deleted_at: null,
+           notes: m.notes, maps_url: m.mapsUrl, drive_url: m.driveUrl,
+           image_url: m.imageUrl, deleted_at: null,
            created_at: new Date(m.createdAt).toISOString(),
            updated_at: new Date(m.updatedAt).toISOString() };
+  if(!mekanFotoSutunu) delete satir.image_url;
+  return satir;
 }
 function mekanRowOku(r){
   return mekanTemizle({ id: r.id, name: r.name || '', city: r.city || '', district: r.district || '',
                         address: r.address || '', permission: r.permission || '',
                         cautions: r.cautions || '', notes: r.notes || '',
                         mapsUrl: r.maps_url || '', driveUrl: r.drive_url || '',
+                        imageUrl: r.image_url || '',
                         createdAt: r.created_at ? Date.parse(r.created_at) : Date.now(),
                         updatedAt: r.updated_at ? Date.parse(r.updated_at) : 0 });
 }
@@ -6983,7 +7110,13 @@ function saveMekanlar(){
   try{ localStorage.setItem(mekanKey(), JSON.stringify(mekanlar)); }catch(e){ kotaHatasi(e); }
   if(session){ clearTimeout(mekanPushTimer); mekanPushTimer = setTimeout(mekanPush, 700); }
 }
-async function mekanPush(){ await kayitPush('places', mekanlar, mekanDirty, mekanRemoved, mekanRowYap); }
+async function mekanPush(){
+  const hata = await kayitPush('places', mekanlar, mekanDirty, mekanRemoved, mekanRowYap);
+  if(hata && mekanFotoSutunu && /image_url/.test(String((hata && hata.message) || hata))){
+    mekanFotoSutunu = false;
+    await kayitPush('places', mekanlar, mekanDirty, mekanRemoved, mekanRowYap);
+  }
+}
 function mekanById(id){ return mekanlar.find(m=>m.id === id) || null; }
 function mekanSiraliListe(){ return mekanlar.slice().sort((a,b)=> a.name.localeCompare(b.name, 'tr')); }
 // Bir mekana bagli projeler: mekan silinmeden once "burada uc cekim var"
@@ -7471,8 +7604,10 @@ async function kayitPush(tablo, liste, kirli, silinen, satirYap){
       }
       yazilacak.forEach(id=> kirli.delete(id));
     }
+    return null;
   }catch(err){
     console.error('[bulut] ' + tablo + ' yazma hatasi', err);
+    return err;
   }
 }
 
