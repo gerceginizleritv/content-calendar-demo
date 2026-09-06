@@ -883,6 +883,13 @@ body.suruklenirken *{cursor:grabbing !important;}
   .mk-harf{background:color-mix(in srgb,hsl(var(--mk-h) 45% 50%) 15%,var(--surface));}
 }
 .mk-govde{padding:11px 13px 12px;display:flex;flex-direction:column;flex:1;}
+.mk-foto-satir{display:flex;gap:8px;align-items:center;}
+.mk-foto-satir input{flex:1;min-width:0;}
+/* Vikipedi'den gelen fotografta kaynak gorunuyor: lisans oyle istiyor. */
+.mk-wiki{position:absolute;right:3px;bottom:2px;font-size:9px;font-style:normal;
+  background:rgba(255,255,255,.74);color:#2A3340;padding:0 3px;border-radius:2px;
+  text-decoration:none;}
+.mk-wiki:hover{color:var(--accent);}
 .mk-ad{font-size:14.5px;font-weight:600;}
 .mk-yer{font-size:12.5px;color:var(--text-dim);margin-top:2px;}
 .mk-adres{font-size:12.5px;color:var(--text-dim);margin-top:2px;overflow-wrap:anywhere;}
@@ -2094,8 +2101,12 @@ textarea.sc-ai-brief{min-height:64px;resize:vertical;line-height:1.5;}
     <div class="proj-tools">
       <input type="search" id="mk_search" data-i18n-placeholder="mk_search_ph" placeholder="Search places — name, city or address">
       <span class="proj-count" id="mk_count"></span>
+      <!-- Fotografsiz mekan varsa cikiyor: tek tek pencere acmadan
+           hepsine birden bakiyor. -->
+      <button type="button" class="btn" id="mk_fotoHepsi" hidden data-i18n="mk_photo_all">Look for photos</button>
       <button type="button" class="btn btn-primary" id="mk_new" data-i18n="mk_add">+ Add a place</button>
     </div>
+    <p class="hint" id="mk_fotoDurum" hidden></p>
     <div id="mk_list"></div>
   </div>
 
@@ -2521,8 +2532,12 @@ textarea.sc-ai-brief{min-height:64px;resize:vertical;line-height:1.5;}
     </div>
     <div class="field">
       <label data-i18n="mk_image">Photo link</label>
-      <input type="url" id="mk_image" maxlength="600" placeholder="https://…/foto.jpg">
+      <div class="mk-foto-satir">
+        <input type="url" id="mk_image" maxlength="600" placeholder="https://…/foto.jpg">
+        <button type="button" class="btn" id="mk_fotoAra" data-i18n="mk_photo_find">Find a photo</button>
+      </div>
       <p class="hint" data-i18n="mk_image_hint">Optional. Without one the card shows the map, so a map link is usually enough.</p>
+      <p class="hint" id="mk_fotoNot" hidden></p>
     </div>
     <p class="hint" id="mk_bagli"></p>
     <div class="modal-actions">
@@ -3649,6 +3664,14 @@ const LANG = {
     mk_drive: "Drive folder",
     mk_image: "Photo link",
     mk_image_hint: "Optional. Without one the card shows the map, so a map link is usually enough.",
+    mk_photo_find: "Find a photo",
+    mk_photo_all: "Look for missing photos",
+    mk_photo_searching: "Looking on Wikipedia…",
+    mk_photo_found: (b)=> `Found: ${b}. Check it, then save.`,
+    mk_photo_none: "Nothing on Wikipedia for this one. Paste a link, or leave it — the card shows the map.",
+    mk_photo_scan: (n, t, ad)=> `Looking… ${n}/${t} — ${ad}`,
+    mk_photo_scan_done: (b, t)=> b ? `${t} places checked, ${b} photos found.` : `${t} places checked, nothing found. The cards keep their maps.`,
+    mk_photo_wiki: "Wikipedia",
     mk_empty: "No places yet. Add the ones you shoot at and you will not type the address again.",
     mk_no_match: "No place matches that search.",
     mk_count: (n, t)=> n === t ? `${t} place${t===1?'':'s'}` : `${n} of ${t}`,
@@ -4314,6 +4337,14 @@ const LANG = {
     mk_drive: "Drive klasörü",
     mk_image: "Fotoğraf bağlantısı",
     mk_image_hint: "İsteğe bağlı. Koymazsan kartta harita görünür; çoğu zaman harita bağlantısı yeter.",
+    mk_photo_find: "Fotoğraf bul",
+    mk_photo_all: "Fotoğrafı olmayanlara bak",
+    mk_photo_searching: "Vikipedi'de aranıyor…",
+    mk_photo_found: (b)=> `Bulundu: ${b}. Bir bak, sonra kaydet.`,
+    mk_photo_none: "Vikipedi'de bununla ilgili bir şey yok. Bağlantı yapıştırabilir ya da boş bırakabilirsin — kartta harita görünür.",
+    mk_photo_scan: (n, t, ad)=> `Aranıyor… ${n}/${t} — ${ad}`,
+    mk_photo_scan_done: (b, t)=> b ? `${t} mekana bakıldı, ${b} fotoğraf bulundu.` : `${t} mekana bakıldı, bir şey çıkmadı. Kartlarda harita duruyor.`,
+    mk_photo_wiki: "Vikipedi",
     mk_empty: "Henüz mekan yok. Çekim yaptığın yerleri ekle, adresi bir daha yazmayasın.",
     mk_no_match: "Bu aramaya uyan mekan yok.",
     mk_count: (n, t)=> n === t ? `${t} mekan` : `${t} mekandan ${n} tanesi`,
@@ -6070,9 +6101,57 @@ function mekanRengi(id){
   for(let i = 0; i < id.length; i++) h = (h * 31 + id.charCodeAt(i)) % 360;
   return h;
 }
+// Vikipedi/Wikimedia'dan fotograf. Anahtar, hesap ya da ucret yok;
+// istek dogrudan tarayicidan gidiyor (origin=* CORS'u aciyor).
+// Bulunamamasi normal: ev studyosunun Vikipedi sayfasi olmaz. O zaman
+// kart yine harita ya da bas harflerle doluyor.
+async function wikiSorgu(dil, arama){
+  const adres = 'https://' + dil + '.wikipedia.org/w/api.php'
+    + '?action=query&format=json&origin=*&generator=search&gsrlimit=1'
+    + '&gsrsearch=' + encodeURIComponent(arama)
+    + '&prop=pageimages%7Cinfo&piprop=thumbnail&pithumbsize=900&inprop=url';
+  try{
+    const cevap = await fetch(adres);
+    if(!cevap.ok) return null;
+    const veri = await cevap.json();
+    const sayfalar = veri && veri.query && veri.query.pages;
+    if(!sayfalar) return null;
+    const anahtar = Object.keys(sayfalar);
+    const s = anahtar.length ? sayfalar[anahtar[0]] : null;
+    if(!s || !s.thumbnail || !s.thumbnail.source) return null;
+    return { url: s.thumbnail.source, baslik: s.title || '' };
+  }catch(e){ return null; }
+}
+async function mekanFotoAra(m){
+  // Once sehirle birlikte: "Kariye" tek basina baska bir sey getirebilir.
+  const aramalar = [];
+  const yer = [m.district, m.city].filter(Boolean)[0] || '';
+  if(yer) aramalar.push(m.name + ' ' + yer);
+  aramalar.push(m.name);
+  const diller = currentLang === 'tr' ? ['tr', 'en'] : ['en', 'tr'];
+  for(let d = 0; d < diller.length; d++){
+    for(let a = 0; a < aramalar.length; a++){
+      const bulunan = await wikiSorgu(diller[d], aramalar[a]);
+      if(bulunan) return bulunan;
+    }
+  }
+  return null;
+}
+// Wikimedia adresinden dosya sayfasi: kaynak gosterilebilsin diye.
+function wikiKaynak(u){
+  const s = String(u || '');
+  if(s.indexOf('https://upload.wikimedia.org/') !== 0) return '';
+  const k = s.match(/\/thumb\/[^/]+\/[^/]+\/([^/]+)\//)
+         || s.match(/\/[0-9a-f]\/[0-9a-f]{2}\/([^/?#]+)$/);
+  return k ? 'https://commons.wikimedia.org/wiki/File:' + k[1] : '';
+}
 function mekanGorseli(m){
   const foto = disUrl(m.imageUrl);
-  if(foto) return `<img class="mk-foto" src="${escapeHtml(foto)}" alt="" loading="lazy">`;
+  if(foto){
+    const kaynak = wikiKaynak(foto);
+    return `<img class="mk-foto" src="${escapeHtml(foto)}" alt="" loading="lazy">`
+      + (kaynak ? `<a class="mk-wiki" href="${escapeHtml(kaynak)}" target="_blank" rel="noopener" data-dis>${escapeHtml(t('mk_photo_wiki'))}</a>` : '');
+  }
   const k = mekanKonum(disUrl(m.mapsUrl));
   if(k){
     const kare = haritaKaresi(k.en, k.boy);
@@ -6090,6 +6169,7 @@ function renderMekanlar(){
   const liste = mekanlariSuz();
   document.getElementById('mk_count').textContent =
     mekanlar.length ? t('mk_count')(liste.length, mekanlar.length) : '';
+  document.getElementById('mk_fotoHepsi').hidden = mekanFotosuzlar().length === 0;
   if(!liste.length){
     kutu.innerHTML = `<p class="bos-not">${escapeHtml(t(mekanlar.length ? 'mk_no_match' : 'mk_empty'))}</p>`;
     return;
@@ -6132,6 +6212,7 @@ function mekanPenceresiniAc(id){
   y('mk_cautions', m && m.cautions); y('mk_notes', m && m.notes);
   y('mk_maps', m && m.mapsUrl); y('mk_drive', m && m.driveUrl);
   y('mk_image', m && m.imageUrl);
+  mkNot('mk_fotoNot', '');
   const kac = m ? mekanProjeleri(m.id).length : 0;
   document.getElementById('mk_bagli').textContent = kac ? t('mk_linked')(kac) : '';
   document.getElementById('mk_delete').hidden = !m;
@@ -6164,6 +6245,54 @@ document.getElementById('pe_place').addEventListener('change', async e=>{
     return;
   }
   mekanBilgisiYaz();
+});
+function mekanFotosuzlar(){ return mekanlar.filter(m=> !disUrl(m.imageUrl)); }
+function mkNot(kutu, yazi){
+  const e = document.getElementById(kutu);
+  e.textContent = yazi || '';
+  e.hidden = !yazi;
+}
+// Pencerede tek mekan icin.
+document.getElementById('mk_fotoAra').addEventListener('click', async ()=>{
+  const ad = document.getElementById('mk_name').value.trim();
+  if(!ad){ document.getElementById('mk_name').focus(); return; }
+  const dugme = document.getElementById('mk_fotoAra');
+  dugme.disabled = true;
+  mkNot('mk_fotoNot', t('mk_photo_searching'));
+  const bulunan = await mekanFotoAra({ name: ad,
+    city: document.getElementById('mk_city').value.trim(),
+    district: document.getElementById('mk_district').value.trim() });
+  dugme.disabled = false;
+  if(bulunan){
+    document.getElementById('mk_image').value = bulunan.url;
+    mkNot('mk_fotoNot', t('mk_photo_found')(bulunan.baslik));
+  }else{
+    mkNot('mk_fotoNot', t('mk_photo_none'));
+  }
+});
+// Sayfada, fotografi olmayan hepsi icin. Sirayla gidiyor: Vikipedi'yi
+// ayni anda onlarca istekle yormanin gereği yok.
+let mekanFotoTaramasi = false;
+document.getElementById('mk_fotoHepsi').addEventListener('click', async ()=>{
+  if(mekanFotoTaramasi) return;
+  const liste = mekanFotosuzlar();
+  if(!liste.length) return;
+  mekanFotoTaramasi = true;
+  const dugme = document.getElementById('mk_fotoHepsi');
+  dugme.disabled = true;
+  let bulunanSayisi = 0;
+  for(let i = 0; i < liste.length; i++){
+    mkNot('mk_fotoDurum', t('mk_photo_scan')(i + 1, liste.length, liste[i].name));
+    const bulunan = await mekanFotoAra(liste[i]);
+    if(bulunan){
+      mekanGuncelle(liste[i].id, { imageUrl: bulunan.url });
+      bulunanSayisi++;
+    }
+  }
+  dugme.disabled = false;
+  mekanFotoTaramasi = false;
+  mkNot('mk_fotoDurum', t('mk_photo_scan_done')(bulunanSayisi, liste.length));
+  renderMekanlar();
 });
 document.getElementById('mk_new').addEventListener('click', ()=> mekanPenceresiniAc(null));
 document.getElementById('mk_cancel').addEventListener('click', mekanPenceresiniKapat);
