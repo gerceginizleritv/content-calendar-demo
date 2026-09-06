@@ -17,51 +17,52 @@
 -- ikinci çalıştırmada yeni mekan doğmuyor, var olan da değişmiyor.
 -- Projede elle seçilmiş bir mekan varsa ona DOKUNULMUYOR.
 --
+-- İki sorgu birbirinden bağımsız: ilki mekanları kuruyor, ikincisi
+-- projeleri bağlıyor. Aralarında geçici tablo YOK — Supabase panelinde
+-- her sorgu ayrı çalıştığı için geçici tablo ikinci sorguya kalmıyordu.
+--
 -- ÖNCE sql/24-mekanlar.sql çalıştırılmış olmalı.
 -- Supabase panelinde: SQL Editor -> New query -> yapıştır -> Run.
 -- Sonra uygulamayı bir kez yenile (Ctrl+Shift+R): mekanlar iner.
 
-begin;
-
-do $$
-begin
-  if to_regclass('public.places') is null then
-    raise exception 'places tablosu yok. Once sql/24-mekanlar.sql calistirilmali.';
-  end if;
-end $$;
-
--- Once eslesme cikariliyor: hangi proje hangi mekana gidecek.
--- Gecici tablo, islem bitince kendiliginden dusuyor.
-create temp table mekan_esleme on commit drop as
-select
-  p.id                                    as proje_id,
-  p.user_id,
-  -- Anahtar: once adres, adres yoksa projenin adi. Bosluk farklari
-  -- ("Edirnekapi  Mah." / "edirnekapi mah.") ayni yeri ikiye bolmesin.
-  lower(regexp_replace(trim(coalesce(nullif(trim(p.address), ''), p.name)), '\s+', ' ', 'g')) as anahtar,
-  'pl_' || md5(p.user_id::text || '|' ||
-    lower(regexp_replace(trim(coalesce(nullif(trim(p.address), ''), p.name)), '\s+', ' ', 'g'))) as mekan_id,
-  -- Eski lokasyondan gelen kayit one geciyor: mekan bilgisini en dogru
-  -- tasiyan o.
-  (case when p.id like 'loc\_%' then 0 else 1 end) as oncelik,
-  p.created_at,
-  p.name, p.city, p.district, p.address, p.permission, p.cautions,
-  p.field_notes, p.maps_url, p.drive_url
-from public.projects p
-where coalesce(p.place_id, '') = ''
-  and p.deleted_at is null
-  and coalesce(trim(p.name), '') <> ''
-  and (coalesce(trim(p.address), '')  <> ''
-    or coalesce(trim(p.city), '')     <> ''
-    or coalesce(trim(p.district), '') <> ''
-    or coalesce(trim(p.maps_url), '') <> '');
-
--- Mekanlar. Uzunluk sinirlari uygulamanindakiyle ayni: uzun bir alan
--- kirpilmadan inerse uygulama onu ilk kayitta zaten kirpiyordu.
+-- ---------------------------------------------------------------------
+-- 1) Mekanları oluştur
+-- ---------------------------------------------------------------------
+with aday as (
+  select
+    p.user_id,
+    -- Anahtar: önce adres, adres yoksa projenin adı. Boşluk farkları
+    -- ("Edirnekapı  Mah." / "edirnekapı mah.") aynı yeri ikiye bölmesin.
+    lower(regexp_replace(trim(coalesce(nullif(trim(p.address), ''), p.name)), '\s+', ' ', 'g')) as anahtar,
+    -- Eski lokasyondan gelen kayıt öne geçiyor: mekan bilgisini en doğru
+    -- taşıyan o.
+    (case when p.id like 'loc\_%' then 0 else 1 end) as oncelik,
+    p.created_at,
+    p.name, p.city, p.district, p.address, p.permission, p.cautions,
+    p.field_notes, p.maps_url, p.drive_url
+  from public.projects p
+  where coalesce(p.place_id, '') = ''
+    and p.deleted_at is null
+    and coalesce(trim(p.name), '') <> ''
+    and (coalesce(trim(p.address), '')  <> ''
+      or coalesce(trim(p.city), '')     <> ''
+      or coalesce(trim(p.district), '') <> ''
+      or coalesce(trim(p.maps_url), '') <> '')
+),
+secili as (
+  select distinct on (user_id, anahtar)
+    'pl_' || md5(user_id::text || '|' || anahtar) as mekan_id,
+    user_id, name, city, district, address, permission, cautions,
+    field_notes, maps_url, drive_url
+  from aday
+  order by user_id, anahtar, oncelik, created_at
+)
+-- Uzunluk sınırları uygulamanınkiyle aynı: uzun bir alan kırpılmadan
+-- inerse uygulama onu ilk kayıtta zaten kırpıyordu.
 insert into public.places
   (id, user_id, name, city, district, address, permission, cautions, notes,
    maps_url, drive_url, created_at, updated_at)
-select distinct on (mekan_id)
+select
   mekan_id, user_id,
   left(name, 160),
   left(coalesce(city, ''), 120),
@@ -73,20 +74,35 @@ select distinct on (mekan_id)
   left(coalesce(maps_url, ''), 600),
   left(coalesce(drive_url, ''), 600),
   now(), now()
-from mekan_esleme
-order by mekan_id, oncelik, created_at
+from secili
 on conflict (id) do nothing;
 
--- Projeleri bagla.
+-- ---------------------------------------------------------------------
+-- 2) Projeleri mekanlarına bağla
+-- ---------------------------------------------------------------------
+-- Anahtar yukarıdakiyle birebir aynı; o yüzden ayrı sorgu olması sorun
+-- değil, ikisi de aynı kimliği üretiyor.
 update public.projects p
-   set place_id = e.mekan_id
-  from mekan_esleme e
- where p.id = e.proje_id
-   and coalesce(p.place_id, '') = '';
+   set place_id = 'pl_' || md5(p.user_id::text || '|' ||
+     lower(regexp_replace(trim(coalesce(nullif(trim(p.address), ''), p.name)), '\s+', ' ', 'g')))
+ where coalesce(p.place_id, '') = ''
+   and p.deleted_at is null
+   and coalesce(trim(p.name), '') <> ''
+   and (coalesce(trim(p.address), '')  <> ''
+     or coalesce(trim(p.city), '')     <> ''
+     or coalesce(trim(p.district), '') <> ''
+     or coalesce(trim(p.maps_url), '') <> '')
+   -- Karşılığı gerçekten oluşmuş mekanlara bağlanıyor; olmayan bir
+   -- kimliği yazıp yabancı anahtarı patlatmıyor.
+   and exists (
+     select 1 from public.places m
+      where m.id = 'pl_' || md5(p.user_id::text || '|' ||
+        lower(regexp_replace(trim(coalesce(nullif(trim(p.address), ''), p.name)), '\s+', ' ', 'g')))
+   );
 
-commit;
-
--- Kontrol: hangi mekan olustu, kac projesi var?
+-- ---------------------------------------------------------------------
+-- 3) Kontrol: hangi mekan oluştu, kaç projesi var?
+-- ---------------------------------------------------------------------
 select m.name, m.city, m.district, left(m.address, 60) as adres,
        (select count(*) from public.projects p
          where p.place_id = m.id and p.deleted_at is null) as proje_sayisi
@@ -95,16 +111,14 @@ select m.name, m.city, m.district, left(m.address, 60) as adres,
 
 -- GERI ALMAK icin (yalnizca bu betigin urettiklerini siler; elle
 -- eklenen mekanlara dokunmaz):
---   begin;
 --   update public.projects set place_id = null
 --    where place_id ~ '^pl_[0-9a-f]{32}$';
 --   delete from public.places
 --    where id ~ '^pl_[0-9a-f]{32}$';
---   commit;
 
 -- Eksik kalan var mi? Eski lokasyon tablosundaki bir kayit, karsiligi
--- olan proje silinmisse mekana donusmez. Sayisini gormek icin (eski
--- tablo duruyorsa) bunu ayrica calistir:
+-- olan proje silinmisse mekana donusmez. Gormek icin (eski tablo
+-- duruyorsa) bunu ayrica calistir:
 --   select l.name, l.city, l.address
 --     from public.locations l
 --    where l.deleted_at is null
