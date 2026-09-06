@@ -1,0 +1,270 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Shared plan — Shootboard</title>
+<!-- Paylasilan plan gizli bir adreste duruyor; arama motorlarina girmesin. -->
+<meta name="robots" content="noindex, nofollow">
+<link rel="icon" href="favicon.svg" type="image/svg+xml">
+<link rel="icon" href="favicon.ico" sizes="any">
+<style>
+/* Renkler gizlilik ve sartlar sayfalariyla ayni: uc sayfa da ayni urun
+   gibi okunsun. Bu sayfa da hicbir dis kaynak yuklemiyor, olcum yapmiyor. */
+:root{
+  --bg:#F4F7FA; --surface:#FFFFFF; --surface-2:#EDF1F6; --line:#DFE5EC;
+  --text:#16202B; --text-dim:#54637A; --accent:#2563C7; --amber:#8F5309;
+}
+@media (prefers-color-scheme: dark){
+  :root{
+    --bg:#10131C; --surface:#171D28; --surface-2:#1F2734; --line:#2B3442;
+    --text:#E7ECF3; --text-dim:#A2B0C2; --accent:#7AA6EE; --amber:#F0A445;
+  }
+}
+*{box-sizing:border-box;}
+body{
+  margin:0; background:var(--bg); color:var(--text);
+  font-family:'IBM Plex Sans','Segoe UI',system-ui,-apple-system,sans-serif;
+  font-size:15px; line-height:1.6; -webkit-font-smoothing:antialiased;
+}
+.wrap{max-width:960px;margin:0 auto;padding:28px 20px 64px;}
+header{display:flex;align-items:center;gap:14px;flex-wrap:wrap;
+  border-bottom:1px solid var(--line);padding-bottom:16px;margin-bottom:20px;}
+.brand{font-weight:700;font-size:1.05rem;}
+.brand a{color:var(--text);text-decoration:none;}
+.rozet{font-size:11px;letter-spacing:.06em;text-transform:uppercase;
+  border:1px solid var(--line);border-radius:20px;padding:3px 10px;color:var(--text-dim);}
+.sag{margin-left:auto;display:flex;gap:8px;align-items:center;}
+button{font:inherit;cursor:pointer;background:var(--surface);color:var(--text);
+  border:1px solid var(--line);border-radius:7px;padding:6px 11px;}
+button:hover{border-color:var(--accent);color:var(--accent);}
+h1{font-size:1.3rem;margin:0;}
+.ay{display:flex;align-items:center;gap:10px;margin:0 0 14px;}
+.ay h2{font-size:1.05rem;margin:0;min-width:190px;}
+.izgara{display:grid;grid-template-columns:repeat(7,minmax(0,1fr));gap:1px;
+  background:var(--line);border:1px solid var(--line);border-radius:10px;overflow:hidden;}
+.gun-bas{background:var(--surface-2);color:var(--text-dim);font-size:11px;
+  letter-spacing:.05em;text-transform:uppercase;padding:7px 8px;text-align:center;}
+.hucre{background:var(--surface);min-height:96px;padding:6px 7px;overflow:hidden;}
+.hucre.bos{background:var(--surface-2);}
+.hucre.bugun .gun-no{color:var(--accent);font-weight:700;}
+.gun-no{font-size:12px;color:var(--text-dim);margin-bottom:4px;}
+.cip{display:block;font-size:11.5px;line-height:1.35;margin-bottom:3px;padding:3px 6px;
+  border-radius:5px;background:var(--surface-2);border-left:3px solid var(--accent);
+  overflow:hidden;text-overflow:ellipsis;white-space:nowrap;}
+.cip.yayinda{opacity:.55;text-decoration:line-through;}
+.cip .saat{color:var(--text-dim);}
+/* Telefonda ay izgarasi okunmuyor: liste gorunumune duselim. */
+.liste{display:none;}
+.liste .gun{border:1px solid var(--line);border-radius:10px;background:var(--surface);
+  padding:10px 12px;margin-bottom:8px;}
+.liste .gun h3{margin:0 0 6px;font-size:13px;color:var(--text-dim);font-weight:600;}
+@media (max-width:640px){ .izgara{display:none;} .liste{display:block;} }
+.bos-not{color:var(--text-dim);padding:22px 0;}
+footer{margin-top:26px;color:var(--text-dim);font-size:12.5px;
+  border-top:1px solid var(--line);padding-top:14px;}
+footer a{color:var(--accent);}
+.hata{border:1px solid var(--line);border-radius:10px;background:var(--surface);
+  padding:18px 20px;margin-top:18px;}
+</style>
+</head>
+<body>
+<div class="wrap">
+
+<header>
+  <div class="brand"><a href="./index.html">🎬 Shootboard</a></div>
+  <span class="rozet" id="rozet">read only</span>
+  <div class="sag">
+    <button type="button" id="dilDug">TR</button>
+  </div>
+</header>
+
+<h1 id="baslik">Shared plan</h1>
+<p class="bos-not" id="durum">Loading…</p>
+
+<div id="govde" hidden>
+  <div class="ay">
+    <button type="button" id="onceki" aria-label="previous month">‹</button>
+    <h2 id="ayAdi"></h2>
+    <button type="button" id="sonraki" aria-label="next month">›</button>
+    <button type="button" id="bugunDug">Today</button>
+  </div>
+  <div class="izgara" id="izgara"></div>
+  <div class="liste" id="liste"></div>
+</div>
+
+<footer>
+  <p id="dipnot"></p>
+</footer>
+
+</div>
+<script>
+// Bu sayfa YALNIZCA okur. Yazma yolu yok, oturum yok, olcum yok.
+// Veri, uygulamanin herkese acik bir kovaya yazdigi JSON dosyasi; adres
+// tahmin edilemeyecek bir jeton iceriyor.
+var SUPABASE_URL = 'https://dyemvzmpnlpnzwebuciu.supabase.co';
+
+var METIN = {
+  en: { baslik:'Shared plan', rozet:'read only', yukleniyor:'Loading…',
+        bugun:'Today', bosAy:'Nothing planned this month.',
+        dip:function(z){ return 'A read-only view of a Shootboard plan. Last updated ' + z + '.'; },
+        dipYok:'A read-only view of a Shootboard plan.',
+        hataAdres:'This link is not complete. Ask for it again.',
+        hataYok:'This link is closed or has expired. Ask its owner for a new one.',
+        hataAg:'The plan could not be loaded. Check the connection and refresh.' },
+  tr: { baslik:'Paylaşılan plan', rozet:'salt okunur', yukleniyor:'Yükleniyor…',
+        bugun:'Bugün', bosAy:'Bu ay için planlanmış bir şey yok.',
+        dip:function(z){ return 'Bir Shootboard planının salt-okunur görünümü. Son güncelleme ' + z + '.'; },
+        dipYok:'Bir Shootboard planının salt-okunur görünümü.',
+        hataAdres:'Bu bağlantı eksik. Tekrar istemen gerekiyor.',
+        hataYok:'Bu bağlantı kapatılmış ya da süresi geçmiş. Sahibinden yenisini iste.',
+        hataAg:'Plan yüklenemedi. Bağlantını kontrol edip sayfayı yenile.' }
+};
+var GUN = { en:['Mon','Tue','Wed','Thu','Fri','Sat','Sun'],
+            tr:['Pzt','Sal','Çar','Per','Cum','Cmt','Paz'] };
+var PLATFORM = { youtube:'YouTube', instagram:'Instagram', tiktok:'TikTok', facebook:'Facebook',
+                 threads:'Threads', x:'X', pinterest:'Pinterest', linkedin:'LinkedIn' };
+var TUR = {
+  en:{ video:'Video', shorts:'Short', reels:'Reel', carousel:'Carousel', story:'Story', text_post:'Post', poll:'Poll' },
+  tr:{ video:'Video', shorts:'Short', reels:'Reels', carousel:'Karusel', story:'Hikâye', text_post:'Gönderi', poll:'Anket' }
+};
+
+var dil = (navigator.language || 'en').toLowerCase().indexOf('tr') === 0 ? 'tr' : 'en';
+var veri = null;
+var ay = new Date();
+
+function m(anahtar){ return METIN[dil][anahtar]; }
+function kacir(x){
+  return String(x == null ? '' : x).replace(/[&<>"']/g, function(c){
+    return { '&':'&amp;', '<':'&lt;', '>':'&gt;', '"':'&quot;', "'":'&#39;' }[c];
+  });
+}
+function iki(n){ return (n < 10 ? '0' : '') + n; }
+function anahtar(d){ return d.getFullYear() + '-' + iki(d.getMonth()+1) + '-' + iki(d.getDate()); }
+
+function dilYaz(){
+  document.documentElement.lang = dil;
+  document.getElementById('dilDug').textContent = dil === 'tr' ? 'EN' : 'TR';
+  document.getElementById('rozet').textContent = m('rozet');
+  document.getElementById('baslik').textContent = m('baslik');
+  document.getElementById('bugunDug').textContent = m('bugun');
+  document.title = m('baslik') + ' — Shootboard';
+  var z = veri && veri.olusturuldu ? new Date(veri.olusturuldu) : null;
+  document.getElementById('dipnot').textContent = z && !isNaN(z)
+    ? m('dip')(z.toLocaleString(dil === 'tr' ? 'tr-TR' : 'en-GB')) : m('dipYok');
+  if(veri) ciz();
+}
+document.getElementById('dilDug').addEventListener('click', function(){
+  dil = dil === 'tr' ? 'en' : 'tr';
+  try{ localStorage.setItem('paylas_dil', dil); }catch(e){}
+  dilYaz();
+});
+try{ var kd = localStorage.getItem('paylas_dil'); if(kd === 'tr' || kd === 'en') dil = kd; }catch(e){}
+
+function hata(anahtar){
+  document.getElementById('govde').hidden = true;
+  var d = document.getElementById('durum');
+  d.textContent = m(anahtar);
+  d.className = 'hata';
+}
+
+function cipHtml(k){
+  var ad = k.baslik || ((TUR[dil][k.tur] || k.tur || '') + (k.platform ? ' · ' + (PLATFORM[k.platform] || k.platform) : ''));
+  var baslikMetni = [k.saat, ad, k.proje].filter(Boolean).join(' · ');
+  return '<span class="cip' + (k.yayinlandi ? ' yayinda' : '') + '" title="' + kacir(baslikMetni) + '">' +
+         (k.saat ? '<span class="saat">' + kacir(k.saat) + '</span> ' : '') + kacir(ad) + '</span>';
+}
+
+function ciz(){
+  var kayitlar = (veri && veri.kayitlar) || [];
+  var harita = {};
+  kayitlar.forEach(function(k){ (harita[k.tarih] = harita[k.tarih] || []).push(k); });
+
+  var ilk = new Date(ay.getFullYear(), ay.getMonth(), 1);
+  // Hafta pazartesi basliyor: takvimde de oyle.
+  var kaydir = (ilk.getDay() + 6) % 7;
+  var gunSayisi = new Date(ay.getFullYear(), ay.getMonth() + 1, 0).getDate();
+  document.getElementById('ayAdi').textContent =
+    ilk.toLocaleDateString(dil === 'tr' ? 'tr-TR' : 'en-GB', { month:'long', year:'numeric' });
+
+  var h = GUN[dil].map(function(g){ return '<div class="gun-bas">' + g + '</div>'; }).join('');
+  for(var i = 0; i < kaydir; i++) h += '<div class="hucre bos"></div>';
+  var bugun = anahtar(new Date());
+  var ayda = 0;
+  for(var g = 1; g <= gunSayisi; g++){
+    var t = ay.getFullYear() + '-' + iki(ay.getMonth()+1) + '-' + iki(g);
+    var liste = harita[t] || [];
+    ayda += liste.length;
+    h += '<div class="hucre' + (t === bugun ? ' bugun' : '') + '">' +
+         '<div class="gun-no">' + g + '</div>' +
+         liste.map(cipHtml).join('') + '</div>';
+  }
+  var kalan = (7 - ((kaydir + gunSayisi) % 7)) % 7;
+  for(var j = 0; j < kalan; j++) h += '<div class="hucre bos"></div>';
+  document.getElementById('izgara').innerHTML = h;
+
+  // Telefon listesi: yalnizca DOLU gunler.
+  var l = '';
+  for(var g2 = 1; g2 <= gunSayisi; g2++){
+    var t2 = ay.getFullYear() + '-' + iki(ay.getMonth()+1) + '-' + iki(g2);
+    var l2 = harita[t2] || [];
+    if(!l2.length) continue;
+    var d2 = new Date(ay.getFullYear(), ay.getMonth(), g2);
+    l += '<div class="gun"><h3>' +
+         kacir(d2.toLocaleDateString(dil === 'tr' ? 'tr-TR' : 'en-GB', { weekday:'long', day:'numeric', month:'long' })) +
+         '</h3>' + l2.map(cipHtml).join('') + '</div>';
+  }
+  document.getElementById('liste').innerHTML = l || '<p class="bos-not">' + kacir(m('bosAy')) + '</p>';
+  document.getElementById('durum').hidden = true;
+  document.getElementById('govde').hidden = false;
+  if(!ayda && !l) document.getElementById('liste').innerHTML = '<p class="bos-not">' + kacir(m('bosAy')) + '</p>';
+}
+
+document.getElementById('onceki').addEventListener('click', function(){ ay = new Date(ay.getFullYear(), ay.getMonth()-1, 1); ciz(); });
+document.getElementById('sonraki').addEventListener('click', function(){ ay = new Date(ay.getFullYear(), ay.getMonth()+1, 1); ciz(); });
+document.getElementById('bugunDug').addEventListener('click', function(){ ay = new Date(); ciz(); });
+
+function baslat(){
+  document.getElementById('durum').textContent = m('yukleniyor');
+  dilYaz();
+  // Adres: paylas.html#<kullanici>/<jeton>
+  var h = (location.hash || '').replace(/^#/, '');
+  var parca = h.split('/');
+  if(parca.length !== 2 || !/^[0-9a-f-]{36}$/i.test(parca[0]) || !/^[A-Za-z0-9_-]{8,64}$/.test(parca[1])){
+    hata('hataAdres'); return;
+  }
+  var url = SUPABASE_URL + '/storage/v1/object/public/paylasim/' + parca[0] + '/' + parca[1] + '.json';
+  fetch(url, { cache:'no-store' }).then(function(r){
+    // Dosya yoksa baglanti kapatilmis demek.
+    if(r.status === 404 || r.status === 400) { hata('hataYok'); return null; }
+    if(!r.ok) { hata('hataAg'); return null; }
+    return r.json();
+  }).then(function(j){
+    if(!j) return;
+    veri = j;
+    // Plani hazirlayan kisinin dili, ziyaretci baska bir dil secmediyse
+    // baslangic dili oluyor.
+    var kayitli = null;
+    try{ kayitli = localStorage.getItem('paylas_dil'); }catch(e){}
+    if(!kayitli && (j.dil === 'tr' || j.dil === 'en')) dil = j.dil;
+    dilYaz();
+  }).catch(function(e){
+    console.error('[paylas] okunamadi', e);
+    hata('hataAg');
+  });
+}
+// Yalnizca # degisirse tarayici sayfayi yeniden yuklemiyor; adresi elle
+// degistiren ya da iki farkli baglanti arasinda gidip gelen kisi eski
+// ekranda kaliyordu.
+window.addEventListener('hashchange', function(){
+  veri = null;
+  ay = new Date();
+  document.getElementById('govde').hidden = true;
+  var d = document.getElementById('durum');
+  d.hidden = false; d.className = 'bos-not';
+  baslat();
+});
+baslat();
+</script>
+</body>
+</html>

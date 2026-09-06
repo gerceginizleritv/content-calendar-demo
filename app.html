@@ -2113,6 +2113,7 @@ textarea.sc-ai-brief{min-height:64px;resize:vertical;line-height:1.5;}
       <span class="entry-count" id="entryCount" title=""></span>
       <span class="count-note" data-i18n="count_note">Demo limit — plenty for a full month of planning.</span>
       <button type="button" class="early-link" id="earlyLink" data-i18n="early_cta">Get early access →</button>
+      <button type="button" class="early-link" id="paylasBtn" data-i18n="pay_btn">Share a read-only link</button>
     </div>
   </div>
 
@@ -2337,6 +2338,32 @@ textarea.sc-ai-brief{min-height:64px;resize:vertical;line-height:1.5;}
 
 <!-- Script penceresi: genis ve yalin. Ic ice form alanlari degil, tek bir
      yazma alani — burada yapilan is yazmak. -->
+<!-- Paylasilabilir salt-okunur takvim. Baglantiyi acan kisi YALNIZCA
+     okuyor: hesabi yok, hicbir sey degistiremiyor. Aciklama, hashtag ve
+     kapak tarifleri BILEREK gonderilmiyor -- ekibe "ne zaman ne cikiyor"
+     gostermek icin taslak metinlerin disariya gitmesi gerekmiyor. -->
+<div class="overlay" id="paylasOverlay">
+  <div class="modal" style="max-width:480px;">
+    <h2 data-i18n="pay_title">Share a read-only link</h2>
+    <p class="hint" data-i18n="pay_lead">Anyone with the link sees the dates, the platforms and the titles. They cannot change anything, and they do not need an account.</p>
+    <p class="hint" data-i18n="pay_privacy">Captions, hashtags and cover prompts are not sent — only what is needed to read the plan.</p>
+    <div class="ai-status" id="pay_durum"></div>
+    <div class="field" id="pay_adresSatir" hidden>
+      <label data-i18n="pay_link">Link</label>
+      <div class="sifre-satir">
+        <input type="text" id="pay_adres" readonly>
+        <button type="button" class="btn sifre-goz" id="pay_kopya" data-i18n="pay_copy">Copy</button>
+      </div>
+      <p class="auth-hint" id="pay_zaman"></p>
+    </div>
+    <div class="modal-actions">
+      <button type="button" class="btn btn-danger" id="pay_kapat" hidden data-i18n="pay_off">Turn the link off</button>
+      <button type="button" class="btn" id="pay_iptal" data-i18n="btn_close">Close</button>
+      <button type="button" class="btn btn-primary" id="pay_olustur" data-i18n="pay_create">Create the link</button>
+    </div>
+  </div>
+</div>
+
 <div class="overlay" id="placeOverlay">
   <div class="modal" style="max-width:560px;">
     <h2 id="mk_baslik" data-i18n="mk_title">Place</h2>
@@ -3427,6 +3454,22 @@ const LANG = {
     tab_ideas: "Ideas",
     tab_scripts: "Scripts",
     tab_places: "Places",
+    pay_btn: "Share a read-only link",
+    pay_title: "Share a read-only link",
+    pay_lead: "Anyone with the link sees the dates, the platforms and the titles. They cannot change anything, and they do not need an account.",
+    pay_privacy: "Captions, hashtags and cover prompts are not sent — only what is needed to read the plan.",
+    pay_create: "Create the link",
+    pay_refresh: "Update the link",
+    pay_working: "Publishing...",
+    pay_done: "Ready. The link now shows the current plan.",
+    pay_link: "Link",
+    pay_copy: "Copy",
+    pay_copied: "Link copied.",
+    pay_updated: (z)=> `Last updated ${z}. It refreshes on its own when you change something.`,
+    pay_off: "Turn the link off",
+    pay_off_body: "The link stops working right away. Anyone who has it sees nothing. You can create a new one later — it will be a different address.",
+    pay_off_done: "The link is off.",
+    pay_need_sql: "The share area is not set up yet. Run sql/25-paylasim.sql in Supabase and try again.",
     mk_add: "+ Add a place",
     mk_search_ph: "Search places — name, city or address",
     mk_title: "Place",
@@ -4049,6 +4092,22 @@ const LANG = {
     tab_ideas: "Fikirler",
     tab_scripts: "Scriptler",
     tab_places: "Mekanlar",
+    pay_btn: "Salt-okunur bağlantı paylaş",
+    pay_title: "Salt-okunur bağlantı paylaş",
+    pay_lead: "Bağlantıyı açan kişi tarihleri, platformları ve başlıkları görür. Hiçbir şeyi değiştiremez ve hesap açması gerekmez.",
+    pay_privacy: "Açıklama, hashtag ve kapak tarifleri gönderilmiyor — yalnızca planı okumak için gerekenler gidiyor.",
+    pay_create: "Bağlantıyı oluştur",
+    pay_refresh: "Bağlantıyı güncelle",
+    pay_working: "Yayınlanıyor...",
+    pay_done: "Hazır. Bağlantı artık güncel planı gösteriyor.",
+    pay_link: "Bağlantı",
+    pay_copy: "Kopyala",
+    pay_copied: "Bağlantı kopyalandı.",
+    pay_updated: (z)=> `Son güncelleme ${z}. Bir şey değiştirdiğinde kendiliğinden tazeleniyor.`,
+    pay_off: "Bağlantıyı kapat",
+    pay_off_body: "Bağlantı hemen çalışmaz olur. Elinde olan kimse bir şey göremez. Sonra yenisini oluşturabilirsin — adresi farklı olur.",
+    pay_off_done: "Bağlantı kapatıldı.",
+    pay_need_sql: "Paylaşım alanı henüz hazır değil. Supabase'de sql/25-paylasim.sql betiğini çalıştırıp tekrar dene.",
     mk_add: "+ Mekan ekle",
     mk_search_ph: "Mekanlarda ara — ad, şehir ya da adres",
     mk_title: "Mekan",
@@ -4685,6 +4744,8 @@ function save(){
     clearTimeout(pushTimer);
     pushTimer = setTimeout(pushChanges, 400);
   }
+  // Paylasilan kopya da tazeleniyor: baglanti yoksa hicbir sey yapmiyor.
+  paylasimGecikmeliYaz();
 }
 
 async function pushChanges(){
@@ -6710,6 +6771,11 @@ const SCRIPT_MAX = 40000, SCRIPT_ADET = 300;
 // baglaniyor (projects.placeId).
 const MEKAN_KEY = 'demo_places';
 const MEKAN_ADET = 400;
+// Paylasilabilir salt-okunur takvim durumu. Bildirim burada, kullanan
+// islevlerden cok once: ust duzey let, tanimlanana kadar erisilemiyor
+// ve acilistaki paylasimYukle() cagrisi ona denk geliyordu.
+let paylasim = { jeton: '', zaman: 0 };
+let paylasimYazTimer = null;
 let mekanlar = [];   // [{id, name, city, district, address, permission, cautions, notes, mapsUrl, driveUrl}]
 const mekanDirty = new Set(), mekanRemoved = new Set();
 let mekanPushTimer = null;
@@ -7306,6 +7372,7 @@ function fikirScriptAfterSignOut(){
   scriptDirty.clear(); scriptRemoved.clear();
   loadFikirScript();
   loadMekanlar();
+  paylasimYukle();
 }
 function readLocalProjects(key){
   try{
@@ -8024,6 +8091,13 @@ let gelenKutusuAcik = false;
 
 function gelenAlinanOku(satir){
   gelenKutusuAcik = !!(satir && satir.prefs && satir.prefs.gelen_kutusu);
+  // Bulutta jeton varsa yerelde olmayanı tamamlıyor; yereldeki daha
+  // yeniyse dokunmuyor.
+  const uzakPay = satir && satir.prefs && satir.prefs.share;
+  if(uzakPay && uzakPay.jeton && !paylasim.jeton){
+    paylasim = { jeton: String(uzakPay.jeton).slice(0, 64), zaman: Number(uzakPay.zaman) || 0 };
+    try{ localStorage.setItem(paylasimKey(), JSON.stringify(paylasim)); }catch(e){}
+  }
   const liste = satir && satir.prefs && satir.prefs.gelen_alinan;
   gelenAlinan = Array.isArray(liste) ? liste.filter(x=> typeof x === 'string').slice(0, 5000) : [];
   gelenDefterHazir = true;
@@ -8034,6 +8108,8 @@ function tercihPrefsYap(){
   // Bayrak buradan yazilmiyor, yalnizca KORUNUYOR: bu islev satirin
   // tamamini yeniden yaziyor, atlanirsa ilk kaydetmede bayrak silinirdi.
   if(gelenKutusuAcik) prefs.gelen_kutusu = true;
+  // Paylasim jetonu hesaba bagli: ayni baglanti telefonda da gorunsun.
+  if(paylasim.jeton) prefs.share = { jeton: paylasim.jeton, zaman: paylasim.zaman || 0 };
   // Hatirlatma ayarlari hesaba bagli, ama TARAYICI anahtari yerel
   // kaliyor: bildirim izni tarayiciya ozel, baska cihazda "acik"
   // yazmak calismayan bir ayari acik gostermek olurdu.
@@ -11029,6 +11105,7 @@ load();
 loadProjects();
 loadFikirScript();
 loadMekanlar();
+paylasimYukle();
 // Bir onceki surumde proje serbest metindi; o kayitlar gercek projeye
 // cevriliyor. Kayitlar yuklendikten SONRA calismali.
 projeleriGocur();
@@ -11330,6 +11407,127 @@ function hataMetni(err){
   if(err && err.sunucu)  return t('rm_cal_err_server') + ' ' + err.sunucu;
   return t('rm_cal_err');
 }
+// ---- Paylasilabilir salt-okunur takvim ------------------------------
+// Takvimin bir kopyasi herkese acik bir kovaya JSON olarak yaziliyor;
+// paylas.html onu okuyup ciziyor. Dosyanin adi tahmin edilemeyecek bir
+// jeton: baglantiyi bilmeyen bulamaz. Kapatilinca dosya siliniyor.
+
+function paylasimYukle(){
+  try{
+    const h = JSON.parse(localStorage.getItem(paylasimKey()) || 'null');
+    paylasim = (h && typeof h === 'object')
+      ? { jeton: typeof h.jeton === 'string' ? h.jeton.slice(0, 64) : '',
+          zaman: typeof h.zaman === 'number' ? h.zaman : 0 }
+      : { jeton: '', zaman: 0 };
+  }catch(e){ paylasim = { jeton: '', zaman: 0 }; }
+}
+function paylasimKey(){ return session ? 'demo_share_' + session.user.id : 'demo_share'; }
+function paylasimKaydet(){
+  try{ localStorage.setItem(paylasimKey(), JSON.stringify(paylasim)); }catch(e){}
+  if(session) tercihPush().catch(()=>{});
+}
+function paylasimYolu(jeton){ return session.user.id + '/' + (jeton || paylasim.jeton) + '.json'; }
+function paylasimAdresi(){
+  if(!session || !paylasim.jeton) return '';
+  // Uygulama app.html'de; paylasim sayfasi ayni klasorde.
+  const kok = location.origin + location.pathname.replace(/[^/]*$/, '');
+  return kok + 'paylas.html#' + session.user.id + '/' + paylasim.jeton;
+}
+// Disariya giden kopya: tarih, saat, tur, platform, baslik, proje ve
+// yayinlandi bilgisi. Aciklama, hashtag ve kapak tarifleri BILEREK yok.
+function paylasimGovdesi(){
+  const kayitlar = events.slice()
+    .sort((a,b)=> (a.date + (a.time||'')).localeCompare(b.date + (b.time||'')))
+    .map(e=>{
+      const p = e.projectId ? projectById(e.projectId) : null;
+      return { tarih: e.date, saat: e.time || '', tur: e.type, platform: e.platform,
+               baslik: (e.title || '').slice(0, 300), yayinlandi: e.uploaded === true,
+               proje: p ? p.name : '' };
+    });
+  return JSON.stringify({ v: 1, olusturuldu: new Date().toISOString(),
+                          dil: currentLang, kayitlar });
+}
+async function paylasimYayinla(){
+  if(!sb || !session){ const e = new Error('giris'); e.anahtar = 'rm_cal_need_login'; throw e; }
+  if(!paylasim.jeton){ paylasim.jeton = jetonUret(); }
+  const govde = new Blob([paylasimGovdesi()], { type: 'application/json' });
+  const { error } = await sb.storage.from('paylasim').upload(paylasimYolu(), govde, {
+    contentType: 'application/json', upsert: true, cacheControl: '60'
+  });
+  if(error){
+    // Kova yoksa yapilacak is belli: sql/25 betigini calistirmak.
+    const m = String(error.message || '');
+    if(/not found|does not exist|bucket/i.test(m)) error.anahtar = 'pay_need_sql';
+    else if(m) error.sunucu = m;
+    throw error;
+  }
+  paylasim.zaman = Date.now();
+  paylasimKaydet();
+  return paylasimAdresi();
+}
+async function paylasimSil(){
+  if(!sb || !session || !paylasim.jeton) return;
+  try{ await sb.storage.from('paylasim').remove([paylasimYolu()]); }
+  catch(e){ console.error('[paylasim] dosya silinemedi', e); }
+  paylasim = { jeton: '', zaman: 0 };
+  paylasimKaydet();
+}
+// Kayitlar degisince paylasilan kopya da tazeleniyor; her tusa basista
+// yazmamak icin kuyrukta bekliyor. Baglanti yoksa hicbir sey yapmiyor.
+function paylasimGecikmeliYaz(){
+  if(!paylasim.jeton || !session) return;
+  clearTimeout(paylasimYazTimer);
+  paylasimYazTimer = setTimeout(()=>{ paylasimYayinla().catch(e=> console.error('[paylasim] tazelenemedi', e)); }, 2500);
+}
+
+function paylasPenceresiniAc(){
+  const d = document.getElementById('pay_durum');
+  d.textContent = ''; d.className = 'ai-status';
+  paylasEkraniTazele();
+  document.getElementById('paylasOverlay').classList.add('open');
+}
+function paylasEkraniTazele(){
+  const varMi = !!paylasim.jeton;
+  document.getElementById('pay_adresSatir').hidden = !varMi;
+  document.getElementById('pay_kapat').hidden = !varMi;
+  document.getElementById('pay_olustur').textContent = t(varMi ? 'pay_refresh' : 'pay_create');
+  if(varMi){
+    document.getElementById('pay_adres').value = paylasimAdresi();
+    document.getElementById('pay_zaman').textContent =
+      paylasim.zaman ? t('pay_updated')(new Date(paylasim.zaman).toLocaleString(currentLang === 'tr' ? 'tr-TR' : 'en-GB')) : '';
+  }
+}
+document.getElementById('paylasBtn').addEventListener('click', paylasPenceresiniAc);
+document.getElementById('pay_iptal').addEventListener('click', ()=> document.getElementById('paylasOverlay').classList.remove('open'));
+document.getElementById('paylasOverlay').addEventListener('click', e=>{ if(e.target.id === 'paylasOverlay') e.currentTarget.classList.remove('open'); });
+document.getElementById('pay_olustur').addEventListener('click', async ()=>{
+  const d = document.getElementById('pay_durum');
+  const btn = document.getElementById('pay_olustur');
+  btn.disabled = true;
+  d.textContent = t('pay_working'); d.className = 'ai-status';
+  try{
+    await paylasimYayinla();
+    paylasEkraniTazele();
+    d.textContent = t('pay_done'); d.className = 'ai-status ok';
+  }catch(err){
+    console.error('[paylasim] olusturulamadi', err);
+    d.textContent = hataMetni(err); d.className = 'ai-status error';
+  }finally{ btn.disabled = false; }
+});
+document.getElementById('pay_kopya').addEventListener('click', async ()=>{
+  const kutu = document.getElementById('pay_adres');
+  kutu.select();
+  try{ await navigator.clipboard.writeText(kutu.value); showToast(t('pay_copied')); }
+  catch(e){ document.execCommand('copy'); showToast(t('pay_copied')); }
+});
+document.getElementById('pay_kapat').addEventListener('click', async ()=>{
+  if(!await onayla({ baslik: t('pay_off'), govde: t('pay_off_body'), tamam: t('pay_off'), tehlike: true })) return;
+  await paylasimSil();
+  paylasEkraniTazele();
+  const d = document.getElementById('pay_durum');
+  d.textContent = t('pay_off_done'); d.className = 'ai-status';
+});
+
 async function takvimYayinla(){
   if(!sb || !session){ const e = new Error('giris'); e.anahtar = 'rm_cal_need_login'; throw e; }
   if(!hatirlatma.jeton){ hatirlatma.jeton = jetonUret(); hatirlatmaKaydet(); }
@@ -11872,6 +12070,7 @@ async function afterSignIn(){
   // noktada belli oldu. Sablonlarda bunun tersi bir kez veri kaybettirdi.
   loadFikirScript();
   loadMekanlar();
+  paylasimYukle();
   // Bulut eslestirmesi BEKLENMEDEN baslatiliyor: kendi try/catch'i var,
   // gerektiginde ekrani kendisi tazeliyor. Await edilseydi takvim tek
   // satirlik bir sorgu yuzunden gec acilirdi.
