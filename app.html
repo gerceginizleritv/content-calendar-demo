@@ -1454,6 +1454,34 @@ textarea.sc-ai-brief{min-height:64px;resize:vertical;line-height:1.5;}
   border:1px solid var(--amber);border-radius:3px;padding:0 3px;flex:none;
   line-height:1.5;
 }
+/* Deneme geri bildirimi: her bolum bir satir, oylar ayni genislikte. */
+.dfb-liste{display:flex;flex-direction:column;gap:6px;}
+.dfb-satir{border:1px solid var(--line);border-radius:9px;padding:8px 10px;}
+.dfb-ust{display:flex;align-items:center;gap:8px;flex-wrap:wrap;}
+.dfb-ad{flex:1;min-width:110px;font-size:13.5px;font-weight:600;}
+.dfb-oylar{display:grid;grid-template-columns:repeat(3, 1fr);gap:4px;flex:0 0 282px;}
+.dfb-oy{font:inherit;font-size:11px;border:1px solid var(--line);background:var(--bg);
+  color:var(--text-dim);border-radius:7px;padding:6px 4px;cursor:pointer;min-height:34px;
+  white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+.dfb-oy:hover{border-color:var(--accent-dim);}
+.dfb-oy.secili{border-color:var(--accent);background:var(--accent-soft);color:var(--accent);font-weight:600;}
+.dfb-oy.secili.kotu{border-color:var(--red);background:transparent;color:var(--red);}
+/* Not KUTUSU ancak bir isaret konunca aciliyor: on bir bolumun her biri
+   icin acik duran bir metin kutusu formu okunmaz bir duvara ceviriyordu.
+   .field textarea'nin 80px'lik boyunu da geri aliyoruz. */
+.dfb-not{width:100%;margin-top:7px;min-height:0;height:36px;font-size:13px;
+  font-family:inherit;line-height:1.4;resize:vertical;}
+.dfb-not[hidden]{display:none;}
+.dfb-nps{display:grid;grid-template-columns:repeat(11, 1fr);gap:4px;}
+.dfb-nps button{font:inherit;font-size:12px;border:1px solid var(--line);background:var(--bg);
+  color:var(--text-dim);border-radius:6px;padding:7px 0;cursor:pointer;min-height:36px;}
+.dfb-nps button.secili{border-color:var(--accent);background:var(--accent-soft);
+  color:var(--accent);font-weight:700;}
+@media(max-width:560px){
+  .dfb-oylar{flex:1 0 100%;}
+  .dfb-nps{grid-template-columns:repeat(6, 1fr);}
+}
+
 /* Saran satirda her kutu kendi metni kadar genisti: "Later" kucucuk,
    "Hicbir sey — kafadan idare ediyorum" bir satiri tek basina yiyordu ve
    satirlar birbirini tutmuyordu. Izgara: hepsi ayni genislikte, hizali. */
@@ -2187,6 +2215,11 @@ textarea.sc-ai-brief{min-height:64px;resize:vertical;line-height:1.5;}
         <button class="rail-link" id="aiSettingsBtn" data-i18n="btn_ai_settings">✨ AI (Gemini)</button>
         <button class="rail-link" id="remindersBtn" data-i18n="rm_btn">🔔 Reminders</button>
         <button class="rail-link" id="feedbackBtn" data-i18n="btn_feedback">💬 Feedback</button>
+        <!-- Uzun form AYRI: kisa form daha urunu denememis ziyaretciye
+             soruluyor, bu ise DENEYEN kisiye. Ikisini birlestirmek
+             ziyaretciyi on soruyla kacirir, deneyiciyi de iki soruyla
+             yetersiz birakirdi. Yalnizca oturum acikken gorunuyor. -->
+        <button class="rail-link" id="trialFbBtn" hidden data-i18n="dfb_link">📝 Trial feedback</button>
         <div class="rail-prefs">
           <select id="langSelect" class="lang-select" aria-label="Language"></select>
           <button class="btn btn-sm" id="themeBtn">🌙 Dark</button>
@@ -3410,6 +3443,47 @@ textarea.sc-ai-brief{min-height:64px;resize:vertical;line-height:1.5;}
   </div>
 </div>
 
+<!-- Deneme geri bildirimi: bolum bolum. Amac "guzel oldu mu" degil,
+     HANGI bolumun ise yaradigini ve hangisinin yaramadigini ayirmak. -->
+<div class="overlay" id="dfbOverlay">
+  <div class="modal" style="max-width:640px;">
+    <div class="modal-head">
+      <h2 data-i18n="dfb_title">How did the trial go?</h2>
+      <button type="button" class="modal-x" id="dfbX" data-i18n-title="btn_close"
+              data-i18n-aria="btn_close" title="Close">×</button>
+    </div>
+    <p class="hint" data-i18n="dfb_intro">Answer what you can and skip the rest — even three lines helps.</p>
+
+    <div class="field">
+      <label data-i18n="dfb_modules">Section by section</label>
+      <p class="hint" data-i18n="dfb_modules_hint">Mark the ones you used. The note is optional.</p>
+      <div class="dfb-liste" id="dfbList"></div>
+    </div>
+
+    <div class="field">
+      <label data-i18n="dfb_best">What earned its place? What would you miss if it went away?</label>
+      <textarea id="dfbBest" maxlength="2000" rows="3"></textarea>
+    </div>
+    <div class="field">
+      <label data-i18n="dfb_worst">What got in your way, confused you, or is missing?</label>
+      <textarea id="dfbWorst" maxlength="2000" rows="3"></textarea>
+    </div>
+    <div class="field">
+      <label data-i18n="dfb_nps">Would you tell another creator about it? 0 = never, 10 = already did</label>
+      <div class="dfb-nps" id="dfbNps"></div>
+    </div>
+    <div class="field">
+      <label data-i18n="dfb_email">Email — only if you want an answer. Optional.</label>
+      <input type="email" id="dfbEmail" placeholder="you@example.com" autocomplete="email">
+    </div>
+    <div class="ai-status" id="dfbStatus"></div>
+    <div class="modal-actions">
+      <button class="btn" id="dfbLater" data-i18n="fb_later_btn">Not now</button>
+      <button class="btn btn-primary" id="dfbSend" data-i18n="fb_send">Send</button>
+    </div>
+  </div>
+</div>
+
 <div class="overlay" id="fbOverlay">
   <div class="modal" style="max-width:520px;">
     <h2 data-i18n="fb_title">Two questions, 20 seconds</h2>
@@ -3659,6 +3733,31 @@ const LANG = {
     fb_q3: "Email — only if you want early access. Optional.",
     fb_send: "Send",
     fb_later_btn: "Not now",
+    dfb_link: "📝 Trial feedback",
+    dfb_title: "How did the trial go?",
+    dfb_intro: "Answer what you can and skip the rest — even three lines helps. It goes to one person: the one who builds this.",
+    dfb_modules: "Section by section",
+    dfb_modules_hint: "Mark the ones you used. The note is optional — press a mark again to clear it.",
+    dfb_note_ph: "A note about this section (optional)",
+    dfb_vote_good: "Useful",
+    dfb_vote_unused: "Did not use",
+    dfb_vote_bad: "In the way",
+    dfb_best: "What earned its place? What would you miss if it went away?",
+    dfb_worst: "What got in your way, confused you, or is missing?",
+    dfb_nps: "Would you tell another creator about it? 0 = never, 10 = already did",
+    dfb_email: "Email — only if you want an answer. Optional.",
+    dfb_bos: "Nothing to send yet — mark one section or write a line.",
+    dfb_b_projects: "Projects and the seven steps",
+    dfb_b_places: "Places",
+    dfb_b_ideas: "Ideas",
+    dfb_b_scripts: "Scripts",
+    dfb_b_calendar: "Calendar and entries",
+    dfb_b_templates: "Caption templates",
+    dfb_b_ai: "AI (Gemini)",
+    dfb_b_reminders: "Reminders and calendar subscription",
+    dfb_b_import: "Import from a spreadsheet",
+    dfb_b_share: "Shared read-only link",
+    dfb_b_backup: "Backup and restore",
     fb_sending: "Sending...",
     fb_thanks: "Thank you — that genuinely helps.",
     fb_thanks_noted: "Thank you — your answer was recorded.",
@@ -4355,6 +4454,31 @@ const LANG = {
     fb_q3: "E-posta — sadece erken erişim istersen. Zorunlu değil.",
     fb_send: "Gönder",
     fb_later_btn: "Şimdi değil",
+    dfb_link: "📝 Deneme geri bildirimi",
+    dfb_title: "Deneme nasıl geçti?",
+    dfb_intro: "Cevaplayabildiğini cevapla, gerisini atla — üç satır bile işe yarıyor. Tek bir kişiye gidiyor: bunu yapan kişiye.",
+    dfb_modules: "Bölüm bölüm",
+    dfb_modules_hint: "Kullandıklarını işaretle. Not isteğe bağlı — aynı işarete tekrar basınca seçim kalkıyor.",
+    dfb_note_ph: "Bu bölüm için not (isteğe bağlı)",
+    dfb_vote_good: "İşime yaradı",
+    dfb_vote_unused: "Kullanmadım",
+    dfb_vote_bad: "Dolandı",
+    dfb_best: "En çok ne işine yaradı? Kalksa neyi ararsın?",
+    dfb_worst: "Ne ayağına dolandı, ne kafanı karıştırdı, ne eksik?",
+    dfb_nps: "Başka bir içerik üreticisine anlatır mıydın? 0 = asla, 10 = anlattım bile",
+    dfb_email: "E-posta — cevap istiyorsan. Zorunlu değil.",
+    dfb_bos: "Gönderilecek bir şey yok — bir bölümü işaretle ya da bir satır yaz.",
+    dfb_b_projects: "Projeler ve yedi adım",
+    dfb_b_places: "Mekanlar",
+    dfb_b_ideas: "Fikirler",
+    dfb_b_scripts: "Scriptler",
+    dfb_b_calendar: "Takvim ve kayıtlar",
+    dfb_b_templates: "Açıklama şablonları",
+    dfb_b_ai: "AI (Gemini)",
+    dfb_b_reminders: "Hatırlatmalar ve takvim aboneliği",
+    dfb_b_import: "Tablodan içe aktarma",
+    dfb_b_share: "Paylaşılabilir salt-okunur bağlantı",
+    dfb_b_backup: "Yedek ve geri yükleme",
     fb_sending: "Gönderiliyor...",
     fb_thanks: "Teşekkürler — bu gerçekten işe yarıyor.",
     fb_thanks_noted: "Teşekkürler — cevabın kaydedildi.",
@@ -13376,6 +13500,10 @@ function refreshAuthUi(){
   b.textContent = session ? t('btn_signed_in') : t('btn_signin');
   b.title = session ? session.user.email : '';
   if(session) document.getElementById('cloudNudge').hidden = true;
+  // Uzun geri bildirim formu yalnizca DENEYENE soruluyor; hesabi olmayan
+  // ziyaretciye kisa form gidiyor.
+  const deneme = document.getElementById('trialFbBtn');
+  if(deneme) deneme.hidden = !session;
   kimlikGoster();
 }
 
@@ -14122,6 +14250,141 @@ document.getElementById('nudgeDismiss').addEventListener('click', ()=>{
   try{ localStorage.setItem('demo_nudge_off','1'); }catch(e){}
   document.getElementById('cloudNudge').hidden = true;
   track('funnel/nudge-dismissed');
+});
+
+// ---- Deneme geri bildirimi (uzun form) --------------------------------
+// Bolum bolum: "guzel oldu mu" degil, HANGI bolumun ise yaradigi.
+const DFB_BOLUMLER = ['projects','places','ideas','scripts','calendar','templates',
+                      'ai','reminders','import','share','backup'];
+const DFB_ANAHTAR = 'demo_dfb_taslak';
+let dfbCevap = { oy:{}, not:{}, nps:null };
+function dfbYukle(){
+  try{
+    const t = JSON.parse(localStorage.getItem(DFB_ANAHTAR) || 'null');
+    if(t && typeof t === 'object'){
+      dfbCevap = { oy: t.oy || {}, not: t.not || {}, nps: (typeof t.nps === 'number' ? t.nps : null) };
+    }
+  }catch(e){}
+}
+function dfbSakla(){
+  // Yarim kalan form kaybolmasin: uzun bir form, tek oturumda
+  // doldurulmayabilir.
+  try{ localStorage.setItem(DFB_ANAHTAR, JSON.stringify(dfbCevap)); }catch(e){}
+}
+function dfbCiz(){
+  const kutu = document.getElementById('dfbList');
+  if(!kutu) return;
+  kutu.innerHTML = DFB_BOLUMLER.map(k=>{
+    const oy = dfbCevap.oy[k] || '';
+    const not = dfbCevap.not[k] || '';
+    const dugme = (deger, etiket, sinif)=>
+      `<button type="button" class="dfb-oy${oy === deger ? ' secili ' + (sinif || '') : ''}"`
+      + ` data-dfb-oy="${k}" data-dfb-deger="${deger}">${escapeHtml(t(etiket))}</button>`;
+    return `<div class="dfb-satir">
+      <div class="dfb-ust">
+        <span class="dfb-ad">${escapeHtml(t('dfb_b_' + k))}</span>
+        <span class="dfb-oylar">
+          ${dugme('iyi', 'dfb_vote_good', '')}
+          ${dugme('yok', 'dfb_vote_unused', '')}
+          ${dugme('kotu', 'dfb_vote_bad', 'kotu')}
+        </span>
+      </div>
+      <textarea class="dfb-not" data-dfb-not="${k}" rows="1" maxlength="1000"${(oy || not) ? '' : ' hidden'}
+        data-i18n-placeholder="dfb_note_ph"
+        placeholder="${escapeHtml(t('dfb_note_ph'))}">${escapeHtml(not)}</textarea>
+    </div>`;
+  }).join('');
+  kutu.querySelectorAll('[data-dfb-oy]').forEach(d=>{
+    d.addEventListener('click', ()=>{
+      const k = d.dataset.dfbOy;
+      // Ayni dugmeye tekrar basmak secimi kaldiriyor: yanlis tiklayan
+      // kisi formu bastan doldurmasin.
+      dfbCevap.oy[k] = dfbCevap.oy[k] === d.dataset.dfbDeger ? '' : d.dataset.dfbDeger;
+      dfbSakla(); dfbCiz();
+    });
+  });
+  kutu.querySelectorAll('[data-dfb-not]').forEach(a=>{
+    a.addEventListener('input', ()=>{ dfbCevap.not[a.dataset.dfbNot] = a.value; dfbSakla(); });
+  });
+  const nps = document.getElementById('dfbNps');
+  nps.innerHTML = Array.from({length:11}, (_,i)=>
+    `<button type="button" class="${dfbCevap.nps === i ? 'secili' : ''}" data-dfb-nps="${i}">${i}</button>`).join('');
+  nps.querySelectorAll('[data-dfb-nps]').forEach(d=>{
+    d.addEventListener('click', ()=>{
+      const n = Number(d.dataset.dfbNps);
+      dfbCevap.nps = dfbCevap.nps === n ? null : n;
+      dfbSakla(); dfbCiz();
+    });
+  });
+}
+function dfbAc(){
+  dfbYukle();
+  dfbCiz();
+  const eposta = document.getElementById('dfbEmail');
+  if(!eposta.value && session && session.user) eposta.value = session.user.email || '';
+  document.getElementById('dfbStatus').textContent = '';
+  document.getElementById('dfbStatus').className = 'ai-status';
+  document.getElementById('dfbOverlay').classList.add('open');
+  track('feedback/trial-opened');
+}
+function dfbKapat(){ document.getElementById('dfbOverlay').classList.remove('open'); }
+document.getElementById('trialFbBtn').addEventListener('click', dfbAc);
+document.getElementById('dfbX').addEventListener('click', dfbKapat);
+document.getElementById('dfbLater').addEventListener('click', dfbKapat);
+document.getElementById('dfbOverlay').addEventListener('click', e=>{ if(e.target.id === 'dfbOverlay') dfbKapat(); });
+document.getElementById('dfbSend').addEventListener('click', async ()=>{
+  const durum = document.getElementById('dfbStatus');
+  const dugme = document.getElementById('dfbSend');
+  const en = LANG.en;
+  const oyMetni = DFB_BOLUMLER.filter(k=> dfbCevap.oy[k] || (dfbCevap.not[k] || '').trim())
+    .map(k=> (en['dfb_b_' + k] || k) + ': '
+             + (dfbCevap.oy[k] ? (en['dfb_vote_' + ({iyi:'good', yok:'unused', kotu:'bad'})[dfbCevap.oy[k]]] || dfbCevap.oy[k]) : '—')
+             + ((dfbCevap.not[k] || '').trim() ? ' — ' + dfbCevap.not[k].trim() : ''));
+  const iyi = document.getElementById('dfbBest').value.trim();
+  const kotu = document.getElementById('dfbWorst').value.trim();
+  const eposta = document.getElementById('dfbEmail').value.trim();
+  // Tamamen bos gonderim bir sey ogretmiyor.
+  if(!oyMetni.length && !iyi && !kotu && dfbCevap.nps === null){
+    durum.textContent = t('dfb_bos'); durum.className = 'ai-status error';
+    return;
+  }
+  track('feedback/trial-sent');
+  if(!(FEEDBACK_ENDPOINT && FEEDBACK_KEY)){
+    durum.textContent = t('fb_thanks'); durum.className = 'ai-status ok';
+    setTimeout(dfbKapat, 1200);
+    return;
+  }
+  dugme.disabled = true;
+  durum.textContent = t('fb_sending'); durum.className = 'ai-status';
+  try{
+    const cevap = await fetch(FEEDBACK_ENDPOINT, {
+      method:'POST', headers:{ 'Content-Type':'application/json' },
+      body: JSON.stringify({
+        access_key: FEEDBACK_KEY,
+        subject: 'Shootboard TRIAL feedback' + (dfbCevap.nps !== null ? ' — NPS ' + dfbCevap.nps : ''),
+        from_name: 'Shootboard trial',
+        'Section by section': oyMetni.length ? oyMetni.join('\n') : '(blank)',
+        'Earned its place': iyi || '(blank)',
+        'Got in the way': kotu || '(blank)',
+        'Would recommend (0-10)': dfbCevap.nps === null ? '(blank)' : String(dfbCevap.nps),
+        'Email': eposta || '(blank)',
+        'Language': currentLang
+      })
+    });
+    if(!cevap.ok) throw new Error('HTTP ' + cevap.status);
+    durum.textContent = t('fb_thanks'); durum.className = 'ai-status ok';
+    // Form BASTAN temizleniyor: serbest metinler kalirsa kullanici ikinci
+    // kez actiginda ayni seyi bir daha gonderebiliyordu.
+    dfbCevap = { oy:{}, not:{}, nps:null };
+    document.getElementById('dfbBest').value = '';
+    document.getElementById('dfbWorst').value = '';
+    try{ localStorage.removeItem(DFB_ANAHTAR); }catch(e){}
+    dfbCiz();
+    setTimeout(dfbKapat, 1400);
+  }catch(err){
+    console.error('[dfb] gonderilemedi', err);
+    durum.textContent = t('fb_error'); durum.className = 'ai-status error';
+  }finally{ dugme.disabled = false; }
 });
 
 document.getElementById('feedbackBtn').addEventListener('click', ()=> openFeedback('manual'));
