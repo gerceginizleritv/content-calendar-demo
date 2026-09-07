@@ -1909,19 +1909,33 @@ textarea.sc-ai-brief{min-height:64px;resize:vertical;line-height:1.5;}
   .proj-table{display:block;width:auto;min-width:0;border:0;}
   .proj-table thead{display:none;}
   .proj-table tbody{display:block;}
-  .proj-table tr{display:block;border:1px solid var(--line);border-radius:12px;
-    background:var(--surface);padding:12px 12px 6px;margin-bottom:10px;}
+  /* Adimlar IZGARADA: sarma duzeninde her cip kendi metni kadar genisti
+     ("Ses" kucucuk, "Yayin Paketi" kocaman) ve satirlar birbirini
+     tutmuyordu — dagini duruyordu. Simdi hepsi ayni genislikte, alt alta
+     ve yan yana hizali. */
+  .proj-table tr{display:grid;grid-template-columns:repeat(2, minmax(0, 1fr));
+    gap:6px;align-items:stretch;
+    border:1px solid var(--line);border-radius:12px;
+    background:var(--surface);padding:12px;margin-bottom:10px;}
   .proj-table tr.prow-bitti,.proj-table tr.prow-iptal{background:var(--surface);}
   .proj-table th.pname-col,.proj-table td{display:block;border:0;padding:0;}
   /* Masaustunde ad sutunu yapisik ve kendi zemini var; kartta ikisi de
      gereksiz — kartin kendisi zaten bir kutu. */
-  .proj-table th.pname-col{width:auto;margin-bottom:10px;position:static;
-    background:none;box-shadow:none;}
+  .proj-table th.pname-col{width:auto;margin:0 0 4px;position:static;
+    background:none;box-shadow:none;grid-column:1 / -1;}
   .pname-col > *{max-width:none;}
   /* Cipler: ad + kutu + tarih tek parca, dokunma hedefi 44px'e yakin. */
-  .proj-table td.pcell{display:inline-flex;align-items:center;gap:5px;width:auto;
-    border:1px solid var(--line);border-radius:20px;padding:4px 8px 4px 11px;
-    margin:0 5px 5px 0;text-align:left;background:var(--bg);}
+  .proj-table td.pcell{display:flex;align-items:center;gap:6px;width:auto;min-width:0;
+    border:1px solid var(--line);border-radius:10px;padding:6px 8px 6px 10px;
+    margin:0;text-align:left;background:var(--bg);}
+  /* Ad soldaki boslugu doldurup isaret kutusuyla termini saga itiyor;
+     ikisi yan yana kaliyor. Uzun ad ("Yayin Paketi") cipi sismiyor,
+     gerekirse kisaliyor. */
+  .pcell-et{flex:1;min-width:0;overflow:hidden;text-overflow:ellipsis;}
+  /* Genis telefonda uc sutun sigiyor; kart kisaliyor. */
+  @media(min-width:460px){
+    .proj-table tr{grid-template-columns:repeat(3, minmax(0, 1fr));}
+  }
   .proj-table td.pcell.done{border-color:var(--accent);background:var(--accent-soft);}
   .pcell-et{display:inline;font-size:12px;color:var(--text-dim);white-space:nowrap;}
   .proj-table td.pcell.done .pcell-et{color:var(--accent);font-weight:600;}

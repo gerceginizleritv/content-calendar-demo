@@ -63,10 +63,14 @@ const disarida = (p, secici)=> p.evaluate(s=>{
       return {
         tabloKayar: sar.scrollWidth > sar.clientWidth + 1,
         sayfaKayar: document.documentElement.scrollWidth > window.innerWidth + 1,
-        kartMi: getComputedStyle(tr).display === 'block',
+        kartMi: getComputedStyle(tr).display === 'grid',
         cipSayisi: cip.length,
-        // Cipler saran satirlar halinde: sonuncusu ilkinden ASAGIDA.
+        // Cipler satirlara diziliyor: sonuncusu ilkinden ASAGIDA.
         sariyor: son.top > ilk.top + 5,
+        // Hepsi AYNI genislikte ve ayni sutunlarda: dagini gorunmesin.
+        ayniGenislik: new Set(cip.map(c=> Math.round(c.getBoundingClientRect().width))).size === 1,
+        sutunSayisi: new Set(cip.map(c=> Math.round(c.getBoundingClientRect().left))).size,
+        genislikler: [...new Set(cip.map(c=> Math.round(c.getBoundingClientRect().width)))],
         hepsiIcerde: cip.every(c=> c.getBoundingClientRect().right <= window.innerWidth + 1),
         etiketGorunur: getComputedStyle(document.querySelector('.pcell-et')).display !== 'none',
         etiketMetni: document.querySelector('.pcell-et').textContent
@@ -76,7 +80,9 @@ const disarida = (p, secici)=> p.evaluate(s=>{
     bak('tablo yana KAYMIYOR', r.tabloKayar === false);
     bak('sayfa yana kaymiyor', r.sayfaKayar === false);
     bak('yedi adim da duruyor', r.cipSayisi === 7, String(r.cipSayisi));
-    bak('cipler alt satira sariyor', r.sariyor === true);
+    bak('cipler alt satira geciyor', r.sariyor === true);
+    bak('CIPLERIN HEPSI AYNI GENISLIKTE', r.ayniGenislik === true, JSON.stringify(r.genislikler));
+    bak('cipler duzgun sutunlarda', r.sutunSayisi === 2 || r.sutunSayisi === 3, String(r.sutunSayisi));
     bak('hicbir cip ekran disinda degil', r.hepsiIcerde === true);
     bak('her cip adimin adini yaziyor', r.etiketGorunur === true && !!r.etiketMetni, r.etiketMetni);
     // Cipe dokunmak adimi isaretliyor: kartta da islev duruyor.
