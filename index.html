@@ -1607,6 +1607,46 @@ a{color:inherit;}
 //  anlatiyor ve girisi burada tamamliyor.
 // =====================================================================
 
+// ---------- Ölçüm ------------------------------------------------------
+// Sayaç app.html'de vardı ama BURADA yoktu: "kaç kişi geldi, kaçı
+// uygulamaya geçti" sorusunun cevabı ölçülemiyordu — oysa deneme
+// döneminin en önemli tek sayısı bu. Kişisel hiçbir şey gitmiyor:
+// yalnızca adımın adı. GoatCounter zaten çerezsiz çalışıyor.
+var _olcKuyruk = [], _olcVazgecti = false;
+function _olcHazir(){ return !!(window.goatcounter && typeof window.goatcounter.count === 'function'); }
+function izle(ad){
+  if(_olcHazir()){
+    try{ window.goatcounter.count({ path: ad, title: ad, event: true }); }catch(e){}
+  }else if(!_olcVazgecti){
+    _olcKuyruk.push(ad);
+  }
+}
+(function(){
+  // count.js sayfanın en altında async yükleniyor; ondan önce atılan
+  // olaylar burada bekliyor. Hiç gelmezse (engelleyici, çevrimdışı)
+  // kuyruk sonsuza kadar büyümesin diye sessizce vazgeçiliyor.
+  var bekledi = 0;
+  var saat = setInterval(function(){
+    bekledi += 700;
+    if(_olcHazir()){
+      clearInterval(saat);
+      var kuyruk = _olcKuyruk; _olcKuyruk = [];
+      kuyruk.forEach(function(a){ izle(a); });
+    }else if(bekledi >= 12000){
+      clearInterval(saat); _olcVazgecti = true; _olcKuyruk = [];
+    }
+  }, 700);
+})();
+// Olay atıldıktan HEMEN sonra sayfa değişirse istek yarıda kalabiliyor.
+// Önce olay, sonra kısa bir bekleme, sonra gidiş: 150 ms kimsenin fark
+// etmeyeceği bir gecikme, ama sayı kaybolmuyor.
+function izleyipGit(ad, adres, degistir){
+  izle(ad);
+  setTimeout(function(){
+    if(degistir) location.replace(adres); else location.href = adres;
+  }, 150);
+}
+
 // ---------- Diller -----------------------------------------------------
 // Sayfanin HTML'i INGILIZCE yazildi: JavaScript calismazsa da okunur bir
 // sayfa kaliyor. Sozluk yalnizca Turkce'yi tasiyor.
@@ -1996,7 +2036,7 @@ function donusVarMi(){
 
 function uygulamayaGit(){
   durum('st_going', 'Signed in — opening Shootboard…', 'ok');
-  location.replace('app.html');
+  izleyipGit('funnel/landing-to-app', 'app.html', true);
 }
 
 function oturumGoster(oturum){
@@ -2072,6 +2112,7 @@ function linkGonder(){
     options: { emailRedirectTo: donusAdresi() }
   }).then(function(r){
     if(r && r.error) throw r.error;
+    izle('funnel/landing-magic-link');
     durum('st_sent', 'Link sent. Nothing after a few minutes? Look in spam or junk — the sender is hello@shootboard.app.', 'ok');
   }).catch(function(err){
     console.error('[giris] link gonderilemedi', err);
@@ -2213,7 +2254,11 @@ function kayitOl(){
       return;
     }
     // Onay kapaliysa oturum hemen aciliyor; aciksa e-posta bekleniyor.
-    if(r.data && r.data.session){ location.href = 'app.html'; return; }
+    if(r.data && r.data.session){
+      izle('funnel/landing-signed-up');
+      izleyipGit('funnel/landing-to-app', 'app.html');
+      return;
+    }
     durum('st_signup_ok', 'Account created. Click the link in the email we just sent — if nothing arrives in a few minutes, look in spam or junk.', 'ok');
   }).catch(function(err){
     console.error('[giris] kayit olmadi', err);
@@ -2226,7 +2271,9 @@ function kayitOl(){
     dug.disabled = false;
   });
 }
-document.getElementById('kayitDug').addEventListener('click', kayitOl);
+document.getElementById('kayitDug').addEventListener('click', function(){
+  izle('funnel/landing-signup-tried'); kayitOl();
+});
 kSifre.addEventListener('keydown', function(e){ if(e.key === 'Enter') kayitOl(); });
 
 function sifreyleGir(){
@@ -2249,7 +2296,8 @@ function sifreyleGir(){
     if(r && r.error) throw r.error;
     sifreAlan.value = '';
     durum('st_going', 'Signed in — opening Shootboard…', 'ok');
-    location.href = 'app.html';
+    izle('funnel/landing-signed-in');
+    izleyipGit('funnel/landing-to-app', 'app.html');
   }).catch(function(err){
     console.error('[giris] sifreyle giris olmadi', err);
     var m = String((err && err.message) || '').toLowerCase();
@@ -2267,6 +2315,39 @@ sifreAlan.addEventListener('keydown', function(e){ if(e.key === 'Enter') sifreyl
 linkDug.addEventListener('click', linkGonder);
 epostaAlan.addEventListener('keydown', function(e){ if(e.key !== 'Enter') return; if(sifreAlan.value) sifreyleGir(); else linkGonder(); });
 
+// Bağlantılar tek yerden izleniyor: her düğmeye ayrı dinleyici koymak
+// yerine tıklama gövdede yakalanıyor. Sayfadan AYRILAN bağlantılarda
+// gidiş 150 ms gecikiyor ki olay yolda kalmasın; sayfa içi çapalarda
+// böyle bir sorun yok, gecikme de yok.
+document.addEventListener('click', function(e){
+  var a = (e.target && e.target.closest) ? e.target.closest('a[href]') : null;
+  if(!a) return;
+  var h = a.getAttribute('href');
+  if(h === '#giris'){ izle('funnel/landing-signin-opened'); return; }
+  if(h === '#nedir'){ izle('funnel/landing-what-is'); return; }
+  var ayrilan = (h === 'app.html') ? 'funnel/landing-to-app'
+              : (h === 'guide.html' || h === 'kilavuz.html') ? 'funnel/landing-guide' : '';
+  if(!ayrilan) return;
+  // "Hesapsız devam et" ayrı sayılıyor: uygulamaya geçenlerin kaçının
+  // hesap açmadan girdiğini yalnızca bu ayırıyor.
+  if(a.getAttribute('data-i18n') === 'guest_link') izle('funnel/landing-guest');
+  izle(ayrilan);
+  // Yeni sekmede açılıyorsa bu sayfa duruyor; beklemeye gerek yok.
+  if(e.metaKey || e.ctrlKey || e.shiftKey || e.button === 1 || a.target === '_blank') return;
+  e.preventDefault();
+  setTimeout(function(){ location.href = h; }, 150);
+});
+
+// Sayfanın okunup okunmadığı: kahramanı geçip aşağı inen biri metni
+// gerçekten okumuş sayılıyor. Bir kez atılıyor.
+(function(){
+  var atildi = false;
+  window.addEventListener('scroll', function(){
+    if(atildi) return;
+    if(window.scrollY > window.innerHeight * 0.8){ atildi = true; izle('funnel/landing-scrolled'); }
+  }, { passive: true });
+})();
+
 document.getElementById('cikisDug').addEventListener('click', function(){
   if(!sb) return;
   sb.auth.signOut().then(function(){
@@ -2275,5 +2356,7 @@ document.getElementById('cikisDug').addEventListener('click', function(){
   });
 });
 </script>
+<script data-goatcounter="https://slate-demo.goatcounter.com/count"
+        async src="//gc.zgo.at/count.js"></script>
 </body>
 </html>
