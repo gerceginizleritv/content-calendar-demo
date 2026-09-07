@@ -77,10 +77,18 @@
    bir kez koyuyoruz. !important burada dogru arac: "gizle" dedigimizde
    hicbir bicim kurali buna itiraz edememeli. */
 [hidden]{display:none !important;}
+/* YATAY YAYLANMA. Telefonda sayfa saga sola oynuyordu: parmak biraz yana
+   kaydiginda tarayici belgeyi yatayda "lastik gibi" cekiyor ve birakinca
+   geri firlatiyor. Sayfa aslinda ekrandan genis degil — yaylanma bos
+   yerde oluyor. overscroll-behavior-x:none bunu kapatiyor; dikey kayma
+   oldugu gibi kaliyor. Hem html hem body'ye yaziliyor, cunku hangisinin
+   kaydirma kabi oldugu tarayiciya gore degisiyor. */
+html{overscroll-behavior-x:none;}
 body{
   margin:0; background:var(--bg); color:var(--text);
   font-family:'IBM Plex Sans',-apple-system,sans-serif;
   padding:24px;
+  overscroll-behavior-x:none;
 }
 .mono{font-family:'IBM Plex Mono',monospace;}
 /* Sol serit yer kapladigi icin sayfa genisledi: icerik alani eskisinden
@@ -534,7 +542,10 @@ body.suruklenirken *{cursor:grabbing !important;}
 .hg-cell:hover{background:var(--surface-2);}
 .hg-cell.today{background:rgba(37,99,199,0.045);}
 .hg-cell.hg-early{background:var(--amber-soft);cursor:default;}
-.cal-grid-wrap{min-width:0;}
+/* Izgara KENDI icinde yana kayiyor. overscroll-behavior:contain olmadan
+   kaymanin sonuna gelince hareket SAYFAYA zincirleniyor ve butun ekran
+   yana suruklenmis oluyordu. */
+.cal-grid-wrap{min-width:0;overscroll-behavior:contain;}
 .hg-endlabel{border-top:1px solid var(--line);}
 .hg-endcell{border-top:1px solid var(--line);border-left:1px solid var(--line-soft);}
 /* Izgara icindeki rozet tek satir: saat sutunu zaten saati soyluyor,
@@ -1338,7 +1349,8 @@ textarea.sc-ai-brief{min-height:64px;resize:vertical;line-height:1.5;}
 /* ---- Tablo gorunumu ----
    Gunler satir, platformlar sutun. Genis olabildigi icin sayfayi degil
    kendi kabini kaydiriyor; govde asla yana kaymiyor. */
-.cal-table-wrap{overflow-x:auto;border:1px solid var(--line);border-radius:8px;background:var(--surface);}
+.cal-table-wrap{overflow-x:auto;overscroll-behavior:contain;
+  border:1px solid var(--line);border-radius:8px;background:var(--surface);}
 .cal-table{border-collapse:collapse;width:max-content;min-width:100%;font-size:12px;}
 .cal-table th,.cal-table td{border-bottom:1px solid var(--line-soft);border-right:1px solid var(--line-soft);
   padding:0;vertical-align:top;}
@@ -1443,11 +1455,15 @@ textarea.sc-ai-brief{min-height:64px;resize:vertical;line-height:1.5;}
 }
 .cal-state.on-air{border-color:var(--green);color:var(--green);}
 
-.overlay{display:none;position:fixed;inset:0;background:rgba(4,5,10,0.8);z-index:50;align-items:center;justify-content:center;padding:20px;}
+/* Pencere acikken kaydirma ARKAYA gecmesin: pencerenin sonuna gelip
+   kaydirmaya devam edince altindaki takvim kayiyordu, pencere kapaninca
+   da takvim baska bir yerde duruyordu. */
+.overlay{display:none;position:fixed;inset:0;background:rgba(4,5,10,0.8);z-index:50;align-items:center;justify-content:center;padding:20px;overscroll-behavior:contain;}
 .overlay.open{display:flex;}
 .modal{
   background:var(--surface);border:1px solid var(--line);border-top:3px solid var(--accent);
   padding:26px;width:100%;max-width:600px;max-height:88vh;overflow-y:auto;border-radius:8px;
+  overscroll-behavior:contain;
 }
 .modal h2{font-family:'Archivo',sans-serif;font-size:16px;font-weight:800;letter-spacing:-0.2px;margin:0 0 18px;}
 /* Modalin kendisi kayiyor (max-height + overflow-y). Baslik serit halinde
@@ -2169,6 +2185,15 @@ textarea.sc-ai-brief{min-height:64px;resize:vertical;line-height:1.5;}
   #dlgOverlay .modal-actions{position:static;margin:16px 0 0;padding:0;border-top:0;background:transparent;}
   #dlgOverlay .modal-actions .btn{flex:0 1 auto;}
   body.sheet-open,body.menu-open{overflow:hidden;}
+  /* overflow:hidden telefonda YETMIYOR: iOS Safari govdeyi yine de
+     suruklemeye izin veriyor, pencere acikken ekran oynuyor ve pencere
+     kapaninca takvim baska bir yerde kaliyordu. position:fixed gercekten
+     donduruyor. Kayma konumu JS'te saklanip geri veriliyor; yoksa
+     kapaninca sayfa en basa donerdi. */
+  body.govde-kilit{position:fixed;left:0;right:0;width:100%;
+    overflow:hidden;overscroll-behavior:none;}
+  /* Alt sayfa da kendi icinde kaysin, arkaya zincirlenmesin. */
+  .rail-foot{overscroll-behavior:contain;touch-action:pan-y;}
 }
 
 /* Filtre paneli basligi ve arka perdesi: masaustunde gorunmez (acilir
@@ -8948,6 +8973,46 @@ function setPage(ad){
 document.getElementById('tabCalendar').addEventListener('click', ()=> setPage('calendar'));
 document.getElementById('tabProjects').addEventListener('click', ()=>{ track('funnel/projects-opened'); setPage('projects'); });
 document.getElementById('tabTemplates').addEventListener('click', ()=>{ track('funnel/templates-opened'); setPage('templates'); });
+// GOVDE KILIDI. Bir pencere ya da alt sayfa acikken sayfanin kendisi
+// yerinde donuyor. CSS'teki overflow:hidden telefonda yetmiyordu: parmak
+// govdeyi yine de suruklüyor, ekran saga sola oynuyor ve pencere
+// kapaninca takvim baska bir yerde duruyordu.
+//
+// position:fixed gercekten donduruyor ama sayfayi en basa atiyor; o
+// yuzden kayma konumu saklanip geri veriliyor. CSS kurali yalnizca dar
+// ekranda gecerli, masaustunde bu islem gorunur bir sey yapmiyor.
+let govdeKilitY = 0, govdeKilitli = false;
+function govdeKilidi(acik){
+  if(acik === govdeKilitli) return;
+  govdeKilitli = acik;
+  if(acik){
+    govdeKilitY = window.scrollY || document.documentElement.scrollTop || 0;
+    document.body.style.top = (-govdeKilitY) + 'px';
+    document.body.classList.add('govde-kilit');
+  }else{
+    const y = govdeKilitY;
+    document.body.classList.remove('govde-kilit');
+    document.body.style.top = '';
+    // Govde donmusken sayfanin kaydirilabilir yuksekligi sifir. Sinifi
+    // kaldirir kaldirmaz scrollTo cagirinca tarayici yeni yuksekligi
+    // henuz hesaplamamis olabiliyor ve istek sifira kirpiliyor. Once
+    // yerlesim zorlaniyor, sonra bir kare sonra bir kez daha deneniyor.
+    void document.body.offsetHeight;
+    window.scrollTo(0, y);
+    requestAnimationFrame(()=>{
+      if(!govdeKilitli && Math.abs(window.scrollY - y) > 2) window.scrollTo(0, y);
+    });
+  }
+}
+// Kilidi ACAN uc sey var: pencereler, filtre paneli ve "..." alt sayfasi.
+// Ucu de ayri ayri kapaniyor, o yuzden karar tek yerden veriliyor —
+// biri kapanirken oteki acikken kilit yanlislikla kalkmasin.
+function kilidiTazele(){
+  govdeKilidi(!!document.querySelector('.overlay.open')
+           || !!document.querySelector('.fbackdrop.open')
+           || document.body.classList.contains('menu-open'));
+}
+
 // Telefondaki "..." dugmesi: ikincil baglantilarin alt sayfasi. Ayri bir
 // pencere yok — serit CSS ile alt sayfaya donusuyor, icindeki butun
 // dugmeler kendi isini yapmaya devam ediyor.
@@ -8965,6 +9030,7 @@ document.getElementById('tabTemplates').addEventListener('click', ()=>{ track('f
     // (filtrePaneliKapat gövdeden siliyor). Alt sayfa onun kavgasina
     // girmesin.
     document.body.classList.toggle('menu-open', acik);
+    kilidiTazele();
   }
   const kapat = ()=> ayarla(false);
   dug.addEventListener('click', ()=> ayarla(!serit.classList.contains('acik')));
@@ -10474,6 +10540,7 @@ function filtrePaneliKapat(){
   if(perde) perde.classList.remove('open');
   // Baska bir pencere acik degilse govde yeniden kayabilir.
   if(!document.querySelector('.overlay.open')) document.body.classList.remove('sheet-open');
+  kilidiTazele();
   // Kapanan panel bir dahaki acilista tam listeyi gostersin: yarim kalmis
   // bir arama yuzunden "projelerim kayboldu" denmesin.
   const kutu = document.getElementById('conceptSearch');
@@ -10519,6 +10586,7 @@ function filtrePaneliKapat(){
         dugme.setAttribute('aria-expanded','true');
         perde.classList.add('open');
         document.body.classList.add('sheet-open');
+        kilidiTazele();
       }
     });
     // Panel icindeki tiklama seridi kapatmasin: coklu secim yapiliyor.
@@ -10643,6 +10711,7 @@ function sor(mesaj, varsayilan){ return dlgAc(String(mesaj), { iptalli:true, gir
   const izle = new MutationObserver(()=>{
     const acik = !!document.querySelector('.overlay.open') || !!document.querySelector('.fbackdrop.open');
     document.body.classList.toggle('sheet-open', acik);
+    kilidiTazele();
   });
   document.querySelectorAll('.overlay').forEach(ov=> izle.observe(ov, { attributes:true, attributeFilter:['class'] }));
   const temizle = document.getElementById('filterClearAll');
