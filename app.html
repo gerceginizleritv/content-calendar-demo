@@ -1938,8 +1938,14 @@ textarea.sc-ai-brief{min-height:64px;resize:vertical;line-height:1.5;}
   .lockup{gap:7px;}
   .lockup .mark{width:22px;height:22px;}
   .wordmark{font-size:18px;}
-  .rail-me{gap:6px;}
-  .avatar{width:26px;height:26px;font-size:11px;}
+  /* Fotograf ve hesap dugmesi markanin HEMEN YANINDA, saga yaslanmis
+     degil: 360 pikselde ikisi zaten satiri dolduruyordu, genis
+     telefonda ise aralarindaki esneyen bosluk uc ogeyi birbirinden
+     kopuk gosteriyordu. Kimlik tek bir grup olarak okunuyor.
+     margin-left:auto BASTIRILIYOR — genel dar ekran kuralindan geliyor. */
+  .rail-brand{flex:0 0 auto;}
+  .rail-me{gap:6px;margin-left:8px;}
+  .avatar{width:28px;height:28px;font-size:11px;}
   /* Bu dugme bir baslik cubugu ogesi: 44px'lik dokunma hedefi burada
      seridi gereksiz yukseltiyor. 34px hala rahat basiliyor. */
   .btn.rail-auth{min-height:34px;padding:6px 10px;font-size:12px;}

@@ -51,7 +51,10 @@ async function olc(t, w, dil){
     const o = await olc(t, w, dil);
     bak('marka ve hesap AYNI satirda', !o.ayriSatir,
         'marka y='+o.marka.y+' h='+o.marka.h+' / hesap y='+o.hesap.y);
-    bak('hesap sagda duruyor', o.hesap.sag > o.marka.sag - 1, 'hesap sag='+o.hesap.sag);
+    // Hesap markanin HEMEN yaninda: aralarindaki bosluk esnemiyor.
+    // Genis telefonda saga yaslansaydi uc oge birbirinden kopuk gorunurdu.
+    const aralik = o.hesap.x - o.marka.sag;
+    bak('hesap markanin hemen yaninda', aralik >= 0 && aralik < 40, 'aralik='+aralik+'px');
     bak('serit '+SINIR+'px altinda', o.rail.h < SINIR, o.rail.h+'px');
     bak('yatay kayma yok', o.tasma === false);
   }
