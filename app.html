@@ -670,6 +670,8 @@ body.suruklenirken *{cursor:grabbing !important;}
 /* Sabit duzende genislik VERILMIYOR: kalan yeri yedi sutun esit
    paylasiyor. min-width tablonun kendisinde. */
 .proj-table td.pcell{text-align:center;}
+/* Adim adi yalnizca telefonda gorunuyor; masaustunde tablo basligi var. */
+.pcell-et{display:none;}
 /* Secici tabloya baglandi: .pcell (0,1,0) ile .proj-table td (0,1,1)
    yarisiyordu, td kazaniyordu ve ortalama hic uygulanmiyordu. */
 .proj-table thead th:not(.pname-col){text-align:center;}
@@ -1868,6 +1870,50 @@ textarea.sc-ai-brief{min-height:64px;resize:vertical;line-height:1.5;}
   .view-btn{flex:1 1 0;min-height:38px;border-radius:8px;background:transparent;padding:0 4px;font-size:13px;}
   .view-btn + .view-btn{border-left:0;}
   .view-btn.active{background:var(--accent);color:var(--on-accent);}
+
+  /* Sayfa ustundeki arac cubuklari telefonda SARIYOR. Tek satirda
+     duruyorlardi: arama kutusu bir parmak genisligine kadar eziliyor,
+     "+ Mekan ekle" ekranin disina tasiyordu. Arama kendi satirinda tam
+     genislikte, dugmeler altinda. */
+  .proj-tools,.sc-tools,.fk-tools{flex-wrap:wrap;gap:8px;}
+  .proj-tools > input[type="search"],.sc-tools > input[type="search"],
+  .fk-tools > input[type="search"]{flex:1 0 100%;}
+  .proj-tools .btn,.sc-tools .btn,.fk-tools .btn{flex:1 1 auto;justify-content:center;}
+  .proj-tools .proj-count,.sc-tools .proj-count,.fk-tools .proj-count{order:99;flex:1 0 100%;}
+
+  /* Proje tablosu telefonda TABLO DEGIL, kart listesi.
+     Yedi adim + proje sutunu bir telefon ekranina sigmiyor; tablo yana
+     kayiyordu ve hangi kutunun hangi adim oldugu gorunmuyordu — ekranin
+     yarisi bos, isin yarisi gorunmez. Her proje bir kart; yedi adim,
+     adiyla birlikte, sarilan cipler halinde altinda duruyor. */
+  .proj-table-wrap{overflow-x:visible;border:0;border-radius:0;background:none;}
+  /* min-width tabloyu yedi sutun genisliginde tutuyor: kart duzeninde
+     cipler sarmiyor, tek satirda saga kaciyordu. */
+  .proj-table{display:block;width:auto;min-width:0;border:0;}
+  .proj-table thead{display:none;}
+  .proj-table tbody{display:block;}
+  .proj-table tr{display:block;border:1px solid var(--line);border-radius:12px;
+    background:var(--surface);padding:12px 12px 6px;margin-bottom:10px;}
+  .proj-table tr.prow-bitti,.proj-table tr.prow-iptal{background:var(--surface);}
+  .proj-table th.pname-col,.proj-table td{display:block;border:0;padding:0;}
+  /* Masaustunde ad sutunu yapisik ve kendi zemini var; kartta ikisi de
+     gereksiz — kartin kendisi zaten bir kutu. */
+  .proj-table th.pname-col{width:auto;margin-bottom:10px;position:static;
+    background:none;box-shadow:none;}
+  .pname-col > *{max-width:none;}
+  /* Cipler: ad + kutu + tarih tek parca, dokunma hedefi 44px'e yakin. */
+  .proj-table td.pcell{display:inline-flex;align-items:center;gap:5px;width:auto;
+    border:1px solid var(--line);border-radius:20px;padding:4px 8px 4px 11px;
+    margin:0 5px 5px 0;text-align:left;background:var(--bg);}
+  .proj-table td.pcell.done{border-color:var(--accent);background:var(--accent-soft);}
+  .pcell-et{display:inline;font-size:12px;color:var(--text-dim);white-space:nowrap;}
+  .proj-table td.pcell.done .pcell-et{color:var(--accent);font-weight:600;}
+  .proj-table .pflag{padding:0;min-height:0;}
+  .proj-table .pbox{width:18px;height:18px;}
+  .proj-table .pdate{font-size:11px;padding:0 4px;min-height:0;}
+  /* Termin dugmesi cipin icinde kaliyor: telefonda tarih girmenin baska
+     yolu yok. Bos halde soluk bir "+", dolu halde tarihin kendisi. */
+  .proj-table .pdate.bos{opacity:.45;}
 
   /* Filtre seridi: yuvarlak cipler, tek satir, yana kayar. Ayirici cizgi
      ve ozet yazisi telefonda yer kaplamaktan baska is gormuyor. */
@@ -5613,6 +5659,7 @@ function renderProjects(){
       const gecti = adimGecikti(p,k);
       const tarih = adimTarihi(p,k);
       return `<td class="pcell ${p[k]?'done':''}">
+        <span class="pcell-et">${escapeHtml(t('step_'+k))}</span>
         <button type="button" class="pflag ${p[k]?'on':''}" data-proj="${escapeHtml(p.id)}" data-step="${k}"
                 title="${escapeHtml(t('step_'+k))}"><span class="pbox">${p[k]?'✓':''}</span></button>
         <button type="button" class="pdate ${gecti?'late':''} ${tarih?'':'bos'}"

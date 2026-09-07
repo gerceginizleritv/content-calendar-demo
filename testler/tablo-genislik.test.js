@@ -1,12 +1,13 @@
 // Proje tablosu: sutunlar dile ve pencere genisligine gore KAYMAMALI,
 // tablonun sagida bos bir alan KALMAMALI, dar ekranda yana kaymali.
+// 700px ve altinda tablo yok — orada kart listesi var, ayri test.
 const { chromium } = require('./araclar');
 (async () => {
   const b = await chromium.launch({ });
   let hata=0; const k=(a,s,e)=>{ console.log((s?'  ✔ ':'  ✖ ')+a+(e!==undefined?' → '+JSON.stringify(e):'')); if(!s) hata++; };
   console.log('PROJE TABLOSU — GENİŞLİK');
   const olcum = {};
-  for (const w of [700, 900, 1440, 1900]) {
+  for (const w of [760, 900, 1440, 1900]) {
     const page = await b.newPage({ viewport:{width:w,height:900} });
     page.on('pageerror', e=>{ console.log('  SAYFA HATASI: '+e); hata++; });
     await page.addInitScript(()=>{ try{ localStorage.setItem('demo_seen_intro','1'); localStorage.setItem('demo_pitch','kapali'); }catch(e){} });
@@ -57,7 +58,7 @@ const { chromium } = require('./araclar');
   k('Tablo genişliği dolduruyor (sağda boşluk yok)',
     hepsi.every(x=> x.yuva < 850 ? true : Math.abs(x.tablo - (x.yuva - 2)) <= 3),
     hepsi.map(x=>({tablo:x.tablo, yuva:x.yuva})));
-  k('Dar ekranda tablo kendi içinde kayıyor', olcum['700/tr'].kaydirir === true, olcum['700/tr']);
+  k('Dar ekranda tablo kendi içinde kayıyor', olcum['760/tr'].kaydirir === true, olcum['760/tr']);
   k('Sayfa yana kaymıyor', hepsi.every(x=>x.sayfaKayar === false), hepsi.map(x=>x.sayfaKayar));
   k('Geniş ekranda kaydırma yok', olcum['1900/tr'].kaydirir === false, olcum['1900/tr']);
 
