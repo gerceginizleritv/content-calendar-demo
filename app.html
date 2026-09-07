@@ -1189,11 +1189,18 @@ textarea.sc-ai-brief{min-height:64px;resize:vertical;line-height:1.5;}
   line-height:1.2;font-variant-numeric:tabular-nums;}
 .pstat span{font-size:9.5px;text-transform:uppercase;letter-spacing:.07em;
   color:var(--text-dim);overflow:hidden;text-overflow:ellipsis;white-space:nowrap;}
-@media(max-width:560px){
-  /* Telefonda ikiserli: bes etiket yan yana okunmaz. Dikey cizgiler
-     kalkiyor, satir basinda asili kalmasinlar. */
-  .proj-stats{grid-template-columns:repeat(2, minmax(0, 1fr));}
-  .pstat{border-left:0;padding:7px 6px;}
+@media(max-width:700px){
+  /* Telefonda izgara DORT SATIR yer kapliyordu: liste gorunmeden once
+     ekranin ucte biri gidiyordu. Ustelik hemen altindaki suzgec cipleri
+     zaten ayni sayilari gosteriyor ve onlara tiklanabiliyor.
+     Serit tek satira iniyor, yana kayiyor: bakmak isteyen kaydiriyor,
+     istemeyenin yolunu kesmiyor. */
+  .proj-stats{display:flex;gap:0;overflow-x:auto;-webkit-overflow-scrolling:touch;
+    scrollbar-width:none;margin-bottom:10px;}
+  .proj-stats::-webkit-scrollbar{display:none;}
+  .pstat{flex:none;padding:6px 11px;gap:5px;}
+  .pstat b{font-size:14px;}
+  .pstat span{font-size:9px;}
 }
 /* --- Sekmeler --- */
 .tabs{display:flex;gap:4px;margin:0 0 18px;border-bottom:1px solid var(--line);}
