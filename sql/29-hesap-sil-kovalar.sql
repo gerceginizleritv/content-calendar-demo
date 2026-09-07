@@ -1,15 +1,17 @@
--- 22 — Hesabı kendi kendine silme
+-- 29 — Hesap silme: yeni kovalardaki dosyalar da silinsin
 --
--- Neden gerekli: bugün silme yolu yoktu. Deneyici "verimi geri alamıyorum"
--- hissine kapılmamalı; KVKK ve GDPR de bunu istiyor.
+-- sql/22 yazıldığında tek depolama kovası "takvim" vardı; işlev yalnızca
+-- ondan siliyordu. O gün bugündür iki kova eklendi: "paylasim" (sql/25)
+-- ve "yedek" (sql/28). Hesabını silen kişinin bütün işi otomatik
+-- yedeklerin içinde duruyordu — sildiğini sanıp durmuyordu.
 --
--- Neden Edge Function değil: bir kullanıcıyı silmek yönetici yetkisi
--- istiyor, o yetki tarayıcıya verilemez. Bu işlev "security definer" ile
--- çalışıyor: yetkiyi işlevin sahibinden alıyor, çağıran kişiden değil.
--- Kimin silineceğini çağıran SEÇEMİYOR — auth.uid(), yani oturumu açık
--- olan kişi siliniyor. Başkasının hesabını silmek mümkün değil.
+-- Bu betik işlevi yeniliyor: artık kova adına değil klasör adına bakıyor.
+-- Bütün kovalarda klasör aynı: <kullanıcı kimliği>/... Yarın yeni bir
+-- kova eklendiğinde bu işlev güncellenmeyi unutulsa bile dosyalar
+-- geride kalmıyor.
 --
--- Nasıl kullanılır: SQL Editor'de çalıştır. Tekrar çalıştırılabilir.
+-- sql/22'yi çalıştırdıysan bunu da çalıştır. Tekrar çalıştırılabilir.
+-- Supabase panelinde: SQL Editor -> New query -> yapıştır -> Run.
 
 begin;
 

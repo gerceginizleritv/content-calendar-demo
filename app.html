@@ -930,6 +930,12 @@ a.mk-rozet:hover{border-color:var(--accent);color:var(--accent);}
    uc satiri gecerse kayiyor. */
 textarea.sc-title{resize:none;overflow-y:auto;max-height:96px;line-height:1.45;
   font-family:inherit;}
+.hesap-satir-dikey{display:block;}
+.yedek-liste{list-style:none;margin:10px 0 0;padding:0;display:flex;flex-direction:column;gap:6px;}
+.yedek-liste li{display:flex;align-items:center;justify-content:space-between;gap:10px;
+  font-size:13px;color:var(--text-dim);border:1px solid var(--line-soft);
+  border-radius:8px;padding:7px 10px;}
+.yedek-liste .yedek-gun{color:var(--text);font-variant-numeric:tabular-nums;}
 .ai-hesaba{display:flex;gap:8px;align-items:flex-start;margin-top:10px;font-size:13px;
   color:var(--text);cursor:pointer;}
 .ai-hesaba input{margin-top:2px;flex:none;}
@@ -3229,6 +3235,17 @@ textarea.sc-ai-brief{min-height:64px;resize:vertical;line-height:1.5;}
       <button type="button" class="btn" id="hesapYedekBtn" data-i18n="hesap_ac">Open</button>
     </div>
 
+    <!-- Otomatik yedek: kullanicidan hicbir sey beklemiyor. Gunde bir
+         kez, uygulama acilinca alinip hesabin kendi klasorune yaziliyor;
+         son yedi tanesi duruyor. -->
+    <div class="hesap-satir hesap-satir-dikey" id="hesapOtoYedek">
+      <div>
+        <div class="hesap-ad" data-i18n="yedek_oto_baslik">Automatic backups</div>
+        <p class="hint hesap-not" data-i18n="yedek_oto_not">Taken once a day on its own, the last seven are kept. You do not have to do anything.</p>
+      </div>
+      <ul class="yedek-liste" id="yedekListe"></ul>
+    </div>
+
     <!-- Geri donusu yok: ayri bir bolumde, kirmizi cerceveli. -->
     <div class="hesap-tehlike">
       <div class="hesap-ad" data-i18n="hesap_sil_baslik">Delete your account</div>
@@ -3381,6 +3398,12 @@ const LANG = {
     yedek_tarih: (g)=> `Backup taken: ${g}`,
     yedek_ozet: (s)=> `${s.kayit} entries · ${s.proje} projects · ${s.fikir} ideas · ${s.script} scripts · ${s.mekan} places`,
     yedek_bitti: (y, d)=> `Restored: ${y} new, ${d} updated.`,
+    yedek_oto_baslik: "Automatic backups",
+    yedek_oto_not: "Taken once a day on its own, the last seven are kept. You do not have to do anything.",
+    yedek_oto_yukleniyor: "Looking…",
+    yedek_oto_yok: "No automatic backup yet — the first one is taken the next time you open the app.",
+    yedek_oto_geri: "Restore",
+    yedek_oto_hata: "That backup could not be read.",
     btn_reset: "Reset Demo",
     btn_tour: "? How this works",
     btn_feedback: "💬 Feedback",
@@ -4066,6 +4089,12 @@ const LANG = {
     yedek_tarih: (g)=> `Yedek tarihi: ${g}`,
     yedek_ozet: (s)=> `${s.kayit} kayıt · ${s.proje} proje · ${s.fikir} fikir · ${s.script} script · ${s.mekan} mekan`,
     yedek_bitti: (y, d)=> `Geri yüklendi: ${y} yeni, ${d} güncellenmiş kayıt.`,
+    yedek_oto_baslik: "Otomatik yedekler",
+    yedek_oto_not: "Günde bir kez kendiliğinden alınıyor, son yedisi duruyor. Senin bir şey yapman gerekmiyor.",
+    yedek_oto_yukleniyor: "Bakılıyor…",
+    yedek_oto_yok: "Henüz otomatik yedek yok — ilki uygulamayı bir sonraki açışında alınacak.",
+    yedek_oto_geri: "Geri yükle",
+    yedek_oto_hata: "Bu yedek okunamadı.",
     btn_reset: "Demoyu Sıfırla",
     btn_tour: "? Bu nasıl çalışır",
     btn_feedback: "💬 Geri Bildirim",
@@ -10516,6 +10545,83 @@ async function yedekGeriYukle(dosya){
   const guncel  = k.degisen + pr.degisen + fk.degisen + sc.degisen + mk.degisen;
   uyari(t('yedek_bitti')(eklenen, guncel));
 }
+// ---- Otomatik yedek ---------------------------------------------------
+// Elle yedek almak, alan kisiyi korur. Deneme kullanicilarinin cogu hic
+// almaz — ve ilk veri kaybini yasayan onlar olur. Bu yuzden yedek
+// kullanicidan bagimsiz: gunde bir kez, uygulama acilinca, hesabin kendi
+// klasorune yaziliyor.
+//
+// Sinirini bilerek yaziyorum: bu yedek AYNI Supabase projesinde duruyor.
+// Yanlislikla silmeye, bozuk bir senkrona, "dun neredeydi" sorusuna karsi
+// koruyor; projenin kendisi giderse o da gider. Baska bir yere kopyalamak
+// icin "Yedek Disa Aktar" duruyor.
+const YEDEK_KOVA = 'yedek';
+const YEDEK_SIKLIK = 20 * 60 * 60 * 1000;   // gunde bir; gun icinde tekrar acilisa takilmasin
+const YEDEK_SAKLA = 7;
+function yedekSonAnahtar(){ return 'demo_yedek_son_' + (session ? session.user.id : 'yok'); }
+function yedekBugunAdi(){
+  const g = new Date(); const iki = n=> String(n).padStart(2, '0');
+  return g.getFullYear() + '-' + iki(g.getMonth()+1) + '-' + iki(g.getDate()) + '.json';
+}
+async function yedekListesi(){
+  if(!sb || !session) return [];
+  const { data, error } = await sb.storage.from(YEDEK_KOVA)
+    .list(session.user.id, { limit: 50, sortBy: { column:'name', order:'desc' } });
+  if(error){ console.warn('[yedek] liste okunamadi', error); return []; }
+  return (data || []).filter(x=> /\.json$/.test(x.name));
+}
+async function otomatikYedek(){
+  if(!sb || !session) return;
+  let son = 0;
+  try{ son = Number(localStorage.getItem(yedekSonAnahtar()) || 0); }catch(e){}
+  if(Date.now() - son < YEDEK_SIKLIK) return;
+  try{
+    const govde = JSON.stringify(yedekGovdesi());
+    const yol = session.user.id + '/' + yedekBugunAdi();
+    // upsert: gun icinde ikinci kez alinirsa ayni gunun uzerine yaziliyor,
+    // yedi gunluk pencere gunlerle doluyor, saatlerle degil.
+    const { error } = await sb.storage.from(YEDEK_KOVA)
+      .upload(yol, new Blob([govde], { type:'application/json' }),
+              { upsert: true, contentType: 'application/json' });
+    if(error) throw error;
+    try{ localStorage.setItem(yedekSonAnahtar(), String(Date.now())); }catch(e){}
+    const liste = await yedekListesi();
+    const fazla = liste.slice(YEDEK_SAKLA).map(x=> session.user.id + '/' + x.name);
+    if(fazla.length) await sb.storage.from(YEDEK_KOVA).remove(fazla);
+  }catch(err){
+    // Kova kurulmamis olabilir (sql/28). Sessizce gecmiyor ama kullaniciyi
+    // da rahatsiz etmiyor: elle yedek yolu duruyor.
+    console.warn('[yedek] otomatik yedek alinamadi', err);
+  }
+}
+async function yedekListesiCiz(){
+  const kutu = document.getElementById('yedekListe');
+  const bolum = document.getElementById('hesapOtoYedek');
+  if(!kutu) return;
+  bolum.hidden = !session;
+  if(!session) return;
+  kutu.innerHTML = '<li>' + escapeHtml(t('yedek_oto_yukleniyor')) + '</li>';
+  const liste = await yedekListesi();
+  if(!liste.length){
+    kutu.innerHTML = '<li>' + escapeHtml(t('yedek_oto_yok')) + '</li>';
+    return;
+  }
+  kutu.innerHTML = liste.slice(0, YEDEK_SAKLA).map(x=>
+    '<li><span class="yedek-gun">' + escapeHtml(x.name.replace(/\.json$/, '')) + '</span>'
+    + '<button type="button" class="btn btn-sm" data-yedek="' + escapeHtml(x.name) + '">'
+    + escapeHtml(t('yedek_oto_geri')) + '</button></li>').join('');
+  kutu.querySelectorAll('[data-yedek]').forEach(d=>{
+    d.addEventListener('click', async ()=>{
+      d.disabled = true;
+      const { data, error } = await sb.storage.from(YEDEK_KOVA)
+        .download(session.user.id + '/' + d.dataset.yedek);
+      d.disabled = false;
+      if(error || !data){ uyari(t('yedek_oto_hata')); return; }
+      document.getElementById('hesapOverlay').classList.remove('open');
+      await yedekGeriYukle(data);
+    });
+  });
+}
 document.getElementById('restoreBtn').addEventListener('click', ()=>
   document.getElementById('yedekDosya').click());
 document.getElementById('yedekDosya').addEventListener('change', async (e)=>{
@@ -13255,6 +13361,9 @@ async function afterSignIn(){
     setCloudStatus('ok');
     trackOnce('funnel/cloud-connected');
     setTimeout(sifreSor, 900);
+    // Gunluk yedek en sonda ve beklenmeden: her sey yerine oturduktan
+    // sonra alinmali, yoksa yarim bir hali yedeklenir.
+    setTimeout(otomatikYedek, 4000);
   }catch(err){
     console.error('[bulut] okuma hatasi', err);
     bulutHataCinsiSon = bulutHataCinsi(err);
@@ -13686,6 +13795,7 @@ function hesapPenceresiniAc(){
   bul('hesapSilBtn').disabled = true;
   const d = bul('hesapDurum'); d.textContent = ''; d.className = 'ai-status';
   bul('hesapOverlay').classList.add('open');
+  yedekListesiCiz();
 }
 document.getElementById('hesapKapat').addEventListener('click', ()=>
   document.getElementById('hesapOverlay').classList.remove('open'));
