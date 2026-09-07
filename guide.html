@@ -130,6 +130,12 @@ th{color:var(--text-dim);font-weight:600;font-size:.8rem;text-transform:uppercas
 .bolun{display:flex;gap:8px;flex-wrap:wrap;}
 .fikir{border:1px solid var(--line);border-left:3px solid var(--accent);border-radius:8px;
   padding:9px 11px;font-size:.85rem;background:var(--bg);}
+.fikir .rozet{display:inline-block;margin-left:8px;font-size:.72rem;border-radius:99px;
+  border:1px solid var(--line);padding:2px 8px;color:var(--text-dim);vertical-align:middle;}
+.fikir .rozet.gec{border-color:#C4453C;color:#C4453C;}
+.fikir .tik{display:inline-block;margin-right:7px;font-size:.72rem;border-radius:99px;
+  border:1px solid var(--line);padding:2px 7px;color:var(--text-dim);}
+.gosterim.gorunur .tarihlenen{animation:belir 5s ease-in-out infinite;}
 .gosterim.gorunur .ikinci{animation:belir 5s ease-in-out infinite;}
 @keyframes belir{0%,30%{opacity:0;transform:translateY(-6px) scale(.96);}
   45%,85%{opacity:1;transform:none;}100%{opacity:0;transform:translateY(-6px) scale(.96);}}
@@ -355,6 +361,29 @@ footer{border-top:1px solid var(--line);margin-top:56px;padding-top:22px;
         project with the <code>+</code> on the card, and cut a link with the × on a chip.</p>
       <p>The filter at the top works the same way: add several projects and see
         <strong>three projects' ideas together</strong>.</p>
+
+      <h3>To-dos: an optional deadline</h3>
+      <p>Some ideas are really jobs: "write the permit letter", "call the caretaker". Press the
+        <strong>clock button</strong> at the bottom of a card and give it a date, and that card
+        becomes a to-do — a <strong>done tick</strong> appears next to it, and the date turns red
+        when it has passed, amber when it is today.</p>
+      <p><strong>A date is never required.</strong> That is deliberate: the strength of ideas is
+        that they are allowed to be untidy. If you never use dates the page stays exactly as it
+        was — no tick, no filter row.</p>
+      <div class="gosterim" data-canlandir>
+        <p class="gosterim-ust">The same card becomes a to-do once it has a date</p>
+        <div class="bolun">
+          <span class="fikir">Call the caretaker</span>
+          <span class="fikir tarihlenen"><span class="tik">✓</span>Call the caretaker<span class="rozet gec">09/12/26</span></span>
+        </div>
+      </div>
+      <p>As soon as one card has a date, three filters appear above the wall:
+        <strong>To-dos</strong>, <strong>Overdue</strong> and <strong>Due today</strong>, each with
+        its count. Press one and the cards are ordered <strong>by date</strong> rather than by the
+        order you dragged them into; the nearest job sits on top. It combines with the project
+        filter, so "the overdue jobs of the Ahrida project" is one glance.</p>
+      <p>To remove a date, press the same button and clear the box. The card goes back to being a
+        plain idea, and the tick disappears with it.</p>
     </section>
 
     <section class="bolum" id="scriptler">

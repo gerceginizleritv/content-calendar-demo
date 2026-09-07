@@ -1073,6 +1073,27 @@ textarea.sc-ai-brief{min-height:64px;resize:vertical;line-height:1.5;}
   border:1px solid var(--line);border-radius:99px;padding:4px 10px;cursor:pointer;
   background:none;color:var(--text-dim);}
 .fk-mini:hover{border-color:var(--accent);color:var(--accent);}
+/* Teslim tarihi ISTEGE BAGLI. Tarihi olmayan kart bugunku sade fikir:
+   duvarin dagilmasina izin veren o hal korunuyor. Tarih verilince ayni
+   kart bir YAPILACAGA donusuyor ve ancak o zaman "bitti" tiki cikiyor.
+   Tik hep gorunseydi her fikir yapilmamis bir is gibi durur, fikirlerin
+   yarim kalmaya hakki oldugu duygusu kaybolurdu. */
+.fk-due{display:inline-flex;align-items:center;gap:5px;}
+.fk-due-ico{width:12px;height:12px;flex:none;}
+.fk-due.bos{border-style:dashed;padding:4px 8px;opacity:.42;}
+.fk-card:hover .fk-due.bos,.fk-due.bos:focus{opacity:1;}
+@media(hover:none){ .fk-due.bos{opacity:.6;} }
+.fk-due.gec{border-color:var(--red);color:var(--red);}
+.fk-due.yakin{border-color:var(--amber);color:var(--amber);}
+.fk-tik{padding:4px 8px;line-height:1;}
+.fk-tik.acik{border-color:var(--accent);background:var(--accent-soft);color:var(--accent);}
+.fk-card.bitti{opacity:.58;}
+.fk-card.bitti .fk-card-body{text-decoration:line-through;
+  text-decoration-color:var(--text-dim);text-decoration-thickness:1px;}
+/* Tarih yerinde giriliyor: ayri bir pencere bir satirlik is icin fazla. */
+.fk-tarih-in{font:inherit;font-size:12px;padding:3px 7px;border-radius:99px;
+  border:1px solid var(--accent);background:var(--surface);color:var(--text);
+  min-width:0;max-width:100%;box-sizing:border-box;}
 .fk-add-text{width:100%;flex:1;resize:vertical;min-height:96px;padding:8px 9px;
   border:1px solid var(--line);border-radius:8px;background:var(--surface);
   color:var(--text);font:inherit;font-size:13.5px;line-height:1.55;}
@@ -2295,6 +2316,9 @@ textarea.sc-ai-brief{min-height:64px;resize:vertical;line-height:1.5;}
     <!-- Secilen projeler cip olarak duruyor: acilir liste tek secim
          yapiyor, birden fazla proje ancak boyle birikebiliyor. -->
     <div class="fk-secili" id="fk_secili" hidden></div>
+    <!-- Ajanda cipleri yalnizca tarihli EN AZ BIR fikir varken beliriyor.
+         Tarih kullanmayan biri bu satiri hic gormuyor. -->
+    <div class="proj-filtre" id="fk_ajanda" hidden></div>
     <div class="fk-grid" id="fk_list"></div>
     <button class="btn btn-wide" id="fk_toScript" data-i18n="fk_to_script" hidden>Write a script from these →</button>
   </div>
@@ -4058,7 +4082,7 @@ const LANG = {
     fk_title: "Ideas",
     fk_chip: "Idea",
     fk_open: "Ideas for this project",
-    fk_intro: "What could this video be about? One card per idea — an angle, a question, a scene, a person to talk to. A project is optional; attach one later, or create one from here. Drop one card on another to merge them, on its edge to reorder. Inside a merged card you can drag a single piece back out.",
+    fk_intro: "What could this video be about? One card per idea — an angle, a question, a scene, a person to talk to. A project is optional; attach one later, or create one from here. Drop one card on another to merge them, on its edge to reorder. Inside a merged card you can drag a single piece back out. Any card can take a deadline with the clock button — from then on it counts as a to-do and you can tick it off.",
     fk_ph: "One idea — Enter adds it, Shift+Enter starts a new line",
     fk_add: "Add",
     fk_add_open: "New idea",
@@ -4085,6 +4109,13 @@ const LANG = {
     fk_count_filtered: (n,tum)=> `${n} / ${tum} ideas`,
     fk_none_match: "No idea here yet.",
     fk_limit: (n)=> `Shootboard holds up to ${n} ideas.`,
+    fk_due_add: "Give it a deadline — it becomes a to-do",
+    fk_due_change: "Change or clear the deadline",
+    fk_done_on: "Mark as done",
+    fk_done_off: "Not done yet",
+    fk_f_todo: "To-dos",
+    fk_f_late: "Overdue",
+    fk_f_today: "Due today",
     sc_new: "+ New script",
     sc_drive: "Bring it from Drive",
     sc_drive_push: "Write to Drive",
@@ -4803,7 +4834,7 @@ const LANG = {
     fk_title: "Fikirler",
     fk_chip: "Fikir",
     fk_open: "Bu projenin fikirleri",
-    fk_intro: "Bu video ne anlatabilir? Her fikir bir kart — bir açı, bir soru, bir sahne, konuşulacak bir kişi. Proje şart değil; bağını sonra kurabilir, buradan yeni proje de açabilirsin. Bir kartı ötekinin üstüne bırakınca birleşirler, kenarına bırakınca sıra değişir. Birleşik karttaki tek bir parçayı da sürükleyip çıkarabilirsin.",
+    fk_intro: "Bu video ne anlatabilir? Her fikir bir kart — bir açı, bir soru, bir sahne, konuşulacak bir kişi. Proje şart değil; bağını sonra kurabilir, buradan yeni proje de açabilirsin. Bir kartı ötekinin üstüne bırakınca birleşirler, kenarına bırakınca sıra değişir. Birleşik karttaki tek bir parçayı da sürükleyip çıkarabilirsin. Saat düğmesiyle istediğin karta bir tarih verebilirsin: o kart artık bir yapılacak, bitince tikliyorsun.",
     fk_ph: "Bir fikir — Enter ekler, Shift+Enter satır atlar",
     fk_add: "Ekle",
     fk_add_open: "Yeni fikir",
@@ -4830,6 +4861,13 @@ const LANG = {
     fk_count_filtered: (n,tum)=> `${n} / ${tum} fikir`,
     fk_none_match: "Burada henüz fikir yok.",
     fk_limit: (n)=> `Shootboard en fazla ${n} fikir tutuyor.`,
+    fk_due_add: "Tarih ver — yapılacağa dönüşsün",
+    fk_due_change: "Tarihi değiştir ya da kaldır",
+    fk_done_on: "Bitti olarak işaretle",
+    fk_done_off: "Geri al, bitmedi",
+    fk_f_todo: "Yapılacaklar",
+    fk_f_late: "Gecikmiş",
+    fk_f_today: "Bugün",
     sc_new: "+ Yeni script",
     sc_drive: "Drive'dan getir",
     sc_drive_push: "Drive'a yaz",
@@ -6208,9 +6246,62 @@ async function secimdenProje(sel, oncekiDeger){
 function fikirSiraliListe(){
   return fikirler.slice().sort((a,b)=> a.sort - b.sort || b.createdAt - a.createdAt);
 }
+// Ajanda suzgeci proje suzgecinden AYRI duruyor: biri "hangi is", oteki
+// "ne zaman". Ikisi ayni satirda tek bir listeye sikistirilsaydi
+// "Kariye + Gecikmis" gibi bir bakis mumkun olmazdi.
+let fikirAjanda = '';   // '' | 'yapilacak' | 'gec' | 'bugun'
+function fikirAjandaSayilar(){
+  const bugun = bugunKey();
+  const s = { tarihli:0, yapilacak:0, gec:0, bugun:0 };
+  fikirler.forEach(f=>{
+    if(!f.due) return;
+    s.tarihli++;
+    if(f.done) return;
+    s.yapilacak++;
+    if(f.due < bugun) s.gec++;
+    else if(f.due === bugun) s.bugun++;
+  });
+  return s;
+}
+function fikirAjandaCizgisi(){
+  const kutu = document.getElementById('fk_ajanda');
+  if(!kutu) return;
+  const s = fikirAjandaSayilar();
+  // Hic tarihli fikir yoksa satir yok: tarih kullanmayan biri bu
+  // ozelligin varligindan bile rahatsiz olmuyor.
+  if(!s.tarihli){ kutu.hidden = true; kutu.innerHTML = ''; fikirAjanda = ''; return; }
+  kutu.hidden = false;
+  const cipler = [
+    { k:'yapilacak', etiket:'fk_f_todo',  n:s.yapilacak },
+    { k:'gec',       etiket:'fk_f_late',  n:s.gec },
+    { k:'bugun',     etiket:'fk_f_today', n:s.bugun }
+  ];
+  kutu.innerHTML = cipler.map(c=>{
+    // Bos olan cip soluyor ve tiklanmiyor — AMA acik olan cip her zaman
+    // tiklanabilir kaliyor. Yoksa son gecikmis isi tikleyen kullanici
+    // "Gecikmis 0" suzgecinin icinde kapali kapida kalirdi.
+    const bos = c.n === 0 && fikirAjanda !== c.k;
+    return `<button type="button" class="pfilt${fikirAjanda === c.k ? ' acik' : ''}${bos ? ' bos' : ''}"
+      data-fk-ajanda="${c.k}"${bos ? ' disabled' : ''}>${escapeHtml(t(c.etiket))}<span class="pfilt-n">${c.n}</span></button>`;
+  }).join('');
+  kutu.querySelectorAll('[data-fk-ajanda]').forEach(el=>{
+    el.addEventListener('click', ()=>{
+      // Acik cipe yeniden basmak suzgeci kaldiriyor: "hepsi" diye ayri
+      // bir cip koymaya gerek kalmiyor.
+      fikirAjanda = (fikirAjanda === el.dataset.fkAjanda) ? '' : el.dataset.fkAjanda;
+      renderFikirler();
+    });
+  });
+}
 function fikirleriSuz(){
   const q = fikirArama.trim().toLocaleLowerCase('tr');
-  return fikirSiraliListe().filter(f=>{
+  const bugun = bugunKey();
+  const liste = fikirSiraliListe().filter(f=>{
+    if(fikirAjanda){
+      if(!f.due || f.done) return false;
+      if(fikirAjanda === 'gec' && !(f.due < bugun)) return false;
+      if(fikirAjanda === 'bugun' && f.due !== bugun) return false;
+    }
     if(fikirFiltreleri.length){
       const bagli = fikirProjeleri(f);
       const projesiz = fikirFiltreleri.indexOf('-') !== -1 && !bagli.length;
@@ -6222,6 +6313,9 @@ function fikirleriSuz(){
     const adlar = fikirProjeleri(f).map(x=>{ const p = projectById(x); return p ? p.name : ''; }).join(' ');
     return (f.text + ' ' + adlar).toLocaleLowerCase('tr').indexOf(q) !== -1;
   });
+  // Ajanda acikken sira ELDEN degil TARIHTEN geliyor: yapilacaklara
+  // bakan biri "once hangisi" sorusunun cevabini bekliyor.
+  return fikirAjanda ? liste.sort((a,b)=> (a.due || '').localeCompare(b.due || '')) : liste;
 }
 
 // Renk PROJEDEN geliyor, fikirden degil: ayni projenin fikirleri ayni
@@ -6240,6 +6334,11 @@ function fikirRengi(pid){
   return n % FIKIR_RENK;
 }
 
+// Saat: tarih dugmesi yazi yerine simge, cunku tarihi olmayan kartta o
+// dugme kenarda sessizce durmali.
+const IKON_SURE = `<svg class="fk-due-ico" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+  stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+  <circle cx="12" cy="12" r="9"/><path d="M12 7.2V12l3.1 2"/></svg>`;
 function fikirKartiHtml(f){
   // Bir fikir birden cok projeye bagli olabiliyor: her bagi kendi cipi,
   // yanindaki "+" yenisini ekliyor. Kart rengi ILK projeden geliyor ki
@@ -6247,7 +6346,12 @@ function fikirKartiHtml(f){
   const bagli = fikirProjeleri(f).map(x=> projectById(x)).filter(Boolean);
   const parcali = f.parts.length > 1;
   const renk = fikirRengi(bagli.length ? bagli[0].id : '');
-  return `<article class="fk-card${renk >= 0 ? ' renk' + renk : ''}${parcali ? ' birlesik' : ''}"
+  const bugun = bugunKey();
+  // Bugun gecikmis sayilmiyor: gunun sonuna kadar zamani var. Ayni kural
+  // proje adimlarinda da geciyor.
+  const gec = !!f.due && !f.done && f.due < bugun;
+  const bugunMu = !!f.due && !f.done && f.due === bugun;
+  return `<article class="fk-card${renk >= 0 ? ' renk' + renk : ''}${parcali ? ' birlesik' : ''}${f.done ? ' bitti' : ''}"
            data-fk-card="${escapeHtml(f.id)}" draggable="true">
     <div class="fk-card-top">
       <span class="fk-proj-kutu">
@@ -6278,6 +6382,15 @@ function fikirKartiHtml(f){
         : `<p>${escapeHtml(f.text)}</p>`}
     </div>
     <div class="fk-card-foot">
+      ${f.due
+        ? `<button type="button" class="fk-mini fk-tik${f.done ? ' acik' : ''}" data-fk-done="${escapeHtml(f.id)}"
+                   title="${escapeHtml(t(f.done ? 'fk_done_off' : 'fk_done_on'))}"
+                   aria-pressed="${f.done ? 'true' : 'false'}"
+                   aria-label="${escapeHtml(t(f.done ? 'fk_done_off' : 'fk_done_on'))}">✓</button>
+           <button type="button" class="fk-mini fk-due${gec ? ' gec' : ''}${bugunMu ? ' yakin' : ''}"
+                   data-fk-due="${escapeHtml(f.id)}" title="${escapeHtml(t('fk_due_change'))}">${IKON_SURE}${escapeHtml(tarihMetni(f.due))}</button>`
+        : `<button type="button" class="fk-mini fk-due bos" data-fk-due="${escapeHtml(f.id)}"
+                   title="${escapeHtml(t('fk_due_add'))}" aria-label="${escapeHtml(t('fk_due_add'))}">${IKON_SURE}</button>`}
       ${parcali ? `<button type="button" class="fk-mini" data-fk-split="${escapeHtml(f.id)}">${escapeHtml(t('fk_split')(f.parts.length))}</button>` : ''}
       <button type="button" class="fk-mini" data-fk-script="${escapeHtml(f.id)}">${escapeHtml(t('fk_one_to_script'))}</button>
     </div>
@@ -6291,6 +6404,7 @@ function renderFikirler(){
   filtre.innerHTML = filtreSecenekleri();
   filtre.value = '';
   fikirFiltreCizgisi();
+  fikirAjandaCizgisi();
   const aramaKutusu = document.getElementById('fk_search');
   if(aramaKutusu.value !== fikirArama) aramaKutusu.value = fikirArama;
 
@@ -6360,6 +6474,38 @@ function fikirKartOlaylari(kap){
       e.stopPropagation();
       fikirParcaCikar(el.dataset.fkOutowner, el.dataset.fkOut);
       renderFikirler(); renderProjects();
+    });
+  });
+  // Tarih yerinde giriliyor: dugme bir <input type="date"> ile yer
+  // degistiriyor, degisince ya da odagi kaybedince kart yeniden ciziliyor.
+  // Bos deger tarihi kaldiriyor — ayri bir "sil" dugmesine gerek yok.
+  kap.querySelectorAll('[data-fk-due]').forEach(el=>{
+    el.addEventListener('click', e=>{
+      e.stopPropagation();
+      const f = fikirById(el.dataset.fkDue);
+      if(!f) return;
+      const inp = document.createElement('input');
+      inp.type = 'date'; inp.className = 'fk-tarih-in'; inp.value = f.due || '';
+      el.replaceWith(inp);
+      inp.focus();
+      if(inp.showPicker){ try{ inp.showPicker(); }catch(err){} }
+      let kapandi = false;
+      const bitir = ()=>{ if(kapandi) return; kapandi = true; renderFikirler(); };
+      inp.addEventListener('change', ()=>{
+        fikirGuncelle(f.id, { due: inp.value });
+        bitir();
+      });
+      inp.addEventListener('blur', bitir);
+      inp.addEventListener('keydown', ev=>{ if(ev.key === 'Escape') bitir(); });
+    });
+  });
+  kap.querySelectorAll('[data-fk-done]').forEach(el=>{
+    el.addEventListener('click', e=>{
+      e.stopPropagation();
+      const f = fikirById(el.dataset.fkDone);
+      if(!f) return;
+      fikirGuncelle(f.id, { done: !f.done });
+      renderFikirler();
     });
   });
   kap.querySelectorAll('[data-fk-split]').forEach(el=>{
@@ -7923,6 +8069,11 @@ function fikirTemizle(ham){
     // Sira kullanicinin surukleyerek verdigi duzen. Kesirli: iki kartin
     // arasina birakinca yalnizca TEK satir degisiyor, butun liste degil.
     sort: typeof ham.sort === 'number' && isFinite(ham.sort) ? ham.sort : 0,
+    // Teslim tarihi ISTEGE BAGLI ve varsayilani bos. Fikirlerin gucu
+    // dagimik olabilmelerinde: her fikre tarih sormak o gucu bozardi.
+    // Tarih verilen fikir bir yapilacak oluyor, otekiler oldugu gibi.
+    due: (typeof ham.due === 'string' && /^\d{4}-\d{2}-\d{2}$/.test(ham.due)) ? ham.due : '',
+    done: ham.done === true,
     createdAt: typeof ham.createdAt === 'number' ? ham.createdAt : Date.now(),
     updatedAt: typeof ham.updatedAt === 'number' ? ham.updatedAt : Date.now()
   };
@@ -8069,6 +8220,9 @@ function fikirBirlestir(hedefId, kaynakId){
   // Hedefin projesi yoksa kaynagin projesi devraliniyor: birinin bagi
   // varsa onu atmanin anlami yok.
   if(!hedef.projectId && kaynak.projectId) hedef.projectId = kaynak.projectId;
+  // Tarih de ayni mantikla devraliniyor, ama YALNIZCA hedefte yoksa:
+  // iki tarihten erken olani secmek kullanicinin koymadigi bir soz olur.
+  if(!hedef.due && kaynak.due){ hedef.due = kaynak.due; hedef.done = kaynak.done; }
   hedef.updatedAt = Date.now();
   fikirDirty.add(hedef.id);
   fikirSil(kaynakId);
@@ -8178,6 +8332,19 @@ function fikirGuncelle(id, alanlar){
     f.projectIds = f.projectId ? [f.projectId] : [];
     degisti = true;
   }
+  if(typeof alanlar.due === 'string'){
+    const yeni = /^\d{4}-\d{2}-\d{2}$/.test(alanlar.due) ? alanlar.due : '';
+    if(yeni !== f.due){
+      f.due = yeni;
+      // Tarih kalkinca "bitti" tiki de kalkiyor: tik yalnizca tarihli
+      // kartta gorunuyor, arkada gizli bir true kalmasin.
+      if(!yeni) f.done = false;
+      degisti = true;
+    }
+  }
+  if(typeof alanlar.done === 'boolean' && alanlar.done !== f.done){
+    f.done = alanlar.done; degisti = true;
+  }
   if(!degisti) return false;
   f.updatedAt = Date.now();
   fikirDirty.add(id);
@@ -8275,6 +8442,9 @@ function fikirRowYap(f, uid){
            // sql/30 henuz calistirilmadiysa bu alan cikariliyor: fikir
            // kaydetmek yalnizca ikinci proje bagi yuzunden durmasin.
            ...(fikirProjeSutunu ? { project_ids: fikirProjeleri(f) } : {}),
+           // sql/31 calistirilmadiysa bu iki alan cikariliyor: tarihsiz
+           // calisan biri icin hicbir sey degismesin.
+           ...(fikirAjandaSutunu ? { due_date: f.due || null, done: !!f.done } : {}),
            sort_index: f.sort,
            deleted_at: null,
            created_at: new Date(f.createdAt).toISOString(),
@@ -8284,6 +8454,7 @@ function fikirRowOku(r){
   return fikirTemizle({ id: r.id, text: r.text || '', parts: r.parts,
                         projectIds: r.project_ids || [],
                         projectId: r.project_id || '',
+                        due: r.due_date || '', done: r.done === true,
                         sort: typeof r.sort_index === 'number' ? r.sort_index : 0,
                         createdAt: r.created_at ? Date.parse(r.created_at) : Date.now(),
                         updatedAt: r.updated_at ? Date.parse(r.updated_at) : 0 });
@@ -8310,10 +8481,19 @@ function scriptRowOku(r){
 }
 
 let fikirProjeSutunu = true;
+let fikirAjandaSutunu = true;
+// Eksik sutun yuzunden butun fikirlerin kaydi durmasin: sunucu "boyle bir
+// alan yok" derse o alan cikariliyor ve gonderim yineleniyor. Boylece
+// SQL'i henuz calistirmamis bir hesapta da fikirler kayboluyor degil.
 async function fikirPush(){
-  const hata = await kayitPush('ideas', fikirler, fikirDirty, fikirRemoved, fikirRowYap);
-  if(hata && fikirProjeSutunu && /project_ids/.test(String((hata && hata.message) || hata))){
+  let hata = await kayitPush('ideas', fikirler, fikirDirty, fikirRemoved, fikirRowYap);
+  const yazi = ()=> String((hata && hata.message) || hata || '');
+  if(hata && fikirProjeSutunu && /project_ids/.test(yazi())){
     fikirProjeSutunu = false;
+    hata = await kayitPush('ideas', fikirler, fikirDirty, fikirRemoved, fikirRowYap);
+  }
+  if(hata && fikirAjandaSutunu && /due_date|\bdone\b/.test(yazi())){
+    fikirAjandaSutunu = false;
     await kayitPush('ideas', fikirler, fikirDirty, fikirRemoved, fikirRowYap);
   }
 }

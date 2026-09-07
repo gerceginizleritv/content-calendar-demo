@@ -85,10 +85,14 @@ const { chromium } = require('./araclar');
     fil.value = '-'; fil.dispatchEvent(new Event('change'));
     await bekle(150);
     const projesizAdet = document.querySelectorAll('.fk-card[data-fk-card]').length;
+    // Acilir liste artik "sec" degil "EKLE": secilenler cip olarak
+    // birikiyor. Ikinci projeyi olcmeden once cipler temizleniyor.
+    fikirFiltreleri = []; renderFikirler();
+    await bekle(120);
     fil.value = P.id; fil.dispatchEvent(new Event('change'));
     await bekle(150);
     const projeliAdet = document.querySelectorAll('.fk-card[data-fk-card]').length;
-    fil.value = ''; fil.dispatchEvent(new Event('change'));
+    fikirFiltreleri = []; renderFikirler();
     await bekle(120);
 
     // --- BIRLESTIRME ---
@@ -146,7 +150,7 @@ const { chromium } = require('./araclar');
   k('Kart rengi kimlikten — çizimler arası kararlı', r.renkKarali===true);
   k('Arama metinde çalışıyor', r.aramaSonuc===1, r.aramaSonuc);
   k('Arama proje adında da çalışıyor', r.projeAdiylaArama===2, r.projeAdiylaArama);
-  k('Filtre "Bütün projeler" diyor', r.filtreIlkSecenek==='Bütün projeler', r.filtreIlkSecenek);
+  k('Filtre "proje ekle" diyor', /ekle/i.test(r.filtreIlkSecenek), r.filtreIlkSecenek);
   k('Projesiz filtresi doğru', r.projesizAdet===2, r.projesizAdet);
   k('Proje filtresi doğru', r.projeliAdet===2, r.projeliAdet);
   k('BİRLEŞTİRME: iki kart bir kart oldu', r.birlesme.adet===3 && r.birlesme.parca===2, r.birlesme);
