@@ -24,9 +24,9 @@ const { chromium } = require('./araclar');
   k('altı sekme var', await page.evaluate(()=> document.querySelectorAll('.tab').length === 6));
   k('açılışta projeler sekmesi', await page.evaluate(()=> document.getElementById('projectsPage').hidden === false));
   k('sekmelerde ikon var', await page.evaluate(()=> document.querySelectorAll('.tab .tab-ico').length === 6));
-  k('sıra: önce Projeler', await page.evaluate(()=>
-    [...document.querySelectorAll('.tab')].map(x=>x.id).join(',') ===
-    'tabProjects,tabPlaces,tabIdeas,tabScripts,tabCalendar,tabTemplates'));
+  k('sıra: fikir, mekan, proje…', await page.evaluate(()=>
+    [...document.querySelectorAll('.rail-nav .tab')].map(x=>x.id).join(',')
+      === 'tabIdeas,tabPlaces,tabProjects,tabScripts,tabCalendar,tabTemplates'))
 
   await page.click('#tabCalendar'); await page.waitForTimeout(200);
   k('takvim sekmesine geçiliyor', await page.evaluate(()=> document.getElementById('calendarPage').hidden === false));

@@ -55,7 +55,7 @@ const { chromium } = require('./araclar');
              satir: document.querySelectorAll('.proj-table tbody tr').length,
              sutun: document.querySelectorAll('.proj-table thead th').length,
              basliklar: [...document.querySelectorAll('.proj-table thead th')].map(x=>x.textContent.trim()),
-             harita: document.querySelector('.pmap') ? document.querySelector('.pmap').href : null };
+             harita: document.querySelector('.pn-harita') ? document.querySelector('.pn-harita').href : null };
   });
   k('proje oluştu', olus.adet === 1 && olus.satir === 1, olus.tur + ' · ' + olus.adres);
   k('sütunlar: proje + 7 adım', olus.sutun === 8, olus.basliklar.join(' | '));

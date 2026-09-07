@@ -56,7 +56,7 @@ const { chromium } = require('./araclar');
   k('Proje sütunu her yerde aynı', new Set(hepsi.map(x=>x.sutun)).size === 1, [...new Set(hepsi.map(x=>x.sutun))]);
   k('Boş dolgu sütunu kalmadı', hepsi.every(x=>x.bosSutun === 0));
   k('Tablo genişliği dolduruyor (sağda boşluk yok)',
-    hepsi.every(x=> x.yuva < 850 ? true : Math.abs(x.tablo - (x.yuva - 2)) <= 3),
+    hepsi.every(x=> x.yuva < 920 ? true : Math.abs(x.tablo - (x.yuva - 2)) <= 3),
     hepsi.map(x=>({tablo:x.tablo, yuva:x.yuva})));
   k('Dar ekranda tablo kendi içinde kayıyor', olcum['760/tr'].kaydirir === true, olcum['760/tr']);
   k('Sayfa yana kaymıyor', hepsi.every(x=>x.sayfaKayar === false), hepsi.map(x=>x.sayfaKayar));

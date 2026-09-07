@@ -80,9 +80,12 @@ const bak = (ad, ko, ek)=>{ if(ko){ g++; console.log('  ok  '+ad); } else { k++;
   await p3.goto(KOK + '/app.html', { waitUntil:'networkidle' });
   console.log('[sol menu]');
   const sira = await p3.$$eval('.rail-nav .tab', els => els.map(e => e.id));
-  bak('Projeler en ustte', sira[0] === 'tabProjects', sira.join(' > '));
-  bak('digerlerinin sirasi korundu',
-      sira.slice(1).join(',') === 'tabPlaces,tabIdeas,tabScripts,tabCalendar,tabTemplates', sira.join(' > '));
+  // Sira kullanicinin istegiyle degisti: once Fikirler, sonra Mekanlar,
+  // sonra Projeler — isin akisi bu yonde.
+  bak('Fikirler en ustte', sira[0] === 'tabIdeas', sira.join(' > '));
+  bak('sira: fikir, mekan, proje, script, takvim, sablon',
+      sira.join(',') === 'tabIdeas,tabPlaces,tabProjects,tabScripts,tabCalendar,tabTemplates',
+      sira.join(' > '));
   bak('sekmeler hala calisiyor', await p3.evaluate(async () => {
     document.getElementById('tabIdeas').click();
     await new Promise(r => setTimeout(r, 200));

@@ -558,7 +558,7 @@ body.suruklenirken *{cursor:grabbing !important;}
 .proj-table-wrap{overflow-x:auto;border:1px solid var(--line);border-radius:11px;
   background:var(--surface);}
 .proj-table{border-collapse:collapse;table-layout:fixed;width:100%;
-  min-width:calc(var(--pname-w,200px) + 7 * 92px);font-size:13px;}
+  min-width:calc(var(--pname-w,268px) + 7 * 92px);font-size:13px;}
 .proj-table th,.proj-table td{border-bottom:1px solid var(--line-soft);
   border-right:1px solid var(--line-soft);padding:9px 9px;vertical-align:top;text-align:left;}
 .proj-table tr:last-child th,.proj-table tr:last-child td{border-bottom:0;}
@@ -576,9 +576,9 @@ body.suruklenirken *{cursor:grabbing !important;}
    (tablo-genislik.test.js bunu olcuyor). Kalabaligin cozumu genislik
    degil, hiyerarsiydi. */
 .pname-col{position:sticky;left:0;z-index:3;background:var(--surface-2);
-  width:var(--pname-w,200px);min-width:var(--pname-w,200px);max-width:var(--pname-w,200px);
+  width:var(--pname-w,268px);min-width:var(--pname-w,268px);max-width:var(--pname-w,268px);
   border-right:1px solid var(--line);}
-.pname-col > *{max-width:var(--pname-w,200px);}
+.pname-col > *{max-width:var(--pname-w,268px);}
 .pname{overflow-wrap:anywhere;}
 .proj-table thead th.pname-col{z-index:4;}
 .pname{font:inherit;font-size:14.5px;font-weight:700;color:var(--text);background:none;
@@ -629,36 +629,33 @@ body.suruklenirken *{cursor:grabbing !important;}
 /* Hucre bir <th>: tarayici varsayilani KALIN ve tum icerik bunu miras
    aliyordu. Dort satirin da kalin cikmasinin asil sebebi buydu. Sutun
    normale cekiliyor, kalinligi yalnizca ad tasiyor. */
+/* Ad hucresi TAM IKI SATIR: ad ve altinda tek bir isaret/kunye satiri.
+   Onceden ad, adres, islemler ve kunye alt alta dort satirdi; adres
+   uzunlugu projeden projeye degistigi icin HER SATIR BASKA YUKSEKLIKTE
+   cikiyor, tablo merdiven gibi gorunuyordu. */
 .pname-col{font-weight:400;}
-.pname-col > * + *{margin-top:4px;}
-.pn-ad{display:flex;align-items:center;gap:6px;flex-wrap:wrap;}
-/* 1 — AD: en buyuk ve tek kalin oge. */
-.pname{font-size:14px;font-weight:650;line-height:1.3;text-align:left;overflow-wrap:anywhere;}
-/* 2 — KONUM: projeyi tanitan ikinci bilgi. Vurgu rengi YOK; nokta
-   isareti emoji degil, cizgiyle ayni ailede duran bir gliftir. */
-.pn-yer{font-size:12px;line-height:1.35;}
-.pn-yer .pmap{display:inline-flex;align-items:baseline;gap:5px;max-width:100%;
-  color:var(--text-dim);text-decoration:none;}
-.pn-yer .pmap > *:last-child,
-.pn-yer .pmap{overflow:hidden;text-overflow:ellipsis;white-space:nowrap;}
-.pn-yer .pmap:hover{color:var(--accent);}
-.pn-pin{color:var(--accent);font-size:10px;flex-shrink:0;}
-/* 3 — ISLEMLER: gezinme, bilgi degil. Bos olanlar cerceve TASIMIYOR;
-   dolu olanlar sayilariyla hafifce one cikiyor. */
-.pn-islem{display:flex;align-items:center;gap:5px;flex-wrap:wrap;margin-top:6px;}
-.pchip{font:inherit;font-size:10.5px;letter-spacing:.03em;text-transform:uppercase;
-  border:none;background:none;padding:2px 0;cursor:pointer;color:var(--accent-dim);
-  display:inline-flex;align-items:center;gap:4px;}
-.pchip + .pchip{padding-left:9px;border-left:1px solid var(--line);}
-.pchip:hover{color:var(--accent);}
-.pchip b{font-family:'IBM Plex Mono',monospace;font-size:10px;font-weight:600;
-  background:var(--surface-2);border-radius:99px;padding:0 5px;line-height:1.5;}
-.pchip.dolu{color:var(--accent);font-weight:600;}
-.pchip.dolu b{background:var(--accent-soft);}
-/* 4 — KUNYE: en kucuk, en sessiz. Hic hap yok. */
+.pn-ad{display:flex;align-items:center;gap:6px;min-width:0;}
+/* 1 — AD: en buyuk ve tek kalin oge. Tek satir; tamami ipucunda. */
+.pname{font-size:14px;font-weight:650;line-height:1.35;text-align:left;
+  overflow:hidden;text-overflow:ellipsis;white-space:nowrap;min-width:0;}
+/* 2 — ALT SATIR: once dokunulabilir isaretler, sonra kunye. Daralinca
+   kunye kirpiliyor, isaretler duruyor. */
+.pn-alt{display:flex;align-items:center;gap:7px;margin-top:3px;min-width:0;
+  white-space:nowrap;overflow:hidden;}
+.pn-ico{font:inherit;font-size:11px;border:0;background:none;padding:0;cursor:pointer;
+  color:var(--text-dim);text-decoration:none;display:inline-flex;align-items:center;
+  gap:3px;flex:none;line-height:1.5;}
+.pn-ico:hover{color:var(--accent);}
+.pn-ico b{font-family:'IBM Plex Mono',monospace;font-size:10px;font-weight:600;}
+.pn-svg{width:13px;height:13px;flex:none;}
+.pdate .pn-svg{width:14px;height:14px;}
+.pn-ico.dolu{color:var(--accent);}
+.pn-harita{color:var(--accent-dim);}
+.pn-harita > span,.pn-eksik > span{font-size:10.5px;}
+.pn-eksik{color:var(--amber);cursor:default;}
+/* 3 — KUNYE: en kucuk, en sessiz; yer kalmazsa ilk o kirpiliyor. */
 .pn-meta{font-size:10.5px;color:var(--text-dim);font-variant-numeric:tabular-nums;
-  line-height:1.45;opacity:.9;}
-.pmap-missing{font-size:12px;color:var(--amber);}
+  line-height:1.5;opacity:.9;overflow:hidden;text-overflow:ellipsis;min-width:0;}
 /* Tarih kutulari daraltildi: yedi adim + proje sutunu bilgisayarda tek
    ekrana sigsin, tablo yana kaydirilmadan okunabilsin. */
 .pdl{padding:4px 4px;border:1px solid var(--line);border-radius:6px;
@@ -670,6 +667,9 @@ body.suruklenirken *{cursor:grabbing !important;}
 /* Sabit duzende genislik VERILMIYOR: kalan yeri yedi sutun esit
    paylasiyor. min-width tablonun kendisinde. */
 .proj-table td.pcell{text-align:center;}
+/* Kutu ve termin yan yana, tek satir. */
+.proj-table td.pcell{white-space:nowrap;}
+.pcell .pflag,.pcell .pdate{vertical-align:middle;}
 /* Adim adi yalnizca telefonda gorunuyor; masaustunde tablo basligi var. */
 .pcell-et{display:none;}
 /* Secici tabloya baglandi: .pcell (0,1,0) ile .proj-table td (0,1,1)
@@ -679,18 +679,19 @@ body.suruklenirken *{cursor:grabbing !important;}
 /* Tarihi gecmis ve bitmemis adim: hem hucre hem tarih kutusu kirmizi. */
 /* Adim hucresi: kutucuk + tarih METNI. Tarih girisi ayri pencerede;
    yedi tarih kutusu satiri okunmaz hale getiriyordu. */
-.pdate{font:inherit;font-size:11px;padding:3px 7px;border:1px solid transparent;
+.pdate{font:inherit;font-size:10.5px;padding:2px 5px;border:1px solid transparent;
   border-radius:6px;background:transparent;color:var(--text-dim);cursor:pointer;
   font-variant-numeric:tabular-nums;white-space:nowrap;
-  /* Kendi satirinda ve ortali: ayni satirda kalinca, tarih bosken
-     gorunmez '+' isareti yer kaplayip kutucugu sola itiyordu. */
-  display:block;width:fit-content;margin:4px auto 0;}
+  /* Kutucukla AYNI satirda: alt satira alindiginda her hucre iki satir
+     yer kapliyor ve tablo iki katina cikiyordu. */
+  display:inline-block;margin:0 0 0 5px;}
 .pdate:hover{border-color:var(--line);color:var(--text);}
-/* Bos tarih dugmesi GORUNUR: onceden color:transparent idi, yalnizca fare
-   ustune gelince beliriyordu. Dokunmatikte fare yok, dolayisiyla termin
-   penceresine geri donmenin hicbir yolu kalmiyordu. */
-.pdate.bos{color:var(--accent-dim);border-color:var(--line);border-style:dashed;}
-.pdate.bos:hover{color:var(--accent);border-style:solid;}
+/* Termini olmayan adimda kucuk bir takvim isareti. Onceden kesik cizgili
+   bir "+" vardi: neyin dugmesi oldugu anlasilmiyor, dolu tarihlerle ayni
+   hizada durmadigi icin de sutun dagini gorunuyordu. */
+.pdate.bos{color:var(--accent-dim);border-color:transparent;font-size:12px;
+  opacity:.5;padding:2px 3px;}
+.pdate.bos:hover{opacity:1;color:var(--accent);border-color:var(--line);}
 /* Tarihi gecmis ve bitmemis adim: tarih metni kirmizi kutuda. */
 .pdate.late{background:rgba(196,69,60,0.14);border-color:var(--red);color:var(--red);
   font-weight:600;}
@@ -2168,11 +2169,11 @@ textarea.sc-ai-brief{min-height:64px;resize:vertical;line-height:1.5;}
       <!-- Sira isin akisi: fikir -> script -> proje -> takvim. Menunun
            kendisi urunun nasil kullanildigini anlatiyor. -->
       <nav class="rail-nav" role="tablist">
-        <button type="button" class="tab active" id="tabProjects" role="tab">
+        <button type="button" class="tab" id="tabIdeas" role="tab">
           <svg class="tab-ico" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
-            <path d="M3 6.5A1.5 1.5 0 0 1 4.5 5h4l2 2.4h7A1.5 1.5 0 0 1 19 8.9V18a1.5 1.5 0 0 1-1.5 1.5h-13A1.5 1.5 0 0 1 3 18z"/>
-            <path d="M8.5 13.4l2 2 4-4.3"/>
-          </svg><span data-i18n="tab_projects">Projects</span>
+            <path d="M9 18h6M10 21h4"/>
+            <path d="M12 3a6 6 0 0 0-3.6 10.8c.5.4.8 1 .9 1.6l.1.6h5.2l.1-.6c.1-.6.4-1.2.9-1.6A6 6 0 0 0 12 3z"/>
+          </svg><span data-i18n="tab_ideas">Ideas</span>
         </button>
         <button type="button" class="tab" id="tabPlaces" role="tab">
           <svg class="tab-ico" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
@@ -2180,11 +2181,11 @@ textarea.sc-ai-brief{min-height:64px;resize:vertical;line-height:1.5;}
             <circle cx="12" cy="10.6" r="2.4"/>
           </svg><span data-i18n="tab_places">Places</span>
         </button>
-        <button type="button" class="tab" id="tabIdeas" role="tab">
+        <button type="button" class="tab active" id="tabProjects" role="tab">
           <svg class="tab-ico" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
-            <path d="M9 18h6M10 21h4"/>
-            <path d="M12 3a6 6 0 0 0-3.6 10.8c.5.4.8 1 .9 1.6l.1.6h5.2l.1-.6c.1-.6.4-1.2.9-1.6A6 6 0 0 0 12 3z"/>
-          </svg><span data-i18n="tab_ideas">Ideas</span>
+            <path d="M3 6.5A1.5 1.5 0 0 1 4.5 5h4l2 2.4h7A1.5 1.5 0 0 1 19 8.9V18a1.5 1.5 0 0 1-1.5 1.5h-13A1.5 1.5 0 0 1 3 18z"/>
+            <path d="M8.5 13.4l2 2 4-4.3"/>
+          </svg><span data-i18n="tab_projects">Projects</span>
         </button>
         <button type="button" class="tab" id="tabScripts" role="tab">
           <svg class="tab-ico" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
@@ -3911,13 +3912,16 @@ const LANG = {
     p_f_done: "Finished", p_f_cancelled: "Cancelled",
     p_link_script: "Script", p_link_drive: "Drive",
     p_addr_missing: "no address yet",
+    p_addr_missing_kisa: "No address",
     p_map: "Map",
+    p_map_open: (adres)=> `Open on a map: ${adres}`,
     p_col_project: "Project",
     p_col_shoot: "Start",
     dl_title: "Deadlines",
     dl_clear: "Clear all",
     dl_ask: "Set deadlines for the steps now? You can always do it later from the table.",
-    p_deadline_title: "Deadline for this step",
+    p_deadline_title: "Set a deadline for this step",
+    p_deadline_var: (g)=> `Deadline: ${g} — click to change`,
     p_overdue: (n)=> n===1 ? '1 step is past its deadline:' : `${n} steps are past their deadline:`,
     pe_title: "Edit project",
     pe_name: "Project name",
@@ -4652,13 +4656,16 @@ const LANG = {
     p_f_done: "Tamamlanan", p_f_cancelled: "İptal",
     p_link_script: "Script", p_link_drive: "Drive",
     p_addr_missing: "adres girilmemiş",
+    p_addr_missing_kisa: "Adres yok",
     p_map: "Harita",
+    p_map_open: (adres)=> `Haritada aç: ${adres}`,
     p_col_project: "Proje",
     p_col_shoot: "Başlangıç",
     dl_title: "Termin tarihleri",
     dl_clear: "Hepsini temizle",
     dl_ask: "Adımlar için teslim tarihi girmek ister misin? Sonradan tablodan da girebilirsin.",
-    p_deadline_title: "Bu adımın teslim tarihi",
+    p_deadline_title: "Bu adıma teslim tarihi koy",
+    p_deadline_var: (g)=> `Teslim tarihi: ${g} — değiştirmek için tıkla`,
     p_overdue: (n)=> `${n} adımın teslim tarihi geçti:`,
     pe_title: "Projeyi düzenle",
     pe_name: "Proje adı",
@@ -5711,6 +5718,13 @@ function projeIcinKayitlar(id){
   return events.filter(e => (e.content||{}).projectId === id);
 }
 
+// Kucuk cizgi ikonlar. Emoji kullanilmiyor: bazi sistemlerde kutu olarak
+// cikiyor, boyu yaziya gore oynuyor ve renge uymuyor.
+const IKON_HARITA = `<svg class="pn-svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M20 10c0 5.5-8 12-8 12s-8-6.5-8-12a8 8 0 0 1 16 0z"/><circle cx="12" cy="10" r="2.8"/></svg>`;
+const IKON_FIKIR  = `<svg class="pn-svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M9 18h6M10 21h4"/><path d="M12 3a6 6 0 0 0-3.6 10.8c.5.4.8 1 .9 1.6l.1.6h5.2l.1-.6c.1-.6.4-1.2.9-1.6A6 6 0 0 0 12 3z"/></svg>`;
+const IKON_SCRIPT = `<svg class="pn-svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M6.5 3.5h8L19 8v12.5H6.5z"/><path d="M14 3.5V8h5"/><path d="M9.5 12.5h6M9.5 16h4"/></svg>`;
+const IKON_TAKVIM = `<svg class="pn-svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="3.2" y="5" width="17.6" height="15" rx="2.2"/><path d="M3.2 9.6h17.6M8 3.4v3.2M16 3.4v3.2"/><path d="M12 13v4M10 15h4"/></svg>`;
+
 // --- Proje sayfasi ---------------------------------------------------
 function projeAra(liste, q){
   const s = (q||'').trim().toLocaleLowerCase(currentLang === 'tr' ? 'tr' : 'en');
@@ -5924,13 +5938,20 @@ function renderProjects(){
     const hucreler = PROJ_STEPS.map(k=>{
       const gecti = adimGecikti(p,k);
       const tarih = adimTarihi(p,k);
+      // Kutu ve termin YAN YANA, tek satirda: alt alta durduklarinda her
+      // hucre iki satir yer kapliyor, tablo gereksiz uzuyordu. Termin
+      // bos ise kucuk bir takvim isareti — kesik cizgili "+" neyin
+      // dugmesi oldugunu soylemiyordu.
       return `<td class="pcell ${p[k]?'done':''}">
         <span class="pcell-et">${escapeHtml(t('step_'+k))}</span>
         <button type="button" class="pflag ${p[k]?'on':''}" data-proj="${escapeHtml(p.id)}" data-step="${k}"
-                title="${escapeHtml(t('step_'+k))}"><span class="pbox">${p[k]?'✓':''}</span></button>
+                title="${escapeHtml(t('step_'+k))}"
+                aria-label="${escapeHtml(t('step_'+k))}"><span class="pbox">${p[k]?'✓':''}</span></button>
         <button type="button" class="pdate ${gecti?'late':''} ${tarih?'':'bos'}"
-                data-dl-open="${escapeHtml(p.id)}" title="${escapeHtml(t('p_deadline_title'))}">
-          ${tarih ? escapeHtml(tarihMetni(tarih)) : '+'}
+                data-dl-open="${escapeHtml(p.id)}"
+                title="${escapeHtml(tarih ? t('p_deadline_var')(tarihMetni(tarih)) : t('p_deadline_title'))}"
+                aria-label="${escapeHtml(tarih ? t('p_deadline_var')(tarihMetni(tarih)) : t('p_deadline_title'))}">
+          ${tarih ? escapeHtml(tarihMetni(tarih)) : IKON_TAKVIM}
         </button>
       </td>`;
     }).join('');
@@ -5945,13 +5966,17 @@ function renderProjects(){
           title="${escapeHtml(x.a)}" aria-label="${escapeHtml(x.a)}">${x.e === 'sc' ? '📄' : '📁'}</a>`
     ).join('');
 
-    // Adres KENDI satirinda ve OKUNUR: once yalnizca bir 📍 vardi, adres
-    // metni tooltip'te kaliyordu — lokasyon adi hicbir yerde gorunmuyordu.
-    const adresSatiri = adres
-      ? `<div class="pn-yer"><a class="pmap" href="${escapeHtml(haritaLinki(adres))}" target="_blank"
-           rel="noopener" title="${escapeHtml(adres)}"><span class="pn-pin">◍</span>${escapeHtml(adres)}</a></div>`
+    // Adres kendi satirindaydi ve uzun adreslerde kirpiliyordu; ustelik
+    // her projede farkli uzunlukta oldugu icin SATIRLAR BIRBIRINDEN
+    // FARKLI YUKSEKLIKTEYDI. Artik tek bir "Harita" dugmesi: adres onun
+    // ipucunda tam olarak duruyor, tiklayinca haritada aciliyor.
+    const yerDugmesi = adres
+      ? `<a class="pn-ico pn-harita" href="${escapeHtml(haritaLinki(adres))}" target="_blank"
+           rel="noopener" title="${escapeHtml(adres)}" aria-label="${escapeHtml(t('p_map_open')(adres))}"
+           >${IKON_HARITA}<span>${escapeHtml(t('p_map'))}</span></a>`
       : (adresGerekir(p.type)
-          ? `<div class="pn-yer"><span class="pmap-missing">${escapeHtml(t('p_addr_missing'))}</span></div>`
+          ? `<span class="pn-ico pn-eksik" title="${escapeHtml(t('p_addr_missing'))}"
+               aria-label="${escapeHtml(t('p_addr_missing'))}">${IKON_HARITA}<span>${escapeHtml(t('p_addr_missing_kisa'))}</span></span>`
           : '');
 
     const durum = projeDurumu(p);
@@ -5963,21 +5988,27 @@ function renderProjects(){
     return `<tr class="${durum === 2 ? 'prow-iptal' : durum === 1 ? 'prow-bitti' : ''}">
       <th class="pname-col" scope="row">
         <div class="pn-ad">
-          <button type="button" class="pname" data-proj-edit="${escapeHtml(p.id)}">${escapeHtml(p.name)}</button>${rozet}
+          <button type="button" class="pname" data-proj-edit="${escapeHtml(p.id)}"
+                  title="${escapeHtml(p.name)}">${escapeHtml(p.name)}</button>${rozet}
         </div>
-        ${adresSatiri}
-        <div class="pn-islem">
-          <button type="button" class="pchip ${fikirSayisi(p.id)?'dolu':''}" data-proj-ideas="${escapeHtml(p.id)}"
-                  title="${escapeHtml(t('fk_open'))}">${escapeHtml(t('fk_chip'))}${fikirSayisi(p.id)?'<b>'+fikirSayisi(p.id)+'</b>':''}</button>
-          <button type="button" class="pchip ${scriptSayisi(p.id)?'dolu':''}" data-proj-scripts="${escapeHtml(p.id)}"
-                  title="${escapeHtml(t('sc_open_full'))}">${escapeHtml(t('sc_chip'))}${scriptSayisi(p.id)?'<b>'+scriptSayisi(p.id)+'</b>':''}</button>
+        <!-- TEK satir: once dokunulabilir isaretler, sonra kirpilabilir
+             metin. Boylece her satir ayni yukseklikte ve daralan sutunda
+             once bilgi degil, ayrinti kirpiliyor. -->
+        <div class="pn-alt">
+          ${yerDugmesi}
+          <button type="button" class="pn-ico ${fikirSayisi(p.id)?'dolu':''}" data-proj-ideas="${escapeHtml(p.id)}"
+                  title="${escapeHtml(t('fk_open'))}" aria-label="${escapeHtml(t('fk_open'))}"
+                  >${IKON_FIKIR}<b>${fikirSayisi(p.id) || 0}</b></button>
+          <button type="button" class="pn-ico ${scriptSayisi(p.id)?'dolu':''}" data-proj-scripts="${escapeHtml(p.id)}"
+                  title="${escapeHtml(t('sc_open_full'))}" aria-label="${escapeHtml(t('sc_open_full'))}"
+                  >${IKON_SCRIPT}<b>${scriptSayisi(p.id) || 0}</b></button>
           ${baglar}
+          <span class="pn-meta">${[
+            escapeHtml(projTypeName(p.type || 'other')),
+            p.shootDate ? escapeHtml(tarihMetni(p.shootDate)) : '',
+            escapeHtml(t('p_entries')(kayitlar.length, yayinlanan))
+          ].filter(Boolean).join(' · ')}</span>
         </div>
-        <div class="pn-meta">${[
-          escapeHtml(projTypeName(p.type || 'other')),
-          p.shootDate ? escapeHtml(tarihMetni(p.shootDate)) : '',
-          escapeHtml(t('p_entries')(kayitlar.length, yayinlanan))
-        ].filter(Boolean).join(' · ')}</div>
       </th>
       ${hucreler}
     </tr>`;

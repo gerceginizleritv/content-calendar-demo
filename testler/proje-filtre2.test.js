@@ -69,9 +69,19 @@ async function ac(b){
   ok('ikisi birlikte çalışıyor', adlar.length === 1 && adlar[0] === 'Bitmis', adlar.join(', '));
   await p.fill('#p_search',''); await p.click('.pfilt[data-filt="hepsi"]'); await p.waitForTimeout(300);
 
-  console.log('\n4. Adres okunur, bağlantılar görünür');
-  const adresMetni = await p.textContent('.pn-yer');
-  ok('adres METNİ satırda', /Sümela Manastırı/.test(adresMetni), adresMetni.trim());
+  console.log('\n4. Adres erişilebilir, bağlantılar görünür');
+  // Adres artik satirda METIN olarak yazmiyor: her projede farkli
+  // uzunlukta oldugu icin satirlari birbirinden farkli yukseklige
+  // sokuyordu. Tek bir "Harita" dugmesi var; adresin tamami onun
+  // ipucunda ve erisilebilir adinda duruyor.
+  const haritaBilgi = await p.$eval('.pn-harita', e=>({
+    metin: e.textContent.trim(), ipucu: e.getAttribute('title') || '',
+    ad: e.getAttribute('aria-label') || '', adres: e.getAttribute('href') || '' }));
+  ok('adres ipucunda tam duruyor', /Sümela Manastırı/.test(haritaBilgi.ipucu), haritaBilgi.ipucu);
+  ok('erişilebilir adda da var', /Sümela Manastırı/.test(haritaBilgi.ad), haritaBilgi.ad);
+  ok('haritada açıyor', /maps/.test(haritaBilgi.adres) && /S%C3%BCmela|Sümela/.test(haritaBilgi.adres),
+     haritaBilgi.adres.slice(0,70));
+  ok('satırda kısa yazı', haritaBilgi.metin.length < 12, haritaBilgi.metin);
   // Baglantilar simge; ne olduklari ERISILEBILIR ADDA (aria-label).
   const linkler = await p.$$eval('.plink', e=>e.map(x=>({t:x.getAttribute('aria-label')||'', h:x.getAttribute('href'), s:x.textContent.trim()})));
   ok('script bağlantısı var', linkler.some(x=>/Script/i.test(x.t) && x.h.includes('docs.google')), JSON.stringify(linkler));
@@ -82,28 +92,47 @@ async function ac(b){
 
   console.log('\n5. Ad sütunu kalabalık değil');
   const yukseklik = await p.evaluate(()=>{
-    const th=[...document.querySelectorAll('.pname-col')].find(x=>/Sümela/.test(x.textContent));
+    const th=[...document.querySelectorAll('.pname-col')].find(x=>{
+      const h = x.querySelector('.pn-harita');
+      return h && /Sümela/.test(h.getAttribute('title') || '');
+    });
     return th ? Math.round(th.getBoundingClientRect().height) : -1;
   });
-  ok('en dolu satır 130 pikselin altında', yukseklik > 0 && yukseklik < 130, yukseklik + 'px');
+  ok('en dolu satır 80 pikselin altında', yukseklik > 0 && yukseklik < 80, yukseklik + 'px');
   const satirSayisi = await p.evaluate(()=>{
-    const th=[...document.querySelectorAll('.pname-col')].find(x=>/Sümela/.test(x.textContent));
+    const th=[...document.querySelectorAll('.pname-col')].find(x=>{
+      const h = x.querySelector('.pn-harita');
+      return h && /Sümela/.test(h.getAttribute('title') || '');
+    });
     return th ? [...th.children].length : -1;
   });
-  ok('ad sütununda en fazla 4 blok', satirSayisi > 0 && satirSayisi <= 4, satirSayisi);
-  // Hiyerarsi: ad > konum > islem > kunye. Esit boyutlu dort satir
-  // tam olarak kullanicinin 'cok karisik' dedigi seydi.
+  // Tam IKI blok: ad ve altindaki tek satir. Dort blok satirlari
+  // birbirinden farkli yukseklige sokuyordu.
+  ok('ad sütununda iki blok', satirSayisi === 2, satirSayisi);
+  // BUTUN satirlar ayni yukseklikte olmali: kullanicinin sikayeti tam
+  // olarak merdiven gibi gorunen tabloydu.
+  const yukseklikler = await p.evaluate(()=>
+    [...document.querySelectorAll('.proj-table tbody tr')].map(x=> Math.round(x.getBoundingClientRect().height)));
+  // Bir piksellik fark yuvarlamadan geliyor; goze carpan bir fark degil.
+  ok('bütün satırlar aynı yükseklikte',
+     Math.max(...yukseklikler) - Math.min(...yukseklikler) <= 1, JSON.stringify(yukseklikler));
+  // Hiyerarsi: ad en buyuk, kunye en kucuk.
   const boyut = await p.evaluate(()=>{
-    const th=[...document.querySelectorAll('.pname-col')].find(x=>/Sümela/.test(x.textContent));
+    const th=[...document.querySelectorAll('.pname-col')].find(x=>{
+      const h = x.querySelector('.pn-harita');
+      return h && /Sümela/.test(h.getAttribute('title') || '');
+    });
     const px=el=>el?parseFloat(getComputedStyle(el).fontSize):0;
-    return { ad:px(th.querySelector('.pname')), yer:px(th.querySelector('.pn-yer')),
-             islem:px(th.querySelector('.pchip')), kunye:px(th.querySelector('.pn-meta')) };
+    return { ad:px(th.querySelector('.pname')), yer:px(th.querySelector('.pn-harita')),
+             kunye:px(th.querySelector('.pn-meta')) };
   });
   ok('ad en büyük', boyut.ad > boyut.yer, JSON.stringify(boyut));
-  ok('konum işlemden büyük', boyut.yer > boyut.islem, JSON.stringify(boyut));
-  ok('künye en küçük', boyut.kunye <= boyut.islem, JSON.stringify(boyut));
+  ok('künye en küçük', boyut.kunye <= boyut.yer, JSON.stringify(boyut));
   const kalin = await p.evaluate(()=>{
-    const th=[...document.querySelectorAll('.pname-col')].find(x=>/Sümela/.test(x.textContent));
+    const th=[...document.querySelectorAll('.pname-col')].find(x=>{
+      const h = x.querySelector('.pn-harita');
+      return h && /Sümela/.test(h.getAttribute('title') || '');
+    });
     return [...th.querySelectorAll('*')].filter(e=>Number(getComputedStyle(e).fontWeight)>=650).length;
   });
   ok('tek kalın öge (ad)', kalin === 1, kalin);

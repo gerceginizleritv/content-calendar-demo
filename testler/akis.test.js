@@ -88,7 +88,9 @@ const { chromium } = require('./araclar');
     // ---- 7) PROJE SAYFASINDA VURGULU ROZETLER ----
     setPage('projects');
     await bekle(150);
-    const rozetler = [...document.querySelectorAll('.proj-table tbody tr:first-child .pn-islem > *')]
+    // Rozetler artik ad satirinin ALTINDAKI tek satirda ve cizgi ikonlu
+    // (.pn-ico). Dolu olan vurgulaniyor.
+    const rozetler = [...document.querySelectorAll('.proj-table tbody tr:first-child .pn-alt [data-proj-ideas], .proj-table tbody tr:first-child .pn-alt [data-proj-scripts]')]
       .map(x=> x.className + '|' + x.textContent.trim());
 
     // ---- 8) ROZET → SÜZÜLMÜŞ SAYFA ----
@@ -171,8 +173,8 @@ const { chromium } = require('./araclar');
   k('Script projeye bağlanıyor', r.scriptBaglandi===true);
   k('SCRIPT ADIMI KENDİLİĞİNDEN İŞARETLENİYOR', r.adimIsaretlendi===true);
   k('Elle kaldırılan işaret geri gelmiyor', r.kaldirilanIsaretGeriGelmedi===true);
-  k('Proje adının altında FİKİR ve SCRIPT vurgulu',
-    r.rozetler.filter(x=>x.startsWith('pchip dolu')).length===2, r.rozetler);
+  k('Proje adının altında fikir ve script işareti vurgulu',
+    r.rozetler.filter(x=> x.indexOf('dolu') !== -1).length===2, r.rozetler);
   k('Fikir rozeti süzülmüş sayfaya götürüyor',
     r.fikirSayfasi.sayfa && r.fikirSayfasi.filtre===r.projeKimlik, r.fikirSayfasi);
   k('Script rozeti süzülmüş sayfaya götürüyor',

@@ -18,7 +18,7 @@ const bak = (ad, ko, ek)=>{ if(ko){ g++; console.log('  ok  '+ad); } else { k++;
   console.log('[sayfa]');
   bak('sol menude Mekanlar sekmesi var', await p.$('#tabPlaces') !== null);
   const sira = await p.$$eval('.rail-nav .tab', e => e.map(x=>x.id));
-  bak('Projeler hala en ustte', sira[0] === 'tabProjects', sira.join(' > '));
+  bak('Fikirler en ustte', sira[0] === 'tabIdeas', sira.join(' > '));
   await p.click('#tabPlaces');
   bak('sayfa aciliyor', !(await p.$eval('#placesPage', e => e.hidden)));
   bak('bos halde ne yapilacagi yaziyor',
