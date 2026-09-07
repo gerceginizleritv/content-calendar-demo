@@ -3917,6 +3917,7 @@ const LANG = {
     p_f_all: "All", p_f_active: "In progress", p_f_script: "Script ready",
     p_f_filmed: "Filmed", p_f_approved: "Approved", p_f_late: "Late",
     p_f_done: "Finished", p_f_cancelled: "Cancelled",
+    p_f_published: "Published", p_f_permit: "Needs permission",
     p_link_script: "Script", p_link_drive: "Drive",
     p_addr_missing: "no address yet",
     p_addr_missing_kisa: "No address",
@@ -4661,6 +4662,7 @@ const LANG = {
     p_f_all: "Tümü", p_f_active: "Devam eden", p_f_script: "Scripti hazır",
     p_f_filmed: "Çekimi bitti", p_f_approved: "Onaylandı", p_f_late: "Geciken",
     p_f_done: "Tamamlanan", p_f_cancelled: "İptal",
+    p_f_published: "Yayında", p_f_permit: "İzin gerekiyor",
     p_link_script: "Script", p_link_drive: "Drive",
     p_addr_missing: "adres girilmemiş",
     p_addr_missing_kisa: "Adres yok",
@@ -5855,6 +5857,11 @@ const PROJE_FILTRELERI = [
   { k:'filmed',    etiket:'p_f_filmed',   olcut: p => !p.cancelled && p.filmed },
   { k:'approved',  etiket:'p_f_approved', olcut: p => !p.cancelled && p.approved },
   { k:'geciken',   etiket:'p_f_late',     olcut: p => !p.cancelled && PROJ_STEPS.some(a=> adimGecikti(p,a)) },
+  // Ozet seridinden gelen iki olcut. Serit kalkti: sayfanin ustunde
+  // ust uste iki sayi blogu vardi, biri okunuyor oteki calisiyordu ve
+  // ayni sayilari gosteriyorlardi. Simdi tek blok, hepsi tiklanabilir.
+  { k:'yayinda',   etiket:'p_f_published',olcut: p => !p.cancelled && p.published },
+  { k:'izin',      etiket:'p_f_permit',   olcut: p => !p.cancelled && (p.permission||'').trim() !== '' },
   { k:'bitti',     etiket:'p_f_done',     olcut: p => !p.cancelled && projeBitti(p) },
   { k:'iptal',     etiket:'p_f_cancelled',olcut: p => !!p.cancelled }
 ];
@@ -5881,16 +5888,15 @@ function renderProjeFiltre(hepsi){
   });
 }
 
+// Ozet seridi KALDIRILDI. Sayfanin ustunde ust uste iki sayi blogu
+// duruyordu: biri yalnizca okunuyor, oteki hem ayni sayilari gosteriyor
+// hem tiklaniyordu. Kullanici "karisik gorunuyor" dedi, haklıydı.
+// Seride ozel olan iki olcut (yayinda, izin gerekiyor) filtre cipi
+// olarak yasamaya devam ediyor. projeOzeti() duruyor: baska yerden
+// cagriliyor olabilir ve sayilarin tek tanimi orada.
 function renderProjeOzeti(){
   const serit = document.getElementById('p_stats');
-  if(!serit) return;
-  // Tek proje bile yokken serit sifirlardan ibaret olur; gizleniyor.
-  serit.hidden = projects.length === 0;
-  if(serit.hidden){ serit.innerHTML = ''; return; }
-  serit.innerHTML = projeOzeti()
-    .filter(x=> !(x.sifirsaGizle && !x.deger))
-    .map(x=>`<div class="pstat"><b>${x.deger}</b><span>${escapeHtml(t(x.anahtar))}</span></div>`)
-    .join('');
+  if(serit){ serit.hidden = true; serit.innerHTML = ''; }
 }
 
 function renderProjects(){

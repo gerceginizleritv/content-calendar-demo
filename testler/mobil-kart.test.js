@@ -95,22 +95,24 @@ const disarida = (p, secici)=> p.evaluate(s=>{
     await p.close();
   }
 
-  console.log('[telefon: ozet seridi tek satir]');
+  console.log('[tek sayi blogu: yalnizca cipler]');
   {
     const p = await ac(t, 390, 844);
     await p.evaluate(()=>{ setPage('projects'); renderProjects(); });
     await p.waitForTimeout(400);
-    const r = await p.evaluate(()=>{
-      const s = document.querySelector('.proj-stats');
-      const k = s.getBoundingClientRect();
-      const ilk = document.querySelector('.pstat').getBoundingClientRect();
-      return { yukseklik: Math.round(k.height), kutuYuk: Math.round(ilk.height),
-               kayar: s.scrollWidth > s.clientWidth + 1,
-               sayfaTasma: document.documentElement.scrollWidth - window.innerWidth };
-    });
-    // Onceden dort satirdi ve liste gorunmeden ekranin ucte biri gidiyordu.
-    bak('ozet seridi TEK satir', r.yukseklik <= r.kutuYuk + 4, r.yukseklik + ' / ' + r.kutuYuk);
-    bak('serit yana kayabiliyor', r.kayar === true);
+    const r = await p.evaluate(()=>({
+      serit: document.querySelectorAll('.pstat').length,
+      seritGizli: document.getElementById('p_stats').hidden,
+      cipler: [...document.querySelectorAll('.pfilt')].map(x=> x.textContent.trim()),
+      sayfaTasma: document.documentElement.scrollWidth - window.innerWidth
+    }));
+    // Ust uste iki sayi blogu vardi: biri okunuyor, oteki ayni sayilari
+    // gosterip tiklaniyordu. Serit kalkti, cipler kaldi.
+    bak('okunur-yazilmaz ozet seridi kalmadi', r.serit === 0 && r.seritGizli === true,
+        r.serit + ' kutu');
+    bak('seride ozel iki olcut cip oldu',
+        r.cipler.some(x=> /Yayında/.test(x)) && r.cipler.some(x=> /İzin gerekiyor/.test(x)),
+        r.cipler.join(' | '));
     bak('sayfayi yana kaydirmiyor', r.sayfaTasma <= 0, String(r.sayfaTasma));
     await p.close();
   }

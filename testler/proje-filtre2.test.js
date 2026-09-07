@@ -42,7 +42,13 @@ async function ac(b){
   console.log('\n1. Filtre satırı');
   ok('filtre satırı var', await p.isVisible('#p_filtre'));
   const etiketler = await p.$$eval('.pfilt', els=>els.map(e=>e.textContent.replace(/\d+$/,'').trim()));
-  ok('sekiz filtre', etiketler.length === 8, etiketler.join(' | '));
+  ok('on filtre', etiketler.length === 10, etiketler.join(' | '));
+  // Ozet seridi kalkti: ona ozel iki olcut (yayinda, izin gerekiyor)
+  // buraya cip olarak tasindi, boylece tek blok kaldi ve hepsi
+  // tiklanabilir.
+  ok('şeritten gelen iki ölçüt de burada',
+     etiketler.some(x=>/Yayında/.test(x)) && etiketler.some(x=>/İzin gerekiyor/.test(x)),
+     etiketler.join(" | "));
   ok('istenen filtreler var', ['Tümü','Devam eden','Scripti hazır','Çekimi bitti','Tamamlanan','İptal']
       .every(x=>etiketler.includes(x)), etiketler.join(' | '));
   ok('başta "Tümü" açık', await p.evaluate(()=>document.querySelector('.pfilt.acik').dataset.filt === 'hepsi'));
