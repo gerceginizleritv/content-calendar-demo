@@ -2685,6 +2685,19 @@ textarea.sc-ai-brief{min-height:64px;resize:vertical;line-height:1.5;}
       </div>
       <p class="auth-hint" id="pay_zaman"></p>
     </div>
+    <!-- Kopyala-yapistir yerine: adresi buraya yaz, e-posta hazir gelsin.
+         Posta SENIN adresinden gidiyor, bizim sunucumuzdan degil —
+         alan kisi tanidigi bir adresten aliyor, spam'e dusme ihtimali
+         dusuk ve biz kimsenin adina posta gondermiyoruz. -->
+    <div class="field" id="pay_postaSatir" hidden>
+      <label data-i18n="pay_send_label">Send it by email</label>
+      <input type="email" id="pay_kime" placeholder="kurgucu@ornek.com" autocomplete="off">
+      <input type="text" id="pay_not" maxlength="300" style="margin-top:8px;"
+             data-i18n-placeholder="pay_note_ph" placeholder="A line of your own (optional)">
+      <button type="button" class="btn" id="pay_postala" style="margin-top:8px;"
+              data-i18n="pay_send_btn">Prepare the email</button>
+      <p class="auth-hint" data-i18n="pay_send_hint">Opens your own mail app with everything written in. It goes from your address, not ours.</p>
+    </div>
     <div class="modal-actions">
       <button type="button" class="btn btn-danger" id="pay_kapat" hidden data-i18n="pay_off">Turn the link off</button>
       <button type="button" class="btn" id="pay_iptal" data-i18n="btn_close">Close</button>
@@ -3956,6 +3969,25 @@ const LANG = {
     pay_working: "Publishing...",
     pay_done: "Ready. The link now shows the current plan.",
     pay_link: "Link",
+    pay_send_label: "Send it by email",
+    pay_note_ph: "A line of your own (optional)",
+    pay_send_btn: "Prepare the email",
+    pay_send_hint: "Opens your own mail app with everything written in. It goes from your address, not ours.",
+    pay_mail_bad: "That email address doesn't look right.",
+    pay_mail_opened: "Your mail app should be opening with the message ready.",
+    pay_mail_subject: (ad)=> ad ? `${ad} shared a publishing plan with you` : 'A publishing plan has been shared with you',
+    pay_mail_body: (ad, baglanti)=> [
+      'Hello,',
+      '',
+      (ad ? ad + ' is sharing' : 'Here is') + ' a read-only view of what is going out and when:',
+      baglanti,
+      '',
+      'You can just open it — no account, no sign-up. It only shows the dates, the platforms and the titles, and nothing can be changed from there.',
+      '',
+      'It updates on its own: whenever the plan changes, the same link shows the new version.',
+      '',
+      '— sent from Shootboard (shootboard.app)'
+    ].join('\n'),
     pay_copy: "Copy",
     pay_copied: "Link copied.",
     pay_updated: (z)=> `Last updated ${z}. It refreshes on its own when you change something.`,
@@ -4678,6 +4710,25 @@ const LANG = {
     pay_working: "Yayınlanıyor...",
     pay_done: "Hazır. Bağlantı artık güncel planı gösteriyor.",
     pay_link: "Bağlantı",
+    pay_send_label: "E-posta ile gönder",
+    pay_note_ph: "Kendi bir satırın (isteğe bağlı)",
+    pay_send_btn: "E-postayı hazırla",
+    pay_send_hint: "Kendi posta uygulamanı her şey yazılmış hâlde açar. Senin adresinden gider, bizim adresimizden değil.",
+    pay_mail_bad: "Bu e-posta adresi doğru görünmüyor.",
+    pay_mail_opened: "Posta uygulaman hazır mesajla açılıyor olmalı.",
+    pay_mail_subject: (ad)=> ad ? `${ad} seninle bir yayın planı paylaştı` : 'Seninle bir yayın planı paylaşıldı',
+    pay_mail_body: (ad, baglanti)=> [
+      'Merhaba,',
+      '',
+      (ad ? ad + ', ne zaman ne çıkacağını' : 'Ne zaman ne çıkacağını') + ' gösteren salt-okunur bir bağlantı paylaşıyor:',
+      baglanti,
+      '',
+      'Açman yeterli — hesap açmana, kayıt olmana gerek yok. Yalnızca tarihleri, platformları ve başlıkları gösteriyor; oradan hiçbir şey değiştirilemiyor.',
+      '',
+      'Kendiliğinden güncelleniyor: plan değiştikçe aynı bağlantı yeni hâlini gösteriyor.',
+      '',
+      '— Shootboard ile gönderildi (shootboard.app)'
+    ].join('\n'),
     pay_copy: "Kopyala",
     pay_copied: "Bağlantı kopyalandı.",
     pay_updated: (z)=> `Son güncelleme ${z}. Bir şey değiştirdiğinde kendiliğinden tazeleniyor.`,
@@ -13083,6 +13134,7 @@ function paylasPenceresiniAc(){
 function paylasEkraniTazele(){
   const varMi = !!paylasim.jeton;
   document.getElementById('pay_adresSatir').hidden = !varMi;
+  document.getElementById('pay_postaSatir').hidden = !varMi;
   document.getElementById('pay_kapat').hidden = !varMi;
   document.getElementById('pay_olustur').textContent = t(varMi ? 'pay_refresh' : 'pay_create');
   if(varMi){
@@ -13107,6 +13159,32 @@ document.getElementById('pay_olustur').addEventListener('click', async ()=>{
     console.error('[paylasim] olusturulamadi', err);
     d.textContent = hataMetni(err); d.className = 'ai-status error';
   }finally{ btn.disabled = false; }
+});
+// E-posta govdesi: baglantiyi alan kisi neye baktigini bilsin. Konu ve
+// govde hazir geliyor, kullanici yalnizca "gonder" diyor.
+function paylasPostaAdresi(){
+  const kime = document.getElementById('pay_kime').value.trim();
+  const not = document.getElementById('pay_not').value.trim();
+  const adres = document.getElementById('pay_adres').value.trim();
+  const ad = kullaniciAdi() || '';
+  const konu = t('pay_mail_subject')(ad);
+  const govde = (not ? not + '\n\n' : '') + t('pay_mail_body')(ad, adres);
+  return 'mailto:' + encodeURIComponent(kime)
+    + '?subject=' + encodeURIComponent(konu)
+    + '&body=' + encodeURIComponent(govde);
+}
+document.getElementById('pay_postala').addEventListener('click', ()=>{
+  const kutu = document.getElementById('pay_kime');
+  const kime = kutu.value.trim();
+  const durum = document.getElementById('pay_durum');
+  if(!/^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(kime)){
+    durum.textContent = t('pay_mail_bad'); durum.className = 'ai-status error';
+    kutu.focus();
+    return;
+  }
+  durum.textContent = t('pay_mail_opened'); durum.className = 'ai-status ok';
+  track('funnel/share-mail');
+  location.href = paylasPostaAdresi();
 });
 document.getElementById('pay_kopya').addEventListener('click', async ()=>{
   const kutu = document.getElementById('pay_adres');
