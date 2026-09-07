@@ -79,7 +79,13 @@ olan erişimi çöpe atıp sıfırdan başlamaktır.
 
 ## 3. Hesap planı
 
-### Kullanıcı adları — KARAR VERİLDİ (7 Eylül 2026)
+### Hesap kimliği ve kullanıcı adları — KARAR VERİLDİ (7 Eylül 2026)
+
+**Ürün hesabı:** `shootboardapp@gmail.com` (kişisel tipte açılmış ücretsiz
+Google hesabı). Bütün sosyal hesaplar bu kimlikle açılıyor.
+Kurtarma adresi: `bostancioglum@gmail.com`. Kamuya dönük iletişim adresi
+ayrı: `hello@shootboard.app` (Cloudflare Email Routing ile aynı Gmail'e
+düşüyor, gönderim Gmail "şu adresten gönder" ile).
 
 | Platform | Kullanıcı adı |
 |---|---|
@@ -88,14 +94,17 @@ olan erişimi çöpe atıp sıfırdan başlamaktır.
 | Threads | `getshootboard` (Instagram'dan otomatik gelir) |
 | TikTok | `getshootboard` |
 | Reddit | `u/shootboard` |
-| Product Hunt | `getshootboard` |
+| Product Hunt | `gethootboard` — **doğrulanacak**, `getshootboard` olmalıydı |
 
 Notlar:
+- **Product Hunt'ta bir harf eksik.** `gethootboard` iki kez böyle yazıldı;
+  gerçekten öyle kaydedildiyse ayarlardan düzeltilebilir. Tek harf farkı
+  marka aramasını ve altı platformdaki tutarlılığı bozar.
 - **Threads ayrı kayıt istemez.** Instagram uygulamasından açılır ve
-  Instagram kullanıcı adını devralır; `@getshootboard` orada da otomatik olur.
+  Instagram kullanıcı adını devralır.
 - **Reddit bilerek farklı ve bilerek sessiz.** `u/shootboard` yalnızca isim
-  rezervasyonu. Reddit'te ürün adını taşıyan yeni bir hesabın kendi ürününü
-  tanıtması silinir ve aşağı oylanır; paylaşım karma geçmişi olan kişisel
+  rezervasyonu; Reddit'te ürün adını taşıyan yeni bir hesabın kendi ürününü
+  tanıtması silinir ve aşağı oylanır. Paylaşım, karma geçmişi olan kişisel
   hesaptan yapılacak.
 - **X (Twitter) listede yok.** Bilinçli bir karar değilse `@getshootboard`
   orada da alınmalı: Show HN ve indie ürün kitlesinin toplandığı yer orası.
