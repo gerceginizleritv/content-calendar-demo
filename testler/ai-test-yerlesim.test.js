@@ -1,4 +1,4 @@
-const { chromium } = require('./araclar');
+const { chromium, menuAc } = require('./araclar');
 (async () => {
   const b = await chromium.launch({ });
   let hata=0; const k=(a,s,e)=>{ console.log((s?'  ✔ ':'  ✖ ')+a+(e!==undefined?' → '+JSON.stringify(e):'')); if(!s) hata++; };
@@ -23,6 +23,7 @@ const { chromium } = require('./araclar');
     await page.goto('http://127.0.0.1:8098/app.html',{waitUntil:'domcontentloaded'});
     await page.waitForTimeout(1400);
     await page.evaluate(()=>{ document.querySelectorAll('.overlay.open').forEach(o=>o.classList.remove('open')); setLanguage('tr'); });
+    await menuAc(page);   // telefonda serit baglantilari alt sayfada
     await page.click('#aiSettingsBtn'); await page.waitForTimeout(250);
     await page.click('#aiTestBtn');
     await page.waitForFunction(()=>!document.getElementById('aiTestBtn').disabled, null, {timeout:20000});

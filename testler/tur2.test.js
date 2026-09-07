@@ -1,4 +1,4 @@
-const { chromium } = require('./araclar');
+const { chromium, menuAc } = require('./araclar');
 (async () => {
   const b = await chromium.launch({ });
   let hata=0; const k=(a,s,e)=>{ console.log((s?'  ✔ ':'  ✖ ')+a+(e!==undefined?' → '+JSON.stringify(e):'')); if(!s) hata++; };
@@ -12,6 +12,7 @@ const { chromium } = require('./araclar');
     await page.goto('http://127.0.0.1:8098/app.html',{waitUntil:'domcontentloaded'});
     await page.waitForTimeout(1400);
     await page.evaluate((d)=>{ document.querySelectorAll('.overlay.open').forEach(o=>o.classList.remove('open')); setLanguage(d); }, dil);
+    await menuAc(page);   // telefonda serit baglantilari alt sayfada
     await page.click('#tourBtn'); await page.waitForTimeout(300);
     return page;
   };
@@ -71,6 +72,7 @@ const { chromium } = require('./araclar');
   k('× turu kapatıyor', await page.evaluate(()=>!document.getElementById('tourOverlay').classList.contains('open')));
 
   // İleri / geri / noktalar
+  await menuAc(page);
   await page.click('#tourBtn'); await page.waitForTimeout(250);
   await page.click('#tourNextBtn'); await page.waitForTimeout(200);
   k('İleri ikinci adıma geçiyor', await page.evaluate(()=>tourIndex === 1));

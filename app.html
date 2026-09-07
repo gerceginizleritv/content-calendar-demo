@@ -140,6 +140,11 @@ body{
 .rail-link:focus-visible{outline:2px solid var(--accent);outline-offset:2px;}
 .rail-prefs{display:flex;gap:6px;align-items:center;margin-top:8px;}
 .rail-prefs .lang-select{flex:1;min-width:0;}
+/* "..." düğmesi ve alt sayfa yalnızca telefonda var; geniş ekranda
+   bağlantılar zaten şeridin altında alt alta duruyor. */
+.rail-more{display:none;}
+.rail-arka{display:none;}
+.rail-foot-tut{display:none;}
 
 /* Dar ekran: serit yatay bir seride donuyor. Hamburger arkasina
    saklamiyoruz — sahada telefonla calisan biri icin navigasyonun
@@ -1949,13 +1954,55 @@ textarea.sc-ai-brief{min-height:64px;resize:vertical;line-height:1.5;}
   /* Bu dugme bir baslik cubugu ogesi: 44px'lik dokunma hedefi burada
      seridi gereksiz yukseltiyor. 34px hala rahat basiliyor. */
   .btn.rail-auth{min-height:34px;padding:6px 10px;font-size:12px;}
-  .rail-foot{flex-wrap:nowrap;overflow-x:auto;-webkit-overflow-scrolling:touch;
-    gap:2px;padding-top:7px;padding-bottom:0;scrollbar-width:none;}
-  .rail-foot::-webkit-scrollbar{display:none;}
-  .rail-link{white-space:nowrap;flex:none;font-size:12px;padding:5px 8px;}
-  .rail-prefs{flex:none;gap:4px;}
-  .rail-prefs .lang-select{min-height:32px;padding:4px 8px;font-size:12px;}
-  .rail-prefs .btn{min-height:32px;padding:4px 9px;font-size:12px;}
+  /* İkincil bağlantılar ALT SAYFADA. Önce yana kayan bir şeritti: altı
+     bağlantı 360 piksele sığmıyor, kaydırmayı fark etmeyen kullanıcı
+     "Kullanım kılavuzu" ve "Geri bildirim"i hiç görmüyordu. Kaydırma
+     bir çözüm değil, sorunun ertelenmesiydi.
+
+     Bağlantılar taşınmadı, YERİNDE kaldı: aynı düğmeler CSS ile alttan
+     açılan bir sayfaya dönüşüyor. Böylece bütün olay bağlantıları,
+     dil seçici ve tema düğmesi olduğu gibi çalışmaya devam ediyor. */
+  .rail-more{
+    display:inline-flex;align-items:center;justify-content:center;
+    margin-left:auto;flex:none;width:34px;height:34px;padding:0;
+    font:inherit;font-size:19px;line-height:1;letter-spacing:.06em;
+    border:1px solid var(--line);border-radius:50%;
+    background:var(--surface);color:var(--text-dim);cursor:pointer;
+  }
+  .rail-more[aria-expanded="true"]{border-color:var(--accent);color:var(--accent);}
+  .rail-arka{
+    display:block;position:fixed;inset:0;z-index:59;
+    background:rgba(4,5,10,0.6);
+  }
+  .rail-arka[hidden]{display:none;}
+  .rail-foot{
+    position:fixed;left:0;right:0;bottom:0;z-index:60;
+    flex-direction:column;align-items:stretch;gap:2px;
+    width:auto;max-height:80vh;max-height:80dvh;overflow-y:auto;
+    background:var(--surface);border-top:1px solid var(--line);
+    border-radius:14px 14px 0 0;
+    padding:8px 12px calc(14px + env(safe-area-inset-bottom));
+    box-shadow:0 -10px 40px -12px rgba(0,0,0,.55);
+    transform:translateY(102%);visibility:hidden;
+    /* visibility gecikmeli kapaniyor: kayma bitmeden gizlenirse sayfa
+       birden yok oluyordu. Kapali haldeyken gizli olmasi SART, yoksa
+       icindeki dugmeler klavyeyle geziliyor. */
+    transition:transform .18s ease, visibility 0s linear .18s;
+  }
+  .rail-foot.acik{transform:none;visibility:visible;
+    transition:transform .18s ease, visibility 0s;}
+  @media (prefers-reduced-motion:reduce){ .rail-foot{transition:none;} }
+  .rail-foot-tut{display:block;width:38px;height:4px;border-radius:2px;
+    background:var(--line);margin:2px auto 8px;flex:none;}
+  /* Alt sayfada bağlantılar tam adıyla ve parmak boyunda. */
+  .rail-link{white-space:normal;flex:none;font-size:14.5px;padding:12px 10px;
+    border-radius:9px;}
+  /* margin-left:0 SART: dar ekran kuralindan gelen auto, sutun icinde
+     dil ve tema dugmesini saga sikistiriyordu. */
+  .rail-prefs{flex:none;gap:8px;margin-left:0;margin-top:10px;padding-top:10px;
+    border-top:1px solid var(--line-soft);}
+  .rail-prefs .lang-select{flex:1;min-height:42px;}
+  .rail-prefs .btn{flex:1;min-height:42px;justify-content:center;}
 
   /* Sekmeler altta, sabit. Basparmagin dogal menzili. */
   .rail-nav{
@@ -2121,7 +2168,7 @@ textarea.sc-ai-brief{min-height:64px;resize:vertical;line-height:1.5;}
   #dlgOverlay .modal{padding-bottom:18px;}
   #dlgOverlay .modal-actions{position:static;margin:16px 0 0;padding:0;border-top:0;background:transparent;}
   #dlgOverlay .modal-actions .btn{flex:0 1 auto;}
-  body.sheet-open{overflow:hidden;}
+  body.sheet-open,body.menu-open{overflow:hidden;}
 }
 
 /* Filtre paneli basligi ve arka perdesi: masaustunde gorunmez (acilir
@@ -2229,6 +2276,15 @@ textarea.sc-ai-brief{min-height:64px;resize:vertical;line-height:1.5;}
         <button class="btn btn-sm rail-auth" id="authBtn" data-i18n="btn_signin">☁ Sign in</button>
       </div>
 
+      <!-- Telefonda ikincil bağlantılar yana kayan bir şeritteydi: altı
+           bağlantı bir satıra sığmıyor, kaydırmayan kullanıcı sondakileri
+           hiç görmüyordu. Artık aynı bağlantılar bu düğmenin açtığı alt
+           sayfada, tam adlarıyla ve alt alta. Şerit de tek satıra indi. -->
+      <button type="button" class="rail-more" id="railMoreBtn" aria-expanded="false"
+              aria-controls="railFoot" aria-label="More" title="More">
+        <span aria-hidden="true">⋯</span>
+      </button>
+
       <!-- Sira isin akisi: fikir -> script -> proje -> takvim. Menunun
            kendisi urunun nasil kullanildigini anlatiyor. -->
       <nav class="rail-nav" role="tablist">
@@ -2270,7 +2326,9 @@ textarea.sc-ai-brief{min-height:64px;resize:vertical;line-height:1.5;}
 
       <!-- Alt grup: her zaman erisilebilir olmasi gereken ama sik
            kullanilmayan seyler. -->
-      <div class="rail-foot">
+      <div class="rail-foot" id="railFoot">
+        <!-- Alt sayfanın tutamağı: yalnızca telefonda görünüyor. -->
+        <span class="rail-foot-tut" aria-hidden="true"></span>
         <!-- Tanitim blogu simdilik kapali: bu is uygulamanin tepesinde
              degil, ayri bir karsilama sayfasinda anlatilacak. Metin ve
              duzenek silinmedi, oradan tekrar kullanilacak. -->
@@ -2293,6 +2351,8 @@ textarea.sc-ai-brief{min-height:64px;resize:vertical;line-height:1.5;}
           <button class="btn btn-sm" id="themeBtn">🌙 Dark</button>
         </div>
       </div>
+      <!-- Alt sayfanın arkasındaki karartma: dışarı dokununca kapanıyor. -->
+      <div class="rail-arka" id="railArka" hidden></div>
     </aside>
 
     <main class="rail-main">
@@ -8888,6 +8948,36 @@ function setPage(ad){
 document.getElementById('tabCalendar').addEventListener('click', ()=> setPage('calendar'));
 document.getElementById('tabProjects').addEventListener('click', ()=>{ track('funnel/projects-opened'); setPage('projects'); });
 document.getElementById('tabTemplates').addEventListener('click', ()=>{ track('funnel/templates-opened'); setPage('templates'); });
+// Telefondaki "..." dugmesi: ikincil baglantilarin alt sayfasi. Ayri bir
+// pencere yok — serit CSS ile alt sayfaya donusuyor, icindeki butun
+// dugmeler kendi isini yapmaya devam ediyor.
+(function(){
+  const dug = document.getElementById('railMoreBtn');
+  const serit = document.getElementById('railFoot');
+  const arka = document.getElementById('railArka');
+  if(!dug || !serit || !arka) return;
+  function ayarla(acik){
+    serit.classList.toggle('acik', acik);
+    arka.hidden = !acik;
+    dug.setAttribute('aria-expanded', acik ? 'true' : 'false');
+    // sheet-open DEGIL, ayri bir sinif: o sinif filtre panelinin ve
+    // pencerelerin ortak malı ve her tiklamada yeniden hesaplaniyor
+    // (filtrePaneliKapat gövdeden siliyor). Alt sayfa onun kavgasina
+    // girmesin.
+    document.body.classList.toggle('menu-open', acik);
+  }
+  const kapat = ()=> ayarla(false);
+  dug.addEventListener('click', ()=> ayarla(!serit.classList.contains('acik')));
+  arka.addEventListener('click', kapat);
+  // Icerideki her sey bir pencere aciyor ya da bir sey degistiriyor:
+  // secimden sonra sayfanin acik kalmasinin bir anlami yok. Dil secici
+  // haric — orada liste kendi penceresini aciyor.
+  serit.addEventListener('click', e=>{ if(e.target.closest('.rail-link')) kapat(); });
+  document.addEventListener('keydown', e=>{ if(e.key === 'Escape') kapat(); });
+  // Genis ekrana gecince serit yine sayfanin bir parcasi: acik kalmasin.
+  window.addEventListener('resize', ()=>{ if(window.innerWidth > 700) kapat(); });
+})();
+
 document.getElementById('tabIdeas').addEventListener('click', ()=>{ track('funnel/ideas-opened'); setPage('ideas'); });
 document.getElementById('tabScripts').addEventListener('click', ()=>{ track('funnel/scripts-opened'); setPage('scripts'); });
 document.getElementById('tabPlaces').addEventListener('click', ()=>{ track('funnel/places-opened'); setPage('places'); });

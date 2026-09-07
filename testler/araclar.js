@@ -64,5 +64,20 @@ exports.chromium = {
   }
 };
 exports.devices = gercek.devices;
+
+// Telefonda seridin ikincil baglantilari "..." dugmesinin actigi alt
+// sayfada duruyor. Masaustunde dogrudan gorunuyorlar, o yuzden dugme de
+// yok. Test bir serit baglantisina basmadan once bunu cagiriyor:
+// genisligi bilmesine gerek kalmiyor.
+exports.menuAc = async function(page){
+  const dug = await page.$('#railMoreBtn');
+  if(!dug) return false;
+  if(!(await dug.isVisible())) return false;
+  const serit = await page.$('#railFoot');
+  if(serit && await serit.evaluate(e=> e.classList.contains('acik'))) return true;
+  await dug.click();
+  await page.waitForTimeout(300);
+  return true;
+};
 // Depo koku: testler app.html'i diskten okurken kullaniyor.
 exports.KOK = path.resolve(__dirname, '..');
