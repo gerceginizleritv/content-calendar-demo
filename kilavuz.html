@@ -1,0 +1,672 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Shootboard Kullanım Kılavuzu — İçerik Takvimi ve Çekim Planlama Rehberi</title>
+<meta name="description" content="Shootboard kullanım kılavuzu: içerik takvimi kurma, çekim planlama, proje adımları, mekan kaydı, fikir ve script yönetimi, Gemini ile ücretsiz AI, hatırlatmalar ve yedekleme. Adım adım, ekran ekran.">
+<meta name="keywords" content="içerik takvimi, çekim planlama, içerik üreticisi planlama, YouTube içerik planı, sosyal medya içerik takvimi, script yazma, Gemini AI ücretsiz, video prodüksiyon takibi">
+<link rel="canonical" href="https://shootboard.app/kilavuz.html">
+<link rel="alternate" hreflang="tr" href="https://shootboard.app/kilavuz.html">
+<link rel="alternate" hreflang="en" href="https://shootboard.app/guide.html">
+<link rel="alternate" hreflang="x-default" href="https://shootboard.app/guide.html">
+<meta property="og:type" content="article">
+<meta property="og:locale" content="tr_TR">
+<meta property="og:title" content="Shootboard Kullanım Kılavuzu — İçerik Takvimi ve Çekim Planlama">
+<meta property="og:description" content="Bir çekimden çıkan on paylaşımı tek yerden yönetmek: projeler, mekanlar, fikirler, scriptler, takvim, AI ve hatırlatmalar. Adım adım kılavuz.">
+<meta property="og:url" content="https://shootboard.app/kilavuz.html">
+<meta name="twitter:card" content="summary">
+<link rel="icon" href="favicon.svg" type="image/svg+xml">
+<link rel="icon" href="favicon.ico" sizes="any">
+<style>
+:root{
+  --bg:#F4F7FA; --surface:#FFFFFF; --surface-2:#EDF1F6; --line:#DFE5EC;
+  --text:#16202B; --text-dim:#54637A; --accent:#2563C7; --accent-soft:#E8EFFB;
+  --amber:#B4700F; --green:#1F7A50;
+}
+@media (prefers-color-scheme: dark){
+  :root{
+    --bg:#10131C; --surface:#171D28; --surface-2:#1F2734; --line:#2B3442;
+    --text:#E7ECF3; --text-dim:#A2B0C2; --accent:#7AA6EE; --accent-soft:#1B2740;
+    --amber:#E0A54A; --green:#5DBE92;
+  }
+}
+*{box-sizing:border-box;}
+body{margin:0;background:var(--bg);color:var(--text);
+  font-family:'IBM Plex Sans','Segoe UI',system-ui,-apple-system,sans-serif;
+  font-size:15px;line-height:1.7;-webkit-font-smoothing:antialiased;}
+a{color:var(--accent);text-underline-offset:2px;}
+.ust{position:sticky;top:0;z-index:20;background:var(--bg);
+  border-bottom:1px solid var(--line);}
+.ust-ic{max-width:1140px;margin:0 auto;padding:12px 22px;
+  display:flex;align-items:center;gap:14px;flex-wrap:wrap;}
+.marka{font-weight:700;letter-spacing:-.01em;}
+.marka a{color:var(--text);text-decoration:none;}
+.ust-sag{margin-left:auto;display:flex;gap:14px;align-items:center;font-size:.86rem;}
+.duzen{max-width:1140px;margin:0 auto;padding:0 22px 80px;
+  display:grid;grid-template-columns:236px minmax(0,1fr);gap:40px;align-items:start;}
+/* Sol menu: adimlar arasinda atlamak icin. Yapiskan, okurken kayboluyor. */
+.yan{position:sticky;top:64px;padding:30px 0 20px;max-height:calc(100vh - 74px);
+  overflow-y:auto;}
+.yan-bas{font-size:.7rem;text-transform:uppercase;letter-spacing:.12em;
+  color:var(--text-dim);margin:0 0 10px;}
+.yan ol{list-style:none;margin:0;padding:0;counter-reset:adim;}
+.yan li{counter-increment:adim;}
+.yan a{display:flex;gap:9px;padding:6px 9px;border-radius:7px;color:var(--text-dim);
+  text-decoration:none;font-size:.87rem;line-height:1.35;}
+.yan a::before{content:counter(adim);flex:none;width:19px;height:19px;margin-top:1px;
+  border-radius:50%;background:var(--surface-2);color:var(--text-dim);
+  font-size:.66rem;font-weight:700;display:flex;align-items:center;justify-content:center;}
+.yan a:hover{background:var(--surface);color:var(--text);}
+.yan a.acik{background:var(--accent-soft);color:var(--accent);font-weight:600;}
+.yan a.acik::before{background:var(--accent);color:#fff;}
+main{padding-top:30px;min-width:0;}
+h1{font-size:2rem;line-height:1.15;letter-spacing:-.025em;margin:0 0 10px;}
+.girizgah{font-size:1.05rem;color:var(--text-dim);margin:0 0 8px;max-width:62ch;}
+.bolum{padding-top:34px;margin-top:10px;scroll-margin-top:74px;}
+.bolum h2{font-size:1.35rem;letter-spacing:-.02em;margin:0 0 4px;}
+.bolum h3{font-size:1.02rem;margin:22px 0 6px;}
+.etiket{font-size:.68rem;text-transform:uppercase;letter-spacing:.12em;
+  color:var(--accent);font-weight:700;margin:0 0 4px;}
+p{margin:0 0 12px;max-width:68ch;}
+ul,ol.liste{margin:0 0 14px;padding-left:20px;max-width:68ch;}
+li{margin-bottom:6px;}
+strong{font-weight:600;}
+code{font-family:ui-monospace,'SF Mono',Menlo,Consolas,monospace;font-size:.88em;
+  background:var(--surface-2);padding:1px 5px;border-radius:4px;}
+.kutu{background:var(--surface);border:1px solid var(--line);border-radius:11px;
+  padding:16px 18px;margin:18px 0;max-width:68ch;}
+.kutu p:last-child{margin-bottom:0;}
+.kutu-bas{font-weight:600;margin:0 0 6px;}
+.uyari{border-left:3px solid var(--amber);}
+.ipucu{border-left:3px solid var(--green);}
+table{width:100%;border-collapse:collapse;margin:14px 0;font-size:.92rem;
+  display:block;overflow-x:auto;max-width:68ch;}
+th,td{text-align:left;padding:9px 10px;border-bottom:1px solid var(--line);vertical-align:top;}
+th{color:var(--text-dim);font-weight:600;font-size:.8rem;text-transform:uppercase;letter-spacing:.05em;}
+/* --- Canlandirmali gosterimler --------------------------------------
+   Her biri anlatilan seyin KENDISINI gosteriyor: yazi yazan AI, tiklenen
+   adim, gune surukklenen kayit. Hareket yalnizca ekranda gorunurken
+   basliyor (JS bir sinif ekliyor) ki sayfa acilir acilmaz her sey birden
+   oynamasin. */
+.gosterim{background:var(--surface);border:1px solid var(--line);border-radius:12px;
+  padding:18px;margin:18px 0;max-width:68ch;}
+.gosterim-ust{font-size:.7rem;text-transform:uppercase;letter-spacing:.11em;
+  color:var(--text-dim);margin:0 0 12px;}
+.sahte-alan{background:var(--bg);border:1px solid var(--line);border-radius:8px;
+  padding:10px 12px;font-size:.95rem;min-height:42px;display:flex;align-items:center;}
+.sahte-etiket{font-size:.66rem;text-transform:uppercase;letter-spacing:.1em;
+  color:var(--text-dim);margin:0 0 5px;}
+.sahte-dugme{display:inline-flex;align-items:center;gap:6px;background:var(--accent);
+  color:#fff;border-radius:7px;padding:7px 13px;font-size:.85rem;font-weight:600;}
+.yazan{border-right:2px solid var(--accent);white-space:nowrap;overflow:hidden;width:0;}
+.gosterim.gorunur .yazan{animation:yaz 3.4s steps(38) .4s infinite;}
+@keyframes yaz{0%{width:0;}45%{width:23em;}80%{width:23em;}100%{width:0;}}
+.adimlar{display:grid;grid-template-columns:repeat(auto-fit,minmax(96px,1fr));gap:7px;}
+.adim{display:flex;align-items:center;gap:7px;border:1px solid var(--line);
+  border-radius:9px;padding:7px 9px;font-size:.78rem;background:var(--bg);}
+.adim i{flex:none;width:15px;height:15px;border:1.5px solid var(--line);border-radius:4px;
+  display:block;position:relative;}
+.gosterim.gorunur .adim i::after{content:'';position:absolute;inset:1px;border-radius:2px;
+  background:var(--accent);opacity:0;animation:tikle 7s infinite;}
+.gosterim.gorunur .adim:nth-child(1) i::after{animation-delay:.2s;}
+.gosterim.gorunur .adim:nth-child(2) i::after{animation-delay:1.1s;}
+.gosterim.gorunur .adim:nth-child(3) i::after{animation-delay:2s;}
+.gosterim.gorunur .adim:nth-child(4) i::after{animation-delay:2.9s;}
+.gosterim.gorunur .adim:nth-child(5) i::after{animation-delay:3.8s;}
+.gosterim.gorunur .adim:nth-child(6) i::after{animation-delay:4.7s;}
+.gosterim.gorunur .adim:nth-child(7) i::after{animation-delay:5.6s;}
+@keyframes tikle{0%{opacity:0;transform:scale(.4);}6%{opacity:1;transform:scale(1);}
+  92%{opacity:1;}100%{opacity:0;}}
+.hafta{display:grid;grid-template-columns:repeat(5,1fr);gap:6px;}
+.gun{border:1px solid var(--line);border-radius:8px;min-height:74px;padding:6px;
+  background:var(--bg);font-size:.66rem;color:var(--text-dim);}
+.kart{margin-top:5px;height:20px;border-radius:5px;background:var(--accent-soft);
+  border-left:3px solid var(--accent);}
+.gosterim.gorunur .tasinan{animation:tasi 5s ease-in-out infinite;}
+@keyframes tasi{0%,12%{transform:translate(0,0);}
+  38%,62%{transform:translate(calc(200% + 12px),0);}
+  88%,100%{transform:translate(0,0);}}
+.bolun{display:flex;gap:8px;flex-wrap:wrap;}
+.fikir{border:1px solid var(--line);border-left:3px solid var(--accent);border-radius:8px;
+  padding:9px 11px;font-size:.85rem;background:var(--bg);}
+.gosterim.gorunur .ikinci{animation:belir 5s ease-in-out infinite;}
+@keyframes belir{0%,30%{opacity:0;transform:translateY(-6px) scale(.96);}
+  45%,85%{opacity:1;transform:none;}100%{opacity:0;transform:translateY(-6px) scale(.96);}}
+@media (prefers-reduced-motion: reduce){
+  .gosterim.gorunur *{animation:none !important;}
+  .gosterim .yazan{width:auto;border-right:0;}
+}
+.sss dt{font-weight:600;margin-top:16px;}
+.sss dd{margin:4px 0 0;color:var(--text-dim);max-width:68ch;}
+footer{border-top:1px solid var(--line);margin-top:56px;padding-top:22px;
+  color:var(--text-dim);font-size:.85rem;}
+.mob-menu{display:none;}
+@media(max-width:900px){
+  .duzen{grid-template-columns:minmax(0,1fr);gap:0;}
+  .yan{display:none;}
+  .mob-menu{display:block;position:sticky;top:52px;z-index:15;background:var(--bg);
+    border-bottom:1px solid var(--line);margin:0 -22px;padding:9px 22px;}
+  .mob-menu ol{display:flex;gap:6px;overflow-x:auto;list-style:none;margin:0;padding:0;
+    scrollbar-width:none;}
+  .mob-menu ol::-webkit-scrollbar{display:none;}
+  .mob-menu a{white-space:nowrap;font-size:.8rem;padding:5px 11px;border-radius:20px;
+    border:1px solid var(--line);color:var(--text-dim);text-decoration:none;}
+  .mob-menu a.acik{border-color:var(--accent);color:var(--accent);background:var(--accent-soft);}
+  h1{font-size:1.6rem;}
+  main{padding-top:20px;}
+}
+</style>
+</head>
+<body>
+
+<div class="ust">
+  <div class="ust-ic">
+    <span class="marka"><a href="index.html">Shootboard</a></span>
+    <span class="ust-sag">
+      <a href="guide.html" hreflang="en">English</a>
+      <a href="app.html">Uygulamayı aç →</a>
+    </span>
+  </div>
+</div>
+
+<div class="duzen">
+  <nav class="yan" aria-label="Kılavuz bölümleri">
+    <p class="yan-bas">Kılavuz</p>
+    <ol id="yanMenu">
+      <li><a href="#nedir">Shootboard nedir, kime göre?</a></li>
+      <li><a href="#ilk">İlk on dakika</a></li>
+      <li><a href="#projeler">Projeler ve yedi adım</a></li>
+      <li><a href="#mekanlar">Mekanlar</a></li>
+      <li><a href="#fikirler">Fikirler</a></li>
+      <li><a href="#scriptler">Scriptler</a></li>
+      <li><a href="#ai">AI: Gemini'nin ücretsiz sürümü</a></li>
+      <li><a href="#takvim">Takvim ve kayıtlar</a></li>
+      <li><a href="#sablonlar">Açıklama şablonları</a></li>
+      <li><a href="#hatirlatma">Hatırlatmalar ve takvim aboneliği</a></li>
+      <li><a href="#iceaktar">Tablodan içe aktarma</a></li>
+      <li><a href="#paylas">Paylaşılabilir bağlantı</a></li>
+      <li><a href="#yedek">Yedek ve veri güvenliği</a></li>
+      <li><a href="#hesap">Hesap, gizlilik, silme</a></li>
+      <li><a href="#sss">Sık sorulanlar</a></li>
+    </ol>
+  </nav>
+
+  <main>
+    <nav class="mob-menu" aria-label="Kılavuz bölümleri (mobil)">
+      <ol id="mobMenu"></ol>
+    </nav>
+
+    <h1>Shootboard kullanım kılavuzu</h1>
+    <p class="girizgah">Bu uygulamayı bir içerik üreticisi kendi ihtiyacından yola çıkarak yazdı.
+      Her modül, gerçekten yaşanmış bir dertten doğdu. Bu kılavuz o dertleri ve çözümlerini
+      sırayla anlatıyor — hangi bölüme ihtiyacın olduğunu buradan anlayabilirsin.</p>
+    <p class="girizgah">Baştan sona okumak zorunda değilsin. <strong>İlk on dakika</strong> bölümü
+      tek başına çalışmaya başlaman için yeterli; gerisi ihtiyaç duydukça okunur.</p>
+
+    <section class="bolum" id="nedir">
+      <p class="etiket">Adım 1</p>
+      <h2>Shootboard nedir, kime göre?</h2>
+      <p>Bir çekim yapılır, ondan <strong>on ayrı paylaşım</strong> çıkar. Reel, Short, carousel,
+        hikâye, metin postu… Her birinin kendi açıklaması, kapak yazısı, saati ve platformu vardır.
+        Çoğu kişi bunları takip etmek için bir tabloya, bir not defterine ve üç ayrı sohbete birden
+        bakar. Shootboard tam olarak bu dağınıklığı toplamak için var.</p>
+      <p>Bir <strong>içerik takvimi</strong> uygulamasıdır, ama sıradan bir takvimden farkı şu:
+        paylaşımın arkasındaki <strong>üretim işini</strong> de tutar. Script yazıldı mı, çekim
+        yapıldı mı, kurgu bitti mi, izin alındı mı — hepsi aynı ekranda.</p>
+      <h3>Kimin işine yarar?</h3>
+      <ul>
+        <li><strong>Tek başına çalışan içerik üreticisi.</strong> Çekimi de kurguyu da paylaşımı da
+          kendisi yapan kişi. Uygulamanın ana kullanıcısı bu.</li>
+        <li><strong>Sahada çekim yapan.</strong> Belgesel, gezi, tarih, yemek — adresi, izni ve
+          "burada dikkat edilecekler"i bir yerde tutması gereken herkes.</li>
+        <li><strong>Küçük ekip.</strong> Planı kurgucuya ya da müşteriye göstermek için salt-okunur
+          bağlantı var.</li>
+      </ul>
+      <div class="kutu">
+        <p class="kutu-bas">Ne DEĞİL?</p>
+        <p>Shootboard <strong>otomatik paylaşım yapmaz</strong>. Instagram'a, YouTube'a bağlanmaz,
+          senin adına bir şey yayınlamaz. Yayınlayan sensin; Shootboard neyi ne zaman
+          yayınlayacağını ve o iş için ne yapılması gerektiğini hatırlar. Bu bilinçli bir tercih:
+          platform API'lerine bağlanan araçlar, platform kuralı değiştirdiğinde çalışmaz hale
+          geliyor.</p>
+      </div>
+    </section>
+
+    <section class="bolum" id="ilk">
+      <p class="etiket">Adım 2</p>
+      <h2>İlk on dakika</h2>
+      <p>Hesap açmadan da çalışır — her şey tarayıcında durur. Ama giriş yaparsan aynı plan
+        bilgisayarında, telefonunda ve tabletinde aynı anda olur, ve verinin bir kopyası bulutta
+        durur. Denemeye başlarken giriş yapmanı öneririm.</p>
+      <ol class="liste">
+        <li><strong>Bir proje aç.</strong> Projeler sayfasında "+ Proje oluştur". Proje, bir
+          çekimin ya da bir işin adı: "Kariye Camii bölümü", "Ekim ürün lansmanı".</li>
+        <li><strong>Nerede çekeceğini seç.</strong> Aynı pencerede mekan seçebilirsin; yeni bir
+          mekanı da oradan ekleyebilirsin.</li>
+        <li><strong>İki fikir yaz.</strong> Fikirler sayfası, aklına geleni attığın yer. Cümle
+          olması gerekmiyor.</li>
+        <li><strong>Takvime bir kayıt koy.</strong> Takvim sayfasında bir güne dokun. Kaydın
+          <em>ne olduğunu</em> (Reel, Short, carousel…) ve <em>nereye gideceğini</em>
+          (YouTube, Instagram…) ayrı ayrı işaretle.</li>
+        <li><strong>Adımları işaretle.</strong> Projeler sayfasında yedi adım var; ilerledikçe
+          tıkla. Ekranı bir bakışta okuyabilmenin tek yolu bu.</li>
+      </ol>
+      <p>Bu kadarı çalışmaya başlaman için yeter. Aşağıdaki bölümler, işin büyüdükçe ihtiyaç
+        duyacağın yerleri anlatıyor.</p>
+    </section>
+
+    <section class="bolum" id="projeler">
+      <p class="etiket">Adım 3</p>
+      <h2>Projeler ve yedi adım</h2>
+      <p>Proje, paylaşımlarının çıktığı iş demek: bir çekim, bir marka işi, bir seri.
+        Her projenin <strong>yedi adımı</strong> var ve bu adımlar bilerek sabit — kendi listeni
+        kurman istenmiyor, çünkü sabit liste bir bakışta okunur, herkesin kendi listesi okunmaz.</p>
+      <div class="gosterim" data-canlandir>
+        <p class="gosterim-ust">Yedi adım, sırayla işaretleniyor</p>
+        <div class="adimlar">
+          <span class="adim"><i></i>Script</span>
+          <span class="adim"><i></i>Çekim</span>
+          <span class="adim"><i></i>Ses</span>
+          <span class="adim"><i></i>Kurgu</span>
+          <span class="adim"><i></i>Onay</span>
+          <span class="adim"><i></i>Paket</span>
+          <span class="adim"><i></i>Yayın</span>
+        </div>
+      </div>
+      <h3>Termin tarihleri</h3>
+      <p>Her adımın kendi tarihi olabilir. Adımın yanındaki <code>+</code> işaretine dokununca
+        yedi tarihi tek pencerede girersin. <strong>Tarihi geçmiş ve hâlâ işaretlenmemiş bir adım
+        kendiliğinden kırmızıya döner</strong>; sayfanın üstündeki şerit de kaç tanesinin
+        geciktiğini söyler. Bu, "neyi unuttum" sorusunun tek cevabı.</p>
+      <h3>Telefonda</h3>
+      <p>Telefonda proje tablosu yerine kart listesi görürsün: her proje bir kart, yedi adım
+        altında adıyla birlikte ızgarada. Çipe dokunmak adımı işaretler.</p>
+      <div class="kutu ipucu">
+        <p class="kutu-bas">İpucu</p>
+        <p>Projeler sayfasının üstündeki süzgeç çipleri ("Devam eden", "Scripti hazır",
+          "Geciken") bir bakışta ne durumda olduğunu söyler. Kırk projen olduğunda en çok
+          kullanacağın yer burası.</p>
+      </div>
+    </section>
+
+    <section class="bolum" id="mekanlar">
+      <p class="etiket">Adım 4</p>
+      <h2>Mekanlar</h2>
+      <p>Sahada çekim yapıyorsan aynı yere ikinci kez gidersin. Mekanlar sayfası o yeri
+        <strong>bir kez</strong> kaydetmen için var: adres, ilçe, şehir, harita bağlantısı,
+        <strong>izin kimden alınıyor ve ne kadar sürüyor</strong>, bir de "burada dikkat
+        edilecekler" (içeride tripod yasak, elektrik sadece avluda, öğleden önce kalabalık…).</p>
+      <p>Projeyi mekana bağladığında bu bilgiler proje penceresinde görünür — kopyalanmaz,
+        canlı okunur. Mekanın notunu güncellersen o mekandaki bütün projeler güncel bilgiyi görür.</p>
+      <h3>Kartlardaki görsel</h3>
+      <p>Bir yeri adından önce görüntüsünden tanırsın. Mekan kartının üstünde sırasıyla şu görünür:</p>
+      <ul>
+        <li><strong>Fotoğraf</strong> — sen bir bağlantı yapıştırdıysan ya da arama ile bulunduysa.</li>
+        <li><strong>Harita karesi</strong> — fotoğraf yoksa, harita bağlantısındaki koordinattan
+          çizilir. OpenStreetMap kullanılır: anahtar, hesap ya da ücret yok.</li>
+        <li><strong>Baş harfler</strong> — ikisi de yoksa, adından türeyen kendi renginde.</li>
+      </ul>
+      <p>Yani kart hiçbir zaman boş kalmaz. Ev stüdyosu ekleyen de dolu bir sayfa görür.</p>
+      <div class="kutu uyari">
+        <p class="kutu-bas">Harita çıkmıyorsa</p>
+        <p>Google Maps'in <code>maps.app.goo.gl</code> ile başlayan <strong>kısa bağlantıları
+          koordinat taşımaz</strong>. Tarayıcının adres çubuğundaki uzun bağlantıyı yapıştırırsan
+          harita görünür.</p>
+      </div>
+      <h3>Fotoğrafı olmayanlar</h3>
+      <p>Sayfanın üstündeki "Fotoğrafı olmayanlara bak" düğmesi, fotoğrafsız mekanların hepsi için
+        sırayla Vikipedi'de arama yapar. Tarihi yapılarda çoğunlukla bulur; ev stüdyosunda bulmaz —
+        o normal, kart yine haritayla dolu görünür.</p>
+    </section>
+
+    <section class="bolum" id="fikirler">
+      <p class="etiket">Adım 5</p>
+      <h2>Fikirler</h2>
+      <p>Fikir, henüz script olmamış her şey: bir cümle, bir soru, bir sahne. Fikirler sayfası
+        aklına geleni attığın yer — düzenli olması gerekmiyor, çünkü fikirler düzenli gelmiyor.</p>
+      <h3>Fikirleri birleştirmek ve bölmek</h3>
+      <p>Bir fikri başka bir fikrin üstüne sürüklersen <strong>birleşirler</strong>; birleşik
+        kartın içindeki bir parçayı dışarı çıkarabilirsin. Sıra değişir, fikir kaybolmaz.</p>
+      <div class="gosterim" data-canlandir>
+        <p class="gosterim-ust">Bir fikir ikiye bölünüyor</p>
+        <div class="bolun">
+          <span class="fikir">Bizans su yolları</span>
+          <span class="fikir ikinci">Sarnıçların içi nasıl görünüyor?</span>
+        </div>
+      </div>
+      <h3>Birden çok proje</h3>
+      <p>Bir fikir <strong>birden çok projeye bağlanabilir</strong>. "Bizans su yolları" hem
+        sarnıç bölümüne hem su kemeri bölümüne gidiyorsa fikri kopyalaman gerekmiyor: kartın
+        üstündeki <code>+</code> ile ikinci projeyi eklersin, çipin çarpısıyla bağı koparırsın.</p>
+      <p>Sayfanın üstündeki süzgeç de çoklu çalışır: birden fazla projeyi ekleyip
+        <strong>üç projenin fikirlerini bir arada</strong> görebilirsin.</p>
+    </section>
+
+    <section class="bolum" id="scriptler">
+      <p class="etiket">Adım 6</p>
+      <h2>Scriptler</h2>
+      <p>Script, projenin bir alanı değil kendi kaydı. Sebebi pratik: proje satırı her termin
+        değişikliğinde bütün olarak buluta gider; script onun içinde olsaydı telefondaki eski
+        kopya masaüstünde yazılan metni ezebilirdi.</p>
+      <h3>Script penceresi altı adım</h3>
+      <ol class="liste">
+        <li><strong>Hangi fikirler?</strong> Bütün fikirler listelenir, aranabilir, çoklu seçilir.</li>
+        <li><strong>Hangi projeler?</strong> Yine çoklu seçim — bir script birden çok projeye
+          bağlanabilir.</li>
+        <li><strong>Başlık.</strong> Yanında "AI ile yaz" düğmesi; seçtiğin fikirlerden başlık
+          önerir.</li>
+        <li><strong>Drive.</strong> Google Drive'dan metin getirir ya da yazdığın metni Drive'a
+          yazar.</li>
+        <li><strong>AI ne yazsın?</strong> Geniş bir tarif alanı. Ctrl/Cmd+Enter ile çalıştırır.</li>
+        <li><strong>Scriptin kendisi.</strong> Kalın, başlık ve liste biçimlendirmesi var;
+          önizleme düğmesi işaretlerin nasıl göründüğünü gösterir.</li>
+      </ol>
+      <p>Metin kutusuna bir şey yazdığın anda projenin "Script" adımı kendiliğinden işaretlenir.</p>
+    </section>
+
+    <section class="bolum" id="ai">
+      <p class="etiket">Adım 7</p>
+      <h2>AI: Gemini'nin ücretsiz sürümü</h2>
+      <p>Shootboard'daki yapay zekâ <strong>senin kendi Google Gemini anahtarınla</strong> çalışır.
+        Uygulamanın arkasında bir AI aboneliği yok; istek doğrudan senin tarayıcından Google'a
+        gider. Bunun üç sonucu var ve üçü de senin lehine:</p>
+      <ul>
+        <li><strong>Ücret bize değil sana bağlı.</strong> Google'ın ücretsiz katmanında kalırsan
+          hiçbir şey ödemezsin.</li>
+        <li><strong>Metnin bizden geçmiyor.</strong> Scriptin Shootboard'ın sunucusuna uğramıyor.</li>
+        <li><strong>Sınır senin sınırın.</strong> Ne kadar kullanacağına sen karar veriyorsun.</li>
+      </ul>
+      <h3>Anahtarı nasıl alırsın?</h3>
+      <ol class="liste">
+        <li><a href="https://aistudio.google.com/apikey" target="_blank" rel="noopener">Google AI
+          Studio</a> adresine Google hesabınla gir.</li>
+        <li>"Create API key" ile bir anahtar üret. <code>AIza…</code> ya da <code>AQ.…</code> ile
+          başlayan bir metin verir.</li>
+        <li>Shootboard'da sol menüden <strong>AI (Gemini)</strong> penceresini aç, anahtarı
+          yapıştır, "Bağlantıyı dene" ile sına, kaydet.</li>
+      </ol>
+      <div class="kutu">
+        <p class="kutu-bas">Ücretsiz katman ne kadar yeter?</p>
+        <p>Google, Gemini'nin ücretsiz katmanında <strong>dakikada ve günde belli sayıda istek</strong>
+          veriyor; bu sayılar zaman zaman değişiyor, güncelini
+          <a href="https://ai.google.dev/pricing" target="_blank" rel="noopener">Google'ın fiyat
+          sayfasından</a> görebilirsin. Günde birkaç script ve birkaç başlık yazan bir kullanıcı
+          bu sınırların çok altında kalır. Sınıra takılırsan uygulama bunu açıkça söyler —
+          bir dakika bekleyip tekrar denemek yeter.</p>
+      </div>
+      <h3>Anahtar nerede duruyor?</h3>
+      <p>Varsayılan olarak <strong>yalnızca girdiğin cihazda</strong>, tarayıcının deposunda.
+        Telefonda yeniden sorulmasını istemiyorsan AI penceresindeki
+        <strong>"Anahtarı hesabımda tut"</strong> kutusunu işaretle: anahtar kendi hesap satırına
+        yazılır (yalnızca sen okuyabilirsin) ve öteki cihazların girişte onu indirir. Bu kutu
+        <strong>varsayılan olarak kapalıdır</strong> — anahtar bir para musluğu, senin istemediğin
+        hiçbir yere kopyalanmaz. "Anahtarı sil" dediğinde hesaptaki kopya da silinir.</p>
+      <div class="gosterim" data-canlandir>
+        <p class="gosterim-ust">AI ile başlık yazma</p>
+        <p class="sahte-etiket">Başlık</p>
+        <div class="sahte-alan"><span class="yazan">Bizans'ın yeraltı su yolları: sarnıçlar</span></div>
+        <p style="margin:12px 0 0;"><span class="sahte-dugme">✨ AI ile yaz</span></p>
+      </div>
+      <p>AI çalışırken düğme kilitlenir ve <strong>geçen saniyeyi sayar</strong> — "çalışıyor mu,
+        dondu mu" sorusunu ortadan kaldırmak için. Dolu bir metnin üstüne sormadan yazmaz.
+        Yazdıktan sonra "önceki hâle dön" düğmesi eski metnini geri getirir.</p>
+      <div class="kutu uyari">
+        <p class="kutu-bas">AI ne yazdığını bilmez</p>
+        <p>Gemini senin projelerini, mekanını ve fikirlerini yalnızca o istekte gönderdiğimiz
+          kadarıyla bilir. Tarih, isim ve rakam konusunda <strong>doğruluğunu sen kontrol
+          etmelisin</strong>. Kılavuzun tamamında geçerli olan kural: AI taslak yazar, yayına
+          sen karar verirsin.</p>
+      </div>
+    </section>
+
+    <section class="bolum" id="takvim">
+      <p class="etiket">Adım 8</p>
+      <h2>Takvim ve kayıtlar</h2>
+      <p>Kayıt, tek bir paylaşım demek. Her kayıt iki bağımsız etiket taşır:
+        <strong>ne olduğu</strong> (Reel, Short, video, story, carousel, metin postu, anket) ve
+        <strong>nereye gideceği</strong> (YouTube, Instagram, TikTok, Facebook, Threads, X,
+        Pinterest, LinkedIn). Bunlar bilerek ayrı: aynı çekim Instagram'da Reel, YouTube'da Short
+        olarak çıkar.</p>
+      <p>Aynı planın <strong>ay, hafta, gün ve tablo</strong> görünümü var. Bir kaydı basılı tutup
+        başka güne sürükleyebilirsin — fareyle de parmakla da.</p>
+      <div class="gosterim" data-canlandir>
+        <p class="gosterim-ust">Bir kayıt başka güne sürükleniyor</p>
+        <div class="hafta">
+          <span class="gun">PZT<span class="kart tasinan"></span></span>
+          <span class="gun">SAL</span>
+          <span class="gun">ÇAR</span>
+          <span class="gun">PER<span class="kart"></span></span>
+          <span class="gun">CUM</span>
+        </div>
+      </div>
+      <h3>"Yüklendi / Zamanlandı" işareti</h3>
+      <p>Kaydı yayınladıktan sonra bu kutuyu sen işaretlersin. Shootboard platformları dinlemez;
+        bunu bilerek yazıyoruz, çünkü yanlış beklentinin patladığı yer tam olarak burasıdır.</p>
+      <h3>Saat dilimi</h3>
+      <p>Her kayıt kendi saat dilimini taşır. Başka bir ülke için planladığın bir paylaşımın
+        saatinin hangi saate göre olduğu belli olur; takvimde de işaretlenir.</p>
+    </section>
+
+    <section class="bolum" id="sablonlar">
+      <p class="etiket">Adım 9</p>
+      <h2>Açıklama şablonları</h2>
+      <p>Her paylaşımın altına yazdığın aynı iki satır — abonelik çağrısı, bağlantılar, imza —
+        her seferinde yeniden yazılmasın diye. Model tek cümleyle: <strong>bir genel metin</strong>,
+        istersen <strong>platform bazında istisnalar</strong>.</p>
+      <ul>
+        <li>Genel metin bütün açıklamalara gider.</li>
+        <li>Bir platform için özel metin yazdıysan, o platforma yalnızca o gider; diğerleri genel
+          metni almaya devam eder.</li>
+      </ul>
+      <p>Hesap adlarını bir kez girersin (<code>@adiniz</code>), şablonda kullanılır.</p>
+    </section>
+
+    <section class="bolum" id="hatirlatma">
+      <p class="etiket">Adım 10</p>
+      <h2>Hatırlatmalar ve takvim aboneliği</h2>
+      <p>Termin tarihi girdiysen Shootboard seni uyarabilir. İki kanal var:</p>
+      <ul>
+        <li><strong>Tarayıcı bildirimi.</strong> Uygulamayı açtığında o günün ve geciken adımların
+          bildirimi düşer. Tarayıcıdan izin istemesi bundan.</li>
+        <li><strong>Takvim aboneliği (.ics).</strong> Terminlerini Google Takvim, Apple Takvim ya da
+          Outlook'a <strong>abonelik olarak</strong> ekler. Bu daha güçlü olan: telefonundaki
+          takvim uygulaması Shootboard açık olmasa da hatırlatır.</li>
+      </ul>
+      <p>Abonelik adresi tahmin edilemeyecek uzunlukta rastgele bir jetondur; "yenile" dersen eski
+        adres ölür, yenisi doğar.</p>
+      <p>Hangi adımlar için uyarılmak istediğini seçebilirsin: bir gün önce, terminin kendi günü,
+        geciktiğinde.</p>
+    </section>
+
+    <section class="bolum" id="iceaktar">
+      <p class="etiket">Adım 11</p>
+      <h2>Tablodan içe aktarma</h2>
+      <p>Bugün bir tabloda çalışıyorsan elini boşaltmadan geçebilmelisin. Alt satırdaki
+        <strong>"İçe Aktar"</strong> düğmesi CSV, Google Sheets, Excel ve Notion'dan
+        <strong>kopyalanan metni</strong> anlar.</p>
+      <ol class="liste">
+        <li>Tablodaki satırları başlık satırıyla birlikte kopyala.</li>
+        <li>İçe aktarma penceresine yapıştır.</li>
+        <li>Shootboard sütunları tahmin eder (tarih, saat, platform, başlık, tür, proje,
+          yayınlandı) — yanlış tahmin ettiyse elle düzeltirsin.</li>
+        <li>Önizlemede ne geleceğini görürsün, sonra onaylarsın.</li>
+      </ol>
+      <p>Tarih biçimlerinin çoğunu tanır: <code>2026-09-10</code>, <code>10.09.2026</code>,
+        <code>22 Eylül 2026</code>, <code>September 10, 2026</code>. Proje adı yazdıysan ve o
+        isimde bir projen varsa kayıt ona bağlanır.</p>
+    </section>
+
+    <section class="bolum" id="paylas">
+      <p class="etiket">Adım 12</p>
+      <h2>Paylaşılabilir bağlantı</h2>
+      <p>Kurgucuya ya da müşteriye "şu hafta neler çıkıyor" diye göstermek için ekran görüntüsü
+        göndermeye gerek yok. <strong>Salt-okunur bir bağlantı</strong> üretebilirsin. Bağlantıyı
+        açan kişi yalnızca okur: hesabı yoktur, hiçbir şeyi değiştiremez.</p>
+      <p>Bağlantıda <strong>yalnızca takvim</strong> vardır: tarih, saat, tür, platform, başlık,
+        yayınlandı mı ve proje adı. <strong>Açıklama metinleri, hashtag'ler ve AI tarifleri
+        bilerek dışarıda kalır</strong> — onlar senin çalışma notların.</p>
+      <p>Bağlantıyı kapattığında dosya silinir ve adres ölür.</p>
+    </section>
+
+    <section class="bolum" id="yedek">
+      <p class="etiket">Adım 13</p>
+      <h2>Yedek ve veri güvenliği</h2>
+      <p>Veri üç yerde birden durur ve bu sıralama bilerek böyle:</p>
+      <ol class="liste">
+        <li><strong>Tarayıcın.</strong> Her değişiklik önce buraya yazılır. İnternet yoksa da
+          çalışır.</li>
+        <li><strong>Bulut (Supabase).</strong> Giriş yaptıysan değişiklikler oraya gönderilir;
+          öteki cihazların oradan okur.</li>
+        <li><strong>Otomatik yedek.</strong> Günde bir kez, uygulamayı açtığında, bütün verinin
+          bir kopyası hesabının kendi klasörüne yazılır. Son yedi gün durur.
+          <strong>Senin bir şey yapman gerekmez.</strong> Hesabım penceresinde günleri görür,
+          birine dokunup geri yükleyebilirsin.</li>
+      </ol>
+      <p>Bir de elle alınan yedek var: alt satırdaki <strong>"Yedek Dışa Aktar"</strong> her şeyi
+        tek bir dosya olarak indirir — takvim, projeler, mekanlar, fikirler, scriptler, şablonlar.
+        <strong>"Yedeği Geri Yükle"</strong> onu geri okur ve <strong>birleştirir</strong>:
+        dosyadaki kayıtlar eklenir, aynı kayıttan varsa dosyadaki geçerli olur,
+        <strong>dosyada olmayan hiçbir şey silinmez</strong>. Eski bir yedeği yanlışlıkla açarsan
+        bugünkü işini kaybetmezsin.</p>
+      <div class="kutu ipucu">
+        <p class="kutu-bas">Ne sıklıkta elle yedek almalı?</p>
+        <p>Otomatik yedek günlük çalışıyor ve çoğu durumu karşılıyor. Elle yedeği ayda bir almak
+          yeterli: o dosya <strong>projeden bağımsız</strong> bir kopya, yani bulut tarafında
+          büyük bir şey ters gitse bile elinde kalır.</p>
+      </div>
+    </section>
+
+    <section class="bolum" id="hesap">
+      <p class="etiket">Adım 14</p>
+      <h2>Hesap, gizlilik, silme</h2>
+      <p>Hesap açmanın tek amacı verinin cihazlar arasında taşınması. İki yol var: Google ile tek
+        tık, ya da e-posta + şifre. Şifreni unutursan giriş bağlantısı istersin — kimse kilitli
+        kalmaz.</p>
+      <p>Sol menüdeki <strong>Hesabım</strong> penceresinde şunlar var: güvenli çıkış, şifre
+        değiştirme, otomatik yedeklerin listesi, yedeği indirme ve <strong>hesabı silme</strong>.</p>
+      <p>Hesap silme geri dönüşü olmayan bir işlem, o yüzden kendi e-posta adresini yazana kadar
+        düğme kapalıdır. Sildiğinde takvimin, projelerin, fikirlerin, scriptlerin, mekanların,
+        ayarların ve <strong>otomatik yedeklerin</strong> sunucudan silinir.</p>
+      <p>Ayrıntılar için <a href="privacy.html">gizlilik</a> ve
+        <a href="sartlar.html">kullanım şartları</a> sayfalarına bak.</p>
+    </section>
+
+    <section class="bolum sss" id="sss">
+      <p class="etiket">Adım 15</p>
+      <h2>Sık sorulanlar</h2>
+      <dl>
+        <dt>Shootboard benim adıma paylaşım yapar mı?</dt>
+        <dd>Hayır. Platformlara bağlanmaz, senin adına bir şey yayınlamaz. Neyi ne zaman
+          yayınlayacağını hatırlar; yayınlayan sensin.</dd>
+
+        <dt>Ücretsiz mi?</dt>
+        <dd>Deneme sürecinde ücret alınmıyor. Yapay zekâ için kendi Google Gemini anahtarını
+          kullanırsın; Google'ın ücretsiz katmanında kalırsan orada da bir şey ödemezsin.</dd>
+
+        <dt>Yapay zekâ için ayrıca para ödeyecek miyim?</dt>
+        <dd>Google'ın ücretsiz katmanı günde birkaç script ve başlık için fazlasıyla yeter.
+          Sınırı aşarsan Google'ın fiyatlandırması geçerli olur; Shootboard araya bir ücret
+          koymaz.</dd>
+
+        <dt>Yazdığım scriptler nerede duruyor?</dt>
+        <dd>Tarayıcında ve giriş yaptıysan kendi hesap satırında. AI kullanırken metin doğrudan
+          senin tarayıcından Google'a gider; Shootboard'ın sunucusuna uğramaz.</dd>
+
+        <dt>İnternet yokken çalışır mı?</dt>
+        <dd>Evet. Her değişiklik önce tarayıcına yazılır; bağlantı gelince buluta gönderilir.</dd>
+
+        <dt>Telefonda kullanabilir miyim?</dt>
+        <dd>Evet, telefon için ayrı bir düzeni var: sekmeler altta sabit, proje tablosu kart
+          listesine dönüşüyor, pencereler alttan açılıyor. Ana ekrana ekleyip uygulama gibi
+          kullanabilirsin.</dd>
+
+        <dt>Verimi başka bir yere taşıyabilir miyim?</dt>
+        <dd>Evet. "Yedek Dışa Aktar" her şeyi tek bir JSON dosyası olarak indirir. Kilitlenme
+          diye bir şey yok.</dd>
+
+        <dt>Ekip olarak kullanabilir miyiz?</dt>
+        <dd>Şimdilik tam ekip özellikleri yok. Planı göstermek için salt-okunur bağlantı var;
+          roller ve ortak düzenleme sonraki adım.</dd>
+      </dl>
+    </section>
+
+    <footer>
+      <p>Bir sorunun mu var, bir şey mi eksik? Uygulamadaki <strong>Geri Bildirim</strong>
+        düğmesi doğrudan bunu yazan kişiye gidiyor.</p>
+      <p><a href="app.html">Uygulamayı aç</a> · <a href="index.html">Ana sayfa</a> ·
+        <a href="guide.html" hreflang="en">English guide</a> ·
+        <a href="privacy.html">Gizlilik</a> · <a href="sartlar.html">Kullanım şartları</a></p>
+    </footer>
+  </main>
+</div>
+
+<script>
+// Sol menu ile bolumler: hangisini okuyorsan o isaretli. IntersectionObserver
+// kaydirma olayini her pikselde dinlemekten ucuz.
+(function(){
+  var menu = document.getElementById('yanMenu');
+  var mob  = document.getElementById('mobMenu');
+  // Mobil serit ayni baglantilardan uretiliyor: iki liste elle
+  // guncellenirse bir gun birbirini tutmaz.
+  if(menu && mob){
+    mob.innerHTML = Array.prototype.map.call(menu.querySelectorAll('a'), function(a){
+      return '<li><a href="' + a.getAttribute('href') + '">' + a.textContent + '</a></li>';
+    }).join('');
+  }
+  var baglar = Array.prototype.slice.call(document.querySelectorAll('#yanMenu a, #mobMenu a'));
+  function isaretle(kimlik){
+    baglar.forEach(function(a){
+      var acik = a.getAttribute('href') === '#' + kimlik;
+      a.classList.toggle('acik', acik);
+      if(acik && a.closest('.mob-menu')){
+        a.scrollIntoView({ block:'nearest', inline:'center', behavior:'smooth' });
+      }
+    });
+  }
+  var bolumler = document.querySelectorAll('.bolum');
+  if('IntersectionObserver' in window){
+    var gozcu = new IntersectionObserver(function(girisler){
+      girisler.forEach(function(g){ if(g.isIntersecting) isaretle(g.target.id); });
+    }, { rootMargin: '-70px 0px -65% 0px', threshold: 0 });
+    bolumler.forEach(function(b){ gozcu.observe(b); });
+
+    // Canlandirmalar YALNIZCA ekranda gorununce basliyor: sayfa acilir
+    // acilmaz hepsi birden oynarsa hem dikkat dagitiyor hem pil yiyor.
+    var oynat = new IntersectionObserver(function(girisler){
+      girisler.forEach(function(g){ g.target.classList.toggle('gorunur', g.isIntersecting); });
+    }, { threshold: .25 });
+    document.querySelectorAll('[data-canlandir]').forEach(function(e){ oynat.observe(e); });
+  }else{
+    document.querySelectorAll('[data-canlandir]').forEach(function(e){ e.classList.add('gorunur'); });
+  }
+})();
+</script>
+
+<script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@graph": [
+    {
+      "@type": "TechArticle",
+      "headline": "Shootboard Kullanım Kılavuzu",
+      "description": "İçerik takvimi kurma, çekim planlama, proje adımları, mekan kaydı, fikir ve script yönetimi, Gemini ile ücretsiz AI, hatırlatmalar ve yedekleme.",
+      "inLanguage": "tr",
+      "url": "https://shootboard.app/kilavuz.html",
+      "about": ["içerik takvimi", "çekim planlama", "sosyal medya içerik planı"]
+    },
+    {
+      "@type": "FAQPage",
+      "inLanguage": "tr",
+      "mainEntity": [
+        {"@type":"Question","name":"Shootboard benim adıma paylaşım yapar mı?","acceptedAnswer":{"@type":"Answer","text":"Hayır. Platformlara bağlanmaz, senin adına bir şey yayınlamaz. Neyi ne zaman yayınlayacağını hatırlar; yayınlayan sensin."}},
+        {"@type":"Question","name":"Yapay zekâ için ayrıca para ödeyecek miyim?","acceptedAnswer":{"@type":"Answer","text":"Kendi Google Gemini anahtarını kullanırsın. Google'ın ücretsiz katmanı günde birkaç script ve başlık için fazlasıyla yeter; Shootboard araya bir ücret koymaz."}},
+        {"@type":"Question","name":"İnternet yokken çalışır mı?","acceptedAnswer":{"@type":"Answer","text":"Evet. Her değişiklik önce tarayıcına yazılır; bağlantı gelince buluta gönderilir."}},
+        {"@type":"Question","name":"Verimi başka bir yere taşıyabilir miyim?","acceptedAnswer":{"@type":"Answer","text":"Evet. Yedek Dışa Aktar her şeyi tek bir JSON dosyası olarak indirir."}}
+      ]
+    }
+  ]
+}
+</script>
+</body>
+</html>

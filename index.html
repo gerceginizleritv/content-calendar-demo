@@ -1591,6 +1591,9 @@ a{color:inherit;}
     <a href="#nedir" data-i18n="nav_what">What it is</a>
     <a href="#ozellikler" data-i18n="nav_features">Features</a>
     <a href="#giris" data-i18n="btn_open">Sign in / Sign up</a>
+    <!-- Kilavuz dipte: arama motoru buradan da buluyor, kararsiz ziyaretci
+         de "nasil calisiyor" sorusuna uzun cevabi burada. -->
+    <a id="dipKilavuz" href="guide.html" data-i18n="footer_guide">User guide</a>
     <a class="dip-sag" href="sartlar.html" data-i18n="footer_terms">Terms</a>
     <a href="privacy.html" data-i18n="footer_privacy">Privacy</a>
   </div>
@@ -1809,6 +1812,7 @@ var METIN = {
     close_cta2:"Giriş yap",
 
     footer_tag:"İçerik yayın takvimi",
+    footer_guide:"Kullanım kılavuzu",
     footer_terms:"Kullanım Şartları",
     footer_privacy:"Gizlilik",
     theme_dark:"KOYU", theme_light:"AÇIK"
@@ -1843,6 +1847,10 @@ function dilUygula(yeni){
   dil = (yeni === 'tr') ? 'tr' : 'en';
   document.documentElement.setAttribute('lang', dil);
   try{ localStorage.setItem(DIL_ANAHTARI, dil); }catch(e){}
+  // Kilavuzun iki ayri sayfasi var (arama motorlari icin ayri URL):
+  // baglanti okunan dile gidiyor.
+  var kil = document.getElementById('dipKilavuz');
+  if(kil) kil.setAttribute('href', dil === 'tr' ? 'kilavuz.html' : 'guide.html');
 
   var s = METIN[dil];
   ORIJINAL.forEach(function(k){

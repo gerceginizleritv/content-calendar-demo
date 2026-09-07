@@ -2214,6 +2214,10 @@ textarea.sc-ai-brief{min-height:64px;resize:vertical;line-height:1.5;}
         <button class="rail-link" id="tourBtn" data-i18n="btn_tour">? How this works</button>
         <button class="rail-link" id="aiSettingsBtn" data-i18n="btn_ai_settings">✨ AI (Gemini)</button>
         <button class="rail-link" id="remindersBtn" data-i18n="rm_btn">🔔 Reminders</button>
+        <!-- Tur "nasil calisir"i gosteriyor; kilavuz NEDEN oyle
+             calistigini ve her modulun ne ise yaradigini anlatiyor. -->
+        <a class="rail-link" id="kilavuzLink" href="guide.html" target="_blank" rel="noopener"
+           data-i18n="btn_guide">📖 User guide</a>
         <button class="rail-link" id="feedbackBtn" data-i18n="btn_feedback">💬 Feedback</button>
         <!-- Uzun form AYRI: kisa form daha urunu denememis ziyaretciye
              soruluyor, bu ise DENEYEN kisiye. Ikisini birlestirmek
@@ -3597,6 +3601,7 @@ const LANG = {
     yedek_oto_hata: "That backup could not be read.",
     btn_reset: "Reset Demo",
     btn_tour: "? How this works",
+    btn_guide: "📖 User guide",
     btn_feedback: "💬 Feedback",
     cal_more: (n)=> `+${n} more`,
     cal_less: "Show less",
@@ -4318,6 +4323,7 @@ const LANG = {
     yedek_oto_hata: "Bu yedek okunamadı.",
     btn_reset: "Demoyu Sıfırla",
     btn_tour: "? Bu nasıl çalışır",
+    btn_guide: "📖 Kullanım kılavuzu",
     btn_feedback: "💬 Geri Bildirim",
     cal_more: (n)=> `+${n} daha`,
     cal_less: "Daha az",
@@ -5075,6 +5081,10 @@ function setLanguage(lang, buluttanGeldi){
   // acikken metin o varyanta donsun diye saglayici durumunu tekrar uyguluyoruz.
   refreshProviders();
   applyThemeLabel();
+  // Kilavuzun iki ayri sayfasi var (SEO icin): baglanti arayuz diline
+  // gore olani gosteriyor.
+  const kilavuz = document.getElementById('kilavuzLink');
+  if(kilavuz) kilavuz.href = (lang === 'tr') ? 'kilavuz.html' : 'guide.html';
   refreshAuthUi();
   renderFbUses();
   populateSelects();
