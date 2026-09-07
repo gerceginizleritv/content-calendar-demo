@@ -153,8 +153,13 @@ body{
   .rail-main{width:100%;min-width:0;}
   .rail{width:100%;flex-direction:row;flex-wrap:wrap;align-items:center;
     gap:10px;padding:10px 12px;}
-  .rail-brand{padding:0;}
-  .rail-me{flex-direction:row;align-items:center;gap:8px;padding:0;
+  /* Serit yataya donunce markanin alti bosluk birakmasi anlamsiz:
+     dikey duzende bir sonraki blogu ayiran o bosluk, yatayda yalnizca
+     seridi yukseltiyordu. */
+  .rail-brand{padding:0;flex:1 1 auto;min-width:0;}
+  .rail-brand .lockup{margin-bottom:0;min-width:0;}
+  .wordmark{overflow:hidden;text-overflow:ellipsis;white-space:nowrap;}
+  .rail-me{flex:0 0 auto;flex-direction:row;align-items:center;gap:8px;padding:0;
     border-bottom:0;margin-left:auto;}
   .avatar{width:34px;height:34px;font-size:13px;}
   /* Girisilmemisken bos daire dar ekranda yalnizca gurultu. */
@@ -178,6 +183,12 @@ body{
 @media(max-width:520px){
   .rail-name{display:none;}
   .rail-link{font-size:12px;padding:6px 8px;}
+}
+/* En dar telefonlar: marka bir tik daha kucuk, ama hala okunuyor. */
+@media(max-width:380px){
+  .wordmark{font-size:16.5px;}
+  .lockup .mark{width:20px;height:20px;}
+  .btn.rail-auth{padding:6px 8px;}
 }
 
 /* --- Sayfa alti ------------------------------------------------------- */
@@ -1913,14 +1924,32 @@ textarea.sc-ai-brief{min-height:64px;resize:vertical;line-height:1.5;}
    dugmesi olan sayfalar; filtre paneli arkasi karartilmis bir alt sayfa.
    Sahada tek elle, basparmakla kullaniliyor — hedefler 44px ve altta. */
 @media(max-width:700px){
-  /* Ust serit sikisik: marka + hesap tek satir, ikincil baglantilar tek
-     satirda yana kayar. */
-  .rail{padding:8px 12px;gap:8px;}
+  /* Ust serit: TEK SATIR — marka solda, hesap sagda, ikincil baglantilar
+     altta yana kayan ince bir serit.
+
+     Onceki halde marka ile hesap ayni satira SIGMIYORDU: hesap alt
+     satira dusuyor ve saga yapisiyordu, ortada kocaman bir bosluk
+     kaliyordu ("dagilmis" gorunen buydu). Serit 179 piksele cikip
+     takvimi asagi itiyordu. Cozum ogeleri kucultmek: marka 18px ve
+     gerekirse kisaliyor (min-width:0 + ellipsis), fotograf 26px,
+     dugme 34px. Boylece 360 piksellik ekranda bile ikisi yan yana
+     duruyor ve serit tek bir baslik cubugu gibi okunuyor. */
+  .rail{padding:7px 10px;gap:6px;}
+  .lockup{gap:7px;}
+  .lockup .mark{width:22px;height:22px;}
+  .wordmark{font-size:18px;}
+  .rail-me{gap:6px;}
+  .avatar{width:26px;height:26px;font-size:11px;}
+  /* Bu dugme bir baslik cubugu ogesi: 44px'lik dokunma hedefi burada
+     seridi gereksiz yukseltiyor. 34px hala rahat basiliyor. */
+  .btn.rail-auth{min-height:34px;padding:6px 10px;font-size:12px;}
   .rail-foot{flex-wrap:nowrap;overflow-x:auto;-webkit-overflow-scrolling:touch;
-    padding-bottom:4px;scrollbar-width:none;}
+    gap:2px;padding-top:7px;padding-bottom:0;scrollbar-width:none;}
   .rail-foot::-webkit-scrollbar{display:none;}
-  .rail-link{white-space:nowrap;flex:none;}
-  .rail-prefs{flex:none;}
+  .rail-link{white-space:nowrap;flex:none;font-size:12px;padding:5px 8px;}
+  .rail-prefs{flex:none;gap:4px;}
+  .rail-prefs .lang-select{min-height:32px;padding:4px 8px;font-size:12px;}
+  .rail-prefs .btn{min-height:32px;padding:4px 9px;font-size:12px;}
 
   /* Sekmeler altta, sabit. Basparmagin dogal menzili. */
   .rail-nav{
