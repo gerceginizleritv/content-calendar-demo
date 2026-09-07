@@ -1954,6 +1954,30 @@ textarea.sc-ai-brief{min-height:64px;resize:vertical;line-height:1.5;}
 .rm-dugmeler{display:flex;gap:8px;flex-wrap:wrap;margin-top:10px;}
 .rm-nasil{margin-top:10px;}
 .rm-nasil ul{margin:8px 0 0;padding-left:18px;color:var(--text-dim);font-size:12.5px;line-height:1.7;}
+
+/* ---------------------------------------------------------------------
+   Dokunmatik ekranda yazi kutulari 16px.
+
+   iOS Safari, 16 pikselden KUCUK yazili bir alana dokunulunca sayfayi
+   kendiliginden yakinlastiriyor — ve geri uzaklastirmiyor. Yasanan sey
+   buydu: telefonda yeni kayit penceresi acilip bir alana dokununca ekran
+   buyuyor, pencere kapandiktan sonra takvim de buyumus kaliyor ve
+   kullanici saga sola kaydirmak zorunda kaliyor.
+
+   Cozum yakinlastirmayi kapatmak DEGIL (maximum-scale=1 gormeyi
+   zorlastirir, erisilebilirligi bozar) — alanlari Safari'nin esigine
+   cikarmak. Kural en sonda duruyor ki daha kucuk boy veren sinif
+   kurallarini gecsin. !important burada bilerek: alanlarin boyu yirmiden
+   fazla ayri kuraldan geliyor (kimlik, sinif, ic ice secici) ve bir tanesi
+   atlanirsa hata geri geliyor — tek tek kovalamak yerine tek kural.
+   Isaret kutulari disarida: metinleri yok, boylari em ile hesaplaniyor.
+   --------------------------------------------------------------------- */
+@media (pointer: coarse){
+  input:not([type="checkbox"]):not([type="radio"]),
+  select,
+  textarea,
+  #imp_metin{font-size:16px !important;}
+}
 </style>
 <script>
 // Kayitli tema tercihini ilk boyamadan once uygula — aksi halde acik temayi
@@ -2283,6 +2307,8 @@ textarea.sc-ai-brief{min-height:64px;resize:vertical;line-height:1.5;}
     <a class="privacy-link" href="privacy.html" data-i18n="btn_privacy">Privacy</a>
     <button class="foot-link" id="importBtn" data-i18n="imp_btn">Import</button>
     <button class="foot-link" id="exportBtn" data-i18n="btn_export">Export Backup</button>
+    <button class="foot-link" id="restoreBtn" data-i18n="btn_restore">Restore Backup</button>
+    <input type="file" id="yedekDosya" accept="application/json,.json" hidden>
     <button class="foot-link" id="resetBtn" data-i18n="btn_reset">Reset Demo</button>
   </footer>
 </div>
@@ -3322,6 +3348,14 @@ const LANG = {
     btn_new: "+ New Entry",
     btn_pending: "⏳ Pending",
     btn_export: "Export Backup",
+    btn_restore: "Restore Backup",
+    yedek_bozuk: "That file is not a Shootboard backup.",
+    yedek_onay_baslik: "Restore this backup?",
+    yedek_onay_govde: "Everything in the file will be added; where a record already exists, the file wins. Nothing else you have now is removed.",
+    yedek_onay_tamam: "Restore",
+    yedek_tarih: (g)=> `Backup taken: ${g}`,
+    yedek_ozet: (s)=> `${s.kayit} entries · ${s.proje} projects · ${s.fikir} ideas · ${s.script} scripts · ${s.mekan} places`,
+    yedek_bitti: (y, d)=> `Restored: ${y} new, ${d} updated.`,
     btn_reset: "Reset Demo",
     btn_tour: "? How this works",
     btn_feedback: "💬 Feedback",
@@ -3996,6 +4030,14 @@ const LANG = {
     btn_new: "+ Yeni Giriş",
     btn_pending: "⏳ Bekleyenler",
     btn_export: "Yedek Dışa Aktar",
+    btn_restore: "Yedeği Geri Yükle",
+    yedek_bozuk: "Bu dosya bir Shootboard yedeği değil.",
+    yedek_onay_baslik: "Yedek geri yüklensin mi?",
+    yedek_onay_govde: "Dosyadaki kayıtlar eklenecek; aynı kayıttan varsa dosyadaki geçerli olacak. Şu an duran başka hiçbir şey silinmiyor.",
+    yedek_onay_tamam: "Geri yükle",
+    yedek_tarih: (g)=> `Yedek tarihi: ${g}`,
+    yedek_ozet: (s)=> `${s.kayit} kayıt · ${s.proje} proje · ${s.fikir} fikir · ${s.script} script · ${s.mekan} mekan`,
+    yedek_bitti: (y, d)=> `Geri yüklendi: ${y} yeni, ${d} güncellenmiş kayıt.`,
     btn_reset: "Demoyu Sıfırla",
     btn_tour: "? Bu nasıl çalışır",
     btn_feedback: "💬 Geri Bildirim",
@@ -10321,14 +10363,108 @@ document.getElementById('viewDayBtn').addEventListener('click', ()=> setView('da
 document.getElementById('viewTableBtn').addEventListener('click', ()=> setView('table'));
 document.getElementById('todayBtn').addEventListener('click', ()=>{ weekOffset = 0; gunKaymasi = 0; ayKaymasi = 0; renderCal(); });
 
+// ---- Yedek -----------------------------------------------------------
+// Yedek eskiden YALNIZCA takvim kayitlarini aliyordu: projeler, fikirler,
+// scriptler, mekanlar ve sablonlar disarida kaliyordu. "Yedegim var"
+// diyen kullanici aslinda isinin kucuk bir parcasini yedekliyordu.
+//
+// AI anahtari BILEREK yok: indirilen dosya e-postayla dolasabiliyor,
+// bulut deposuna dusuyor. Anahtar tarayicida kalir, yedege girmez.
+const YEDEK_SURUM = 1;
+function yerelOku(anahtar){
+  try{ return JSON.parse(localStorage.getItem(anahtar) || 'null'); }catch(e){ return null; }
+}
+function yedekGovdesi(){
+  return {
+    urun: 'shootboard',
+    surum: YEDEK_SURUM,
+    alindi: new Date().toISOString(),
+    dil: currentLang,
+    kayitlar:  events,
+    projeler:  projects,
+    fikirler:  fikirler,
+    scriptler: scriptler,
+    mekanlar:  mekanlar,
+    sablon:    sablon,
+    hatirlatma: yerelOku(HATIRLATMA_ANAHTARI)
+  };
+}
+function yedekSayilari(y){
+  return { kayit: (y.kayitlar||[]).length, proje: (y.projeler||[]).length,
+           fikir: (y.fikirler||[]).length, script: (y.scriptler||[]).length,
+           mekan: (y.mekanlar||[]).length };
+}
 document.getElementById('exportBtn').addEventListener('click', ()=>{
-  const blob = new Blob([JSON.stringify(events,null,2)], {type:'application/json'});
+  const govde = yedekGovdesi();
+  const blob = new Blob([JSON.stringify(govde,null,2)], {type:'application/json'});
   const url = URL.createObjectURL(blob);
   const a = document.createElement('a');
-  a.href = url; a.download = 'content-calendar-backup.json';
+  const g = new Date();
+  const iki = n => String(n).padStart(2,'0');
+  a.href = url;
+  a.download = 'shootboard-yedek-' + g.getFullYear() + '-' + iki(g.getMonth()+1) + '-' + iki(g.getDate()) + '.json';
   trackOnce('funnel/backup-exported');
   document.body.appendChild(a); a.click(); document.body.removeChild(a);
   URL.revokeObjectURL(url);
+});
+
+// Geri yukleme BIRLESTIRIYOR, silmiyor: dosyadaki kayitlar ekleniyor, ayni
+// kimlikli olanlar dosyadakiyle degisiyor, dosyada olmayan hicbir sey
+// silinmiyor. Eski bir yedegi yanlislikla acan kisi bugunku isini
+// kaybetmesin diye boyle.
+function yedekBirlestir(mevcut, gelen, temizle){
+  const harita = new Map();
+  mevcut.forEach(x=> harita.set(x.id, x));
+  let yeni = 0, degisen = 0;
+  (gelen || []).forEach(ham=>{
+    const t = temizle(ham);
+    if(!t || !t.id) return;
+    if(harita.has(t.id)) degisen++; else yeni++;
+    harita.set(t.id, t);
+  });
+  return { liste: [...harita.values()], yeni, degisen };
+}
+async function yedekGeriYukle(dosya){
+  let veri = null;
+  try{ veri = JSON.parse(await dosya.text()); }catch(e){ veri = null; }
+  if(!veri || typeof veri !== 'object' || veri.urun !== 'shootboard'){
+    uyari(t('yedek_bozuk')); return;
+  }
+  const s = yedekSayilari(veri);
+  const ozet = t('yedek_ozet')(s);
+  const tarih = veri.alindi ? new Date(veri.alindi).toLocaleString(currentLang === 'tr' ? 'tr-TR' : 'en-GB') : '';
+  if(!await onayla({ baslik: t('yedek_onay_baslik'), govde: t('yedek_onay_govde'),
+                     vurgu: ozet, not: tarih ? t('yedek_tarih')(tarih) : '',
+                     tamam: t('yedek_onay_tamam') })) return;
+
+  const k = yedekBirlestir(events,    veri.kayitlar,  sanitizeEvent);
+  events = k.liste; markAllDirty(); save();
+  const pr = yedekBirlestir(projects, veri.projeler,  sanitizeProject);
+  projects = pr.liste; projHepsiDirty(); saveProjects();
+  const fk = yedekBirlestir(fikirler, veri.fikirler,  fikirTemizle);
+  fikirler = fk.liste; fikirler.forEach(x=> fikirDirty.add(x.id)); saveFikirler();
+  const sc = yedekBirlestir(scriptler, veri.scriptler, scriptTemizle);
+  scriptler = sc.liste; scriptler.forEach(x=> scriptDirty.add(x.id)); saveScriptler();
+  const mk = yedekBirlestir(mekanlar, veri.mekanlar,  mekanTemizle);
+  mekanlar = mk.liste; mekanlar.forEach(x=> mekanDirty.add(x.id)); saveMekanlar();
+
+  // Sablon tek bir kayit: yalnizca yedektekinin damgasi DAHA YENIYSE
+  // aliniyor, eski bir yedek bugunku sablonu ezmesin.
+  if(veri.sablon && typeof veri.sablon === 'object'
+     && (veri.sablon.updatedAt || 0) > (sablon.updatedAt || 0)){
+    sablon = veri.sablon; sablonDegisti();
+  }
+  renderCal(); renderProjects(); renderFikirler(); renderScriptler(); renderMekanlar(); renderSablon();
+  const eklenen = k.yeni + pr.yeni + fk.yeni + sc.yeni + mk.yeni;
+  const guncel  = k.degisen + pr.degisen + fk.degisen + sc.degisen + mk.degisen;
+  uyari(t('yedek_bitti')(eklenen, guncel));
+}
+document.getElementById('restoreBtn').addEventListener('click', ()=>
+  document.getElementById('yedekDosya').click());
+document.getElementById('yedekDosya').addEventListener('change', async (e)=>{
+  const d = e.target.files && e.target.files[0];
+  e.target.value = '';   // ayni dosya ikinci kez secilebilsin
+  if(d) await yedekGeriYukle(d);
 });
 document.getElementById('resetBtn').addEventListener('click', async ()=>{
   if(!await onayla(t('confirm_reset'))) return;
