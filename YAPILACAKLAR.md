@@ -6,6 +6,34 @@ duruyor, neden ertelendiği de yazıyor ki aynı tartışma baştan yapılmasın
 
 ---
 
+## Nerede kaldık (7 Eylül 2026 — araştırmalar Drive'a taşındı)
+
+**Google Drive klasörü "SHOOTBOARD.APP PAZARLAMA STRATEJISI"** (Drive kökünde,
+kimlik `1dsDtQdkuyEwykehUP-8tp4KDcu7pNqT_`). Kullanıcı bu ada klasör istedi;
+aynı adda klasör ya da belge yoktu, açıldı. İçine depodaki altı belge HTML
+olarak yüklenip Google Doc'a çevrildi (md → HTML dönüştürücü scratchpad'de
+kaldı; başlık, liste ve tablo aktarımı ilk belgede geri okunarak doğrulandı):
+
+| Google Doc | Kaynak | Doc kimliği |
+|---|---|---|
+| Shootboard – Pazar Araştırması ve Satılabilirlik Raporu (2 Eylül 2026) | `docs/pazar-arastirmasi.md` | `1N0TzVA1EUkuo7-v5VPsbqfjf2YEBViEaOFeKBTQnD40` |
+| Shootboard – İsim, Marka, Alan Adı ve E-posta Kararları (Eylül 2026) | `docs/isim-marka-alanadi-kararlari.md` | `1VAJvOARyt_5EsZdJy38MlzXoZBgyXVXp8OGKE9KCJTc` |
+| Demo açılışı ve ürün kanalları planı (7 Eylül 2026) | `docs/demo-ve-kanal-plani.md` | `1DAi_e6JHLgS_CYPMTV7GW54LBV_K0cCsUSaO-s16GC0` |
+| Araştırma notu 1 – Rakipler ve fiyatlar (EN, 2 Eylül 2026) | `docs/arastirma-notlari/01-rakipler.md` | `1-UIzE5HIQ8oPM1JtaW8QbKoEDwZyXYP6kJCg4iGYBZ4` |
+| Araştırma notu 2 – Talep sinyalleri (EN) | `docs/arastirma-notlari/02-talep.md` | `1KxTGJcuZcdlQ3NjpilIaVFpPArROVmYtCnYrSOwPXjE` |
+| Araştırma notu 3 – İş modeli, ödeme ve Türkiye'den satış (EN) | `docs/arastirma-notlari/03-is-modeli.md` | `18F3-iUz-zzT2-qNjXaln43iUblmbeK02N11GOaDJHbc` |
+
+- Raporun iki ekran görüntüsü (`docs/gorseller/takvim-masaustu.png`,
+  `takvim-telefon.png`) Doc'a gömülmedi; dönüştürücü resim satırlarını
+  atlıyor, metindeki yerlerinde boşluk var. İstenirse klasöre ayrıca
+  yüklenir.
+- Kural: bu belgelerden biri depoda değişirse Drive'daki kopyayı aynı Doc
+  kimliğiyle güncelle; yeni belge açıp çoğaltma.
+- Depodaki `.md` dosyaları kaynak olmaya devam ediyor; Drive kopyası
+  paylaşım ve okuma için.
+
+---
+
 ## Nerede kaldık (3 Eylül 2026, gece — e-posta: giriş bağlantıları ve hoşgeldin)
 
 **Alan adı e-postası kuruldu (kullanıcı, Cloudflare Email Routing):** hello@,
