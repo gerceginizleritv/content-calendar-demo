@@ -45,7 +45,10 @@ const bak = (ad, ko, ek)=>{ if(ko){ g++; console.log('  ok  '+ad); } else { k++;
   bak('mekan kaydedildi', m && m.name === 'Kariye Müzesi', JSON.stringify(m||{}).slice(0,60));
   bak('bütün alanlar durdu', m.city === 'İstanbul' && m.district === 'Fatih' && !!m.address && !!m.permission && !!m.cautions);
   bak('pencere kapandı', !(await p.$('#placeOverlay.open')));
-  bak('kartta ad görünüyor', (await p.$eval('#mk_list', e => e.textContent)).includes('Kariye Müzesi'));
+  // Ad ekranda arayüz diline göre çevriliyor ("Müzesi" -> "Museum");
+  // veride Türkçe duruyor. Testin derdi adın kartta görünmesi.
+  bak('kartta ad görünüyor',
+      /Kariye (Müzesi|Museum)/.test(await p.$eval('#mk_list', e => e.textContent)));
   bak('"dikkat" rozeti var', await p.$('.mk-dikkat') !== null);
   bak('harita bağlantısı var', await p.$('a.mk-rozet') !== null);
   bak('tarayıcıya yazıldı', await p.evaluate(() => JSON.parse(localStorage.getItem('demo_places')||'[]').length) === 1);
@@ -66,7 +69,7 @@ const bak = (ad, ko, ek)=>{ if(ko){ g++; console.log('  ok  '+ad); } else { k++;
   await p.waitForSelector('#projectEditOverlay.open');
   bak('proje penceresinde mekan seçimi var', await p.$('#pe_place') !== null);
   const secenek = await p.$$eval('#pe_place option', e => e.map(x=>x.textContent));
-  bak('mekanlar seçenekte', secenek.some(x=>x.includes('Kariye Müzesi')), secenek.join(' | '));
+  bak('mekanlar seçenekte', secenek.some(x=> /Kariye (Müzesi|Museum)/.test(x)), secenek.join(' | '));
   bak('şehir/ilçe seçenekte de yazıyor', secenek.some(x=>x.includes('Fatih')));
   const mid = await p.evaluate(() => mekanlar.find(x=>x.name==='Kariye Müzesi').id);
   await p.selectOption('#pe_place', mid);

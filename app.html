@@ -5234,6 +5234,9 @@ function setLanguage(lang, buluttanGeldi){
   // ("— proje yok —" gibi); dil degisince yeniden cizilmeleri gerekiyor.
   renderFikirler();
   renderScriptler();
+  // Mekan adlarindaki TUR sozcugu dile gore ceviriliyor ("Camii" ->
+  // "Mosque"); dil degisince kartlarin yeniden cizilmesi gerekiyor.
+  renderMekanlar();
   renderLegend();
   renderCal();
 }
@@ -6717,7 +6720,7 @@ function mekanSecenekleri(secili){
   mekanSiraliListe().forEach(m=>{
     const yer = [m.district, m.city].filter(Boolean).join(', ');
     sec.push(`<option value="${escapeHtml(m.id)}"${m.id === secili ? ' selected' : ''}>` +
-             escapeHtml(m.name + (yer ? ' — ' + yer : '')) + '</option>');
+             escapeHtml(mekanAdi(m) + (yer ? ' — ' + yer : '')) + '</option>');
   });
   sec.push(`<option value="__yeni__">${escapeHtml(t('p_place_new'))}</option>`);
   return sec.join('');
@@ -6749,11 +6752,152 @@ function mekanBilgisiYaz(onek){
 let mekanArama = '';
 let acikMekanId = null;
 
+// --- Mekan adlari: TUR sozcugu ceviriliyor, ozel ad degil ------------
+//
+// "Selimiye Camii" Ingilizce arayuzde "Selimiye Mosque" olmali: ozel ad
+// her dilde ayni kaliyor, ama "camii", "manastiri", "muzesi" gibi TUR
+// sozcuklerinin Ingilizcede karsiligi var. Bu bir cevirmen degil, kucuk
+// bir sozluk — ve ceviri yalnizca EKRANDA yapiliyor: kullanicinin
+// yazdigi ad veride oldugu gibi duruyor, duzenleme penceresinde de
+// yazdigi haliyle aciliyor. Boylece dil degistirmek kimsenin verisini
+// bozmuyor.
+//
+// Ikili kaliplar once bakiliyor: "su kemeri" tek basina "kemer" degil,
+// "antik kenti" tek basina "kent" degil.
+const MEKAN_TUR_IKILI = {
+  'su kemeri':'Aqueduct', 'su kemerleri':'Aqueduct',
+  'antik kent':'Ancient City', 'antik kenti':'Ancient City',
+  'ören yeri':'Ruins', 'ören yerleri':'Ruins',
+  'milli park':'National Park', 'milli parkı':'National Park',
+  'millî park':'National Park', 'millî parkı':'National Park',
+  'deniz feneri':'Lighthouse', 'su sarnıcı':'Cistern',
+  'kültür merkezi':'Cultural Centre', 'sanat galerisi':'Art Gallery',
+  'tren istasyonu':'Railway Station', 'otobüs terminali':'Bus Terminal'
+};
+const MEKAN_TUR_SOZLUK = {
+  'cami':'Mosque', 'camii':'Mosque', 'camisi':'Mosque',
+  'mescit':'Masjid', 'mescid':'Masjid', 'mescidi':'Masjid',
+  'kilise':'Church', 'kilisesi':'Church',
+  'katedral':'Cathedral', 'katedrali':'Cathedral',
+  'manastır':'Monastery', 'manastırı':'Monastery',
+  'sinagog':'Synagogue', 'sinagogu':'Synagogue',
+  'havra':'Synagogue', 'havrası':'Synagogue',
+  'müze':'Museum', 'müzesi':'Museum',
+  'saray':'Palace', 'sarayı':'Palace',
+  'köşk':'Pavilion', 'köşkü':'Pavilion', 'kasır':'Pavilion', 'kasrı':'Pavilion',
+  'yalı':'Waterside Mansion', 'yalısı':'Waterside Mansion',
+  'konak':'Mansion', 'konağı':'Mansion',
+  'kale':'Castle', 'kalesi':'Castle',
+  'hisar':'Fortress', 'hisarı':'Fortress',
+  'surları':'Walls', 'suru':'Wall',
+  'kule':'Tower', 'kulesi':'Tower',
+  'sarnıç':'Cistern', 'sarnıcı':'Cistern',
+  'köprü':'Bridge', 'köprüsü':'Bridge',
+  'çeşme':'Fountain', 'çeşmesi':'Fountain',
+  'hamam':'Bathhouse', 'hamamı':'Bathhouse',
+  'türbe':'Tomb', 'türbesi':'Tomb',
+  'mezarlık':'Cemetery', 'mezarlığı':'Cemetery',
+  'medrese':'Madrasa', 'medresesi':'Madrasa',
+  'kütüphane':'Library', 'kütüphanesi':'Library',
+  'han':'Caravanserai', 'hanı':'Caravanserai',
+  'kervansaray':'Caravanserai', 'kervansarayı':'Caravanserai',
+  'çarşı':'Bazaar', 'çarşısı':'Bazaar',
+  'bedesten':'Bedesten', 'bedesteni':'Bedesten',
+  'pazar':'Market', 'pazarı':'Market',
+  'meydan':'Square', 'meydanı':'Square',
+  'park':'Park', 'parkı':'Park',
+  'bahçe':'Garden', 'bahçesi':'Garden',
+  'koru':'Grove', 'korusu':'Grove',
+  'orman':'Forest', 'ormanı':'Forest',
+  'ada':'Island', 'adası':'Island',
+  'tepe':'Hill', 'tepesi':'Hill',
+  'dağ':'Mountain', 'dağı':'Mountain',
+  'yayla':'Plateau', 'yaylası':'Plateau',
+  'vadi':'Valley', 'vadisi':'Valley',
+  'mağara':'Cave', 'mağarası':'Cave',
+  'şelale':'Waterfall', 'şelalesi':'Waterfall',
+  'göl':'Lake', 'gölü':'Lake',
+  'baraj':'Dam', 'barajı':'Dam',
+  'nehir':'River', 'nehri':'River', 'ırmağı':'River',
+  'dere':'Creek', 'deresi':'Creek',
+  'boğaz':'Strait', 'boğazı':'Strait',
+  'körfez':'Bay', 'körfezi':'Bay',
+  'plaj':'Beach', 'plajı':'Beach',
+  'sahil':'Shore', 'sahili':'Shore',
+  'liman':'Harbour', 'limanı':'Harbour',
+  'iskele':'Pier', 'iskelesi':'Pier',
+  'fener':'Lighthouse', 'feneri':'Lighthouse',
+  'kaplıca':'Hot Spring', 'kaplıcası':'Hot Spring', 'ılıca':'Hot Spring',
+  'harabe':'Ruins', 'harabeleri':'Ruins',
+  'höyük':'Mound', 'höyüğü':'Mound',
+  'tiyatro':'Theatre', 'tiyatrosu':'Theatre',
+  'opera':'Opera House', 'operası':'Opera House',
+  'sinema':'Cinema', 'sineması':'Cinema',
+  'galeri':'Gallery', 'galerisi':'Gallery',
+  'stüdyo':'Studio', 'stüdyosu':'Studio',
+  'atölye':'Workshop', 'atölyesi':'Workshop',
+  'stadyum':'Stadium', 'stadyumu':'Stadium',
+  'kışla':'Barracks', 'kışlası':'Barracks',
+  'değirmen':'Mill', 'değirmeni':'Mill',
+  'fabrika':'Factory', 'fabrikası':'Factory',
+  'istasyon':'Station', 'istasyonu':'Station', 'gar':'Station', 'garı':'Station',
+  'hastane':'Hospital', 'hastanesi':'Hospital',
+  'okul':'School', 'okulu':'School',
+  'üniversite':'University', 'üniversitesi':'University',
+  'otel':'Hotel', 'oteli':'Hotel',
+  'lokanta':'Restaurant', 'lokantası':'Restaurant',
+  'çiftlik':'Farm', 'çiftliği':'Farm',
+  'bağ':'Vineyard', 'bağı':'Vineyard',
+  'kapı':'Gate', 'kapısı':'Gate',
+  'anıt':'Monument', 'anıtı':'Monument',
+  'sokak':'Street', 'sokağı':'Street',
+  'cadde':'Avenue', 'caddesi':'Avenue',
+  'bulvar':'Boulevard', 'bulvarı':'Boulevard',
+  'mahalle':'Neighbourhood', 'mahallesi':'Neighbourhood',
+  'köy':'Village', 'köyü':'Village',
+  // Cogul bicimler ayri yaziliyor: Turkce cogul ekini kurala baglamak
+  // ("-ları/-leri at") ozel adlari da kirpardi — "Adalar" bir semt adi.
+  'sokakları':'Streets', 'caddeleri':'Avenues', 'adaları':'Islands',
+  'kuleleri':'Towers', 'camileri':'Mosques', 'kiliseleri':'Churches',
+  'sarnıçları':'Cisterns', 'mağaraları':'Caves', 'köprüleri':'Bridges',
+  'çeşmeleri':'Fountains', 'tepeleri':'Hills', 'gölleri':'Lakes',
+  'sarayları':'Palaces', 'evleri':'Houses', 'konakları':'Mansions'
+};
+function mekanAdiIngilizce(ad){
+  const ham = String(ad || '');
+  if(!ham.trim()) return ham;
+  // Bosluklar da diziye giriyor (yakalayan ayirici): ad geri
+  // birlestirildiginde araliklar oldugu gibi kaliyor.
+  const parca = ham.split(/(\s+)/);
+  const kucuk = x => x.toLocaleLowerCase('tr').replace(/[.,;:!?]+$/, '');
+  const cikti = parca.slice();
+  for(let i = 0; i < parca.length; i++){
+    if(!parca[i] || /^\s+$/.test(parca[i])) continue;
+    if(i + 2 < parca.length && /^\s+$/.test(parca[i+1])){
+      const ikili = MEKAN_TUR_IKILI[kucuk(parca[i]) + ' ' + kucuk(parca[i+2])];
+      if(ikili){ cikti[i] = ikili; cikti[i+1] = ''; cikti[i+2] = ''; i += 2; continue; }
+    }
+    const tek = MEKAN_TUR_SOZLUK[kucuk(parca[i])];
+    if(tek) cikti[i] = tek;
+  }
+  const sonuc = cikti.join('').replace(/\s{2,}/g, ' ').trim();
+  return sonuc || ham;
+}
+// Ekranda gorunen ad. Duzenleme alanlarinda KULLANILMIYOR: orada
+// kullanicinin yazdigi ad duruyor.
+function mekanAdi(m){
+  const ad = (m && m.name) || '';
+  return currentLang === 'en' ? mekanAdiIngilizce(ad) : ad;
+}
+
 function mekanlariSuz(){
   const q = mekanArama.trim().toLocaleLowerCase('tr');
   return mekanSiraliListe().filter(m=>{
     if(!q) return true;
-    return [m.name, m.city, m.district, m.address].join(' ').toLocaleLowerCase('tr').includes(q);
+    // Cevrilmis ad da samanliga giriyor: Ingilizce arayuzde "mosque"
+    // yazan biri Selimiye Camii'ni bulabilsin.
+    return [m.name, mekanAdiIngilizce(m.name), m.city, m.district, m.address]
+      .join(' ').toLocaleLowerCase('tr').includes(q);
   });
 }
 // Kullanicinin yapistirdigi adres. Yalnizca http/https geciyor:
@@ -6847,10 +6991,16 @@ async function mekanFotoAra(m){
   const yer = [m.district, m.city].filter(Boolean)[0] || '';
   if(yer) aramalar.push(m.name + ' ' + yer);
   aramalar.push(m.name);
+  // Ingilizce Wikipedia "Selimiye Camii"yi degil "Selimiye Mosque"u
+  // taniyor: cevrilmis ad da denenecekler arasinda.
+  const ing = mekanAdiIngilizce(m.name);
+  const ingAramalar = ing && ing !== m.name
+    ? (yer ? [ing + ' ' + yer, ing] : [ing]) : [];
   const diller = currentLang === 'tr' ? ['tr', 'en'] : ['en', 'tr'];
   for(let d = 0; d < diller.length; d++){
-    for(let a = 0; a < aramalar.length; a++){
-      const bulunan = await wikiSorgu(diller[d], aramalar[a]);
+    const liste = diller[d] === 'en' ? ingAramalar.concat(aramalar) : aramalar;
+    for(let a = 0; a < liste.length; a++){
+      const bulunan = await wikiSorgu(diller[d], liste[a]);
       if(bulunan) return bulunan;
     }
   }
@@ -6880,7 +7030,7 @@ function mekanGorseli(m){
       <span class="mk-blok" style="left:calc(50% - ${kare.nx}px);top:calc(50% - ${kare.ny}px)">${karolar}</span>
       <i class="mk-nokta"></i><em class="mk-osm">© OpenStreetMap</em></span>`;
   }
-  return `<span class="mk-harf" style="--mk-h:${mekanRengi(m.id)}">${escapeHtml(mekanBasHarf(m.name))}</span>`;
+  return `<span class="mk-harf" style="--mk-h:${mekanRengi(m.id)}">${escapeHtml(mekanBasHarf(mekanAdi(m)))}</span>`;
 }
 function renderMekanlar(){
   const kutu = document.getElementById('mk_list');
@@ -6900,7 +7050,7 @@ function renderMekanlar(){
     return `<div class="mk-kart" data-mk="${escapeHtml(m.id)}">
       <div class="mk-gorsel">${mekanGorseli(m)}</div>
       <div class="mk-govde">
-        <div class="mk-ad">${escapeHtml(m.name)}</div>
+        <div class="mk-ad">${escapeHtml(mekanAdi(m))}</div>
         ${yer ? `<div class="mk-yer">${escapeHtml(yer)}</div>` : ''}
         ${m.address ? `<div class="mk-adres">${escapeHtml(m.address)}</div>` : ''}
         <div class="mk-rozetler">
@@ -7046,7 +7196,7 @@ document.getElementById('mk_delete').addEventListener('click', async ()=>{
   const m = acikMekanId ? mekanById(acikMekanId) : null;
   if(!m) return;
   const kac = mekanProjeleri(m.id).length;
-  if(!await onayla({ baslik: t('mk_del_title'), govde: t('mk_del_body'), vurgu: m.name,
+  if(!await onayla({ baslik: t('mk_del_title'), govde: t('mk_del_body'), vurgu: mekanAdi(m),
                      not: kac ? t('mk_del_linked')(kac) : '', tamam: t('p_delete'), tehlike: true })) return;
   mekanSil(m.id);
   mekanPenceresiniKapat();

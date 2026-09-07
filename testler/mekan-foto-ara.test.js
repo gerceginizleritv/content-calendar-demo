@@ -107,7 +107,9 @@ const FOTO = 'https://upload.wikimedia.org/wikipedia/commons/thumb/a/ab/Tekfur_S
       /bağlantı|harita/i.test(await p.$eval('#mk_fotoNot', e=> e.textContent)));
   bak('kutu bos kaldi', await p.$eval('#mk_image', e=> e.value) === '');
   bak('bulunamayinca onizleme de yok', await p.$eval('#mk_onizleme', e=> e.hidden));
-  bak('sehirli/sehirsiz ve iki dil denendi', istekler.length === 4, String(istekler.length));
+  // TR icin sehirli/sehirsiz iki sorgu, EN icin ayrica CEVRILMIS ad
+  // ("Ev studyosu" -> "Ev Studio") sehirli/sehirsiz: toplam alti.
+  bak('sehirli/sehirsiz, iki dil ve cevrilmis ad denendi', istekler.length === 6, String(istekler.length));
   bak('ikinci dil EN', /en\.wikipedia\.org/.test(istekler[2] || ''), istekler[2]);
   await p.click('#mk_cancel');
 
