@@ -923,9 +923,18 @@ a.mk-rozet:hover{border-color:var(--accent);color:var(--accent);}
   border-radius:20px;padding:1px 7px;white-space:nowrap;}
 .sc-bos{color:var(--text-dim);font-size:12.5px;padding:6px 2px;}
 .sc-iskele{margin-top:8px;}
-.sc-baslik-satir{display:flex;gap:8px;align-items:stretch;}
+.sc-baslik-satir{display:flex;gap:8px;align-items:flex-start;}
 .sc-baslik-satir .sc-title{flex:1;min-width:0;margin:0;}
 .sc-baslik-satir .btn{flex:none;}
+/* Kutu icerigi kadar buyuyor (JS boyunu yaziyor); kendi icinde kaymiyor,
+   uc satiri gecerse kayiyor. */
+textarea.sc-title{resize:none;overflow-y:auto;max-height:96px;line-height:1.45;
+  font-family:inherit;}
+.ai-hesaba{display:flex;gap:8px;align-items:flex-start;margin-top:10px;font-size:13px;
+  color:var(--text);cursor:pointer;}
+.ai-hesaba input{margin-top:2px;flex:none;}
+.sc-baslik-durum{margin-top:6px;min-height:0;}
+.sc-baslik-durum:empty{display:none;}
 /* Tarif kutusu artik cok satirli. */
 textarea.sc-ai-brief{min-height:64px;resize:vertical;line-height:1.5;}
 .sc-idea-sec{display:flex;align-items:flex-start;gap:9px;cursor:pointer;flex:1;min-width:0;}
@@ -2636,11 +2645,19 @@ textarea.sc-ai-brief{min-height:64px;resize:vertical;line-height:1.5;}
 
     <div class="sc-blok">
       <div class="sc-blok-bas"><span data-i18n="sc_title_step">3 · Title</span></div>
+      <!-- Baslik tek satirlik bir kutuydu: telefonda uzun bir baslik
+           kutuya sigmiyor, kaydirmadan okunamiyordu. Cok satirli ve
+           icerigi kadar buyuyor. Enter yine satir atlamiyor — bu bir
+           baslik, metin degil. -->
       <div class="sc-baslik-satir">
-        <input type="text" id="sc_title" class="sc-title" maxlength="160"
-               data-i18n-placeholder="sc_title_ph" placeholder="Title — what is this script for?">
+        <textarea id="sc_title" class="sc-title" maxlength="160" rows="1"
+                  data-i18n-placeholder="sc_title_ph" placeholder="Title — what is this script for?"></textarea>
         <button type="button" class="btn btn-sm ai-btn" id="sc_titleAi" data-i18n="sc_title_ai">✨ AI</button>
       </div>
+      <!-- Durum yazisi basligin YANINDA: onceden Drive blogundaki satira
+           yaziliyordu, telefonda ekranin disinda kaliyor ve dugmeye
+           basan kisi hicbir sey olmadigini saniyordu. -->
+      <div class="ai-status sc-baslik-durum" id="sc_titleDurum"></div>
     </div>
 
     <div class="sc-blok sc-blok-duz">
@@ -2947,6 +2964,14 @@ textarea.sc-ai-brief{min-height:64px;resize:vertical;line-height:1.5;}
       <label data-i18n="ai_key_label">Gemini API key</label>
       <input type="password" id="ai_key" placeholder="AQ.… / AIza…">
       <p class="ai-key-hint" id="ai_key_hint"></p>
+      <!-- Anahtar varsayilan olarak YALNIZCA bu cihazda duruyor. Telefonda
+           yeniden istenmesin diye hesaba da yazilabiliyor; secim
+           kullanicinin, kutu bos basliyor. -->
+      <label class="ai-hesaba" id="ai_hesabaSatir">
+        <input type="checkbox" id="ai_hesaba">
+        <span data-i18n="ai_hesaba">Keep this key in my account (so my other devices have it too)</span>
+      </label>
+      <p class="ai-key-hint" data-i18n="ai_hesaba_not">Stored in your own row, which only you can read. Leave it off and the key never leaves this device.</p>
       <div class="ai-test-satir">
         <button type="button" class="btn btn-sm" id="aiTestBtn" data-i18n="ai_test">Test the connection</button>
         <span class="ai-status" id="ai_test_out"></span>
@@ -3721,6 +3746,9 @@ const LANG = {
     mk_photo_scan_done: (b, t)=> b ? `${t} places checked, ${b} photos found.` : `${t} places checked, nothing found. The cards keep their maps.`,
     mk_photo_wiki: "Wikipedia",
     mk_photo_broken: "That link didn't open an image.",
+    ai_anahtar_gerek: "This needs a Gemini key. Opening the AI window — paste the key there, then try again.",
+    ai_hesaba: "Keep this key in my account (so my other devices have it too)",
+    ai_hesaba_not: "Stored in your own row, which only you can read. Leave it off and the key never leaves this device.",
     mk_empty: "No places yet. Add the ones you shoot at and you will not type the address again.",
     mk_no_match: "No place matches that search.",
     mk_count: (n, t)=> n === t ? `${t} place${t===1?'':'s'}` : `${n} of ${t}`,
@@ -4403,6 +4431,9 @@ const LANG = {
     mk_photo_scan_done: (b, t)=> b ? `${t} mekana bakıldı, ${b} fotoğraf bulundu.` : `${t} mekana bakıldı, bir şey çıkmadı. Kartlarda harita duruyor.`,
     mk_photo_wiki: "Vikipedi",
     mk_photo_broken: "Bu adres bir görsel açmadı.",
+    ai_anahtar_gerek: "Bunun için Gemini anahtarı gerekiyor. AI penceresi açılıyor — anahtarı oraya yapıştır, sonra tekrar dene.",
+    ai_hesaba: "Anahtarı hesabımda tut (diğer cihazlarımda da olsun)",
+    ai_hesaba_not: "Yalnızca senin okuyabildiğin kendi satırında durur. Kapalı bırakırsan anahtar bu cihazdan hiç çıkmaz.",
     mk_empty: "Henüz mekan yok. Çekim yaptığın yerleri ekle, adresi bir daha yazmayasın.",
     mk_no_match: "Bu aramaya uyan mekan yok.",
     mk_count: (n, t)=> n === t ? `${t} mekan` : `${t} mekandan ${n} tanesi`,
@@ -8301,15 +8332,15 @@ document.getElementById('sc_toText').addEventListener('click', async ()=>{
 // Baslik onerisi: secili fikirlerden ve projelerden. Scriptin metnini
 // beklemeden calisiyor -- baslik en basta lazim.
 async function scriptBaslikAiYaz(){
-  const durumEl = document.getElementById('sc_driveStatus');
-  durumEl.dataset.temelSinif = 'sc-drive-durum';
+  const durumEl = document.getElementById('sc_titleDurum');
+  durumEl.dataset.temelSinif = 'ai-status sc-baslik-durum';
   const satir = scriptPencereProjeleri().reduce((a, pid)=> a.concat(aiProjeSatirlari(pid)), []);
   const fikir = seciliFikirMetni();
   if(fikir) satir.push('Ideas the creator picked for this script:\n' + aiKisalt(fikir, AI_FIKIR_SINIR));
   const metin = (document.getElementById('sc_text').value || '').trim();
   if(!satir.length && !metin){
     durumEl.textContent = t('sc_title_ai_bos');
-    durumEl.className = 'sc-drive-durum error';
+    durumEl.className = 'ai-status sc-baslik-durum error';
     return;
   }
   if(metin) satir.push('The beginning of the script:\n' + aiKisalt(metin, 1200));
@@ -8326,14 +8357,26 @@ async function scriptBaslikAiYaz(){
   const temiz = aiTemizle(ham, true);
   if(!temiz){
     durumEl.textContent = t('ai_error_prefix') + 'boş yanıt' + t('ai_error_suffix');
-    durumEl.className = 'sc-drive-durum error';
+    durumEl.className = 'ai-status sc-baslik-durum error';
     return;
   }
   kutu.value = temiz.replace(/^["'«»]+|["'«»]+$/g, '').slice(0, 160);
+  scriptBaslikBoyu();
   durumEl.textContent = t('sc_title_ai_done');
-  durumEl.className = 'sc-drive-durum ok';
+  durumEl.className = 'ai-status sc-baslik-durum ok';
 }
 document.getElementById('sc_titleAi').addEventListener('click', scriptBaslikAiYaz);
+// Baslik kutusu cok satirli ama tek satirlik gibi davraniyor: Enter satir
+// atlamiyor, kutu icerigi kadar buyuyor.
+function scriptBaslikBoyu(){
+  const k = document.getElementById('sc_title');
+  k.style.height = 'auto';
+  k.style.height = Math.min(k.scrollHeight, 96) + 'px';
+}
+document.getElementById('sc_title').addEventListener('input', scriptBaslikBoyu);
+document.getElementById('sc_title').addEventListener('keydown', e=>{
+  if(e.key === 'Enter'){ e.preventDefault(); }
+});
 
 document.getElementById('sc_ai').addEventListener('click', scriptAiYaz);
 // Kutu artik cok satirli: Enter satir atliyor, uretimi Ctrl/Cmd+Enter
@@ -8616,6 +8659,15 @@ function gelenAlinanOku(satir){
     paylasim = { jeton: String(uzakPay.jeton).slice(0, 64), zaman: Number(uzakPay.zaman) || 0 };
     try{ localStorage.setItem(paylasimKey(), JSON.stringify(paylasim)); }catch(e){}
   }
+  // Hesapta anahtar varsa ve BU cihazda yoksa, indiriliyor: kullanici
+  // baska bir bilgisayarda girmis, telefonda yeniden sorulmasin.
+  const uzakAi = satir && satir.prefs && satir.prefs.ai;
+  if(uzakAi && typeof uzakAi.key === 'string' && uzakAi.key && !getAiSettings()){
+    saveAiSettings({ provider:'gemini', key: uzakAi.key });
+    aiHesabaKaydet = true;
+    try{ localStorage.setItem(AI_HESABA_ANAHTARI, '1'); }catch(e){}
+    aiDurumTazele();
+  }
   const liste = satir && satir.prefs && satir.prefs.gelen_alinan;
   gelenAlinan = Array.isArray(liste) ? liste.filter(x=> typeof x === 'string').slice(0, 5000) : [];
   gelenDefterHazir = true;
@@ -8626,6 +8678,11 @@ function tercihPrefsYap(){
   // Bayrak buradan yazilmiyor, yalnizca KORUNUYOR: bu islev satirin
   // tamamini yeniden yaziyor, atlanirsa ilk kaydetmede bayrak silinirdi.
   if(gelenKutusuAcik) prefs.gelen_kutusu = true;
+  // AI anahtari yalnizca kullanici acikca istediyse hesaba yaziliyor.
+  if(aiHesabaKaydet){
+    const ayar = getAiSettings();
+    if(ayar && ayar.key) prefs.ai = { key: ayar.key };
+  }
   // Paylasim jetonu hesaba bagli: ayni baglanti telefonda da gorunsun.
   if(paylasim.jeton) prefs.share = { jeton: paylasim.jeton, zaman: paylasim.zaman || 0 };
   // Hatirlatma ayarlari hesaba bagli, ama TARAYICI anahtari yerel
@@ -11013,7 +11070,22 @@ function getAiSettings(){
     return { provider:'gemini', key:s.key };
   }catch(e){ return null; }
 }
-function saveAiSettings(s){ localStorage.setItem('demo_ai_settings', JSON.stringify(s)); }
+// Anahtari hesaba da yazma secimi. Varsayilan KAPALI: anahtar bir para
+// musluğu, kullanici istemeden hicbir yere kopyalanmiyor.
+const AI_HESABA_ANAHTARI = 'demo_ai_hesaba';
+let aiHesabaKaydet = false;
+try{ aiHesabaKaydet = localStorage.getItem(AI_HESABA_ANAHTARI) === '1'; }catch(e){}
+function aiHesabaYaz(acik){
+  aiHesabaKaydet = !!acik;
+  try{ localStorage.setItem(AI_HESABA_ANAHTARI, acik ? '1' : '0'); }catch(e){}
+  // Kapatildiginda buluttaki kopya da gitsin: bir dahaki tercih
+  // yazimi prefs.ai'yi hic yazmiyor, satir uzerine yazildigi icin siliniyor.
+  tercihPushKuyrukla();
+}
+function saveAiSettings(s){
+  localStorage.setItem('demo_ai_settings', JSON.stringify(s));
+  if(aiHesabaKaydet) tercihPushKuyrukla();
+}
 
 document.getElementById('aiSettingsCancelBtn').addEventListener('click', ()=> document.getElementById('aiSettingsOverlay').classList.remove('open'));
 document.getElementById('aiSettingsOverlay').addEventListener('click', (e)=>{ if(e.target.id==='aiSettingsOverlay') document.getElementById('aiSettingsOverlay').classList.remove('open'); });
@@ -11371,7 +11443,17 @@ function aiAlanPrompt(alan){
 // Tek gecit: anahtar kontrolu, dugme kilidi, hata mesaji hep ayni yerde.
 async function aiCalistir(dugme, durumEl, calisanEtiket, prompt, secenek){
   const ayar = getAiSettings();
-  if(!ayar || !ayar.key){ openAiSettings(); return null; }
+  if(!ayar || !ayar.key){
+    // Once NEDEN oldugunu yaz, sonra pencereyi ac: telefonda ayar
+    // penceresi acilinca kullanici dugmeyle bagini kuramiyor,
+    // "hicbir sey olmadi" saniyordu.
+    if(durumEl){
+      durumEl.textContent = t('ai_anahtar_gerek');
+      durumEl.className = (durumEl.dataset.temelSinif || '') + ' error';
+    }
+    openAiSettings();
+    return null;
+  }
   const eskiEtiket = dugme.textContent;
   dugme.disabled = true; dugme.textContent = calisanEtiket;
   const temel = durumEl ? (durumEl.dataset.temelSinif || durumEl.className.split(' ')[0]) : '';
@@ -11444,9 +11526,16 @@ function openAiSettings(){
   document.getElementById('ai_key_hint').className = 'ai-key-hint';
   document.getElementById('aiForgetBtn').hidden = !(s && s.key);
   document.getElementById('aiSaveAnywayBtn').hidden = true;
+  const hesabaKutu = document.getElementById('ai_hesaba');
+  hesabaKutu.checked = aiHesabaKaydet;
+  // Oturum yokken yazacak bir hesap yok.
+  document.getElementById('ai_hesabaSatir').hidden = !session;
+  document.querySelector('[data-i18n="ai_hesaba_not"]').hidden = !session;
+  document.getElementById('aiSaveAnywayBtn').hidden = true;
   document.getElementById('aiSettingsOverlay').classList.add('open');
 }
 
+document.getElementById('ai_hesaba').addEventListener('change', e=> aiHesabaYaz(e.target.checked));
 document.getElementById('aiSettingsBtn').addEventListener('click', openAiSettings);
 
 // Model listesi: kucuk ve hizli bir istek. Donerse ag da anahtar da
@@ -11570,6 +11659,10 @@ document.getElementById('aiSaveAnywayBtn').addEventListener('click', ()=>{
 document.getElementById('aiForgetBtn').addEventListener('click', async ()=>{
   if(!await onayla(t('ai_forget_confirm'))) return;
   try{ localStorage.removeItem('demo_ai_settings'); }catch(e){}
+  // Hesaptaki kopya da gidiyor: "anahtari sil" dedigi halde telefonun
+  // buluttan geri indirmesi kullaniciyi yaniltirdi.
+  if(aiHesabaKaydet) aiHesabaYaz(false);
+  document.getElementById('ai_hesaba').checked = false;
   track('funnel/ai-key-removed');
   document.getElementById('aiForgetBtn').hidden = true;
   aiDurumTazele();
