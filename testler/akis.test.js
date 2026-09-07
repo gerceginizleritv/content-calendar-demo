@@ -94,7 +94,9 @@ const { chromium } = require('./araclar');
     // ---- 8) ROZET → SÜZÜLMÜŞ SAYFA ----
     document.querySelector('[data-proj-ideas]').click();
     await bekle(200);
-    const fikirSayfasi = { sayfa: !document.getElementById('ideasPage').hidden, filtre: fikirFiltresi };
+    // Filtre artik liste: "tek proje" hali tek elemanli bir liste.
+    const fikirSayfasi = { sayfa: !document.getElementById('ideasPage').hidden,
+                           filtre: fikirFiltreleri.length === 1 ? fikirFiltreleri[0] : fikirFiltreleri.join(',') };
     setPage('projects'); await bekle(120);
     document.querySelector('[data-proj-scripts]').click();
     await bekle(200);
@@ -105,13 +107,19 @@ const { chromium } = require('./araclar');
     fikirEkle('Projesiz ikinci fikir', '');
     renderFikirler();
     await bekle(120);
+    // Filtre artik EKLIYOR (birden cok proje secilebiliyor), degistirmiyor:
+    // her olcumden once temizleniyor.
     const filtreSel = document.getElementById('fk_filter');
+    fikirFiltreleri = []; renderFikirler(); await bekle(60);
     filtreSel.value = '-'; filtreSel.dispatchEvent(new Event('change'));
     await bekle(120);
     const projesizFiltre = document.querySelectorAll('#fk_list .fk-card[data-fk-card]').length;
+    fikirFiltreleri = []; renderFikirler(); await bekle(60);
     filtreSel.value = proje.id; filtreSel.dispatchEvent(new Event('change'));
     await bekle(120);
     const projeFiltre = document.querySelectorAll('#fk_list .fk-card[data-fk-card]').length;
+    // Proje filtresi ACIK birakiliyor: asagidaki "tek fikirden script"
+    // adimi listedeki ILK karta tikliyor, o da bu projenin fikri olmali.
 
     // ---- 10) "BU FİKİRLERDEN SCRIPT YAZ" ----
     document.getElementById('fk_toScript').click();

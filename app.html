@@ -985,6 +985,15 @@ textarea.sc-ai-brief{min-height:64px;resize:vertical;line-height:1.5;}
 /* Kartlar, tek satirlik kutunun anlatamadigini anlatiyor: bir fikrin ne
    kadar yer kapladigini gormek, ne kadar yazilabilecegini de gosteriyor. */
 .fk-tools{display:flex;align-items:center;gap:10px;margin-bottom:14px;flex-wrap:wrap;}
+.fk-secili{display:flex;flex-wrap:wrap;gap:6px;margin:-6px 0 14px;}
+.fk-secili .fk-cip{display:inline-flex;align-items:center;gap:6px;font-size:12px;
+  border:1px solid var(--accent);color:var(--accent);background:var(--accent-soft);
+  border-radius:20px;padding:4px 6px 4px 11px;}
+.fk-secili .fk-cip button{border:0;background:none;color:inherit;font:inherit;
+  cursor:pointer;line-height:1;padding:2px 4px;border-radius:50%;}
+.fk-secili .fk-cip button:hover{background:var(--surface);}
+.fk-secili .fk-temizle{font-size:12px;border:1px solid var(--line);border-radius:20px;
+  padding:4px 11px;background:none;color:var(--text-dim);cursor:pointer;}
 .fk-tools input[type="search"]{flex:2 1 220px;min-width:0;padding:9px 12px;
   border:1px solid var(--line);border-radius:8px;background:var(--surface);
   color:var(--text);font:inherit;font-size:13.5px;}
@@ -1402,8 +1411,13 @@ textarea.sc-ai-brief{min-height:64px;resize:vertical;line-height:1.5;}
 .modal-x:focus-visible{outline:2px solid var(--accent);outline-offset:2px;}
 .field{margin-bottom:15px;}
 .field label{display:block;font-family:'IBM Plex Mono',monospace;font-size:10.5px;text-transform:uppercase;letter-spacing:1.2px;color:var(--accent-dim);margin-bottom:6px;}
+/* min-width:0 ve box-sizing SART: tarih/saat kutulari ve acilir listeler
+   yaziya gore bir ic genislik dayatiyor. Telefonda yazi 16 piksele
+   cikinca (iOS'un kendiliginden yakinlastirmasini onlemek icin) bu ic
+   genislik pencereden tasti ve alanlar ekranin disina cikti. */
 .field input,.field select,.field textarea{
-  width:100%;background:var(--bg);border:1px solid var(--line);color:var(--text);
+  width:100%;min-width:0;max-width:100%;box-sizing:border-box;
+  background:var(--bg);border:1px solid var(--line);color:var(--text);
   padding:9px 10px;font-size:13px;font-family:'IBM Plex Sans',sans-serif;border-radius:5px;
 }
 .field input:focus,.field select:focus,.field textarea:focus{outline:none;border-color:var(--accent-dim);}
@@ -1414,7 +1428,10 @@ textarea.sc-ai-brief{min-height:64px;resize:vertical;line-height:1.5;}
 .copy-btn:hover{border-color:var(--accent-dim);color:var(--accent);}
 .copy-btn.copied{color:var(--accent);border-color:var(--accent);}
 .row2{display:grid;grid-template-columns:1fr 1fr;gap:12px;}
+/* Izgara gozleri varsayilan olarak icerikten dar olamiyor; bu satirda
+   tarih ve saat kutulari var, onlar da ic genislik dayatiyor. */
 .row3{display:grid;grid-template-columns:1fr 1fr 1.3fr;gap:12px;}
+.row3 > *,.row2 > *{min-width:0;}
 @media(max-width:560px){ .row3{grid-template-columns:1fr;} }
 /* Kendi saat diliminden farkli bir kayit takvimde isaretleniyor */
 .cal-tz{
@@ -2179,6 +2196,9 @@ textarea.sc-ai-brief{min-height:64px;resize:vertical;line-height:1.5;}
       <select id="fk_filter" class="fk-filter" aria-label="Project"></select>
       <span class="proj-count" id="fk_count"></span>
     </div>
+    <!-- Secilen projeler cip olarak duruyor: acilir liste tek secim
+         yapiyor, birden fazla proje ancak boyle birikebiliyor. -->
+    <div class="fk-secili" id="fk_secili" hidden></div>
     <div class="fk-grid" id="fk_list"></div>
     <button class="btn btn-wide" id="fk_toScript" data-i18n="fk_to_script" hidden>Write a script from these →</button>
   </div>
@@ -3856,6 +3876,9 @@ const LANG = {
     fk_no_project: "— no project —",
     fk_new_project: "+ New project…",
     fk_new_project_ask: "Name of the new project:",
+    fk_filter_add: "+ Add a project…",
+    fk_filter_remove: (ad)=> `Remove ${ad} from the filter`,
+    fk_filter_clear: "Show all",
     fk_filter_all: "Every project",
     fk_filter_none: "Without a project",
     fk_count_filtered: (n,tum)=> `${n} / ${tum} ideas`,
@@ -4547,6 +4570,9 @@ const LANG = {
     fk_no_project: "— proje yok —",
     fk_new_project: "+ Yeni proje…",
     fk_new_project_ask: "Yeni projenin adı:",
+    fk_filter_add: "+ Proje ekle…",
+    fk_filter_remove: (ad)=> `${ad} filtreden çıksın`,
+    fk_filter_clear: "Hepsini göster",
     fk_filter_all: "Bütün projeler",
     fk_filter_none: "Projesiz olanlar",
     fk_count_filtered: (n,tum)=> `${n} / ${tum} fikir`,
@@ -5736,7 +5762,7 @@ function renderProjects(){
   });
   // Rozetler kendi sayfalarina goturuyor, o projeye suzulmus halde.
   kap.querySelectorAll('[data-proj-ideas]').forEach(el=>{
-    el.addEventListener('click', ()=>{ fikirFiltresi = el.dataset.projIdeas; setPage('ideas'); });
+    el.addEventListener('click', ()=>{ fikirFiltresiYap(el.dataset.projIdeas); setPage('ideas'); });
   });
   kap.querySelectorAll('[data-proj-scripts]').forEach(el=>{
     el.addEventListener('click', ()=>{ scriptFiltresi = el.dataset.projScripts; setPage('scripts'); });
@@ -5827,7 +5853,14 @@ function sahaSayaciniTazele(){
 // Filtreler iki tane ve ayri: biri METINDE arar, oteki projeye gore
 // suzer. Onceden tek acilir liste vardi, uzerinde "Butun fikirler"
 // yaziyordu ama icinde projeler cikiyordu — dogru okunmasi mumkun degildi.
-let fikirFiltresi = '';   // '' = tumu, '-' = projesiz, aksi halde proje kimligi
+// Filtre artik TEK proje degil liste: "su uc projenin fikirlerini bir
+// arada goreyim" istegi vardi. Bos liste = tumu. '-' = projesiz.
+let fikirFiltreleri = [];
+// Eski adin yerine gecen kisayol: baska sayfalar tek proje secip
+// buraya geliyor.
+function fikirFiltresiYap(kimlik){
+  fikirFiltreleri = kimlik ? [kimlik] : [];
+}
 let fikirArama = '';
 let fikirTaslakAcik = false;   // ekleme karti acik mi
 
@@ -5839,13 +5872,40 @@ function projeSecenekleri(secili, bosEtiket){
   secenekler.push(`<option value="__yeni__">${escapeHtml(t('fk_new_project'))}</option>`);
   return secenekler.join('');
 }
-function filtreSecenekleri(secili){
-  return [
-    `<option value=""${secili===''?' selected':''}>${escapeHtml(t('fk_filter_all'))}</option>`,
-    `<option value="-"${secili==='-'?' selected':''}>${escapeHtml(t('fk_filter_none'))}</option>`
-  ].concat(projects.slice().sort((a,b)=> a.name.localeCompare(b.name, 'tr'))
-    .map(p=>`<option value="${escapeHtml(p.id)}"${p.id===secili?' selected':''}>${escapeHtml(p.name)}</option>`)
+// Acilir liste artik "sec" degil "EKLE": secilen proje cip olarak
+// birikiyor, listede bir daha gorunmuyor.
+function filtreSecenekleri(){
+  const secili = fikirFiltreleri;
+  const bas = [`<option value="">${escapeHtml(t('fk_filter_add'))}</option>`];
+  if(secili.indexOf('-') === -1) bas.push(`<option value="-">${escapeHtml(t('fk_filter_none'))}</option>`);
+  return bas.concat(projects.slice().sort((a,b)=> a.name.localeCompare(b.name, 'tr'))
+    .filter(p=> secili.indexOf(p.id) === -1)
+    .map(p=>`<option value="${escapeHtml(p.id)}">${escapeHtml(p.name)}</option>`)
   ).join('');
+}
+function fikirFiltreAdi(kimlik){
+  if(kimlik === '-') return t('fk_filter_none');
+  const p = projectById(kimlik);
+  return p ? p.name : kimlik;
+}
+function fikirFiltreCizgisi(){
+  const kutu = document.getElementById('fk_secili');
+  if(!kutu) return;
+  kutu.hidden = fikirFiltreleri.length === 0;
+  if(!fikirFiltreleri.length){ kutu.innerHTML = ''; return; }
+  kutu.innerHTML = fikirFiltreleri.map(x=>
+    `<span class="fk-cip">${escapeHtml(fikirFiltreAdi(x))}`
+    + `<button type="button" data-filtre-sil="${escapeHtml(x)}"`
+    + ` aria-label="${escapeHtml(t('fk_filter_remove')(fikirFiltreAdi(x)))}">×</button></span>`).join('')
+    + `<button type="button" class="fk-temizle" id="fk_filtreTemizle">${escapeHtml(t('fk_filter_clear'))}</button>`;
+  kutu.querySelectorAll('[data-filtre-sil]').forEach(d=>{
+    d.addEventListener('click', ()=>{
+      fikirFiltreleri = fikirFiltreleri.filter(x=> x !== d.dataset.filtreSil);
+      renderFikirler();
+    });
+  });
+  const temizle = document.getElementById('fk_filtreTemizle');
+  if(temizle) temizle.addEventListener('click', ()=>{ fikirFiltreleri = []; renderFikirler(); });
 }
 
 // Yeni proje secildiginde adi soruluyor ve proje ORADA aciliyor: kullanici
@@ -5865,8 +5925,10 @@ function fikirSiraliListe(){
 function fikirleriSuz(){
   const q = fikirArama.trim().toLocaleLowerCase('tr');
   return fikirSiraliListe().filter(f=>{
-    if(fikirFiltresi === '-' && f.projectId) return false;
-    if(fikirFiltresi && fikirFiltresi !== '-' && f.projectId !== fikirFiltresi) return false;
+    if(fikirFiltreleri.length){
+      const projesiz = fikirFiltreleri.indexOf('-') !== -1 && !f.projectId;
+      if(!projesiz && fikirFiltreleri.indexOf(f.projectId) === -1) return false;
+    }
     if(!q) return true;
     // Arama metinde VE proje adinda: "Kariye" yazan biri o projenin
     // fikirlerini de bulmak istiyordur.
@@ -5930,7 +5992,9 @@ function renderFikirler(){
   const kap = document.getElementById('fk_list');
   if(!kap) return;
   const filtre = document.getElementById('fk_filter');
-  filtre.innerHTML = filtreSecenekleri(fikirFiltresi);
+  filtre.innerHTML = filtreSecenekleri();
+  filtre.value = '';
+  fikirFiltreCizgisi();
   const aramaKutusu = document.getElementById('fk_search');
   if(aramaKutusu.value !== fikirArama) aramaKutusu.value = fikirArama;
 
@@ -8289,7 +8353,10 @@ SAHA_ALANLARI.forEach(([id])=>{
 // olaylari fikirKartOlaylari() bagliyor. Burada yalnizca sayfada SABIT
 // duran ogeler var.
 document.getElementById('fk_filter').addEventListener('change', e=>{
-  fikirFiltresi = e.target.value; renderFikirler();
+  const deger = e.target.value;
+  if(deger && fikirFiltreleri.indexOf(deger) === -1) fikirFiltreleri.push(deger);
+  e.target.value = '';
+  renderFikirler();
 });
 document.getElementById('fk_search').addEventListener('input', e=>{
   fikirArama = e.target.value; renderFikirler();
@@ -8320,7 +8387,7 @@ document.getElementById('pe_ideas').addEventListener('click', ()=>{
   const kimlik = p.id;
   document.getElementById('pe_save').click();
   if(document.getElementById('projectEditOverlay').classList.contains('open')) return; // kaydedilemedi
-  fikirFiltresi = kimlik; setPage('ideas');
+  fikirFiltresiYap(kimlik); setPage('ideas');
 });
 document.getElementById('pe_script').addEventListener('click', ()=>{
   const p = duzenlenenProje;

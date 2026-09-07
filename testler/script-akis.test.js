@@ -100,7 +100,7 @@ const KUR = () => {
   await p.click('#sc_cancel');
 
   console.log('[fikirler sayfasindan gelis]');
-  await p.evaluate(() => { setPage('ideas'); fikirFiltresi = ''; fikirArama = ''; renderFikirler(); });
+  await p.evaluate(() => { setPage('ideas'); fikirFiltreleri = []; fikirArama = ''; renderFikirler(); });
   await p.click('#fk_toScript');
   await p.waitForSelector('#scriptOverlay.open');
   bak('metin yine BOS (eski hali hepsini dokuyordu)', (await p.$eval('#sc_text', e => e.value)) === '');
