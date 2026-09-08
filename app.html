@@ -545,7 +545,7 @@ body.suruklenirken *{cursor:grabbing !important;}
 /* Izgara KENDI icinde yana kayiyor. overscroll-behavior:contain olmadan
    kaymanin sonuna gelince hareket SAYFAYA zincirleniyor ve butun ekran
    yana suruklenmis oluyordu. */
-.cal-grid-wrap{min-width:0;overscroll-behavior:contain;}
+.cal-grid-wrap{min-width:0;overscroll-behavior:none;}
 .hg-endlabel{border-top:1px solid var(--line);}
 .hg-endcell{border-top:1px solid var(--line);border-left:1px solid var(--line-soft);}
 /* Izgara icindeki rozet tek satir: saat sutunu zaten saati soyluyor,
@@ -1349,7 +1349,7 @@ textarea.sc-ai-brief{min-height:64px;resize:vertical;line-height:1.5;}
 /* ---- Tablo gorunumu ----
    Gunler satir, platformlar sutun. Genis olabildigi icin sayfayi degil
    kendi kabini kaydiriyor; govde asla yana kaymiyor. */
-.cal-table-wrap{overflow-x:auto;overscroll-behavior:contain;
+.cal-table-wrap{overflow-x:auto;overscroll-behavior:none;
   border:1px solid var(--line);border-radius:8px;background:var(--surface);}
 .cal-table{border-collapse:collapse;width:max-content;min-width:100%;font-size:12px;}
 .cal-table th,.cal-table td{border-bottom:1px solid var(--line-soft);border-right:1px solid var(--line-soft);
@@ -1458,12 +1458,12 @@ textarea.sc-ai-brief{min-height:64px;resize:vertical;line-height:1.5;}
 /* Pencere acikken kaydirma ARKAYA gecmesin: pencerenin sonuna gelip
    kaydirmaya devam edince altindaki takvim kayiyordu, pencere kapaninca
    da takvim baska bir yerde duruyordu. */
-.overlay{display:none;position:fixed;inset:0;background:rgba(4,5,10,0.8);z-index:50;align-items:center;justify-content:center;padding:20px;overscroll-behavior:contain;}
+.overlay{display:none;position:fixed;inset:0;background:rgba(4,5,10,0.8);z-index:50;align-items:center;justify-content:center;padding:20px;overscroll-behavior:none;}
 .overlay.open{display:flex;}
 .modal{
   background:var(--surface);border:1px solid var(--line);border-top:3px solid var(--accent);
   padding:26px;width:100%;max-width:600px;max-height:88vh;overflow-y:auto;border-radius:8px;
-  overscroll-behavior:contain;
+  overscroll-behavior:none;
 }
 .modal h2{font-family:'Archivo',sans-serif;font-size:16px;font-weight:800;letter-spacing:-0.2px;margin:0 0 18px;}
 /* Modalin kendisi kayiyor (max-height + overflow-y). Baslik serit halinde
@@ -2033,7 +2033,32 @@ textarea.sc-ai-brief{min-height:64px;resize:vertical;line-height:1.5;}
   .rail-nav .tab .tab-ico{width:22px;height:22px;}
   .rail-nav .tab.active{background:var(--accent-soft);border-bottom-color:transparent;}
   /* Alt seridin arkasinda icerik kalmasin. */
-  .wrap{padding-bottom:calc(84px + env(safe-area-inset-bottom));}
+  /* ==== TELEFONDA KAYDIRMA BELGENIN DEGIL .wrap'IN ICINDE ==========
+     iOS Safari BELGENIN yaylanmasini kapatmiyor: overscroll-behavior'u
+     yalnizca IC kaydiricilarda dinliyor, sayfanin kendisinde degil.
+     Bu yuzden telefonda belge hic kaymiyor — kaydirma bir kap icine
+     aliniyor. Orada overscroll-behavior:none calisiyor: parmak sonuna
+     gelince sayfa lastik gibi gerilmiyor, saga sola oynamiyor.
+
+     Yan etki: iOS'ta adres cubugu kaydirinca gizlenmiyor. Bu bir bedel
+     degil kazanc: gorunur alan sabit kaliyor, sayfa kaydirdikca
+     yeniden boyutlanmiyor.
+
+     Govde ic bosluguyla birlikte kaba tasindi; bosluk kabin DISINDA
+     kalsaydi kaydirilan alan ekrandan kucuk olurdu. */
+  html,body{height:100%;overflow:hidden;}
+  body{padding:0;}
+  .wrap{
+    height:100%;overflow-y:auto;overflow-x:hidden;
+    overscroll-behavior:none;-webkit-overflow-scrolling:touch;
+    padding:24px 24px calc(96px + env(safe-area-inset-bottom));
+  }
+  /* Pencere acikken kaydirma duruyor. overflow:hidden kabin konumunu
+     korudugu icin sayfa yerinden oynamiyor — govdeyi position:fixed
+     yapmaya, kayma konumunu saklayip geri vermeye gerek kalmadi. */
+  .wrap.kilitli{overflow:hidden;}
+  /* Sayfa ici yatay kaydiricilar da kendi icinde kalsin. */
+  .filter-bar{overscroll-behavior:none;}
   .toast{bottom:calc(84px + env(safe-area-inset-bottom));}
 
   /* Yeni giris: sag altta yuvarlak sabit dugme, sekme seridinin ustunde.
@@ -2185,15 +2210,8 @@ textarea.sc-ai-brief{min-height:64px;resize:vertical;line-height:1.5;}
   #dlgOverlay .modal-actions{position:static;margin:16px 0 0;padding:0;border-top:0;background:transparent;}
   #dlgOverlay .modal-actions .btn{flex:0 1 auto;}
   body.sheet-open,body.menu-open{overflow:hidden;}
-  /* overflow:hidden telefonda YETMIYOR: iOS Safari govdeyi yine de
-     suruklemeye izin veriyor, pencere acikken ekran oynuyor ve pencere
-     kapaninca takvim baska bir yerde kaliyordu. position:fixed gercekten
-     donduruyor. Kayma konumu JS'te saklanip geri veriliyor; yoksa
-     kapaninca sayfa en basa donerdi. */
-  body.govde-kilit{position:fixed;left:0;right:0;width:100%;
-    overflow:hidden;overscroll-behavior:none;}
   /* Alt sayfa da kendi icinde kaysin, arkaya zincirlenmesin. */
-  .rail-foot{overscroll-behavior:contain;touch-action:pan-y;}
+  .rail-foot{overscroll-behavior:none;touch-action:pan-y;}
 }
 
 /* Filtre paneli basligi ve arka perdesi: masaustunde gorunmez (acilir
@@ -8973,35 +8991,31 @@ function setPage(ad){
 document.getElementById('tabCalendar').addEventListener('click', ()=> setPage('calendar'));
 document.getElementById('tabProjects').addEventListener('click', ()=>{ track('funnel/projects-opened'); setPage('projects'); });
 document.getElementById('tabTemplates').addEventListener('click', ()=>{ track('funnel/templates-opened'); setPage('templates'); });
-// GOVDE KILIDI. Bir pencere ya da alt sayfa acikken sayfanin kendisi
-// yerinde donuyor. CSS'teki overflow:hidden telefonda yetmiyordu: parmak
-// govdeyi yine de suruklüyor, ekran saga sola oynuyor ve pencere
-// kapaninca takvim baska bir yerde duruyordu.
+// KAYDIRMA KILIDI. Bir pencere ya da alt sayfa acikken arkadaki sayfa
+// durmali: eskiden pencerenin sonuna gelip kaydirmaya devam edince
+// altindaki takvim kayiyor, pencere kapaninca takvim baska bir yerde
+// duruyordu.
 //
-// position:fixed gercekten donduruyor ama sayfayi en basa atiyor; o
-// yuzden kayma konumu saklanip geri veriliyor. CSS kurali yalnizca dar
-// ekranda gecerli, masaustunde bu islem gorunur bir sey yapmiyor.
+// Telefonda kaydirilan sey belge degil .wrap (yukaridaki CSS'e bakin);
+// kilit de onun uzerinde. overflow:hidden kabin kayma konumunu
+// koruyor, yani sayfa yerinden oynamiyor — yine de konum saklanip geri
+// veriliyor, tarayici bir gun kirparsa diye.
+//
+// Masaustunde .wrap kaydirilmiyor (kural yalnizca dar ekranda), bu
+// yuzden sinif orada gorunur bir sey yapmiyor.
 let govdeKilitY = 0, govdeKilitli = false;
 function govdeKilidi(acik){
   if(acik === govdeKilitli) return;
   govdeKilitli = acik;
+  const kap = document.querySelector('.wrap');
+  if(!kap) return;
   if(acik){
-    govdeKilitY = window.scrollY || document.documentElement.scrollTop || 0;
-    document.body.style.top = (-govdeKilitY) + 'px';
-    document.body.classList.add('govde-kilit');
+    govdeKilitY = kap.scrollTop;
+    kap.classList.add('kilitli');
   }else{
     const y = govdeKilitY;
-    document.body.classList.remove('govde-kilit');
-    document.body.style.top = '';
-    // Govde donmusken sayfanin kaydirilabilir yuksekligi sifir. Sinifi
-    // kaldirir kaldirmaz scrollTo cagirinca tarayici yeni yuksekligi
-    // henuz hesaplamamis olabiliyor ve istek sifira kirpiliyor. Once
-    // yerlesim zorlaniyor, sonra bir kare sonra bir kez daha deneniyor.
-    void document.body.offsetHeight;
-    window.scrollTo(0, y);
-    requestAnimationFrame(()=>{
-      if(!govdeKilitli && Math.abs(window.scrollY - y) > 2) window.scrollTo(0, y);
-    });
+    kap.classList.remove('kilitli');
+    if(Math.abs(kap.scrollTop - y) > 2) kap.scrollTop = y;
   }
 }
 // Kilidi ACAN uc sey var: pencereler, filtre paneli ve "..." alt sayfasi.
@@ -12882,7 +12896,7 @@ document.addEventListener('keydown', (e)=>{
 
 // Yayina alinan surumun damgasi. Onbellekten eski bir kopya geldiginde bu
 // tarih eski kalir, boylece "guncel mi?" sorusu bakarak cevaplanir.
-const BUILD_STAMP = '2026-09-03 19:05 UTC';
+const BUILD_STAMP = '2026-09-08 05:26 UTC';
 document.getElementById('buildId').textContent = BUILD_STAMP;
 
 // ===== Init =====
