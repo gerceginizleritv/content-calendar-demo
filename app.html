@@ -563,12 +563,31 @@ body.suruklenirken *{cursor:grabbing !important;}
   /* Yedi sutun 390 piksele sigmiyor: sutunlara okunabilir bir alt sinir
      verip izgarayi kendi icinde kaydiriyoruz. Gun gorunumu zaten tek
      sutun oldugu icin tam genislikte kaliyor. */
-  .cal-grid-wrap:has(.hour-grid){overflow-x:auto;-webkit-overflow-scrolling:touch;}
+  .cal-grid-wrap:has(.hour-grid){
+    overflow-x:auto;overscroll-behavior-x:contain;
+    border:1px solid var(--line);border-radius:10px;background:var(--surface);
+  }
+  /* Cerceve ve kose yuvarlamasi SARMALAYICIYA tasindi; izgaranin
+     kendisi kirpmiyor. Sart: izgarada overflow:hidden kalirsa o kendi
+     basina bir kaydirma kabi oluyor ve icindeki "yapiskan" saat sutunu
+     dis kaba gore degil ona gore hesaplaniyor — yani hic yapismiyor. */
+  .cal-grid-wrap:has(.hour-grid) .hour-grid{border:0;border-radius:0;overflow:visible;}
   /* Sutun SABIT genislikte: yalnizca alt sinir verilseydi 1fr, en uzun
      baslikla 270 piksele cikiyordu. Ayrica izgara kutusu icerigi kadar
      genis olmali (width:max-content), yoksa tasma izgaranin ICINDE
      kaliyor ve sarmalayici kaydirmiyor. */
   .hour-grid.hg-cok{--hg-sutun:112px; --hg-sutun-max:112px; width:max-content;}
+  /* SAAT SUTUNU YAPISIK. Yana kaydirinca saat etiketleri ekrandan
+     cikiyordu: kartlari goruyor ama hangi saatte olduklarini
+     goremiyordun. Hafta gorunumunde ekrana ucu bucuk gun sigdigi icin
+     kaydirmak zorunlu, dolayisiyla bu etiketlerin kalmasi da zorunlu. */
+  .hour-grid.hg-cok .hg-hour,
+  .hour-grid.hg-cok .hg-corner{
+    position:sticky;left:0;z-index:2;
+    border-right:1px solid var(--line);
+  }
+  /* Kose hucresi gun basliklarinin da ustunde kalmali. */
+  .hour-grid.hg-cok .hg-corner{z-index:3;}
   .hg-chip{font-size:10.5px;padding:2px 4px;gap:3px;}
   .hg-chip .cal-badge{display:none;}
   .hg-dayhead{flex-direction:column;gap:0;padding:5px 3px;align-items:center;}
@@ -10974,6 +10993,44 @@ function renderSaatIzgarasi(gunSayisi){
   // Kapanis cizgisi: son satir 23:00-00:00 araligi.
   ekle('hg-hour hg-endlabel', '00:00');
   gunler.forEach(()=> ekle('hg-endcell'));
+
+  izgarayiKonumla(gunler, gunSayisi);
+}
+
+// Hafta izgarasinin YATAY konumu.
+//
+// Telefonda yedi gun ekrana sigmiyor, izgara kendi icinde kayiyor. Iki
+// sorun vardi:
+//   1. Izgara hep PAZARTESIDEN basliyordu. Cuma gunu uygulamayi acan
+//      biri kendi gununu gormuyor, once saga kaydirmasi gerekiyordu.
+//   2. Her cizimde izgara bastan kuruluyor. Ayni haftaya bakarken bir
+//      kayit acip kapatinca kaydirdigi yer korunmali.
+//
+// Kural: PENCERE degistiyse (baska hafta, baska gorunum) konum bastan
+// hesaplaniyor — bugun varsa ona, yoksa basa. Pencere ayniysa
+// kullanicinin biraktigi yer korunuyor.
+let izgaraPenceresi = '';
+function izgarayiKonumla(gunler, gunSayisi){
+  const kap = document.getElementById('calGridWrap');
+  if(!kap || gunSayisi < 2) return;
+  const anahtar = gunSayisi + '@' + (gunler[0] ? gunler[0].key : '');
+  const yeniPencere = anahtar !== izgaraPenceresi;
+  izgaraPenceresi = anahtar;
+  const onceki = kap.scrollLeft;
+  // Yerlesim bir sonraki karede hazir: scrollWidth simdi okunursa
+  // izgara henuz olculmemis olabiliyor.
+  requestAnimationFrame(()=>{
+    if(kap.scrollWidth <= kap.clientWidth + 1) return;   // hepsi zaten sigiyor
+    if(!yeniPencere){ kap.scrollLeft = onceki; return; }
+    const bugun = kap.querySelector('.hg-dayhead.today');
+    if(!bugun){ kap.scrollLeft = 0; return; }
+    // Bugun, yapisik saat sutununun hemen saginda dursun: hem bugun
+    // hem sonraki gunler gorunur oluyor.
+    const etiket = kap.querySelector('.hg-corner');
+    const genislik = etiket ? etiket.getBoundingClientRect().width : 0;
+    const b = bugun.getBoundingClientRect(), k = kap.getBoundingClientRect();
+    kap.scrollLeft = Math.max(0, kap.scrollLeft + (b.left - k.left) - genislik);
+  });
 }
 
 // Telefonda takvim basligi icin yer az: iki ok ve "Bugun" dugmesi de
@@ -12969,7 +13026,7 @@ document.addEventListener('keydown', (e)=>{
 
 // Yayina alinan surumun damgasi. Onbellekten eski bir kopya geldiginde bu
 // tarih eski kalir, boylece "guncel mi?" sorusu bakarak cevaplanir.
-const BUILD_STAMP = '2026-09-08 07:05 UTC';
+const BUILD_STAMP = '2026-09-08 10:18 UTC';
 document.getElementById('buildId').textContent = BUILD_STAMP;
 
 // ===== Init =====
