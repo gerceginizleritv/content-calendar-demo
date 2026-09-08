@@ -197,10 +197,12 @@ body{
   .rail-name{display:none;}
   .rail-link{font-size:12px;padding:6px 8px;}
 }
-/* En dar telefonlar: marka bir tik daha kucuk, ama hala okunuyor. */
+/* En dar telefonlar: marka yazisi gidiyor, isaret kaliyor. Kirpilmis
+   bir "Shootboa..." markayi tasimiyor; isaret tasiyor. Boylece hesap
+   dugmesi ve "..." her zaman ayni satirda kaliyor. */
 @media(max-width:380px){
-  .wordmark{font-size:16.5px;}
-  .lockup .mark{width:20px;height:20px;}
+  .wordmark{display:none;}
+  .lockup .mark{width:24px;height:24px;}
   .btn.rail-auth{padding:6px 8px;}
 }
 
@@ -1964,8 +1966,15 @@ textarea.sc-ai-brief{min-height:64px;resize:vertical;line-height:1.5;}
      telefonda ise aralarindaki esneyen bosluk uc ogeyi birbirinden
      kopuk gosteriyordu. Kimlik tek bir grup olarak okunuyor.
      margin-left:auto BASTIRILIYOR — genel dar ekran kuralindan geliyor. */
-  .rail-brand{flex:0 0 auto;}
-  .rail-me{gap:6px;margin-left:8px;}
+  /* flex-wrap:nowrap SART: "..." dugmesi ikinci satira dusuyordu ve
+     seritte kocaman bos bir alan kaliyordu. Serit icindeki oteki
+     ogeler (sekmeler, alt sayfa, perde) telefonda zaten sabit
+     konumlu, yani akista yalnizca bu uc oge var — sarmalarina gerek
+     yok. Sigmazsa marka kisaliyor, satir bolunmuyor. */
+  .rail{flex-wrap:nowrap;}
+  .rail-brand{flex:0 1 auto;min-width:0;}
+  .rail-me{flex:0 0 auto;min-width:0;gap:6px;margin-left:8px;}
+  .rail-more{flex:none;}
   .avatar{width:28px;height:28px;font-size:11px;}
   /* Bu dugme bir baslik cubugu ogesi: 44px'lik dokunma hedefi burada
      seridi gereksiz yukseltiyor. 34px hala rahat basiliyor. */
@@ -2095,10 +2104,25 @@ textarea.sc-ai-brief{min-height:64px;resize:vertical;line-height:1.5;}
     font-family:'IBM Plex Sans',sans-serif;position:relative;top:-2px;}
   #prevBtn::before{content:'\2039';} #nextBtn::before{content:'\203A';}
   #todayBtn{padding:0 12px;min-height:34px;font-size:12px;border-radius:17px;}
+  /* min-width:0 SART. Izgara gozunun kendiligindeki en kucuk genisligi
+     ICERIGE gore hesaplaniyor; baslik tek satir oldugu icin (nowrap) bu
+     "butun metnin genisligi" demek. Gun gorunumunde baslik uzun
+     ("Tuesday, September 8, 2026") ve goz kendi sutunundan tasip
+     yanindaki oklarin ve "Bugun" dugmesinin ustune biniyordu.
+     min-width:0 gozun daralmasina izin veriyor, uc nokta da o zaman
+     devreye giriyor. */
+  /* justify-self:stretch SART. Temel kuralda "center" var: oyle olunca
+     izgara gozu basligi GERMIYOR, basligin kendi genisligine birakip
+     ortaliyor — uzun bir baslik da gozden tasip iki yanindaki oklarin
+     ve "Bugun" dugmesinin ustune biniyordu. Gerilince gozun genisligini
+     aliyor, uc nokta da o zaman devreye giriyor.
+     min-width:0 da gerekli: izgara gozunun kendiliginden en kucuk
+     genisligi icerige gore hesaplaniyor. */
   .cal-range{
     font-family:'Archivo',sans-serif;font-size:19px;font-weight:800;letter-spacing:-.01em;
-    color:var(--text);text-align:left;order:0;width:auto;margin:0;padding-left:4px;
-    overflow:hidden;text-overflow:ellipsis;
+    color:var(--text);font-size:clamp(15px, 4.6vw, 19px);
+    text-align:left;order:0;width:auto;min-width:0;margin:0;padding-left:4px;
+    justify-self:stretch;overflow:hidden;text-overflow:ellipsis;
   }
   .view-toggle{display:flex;background:var(--surface-2);border:0;border-radius:11px;padding:3px;overflow:visible;}
   .view-btn{flex:1 1 0;min-height:38px;border-radius:8px;background:transparent;padding:0 4px;font-size:13px;}
@@ -2265,6 +2289,14 @@ textarea.sc-ai-brief{min-height:64px;resize:vertical;line-height:1.5;}
 .rm-dugmeler{display:flex;gap:8px;flex-wrap:wrap;margin-top:10px;}
 .rm-nasil{margin-top:10px;}
 .rm-nasil ul{margin:8px 0 0;padding-left:18px;color:var(--text-dim);font-size:12.5px;line-height:1.7;}
+
+/* Cok dar telefonda (SE boyu) "Bugun" dugmesi daraliyor: kazanilan her
+   piksel basliga gidiyor, cunku sigmayan sey baslik oluyordu. Kural
+   telefon blogundan SONRA duruyor — once yazilsaydi oradaki genis
+   degerler bunu ezerdi. */
+@media(max-width:400px){
+  #todayBtn{padding:0 8px;font-size:11px;letter-spacing:0;}
+}
 
 /* ---------------------------------------------------------------------
    Dokunmatik ekranda yazi kutulari 16px.
@@ -10944,25 +10976,66 @@ function renderSaatIzgarasi(gunSayisi){
   gunler.forEach(()=> ekle('hg-endcell'));
 }
 
+// Telefonda takvim basligi icin yer az: iki ok ve "Bugun" dugmesi de
+// ayni satirda. Baslik oraya sigmayinca uc noktayla kirpiliyordu ve
+// kirpilmis bir tarih tarihi soylemiyor. Cozum kirpmak degil, ayni
+// bilgiyi kisa yazmak.
+function darTakvimBasligi(){
+  return !!(window.matchMedia && window.matchMedia('(max-width:700px)').matches);
+}
+// Cok dar telefonda (SE boyu) basligin yeri iyice daraliyor: ay adi da
+// kisaliyor. 400 pikselin ustunde "Eylul 2026" rahat siginca uzun hali
+// duruyor — kisaltma her yerde degil, gereken yerde.
+function cokDarTakvimBasligi(){
+  return !!(window.matchMedia && window.matchMedia('(max-width:400px)').matches);
+}
+// Yil YALNIZCA gerektiginde yaziliyor: icinde bulundugumuz yila bakan
+// biri zaten hangi yilda oldugunu biliyor. Pencere baska bir yila
+// gectigi anda yil geri geliyor — bilgi kaybi yok, gurultu yok.
+function takvimYiliGerekli(bas, bit){
+  if(!darTakvimBasligi()) return true;
+  const buYil = new Date().getFullYear();
+  return bas.getFullYear() !== buYil || (bit ? bit.getFullYear() !== buYil : false);
+}
+// Ekran donunce baslik yeniden yaziliyor: dikeyde kisaltilmis bir
+// baslik yatayda kisa kalmasin, tersi de olmasin.
+(function(){
+  let zamanlayici = 0;
+  window.addEventListener('resize', ()=>{
+    clearTimeout(zamanlayici);
+    zamanlayici = setTimeout(()=>{ try{ araligiYaz(); }catch(e){} }, 150);
+  });
+})();
 function araligiYaz(){
   const locale = currentLang === 'tr' ? 'tr-TR' : 'en-US';
   // Ayda aralik degil ayin ADI yaziliyor: pencere zaten tam o ay.
   if(viewMode === 'month'){
     const a = ayPenceresi();
     document.getElementById('rangeLabel').textContent =
-      new Date(a.yil, a.ay, 1).toLocaleDateString(locale, {month:'long', year:'numeric'});
+      new Date(a.yil, a.ay, 1).toLocaleDateString(locale,
+        { month: cokDarTakvimBasligi() ? 'short' : 'long', year:'numeric' });
     return;
   }
   // Tek gunde aralik yazmak anlamsiz: gunun tam adi yaziliyor.
+  // Telefonda kisasi: "Tue, Sep 8" — "Tuesday, September 8, 2026" oraya
+  // sigmiyor.
   if(viewMode === 'day'){
-    document.getElementById('rangeLabel').textContent =
-      calWindowStart().toLocaleDateString(locale, {weekday:'long', day:'numeric', month:'long', year:'numeric'});
+    const bas = calWindowStart();
+    const dar = darTakvimBasligi();
+    const bicim = dar
+      ? { weekday:'short', day:'numeric', month:'short' }
+      : { weekday:'long', day:'numeric', month:'long', year:'numeric' };
+    if(takvimYiliGerekli(bas, null)) bicim.year = 'numeric';
+    document.getElementById('rangeLabel').textContent = bas.toLocaleDateString(locale, bicim);
     return;
   }
+  const bas = calWindowStart(), bit = calWindowEnd();
+  const sonBicim = { day:'numeric', month:'short' };
+  if(takvimYiliGerekli(bas, bit)) sonBicim.year = 'numeric';
   document.getElementById('rangeLabel').textContent =
-    calWindowStart().toLocaleDateString(locale, {day:'numeric', month:'short'})
+    bas.toLocaleDateString(locale, {day:'numeric', month:'short'})
     + ' – '
-    + calWindowEnd().toLocaleDateString(locale, {day:'numeric', month:'short', year:'numeric'});
+    + bit.toLocaleDateString(locale, sonBicim);
 }
 
 // Kaydin projesi. Bos olabilir; bos olan kayitlar filtrede "Projesiz"
