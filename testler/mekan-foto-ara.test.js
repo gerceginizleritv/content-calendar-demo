@@ -13,6 +13,11 @@ const FOTO = 'https://upload.wikimedia.org/wikipedia/commons/thumb/a/ab/Tekfur_S
   const p = await (await t.newContext({ viewport:{width:1280,height:1000} })).newPage();
   const hata = []; p.on('pageerror', e => hata.push(String(e)));
   await p.route('**tile.openstreetmap.org**', r=> r.abort());
+  // ornek.com uydurma bir adres. Kesmezsek tarayici gercekten aga
+  // cikiyor: CI'da DNS/baglanti denemesi 8 saniyeyi asabiliyor ve
+  // "acilmayan adres soyleniyor" kontrolu zaman asimina dusuyordu.
+  // Kesince onerror aninda tetikleniyor; olculen sey degismiyor.
+  await p.route('**ornek.com**', r=> r.abort());
   // Gorseli KESMIYORUZ: kesilirse onizleme "acilmadi" der ve testin
   // olcmek istedigi sey kaybolur. Kucuk bir PNG donuyoruz.
   const PNG = Buffer.from('iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR42mP8z8BQDwAEhQGAhKmMIQAAAABJRU5ErkJggg==', 'base64');
@@ -129,7 +134,7 @@ const FOTO = 'https://upload.wikimedia.org/wikipedia/commons/thumb/a/ab/Tekfur_S
   bak('javascript: adresi onizlemeye girmiyor', await p.$eval('#mk_onizleme', e=> e.hidden));
   await p.fill('#mk_image', 'https://ornek.com/olmayan.jpg');
   await p.waitForFunction(()=> /görsel açmadı/.test(document.getElementById('mk_onizleme').textContent),
-                          null, { timeout: 8000 });
+                          null, { timeout: 5000 });
   bak('acilmayan adres soyleniyor', true);
   await p.click('#mk_cancel');
   await p.waitForTimeout(150);

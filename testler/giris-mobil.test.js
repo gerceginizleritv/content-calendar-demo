@@ -26,7 +26,15 @@ const EKRANLAR = [['iPhone SE',375,667],['iPhone 14',390,844],['Android',412,915
     }
 
     await p.click('.tepe-sag .dug');
-    await p.waitForTimeout(700);
+    // Sayfa yumusak kayiyor (scroll-behavior:smooth). Sabit 700 ms bekleme
+    // CI'nin yavas makinesinde bazen yetmiyor ve olcum kaydirma ortasinda
+    // aliniyordu. Kaydirma DURANA kadar bekliyoruz.
+    await p.waitForFunction(() => {
+      const y = Math.round(window.scrollY);
+      if (window.__sonY === y) window.__ayni = (window.__ayni || 0) + 1;
+      else { window.__ayni = 0; window.__sonY = y; }
+      return window.__ayni >= 3;
+    }, null, { timeout: 8000, polling: 100 });
     const r = await p.evaluate(() => {
       const sek = document.querySelector('.sekmeler').getBoundingClientRect();
       const dug = document.getElementById('kayitDug').getBoundingClientRect();
