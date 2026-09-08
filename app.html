@@ -126,6 +126,55 @@ body{
   max-width:100%;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;}
 .btn.rail-auth{width:100%;justify-content:center;}
 
+/* --- Hava ve isik seridi ---
+   Cekim planlayan biri icin sicaklik degil ISIK asil bilgi: gun dogumu,
+   gun batimi ve altin saat. O uc sey koordinattan HESAPLANIYOR, internete
+   bagli degil; ag yalnizca sicaklik/yagis icin gerekiyor. Bu yuzden blok
+   cevrimdisiyken de dolu duruyor. */
+.rail-hava{
+  position:relative;display:flex;flex-direction:column;gap:5px;
+  padding:9px 8px 11px;border-bottom:1px solid var(--line-soft);
+  font-size:12px;color:var(--text-dim);
+}
+.rail-hava[hidden]{display:none;}
+.hv-bas{font-size:11px;letter-spacing:.04em;text-transform:uppercase;
+  color:var(--text-dim);padding-right:16px;
+  overflow:hidden;text-overflow:ellipsis;white-space:nowrap;}
+.hv-simdi{display:flex;align-items:baseline;gap:6px;color:var(--text);}
+.hv-ikon{font-size:16px;line-height:1;}
+.hv-derece{font:700 17px/1 'Archivo',sans-serif;font-variant-numeric:tabular-nums;}
+.hv-durum{font-size:12px;color:var(--text-dim);
+  overflow:hidden;text-overflow:ellipsis;white-space:nowrap;}
+.hv-satir{display:flex;flex-wrap:wrap;gap:4px 10px;font-variant-numeric:tabular-nums;}
+.hv-satir b{font-weight:600;color:var(--text);}
+.hv-altin{display:flex;align-items:center;gap:5px;color:var(--amber);
+  font-weight:600;font-variant-numeric:tabular-nums;}
+.hv-kisa,
+.hv-sor-kisa{display:none;}
+.hv-not{font-size:11px;color:var(--text-dim);opacity:.75;}
+.hv-kapat{position:absolute;top:5px;right:4px;width:20px;height:20px;padding:0;
+  display:flex;align-items:center;justify-content:center;
+  font:inherit;font-size:15px;line-height:1;border:0;border-radius:50%;
+  background:none;color:var(--text-dim);cursor:pointer;opacity:.6;}
+.hv-kapat:hover{opacity:1;background:var(--surface-2);}
+.hv-ac{align-self:flex-start;font:inherit;font-size:12px;padding:5px 9px;}
+.hv-sehir{display:flex;gap:5px;}
+.hv-sehir input{flex:1;min-width:0;padding:5px 8px;font:inherit;font-size:12px;
+  background:var(--surface);color:var(--text);
+  border:1px solid var(--line);border-radius:7px;}
+.hv-sehir .btn{flex:none;padding:5px 9px;font-size:12px;}
+
+/* Mekan penceresindeki ayni bilgi. Burada konum iznine hic gerek yok:
+   koordinat mekanin kendi harita baglantisindan ya da adindan geliyor. */
+.mk-hava{
+  display:flex;flex-direction:column;gap:6px;margin:0 0 14px;
+  padding:11px 12px;border:1px solid var(--line);border-radius:10px;
+  background:var(--surface-2);font-size:13px;color:var(--text-dim);
+}
+.mk-hava[hidden]{display:none;}
+.mk-hava .hv-bas{font-size:11px;padding-right:0;}
+.mk-hava .hv-satir{gap:6px 16px;}
+
 .rail-nav{display:flex;flex-direction:column;gap:2px;}
 /* Serit icindeki sekme: alt cizgi yerine sol vurgu, ve tam genislik. */
 .rail-nav .tab{
@@ -1990,12 +2039,47 @@ textarea.sc-ai-brief{min-height:64px;resize:vertical;line-height:1.5;}
      telefonda ise aralarindaki esneyen bosluk uc ogeyi birbirinden
      kopuk gosteriyordu. Kimlik tek bir grup olarak okunuyor.
      margin-left:auto BASTIRILIYOR — genel dar ekran kuralindan geliyor. */
-  /* flex-wrap:nowrap SART: "..." dugmesi ikinci satira dusuyordu ve
-     seritte kocaman bos bir alan kaliyordu. Serit icindeki oteki
-     ogeler (sekmeler, alt sayfa, perde) telefonda zaten sabit
-     konumlu, yani akista yalnizca bu uc oge var — sarmalarina gerek
-     yok. Sigmazsa marka kisaliyor, satir bolunmuyor. */
-  .rail{flex-wrap:nowrap;}
+  /* Once flex-wrap:nowrap yaziliyordu: "..." dugmesi ikinci satira
+     dusuyor ve seritte kocaman bos bir alan kaliyordu. Sarmaya artik
+     IZIN var ama kural ayni — marka, kimlik ve "..." hala TEK satirda.
+     Bunu ogelerin kucuklugu ve markanin gerekirse kisalmasi sagliyor
+     (min-width:0 + ellipsis). Sarmaya ihtiyaci olan tek sey hava
+     seridi: flex-basis:100% ile her zaman kendi satirina iniyor.
+     mobil-hava testi uc ogenin ayni satirda kaldigini 320-412 piksel
+     arasinda olcuyor — o test kirilirsa burasi bozulmus demektir. */
+  .rail{flex-wrap:wrap;}
+  /* Hava seridi telefonda tek satir: ikon, derece, dogus/batis ve
+     altin saatin baslangici. Dokununca acilip tam haline geciyor.
+     Ust serit yeni kucultuldu; bu blok onu tekrar sisirmesin diye
+     11.5 piksel ve tek satir. */
+  .rail-hava{
+    flex:1 0 100%;order:9;
+    flex-direction:row;align-items:center;flex-wrap:wrap;gap:3px 10px;
+    padding:5px 2px 1px;border-bottom:0;font-size:11.5px;
+  }
+  .rail-hava .hv-bas,
+  .rail-hava .hv-durum,
+  .rail-hava .hv-uzun{display:none;}
+  .rail-hava .hv-kisa{display:inline;}
+  .rail-hava.acik{flex-direction:column;align-items:flex-start;
+    gap:4px;padding-bottom:7px;}
+  .rail-hava.acik .hv-bas,
+  .rail-hava.acik .hv-durum,
+  .rail-hava.acik .hv-uzun{display:block;}
+  .rail-hava.acik .hv-kisa{display:none;}
+  /* "Konumu ac" hali de tek satir: aciklama ve sehir kutusu ancak
+     dokununca aciliyor. Ust serit yeniden sismesin. */
+  .rail-hava.hv-sor .hv-not,
+  .rail-hava.hv-sor .hv-sehir,
+  .rail-hava.hv-sor .hv-ac{display:none;}
+  .rail-hava.hv-sor .hv-sor-kisa{display:inline;}
+  .rail-hava.hv-sor.acik .hv-sor-kisa{display:none;}
+  .rail-hava.hv-sor.acik .hv-not{display:block;}
+  .rail-hava.hv-sor.acik .hv-sehir{display:flex;}
+  .rail-hava.hv-sor.acik .hv-ac{display:inline-flex;align-self:flex-start;}
+  .rail-hava .hv-derece{font-size:14px;}
+  .rail-hava .hv-ikon{font-size:14px;}
+  .rail-hava .hv-kapat{top:2px;right:0;}
   .rail-brand{flex:0 1 auto;min-width:0;}
   .rail-me{flex:0 0 auto;min-width:0;gap:6px;margin-left:8px;}
   .rail-more{flex:none;}
@@ -2370,6 +2454,10 @@ textarea.sc-ai-brief{min-height:64px;resize:vertical;line-height:1.5;}
         <button class="btn btn-sm rail-auth" id="authBtn" data-i18n="btn_signin">☁ Sign in</button>
       </div>
 
+      <!-- Hava ve isik. Icerigi tamamen JS yaziyor: izin istenmemis
+           hali, izin verilmis hali ve ag yokken son bilinen hali. -->
+      <div class="rail-hava" id="railHava" hidden></div>
+
       <!-- Telefonda ikincil bağlantılar yana kayan bir şeritteydi: altı
            bağlantı bir satıra sığmıyor, kaydırmayan kullanıcı sondakileri
            hiç görmüyordu. Artık aynı bağlantılar bu düğmenin açtığı alt
@@ -2428,6 +2516,9 @@ textarea.sc-ai-brief{min-height:64px;resize:vertical;line-height:1.5;}
              duzenek silinmedi, oradan tekrar kullanilacak. -->
         <button class="rail-link" id="pitchToggle" aria-expanded="false" data-i18n="pitch_show" hidden>What is Shootboard?</button>
         <button class="rail-link" id="tourBtn" data-i18n="btn_tour">? How this works</button>
+        <!-- Hava blogu gizlenmisse geri getiren baglanti; blok acikken
+             bu dugme gizli duruyor. -->
+        <button class="rail-link" id="havaGosterBtn" hidden data-i18n="hv_show">Weather &amp; light</button>
         <button class="rail-link" id="aiSettingsBtn" data-i18n="btn_ai_settings">✨ AI (Gemini)</button>
         <button class="rail-link" id="remindersBtn" data-i18n="rm_btn">🔔 Reminders</button>
         <!-- Tur "nasil calisir"i gosteriyor; kilavuz NEDEN oyle
@@ -2982,6 +3073,10 @@ textarea.sc-ai-brief{min-height:64px;resize:vertical;line-height:1.5;}
            adres yazilir yazilmaz fotograf burada gorunuyor. -->
       <div class="mk-onizleme" id="mk_onizleme" hidden></div>
     </div>
+    <!-- Bu mekanin kendi hava ve isik bilgisi. Konum iznine BAGLI
+         DEGIL: koordinat once harita baglantisindan okunuyor, yoksa
+         mekanin adi/ilcesi/sehri isim aramasiyla koordinata ceviriliyor. -->
+    <div class="mk-hava" id="mk_hava" hidden></div>
     <p class="hint" id="mk_bagli"></p>
     <div class="modal-actions">
       <button type="button" class="btn btn-danger" id="mk_delete" data-i18n="p_delete">Delete</button>
@@ -4249,6 +4344,36 @@ const LANG = {
     mk_photo_scan_done: (b, t)=> b ? `${t} places checked, ${b} photos found.` : `${t} places checked, nothing found. The cards keep their maps.`,
     mk_photo_wiki: "Wikipedia",
     mk_photo_broken: "That link didn't open an image.",
+    hv_title: "Weather & light",
+    hv_ask: "Sunrise, sunset and golden hour for where you are.",
+    hv_ask_btn: "Turn on location",
+    hv_denied: "Location is off. Type a city and the light times still work.",
+    hv_city_ph: "City",
+    hv_city_none: "No place found by that name.",
+    hv_today: "Today",
+    hv_sunrise: "Sunrise",
+    hv_sunset: "Sunset",
+    hv_golden: "Golden hour",
+    hv_blue: "Blue hour",
+    hv_rain: "Rain",
+    hv_wind: "Wind",
+    hv_hide: "Hide",
+    hv_show: "\u{1F324} Weather & light",
+    hv_looking: "Looking\u2026",
+    hv_age_min: (n)=> `${n} min ago`,
+    hv_age_hour: (n)=> `${n} h ago`,
+    hv_age_day: "from yesterday",
+    hv_age_old: "an older reading",
+    hv_stale: (s)=> `Could not refresh \u2014 ${s}.`,
+    hv_no_net: "No weather right now. Sunrise and golden hour are calculated here, so they are exact either way.",
+    hv_place_title: "At this place today",
+    hv_place_need: "Add a city or a map link and this place gets its own weather and light times.",
+    hv_src_map: "from the map link",
+    hv_src_city: "from the place name (approximate)",
+    hv_polar: "The sun does not rise or set here today.",
+    hv_k_0: "Clear", hv_k_1: "Mostly clear", hv_k_2: "Partly cloudy", hv_k_3: "Overcast",
+    hv_k_45: "Fog", hv_k_51: "Drizzle", hv_k_61: "Rain", hv_k_71: "Snow",
+    hv_k_80: "Showers", hv_k_95: "Thunderstorm",
     ai_anahtar_gerek: "This needs a Gemini key. Opening the AI window — paste the key there, then try again.",
     ai_hesaba: "Keep this key in my account (so my other devices have it too)",
     ai_hesaba_not: "Stored in your own row, which only you can read. Leave it off and the key never leaves this device.",
@@ -5002,6 +5127,36 @@ const LANG = {
     mk_photo_scan_done: (b, t)=> b ? `${t} mekana bakıldı, ${b} fotoğraf bulundu.` : `${t} mekana bakıldı, bir şey çıkmadı. Kartlarda harita duruyor.`,
     mk_photo_wiki: "Vikipedi",
     mk_photo_broken: "Bu adres bir görsel açmadı.",
+    hv_title: "Hava ve \u0131\u015F\u0131k",
+    hv_ask: "Bulundu\u011Fun yerin g\u00FCn do\u011Fumu, g\u00FCn bat\u0131m\u0131 ve alt\u0131n saati.",
+    hv_ask_btn: "Konumu a\u00E7",
+    hv_denied: "Konum kapal\u0131. \u015Eehir yazarsan \u0131\u015F\u0131k saatleri yine \u00E7al\u0131\u015F\u0131r.",
+    hv_city_ph: "\u015Eehir",
+    hv_city_none: "Bu ada uyan bir yer bulunamad\u0131.",
+    hv_today: "Bug\u00FCn",
+    hv_sunrise: "G\u00FCn do\u011Fumu",
+    hv_sunset: "G\u00FCn bat\u0131m\u0131",
+    hv_golden: "Alt\u0131n saat",
+    hv_blue: "Mavi saat",
+    hv_rain: "Ya\u011Fmur",
+    hv_wind: "R\u00FCzg\u00E2r",
+    hv_hide: "Gizle",
+    hv_show: "\u{1F324} Hava ve \u0131\u015F\u0131k",
+    hv_looking: "Bak\u0131l\u0131yor\u2026",
+    hv_age_min: (n)=> `${n} dk \u00F6nceki bilgi`,
+    hv_age_hour: (n)=> `${n} saat \u00F6nceki bilgi`,
+    hv_age_day: "d\u00FCnk\u00FC bilgi",
+    hv_age_old: "eski bir bilgi",
+    hv_stale: (s)=> `Tazelenemedi \u2014 ${s}.`,
+    hv_no_net: "Hava bilgisi \u015Fu an yok. G\u00FCn do\u011Fumu ve alt\u0131n saat burada hesaplan\u0131yor, onlar her hal\u00FCk\u00E2rda tam.",
+    hv_place_title: "Bu mekanda bug\u00FCn",
+    hv_place_need: "\u015Eehir ya da harita ba\u011Flant\u0131s\u0131 ekleyince bu mekan\u0131n kendi hava ve \u0131\u015F\u0131k bilgisi burada \u00E7\u0131kar.",
+    hv_src_map: "harita ba\u011Flant\u0131s\u0131ndaki koordinata g\u00F6re",
+    hv_src_city: "mekan ad\u0131na g\u00F6re (yakla\u015F\u0131k)",
+    hv_polar: "Burada bug\u00FCn g\u00FCne\u015F do\u011Fmuyor ya da batm\u0131yor.",
+    hv_k_0: "A\u00E7\u0131k", hv_k_1: "Az bulutlu", hv_k_2: "Par\u00E7al\u0131 bulutlu", hv_k_3: "Kapal\u0131",
+    hv_k_45: "Sisli", hv_k_51: "\u00C7iseliyor", hv_k_61: "Ya\u011Fmurlu", hv_k_71: "Karl\u0131",
+    hv_k_80: "Sa\u011Fanak", hv_k_95: "G\u00F6k g\u00FCr\u00FClt\u00FCl\u00FC",
     ai_anahtar_gerek: "Bunun için Gemini anahtarı gerekiyor. AI penceresi açılıyor — anahtarı oraya yapıştır, sonra tekrar dene.",
     ai_hesaba: "Anahtarı hesabımda tut (diğer cihazlarımda da olsun)",
     ai_hesaba_not: "Yalnızca senin okuyabildiğin kendi satırında durur. Kapalı bırakırsan anahtar bu cihazdan hiç çıkmaz.",
@@ -5405,6 +5560,9 @@ function setLanguage(lang, buluttanGeldi){
   renderCal();
   // Tur acikken dil degisebiliyor (bulut tercihi acilistan biraz sonra
   // gelebilir); acik turun kartlari eski dilde kalmasin.
+  // Hava blogunun metinleri de kod icinde uretiliyor.
+  railHavaYenile();
+  if(document.querySelector('#placeOverlay.open')) mekanHavaYenile();
   const turPen = document.getElementById('tourOverlay');
   if(turPen && turPen.classList.contains('open')) renderTourStep();
 }
@@ -7261,6 +7419,9 @@ function mekanPenceresiniAc(id){
   y('mk_image', m && m.imageUrl);
   mkNot('mk_fotoNot', '');
   mekanOnizleme();
+  // Bu mekanin hava ve isik bilgisi: agi beklemeden pencere aciliyor,
+  // blok kendi kendini dolduruyor.
+  mekanHavaYenile();
   const kac = m ? mekanProjeleri(m.id).length : 0;
   document.getElementById('mk_bagli').textContent = kac ? t('mk_linked')(kac) : '';
   document.getElementById('mk_delete').hidden = !m;
@@ -10392,6 +10553,446 @@ document.getElementById('cloneSave').addEventListener('click', ()=>{
   save(); closeClone(); renderCal();
 });
 
+// ===== Hava ve isik =====
+// Cekim planlayan biri icin asil bilgi sicaklik degil ISIK. Gun dogumu,
+// gun batimi, altin saat ve mavi saat burada HESAPLANIYOR (gunes
+// denkleminin standart hali): internet gerekmiyor, her tarih icin dogru.
+// Ag yalnizca sicaklik/yagis/ruzgar icin kullaniliyor; o gelmezse blok
+// kaybolmuyor, son bilinen olcumu soluk bir notla gosteriyor.
+//
+// Servis: Open-Meteo. API anahtari istemiyor, ucretsiz. Koordinat iki
+// haneye (~1 km) yuvarlanip gonderiliyor: ev adresi hassasiyetinde bir
+// sey disari cikmasin. Koordinat hicbir yere KAYDEDILMIYOR — ne buluta
+// ne baska bir yere; yalnizca bu tarayicida duruyor.
+const HAVA_KONUM_KEY = 'demo_hava_konum';
+const HAVA_KAPALI_KEY = 'demo_hava_kapali';
+const HAVA_ONBELLEK_KEY = 'demo_hava_onbellek';
+const HAVA_YER_KEY = 'demo_hava_yer';
+const HAVA_TAZE = 30 * 60 * 1000;             // bu sureden yenisi icin aga cikilmiyor
+const HAVA_OMUR = 24 * 60 * 60 * 1000;        // onbellekte bundan eskisi atiliyor
+const HAVA_DERECE = Math.PI / 180;
+
+// --- Gunes ---
+// Gunes denkleminin kisa hali. Sapmasi bir iki dakika; cekim planlamak
+// icin fazlasiyla yeterli. "yukseklik" gunesin ufka gore acisi:
+//   -0.833  dogus / batis (kirilma + gunes diskinin yarisi)
+//   +6      altin saatin sinirinda
+//   -4      mavi saatin sinirinda
+function gunesAnlari(lat, lon, ymd, yukseklik){
+  const p = String(ymd || '').split('-').map(Number);
+  if(p.length !== 3 || !p[0] || !p[1] || !p[2]) return { dogus:null, batis:null };
+  const jGun = Date.UTC(p[0], p[1] - 1, p[2], 12) / 86400000 + 2440587.5;
+  const n = Math.round(jGun - 2451545.0 + 0.0008);
+  const yildiz = n - lon / 360;
+  const M = (357.5291 + 0.98560028 * yildiz) % 360;
+  const Mr = M * HAVA_DERECE;
+  const C = 1.9148 * Math.sin(Mr) + 0.02 * Math.sin(2 * Mr) + 0.0003 * Math.sin(3 * Mr);
+  const lam = ((M + C + 180 + 102.9372) % 360) * HAVA_DERECE;
+  const gecis = 2451545.0 + yildiz + 0.0053 * Math.sin(Mr) - 0.0069 * Math.sin(2 * lam);
+  const sinD = Math.sin(lam) * Math.sin(23.4397 * HAVA_DERECE);
+  const cosD = Math.cos(Math.asin(sinD));
+  const cosW = (Math.sin(yukseklik * HAVA_DERECE) - Math.sin(lat * HAVA_DERECE) * sinD)
+             / (Math.cos(lat * HAVA_DERECE) * cosD);
+  // |cosW| > 1: o gun gunes ya hic dogmuyor ya hic batmiyor (kutuplar).
+  if(!(cosW >= -1 && cosW <= 1)) return { dogus:null, batis:null };
+  const w = Math.acos(cosW) / HAVA_DERECE / 360;
+  const tarihe = j => new Date((j - 2440587.5) * 86400000);
+  return { dogus: tarihe(gecis - w), batis: tarihe(gecis + w) };
+}
+function gunIsigi(lat, lon, ymd){
+  const gun = gunesAnlari(lat, lon, ymd, -0.833);
+  const altin = gunesAnlari(lat, lon, ymd, 6);
+  const mavi = gunesAnlari(lat, lon, ymd, -4);
+  return { dogus: gun.dogus, batis: gun.batis,
+           altinSabahBitis: altin.dogus, altinAksamBas: altin.batis,
+           maviSabahBas: mavi.dogus, maviAksamBitis: mavi.batis };
+}
+function bugunYmd(){
+  const b = new Date();
+  return b.getFullYear() + '-' + String(b.getMonth() + 1).padStart(2, '0')
+                         + '-' + String(b.getDate()).padStart(2, '0');
+}
+// Saat, mekanin KENDI diliminde yaziliyor (Open-Meteo dilimi de donduruyor).
+// Dilim bilinmiyorsa tarayicininki kullaniliyor.
+function havaSaat(d, tz){
+  if(!d) return '';
+  try{
+    return new Intl.DateTimeFormat(currentLang === 'tr' ? 'tr-TR' : 'en-GB',
+      { hour:'2-digit', minute:'2-digit', hour12:false,
+        timeZone: tz || undefined }).format(d);
+  }catch(e){
+    try{ return new Intl.DateTimeFormat('en-GB',
+      { hour:'2-digit', minute:'2-digit', hour12:false }).format(d); }catch(e2){ return ''; }
+  }
+}
+
+// --- Yerel saklama ---
+function havaOku(anahtar, varsayilan){
+  try{ const h = localStorage.getItem(anahtar); return h ? JSON.parse(h) : varsayilan; }
+  catch(e){ return varsayilan; }
+}
+function havaYaz(anahtar, deger){
+  try{ localStorage.setItem(anahtar, JSON.stringify(deger)); }catch(e){}
+}
+function havaKapaliMi(){ return havaOku(HAVA_KAPALI_KEY, false) === true; }
+function havaKonumu(){
+  const k = havaOku(HAVA_KONUM_KEY, null);
+  return (k && typeof k.lat === 'number' && typeof k.lon === 'number') ? k : null;
+}
+function havaAnahtar(lat, lon){ return lat.toFixed(2) + ',' + lon.toFixed(2); }
+function havaOnbellekOku(lat, lon){
+  const hepsi = havaOku(HAVA_ONBELLEK_KEY, {}) || {};
+  const k = hepsi[havaAnahtar(lat, lon)];
+  return (k && k.t && k.v) ? k : null;
+}
+function havaOnbellekYaz(lat, lon, veri){
+  const hepsi = havaOku(HAVA_ONBELLEK_KEY, {}) || {};
+  hepsi[havaAnahtar(lat, lon)] = { t: Date.now(), v: veri };
+  // Onbellek buyumesin: once eskiler, sonra en yeni 20 disindakiler gidiyor.
+  const simdi = Date.now();
+  Object.keys(hepsi).forEach(k=>{ if(simdi - (hepsi[k].t || 0) > HAVA_OMUR) delete hepsi[k]; });
+  const kirp = {};
+  Object.keys(hepsi).sort((a,b)=> hepsi[b].t - hepsi[a].t).slice(0, 20)
+        .forEach(k=> { kirp[k] = hepsi[k]; });
+  havaYaz(HAVA_ONBELLEK_KEY, kirp);
+}
+
+// --- Ag ---
+async function havaCek(lat, lon){
+  const adres = 'https://api.open-meteo.com/v1/forecast'
+    + '?latitude=' + lat.toFixed(2) + '&longitude=' + lon.toFixed(2)
+    + '&current=temperature_2m,weather_code,wind_speed_10m'
+    + '&daily=weather_code,temperature_2m_max,temperature_2m_min,precipitation_probability_max'
+    + '&timezone=auto&forecast_days=1';
+  try{
+    const cevap = await fetch(adres);
+    if(!cevap.ok) return null;
+    const veri = await cevap.json();
+    if(!veri || !veri.current) return null;
+    const g = veri.daily || {};
+    const say = (dizi)=> (Array.isArray(dizi) && typeof dizi[0] === 'number') ? dizi[0] : null;
+    const sonuc = {
+      derece: Math.round(veri.current.temperature_2m),
+      kod: veri.current.weather_code,
+      ruzgar: Math.round(veri.current.wind_speed_10m),
+      yagis: say(g.precipitation_probability_max),
+      enYuksek: say(g.temperature_2m_max) === null ? null : Math.round(say(g.temperature_2m_max)),
+      enDusuk: say(g.temperature_2m_min) === null ? null : Math.round(say(g.temperature_2m_min)),
+      tz: veri.timezone || ''
+    };
+    havaOnbellekYaz(lat, lon, sonuc);
+    return sonuc;
+  }catch(e){ return null; }
+}
+// Onbellek tazeyse aga hic cikilmiyor. Cikilip da gelmezse son bilinen
+// olcum donuyor: blok kaybolmasin diye, yasi belirtilerek.
+async function havaAl(lat, lon){
+  const k = havaOnbellekOku(lat, lon);
+  if(k && Date.now() - k.t < HAVA_TAZE) return { veri: k.v, yas: 0 };
+  const yeni = await havaCek(lat, lon);
+  if(yeni) return { veri: yeni, yas: 0 };
+  return k ? { veri: k.v, yas: Date.now() - k.t } : null;
+}
+// Sehir/mekan adindan koordinat. Ayni anahtarsiz servis. Sonuc (bulunamadi
+// dahil) onbellege giriyor; ag hatasi girmiyor ki sonra tekrar denensin.
+async function yerdenKoordinat(arama){
+  const s = String(arama || '').trim();
+  if(!s) return null;
+  const onbellek = havaOku(HAVA_YER_KEY, {}) || {};
+  const k = s.toLocaleLowerCase('tr');
+  if(Object.prototype.hasOwnProperty.call(onbellek, k)) return onbellek[k];
+  let sonuc = null;
+  try{
+    const cevap = await fetch('https://geocoding-api.open-meteo.com/v1/search'
+      + '?count=1&format=json&language=' + (currentLang === 'tr' ? 'tr' : 'en')
+      + '&name=' + encodeURIComponent(s));
+    if(cevap.ok){
+      const veri = await cevap.json();
+      const y = veri && veri.results && veri.results[0];
+      if(y && typeof y.latitude === 'number' && typeof y.longitude === 'number'){
+        sonuc = { lat: +y.latitude.toFixed(2), lon: +y.longitude.toFixed(2),
+                  ad: [y.name, y.admin1].filter(Boolean).join(', ') };
+      }
+    } else { return null; }
+  }catch(e){ return null; }
+  onbellek[k] = sonuc;
+  havaYaz(HAVA_YER_KEY, onbellek);
+  return sonuc;
+}
+
+// --- Yazi ---
+// WMO kodlari. Yakin kodlar tek bir baslikta toplaniyor: "hafif cisenti"
+// ile "yogun cisenti" ayrimi cekim planlarken bir sey degistirmiyor.
+function havaKodu(kod){
+  const n = Number(kod);
+  if(n === 0) return ['☀', 'hv_k_0'];
+  if(n === 1) return ['\u{1F324}', 'hv_k_1'];
+  if(n === 2) return ['⛅', 'hv_k_2'];
+  if(n === 3) return ['☁', 'hv_k_3'];
+  if(n === 45 || n === 48) return ['\u{1F32B}', 'hv_k_45'];
+  if(n >= 51 && n <= 57) return ['\u{1F326}', 'hv_k_51'];
+  if(n >= 61 && n <= 67) return ['\u{1F327}', 'hv_k_61'];
+  if((n >= 71 && n <= 77) || n === 85 || n === 86) return ['\u{1F328}', 'hv_k_71'];
+  if(n >= 80 && n <= 82) return ['\u{1F326}', 'hv_k_80'];
+  if(n >= 95) return ['⛈', 'hv_k_95'];
+  return ['⛅', 'hv_k_2'];
+}
+function havaYuzde(n){ return currentLang === 'tr' ? '%' + n : n + '%'; }
+function havaHiz(n){ return n + (currentLang === 'tr' ? ' km/s' : ' km/h'); }
+function havaYasMetni(ms){
+  const dk = Math.round(ms / 60000);
+  if(dk < 60) return t('hv_age_min')(Math.max(1, dk));
+  const saat = Math.round(dk / 60);
+  if(saat < 24) return t('hv_age_hour')(saat);
+  if(saat < 48) return t('hv_age_day');
+  return t('hv_age_old');
+}
+// Isik satirlari: hesaplanan degerler, aga bagli degil. "genis" mekan
+// penceresi icin — orada sabah altin saati ve mavi saat de yaziliyor.
+function isikHtml(lat, lon, tz, genis){
+  const i = gunIsigi(lat, lon, bugunYmd());
+  if(!i.dogus || !i.batis){
+    return '<div class="hv-not">' + escapeHtml(t('hv_polar')) + '</div>';
+  }
+  const s = d => escapeHtml(havaSaat(d, tz));
+  const ara = (a, b)=> s(a) + '–' + s(b);
+  let html = '<div class="hv-satir">'
+    + '<span>↑ <b>' + s(i.dogus) + '</b></span>'
+    + '<span>↓ <b>' + s(i.batis) + '</b></span>'
+    + '</div>';
+  // Genis halde (mekan penceresi) iki altin saat de yaziliyor. Seritte
+  // ise SIRADAKI: sabah dokuzda aksamin altin saatini gostermek bilgi
+  // degil gurultu; ogleden sonra da sabahinki gecmis oluyor.
+  const simdi = Date.now();
+  const sabahMi = i.altinSabahBitis && simdi < +i.altinSabahBitis;
+  const bas = sabahMi ? i.dogus : i.altinAksamBas;
+  const bit = sabahMi ? i.altinSabahBitis : i.batis;
+  html += '<div class="hv-altin"><span aria-hidden="true">\u{1F305}</span>'
+    + '<span class="hv-uzun">' + escapeHtml(t('hv_golden')) + ' '
+    + (genis
+        ? (i.altinSabahBitis ? ara(i.dogus, i.altinSabahBitis) + ' · ' : '')
+          + (i.altinAksamBas ? ara(i.altinAksamBas, i.batis) : '')
+        : (bas && bit ? ara(bas, bit) : ''))
+    + '</span>'
+    + '<span class="hv-kisa">' + (bas ? s(bas) : '') + '</span>'
+    + '</div>';
+  if(genis && i.maviAksamBitis){
+    html += '<div class="hv-satir"><span>' + escapeHtml(t('hv_blue')) + ' '
+         + ara(i.batis, i.maviAksamBitis) + '</span></div>';
+  }
+  return html;
+}
+// Blok govdesi: baslik, o anki hava (varsa) ve hesaplanan isik saatleri.
+// hava: {veri, yas} ya da null. Isik kismi hava olmasa da yaziliyor.
+function havaGovdesiHtml(baslik, konum, hava, genis){
+  const tz = (hava && hava.veri && hava.veri.tz) || '';
+  let html = '<div class="hv-bas">' + escapeHtml(baslik) + '</div>';
+  if(hava && hava.veri){
+    const v = hava.veri;
+    const kd = havaKodu(v.kod);
+    html += '<div class="hv-simdi">'
+         + '<span class="hv-ikon" aria-hidden="true">' + kd[0] + '</span>'
+         + '<span class="hv-derece">' + escapeHtml(String(v.derece)) + '°</span>'
+         + '<span class="hv-durum">' + escapeHtml(t(kd[1])) + '</span>'
+         + '</div>';
+    const ek = [];
+    if(typeof v.yagis === 'number') ek.push(escapeHtml(t('hv_rain') + ' ' + havaYuzde(v.yagis)));
+    if(typeof v.ruzgar === 'number') ek.push(escapeHtml(t('hv_wind') + ' ' + havaHiz(v.ruzgar)));
+    if(ek.length){
+      html += '<div class="hv-satir' + (genis ? '' : ' hv-uzun') + '">'
+           + ek.map(x=> '<span>' + x + '</span>').join('') + '</div>';
+    }
+  }
+  html += isikHtml(konum.lat, konum.lon, tz, genis);
+  if(hava && hava.yas > 0){
+    html += '<div class="hv-not">' + escapeHtml(t('hv_stale')(havaYasMetni(hava.yas))) + '</div>';
+  }else if(!hava){
+    html += '<div class="hv-not">' + escapeHtml(t('hv_no_net')) + '</div>';
+  }
+  return html;
+}
+
+// --- Serit blogu ---
+let havaIstek = 0;
+function havaKapatDugmesi(){
+  return '<button type="button" class="hv-kapat" id="havaKapatBtn" title="'
+    + escapeHtml(t('hv_hide')) + '" aria-label="' + escapeHtml(t('hv_hide')) + '">×</button>';
+}
+// Koordinat yokken: hem izin dugmesi hem sehir kutusu. Izin veremeyen ya
+// da vermek istemeyen biri de isik saatlerini gorebilsin diye ikisi bir
+// arada duruyor; reddedilince ayri bir ekrana gecmiyoruz.
+function havaSorHtml(not){
+  return havaKapatDugmesi()
+    + '<div class="hv-bas">' + escapeHtml(t('hv_title')) + '</div>'
+    // Telefonda gorunen tek satir: dugme degil yazi. 44 piksellik dokunma
+    // hedefi ust seridi tek basina sisiriyordu; seridin KENDISI zaten
+    // dokunulabilir, dokununca asagidaki tam hal aciliyor.
+    + '<span class="hv-sor-kisa">' + escapeHtml(t('hv_title') + ' \u2014 ' + t('hv_ask_btn')) + '</span>'
+    + '<div class="hv-not">' + escapeHtml(not || t('hv_ask')) + '</div>'
+    + '<button type="button" class="btn btn-sm hv-ac" id="havaIzinBtn">'
+    + escapeHtml(t('hv_ask_btn')) + '</button>'
+    + '<form class="hv-sehir" id="havaSehirForm">'
+    + '<input type="text" id="havaSehirGiris" maxlength="80" autocomplete="address-level2"'
+    + ' aria-label="' + escapeHtml(t('hv_city_ph')) + '"'
+    + ' placeholder="' + escapeHtml(t('hv_city_ph')) + '">'
+    + '<button type="submit" class="btn btn-sm">→</button>'
+    + '</form>';
+}
+async function railHavaYenile(){
+  const kutu = document.getElementById('railHava');
+  const gosterDug = document.getElementById('havaGosterBtn');
+  if(!kutu) return;
+  const kapali = havaKapaliMi();
+  if(gosterDug) gosterDug.hidden = !kapali;
+  if(kapali){ kutu.hidden = true; kutu.innerHTML = ''; return; }
+  kutu.hidden = false;
+  const konum = havaKonumu();
+  if(!konum){
+    // Telefonda bu halin de TEK SATIR olmasi gerekiyor: aciklama ve
+    // sehir kutusu ust seridi 120 pikselin uzerine cikariyordu. Isaret
+    // sinifi CSS'e "burada yalnizca dugmeyi goster" diyor; dokununca
+    // (acik) tamami aciliyor.
+    kutu.classList.remove('acik');
+    kutu.classList.add('hv-sor');
+    kutu.innerHTML = havaSorHtml();
+    return;
+  }
+  kutu.classList.remove('hv-sor');
+  const jeton = ++havaIstek;
+  const baslik = (konum.ad ? konum.ad : t('hv_title')) + ' · ' + t('hv_today');
+  // Isik once ve hemen: hesaplaniyor, agi beklemesine gerek yok.
+  kutu.innerHTML = havaKapatDugmesi() + havaGovdesiHtml(baslik, konum, null, false);
+  const hava = await havaAl(konum.lat, konum.lon);
+  if(jeton !== havaIstek) return;
+  kutu.innerHTML = havaKapatDugmesi() + havaGovdesiHtml(baslik, konum, hava, false);
+}
+function havaKonumIste(){
+  const kutu = document.getElementById('railHava');
+  if(!navigator.geolocation){ if(kutu) kutu.innerHTML = havaSorHtml(t('hv_denied')); return; }
+  const dug = document.getElementById('havaIzinBtn');
+  if(dug){ dug.disabled = true; dug.textContent = t('hv_looking'); }
+  navigator.geolocation.getCurrentPosition(
+    (k)=>{
+      // Iki hane ~1 km: ev adresi hassasiyetinde bir sey saklanmiyor.
+      havaYaz(HAVA_KONUM_KEY, { lat: +k.coords.latitude.toFixed(2),
+                                lon: +k.coords.longitude.toFixed(2), t: Date.now() });
+      railHavaYenile();
+    },
+    ()=>{ if(kutu) kutu.innerHTML = havaSorHtml(t('hv_denied')); },
+    { timeout: 12000, maximumAge: 10 * 60 * 1000 });
+}
+async function havaSehirGonder(){
+  const giris = document.getElementById('havaSehirGiris');
+  const kutu = document.getElementById('railHava');
+  if(!giris || !kutu) return;
+  const ad = giris.value.trim();
+  if(!ad) return;
+  giris.disabled = true;
+  const yer = await yerdenKoordinat(ad);
+  if(!yer){
+    giris.disabled = false;
+    const not = kutu.querySelector('.hv-not');
+    // Serit blogunun kendi cumlesi: mekan penceresininki burada
+    // ("harita baglantisi ekle") anlamsiz kaliyordu.
+    if(not) not.textContent = t('hv_city_none');
+    return;
+  }
+  havaYaz(HAVA_KONUM_KEY, { lat: yer.lat, lon: yer.lon, ad: yer.ad, t: Date.now() });
+  railHavaYenile();
+}
+
+// --- Mekan penceresindeki blok ---
+// Konum iznine BAGLI DEGIL: koordinat once harita baglantisindan (kesin),
+// yoksa mekanin adindan/ilcesinden/sehrinden geliyor (yaklasik).
+async function mekanKoordinati(m){
+  const harita = mekanKonum(m.mapsUrl);
+  if(harita) return { lat: +harita.en.toFixed(2), lon: +harita.boy.toFixed(2), kaynak: 'harita' };
+  const denemeler = [];
+  if(m.name && m.city) denemeler.push(m.name + ', ' + m.city);
+  if(m.district && m.city) denemeler.push(m.district + ', ' + m.city);
+  if(m.district) denemeler.push(m.district);
+  if(m.city) denemeler.push(m.city);
+  for(let i = 0; i < denemeler.length; i++){
+    const yer = await yerdenKoordinat(denemeler[i]);
+    if(yer) return { lat: yer.lat, lon: yer.lon, ad: yer.ad, kaynak: 'ad' };
+  }
+  return null;
+}
+let mekanHavaIstek = 0;
+async function mekanHavaYenile(){
+  const kutu = document.getElementById('mk_hava');
+  if(!kutu) return;
+  const al = k => (document.getElementById(k) || {}).value || '';
+  const m = { name: al('mk_name').trim(), city: al('mk_city').trim(),
+              district: al('mk_district').trim(), mapsUrl: al('mk_maps') };
+  const jeton = ++mekanHavaIstek;
+  kutu.hidden = false;
+  if(!m.city && !m.district && !m.name && !mekanKonum(m.mapsUrl)){
+    kutu.innerHTML = '<div class="hv-not">' + escapeHtml(t('hv_place_need')) + '</div>';
+    return;
+  }
+  kutu.innerHTML = '<div class="hv-not">' + escapeHtml(t('hv_looking')) + '</div>';
+  const k = await mekanKoordinati(m);
+  if(jeton !== mekanHavaIstek) return;
+  if(!k){
+    kutu.innerHTML = '<div class="hv-not">' + escapeHtml(t('hv_place_need')) + '</div>';
+    return;
+  }
+  const hava = await havaAl(k.lat, k.lon);
+  if(jeton !== mekanHavaIstek) return;
+  const nereden = k.kaynak === 'harita' ? t('hv_src_map') : t('hv_src_city');
+  kutu.innerHTML = havaGovdesiHtml(t('hv_place_title') + ' · ' + nereden, k, hava, true);
+}
+
+// --- Baglantilar ---
+(function havaDinleyicileri(){
+  const kutu = document.getElementById('railHava');
+  if(kutu){
+    kutu.addEventListener('click', (e)=>{
+      if(e.target.closest('#havaKapatBtn')){ havaYaz(HAVA_KAPALI_KEY, true); railHavaYenile(); return; }
+      if(e.target.closest('#havaIzinBtn')){ havaKonumIste(); return; }
+      if(e.target.closest('button') || e.target.closest('input')) return;
+      // Telefonda serit tek satir; bos bir yerine dokununca tam hali aciliyor.
+      kutu.classList.toggle('acik');
+    });
+    kutu.addEventListener('submit', (e)=>{
+      if(!e.target.closest('#havaSehirForm')) return;
+      e.preventDefault();
+      havaSehirGonder();
+    });
+  }
+  const goster = document.getElementById('havaGosterBtn');
+  if(goster) goster.addEventListener('click', ()=>{ havaYaz(HAVA_KAPALI_KEY, false); railHavaYenile(); });
+  ['mk_city','mk_district','mk_maps','mk_name'].forEach(id=>{
+    const e = document.getElementById(id);
+    // 'change' — her tusa basista degil, alan birakilinca. Isim aramasi
+    // bosuna calismasin.
+    if(e) e.addEventListener('change', ()=> mekanHavaYenile());
+  });
+})();
+function havaBaslat(){
+  railHavaYenile();
+  // Izin DAHA ONCE verilmisse koordinat sessizce tazeleniyor. Durum
+  // 'granted' degilse hicbir sey sorulmuyor: acilista konum penceresi
+  // cikarmak en can sikici kaliplardan biri.
+  try{
+    if(navigator.permissions && navigator.permissions.query && havaKonumu() && !havaKapaliMi()){
+      navigator.permissions.query({ name:'geolocation' }).then(d=>{
+        if(!d || d.state !== 'granted') return;
+        navigator.geolocation.getCurrentPosition((k)=>{
+          const yeni = { lat: +k.coords.latitude.toFixed(2),
+                         lon: +k.coords.longitude.toFixed(2), t: Date.now() };
+          const eski = havaKonumu();
+          if(!eski || eski.lat !== yeni.lat || eski.lon !== yeni.lon){
+            havaYaz(HAVA_KONUM_KEY, yeni);
+            railHavaYenile();
+          }
+        }, ()=>{}, { timeout: 8000, maximumAge: 15 * 60 * 1000 });
+      }).catch(()=>{});
+    }
+  }catch(e){}
+}
+
 // ===== Saat dilimi =====
 // Kayit hangi saate gore planlandigini kendi icinde tasiyor. Baska bir ulke
 // icin uretilen icerikte "18:00" tek basina eksik bilgi; kimin 18:00'i oldugu
@@ -13128,6 +13729,7 @@ try{
   if(SAYFALAR.some(x=> x[0] === v)) acilisSayfasi = v;
 }catch(e){}
 setPage(acilisSayfasi);
+havaBaslat();
 // Every time the demo loads: "How this works" tour first, then — once that's
 // closed (skipped or finished) — the Pending popup, so a first-time visitor
 // always gets the explainer before the state-of-the-calendar nudge.

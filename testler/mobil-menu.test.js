@@ -51,8 +51,19 @@ async function ac(t, w){
       await p.$eval('#railFoot', e=> e.scrollWidth+'/'+e.clientWidth));
   bak('"..." dugmesi gorunur', await p.$eval('#railMoreBtn', e=> getComputedStyle(e).display !== 'none'));
   bak('arka perde gizli', await p.$eval('#railArka', e=> e.hidden));
-  const serit = await p.$eval('.rail', e=> Math.round(e.getBoundingClientRect().height));
-  bak('ust serit 70px altinda', serit < 70, serit+'px');
+  // Serit yuksekligi BASLIK CUBUGU olarak olculuyor: hava/isik satiri
+  // seride sonradan eklendi, kendi satirinda duruyor ve kullanici onu
+  // kapatabiliyor. Cubugun kendisi icin sinir degismedi; hava satirinin
+  // kendi butcesi asagida ve ayrica hava testinde olculuyor.
+  const olcum = await p.evaluate(()=>{
+    const s = document.querySelector('.rail').getBoundingClientRect();
+    const h = document.getElementById('railHava');
+    const hy = (h && !h.hidden) ? h.getBoundingClientRect().height : 0;
+    return { serit: Math.round(s.height), hava: Math.round(hy) };
+  });
+  bak('ust serit 70px altinda (hava satiri haric)',
+      olcum.serit - olcum.hava < 70, (olcum.serit - olcum.hava) + 'px');
+  bak('hava satiri tek satirlik yer kapliyor', olcum.hava < 30, olcum.hava + 'px');
 
   console.log('[acilinca]');
   await p.click('#railMoreBtn');
