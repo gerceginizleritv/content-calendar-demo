@@ -1713,6 +1713,11 @@ textarea.sc-ai-brief{min-height:64px;resize:vertical;line-height:1.5;}
 .ai-status{font-size:11.5px;color:var(--text-dim);margin-top:6px;min-height:14px;}
 .ai-status.error{color:var(--red);}
 .ai-status.ok{color:var(--green);}
+/* "Tam turu gor": dugme degil baglanti gibi — asil eylem "Tamam". */
+.tour-tam{font:inherit;font-size:12.5px;background:none;border:0;padding:0;
+  cursor:pointer;color:var(--accent);text-decoration:underline;
+  text-underline-offset:2px;}
+.tour-tam:hover{color:var(--text);}
 .tour-dots{display:flex;gap:5px;margin-top:14px;}
 .tour-dot{width:7px;height:7px;border-radius:50%;background:var(--line);border:0;padding:0;
   cursor:pointer;transition:background .15s, transform .15s;}
@@ -3484,6 +3489,8 @@ textarea.sc-ai-brief{min-height:64px;resize:vertical;line-height:1.5;}
     <div class="tour-dots" id="tourDots"></div>
     <div class="modal-actions" style="justify-content:space-between;align-items:center;">
       <span class="mono" id="tourSkip" data-i18n="tour_skip">Skip tour</span>
+      <!-- Yalnizca kisa turun son adiminda gorunuyor; metni JS yaziyor. -->
+      <button type="button" class="tour-tam" id="tourFull" hidden></button>
       <span style="display:flex;gap:8px;">
         <button class="btn" id="tourBackBtn" style="display:none;" data-i18n="btn_back">Back</button>
         <button class="btn btn-primary" id="tourNextBtn" data-i18n="btn_next">Next</button>
@@ -4514,6 +4521,7 @@ const LANG = {
     tour_v_dev_phone: "PHONE", tour_v_dev_laptop: "LAPTOP", tour_v_dev_tablet: "TABLET",
     tour_v_wait: "3 WAITING",
     tour_step: (n, toplam)=> `STEP ${n} / ${toplam}`,
+    tour_full: (n)=> `See the full tour (${n} steps)`,
     tour_skip: "Skip tour",
     tour_got_it: "Got it",
     btn_back: "Back",
@@ -5266,6 +5274,7 @@ const LANG = {
     tour_v_dev_phone: "TELEFON", tour_v_dev_laptop: "BİLGİSAYAR", tour_v_dev_tablet: "TABLET",
     tour_v_wait: "3 BEKLİYOR",
     tour_step: (n, toplam)=> `ADIM ${n} / ${toplam}`,
+    tour_full: (n)=> `Tam turu gör (${n} adım)`,
     tour_skip: "Turu atla",
     tour_got_it: "Anladım",
     btn_back: "Geri",
@@ -5394,6 +5403,10 @@ function setLanguage(lang, buluttanGeldi){
   renderMekanlar();
   renderLegend();
   renderCal();
+  // Tur acikken dil degisebiliyor (bulut tercihi acilistan biraz sonra
+  // gelebilir); acik turun kartlari eski dilde kalmasin.
+  const turPen = document.getElementById('tourOverlay');
+  if(turPen && turPen.classList.contains('open')) renderTourStep();
 }
 
 // Language-aware labels for content type / status (platform brand names like
@@ -7195,7 +7208,17 @@ function renderMekanlar(){
     mekanlar.length ? t('mk_count')(liste.length, mekanlar.length) : '';
   document.getElementById('mk_fotoHepsi').hidden = mekanFotosuzlar().length === 0;
   if(!liste.length){
-    kutu.innerHTML = `<p class="bos-not">${escapeHtml(t(mekanlar.length ? 'mk_no_match' : 'mk_empty'))}</p>`;
+    // Bos ekranin ortasinda YOL GOSTEREN dugme. Ekleme dugmesi sayfanin
+    // ust cubugunda da duruyor ama ilk kez gelen kisi bos bir alana
+    // bakiyor ve gozu once oraya gidiyor; cumleyi okuyup ne yapacagini
+    // ararken dugme elinin altinda olsun. Projeler sayfasinda bu zaten
+    // boyleydi, Fikirler'de ekleme karti ayni isi goruyor.
+    kutu.innerHTML = mekanlar.length
+      ? `<p class="bos-not">${escapeHtml(t('mk_no_match'))}</p>`
+      : `<div class="proj-empty"><p class="hint">${escapeHtml(t('mk_empty'))}</p>`
+        + `<button type="button" class="btn btn-primary" id="mk_emptyNew">${escapeHtml(t('mk_add'))}</button></div>`;
+    const bosDugme = document.getElementById('mk_emptyNew');
+    if(bosDugme) bosDugme.addEventListener('click', ()=> mekanPenceresiniAc(null));
     return;
   }
   kutu.innerHTML = liste.map(m=>{
@@ -7376,7 +7399,13 @@ function renderScriptler(){
     liste.length === scriptler.length ? t('sc_count')(scriptler.length)
                                       : t('sc_count_filtered')(liste.length, scriptler.length);
   if(!liste.length){
-    kap.innerHTML = '<p class="hint">' + escapeHtml(scriptler.length ? t('sc_none_match') : t('sc_none')) + '</p>';
+    kap.innerHTML = scriptler.length
+      ? '<p class="hint">' + escapeHtml(t('sc_none_match')) + '</p>'
+      : '<div class="proj-empty"><p class="hint">' + escapeHtml(t('sc_none')) + '</p>'
+        + '<button type="button" class="btn btn-primary" id="sc_emptyNew">' + escapeHtml(t('sc_new')) + '</button></div>';
+    const bosDugme = document.getElementById('sc_emptyNew');
+    if(bosDugme) bosDugme.addEventListener('click', ()=>
+      openScript(null, { projectId: scriptFiltresi && scriptFiltresi !== '-' ? scriptFiltresi : '' }));
     return;
   }
   kap.innerHTML = liste.map(sc=>{
@@ -12234,11 +12263,28 @@ const TOUR_VISUALS = [
 ];
 
 let tourIndex = 0;
+// ILK GELENE KISA TUR. On adim, daha hicbir seye dokunmamis birine
+// kapida gosterilen on ekranlik bir sunum demekti. Kimse silinmedi:
+// acilista uc adim gosteriliyor (bu ne ise yarar -> projeler -> takvim),
+// on adimlik tam surum "? Bu nasil calisir" dugmesinde duruyor ve kisa
+// turun son adiminda da bir baglantiyla cagriliyor.
+//
+// Adimlar yeniden YAZILMIYOR, mevcutlardan seciliyor: metin de gorsel de
+// iki dilde zaten hazir, kisaltma yeni ceviri borcu dogurmuyor.
+const TUR_KISA = [0, 4, 6];
+let turSecimi = null;   // null = tam tur; dizi = yalnizca o adimlar
+function turAdimlari(){
+  const hepsi = TOUR_STEPS_I18N[currentLang] || TOUR_STEPS_I18N.en;
+  return turSecimi ? turSecimi.map(i=> hepsi[i]) : hepsi;
+}
+// Gorseller HER ZAMAN asil sirayla duruyor: kisa turda gosterilen adimin
+// gercek indeksi lazim.
+function turGercekIndeks(i){ return turSecimi ? turSecimi[i] : i; }
 function renderTourStep(){
-  const steps = TOUR_STEPS_I18N[currentLang] || TOUR_STEPS_I18N.en;
+  const steps = turAdimlari();
   const s = steps[tourIndex];
   document.getElementById('tourStep').textContent = t('tour_step')(tourIndex+1, steps.length);
-  document.getElementById('tourVisual').innerHTML = TOUR_VISUALS[tourIndex]();
+  document.getElementById('tourVisual').innerHTML = TOUR_VISUALS[turGercekIndeks(tourIndex)]();
   document.getElementById('tourTitle').textContent = s.title;
   document.getElementById('tourBody').textContent = s.body;
   // Her adimin maddeleri: paragraf "neden", maddeler "tam olarak ne".
@@ -12258,9 +12304,19 @@ function renderTourStep(){
   nokta.querySelectorAll('[data-tour-git]').forEach(el=>{
     el.addEventListener('click', ()=>{ tourIndex = Number(el.dataset.tourGit); renderTourStep(); });
   });
+  // Kisa turun son adiminda tam tura gecis: merak eden kapali kalmasin.
+  const tam = document.getElementById('tourFull');
+  if(tam){
+    tam.hidden = !(turSecimi && tourIndex === steps.length - 1);
+    tam.textContent = t('tour_full')(TOUR_STEPS_I18N.en.length);
+  }
 }
 let tourAutoSequence = false; // true only for the automatic on-load tour, so we know to chain the Pending popup after it closes
-function openTour(){ tourIndex = 0; renderTourStep(); document.getElementById('tourOverlay').classList.add('open'); }
+function openTour(kisa){
+  turSecimi = kisa ? TUR_KISA : null;
+  tourIndex = 0; renderTourStep();
+  document.getElementById('tourOverlay').classList.add('open');
+}
 function closeTour(completed){
   trackOnce(completed === true ? 'funnel/tour-completed' : 'funnel/tour-skipped');
   document.getElementById('tourOverlay').classList.remove('open');
@@ -12272,15 +12328,19 @@ function closeTour(completed){
   }
 }
 document.getElementById('tourNextBtn').addEventListener('click', ()=>{
-  const steps = TOUR_STEPS_I18N[currentLang] || TOUR_STEPS_I18N.en;
-  if(tourIndex === steps.length-1){ closeTour(true); return; }
+  if(tourIndex === turAdimlari().length-1){ closeTour(true); return; }
   tourIndex++; renderTourStep();
 });
 document.getElementById('tourBackBtn').addEventListener('click', ()=>{ tourIndex--; renderTourStep(); });
 document.getElementById('tourSkip').addEventListener('click', ()=> closeTour(false));
 document.getElementById('tourX').addEventListener('click', ()=> closeTour(false));
 document.getElementById('tourOverlay').addEventListener('click', (e)=>{ if(e.target.id==='tourOverlay') closeTour(false); });
-document.getElementById('tourBtn').addEventListener('click', ()=>{ track('funnel/tour-reopened'); tourAutoSequence = false; openTour(); });
+document.getElementById('tourBtn').addEventListener('click', ()=>{ track('funnel/tour-reopened'); tourAutoSequence = false; openTour(false); });
+// Kisa turdan tam tura: adim sayaci basa donuyor, pencere kapanmiyor.
+document.getElementById('tourFull').addEventListener('click', ()=>{
+  track('funnel/tour-expanded');
+  turSecimi = null; tourIndex = 0; renderTourStep();
+});
 
 // ===== Kullanicinin kendi anahtariyla AI =====
 // TEK saglayici: Gemini. Sebep secim degil, ulasilabilirlik:
@@ -15275,7 +15335,7 @@ if(turuGordu){
   setTimeout(acilistaBildirim, 1400);
 }else{
   tourAutoSequence = true;
-  setTimeout(openTour, 400);
+  setTimeout(()=> openTour(true), 400);
 }
 </script>
   <script data-goatcounter="https://slate-demo.goatcounter.com/count"
