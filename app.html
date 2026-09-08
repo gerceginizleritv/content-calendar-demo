@@ -2030,7 +2030,10 @@ textarea.sc-ai-brief{min-height:64px;resize:vertical;line-height:1.5;}
      gerekirse kisaliyor (min-width:0 + ellipsis), fotograf 26px,
      dugme 34px. Boylece 360 piksellik ekranda bile ikisi yan yana
      duruyor ve serit tek bir baslik cubugu gibi okunuyor. */
-  .rail{padding:7px 10px;gap:6px;}
+  /* iOS Safari bazi bloklarda yaziyi kendiliginden buyutuyor;
+     18 piksel dedigimiz marka telefonda daha genis cikiyor ve
+     seridin hesabi tutmuyor. Yalnizca burada kapatiliyor. */
+  .rail{padding:7px 10px;gap:6px;-webkit-text-size-adjust:100%;text-size-adjust:100%;}
   .lockup{gap:7px;}
   .lockup .mark{width:22px;height:22px;}
   .wordmark{font-size:18px;}
@@ -2059,6 +2062,7 @@ textarea.sc-ai-brief{min-height:64px;resize:vertical;line-height:1.5;}
   }
   .rail-hava .hv-bas,
   .rail-hava .hv-durum,
+  .rail-hava .hv-ek,
   .rail-hava .hv-uzun{display:none;}
   .rail-hava .hv-kisa{display:inline;}
   .rail-hava.acik{flex-direction:column;align-items:flex-start;
@@ -2066,6 +2070,9 @@ textarea.sc-ai-brief{min-height:64px;resize:vertical;line-height:1.5;}
   .rail-hava.acik .hv-bas,
   .rail-hava.acik .hv-durum,
   .rail-hava.acik .hv-uzun{display:block;}
+  /* Bu bir flex SATIR: display:block verilirse aradaki bosluklar
+     gidiyor ve "Yagmur %0Ruzgar 11 km/s" diye bitisiyor. */
+  .rail-hava.acik .hv-ek{display:flex;}
   .rail-hava.acik .hv-kisa{display:none;}
   /* "Konumu ac" hali de tek satir: aciklama ve sehir kutusu ancak
      dokununca aciliyor. Ust serit yeniden sismesin. */
@@ -2080,7 +2087,13 @@ textarea.sc-ai-brief{min-height:64px;resize:vertical;line-height:1.5;}
   .rail-hava .hv-derece{font-size:14px;}
   .rail-hava .hv-ikon{font-size:14px;}
   .rail-hava .hv-kapat{top:2px;right:0;}
-  .rail-brand{flex:0 1 auto;min-width:0;}
+  /* flex-basis 0 SART. Sarma acik bir flex kabinda tarayici once
+     satiri boluyor, KUCULTMEYI ondan sonra yapiyor: flex-basis:auto
+     olan marka tam genisligiyle olculup "sigmiyor" deniyor ve "..."
+     dugmesi alt satira dusuyordu (telefonda gorulen buydu). Basis 0
+     olunca marka satir bolunmesine hic sebep olmuyor, yer daralinca
+     kendisi kisaliyor. */
+  .rail-brand{flex:1 1 0;min-width:0;}
   .rail-me{flex:0 0 auto;min-width:0;gap:6px;margin-left:8px;}
   .rail-more{flex:none;}
   .avatar{width:28px;height:28px;font-size:11px;}
@@ -10799,7 +10812,7 @@ function havaGovdesiHtml(baslik, konum, hava, genis){
     if(typeof v.yagis === 'number') ek.push(escapeHtml(t('hv_rain') + ' ' + havaYuzde(v.yagis)));
     if(typeof v.ruzgar === 'number') ek.push(escapeHtml(t('hv_wind') + ' ' + havaHiz(v.ruzgar)));
     if(ek.length){
-      html += '<div class="hv-satir' + (genis ? '' : ' hv-uzun') + '">'
+      html += '<div class="hv-satir' + (genis ? '' : ' hv-ek') + '">'
            + ek.map(x=> '<span>' + x + '</span>').join('') + '</div>';
     }
   }

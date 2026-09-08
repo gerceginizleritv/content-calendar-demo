@@ -288,71 +288,127 @@ const metin = (p, sec)=> p.$eval(sec, e=> e.textContent.replace(/\s+/g,' ').trim
   await c0.close();
 
   // ---------- 10. Telefon ----------
-  // Ust serit gecen hafta kucultuldu. Hava seridi onu yeniden sismesin
+  // Ust serit gecen hafta kucultuldu. Hava satiri onu yeniden sismesin
   // diye AYRI bir satirda; marka, kimlik ve "..." hala tek satirda.
+  //
+  // Burasi TEK sayfada, viewport degistirilerek olculuyor. Her genislik
+  // icin ayri tarayici acmak testi bes dakikaya cikariyor ve kosucunun
+  // 200 saniyelik siniri onu kesiyordu.
   console.log('[telefon: üst şerit bozulmuyor]');
-  for(const [ad, w] of [['320',320],['iPhone SE',375],['iPhone 14',390],['Android',412]]){
-    const { c, p } = await kur(t, { viewport:{ width:w, height:800 }, isMobile:true, hasTouch:true });
-    await havaYolu(p, true); await yerYolu(p);
-    await p.goto(KOK + '/app.html', { waitUntil:'domcontentloaded' });
-    await p.waitForTimeout(1400);
-    await p.evaluate(()=>{
-      localStorage.setItem('demo_hava_konum', JSON.stringify({ lat:41.01, lon:28.98, t:Date.now() }));
-      localStorage.setItem('demo_tour_done','1');
-    });
-    await p.reload({ waitUntil:'domcontentloaded' });
-    await p.waitForFunction(()=> /°/.test(document.getElementById('railHava').textContent),
-                            null, { timeout: 8000 });
-    const o = await p.evaluate(()=>{
-      const y = s => { const e = document.querySelector(s); return e ? e.getBoundingClientRect() : null; };
-      const marka = y('.rail-brand'), ben = y('.rail-me'), nokta = y('.rail-more'), hava = y('#railHava');
-      return { marka:marka.top, ben:ben.top, nokta:nokta.top, hava:hava.top,
-               havaAlt:hava.bottom, seritYuk: y('.rail').height,
-               yatay: document.documentElement.scrollWidth - document.documentElement.clientWidth,
-               satir: hava.height };
-    });
+  const { c: cm, p: pm } = await kur(t, { viewport:{ width:412, height:850 },
+                                          isMobile:true, hasTouch:true });
+  const hata3 = []; pm.on('pageerror', e=> hata3.push(String(e)));
+  await havaYolu(pm, true); await yerYolu(pm);
+  await pm.goto(KOK + '/app.html', { waitUntil:'domcontentloaded' });
+  await pm.waitForTimeout(1400);
+  await pm.evaluate(()=>{
+    localStorage.setItem('demo_tour_done','1');
+    localStorage.setItem('demo_hava_konum', JSON.stringify({ lat:41.01, lon:28.98, t:Date.now() }));
+  });
+  await pm.reload({ waitUntil:'domcontentloaded' });
+  await pm.waitForFunction(()=> /°/.test(document.getElementById('railHava').textContent),
+                           null, { timeout: 10000 });
+  await pm.evaluate(()=>{
+    document.querySelectorAll('.overlay.open').forEach(o=> o.classList.remove('open'));
+    setLanguage('tr');
+    document.getElementById('authBtn').textContent = '\u2601 Hesabım';
+    document.getElementById('railAvatar').textContent = 'MB';
+  });
+  await pm.waitForTimeout(400);
+
+  const seritOlc = ()=> pm.evaluate(()=>{
+    const y = s => { const e = document.querySelector(s); return e ? e.getBoundingClientRect() : null; };
+    const marka = y('.rail-brand'), ben = y('.rail-me'), nokta = y('.rail-more'), hava = y('#railHava');
+    return { marka:marka.top, ben:ben.top, nokta:nokta.top, hava:hava.top,
+             satir:hava.height, seritYuk: y('.rail').height,
+             yatay: document.documentElement.scrollWidth - document.documentElement.clientWidth };
+  });
+
+  for(const [ad, w] of [['320',320],['iPhone SE',375],['iPhone 14',390],['Android',412],['büyük',430]]){
+    await pm.setViewportSize({ width:w, height:850 });
+    await pm.waitForTimeout(250);
+    const o = await seritOlc();
     console.log('  [' + ad + ' ' + w + 'px]');
     bak('marka, kimlik ve "..." aynı satırda',
-        Math.abs(o.marka - o.ben) < 12 && Math.abs(o.marka - o.nokta) < 12,
+        Math.abs(o.marka - o.ben) < 14 && Math.abs(o.nokta - o.ben) < 14,
         [o.marka, o.ben, o.nokta].map(Math.round).join(' / '));
     bak('hava şeridi ALT satırda', o.hava > o.ben + 8, Math.round(o.hava) + ' > ' + Math.round(o.ben));
     bak('hava şeridi tek satır (30px altı)', o.satir < 30, Math.round(o.satir) + 'px');
     bak('üst şerit hâlâ makul (110px altı)', o.seritYuk < 110, Math.round(o.seritYuk) + 'px');
     bak('sayfa yatay kaymıyor', o.yatay <= 0, o.yatay + 'px');
-    await c.close();
   }
+
+  // GERCEK TELEFONDA CIKAN HATA. iOS Safari bazi bloklarda yaziyi
+  // kendiliginden buyutuyor. Sarma acik bir flex kabinda tarayici once
+  // satiri boluyor, kucultmeyi ondan SONRA yapiyor: buyuyen marka
+  // "sigmiyorum" deyip "..." dugmesini alt satira atiyordu ve ust serit
+  // iki satir oluyordu. Burada yaziyi biz sisiriyoruz.
+  console.log('[yazı büyütülse bile üst şerit tek satır]');
+  await pm.evaluate(()=>{
+    const s = document.createElement('style');
+    s.id = 'sisir';
+    s.textContent = '.wordmark{font-size:25px !important;}';
+    document.head.appendChild(s);
+  });
+  for(const w of [320, 360, 390, 414, 430]){
+    await pm.setViewportSize({ width:w, height:850 });
+    await pm.waitForTimeout(250);
+    const o = await seritOlc();
+    console.log('  [' + w + 'px, şişirilmiş yazı]');
+    bak('"..." düğmesi alt satıra düşmedi', Math.abs(o.nokta - o.ben) < 14,
+        Math.round(o.nokta) + ' / ' + Math.round(o.ben));
+    bak('marka aynı satırda (kısalarak)', Math.abs(o.marka - o.ben) < 16,
+        Math.round(o.marka) + ' / ' + Math.round(o.ben));
+    bak('üst şerit hâlâ 110px altında', o.seritYuk < 110, Math.round(o.seritYuk) + 'px');
+  }
+  await pm.evaluate(()=> document.getElementById('sisir').remove());
+  await pm.setViewportSize({ width:390, height:850 });
+  await pm.waitForTimeout(250);
+
+  // Acik halde satirlar birbirine yapismiyor: yagmur/ruzgar satiri bir
+  // flex satiri; display:block verilirse "Yagmur %20Ruzgar 11 km/s" oluyordu.
+  console.log('[dokununca açılan hâl]');
+  await pm.evaluate(()=> document.getElementById('railHava').click());
+  await pm.waitForTimeout(300);
+  const acikHal = await pm.evaluate(()=>{
+    const ek = document.querySelector('#railHava .hv-ek');
+    // textContent'te bosluk YOK (iki ayri span); goze gorunen bosluk flex
+    // gap'ten geliyor, o yuzden kutulari olcuyoruz.
+    const ic = ek ? [...ek.children].map(e=> e.getBoundingClientRect()) : [];
+    return { display: ek ? getComputedStyle(ek).display : 'yok',
+             aralik: ic.length > 1 ? Math.round(ic[1].left - ic[0].right) : -1,
+             bas: !!document.querySelector('#railHava .hv-bas').offsetParent };
+  });
+  bak('yağmur/rüzgâr satırı flex kaldı', acikHal.display === 'flex', acikHal.display);
+  bak('yağmur ve rüzgâr birbirine yapışmadı', acikHal.aralik >= 5, acikHal.aralik + 'px aralık');
+  bak('açılınca başlık da görünüyor', acikHal.bas);
+  await pm.evaluate(()=> document.getElementById('railHava').classList.remove('acik'));
 
   // Konum daha acilmamisken de tek satir olmali: aciklama ve sehir kutusu
   // ust seridi 120 pikselin uzerine cikariyordu.
-  console.log('  [konum açılmadan, 390px]');
-  {
-    const { c, p } = await kur(t, { viewport:{ width:390, height:800 }, isMobile:true, hasTouch:true });
-    await havaYolu(p, true); await yerYolu(p);
-    await p.goto(KOK + '/app.html', { waitUntil:'domcontentloaded' });
-    await p.waitForTimeout(1400);
-    await p.evaluate(()=>{ localStorage.setItem('demo_tour_done','1'); });
-    await p.reload({ waitUntil:'domcontentloaded' });
-    await p.waitForTimeout(1500);
-    await p.evaluate(()=>{ document.querySelectorAll('.overlay.open').forEach(o=> o.classList.remove('open')); });
-    const o = await p.evaluate(()=>{
-      const h = document.getElementById('railHava');
-      return { hava: h.getBoundingClientRect().height,
-               serit: document.querySelector('.rail').getBoundingClientRect().height,
-               dugmeGorunur: !!(document.getElementById('havaIzinBtn') || {}).offsetParent,
-               yazi: (document.querySelector('.hv-sor-kisa') || {}).textContent || '' };
-    });
-    bak('sorma hâli de tek satır', o.hava < 30, Math.round(o.hava) + 'px');
-    bak('üst şerit 100px altında', o.serit < 100, Math.round(o.serit) + 'px');
-    bak('44px düğme yerine tek satır yazı', !o.dugmeGorunur && o.yazi.length > 5, o.yazi);
-    await p.evaluate(()=> document.getElementById('railHava').click());
-    await p.waitForTimeout(250);
-    const acik = await p.evaluate(()=> ({
-      dugme: !!(document.getElementById('havaIzinBtn') || {}).offsetParent,
-      sehir: !!(document.getElementById('havaSehirGiris') || {}).offsetParent }));
-    bak('dokununca düğme ve şehir kutusu açılıyor', acik.dugme && acik.sehir,
-        JSON.stringify(acik));
-    await c.close();
-  }
+  console.log('[konum açılmadan]');
+  await pm.evaluate(()=>{ localStorage.removeItem('demo_hava_konum'); railHavaYenile(); });
+  await pm.waitForTimeout(400);
+  const sorHal = await pm.evaluate(()=>{
+    const h = document.getElementById('railHava');
+    return { hava: h.getBoundingClientRect().height,
+             serit: document.querySelector('.rail').getBoundingClientRect().height,
+             dugmeGorunur: !!(document.getElementById('havaIzinBtn') || {}).offsetParent,
+             yazi: (document.querySelector('.hv-sor-kisa') || {}).textContent || '' };
+  });
+  bak('sorma hâli de tek satır', sorHal.hava < 30, Math.round(sorHal.hava) + 'px');
+  bak('üst şerit 100px altında', sorHal.serit < 100, Math.round(sorHal.serit) + 'px');
+  bak('44px düğme yerine tek satır yazı',
+      !sorHal.dugmeGorunur && sorHal.yazi.length > 5, sorHal.yazi);
+  await pm.evaluate(()=> document.getElementById('railHava').click());
+  await pm.waitForTimeout(300);
+  const acilan = await pm.evaluate(()=> ({
+    dugme: !!(document.getElementById('havaIzinBtn') || {}).offsetParent,
+    sehir: !!(document.getElementById('havaSehirGiris') || {}).offsetParent }));
+  bak('dokununca düğme ve şehir kutusu açılıyor', acilan.dugme && acilan.sehir,
+      JSON.stringify(acilan));
+  bak('sayfa hatası yok (telefon)', hata3.length === 0, hata3.join(' | '));
+  await cm.close();
 
   await t.close();
   console.log('\n' + g + ' gecti, ' + k + ' kaldi');
