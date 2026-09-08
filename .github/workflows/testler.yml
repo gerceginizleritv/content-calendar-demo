@@ -1,0 +1,45 @@
+name: Testler
+
+on:
+  push:
+  pull_request:
+  schedule:
+    - cron: '0 2 * * *'
+  workflow_dispatch:
+
+jobs:
+  testler:
+    runs-on: ubuntu-latest
+    timeout-minutes: 80
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+
+      - name: Playwright kur
+        run: |
+          npm init -y
+          npm install playwright
+          npx playwright install --with-deps chromium
+
+      - name: Testleri koş
+        run: |
+          if [ "${{ github.event_name }}" = "schedule" ]; then
+            ./testler/kosu.sh
+          else
+            ./testler/kosu.sh mobil takvim proje mekan fikir izgara serit
+          fi
+
+      - name: Sonucu yaz
+        if: always()
+        run: cat testler/sonuc.txt
+
+      - name: Sonucu sakla
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: test-sonucu
+          path: testler/sonuc.txt
