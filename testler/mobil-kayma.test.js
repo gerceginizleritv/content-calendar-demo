@@ -1,14 +1,14 @@
-// Telefonda ekran kaydirirken saga sola oynuyor, birakinca yayliyordu.
+// Pencere acikken arkadaki sayfa DURMALI: eskiden pencerenin sonuna
+// gelip kaydirmaya devam edince altindaki takvim kayiyor, pencere
+// kapaninca takvim baska bir yerde duruyordu.
 //
-// Sebep: iOS Safari BELGENIN yaylanmasini kapatmiyor —
-// overscroll-behavior'u yalnizca IC kaydiricilarda dinliyor, sayfanin
-// kendisinde degil. Ilk denemede kurali belgeye yazmistik, ise
-// yaramadi. Cozum kaydirmayi belgeden alip .wrap'in icine koymak:
-// orada overscroll-behavior:none gercekten calisiyor.
+// Not: bir ara kaydirma belgeden alinip .wrap'in icine konmustu
+// (iOS'un lastik hareketini kapatmak icin). Geri alindi — alt sekme
+// cubugu o kabin icinde kalip ekranin ortasina tasindi. Simdiki yapi:
+// kaydiran sey belge, kilit de govde uzerinde.
 //
-// Headless tarayici lastik hareketini uretmiyor; bu yuzden test
-// YAPININ dogru oldugunu olcuyor: telefonda belge hic kaymiyor, kayan
-// sey .wrap, ve pencere acikken .wrap duruyor.
+// Headless tarayici lastik hareketini uretmiyor; test kilidin
+// gercekten calistigini ve sayfanin yerinden oynamadigini olcuyor.
 const { chromium } = require('./araclar');
 const KOK = process.argv[2] || 'http://127.0.0.1:8098';
 let g = 0, k = 0;
@@ -29,42 +29,27 @@ async function ac(t, w, dokunmatik){
   await p.waitForTimeout(400);
   return p;
 }
-// Telefonda kayan sey .wrap, masaustunde belgenin kendisi.
-const kilit = p => p.evaluate(()=>{
-  const w = document.querySelector('.wrap');
-  const icerde = getComputedStyle(w).overflowY !== 'visible';
-  return { kilitli: w.classList.contains('kilitli'),
-           donuk: icerde ? getComputedStyle(w).overflowY === 'hidden' : false,
-           kayma: Math.round(icerde ? w.scrollTop : window.scrollY) };
-});
-const kaydir = (p, y) => p.evaluate(v=>{
-  const w = document.querySelector('.wrap');
-  if(getComputedStyle(w).overflowY !== 'visible') w.scrollTop = v; else window.scrollTo(0, v);
-}, y);
+const kilit = p => p.evaluate(()=>({
+  donuk: getComputedStyle(document.body).position === 'fixed',
+  top: document.body.style.top,
+  kayma: Math.round(window.scrollY)
+}));
+const kaydir = (p, y) => p.evaluate(v=> window.scrollTo(0, v), y);
 
 (async () => {
   const t = await chromium.launch();
   const p = await ac(t, 390, true);
   const hata = []; p.on('pageerror', e=> hata.push(String(e)));
 
-  console.log('[belge hic kaymiyor, kayan sey .wrap]');
-  bak('belge dikeyde kaymiyor',
-      await p.evaluate(()=> document.documentElement.scrollHeight <= document.documentElement.clientHeight + 1),
-      await p.evaluate(()=> document.documentElement.scrollHeight + '/' + document.documentElement.clientHeight));
-  bak('belge yatayda kaymiyor',
+  console.log('[kaydiran sey belgenin kendisi]');
+  bak('belge dikeyde kayiyor',
+      await p.evaluate(()=> document.documentElement.scrollHeight > document.documentElement.clientHeight + 1));
+  bak('belge yatayda KAYMIYOR',
       await p.evaluate(()=> document.documentElement.scrollWidth <= document.documentElement.clientWidth + 1),
       await p.evaluate(()=> document.documentElement.scrollWidth + '/' + document.documentElement.clientWidth));
-  bak('.wrap kaydirici', await p.evaluate(()=> getComputedStyle(document.querySelector('.wrap')).overflowY) === 'auto');
-  bak('.wrap YAYLANMIYOR (overscroll-behavior none)',
-      await p.evaluate(()=> getComputedStyle(document.querySelector('.wrap')).overscrollBehaviorY) === 'none');
-  bak('.wrap gercekten kaydirilabilir',
-      await p.evaluate(()=>{ const w = document.querySelector('.wrap');
-        return w.scrollHeight > w.clientHeight + 1; }));
-  bak('.wrap yatayda kaymiyor',
-      await p.evaluate(()=>{ const w = document.querySelector('.wrap');
-        return w.scrollWidth <= w.clientWidth + 1; }),
-      await p.evaluate(()=>{ const w = document.querySelector('.wrap');
-        return w.scrollWidth + '/' + w.clientWidth; }));
+  bak('.wrap kaydirici DEGIL (sabit ogeler icinde kalmasin)',
+      await p.evaluate(()=> getComputedStyle(document.querySelector('.wrap')).overflowY) === 'visible',
+      await p.evaluate(()=> getComputedStyle(document.querySelector('.wrap')).overflowY));
 
   console.log('[sayfa ici kaydiricilar da yaylanmiyor]');
   for(const sec of ['.cal-grid-wrap', '.cal-table-wrap', '.filter-bar']){
@@ -81,9 +66,8 @@ const kaydir = (p, y) => p.evaluate(v=>{
   await p.evaluate(()=>{ openModal(null, fmtKey(new Date())); });
   await p.waitForTimeout(450);
   const acik = await kilit(p);
-  bak('KAYDIRMA DONDU', acik.kilitli && acik.donuk, JSON.stringify(acik));
-  bak('donarken yerinden oynamadi', Math.abs(acik.kayma - once.kayma) <= 2,
-      once.kayma + ' -> ' + acik.kayma);
+  bak('KAYDIRMA DONDU (position:fixed)', acik.donuk, JSON.stringify(acik));
+  bak('kayma konumu saklandi', acik.top === '-' + once.kayma + 'px', acik.top);
   bak('pencere kendi icinde kayiyor, arkaya zincirlenmiyor',
       await p.evaluate(()=> getComputedStyle(document.querySelector('.overlay.open .modal')).overscrollBehaviorY) === 'none');
   bak('pencere acikken belge yine kaymiyor',
@@ -93,7 +77,8 @@ const kaydir = (p, y) => p.evaluate(v=>{
   await p.evaluate(()=>{ document.querySelectorAll('.overlay.open').forEach(o=>o.classList.remove('open')); });
   await p.waitForTimeout(450);
   const sonra = await kilit(p);
-  bak('kilit cozuldu', !sonra.kilitli && !sonra.donuk, JSON.stringify(sonra));
+  bak('kilit cozuldu', !sonra.donuk, JSON.stringify(sonra));
+  bak('top temizlendi', sonra.top === '', sonra.top);
   bak('AYNI YERE geri donuldu', Math.abs(sonra.kayma - once.kayma) <= 2,
       once.kayma + ' -> ' + sonra.kayma);
 
@@ -132,17 +117,15 @@ const kaydir = (p, y) => p.evaluate(v=>{
   bak('ikisi de kapaninca cozuldu', !(await kilit(p)).donuk);
   await p.close();
 
-  console.log('[masaustunde eskisi gibi: kaydiran sey belge]');
+  console.log('[masaustunde govde dondurulmuyor]');
   const d = await ac(t, 1280, false);
-  bak('belge kaydiriyor',
-      await d.evaluate(()=> document.documentElement.scrollHeight > document.documentElement.clientHeight + 1));
-  bak('.wrap kaydirici degil',
-      await d.evaluate(()=> getComputedStyle(document.querySelector('.wrap')).overflowY) === 'visible',
-      await d.evaluate(()=> getComputedStyle(document.querySelector('.wrap')).overflowY));
   await d.evaluate(()=> window.scrollTo(0, 180));
   await d.waitForTimeout(200);
   await d.evaluate(()=>{ openModal(null, fmtKey(new Date())); });
   await d.waitForTimeout(400);
+  bak('masaustunde position static kaliyor',
+      await d.evaluate(()=> getComputedStyle(document.body).position) === 'static',
+      await d.evaluate(()=> getComputedStyle(document.body).position));
   bak('masaustunde sayfa yerinden oynamadi',
       Math.abs(await d.evaluate(()=> Math.round(window.scrollY)) - 180) <= 2,
       String(await d.evaluate(()=> Math.round(window.scrollY))));
