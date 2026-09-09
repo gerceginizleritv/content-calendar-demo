@@ -4363,6 +4363,7 @@ const LANG = {
     hv_denied: "Location is off. Type a city and the light times still work.",
     hv_city_ph: "City",
     hv_city_none: "No place found by that name.",
+    bulut_bekle: "Loading your account\u2026",
     hv_today: "Today",
     hv_sunrise: "Sunrise",
     hv_sunset: "Sunset",
@@ -5146,6 +5147,7 @@ const LANG = {
     hv_denied: "Konum kapal\u0131. \u015Eehir yazarsan \u0131\u015F\u0131k saatleri yine \u00E7al\u0131\u015F\u0131r.",
     hv_city_ph: "\u015Eehir",
     hv_city_none: "Bu ada uyan bir yer bulunamad\u0131.",
+    bulut_bekle: "Hesab\u0131n y\u00FCkleniyor\u2026",
     hv_today: "Bug\u00FCn",
     hv_sunrise: "G\u00FCn do\u011Fumu",
     hv_sunset: "G\u00FCn bat\u0131m\u0131",
@@ -7386,8 +7388,10 @@ function renderMekanlar(){
     // boyleydi, Fikirler'de ekleme karti ayni isi goruyor.
     kutu.innerHTML = mekanlar.length
       ? `<p class="bos-not">${escapeHtml(t('mk_no_match'))}</p>`
-      : `<div class="proj-empty"><p class="hint">${escapeHtml(t('mk_empty'))}</p>`
-        + `<button type="button" class="btn btn-primary" id="mk_emptyNew">${escapeHtml(t('mk_add'))}</button></div>`;
+      : bulutBekleniyor()
+        ? `<p class="hint">${escapeHtml(t('bulut_bekle'))}</p>`
+        : `<div class="proj-empty"><p class="hint">${escapeHtml(t('mk_empty'))}</p>`
+          + `<button type="button" class="btn btn-primary" id="mk_emptyNew">${escapeHtml(t('mk_add'))}</button></div>`;
     const bosDugme = document.getElementById('mk_emptyNew');
     if(bosDugme) bosDugme.addEventListener('click', ()=> mekanPenceresiniAc(null));
     return;
@@ -7575,6 +7579,8 @@ function renderScriptler(){
   if(!liste.length){
     kap.innerHTML = scriptler.length
       ? '<p class="hint">' + escapeHtml(t('sc_none_match')) + '</p>'
+      : bulutBekleniyor()
+      ? '<p class="hint">' + escapeHtml(t('bulut_bekle')) + '</p>'
       : '<div class="proj-empty"><p class="hint">' + escapeHtml(t('sc_none')) + '</p>'
         + '<button type="button" class="btn btn-primary" id="sc_emptyNew">' + escapeHtml(t('sc_new')) + '</button></div>';
     const bosDugme = document.getElementById('sc_emptyNew');
@@ -9068,6 +9074,12 @@ async function kayitPush(tablo, liste, kirli, silinen, satirYap){
 
 // Giris sonrasi eslestirme. Satir satir, DAHA YENI olan kazanir:
 // bir cihazda duzenlenen fikir, otekindeki eski kopyayla ezilmiyor.
+// Ilk bulut okumasi bitene kadar "hic kayit yok" DENMEZ. Hesabinda 41
+// mekan olan biri, o cihazda yerel kopya yoksa, okuma donene dek bos bir
+// ekrana bakiyordu — ustelik "Henuz mekan yok" diye yaziyordu. Bos ekran
+// bir BILGI; onu ancak bildigimizde soyleyebiliriz.
+let bulutIlkOkumaBitti = false;
+function bulutBekleniyor(){ return !!(sb && session) && !bulutIlkOkumaBitti; }
 async function fikirScriptBulutSenkron(){
   if(!sb || !session) return;
   try{
@@ -9088,12 +9100,27 @@ async function fikirScriptBulutSenkron(){
     if(degistiF) saveFikirler();
     if(degistiS) saveScriptler();
     if(degistiM) saveMekanlar();
-    if(degistiF || degistiS || degistiM){ renderFikirler(); renderScriptler(); renderMekanlar(); renderProjects(); }
+    // Cizim her halukarda: bayrak kalkinca bos ekranin metni de degisiyor,
+    // degisen kayit olmasa bile ekran tazelenmeli.
+    bulutIlkOkumaBitti = true;
+    ekraniTazele();
     await fikirPush(); await scriptPush();
     if(!m.error) await mekanPush();
   }catch(err){
     console.error('[bulut] fikir/script okuma hatasi', err);
+    // Okuma dustuyse de bekleme bitti: kimse sonsuza kadar "yukleniyor"
+    // yazisina bakmasin.
+    bulutIlkOkumaBitti = true;
+    ekraniTazele();
   }
+}
+// Cizimler TEK TEK korunuyor: biri hata verirse otekiler yine ciziliyor.
+// Eskiden dordu tek satirdaydi ve o satir senkronun try blogundaydi: ilk
+// cizim patlarsa mekanlar hic cizilmiyor, hata da yutuluyordu.
+function ekraniTazele(){
+  [renderFikirler, renderScriptler, renderMekanlar, renderProjects].forEach(ciz=>{
+    try{ ciz(); }catch(e){ console.error('[cizim] ' + (ciz.name || '?'), e); }
+  });
 }
 function listeKat(yerel, uzak, kirli){
   let degisti = false;
@@ -15123,6 +15150,9 @@ async function hesapMetaVerisiniTamamla(){
 }
 async function afterSignIn(){
   dirtyIds.clear(); removedIds.clear();
+  // Yeniden giriste de bekleme basliyor: onceki oturumdan kalan
+  // "okundu" isareti bos ekrani erken gostermesin.
+  bulutIlkOkumaBitti = false;
   hesapMetaVerisiniTamamla();
   // Sablonlar buluta degil tarayiciya yaziliyor, bu yuzden bulut
   // okumasindan ONCE ve onun disinda yukleniyor. Eskiden en sonda,

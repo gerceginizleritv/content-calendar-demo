@@ -89,6 +89,52 @@ async function ac(t, turGorulmus){
                          saveMekanlar(); setPage('places'); renderMekanlar(); });
   await p.waitForTimeout(350);
   bak('Mekanlar: kayit varken bos dugmesi yok', await p.$('#mk_emptyNew') === null);
+
+  // ---------- 1b. Bulut okunurken "hic kayit yok" DENMEZ ----------
+  // Gercek telefonda cikti: hesapta 41 mekan varken giristen hemen sonra
+  // ekran "Henuz mekan yok" diyordu. O cihazda yerel kopya olmadigi icin
+  // liste ancak bulut okumasi donunce doluyor. Bos ekran bir BILGI; onu
+  // ancak bildigimizde soyleyebiliriz.
+  console.log('[bulut okunurken]');
+  await p.evaluate(()=>{
+    // Oturum aciks gibi davran, okuma daha bitmemis olsun.
+    sb = sb || {}; session = { user:{ id:'x' } };
+    bulutIlkOkumaBitti = false;
+    mekanlar = []; scriptler = [];
+    setPage('places'); renderMekanlar();
+  });
+  await p.waitForTimeout(200);
+  const bekleyen = await p.$eval('#mk_list', e=> e.textContent.trim());
+  bak('Mekanlar: "hic yok" demiyor, bekliyor', /y[uü]kleniyor|Loading/i.test(bekleyen), bekleyen);
+  bak('Mekanlar: bos ekran dugmesi de yok', await p.$('#mk_emptyNew') === null);
+  await p.evaluate(()=>{ setPage('scripts'); renderScriptler(); });
+  await p.waitForTimeout(200);
+  const bekleyenS = await p.$eval('#sc_list', e=> e.textContent.trim());
+  bak('Scriptler: "hic yok" demiyor, bekliyor', /y[uü]kleniyor|Loading/i.test(bekleyenS), bekleyenS);
+
+  // Okuma bitince gercek bos ekran geri geliyor.
+  await p.evaluate(()=>{ bulutIlkOkumaBitti = true; setPage('places'); renderMekanlar(); });
+  await p.waitForTimeout(200);
+  bak('okuma bitince bos ekran dugmesi geri geliyor', await p.$('#mk_emptyNew') !== null);
+
+  // Cizimler tek tek korunuyor: biri patlarsa otekiler yine cizilmeli.
+  // Eskiden dordu tek satirdaydi, ilk cizim patlayinca mekanlar hic
+  // cizilmiyordu ve hata da yutuluyordu.
+  const dayanikli = await p.evaluate(()=>{
+    const eskiF = renderFikirler;
+    let mekanCizildi = false;
+    const eskiM = renderMekanlar;
+    try{
+      renderFikirler = ()=>{ throw new Error('bilerek'); };
+      renderMekanlar = ()=>{ mekanCizildi = true; };
+      ekraniTazele();
+    }finally{
+      renderFikirler = eskiF; renderMekanlar = eskiM;
+    }
+    return mekanCizildi;
+  });
+  bak('bir cizim patlasa da mekanlar cizilyor', dayanikli === true, String(dayanikli));
+  await p.evaluate(()=>{ session = null; bulutIlkOkumaBitti = false; });
   bak('sayfa hatasi yok (bos sayfalar)', hata.length === 0, hata.join(' | '));
   await p.close();
 
