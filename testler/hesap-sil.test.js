@@ -51,6 +51,13 @@ const SAHTE = (secenek)=>{
         };
       }
     },
+    from(tablo){
+      return { delete(){ return { eq(){
+        izKaydet('sil:' + tablo);
+        return Promise.resolve({ error: (secenek.tabloHata || []).indexOf(tablo) !== -1
+                                        ? { message:'olmadi' } : null });
+      } }; } };
+    },
     rpc(ad){
       izKaydet('rpc:' + ad);
       return Promise.resolve({ error: secenek.rpcHata ? { message: secenek.rpcHata } : null });
@@ -120,34 +127,54 @@ const SAHTE = (secenek)=>{
   bak('dosyalar hesaptan ÖNCE silindi', sonRemove !== -1 && sonRemove < rpcSira,
       'son remove=' + sonRemove + ' rpc=' + rpcSira);
 
-  console.log('[SQL çalıştırılmamışsa ne diyor]');
-  // Onceki bolum basariyla silip index.html'e gitti: sayfayi geri aliyoruz.
+  console.log('[sunucu işlevi çalışmazsa kullanıcı yine de silebiliyor]');
+  // KURAL: hesabini silmek isteyen kisiye "su betigi calistir" DENMEZ.
+  // Islev calismazsa uygulama kullanicinin kendi yetkisiyle (RLS) verisini
+  // siliyor ve geriye ne kaldigini oldugu gibi soyluyor.
   await p.goto(KOK + '/app.html', { waitUntil:'domcontentloaded' });
   await p.waitForTimeout(1500);
   await p.evaluate(()=>{ document.querySelectorAll('.overlay.open').forEach(o=> o.classList.remove('open'));
                          setLanguage('tr'); });
-  await p.evaluate(SAHTE, { rpcHata:'function public.hesabi_sil() does not exist' });
-  await p.evaluate(()=>{ onayla = ()=> Promise.resolve(true); track = ()=>{};
-                         document.getElementById('hesapSilBtn').disabled = false; });
-  await p.evaluate(()=> document.getElementById('hesapSilBtn').click());
-  await p.waitForTimeout(900);
-  const durum = await p.$eval('#hesapDurum', e=> e.textContent);
-  bak('kullanıcıya ne yapacağı söyleniyor', durum.trim().length > 10, durum);
-  bak('düğme yeniden kullanılabilir',
-      !(await p.$eval('#hesapSilBtn', e=> e.disabled)));
-
-  console.log('[eski işlev duruyorsa ne diyor]');
-  // Supabase'in kendi hata metni. Kullaniciya ham Ingilizce basmak yerine
-  // ne yapacagini soyluyoruz: hangi betigi calistiracak.
   await p.evaluate(SAHTE, { rpcHata:'Direct deletion from storage tables is not allowed. Use the Storage API instead.' });
   await p.evaluate(()=>{ onayla = ()=> Promise.resolve(true); track = ()=>{};
                          document.getElementById('hesapSilBtn').disabled = false; });
+  izler = [];
   await p.evaluate(()=> document.getElementById('hesapSilBtn').click());
-  await p.waitForTimeout(900);
-  const eskiDurum = await p.$eval('#hesapDurum', e=> e.textContent);
-  bak('hangi betiği çalıştıracağı yazıyor', /sql\/32/.test(eskiDurum), eskiDurum);
-  bak('ham İngilizce hata basılmıyor', !/Direct deletion/.test(eskiDurum), eskiDurum);
-  bak('dosyaların silindiği söyleniyor', /[Dd]osya/.test(eskiDurum), eskiDurum);
+  await p.waitForTimeout(1200);
+  const kismiDurum = await p.$eval('#hesapDurum', e=> e.textContent);
+  bak('kullanıcıya SQL çalıştır DENMİYOR',
+      !/sql\/|Supabase|betik/i.test(kismiDurum), kismiDurum);
+  bak('ham İngilizce hata da basılmıyor', !/Direct deletion|storage/i.test(kismiDurum), kismiDurum);
+  bak('verilerin silindiği söyleniyor', /silindi/i.test(kismiDurum), kismiDurum);
+  bak('geriye ne kaldığı da söyleniyor', /giriş kaydın/i.test(kismiDurum), kismiDurum);
+  bak('bütün tablolar gerçekten silindi',
+      ['calendar_events','projects','ideas','scripts','places','caption_templates','user_prefs']
+        .every(x=> izler.indexOf('sil:'+x) !== -1), izler.join(' '));
+  bak('oturum kapatıldı', izler.indexOf('signOut') !== -1, izler.join(' '));
+
+  console.log('[verisi bile silinemezse]');
+  await p.evaluate(SAHTE, { rpcHata:'bir sey oldu', tabloHata:['projects'] });
+  await p.evaluate(()=>{ onayla = ()=> Promise.resolve(true); track = ()=>{};
+                         document.getElementById('hesapSilBtn').disabled = false; });
+  await p.evaluate(()=> document.getElementById('hesapSilBtn').click());
+  await p.waitForTimeout(1000);
+  const kotuDurum = await p.$eval('#hesapDurum', e=> e.textContent);
+  bak('"verilerin duruyor" deniyor', /duruyor/i.test(kotuDurum), kotuDurum);
+  bak('ne yapacağı söyleniyor (tekrar dene / bize yaz)',
+      /tekrar dene/i.test(kotuDurum), kotuDurum);
+  bak('düğme yeniden kullanılabilir',
+      !(await p.$eval('#hesapSilBtn', e=> e.disabled)));
+
+  console.log('[işlev hiç kurulmamışsa da aynı yol]');
+  await p.evaluate(SAHTE, { rpcHata:'function public.hesabi_sil() does not exist' });
+  await p.evaluate(()=>{ onayla = ()=> Promise.resolve(true); track = ()=>{};
+                         document.getElementById('hesapSilBtn').disabled = false; });
+  izler = [];
+  await p.evaluate(()=> document.getElementById('hesapSilBtn').click());
+  await p.waitForTimeout(1100);
+  const yokDurum = await p.$eval('#hesapDurum', e=> e.textContent);
+  bak('yine SQL adı geçmiyor', !/sql\/|Supabase/i.test(yokDurum), yokDurum);
+  bak('verisi yine de silindi', izler.indexOf('sil:calendar_events') !== -1, izler.join(' '));
 
   bak('sayfa hatası yok', hata.length === 0, hata.join(' | '));
   await t.close();

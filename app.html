@@ -4045,9 +4045,8 @@ const LANG = {
     hesap_sil_et: (e)=> `To confirm, type your email address: ${e}`,
     hesap_sil_btn: "Delete my account",
     hesap_sil_calisiyor: "Deleting...",
-    hesap_sil_yok: "The server does not know this action yet. Run sql/32-hesap-sil-depo-api.sql in Supabase and try again.",
-    hesap_sil_eski: "The server is still running the old delete function \u2014 it tries to remove files straight from the storage tables, which Supabase no longer allows. Run sql/32-hesap-sil-depo-api.sql in Supabase, then press the button again. Your files have already been removed.",
-    hesap_sil_err: "The account could not be deleted.",
+    hesap_sil_kismi: "Your content is deleted \u2014 calendar, projects, ideas, scripts, places, settings and files are gone from the server. Your sign-in record could not be removed automatically; write to us from Feedback and we will finish it.",
+    hesap_sil_err: "The account could not be deleted right now and your data is still there. Please try again \u2014 if it keeps failing, write to us from Feedback.",
     sifre_saving: "Saving...",
     sifre_ok: "Password saved. You can now sign in with your email and this password.",
     sifre_err: "Could not save the password. Try again in a moment.",
@@ -4834,9 +4833,8 @@ const LANG = {
     hesap_sil_et: (e)=> `Onaylamak için e-posta adresini yaz: ${e}`,
     hesap_sil_btn: "Hesabımı sil",
     hesap_sil_calisiyor: "Siliniyor...",
-    hesap_sil_yok: "Sunucu bu işlemi henüz tanımıyor. Supabase'de sql/32-hesap-sil-depo-api.sql betiğini çalıştırıp tekrar dene.",
-    hesap_sil_eski: "Sunucuda silme işlevinin ESKİ hâli duruyor: dosyaları doğrudan depo tablolarından silmeye çalışıyor, Supabase buna artık izin vermiyor. Supabase'de sql/32-hesap-sil-depo-api.sql betiğini çalıştırıp düğmeye tekrar bas. Dosyaların zaten silindi.",
-    hesap_sil_err: "Hesap silinemedi.",
+    hesap_sil_kismi: "İçeriğin silindi — takvimin, projelerin, fikirlerin, scriptlerin, mekanların, ayarların ve dosyaların sunucudan kaldırıldı. Giriş kaydın kendiliğinden silinemedi; Geri Bildirim'den bize yaz, biz tamamlayalım.",
+    hesap_sil_err: "Hesap şu anda silinemedi, verilerin duruyor. Lütfen tekrar dene — sürerse Geri Bildirim'den bize yaz.",
     sifre_saving: "Kaydediliyor...",
     sifre_ok: "Şifre kaydedildi. Artık e-postan ve bu şifreyle girebilirsin.",
     sifre_err: "Şifre kaydedilemedi. Biraz sonra tekrar dene.",
@@ -15882,6 +15880,27 @@ async function hesapDosyalariniSil(){
   }
   return { takilan };
 }
+// Kullanicinin KENDI satirlari. Bunlari silmek icin yonetici yetkisi
+// gerekmiyor: RLS zaten "kendi satirin" diyor. Sunucudaki islev
+// herhangi bir sebeple calismazsa devreye giren yedek yol bu.
+const HESAP_TABLOLARI = ['calendar_events','projects','ideas','scripts',
+                         'places','caption_templates','user_prefs'];
+async function hesapVerisiniSil(){
+  if(!sb || !session) return { takilan: [] };
+  const kim = session.user.id;
+  const takilan = [];
+  for(const tablo of HESAP_TABLOLARI){
+    try{
+      const { error } = await sb.from(tablo).delete().eq('user_id', kim);
+      // Tablo hic kurulmamis olabilir: silinecek satir da yok demektir.
+      if(error){
+        const m = String(error.message || '');
+        if(!/does not exist|schema cache|relation/i.test(m)) takilan.push(tablo);
+      }
+    }catch(e){ takilan.push(tablo); }
+  }
+  return { takilan };
+}
 document.getElementById('hesapSilBtn').addEventListener('click', async ()=>{
   const d = document.getElementById('hesapDurum');
   const btn = document.getElementById('hesapSilBtn');
@@ -15902,10 +15921,28 @@ document.getElementById('hesapSilBtn').addEventListener('click', async ()=>{
     // yetki tarayiciya verilemez. Kimin silinecegini de burasi secmiyor,
     // islev auth.uid()'e bakiyor (sql/32-hesap-sil-depo-api.sql).
     const { error } = await sb.rpc('hesabi_sil');
-    if(error) throw error;
-    // Dosyalarin bir kismi kaldiysa bunu SOYLUYORUZ. "Her sey silindi"
-    // demek, silinmediyse, sozun kendisini bozar.
     if(dosya.takilan.length) console.warn('[hesap sil] geride kalan kovalar', dosya.takilan);
+    if(error){
+      // ISLEV CALISMADI. Kullaniciya "su betigi calistir" DENMEZ: hesabini
+      // silmek isteyen kisiye kurulum isi yaptirilmaz. Yapabildigimizi
+      // yapiyoruz — verisini kendi yetkisiyle siliyoruz (RLS) — ve geriye
+      // ne kaldigini durustce soyluyoruz. Sebep konsola yaziliyor, orasi
+      // uygulamayi kuranin bakacagi yer.
+      console.error('[hesap sil] sunucu islevi calismadi', error);
+      const veri = await hesapVerisiniSil();
+      if(veri.takilan.length) throw error;      // verisi bile silinemedi
+      track('funnel/account-data-deleted');
+      try{
+        localStorage.removeItem(storageKey());
+        localStorage.removeItem(STORAGE_KEY);
+      }catch(e){}
+      await sb.auth.signOut();
+      // Verisi gitti, giris kaydi duruyor. Bunu saklamak yalan olurdu:
+      // ne silindigini ve ne kaldigini oldugu gibi yaziyoruz.
+      d.textContent = t('hesap_sil_kismi');
+      d.className = 'ai-status';
+      return;
+    }
     track('funnel/account-deleted');
     // Yerel kopya da gitsin: baska turlu cikis sonrasi ayni tarayicida
     // silinmis hesabin verisi duruyormus gibi gorunurdu.
@@ -15917,13 +15954,10 @@ document.getElementById('hesapSilBtn').addEventListener('click', async ()=>{
     location.replace('index.html');
   }catch(err){
     console.error('[bulut] hesap silinemedi', err);
-    const m = String((err && err.message) || '');
-    // Uc ayri durum, uc ayri cumle. Ham Ingilizce hata mesajini ekrana
-    // basmak kullaniciya ne yapacagini soylemiyor.
-    d.textContent =
-      /storage tables|Storage API/i.test(m) ? t('hesap_sil_eski')
-      : /function|does not exist|schema cache/i.test(m) ? t('hesap_sil_yok')
-      : t('hesap_sil_err') + ' ' + m;
+    // Buraya ancak verisi BILE silinemediginde geliniyor. Kullaniciya
+    // teknik sebep ya da kurulum talimati verilmiyor; sebep konsolda,
+    // orasi uygulamayi kuranin bakacagi yer.
+    d.textContent = t('hesap_sil_err');
     d.className = 'ai-status error';
     btn.disabled = false;
   }
