@@ -20,11 +20,18 @@ const HAVA_CEVAP = {
   daily: { weather_code:[2], temperature_2m_max:[26.1], temperature_2m_min:[18.3],
            precipitation_probability_max:[20] }
 };
-const YERLER = {
-  'izmir': { name:'İzmir', latitude:38.41, longitude:27.14, admin1:'İzmir' },
-  'kadıköy, i̇stanbul': { name:'Kadıköy', latitude:40.99, longitude:29.03, admin1:'İstanbul' },
-  'kadıköy': { name:'Kadıköy', latitude:40.99, longitude:29.03, admin1:'İstanbul' }
-};
+// Anahtarlar normalize ediliyor: Turkce buyuk I'nin kucultulmesi ortama
+// gore 'i' ya da 'i̇' verebiliyor, test bu ayrintiya takilmasin.
+const nrm = s => String(s).toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g,'');
+const YERLER = {};
+const yerEkle = (sorgu, y)=> { YERLER[nrm(sorgu)] = y; };
+yerEkle('İzmir',            { name:'İzmir',   latitude:38.41, longitude:27.14, admin1:'İzmir' });
+yerEkle('Kadıköy, İstanbul',{ name:'Kadıköy', latitude:40.99, longitude:29.03, admin1:'İstanbul' });
+yerEkle('Kadıköy',          { name:'Kadıköy', latitude:40.99, longitude:29.03, admin1:'İstanbul' });
+yerEkle('Fatih, İstanbul',  { name:'Fatih',   latitude:41.02, longitude:28.94, admin1:'İstanbul' });
+// TUZAK: mekan adi sorulursa bu doner ve Berlin'in havasi gosterilir.
+yerEkle('Berlin Kafe, İstanbul', { name:'Berlin', latitude:52.52, longitude:13.40, admin1:'Berlin' });
+yerEkle('Berlin Kafe',           { name:'Berlin', latitude:52.52, longitude:13.40, admin1:'Berlin' });
 
 async function kur(t, secenek){
   const c = await t.newContext(Object.assign({
@@ -41,15 +48,20 @@ async function kur(t, secenek){
 // da o kalibin icinde geciyor ve iki servis birbirine karisiyor.
 async function havaYolu(p, calisiyor){
   await p.unroute('https://api.open-meteo.com/**').catch(()=>{});
-  await p.route('https://api.open-meteo.com/**', r=> calisiyor
-    ? r.fulfill({ status:200, contentType:'application/json', body: JSON.stringify(HAVA_CEVAP) })
-    : r.abort());
+  await p.route('https://api.open-meteo.com/**', r=>{
+    havaSorgulari.push(r.request().url());
+    return calisiyor
+      ? r.fulfill({ status:200, contentType:'application/json', body: JSON.stringify(HAVA_CEVAP) })
+      : r.abort();
+  });
 }
+const yerSorgulari = [];
+const havaSorgulari = [];
 async function yerYolu(p){
   await p.route('https://geocoding-api.open-meteo.com/**', r=>{
     const u = r.request().url();
-    const ad = decodeURIComponent((u.match(/[?&]name=([^&]*)/) || [])[1] || '')
-                 .toLocaleLowerCase('tr');
+    const ad = nrm(decodeURIComponent((u.match(/[?&]name=([^&]*)/) || [])[1] || ''));
+    yerSorgulari.push(ad);
     const y = YERLER[ad];
     return r.fulfill({ status:200, contentType:'application/json',
       body: JSON.stringify(y ? { results:[y] } : {}) });
@@ -252,7 +264,10 @@ const metin = (p, sec)=> p.$eval(sec, e=> e.textContent.replace(/\s+/g,' ').trim
       mekanTemizle({ id:'m_harita', name:'Sahil', city:'İstanbul',
                      mapsUrl:'https://www.google.com/maps/@40.99,29.03,17z' }),
       mekanTemizle({ id:'m_sehir', name:'Kadıköy', city:'İstanbul', district:'Kadıköy' }),
-      mekanTemizle({ id:'m_bos', name:'Ev stüdyosu' })
+      mekanTemizle({ id:'m_bos', name:'Ev stüdyosu' }),
+      // Adi bambaska bir sehri cagristiran mekan: koordinat ADINDAN
+      // aranirsa Berlin'in havasi gosterilir.
+      mekanTemizle({ id:'m_tuzak', name:'Berlin Kafe', city:'İstanbul', district:'Fatih' })
     ];
     saveMekanlar(); setPage('places'); renderMekanlar();
   });
@@ -282,6 +297,26 @@ const metin = (p, sec)=> p.$eval(sec, e=> e.textContent.replace(/\s+/g,' ').trim
   bak('bilgisi olmayan mekanda ne yapılacağı söyleniyor',
       /Şehir ya da harita/i.test(bosMekan), bosMekan);
   bak('boş mekanda derece uydurulmuyor', !/°/.test(bosMekan), bosMekan);
+  await p0.evaluate(()=> mekanPenceresiniKapat());
+
+  // MEKAN ADI SORULMAMALI. Bu servis bina/isletme degil yerlesim adi
+  // indeksliyor; "Berlin Kafe, Istanbul" sorulursa adi benzeyen bambaska
+  // bir yer donuyor ve sessizce YANLIS sehrin havasi gosteriliyor.
+  console.log('[mekan adı yüzünden yanlış şehre düşmüyor]');
+  yerSorgulari.length = 0; havaSorgulari.length = 0;
+  await p0.evaluate(()=>{ localStorage.removeItem('demo_hava_yer');
+                          localStorage.removeItem('demo_hava_onbellek'); });
+  await p0.evaluate(()=> mekanPenceresiniAc('m_tuzak'));
+  await p0.waitForFunction(()=> /°/.test(document.getElementById('mk_hava').textContent),
+                           null, { timeout: 8000 });
+  const sonHava = havaSorgulari[havaSorgulari.length - 1] || '';
+  const enlem = parseFloat((sonHava.match(/latitude=(-?[\d.]+)/) || [])[1]);
+  bak('mekan adı hiç sorulmadı',
+      yerSorgulari.every(q=> q.indexOf('berlin') === -1), yerSorgulari.join(' | '));
+  bak('ilçe+şehir soruldu', yerSorgulari.some(q=> q.indexOf('fatih') !== -1),
+      yerSorgulari.join(' | '));
+  bak('Fatih\'in koordinatı kullanıldı, Berlin\'inki değil',
+      Math.abs(enlem - 41.02) < 0.02, 'enlem=' + enlem);
   await p0.evaluate(()=> mekanPenceresiniKapat());
 
   bak('sayfa hatası yok', hata.length === 0, hata.join(' | '));

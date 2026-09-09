@@ -4383,7 +4383,7 @@ const LANG = {
     hv_place_title: "At this place today",
     hv_place_need: "Add a city or a map link and this place gets its own weather and light times.",
     hv_src_map: "from the map link",
-    hv_src_city: "from the place name (approximate)",
+    hv_src_city: "from the city or district (approximate)",
     hv_polar: "The sun does not rise or set here today.",
     hv_k_0: "Clear", hv_k_1: "Mostly clear", hv_k_2: "Partly cloudy", hv_k_3: "Overcast",
     hv_k_45: "Fog", hv_k_51: "Drizzle", hv_k_61: "Rain", hv_k_71: "Snow",
@@ -5167,7 +5167,7 @@ const LANG = {
     hv_place_title: "Bu mekanda bug\u00FCn",
     hv_place_need: "\u015Eehir ya da harita ba\u011Flant\u0131s\u0131 ekleyince bu mekan\u0131n kendi hava ve \u0131\u015F\u0131k bilgisi burada \u00E7\u0131kar.",
     hv_src_map: "harita ba\u011Flant\u0131s\u0131ndaki koordinata g\u00F6re",
-    hv_src_city: "mekan ad\u0131na g\u00F6re (yakla\u015F\u0131k)",
+    hv_src_city: "\u015Fehir/il\u00E7e ad\u0131na g\u00F6re (yakla\u015F\u0131k)",
     hv_polar: "Burada bug\u00FCn g\u00FCne\u015F do\u011Fmuyor ya da batm\u0131yor.",
     hv_k_0: "A\u00E7\u0131k", hv_k_1: "Az bulutlu", hv_k_2: "Par\u00E7al\u0131 bulutlu", hv_k_3: "Kapal\u0131",
     hv_k_45: "Sisli", hv_k_51: "\u00C7iseliyor", hv_k_61: "Ya\u011Fmurlu", hv_k_71: "Karl\u0131",
@@ -10947,11 +10947,18 @@ async function havaSehirGonder(){
 async function mekanKoordinati(m){
   const harita = mekanKonum(m.mapsUrl);
   if(harita) return { lat: +harita.en.toFixed(2), lon: +harita.boy.toFixed(2), kaynak: 'harita' };
+  // MEKAN ADI SORULMUYOR. Bu servis bina/isletme degil YERLESIM adi
+  // indeksliyor: "Berlin Kafe, Istanbul" sorulunca ya bos donuyor ya da
+  // adi benzeyen bambaska bir yeri veriyor — ve o zaman sessizce yanlis
+  // sehrin havasi gosteriliyor. Ilce ve sehir zaten bu servisin tanidigi
+  // turden adlar. Hicbiri yoksa hava gostermiyoruz; yanlis bilgi vermek
+  // yerine "sehir ya da harita baglantisi ekle" demek dogrusu.
   const denemeler = [];
-  if(m.name && m.city) denemeler.push(m.name + ', ' + m.city);
   if(m.district && m.city) denemeler.push(m.district + ', ' + m.city);
-  if(m.district) denemeler.push(m.district);
   if(m.city) denemeler.push(m.city);
+  // Ilce tek basina ancak sehir hic yoksa: "Balat" dunyada baska yerlerde
+  // de var, sehir varken ona guvenmek yerine sehre dusuyoruz.
+  if(m.district && !m.city) denemeler.push(m.district);
   for(let i = 0; i < denemeler.length; i++){
     const yer = await yerdenKoordinat(denemeler[i]);
     if(yer) return { lat: yer.lat, lon: yer.lon, ad: yer.ad, kaynak: 'ad' };
