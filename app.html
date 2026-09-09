@@ -1002,6 +1002,10 @@ body.suruklenirken *{cursor:grabbing !important;}
   border-radius:20px;padding:2px 8px;text-decoration:none;}
 a.mk-rozet:hover{border-color:var(--accent);color:var(--accent);}
 .mk-dikkat{color:var(--amber);border-color:var(--amber);}
+/* Bekleyen cekim rozeti vurgulu: sayfayi acan kisi nerede is oldugunu
+   once bunlardan okuyor. "Dikkat" sarisiyla karismasin diye vurgu
+   rengi kullaniliyor. */
+.mk-bekleyen{color:var(--accent);border-color:var(--accent);font-weight:600;}
 /* Mekanda "dikkat" notu varsa proje penceresindeki satir da uyariyor. */
 .mk-uyari{color:var(--amber);}
 /* Sehir/ilce ve iki baglanti yan yana: pencere gereksiz uzamasin. */
@@ -4395,6 +4399,8 @@ const LANG = {
     mk_no_match: "No place matches that search.",
     mk_count: (n, t)=> n === t ? `${t} place${t===1?'':'s'}` : `${n} of ${t}`,
     mk_projects: (n)=> `${n} project${n===1?'':'s'}`,
+    mk_waiting: (n)=> `${n} shoot${n===1?'':'s'} waiting`,
+    mk_sort_waiting: "Waiting work first",
     mk_has_permission: "permission noted",
     mk_has_cautions: "watch out",
     mk_map: "Map ↗",
@@ -5179,6 +5185,8 @@ const LANG = {
     mk_no_match: "Bu aramaya uyan mekan yok.",
     mk_count: (n, t)=> n === t ? `${t} mekan` : `${t} mekandan ${n} tanesi`,
     mk_projects: (n)=> `${n} proje`,
+    mk_waiting: (n)=> `${n} bekleyen \u00E7ekim`,
+    mk_sort_waiting: "\u00D6nce bekleyen i\u015Fi olanlar",
     mk_has_permission: "izin notu var",
     mk_has_cautions: "dikkat",
     mk_map: "Harita ↗",
@@ -7399,6 +7407,7 @@ function renderMekanlar(){
   kutu.innerHTML = liste.map(m=>{
     const yer = [m.district, m.city].filter(Boolean).join(', ');
     const kac = mekanProjeleri(m.id).length;
+    const bekleyen = mekanBekleyenleri(m.id).length;
     const harita = disUrl(m.mapsUrl);
     return `<div class="mk-kart" data-mk="${escapeHtml(m.id)}">
       <div class="mk-gorsel">${mekanGorseli(m)}</div>
@@ -7407,7 +7416,9 @@ function renderMekanlar(){
         ${yer ? `<div class="mk-yer">${escapeHtml(yer)}</div>` : ''}
         ${m.address ? `<div class="mk-adres">${escapeHtml(m.address)}</div>` : ''}
         <div class="mk-rozetler">
-          ${kac ? `<span class="mk-rozet">${escapeHtml(t('mk_projects')(kac))}</span>` : ''}
+          ${bekleyen
+            ? `<span class="mk-rozet mk-bekleyen">${escapeHtml(t('mk_waiting')(bekleyen))}</span>`
+            : (kac ? `<span class="mk-rozet">${escapeHtml(t('mk_projects')(kac))}</span>` : '')}
           ${m.permission ? `<span class="mk-rozet">${escapeHtml(t('mk_has_permission'))}</span>` : ''}
           ${m.cautions ? `<span class="mk-rozet mk-dikkat">${escapeHtml(t('mk_has_cautions'))}</span>` : ''}
           ${harita ? `<a class="mk-rozet" href="${escapeHtml(harita)}" target="_blank" rel="noopener" data-dis>${escapeHtml(t('mk_map'))}</a>` : ''}
@@ -8509,10 +8520,24 @@ async function mekanPush(){
   }
 }
 function mekanById(id){ return mekanlar.find(m=>m.id === id) || null; }
-function mekanSiraliListe(){ return mekanlar.slice().sort((a,b)=> a.name.localeCompare(b.name, 'tr')); }
+// Once BEKLEYEN isi olanlar. Sayfayi acan kisi nerede is biriktigini bir
+// bakista gorsun; ad sirasi yalnizca esitleri ayirmak icin kaliyor, boylece
+// liste tahmin edilebilir duruyor.
+function mekanSiraliListe(){
+  return mekanlar.slice().sort((a,b)=>
+    mekanBekleyenleri(b.id).length - mekanBekleyenleri(a.id).length
+    || a.name.localeCompare(b.name, 'tr'));
+}
 // Bir mekana bagli projeler: mekan silinmeden once "burada uc cekim var"
 // diyebilmek icin.
 function mekanProjeleri(id){ return projects.filter(p=>p.placeId === id); }
+// BEKLEYEN cekim: iptal edilmemis ve daha cekilmemis. Kartta "3 proje"
+// yaziyordu ve bu her projeyi sayiyordu — bitmisini de, iptal edilmisini
+// de. "Balat'a gidiyorum, orada bekleyen baska ne var?" sorusuna cevap
+// vermiyordu. Yeni alan gerekmedi: iki isaret zaten projede duruyor.
+function mekanBekleyenleri(id){
+  return projects.filter(p=> p.placeId === id && !p.cancelled && !p.filmed);
+}
 
 function mekanEkle(alanlar){
   const m = mekanTemizle(alanlar);
