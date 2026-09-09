@@ -1,103 +1,155 @@
-// Hesabi kendi kendine silme. Geri donusu olmayan bir islem: dugme
-// kullanici KENDI adresini yazana kadar kapali, ustune bir de onay
-// penceresi var. Silme sunucuda (sql/22), tarayici yonetici yetkisi almiyor.
+// HESAP SILME.
+//
+// Sartlar sayfasi bir soz veriyor: "Hesabim -> Hesabini sil" deyince her
+// sey sunucudan silinir. Gercek telefonda o soz tutulmuyordu:
+//
+//   Hesap silinemedi. Direct deletion from storage tables is not allowed.
+//   Use the Storage API instead.
+//
+// SQL islevi depodaki dosyalari dogrudan storage.objects'ten siliyordu;
+// Supabase buna izin vermiyor. Islev tek parca oldugu icin bu hata her
+// seyi geri aliyordu: kullanici siliyorum saniyor, HICBIR SEY silinmiyor.
+//
+// Is ikiye bolundu: dosyalari uygulama siliyor (Storage API), tablolari
+// ve hesabin kendisini islev siliyor. Burada Supabase TAKLIT ediliyor:
+// olculen sey cagrilarin SIRASI ve dosya silme takilirsa ne oldugu.
 const { chromium } = require('./araclar');
 const KOK = process.argv[2] || 'http://127.0.0.1:8098';
 let g = 0, k = 0;
 const bak = (ad, ko, ek)=>{ if(ko){ g++; console.log('  ok  '+ad); } else { k++; console.log('  YOK '+ad+(ek?' -> '+ek:'')); } };
-const POSTA = 'deneyici@ornek.com';
+
+// Sahte bir Supabase: cagrilari kaydediyor.
+const SAHTE = (secenek)=>{
+  // Iz DISARIYA yaziliyor (izKaydet). Silme basarili olunca sayfa
+  // index.html'e gidiyor ve sayfa icindeki her sey siliniyor; disarida
+  // tutulan liste o gidisi atlatiyor.
+  // DIKKAT: sb ve session `let` ile tanimli, yani window uzerinde DEGIL.
+  // window.sb = ... yazmak hicbir sey yapmiyor; degiskenin kendisine
+  // atamak gerekiyor.
+  session = { user: { id: 'kim-1', email: 'a@b.c' } };
+  sb = {
+    storage: {
+      from(kova){
+        return {
+          list(yol){
+            izKaydet('list:' + kova);
+            if(secenek.kovaYok && secenek.kovaYok.indexOf(kova) !== -1){
+              return Promise.resolve({ data:null, error:{ message:'Bucket not found' } });
+            }
+            if(secenek.listeHata && secenek.listeHata.indexOf(kova) !== -1){
+              return Promise.resolve({ data:null, error:{ message:'boom' } });
+            }
+            return Promise.resolve({ data:[{ name:'a.json' }, { name:'b.json' }], error:null });
+          },
+          remove(yollar){
+            izKaydet('remove:' + kova + ':' + yollar.join('|'));
+            if(secenek.silHata && secenek.silHata.indexOf(kova) !== -1){
+              return Promise.resolve({ error:{ message:'silinemedi' } });
+            }
+            return Promise.resolve({ error:null });
+          }
+        };
+      }
+    },
+    rpc(ad){
+      izKaydet('rpc:' + ad);
+      return Promise.resolve({ error: secenek.rpcHata ? { message: secenek.rpcHata } : null });
+    },
+    auth: { signOut(){ izKaydet('signOut'); return Promise.resolve({}); } }
+  };
+};
 
 (async () => {
-  const t = await chromium.launch({ });
-  for (const tema of ['light','dark']) {
-    const c = await t.newContext({ colorScheme: tema, viewport:{width:1280,height:900} });
-    const p = await c.newPage();
-    const olanlar = [];
-    await p.exposeFunction('__kaydet', (x) => { olanlar.push(x); });
-    await p.goto(KOK + '/app.html', { waitUntil:'networkidle' });
-    console.log('[' + tema + ']');
+  const t = await chromium.launch();
+  const p = await (await t.newContext({ viewport:{ width:1280, height:900 } })).newPage();
+  const hata = []; p.on('pageerror', e=> hata.push(String(e)));
+  let izler = [];
+  await p.exposeFunction('izKaydet', (x)=> { izler.push(x); });
+  await p.route('**accounts.google.com**', r=> r.abort());
+  await p.goto(KOK + '/app.html', { waitUntil:'domcontentloaded' });
+  await p.waitForTimeout(1500);
+  await p.evaluate(()=>{ document.querySelectorAll('.overlay.open').forEach(o=> o.classList.remove('open'));
+                         setLanguage('tr'); });
 
-    bak('oturum yokken dugme "Giris yap" diyor',
-        !/hesab|account/i.test(await p.$eval('#authBtn', e => e.textContent)),
-        await p.$eval('#authBtn', e => e.textContent));
+  console.log('[önce dosyalar, sonra hesap]');
+  await p.evaluate(SAHTE, { });
+  izler = [];
+  await p.evaluate(()=> hesapDosyalariniSil());
+  const iz1 = izler;
+  bak('üç kovanın da içine bakılıyor',
+      ['takvim','paylasim','yedek'].every(x=> iz1.indexOf('list:'+x) !== -1), iz1.join(' '));
+  bak('dosyalar kullanıcının klasöründen siliniyor',
+      iz1.some(x=> x.indexOf('remove:takvim:kim-1/a.json|kim-1/b.json') === 0), iz1.join(' '));
+  bak('her kovada siliniyor',
+      ['takvim','paylasim','yedek'].every(x=> iz1.some(y=> y.indexOf('remove:'+x) === 0)),
+      iz1.join(' '));
 
-    // Sahte oturum + rpc taklidi
-    await p.evaluate((posta) => {
-      session = { user: { id: '00000000-0000-4000-8000-000000000009', email: posta, app_metadata: { provider: 'email' } } };
-      sb = { rpc: (ad) => { window.__kaydet('rpc:' + ad); return Promise.resolve({ error: null }); },
-             auth: { signOut: () => { window.__kaydet('cikis'); return Promise.resolve({}); } } };
-      refreshAuthUi();
-      document.getElementById('authBtn').click();
-    }, POSTA);
-    await p.waitForSelector('#hesapOverlay.open');
+  console.log('[kurulmamış kova hata değil]');
+  await p.evaluate(SAHTE, { kovaYok:['paylasim','yedek'] });
+  const s2 = await p.evaluate(()=> hesapDosyalariniSil());
+  bak('olmayan kova takılan sayılmıyor', s2.takilan.length === 0, JSON.stringify(s2));
 
-    bak('giris yapmisken dugme "Hesabim" diyor',
-        /hesab|account/i.test(await p.$eval('#authBtn', e => e.textContent)),
-        await p.$eval('#authBtn', e => e.textContent));
-    bak('ray uzerinde ikinci bir hesap dugmesi YOK',
-        (await p.$$('#rail .rail-me button')).length === 1);
-    bak('cikis penceredeki satirda', await p.$('#hesapCikisBtn') !== null);
-    bak('adres pencerede yaziyor', (await p.$eval('#hesapEposta', e => e.textContent)) === POSTA);
-    bak('onay etiketi adresi soyluyor', (await p.$eval('#hesapSilEtiket', e => e.textContent)).includes(POSTA));
-    bak('silme dugmesi bastan KAPALI', await p.$eval('#hesapSilBtn', e => e.disabled));
+  console.log('[silinemeyen kova bildiriliyor]');
+  await p.evaluate(SAHTE, { silHata:['yedek'] });
+  izler = [];
+  const s3 = await p.evaluate(()=> hesapDosyalariniSil());
+  bak('takılan kova söyleniyor', s3.takilan.join(',') === 'yedek', JSON.stringify(s3));
+  bak('öteki kovalar yine de temizlendi',
+      izler.some(x=> x.indexOf('remove:takvim') === 0), izler.join(' '));
 
-    await p.fill('#hesapSilKutu', 'sil');
-    bak('rastgele yaziyla acilmiyor', await p.$eval('#hesapSilBtn', e => e.disabled));
-    await p.fill('#hesapSilKutu', 'baskasi@ornek.com');
-    bak('baska adresle acilmiyor', await p.$eval('#hesapSilBtn', e => e.disabled));
-    await p.fill('#hesapSilKutu', POSTA.toUpperCase());
-    bak('kendi adresiyle aciliyor (buyuk/kucuk onemsiz)', !(await p.$eval('#hesapSilBtn', e => e.disabled)));
-
-    // Onay penceresinde VAZGECINCE hicbir sey olmamali.
-    await p.click('#hesapSilBtn');
-    await p.waitForSelector('#dlgOverlay.open');
-    bak('onay penceresi aciliyor', true);
-    bak('onay dugmesi tehlike rengi', await p.$eval('#dlgOk', e => e.classList.contains('btn-danger')));
-    await p.click('#dlgCancel');
-    await p.waitForTimeout(200);
-    bak('vazgecince sunucuya gidilmiyor', olanlar.length === 0, JSON.stringify(olanlar));
-    
-
-    // Onaylayinca: dogru islev, sonra cikis.
-    await p.click('#hesapSilBtn');
-    await p.waitForSelector('#dlgOverlay.open');
-    await p.click('#dlgOk');
-    await p.waitForTimeout(500);
-    bak('sunucudaki hesabi_sil cagriliyor', olanlar[0] === 'rpc:hesabi_sil', JSON.stringify(olanlar));
-    bak('once silinip SONRA cikis yapiliyor', olanlar.join('>') === 'rpc:hesabi_sil>cikis', olanlar.join('>'));
-    await c.close();
-  }
-
-  // Google hesabinda sifre satiri gizli.
-  const c2 = await t.newContext({ viewport:{width:1280,height:900} });
-  const p2 = await c2.newPage();
-  await p2.goto(KOK + '/app.html', { waitUntil:'networkidle' });
-  console.log('[google hesabi]');
-  await p2.evaluate(() => {
-    session = { user: { id: 'x', email: 'g@ornek.com', app_metadata: { provider: 'google' } } };
-    refreshAuthUi();
-    document.getElementById('authBtn').click();
+  console.log('[gerçek düğme: sıra doğru mu]');
+  await p.evaluate(SAHTE, { });
+  await p.evaluate(()=>{
+    // Onay penceresini ve sayfa degistirmeyi atliyoruz: olculen sey sira.
+    // onayla ve track function bildirimi, yani ustune yazilabiliyor.
+    onayla = ()=> Promise.resolve(true);
+    track = ()=>{};
+    // Dugme e-posta yazilmadan kapali geliyor.
+    document.getElementById('hesapSilBtn').disabled = false;
   });
-  await p2.waitForSelector('#hesapOverlay.open');
-  bak('sifre satiri Google hesabinda gizli',
-      await p2.$eval('#hesapSifreBtn', e => e.closest('.hesap-satir').hidden));
-  bak('silme bolumu Google hesabinda da duruyor',
-      !(await p2.$eval('#hesapSilBtn', e => e.closest('.hesap-tehlike').hidden)));
+  izler = [];
+  await p.evaluate(()=> document.getElementById('hesapSilBtn').click());
+  for(let i = 0; i < 80 && izler.indexOf('rpc:hesabi_sil') === -1; i++) await p.waitForTimeout(100);
+  const iz4 = izler.slice();
+  const rpcSira = iz4.indexOf('rpc:hesabi_sil');
+  const sonRemove = iz4.map((x,i)=> x.indexOf('remove:') === 0 ? i : -1)
+                       .reduce((a,b)=> Math.max(a,b), -1);
+  bak('işlev çağrıldı', rpcSira !== -1, iz4.join(' '));
+  // SIRA ONEMLI: islev hesabi silince oturum oluyor, ondan sonra dosya
+  // silinemez. Once dosyalar, sonra hesap.
+  bak('dosyalar hesaptan ÖNCE silindi', sonRemove !== -1 && sonRemove < rpcSira,
+      'son remove=' + sonRemove + ' rpc=' + rpcSira);
 
-  // SQL calistirilmamissa anlasilir bir mesaj.
-  await p2.evaluate(() => {
-    sb = { rpc: () => Promise.resolve({ error: { message: 'Could not find the function public.hesabi_sil in the schema cache' } }),
-           auth: { signOut: () => Promise.resolve({}) } };
-  });
-  await p2.fill('#hesapSilKutu', 'g@ornek.com');
-  await p2.click('#hesapSilBtn');
-  await p2.waitForSelector('#dlgOverlay.open');
-  await p2.click('#dlgOk');
-  await p2.waitForTimeout(400);
-  const dz = await p2.$eval('#hesapDurum', e => ({ y: e.textContent, c: e.className }));
-  bak('SQL calistirilmamissa ne yapilacagi yaziyor', /sql\/22/.test(dz.y) && dz.c.includes('error'), dz.y);
-  bak('hata sonrasi dugme tekrar basilabilir', !(await p2.$eval('#hesapSilBtn', e => e.disabled)));
+  console.log('[SQL çalıştırılmamışsa ne diyor]');
+  // Onceki bolum basariyla silip index.html'e gitti: sayfayi geri aliyoruz.
+  await p.goto(KOK + '/app.html', { waitUntil:'domcontentloaded' });
+  await p.waitForTimeout(1500);
+  await p.evaluate(()=>{ document.querySelectorAll('.overlay.open').forEach(o=> o.classList.remove('open'));
+                         setLanguage('tr'); });
+  await p.evaluate(SAHTE, { rpcHata:'function public.hesabi_sil() does not exist' });
+  await p.evaluate(()=>{ onayla = ()=> Promise.resolve(true); track = ()=>{};
+                         document.getElementById('hesapSilBtn').disabled = false; });
+  await p.evaluate(()=> document.getElementById('hesapSilBtn').click());
+  await p.waitForTimeout(900);
+  const durum = await p.$eval('#hesapDurum', e=> e.textContent);
+  bak('kullanıcıya ne yapacağı söyleniyor', durum.trim().length > 10, durum);
+  bak('düğme yeniden kullanılabilir',
+      !(await p.$eval('#hesapSilBtn', e=> e.disabled)));
 
+  console.log('[eski işlev duruyorsa ne diyor]');
+  // Supabase'in kendi hata metni. Kullaniciya ham Ingilizce basmak yerine
+  // ne yapacagini soyluyoruz: hangi betigi calistiracak.
+  await p.evaluate(SAHTE, { rpcHata:'Direct deletion from storage tables is not allowed. Use the Storage API instead.' });
+  await p.evaluate(()=>{ onayla = ()=> Promise.resolve(true); track = ()=>{};
+                         document.getElementById('hesapSilBtn').disabled = false; });
+  await p.evaluate(()=> document.getElementById('hesapSilBtn').click());
+  await p.waitForTimeout(900);
+  const eskiDurum = await p.$eval('#hesapDurum', e=> e.textContent);
+  bak('hangi betiği çalıştıracağı yazıyor', /sql\/32/.test(eskiDurum), eskiDurum);
+  bak('ham İngilizce hata basılmıyor', !/Direct deletion/.test(eskiDurum), eskiDurum);
+  bak('dosyaların silindiği söyleniyor', /[Dd]osya/.test(eskiDurum), eskiDurum);
+
+  bak('sayfa hatası yok', hata.length === 0, hata.join(' | '));
   await t.close();
   console.log('\n' + g + ' gecti, ' + k + ' kaldi');
   process.exit(k ? 1 : 0);

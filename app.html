@@ -1054,6 +1054,26 @@ textarea.sc-ai-brief{min-height:64px;resize:vertical;line-height:1.5;}
   font-family:'IBM Plex Mono',monospace;font-size:11px;color:var(--accent);text-decoration:underline;
   text-underline-offset:2px;}
 .sc-idea-all:hover{color:var(--accent-hover);}
+/* UZUN LISTE. Yuz fikri 118 piksellik bir pencereden kaydirmak iskenceydi:
+   ustelik o pencere pencerenin kendi kaydirmasinin icinde duruyor ve
+   telefonda hangisinin kaydigi karisiyor. Liste artik KAPALI aciliyor
+   (kisa listede acik kaliyor); acilinca da yarim ekran boyunda, yani
+   icinde gezilebilir bir liste oluyor. */
+.sc-blok.sc-kapali .sc-idea-list,
+.sc-blok.sc-kapali .sc-proj-list,
+.sc-blok.sc-kapali .sc-idea-ekle,
+.sc-blok.sc-kapali .sc-iskele,
+.sc-blok.sc-kapali .sc-blok-ara,
+.sc-blok.sc-kapali #sc_ideasAll{display:none;}
+.sc-blok-ac{margin-left:auto;}
+.sc-blok-ac::after{content:'\25BE';margin-left:5px;font-size:10px;}
+.sc-blok.sc-kapali .sc-blok-ac::after{content:'\25B8';}
+/* Acikken alcak ekran kuralindaki 14vh'yi eziyor: secim yapilan an
+   listenin genis olmasi gerekiyor. Ozgulugu yuksek, sira onemsiz. */
+.sc-modal .sc-blok:not(.sc-kapali) .sc-idea-list,
+.sc-modal .sc-blok:not(.sc-kapali) .sc-proj-list{max-height:44vh;}
+/* Kapaliyken "3 fikir secili" satiri tek bilgi: silikligi kalksin. */
+.sc-blok.sc-kapali .sc-blok-say{color:var(--accent);}
 .sc-idea-picked{margin:0 0 10px;font-size:11.5px;color:var(--text-dim);}
 .sc-idea-picked.var{color:var(--accent);}
 .sc-idea-ekle{display:flex;gap:8px;margin:8px 0 2px;}
@@ -3124,6 +3144,9 @@ textarea.sc-ai-brief{min-height:64px;resize:vertical;line-height:1.5;}
         <input type="search" id="sc_ideaSearch" class="sc-blok-ara"
                data-i18n-placeholder="sc_idea_search_ph" placeholder="Search ideas">
         <button type="button" class="fk-mini" id="sc_ideasAll" data-i18n="sc_idea_all">Select all</button>
+        <!-- Uzun listede blok KAPALI aciliyor; bu dugme aciyor. -->
+        <button type="button" class="fk-mini sc-blok-ac" id="sc_ideasToggle"
+                aria-expanded="true" aria-controls="sc_ideasList"></button>
       </div>
       <ul class="sc-idea-list" id="sc_ideasList"></ul>
       <!-- Fikir buradan da eklenebiliyor: aklina gelen bir seyi not etmek
@@ -3143,6 +3166,8 @@ textarea.sc-ai-brief{min-height:64px;resize:vertical;line-height:1.5;}
         <span data-i18n="sc_projects_step">2 · Which projects?</span>
         <span class="sc-blok-say" id="sc_projCount"></span>
         <button type="button" class="fk-mini" id="sc_projNew" data-i18n="sc_proj_new">+ New project</button>
+        <button type="button" class="fk-mini sc-blok-ac" id="sc_projToggle"
+                aria-expanded="true" aria-controls="sc_projList"></button>
       </div>
       <!-- Coklu secim: bir script iki cekimi birden besleyebiliyor.
            Listenin ILKI scriptin "asil" projesi sayiliyor (projectId). -->
@@ -3382,7 +3407,10 @@ textarea.sc-ai-brief{min-height:64px;resize:vertical;line-height:1.5;}
     <div class="field">
       <div class="field-header">
         <label data-i18n="f_hashtags_label">Hashtags / Tags (comma-separated, no #)</label>
-        <button type="button" class="copy-btn" data-copy="f_hashtags" data-i18n="btn_copy">Copy</button>
+        <span style="display:flex;gap:6px;">
+          <button type="button" class="copy-btn ai-btn" id="aiTagsBtn" data-i18n="btn_ai_write">\u2728 AI</button>
+          <button type="button" class="copy-btn" data-copy="f_hashtags" data-i18n="btn_copy">Copy</button>
+        </span>
       </div>
       <textarea id="f_hashtags" maxlength="400" style="min-height:44px;" data-i18n-placeholder="f_hashtags_ph" placeholder="product launch, saas, startup"></textarea>
     </div>
@@ -3412,7 +3440,10 @@ textarea.sc-ai-brief{min-height:64px;resize:vertical;line-height:1.5;}
     <div class="field" id="thumbWrap">
       <div class="field-header">
         <label data-i18n="f_thumb_label">Cover / Thumbnail Image Prompt</label>
-        <button type="button" class="copy-btn" data-copy="f_thumb" data-i18n="btn_copy">Copy</button>
+        <span style="display:flex;gap:6px;">
+          <button type="button" class="copy-btn ai-btn" id="aiThumbBtn" data-i18n="btn_ai_write">\u2728 AI</button>
+          <button type="button" class="copy-btn" data-copy="f_thumb" data-i18n="btn_copy">Copy</button>
+        </span>
       </div>
       <textarea id="f_thumb" maxlength="1500" data-i18n-placeholder="f_thumb_ph" placeholder="Describe the cover image for an AI image generator..."></textarea>
     </div>
@@ -4014,7 +4045,8 @@ const LANG = {
     hesap_sil_et: (e)=> `To confirm, type your email address: ${e}`,
     hesap_sil_btn: "Delete my account",
     hesap_sil_calisiyor: "Deleting...",
-    hesap_sil_yok: "The server does not know this action yet. Run sql/22-hesap-sil.sql in Supabase and try again.",
+    hesap_sil_yok: "The server does not know this action yet. Run sql/32-hesap-sil-depo-api.sql in Supabase and try again.",
+    hesap_sil_eski: "The server is still running the old delete function \u2014 it tries to remove files straight from the storage tables, which Supabase no longer allows. Run sql/32-hesap-sil-depo-api.sql in Supabase, then press the button again. Your files have already been removed.",
     hesap_sil_err: "The account could not be deleted.",
     sifre_saving: "Saving...",
     sifre_ok: "Password saved. You can now sign in with your email and this password.",
@@ -4145,6 +4177,8 @@ const LANG = {
     btn_ai_write: "✨ AI",
     sc_words: (n)=> `${n} words`,
     sc_idea_all: "Select all / none",
+    sc_pick_open: "Choose",
+    sc_pick_close: "Done",
     sc_ideas_step: "1 · Which ideas?",
     sc_projects_step: "2 · Which projects?",
     sc_title_step: "3 · Title",
@@ -4800,7 +4834,8 @@ const LANG = {
     hesap_sil_et: (e)=> `Onaylamak için e-posta adresini yaz: ${e}`,
     hesap_sil_btn: "Hesabımı sil",
     hesap_sil_calisiyor: "Siliniyor...",
-    hesap_sil_yok: "Sunucu bu işlemi henüz tanımıyor. Supabase'de sql/22-hesap-sil.sql betiğini çalıştırıp tekrar dene.",
+    hesap_sil_yok: "Sunucu bu işlemi henüz tanımıyor. Supabase'de sql/32-hesap-sil-depo-api.sql betiğini çalıştırıp tekrar dene.",
+    hesap_sil_eski: "Sunucuda silme işlevinin ESKİ hâli duruyor: dosyaları doğrudan depo tablolarından silmeye çalışıyor, Supabase buna artık izin vermiyor. Supabase'de sql/32-hesap-sil-depo-api.sql betiğini çalıştırıp düğmeye tekrar bas. Dosyaların zaten silindi.",
     hesap_sil_err: "Hesap silinemedi.",
     sifre_saving: "Kaydediliyor...",
     sifre_ok: "Şifre kaydedildi. Artık e-postan ve bu şifreyle girebilirsin.",
@@ -4931,6 +4966,8 @@ const LANG = {
     btn_ai_write: "✨ AI",
     sc_words: (n)=> `${n} kelime`,
     sc_idea_all: "Tümünü seç / bırak",
+    sc_pick_open: "Se\u00E7",
+    sc_pick_close: "Tamam",
     sc_ideas_step: "1 · Hangi fikirler?",
     sc_projects_step: "2 · Hangi projeler?",
     sc_title_step: "3 · Başlık",
@@ -5583,6 +5620,7 @@ function setLanguage(lang, buluttanGeldi){
   renderCal();
   // Tur acikken dil degisebiliyor (bulut tercihi acilistan biraz sonra
   // gelebilir); acik turun kartlari eski dilde kalmasin.
+  scBlokEtiketleri();
   // Hava blogunun metinleri de kod icinde uretiliyor.
   railHavaYenile();
   if(document.querySelector('#placeOverlay.open')) mekanHavaYenile();
@@ -5652,6 +5690,11 @@ let activeConceptFilters = new Set();
 let activeStatusFilters = new Set();
 const activeTzFilters = new Set();
 let weekOffset = 0;  // 0 = icinde bulunulan hafta (pencere buradan baslar)
+// Hafta gorunumu artik pazartesiye CIVILENMIS degil: izgaranin kenarina
+// gelip kaydirmaya devam edince pencere bir gun kayiyor. Telefonda yedi
+// gunun ancak ucu ekrana sigiyor; pencere haftaya sabitlenince kenara
+// gelen kisi icin tek cikis yol koca bir hafta atlamakti.
+let haftaGunKaymasi = 0;
 // Gun gorunumu gun gun ilerliyor; hafta cipasi burada islemiyor.
 let gunKaymasi = 0;
 // Ay gorunumu gercek bir ayi gosteriyor; ay ay ilerliyor.
@@ -5981,7 +6024,7 @@ function calWindowStart(){
   }
   if(viewMode === 'month') return ayPenceresi().bas;
   const mondayOffset = (d.getDay() + 6) % 7; // Pazar(0)->6, Pazartesi(1)->0
-  d.setDate(d.getDate() - mondayOffset + weekOffset * 7);
+  d.setDate(d.getDate() - mondayOffset + weekOffset * 7 + haftaGunKaymasi);
   d.setHours(0,0,0,0);
   return d;
 }
@@ -6897,7 +6940,14 @@ function fikirKartOlaylari(kap){
       e.stopPropagation();
       const f = fikirById(el.dataset.fkScript);
       if(!f) return;
-      openScript(null, { text: f.text.trim() + '\n\n', projectId: f.projectId,
+      // Fikir SECILI geliyor, metne DOKULMUYOR. Once metne dokuluyordu ve
+      // 1. adimda hicbir sey isaretli degildi: kullanici ayni fikri bir
+      // daha, bu sefer listeden secmek zorunda kaliyordu. Sayfadaki
+      // "gosterilen fikirlerden script" dugmesi zaten boyle calisiyordu;
+      // kart uzerindeki bu dugme eski davranista kalmisti.
+      openScript(null, { ideaIds: [f.id],
+                         projectId: f.projectId,
+                         projectIds: f.projectId ? [f.projectId] : [],
                          title: f.parts[0].text.trim().slice(0, 60) });
     });
   });
@@ -8025,6 +8075,33 @@ function scriptProjeListesiCiz(){
     });
   });
 }
+// Fikir/proje bloklarinin acik-kapali hali. Uzun listede KAPALI
+// basliyor: pencereyi acan kisi once ne yapacagini gormeli, yuz
+// satirlik bir liste degil. Kisa listede acik kaliyor — dort fikri
+// gormek icin bir dugmeye basmak gereksiz bir adim olurdu.
+const SC_UZUN_LISTE = 8;
+function scBlokAyarla(dugmeId, acik){
+  const dugme = document.getElementById(dugmeId);
+  const blok = dugme && dugme.closest('.sc-blok');
+  if(!blok) return;
+  blok.classList.toggle('sc-kapali', !acik);
+  dugme.textContent = t(acik ? 'sc_pick_close' : 'sc_pick_open');
+  dugme.setAttribute('aria-expanded', acik ? 'true' : 'false');
+}
+function scBlokCevir(dugmeId){
+  const dugme = document.getElementById(dugmeId);
+  const blok = dugme && dugme.closest('.sc-blok');
+  if(!blok) return;
+  scBlokAyarla(dugmeId, blok.classList.contains('sc-kapali'));
+}
+// Dil degisince dugme yazilari da degismeli; hal aynen korunuyor.
+function scBlokEtiketleri(){
+  ['sc_ideasToggle','sc_projToggle'].forEach(id=>{
+    const dugme = document.getElementById(id);
+    const blok = dugme && dugme.closest('.sc-blok');
+    if(blok) scBlokAyarla(id, !blok.classList.contains('sc-kapali'));
+  });
+}
 function projeSecimiYaz(){
   document.getElementById('sc_projCount').textContent =
     seciliProjeler.size ? t('sc_proj_picked')(seciliProjeler.size) : t('sc_proj_picked_none');
@@ -8174,6 +8251,9 @@ function openScript(id, baslangic){
   scFikirArama = '';
   scriptFikirListesiCiz();
   scriptProjeListesiCiz();
+  // Uzun liste kapali, kisa liste acik acilir.
+  scBlokAyarla('sc_ideasToggle', fikirler.length <= SC_UZUN_LISTE);
+  scBlokAyarla('sc_projToggle', projects.length <= SC_UZUN_LISTE);
   scriptSayaci((veri.text || '').length);
   // Silme yalnizca var olan bir kayit icin anlamli.
   document.getElementById('sc_delete').hidden = !sc;
@@ -9618,6 +9698,8 @@ document.getElementById('sc_driveUndo').addEventListener('click', ()=>{
   document.getElementById('sc_driveUndo').hidden = true;
   driveDurum('');
 });
+document.getElementById('sc_ideasToggle').addEventListener('click', ()=> scBlokCevir('sc_ideasToggle'));
+document.getElementById('sc_projToggle').addEventListener('click', ()=> scBlokCevir('sc_projToggle'));
 document.getElementById('sc_ideaSearch').addEventListener('input', e=>{
   scFikirArama = e.target.value;
   scriptFikirListesiCiz();
@@ -11712,6 +11794,9 @@ function renderSaatIzgarasi(gunSayisi){
 // hesaplaniyor — bugun varsa ona, yoksa basa. Pencere ayniysa
 // kullanicinin biraktigi yer korunuyor.
 let izgaraPenceresi = '';
+// Bir gun kaydirdiktan sonra hangi ucta kalinacagi: pencere kaysa da
+// goz ayni yerde kalsin, bir gun beliriverip oteki uctan biri ciksin.
+let izgaraKenarIstegi = '';
 function izgarayiKonumla(gunler, gunSayisi){
   const kap = document.getElementById('calGridWrap');
   if(!kap || gunSayisi < 2) return;
@@ -11719,10 +11804,15 @@ function izgarayiKonumla(gunler, gunSayisi){
   const yeniPencere = anahtar !== izgaraPenceresi;
   izgaraPenceresi = anahtar;
   const onceki = kap.scrollLeft;
+  const kenar = izgaraKenarIstegi;
+  izgaraKenarIstegi = '';
   // Yerlesim bir sonraki karede hazir: scrollWidth simdi okunursa
   // izgara henuz olculmemis olabiliyor.
   requestAnimationFrame(()=>{
     if(kap.scrollWidth <= kap.clientWidth + 1) return;   // hepsi zaten sigiyor
+    // Parmakla bir gun kaydirildi: ayni ucta kaliyoruz. Bugune konumlanmak
+    // burada yanlis olurdu — goz kaydigi yerden devam etmeli.
+    if(kenar){ kap.scrollLeft = kenar === 'son' ? kap.scrollWidth : 0; return; }
     if(!yeniPencere){ kap.scrollLeft = onceki; return; }
     const bugun = kap.querySelector('.hg-dayhead.today');
     if(!bugun){ kap.scrollLeft = 0; return; }
@@ -12244,6 +12334,25 @@ document.getElementById('nextBtn').addEventListener('click', ()=> takvimKaydir(1
 // karismasin diye yatay yol 60px'i gecmeli ve dikey yoldan belirgin buyuk
 // olmali. Tablo gorunumu kendi icinde yana kaydigi icin orada kapali;
 // aksi halde tabloyu kaydirmak ay degistirirdi.
+// Izgara kendi icinde yana kayiyor mu? Saat izgarasinda yedi gun telefona
+// sigmadigi icin kayiyor; ay izgarasi sigiyor, kaymiyor.
+function izgaraYanaKayiyor(kap){ return kap.scrollWidth > kap.clientWidth + 2; }
+// Parmagin gittigi yonde kaydiracak yer kaldi mi?
+function izgaraKenarda(kap, yon){
+  return yon > 0 ? kap.scrollLeft + kap.clientWidth >= kap.scrollWidth - 2
+                 : kap.scrollLeft <= 2;
+}
+// Pencereyi BIR GUN kaydiriyor. Kaydirdiktan sonra ayni kenarda kaliyoruz:
+// ekranda bir yeni gun beliriyor, oteki uctan bir gun cikiyor. Goz icin
+// kesintisiz bir ilerleme, sicrama yok.
+function birGunKaydir(yon){
+  if(viewMode === 'day'){ gunKaymasi += yon; }
+  else if(viewMode === 'week'){ haftaGunKaymasi += yon; }
+  else { takvimKaydir(yon); return; }
+  izgaraKenarIstegi = yon > 0 ? 'son' : 'bas';
+  trackOnce('funnel/month-navigated');
+  renderCal();
+}
 (function takvimKaydirmaHareketi(){
   const kap = document.getElementById('calGridWrap');
   if(!kap) return;
@@ -12259,7 +12368,17 @@ document.getElementById('nextBtn').addEventListener('click', ()=> takvimKaydir(1
     if(!t) return;
     const dx = t.clientX - x0, dy = t.clientY - y0;
     if(Math.abs(dx) < 60 || Math.abs(dx) < Math.abs(dy) * 1.5) return;
-    takvimKaydir(dx < 0 ? 1 : -1);
+    const yon = dx < 0 ? 1 : -1;
+    // IZGARA KENDI ICINDE KAYIYORSA HAFTA ATLAMIYOR. Tablo gorunumu icin
+    // zaten boyleydi; saat izgarasini yana kaydirilir yapinca ayni durum
+    // orada da olustu ve tek bir parmak hareketi iki is birden yapmaya
+    // basladi: hem izgarayi kaydiriyor hem haftayi atlatiyordu.
+    if(izgaraYanaKayiyor(kap)){
+      // Kenarda degilsek parmak zaten izgarayi kaydirdi, yapacak sey yok.
+      if(izgaraKenarda(kap, yon)) birGunKaydir(yon);
+      return;
+    }
+    takvimKaydir(yon);
   }, { passive:true });
 })();
 
@@ -12275,7 +12394,7 @@ document.getElementById('viewMonthBtn').addEventListener('click', ()=> setView('
 document.getElementById('viewWeekBtn').addEventListener('click', ()=> setView('week'));
 document.getElementById('viewDayBtn').addEventListener('click', ()=> setView('day'));
 document.getElementById('viewTableBtn').addEventListener('click', ()=> setView('table'));
-document.getElementById('todayBtn').addEventListener('click', ()=>{ weekOffset = 0; gunKaymasi = 0; ayKaymasi = 0; renderCal(); });
+document.getElementById('todayBtn').addEventListener('click', ()=>{ weekOffset = 0; gunKaymasi = 0; ayKaymasi = 0; haftaGunKaymasi = 0; renderCal(); });
 
 // ---- Yedek -----------------------------------------------------------
 // Yedek eskiden YALNIZCA takvim kayitlarini aliyordu: projeler, fikirler,
@@ -13397,6 +13516,8 @@ function aiBaglamVarMi(baglam){
 const AI_ALAN_TARIFI = {
   caption:    (dil)=> `Write the caption that goes with this post. Keep it in the creator's own voice — casual, direct, no corporate tone, no more than 3-4 short sentences, end with a light call to action only if it fits naturally. Write it in ${dil}. Return ONLY the caption text — no preamble, no quotation marks around it, no hashtags.`,
   videoTitle: (dil)=> `Write the public title of this video — the one viewers see in search and suggested. One line, at most 70 characters, concrete and specific to what the video actually shows. No clickbait promises the video does not keep, no emoji, no quotation marks. Write it in ${dil}. Return ONLY the title.`,
+  hashtags:   (dil)=> `List the hashtags for this post. 8 to 15 of them, most relevant first, mixing a few broad ones with several specific to the subject. Comma-separated, WITHOUT the # sign, lowercase, no duplicates. Use ${dil} tags where that is what the audience searches, English where the tag is standard. Return ONLY the comma-separated list.`,
+  thumbPrompt:(dil)=> `Write an image-generation prompt for the cover image of this post. Describe the subject, the framing, the lighting and the mood in concrete visual terms \u2014 what a camera would see. No text or lettering in the image, no logos, no watermarks. Write the prompt in English: image models read it best. Return ONLY the prompt.`,
   shortTitle: (dil)=> `Write the short text that goes ON the cover image — 3 to 5 words, at most 30 characters. It is read at a glance on a small thumbnail, so it must be short, punchy and readable. No punctuation at the end, no emoji, no quotation marks. Write it in ${dil}. Return ONLY that text.`
 };
 
@@ -13652,7 +13773,11 @@ async function aiAlanUret(alan, alanId, dugmeId, calisanEtiket){
   const ham = await aiCalistir(dugme, durumEl, calisanEtiket, aiAlanPrompt(alan),
                                { sure: AI_ZAMAN_ASIMI });
   if(ham === null) return;
-  const temiz = aiTemizle(ham, alan !== 'caption');
+  // Tek satira indirilmesi GEREKEN alanlar: baslik, kapak yazisi, etiket
+  // listesi. Aciklama ve kapak gorseli tarifi cok satirli olabiliyor;
+  // onlari kirpmak metnin yarisini atmak demek.
+  const cokSatirli = alan === 'caption' || alan === 'thumbPrompt';
+  const temiz = aiTemizle(ham, !cokSatirli);
   if(!temiz){
     durumEl.textContent = t('ai_error_prefix') + 'boş yanıt' + t('ai_error_suffix');
     durumEl.className = 'ai-status error';
@@ -13670,6 +13795,8 @@ function runAiDraft(){ return aiAlanUret('caption', 'f_caption', 'aiDraftBtn', t
 document.getElementById('aiDraftBtn').addEventListener('click', runAiDraft);
 document.getElementById('aiTitleBtn').addEventListener('click', ()=> aiAlanUret('videoTitle','f_videotitle','aiTitleBtn', t('ai_drafting')));
 document.getElementById('aiShortBtn').addEventListener('click', ()=> aiAlanUret('shortTitle','f_shorttitle','aiShortBtn', t('ai_drafting')));
+document.getElementById('aiTagsBtn').addEventListener('click', ()=> aiAlanUret('hashtags','f_hashtags','aiTagsBtn', t('ai_drafting')));
+document.getElementById('aiThumbBtn').addEventListener('click', ()=> aiAlanUret('thumbPrompt','f_thumb','aiThumbBtn', t('ai_drafting')));
 
 // ===== Pending / Not Yet Posted popup =====
 let pendingAutoShown = false; // auto popup only ever fires once per page load
@@ -15721,6 +15848,40 @@ document.getElementById('hesapSilKutu').addEventListener('input', (e)=>{
     e.target.value.trim().toLowerCase() !== eposta || !eposta;
 });
 
+// Depodaki dosyalari UYGULAMA siliyor. Once SQL islevi siliyordu ama
+// Supabase storage.objects uzerinde dogrudan silmeye izin vermiyor:
+// "Direct deletion from storage tables is not allowed. Use the Storage
+// API instead." Islev tek parca oldugu icin bu hata her seyi geri
+// aliyordu — kullanici "Hesabimi sil" diyor, hicbir sey silinmiyordu.
+// (sql/32-hesap-sil-depo-api.sql)
+//
+// Butun kovalarda klasor ayni: <kullanici kimligi>/...
+const HESAP_KOVALARI = ['takvim', 'paylasim', YEDEK_KOVA];
+// Dosyalar silinemezse hesap silme DURMUYOR: dosyanin kalmasi kotu, ama
+// hesabi hic silememek daha kotu. Kac kovada takildigini donduruyoruz ki
+// kullaniciya dogruyu soyleyebilelim.
+async function hesapDosyalariniSil(){
+  if(!sb || !session) return { takilan: [] };
+  const kim = session.user.id;
+  const takilan = [];
+  for(const kova of HESAP_KOVALARI){
+    try{
+      const { data, error } = await sb.storage.from(kova).list(kim, { limit: 200 });
+      // Kova hic kurulmamis olabilir (o sql calistirilmadiysa): silinecek
+      // dosya da yok demektir, bu bir hata degil.
+      if(error){
+        const m = String(error.message || '');
+        if(!/not found|does not exist|bucket/i.test(m)) takilan.push(kova);
+        continue;
+      }
+      const yollar = (data || []).filter(x=> x && x.name).map(x=> kim + '/' + x.name);
+      if(!yollar.length) continue;
+      const { error: silHata } = await sb.storage.from(kova).remove(yollar);
+      if(silHata){ console.warn('[hesap sil] dosyalar silinemedi: ' + kova, silHata); takilan.push(kova); }
+    }catch(e){ console.warn('[hesap sil] kova okunamadi: ' + kova, e); takilan.push(kova); }
+  }
+  return { takilan };
+}
 document.getElementById('hesapSilBtn').addEventListener('click', async ()=>{
   const d = document.getElementById('hesapDurum');
   const btn = document.getElementById('hesapSilBtn');
@@ -15734,11 +15895,17 @@ document.getElementById('hesapSilBtn').addEventListener('click', async ()=>{
   btn.disabled = true;
   d.textContent = t('hesap_sil_calisiyor'); d.className = 'ai-status';
   try{
+    // ONCE dosyalar: oturum daha duruyorken. Islev hesabi silince
+    // oturum da olecegi icin sonraya birakilamaz.
+    const dosya = await hesapDosyalariniSil();
     // Silme sunucuda: bir kullaniciyi silmek yonetici yetkisi istiyor ve o
     // yetki tarayiciya verilemez. Kimin silinecegini de burasi secmiyor,
-    // islev auth.uid()'e bakiyor (sql/22-hesap-sil.sql).
+    // islev auth.uid()'e bakiyor (sql/32-hesap-sil-depo-api.sql).
     const { error } = await sb.rpc('hesabi_sil');
     if(error) throw error;
+    // Dosyalarin bir kismi kaldiysa bunu SOYLUYORUZ. "Her sey silindi"
+    // demek, silinmediyse, sozun kendisini bozar.
+    if(dosya.takilan.length) console.warn('[hesap sil] geride kalan kovalar', dosya.takilan);
     track('funnel/account-deleted');
     // Yerel kopya da gitsin: baska turlu cikis sonrasi ayni tarayicida
     // silinmis hesabin verisi duruyormus gibi gorunurdu.
@@ -15751,8 +15918,12 @@ document.getElementById('hesapSilBtn').addEventListener('click', async ()=>{
   }catch(err){
     console.error('[bulut] hesap silinemedi', err);
     const m = String((err && err.message) || '');
-    d.textContent = /function|does not exist|schema cache/i.test(m)
-      ? t('hesap_sil_yok') : t('hesap_sil_err') + ' ' + m;
+    // Uc ayri durum, uc ayri cumle. Ham Ingilizce hata mesajini ekrana
+    // basmak kullaniciya ne yapacagini soylemiyor.
+    d.textContent =
+      /storage tables|Storage API/i.test(m) ? t('hesap_sil_eski')
+      : /function|does not exist|schema cache/i.test(m) ? t('hesap_sil_yok')
+      : t('hesap_sil_err') + ' ' + m;
     d.className = 'ai-status error';
     btn.disabled = false;
   }

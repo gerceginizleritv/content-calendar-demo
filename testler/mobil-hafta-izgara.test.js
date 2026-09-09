@@ -126,6 +126,79 @@ const durum = p => p.evaluate(()=>{
   bak('sayfa hatasi yok', hata.length === 0, hata.join(' | '));
   await p.close();
 
+  // ---- Parmakla kaydirma ----
+  // GERCEK TELEFONDA CIKTI. Takvimde "sola cek -> sonraki" diye bir hareket
+  // vardi ve saat izgarasina da bagliydi. Izgarayi yana kaydirilir yapinca
+  // tek bir parmak hareketi IKI is birden yapmaya basladi: hem izgarayi
+  // kaydiriyor hem haftayi atlatiyordu. Tablo gorunumu icin ayni sebeple
+  // zaten kapaliydi; saat izgarasi listeye eklenmemisti.
+  console.log('[parmakla kaydirinca hafta atlamiyor]');
+  const s = await ac(t, 390);
+  const hataP = []; s.on('pageerror', e=> hataP.push(String(e)));
+  const gunler = ()=> s.$$eval('.hg-dayhead',
+    e=> e.map(x=> x.textContent.replace(/\s+/g,' ').trim()).join(','));
+  const kaydirmaDurumu = ()=> s.evaluate(()=>{
+    const k = document.getElementById('calGridWrap');
+    return { sl: Math.round(k.scrollLeft), max: Math.round(k.scrollWidth - k.clientWidth) };
+  });
+  // Parmak hareketi taklidi: touchstart + touchend, yatay yol 120px.
+  const cek = (dx)=> s.evaluate((dx)=>{
+    const k = document.getElementById('calGridWrap');
+    const r = k.getBoundingClientRect(), y = r.top + 120, x0 = r.left + r.width / 2;
+    const at = (tip, x)=> k.dispatchEvent(new TouchEvent(tip, { bubbles:true, cancelable:true,
+      touches: tip === 'touchend' ? [] : [new Touch({ identifier:1, target:k, clientX:x, clientY:y })],
+      changedTouches: [new Touch({ identifier:1, target:k, clientX:x, clientY:y })] }));
+    at('touchstart', x0); at('touchend', x0 + dx);
+  }, dx);
+
+  const ilkGunler = await gunler();
+  await s.evaluate(()=>{ document.getElementById('calGridWrap').scrollLeft = 150; });
+  await cek(-120);
+  await s.waitForTimeout(500);
+  bak('ortada kaydırınca hafta ATLAMIYOR', (await gunler()) === ilkGunler,
+      await gunler());
+
+  // Kenara gelip devam edince pencere BIR GUN kayiyor: gun gun ilerliyor.
+  await s.evaluate(()=>{ const k = document.getElementById('calGridWrap'); k.scrollLeft = k.scrollWidth; });
+  await s.waitForTimeout(200);
+  const oncekiIlk = (await gunler()).split(',')[0];
+  await cek(-120);
+  await s.waitForTimeout(500);
+  const sonraki = await gunler();
+  bak('sağ uçta kaydırınca bir gün ilerliyor',
+      sonraki.split(',')[0] !== oncekiIlk
+      && sonraki.split(',').slice(0, 6).join(',') === ilkGunler.split(',').slice(1).join(','),
+      oncekiIlk + ' -> ' + sonraki);
+  const d1 = await kaydirmaDurumu();
+  bak('göz aynı uçta kalıyor (sıçrama yok)', Math.abs(d1.sl - d1.max) <= 2,
+      d1.sl + ' / ' + d1.max);
+
+  // Ust uste: yedi gunluk bir sicrama degil, her seferinde bir gun.
+  await cek(-120); await s.waitForTimeout(450);
+  await cek(-120); await s.waitForTimeout(450);
+  const ucAdim = (await gunler()).split(',')[0];
+  bak('üç kaydırma = üç gün (bir hafta değil)',
+      ucAdim === ilkGunler.split(',')[3], ilkGunler.split(',')[0] + ' -> ' + ucAdim);
+
+  // Geri yon.
+  await s.evaluate(()=>{ document.getElementById('calGridWrap').scrollLeft = 0; });
+  await s.waitForTimeout(200);
+  await cek(120);
+  await s.waitForTimeout(500);
+  bak('sol uçta kaydırınca bir gün geri geliyor',
+      (await gunler()).split(',')[0] === ilkGunler.split(',')[2],
+      (await gunler()).split(',')[0]);
+  const d2 = await kaydirmaDurumu();
+  bak('geri gelirken de aynı uçta', d2.sl <= 2, String(d2.sl));
+
+  // "Bugun" her seyi sifirliyor.
+  await s.evaluate(()=> document.getElementById('todayBtn').click());
+  await s.waitForTimeout(500);
+  bak('"Bugün" gün kaymasını da sıfırlıyor', (await gunler()) === ilkGunler,
+      await gunler());
+  bak('sayfa hatası yok (kaydırma)', hataP.length === 0, hataP.join(' | '));
+  await s.close();
+
   console.log('[masaustunde yedi gun zaten sigiyor]');
   const m = await ac(t, 1280);
   const md = await durum(m);
