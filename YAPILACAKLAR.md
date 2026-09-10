@@ -23,6 +23,17 @@ sonra). İki değişiklik:
   paylaşım) alınmış takvim ekranı; takvim arayüzü değişirse yeniden
   alınmalı (scratchpad'deki Playwright betiği: viewport 1200×630, 2x).
 - Hero başlığı (`hero_h1`) değişmedi; arama terimi H1'de yok.
+- **Aynı gün, araştırma (kod yok):** `docs/mekan-adres-ve-coklu-mekan-analizi.md`.
+  Kullanıcı mekan adından adresin otomatik gelmesini, il/ilçe/sokak
+  kırılımını ve tek projeye birden çok mekanı sordu. Bulgular: "adres
+  istiyor" sorusu proje penceresinden geliyor (seçili mekanın adresine
+  bakılmıyor, "+ Yeni mekan" yalnızca ad soruyor); koordinat saklanmıyor;
+  Nominatim'de yazdıkça öneri yasak, Photon serbest; Google Places yalnızca
+  Edge Function arkasında ve ücretli pakette (önceki kararla aynı);
+  Open-Meteo ticari kullanımda 29 $/ay ister (hava bloğu da buna bağlı).
+  Öneri: Faz 0 yarım gün (mekan adresi projeye sayılsın, tam pencere),
+  Faz 1 iki gün (Nominatim Enter ile bul + koordinat + TR il/ilçe listesi),
+  çoklu mekan `place_ids text[]` (sql/23 deseni) 1–2 gün. Karar bekliyor.
 - **Aynı gün, ikinci PR (kullanıcı "ekle" dedi):** logonun altına tek satır
   tanıtım metni. Karşılama sayfasında `.marka-alt` ("Content calendar for
   video creators" / "Video üreticileri için içerik takvimi"), 640px altında
