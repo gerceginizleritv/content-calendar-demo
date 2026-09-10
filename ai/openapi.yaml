@@ -193,7 +193,7 @@ paths:
         content:
           application/json:
             schema:
-              $ref: "https://shootboard.app/ai/sema.json"
+              $ref: "#/components/schemas/Package"
             example:
               shootboard: 1
               source: ChatGPT
@@ -304,6 +304,105 @@ components:
         application/json:
           schema: { $ref: "#/components/schemas/Error" }
   schemas:
+    # Compact copy of https://shootboard.app/ai/sema.json so the document is
+    # self-contained (GPT Actions do not follow external $refs). The full
+    # schema carries every limit and description.
+    Package:
+      type: object
+      description: A batch of content for the account. Turkish aliases kayitlar/projeler/mekanlar/scriptler/fikirler are accepted too.
+      properties:
+        shootboard: { type: integer, const: 1 }
+        source: { type: string, maxLength: 60, description: "Who produced it, e.g. ChatGPT" }
+        note: { type: string, maxLength: 300 }
+        places: { type: array, maxItems: 100, items: { $ref: "#/components/schemas/PlaceIn" } }
+        projects: { type: array, maxItems: 100, items: { $ref: "#/components/schemas/ProjectIn" } }
+        entries: { type: array, maxItems: 200, items: { $ref: "#/components/schemas/EntryIn" } }
+        scripts: { type: array, maxItems: 50, items: { $ref: "#/components/schemas/ScriptIn" } }
+        ideas: { type: array, maxItems: 100, items: { $ref: "#/components/schemas/IdeaIn" } }
+    EntryIn:
+      type: object
+      required: [date, platform]
+      properties:
+        id: { type: string, description: "Only to update an item from an earlier response" }
+        date: { type: string, format: date }
+        time: { type: string, description: "HH:MM, 24-hour, optional" }
+        type: { type: string, enum: [video, shorts, reels, carousel, story, text_post, poll], default: video }
+        platform: { type: string, enum: [youtube, instagram, tiktok, facebook, threads, x, pinterest, linkedin] }
+        title: { type: string, maxLength: 300 }
+        project: { type: string, description: "Project name (case-insensitive) or id" }
+        uploaded: { type: boolean, default: false }
+        content:
+          type: object
+          properties:
+            caption: { type: string, maxLength: 5000 }
+            hashtags: { type: string, maxLength: 1000 }
+            videoTitle: { type: string, maxLength: 300 }
+            shortTitle: { type: string, maxLength: 300 }
+            thumbPrompt: { type: string, maxLength: 5000 }
+            slidePrompts: { type: array, maxItems: 9, items: { type: string, maxLength: 2000 } }
+            timezone: { type: string, description: "IANA zone, e.g. Europe/Istanbul" }
+    ProjectIn:
+      type: object
+      required: [name]
+      properties:
+        id: { type: string }
+        name: { type: string, maxLength: 120, description: "Unique per account; same name updates" }
+        type: { type: string, enum: [outdoor, venue, studio, vlog, review, desk, other], default: other }
+        shootDate: { type: string, format: date }
+        keywords: { type: string, maxLength: 200 }
+        notes: { type: string, maxLength: 2000 }
+        address: { type: string, maxLength: 300 }
+        places: { type: array, maxItems: 20, items: { type: string }, description: "Ordered stops: place names or ids" }
+        topic: { type: string, maxLength: 300 }
+        city: { type: string, maxLength: 120 }
+        district: { type: string, maxLength: 120 }
+        format: { type: string, maxLength: 60 }
+        permission: { type: string, maxLength: 300 }
+        scriptUrl: { type: string, maxLength: 600 }
+        driveUrl: { type: string, maxLength: 600 }
+        mapsUrl: { type: string, maxLength: 600 }
+        fieldNotes: { type: string, maxLength: 4000 }
+        cautions: { type: string, maxLength: 4000 }
+        shotList: { type: string, maxLength: 4000 }
+        cancelled: { type: boolean }
+        steps: { type: object, additionalProperties: { type: boolean }, description: "script, filmed, audio, edited, approved, package, published" }
+        deadlines: { type: object, additionalProperties: { type: string, format: date } }
+    PlaceIn:
+      type: object
+      required: [name]
+      properties:
+        id: { type: string }
+        name: { type: string, maxLength: 160 }
+        city: { type: string, maxLength: 120 }
+        district: { type: string, maxLength: 120 }
+        address: { type: string, maxLength: 400, description: "Never invent one" }
+        country: { type: string, maxLength: 80 }
+        lat: { type: number }
+        lon: { type: number }
+        timezone: { type: string }
+        mapsUrl: { type: string, maxLength: 600 }
+        driveUrl: { type: string, maxLength: 600 }
+        permission: { type: string, maxLength: 400 }
+        cautions: { type: string, maxLength: 2000 }
+        notes: { type: string, maxLength: 4000 }
+    ScriptIn:
+      type: object
+      properties:
+        id: { type: string }
+        title: { type: string, maxLength: 160 }
+        text: { type: string, maxLength: 40000 }
+        project: { type: string }
+        projects: { type: array, maxItems: 20, items: { type: string } }
+    IdeaIn:
+      type: object
+      required: [text]
+      properties:
+        id: { type: string }
+        text: { type: string, maxLength: 600 }
+        project: { type: string }
+        projects: { type: array, maxItems: 20, items: { type: string } }
+        due: { type: string, format: date }
+        done: { type: boolean }
     Error:
       type: object
       properties:

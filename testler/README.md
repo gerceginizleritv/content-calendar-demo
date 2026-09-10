@@ -69,3 +69,12 @@ Testler tek tip değil, `kosu.sh` her birine beklediğini veriyor:
 
 Artık koşulmayan testler ve neden emekli oldukları. Silmiyoruz: biri
 "bu neden test edilmiyor" diye sorduğunda cevabı burada.
+
+## Tarayıcısız testler
+
+`ai-erisimi-dogrula.test.js` ve `ai-erisimi-sunucu.test.js` tarayıcı açmaz:
+ilki `supabase/functions/ai/dogrula.js` modülünü doğrudan koşar, ikincisi
+`tek-dosya.ts`'yi `typescript` ile çevirip bellekteki bir PostgREST
+taklidine karşı uçları dener. İkincisi için `typescript` gerekir
+(`npm i -D typescript` ya da `/opt/node22` altındaki küresel kurulum);
+yoksa test kendini atlar ve geçmiş sayılır.
