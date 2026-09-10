@@ -1,0 +1,68 @@
+const fs = require('fs');
+const { KOK: DEPO } = require('../araclar');
+const html = fs.readFileSync(DEPO + '/aktar.html','utf8');
+// Fonksiyonlari kaynaktan cikariyoruz: testin olcecegi sey kopyasi degil,
+// tarayicida calisacak kodun ta kendisi olsun.
+function al(ad){
+  const i = html.indexOf('function '+ad+'(');
+  if(i < 0) throw new Error('bulunamadi: '+ad);
+  let d=0, j=html.indexOf('{', i);
+  for(let k=j;k<html.length;k++){
+    if(html[k]==='{')d++; else if(html[k]==='}'){d--; if(!d) return html.slice(i,k+1);}
+  }
+  throw new Error('kapanmadi: '+ad);
+}
+const yardimci = html.match(/const eh = [\s\S]*?const mtn = [^\n]*\n/)[0];
+const kod = yardimci + al('lokasyonSatiri') + '\n' + al('kayitSatiri');
+const wsId = '00000000-0000-0000-0000-0000000000ws'.replace('ws','01');
+const uid  = '00000000-0000-0000-0000-000000000002';
+const f = new Function('wsId','uid', kod + '; return {lokasyonSatiri, kayitSatiri};')(wsId, uid);
+
+const yedek = JSON.parse(fs.readFileSync(process.argv[2],'utf8'));
+const L = yedek.locations.map(f.lokasyonSatiri);
+const E = yedek.calendarEvents.map(f.kayitSatiri);
+
+let hata = 0;
+const kontrol = (ad, sart) => { if(!sart){ console.log('  ✖ '+ad); hata++; } else console.log('  ✔ '+ad); };
+console.log('DONUSUM KONTROLLERI');
+kontrol('43 lokasyon', L.length === 43);
+kontrol('99 kayit', E.length === 99);
+kontrol('bayraklar boolean', L.every(x => [x.permission,x.filmed,x.audio,x.edited,x.published,x.script,x.cancelled].every(v => typeof v === 'boolean')));
+kontrol("published=true sayisi 11", L.filter(x=>x.published).length === 11);
+kontrol("cancelled=true sayisi 1", L.filter(x=>x.cancelled).length === 1);
+kontrol('prepRequested tasinmadi', L.every(x => !('prepRequested' in x)));
+kontrol('bos plannedDate null oldu', L.filter(x=>x.planned_date===null).length === 40 && L.filter(x=>x.planned_date).length === 3);
+kontrol('format degerleri semaya uygun', L.every(x => ['Saha','Masabaşı','Hibrit','Stüdyo/Grafik'].indexOf(x.format)>=0));
+kontrol('shot_list package.shotList tan geldi', L.every(x => typeof x.shot_list === 'string'));
+kontrol('uploaded=true sayisi 87', E.filter(x=>x.uploaded).length === 87);
+kontrol('pinned_comment content ten cikarildi', E.every(x => !('pinnedComment' in x.content)));
+kontrol('pinned_comment dolu olan 34', E.filter(x=>x.pinned_comment).length === 34);
+kontrol('caption content te kaldi', E.filter(x=>x.content.caption).length === 75);
+kontrol('location_id hepsinde dolu', E.every(x => typeof x.location_id === 'string' && x.location_id));
+kontrol('workspace_id her satirda', L.every(x=>x.workspace_id===wsId) && E.every(x=>x.workspace_id===wsId));
+kontrol('user_id her kayitta', E.every(x=>x.user_id===uid));
+kontrol('post_date/post_time dolu', E.every(x=>x.post_date && x.post_time));
+
+// Metin kaybi olmamali: kirpma sinirlarina takilan var mi?
+const kaynakL = yedek.locations;
+let kirpik = 0;
+kaynakL.forEach((o,i)=>{
+  [['name','name'],['topic','topic'],['notes','notes'],['shootingCautions','cautions'],
+   ['fieldNotes','field_notes'],['address','address'],['imageUrl','image_url']].forEach(([a,b])=>{
+    if((o[a]||'').length !== (L[i][b]||'').length) kirpik++;
+  });
+});
+kontrol('lokasyonlarda metin kirpilmadi', kirpik === 0);
+let ekirpik = 0;
+yedek.calendarEvents.forEach((o,i)=>{
+  if((o.title||'').length !== (E[i].title||'').length) ekirpik++;
+  if(((o.content&&o.content.pinnedComment)||'').length !== (E[i].pinned_comment||'').length) ekirpik++;
+  ['caption','hashtags','thumbPrompt','shortTitle','videoTitle'].forEach(k=>{
+    if(((o.content&&o.content[k])||'') !== (E[i].content[k]||'')) ekirpik++;
+  });
+});
+kontrol('kayitlarda metin kirpilmadi', ekirpik === 0);
+
+fs.writeFileSync('satirlar.json', JSON.stringify({L:L,E:E}));
+console.log(hata ? '\n'+hata+' KONTROL BASARISIZ' : '\nHepsi gecti.');
+process.exit(hata?1:0);

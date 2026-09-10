@@ -1,0 +1,104 @@
+// index.html'den pencere fonksiyonlarini birebir cikarip cok sayida tarih icin sinar.
+const fs = require('fs');
+const { KOK: DEPO } = require('../araclar');
+const src = fs.readFileSync(DEPO + '/app.html', 'utf8');
+
+function grab(name, re){
+  const m = src.match(re);
+  if(!m) throw new Error('bulunamadi: ' + name);
+  return m[0];
+}
+const parcalar = [
+  grab('CAL_WEEKS', /const CAL_WEEKS = \d+;/),
+  grab('CAL_STEP_WEEKS', /const CAL_STEP_WEEKS = \d+;/),
+  grab('ayKaymasi', /let ayKaymasi = \d+;/),
+  grab('gunKaymasi', /let gunKaymasi = \d+;/),
+  grab('ayPenceresi', /function ayPenceresi\(\)\{[\s\S]*?\n\}/),
+  grab('calWindowStart', /function calWindowStart\(\)\{[\s\S]*?\n\}/),
+  grab('calCellCount', /function calCellCount\(\)\{[\s\S]*?\n\}/),
+  grab('calWindowEnd', /function calWindowEnd\(\)\{[\s\S]*?\n\}/),
+].join('\n');
+
+let weekOffset = 0;
+const ctx = { weekOffset: 0 };
+const fabrika = new Function('durum', parcalar + `
+  return {
+    get weekOffset(){ return weekOffset; },
+    set weekOffset(v){ weekOffset = v; },
+    calWindowStart, calCellCount, calWindowEnd
+  };
+`.replace('let weekOffset','')); // weekOffset asagida enjekte ediliyor
+
+// Basit yol: fonksiyonlari weekOffset'i disaridan alan bir kapanisa sar.
+const yap = new Function('weekOffsetRef', `
+  let weekOffset = weekOffsetRef.v;
+  let viewMode = weekOffsetRef.mod || 'month';
+  ${parcalar}
+  return { calWindowStart, calCellCount, calWindowEnd };
+`);
+
+const gercekDate = Date;
+function tarihiSabitle(iso){
+  const sabit = new gercekDate(iso + 'T09:00:00');
+  global.Date = class extends gercekDate {
+    constructor(...a){ return a.length ? new gercekDate(...a) : new gercekDate(sabit); }
+    static now(){ return sabit.getTime(); }
+  };
+}
+function serbestBirak(){ global.Date = gercekDate; }
+
+const GUN = 86400000;
+const iso = d => d.toISOString().slice(0,10);
+let hata = 0, sayac = 0;
+function bekle(kosul, mesaj){
+  sayac++;
+  if(!kosul){ hata++; console.log('  BASARISIZ: ' + mesaj); }
+}
+
+// 2026 boyunca her gun icin dogrula
+for(let g = new gercekDate('2026-01-01T09:00:00'); g < new gercekDate('2027-01-02T09:00:00'); g = new gercekDate(+g + GUN)){
+  tarihiSabitle(iso(g));
+  const api = yap({ v: 0, mod: 'month' });
+  const bas = api.calWindowStart();
+  const bit = api.calWindowEnd();
+  const adet = api.calCellCount();
+  const bugun = new gercekDate(g); bugun.setHours(0,0,0,0);
+
+  bekle(bas.getDay() === 1, iso(g) + ' -> pencere Pazartesi baslamiyor (' + bas.getDay() + ')');
+  bekle(adet === 42, iso(g) + ' -> hucre sayisi 42 degil: ' + adet);
+  const fark = Math.round((bugun - bas) / GUN);
+  bekle(fark >= 0 && fark <= 6, iso(g) + ' -> bugun ilk satirda degil, ofset ' + fark);
+  bekle(Math.round((bit - bas) / GUN) === 41, iso(g) + ' -> pencere 42 gun degil');
+  bekle(bit >= bugun, iso(g) + ' -> pencere sonu bugunden once');
+  // Bugunden sonra en az 5 tam hafta gorunuyor mu
+  const ileriGun = Math.round((bit - bugun) / GUN);
+  bekle(ileriGun >= 35, iso(g) + ' -> ileride sadece ' + ileriGun + ' gun goruluyor');
+  serbestBirak();
+}
+
+// Gezinme: 4 haftalik adim, ileri-geri simetrik, Bugun sifirliyor
+tarihiSabitle('2026-08-31');
+const a0 = yap({ v: 0 }).calWindowStart();
+const a1 = yap({ v: 4 }).calWindowStart();
+const aM1 = yap({ v: -4 }).calWindowStart();
+bekle(Math.round((a1 - a0) / GUN) === 28, 'ileri adim 28 gun degil');
+bekle(Math.round((a0 - aM1) / GUN) === 28, 'geri adim 28 gun degil');
+bekle(iso(a0) === '2026-08-31', 'ofset 0 baslangici 2026-08-31 degil, ' + iso(a0));
+bekle(iso(yap({ v: 0 }).calWindowEnd()) === '2026-10-11', 'ofset 0 bitisi 2026-10-11 degil');
+serbestBirak();
+
+// Hafta modu: 7 hucre, hep Pazartesi, bugun icinde
+for(let g = new gercekDate('2026-01-01T09:00:00'); g < new gercekDate('2026-12-31T09:00:00'); g = new gercekDate(+g + GUN)){
+  tarihiSabitle(iso(g));
+  const h = yap({ v: 0, mod: 'week' });
+  const bas = h.calWindowStart(), bit = h.calWindowEnd();
+  const bugun = new gercekDate(g); bugun.setHours(0,0,0,0);
+  bekle(h.calCellCount() === 7, iso(g) + ' -> hafta modunda hucre 7 degil: ' + h.calCellCount());
+  bekle(bas.getDay() === 1, iso(g) + ' -> hafta modu Pazartesi baslamiyor');
+  bekle(bugun >= bas && bugun <= bit, iso(g) + ' -> bugun hafta penceresinin disinda');
+  bekle(Math.round((bit - bas) / GUN) === 6, iso(g) + ' -> hafta 7 gun degil');
+  serbestBirak();
+}
+
+console.log(`\n${sayac} kontrol calisti, ${hata} basarisiz.`);
+process.exit(hata ? 1 : 0);

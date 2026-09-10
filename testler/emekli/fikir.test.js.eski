@@ -1,0 +1,185 @@
+const { chromium } = require('../araclar');
+(async () => {
+  const b = await chromium.launch({ });
+  const page = await b.newPage({ viewport:{width:1440,height:1000} });
+  let hata=0; const k=(a,s,e)=>{ console.log((s?'  ✔ ':'  ✖ ')+a+(e!==undefined?' → '+JSON.stringify(e):'')); if(!s) hata++; };
+  page.on('pageerror', e=>{ console.log('  SAYFA HATASI: '+e); hata++; });
+  await page.addInitScript(()=>{ try{ localStorage.setItem('demo_seen_intro','1'); localStorage.setItem('demo_pitch','kapali'); }catch(e){} });
+  await page.route('**/supabase-js**', r=>r.fulfill({status:200,contentType:'application/javascript',
+    body:'window.supabase={createClient(){return {auth:{getSession:()=>Promise.resolve({data:{session:null}}),onAuthStateChange(){return {data:{subscription:{unsubscribe(){}}}}}}};}};'}));
+  await page.route('**/goatcounter**', r=>r.abort());
+  await page.goto('http://127.0.0.1:8098/app.html',{waitUntil:'domcontentloaded'});
+  await page.waitForTimeout(1500);
+  await page.evaluate(()=>{ document.querySelectorAll('.overlay.open').forEach(o=>o.classList.remove('open')); setLanguage('tr'); setPage('projects'); });
+  await page.waitForTimeout(300);
+  console.log('FİKİR → SCRIPT AKIŞI');
+
+  const r = await page.evaluate(async ()=>{
+    const bekle = ms=> new Promise(r=>setTimeout(r,ms));
+    const c = window.confirm; window.confirm = ()=>false;
+    // Proje olusturma sonradan ayri bir pencereye tasindi: once o aciliyor.
+    const kur = ad=>{
+      openProjectNew();
+      document.getElementById('p_type').value='studio';
+      document.getElementById('p_type').dispatchEvent(new Event('change'));
+      document.getElementById('p_name').value = ad;
+      document.getElementById('p_add').click();
+    };
+    kur('Kariye'); kur('Balat');
+    await bekle(400); window.confirm = c;
+    const P = projects.find(p=>p.name==='Kariye');
+    const Q = projects.find(p=>p.name==='Balat');
+
+    // Tabloda zincir gorunuyor mu?
+    const satir = document.querySelector('.proj-table tbody tr');
+    const zincir = [...document.querySelectorAll('.proj-table tbody tr:first-child .pname-sub > *')]
+                     .map(x=> x.className + ':' + x.textContent.trim());
+
+    // Fikir penceresini tablodan ac
+    document.querySelector(`[data-fk-open="${P.id}"]`).click();
+    await bekle(250);
+    const acildi = document.getElementById('ideaOverlay').classList.contains('open');
+    const bosMesaj = document.getElementById('fkList').textContent.trim();
+
+    // Enter ile fikir ekle
+    const kutu = document.getElementById('fk_new');
+    const enterla = metin=>{
+      kutu.value = metin;
+      kutu.dispatchEvent(new KeyboardEvent('keydown', {key:'Enter', bubbles:true, cancelable:true}));
+    };
+    enterla('Metokhites kimdi — bürokrattan keşişe');
+    enterla('Mozaiklerin altındaki ikinci katman');
+    enterla('Sabah ışığında çekim — hangi saat?');
+    await bekle(200);
+    const adet = fikirSayisi(P.id);
+    const kutuTemizlendi = kutu.value === '';
+    const sayacMetni = document.getElementById('fkCount').textContent;
+    const satirSayisi = document.querySelectorAll('#fkList .fk-row').length;
+
+    // Yerel kayda yaziliyor mu?
+    const yerel = JSON.parse(localStorage.getItem('demo_scripts') || '{}');
+    const yereldeAdet = (yerel[P.id] && yerel[P.id].ideas || []).length;
+    const fikirDamgasi = yerel[P.id] && yerel[P.id].ideasTs > 0;
+
+    // Bir fikri duzenle
+    const ilk = document.querySelector('#fkList .fk-text');
+    ilk.value = 'Metokhites — bürokrattan keşişe düşen adam';
+    ilk.dispatchEvent(new Event('input'));
+    ilk.dispatchEvent(new Event('blur'));
+    await bekle(150);
+    const duzenlendi = fikirler(P.id)[0].text;
+
+    // Bir fikri cikar
+    document.querySelectorAll('#fkList [data-fk-del]')[1].click();
+    await bekle(150);
+    const silmeSonrasi = fikirSayisi(P.id);
+    const kalanlar = fikirler(P.id).map(f=>f.text);
+
+    // "Bu fikirlerden script yaz" — iskelet
+    document.getElementById('fk_toScript').click();
+    await bekle(350);
+    const scriptAcildi = document.getElementById('scriptOverlay').classList.contains('open');
+    const fikirKapandi = !document.getElementById('ideaOverlay').classList.contains('open');
+    const iskelet = document.getElementById('sc_text').value;
+    const seritGorunuyor = !document.getElementById('sc_ideasFold').hidden;
+    const seritMetni = document.getElementById('sc_ideasList').textContent;
+    // ISKELET KAYDEDILMEMELI (vazgecince kaybolmali)
+    document.getElementById('sc_cancel').click();
+    await bekle(150);
+    const iskeletKaydedilmedi = scriptMetni(P.id) === '';
+
+    // Simdi gercekten script yaz
+    await openScript(P.id);
+    await bekle(200);
+    document.getElementById('sc_text').value = 'GERÇEK SCRIPT METNİ';
+    document.getElementById('sc_save').click();
+    await bekle(250);
+
+    // Tekrar "fikirlerden script yaz": DOLU metnin uzerine YAZMAMALI
+    await openIdeas(P.id);
+    await bekle(200);
+    document.getElementById('fk_toScript').click();
+    await bekle(300);
+    const doluMetinKorundu = document.getElementById('sc_text').value;
+    document.getElementById('sc_cancel').click();
+
+    // Kutuda yazili kalan fikir kaybolmuyor mu?
+    await openIdeas(P.id);
+    await bekle(200);
+    document.getElementById('fk_new').value = 'Son anda aklıma gelen';
+    document.getElementById('fk_toScript').click();
+    await bekle(300);
+    const kutudakiKurtarildi = fikirler(P.id).some(f=>f.text==='Son anda aklıma gelen');
+    document.getElementById('sc_cancel').click();
+
+    // Fikirsiz projede serit gizli, rozet bos
+    await openScript(Q.id);
+    await bekle(200);
+    const bosSerit = document.getElementById('sc_ideasFold').hidden;
+    document.getElementById('sc_cancel').click();
+
+    // Pencereyi kapatinca kaydediliyor mu?
+    await openIdeas(Q.id);
+    await bekle(150);
+    // Fikir yazma kutusu artik "+ yeni fikir" karti ile aciliyor,
+    // pencere de fk_close yerine closeIdeas() ile kapaniyor.
+    const acKart = document.getElementById('fk_openAdd');
+    if(acKart){ acKart.click(); await bekle(150); }
+    const kutu2 = document.getElementById('fk_new');
+    kutu2.value = 'Balat için tek fikir';
+    document.getElementById('fk_add').click();
+    await bekle(150);
+    closeIdeas();
+    await bekle(200);
+    const kapatincaKaydedildi = fikirSayisi(Q.id) === 1;
+
+    // Duzenleme penceresi etiketi
+    openProjectEdit(P.id);
+    await bekle(150);
+    const etiket = document.getElementById('pe_ideasTag').textContent;
+    document.getElementById('pe_ideas').click();
+    await bekle(250);
+    const duzenlemedenAcildi = document.getElementById('ideaOverlay').classList.contains('open');
+    closeIdeas();
+
+    // Ust sinir
+    const uzun = 'x'.repeat(FIKIR_MAX + 200);
+    fikirYaz(Q.id, [{id:'a', text:uzun, ts:1}]);
+    const kirpildi = fikirler(Q.id)[0].text.length;
+
+    return { zincir, acildi, bosMesaj, adet, kutuTemizlendi, sayacMetni, satirSayisi,
+             yereldeAdet, fikirDamgasi, duzenlendi, silmeSonrasi, kalanlar,
+             scriptAcildi, fikirKapandi, iskelet, seritGorunuyor, seritMetni,
+             iskeletKaydedilmedi, doluMetinKorundu, kutudakiKurtarildi, bosSerit,
+             kapatincaKaydedildi, etiket, duzenlemedenAcildi, kirpildi, sinir: FIKIR_MAX };
+  });
+
+  k('Tabloda zincir: Fikir → Script', r.zincir.join(' | ').includes('Fikir') && r.zincir.some(x=>x.startsWith('pchain')), r.zincir);
+  k('Fikir penceresi aciliyor', r.acildi);
+  k('Bos halde yol gosteren metin var', r.bosMesaj.length > 10, r.bosMesaj);
+  k('Enter ile 3 fikir eklendi', r.adet===3, r.adet);
+  k('Ekleyince kutu temizleniyor', r.kutuTemizlendi);
+  k('Sayac dogru', r.sayacMetni==='3 fikir', r.sayacMetni);
+  k('Ekranda 3 satir', r.satirSayisi===3, r.satirSayisi);
+  k('Tarayiciya yaziliyor', r.yereldeAdet===3, r.yereldeAdet);
+  k('Fikirlerin kendi zaman damgasi var', r.fikirDamgasi===true);
+  k('Fikir yerinde duzenlenebiliyor', r.duzenlendi==='Metokhites — bürokrattan keşişe düşen adam', r.duzenlendi);
+  k('Fikir cikarilabiliyor', r.silmeSonrasi===2, r.silmeSonrasi);
+  k('Dogru fikir cikarildi', !r.kalanlar.some(x=>x.includes('ikinci katman')), r.kalanlar);
+  k('"Script yaz" script penceresini aciyor', r.scriptAcildi);
+  k('Fikir penceresi kapandi', r.fikirKapandi);
+  k('Iskelet fikirlerden kuruldu', r.iskelet.includes('1. Metokhites') && r.iskelet.includes('2. Sabah'), r.iskelet.slice(0,80));
+  k('Script penceresinde fikir seridi gorunuyor', r.seritGorunuyor===true);
+  k('Serit fikirleri listeliyor', r.seritMetni.includes('Metokhites'), r.seritMetni.slice(0,50));
+  k('ISKELET KAYDEDILMIYOR (vazgecince kayboluyor)', r.iskeletKaydedilmedi===true);
+  k('DOLU SCRIPT UZERINE YAZILMIYOR', r.doluMetinKorundu==='GERÇEK SCRIPT METNİ', r.doluMetinKorundu.slice(0,40));
+  k('Kutuda yazili kalan fikir kurtariliyor', r.kutudakiKurtarildi===true);
+  k('Fikirsiz projede serit gizli', r.bosSerit===true);
+  k('Pencereyi kapatinca kaydediliyor', r.kapatincaKaydedildi===true);
+  k('Duzenleme penceresinde fikir sayisi', r.etiket==='3 fikir', r.etiket);
+  k('Duzenlemeden fikir penceresi aciliyor', r.duzenlemedenAcildi===true);
+  k('Uzun fikir kirpiliyor', r.kirpildi===r.sinir, {kirpildi:r.kirpildi, sinir:r.sinir});
+
+  console.log(hata? `\n${hata} BASARISIZ` : '\nHEPSI GECTI');
+  await b.close(); process.exit(hata?1:0);
+})();

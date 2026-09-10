@@ -20,7 +20,7 @@
    yeniden yaziliyor.
    ===================================================================== */
 
-const SURUM = 'slate-v1';
+const SURUM = 'shootboard-v2';
 const KABUK = [
   './app.html',
   './index.html',
@@ -63,8 +63,18 @@ self.addEventListener('fetch', (olay)=>{
   try{ adres = new URL(istek.url); }catch(e){ return; }
   if(adres.origin !== self.location.origin) return;
 
+  // HTML her seferinde SUNUCUYA soruluyor. Uygulama tek bir dosya ve gunde
+  // birkac kez degisiyor; tarayicinin kendi onbellegi (GitHub Pages 10
+  // dakikalik veriyor) yuzunden kullanici duzeltilmis bir hatayi hala
+  // gorebiliyordu. no-cache istegi kesmiyor, yalnizca "degisti mi" diye
+  // soruyor: degismediyse sunucu 304 donuyor, bedava.
+  const htmlMi = adres.pathname.endsWith('.html') || adres.pathname.endsWith('/')
+                 || istek.mode === 'navigate';
+  const gidecek = htmlMi ? new Request(istek.url, { cache:'no-cache', credentials:'same-origin' })
+                         : istek;
+
   olay.respondWith(
-    fetch(istek)
+    fetch(gidecek)
       .then(yanit=>{
         if(yanit && yanit.ok){
           const kopya = yanit.clone();

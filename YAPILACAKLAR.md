@@ -31,6 +31,58 @@ kaldı; başlık, liste ve tablo aktarımı ilk belgede geri okunarak doğruland
   kimliğiyle güncelle; yeni belge açıp çoğaltma.
 - Depodaki `.md` dosyaları kaynak olmaya devam ediyor; Drive kopyası
   paylaşım ve okuma için.
+---
+
+## Giriş: kayıt/giriş ayrımı ve şifre (5 Eylül 2026)
+
+Giriş yalnızca e-posta bağlantısıyla yapılıyordu. Gerçek denemede iki kez
+tökezledi: bağlantı Gmail'de spam'e düştü, Hotmail'de ikinci sefer hiç
+gelmedi. Bağlantıya bağlı tek yol kırılgan.
+
+Yapılanlar (uygulama ve karşılama sayfası, ikisinde de):
+
+- **Kayıt ol / Giriş yap iki ayrı sekme.** Tek kartta toplandığında
+  kullanıcı hangisini yaptığını anlamıyordu.
+- **Kayıt:** Google ile tek tık, ya da ad + e-posta + şifre (`signUp`).
+  Adres zaten kayıtlıysa Supabase hata vermez, boş `identities` döner;
+  bu yakalanıp kullanıcı giriş sekmesine yönlendiriliyor.
+- **Giriş:** Google, ya da e-posta + şifre. Şifresini unutan için giriş
+  bağlantısı aynı panelde duruyor — kimse kilitli kalmıyor.
+- **Şifre gücü** yazarken görünüyor: ince çubuk + ne yapılması gerektiğini
+  söyleyen bir satır. **Zayıf şifre kabul edilmiyor** (kısa, tek karakter
+  tekrarı, `password/şifre/1234/qwerty` gibi kalıplar). Aynı ölçü,
+  bağlantıyla girene sorulan şifre penceresinde de geçerli.
+- Bağlantıyla giren kişiye bir kez **şifre belirle** penceresi açılıyor
+  (üretici + güç ölçüsü). "Şimdi değil" bir hafta susturuyor. Google ile
+  girene sorulmuyor. Sonradan değiştirmek için sol taraftaki isimlerin
+  altında bir bağlantı var.
+- **Spam uyarısı** bağlantı gönderildiğinde mesajın içinde.
+- Karşılama sayfasının çağrı düğmeleri artık boş uygulamaya değil giriş
+  bölümüne götürüyor; **çıkış yapan da karşılama sayfasına dönüyor.**
+
+Yol boyunca çıkan üç kusur: bulut yüklenmediğinde giriş düğmeleri sessizce
+hiçbir şey yapmıyordu; koyu temada seçili sekme seçilmemişten daha koyu
+çıkıyordu (oluk `--yuzey2`, pil `--yuzey` — ilişki tema değişince tersine
+dönüyor); kapatma şeridinin negatif kenar boşluğu `.modal`'ın 26 pikseline
+göreydi, dlg penceresi 22 kullanıyor, serit dört piksel taşıyordu.
+
+Aynı gün iki oturum aynı sorunu ayrı çözmüştü: biri uygulamadaki tüm
+`confirm/alert/prompt` çağrılarını karşılayan genel bir pencere, diğeri
+yalnızca iki auth sorusu için başlıklı bir pencere. Genel olan esas alındı;
+`onayla()` artık metin ya da `{baslik, govde, vurgu, not, tamam}` alıyor.
+
+**E-posta tarafı (5 Eylül):** Resend bağlandı, SMTP kuruldu, şablonlar
+Supabase'e girildi, `hosgeldin` fonksiyonu dağıtıldı, `sql/20` çalıştırıldı.
+`hello@shootboard.app` Cloudflare Email Routing ile Gmail'e düşüyor.
+**Kalan:** `_dmarc` TXT kaydı (`v=DMARC1; p=none;`) — ilk e-posta Gmail'de
+spam'e düştü, asıl sebebi bu.
+
+Panelden kurulum iki kez düştü: ad kutusu rastgele bir isimle (`dynamic-task`)
+dolu geliyor ve değiştirilmezse tetikleyicinin çağırdığı adla uyuşmuyor;
+editörde ikinci dosya (`sablonlar.js`) eklenmeden Deploy'a basılınca
+"Module not found" veriyor. İkisi de `supabase/email/README.md`'ye yazıldı,
+ayrıca tek dosyalık sürüm üretildi: `supabase/functions/hosgeldin/tek-dosya.ts`
+(elle değil `birlestir.py` ile üretiliyor, iki sürüm ayrışmasın).
 
 ---
 
@@ -121,6 +173,114 @@ kayıtları girildi.** Bu birleştirmede yapılanlar:
    çalışmaz.
 4. İsteğe bağlı: GoatCounter'da yeni site kodu; GitHub hesap düzeyinde alan
    adı doğrulaması (TXT kaydı) ele geçirmeye karşı.
+
+---
+
+## Kaydırma hareketi ve yapışık Kaydet (5 Eylül 2026)
+
+- **Kaydırma:** `#calGridWrap` üzerinde touchstart/touchend. Yatay yol ≥60px
+  ve dikeyin 1,5 katından büyükse `takvimKaydir(±1)`. Tablo görünümünde
+  kapalı (tablo kendi içinde yana kayıyor). `passive:true`, kaydırmayı
+  engellemiyor.
+- **Yapışık Kaydet:** telefonda `.modal .modal-actions{position:sticky;
+  bottom:0}`; pencerenin alt boşluğu şeride taşındı (safe-area dahil).
+  Düğmeler tam genişlik 48px. `#dlgOverlay` istisna (küçük diyalog).
+- Test: `scratchpad/swipe.test.js` (9 iddia). Diğer takımlar yeniden geçti.
+
+---
+
+## Takvim başlığı telefonda yerel takvim düzeni (5 Eylül 2026)
+
+Kullanıcı canlı siteden ekran görüntüsü attı: koca mavi "+ Yeni Giriş"
+şeridi, demo sayacı, üç satıra dağılmış Ay/Hafta/Gün/Tablo + Önceki +
+Bugün + Sonraki, ayırıcı çizgili filtre düğmeleri. "Karışık, native
+görünmesin" dedi. Yalnızca `max-width:700px` bloğunda:
+
+- Başlık satırı `‹  Eylül 2026   Bugün  ›`: oklar yuvarlak 44px, yazısız
+  (`font-size:0` + `::before` ‹ ›; i18n metni ekran okuyucuda duruyor),
+  ay adı Archivo 19px başlık. Grid `grid-template-areas` ile, `.cal-nav-left/
+  right{display:contents}`.
+- Segment kontrolü tam genişlik, iOS tarzı: gri zemin, seçili mavi hap.
+- "+ Yeni Giriş" sağ altta 56px yuvarlak sabit düğme, sekme şeridinin
+  üstünde. Özgüllük tuzağı: genel kural `.btn.btn-new` yazılı, telefon
+  kuralı da `.btn.btn-new` olmalı; tek sınıfla metin görünür kaldı.
+- Demo notu ve "Erken erişim iste" telefonda gizli, sayaç 11px soluk.
+- Filtreler yuvarlak çip, ayırıcı ve özet yazısı gizli, tek satır kayar.
+
+Test: `scratchpad/gorunum.js` (oklar/başlık aynı satır, FAB sekme
+şeridinin üstünde, ok ve Bugün çalışıyor, segment seçimi, FAB pencereyi
+açıyor). Diğer üç takım yeniden geçti.
+
+---
+
+## Yerel diyaloglar kaldırıldı: alert/confirm/prompt yok (5 Eylül 2026)
+
+Kullanıcı bildirdi: kaydederken açılan yerel tarayıcı diyaloğu sayfayı
+kilitliyor, "diyalogları engelle" seçilince `confirm` hep `false` dönüp
+kayıt sessizce düşüyor; proje iki kez böyle kayboldu. Kenar çubuğundaki
+hesap düğmesi de (`confirm` ile çıkış sorusu) aynı şekilde donuyordu.
+
+**Kural (kalıcı):** `alert`, `confirm`, `prompt` bir daha KULLANILMAYACAK.
+Yerine `uyari(msg)`, `onayla(msg)` → Promise<boolean>, `sor(msg, varsayılan)`
+→ Promise<string|null>. Üçü de `#dlgOverlay` penceresini açıyor (z-index 80,
+kayıt penceresinin üstüne çıkar). Çağıran fonksiyon `async` olmalı ve
+`await` etmeli; 39 çağrı yeri çevrildi, `node --check` ile doğrulandı.
+
+Dönüşüm notları:
+- `alert(x)` → `uyari(x)` (await gerekmez, çağıranlar zaten `return` ediyor).
+- `confirm(x)` → `await onayla(x)`; `prompt(x)` → `await sor(x)`. Bu yüzden
+  `secimdenProje`, `projeSil`, `secilenProjeyiCoz` ve 10 kadar click/change
+  dinleyicisi `async` oldu; `secimdenProje` ve `secilenProjeyiCoz`
+  çağıranları `await` ediyor.
+- Tek düğmeli uyarıda perde de Tamam sayılır; onay/soru penceresinde perde
+  ve Escape iptal, Enter Tamam. Aynı anda ikinci diyalog istenirse ilki
+  iptal sayılıp kapanır.
+- Test: `scratchpad/dlg.test.js` (16 iddia: proje adres sorusu, termin
+  sorusu, hesap düğmesi, kayıt silme onayı pencere üstünde, eksik alan
+  uyarısı; sıfır yerel diyalog, sıfır sayfa hatası).
+
+---
+
+## Telefon: uygulama gibi (5 Eylül 2026)
+
+Kullanıcı sahadan bildirdi: shootboard.app telefonda "bazı menüler açılınca
+kapanmıyor, takvimde filtreler doğru çalışmıyor". iPhone 12 Pro ölçüsünde
+(390×844) Playwright ile yeniden üretildi. Teşhis:
+
+1. **Filtre paneli** telefonda ekranın altına sabitleniyordu ama arkasında
+   perde yoktu. Kapatmanın tek yolu "dışarıya dokunmak"tı; o dokunuş
+   ALTTAKİ güne isabet edip yeni kayıt penceresi açıyordu (testte
+   `editOverlay` açıldı). iOS Safari'de ise tıklanabilir olmayan alana
+   dokunulunca `document`'e `click` hiç gelmiyor, panel hiç kapanmıyordu.
+   Filtre mantığının kendisi doğruydu (seçim 8 → 1 kayıt); sorun kapanma.
+2. **Kayıt, proje, klon vb. pencerelerde kapatma düğmesi yoktu.** Sadece
+   perdeye tıklamak ya da formun en altındaki Vazgeç'e inmek gerekiyordu.
+   Telefonda pencere ekranı kapladığı için perde yok; 1.800 px'lik formda
+   Vazgeç ekran dışında. "Menüyü açtım, kapatamıyorum" bu.
+3. Üst şerit 750 px yer yiyordu; 5 sekme + 4 bağlantı + dil + tema.
+
+Çözüm (`app.html`, yalnızca `max-width:700px` bloğu + küçük JS):
+- Sekmeler altta sabit şerit (`.rail-nav{position:fixed;bottom:0}`),
+  `safe-area-inset-bottom` payıyla; `.wrap`'a alt boşluk, toast yukarı.
+- Filtre paneli: `.fbackdrop` perdesi (JS ekliyor, kendi click dinleyicisi
+  var, dokunuş alta geçmiyor), panelin üstünde başlık + Kapat (`.fpanel-head`,
+  masaüstünde `display:none`). `body.sheet-open` ile gövde kaymıyor.
+- Her `.overlay .modal`'a, `.modal-head`'i yoksa JS ile yapışkan bir
+  `.modal-xbar` + `×` ekleniyor. Düğme pencerenin KENDİ kapanma yolunu
+  kullanıyor: perdeye tıklanmış gibi `overlay.dispatchEvent(click)`; böylece
+  `closeModal`, `closeClone` vb. temizlikler aynen çalışıyor. Masaüstünde
+  de görünüyor (tutarlılık); test edildi, kırılan yok.
+- Pencereler alttan açılan sayfa: `align-items:flex-end`, üst köşeler
+  yuvarlak, `92dvh`. Takvim gezintisi 3 satır ızgara (görünüm / aralık /
+  önceki-bugün-sonraki). Filtre şeridi tek satır yana kayar.
+- MutationObserver overlay sınıflarını izleyip `sheet-open` düşürüyor.
+
+**Tuzak (yaşandı):** Medya bloğundan SONRA yazılan genel kural aynı
+özgüllükte olduğu için telefon kuralını eziyordu (`.fpanel-head` hiç
+görünmedi). Çözüm: medya içinde `.fpanel .fpanel-head`, `.modal .modal-xbar`.
+
+Test: `scratchpad/mobil5.js` (22 iddia, hepsi geçti), `desk.js` (masaüstü
+açılır menü ve pencere değişmedi), `gelen.test.js` (regresyon yok).
 
 ---
 

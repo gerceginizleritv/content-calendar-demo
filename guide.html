@@ -1,0 +1,724 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Shootboard User Guide — Content Calendar and Shoot Planning, Step by Step</title>
+<meta name="description" content="The Shootboard guide: build a content calendar, plan shoots, track the seven production steps, keep locations, ideas and scripts, use Gemini's free tier, set reminders and back everything up.">
+<meta name="keywords" content="content calendar, shoot planning, creator planning tool, YouTube content plan, social media content calendar, script writing, free Gemini AI, video production tracker">
+<link rel="canonical" href="https://shootboard.app/guide.html">
+<link rel="alternate" hreflang="en" href="https://shootboard.app/guide.html">
+<link rel="alternate" hreflang="tr" href="https://shootboard.app/kilavuz.html">
+<link rel="alternate" hreflang="x-default" href="https://shootboard.app/guide.html">
+<meta property="og:type" content="article">
+<meta property="og:locale" content="en_GB">
+<meta property="og:title" content="Shootboard User Guide — Content Calendar and Shoot Planning">
+<meta property="og:description" content="One shoot becomes ten posts. Projects, places, ideas, scripts, calendar, AI and reminders — the whole thing, step by step.">
+<meta property="og:url" content="https://shootboard.app/guide.html">
+<meta name="twitter:card" content="summary">
+<link rel="icon" href="favicon.svg" type="image/svg+xml">
+<link rel="icon" href="favicon.ico" sizes="any">
+<style>
+:root{
+  --bg:#F4F7FA; --surface:#FFFFFF; --surface-2:#EDF1F6; --line:#DFE5EC;
+  --text:#16202B; --text-dim:#54637A; --accent:#2563C7; --accent-soft:#E8EFFB;
+  --amber:#B4700F; --green:#1F7A50;
+}
+@media (prefers-color-scheme: dark){
+  :root{
+    --bg:#10131C; --surface:#171D28; --surface-2:#1F2734; --line:#2B3442;
+    --text:#E7ECF3; --text-dim:#A2B0C2; --accent:#7AA6EE; --accent-soft:#1B2740;
+    --amber:#E0A54A; --green:#5DBE92;
+  }
+}
+*{box-sizing:border-box;}
+body{margin:0;background:var(--bg);color:var(--text);
+  font-family:'IBM Plex Sans','Segoe UI',system-ui,-apple-system,sans-serif;
+  font-size:15px;line-height:1.7;-webkit-font-smoothing:antialiased;}
+a{color:var(--accent);text-underline-offset:2px;}
+.ust{position:sticky;top:0;z-index:20;background:var(--bg);
+  border-bottom:1px solid var(--line);}
+.ust-ic{max-width:1140px;margin:0 auto;padding:12px 22px;
+  display:flex;align-items:center;gap:14px;flex-wrap:wrap;}
+.marka{font-weight:700;letter-spacing:-.01em;}
+.marka a{color:var(--text);text-decoration:none;}
+.ust-sag{margin-left:auto;display:flex;gap:14px;align-items:center;font-size:.86rem;}
+.duzen{max-width:1140px;margin:0 auto;padding:0 22px 80px;
+  display:grid;grid-template-columns:236px minmax(0,1fr);gap:40px;align-items:start;}
+/* Sol menu: adimlar arasinda atlamak icin. Yapiskan, okurken kayboluyor. */
+.yan{position:sticky;top:64px;padding:30px 0 20px;max-height:calc(100vh - 74px);
+  overflow-y:auto;}
+.yan-bas{font-size:.7rem;text-transform:uppercase;letter-spacing:.12em;
+  color:var(--text-dim);margin:0 0 10px;}
+.yan ol{list-style:none;margin:0;padding:0;counter-reset:adim;}
+.yan li{counter-increment:adim;}
+.yan a{display:flex;gap:9px;padding:6px 9px;border-radius:7px;color:var(--text-dim);
+  text-decoration:none;font-size:.87rem;line-height:1.35;}
+.yan a::before{content:counter(adim);flex:none;width:19px;height:19px;margin-top:1px;
+  border-radius:50%;background:var(--surface-2);color:var(--text-dim);
+  font-size:.66rem;font-weight:700;display:flex;align-items:center;justify-content:center;}
+.yan a:hover{background:var(--surface);color:var(--text);}
+.yan a.acik{background:var(--accent-soft);color:var(--accent);font-weight:600;}
+.yan a.acik::before{background:var(--accent);color:#fff;}
+main{padding-top:30px;min-width:0;}
+h1{font-size:2rem;line-height:1.15;letter-spacing:-.025em;margin:0 0 10px;}
+.girizgah{font-size:1.05rem;color:var(--text-dim);margin:0 0 8px;max-width:62ch;}
+.bolum{padding-top:34px;margin-top:10px;scroll-margin-top:74px;}
+.bolum h2{font-size:1.35rem;letter-spacing:-.02em;margin:0 0 4px;}
+.bolum h3{font-size:1.02rem;margin:22px 0 6px;}
+.etiket{font-size:.68rem;text-transform:uppercase;letter-spacing:.12em;
+  color:var(--accent);font-weight:700;margin:0 0 4px;}
+p{margin:0 0 12px;max-width:68ch;}
+ul,ol.liste{margin:0 0 14px;padding-left:20px;max-width:68ch;}
+li{margin-bottom:6px;}
+strong{font-weight:600;}
+code{font-family:ui-monospace,'SF Mono',Menlo,Consolas,monospace;font-size:.88em;
+  background:var(--surface-2);padding:1px 5px;border-radius:4px;}
+.kutu{background:var(--surface);border:1px solid var(--line);border-radius:11px;
+  padding:16px 18px;margin:18px 0;max-width:68ch;}
+.kutu p:last-child{margin-bottom:0;}
+.kutu-bas{font-weight:600;margin:0 0 6px;}
+.uyari{border-left:3px solid var(--amber);}
+.ipucu{border-left:3px solid var(--green);}
+table{width:100%;border-collapse:collapse;margin:14px 0;font-size:.92rem;
+  display:block;overflow-x:auto;max-width:68ch;}
+th,td{text-align:left;padding:9px 10px;border-bottom:1px solid var(--line);vertical-align:top;}
+th{color:var(--text-dim);font-weight:600;font-size:.8rem;text-transform:uppercase;letter-spacing:.05em;}
+/* --- Canlandirmali gosterimler --------------------------------------
+   Her biri anlatilan seyin KENDISINI gosteriyor: yazi yazan AI, tiklenen
+   adim, gune surukklenen kayit. Hareket yalnizca ekranda gorunurken
+   basliyor (JS bir sinif ekliyor) ki sayfa acilir acilmaz her sey birden
+   oynamasin. */
+.gosterim{background:var(--surface);border:1px solid var(--line);border-radius:12px;
+  padding:18px;margin:18px 0;max-width:68ch;}
+.gosterim-ust{font-size:.7rem;text-transform:uppercase;letter-spacing:.11em;
+  color:var(--text-dim);margin:0 0 12px;}
+.sahte-alan{background:var(--bg);border:1px solid var(--line);border-radius:8px;
+  padding:10px 12px;font-size:.95rem;min-height:42px;display:flex;align-items:center;}
+.sahte-etiket{font-size:.66rem;text-transform:uppercase;letter-spacing:.1em;
+  color:var(--text-dim);margin:0 0 5px;}
+.sahte-dugme{display:inline-flex;align-items:center;gap:6px;background:var(--accent);
+  color:#fff;border-radius:7px;padding:7px 13px;font-size:.85rem;font-weight:600;}
+.yazan{border-right:2px solid var(--accent);white-space:nowrap;overflow:hidden;width:0;}
+.gosterim.gorunur .yazan{animation:yaz 3.4s steps(38) .4s infinite;}
+@keyframes yaz{0%{width:0;}45%{width:23em;}80%{width:23em;}100%{width:0;}}
+.adimlar{display:grid;grid-template-columns:repeat(auto-fit,minmax(96px,1fr));gap:7px;}
+.adim{display:flex;align-items:center;gap:7px;border:1px solid var(--line);
+  border-radius:9px;padding:7px 9px;font-size:.78rem;background:var(--bg);}
+.adim i{flex:none;width:15px;height:15px;border:1.5px solid var(--line);border-radius:4px;
+  display:block;position:relative;}
+.gosterim.gorunur .adim i::after{content:'';position:absolute;inset:1px;border-radius:2px;
+  background:var(--accent);opacity:0;animation:tikle 7s infinite;}
+.gosterim.gorunur .adim:nth-child(1) i::after{animation-delay:.2s;}
+.gosterim.gorunur .adim:nth-child(2) i::after{animation-delay:1.1s;}
+.gosterim.gorunur .adim:nth-child(3) i::after{animation-delay:2s;}
+.gosterim.gorunur .adim:nth-child(4) i::after{animation-delay:2.9s;}
+.gosterim.gorunur .adim:nth-child(5) i::after{animation-delay:3.8s;}
+.gosterim.gorunur .adim:nth-child(6) i::after{animation-delay:4.7s;}
+.gosterim.gorunur .adim:nth-child(7) i::after{animation-delay:5.6s;}
+@keyframes tikle{0%{opacity:0;transform:scale(.4);}6%{opacity:1;transform:scale(1);}
+  92%{opacity:1;}100%{opacity:0;}}
+.hafta{display:grid;grid-template-columns:repeat(5,1fr);gap:6px;}
+.gun{border:1px solid var(--line);border-radius:8px;min-height:74px;padding:6px;
+  background:var(--bg);font-size:.66rem;color:var(--text-dim);}
+.kart{margin-top:5px;height:20px;border-radius:5px;background:var(--accent-soft);
+  border-left:3px solid var(--accent);}
+.gosterim.gorunur .tasinan{animation:tasi 5s ease-in-out infinite;}
+@keyframes tasi{0%,12%{transform:translate(0,0);}
+  38%,62%{transform:translate(calc(200% + 12px),0);}
+  88%,100%{transform:translate(0,0);}}
+.bolun{display:flex;gap:8px;flex-wrap:wrap;}
+.fikir{border:1px solid var(--line);border-left:3px solid var(--accent);border-radius:8px;
+  padding:9px 11px;font-size:.85rem;background:var(--bg);}
+.fikir .rozet{display:inline-block;margin-left:8px;font-size:.72rem;border-radius:99px;
+  border:1px solid var(--line);padding:2px 8px;color:var(--text-dim);vertical-align:middle;}
+.fikir .rozet.gec{border-color:#C4453C;color:#C4453C;}
+.fikir .tik{display:inline-block;margin-right:7px;font-size:.72rem;border-radius:99px;
+  border:1px solid var(--line);padding:2px 7px;color:var(--text-dim);}
+.gosterim.gorunur .tarihlenen{animation:belir 5s ease-in-out infinite;}
+.gosterim.gorunur .ikinci{animation:belir 5s ease-in-out infinite;}
+@keyframes belir{0%,30%{opacity:0;transform:translateY(-6px) scale(.96);}
+  45%,85%{opacity:1;transform:none;}100%{opacity:0;transform:translateY(-6px) scale(.96);}}
+@media (prefers-reduced-motion: reduce){
+  .gosterim.gorunur *{animation:none !important;}
+  .gosterim .yazan{width:auto;border-right:0;}
+}
+.sss dt{font-weight:600;margin-top:16px;}
+.sss dd{margin:4px 0 0;color:var(--text-dim);max-width:68ch;}
+footer{border-top:1px solid var(--line);margin-top:56px;padding-top:22px;
+  color:var(--text-dim);font-size:.85rem;}
+.mob-menu{display:none;}
+@media(max-width:900px){
+  .duzen{grid-template-columns:minmax(0,1fr);gap:0;}
+  .yan{display:none;}
+  .mob-menu{display:block;position:sticky;top:52px;z-index:15;background:var(--bg);
+    border-bottom:1px solid var(--line);margin:0 -22px;padding:9px 22px;}
+  .mob-menu ol{display:flex;gap:6px;overflow-x:auto;list-style:none;margin:0;padding:0;
+    scrollbar-width:none;}
+  .mob-menu ol::-webkit-scrollbar{display:none;}
+  .mob-menu a{white-space:nowrap;font-size:.8rem;padding:5px 11px;border-radius:20px;
+    border:1px solid var(--line);color:var(--text-dim);text-decoration:none;}
+  .mob-menu a.acik{border-color:var(--accent);color:var(--accent);background:var(--accent-soft);}
+  h1{font-size:1.6rem;}
+  main{padding-top:20px;}
+}
+</style>
+</head>
+<body>
+
+<div class="ust">
+  <div class="ust-ic">
+    <span class="marka"><a href="index.html">Shootboard</a></span>
+    <span class="ust-sag">
+      <a href="kilavuz.html" hreflang="tr">Türkçe</a>
+      <a href="app.html">Open the app →</a>
+    </span>
+  </div>
+</div>
+
+<div class="duzen">
+  <nav class="yan" aria-label="Guide sections">
+    <p class="yan-bas">Guide</p>
+    <ol id="yanMenu">
+      <li><a href="#nedir">What Shootboard is, and who for</a></li>
+      <li><a href="#ilk">The first ten minutes</a></li>
+      <li><a href="#projeler">Projects and the seven steps</a></li>
+      <li><a href="#mekanlar">Places</a></li>
+      <li><a href="#fikirler">Ideas</a></li>
+      <li><a href="#scriptler">Scripts</a></li>
+      <li><a href="#ai">AI: Gemini's free tier</a></li>
+      <li><a href="#takvim">Calendar and entries</a></li>
+      <li><a href="#sablonlar">Caption templates</a></li>
+      <li><a href="#hatirlatma">Reminders and calendar subscription</a></li>
+      <li><a href="#iceaktar">Importing from a spreadsheet</a></li>
+      <li><a href="#paylas">The shareable link</a></li>
+      <li><a href="#yedek">Backups and your data</a></li>
+      <li><a href="#hesap">Account, privacy, deletion</a></li>
+      <li><a href="#sss">Frequently asked</a></li>
+    </ol>
+  </nav>
+
+  <main>
+    <nav class="mob-menu" aria-label="Guide sections (mobile)">
+      <ol id="mobMenu"></ol>
+    </nav>
+
+    <h1>Shootboard user guide</h1>
+    <p class="girizgah">This app was written by one creator, starting from their own problems.
+      Every module came out of something that actually went wrong. This guide walks through those
+      problems and what was built for them — so you can tell which parts you need.</p>
+    <p class="girizgah">You do not have to read it end to end. <strong>The first ten minutes</strong>
+      is enough to start working; the rest is there when you need it.</p>
+
+    <section class="bolum" id="nedir">
+      <p class="etiket">Step 1</p>
+      <h2>What Shootboard is, and who for</h2>
+      <p>You do one shoot and <strong>ten separate posts</strong> come out of it. A Reel, a Short,
+        a carousel, a story, a text post. Each has its own caption, cover text, time and platform.
+        Most people track that across a spreadsheet, a notes app and three different chats.
+        Shootboard exists to pull that mess into one place.</p>
+      <p>It is a <strong>content calendar</strong>, with one difference from an ordinary calendar:
+        it also holds <strong>the production work</strong> behind the post. Is the script written,
+        is it filmed, is the edit done, is permission cleared — all on the same screen.</p>
+      <h3>Who it helps</h3>
+      <ul>
+        <li><strong>The solo creator.</strong> Shooting, editing and posting are all the same
+          person. This is the main user.</li>
+        <li><strong>Anyone filming on location.</strong> Documentary, travel, history, food —
+          anyone who needs the address, the permission and the "watch out for this here" in one
+          place.</li>
+        <li><strong>A small team.</strong> There is a read-only link for showing the plan to an
+          editor or a client.</li>
+      </ul>
+      <div class="kutu">
+        <p class="kutu-bas">What it is NOT</p>
+        <p>Shootboard <strong>does not post for you</strong>. It does not connect to Instagram or
+          YouTube and it never publishes anything on your behalf. You publish; Shootboard remembers
+          what goes out when, and what has to happen first. That is a deliberate choice: tools built
+          on platform APIs stop working the day a platform changes its rules.</p>
+      </div>
+    </section>
+
+    <section class="bolum" id="ilk">
+      <p class="etiket">Step 2</p>
+      <h2>The first ten minutes</h2>
+      <p>It works without an account — everything sits in your browser. But if you sign in, the same
+        plan is on your computer, your phone and your tablet at once, and a copy lives in the cloud.
+        For a trial, sign in.</p>
+      <ol class="liste">
+        <li><strong>Open a project.</strong> On the Projects page, "+ Create project". A project is
+          the name of a shoot or a job: "Kariye Mosque episode", "October product launch".</li>
+        <li><strong>Say where you are filming.</strong> You can pick a place in the same window,
+          and add a new one from there too.</li>
+        <li><strong>Write two ideas.</strong> The Ideas page is where you throw whatever comes to
+          mind. It does not have to be a sentence.</li>
+        <li><strong>Put one entry on the calendar.</strong> Tap a day. Mark <em>what it is</em>
+          (Reel, Short, carousel…) and <em>where it goes</em> (YouTube, Instagram…) separately.</li>
+        <li><strong>Tick the steps.</strong> Each project has seven; tick them as you go. That is
+          the only way the screen stays readable at a glance.</li>
+      </ol>
+      <p>That is enough to start. The sections below cover what you will need as the work grows.</p>
+    </section>
+
+    <section class="bolum" id="projeler">
+      <p class="etiket">Step 3</p>
+      <h2>Projects and the seven steps</h2>
+      <p>A project is the job your posts come out of: a shoot, a brand job, a series. Every project
+        has <strong>seven steps</strong>, and the list is deliberately fixed — you are not asked to
+        design your own, because a fixed list can be read at a glance and everyone's own list
+        cannot.</p>
+      <div class="gosterim" data-canlandir>
+        <p class="gosterim-ust">The seven steps, ticked in order</p>
+        <div class="adimlar">
+          <span class="adim"><i></i>Script</span>
+          <span class="adim"><i></i>Filmed</span>
+          <span class="adim"><i></i>Audio</span>
+          <span class="adim"><i></i>Edited</span>
+          <span class="adim"><i></i>Approved</span>
+          <span class="adim"><i></i>Package</span>
+          <span class="adim"><i></i>Published</span>
+        </div>
+      </div>
+      <h3>Reading a row</h3>
+      <p>On a computer each project is one row, and <strong>every row is the same height</strong>.
+        Under the name there are four small marks, all of them clickable:</p>
+      <ul>
+        <li><strong>Map</strong> — opens the location on a map. The full address is in the mark's
+          tooltip; it is not written out, so it cannot stretch the row.</li>
+        <li><strong>Bulb</strong> — this project's ideas, with the count. Clicking it opens the
+          Ideas page filtered to that project.</li>
+        <li><strong>Document</strong> — the same for scripts.</li>
+        <li>Next to them: type · shoot date · how many entries.</li>
+      </ul>
+      <h3>Deadlines</h3>
+      <p>Each step can carry its own date. Tap the <strong>small calendar mark</strong> next to the
+        tick box and you enter all seven in one window; once a date is set, the date itself takes
+        the mark's place. <strong>A date that passes while its step is still unticked turns red on
+        its own</strong>, and the strip at the top of the page tells you how many have slipped.
+        This is the answer to "what did I forget".</p>
+      <h3>On a phone</h3>
+      <p>On a phone the top strip carries only the logo and your account. The user
+        guide, AI settings, reminders, feedback, language and theme all live in the sheet behind
+        the <strong>⋯</strong> button on the right.</p>
+      <p>On a phone you get cards instead of a table: one card per project, the seven steps below it
+        in a grid, each with its name. Tapping a chip ticks the step.</p>
+      <div class="kutu ipucu">
+        <p class="kutu-bas">Tip</p>
+        <p>The filter chips at the top of the Projects page ("In progress", "Script ready",
+          "Overdue") tell you the state of things in one look. Once you have forty projects, this
+          is where you will live.</p>
+      </div>
+    </section>
+
+    <section class="bolum" id="mekanlar">
+      <p class="etiket">Step 4</p>
+      <h2>Places</h2>
+      <p>If you film on location, you go back to the same spot. The Places page is for recording it
+        <strong>once</strong>: address, district, city, map link, <strong>who gives permission and
+        how long it takes</strong>, and "things to watch out for here" (no tripods inside, power
+        only in the courtyard, crowded before noon).</p>
+      <p>When a project is linked to a place, that information shows in the project window — it is
+        not copied, it is read live. Update the note on the place and every project there sees the
+        current version.</p>
+      <h3>The picture on the card</h3>
+      <p>You recognise a place by its picture before its name. The top of a place card shows, in
+        order:</p>
+      <ul>
+        <li><strong>A photo</strong> — if you pasted a link, or one was found by search.</li>
+        <li><strong>A map tile</strong> — if there is no photo, drawn from the coordinates in the
+          map link. It uses OpenStreetMap: no key, no account, no cost.</li>
+        <li><strong>Initials</strong> — if neither exists, in a colour derived from the name.</li>
+      </ul>
+      <p>So the card is never empty. Someone adding a home studio still sees a full page.</p>
+      <div class="kutu uyari">
+        <p class="kutu-bas">If no map appears</p>
+        <p>Google Maps <strong>short links</strong> (the <code>maps.app.goo.gl</code> kind)
+          <strong>carry no coordinates</strong>. Paste the long link from your browser's address
+          bar and the map shows up.</p>
+      </div>
+      <h3>Names in the English interface</h3>
+      <p>When you switch the interface to English, the <strong>type word</strong> in a place name is
+        translated too: "Selimiye Camii" → "Selimiye Mosque", "Sümela Manastırı" → "Sümela
+        Monastery", "Valens Su Kemeri" → "Valens Aqueduct". <strong>The proper name never
+        changes</strong> — Kapadokya is Kapadokya in every language.</p>
+      <p>The translation happens <strong>on screen only</strong>. The name you typed stays as it is
+        in your data, and the edit window always shows you exactly what you wrote — switching
+        languages breaks nothing. If a type word is not in the dictionary the name is left alone;
+        this is not a translator, just a small dictionary that knows mosques, churches, museums,
+        towers and the like.</p>
+      <p>Search works in both languages: typing "mosque" in the English interface still finds
+        Selimiye Camii.</p>
+
+      <h3>Places without a photo</h3>
+      <p>"Look for missing photos" at the top of the page searches Wikipedia for every place that
+        has no photo, one at a time. It usually finds historic buildings; it will not find your home
+        studio — that is normal, and the card still shows its map.</p>
+    </section>
+
+    <section class="bolum" id="fikirler">
+      <p class="etiket">Step 5</p>
+      <h2>Ideas</h2>
+      <p>An idea is anything that is not a script yet: a sentence, a question, a scene. The Ideas
+        page is where you throw them. It does not have to be tidy, because ideas do not arrive
+        tidy.</p>
+      <h3>Merging and splitting</h3>
+      <p>Drag one idea onto another and they <strong>merge</strong>; you can pull a single part back
+        out of a merged card. Order changes, nothing is lost.</p>
+      <div class="gosterim" data-canlandir>
+        <p class="gosterim-ust">One idea splits into two</p>
+        <div class="bolun">
+          <span class="fikir">Byzantine water routes</span>
+          <span class="fikir ikinci">What do the cisterns look like inside?</span>
+        </div>
+      </div>
+      <h3>More than one project</h3>
+      <p>An idea can belong to <strong>several projects</strong>. If "Byzantine water routes" serves
+        both the cistern episode and the aqueduct episode, you do not copy it: add the second
+        project with the <code>+</code> on the card, and cut a link with the × on a chip.</p>
+      <p>The filter at the top works the same way: add several projects and see
+        <strong>three projects' ideas together</strong>.</p>
+
+      <h3>To-dos: an optional deadline</h3>
+      <p>Some ideas are really jobs: "write the permit letter", "call the caretaker". Press the
+        <strong>clock button</strong> at the bottom of a card and give it a date, and that card
+        becomes a to-do — a <strong>done tick</strong> appears next to it, and the date turns red
+        when it has passed, amber when it is today.</p>
+      <p><strong>A date is never required.</strong> That is deliberate: the strength of ideas is
+        that they are allowed to be untidy. If you never use dates the page stays exactly as it
+        was — no tick, no filter row.</p>
+      <div class="gosterim" data-canlandir>
+        <p class="gosterim-ust">The same card becomes a to-do once it has a date</p>
+        <div class="bolun">
+          <span class="fikir">Call the caretaker</span>
+          <span class="fikir tarihlenen"><span class="tik">✓</span>Call the caretaker<span class="rozet gec">09/12/26</span></span>
+        </div>
+      </div>
+      <p>As soon as one card has a date, three filters appear above the wall:
+        <strong>To-dos</strong>, <strong>Overdue</strong> and <strong>Due today</strong>, each with
+        its count. Press one and the cards are ordered <strong>by date</strong> rather than by the
+        order you dragged them into; the nearest job sits on top. It combines with the project
+        filter, so "the overdue jobs of the Ahrida project" is one glance.</p>
+      <p>To remove a date, press the same button and clear the box. The card goes back to being a
+        plain idea, and the tick disappears with it.</p>
+    </section>
+
+    <section class="bolum" id="scriptler">
+      <p class="etiket">Step 6</p>
+      <h2>Scripts</h2>
+      <p>A script is its own record, not a field on the project. The reason is practical: the
+        project row goes to the cloud whole on every deadline change, and if the script lived
+        inside it, an old copy on your phone could overwrite what you wrote on your desktop.</p>
+      <h3>The script window, six steps</h3>
+      <ol class="liste">
+        <li><strong>Which ideas?</strong> Every idea, searchable, multi-select.</li>
+        <li><strong>Which projects?</strong> Multi-select again — one script can serve several.</li>
+        <li><strong>Title.</strong> With an "AI writes it" button that suggests a title from the
+          ideas you picked.</li>
+        <li><strong>Drive.</strong> Pull text in from Google Drive, or push your text back to it.</li>
+        <li><strong>What should the AI write?</strong> A roomy brief box. Ctrl/Cmd+Enter runs it.</li>
+        <li><strong>The script itself.</strong> Bold, headings and lists; a preview button shows how
+          the marks render.</li>
+      </ol>
+      <p>The moment there is text in the box, the project's "Script" step ticks itself.</p>
+    </section>
+
+    <section class="bolum" id="ai">
+      <p class="etiket">Step 7</p>
+      <h2>AI: Gemini's free tier</h2>
+      <p>The AI in Shootboard runs on <strong>your own Google Gemini key</strong>. There is no AI
+        subscription behind the app; the request goes straight from your browser to Google. Three
+        consequences, all in your favour:</p>
+      <ul>
+        <li><strong>The cost is yours, not ours.</strong> Stay inside Google's free tier and you pay
+          nothing.</li>
+        <li><strong>Your text does not pass through us.</strong> Your script never touches a
+          Shootboard server.</li>
+        <li><strong>The limit is your limit.</strong> You decide how much you use.</li>
+      </ul>
+      <h3>Getting a key</h3>
+      <ol class="liste">
+        <li>Sign in to <a href="https://aistudio.google.com/apikey" target="_blank" rel="noopener">Google
+          AI Studio</a> with your Google account.</li>
+        <li>"Create API key". You get a string starting with <code>AIza…</code> or
+          <code>AQ.…</code>.</li>
+        <li>In Shootboard, open <strong>AI (Gemini)</strong> from the left rail, paste the key, hit
+          "Test the connection", save.</li>
+      </ol>
+      <div class="kutu">
+        <p class="kutu-bas">How far does the free tier go?</p>
+        <p>Google's free tier gives you a certain number of requests <strong>per minute and per
+          day</strong>. Those numbers change from time to time; the current ones are on
+          <a href="https://ai.google.dev/pricing" target="_blank" rel="noopener">Google's pricing
+          page</a>. Someone writing a few scripts and a few titles a day stays well under them. If
+          you do hit a limit, the app says so plainly — waiting a minute and trying again is
+          enough.</p>
+      </div>
+      <h3>Where the key lives</h3>
+      <p>By default, <strong>only on the device you typed it into</strong>, in that browser's
+        storage. If you do not want to be asked again on your phone, tick <strong>"Keep this key in
+        my account"</strong> in the AI window: it is written to your own account row (only you can
+        read it) and your other devices pull it down at sign-in. That box is
+        <strong>off by default</strong> — a key is a tap on your wallet, and it is not copied
+        anywhere you did not ask for. "Remove key" deletes the account copy too.</p>
+      <div class="gosterim" data-canlandir>
+        <p class="gosterim-ust">Writing a title with AI</p>
+        <p class="sahte-etiket">Title</p>
+        <div class="sahte-alan"><span class="yazan">Under Byzantium: the cisterns beneath the city</span></div>
+        <p style="margin:12px 0 0;"><span class="sahte-dugme">✨ Write with AI</span></p>
+      </div>
+      <p>While the AI works the button locks and <strong>counts the seconds</strong> — so "is it
+        working or is it stuck" never comes up. It will not write over text you already have without
+        asking. Afterwards, "undo" brings your old text back.</p>
+      <div class="kutu uyari">
+        <p class="kutu-bas">The AI does not know what it wrote</p>
+        <p>Gemini only knows what we send in that one request. Dates, names and numbers are
+          <strong>yours to check</strong>. The rule that holds across this whole guide: the AI
+          writes a draft, you decide what gets published.</p>
+      </div>
+    </section>
+
+    <section class="bolum" id="takvim">
+      <p class="etiket">Step 8</p>
+      <h2>Calendar and entries</h2>
+      <p>An entry is a single post. Every entry carries two independent labels:
+        <strong>what it is</strong> (Reel, Short, video, story, carousel, text post, poll) and
+        <strong>where it goes</strong> (YouTube, Instagram, TikTok, Facebook, Threads, X, Pinterest,
+        LinkedIn). They are separate on purpose: the same shoot goes out as a Reel on Instagram and
+        a Short on YouTube.</p>
+      <p>The same plan has <strong>month, week, day and table</strong> views. Press and hold an
+        entry to drag it to another day — with a mouse or a finger.</p>
+      <p><strong>Week view on a phone:</strong> seven days do not fit on a phone screen, so the grid
+        scrolls sideways on its own. While you scroll, the <strong>hour column stays put</strong>, so
+        you always know which hour you are looking at. Opening the week view takes you straight to
+        <strong>today</strong> — you do not start on Monday and scroll right. Your scroll position is
+        kept: opening and closing an entry does not throw you back to the start.</p>
+      <div class="gosterim" data-canlandir>
+        <p class="gosterim-ust">An entry is dragged to another day</p>
+        <div class="hafta">
+          <span class="gun">MON<span class="kart tasinan"></span></span>
+          <span class="gun">TUE</span>
+          <span class="gun">WED</span>
+          <span class="gun">THU<span class="kart"></span></span>
+          <span class="gun">FRI</span>
+        </div>
+      </div>
+      <h3>The "Posted / Scheduled" tick</h3>
+      <p>You tick this after you publish. Shootboard does not listen to the platforms; we say so
+        plainly, because this is exactly where a wrong expectation goes off.</p>
+      <h3>Time zones</h3>
+      <p>Every entry carries its own time zone, so a post planned for another country makes it clear
+        which clock the time refers to. The calendar marks it too.</p>
+    </section>
+
+    <section class="bolum" id="sablonlar">
+      <p class="etiket">Step 9</p>
+      <h2>Caption templates</h2>
+      <p>The same two lines you put under every post — the subscribe line, the links, the signature —
+        so you do not retype them. The model in one sentence: <strong>one general text</strong>, and
+        optionally <strong>per-platform exceptions</strong>.</p>
+      <ul>
+        <li>The general text goes into every caption.</li>
+        <li>If you wrote a special text for one platform, only that platform gets it; the rest keep
+          taking the general one.</li>
+      </ul>
+      <p>You enter your handles once (<code>@yourname</code>) and the template uses them.</p>
+    </section>
+
+    <section class="bolum" id="hatirlatma">
+      <p class="etiket">Step 10</p>
+      <h2>Reminders and calendar subscription</h2>
+      <p>If you have entered deadlines, Shootboard can warn you. Two channels:</p>
+      <ul>
+        <li><strong>Browser notification.</strong> When you open the app, today's and overdue steps
+          come through. That is why it asks for permission.</li>
+        <li><strong>Calendar subscription (.ics).</strong> Adds your deadlines to Google Calendar,
+          Apple Calendar or Outlook <strong>as a subscription</strong>. This is the stronger one:
+          your phone's calendar reminds you even when Shootboard is closed.</li>
+      </ul>
+      <p>The subscription address is a random token long enough not to be guessed; hit "refresh" and
+        the old address dies and a new one is born.</p>
+      <p>You choose which steps you want warning about: the day before, on the day, once overdue.</p>
+    </section>
+
+    <section class="bolum" id="iceaktar">
+      <p class="etiket">Step 11</p>
+      <h2>Importing from a spreadsheet</h2>
+      <p>If you work in a spreadsheet today, you should be able to move without emptying your hands.
+        <strong>"Import"</strong> in the footer understands <strong>text copied</strong> out of CSV,
+        Google Sheets, Excel and Notion.</p>
+      <ol class="liste">
+        <li>Copy the rows, header row included.</li>
+        <li>Paste into the import window.</li>
+        <li>Shootboard guesses the columns (date, time, platform, title, type, project, posted) —
+          correct it by hand where the guess is wrong.</li>
+        <li>The preview shows what is about to come in. Then you confirm.</li>
+      </ol>
+      <p>It reads most date formats: <code>2026-09-10</code>, <code>10.09.2026</code>,
+        <code>22 September 2026</code>, <code>September 10, 2026</code>. If you gave a project name
+        and a project by that name exists, the entry is linked to it.</p>
+    </section>
+
+    <section class="bolum" id="paylas">
+      <p class="etiket">Step 12</p>
+      <h2>The shareable link</h2>
+      <p>To show an editor or a client what is going out this week, you do not need a screenshot.
+        You can generate a <strong>read-only link</strong>. Whoever opens it only reads: no account,
+        nothing to change.</p>
+      <p>The link carries <strong>the calendar only</strong>: date, time, type, platform, title,
+        whether it went out, and the project name. <strong>Captions, hashtags and AI briefs are
+        deliberately left out</strong> — those are your working notes.</p>
+      <p>Close the link and the file is deleted; the address dies with it.</p>
+    </section>
+
+    <section class="bolum" id="yedek">
+      <p class="etiket">Step 13</p>
+      <h2>Backups and your data</h2>
+      <p>Your work sits in three places, in this order on purpose:</p>
+      <ol class="liste">
+        <li><strong>Your browser.</strong> Every change is written here first. It works with no
+          internet.</li>
+        <li><strong>The cloud (Supabase).</strong> If you are signed in, changes go up; your other
+          devices read them down.</li>
+        <li><strong>An automatic backup.</strong> Once a day, when you open the app, a copy of
+          everything is written to your own folder. The last seven days are kept.
+          <strong>You do not have to do anything.</strong> The account window lists the days; tap one
+          to restore it.</li>
+      </ol>
+      <p>There is a manual backup too: <strong>"Export Backup"</strong> in the footer downloads
+        everything as one file — calendar, projects, places, ideas, scripts, templates.
+        <strong>"Restore Backup"</strong> reads it back and <strong>merges</strong>: what is in the
+        file is added, where a record already exists the file wins, and <strong>nothing you have
+        now is deleted</strong>. Open an old backup by mistake and you do not lose today's work.</p>
+      <div class="kutu ipucu">
+        <p class="kutu-bas">How often should you take a manual backup?</p>
+        <p>The automatic one runs daily and covers most of it. Monthly is enough by hand: that file
+          is a copy <strong>independent of the project</strong>, so it survives even if something
+          goes badly wrong on the cloud side.</p>
+      </div>
+    </section>
+
+    <section class="bolum" id="hesap">
+      <p class="etiket">Step 14</p>
+      <h2>Account, privacy, deletion</h2>
+      <p>The only reason to have an account is so your work moves between devices. Two ways in:
+        Google in one tap, or email and a password. Forget the password and you ask for a sign-in
+        link — nobody gets locked out.</p>
+      <p>The <strong>Your account</strong> window in the left rail holds: sign out, change password,
+        the list of automatic backups, the export, and <strong>delete your account</strong>.</p>
+      <p>Deleting cannot be undone, so the button stays disabled until you type your own email
+        address. When you do, your calendar, projects, ideas, scripts, places, settings and
+        <strong>automatic backups</strong> are deleted from the server.</p>
+      <p>The details are in <a href="privacy.html">privacy</a> and
+        <a href="sartlar.html">terms of use</a>.</p>
+    </section>
+
+    <section class="bolum sss" id="sss">
+      <p class="etiket">Step 15</p>
+      <h2>Frequently asked</h2>
+      <dl>
+        <dt>Does Shootboard post for me?</dt>
+        <dd>No. It does not connect to the platforms and never publishes on your behalf. It
+          remembers what goes out when; you publish.</dd>
+
+        <dt>Is it free?</dt>
+        <dd>Nothing is charged during the trial. For AI you use your own Google Gemini key; stay
+          inside Google's free tier and that costs nothing either.</dd>
+
+        <dt>Will I pay extra for the AI?</dt>
+        <dd>Google's free tier is more than enough for a few scripts and titles a day. Go past it
+          and Google's pricing applies; Shootboard does not put a fee in between.</dd>
+
+        <dt>Where do my scripts live?</dt>
+        <dd>In your browser, and in your own account row if you are signed in. When you use AI the
+          text goes straight from your browser to Google; it never touches a Shootboard server.</dd>
+
+        <dt>Does it work offline?</dt>
+        <dd>Yes. Every change is written to your browser first and sent up when the connection
+          returns.</dd>
+
+        <dt>Can I use it on a phone?</dt>
+        <dd>Yes, and it has its own phone layout: tabs fixed at the bottom, the project table turns
+          into cards, windows open from the bottom. Add it to your home screen and it behaves like
+          an app.</dd>
+
+        <dt>Can I take my data elsewhere?</dt>
+        <dd>Yes. "Export Backup" downloads everything as a single JSON file. There is no lock-in.</dd>
+
+        <dt>Can we use it as a team?</dt>
+        <dd>Not fully yet. There is a read-only link for showing the plan; roles and shared editing
+          are the next step.</dd>
+      </dl>
+    </section>
+
+    <footer>
+      <p>Something missing, something unclear? The <strong>Feedback</strong> button in the app goes
+        straight to the person who writes it.</p>
+      <p><a href="app.html">Open the app</a> · <a href="index.html">Home</a> ·
+        <a href="kilavuz.html" hreflang="tr">Türkçe kılavuz</a> ·
+        <a href="privacy.html">Privacy</a> · <a href="sartlar.html">Terms</a></p>
+    </footer>
+  </main>
+</div>
+
+<script>
+(function(){
+  var menu = document.getElementById('yanMenu');
+  var mob  = document.getElementById('mobMenu');
+  if(menu && mob){
+    mob.innerHTML = Array.prototype.map.call(menu.querySelectorAll('a'), function(a){
+      return '<li><a href="' + a.getAttribute('href') + '">' + a.textContent + '</a></li>';
+    }).join('');
+  }
+  var baglar = Array.prototype.slice.call(document.querySelectorAll('#yanMenu a, #mobMenu a'));
+  function isaretle(kimlik){
+    baglar.forEach(function(a){
+      var acik = a.getAttribute('href') === '#' + kimlik;
+      a.classList.toggle('acik', acik);
+      if(acik && a.closest('.mob-menu')){
+        a.scrollIntoView({ block:'nearest', inline:'center', behavior:'smooth' });
+      }
+    });
+  }
+  var bolumler = document.querySelectorAll('.bolum');
+  if('IntersectionObserver' in window){
+    var gozcu = new IntersectionObserver(function(girisler){
+      girisler.forEach(function(g){ if(g.isIntersecting) isaretle(g.target.id); });
+    }, { rootMargin: '-70px 0px -65% 0px', threshold: 0 });
+    bolumler.forEach(function(b){ gozcu.observe(b); });
+    var oynat = new IntersectionObserver(function(girisler){
+      girisler.forEach(function(g){ g.target.classList.toggle('gorunur', g.isIntersecting); });
+    }, { threshold: .25 });
+    document.querySelectorAll('[data-canlandir]').forEach(function(e){ oynat.observe(e); });
+  }else{
+    document.querySelectorAll('[data-canlandir]').forEach(function(e){ e.classList.add('gorunur'); });
+  }
+})();
+</script>
+
+<script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@graph": [
+    {
+      "@type": "TechArticle",
+      "headline": "Shootboard User Guide",
+      "description": "Build a content calendar, plan shoots, track the seven production steps, keep locations, ideas and scripts, use Gemini's free tier, set reminders and back everything up.",
+      "inLanguage": "en",
+      "url": "https://shootboard.app/guide.html",
+      "about": ["content calendar", "shoot planning", "social media content plan"]
+    },
+    {
+      "@type": "FAQPage",
+      "inLanguage": "en",
+      "mainEntity": [
+        {"@type":"Question","name":"Does Shootboard post for me?","acceptedAnswer":{"@type":"Answer","text":"No. It does not connect to the platforms and never publishes on your behalf. It remembers what goes out when; you publish."}},
+        {"@type":"Question","name":"Will I pay extra for the AI?","acceptedAnswer":{"@type":"Answer","text":"You use your own Google Gemini key. Google's free tier is more than enough for a few scripts and titles a day, and Shootboard does not put a fee in between."}},
+        {"@type":"Question","name":"Does it work offline?","acceptedAnswer":{"@type":"Answer","text":"Yes. Every change is written to your browser first and sent up when the connection returns."}},
+        {"@type":"Question","name":"Can I take my data elsewhere?","acceptedAnswer":{"@type":"Answer","text":"Yes. Export Backup downloads everything as a single JSON file. There is no lock-in."}}
+      ]
+    }
+  ]
+}
+</script>
+</body>
+</html>
