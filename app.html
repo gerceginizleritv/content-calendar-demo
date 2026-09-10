@@ -220,6 +220,7 @@ body{
      seridi yukseltiyordu. */
   .rail-brand{padding:0;flex:1 1 auto;min-width:0;}
   .rail-brand .lockup{margin-bottom:0;min-width:0;}
+  .rail-tagline{display:none;}
   .wordmark{overflow:hidden;text-overflow:ellipsis;white-space:nowrap;}
   .rail-me{flex:0 0 auto;flex-direction:row;align-items:center;gap:8px;padding:0;
     border-bottom:0;margin-left:auto;}
@@ -1891,6 +1892,9 @@ textarea.sc-ai-brief{min-height:64px;resize:vertical;line-height:1.5;}
   font-family:'Archivo',sans-serif;font-weight:800;font-size:25px;
   letter-spacing:-.035em;color:var(--text);line-height:1;
 }
+/* Markanin altinda tek satir: ekran goruntusunde urunun ne oldugu okunsun.
+   Yalnizca genis ekran rayinda; dar ekranda serit yataya donuyor, yer yok. */
+.rail-tagline{font-size:11.5px;line-height:1.3;color:var(--text-dim);margin:-8px 0 12px 40px;}
 
 /* ===== Kisa bildirim ===== */
 .toast{
@@ -2482,7 +2486,7 @@ textarea.sc-ai-brief{min-height:64px;resize:vertical;line-height:1.5;}
        basliyordu). Hepsi sola tasindi; ust taraf tamamen bosaldi. -->
   <div class="shell">
     <aside class="rail" id="rail">
-      <div class="rail-brand"><div class="lockup"><span class="mark"><svg viewBox="0 0 64 64" aria-hidden="true"><rect x="6" y="24" width="52" height="34" rx="7" fill="var(--text)"/><g transform="rotate(-9 32 17)"><rect x="6" y="7" width="52" height="15" rx="3.5" fill="var(--accent)"/><path d="M17 7 L22.5 7 L14.5 22 L9 22 Z" fill="var(--bg)"/><path d="M33 7 L38.5 7 L30.5 22 L25 22 Z" fill="var(--bg)"/><path d="M49 7 L54.5 7 L46.5 22 L41 22 Z" fill="var(--bg)"/></g><rect x="15" y="34" width="26" height="3.4" rx="1.7" fill="var(--text-dim)"/><rect x="15" y="43" width="17" height="3.4" rx="1.7" fill="var(--amber)"/></svg></span><span class="wordmark">Shootboard</span></div></div>
+      <div class="rail-brand"><div class="lockup"><span class="mark"><svg viewBox="0 0 64 64" aria-hidden="true"><rect x="6" y="24" width="52" height="34" rx="7" fill="var(--text)"/><g transform="rotate(-9 32 17)"><rect x="6" y="7" width="52" height="15" rx="3.5" fill="var(--accent)"/><path d="M17 7 L22.5 7 L14.5 22 L9 22 Z" fill="var(--bg)"/><path d="M33 7 L38.5 7 L30.5 22 L25 22 Z" fill="var(--bg)"/><path d="M49 7 L54.5 7 L46.5 22 L41 22 Z" fill="var(--bg)"/></g><rect x="15" y="34" width="26" height="3.4" rx="1.7" fill="var(--text-dim)"/><rect x="15" y="43" width="17" height="3.4" rx="1.7" fill="var(--amber)"/></svg></span><span class="wordmark">Shootboard</span></div><div class="rail-tagline" data-i18n="rail_tagline">Content calendar for video creators</div></div>
 
       <!-- Kimlik: fotograf, ad, ve hemen ALTINDA giris dugmesi. -->
       <div class="rail-me">
@@ -3959,6 +3963,7 @@ const LANG = {
     banner_bold1: "This is a live, working demo.",
     banner_rest: "Click any day to add an entry, or any entry to edit it. It all works <b>without an account</b> — your calendar stays in this browser. Sign in with Google or an email link only if you want the same calendar on your phone too. The demo holds up to 100 entries.",
     eyebrow: "QUEUE — NEXT 6 WEEKS",
+    rail_tagline: "Content calendar for video creators",
     h1: "One shoot becomes ten posts. Shootboard keeps all ten on one board.",
     h1_sub: "The same footage goes out as a Reel, a Short, a carousel and a story — each with its own caption, cover text and time slot. You tick them off as they go out; Shootboard keeps the list of what is still waiting.",
     btn_new: "+ New Entry",
@@ -4747,6 +4752,7 @@ const LANG = {
     banner_bold1: "Bu, canlı ve çalışan bir demodur.",
     banner_rest: "Bir güne tıklayarak kayıt ekle, bir kayda tıklayarak düzenle. Hepsi <b>hesapsız çalışır</b> — takvimin bu tarayıcıda kalır. Aynı takvimi telefonunda da istiyorsan Google ya da e-posta linkiyle giriş yap. Demo 100 kayıt tutar.",
     eyebrow: "SIRADAKİLER — ÖNÜMÜZDEKİ 6 HAFTA",
+    rail_tagline: "Video üreticileri için içerik takvimi",
     h1: "Tek çekim on paylaşıma dönüşür. Shootboard onunu da tek panoda tutar.",
     h1_sub: "Aynı çekim; Reels, Shorts, carousel ve hikaye olarak çıkar — her biri kendi caption'ı, kapak metni ve saatiyle. Yayınladıkça işaretlersin; Shootboard bekleyenlerin listesini tutar.",
     btn_new: "+ Yeni Giriş",
