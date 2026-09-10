@@ -173,12 +173,32 @@ yeniden geocode etmez; `mekanKoordinati` önce `m.lat/m.lon`'a bakar.
 - Atıf: OSM verisi kullanılan her yerde "© OpenStreetMap contributors"
   (kartta zaten var; öneri listesine de konur).
 
+**Yapıldı (10 Eylül 2026, Faz 1):** mekan penceresinde ad alanının yanında
+"Bul" düğmesi; Enter ya da düğme Nominatim'e tek istek atıyor (yazdıkça
+öneri yok, kural gereği), sonuçlar "ad — tür · adres · ilçe · il · ülke"
+satırlarıyla listeleniyor, altında OSM kaynak yazısı. Seçince adres (yol +
+kapı no + mahalle + posta kodu), ilçe, il, ülke, koordinat, OSM kimliği ve
+harita bağlantısı doluyor (bağlantı `?query=en,boy` biçiminde, virgül
+kodlanmadan; `mekanKonum` onu geri okuyor); kullanıcının yazdığı ad
+korunuyor. "Burası mı?" karosu pencere içinde (`haritaKaroHtml`, kartla
+aynı dört karo). Saat dilimi hava bloğunun Open-Meteo cevabından alınıp
+gizli alana yazılıyor. Mekan modeline `lat, lon, country, timezone,
+source, externalId` eklendi (`mekanTemizle` beyaz listesi, `mekanRowYap`,
+`mekanRowOku`); `sql/33-mekan-konum.sql` sütunları ekliyor, betik
+çalıştırılmadıysa `mekanKonumSutunlari` geri düşüşüyle sütunsuz yazılıyor.
+Kart karosu ve hava koordinatı artık `mekanKonumu(m)` üzerinden: harita
+bağlantısı > kayıtlı koordinat > ilçe/il araması. Türkiye il/ilçe listesi
+`veri/tr-il-ilce.json` (81 il, 973 ilçe, 12 KB, MIT kaynaklı), pencere ilk
+açıldığında çekiliyor, `datalist` olarak; il yazılınca ilçe listesi
+daralıyor; yurtdışında serbest metin. Test: `mekan-bul.test.js`.
+Yapılmayan: Photon (Faz 2) ve Google (Faz 3).
+
 **Fazlar:**
 
 | Faz | İş | Süre |
 |---|---|---|
 | 0 | Bölüm 2'deki iki düzeltme — **yapıldı, 10 Eylül** | Yarım gün |
-| 1 | Nominatim "Enter ile bul", koordinat + ülke + saat dilimi saklama, otomatik harita bağlantısı, pencere içi karo ile kontrol, Türkiye il/ilçe `datalist`, migration `sql/33` | 2 gün |
+| 1 | Nominatim "Enter ile bul", koordinat + ülke + saat dilimi saklama, otomatik harita bağlantısı, pencere içi karo ile kontrol, Türkiye il/ilçe `datalist`, migration `sql/33` — **yapıldı, 10 Eylül** | 2 gün |
 | 2 | Photon yazdıkça öneri (aynı seçim akışı, sadece tetikleyici değişir) | Yarım gün |
 | 3 | Google Places, Edge Function, oturum belirteci, paket kapısı | 2 gün, ödeme sonrası |
 
@@ -235,6 +255,19 @@ güncellenir; yeni: "iki mekanlı proje: sıra, silme, sayım, harita".
 
 **Süre:** 1–2 gün; Bölüm 4 Faz 1 ile aynı PR'da olmak zorunda değil.
 
+**Yapıldı (10 Eylül 2026):** `projects.placeIds` sıralı liste,
+`placeId` ilk duraktan türetiliyor (`sanitizeProject`, `projeMekanListesi`;
+temizlenmemiş nesneler için `projeMekanlari`). Bulut: `place_ids text[]`
+(`sql/34-proje-cok-mekan.sql`, eski `place_id` ilk durak olarak kalıyor,
+betik yoksa `projMekanSutunu` geri düşüşüyle listesiz yazılıyor). Proje
+formunda seçim kutusu kaldı; her seçim bir çip ekliyor, ▲▼ ile sıra, × ile
+çıkarma, tek mekanda tek çip; "+ Yeni mekan" penceresi kaydedince yeni
+mekan listeye giriyor. Kartta ilk durağın adı ve "+N", ipucunda hepsi;
+"Harita" ve adres sorusu ilk durağa bakıyor. Mekan kartı sayımları ve
+silme davranışı listeyi tarıyor. Durak saati yok (karar 3). Test:
+`proje-cok-mekan.test.js`. Proje düzenleme penceresinde durak başına hava
+satırı yapılmadı; ayrı iş.
+
 ---
 
 ## 6. Karar isteyen noktalar
@@ -243,7 +276,7 @@ güncellenir; yeni: "iki mekanlı proje: sıra, silme, sayım, harita".
 2. Google katmanı: ödeme altyapısından önce hiç dokunulmasın (önceki
    kararla aynı) — evet önerilir.
 3. Çoklu mekanda durak saati ilk sürümde olsun mu — hayır önerilir;
-   sıra yeter, saat kayıtlarda zaten var.
+   sıra yeter, saat kayıtlarda zaten var. (Uygulandı: saat yok.)
 4. Open-Meteo ticari şartı: para alınan gün 29 $/ay plan mı, hava için
    başka kaynak mı — şimdi değil, `YAPILACAKLAR`'a madde.
 

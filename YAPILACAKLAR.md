@@ -41,8 +41,39 @@ sonra). İki değişiklik:
   mekan penceresini açıyor (`mekanPenceresiniAc(id, sonra)` geri çağrısı;
   `mekanKayitSonrasi` pencere kapanınca temizleniyor ki Mekanlar
   sayfasından sonradan eklenen mekan forma sıçramasın). İl/ilçe tek başına
-  adres sayılmıyor. Faz 1 (Nominatim ile bul, koordinat) ve çoklu mekan
-  hâlâ karar bekliyor.
+  adres sayılmıyor.
+- **Faz 1 yapıldı (aynı gün, kullanıcı "Faz 1'e başla" dedi):** mekan
+  penceresinde "Bul": ad + şehir Nominatim'de aranıyor (Enter/düğme, tek
+  istek; yazdıkça öneri Nominatim kuralınca yasak), seçilen sonuç adres,
+  ilçe, il, ülke, koordinat, OSM kimliği ve harita bağlantısını dolduruyor;
+  "burası mı?" karosu pencerede. Mekan modeline lat/lon/country/timezone/
+  source/externalId; **`sql/33-mekan-konum.sql` Supabase'de çalıştırılmalı**,
+  çalıştırılana kadar koordinat yalnızca tarayıcıda kalır (sessiz geri
+  düşüş, `mekanKonumSutunlari`). Türkiye il/ilçe listesi
+  `veri/tr-il-ilce.json` (MIT; kaynakta Türkçe büyük/küçük harf bozuktu,
+  onarıldı), `sw.js` kabuğuna eklendi. Nominatim POI kapsamı canlı
+  doğrulanamadı (ağ engeli); ilk gerçek denemede "Nuruosmaniye Han",
+  "Kariye" gibi adlarla bakılmalı. Ayrıntı: analiz belgesi, bölüm 4.
+- **Ayrı madde, karar bekliyor:** Open-Meteo ücretsiz sürümü ticari
+  kullanıma kapalı (abonelikli/reklamlı uygulama 29 $/ay plan ister); hava
+  bloğu ve saat dilimi ona bağlı. Para alınmaya başlanmadan karar verilmeli.
+- **Çoklu mekan yapıldı (aynı gün, kullanıcı istedi):** `projects.placeIds`
+  sıralı durak listesi, `placeId` ilk durak (eski yerler bozulmadı). Proje
+  formunda her seçim bir çip; ▲▼ sıra, × çıkarma; kartta "ilk durak +N".
+  **`sql/34-proje-cok-mekan.sql` çalıştırılmalı**; çalışana kadar yalnızca
+  ilk durak buluta gider (`projMekanSutunu` geri düşüşü). Durak saati yok.
+  Test: `proje-cok-mekan.test.js`.
+- **Karar (10 Eylül, kullanıcı): Google Places park edildi, "belki ileride".**
+  Gerekçe konuşuldu: demo ölçeğinde ücret yok (SKU başına 10.000/ay bedava)
+  ama anahtar tarayıcıda durur, kötüye kullanım faturası ürün sahibine
+  yazılır, adres metni saklama şartına takılır. OpenStreetMap ile devam.
+  İleride açılırsa: önce ödeme altyapısı, sonra Supabase Edge Function
+  arkasında anahtar ve kullanıcı başına kota; demoda istenirse Google
+  Cloud'da günlük sert kota (ör. 300 istek) ile riski sıfırlayıp
+  "Google'da bul" düğmesi. Kapsam yetmezse ilk adım Photon (Faz 2).
+- **Kullanıcının çalıştıracakları (PR #10 birleşince):** Supabase SQL
+  Editor'da sırayla `sql/33-mekan-konum.sql` ve `sql/34-proje-cok-mekan.sql`.
+  Sonra canlıda bir mekanda "Bul" ile OSM kapsamını denemek.
 - **Aynı gün, ikinci PR (kullanıcı "ekle" dedi):** logonun altına tek satır
   tanıtım metni. Karşılama sayfasında `.marka-alt` ("Content calendar for
   video creators" / "Video üreticileri için içerik takvimi"), 640px altında
