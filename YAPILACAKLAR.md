@@ -1417,3 +1417,20 @@ sarı neon halka içinde; başlık iki katman (sarı büyük harf + kırmızı b
 İngilizce, başlık Türkçe. Metin varsayılan olarak Canva'da; Gemini'ye
 yazdırılacaksa TEXT bloğu eklenir, Türkçe harf bozulursa çıkarılır.
 Referans kapak: "Gizli Mimari / Kuş Sarayı".
+
+## Uzun video scripti bitince yayın paketi otomatik (2026-09-10, kalıcı kural)
+
+Her uzun video scripti Drive'a yüklendikten sonra, sorulmadan, Shootboard
+için tam yayın paketi hazırlanır ve `gelen/kayitlar.json`'a iki kayıt
+olarak yazılır: YouTube (video, 20:00) ve Facebook (video, 21:00), aynı
+`proje` adı. Alanlar: `title`, `content.videoTitle` (SEO uzun başlık),
+`shortTitle` (kapak başlığı), `caption` (YouTube açıklaması: hook, özet,
+"Bu videoda:" maddeleri, yorum sorusu, seri satırı, "Rivayet değil,
+kayıt.", kaynaklar, kanal linkleri, hashtag'ler; Facebook'ta kısa
+sürüm + "TAM BELGESELİ İZLEMEK İÇİN" + "Sayfamda Abonelikler açık"),
+`hashtags` (virgüllü), `thumbPrompt` (yatay 16:9 + dikey 9:16, anayasa
+kapak şablonu), `slidePrompts: []`. Örnek: Nuruosmaniye ve Sokollu
+kayıtları. Tarih verilmemişse önceki uzun videodan sonraki Cuma'ya
+konur ve kullanıcıya söylenir; Shootboard'da taşınabilir. Kayıtlar
+yayına ancak dal main'e alınınca düşer (gelen kutusu yayındaki siteden
+okunur).
