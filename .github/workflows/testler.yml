@@ -22,7 +22,7 @@ jobs:
       - name: Playwright kur
         run: |
           npm init -y
-          npm install playwright
+          npm install playwright typescript
           npx playwright install --with-deps chromium
 
       - name: Testleri koş
