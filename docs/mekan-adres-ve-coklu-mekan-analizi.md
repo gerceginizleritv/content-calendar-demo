@@ -86,6 +86,15 @@ kaldırır:
 Yarım gün; testlerden `mekan-yeniproje.test.js` ve `yeniproje*.test.js`
 güncellenir.
 
+**Yapıldı (10 Eylül 2026, Faz 0):** `projeYeri(p)` yardımcısı projenin
+kendi adresi yoksa bağlı mekanın adresini ya da harita bağlantısını
+döndürüyor; onay sorusu ve karttaki "Harita" düğmesi ona bakıyor (mekanın
+harita bağlantısı varsa düğme doğrudan onu açıyor). "+ Yeni mekan" artık
+`mekanPenceresiniAc(null, sonra)` ile tam pencereyi açıyor, kaydedilen
+mekan proje formunda seçili geliyor, vazgeçilince eski seçim duruyor.
+Testler: `mekan-adres-proje.test.js` (yeni), `mekan-yeniproje.test.js`
+(güncellendi).
+
 ---
 
 ## 3. Adresi otomatik bulma: seçenekler
@@ -168,7 +177,7 @@ yeniden geocode etmez; `mekanKoordinati` önce `m.lat/m.lon`'a bakar.
 
 | Faz | İş | Süre |
 |---|---|---|
-| 0 | Bölüm 2'deki iki düzeltme | Yarım gün |
+| 0 | Bölüm 2'deki iki düzeltme — **yapıldı, 10 Eylül** | Yarım gün |
 | 1 | Nominatim "Enter ile bul", koordinat + ülke + saat dilimi saklama, otomatik harita bağlantısı, pencere içi karo ile kontrol, Türkiye il/ilçe `datalist`, migration `sql/33` | 2 gün |
 | 2 | Photon yazdıkça öneri (aynı seçim akışı, sadece tetikleyici değişir) | Yarım gün |
 | 3 | Google Places, Edge Function, oturum belirteci, paket kapısı | 2 gün, ödeme sonrası |

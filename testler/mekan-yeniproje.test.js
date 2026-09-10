@@ -74,26 +74,55 @@ const bak = (ad, ko, ek)=>{ if(ko){ g++; console.log('  ok  '+ad); } else { k++;
       /mekan|Mekan/.test(await p.$eval('#p_placeBilgi', e=> e.textContent)));
 
   console.log('[pencereden yeni mekan]');
-  await p.evaluate(()=>{ window.sor = ()=> Promise.resolve('Sultanahmet Meydanı'); });
+  // Onceden yalnizca ad soruluyordu (sor); mekan adressiz doguyor, proje
+  // adressiz kaliyor ve hemen "adres girmedin" sorusu geliyordu. Artik
+  // tam mekan penceresi aciliyor.
+  await p.selectOption('#p_place', 'm_kariye');
+  await p.waitForTimeout(120);
   await p.selectOption('#p_place', '__yeni__');
-  await p.waitForFunction(()=> document.getElementById('p_place').value !== '__yeni__');
+  await p.waitForSelector('#placeOverlay.open');
+  bak('"+ Yeni mekan" tam mekan penceresini aciyor', true);
+  bak('liste "+ Yeni mekan"da kalmiyor, eski secim duruyor',
+      await p.$eval('#p_place', e=> e.value) === 'm_kariye', await p.$eval('#p_place', e=> e.value));
+  bak('proje penceresi altta acik kaliyor',
+      await p.$eval('#projectNewOverlay', e=> e.classList.contains('open')));
+  bak('pencere "yeni mekan" basligiyla ve bos aciliyor',
+      await p.$eval('#mk_name', e=> e.value) === '' && await p.$eval('#mk_delete', e=> e.hidden));
+  await p.fill('#mk_name', 'Sultanahmet Meydanı');
+  await p.fill('#mk_address', 'Sultanahmet, Fatih');
+  await p.click('#mk_save');
+  await p.waitForFunction(()=> !document.getElementById('placeOverlay').classList.contains('open'));
   const yeni = await p.evaluate(()=>({
     secili: document.getElementById('p_place').value,
-    ad: (mekanlar.find(m=> m.name === 'Sultanahmet Meydanı') || {}).name,
+    kayit: mekanlar.find(m=> m.name === 'Sultanahmet Meydanı') || null,
     adet: mekanlar.length
   }));
-  bak('pencereden mekan eklenebiliyor', yeni.ad === 'Sultanahmet Meydanı' && yeni.adet === 3, JSON.stringify(yeni));
-  bak('yeni mekan hemen secili geliyor', yeni.secili && yeni.secili !== '__yeni__' && yeni.secili !== '');
+  bak('pencereden mekan eklenebiliyor', !!yeni.kayit && yeni.adet === 3, JSON.stringify(yeni));
+  bak('adres de kaydediliyor', !!yeni.kayit && yeni.kayit.address === 'Sultanahmet, Fatih');
+  bak('yeni mekan hemen secili geliyor', !!yeni.kayit && yeni.secili === yeni.kayit.id, yeni.secili);
+  bak('bilgi satirinda yeni mekanin adresi',
+      /Sultanahmet, Fatih/.test(await p.$eval('#p_placeBilgi', e=> e.textContent)));
+  bak('proje penceresi hala acik',
+      await p.$eval('#projectNewOverlay', e=> e.classList.contains('open')));
 
   console.log('[vazgecince]');
   await p.selectOption('#p_place', 'm_ev');
   await p.waitForTimeout(120);
-  await p.evaluate(()=>{ window.sor = ()=> Promise.resolve(null); });
   await p.selectOption('#p_place', '__yeni__');
-  await p.waitForFunction(()=> document.getElementById('p_place').value !== '__yeni__');
+  await p.waitForSelector('#placeOverlay.open');
+  await p.click('#mk_cancel');
+  await p.waitForFunction(()=> !document.getElementById('placeOverlay').classList.contains('open'));
   bak('vazgecilince eski secim geri geliyor',
       await p.$eval('#p_place', e=> e.value) === 'm_ev', await p.$eval('#p_place', e=> e.value));
   bak('vazgecilince mekan eklenmedi', await p.evaluate(()=> mekanlar.length) === 3);
+  // Vazgecilen pencerenin geri cagrisi temizlenmis olmali: Mekanlar
+  // sayfasindan sonradan eklenen mekan proje formuna sicramasin.
+  await p.evaluate(()=>{ mekanPenceresiniAc(null); });
+  await p.fill('#mk_name', 'Alakasız mekan');
+  await p.click('#mk_save');
+  await p.waitForFunction(()=> !document.getElementById('placeOverlay').classList.contains('open'));
+  bak('sonradan eklenen mekan forma sicramiyor',
+      await p.$eval('#p_place', e=> e.value) === 'm_ev', await p.$eval('#p_place', e=> e.value));
 
   console.log('[duzenleme penceresi bozulmadi]');
   await p.click('#p_newCancel');

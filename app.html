@@ -6252,6 +6252,22 @@ function gecikenAdimlar(){
 function haritaLinki(adres){
   return 'https://www.google.com/maps/search/?api=1&query=' + encodeURIComponent(adres);
 }
+// Projenin YERI: kendi adres alani, yoksa bagli mekanin adresi ya da harita
+// baglantisi. Onay sorusu ve karttaki rozet yalnizca projenin kendi
+// alanina bakiyordu; mekan secilmisken "adres girmedin" deniyordu, oysa
+// adres mekanda duruyor ve bir daha yazdirmanin geregi yok. Il/ilce tek
+// basina adres sayilmiyor: "Istanbul" ekibi bir yere goturmez.
+function projeYeri(p){
+  const adres = ((p && p.address) || '').trim();
+  if(adres) return { metin: adres, link: haritaLinki(adres), kaynak: 'proje' };
+  const m = (p && p.placeId) ? mekanById(p.placeId) : null;
+  if(!m) return null;
+  const harita = disUrl(m.mapsUrl);
+  const mAdres = (m.address || '').trim();
+  if(!mAdres && !harita) return null;
+  return { metin: mAdres ? mekanAdi(m) + ' — ' + mAdres : mekanAdi(m),
+           link: harita || haritaLinki(mAdres), kaynak: 'mekan' };
+}
 
 // Butun adimlari isaretli mi? "Bitti" ayri bir kutu degil, adimlarin
 // toplami: yedi adim tamamsa is bitmistir. Ayri bir bayrak olsaydi iki
@@ -6413,7 +6429,7 @@ function renderProjects(){
   const satirlar = liste.map(p=>{
     const kayitlar = projeIcinKayitlar(p.id);
     const yayinlanan = kayitlar.filter(e=>e.uploaded).length;
-    const adres = p.address || '';
+    const yer = projeYeri(p);
     const hucreler = PROJ_STEPS.map(k=>{
       const gecti = adimGecikti(p,k);
       const tarih = adimTarihi(p,k);
@@ -6448,10 +6464,11 @@ function renderProjects(){
     // Adres kendi satirindaydi ve uzun adreslerde kirpiliyordu; ustelik
     // her projede farkli uzunlukta oldugu icin SATIRLAR BIRBIRINDEN
     // FARKLI YUKSEKLIKTEYDI. Artik tek bir "Harita" dugmesi: adres onun
-    // ipucunda tam olarak duruyor, tiklayinca haritada aciliyor.
-    const yerDugmesi = adres
-      ? `<a class="pn-ico pn-harita" href="${escapeHtml(haritaLinki(adres))}" target="_blank"
-           rel="noopener" title="${escapeHtml(adres)}" aria-label="${escapeHtml(t('p_map_open')(adres))}"
+    // ipucunda tam olarak duruyor, tiklayinca haritada aciliyor. Projenin
+    // kendi adresi yoksa bagli mekanin adresi ya da harita baglantisi.
+    const yerDugmesi = yer
+      ? `<a class="pn-ico pn-harita" href="${escapeHtml(yer.link)}" target="_blank"
+           rel="noopener" title="${escapeHtml(yer.metin)}" aria-label="${escapeHtml(t('p_map_open')(yer.metin))}"
            >${IKON_HARITA}<span>${escapeHtml(t('p_map'))}</span></a>`
       : (adresGerekir(p.type)
           ? `<span class="pn-ico pn-eksik" title="${escapeHtml(t('p_addr_missing'))}"
@@ -7154,6 +7171,9 @@ function mekanBilgisiYaz(onek){
 // --- Mekanlar sayfasi -------------------------------------------------
 let mekanArama = '';
 let acikMekanId = null;
+// Pencereyi proje formu actiysa kaydedilince cagrilacak islev: yeni mekan
+// o formda secili gelsin. Vazgecilince temizleniyor.
+let mekanKayitSonrasi = null;
 
 // --- Mekan adlari: TUR sozcugu ceviriliyor, ozel ad degil ------------
 //
@@ -7489,9 +7509,10 @@ function renderMekanlar(){
   });
 }
 
-function mekanPenceresiniAc(id){
+function mekanPenceresiniAc(id, sonra){
   const m = id ? mekanById(id) : null;
   acikMekanId = m ? m.id : null;
+  mekanKayitSonrasi = typeof sonra === 'function' ? sonra : null;
   const y = (k, v)=> { document.getElementById(k).value = v || ''; };
   document.getElementById('mk_baslik').textContent = t(m ? 'mk_title_edit' : 'mk_title_new');
   y('mk_name', m && m.name); y('mk_city', m && m.city); y('mk_district', m && m.district);
@@ -7513,6 +7534,7 @@ function mekanPenceresiniAc(id){
 function mekanPenceresiniKapat(){
   document.getElementById('placeOverlay').classList.remove('open');
   acikMekanId = null;
+  mekanKayitSonrasi = null;
 }
 function mekanKaydet(){
   const al = k => document.getElementById(k).value;
@@ -7522,19 +7544,23 @@ function mekanKaydet(){
                     mapsUrl: al('mk_maps'), driveUrl: al('mk_drive'),
                     imageUrl: al('mk_image') };
   if(!alanlar.name.trim()){ document.getElementById('mk_name').focus(); return; }
-  if(acikMekanId) mekanGuncelle(acikMekanId, alanlar);
-  else if(!mekanEkle(alanlar)) return;
+  const m = acikMekanId ? mekanGuncelle(acikMekanId, alanlar) : mekanEkle(alanlar);
+  if(!m) return;
+  const sonra = mekanKayitSonrasi;
   mekanPenceresiniKapat();
   renderMekanlar(); renderProjects();
+  if(sonra) sonra(m);
 }
 async function mekanSeciminiIsle(onek){
   const sel = document.getElementById(onek + '_place');
   if(sel.value === '__yeni__'){
-    const ad = (await sor(t('mk_title_new')) || '').trim();
-    const m = ad ? mekanEkle({ name: ad }) : null;
-    // Vazgecilirse eski secim geri geliyor; liste "+ Yeni mekan"da kalmasin.
-    mekanSecimiDoldur(m ? m.id : mekanSonSecim[onek], onek);
-    if(m) renderMekanlar();
+    // Isim sorusu yerine TAM pencere: adres, ilce, il ve uyarilar burada
+    // yazilir. Yalnizca ad sorulunca mekan adressiz doguyor, proje de
+    // adressiz kaliyor ve hemen ardindan "adres girmedin" sorusu geliyordu.
+    // Liste "+ Yeni mekan"da kalmasin: pencere kapanana kadar eski secim
+    // duruyor, vazgecilirse oyle kaliyor.
+    mekanSecimiDoldur(mekanSonSecim[onek], onek);
+    mekanPenceresiniAc(null, m=>{ mekanSecimiDoldur(m.id, onek); sel.focus(); });
     return;
   }
   mekanSonSecim[onek] = sel.value;
@@ -9542,8 +9568,10 @@ document.getElementById('p_add').addEventListener('click', async ()=>{
   const tur = document.getElementById('p_type').value;
   const adres = document.getElementById('p_address').value.trim();
   // Saha isinde adres olmadan devam edilebiliyor ama bir kez soruluyor:
-  // engel degil, hatirlatma.
-  if(adresGerekir(tur) && !adres && !await onayla(t('p_addr_confirm'))){
+  // engel degil, hatirlatma. Secili mekanin adresi ya da harita baglantisi
+  // varsa soru yok: adres orada duruyor.
+  const mekanYeri = projeYeri({ address: '', placeId: document.getElementById('p_place').value });
+  if(adresGerekir(tur) && !adres && !mekanYeri && !await onayla(t('p_addr_confirm'))){
     document.getElementById('p_address').focus();
     return;
   }
