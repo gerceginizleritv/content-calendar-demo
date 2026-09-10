@@ -11,6 +11,9 @@ KAPI 1 listesi ve 7 Eylül 2026'da kodun kendisinden yapılan doğrulamalar.
 
 ## 0. Kısa cevap
 
+0. **Demo kapısı neredeyse açık.** 7 Eylül'de `main` kontrol edildi: gelen
+   kutusu sızıntısı, kullanım şartları ve hesap silme bitmiş. Geriye bir
+   saatlik tek iş kalıyor — karşılama sayfasına sayaç (bölüm 1).
 1. **Sosyal hesap açmak demo açılışının önündeki iş değil, sonrasındaki iş.**
    İlk 20 deneyiciyi sıfır takipçili bir hesap getirmez; sizin var olan
    kanalınız, birebir davet ve üretici toplulukları getirir. Yeni bir hesabı
@@ -27,25 +30,25 @@ KAPI 1 listesi ve 7 Eylül 2026'da kodun kendisinden yapılan doğrulamalar.
 
 ---
 
-## 1. Demo kapısı: kodda doğrulanmış eksikler (7 Eylül 2026)
+## 1. Demo kapısı: güncel `main` üzerinde durum (7 Eylül 2026)
 
-Bunlar "iyi olurdu" maddeleri değil; deneyicinin ilk beş dakikasını ya da
-sizin hukuki durumunuzu doğrudan etkileyen maddeler.
+Bu bölüm önce, `main`'in 60 commit gerisinde kalmış bir daldan okunarak
+yazılmıştı ve beş madde de açık görünüyordu. Güncel `main` kontrol edilince
+üçünün bitmiş olduğu görüldü. Doğru liste:
 
-| # | Eksik | Kanıt | Süre |
-|---|---|---|---|
-| 1 | **Gelen kutusu her giriş yapana çalışıyor.** `gelenKutusunuIsle()` yalnızca `if(!session) return;` ile korunuyor; oturum açan HERKES `gelen/kayitlar.json` içindeki Nuruosmaniye kayıtlarını kendi takviminde bulur. | `app.html:6843`, çağrı `app.html:10506` | 1 saat |
-| 2 | **Kullanım şartları sayfası yok.** Depoda `privacy.html` var, şartlar/veri işleme/iade yok. | Kök dizinde `.html` listesi | Yarım gün |
-| 3 | **Hesabı kendi kendine silme yok.** Kodda hesap silme akışı bulunamadı; `hesapSil` sosyal hesap çipini siliyor, kullanıcı hesabını değil. | `app.html:6994` civarı | Yarım gün |
-| 4 | **Karşılama sayfasında ölçüm yok.** GoatCounter yalnızca `app.html` içinde. Kaç kişi geldi, kaçı uygulamaya geçti — bugün ölçülemiyor. Demonun en önemli tek sayısı bu. | `index.html` içinde GoatCounter/analytics eşleşmesi: 0 | 1 saat |
-| 5 | **Supabase ücretsiz katman.** Bir hafta hareketsizlikte proje duruyor, yedek yok. On gün sonra dönen deneyicinin verisi donmuş olur. | `YAPILACAKLAR.md` KAPI 1, madde 1 | 1 saat + aylık 25 $ |
+| # | Madde | Durum (kanıt) |
+|---|---|---|
+| 1 | Gelen kutusu yalnızca sahibin hesabında çalışsın | **Bitti.** `gelenKutusuAcik` bayrağı eklenmiş; `gelenKutusunuIsle()` içinde `if(!gelenKutusuAcik) return;` (`app.html:9433`), bayrak `user_prefs.prefs.gelen_kutusu`'ndan okunuyor (`app.html:9350`). Önerilen çözümün aynısı, e-posta gömülmeden. |
+| 2 | Kullanım şartları sayfası | **Bitti.** Kökte `sartlar.html` var. |
+| 3 | Hesabı kendi kendine silme | **Bitti.** Arayüz `app.html:3479-3484`, sunucu tarafı `sql/22-hesap-sil.sql` ve `sql/29-hesap-sil-kovalar.sql`. E-posta yazarak onay isteniyor. |
+| 4 | **Karşılama sayfasında ölçüm** | **AÇIK.** GoatCounter yalnızca `app.html` içinde; `index.html`'de hiçbir sayaç yok. Kaç kişi karşılama sayfasına geldi, kaçı uygulamaya geçti — bugün ölçülemiyor. Demonun en önemli tek sayısı bu. 1 saat. |
+| 5 | Supabase ücretsiz katman | **Kısmen çözülmüş, karar sizin.** `sql/28-otomatik-yedek.sql` ile günde bir kez hesabın bütün verisi JSON olarak aynı projedeki özel bir kovaya yazılıyor, son yedi gün duruyor. Betiğin kendi notu sınırı dürüstçe yazıyor: *"bu yedek AYNI Supabase projesinde duruyor; projenin kendisi giderse yedek de gider."* Yani veri kaybı riski büyük ölçüde kapandı, ama hareketsizlikte projenin durması riski duruyor. Deneme dönemi boyunca ücretsiz katmanla gidilebilir; ödeyen ilk kullanıcıda Pro şart. |
 
-1 ve 4 aynı gün bitecek işler. 2 ve 3 birlikte bir gün. 5 bir karar ve bir
-kredi kartı. **Toplam iki iş günü.** Demo bundan önce açılmamalı.
+**Demo açılışının önündeki tek zorunlu iş 4. madde.** Bir saatlik iş.
 
-Mobilde takvimin katlanması (KAPI 1, madde 5) kodda var ama gerçek telefonda
-doğrulanmadı; deneyicilerin çoğu telefondan bakacağı için açılıştan önce bir
-kez gerçek cihazda kontrol edilmeli.
+Ayrıca açılıştan önce bir kez gerçek telefonda takvim kontrolü: kodda
+`.cal-day.collapsed` ve telefon medya sorgusu var, gerçek cihazda
+doğrulanmadı. Deneyicilerin çoğu telefondan bakacak.
 
 ---
 
@@ -76,20 +79,39 @@ olan erişimi çöpe atıp sıfırdan başlamaktır.
 
 ## 3. Hesap planı
 
-### Şimdi (bu hafta, yarım saat)
-Kullanıcı adlarını al, sayfaları boş bırak. Ad kapılması geri alınamaz, hesap
-açmak bedava:
+### Hesap kimliği ve kullanıcı adları — KARAR VERİLDİ (7 Eylül 2026)
 
-- Instagram: `@shootboard` (yoksa `@shootboardapp`)
-- YouTube: `@shootboard`
-- X: `@shootboard`
-- TikTok: `@shootboard`
-- Reddit: `u/shootboard` (hesap yaşı ve karma gerektiren alt forumlar var;
-  bugün açılan hesap 45. günde paylaşım yapabilir hale gelir)
-- Product Hunt: ürün taslağı (yayınlamadan)
+**Ürün hesabı:** `shootboardapp@gmail.com` (kişisel tipte açılmış ücretsiz
+Google hesabı). Bütün sosyal hesaplar bu kimlikle açılıyor.
+Kurtarma adresi: `bostancioglum@gmail.com`. Kamuya dönük iletişim adresi
+ayrı: `hello@shootboard.app` (Cloudflare Email Routing ile aynı Gmail'e
+düşüyor, gönderim Gmail "şu adresten gönder" ile).
 
-Her birine aynı avatar (`icons/icon-512.png`), aynı tek cümle
-("One shoot becomes ten posts.") ve shootboard.app bağlantısı. Bu kadar.
+| Platform | Kullanıcı adı |
+|---|---|
+| YouTube | `getshootboard` |
+| Instagram | `getshootboard` |
+| Threads | `getshootboard` (Instagram'dan otomatik gelir) |
+| TikTok | `getshootboard` |
+| Reddit | `u/shootboard` |
+| Product Hunt | `gethootboard` — **doğrulanacak**, `getshootboard` olmalıydı |
+
+Notlar:
+- **Product Hunt'ta bir harf eksik.** `gethootboard` iki kez böyle yazıldı;
+  gerçekten öyle kaydedildiyse ayarlardan düzeltilebilir. Tek harf farkı
+  marka aramasını ve altı platformdaki tutarlılığı bozar.
+- **Threads ayrı kayıt istemez.** Instagram uygulamasından açılır ve
+  Instagram kullanıcı adını devralır.
+- **Reddit bilerek farklı ve bilerek sessiz.** `u/shootboard` yalnızca isim
+  rezervasyonu; Reddit'te ürün adını taşıyan yeni bir hesabın kendi ürününü
+  tanıtması silinir ve aşağı oylanır. Paylaşım, karma geçmişi olan kişisel
+  hesaptan yapılacak.
+- **X (Twitter) listede yok.** Bilinçli bir karar değilse `@getshootboard`
+  orada da alınmalı: Show HN ve indie ürün kitlesinin toplandığı yer orası.
+
+Her hesapta aynı avatar, aynı tek cümle ("One shoot becomes ten posts.") ve
+`https://shootboard.app` bağlantısı. Profiller doldurulur, **paylaşım
+yapılmaz**.
 
 ### Demo bitene kadar (yaklaşık 4-6 hafta)
 Hesaplara **paylaşım yapılmıyor**. Boş bir hesap, haftada üç kez paylaşım
@@ -156,13 +178,13 @@ karşılama sayfasındaki sayaç — bölüm 1, madde 4.
 ## 6. Dört haftalık takvim
 
 **Hafta 1 — kapıyı kapat**
-- Gelen kutusu bayrağı (`user_prefs.prefs.gelen_kutusu`, yalnızca sahibin
-  hesabında açık; kaynağa e-posta gömme kuralı korunuyor)
-- Karşılama sayfasına GoatCounter
-- Supabase Pro
-- Kullanım şartları + iade politikası sayfası
-- Hesabı silme akışı
+- Karşılama sayfasına GoatCounter (tek zorunlu madde, 1 saat)
+- Gerçek telefonda takvim kontrolü
 - Kullanıcı adlarını al (yarım saat)
+- İade politikası: şartlar sayfasında yoksa eklenir — deneme döneminde
+  para alınmadığı için açılışı bekletmez
+- Supabase Pro: ödeyen ilk kullanıcıya kadar ertelenebilir (otomatik
+  yedek eklendi), kararı siz verin
 
 **Hafta 2 — 20 kişiyi çağır**
 - Birebir davetler; hedef 20 kabul
