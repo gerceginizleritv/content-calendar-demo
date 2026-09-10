@@ -30,7 +30,7 @@ jobs:
           if [ "${{ github.event_name }}" = "schedule" ]; then
             ./testler/kosu.sh
           else
-            ./testler/kosu.sh mobil takvim proje mekan fikir izgara serit
+            ./testler/kosu.sh mobil takvim proje mekan fikir izgara serit ai-erisimi
           fi
 
       - name: Sonucu yaz

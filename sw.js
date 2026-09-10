@@ -20,12 +20,13 @@
    yeniden yaziliyor.
    ===================================================================== */
 
-const SURUM = 'shootboard-v2';
+const SURUM = 'shootboard-v3';
 const KABUK = [
   './app.html',
   './index.html',
   './manifest.json',
   './veri/tr-il-ilce.json',
+  './supabase/functions/ai/dogrula.js',
   './favicon.svg',
   './icons/icon-192.png',
   './icons/icon-512.png'
