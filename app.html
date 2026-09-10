@@ -1002,6 +1002,15 @@ body.suruklenirken *{cursor:grabbing !important;}
 .mk-bul-kaynak{font-size:11px;color:var(--text-dim);padding:5px 10px;background:var(--surface-2);}
 .mk-harita-kontrol{margin:2px 0 14px;}
 .mk-harita-kontrol .mk-gorsel{height:150px;border:1px solid var(--line);border-radius:8px;}
+/* Projenin duraklari: secim kutusundan her secim bir cip ekliyor; sira
+   oklarla, cikarma carpiyla. Tek mekanli projede tek cip. */
+.mekan-cipler{display:flex;flex-wrap:wrap;gap:6px;margin-top:8px;}
+.mekan-cip{display:inline-flex;align-items:center;gap:3px;padding:4px 5px 4px 10px;
+  border:1px solid var(--line);border-radius:999px;background:var(--surface-2);font-size:12.5px;}
+.mekan-cip b{font-weight:600;color:var(--text-dim);margin-right:3px;}
+.mekan-cip button{border:0;background:transparent;color:var(--text-dim);cursor:pointer;
+  padding:0 4px;font:inherit;line-height:1;min-height:0;}
+.mekan-cip button:hover{color:var(--text);}
 /* Vikipedi'den gelen fotografta kaynak gorunuyor: lisans oyle istiyor. */
 .mk-wiki{position:absolute;right:3px;bottom:2px;font-size:9px;font-style:normal;
   background:rgba(255,255,255,.74);color:#2A3340;padding:0 3px;border-radius:2px;
@@ -2888,6 +2897,7 @@ textarea.sc-ai-brief{min-height:64px;resize:vertical;line-height:1.5;}
     <div class="field" id="p_placeWrap">
       <label data-i18n="p_place">Place</label>
       <select id="p_place"></select>
+      <div class="mekan-cipler" id="p_placeList" hidden></div>
       <p class="hint" id="p_placeBilgi"></p>
     </div>
     <!-- Adres yalnizca saha isinde soruluyor; studyo isinde bos bir alan
@@ -2919,6 +2929,7 @@ textarea.sc-ai-brief{min-height:64px;resize:vertical;line-height:1.5;}
     <div class="field" id="pe_placeWrap">
       <label data-i18n="p_place">Place</label>
       <select id="pe_place"></select>
+      <div class="mekan-cipler" id="pe_placeList" hidden></div>
       <p class="hint" id="pe_placeBilgi"></p>
     </div>
     <div class="field" id="pe_addressWrap">
@@ -4489,10 +4500,13 @@ const LANG = {
     mk_del_title: "Delete this place?",
     mk_del_body: "The place is removed from the list.",
     mk_del_linked: (n)=> `${n} project${n===1?'':'s'} are linked to it. The projects stay; they lose the link and keep their own address.`,
-    p_place: "Place",
+    p_place: "Places",
     p_place_none: "— no place —",
     p_place_new: "+ New place…",
-    p_place_hint: "Pick a place and its address, permission and cautions come with it.",
+    p_place_hint: "Pick a place and its address, permission and cautions come with it. Pick another one to add a second stop.",
+    p_stop_up: "Move up",
+    p_stop_down: "Move down",
+    p_stop_remove: "Remove from this project",
     pe_ideas: "Ideas…",
     fk_title: "Ideas",
     fk_chip: "Idea",
@@ -5288,10 +5302,13 @@ const LANG = {
     mk_del_title: "Bu mekan silinsin mi?",
     mk_del_body: "Mekan listeden kalkıyor.",
     mk_del_linked: (n)=> `${n} proje buna bağlı. Projeler duruyor; bağ kopuyor, kendi adresleri kalıyor.`,
-    p_place: "Mekan",
+    p_place: "Mekanlar",
     p_place_none: "— mekan yok —",
     p_place_new: "+ Yeni mekan…",
-    p_place_hint: "Mekanı seçince adresi, izni ve uyarıları onunla birlikte geliyor.",
+    p_place_hint: "Mekanı seçince adresi, izni ve uyarıları onunla birlikte geliyor. Bir tane daha seçersen ikinci durak olur.",
+    p_stop_up: "Yukarı al",
+    p_stop_down: "Aşağı al",
+    p_stop_remove: "Bu projeden çıkar",
     pe_ideas: "Fikirler…",
     fk_title: "Fikirler",
     fk_chip: "Fikir",
@@ -6121,9 +6138,26 @@ function newProjectId(){
   return 'pr_' + Date.now().toString(36) + '_' + Math.random().toString(36).slice(2,7);
 }
 
+// Ham veriden mekan listesi: yeni alan (placeIds) varsa o, yoksa eski tek
+// alan (placeId). Sirali; ilk eleman ana durak. Ayni desen script ve
+// fikirlerdeki projectIds'te.
+function projeMekanListesi(ham){
+  const liste = kimlikListesi(ham && ham.placeIds);
+  if(liste.length) return liste;
+  const tek = (ham && typeof ham.placeId === 'string' && /^[A-Za-z0-9_-]{1,64}$/.test(ham.placeId)) ? ham.placeId : '';
+  return tek ? [tek] : [];
+}
+// Projenin duraklari; temizlenmemis nesnelerde de calisir (testler ve
+// eski kayitlar yalnizca placeId tasiyabiliyor).
+function projeMekanlari(p){
+  if(!p) return [];
+  if(Array.isArray(p.placeIds) && p.placeIds.length) return p.placeIds;
+  return p.placeId ? [p.placeId] : [];
+}
 function sanitizeProject(raw){
   if(!raw || typeof raw !== 'object') return null;
   const str = (v,max)=> (typeof v === 'string' ? v.slice(0,max) : '');
+  const yerler = projeMekanListesi(raw);
   const p = {
     // typeof kontrolu sart: regex.test verilen degeri once metne cevirir,
     // kimlik yoksa "undefined" metni desene uyar ve kimliksiz proje doger.
@@ -6137,7 +6171,10 @@ function sanitizeProject(raw){
     address: str(raw.address, 300),
     // Mekan bagi. Adres alanlari projede DURMAYA devam ediyor: mekani
     // olmayan projeler ve eski kayitlar bozulmasin.
-    placeId: (typeof raw.placeId === 'string' && /^[A-Za-z0-9_-]{0,64}$/.test(raw.placeId)) ? raw.placeId : '',
+    // Sirali durak listesi ve eski tek alan: placeId = ilk durak. Ona bakan
+    // her yer (kart, onay sorusu, sql/26, eski istemciler) bozulmadan calisiyor.
+    placeIds: yerler,
+    placeId: yerler[0] || '',
     createdAt: typeof raw.createdAt === 'number' ? raw.createdAt : Date.now(),
     // Iptal: proje duruyor ama yapilmayacak. Silmek DEGIL — silinen proje
     // gecmisi de goturuyor, oysa "neden yapmadik" bilgisi degerli.
@@ -6481,6 +6518,8 @@ function renderProjects(){
     const kayitlar = projeIcinKayitlar(p.id);
     const yayinlanan = kayitlar.filter(e=>e.uploaded).length;
     const yer = projeYeri(p);
+    // Duraklar: ilkinin adi, fazlasi "+2"; hepsi ipucunda.
+    const yerAdlari = projeMekanlari(p).map(id=> mekanById(id)).filter(Boolean).map(mekanAdi);
     const hucreler = PROJ_STEPS.map(k=>{
       const gecti = adimGecikti(p,k);
       const tarih = adimTarihi(p,k);
@@ -6550,8 +6589,9 @@ function renderProjects(){
                   title="${escapeHtml(t('sc_open_full'))}" aria-label="${escapeHtml(t('sc_open_full'))}"
                   >${IKON_SCRIPT}<b>${scriptSayisi(p.id) || 0}</b></button>
           ${baglar}
-          <span class="pn-meta">${[
+          <span class="pn-meta"${yerAdlari.length > 1 ? ` title="${escapeHtml(yerAdlari.join(' → '))}"` : ''}>${[
             escapeHtml(projTypeName(p.type || 'other')),
+            yerAdlari.length ? escapeHtml(yerAdlari[0] + (yerAdlari.length > 1 ? ' +' + (yerAdlari.length - 1) : '')) : '',
             p.shootDate ? escapeHtml(tarihMetni(p.shootDate)) : '',
             escapeHtml(t('p_entries')(kayitlar.length, yayinlanan))
           ].filter(Boolean).join(' · ')}</span>
@@ -7199,14 +7239,74 @@ function mekanSecenekleri(secili){
 // Ayni secim kutusu iki pencerede birden: proje OLUSTURURKEN (p_) ve
 // duzenlerken (pe_). Onek hangisi oldugunu soyluyor.
 const mekanSonSecim = { pe: '', p: '' };
-function mekanSecimiDoldur(secili, onek){
+// Projenin duraklari (sirali mekan kimlikleri), pencere basina. Secim
+// kutusundan her secim listeye ekleniyor; kutu son secileni gosteriyor.
+const projeMekanSecimi = { pe: [], p: [] };
+function mekanSecimiDoldur(secili, onek, liste){
   const ek = onek || 'pe';
   const sel = document.getElementById(ek + '_place');
   if(!sel) return;
+  if(Array.isArray(liste)) projeMekanSecimi[ek] = liste.filter(id=> mekanById(id));
   sel.innerHTML = mekanSecenekleri(secili);
   mekanSonSecim[ek] = sel.value === '__yeni__' ? '' : sel.value;
+  mekanCipleriCiz(ek);
   mekanBilgisiYaz(ek);
 }
+function projeMekanEkle(onek, id){
+  if(!id || id === '__yeni__' || !mekanById(id)) return;
+  const liste = projeMekanSecimi[onek];
+  if(liste.indexOf(id) === -1) liste.push(id);
+  mekanCipleriCiz(onek);
+}
+function projeMekanCikar(onek, id){
+  projeMekanSecimi[onek] = projeMekanSecimi[onek].filter(x=> x !== id);
+  const sel = document.getElementById(onek + '_place');
+  if(sel && sel.value === id) mekanSecimiDoldur(projeMekanSecimi[onek][0] || '', onek);
+  else mekanCipleriCiz(onek);
+}
+function projeMekanKaydir(onek, id, yon){
+  const liste = projeMekanSecimi[onek];
+  const i = liste.indexOf(id), j = i + yon;
+  if(i === -1 || j < 0 || j >= liste.length) return;
+  liste.splice(i, 1); liste.splice(j, 0, id);
+  mekanCipleriCiz(onek);
+}
+// Formdaki durak listesi. Cip yoksa ama kutuda secim varsa (programla
+// atanmis deger, change tetiklenmemis) o tek durak sayiliyor.
+function projeMekanSecimiOku(onek){
+  const liste = projeMekanSecimi[onek].filter(id=> mekanById(id));
+  if(liste.length) return liste;
+  const sel = document.getElementById(onek + '_place');
+  const v = sel ? sel.value : '';
+  return (v && v !== '__yeni__' && mekanById(v)) ? [v] : [];
+}
+function mekanCipleriCiz(onek){
+  const kutu = document.getElementById(onek + '_placeList');
+  if(!kutu) return;
+  const liste = projeMekanSecimi[onek].filter(id=> mekanById(id));
+  projeMekanSecimi[onek] = liste;
+  kutu.hidden = liste.length === 0;
+  const cok = liste.length > 1;
+  kutu.innerHTML = liste.map((id, i)=>{
+    const m = mekanById(id);
+    return `<span class="mekan-cip" data-cip="${escapeHtml(id)}">${cok ? `<b>${i + 1}.</b>` : ''}${escapeHtml(mekanAdi(m))}`
+      + (cok ? `<button type="button" data-cip-yukari title="${escapeHtml(t('p_stop_up'))}" aria-label="${escapeHtml(t('p_stop_up'))}" ${i === 0 ? 'disabled' : ''}>▲</button>`
+             + `<button type="button" data-cip-asagi title="${escapeHtml(t('p_stop_down'))}" aria-label="${escapeHtml(t('p_stop_down'))}" ${i === liste.length - 1 ? 'disabled' : ''}>▼</button>` : '')
+      + `<button type="button" data-cip-sil title="${escapeHtml(t('p_stop_remove'))}" aria-label="${escapeHtml(t('p_stop_remove'))}">×</button></span>`;
+  }).join('');
+}
+['p', 'pe'].forEach(onek=>{
+  const kutu = document.getElementById(onek + '_placeList');
+  if(!kutu) return;
+  kutu.addEventListener('click', e=>{
+    const cip = e.target.closest('[data-cip]');
+    if(!cip) return;
+    const id = cip.dataset.cip;
+    if(e.target.closest('[data-cip-sil]')) projeMekanCikar(onek, id);
+    else if(e.target.closest('[data-cip-yukari]')) projeMekanKaydir(onek, id, -1);
+    else if(e.target.closest('[data-cip-asagi]')) projeMekanKaydir(onek, id, 1);
+  });
+});
 function mekanBilgisiYaz(onek){
   const ek = onek || 'pe';
   const el = document.getElementById(ek + '_placeBilgi');
@@ -7636,10 +7736,13 @@ async function mekanSeciminiIsle(onek){
     // Liste "+ Yeni mekan"da kalmasin: pencere kapanana kadar eski secim
     // duruyor, vazgecilirse oyle kaliyor.
     mekanSecimiDoldur(mekanSonSecim[onek], onek);
-    mekanPenceresiniAc(null, m=>{ mekanSecimiDoldur(m.id, onek); sel.focus(); });
+    mekanPenceresiniAc(null, m=>{ projeMekanEkle(onek, m.id); mekanSecimiDoldur(m.id, onek); sel.focus(); });
     return;
   }
   mekanSonSecim[onek] = sel.value;
+  // Her secim bir durak: ikinci mekan secilince ilki silinmiyor, listeye
+  // ekleniyor. Cikarmak icin cipteki carpi.
+  projeMekanEkle(onek, sel.value);
   mekanBilgisiYaz(onek);
 }
 document.getElementById('pe_place').addEventListener('change', ()=> mekanSeciminiIsle('pe'));
@@ -8570,7 +8673,7 @@ function openProjectEdit(id){
   document.getElementById('pe_ideasTag').textContent = kacFikir ? t('fk_count')(kacFikir) : t('sc_empty');
   sahaAlanlariniDoldur(p);
   document.getElementById('pe_address').value = p.address || '';
-  mekanSecimiDoldur(p.placeId || '');
+  mekanSecimiDoldur(p.placeId || '', 'pe', projeMekanlari(p));
   const tur = document.getElementById('pe_type');
   projTypeSelectDoldur(tur, p.type || 'other');
   adresAlaniniTazele(tur, document.getElementById('pe_addressWrap'));
@@ -8598,11 +8701,12 @@ function closeProjectEdit(){
 
 
 function projeEkle(ad, anahtar, cekim, tur, adres, mekanId){
-  // "__yeni__" bir mekan degil, listedeki komut satiri; kimlik olarak
-  // yazilmasin.
-  const yer = (mekanId && mekanId !== '__yeni__' && mekanById(mekanId)) ? mekanId : '';
+  // Tek kimlik ya da sirali liste. "__yeni__" bir mekan degil, listedeki
+  // komut satiri; var olmayan kimlik de yazilmiyor.
+  const yerler = (Array.isArray(mekanId) ? mekanId : [mekanId])
+    .filter(x=> x && x !== '__yeni__' && mekanById(x));
   const p = sanitizeProject({ name: ad, keywords: anahtar, shootDate: cekim, type: tur,
-                              address: adres, placeId: yer });
+                              address: adres, placeIds: yerler });
   if(!p) return null;
   if(projects.length >= MAX_PROJECTS){ uyari(t('p_limit')(MAX_PROJECTS)); return null; }
   // Ayni ad iki kez girilmesin: "Stüdyo çekimi" ile "stüdyo Çekimi" ayri
@@ -8640,6 +8744,7 @@ function projToRow(p, uid){
     name: p.name || '', keywords: p.keywords || '', notes: p.notes || '',
     address: p.address || '', type: p.type || 'other',
     place_id: p.placeId || null,
+    place_ids: projeMekanlari(p),
     // Bos metin tarih sutununa yazilamaz; yoklugu null ile anlatiliyor.
     start_date: p.shootDate ? p.shootDate : null,
     cancelled: p.cancelled === true,
@@ -8661,6 +8766,7 @@ function projFromRow(r){
     format: r.format || '', permission: r.permission || '',
     scriptUrl: r.script_url || '', driveUrl: r.drive_url || '',
     placeId: r.place_id || '',
+    placeIds: Array.isArray(r.place_ids) ? r.place_ids : [],
     mapsUrl: r.maps_url || '', fieldNotes: r.field_notes || '',
     cautions: r.cautions || '', shotList: r.shot_list || '',
     deadlines: (r.deadlines && typeof r.deadlines === 'object') ? r.deadlines : {},
@@ -8678,6 +8784,9 @@ async function projPullRemote(){
   return (data || []).map(projFromRow).filter(Boolean);
 }
 
+// sql/34 (place_ids) calistirilmadiysa false'a duser; satir o sutunsuz gider.
+let projMekanSutunu = true;
+function projSatirSutunsuz(r){ const k = Object.assign({}, r); delete k.place_ids; return k; }
 async function projPushChanges(){
   if(!sb || !session) return;
   const uid = session.user.id;
@@ -8696,7 +8805,13 @@ async function projPushChanges(){
     if(yazilacak.size){
       const rows = projects.filter(p=>yazilacak.has(p.id)).map(p=>projToRow(p, uid));
       if(rows.length){
-        const { error } = await sb.from('projects').upsert(rows, { onConflict: 'id' });
+        let { error } = await sb.from('projects').upsert(projMekanSutunu ? rows : rows.map(projSatirSutunsuz), { onConflict: 'id' });
+        // sql/34 calistirilmamis: place_ids sutunu yok. Listesiz tekrar dene;
+        // ilk durak place_id'de gider, gerisi betik calisinca.
+        if(error && projMekanSutunu && /place_ids/.test(String(error.message || error))){
+          projMekanSutunu = false;
+          ({ error } = await sb.from('projects').upsert(rows.map(projSatirSutunsuz), { onConflict: 'id' }));
+        }
         if(error) throw error;
       }
       yazilacak.forEach(id => projDirty.delete(id));
@@ -8884,13 +8999,13 @@ function mekanSiraliListe(){
 }
 // Bir mekana bagli projeler: mekan silinmeden once "burada uc cekim var"
 // diyebilmek icin.
-function mekanProjeleri(id){ return projects.filter(p=>p.placeId === id); }
+function mekanProjeleri(id){ return projects.filter(p=> projeMekanlari(p).indexOf(id) !== -1); }
 // BEKLEYEN cekim: iptal edilmemis ve daha cekilmemis. Kartta "3 proje"
 // yaziyordu ve bu her projeyi sayiyordu — bitmisini de, iptal edilmisini
 // de. "Balat'a gidiyorum, orada bekleyen baska ne var?" sorusuna cevap
 // vermiyordu. Yeni alan gerekmedi: iki isaret zaten projede duruyor.
 function mekanBekleyenleri(id){
-  return projects.filter(p=> p.placeId === id && !p.cancelled && !p.filmed);
+  return projects.filter(p=> projeMekanlari(p).indexOf(id) !== -1 && !p.cancelled && !p.filmed);
 }
 
 function mekanEkle(alanlar){
@@ -8921,7 +9036,13 @@ function mekanSil(id){
   mekanDirty.delete(id); mekanRemoved.add(id);
   // Bagli projeler sahipsiz kalmasin: bag kopuyor, projenin kendi adresi
   // duruyor.
-  projects.forEach(p=>{ if(p.placeId === id){ p.placeId = ''; projDirtyIsaretle(p.id); } });
+  projects.forEach(p=>{
+    const liste = projeMekanlari(p);
+    if(liste.indexOf(id) === -1) return;
+    p.placeIds = liste.filter(x=> x !== id);
+    p.placeId = p.placeIds[0] || '';
+    projDirtyIsaretle(p.id);
+  });
   saveProjects();
   saveMekanlar();
 }
@@ -9793,7 +9914,7 @@ function openProjectNew(ad){
   document.getElementById('p_name').value = ad || '';
   document.getElementById('p_address').value = '';
   document.getElementById('p_shoot').value = '';
-  mekanSecimiDoldur('', 'p');
+  mekanSecimiDoldur('', 'p', []);
   const tur = document.getElementById('p_type');
   projTypeSelectDoldur(tur, tur.value || 'outdoor');
   adresAlaniniTazele(tur, document.getElementById('p_addressWrap'));
@@ -9814,13 +9935,14 @@ document.getElementById('p_add').addEventListener('click', async ()=>{
   // Saha isinde adres olmadan devam edilebiliyor ama bir kez soruluyor:
   // engel degil, hatirlatma. Secili mekanin adresi ya da harita baglantisi
   // varsa soru yok: adres orada duruyor.
-  const mekanYeri = projeYeri({ address: '', placeId: document.getElementById('p_place').value });
+  // Birden cok durakta ILK duraga bakiliyor: kart ve harita da ona bakiyor.
+  const duraklar = projeMekanSecimiOku('p');
+  const mekanYeri = projeYeri({ address: '', placeId: duraklar[0] || '' });
   if(adresGerekir(tur) && !adres && !mekanYeri && !await onayla(t('p_addr_confirm'))){
     document.getElementById('p_address').focus();
     return;
   }
-  const p = projeEkle(ad, '', document.getElementById('p_shoot').value, tur, adres,
-                      document.getElementById('p_place').value);
+  const p = projeEkle(ad, '', document.getElementById('p_shoot').value, tur, adres, duraklar);
   if(!p) return;
   document.getElementById('p_name').value = '';
   document.getElementById('p_address').value = '';
@@ -9869,7 +9991,8 @@ document.getElementById('pe_save').addEventListener('click', ()=>{
   p.name = ad.slice(0,120);
   p.type = document.getElementById('pe_type').value;
   p.address = document.getElementById('pe_address').value.trim().slice(0,300);
-  p.placeId = document.getElementById('pe_place').value === '__yeni__' ? (p.placeId || '') : document.getElementById('pe_place').value;
+  p.placeIds = projeMekanSecimiOku('pe');
+  p.placeId = p.placeIds[0] || '';
   p.keywords = document.getElementById('pe_keywords').value.slice(0,200);
   p.shootDate = document.getElementById('pe_shoot').value || '';
   p.cancelled = document.getElementById('pe_cancelled').checked;

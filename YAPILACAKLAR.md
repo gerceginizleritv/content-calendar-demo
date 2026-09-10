@@ -57,7 +57,15 @@ sonra). İki değişiklik:
 - **Ayrı madde, karar bekliyor:** Open-Meteo ücretsiz sürümü ticari
   kullanıma kapalı (abonelikli/reklamlı uygulama 29 $/ay plan ister); hava
   bloğu ve saat dilimi ona bağlı. Para alınmaya başlanmadan karar verilmeli.
-  Çoklu mekan (place_ids) hâlâ karar bekliyor.
+- **Çoklu mekan yapıldı (aynı gün, kullanıcı istedi):** `projects.placeIds`
+  sıralı durak listesi, `placeId` ilk durak (eski yerler bozulmadı). Proje
+  formunda her seçim bir çip; ▲▼ sıra, × çıkarma; kartta "ilk durak +N".
+  **`sql/34-proje-cok-mekan.sql` çalıştırılmalı**; çalışana kadar yalnızca
+  ilk durak buluta gider (`projMekanSutunu` geri düşüşü). Durak saati yok.
+  Test: `proje-cok-mekan.test.js`.
+- **Kullanıcının çalıştıracakları (PR #10 birleşince):** Supabase SQL
+  Editor'da sırayla `sql/33-mekan-konum.sql` ve `sql/34-proje-cok-mekan.sql`.
+  Sonra canlıda bir mekanda "Bul" ile OSM kapsamını denemek.
 - **Aynı gün, ikinci PR (kullanıcı "ekle" dedi):** logonun altına tek satır
   tanıtım metni. Karşılama sayfasında `.marka-alt` ("Content calendar for
   video creators" / "Video üreticileri için içerik takvimi"), 640px altında
