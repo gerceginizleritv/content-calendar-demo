@@ -63,6 +63,14 @@ sonra). İki değişiklik:
   **`sql/34-proje-cok-mekan.sql` çalıştırılmalı**; çalışana kadar yalnızca
   ilk durak buluta gider (`projMekanSutunu` geri düşüşü). Durak saati yok.
   Test: `proje-cok-mekan.test.js`.
+- **Karar (10 Eylül, kullanıcı): Google Places park edildi, "belki ileride".**
+  Gerekçe konuşuldu: demo ölçeğinde ücret yok (SKU başına 10.000/ay bedava)
+  ama anahtar tarayıcıda durur, kötüye kullanım faturası ürün sahibine
+  yazılır, adres metni saklama şartına takılır. OpenStreetMap ile devam.
+  İleride açılırsa: önce ödeme altyapısı, sonra Supabase Edge Function
+  arkasında anahtar ve kullanıcı başına kota; demoda istenirse Google
+  Cloud'da günlük sert kota (ör. 300 istek) ile riski sıfırlayıp
+  "Google'da bul" düğmesi. Kapsam yetmezse ilk adım Photon (Faz 2).
 - **Kullanıcının çalıştıracakları (PR #10 birleşince):** Supabase SQL
   Editor'da sırayla `sql/33-mekan-konum.sql` ve `sql/34-proje-cok-mekan.sql`.
   Sonra canlıda bir mekanda "Bul" ile OSM kapsamını denemek.
