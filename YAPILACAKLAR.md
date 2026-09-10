@@ -1414,8 +1414,9 @@ bakış kameraya değil konu nesnesine (sağa / yukarı), kaşlar çatık;
 sıcak altın kenar ışığı; arka plan flu; TEK konu nesnesi, kalın parlayan
 sarı neon halka içinde; başlık iki katman (sarı büyük harf + kırmızı bant
 üstüne beyaz), 2–3 kelime; başka metin, logo, ikinci kişi yok. Prompt
-İngilizce, başlık Türkçe. Metin varsayılan olarak Canva'da; Gemini'ye
-yazdırılacaksa TEXT bloğu eklenir, Türkçe harf bozulursa çıkarılır.
+İngilizce, başlık Türkçe. Metin VARSAYILAN OLARAK GEMİNİ'YE yazdırılır (TEXT bloğu
+prompta girer; kullanıcı 2026-09-10'da onayladı); Türkçe harf bozulursa
+çıkarılıp Canva'ya dönülür. Canva yalnızca damga temizliği ve boyut.
 Referans kapak: "Gizli Mimari / Kuş Sarayı".
 
 ## Uzun video scripti bitince yayın paketi otomatik (2026-09-10, kalıcı kural)
