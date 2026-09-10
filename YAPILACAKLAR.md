@@ -34,6 +34,15 @@ sonra). İki değişiklik:
   Öneri: Faz 0 yarım gün (mekan adresi projeye sayılsın, tam pencere),
   Faz 1 iki gün (Nominatim Enter ile bul + koordinat + TR il/ilçe listesi),
   çoklu mekan `place_ids text[]` (sql/23 deseni) 1–2 gün. Karar bekliyor.
+- **Faz 0 yapıldı (aynı gün, kullanıcı "Faz 0'a başla" dedi):** `projeYeri(p)`
+  projenin kendi adresi yoksa bağlı mekanın adresini ya da harita
+  bağlantısını veriyor; "adres girmedin" sorusu ve karttaki "Harita"/"Adres
+  yok" ona bakıyor. Proje formundaki "+ Yeni mekan" isim sorusu yerine tam
+  mekan penceresini açıyor (`mekanPenceresiniAc(id, sonra)` geri çağrısı;
+  `mekanKayitSonrasi` pencere kapanınca temizleniyor ki Mekanlar
+  sayfasından sonradan eklenen mekan forma sıçramasın). İl/ilçe tek başına
+  adres sayılmıyor. Faz 1 (Nominatim ile bul, koordinat) ve çoklu mekan
+  hâlâ karar bekliyor.
 - **Aynı gün, ikinci PR (kullanıcı "ekle" dedi):** logonun altına tek satır
   tanıtım metni. Karşılama sayfasında `.marka-alt` ("Content calendar for
   video creators" / "Video üreticileri için içerik takvimi"), 640px altında
