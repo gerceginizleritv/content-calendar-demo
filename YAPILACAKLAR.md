@@ -6,6 +6,54 @@ duruyor, neden ertelendiği de yazıyor ki aynı tartışma baştan yapılmasın
 
 ---
 
+## Karşılama sayfası SEO ve bağlantı önizlemesi (10 Eylül 2026)
+
+Kullanıcı Threads'te duyuruya başlıyor (ilk plan yalnızca Threads, Reddit
+sonra). İki değişiklik:
+
+- `index.html` başlığı ve açıklaması arama terimiyle yeniden yazıldı:
+  "Content Calendar for Video Creators". Gerekçe: 2 Eylül vidIQ ölçümünde
+  "content calendar" ayda 11.8K, "content planner app" 750'nin altında;
+  kimse "app" aramıyor. `app.html` başlığı da aynı terimi taşıyor ama
+  farklı: iki sayfa aynı başlığı taşımasın.
+- `index.html`'e canonical (`https://shootboard.app/`) ve Open Graph /
+  Twitter etiketleri eklendi; `og.png` (2400×1260) kök dizinde. Threads,
+  X ve WhatsApp bağlantı önizlemesini bu etiketlerden kuruyor; og:image
+  yokken önizleme çıplak başlıktı. Görsel, örnek veriyle (tek çekim, on
+  paylaşım) alınmış takvim ekranı; takvim arayüzü değişirse yeniden
+  alınmalı (scratchpad'deki Playwright betiği: viewport 1200×630, 2x).
+- Hero başlığı (`hero_h1`) değişmedi; arama terimi H1'de yok. İstenirse
+  `hero_tag` rozetine "content calendar" konabilir, TR karşılığıyla.
+
+---
+
+## Nerede kaldık (7 Eylül 2026 — araştırmalar Drive'a taşındı)
+
+**Google Drive klasörü "SHOOTBOARD.APP PAZARLAMA STRATEJISI"** (Drive kökünde,
+kimlik `1dsDtQdkuyEwykehUP-8tp4KDcu7pNqT_`). Kullanıcı bu ada klasör istedi;
+aynı adda klasör ya da belge yoktu, açıldı. İçine depodaki altı belge HTML
+olarak yüklenip Google Doc'a çevrildi (md → HTML dönüştürücü scratchpad'de
+kaldı; başlık, liste ve tablo aktarımı ilk belgede geri okunarak doğrulandı):
+
+| Google Doc | Kaynak | Doc kimliği |
+|---|---|---|
+| Shootboard – Pazar Araştırması ve Satılabilirlik Raporu (2 Eylül 2026) | `docs/pazar-arastirmasi.md` | `1N0TzVA1EUkuo7-v5VPsbqfjf2YEBViEaOFeKBTQnD40` |
+| Shootboard – İsim, Marka, Alan Adı ve E-posta Kararları (Eylül 2026) | `docs/isim-marka-alanadi-kararlari.md` | `1VAJvOARyt_5EsZdJy38MlzXoZBgyXVXp8OGKE9KCJTc` |
+| Demo açılışı ve ürün kanalları planı (7 Eylül 2026) | `docs/demo-ve-kanal-plani.md` | `1DAi_e6JHLgS_CYPMTV7GW54LBV_K0cCsUSaO-s16GC0` |
+| Araştırma notu 1 – Rakipler ve fiyatlar (EN, 2 Eylül 2026) | `docs/arastirma-notlari/01-rakipler.md` | `1-UIzE5HIQ8oPM1JtaW8QbKoEDwZyXYP6kJCg4iGYBZ4` |
+| Araştırma notu 2 – Talep sinyalleri (EN) | `docs/arastirma-notlari/02-talep.md` | `1KxTGJcuZcdlQ3NjpilIaVFpPArROVmYtCnYrSOwPXjE` |
+| Araştırma notu 3 – İş modeli, ödeme ve Türkiye'den satış (EN) | `docs/arastirma-notlari/03-is-modeli.md` | `18F3-iUz-zzT2-qNjXaln43iUblmbeK02N11GOaDJHbc` |
+
+- Raporun iki ekran görüntüsü (`docs/gorseller/takvim-masaustu.png`,
+  `takvim-telefon.png`) Doc'a gömülmedi; dönüştürücü resim satırlarını
+  atlıyor, metindeki yerlerinde boşluk var. İstenirse klasöre ayrıca
+  yüklenir.
+- Kural: bu belgelerden biri depoda değişirse Drive'daki kopyayı aynı Doc
+  kimliğiyle güncelle; yeni belge açıp çoğaltma.
+- Depodaki `.md` dosyaları kaynak olmaya devam ediyor; Drive kopyası
+  paylaşım ve okuma için.
+---
+
 ## Giriş: kayıt/giriş ayrımı ve şifre (5 Eylül 2026)
 
 Giriş yalnızca e-posta bağlantısıyla yapılıyordu. Gerçek denemede iki kez
