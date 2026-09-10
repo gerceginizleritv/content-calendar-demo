@@ -990,6 +990,18 @@ body.suruklenirken *{cursor:grabbing !important;}
   border-radius:8px;display:block;}
 .mk-onizleme-yok{font-size:12.5px;color:var(--amber);}
 .mk-foto-satir input{flex:1;min-width:0;}
+.mk-bul-satir{display:flex;gap:8px;align-items:center;}
+.mk-bul-satir input{flex:1;min-width:0;}
+.mk-bul-liste{margin-top:6px;border:1px solid var(--line);border-radius:8px;overflow:hidden;}
+.mk-bul-liste button{display:block;width:100%;text-align:left;padding:8px 10px;background:var(--surface);
+  border:0;border-bottom:1px solid var(--line-soft);color:var(--text);font:inherit;cursor:pointer;}
+.mk-bul-liste button:last-of-type{border-bottom:0;}
+.mk-bul-liste button:hover{background:var(--surface-2);}
+.mk-bul-liste .mk-bul-ad{font-weight:600;}
+.mk-bul-liste .mk-bul-yer{display:block;font-size:12px;color:var(--text-dim);margin-top:2px;}
+.mk-bul-kaynak{font-size:11px;color:var(--text-dim);padding:5px 10px;background:var(--surface-2);}
+.mk-harita-kontrol{margin:2px 0 14px;}
+.mk-harita-kontrol .mk-gorsel{height:150px;border:1px solid var(--line);border-radius:8px;}
 /* Vikipedi'den gelen fotografta kaynak gorunuyor: lisans oyle istiyor. */
 .mk-wiki{position:absolute;right:3px;bottom:2px;font-size:9px;font-style:normal;
   background:rgba(255,255,255,.74);color:#2A3340;padding:0 3px;border-radius:2px;
@@ -3064,22 +3076,41 @@ textarea.sc-ai-brief{min-height:64px;resize:vertical;line-height:1.5;}
     <h2 id="mk_baslik" data-i18n="mk_title">Place</h2>
     <div class="field">
       <label data-i18n="mk_name">Name</label>
-      <input type="text" id="mk_name" maxlength="160" data-i18n-placeholder="mk_name_ph" placeholder="Kariye Museum">
+      <!-- Ad + "Bul": Enter'a ya da dugmeye basinca OpenStreetMap'te tek
+           arama. Yazdikca oneri yok; Nominatim kurali yasakliyor. -->
+      <div class="mk-bul-satir">
+        <input type="text" id="mk_name" maxlength="160" data-i18n-placeholder="mk_name_ph" placeholder="Kariye Museum" autocomplete="off">
+        <button type="button" class="btn" id="mk_bul" data-i18n="mk_find">Find</button>
+      </div>
+      <p class="hint" id="mk_bulNot" hidden></p>
+      <div class="mk-bul-liste" id="mk_bulListe" hidden></div>
     </div>
     <div class="mk-ikili">
       <div class="field">
         <label data-i18n="mk_city">City</label>
-        <input type="text" id="mk_city" maxlength="120">
+        <input type="text" id="mk_city" maxlength="120" list="mk_ilListe" autocomplete="off">
+        <datalist id="mk_ilListe"></datalist>
       </div>
       <div class="field">
         <label data-i18n="mk_district">District</label>
-        <input type="text" id="mk_district" maxlength="120">
+        <input type="text" id="mk_district" maxlength="120" list="mk_ilceListe" autocomplete="off">
+        <datalist id="mk_ilceListe"></datalist>
       </div>
     </div>
     <div class="field">
       <label data-i18n="mk_address">Address</label>
       <input type="text" id="mk_address" maxlength="400">
     </div>
+    <!-- "Burasi mi?" karosu: koordinat aramadan ya da harita baglantisindan
+         geldiginde. Koordinat, ulke, saat dilimi ve kaynak gizli alanlarda
+         tasiniyor; kaydedilirken mekana yaziliyor. -->
+    <div class="mk-harita-kontrol" id="mk_haritaKontrol" hidden>
+      <div class="mk-gorsel" id="mk_haritaKaro"></div>
+      <p class="hint" id="mk_haritaNot"></p>
+    </div>
+    <input type="hidden" id="mk_lat"><input type="hidden" id="mk_lon">
+    <input type="hidden" id="mk_country"><input type="hidden" id="mk_timezone">
+    <input type="hidden" id="mk_source"><input type="hidden" id="mk_externalId">
     <div class="field">
       <label data-i18n="mk_permission">Permission — who gives it, how long it takes</label>
       <input type="text" id="mk_permission" maxlength="400">
@@ -4398,6 +4429,15 @@ const LANG = {
     mk_photo_scan: (n, t, ad)=> `Looking… ${n}/${t} — ${ad}`,
     mk_photo_scan_done: (b, t)=> b ? `${t} places checked, ${b} photos found.` : `${t} places checked, nothing found. The cards keep their maps.`,
     mk_photo_wiki: "Wikipedia",
+    mk_find: "Find",
+    mk_find_title: "Type the name and city, then find the address and map location on OpenStreetMap",
+    mk_find_searching: "Searching OpenStreetMap…",
+    mk_find_pick: "Pick the right one:",
+    mk_find_none: "Not found. Type the address yourself, or paste a map link.",
+    mk_find_error: "The search service did not answer. Try again in a moment.",
+    mk_find_attrib: "Search and map: © OpenStreetMap contributors",
+    mk_find_done: "Filled in from the map. Check the fields, then save.",
+    mk_map_check: "Is this the place? If not, pick another result or paste a map link.",
     mk_photo_broken: "That link didn't open an image.",
     hv_title: "Weather & light",
     hv_ask: "Sunrise, sunset and golden hour for where you are.",
@@ -4426,6 +4466,7 @@ const LANG = {
     hv_place_need: "Add a city or a map link and this place gets its own weather and light times.",
     hv_src_map: "from the map link",
     hv_src_city: "from the city or district (approximate)",
+    hv_src_saved: "from the saved location",
     hv_polar: "The sun does not rise or set here today.",
     hv_k_0: "Clear", hv_k_1: "Mostly clear", hv_k_2: "Partly cloudy", hv_k_3: "Overcast",
     hv_k_45: "Fog", hv_k_51: "Drizzle", hv_k_61: "Rain", hv_k_71: "Snow",
@@ -5187,6 +5228,15 @@ const LANG = {
     mk_photo_scan: (n, t, ad)=> `Aranıyor… ${n}/${t} — ${ad}`,
     mk_photo_scan_done: (b, t)=> b ? `${t} mekana bakıldı, ${b} fotoğraf bulundu.` : `${t} mekana bakıldı, bir şey çıkmadı. Kartlarda harita duruyor.`,
     mk_photo_wiki: "Vikipedi",
+    mk_find: "Bul",
+    mk_find_title: "Adı ve şehri yaz, adresi ve harita konumunu OpenStreetMap'te bul",
+    mk_find_searching: "OpenStreetMap'te aranıyor…",
+    mk_find_pick: "Doğru olanı seç:",
+    mk_find_none: "Bulunamadı. Adresi elle yaz ya da harita bağlantısı yapıştır.",
+    mk_find_error: "Arama servisi yanıt vermedi, birazdan tekrar dene.",
+    mk_find_attrib: "Arama ve harita: © OpenStreetMap katkıda bulunanlar",
+    mk_find_done: "Haritadan dolduruldu. Alanlara bir bak, sonra kaydet.",
+    mk_map_check: "Burası mı? Değilse başka sonuç seç ya da harita bağlantısı yapıştır.",
     mk_photo_broken: "Bu adres bir görsel açmadı.",
     hv_title: "Hava ve \u0131\u015F\u0131k",
     hv_ask: "Bulundu\u011Fun yerin g\u00FCn do\u011Fumu, g\u00FCn bat\u0131m\u0131 ve alt\u0131n saati.",
@@ -5215,6 +5265,7 @@ const LANG = {
     hv_place_need: "\u015Eehir ya da harita ba\u011Flant\u0131s\u0131 ekleyince bu mekan\u0131n kendi hava ve \u0131\u015F\u0131k bilgisi burada \u00E7\u0131kar.",
     hv_src_map: "harita ba\u011Flant\u0131s\u0131ndaki koordinata g\u00F6re",
     hv_src_city: "\u015Fehir/il\u00E7e ad\u0131na g\u00F6re (yakla\u015F\u0131k)",
+    hv_src_saved: "kayıtlı konuma göre",
     hv_polar: "Burada bug\u00FCn g\u00FCne\u015F do\u011Fmuyor ya da batm\u0131yor.",
     hv_k_0: "A\u00E7\u0131k", hv_k_1: "Az bulutlu", hv_k_2: "Par\u00E7al\u0131 bulutlu", hv_k_3: "Kapal\u0131",
     hv_k_45: "Sisli", hv_k_51: "\u00C7iseliyor", hv_k_61: "Ya\u011Fmurlu", hv_k_71: "Karl\u0131",
@@ -7437,6 +7488,24 @@ function wikiKaynak(u){
          || s.match(/\/[0-9a-f]\/[0-9a-f]{2}\/([^/?#]+)$/);
   return k ? 'https://commons.wikimedia.org/wiki/File:' + k[1] : '';
 }
+// Dort OSM karosu ve ortadaki nokta; kartta ve pencerede ayni kare.
+function haritaKaroHtml(en, boy){
+  const kare = haritaKaresi(en, boy);
+  const karolar = kare.karolar.map(c=>
+    `<img src="${escapeHtml(c.url)}" alt="" loading="lazy" style="left:${c.x}px;top:${c.y}px">`).join('');
+  return `<span class="mk-harita">
+      <span class="mk-blok" style="left:calc(50% - ${kare.nx}px);top:calc(50% - ${kare.ny}px)">${karolar}</span>
+      <i class="mk-nokta"></i><em class="mk-osm">© OpenStreetMap</em></span>`;
+}
+// Mekanin koordinati: harita baglantisi (kullanicinin isaretledigi nokta,
+// kesin) > aramadan kaydedilen enlem/boylam > yok.
+function mekanKonumu(m){
+  const k = mekanKonum(disUrl(m && m.mapsUrl));
+  if(k) return { en: k.en, boy: k.boy, kaynak: 'harita' };
+  if(m && Number.isFinite(m.lat) && Number.isFinite(m.lon) && Math.abs(m.lat) <= 85 && Math.abs(m.lon) <= 180)
+    return { en: m.lat, boy: m.lon, kaynak: 'kayit' };
+  return null;
+}
 function mekanGorseli(m){
   const foto = disUrl(m.imageUrl);
   if(foto){
@@ -7444,15 +7513,8 @@ function mekanGorseli(m){
     return `<img class="mk-foto" src="${escapeHtml(foto)}" alt="" loading="lazy">`
       + (kaynak ? `<a class="mk-wiki" href="${escapeHtml(kaynak)}" target="_blank" rel="noopener" data-dis>${escapeHtml(t('mk_photo_wiki'))}</a>` : '');
   }
-  const k = mekanKonum(disUrl(m.mapsUrl));
-  if(k){
-    const kare = haritaKaresi(k.en, k.boy);
-    const karolar = kare.karolar.map(c=>
-      `<img src="${escapeHtml(c.url)}" alt="" loading="lazy" style="left:${c.x}px;top:${c.y}px">`).join('');
-    return `<span class="mk-harita">
-      <span class="mk-blok" style="left:calc(50% - ${kare.nx}px);top:calc(50% - ${kare.ny}px)">${karolar}</span>
-      <i class="mk-nokta"></i><em class="mk-osm">© OpenStreetMap</em></span>`;
-  }
+  const k = mekanKonumu(m);
+  if(k) return haritaKaroHtml(k.en, k.boy);
   return `<span class="mk-harf" style="--mk-h:${mekanRengi(m.id)}">${escapeHtml(mekanBasHarf(mekanAdi(m)))}</span>`;
 }
 function renderMekanlar(){
@@ -7520,6 +7582,17 @@ function mekanPenceresiniAc(id, sonra){
   y('mk_cautions', m && m.cautions); y('mk_notes', m && m.notes);
   y('mk_maps', m && m.mapsUrl); y('mk_drive', m && m.driveUrl);
   y('mk_image', m && m.imageUrl);
+  y('mk_lat', m && m.lat != null ? String(m.lat) : ''); y('mk_lon', m && m.lon != null ? String(m.lon) : '');
+  y('mk_country', m && m.country); y('mk_timezone', m && m.timezone);
+  y('mk_source', m && m.source); y('mk_externalId', m && m.externalId);
+  mekanAramaSonuclari = []; mekanAramaJeton++;
+  const bulListe = document.getElementById('mk_bulListe');
+  bulListe.hidden = true; bulListe.innerHTML = '';
+  mkNot('mk_bulNot', '');
+  const bulDugme = document.getElementById('mk_bul');
+  bulDugme.disabled = false; bulDugme.title = t('mk_find_title');
+  ilListesiniDoldur();
+  mekanHaritaKontrol();
   mkNot('mk_fotoNot', '');
   mekanOnizleme();
   // Bu mekanin hava ve isik bilgisi: agi beklemeden pencere aciliyor,
@@ -7542,7 +7615,10 @@ function mekanKaydet(){
                     address: al('mk_address'), permission: al('mk_permission'),
                     cautions: al('mk_cautions'), notes: al('mk_notes'),
                     mapsUrl: al('mk_maps'), driveUrl: al('mk_drive'),
-                    imageUrl: al('mk_image') };
+                    imageUrl: al('mk_image'),
+                    lat: al('mk_lat'), lon: al('mk_lon'), country: al('mk_country'),
+                    timezone: al('mk_timezone'), externalId: al('mk_externalId'),
+                    source: al('mk_source') || 'manual' };
   if(!alanlar.name.trim()){ document.getElementById('mk_name').focus(); return; }
   const m = acikMekanId ? mekanGuncelle(acikMekanId, alanlar) : mekanEkle(alanlar);
   if(!m) return;
@@ -7568,6 +7644,147 @@ async function mekanSeciminiIsle(onek){
 }
 document.getElementById('pe_place').addEventListener('change', ()=> mekanSeciminiIsle('pe'));
 document.getElementById('p_place').addEventListener('change', ()=> mekanSeciminiIsle('p'));
+// --- Adresi haritadan bulma (OpenStreetMap / Nominatim) ------------------
+// Yazdikca oneri YOK: Nominatim'in kullanim kurali otomatik tamamlamayi
+// acikca yasakliyor. Arama yalnizca Enter'a ya da "Bul"a basinca, tek
+// istek. Sonuc secilince adres, ilce, il, ulke, koordinat ve harita
+// baglantisi doluyor; hepsi elle duzeltilebilir. Bulunamazsa alanlar
+// oldugu gibi kaliyor, elle yazilir. Kaynak yazmak lisans geregi.
+const MEKAN_ARA_URL = 'https://nominatim.openstreetmap.org/search';
+let mekanAramaJeton = 0;
+let mekanAramaSonuclari = [];
+function mekanAraSorgu(){
+  const ad = document.getElementById('mk_name').value.trim();
+  const il = document.getElementById('mk_city').value.trim();
+  return [ad, il].filter(Boolean).join(', ');
+}
+// Nominatim sonucunu form alanlarina cevirir. Alan adlari ulkeden ulkeye
+// degisiyor (il: province/state, ilce: county/city_district/town...);
+// sirayla ilk dolu olan aliniyor, gerisini kullanici duzeltir.
+function mekanSonucYorumla(r){
+  const lat = parseFloat(r && r.lat), lon = parseFloat(r && r.lon);
+  if(!Number.isFinite(lat) || !Number.isFinite(lon) || Math.abs(lat) > 85 || Math.abs(lon) > 180) return null;
+  const a = (r.address && typeof r.address === 'object') ? r.address : {};
+  const il = a.province || a.state || a.city || a.region || '';
+  const ilce = [a.county, a.city_district, a.district, a.town, a.municipality, a.borough, a.city, a.suburb, a.village]
+    .find(x=> x && x !== il) || '';
+  const mahalle = [a.neighbourhood, a.quarter, a.suburb].find(x=> x && x !== ilce) || '';
+  const yol = [a.road, a.house_number].filter(Boolean).join(' ');
+  const adres = [yol, mahalle, a.postcode].filter(Boolean).join(', ');
+  const ad = String(r.name || String(r.display_name || '').split(',')[0] || '').trim();
+  const tur = String(r.type || '').replace(/_/g, ' ');
+  return { ad, tur: (tur && tur !== 'yes') ? tur : '', adres, ilce, il,
+           ulke: a.country || '', lat: +lat.toFixed(5), lon: +lon.toFixed(5),
+           kimlik: (r.osm_type && r.osm_id) ? (String(r.osm_type)[0].toUpperCase() + r.osm_id) : '' };
+}
+async function mekanAra(){
+  const sorgu = mekanAraSorgu();
+  const liste = document.getElementById('mk_bulListe');
+  const dugme = document.getElementById('mk_bul');
+  if(!sorgu){ document.getElementById('mk_name').focus(); return; }
+  const jeton = ++mekanAramaJeton;
+  dugme.disabled = true;
+  liste.hidden = true; liste.innerHTML = '';
+  mkNot('mk_bulNot', t('mk_find_searching'));
+  let sonuc = null;
+  try{
+    const cevap = await fetch(MEKAN_ARA_URL + '?format=jsonv2&addressdetails=1&limit=6'
+      + '&accept-language=' + (currentLang === 'tr' ? 'tr' : 'en')
+      + '&q=' + encodeURIComponent(sorgu));
+    if(cevap.ok) sonuc = await cevap.json();
+  }catch(e){ sonuc = null; }
+  if(jeton !== mekanAramaJeton) return;
+  dugme.disabled = false;
+  if(!Array.isArray(sonuc)){ mkNot('mk_bulNot', t('mk_find_error')); return; }
+  mekanAramaSonuclari = sonuc.map(mekanSonucYorumla).filter(Boolean);
+  if(!mekanAramaSonuclari.length){ mkNot('mk_bulNot', t('mk_find_none')); return; }
+  mkNot('mk_bulNot', t('mk_find_pick'));
+  liste.innerHTML = mekanAramaSonuclari.map((s, i)=>
+    `<button type="button" data-mk-sonuc="${i}"><span class="mk-bul-ad">${escapeHtml(s.ad || s.adres || s.ilce)}</span>`
+    + `<span class="mk-bul-yer">${escapeHtml([s.tur, s.adres, s.ilce, s.il, s.ulke].filter(Boolean).join(' · '))}</span></button>`
+  ).join('') + `<div class="mk-bul-kaynak">${escapeHtml(t('mk_find_attrib'))}</div>`;
+  liste.hidden = false;
+}
+function mekanSonucSec(i){
+  const s = mekanAramaSonuclari[i];
+  if(!s) return;
+  const yaz = (k, v)=>{ document.getElementById(k).value = v || ''; };
+  // Kullanicinin yazdigi ad duruyor; bos ise sonucun adi.
+  if(!document.getElementById('mk_name').value.trim()) yaz('mk_name', s.ad);
+  if(s.il) yaz('mk_city', s.il);
+  yaz('mk_district', s.ilce);
+  yaz('mk_address', s.adres);
+  yaz('mk_lat', String(s.lat)); yaz('mk_lon', String(s.lon));
+  yaz('mk_country', s.ulke); yaz('mk_source', 'osm'); yaz('mk_externalId', s.kimlik);
+  yaz('mk_timezone', '');
+  // Harita baglantisi bossa koordinattan uretiliyor. Doluysa kullanicinin
+  // yapistirdigi kaliyor: o daha kesin.
+  const harita = document.getElementById('mk_maps');
+  if(!harita.value.trim()) harita.value = koordinatBaglantisi(s.lat, s.lon);
+  document.getElementById('mk_bulListe').hidden = true;
+  mkNot('mk_bulNot', t('mk_find_done'));
+  ilceListesiniDoldur();
+  mekanHaritaKontrol();
+  mekanHavaYenile();
+}
+// Virgul kodlanmiyor: mekanKonum bu baglantiyi "query=en,boy" deseniyle
+// geri okuyor.
+function koordinatBaglantisi(lat, lon){
+  return 'https://www.google.com/maps/search/?api=1&query=' + lat + ',' + lon;
+}
+// Penceredeki "burasi mi?" karosu. Koordinat once harita baglantisindan,
+// yoksa aramadan gelen gizli alanlardan.
+function mekanHaritaKontrol(){
+  const kutu = document.getElementById('mk_haritaKontrol');
+  if(!kutu) return;
+  const al = k => document.getElementById(k).value;
+  const k = mekanKonumu({ mapsUrl: al('mk_maps'), lat: parseFloat(al('mk_lat')), lon: parseFloat(al('mk_lon')) });
+  kutu.hidden = !k;
+  if(!k) return;
+  document.getElementById('mk_haritaKaro').innerHTML = haritaKaroHtml(k.en, k.boy);
+  document.getElementById('mk_haritaNot').textContent =
+    t('mk_map_check') + ' ' + k.en.toFixed(5) + ', ' + k.boy.toFixed(5);
+}
+// --- Turkiye il/ilce listesi (veri/tr-il-ilce.json, MIT) ------------------
+// Sayfaya gomulu degil: pencere ilk acildiginda bir kez cekiliyor.
+// Cekilemezse alanlar serbest metin olarak calismaya devam ediyor;
+// yurtdisi icin zaten oyle. Il yazilinca ilce listesi o ile iniyor.
+let trIlIlce = null, trIlIlceIstek = null;
+function trIlIlceYukle(){
+  if(trIlIlce) return Promise.resolve(trIlIlce);
+  if(!trIlIlceIstek){
+    trIlIlceIstek = fetch('veri/tr-il-ilce.json')
+      .then(c=> c.ok ? c.json() : null)
+      .then(v=>{ trIlIlce = (v && v.iller && typeof v.iller === 'object') ? v.iller : {}; return trIlIlce; })
+      .catch(()=>{ trIlIlce = {}; return trIlIlce; });
+  }
+  return trIlIlceIstek;
+}
+async function ilListesiniDoldur(){
+  const veri = await trIlIlceYukle();
+  const dl = document.getElementById('mk_ilListe');
+  if(!dl) return;
+  if(!dl.childElementCount) dl.innerHTML = Object.keys(veri).map(il=> `<option value="${escapeHtml(il)}">`).join('');
+  ilceListesiniDoldur();
+}
+function ilceListesiniDoldur(){
+  const dl = document.getElementById('mk_ilceListe');
+  if(!dl || !trIlIlce) return;
+  const il = document.getElementById('mk_city').value.trim().toLocaleLowerCase('tr');
+  const ad = il ? Object.keys(trIlIlce).find(x=> x.toLocaleLowerCase('tr') === il) : '';
+  dl.innerHTML = ad ? trIlIlce[ad].map(i=> `<option value="${escapeHtml(i)}">`).join('') : '';
+}
+document.getElementById('mk_bul').addEventListener('click', mekanAra);
+document.getElementById('mk_name').addEventListener('keydown', e=>{
+  if(e.key === 'Enter'){ e.preventDefault(); mekanAra(); }
+});
+document.getElementById('mk_bulListe').addEventListener('click', e=>{
+  const b = e.target.closest('[data-mk-sonuc]');
+  if(b) mekanSonucSec(Number(b.dataset.mkSonuc));
+});
+document.getElementById('mk_maps').addEventListener('input', mekanHaritaKontrol);
+document.getElementById('mk_city').addEventListener('input', ilceListesiniDoldur);
+
 function mekanOnizleme(){
   const kutu = document.getElementById('mk_onizleme');
   const adres = disUrl(document.getElementById('mk_image').value.trim());
@@ -8571,6 +8788,11 @@ let mekanPushTimer = null;
 function mekanKey(){ return session ? MEKAN_KEY + '_' + session.user.id : MEKAN_KEY; }
 function yeniMekanId(){ return 'mk_' + Date.now().toString(36) + '_' + Math.random().toString(36).slice(2,6); }
 
+// Enlem/boylam: sayi ya da sayi metni; bos ve sinir disi deger null.
+function koordinatSayisi(v, sinir){
+  const n = typeof v === 'number' ? v : (typeof v === 'string' && v.trim() ? Number(v) : NaN);
+  return (Number.isFinite(n) && Math.abs(n) <= sinir) ? +n.toFixed(5) : null;
+}
 function mekanTemizle(ham){
   if(!ham || typeof ham !== 'object') return null;
   const y = (v, n)=> (typeof v === 'string' ? v.slice(0, n) : '');
@@ -8586,6 +8808,13 @@ function mekanTemizle(ham){
     notes: y(ham.notes, 4000),
     mapsUrl: y(ham.mapsUrl, 600), driveUrl: y(ham.driveUrl, 600),
     imageUrl: y(ham.imageUrl, 600),
+    // Koordinat ve kaynak: aramadan (osm) ya da elle. Beyaz listede
+    // olmasaydi sessizce duserdi (YAPILACAKLAR'daki ders).
+    lat: koordinatSayisi(ham.lat, 85), lon: koordinatSayisi(ham.lon, 180),
+    country: y(ham.country, 80),
+    timezone: gecerliTz(ham.timezone) ? String(ham.timezone).slice(0, 64) : '',
+    source: ['osm', 'google', 'manual'].indexOf(ham.source) !== -1 ? ham.source : '',
+    externalId: y(ham.externalId, 80),
     createdAt: typeof ham.createdAt === 'number' ? ham.createdAt : Date.now(),
     updatedAt: typeof ham.updatedAt === 'number' ? ham.updatedAt : Date.now()
   };
@@ -8593,14 +8822,20 @@ function mekanTemizle(ham){
 // sql/27 (fotograf sutunu) henuz calistirilmadiysa false'a duser: mekan
 // kaydetmek yalnizca fotograf yuzunden bastan asagi durmasin.
 let mekanFotoSutunu = true;
+// sql/33 (koordinat sutunlari) calistirilmadiysa ayni sekilde false'a duser.
+let mekanKonumSutunlari = true;
+const MEKAN_KONUM_SUTUNLARI = ['lat', 'lon', 'country', 'timezone', 'source', 'external_id'];
 function mekanRowYap(m, uid){
   const satir = { id: m.id, user_id: uid, name: m.name, city: m.city, district: m.district,
            address: m.address, permission: m.permission, cautions: m.cautions,
            notes: m.notes, maps_url: m.mapsUrl, drive_url: m.driveUrl,
            image_url: m.imageUrl, deleted_at: null,
+           lat: m.lat, lon: m.lon, country: m.country, timezone: m.timezone,
+           source: m.source, external_id: m.externalId,
            created_at: new Date(m.createdAt).toISOString(),
            updated_at: new Date(m.updatedAt).toISOString() };
   if(!mekanFotoSutunu) delete satir.image_url;
+  if(!mekanKonumSutunlari) MEKAN_KONUM_SUTUNLARI.forEach(k=> delete satir[k]);
   return satir;
 }
 function mekanRowOku(r){
@@ -8609,6 +8844,8 @@ function mekanRowOku(r){
                         cautions: r.cautions || '', notes: r.notes || '',
                         mapsUrl: r.maps_url || '', driveUrl: r.drive_url || '',
                         imageUrl: r.image_url || '',
+                        lat: r.lat, lon: r.lon, country: r.country || '', timezone: r.timezone || '',
+                        source: r.source || '', externalId: r.external_id || '',
                         createdAt: r.created_at ? Date.parse(r.created_at) : Date.now(),
                         updatedAt: r.updated_at ? Date.parse(r.updated_at) : 0 });
 }
@@ -8623,9 +8860,16 @@ function saveMekanlar(){
   if(session){ clearTimeout(mekanPushTimer); mekanPushTimer = setTimeout(mekanPush, 700); }
 }
 async function mekanPush(){
-  const hata = await kayitPush('places', mekanlar, mekanDirty, mekanRemoved, mekanRowYap);
-  if(hata && mekanFotoSutunu && /image_url/.test(String((hata && hata.message) || hata))){
+  let hata = await kayitPush('places', mekanlar, mekanDirty, mekanRemoved, mekanRowYap);
+  const mesaj = ()=> String((hata && hata.message) || hata || '');
+  if(hata && mekanFotoSutunu && /image_url/.test(mesaj())){
     mekanFotoSutunu = false;
+    hata = await kayitPush('places', mekanlar, mekanDirty, mekanRemoved, mekanRowYap);
+  }
+  // sql/33 calistirilmadiysa koordinat sutunlari yok: onlarsiz tekrar dene,
+  // koordinat tarayicida kalir, betik calisinca sonraki kayitta gider.
+  if(hata && mekanKonumSutunlari && new RegExp('\\b(' + MEKAN_KONUM_SUTUNLARI.join('|') + ')\\b').test(mesaj())){
+    mekanKonumSutunlari = false;
     await kayitPush('places', mekanlar, mekanDirty, mekanRemoved, mekanRowYap);
   }
 }
@@ -11084,8 +11328,8 @@ async function havaSehirGonder(){
 // Konum iznine BAGLI DEGIL: koordinat once harita baglantisindan (kesin),
 // yoksa mekanin adindan/ilcesinden/sehrinden geliyor (yaklasik).
 async function mekanKoordinati(m){
-  const harita = mekanKonum(m.mapsUrl);
-  if(harita) return { lat: +harita.en.toFixed(2), lon: +harita.boy.toFixed(2), kaynak: 'harita' };
+  const konum = mekanKonumu(m);
+  if(konum) return { lat: +konum.en.toFixed(2), lon: +konum.boy.toFixed(2), kaynak: konum.kaynak };
   // MEKAN ADI SORULMUYOR. Bu servis bina/isletme degil YERLESIM adi
   // indeksliyor: "Berlin Kafe, Istanbul" sorulunca ya bos donuyor ya da
   // adi benzeyen bambaska bir yeri veriyor — ve o zaman sessizce yanlis
@@ -11110,10 +11354,11 @@ async function mekanHavaYenile(){
   if(!kutu) return;
   const al = k => (document.getElementById(k) || {}).value || '';
   const m = { name: al('mk_name').trim(), city: al('mk_city').trim(),
-              district: al('mk_district').trim(), mapsUrl: al('mk_maps') };
+              district: al('mk_district').trim(), mapsUrl: al('mk_maps'),
+              lat: parseFloat(al('mk_lat')), lon: parseFloat(al('mk_lon')) };
   const jeton = ++mekanHavaIstek;
   kutu.hidden = false;
-  if(!m.city && !m.district && !m.name && !mekanKonum(m.mapsUrl)){
+  if(!m.city && !m.district && !m.name && !mekanKonumu(m)){
     kutu.innerHTML = '<div class="hv-not">' + escapeHtml(t('hv_place_need')) + '</div>';
     return;
   }
@@ -11126,7 +11371,11 @@ async function mekanHavaYenile(){
   }
   const hava = await havaAl(k.lat, k.lon);
   if(jeton !== mekanHavaIstek) return;
-  const nereden = k.kaynak === 'harita' ? t('hv_src_map') : t('hv_src_city');
+  // Saat dilimi hava servisinden bedavaya geliyor; mekana yaziliyor.
+  const tzEl = document.getElementById('mk_timezone');
+  if(tzEl && !tzEl.value && hava && hava.veri && gecerliTz(hava.veri.tz)) tzEl.value = hava.veri.tz;
+  const nereden = k.kaynak === 'harita' ? t('hv_src_map')
+                : k.kaynak === 'kayit' ? t('hv_src_saved') : t('hv_src_city');
   kutu.innerHTML = havaGovdesiHtml(t('hv_place_title') + ' · ' + nereden, k, hava, true);
 }
 

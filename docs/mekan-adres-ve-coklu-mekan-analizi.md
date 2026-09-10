@@ -173,12 +173,32 @@ yeniden geocode etmez; `mekanKoordinati` önce `m.lat/m.lon`'a bakar.
 - Atıf: OSM verisi kullanılan her yerde "© OpenStreetMap contributors"
   (kartta zaten var; öneri listesine de konur).
 
+**Yapıldı (10 Eylül 2026, Faz 1):** mekan penceresinde ad alanının yanında
+"Bul" düğmesi; Enter ya da düğme Nominatim'e tek istek atıyor (yazdıkça
+öneri yok, kural gereği), sonuçlar "ad — tür · adres · ilçe · il · ülke"
+satırlarıyla listeleniyor, altında OSM kaynak yazısı. Seçince adres (yol +
+kapı no + mahalle + posta kodu), ilçe, il, ülke, koordinat, OSM kimliği ve
+harita bağlantısı doluyor (bağlantı `?query=en,boy` biçiminde, virgül
+kodlanmadan; `mekanKonum` onu geri okuyor); kullanıcının yazdığı ad
+korunuyor. "Burası mı?" karosu pencere içinde (`haritaKaroHtml`, kartla
+aynı dört karo). Saat dilimi hava bloğunun Open-Meteo cevabından alınıp
+gizli alana yazılıyor. Mekan modeline `lat, lon, country, timezone,
+source, externalId` eklendi (`mekanTemizle` beyaz listesi, `mekanRowYap`,
+`mekanRowOku`); `sql/33-mekan-konum.sql` sütunları ekliyor, betik
+çalıştırılmadıysa `mekanKonumSutunlari` geri düşüşüyle sütunsuz yazılıyor.
+Kart karosu ve hava koordinatı artık `mekanKonumu(m)` üzerinden: harita
+bağlantısı > kayıtlı koordinat > ilçe/il araması. Türkiye il/ilçe listesi
+`veri/tr-il-ilce.json` (81 il, 973 ilçe, 12 KB, MIT kaynaklı), pencere ilk
+açıldığında çekiliyor, `datalist` olarak; il yazılınca ilçe listesi
+daralıyor; yurtdışında serbest metin. Test: `mekan-bul.test.js`.
+Yapılmayan: Photon (Faz 2) ve Google (Faz 3).
+
 **Fazlar:**
 
 | Faz | İş | Süre |
 |---|---|---|
 | 0 | Bölüm 2'deki iki düzeltme — **yapıldı, 10 Eylül** | Yarım gün |
-| 1 | Nominatim "Enter ile bul", koordinat + ülke + saat dilimi saklama, otomatik harita bağlantısı, pencere içi karo ile kontrol, Türkiye il/ilçe `datalist`, migration `sql/33` | 2 gün |
+| 1 | Nominatim "Enter ile bul", koordinat + ülke + saat dilimi saklama, otomatik harita bağlantısı, pencere içi karo ile kontrol, Türkiye il/ilçe `datalist`, migration `sql/33` — **yapıldı, 10 Eylül** | 2 gün |
 | 2 | Photon yazdıkça öneri (aynı seçim akışı, sadece tetikleyici değişir) | Yarım gün |
 | 3 | Google Places, Edge Function, oturum belirteci, paket kapısı | 2 gün, ödeme sonrası |
 

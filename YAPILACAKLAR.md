@@ -41,8 +41,23 @@ sonra). İki değişiklik:
   mekan penceresini açıyor (`mekanPenceresiniAc(id, sonra)` geri çağrısı;
   `mekanKayitSonrasi` pencere kapanınca temizleniyor ki Mekanlar
   sayfasından sonradan eklenen mekan forma sıçramasın). İl/ilçe tek başına
-  adres sayılmıyor. Faz 1 (Nominatim ile bul, koordinat) ve çoklu mekan
-  hâlâ karar bekliyor.
+  adres sayılmıyor.
+- **Faz 1 yapıldı (aynı gün, kullanıcı "Faz 1'e başla" dedi):** mekan
+  penceresinde "Bul": ad + şehir Nominatim'de aranıyor (Enter/düğme, tek
+  istek; yazdıkça öneri Nominatim kuralınca yasak), seçilen sonuç adres,
+  ilçe, il, ülke, koordinat, OSM kimliği ve harita bağlantısını dolduruyor;
+  "burası mı?" karosu pencerede. Mekan modeline lat/lon/country/timezone/
+  source/externalId; **`sql/33-mekan-konum.sql` Supabase'de çalıştırılmalı**,
+  çalıştırılana kadar koordinat yalnızca tarayıcıda kalır (sessiz geri
+  düşüş, `mekanKonumSutunlari`). Türkiye il/ilçe listesi
+  `veri/tr-il-ilce.json` (MIT; kaynakta Türkçe büyük/küçük harf bozuktu,
+  onarıldı), `sw.js` kabuğuna eklendi. Nominatim POI kapsamı canlı
+  doğrulanamadı (ağ engeli); ilk gerçek denemede "Nuruosmaniye Han",
+  "Kariye" gibi adlarla bakılmalı. Ayrıntı: analiz belgesi, bölüm 4.
+- **Ayrı madde, karar bekliyor:** Open-Meteo ücretsiz sürümü ticari
+  kullanıma kapalı (abonelikli/reklamlı uygulama 29 $/ay plan ister); hava
+  bloğu ve saat dilimi ona bağlı. Para alınmaya başlanmadan karar verilmeli.
+  Çoklu mekan (place_ids) hâlâ karar bekliyor.
 - **Aynı gün, ikinci PR (kullanıcı "ekle" dedi):** logonun altına tek satır
   tanıtım metni. Karşılama sayfasında `.marka-alt` ("Content calendar for
   video creators" / "Video üreticileri için içerik takvimi"), 640px altında

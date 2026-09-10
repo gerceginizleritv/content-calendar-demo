@@ -25,6 +25,7 @@ const KABUK = [
   './app.html',
   './index.html',
   './manifest.json',
+  './veri/tr-il-ilce.json',
   './favicon.svg',
   './icons/icon-192.png',
   './icons/icon-512.png'
