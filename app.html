@@ -1727,6 +1727,25 @@ textarea.sc-ai-brief{min-height:64px;resize:vertical;line-height:1.5;}
 .hesap-ad{font-size:14px;font-weight:600;}
 .hesap-not{margin:4px 0 0;}
 .hesap-satir .btn{flex:none;}
+/* AI erisimi: kartlardaki "AI" rozeti ve hesap penceresindeki bolum. */
+.ai-rozet{display:inline-block;margin-left:5px;padding:1px 4px;border-radius:4px;
+  font:600 9px/1.4 'IBM Plex Mono',monospace;letter-spacing:.04em;
+  color:var(--accent);background:var(--accent-soft);vertical-align:middle;flex:none;}
+.cal-chip .ai-rozet{margin-left:0;padding:0 3px;}
+#hesapAi{display:block;}
+.ai-er-dugmeler{display:flex;gap:8px;flex-wrap:wrap;margin-top:10px;}
+.ai-er-dugmeler .btn{flex:none;}
+.ai-er-kutu{margin-top:10px;padding:10px;border:1px solid var(--accent);border-radius:8px;
+  background:var(--accent-soft);}
+.ai-er-kutu .hint{margin:0 0 8px;}
+.ai-er-kutu input{width:100%;box-sizing:border-box;background:var(--bg);border:1px solid var(--line);
+  color:var(--text);padding:9px 10px;font:500 13px 'IBM Plex Mono',monospace;border-radius:5px;}
+.ai-er-alt{margin-top:14px;}
+.yedek-liste .ai-er-sol{display:flex;flex-direction:column;gap:2px;min-width:0;}
+.yedek-liste .ai-er-sol .yedek-gun{overflow:hidden;text-overflow:ellipsis;white-space:nowrap;}
+.yedek-liste .ai-er-sol small{font-size:11.5px;color:var(--text-dim);}
+.yedek-liste li.hint{border:0;padding:4px 0;}
+.imp-paket-ipucu{margin:-4px 0 10px;}
 /* Silme bolumu gorsel olarak da ayri: yanlislikla basilan bir dugme degil. */
 .hesap-tehlike{margin-top:16px;padding:14px;border:1px solid var(--red);
   border-radius:10px;background:color-mix(in srgb, var(--red) 7%, transparent);}
@@ -3025,6 +3044,8 @@ textarea.sc-ai-brief{min-height:64px;resize:vertical;line-height:1.5;}
 2026-09-10	09:00	Instagram	Mosaics — teaser"></textarea>
     </div>
 
+    <p class="hint imp-paket-ipucu"><span data-i18n="imp_paket_ipucu">An AI package (JSON) works here too — ask your AI for one with the card at</span> <a href="ai/" target="_blank" rel="noopener">shootboard.app/ai</a></p>
+
     <div class="sc-blok" id="imp_eslesBlok" hidden>
       <div class="sc-blok-bas"><span data-i18n="imp_step2">2 · Which column is what?</span></div>
       <div class="imp-esles" id="imp_esles"></div>
@@ -3037,6 +3058,11 @@ textarea.sc-ai-brief{min-height:64px;resize:vertical;line-height:1.5;}
       </div>
       <div class="imp-onizleme" id="imp_onizleme"></div>
       <p class="hint" id="imp_uyari"></p>
+    </div>
+
+    <div class="sc-blok" id="imp_aiBlok" hidden>
+      <div class="sc-blok-bas"><span data-i18n="ai_er_aktarimlar">Recent AI imports</span></div>
+      <ul class="yedek-liste" id="imp_aiListe"></ul>
     </div>
 
     <div class="ai-status" id="imp_durum"></div>
@@ -3825,6 +3851,32 @@ textarea.sc-ai-brief{min-height:64px;resize:vertical;line-height:1.5;}
       <ul class="yedek-liste" id="yedekListe"></ul>
     </div>
 
+    <!-- AI erisimi: anahtar uretme/iptal, asistan karti, son aktarimlar,
+         buluttan yenileme. Anahtarin duz metni yalnizca bu ekranda ve bir
+         kez gorunur; buluta SHA-256 ozeti gider. -->
+    <div class="hesap-satir hesap-satir-dikey" id="hesapAi">
+      <div>
+        <div class="hesap-ad" data-i18n="ai_er_baslik">AI access</div>
+        <p class="hint hesap-not" data-i18n="ai_er_not">Let ChatGPT, Claude or any other AI add plans and scripts to this account and read what is here. Paste the assistant card into the chat first; give it a key only if it should write directly.</p>
+      </div>
+      <div class="ai-er-dugmeler">
+        <button type="button" class="btn" id="aiKartKopyala" data-i18n="ai_er_kart">Copy assistant card</button>
+        <button type="button" class="btn btn-primary" id="aiAnahtarYeni" data-i18n="ai_er_yeni">New key</button>
+        <button type="button" class="btn" id="aiYenile" data-i18n="ai_er_yenile">Refresh from cloud</button>
+      </div>
+      <div class="ai-er-kutu" id="aiAnahtarKutusu" hidden>
+        <p class="hint" data-i18n="ai_er_bir_kez">This key is shown once. Copy it now and give it to the AI; it is not stored here.</p>
+        <div class="sifre-satir">
+          <input type="text" id="aiAnahtarMetin" readonly spellcheck="false" autocomplete="off">
+          <button type="button" class="btn sifre-goz" id="aiAnahtarKopyala" data-i18n="ai_er_kopyala">Copy</button>
+        </div>
+      </div>
+      <ul class="yedek-liste" id="aiAnahtarListe"></ul>
+      <div class="ai-status" id="aiAnahtarDurum"></div>
+      <div class="hesap-ad ai-er-alt" data-i18n="ai_er_aktarimlar">Recent AI imports</div>
+      <ul class="yedek-liste" id="aiAktarimListe"></ul>
+    </div>
+
     <!-- Geri donusu yok: ayri bir bolumde, kirmizi cerceveli. -->
     <div class="hesap-tehlike">
       <div class="hesap-ad" data-i18n="hesap_sil_baslik">Delete your account</div>
@@ -4094,6 +4146,50 @@ const LANG = {
     hesap_sil_calisiyor: "Deleting...",
     hesap_sil_kismi: "Your content is deleted \u2014 calendar, projects, ideas, scripts, places, settings and files are gone from the server. Your sign-in record could not be removed automatically; write to us from Feedback and we will finish it.",
     hesap_sil_err: "The account could not be deleted right now and your data is still there. Please try again \u2014 if it keeps failing, write to us from Feedback.",
+    // AI erisimi
+    ai_er_baslik: "AI access",
+    ai_er_not: "Let ChatGPT, Claude or any other AI add plans and scripts to this account and read what is here. Paste the assistant card into the chat first; give it a key only if it should write directly.",
+    ai_er_kart: "Copy assistant card",
+    ai_er_kart_kopyalandi: "Assistant card copied. Paste it at the top of your AI chat.",
+    ai_er_kart_hata: "Could not copy — the card opened in a new tab instead.",
+    ai_er_yeni: "New key",
+    ai_er_etiket_sor: "What is this key for? A name you will recognise in the list.",
+    ai_er_bir_kez: "This key is shown once. Copy it now and give it to the AI; it is not stored here.",
+    ai_er_kopyala: "Copy",
+    ai_er_kopyalandi: "Key copied.",
+    ai_er_bos: "No keys yet. A key lets an AI write to this account directly; pasting a package needs none.",
+    ai_er_kurulmadi: "AI access is not set up on the server yet (sql/35). Pasting a package into Import still works.",
+    ai_er_giris: "Sign in first.",
+    ai_er_olusturuldu: (d)=> `created ${d}`,
+    ai_er_son: (d)=> `last used ${d}`,
+    ai_er_hic: "never used",
+    ai_er_iptal: "Revoke",
+    ai_er_iptal_sor: (ad)=> `Revoke “${ad}”? Anything using it stops working right away.`,
+    ai_er_iptal_edildi: "Key revoked.",
+    ai_er_aktarimlar: "Recent AI imports",
+    ai_er_aktarim_yok: "Nothing imported by an AI yet.",
+    ai_er_geri_al: "Undo",
+    ai_er_geri_al_sor: (n)=> `Undo this import? ${n} added item${n===1?'':'s'} will be removed and changed ones restored.`,
+    ai_er_geri_alindi: "Import undone.",
+    ai_er_geri_alinmis: "undone",
+    ai_er_yenile: "Refresh from cloud",
+    ai_er_yenilendi: "Refreshed from the cloud.",
+    ai_er_bekleyen: "Some changes have not reached the cloud yet; try again in a moment.",
+    ai_rozet: (k)=> `Added by ${k}`,
+    ai_uyari_proje: (ad)=> `Project “${ad}” not found — added without a project.`,
+    ai_uyari_mekan: (ad)=> `Place “${ad}” not found — that stop was skipped.`,
+    ai_say_entries: (n)=> `${n} entr${n===1?'y':'ies'}`,
+    ai_say_projects: (n)=> `${n} project${n===1?'':'s'}`,
+    ai_say_places: (n)=> `${n} place${n===1?'':'s'}`,
+    ai_say_scripts: (n)=> `${n} script${n===1?'':'s'}`,
+    ai_say_ideas: (n)=> `${n} idea${n===1?'':'s'}`,
+    imp_paket_ipucu: "An AI package (JSON) works here too — ask your AI for one with the card at",
+    imp_paket_kaynak: (k)=> `AI package from ${k}`,
+    imp_paket_bos: "The package has nothing to import.",
+    imp_paket_onay: (m)=> `${m} will be added. Existing projects and places with the same name are updated; nothing is replaced.`,
+    imp_paket_done: (m)=> `Imported: ${m}.`,
+    imp_paket_uyari: (n)=> `${n} warning${n===1?'':'s'}`,
+    imp_paket_yuklenemedi: "The package checker could not be loaded (offline?). Try again.",
     sifre_saving: "Saving...",
     sifre_ok: "Password saved. You can now sign in with your email and this password.",
     sifre_err: "Could not save the password. Try again in a moment.",
@@ -4896,6 +4992,50 @@ const LANG = {
     hesap_sil_calisiyor: "Siliniyor...",
     hesap_sil_kismi: "İçeriğin silindi — takvimin, projelerin, fikirlerin, scriptlerin, mekanların, ayarların ve dosyaların sunucudan kaldırıldı. Giriş kaydın kendiliğinden silinemedi; Geri Bildirim'den bize yaz, biz tamamlayalım.",
     hesap_sil_err: "Hesap şu anda silinemedi, verilerin duruyor. Lütfen tekrar dene — sürerse Geri Bildirim'den bize yaz.",
+    // AI erisimi
+    ai_er_baslik: "AI erişimi",
+    ai_er_not: "ChatGPT, Claude ya da başka bir yapay zekâ bu hesaba plan ve script eklesin, buradakileri okusun. Önce asistan kartını sohbete yapıştır; anahtarı yalnızca doğrudan yazması gerekiyorsa ver.",
+    ai_er_kart: "Asistan kartını kopyala",
+    ai_er_kart_kopyalandi: "Asistan kartı kopyalandı. AI sohbetinin başına yapıştır.",
+    ai_er_kart_hata: "Kopyalanamadı — kart yeni sekmede açıldı.",
+    ai_er_yeni: "Yeni anahtar",
+    ai_er_etiket_sor: "Bu anahtar ne için? Listede tanıyacağın bir ad.",
+    ai_er_bir_kez: "Bu anahtar bir kez gösterilir. Şimdi kopyala ve AI'ya ver; burada saklanmaz.",
+    ai_er_kopyala: "Kopyala",
+    ai_er_kopyalandi: "Anahtar kopyalandı.",
+    ai_er_bos: "Henüz anahtar yok. Anahtar, AI'nın bu hesaba doğrudan yazmasını sağlar; paket yapıştırmak için gerekmez.",
+    ai_er_kurulmadi: "AI erişimi sunucuda henüz kurulmadı (sql/35). İçe Aktar'a paket yapıştırmak yine çalışır.",
+    ai_er_giris: "Önce giriş yap.",
+    ai_er_olusturuldu: (d)=> `${d} oluşturuldu`,
+    ai_er_son: (d)=> `son kullanım ${d}`,
+    ai_er_hic: "hiç kullanılmadı",
+    ai_er_iptal: "İptal et",
+    ai_er_iptal_sor: (ad)=> `“${ad}” iptal edilsin mi? Onu kullanan her şey hemen durur.`,
+    ai_er_iptal_edildi: "Anahtar iptal edildi.",
+    ai_er_aktarimlar: "Son AI aktarımları",
+    ai_er_aktarim_yok: "Henüz bir AI aktarımı yok.",
+    ai_er_geri_al: "Geri al",
+    ai_er_geri_al_sor: (n)=> `Bu aktarım geri alınsın mı? Eklenen ${n} öğe silinir, değişenler eski haline döner.`,
+    ai_er_geri_alindi: "Aktarım geri alındı.",
+    ai_er_geri_alinmis: "geri alındı",
+    ai_er_yenile: "Buluttan yenile",
+    ai_er_yenilendi: "Buluttan yenilendi.",
+    ai_er_bekleyen: "Bazı değişiklikler henüz buluta gitmedi; az sonra tekrar dene.",
+    ai_rozet: (k)=> `${k} ekledi`,
+    ai_uyari_proje: (ad)=> `“${ad}” projesi bulunamadı — projesiz eklendi.`,
+    ai_uyari_mekan: (ad)=> `“${ad}” mekanı bulunamadı — o durak atlandı.`,
+    ai_say_entries: (n)=> `${n} kayıt`,
+    ai_say_projects: (n)=> `${n} proje`,
+    ai_say_places: (n)=> `${n} mekan`,
+    ai_say_scripts: (n)=> `${n} script`,
+    ai_say_ideas: (n)=> `${n} fikir`,
+    imp_paket_ipucu: "AI paketi (JSON) de buraya yapıştırılır — AI'dan istemek için kart:",
+    imp_paket_kaynak: (k)=> `${k} paketi`,
+    imp_paket_bos: "Pakette alınacak bir şey yok.",
+    imp_paket_onay: (m)=> `${m} eklenecek. Aynı adlı proje ve mekanlar güncellenir; hiçbir şey silinmez.`,
+    imp_paket_done: (m)=> `Alındı: ${m}.`,
+    imp_paket_uyari: (n)=> `${n} uyarı`,
+    imp_paket_yuklenemedi: "Paket denetleyicisi yüklenemedi (çevrimdışı?). Tekrar dene.",
     sifre_saving: "Kaydediliyor...",
     sifre_ok: "Şifre kaydedildi. Artık e-postan ve bu şifreyle girebilirsin.",
     sifre_err: "Şifre kaydedilemedi. Biraz sonra tekrar dene.",
@@ -6575,7 +6715,7 @@ function renderProjects(){
       <th class="pname-col" scope="row">
         <div class="pn-ad">
           <button type="button" class="pname" data-proj-edit="${escapeHtml(p.id)}"
-                  title="${escapeHtml(p.name)}">${escapeHtml(p.name)}</button>${rozet}
+                  title="${escapeHtml(p.name)}">${escapeHtml(p.name)}</button>${rozet}${aiRozet('projects', p.id)}
         </div>
         <!-- TEK satir: once dokunulabilir isaretler, sonra kirpilabilir
              metin. Boylece her satir ayni yukseklikte ve daralan sutunda
@@ -6898,6 +7038,7 @@ function fikirKartiHtml(f){
         <button type="button" class="fk-proj-chip ekle${bagli.length ? '' : ' bos'}" data-fk-projbtn="${escapeHtml(f.id)}"
                 title="${escapeHtml(t('fk_project_title'))}">${bagli.length ? '+' : escapeHtml(t('fk_no_project'))}</button>
       </span>
+      ${aiRozet('ideas', f.id)}
       <button type="button" class="fk-x" data-fk-del="${escapeHtml(f.id)}"
               title="${escapeHtml(t('fk_remove'))}" aria-label="${escapeHtml(t('fk_remove'))}">
         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"
@@ -7648,7 +7789,7 @@ function renderMekanlar(){
     return `<div class="mk-kart" data-mk="${escapeHtml(m.id)}">
       <div class="mk-gorsel">${mekanGorseli(m)}</div>
       <div class="mk-govde">
-        <div class="mk-ad">${escapeHtml(mekanAdi(m))}</div>
+        <div class="mk-ad">${escapeHtml(mekanAdi(m))}${aiRozet('places', m.id)}</div>
         ${yer ? `<div class="mk-yer">${escapeHtml(yer)}</div>` : ''}
         ${m.address ? `<div class="mk-adres">${escapeHtml(m.address)}</div>` : ''}
         <div class="mk-rozetler">
@@ -8002,7 +8143,7 @@ function renderScriptler(){
   kap.innerHTML = liste.map(sc=>{
     const p = sc.projectId ? projectById(sc.projectId) : null;
     return `<button type="button" class="sc-card" data-sc-open="${escapeHtml(sc.id)}">
-      <span class="sc-card-name">${escapeHtml(scriptAdi(sc))}</span>
+      <span class="sc-card-name">${escapeHtml(scriptAdi(sc))}${aiRozet('scripts', sc.id)}</span>
       <span class="sc-card-meta">
         ${p ? `<span class="sc-card-proj">${escapeHtml(p.name)}</span>`
             : `<span class="sc-card-proj bos">${escapeHtml(t('fk_no_project'))}</span>`}
@@ -12101,7 +12242,7 @@ function hgChip(ev){
   chip.title = (ev.title || '') + ' · ' + (ev.time || '') + ' · ' + CAL_SM_NAMES[ev.platform];
   chip.innerHTML =
     `<span class="cal-pico" style="color:${CAL_SM_COLORS[ev.platform]}">${PLATFORM_ICONS[ev.platform]||''}</span>` +
-    `<span class="cal-badge">${escapeHtml(typeLabel(ev.type))}</span>` +
+    `<span class="cal-badge">${escapeHtml(typeLabel(ev.type))}</span>` + aiRozet('entries', ev.id) +
     `<span class="cal-time">${escapeHtml(ev.time||'')}</span>` +
     `<span class="cal-chip-title">${escapeHtml(ev.title||'')}</span>`;
   suruklenebilirYap(chip, ev);
@@ -12409,7 +12550,7 @@ function renderCal(){
       // Renk platformu, etiket tipi anlatir: isaret hem kimligi hem rengi tasidigi
       // icin ayri bir renk cubuguna gerek kalmiyor.
       chip.innerHTML = `<span class="cal-pico" style="color:${CAL_SM_COLORS[ev.platform]}" title="${CAL_SM_NAMES[ev.platform]}">${PLATFORM_ICONS[ev.platform]||''}</span>
-        <span class="cal-badge">${escapeHtml(typeLabel(ev.type))}</span>
+        <span class="cal-badge">${escapeHtml(typeLabel(ev.type))}</span>${aiRozet('entries', ev.id)}
         <span class="cal-time">${escapeHtml(ev.time||'')}</span>${
           (ev.content && gecerliTz(ev.content.timezone) && ev.content.timezone !== yerelTz())
             ? `<span class="cal-tz" title="${escapeHtml(ev.content.timezone)}">${escapeHtml(tzFark(ev.content.timezone) || ev.content.timezone.split('/').pop())}</span>` : ''}
@@ -14251,7 +14392,7 @@ function showPendingPopup(autoMode){
     return `<tr class="pending-row ${p.overdue?'pending-overdue':''}" data-id="${escapeHtml(ev.id)}">
       <td>${p.overdue ? '🔴' : '🕒'} ${escapeHtml(ev.date)} ${escapeHtml(ev.time||'')}</td>
       <td><span class="cal-pico" style="color:${CAL_SM_COLORS[ev.platform]};display:inline-block;vertical-align:-3px;">${PLATFORM_ICONS[ev.platform]||''}</span> <span class="cal-badge">${escapeHtml(typeLabel(ev.type))}</span> ${escapeHtml(CAL_SM_NAMES[ev.platform]||'')}</td>
-      <td>${escapeHtml(ev.title||'')}</td>
+      <td>${escapeHtml(ev.title||'')}${aiRozet('entries', ev.id)}</td>
     </tr>`;
   }).join('');
 
@@ -14298,6 +14439,624 @@ document.addEventListener('keydown', (e)=>{
 // tarih eski kalir, boylece "guncel mi?" sorusu bakarak cevaplanir.
 const BUILD_STAMP = '2026-09-08 10:18 UTC';
 document.getElementById('buildId').textContent = BUILD_STAMP;
+
+// ===== AI erişimi =====
+// Herhangi bir yapay zeka (ChatGPT, Claude...) kullanicinin planini
+// Shootboard'a aktarabilsin. Iki yol:
+//   1) Paket yapistirma: AI'nin verdigi JSON, Ice Aktar penceresine
+//      yapistiriliyor. Anahtar gerekmiyor, giris bile sart degil.
+//   2) API anahtari: Hesabim > AI erisimi'nden uretilen shb_ anahtariyla AI
+//      dogrudan yaziyor ve okuyor (supabase/functions/ai).
+// Iki yol da AYNI dogrulamadan geciyor: supabase/functions/ai/dogrula.js
+// sunucuda da tarayicida da (dinamik import) ayni dosya. Iki yol ayni
+// deftere yaziyor (yerelde demo_ai_defter, hesapta ai_aktarimlar):
+// "AI ekledi" rozeti ve "geri al" bu defterden calisiyor. Biçim: ai/sema.json.
+const AI_DEFTER_KEY = 'demo_ai_defter';
+const AI_API_KOK = SUPABASE_URL + '/functions/v1/ai';
+const AI_TABLO = { entries: 'calendar_events', projects: 'projects', places: 'places', scripts: 'scripts', ideas: 'ideas' };
+const AI_DEFTER_SUTUNU = { entries: 'kayitlar', projects: 'projeler', places: 'mekanlar', scripts: 'scriptler', ideas: 'fikirler' };
+const AI_LISTELER = ['entries', 'projects', 'places', 'scripts', 'ideas'];
+let aiDefter = [];              // [{id, created_at, kaynak, ozet, kayitlar, projeler, mekanlar, scriptler, fikirler, onceki, geri_alindi_at}]
+let aiEklenenler = new Set();   // "entries:<id>" — rozet icin hizli bakis
+let aiDogrulaSozu = null;
+let aiDefterBulutVar = null;    // null: bilinmiyor, false: sql/35 calistirilmamis
+
+function aiDefterKey(){ return session ? AI_DEFTER_KEY + '_' + session.user.id : AI_DEFTER_KEY; }
+// Dogrulama modulu bir kez yukleniyor; sunucuyla ayni dosya.
+function aiDogrulaYukle(){
+  if(!aiDogrulaSozu) aiDogrulaSozu = import('./supabase/functions/ai/dogrula.js').catch(e=>{ aiDogrulaSozu = null; throw e; });
+  return aiDogrulaSozu;
+}
+function aiRozetleriHesapla(){
+  aiEklenenler = new Set();
+  aiDefter.forEach(d=>{
+    if(d.geri_alindi_at) return;
+    AI_LISTELER.forEach(liste=>{ (d[AI_DEFTER_SUTUNU[liste]] || []).forEach(id=> aiEklenenler.add(liste + ':' + id)); });
+  });
+}
+// Kartlarda kucuk "AI" rozeti: bu oge bir yapay zeka aktarimiyla geldi ya
+// da degisti. Ilk cizim bu blok calismadan once oldugu icin liste 'let'
+// degil; bos kume ile basliyor ve defter okununca doluyor.
+function aiRozet(liste, id){
+  if(!aiEklenenler.has(liste + ':' + id)) return '';
+  const d = aiDefter.find(x=> !x.geri_alindi_at && (x[AI_DEFTER_SUTUNU[liste]] || []).indexOf(id) !== -1);
+  const kaynak = (d && d.kaynak) ? d.kaynak : 'AI';
+  return `<span class="ai-rozet" title="${escapeHtml(t('ai_rozet')(kaynak))}">AI</span>`;
+}
+function aiDefteriYerelOku(){
+  try{
+    const d = JSON.parse(localStorage.getItem(aiDefterKey()) || 'null');
+    aiDefter = Array.isArray(d) ? d.filter(x=> x && typeof x.id === 'string') : [];
+  }catch(e){ aiDefter = []; }
+  aiRozetleriHesapla();
+}
+function aiDefteriYerelYaz(){
+  aiDefter.sort((a, b)=> String(b.created_at || '').localeCompare(String(a.created_at || '')));
+  aiDefter = aiDefter.slice(0, 30);
+  try{ localStorage.setItem(aiDefterKey(), JSON.stringify(aiDefter)); }catch(e){ kotaHatasi(e); }
+  aiRozetleriHesapla();
+}
+function aiTabloYok(err){ return /does not exist|schema cache|relation/i.test(String((err && err.message) || '')); }
+// Hesabin defteri: API ile yapilan aktarimlar yalnizca bulutta. Yerel ile
+// kimlik uzerinden birlesiyor; bulut esas. Tablo yoksa yerelle yetiniliyor.
+async function aiDefteriOku(){
+  aiDefteriYerelOku();
+  if(sb && session){
+    try{
+      const { data, error } = await sb.from('ai_aktarimlar')
+        .select('id,created_at,kaynak,ozet,kayitlar,projeler,mekanlar,scriptler,fikirler,onceki,geri_alindi_at')
+        .order('created_at', { ascending: false }).limit(30);
+      if(error) throw error;
+      aiDefterBulutVar = true;
+      const harita = {};
+      aiDefter.forEach(d=>{ harita[d.id] = d; });
+      (Array.isArray(data) ? data : []).forEach(d=>{ harita[d.id] = d; });
+      aiDefter = Object.values(harita);
+      aiDefteriYerelYaz();
+    }catch(err){
+      if(aiTabloYok(err)) aiDefterBulutVar = false;
+      else console.warn('[ai] defter okunamadi', err);
+    }
+  }
+  ekraniTazele(); renderCal();
+}
+async function aiDefteriBulutaYaz(d){
+  if(!sb || !session || aiDefterBulutVar === false) return;
+  try{
+    const { error } = await sb.from('ai_aktarimlar').insert(Object.assign({}, d, { user_id: session.user.id, key_id: null }));
+    if(error) throw error;
+    aiDefterBulutVar = true;
+  }catch(err){
+    if(aiTabloYok(err)) aiDefterBulutVar = false;
+    else console.warn('[ai] defter yazilamadi', err);
+  }
+}
+function aiSayilarMetni(say){
+  return AI_LISTELER.filter(k=> say[k]).map(k=> t('ai_say_' + k)(say[k])).join(', ');
+}
+
+// ---- Paketi yerel listelere isleme -----------------------------------
+// Sunucudaki aktar() ile ayni kurallar: mekan ve proje ADA gore eslesir ve
+// guncellenir; kayit, script, fikir yalnizca kimlikle guncellenir, yoksa
+// eklenir. Paketin sustugu alan ezilmez. Her sey once sayilir: sinir
+// asilacaksa hicbir sey yazilmaz.
+async function aiPaketiUygula(cozum, kaynakEk){
+  const { basvuruCoz } = await aiDogrulaYukle();
+  const uid = session ? session.user.id : 'yerel';
+  const uyarilar = cozum.hatalar.map(h=> (h.liste ? h.liste + (h.sira >= 0 ? '[' + h.sira + ']' : '') + ' · ' : '') + (h.alan ? h.alan + ': ' : '') + h.sebep);
+  const yaratilan = { entries: [], projects: [], places: [], scripts: [], ideas: [] };
+  const guncellenen = { entries: [], projects: [], places: [], scripts: [], ideas: [] };
+  const onceki = {};
+  const sakla = (liste, satir)=>{ (onceki[AI_TABLO[liste]] = onceki[AI_TABLO[liste]] || []).push(satir); };
+  const say = o=>{ const c = {}; AI_LISTELER.forEach(k=>{ c[k] = o[k].length; }); return c; };
+
+  // Sinirlar: yeni sayilacak olanlar (ada/kimlige gore eslesenler haric).
+  const yeniMekan  = cozum.places.filter(m=> !(m.id && mekanById(m.id)) && !basvuruCoz(m.name, mekanlar)).length;
+  const yeniProje  = cozum.projects.filter(p=> !(p.id && projectById(p.id)) && !basvuruCoz(p.name, projects)).length;
+  const yeniKayit  = cozum.entries.filter(k=> !(k.id && events.some(e=> e.id === k.id))).length;
+  const yeniScript = cozum.scripts.filter(s=> !(s.id && scriptById(s.id))).length;
+  const yeniFikir  = cozum.ideas.filter(f=> !(f.id && fikirById(f.id))).length;
+  if(events.length + yeniKayit > MAX_ENTRIES)     return { ok: false, hata: t('imp_limit')(Math.max(0, MAX_ENTRIES - events.length), yeniKayit) };
+  if(projects.length + yeniProje > MAX_PROJECTS)  return { ok: false, hata: t('p_limit')(MAX_PROJECTS) };
+  if(mekanlar.length + yeniMekan > MEKAN_ADET)    return { ok: false, hata: t('mk_limit')(MEKAN_ADET) };
+  if(scriptler.length + yeniScript > SCRIPT_ADET) return { ok: false, hata: t('sc_limit')(SCRIPT_ADET) };
+  if(fikirler.length + yeniFikir > FIKIR_ADET)    return { ok: false, hata: t('fk_limit')(FIKIR_ADET) };
+
+  const projeBul = (ref)=>{
+    if(!ref) return null;
+    const p = basvuruCoz(ref, projects);
+    if(!p) uyarilar.push(t('ai_uyari_proje')(ref));
+    return p;
+  };
+  const projeListesi = (refs)=>{
+    if(!refs) return undefined;
+    const ids = [];
+    refs.forEach(ref=>{ const p = projeBul(ref); if(p && ids.indexOf(p.id) === -1) ids.push(p.id); });
+    return ids;
+  };
+
+  // -- mekanlar
+  cozum.places.forEach(m=>{
+    let eski = m.id ? mekanById(m.id) : null;
+    if(!eski) eski = basvuruCoz(m.name, mekanlar);
+    const alanlar = Object.assign({}, m); delete alanlar.id; delete alanlar.sira;
+    if(m.lat !== undefined && m.lon !== undefined) alanlar.source = 'manual';
+    if(eski){
+      sakla('places', mekanRowYap(eski, uid));
+      if(mekanGuncelle(eski.id, alanlar)) guncellenen.places.push(eski.id);
+    }else{
+      const yeni = mekanTemizle(Object.assign({}, alanlar, m.id ? { id: m.id } : {}));
+      if(!yeni) return;
+      mekanlar.push(yeni); mekanDirty.add(yeni.id);
+      yaratilan.places.push(yeni.id);
+    }
+  });
+  if(cozum.places.length) saveMekanlar();
+
+  // -- projeler
+  cozum.projects.forEach(p=>{
+    let eski = p.id ? projectById(p.id) : null;
+    if(!eski) eski = basvuruCoz(p.name, projects);
+    const alanlar = Object.assign({}, p);
+    ['id', 'sira', 'placeRefs', 'steps', 'deadlines'].forEach(k=>{ delete alanlar[k]; });
+    if(p.placeRefs){
+      alanlar.placeIds = [];
+      p.placeRefs.forEach(ref=>{
+        const m = basvuruCoz(ref, mekanlar);
+        if(m){ if(alanlar.placeIds.indexOf(m.id) === -1) alanlar.placeIds.push(m.id); }
+        else uyarilar.push(t('ai_uyari_mekan')(ref));
+      });
+      alanlar.placeId = alanlar.placeIds[0] || '';
+    }
+    if(p.steps) Object.keys(p.steps).forEach(k=>{ alanlar[k] = p.steps[k]; });
+    if(eski){
+      sakla('projects', projToRow(eski, uid));
+      const birlesik = Object.assign({}, eski, alanlar);
+      if(p.deadlines) birlesik.deadlines = Object.assign({}, eski.deadlines || {}, p.deadlines);
+      const temiz = sanitizeProject(birlesik);
+      if(temiz){ Object.assign(eski, temiz); projDirtyIsaretle(eski.id); guncellenen.projects.push(eski.id); }
+    }else{
+      const temiz = sanitizeProject(Object.assign({ deadlines: p.deadlines || {} }, alanlar, p.id ? { id: p.id } : {}));
+      if(!temiz) return;
+      projects.push(temiz); projDirtyIsaretle(temiz.id);
+      yaratilan.projects.push(temiz.id);
+    }
+  });
+  if(cozum.projects.length) saveProjects();
+
+  // -- kayitlar
+  cozum.entries.forEach(k=>{
+    const eski = k.id ? events.find(e=> e.id === k.id) : null;
+    const proje = projeBul(k.projectRef);
+    const icerik = Object.assign({}, k.content || {});
+    // Proje bulunamazsa concept de BOS kaliyor: dolu olsaydi projeleriGocur
+    // bir sonraki acilista o addan sessizce proje uretirdi (defter disi,
+    // geri alinamaz). Uyari zaten soyleniyor.
+    if(k.projectRef !== undefined){
+      icerik.projectId = proje ? proje.id : '';
+      icerik.concept = proje ? proje.name : '';
+    }
+    const alanlar = { type: k.type, platform: k.platform, title: k.title, date: k.date, time: k.time, uploaded: k.uploaded };
+    Object.keys(alanlar).forEach(kk=>{ if(alanlar[kk] === undefined) delete alanlar[kk]; });
+    if(eski){
+      sakla('entries', toRow(eski, uid));
+      const temiz = sanitizeEvent(Object.assign({}, eski, alanlar, { content: Object.assign({}, eski.content || {}, icerik) }));
+      if(temiz){ Object.assign(eski, temiz); markDirty(eski.id); guncellenen.entries.push(eski.id); }
+    }else{
+      const temiz = sanitizeEvent(Object.assign({ id: k.id || newId(), uploaded: false }, alanlar, { content: icerik }));
+      if(!temiz) return;
+      events.push(temiz); markDirty(temiz.id);
+      yaratilan.entries.push(temiz.id);
+    }
+  });
+  if(cozum.entries.length) save();
+
+  // -- scriptler
+  cozum.scripts.forEach(s=>{
+    const eski = s.id ? scriptById(s.id) : null;
+    const pids = projeListesi(s.projectRefs);
+    if(eski){
+      sakla('scripts', scriptRowYap(eski, uid));
+      const alanlar = { source: 'ai', updatedAt: Date.now() };
+      if(s.title !== undefined) alanlar.title = s.title;
+      if(s.text !== undefined) alanlar.text = s.text;
+      if(pids !== undefined){ alanlar.projectIds = pids; alanlar.projectId = pids[0] || ''; }
+      const temiz = scriptTemizle(Object.assign({}, eski, alanlar));
+      if(temiz){ Object.assign(eski, temiz); scriptDirty.add(eski.id); guncellenen.scripts.push(eski.id); }
+    }else{
+      const temiz = scriptTemizle({ id: s.id, title: s.title || '', text: s.text || '', source: 'ai',
+                                    projectIds: pids || [], projectId: (pids || [])[0] || '' });
+      if(!temiz) return;
+      const oncedenVardi = projeninScriptiVarMi(temiz.projectId, temiz.id);
+      scriptler.unshift(temiz); scriptDirty.add(temiz.id);
+      yaratilan.scripts.push(temiz.id);
+      scriptAdimiIsaretle(temiz, oncedenVardi);
+    }
+  });
+  if(cozum.scripts.length) saveScriptler();
+
+  // -- fikirler
+  cozum.ideas.forEach(f=>{
+    const eski = f.id ? fikirById(f.id) : null;
+    const pids = projeListesi(f.projectRefs);
+    if(eski){
+      sakla('ideas', fikirRowYap(eski, uid));
+      const alanlar = { text: f.text, due: f.due, done: f.done };
+      if(pids !== undefined) alanlar.projectIds = pids;
+      Object.keys(alanlar).forEach(kk=>{ if(alanlar[kk] === undefined) delete alanlar[kk]; });
+      fikirGuncelle(eski.id, alanlar);
+      guncellenen.ideas.push(eski.id);
+    }else{
+      const temiz = fikirTemizle({ id: f.id, text: f.text, projectIds: pids || [], projectId: (pids || [])[0] || '',
+                                   due: f.due || '', done: f.done === true, sort: enKucukSira() - 1 });
+      if(!temiz) return;
+      fikirler.unshift(temiz); fikirDirty.add(temiz.id);
+      yaratilan.ideas.push(temiz.id);
+    }
+  });
+  if(cozum.ideas.length) saveFikirler();
+
+  // -- defter
+  const d = {
+    id: 'ak_' + Date.now().toString(36) + '_' + Math.random().toString(36).slice(2, 8),
+    created_at: new Date().toISOString(),
+    kaynak: cozum.source || kaynakEk || '',
+    ozet: { note: cozum.note || '', created: say(yaratilan), updated: say(guncellenen), warnings: uyarilar.length, yerel: true },
+    onceki, geri_alindi_at: null
+  };
+  AI_LISTELER.forEach(k=>{ d[AI_DEFTER_SUTUNU[k]] = yaratilan[k].concat(guncellenen[k]); });
+  aiDefter.unshift(d);
+  aiDefteriYerelYaz();
+  aiDefteriBulutaYaz(d);
+  ekraniTazele(); renderCal();
+  const toplam = AI_LISTELER.reduce((n, k)=> n + yaratilan[k].length + guncellenen[k].length, 0);
+  const sayilar = say(yaratilan); AI_LISTELER.forEach(k=>{ sayilar[k] += guncellenen[k].length; });
+  return { ok: true, id: d.id, toplam, sayilar, uyarilar };
+}
+
+// ---- Geri alma -------------------------------------------------------
+// Eklenenler siliniyor, guncellenenler defterdeki onceki (satir bicimli)
+// haline donuyor. Silme normal yollardan gidiyor ki bulut kuyrugu ve
+// baglar (mekan-proje, proje-kayit) ayni sekilde temizlensin.
+function aiOgeSil(liste, id){
+  if(liste === 'entries'){
+    const i = events.findIndex(e=> e.id === id);
+    if(i >= 0){ events.splice(i, 1); markRemoved(id); }
+  }else if(liste === 'projects'){
+    if(!projectById(id)) return;
+    projeIcinKayitlar(id).forEach(e=>{ delete e.content.projectId; delete e.content.concept; markDirty(e.id); });
+    projects = projects.filter(x=> x.id !== id);
+    projSilindiIsaretle(id);
+  }else if(liste === 'places'){ mekanSil(id); }
+  else if(liste === 'scripts'){ scriptSil(id); }
+  else if(liste === 'ideas'){ fikirSil(id); }
+}
+function aiOgeGeriYaz(liste, satir){
+  const okuyucu = { entries: r=> sanitizeEvent(fromRow(r)), projects: projFromRow, places: mekanRowOku, scripts: scriptRowOku, ideas: fikirRowOku };
+  let nesne = null;
+  try{ nesne = okuyucu[liste](satir); }catch(e){ nesne = null; }
+  if(!nesne) return;
+  const yerlestir = (dizi, kirli)=>{
+    const i = dizi.findIndex(x=> x.id === nesne.id);
+    if(i >= 0) Object.assign(dizi[i], nesne); else dizi.push(nesne);
+    kirli(nesne.id);
+  };
+  if(liste === 'entries') yerlestir(events, markDirty);
+  else if(liste === 'projects') yerlestir(projects, projDirtyIsaretle);
+  else if(liste === 'places') yerlestir(mekanlar, id=> mekanDirty.add(id));
+  else if(liste === 'scripts') yerlestir(scriptler, id=> scriptDirty.add(id));
+  else if(liste === 'ideas') yerlestir(fikirler, id=> fikirDirty.add(id));
+}
+function aiAktarimEklenenSayisi(d){
+  const onceki = (d.onceki && typeof d.onceki === 'object') ? d.onceki : {};
+  let n = 0;
+  AI_LISTELER.forEach(liste=>{
+    const eskiIds = new Set((onceki[AI_TABLO[liste]] || []).map(r=> r && r.id));
+    n += (d[AI_DEFTER_SUTUNU[liste]] || []).filter(x=> !eskiIds.has(x)).length;
+  });
+  return n;
+}
+async function aiAktarimiGeriAl(id){
+  const d = aiDefter.find(x=> x.id === id);
+  if(!d || d.geri_alindi_at) return false;
+  const onceki = (d.onceki && typeof d.onceki === 'object') ? d.onceki : {};
+  AI_LISTELER.forEach(liste=>{
+    const hepsi = Array.isArray(d[AI_DEFTER_SUTUNU[liste]]) ? d[AI_DEFTER_SUTUNU[liste]] : [];
+    const eskiler = Array.isArray(onceki[AI_TABLO[liste]]) ? onceki[AI_TABLO[liste]] : [];
+    const eskiIds = new Set(eskiler.map(r=> r && r.id));
+    hepsi.filter(x=> !eskiIds.has(x)).forEach(kimlik=> aiOgeSil(liste, kimlik));
+    eskiler.forEach(r=> aiOgeGeriYaz(liste, r));
+  });
+  save(); saveProjects(); saveMekanlar(); saveScriptler(); saveFikirler();
+  d.geri_alindi_at = new Date().toISOString();
+  aiDefteriYerelYaz();
+  if(sb && session && aiDefterBulutVar !== false){
+    try{ await sb.from('ai_aktarimlar').update({ geri_alindi_at: d.geri_alindi_at }).eq('id', d.id); }
+    catch(e){ console.warn('[ai] geri alma isareti yazilamadi', e); }
+  }
+  ekraniTazele(); renderCal();
+  return true;
+}
+// Son aktarimlar listesi: hem Ice Aktar penceresinde hem Hesabim'da.
+function aiAktarimlariCiz(kap, blok){
+  if(!kap) return;
+  const liste = aiDefter.slice(0, 5);
+  if(blok) blok.hidden = !liste.length;
+  if(!liste.length){ kap.innerHTML = `<li class="hint">${escapeHtml(t('ai_er_aktarim_yok'))}</li>`; return; }
+  kap.innerHTML = liste.map(d=>{
+    const ozet = d.ozet || {};
+    const sayilar = {};
+    AI_LISTELER.forEach(k=>{ sayilar[k] = ((ozet.created || {})[k] || 0) + ((ozet.updated || {})[k] || 0); });
+    const zaman = d.created_at ? new Date(d.created_at).toLocaleString(currentLang === 'tr' ? 'tr-TR' : 'en-US', { day: '2-digit', month: '2-digit', hour: '2-digit', minute: '2-digit' }) : '';
+    return `<li data-ai-aktarim="${escapeHtml(d.id)}">
+      <span class="ai-er-sol">
+        <span class="yedek-gun">${escapeHtml(zaman)} · ${escapeHtml(d.kaynak || 'AI')}${ozet.note ? ' · ' + escapeHtml(String(ozet.note).slice(0, 60)) : ''}</span>
+        <small>${escapeHtml(aiSayilarMetni(sayilar) || '—')}${ozet.warnings ? ' · ' + escapeHtml(t('imp_paket_uyari')(ozet.warnings)) : ''}</small>
+      </span>
+      ${d.geri_alindi_at
+        ? `<small>${escapeHtml(t('ai_er_geri_alinmis'))}</small>`
+        : `<button type="button" class="fk-mini" data-ai-geri="${escapeHtml(d.id)}">${escapeHtml(t('ai_er_geri_al'))}</button>`}
+    </li>`;
+  }).join('');
+}
+async function aiGeriAlTiklandi(e){
+  const btn = e.target.closest('[data-ai-geri]');
+  if(!btn) return;
+  const d = aiDefter.find(x=> x.id === btn.dataset.aiGeri);
+  if(!d) return;
+  if(!await onayla({ baslik: t('ai_er_geri_al'), govde: t('ai_er_geri_al_sor')(aiAktarimEklenenSayisi(d)), tamam: t('ai_er_geri_al'), tehlike: true })) return;
+  if(await aiAktarimiGeriAl(d.id)){
+    showToast(t('ai_er_geri_alindi'));
+    aiAktarimlariCiz(document.getElementById('imp_aiListe'), document.getElementById('imp_aiBlok'));
+    aiAktarimlariCiz(document.getElementById('aiAktarimListe'));
+  }
+}
+['imp_aiListe', 'aiAktarimListe'].forEach(id=>{
+  const el = document.getElementById(id);
+  if(el) el.addEventListener('click', aiGeriAlTiklandi);
+});
+
+// ---- Ice Aktar penceresi: paket yapistirma ----------------------------
+let impPaket = null;   // { ham, cozum, metin }
+// Yapistirilan metin bir paket mi? Kod citi (```json) de soyuluyor: AI
+// yanitindan kopyalanan metin cogu zaman onunla geliyor.
+function impPaketDene(metin){
+  let s = String(metin || '').trim().replace(/^```(?:json)?\s*/i, '').replace(/\s*```$/, '').trim();
+  if(!s.startsWith('{')) return null;
+  let ham;
+  try{ ham = JSON.parse(s); }catch(e){ return null; }
+  if(!ham || typeof ham !== 'object' || Array.isArray(ham)) return null;
+  const anahtarlar = ['shootboard', 'urun', 'entries', 'projects', 'places', 'scripts', 'ideas', 'kayitlar', 'projeler', 'mekanlar', 'scriptler', 'fikirler'];
+  return anahtarlar.some(k=> k in ham) ? ham : null;
+}
+async function impPaketCoz(ham, metin){
+  const d = document.getElementById('imp_durum');
+  try{
+    const m = await aiDogrulaYukle();
+    // Bu arada metin degistiyse sonuc bayat.
+    if(document.getElementById('imp_metin').value !== metin) return;
+    impPaket = { ham, cozum: m.paketiCoz(ham), metin, modul: m };
+    d.textContent = ''; d.className = 'ai-status';
+  }catch(e){
+    console.error('[ai] dogrulama modulu yuklenemedi', e);
+    impPaket = null;
+    d.textContent = t('imp_paket_yuklenemedi'); d.className = 'ai-status error';
+  }
+  impEkraniTazele();
+}
+function impPaketEkrani(){
+  const c = impPaket.cozum;
+  document.getElementById('imp_eslesBlok').hidden = true;
+  document.getElementById('imp_onizlemeBlok').hidden = false;
+  document.getElementById('imp_satirSay').textContent = t('imp_paket_kaynak')(c.source || 'AI');
+  const sayilar = {}; AI_LISTELER.forEach(k=>{ sayilar[k] = c[k].length; });
+  document.getElementById('imp_ozet').textContent = aiSayilarMetni(sayilar);
+  const satirlar = [];
+  c.entries.slice(0, 4).forEach(k=> satirlar.push(
+    `<div class="imp-sat"><span class="imp-t">${escapeHtml(k.date)}${k.time ? ' ' + escapeHtml(k.time) : ''}</span>
+       <span class="imp-p">${escapeHtml(CAL_SM_NAMES[k.platform] || k.platform)} · ${escapeHtml(typeName(k.type))}</span>
+       <span class="imp-b">${escapeHtml(k.title || '—')}</span>
+       ${k.projectRef ? `<span class="imp-pr">${escapeHtml(k.projectRef)}</span>` : ''}</div>`));
+  c.projects.slice(0, 3).forEach(p=> satirlar.push(`<div class="imp-sat"><span class="imp-p">${escapeHtml(t('ai_say_projects')(1))}</span><span class="imp-b">${escapeHtml(p.name)}</span></div>`));
+  c.places.slice(0, 3).forEach(m=> satirlar.push(`<div class="imp-sat"><span class="imp-p">${escapeHtml(t('ai_say_places')(1))}</span><span class="imp-b">${escapeHtml(m.name)}</span></div>`));
+  c.scripts.slice(0, 2).forEach(s=> satirlar.push(`<div class="imp-sat"><span class="imp-p">${escapeHtml(t('ai_say_scripts')(1))}</span><span class="imp-b">${escapeHtml(s.title || (s.text || '').slice(0, 60))}</span></div>`));
+  c.ideas.slice(0, 3).forEach(f=> satirlar.push(`<div class="imp-sat"><span class="imp-p">${escapeHtml(t('ai_say_ideas')(1))}</span><span class="imp-b">${escapeHtml(f.text.slice(0, 80))}</span></div>`));
+  document.getElementById('imp_onizleme').innerHTML = satirlar.join('') || `<p class="hint">${escapeHtml(t('imp_paket_bos'))}</p>`;
+  const uyarilar = c.hatalar.map(h=> (h.liste ? h.liste + (h.sira >= 0 ? '[' + h.sira + ']' : '') + ' · ' : '') + (h.alan ? h.alan + ': ' : '') + h.sebep);
+  // Bulunmayan proje ve mekan adlari daha uygulamadan soyleniyor: hesaptakiler
+  // + bu paketin kendi tanimladiklari araniyor.
+  const bul = impPaket.modul.basvuruCoz;
+  const projeAdaylari = projects.concat(c.projects.map(p=> ({ id: p.id || '', name: p.name })));
+  const mekanAdaylari = mekanlar.concat(c.places.map(m=> ({ id: m.id || '', name: m.name })));
+  const eksikProje = new Set(), eksikMekan = new Set();
+  c.entries.forEach(k=>{ if(k.projectRef && !bul(k.projectRef, projeAdaylari)) eksikProje.add(k.projectRef); });
+  c.scripts.concat(c.ideas).forEach(x=>{ (x.projectRefs || []).forEach(r=>{ if(!bul(r, projeAdaylari)) eksikProje.add(r); }); });
+  c.projects.forEach(p=>{ (p.placeRefs || []).forEach(r=>{ if(!bul(r, mekanAdaylari)) eksikMekan.add(r); }); });
+  eksikProje.forEach(ad=> uyarilar.push(t('ai_uyari_proje')(ad)));
+  eksikMekan.forEach(ad=> uyarilar.push(t('ai_uyari_mekan')(ad)));
+  document.getElementById('imp_uyari').textContent = uyarilar.length
+    ? t('imp_paket_uyari')(uyarilar.length) + ': ' + uyarilar.slice(0, 4).join(' — ') + (uyarilar.length > 4 ? ' …' : '')
+    : '';
+  document.getElementById('imp_uygula').disabled = !c.ok;
+}
+async function impPaketUygula(){
+  const c = impPaket.cozum;
+  if(!c.ok) return;
+  const d = document.getElementById('imp_durum');
+  const sayilar = {}; AI_LISTELER.forEach(k=>{ sayilar[k] = c[k].length; });
+  if(!await onayla({ baslik: t('imp_title'), govde: t('imp_paket_onay')(aiSayilarMetni(sayilar)),
+                     not: c.source ? t('imp_paket_kaynak')(c.source) : '', tamam: t('imp_go') })) return;
+  let sonuc;
+  try{ sonuc = await aiPaketiUygula(c, ''); }
+  catch(e){ console.error('[ai] paket uygulanamadi', e); sonuc = { ok: false, hata: t('imp_paket_yuklenemedi') }; }
+  if(!sonuc.ok){ d.textContent = sonuc.hata; d.className = 'ai-status error'; return; }
+  renderProjects();
+  document.getElementById('importOverlay').classList.remove('open');
+  showToast(t('imp_paket_done')(aiSayilarMetni(sonuc.sayilar)));
+  if(sonuc.uyarilar.length) uyari(t('imp_paket_uyari')(sonuc.uyarilar.length) + ':\n' + sonuc.uyarilar.slice(0, 6).join('\n') + (sonuc.uyarilar.length > 6 ? '\n…' : ''));
+  track('funnel/ai-package-imported');
+}
+
+// ---- Hesabim > AI erisimi: anahtarlar --------------------------------
+// Anahtar tarayicida uretiliyor; buluta yalnizca SHA-256 ozeti gidiyor.
+// Duz metin yalnizca bu ekranda, bir kez.
+function aiAnahtarUret(){
+  const harfler = 'ABCDEFGHJKLMNPQRSTUVWXYZabcdefghijkmnopqrstuvwxyz23456789';
+  const a = new Uint8Array(32);
+  crypto.getRandomValues(a);
+  return 'shb_' + Array.from(a, b=> harfler[b % harfler.length]).join('');
+}
+async function sha256Hex(metin){
+  const buf = await crypto.subtle.digest('SHA-256', new TextEncoder().encode(metin));
+  return Array.from(new Uint8Array(buf), b=> b.toString(16).padStart(2, '0')).join('');
+}
+function aiDurumYaz(metin, hata){
+  const d = document.getElementById('aiAnahtarDurum');
+  if(!d) return;
+  d.textContent = metin || ''; d.className = 'ai-status' + (hata ? ' error' : '');
+}
+async function aiAnahtarlariCiz(){
+  const kap = document.getElementById('aiAnahtarListe');
+  if(!kap) return;
+  if(!sb || !session){ kap.innerHTML = ''; return; }
+  try{
+    const { data, error } = await sb.from('api_keys')
+      .select('id,label,key_prefix,created_at,last_used_at,revoked_at').order('created_at', { ascending: true });
+    if(error) throw error;
+    const etkin = (Array.isArray(data) ? data : []).filter(k=> !k.revoked_at);
+    if(!etkin.length){ kap.innerHTML = `<li class="hint">${escapeHtml(t('ai_er_bos'))}</li>`; return; }
+    const tarih = (iso)=> iso ? new Date(iso).toLocaleDateString(currentLang === 'tr' ? 'tr-TR' : 'en-US', { day: '2-digit', month: '2-digit', year: '2-digit' }) : '';
+    kap.innerHTML = etkin.map(k=> `<li data-ai-anahtar="${escapeHtml(k.id)}">
+      <span class="ai-er-sol">
+        <span class="yedek-gun">${escapeHtml(k.label || 'AI')} · ${escapeHtml(k.key_prefix || 'shb_')}…</span>
+        <small>${escapeHtml(t('ai_er_olusturuldu')(tarih(k.created_at)))} · ${escapeHtml(k.last_used_at ? t('ai_er_son')(tarih(k.last_used_at)) : t('ai_er_hic'))}</small>
+      </span>
+      <button type="button" class="fk-mini" data-ai-iptal="${escapeHtml(k.id)}" data-ai-etiket="${escapeHtml(k.label || '')}">${escapeHtml(t('ai_er_iptal'))}</button>
+    </li>`).join('');
+    aiDurumYaz('');
+  }catch(err){
+    kap.innerHTML = '';
+    if(aiTabloYok(err)) aiDurumYaz(t('ai_er_kurulmadi'), true);
+    else { console.error('[ai] anahtarlar okunamadi', err); aiDurumYaz(t('auth_sync_err'), true); }
+  }
+}
+async function aiAnahtarYeni(){
+  if(!sb || !session){ showToast(t('ai_er_giris')); return; }
+  const etiket = await sor(t('ai_er_etiket_sor'), 'ChatGPT');
+  if(etiket === null) return;
+  const anahtar = aiAnahtarUret();
+  const btn = document.getElementById('aiAnahtarYeni');
+  btn.disabled = true;
+  try{
+    const ozet = await sha256Hex(anahtar);
+    const { error } = await sb.from('api_keys').insert({
+      id: 'ak_' + Date.now().toString(36) + '_' + Math.random().toString(36).slice(2, 8),
+      user_id: session.user.id,
+      label: String(etiket || '').trim().slice(0, 60) || 'AI',
+      key_hash: ozet, key_prefix: anahtar.slice(0, 12), scopes: ['read', 'write']
+    });
+    if(error) throw error;
+    const kutu = document.getElementById('aiAnahtarKutusu');
+    kutu.hidden = false;
+    const giris = document.getElementById('aiAnahtarMetin');
+    giris.value = anahtar;
+    giris.focus(); giris.select();
+    aiDurumYaz('');
+    track('funnel/ai-key-created');
+    await aiAnahtarlariCiz();
+  }catch(err){
+    if(aiTabloYok(err)) aiDurumYaz(t('ai_er_kurulmadi'), true);
+    else { console.error('[ai] anahtar yazilamadi', err); aiDurumYaz(t('auth_sync_err'), true); }
+  }finally{ btn.disabled = false; }
+}
+async function aiAnahtarIptal(id, etiket){
+  if(!sb || !session) return;
+  if(!await onayla({ baslik: t('ai_er_iptal'), govde: t('ai_er_iptal_sor')(etiket || 'AI'), tamam: t('ai_er_iptal'), tehlike: true })) return;
+  try{
+    const { error } = await sb.from('api_keys').update({ revoked_at: new Date().toISOString() }).eq('id', id);
+    if(error) throw error;
+    showToast(t('ai_er_iptal_edildi'));
+    await aiAnahtarlariCiz();
+  }catch(err){ console.error('[ai] anahtar iptal edilemedi', err); aiDurumYaz(t('auth_sync_err'), true); }
+}
+async function panoyaKopyala(metin){
+  try{ await navigator.clipboard.writeText(metin); return true; }
+  catch(e){
+    try{
+      const ta = document.createElement('textarea');
+      ta.value = metin; ta.setAttribute('readonly', ''); ta.style.position = 'fixed'; ta.style.opacity = '0';
+      document.body.appendChild(ta); ta.select();
+      const oldu = document.execCommand('copy');
+      document.body.removeChild(ta);
+      return oldu;
+    }catch(e2){ return false; }
+  }
+}
+// Asistan karti: sohbetin basina yapistirilan metin. Dosya siteden
+// cekiliyor (ai/asistan-karti.md, ai/assistant-card.md) ki tek yerde dursun.
+async function aiKartKopyala(){
+  const dosya = currentLang === 'tr' ? 'ai/asistan-karti.md' : 'ai/assistant-card.md';
+  try{
+    const c = await fetch(dosya, { cache: 'no-store' });
+    if(!c.ok) throw new Error('kart yok');
+    const metin = await c.text();
+    if(await panoyaKopyala(metin)){ showToast(t('ai_er_kart_kopyalandi')); track('funnel/ai-card-copied'); return; }
+    throw new Error('pano');
+  }catch(e){
+    console.warn('[ai] kart kopyalanamadi', e);
+    aiDurumYaz(t('ai_er_kart_hata'), true);
+    window.open(dosya, '_blank', 'noopener');
+  }
+}
+// Buluttan yenile: AI, API ile yazdiginda uygulama bunu yeniden acmadan
+// gormuyor (gercek zamanli abonelik yok). Once bekleyen degisiklikler
+// gonderiliyor; gonderilemediyse yenileme YAPILMIYOR — bulut kopyasi
+// yereli ezmesin.
+async function bulutTazele(){
+  if(!sb || !session){ showToast(t('ai_er_giris')); return; }
+  const btn = document.getElementById('aiYenile');
+  if(btn) btn.disabled = true;
+  try{
+    await pushChanges(); await projPushChanges(); await fikirPush(); await scriptPush(); await mekanPush();
+    if(dirtyIds.size || removedIds.size || projDirty.size || projRemoved.size || fikirDirty.size || scriptDirty.size || mekanDirty.size){
+      showToast(t('ai_er_bekleyen')); return;
+    }
+    const [uzakKayitlar, uzakProjeler] = await Promise.all([pullRemote(), projPullRemote()]);
+    events = uzakKayitlar; save();
+    projects = uzakProjeler; saveProjects();
+    await fikirScriptBulutSenkron();
+    await aiDefteriOku();
+    renderCal(); renderProjects();
+    aiAktarimlariCiz(document.getElementById('aiAktarimListe'));
+    showToast(t('ai_er_yenilendi'));
+  }catch(err){
+    console.error('[bulut] yenileme hatasi', err);
+    showToast(t('auth_sync_err'));
+  }finally{ if(btn) btn.disabled = false; }
+}
+function aiBolumuCiz(){
+  const kutu = document.getElementById('aiAnahtarKutusu');
+  if(kutu){ kutu.hidden = true; document.getElementById('aiAnahtarMetin').value = ''; }
+  aiDurumYaz('');
+  aiAnahtarlariCiz();
+  aiAktarimlariCiz(document.getElementById('aiAktarimListe'));
+}
+(function aiKur(){
+  const bul = id => document.getElementById(id);
+  if(bul('aiAnahtarYeni')) bul('aiAnahtarYeni').addEventListener('click', aiAnahtarYeni);
+  if(bul('aiKartKopyala')) bul('aiKartKopyala').addEventListener('click', aiKartKopyala);
+  if(bul('aiYenile')) bul('aiYenile').addEventListener('click', bulutTazele);
+  if(bul('aiAnahtarKopyala')) bul('aiAnahtarKopyala').addEventListener('click', async ()=>{
+    if(await panoyaKopyala(bul('aiAnahtarMetin').value)) showToast(t('ai_er_kopyalandi'));
+    else { bul('aiAnahtarMetin').focus(); bul('aiAnahtarMetin').select(); }
+  });
+  if(bul('aiAnahtarListe')) bul('aiAnahtarListe').addEventListener('click', e=>{
+    const btn = e.target.closest('[data-ai-iptal]');
+    if(btn) aiAnahtarIptal(btn.dataset.aiIptal, btn.dataset.aiEtiket);
+  });
+  // Ilk cizimden once: yerel defter rozetleri belirliyor.
+  aiDefteriYerelOku();
+})();
 
 // ===== Init =====
 try{
@@ -14921,6 +15680,7 @@ function impKayitlar(){
 }
 
 function impEkraniTazele(){
+  if(impPaket){ impPaketEkrani(); return; }
   const eslesBlok = document.getElementById('imp_eslesBlok');
   const onizlemeBlok = document.getElementById('imp_onizlemeBlok');
   const uygula = document.getElementById('imp_uygula');
@@ -14967,7 +15727,8 @@ function impEkraniTazele(){
 }
 
 function impPenceresiniAc(){
-  impTablo = null; impEsleme = {};
+  impTablo = null; impEsleme = {}; impPaket = null;
+  aiAktarimlariCiz(document.getElementById('imp_aiListe'), document.getElementById('imp_aiBlok'));
   document.getElementById('imp_metin').value = '';
   const d = document.getElementById('imp_durum');
   d.textContent = ''; d.className = 'ai-status';
@@ -14976,6 +15737,16 @@ function impPenceresiniAc(){
   document.getElementById('imp_metin').focus();
 }
 function impMetinOku(metin){
+  // Once paket mi diye bakiliyor: AI'nin verdigi JSON ile tablo satirlari
+  // ayni kutuya yapistiriliyor.
+  impPaket = null;
+  const paketHam = impPaketDene(metin);
+  if(paketHam){
+    impTablo = null; impEsleme = {};
+    impEkraniTazele();
+    impPaketCoz(paketHam, metin);
+    return;
+  }
   impTablo = impCozumle(metin);
   impEsleme = impTablo ? impTahmin(impTablo.basliklar) : {};
   const d = document.getElementById('imp_durum');
@@ -15000,6 +15771,7 @@ document.getElementById('imp_dosya').addEventListener('change', e=>{
   e.target.value = '';
 });
 document.getElementById('imp_uygula').addEventListener('click', async ()=>{
+  if(impPaket){ await impPaketUygula(); return; }
   const o = impKayitlar();
   if(!o.kayitlar.length) return;
   const yer = MAX_ENTRIES - events.length;
@@ -15220,7 +15992,11 @@ async function takvimSil(jeton){
 // yazmamak icin kuyrukta bekliyor.
 let takvimYazTimer = null;
 function takvimTazeleKuyrukla(){
-  if(!hatirlatma.takvim || !hatirlatma.jeton || !sb || !session) return;
+  // Acilistaki gocurme (projeleriGocur -> saveProjects) buraya hatirlatma
+  // durumu daha kurulmadan gelebiliyor; o anda abonelik de yok. TDZ
+  // hatasi butun acilisi durduruyordu: sessizce cikiliyor.
+  let h; try{ h = hatirlatma; }catch(e){ return; }
+  if(!h.takvim || !h.jeton || !sb || !session) return;
   clearTimeout(takvimYazTimer);
   takvimYazTimer = setTimeout(()=>{ takvimYayinla().catch(e=>console.error('[takvim] tazelenemedi', e)); }, 1500);
 }
@@ -15788,6 +16564,8 @@ async function afterSignIn(){
     // kayit hesapta var mi" ve "hangi projeye bagli" sorulari cevaplanabilir.
     await tercihSozu;
     await gelenKutusunuIsle();
+    // AI defteri en sonda ve beklenmeden: rozetler gelince ekran tazelenir.
+    aiDefteriOku();
     renderCal();
     setCloudStatus('ok');
     trackOnce('funnel/cloud-connected');
@@ -15832,6 +16610,7 @@ function afterSignOut(){
   projAfterSignOut();
   sablonAfterSignOut();
   fikirScriptAfterSignOut();
+  aiDefteriYerelOku();
   renderCal();
   setCloudStatus('');
   showToast(t('auth_signed_out'));
@@ -16227,6 +17006,7 @@ function hesapPenceresiniAc(){
   const d = bul('hesapDurum'); d.textContent = ''; d.className = 'ai-status';
   bul('hesapOverlay').classList.add('open');
   yedekListesiCiz();
+  aiBolumuCiz();
 }
 document.getElementById('hesapKapat').addEventListener('click', ()=>
   document.getElementById('hesapOverlay').classList.remove('open'));
@@ -16296,7 +17076,8 @@ async function hesapDosyalariniSil(){
 // gerekmiyor: RLS zaten "kendi satirin" diyor. Sunucudaki islev
 // herhangi bir sebeple calismazsa devreye giren yedek yol bu.
 const HESAP_TABLOLARI = ['calendar_events','projects','ideas','scripts',
-                         'places','caption_templates','user_prefs'];
+                         'places','caption_templates','user_prefs',
+                         'api_keys','ai_aktarimlar'];
 async function hesapVerisiniSil(){
   if(!sb || !session) return { takilan: [] };
   const kim = session.user.id;

@@ -1,0 +1,230 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Shootboard — AI access</title>
+<meta name="description" content="Plan with ChatGPT, Claude or any other AI and land the result in Shootboard: paste a package, or give the assistant a key so it writes and reads directly.">
+<link rel="canonical" href="https://shootboard.app/ai/">
+<meta property="og:type" content="website">
+<meta property="og:site_name" content="Shootboard">
+<meta property="og:url" content="https://shootboard.app/ai/">
+<meta property="og:title" content="Shootboard — AI access">
+<meta property="og:description" content="Plan with any AI, land it in Shootboard. Paste a package or hand the assistant a key.">
+<meta property="og:image" content="https://shootboard.app/og.png">
+<meta name="twitter:card" content="summary_large_image">
+<meta name="theme-color" content="#F4F7FA">
+<link rel="icon" href="../favicon.svg" type="image/svg+xml">
+<link rel="icon" href="../favicon-32x32.png" sizes="32x32">
+<link rel="apple-touch-icon" href="../apple-touch-icon.png">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Archivo:wght@600;700;800&family=IBM+Plex+Mono:wght@400;500;600&family=IBM+Plex+Sans:wght@400;500;600&display=swap">
+<script>
+// Tema ilk boyamadan once; anahtar uygulamayla ayni.
+(function(){
+  try{
+    var t = localStorage.getItem('demo_theme');
+    if(t === 'dark' || t === 'light') document.documentElement.setAttribute('data-theme', t);
+  }catch(e){}
+})();
+</script>
+<style>
+:root{
+  color-scheme: light;
+  --kagit:#F4F7FA; --yuzey:#FFFFFF; --yuzey2:#EDF1F6; --cizgi:#DFE5EC;
+  --mavi:#2563C7; --mavi-koyu:#1D53AC; --mavi-soft:#E8EFFB;
+  --murekkep:#141C27; --solgun:#4C5C70; --hayalet:#6E7E92;
+  --amber:#8F5309; --amber-soft:#FBF0DE; --yesil:#25714F;
+}
+@media (prefers-color-scheme: dark){
+  :root:not([data-theme="light"]){
+    color-scheme: dark;
+    --kagit:#0F151D; --yuzey:#18212C; --yuzey2:#202B38; --cizgi:#2A3644;
+    --mavi:#6BA0EE; --mavi-koyu:#8DB6F3; --mavi-soft:#1B2A42;
+    --murekkep:#E8EEF5; --solgun:#AAB6C4; --hayalet:#7E8C9C;
+    --amber:#F0A445; --amber-soft:#33270F; --yesil:#6FCF97;
+  }
+}
+:root[data-theme="dark"]{
+  color-scheme: dark;
+  --kagit:#0F151D; --yuzey:#18212C; --yuzey2:#202B38; --cizgi:#2A3644;
+  --mavi:#6BA0EE; --mavi-koyu:#8DB6F3; --mavi-soft:#1B2A42;
+  --murekkep:#E8EEF5; --solgun:#AAB6C4; --hayalet:#7E8C9C;
+  --amber:#F0A445; --amber-soft:#33270F; --yesil:#6FCF97;
+}
+*{box-sizing:border-box;}
+body{margin:0;background:var(--kagit);color:var(--murekkep);font:15px/1.6 'IBM Plex Sans',system-ui,sans-serif;
+  padding:0 20px 60px;}
+a{color:var(--mavi);}
+.sayfa{max-width:760px;margin:0 auto;}
+header{display:flex;align-items:center;justify-content:space-between;gap:16px;padding:22px 0 8px;}
+.marka{display:flex;align-items:center;gap:10px;text-decoration:none;color:inherit;}
+.marka-im{width:26px;height:26px;flex:none;}
+.marka-ad{font:800 18px/1 'Archivo',sans-serif;letter-spacing:-.02em;}
+.marka-alt{display:block;font-size:11.5px;color:var(--hayalet);margin-top:3px;}
+.dil{display:flex;gap:2px;border:1px solid var(--cizgi);border-radius:8px;padding:2px;background:var(--yuzey);}
+.dil button{border:0;background:transparent;color:var(--solgun);font:600 12.5px 'IBM Plex Sans',sans-serif;
+  padding:5px 10px;border-radius:6px;cursor:pointer;}
+.dil button.secili{background:var(--mavi-soft);color:var(--mavi);}
+h1{font:800 34px/1.15 'Archivo',sans-serif;letter-spacing:-.025em;margin:26px 0 10px;}
+.giris{font-size:17px;color:var(--solgun);margin:0 0 26px;max-width:60ch;}
+.kartlar{display:grid;grid-template-columns:repeat(auto-fit,minmax(280px,1fr));gap:14px;margin:0 0 26px;}
+.kart{background:var(--yuzey);border:1px solid var(--cizgi);border-radius:14px;padding:18px 18px 16px;}
+.kart h2{font:700 17px/1.3 'Archivo',sans-serif;margin:0 0 4px;letter-spacing:-.01em;}
+.kart .kim{font-size:12.5px;color:var(--hayalet);margin:0 0 12px;}
+.kart ol{margin:0;padding-left:20px;color:var(--solgun);}
+.kart li{margin:6px 0;}
+.kart li b{color:var(--murekkep);font-weight:600;}
+.dugmeler{display:flex;gap:10px;flex-wrap:wrap;margin-top:14px;}
+.btn{display:inline-flex;align-items:center;gap:8px;border:1px solid var(--cizgi);background:var(--yuzey);
+  color:var(--murekkep);font:600 13.5px 'IBM Plex Sans',sans-serif;padding:9px 14px;border-radius:9px;
+  cursor:pointer;text-decoration:none;}
+.btn.ana{background:var(--mavi);border-color:var(--mavi);color:#fff;}
+.btn.ana:hover{background:var(--mavi-koyu);}
+.durum{font-size:13px;color:var(--yesil);min-height:20px;margin-top:8px;}
+.durum.hata{color:var(--amber);}
+h3{font:700 15px/1.3 'Archivo',sans-serif;margin:26px 0 8px;}
+pre{background:var(--yuzey2);border:1px solid var(--cizgi);border-radius:10px;padding:12px 14px;overflow:auto;
+  font:12.5px/1.55 'IBM Plex Mono',monospace;color:var(--murekkep);}
+code{font:500 12.5px 'IBM Plex Mono',monospace;background:var(--yuzey2);padding:1px 5px;border-radius:4px;}
+table{border-collapse:collapse;width:100%;font-size:13.5px;}
+th,td{text-align:left;padding:7px 8px;border-bottom:1px solid var(--cizgi);vertical-align:top;}
+th{color:var(--hayalet);font-weight:600;font-size:12px;text-transform:uppercase;letter-spacing:.04em;}
+.not{background:var(--amber-soft);border-radius:10px;padding:12px 14px;font-size:13.5px;color:var(--murekkep);margin:22px 0;}
+footer{margin-top:40px;font-size:12.5px;color:var(--hayalet);display:flex;gap:14px;flex-wrap:wrap;}
+[hidden]{display:none !important;}
+</style>
+</head>
+<body>
+<div class="sayfa">
+  <header>
+    <a class="marka" href="../index.html">
+      <svg class="marka-im" viewBox="0 0 26 26" fill="none" aria-hidden="true">
+        <rect x="2" y="9" width="22" height="14" rx="3" fill="currentColor"/>
+        <g transform="rotate(-9 13 6)"><rect x="2" y="2" width="22" height="6.5" rx="1.6" fill="#2563C7"/></g>
+        <rect x="6" y="14" width="11" height="1.6" rx=".8" fill="var(--kagit)"/>
+        <rect x="6" y="18" width="7" height="1.6" rx=".8" fill="#E0871F"/>
+      </svg>
+      <span><span class="marka-ad">Shootboard</span><span class="marka-alt" data-tr="Video üreticileri için içerik takvimi" data-en="Content calendar for video creators"></span></span>
+    </a>
+    <div class="dil" role="group" aria-label="Language">
+      <button type="button" data-dil="en">EN</button>
+      <button type="button" data-dil="tr">TR</button>
+    </div>
+  </header>
+
+  <h1 data-en="Plan with any AI. Land it in Shootboard." data-tr="Planı istediğin AI ile yap. Shootboard'a düşsün."></h1>
+  <p class="giris"
+     data-en="Write the plan, the scripts and the captions in ChatGPT, Claude or any other assistant. Shootboard takes the result in as a package — pasted by you, or sent by the assistant itself with a key."
+     data-tr="Planı, scriptleri, açıklama metinlerini ChatGPT, Claude ya da başka bir asistanla yaz. Shootboard sonucu paket olarak alır — sen yapıştırırsın ya da asistan anahtarla kendisi gönderir."></p>
+
+  <div class="kartlar">
+    <section class="kart">
+      <h2 data-en="1 · Paste a package" data-tr="1 · Paket yapıştır"></h2>
+      <p class="kim" data-en="Works with every AI, no account needed." data-tr="Her AI ile çalışır, hesap bile gerekmez."></p>
+      <ol>
+        <li data-en="<b>Copy the assistant card</b> below and paste it at the top of your AI chat." data-tr="Aşağıdaki <b>asistan kartını kopyala</b>, AI sohbetinin başına yapıştır."></li>
+        <li data-en="Plan as usual. Ask for <b>the Shootboard package</b> when you are done." data-tr="Her zamanki gibi planla. Bitince <b>Shootboard paketini</b> iste."></li>
+        <li data-en="Copy the JSON block. In Shootboard open <b>Import</b> and paste it." data-tr="JSON bloğunu kopyala. Shootboard'da <b>İçe Aktar</b>'ı aç, yapıştır."></li>
+        <li data-en="Check the preview, press Import. Everything lands with an <b>AI</b> badge; one click undoes it." data-tr="Önizlemeye bak, İçe Aktar'a bas. Her şey <b>AI</b> rozetiyle düşer; tek tıkla geri alınır."></li>
+      </ol>
+      <div class="dugmeler">
+        <button type="button" class="btn ana" id="kartKopyala" data-en="Copy assistant card" data-tr="Asistan kartını kopyala"></button>
+        <a class="btn" id="kartAc" href="assistant-card.md" target="_blank" rel="noopener" data-en="Open as text" data-tr="Metin olarak aç"></a>
+      </div>
+      <div class="durum" id="kartDurum"></div>
+    </section>
+
+    <section class="kart">
+      <h2 data-en="2 · Give the assistant a key" data-tr="2 · Asistana anahtar ver"></h2>
+      <p class="kim" data-en="For assistants and tools that can call an API: Custom GPTs, agents, Zapier, your own scripts." data-tr="API çağırabilen asistan ve araçlar için: Custom GPT, ajanlar, Zapier, kendi betiklerin."></p>
+      <ol>
+        <li data-en="In Shootboard: <b>Account → AI access → New key</b>. The key is shown once." data-tr="Shootboard'da: <b>Hesabım → AI erişimi → Yeni anahtar</b>. Anahtar bir kez gösterilir."></li>
+        <li data-en="Give the key to the assistant together with the card. It can now <b>read</b> your plan and <b>write</b> to it." data-tr="Anahtarı kartla birlikte asistana ver. Artık planını <b>okuyup</b> üstüne <b>yazabilir</b>."></li>
+        <li data-en="Every import is logged; undo it from Shootboard or ask the assistant. Revoke the key any time." data-tr="Her aktarım deftere yazılır; Shootboard'dan ya da asistana söyleyerek geri alınır. Anahtar istediğin an iptal edilir."></li>
+      </ol>
+      <div class="dugmeler">
+        <a class="btn" href="openapi.yaml" target="_blank" rel="noopener">OpenAPI</a>
+        <a class="btn" href="sema.json" target="_blank" rel="noopener" data-en="Package schema" data-tr="Paket şeması"></a>
+      </div>
+    </section>
+  </div>
+
+  <h3 data-en="What a package looks like" data-tr="Paket neye benzer"></h3>
+<pre>{
+  "shootboard": 1,
+  "source": "ChatGPT",
+  "projects": [ { "name": "Hans district", "type": "venue", "shootDate": "2026-09-20" } ],
+  "entries": [
+    { "date": "2026-09-27", "time": "19:00", "type": "video", "platform": "youtube",
+      "title": "Hans of Istanbul", "project": "Hans district",
+      "content": { "videoTitle": "The Last Working Hans of Istanbul", "caption": "..." } },
+    { "date": "2026-09-27", "time": "19:30", "type": "reels", "platform": "instagram",
+      "title": "Hans teaser", "project": "Hans district" }
+  ],
+  "scripts": [ { "title": "Voice-over v1", "text": "COLD OPEN ...", "project": "Hans district" } ],
+  "ideas":   [ { "text": "Follow one craftsman for a full day." } ]
+}</pre>
+
+  <h3 data-en="API in one table" data-tr="API tek tabloda"></h3>
+  <p data-en="Base URL <code>https://dyemvzmpnlpnzwebuciu.supabase.co/functions/v1/ai</code> · header <code>Authorization: Bearer shb_…</code>"
+     data-tr="Taban adres <code>https://dyemvzmpnlpnzwebuciu.supabase.co/functions/v1/ai</code> · başlık <code>Authorization: Bearer shb_…</code>"></p>
+  <table>
+    <thead><tr><th data-en="Endpoint" data-tr="Uç"></th><th data-en="Does" data-tr="Ne yapar"></th></tr></thead>
+    <tbody>
+      <tr><td><code>GET /me</code></td><td data-en="limits, counts, language" data-tr="sınırlar, sayılar, dil"></td></tr>
+      <tr><td><code>GET /entries?from&amp;to</code></td><td data-en="calendar entries in a range" data-tr="aralıktaki takvim kayıtları"></td></tr>
+      <tr><td><code>GET /projects</code> · <code>/places</code> · <code>/scripts</code> · <code>/ideas</code></td><td data-en="the lists" data-tr="listeler"></td></tr>
+      <tr><td><code>POST /import</code></td><td data-en="body = package; returns ids, warnings, importId" data-tr="gövde = paket; kimlikler, uyarılar, importId döner"></td></tr>
+      <tr><td><code>POST /undo</code></td><td data-en="reverts an import (latest if no importId)" data-tr="bir aktarımı geri alır (importId yoksa sonuncuyu)"></td></tr>
+      <tr><td><code>GET /imports</code></td><td data-en="recent imports" data-tr="son aktarımlar"></td></tr>
+    </tbody>
+  </table>
+
+  <div class="not"
+       data-en="A key is full access to your account: never paste it into a shared document. Revoke it under Account → AI access. Shootboard still never publishes anything; the assistant can only plan."
+       data-tr="Anahtar hesabına tam erişimdir: ortak bir belgeye yapıştırma. Hesabım → AI erişimi'nden iptal et. Shootboard yine hiçbir şeyi yayınlamaz; asistan yalnızca planlar."></div>
+
+  <footer>
+    <a href="../app.html" data-en="Open Shootboard" data-tr="Shootboard'ı aç"></a>
+    <a href="../index.html" data-en="About Shootboard" data-tr="Shootboard nedir"></a>
+    <a href="asistan-karti.md" data-en="Card (Turkish)" data-tr="Kart (Türkçe)"></a>
+    <a href="assistant-card.md" data-en="Card (English)" data-tr="Kart (İngilizce)"></a>
+    <span>hello@shootboard.app</span>
+  </footer>
+</div>
+<script>
+(function(){
+  var dil = 'en';
+  try{ var k = localStorage.getItem('demo_ui_language'); if(k === 'tr' || k === 'en') dil = k; }catch(e){}
+  if(dil === 'en' && /^tr/i.test(navigator.language || '')) { try{ if(!localStorage.getItem('demo_ui_language')) dil = 'tr'; }catch(e){} }
+  function uygula(d){
+    dil = d;
+    document.documentElement.lang = d;
+    document.querySelectorAll('[data-en]').forEach(function(el){
+      var m = el.getAttribute('data-' + d) || el.getAttribute('data-en');
+      if(el.tagName === 'LI' || el.tagName === 'P' || el.tagName === 'DIV') el.innerHTML = m; else el.textContent = m;
+    });
+    document.querySelectorAll('[data-dil]').forEach(function(b){ b.classList.toggle('secili', b.getAttribute('data-dil') === d); });
+    document.getElementById('kartAc').setAttribute('href', d === 'tr' ? 'asistan-karti.md' : 'assistant-card.md');
+    document.title = d === 'tr' ? 'Shootboard — AI erişimi' : 'Shootboard — AI access';
+  }
+  document.querySelectorAll('[data-dil]').forEach(function(b){
+    b.addEventListener('click', function(){ uygula(b.getAttribute('data-dil')); });
+  });
+  uygula(dil);
+
+  var durum = document.getElementById('kartDurum');
+  document.getElementById('kartKopyala').addEventListener('click', function(){
+    var dosya = dil === 'tr' ? 'asistan-karti.md' : 'assistant-card.md';
+    durum.className = 'durum'; durum.textContent = '…';
+    fetch(dosya, { cache: 'no-store' }).then(function(c){ if(!c.ok) throw new Error('yok'); return c.text(); })
+      .then(function(metin){ return navigator.clipboard.writeText(metin); })
+      .then(function(){ durum.textContent = dil === 'tr' ? 'Kopyalandı. AI sohbetinin başına yapıştır.' : 'Copied. Paste it at the top of your AI chat.'; })
+      .catch(function(){ durum.className = 'durum hata'; durum.textContent = dil === 'tr' ? 'Kopyalanamadı — "Metin olarak aç" ile kopyala.' : 'Could not copy — use "Open as text" and copy from there.'; });
+  });
+})();
+</script>
+</body>
+</html>

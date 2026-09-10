@@ -6,6 +6,64 @@ duruyor, neden ertelendiği de yazıyor ki aynı tartışma baştan yapılmasın
 
 ---
 
+## AI erişimi: herhangi bir yapay zekâ Shootboard'a yazsın, okusun (10 Eylül 2026)
+
+Kullanıcı sordu: "ChatGPT/Claude ile başka bir sohbette plan ve script
+yazıyorum; 'bunları Shootboard'a ekle' diyebilir miyim?" Cevap: eskiden
+hayır (dış kapı yalnızca sahibine özel gelen kutusu ve tablo yapıştırma
+idi). Kullanıcı "AI eklentisi önemli, tablo yapısı karşı tarafa
+aktarılabilmeli, AI asistan gibi çalışabilmeli" dedi; sıra "önce şema ve
+kart, sonra anahtar ve uçlar, en son OpenAPI ve geri alma" diye
+kararlaştırıldı ve hepsi bu PR'da yapıldı.
+
+- **Paket biçimi** `ai/sema.json` (JSON Schema 2020-12). Üst anahtarlar
+  İngilizce (`entries/projects/places/scripts/ideas`), alan adları
+  uygulamanın modeliyle birebir; yedek dosyasının Türkçe anahtarları da
+  kabul (bir yedek de geçerli paket). Karar: dış yüz İngilizce (Custom GPT,
+  yabancı kullanıcı), iç kod Türkçe kalır.
+- **Asistan kartı** `ai/asistan-karti.md` + `ai/assistant-card.md`: sohbetin
+  başına yapıştırılan metin; kurallar (adres uydurma, uploaded yazma, tek
+  JSON bloğu). Uygulamada *Hesabım → AI erişimi → Kartı kopyala* ve
+  `ai/index.html` (shootboard.app/ai) aynı dosyayı çeker.
+- **İki yol, tek doğrulama.** (1) *Paket yapıştırma:* İçe Aktar kutusuna
+  JSON (```json çiti soyulur) → önizleme → alınır; anahtarsız, girişsiz.
+  (2) *API:* `supabase/functions/ai` — `Bearer shb_…`, SHA-256 özeti
+  `api_keys`'te (düz metin hiçbir yerde), servis rolü ama her sorgu
+  `user_id` süzgeçli, verilen kimlikte sahiplik denetimi. Doğrulama
+  `supabase/functions/ai/dogrula.js` sunucuda da tarayıcıda da (dinamik
+  import; `sw.js` kabuğuna eklendi, sürüm v3) aynı dosya.
+- **Kurallar:** proje ve mekan *ada göre* eşleşir ve güncellenir (ikinci
+  kopya yok), paketin sustuğu alan ezilmez; kayıt/script/fikir yalnızca
+  kimlikle güncellenir. Bulunmayan proje → öğe projesiz alınır, uyarı;
+  `concept` BOŞ bırakılır (dolu olsaydı `projeleriGocur` sonraki açılışta
+  sessizce proje üretirdi — bu, gelen kutusu yolunda hâlâ böyle). Sınırlar
+  hesaptan (`user_prefs.entry_limit`), aşılacaksa hiçbir şey yazılmaz.
+  Pakette 200 öğe, anahtar başına saatte 60 aktarım.
+- **Defter ve geri alma:** her aktarım `ai_aktarimlar` satırı (yapıştırma
+  yolunda yerelde de `demo_ai_defter`), eklenen kimlikler + güncellenenlerin
+  önceki satır halleri. Uygulamada "AI" rozeti (kayıt, proje, mekan,
+  script, fikir kartları) ve "Geri al" (İçe Aktar penceresi ve Hesabım)
+  bu defterden; API'de `POST /undo`. *Buluttan yenile* düğmesi: gerçek
+  zamanlı abonelik yok, AI API ile yazınca uygulama yeniden açılmadan
+  görmüyordu; önce bekleyenler gönderilir, gönderilemediyse yenileme yapılmaz.
+- **Bulunan eski hata:** `projeleriGocur` açılışta `saveProjects` →
+  `takvimTazeleKuyrukla` → `hatirlatma` TDZ; concept'li kayıt varsa
+  bütün açılış duruyordu. Koruma eklendi.
+- **Kullanıcının çalıştıracakları:** `sql/33`, `sql/34`, sonra
+  **`sql/35-ai-erisimi.sql`**; fonksiyon dağıtımı
+  `supabase/functions/ai/README.md` (panelden `tek-dosya.ts`, Verify JWT
+  kapalı; gizli ayar gerekmez). Canlıda denenmedi (ağ yok): ilk gerçek
+  denemede README'deki curl sırası; `GET /` anahtarsız çalışmalı.
+- **Testler:** `ai-erisimi-dogrula` (Node, saf), `ai-erisimi-sunucu`
+  (Node, tek-dosya.ts tsc ile çevrilip bellekte PostgREST taklidine karşı;
+  CI'a `typescript` eklendi), `ai-erisimi` (Playwright: yapıştırma, rozet,
+  geri al, anahtar üret/iptal, yenile). CI alt kümesine `ai-erisimi` eklendi.
+- **Sonrası (yapılmadı):** MCP sunucusu (Claude Desktop/claude.ai
+  bağlayıcısı, aynı uçların sarmalayıcısı); OAuth "Shootboard'a bağlan";
+  `api.shootboard.app` özel alan adı; salt okunur anahtar seçeneği
+  arayüzde (`scopes` sütunu hazır); kart metnini uygulama diline göre
+  otomatik güncelleme.
+
 ## Karşılama sayfası SEO ve bağlantı önizlemesi (10 Eylül 2026)
 
 Kullanıcı Threads'te duyuruya başlıyor (ilk plan yalnızca Threads, Reddit

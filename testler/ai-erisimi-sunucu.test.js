@@ -192,7 +192,7 @@ async function sahteFetch(url, init = {}){
   const kayit = db.calendar_events.find(e=> e.title === 'Hanlar video');
   bak('kayit satiri: post_date/post_time, project_id, content.projectId + concept', kayit && kayit.post_date === '2026-09-27' && kayit.post_time === '19:00' && kayit.project_id === hanlar.id && kayit.content.projectId === hanlar.id && kayit.content.concept === 'Hanlar' && kayit.content.caption === 'aciklama' && kayit.uploaded === false);
   const thread = db.calendar_events.find(e=> e.title === 'thread');
-  bak('projesi bulunmayan kayit: project_id null, concept adi tasiyor', thread && thread.project_id === null && thread.content.concept === 'Olmayan Proje' && thread.post_time === null);
+  bak('projesi bulunmayan kayit: project_id null, concept bos (gocurme proje uretmesin)', thread && thread.project_id === null && thread.content.concept === '' && thread.content.projectId === '' && thread.post_time === null);
   bak('kayit kimligi uuid', /^[0-9a-f-]{36}$/.test(kayit.id));
   const script = db.scripts[0];
   bak('script satiri: source ai, content, project_ids', script && script.source === 'ai' && script.content === 'metin' && script.project_ids[0] === hanlar.id && script.project_id === hanlar.id);
@@ -207,7 +207,7 @@ async function sahteFetch(url, init = {}){
   c = await istek('/projects');
   bak('GET /projects: mekan adlari cozuluyor', c.j.projects.find(p=> p.name === 'Hanlar').places[0] === 'Büyük Valide Han');
   c = await istek('/entries?from=2026-09-27&to=2026-09-28');
-  bak('GET /entries: aralik ve proje adi', c.j.entries.length === 2 && c.j.entries[0].project === 'Hanlar' && c.j.entries[1].project === 'Olmayan Proje');
+  bak('GET /entries: aralik ve proje adi (bulunmayan proje bos)', c.j.entries.length === 2 && c.j.entries[0].project === 'Hanlar' && c.j.entries[1].project === '');
   c = await istek('/entries?from=2026-9-1');
   bak('GET /entries: bozuk tarih 400', c.durum === 400);
   c = await istek('/scripts');

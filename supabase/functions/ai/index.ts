@@ -334,7 +334,9 @@ async function aktar(kim: Kim, ham: unknown) {
     const eski = k.id ? kayitSahip[k.id] : null;
     const proje = projeBul(k.projectRef, 'entries', k.sira);
     const icerik: any = { ...(k.content || {}) };
-    if (k.projectRef !== undefined) { icerik.projectId = proje ? proje.id : ''; icerik.concept = proje ? proje.name : String(k.projectRef).slice(0, 120); }
+    // Proje bulunamazsa concept de boş: dolu olsaydı uygulama (projeleriGocur)
+    // bir sonraki açılışta o addan sessizce proje üretirdi. Uyarı yeter.
+    if (k.projectRef !== undefined) { icerik.projectId = proje ? proje.id : ''; icerik.concept = proje ? proje.name : ''; }
     const degisen: any = { type: k.type, platform: k.platform, title: k.title, post_date: k.date,
                            post_time: k.time === undefined ? undefined : (k.time || null), uploaded: k.uploaded };
     Object.keys(degisen).forEach(kk => { if (degisen[kk] === undefined) delete degisen[kk]; });
@@ -349,7 +351,7 @@ async function aktar(kim: Kim, ham: unknown) {
                             post_time: k.time || null, uploaded: k.uploaded === true, workspace_id: null,
                             project_id: proje ? proje.id : null, deleted_at: null,
                             content: { caption: '', hashtags: '', videoTitle: '', shortTitle: '', thumbPrompt: '', timezone: '',
-                                       concept: proje ? proje.name : (k.projectRef ? String(k.projectRef).slice(0, 120) : ''),
+                                       concept: proje ? proje.name : '',
                                        projectId: proje ? proje.id : '', slidePrompts: [], ...icerik } });
       yaratilan.entries.push(id);
       yeniKayit++;
