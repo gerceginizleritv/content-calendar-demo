@@ -1399,3 +1399,21 @@ Alınan üç önlem (2026-09-01):
 Aynı tuzağa düşmemek için: **oturum durumu değiştiğinde veriyi yeniden
 oku, ve yerel veriyi asla bulut çağrısının başarısına bağlama.**
 Yerel depo artık tek kopya değil, yine de emniyet ağı olarak duruyor.
+
+## Kapak görseli promptu — her yayın paketinde (2026-09-10, kalıcı kural)
+
+Kullanıcı her kapağı Gemini'de kendi fotoğrafıyla üretiyor. Her yayın
+paketi (Drive "Yayın Paketi — X" ve `gelen/kayitlar.json` içindeki
+`thumbPrompt`) iki prompt taşır: yatay 16:9 ve dikey 9:16. Sabit şablon
+Drive'da "ANAYASA GÜNCELLEMESİ - Kapak Görseli Prompt Kuralı (Yayın
+Paketi)" belgesinde; ilk uygulama "Kapak Promptları — Sokollu".
+
+Değişmeyenler: referans fotoğraf, yüz ve yaş korunur; yalnızca düz siyah
+bisiklet yaka tişört; yatayda sol üçte bir / dikeyde alt %45, baş-omuz;
+bakış kameraya değil konu nesnesine (sağa / yukarı), kaşlar çatık;
+sıcak altın kenar ışığı; arka plan flu; TEK konu nesnesi, kalın parlayan
+sarı neon halka içinde; başlık iki katman (sarı büyük harf + kırmızı bant
+üstüne beyaz), 2–3 kelime; başka metin, logo, ikinci kişi yok. Prompt
+İngilizce, başlık Türkçe. Metin varsayılan olarak Canva'da; Gemini'ye
+yazdırılacaksa TEXT bloğu eklenir, Türkçe harf bozulursa çıkarılır.
+Referans kapak: "Gizli Mimari / Kuş Sarayı".
