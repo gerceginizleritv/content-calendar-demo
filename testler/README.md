@@ -74,7 +74,8 @@ Artık koşulmayan testler ve neden emekli oldukları. Silmiyoruz: biri
 
 `ai-erisimi-dogrula.test.js` ve `ai-erisimi-sunucu.test.js` tarayıcı açmaz:
 ilki `supabase/functions/ai/dogrula.js` modülünü doğrudan koşar, ikincisi
-`tek-dosya.ts`'yi `typescript` ile çevirip bellekteki bir PostgREST
-taklidine karşı uçları dener. İkincisi için `typescript` gerekir
-(`npm i -D typescript` ya da `/opt/node22` altındaki küresel kurulum);
-yoksa test kendini atlar ve geçmiş sayılır.
+`tek-dosya.ts`'yi bu sürece yükleyip bellekteki bir PostgREST taklidine
+karşı uçları dener. TypeScript'i Node'un kendisi soyar (22.18+ / 23.6+);
+daha eski Node'da `typescript@5` (transpileModule) yedek yoldur; ikisi de
+yoksa test kendini atlar ve geçmiş sayılır. `typescript@7` işe yaramaz:
+JS API'si yok.

@@ -7,17 +7,32 @@
 // butun akisi: anahtar -> kullanici, paketten satirlara donusum, ada gore
 // eslesme, sahiplik, hesap siniri, defter, geri alma, hiz siniri.
 //
-// typescript modulu gerekiyor (npm i typescript ya da /opt/node22 altinda).
+// TypeScript'i Node'un kendisi soyuyor (22.18+ / 23.6+ tip soyma varsayilan);
+// eski Node'da typescript@5 modulu (transpileModule) yedek yol. typescript 7
+// (Go) JS API'sini tasimadigi icin ScriptTarget'i yok: CI'da bir kez bu
+// yuzden dustu, artik ona bagimli degil.
 const fs = require('fs'), path = require('path');
 let g = 0, k = 0;
 const bak = (ad, ko, ek)=>{ if(ko){ g++; console.log('  ok  '+ad); } else { k++; console.log('  YOK '+ad+(ek?' -> '+ek:'')); } };
 
 function tsYukle(){
-  try{ return require('typescript'); }catch(e){}
-  for(const y of ['/opt/node22/lib/node_modules/typescript', '/usr/lib/node_modules/typescript', '/usr/local/lib/node_modules/typescript']){
-    try{ return require(y); }catch(e){}
+  const adaylar = ['typescript', '/opt/node22/lib/node_modules/typescript', '/usr/lib/node_modules/typescript', '/usr/local/lib/node_modules/typescript'];
+  for(const y of adaylar){
+    try{ const ts = require(y); if(ts && typeof ts.transpileModule === 'function' && ts.ScriptTarget) return ts; }catch(e){}
   }
   return null;
+}
+// Fonksiyonu bu surece yukler: once Node'un tip soymasi (require .ts),
+// olmazsa typescript@5. Ikisi de yoksa null.
+function fonksiyonuYukle(dosya){
+  // Tip soyma varsa require'daki her hata GERCEK hatadir, yukari gider.
+  if(process.features && process.features.typescript){ require(dosya); return 'node'; }
+  const ts = tsYukle();
+  if(!ts) return null;
+  const kaynak = fs.readFileSync(dosya, 'utf8');
+  const js = ts.transpileModule(kaynak, { compilerOptions: { target: ts.ScriptTarget.ES2022, module: ts.ModuleKind.None } }).outputText;
+  new Function(js)();
+  return 'typescript';
 }
 
 // ---- bellekte PostgREST ------------------------------------------------
@@ -101,17 +116,19 @@ async function sahteFetch(url, init = {}){
 
 // ---- fonksiyonu yukle --------------------------------------------------
 (async () => {
-  const ts = tsYukle();
-  if(!ts){ console.log('typescript modulu yok: bu test atlandi (npm i typescript)'); process.exit(0); }
-  const kaynak = fs.readFileSync(path.join(__dirname, '..', 'supabase', 'functions', 'ai', 'tek-dosya.ts'), 'utf8');
-  const js = ts.transpileModule(kaynak, { compilerOptions: { target: ts.ScriptTarget.ES2022, module: ts.ModuleKind.None } }).outputText;
   let isleyici = null;
   globalThis.Deno = { env: { get: kk=> ({ SUPABASE_URL: 'http://sahte.local', SUPABASE_SERVICE_ROLE_KEY: 'servis' })[kk] },
                       serve: h=> { isleyici = h; } };
   globalThis.fetch = sahteFetch;
   const eskiUyari = console.warn, eskiHata = console.error;
   console.warn = ()=>{}; console.error = ()=>{};
-  new Function(js)();
+  const yol = fonksiyonuYukle(path.join(__dirname, '..', 'supabase', 'functions', 'ai', 'tek-dosya.ts'));
+  if(!yol){
+    console.warn = eskiUyari; console.error = eskiHata;
+    console.log('Ne Node tip soyma (22.18+) ne typescript@5 var: bu test atlandi.');
+    process.exit(0);
+  }
+  console.log('  fonksiyon yuklendi: ' + yol);
   bak('Deno.serve isleyiciyi verdi', typeof isleyici === 'function');
 
   const KOK = 'http://sahte.local/functions/v1/ai';
@@ -277,4 +294,4 @@ async function sahteFetch(url, init = {}){
   console.warn = eskiUyari; console.error = eskiHata;
   console.log(`\n${g} gecti, ${k} kaldi`);
   process.exit(k ? 1 : 0);
-})().catch(e=>{ console.error(e); process.exit(1); });
+})().catch(e=>{ process.stderr.write(String((e && e.stack) || e) + '\n'); process.exit(1); });
