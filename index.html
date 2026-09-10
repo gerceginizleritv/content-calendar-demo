@@ -109,6 +109,10 @@ a{color:inherit;}
 .marka{display:flex;align-items:center;gap:9px;text-decoration:none;flex:none;}
 .marka-im{width:26px;height:26px;flex:none;}
 .marka-ad{font-family:'Archivo',sans-serif;font-weight:800;font-size:19px;letter-spacing:-.4px;}
+/* Markanin altinda tek satir: sayfa ne oldugunu ilk saniyede soylesin, arama
+   terimi gorunen metinde de gecsin. Telefonda ust serit dar, satir gizli. */
+.marka-metin{display:flex;flex-direction:column;line-height:1;}
+.marka-alt{font-size:11px;font-weight:500;color:var(--solgun);letter-spacing:.1px;margin-top:3px;white-space:nowrap;}
 .tepe-nav{display:flex;gap:18px;margin-left:auto;overflow-x:auto;scrollbar-width:none;}
 .tepe-nav::-webkit-scrollbar{display:none;}
 .tepe-nav a{
@@ -727,6 +731,7 @@ a{color:inherit;}
   .dizin-izgara{grid-template-columns:1fr;}
   .adimlar{grid-template-columns:1fr;}
   .marka-ad{font-size:17px;}
+  .marka-alt{display:none;}
   .tepe-ic{gap:12px;}
   .genis-yazi{display:none;}
   .dar-yazi{display:inline;}
@@ -745,7 +750,10 @@ a{color:inherit;}
         <rect x="13.4" y="12.6" width="7" height="3.4" rx="1.2" fill="#fff" opacity=".55"/>
         <rect x="5.6" y="17.8" width="9" height="3.4" rx="1.2" fill="#fff" opacity=".7"/>
       </svg>
-      <span class="marka-ad">Shootboard</span>
+      <span class="marka-metin">
+        <span class="marka-ad">Shootboard</span>
+        <span class="marka-alt" data-i18n="marka_alt">Content calendar for video creators</span>
+      </span>
     </a>
     <nav class="tepe-nav" id="tepeNav" aria-label="Sections">
       <a href="#nedir" data-i18n="nav_what">What it is</a>
@@ -770,7 +778,7 @@ a{color:inherit;}
   <section class="kahraman">
     <div class="sar kahraman-izgara">
       <div>
-        <span class="rozet" data-i18n="hero_tag">A planning board — not an auto-poster</span>
+        <span class="rozet" data-i18n="hero_tag">Content calendar — not an auto-poster</span>
         <h1 data-i18n="hero_h1">One shoot becomes ten posts. Shootboard keeps all ten on one board.</h1>
         <p class="kahraman-alt" data-i18n="hero_sub">The same footage goes out as a Reel, a Short, a carousel and a story — each with its own caption, cover text and time slot. You tick them off as they go out; Shootboard keeps the list of what is still waiting.</p>
         <div class="kahraman-dug">
@@ -1685,7 +1693,8 @@ var METIN = {
     btn_open_kisa:"Giriş",
     aria_lang:"Dili değiştir", aria_theme:"Temayı değiştir", aria_board:"Örnek yayın takvimi",
 
-    hero_tag:"Planlama panosu — otomatik paylaşım değil",
+    marka_alt:"Video üreticileri için içerik takvimi",
+    hero_tag:"İçerik takvimi — otomatik paylaşım değil",
     hero_h1:"Tek çekim on paylaşıma dönüşür. Shootboard onunu da tek panoda tutar.",
     hero_sub:"Aynı çekim; Reels, Shorts, carousel ve hikâye olarak çıkar — her biri kendi açıklaması, kapak metni ve saatiyle. Yayınladıkça işaretlersin; Shootboard bekleyenlerin listesini tutar.",
     hero_cta1:"Ücretsiz başla — giriş yap ya da kayıt ol",

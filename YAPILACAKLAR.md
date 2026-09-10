@@ -22,8 +22,15 @@ sonra). İki değişiklik:
   yokken önizleme çıplak başlıktı. Görsel, örnek veriyle (tek çekim, on
   paylaşım) alınmış takvim ekranı; takvim arayüzü değişirse yeniden
   alınmalı (scratchpad'deki Playwright betiği: viewport 1200×630, 2x).
-- Hero başlığı (`hero_h1`) değişmedi; arama terimi H1'de yok. İstenirse
-  `hero_tag` rozetine "content calendar" konabilir, TR karşılığıyla.
+- Hero başlığı (`hero_h1`) değişmedi; arama terimi H1'de yok.
+- **Aynı gün, ikinci PR (kullanıcı "ekle" dedi):** logonun altına tek satır
+  tanıtım metni. Karşılama sayfasında `.marka-alt` ("Content calendar for
+  video creators" / "Video üreticileri için içerik takvimi"), 640px altında
+  gizli. Uygulama rayında `.rail-tagline`, 1023px altında (yatay şerit)
+  gizli; iki satıra kırılıyor, bilerek, ray dar. Hero rozeti `hero_tag`
+  "Content calendar — not an auto-poster" oldu; "for video creators" ekli
+  sürüm masaüstünde iki satıra kırılıp "AUTO-/POSTER" diye bölünüyordu,
+  kısaltıldı. Avatara metin konmadı (40 pikselde okunmuyor).
 
 ---
 
