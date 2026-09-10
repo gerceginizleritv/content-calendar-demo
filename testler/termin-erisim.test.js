@@ -36,12 +36,24 @@ const PORT = process.argv[2] || '8098';
     const yaz = st.color.replace(/\s/g,'');
     const saydam = /rgba?\([^)]*,0\)$/.test(yaz) || st.opacity === '0' || st.visibility === 'hidden';
     const r = d.getBoundingClientRect();
-    return { saydam, metin:d.textContent.trim(), kenar: st.borderStyle,
+    // Ikon bir SVG; metin yerine onu ariyoruz.
+    const ikon = !!d.querySelector('svg');
+    // Hover kurali stil sayfasinda mi: .pdate.bos:hover cerceve veriyor.
+    const hoverKenar = [...document.styleSheets].some(ss=>{
+      try{ return [...ss.cssRules].some(rl=>
+        rl.selectorText && /\.pdate\.bos:hover/.test(rl.selectorText)
+        && /border-color/.test(rl.style.cssText)); }catch(e){ return false; }
+    });
+    return { saydam, ikon, hoverKenar, metin:d.textContent.trim(), kenar: st.borderStyle,
              en: Math.round(r.width), boy: Math.round(r.height), renk: st.color };
   });
   k('BOŞ TARİH DÜĞMESİ GÖRÜNÜR (fareyi getirmeden)', gor.saydam === false, gor.renk);
-  k('düğmede + işareti var', gor.metin === '+', gor.metin);
-  k('kesikli çerçeveyle tıklanabilir duruyor', /dashed/.test(gor.kenar), gor.kenar);
+  // TASARIM DEGISTI. Once kesik cizgili bir "+" vardi: neyin dugmesi
+  // oldugu anlasilmiyor, dolu tarihlerle ayni hizada durmadigi icin de
+  // sutun dagini gorunuyordu. Yerine kucuk bir takvim isareti kondu.
+  // Olculen sey ayni kaldi: dugme GORUNUR ve TIKLANABILIR mi.
+  k('düğmede takvim işareti var', gor.ikon === true, gor.metin || '(ikon)');
+  k('fareyle üstüne gelince çerçeve çıkıyor', gor.hoverKenar === true, gor.hoverKenar);
   k('dokunma hedefi yeterli', gor.en >= 20 && gor.boy >= 18, gor.en+'x'+gor.boy);
 
   // 2) Gercek tiklama (fare ustune gelmeden, dogrudan) pencereyi aciyor mu

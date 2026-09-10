@@ -11800,14 +11800,20 @@ function izgarayiKonumla(gunler, gunSayisi){
   if(!kap || gunSayisi < 2) return;
   const anahtar = gunSayisi + '@' + (gunler[0] ? gunler[0].key : '');
   const yeniPencere = anahtar !== izgaraPenceresi;
-  izgaraPenceresi = anahtar;
   const onceki = kap.scrollLeft;
   const kenar = izgaraKenarIstegi;
   izgaraKenarIstegi = '';
   // Yerlesim bir sonraki karede hazir: scrollWidth simdi okunursa
   // izgara henuz olculmemis olabiliyor.
   requestAnimationFrame(()=>{
+    // DIKKAT: pencere anahtari ancak KONUMLANDIKTAN sonra kaydediliyor.
+    // Once yukarida kaydediliyordu; izgara henuz olculmemisken (gizliyken,
+    // ya da ayni karede iki kez cizildiginde) buradan erken donuluyor ve
+    // anahtar yine de yazilmis oluyordu. Bir sonraki cizim "ayni pencere"
+    // deyip bugune hic konumlanmiyordu: hafta gorunumu pazartesiden
+    // aciliyordu.
     if(kap.scrollWidth <= kap.clientWidth + 1) return;   // hepsi zaten sigiyor
+    izgaraPenceresi = anahtar;
     // Parmakla bir gun kaydirildi: ayni ucta kaliyoruz. Bugune konumlanmak
     // burada yanlis olurdu — goz kaydigi yerden devam etmeli.
     if(kenar){ kap.scrollLeft = kenar === 'son' ? kap.scrollWidth : 0; return; }

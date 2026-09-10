@@ -30,11 +30,12 @@ const { chromium } = require('./araclar');
     await new Promise(r=>setTimeout(r,400));
     window.onayla = c;
     const ad = ()=> [...document.querySelectorAll('.proj-table tbody .pname')].map(x=>x.textContent.trim());
-    const serit = ()=> [...document.querySelectorAll('#p_stats .pstat')]
-                        .map(x=>[x.querySelector('span').textContent.trim(), x.querySelector('b').textContent.trim()]);
-
-    const baslangicSerit = serit();
-    const seritGizliBaslangic = document.getElementById('p_stats').hidden;
+    // OZET SERIDI KALDIRILDI. Sayfanin ustunde ust uste iki sayi blogu
+    // vardi; biri okunuyor oteki calisiyordu. Bu testteki dokuz olcum onu
+    // olcuyordu ve serit gidince askta kaldi. Ayni olcutler (script hazir,
+    // cekildi, izin gerekiyor, iptal) filtre ciplerinde duruyor ve orasi
+    // proje-filtre testleriyle olculuyor. Buradaki konu SIRALAMA ve iptal
+    // davranisi; o kisim asagida oldugu gibi duruyor.
 
     // Bazi adimlari isaretle
     const A = projects.find(p=>p.name==='A surende');
@@ -53,7 +54,6 @@ const { chromium } = require('./araclar');
     await new Promise(r=>setTimeout(r,250));
 
     const sira = ad();
-    const seritSon = serit();
     const satirlar = [...document.querySelectorAll('.proj-table tbody tr')].map(tr=>({
       ad: tr.querySelector('.pname').textContent.trim(),
       sinif: tr.className,
@@ -91,25 +91,11 @@ const { chromium } = require('./araclar');
     // Lokasyon gocundeki [IPTAL] on eki bayraga cevriliyor mu?
     const gocmus = sanitizeProject({ name:'Gocmus', notes:'[İPTAL]\nEski not' });
 
-    return { baslangicSerit, seritGizliBaslangic, sira, seritSon, satirlar,
+    return { sira, satirlar,
              gecikenMetin, gecikenSayi, kutuBaslangic, AiptalMi, siraIptalSonrasi,
              kutuAcilistaIsaretli, AgeriDondu,
              gocmusIptal: gocmus.cancelled, gocmusNot: gocmus.notes };
   });
-
-  const et = a=> Object.fromEntries(a);
-  const s0 = et(r.baslangicSerit), s1 = et(r.seritSon);
-
-  k('Serit gorunuyor', !r.seritGizliBaslangic);
-  k('Baslangicta 4 proje', s0['Toplam proje']==='4', s0);
-  k('Baslangicta izin/iptal kutulari gizli', !('İzin gerekiyor' in s0) && !('İptal edilen' in s0), Object.keys(s0));
-  k('Script hazir 2 (A + B)', s1['Script hazır']==='2', s1);
-  k('Cekildi 2 (A + B)', s1['Çekildi']==='2', s1);
-  k('Yayinda 1 (B)', s1['Yayında']==='1', s1);
-  k('Tamamlandi 1 (B)', s1['Tamamlandı']==='1', s1);
-  k('Izin gerekiyor 1 (D — iptal olan C sayilmiyor)', s1['İzin gerekiyor']==='1', s1);
-  k('Iptal edilen 1 (C)', s1['İptal edilen']==='1', s1);
-  k('Toplam yine 4', s1['Toplam proje']==='4', s1);
 
   // D'nin gecikmis bir termini var, A'nin yok: ikisi de surende oldugu icin
   // aralarindaki sirayi tarih belirliyor ve D once geliyor. Onemli olan

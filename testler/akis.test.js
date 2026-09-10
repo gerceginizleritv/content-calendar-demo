@@ -137,6 +137,9 @@ const { chromium } = require('./araclar');
     document.querySelector('#fk_list [data-fk-script]').click();
     await bekle(200);
     const tekFikirMetni = document.getElementById('sc_text').value;
+    // Kart uzerindeki "script yaz" da artik fikri SECIYOR, metne dokmuyor.
+    const tekFikirSecili = [...document.querySelectorAll('#sc_ideasList input:checked')]
+                             .map(e=> e.dataset.fikirSec);
     document.getElementById('sc_cancel').click();
 
     // ---- 12) SCRIPT SİLME ----
@@ -157,7 +160,7 @@ const { chromium } = require('./araclar');
              bosTaslak, fikirBaglandi, seritGorundu, scriptBaglandi, adimIsaretlendi,
              kaldirilanIsaretGeriGelmedi, rozetler, fikirSayfasi, scriptSayfasi,
              projesizFiltre, projeFiltre, iskelet, iskeletSecili, iskeletProje, iskeletKaydedilmedi,
-             tekFikirMetni, silindi, yerelFikirAdet: yerelF.length, yerelScriptAdet: yerelS.length,
+             tekFikirMetni, tekFikirSecili, silindi, yerelFikirAdet: yerelF.length, yerelScriptAdet: yerelS.length,
              projeKimlik: proje.id };
   });
 
@@ -186,7 +189,13 @@ const { chromium } = require('./araclar');
   k('Fikirler seçili geliyor', r.iskeletSecili > 0, String(r.iskeletSecili));
   k('İskeletli script projeye bağlı doğuyor', r.iskeletProje===r.projeKimlik, r.iskeletProje);
   k('Vazgeçilen iskelet kaydedilmiyor', r.iskeletKaydedilmedi===true);
-  k('Tek fikirden script başlatılıyor', /Metokhites/.test(r.tekFikirMetni), r.tekFikirMetni.slice(0,50));
+  // Kart uzerindeki dugme de sayfadaki dugmeyle ayni kurala uydu: fikir
+  // SECILI geliyor, metne dokulmuyor. Once metne dokuyordu ve 1. adimda
+  // hicbir sey isaretli degildi — kullanici ayni fikri iki kez seciyordu.
+  k('Tek fikirden script: fikir seçili geliyor',
+    r.tekFikirSecili.length === 1, JSON.stringify(r.tekFikirSecili));
+  k('Tek fikirden script: metne dökülmüyor',
+    r.tekFikirMetni.trim() === '', r.tekFikirMetni.slice(0,50));
   k('Script silinebiliyor', r.silindi===true);
   k('Fikirler tarayıcıya yazılıyor', r.yerelFikirAdet===2, r.yerelFikirAdet);
   k('Scriptler tarayıcıya yazılıyor', r.yerelScriptAdet===0, r.yerelScriptAdet);
