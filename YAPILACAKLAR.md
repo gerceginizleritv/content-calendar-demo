@@ -6,6 +6,27 @@ duruyor, neden ertelendiği de yazıyor ki aynı tartışma baştan yapılmasın
 
 ---
 
+## Karşılama sayfası SEO ve bağlantı önizlemesi (10 Eylül 2026)
+
+Kullanıcı Threads'te duyuruya başlıyor (ilk plan yalnızca Threads, Reddit
+sonra). İki değişiklik:
+
+- `index.html` başlığı ve açıklaması arama terimiyle yeniden yazıldı:
+  "Content Calendar for Video Creators". Gerekçe: 2 Eylül vidIQ ölçümünde
+  "content calendar" ayda 11.8K, "content planner app" 750'nin altında;
+  kimse "app" aramıyor. `app.html` başlığı da aynı terimi taşıyor ama
+  farklı: iki sayfa aynı başlığı taşımasın.
+- `index.html`'e canonical (`https://shootboard.app/`) ve Open Graph /
+  Twitter etiketleri eklendi; `og.png` (2400×1260) kök dizinde. Threads,
+  X ve WhatsApp bağlantı önizlemesini bu etiketlerden kuruyor; og:image
+  yokken önizleme çıplak başlıktı. Görsel, örnek veriyle (tek çekim, on
+  paylaşım) alınmış takvim ekranı; takvim arayüzü değişirse yeniden
+  alınmalı (scratchpad'deki Playwright betiği: viewport 1200×630, 2x).
+- Hero başlığı (`hero_h1`) değişmedi; arama terimi H1'de yok. İstenirse
+  `hero_tag` rozetine "content calendar" konabilir, TR karşılığıyla.
+
+---
+
 ## Nerede kaldık (7 Eylül 2026 — araştırmalar Drive'a taşındı)
 
 **Google Drive klasörü "SHOOTBOARD.APP PAZARLAMA STRATEJISI"** (Drive kökünde,
