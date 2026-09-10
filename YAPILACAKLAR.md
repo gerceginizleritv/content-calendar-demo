@@ -1428,7 +1428,8 @@ olarak yazılır: YouTube (video, 20:00) ve Facebook (video, 21:00), aynı
 `shortTitle` (kapak başlığı), `caption` (YouTube açıklaması: hook, özet,
 "Bu videoda:" maddeleri, yorum sorusu, seri satırı, "Rivayet değil,
 kayıt.", kaynaklar, kanal linkleri, hashtag'ler; Facebook'ta kısa
-sürüm + "TAM BELGESELİ İZLEMEK İÇİN" + "Sayfamda Abonelikler açık"),
+sürüm + yorum sorusu + "Sayfamda Abonelikler açık"; Facebook'a video NATİVE
+yüklendiği için açıklamada ASLA "YouTube'da izle" / YouTube linki OLMAZ),
 `hashtags` (virgüllü), `thumbPrompt` (yatay 16:9 + dikey 9:16, anayasa
 kapak şablonu), `slidePrompts: []`. Örnek: Nuruosmaniye ve Sokollu
 kayıtları. Tarih verilmemişse önceki uzun videodan sonraki Cuma'ya
