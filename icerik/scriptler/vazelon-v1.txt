@@ -1,0 +1,527 @@
+VAZELON MANASTIRI — DEFTER TUTAN MANASTIR — VİDEO METNİ (v1)
+
+Tarihi Dedektif — Gerçeğin İzleri
+Karadeniz Dosyası — 2. Bölüm
+
+⚠ TEK SÜRÜM — ve sebebi önemli.
+  Sümela ve Kuştul'da iki sürüm (İÇERİ / DIŞARI) yazdım, çünkü omurgaları iç mekâna bağlıydı.
+  Vazelon'da öyle değil. Üç sebep:
+    1. Kapı yok, bilet yok, görevli yok. Giriş serbest.
+    2. Videonun ana görseli olan freskler KUZEY DIŞ DUVARDA — yani zaten dışarıda.
+    3. Videonun omurgası bir belge; bina değil. İçeri girmek omurgayı değiştirmiyor.
+  Çatı çökük olduğu için iç mekân GÜVENLİ OLMAYABİLİR. Girme kararı sahada verilir;
+  girilmezse bu script olduğu gibi çekilir, eksik kalan hiçbir şey yoktur.
+
+OMURGA (iddia):
+  Aynı ilçede iki manastır var. Birine milyonlar geliyor, bilet alıyor — Sümela.
+  Diğerine kimse gelmiyor; girişi bedava, çatısı çökmüş, freskleri kurşunlanmış — Vazelon.
+  Ama ortaçağ Karadeniz köylüsünün adı, tarlası, vasiyeti, evlilik sözleşmesi ve
+  mahkeme tutanağı Sümela'dan değil, VAZELON'DAN çıktı.
+  Sümela'yı bir RİVAYET taşıyor. Vazelon'u bir KAYIT.
+  Sona saklanan: o kayıtlar artık burada değil — Petersburg'da ve Ankara'da.
+  Bina çöktü, kayıt yaşıyor.
+
+  ★ Bu, kanalın mottosunun fiziksel karşılığı. "Rivayet değil, kayıt" cümlesi bu videoda
+    bir slogan değil, videonun kendi konusu.
+
+Süre hedefi: ~11 dk · Seslendirme kelime hedefi: en az 1500
+
+KURGU İLKELERİ
+- 0–3 sn: tek görüntü, tek cümle. Yapı görünmüyor, yüz görünmüyor.
+- 3–25 sn: sadece merak; üç soru açılır. Format duyurusu, kanal tanıtımı YOK.
+- Seri jeneriği hook bittikten SONRA, ~0:25.
+- Her bölüm bir cevap verir, yeni soru açar.
+- Kalıp kırma en geç 90 saniyede bir.
+- SONA SAKLANAN: buradan çıkan en değerli şeyin ne olduğu ve şu an nerede olduğu.
+
+═══════════════════════════════════════
+ÇEKİM İÇİN — ÖNCE OKU
+═══════════════════════════════════════
+ADRES / ULAŞIM
+  Kiremitli Köyü, Maçka / TRABZON. Rakım ~1.200 m.
+  Maçka'yı 14 km geçtikten sonra, Zigana yolunda Hamsiköy'e VARMADAN,
+  Kiremitli Köyü yol ayrımındaki tabeladan sap. Bir kısmı beton, bir kısmı köy yolu.
+  ⚠ Tabela az. Navigasyonla git; yol bölünmediği için şaşırmazsın.
+  ⚠ Giriş ücreti YOK, saat kısıtı YOK (milli park / ören yeri bileti değil).
+  ⚠ Çevrede yerleşim yok. Akşam saatlerinde tek başına kalma. Gündüz git, gündüz çık.
+
+GÜVENLİK
+  ⚠ Çatı heyelanla çökmüş. İç mekân güvenli olmayabilir — kararı YERİNDE ver.
+  ⚠ Şüphedeysen GİRME. Bu script içeri girmeden de tamdır.
+  ⚠ Yamaç dik. Tripodu kenara kurma.
+
+★ MUTLAKA ÇEKİLECEK ÜÇ ŞEY (videonun omurgası)
+☐ KUZEY DIŞ DUVAR FRESKLERİ — Cennet, Cehennem, Son Yargı.
+  Bu videonun en önemli görüntüsü ve DIŞARIDA.
+  Geniş (duvarın yapıdaki yeri) → orta (sahneler boyunca yavaş pan) → ÇOK YAKIN (tek tek figürler)
+☐ FRESKLERDEKİ TAHRİBAT — üç ayrı tür, üçünü de AYRI AYRI çek:
+    a) kurşun izleri / delikler  b) üstüne kazınmış yazı ve resimler  c) sıva dökülmesi
+  ⚠ Mümkünse SAĞLAM ve TAHRİP OLMUŞ yüzeyi AYNI KAREDE yakala.
+☐ ÇÖKMÜŞ ÇATI — içeriden yukarı bakan plan (girilebiliyorsa) ya da dışarıdan kırık hat.
+  "Bina gitti, kayıt kaldı" cümlesinin görsel karşılığı bu.
+
+DİĞER
+☐ Yaklaşma: araç nerede bitiyor, yürüyüş nasıl (gimbal, kesmesiz)
+☐ Yapının uçurumdaki konumu — karşı yamaçtan geniş plan, insan ölçeği için
+☐ ★ AŞAĞIDAKİ VADİ VE YOL — Zigana güzergâhı. Bölüm 1'in cevabı bu kare.
+☐ Yamaçtan sızan su / su kaynağı ⚠ SAHADA ARA
+☐ Tavandaki beşikte İsa tasviri ⚠ SAHADA ARA, duruyor mu
+☐ Kitabe / yazıt / tarih taşı ⚠ SAHADA ARA
+☐ Define kazısı çukurları — zeminde ⚠ SAHADA ARA
+☐ Tabelaların TAMAMINI fotoğrafla (tarih teyidi için — kaynaklar çelişiyor)
+☐ 10 sn sessiz ortam sesi (rüzgâr, kuş, vadi)
+☐ Motorla dağ yolu, viraj, sis
+
+SAHADA DOLDUR
+  Araçla nereye kadar: ______        Yürüyüş süresi: ______
+  İçeri girilebiliyor / güvenli mi: ______
+  Tabelada yazan kuruluş tarihi: ______
+  Kuzey duvarda kaç ayrı sahne sayılabiliyor: ______
+  Kurşun izi sayısı (yaklaşık): ______
+  Beşikteki İsa tasviri duruyor mu: ______
+  Kitabe var mı, ne yazıyor: ______
+  Restorasyon / koruma çalışması var mı: ______
+
+═══════════════════════════════════════
+0:00–0:03 — AÇILIŞ KARESİ
+═══════════════════════════════════════
+(Kamera: kuzey dış duvardaki cehennem tasvirinden tek bir figürün yüzü, ÇOK YAKIN.
+ Sessizlik. Yapı görünmüyor, konuşmacı görünmüyor.)
+
+Bu cehennem tasviri dışarıda duruyor.
+
+═══════════════════════════════════════
+0:03–0:25 — HOOK
+═══════════════════════════════════════
+(Kamera: kesme, konuşmacı kuzey duvarın önünde; üçüncü cümlede kamera geri açılır,
+ çökmüş çatı ve yapının hali görünür)
+
+  ⚠ Bu 22 saniyede kanal tanıtımı, format duyurusu, isim YOK. Sadece merak yükselir.
+
+Trabzon'da bir manastır var. Milyonlarca insan gidiyor. Bilet alıyor, sıraya giriyor. Adı Sümela.
+
+Aynı ilçede bir manastır daha var. Girişi bedava. Kapısı yok, bileti yok, sırası yok. Çünkü kimse gelmiyor.
+
+Adı Vazelon. Ve bazı kaynaklara göre Sümela'dan daha eski.
+
+Üç soru. Bu yapı neden bin iki yüz metrede, bir uçurumun kenarına kuruldu? Cehennem tasviri neden binanın içine değil, dışına çizildi? Ve buradan çıkan en değerli şey neden artık burada değil?
+
+Üçüncüsünü sona saklıyorum. Çünkü cevabı bu bina değil.
+
+Rivayet değil, kayıt.
+
+(Seri jeneriği — burada, 0:25'te. Açılış karesinden SONRA değil, hook'tan SONRA.)
+
+═══════════════════════════════════════
+BÖLÜM 1 — NEDEN BURASI (0:25–2:40)
+═══════════════════════════════════════
+(Kamera: yaklaşma planı — köy yolu, gimbal; sonra karşı yamaçtan yapının geniş planı)
+
+Maçka. Trabzon'un güneyi.
+
+Zigana'ya giden yolda, Maçka'yı on dört kilometre geçince Kiremitli Köyü ayrımı çıkıyor. Oradan sapıyorsunuz. Yol bir süre beton, sonra köy yolu. Tabela neredeyse yok.
+
+Ve sonra bu görünüyor.
+
+[Kamera: GENİŞ — yapı, uçurum, orman]
+
+Bin iki yüz metre. Dik bir yamacın üstünde.
+
+[EKRAN DAMGASI: KAYIT — Kiremitli Köyü, Maçka · rakım ~1.200 m]
+
+Yapının adı Vazelon. Yazılı kaynaklara göre bu ad üstünde durduğu dağdan geliyor: Zabulon. Zamanla Zuvalon, sonra Vazelon olmuş.
+
+[EKRAN DAMGASI: BAZI KAYNAKLARA GÖRE — ad, Zabulon dağından]
+
+Manastır Vaftizci Yahya'ya adanmış. Bu yüzden kaynaklarda çoğu zaman Aziz Yahya Vazelon Manastırı diye geçer.
+
+Kuruluş için verilen tarih iki yüz yetmiş. Bazı kaynaklar iki yüz yetmiş ile üç yüz on yedi arasını veriyor. Kesin değil, ve ben size kesin diye anlatmayacağım.
+
+[EKRAN DAMGASI: BAZI KAYNAKLARA GÖRE — kuruluş 270–317 arası]
+
+Ama bu aralık doğruysa, Vazelon Sümela'dan bir yüzyıl kadar eski.
+
+Şimdi ilk soruya dönelim. Neden burası?
+
+İnsan bir binayı, taş taşımak zor olsun diye dağa kurmaz. Bir sebep olması lazım. Burada üç tane var.
+
+Birincisi su. Yamaçtan sızıyor. Dağda yaşamanın ilk şartı bu.
+
+İkincisi yükseklik. Aşağıdan gelen görünür. Yukarıdan gelen yoktur.
+
+Üçüncüsü — ve asıl sebep bu — yol.
+
+[KALIP KIRMA: HARİTA — Trabzon limanı · Maçka · Zigana geçidi · Gümüşhane · Erzurum]
+
+Şu aşağıdaki vadi sıradan bir vadi değil. Trabzon limanını iç bölgelere bağlayan güzergâh. Zigana geçidi buradan aşılıyor.
+
+Kervanlar buradan geçiyor. Erzurum'a giden yük buradan geçiyor. İran'dan gelen ipek buradan geçiyor.
+
+Yani bu manastır ıssız bir yere kurulmamış. Tam tersine: bir yolun üstüne kurulmuş.
+
+[EKRAN DAMGASI: YORUM — konum seçimi, güzergâh üzerinden çıkarım]
+
+Ve o yoldan ne geçtiğini düşünün. Doğudan gelen ipek. İçeriden gelen deri, yün, bakır. Limandan içeriye giden kumaş, tuz, cam. Bunların hepsi katır sırtında, bu vadiden, bu yamacın dibinden.
+
+Bir manastırın ayakta kalması için iki şey lazım: toprak ve bağış. İkisi de insanın geçtiği yerde olur. Kimsenin uğramadığı bir dağ başında ne toprak bağışlanır, ne mum yakılır.
+
+[Kamera: aşağıdaki vadi ve yol, yukarıdan]
+
+Bir de şu var. Bin iki yüz dörtte İstanbul, Haçlılar tarafından alındı ve Bizans üçe bölündü. Parçalardan biri buraya, Karadeniz kıyısına kuruldu: Trabzon İmparatorluğu. İki yüz elli yedi yıl sürdü.
+
+Vazelon o iki yüz elli yedi yılın tamamını gördü. Kurulduğunda da buradaydı, yıkıldığında da.
+
+Bunu destekleyen bir kayıt daha var. Beş yüz altmış beşte, İmparator Justinianus bu yapının onarılmasını emrediyor.
+
+[EKRAN DAMGASI: BAZI KAYNAKLARA GÖRE — 565, I. Justinianus onarımı]
+
+Şunu bir düşünün. Bir imparator, başkentinden çok uzaktaki bir dağ manastırını onartıyor. Bunu kimsenin bilmediği, kimsenin uğramadığı bir yer için yapmaz.
+
+İlk soru kapandı. Burası ıssız değildi. Burası yol üstüydü.
+
+Ama bu cevap ikinci soruyu daha da tuhaf hale getiriyor. Madem buradan bu kadar insan geçiyordu — neden en korkutucu resim binanın dışına çizildi?
+
+═══════════════════════════════════════
+BÖLÜM 2 — DIŞARIDAKİ CEHENNEM (2:40–4:50)
+═══════════════════════════════════════
+(Kamera: kuzey dış duvara yürüyüş, geniş → orta)
+
+Kuzey duvara gelin.
+
+Bu duvarda üç şey var. Cennet. Cehennem. Ve Son Yargı.
+
+[EKRAN DAMGASI: KAYIT — kuzey DIŞ duvarda Cennet, Cehennem ve Son Yargı tasvirleri]
+
+Dikkat edin: bunlar içeride değil. Dışarıda. Açık havada. Yağmurun, karın, güneşin altında.
+
+Bu normal değil.
+
+Kilise mimarisinde Son Yargı sahnesi genellikle iç mekânda olur. Cemaat içeri girer, oturur, yukarı bakar ve görür. Sahne cemaat için yapılır.
+
+Burada dışarıda.
+
+Bunun benim bulabildiğim tek makul açıklaması var — ve bu benim yorumum, kayıt değil, o yüzden öyle işaretliyorum:
+
+Bu resim, içeri hiç girmeyecek insanlar için yapılmış.
+
+[EKRAN DAMGASI: YORUM — dış duvar tercihi, işlev üzerinden çıkarım]
+
+Aşağıdan katırcı geçiyor. Kervancı geçiyor. Asker geçiyor. Yolcu geçiyor. Çoğu buranın cemaatinden değil. Bazıları Hristiyan bile değil. Hiçbiri bu manastıra girmeyecek.
+
+Ama hepsi bu duvarı görecek.
+
+[Kamera: ÇOK YAKIN — cehennem sahnesinin figürleri, yavaş pan]
+
+Ve duvar onlara tek bir şey söylüyor: burada bir düzen var, ve o düzenin bir hesabı var.
+
+Son Yargı sahnesi zaten bunun için yapılır. Bir tarafta kurtulanlar, öbür tarafta kurtulamayanlar. Ortada ayıran bir çizgi. Sahne okuma bilmeyen bir insana, tek bakışta, hiçbir açıklama olmadan anlatır. Ortaçağda duvar resminin işi budur — kitabı olmayanın kitabıdır.
+
+[Kamera: orta plan — sahnenin iki yakası aynı karede]
+
+Şimdi bunu yolcunun gözünden düşünün. Günlerdir yürüyorsun. Yamaçta bir yapı görüyorsun. Yaklaşıyorsun, içeri girmiyorsun, giremezsin belki, işin var, kervan bekliyor. Ama duvarda bir resim var ve o resim sana bakıyor.
+
+Bir yapı, kendi içine girmeyen insanlarla işte böyle konuşur. Duvarını dışa çevirir.
+
+[KALIP KIRMA: tele → tavan detayı]
+
+İçeride ise başka bir dil var. Tavanların birinde beşikte bir bebek İsa tasviri olduğu kayıtlı.
+
+[EKRAN DAMGASI: KAYIT — tavanda beşikteki İsa tasviri]
+⚠ SAHADA: duruyor mu, görülebiliyor mu — kontrol et ve kaydet.
+
+Yani bu manastır iki ayrı dil kullanmış. Dışarıda hesap. İçeride doğum. Dışarıda korku. İçeride şefkat.
+
+Hangi yüzünü kime gösterdiğini biliyormuş.
+
+İkinci soru kapandı.
+
+Ama şimdi şuraya bakın.
+
+[Kamera: kesme — freskteki delikler, ÇOK YAKIN]
+
+Bu delikler kurşun.
+
+═══════════════════════════════════════
+BÖLÜM 3 — YÜZ YIL (4:50–7:00)
+═══════════════════════════════════════
+(Kamera: tahribat detayları — kazınmış yazılar, dökülmüş sıva, çökmüş çatı)
+
+Manastır son büyük onarımını on dokuzuncu yüzyılda gördü. O tarihte hâlâ ayaktaydı, hâlâ kullanılıyordu.
+
+[EKRAN DAMGASI: KAYIT — son onarım 19. yüzyıl]
+
+Şimdi burada çoğu insanın atladığı bir şey var.
+
+Trabzon bin dört yüz altmış birde fethedildi. Bu manastır bin dokuz yüz yirmi üçe kadar açık kaldı.
+
+Aradaki fark dört yüz altmış iki yıl.
+
+[EKRAN DAMGASI: KAYIT — 1461 fetih · 1923 terk · arada 462 yıl]
+
+Yani Vazelon'un Osmanlı idaresi altında geçirdiği süre, Trabzon İmparatorluğu'nun tüm ömründen daha uzun. Fetihten sonra kapanmadı, yıkılmadı, boşaltılmadı. Çalışmaya devam etti. Defter tutmaya devam etti.
+
+Bu manastırı bitiren şey bir fetih değil.
+
+Sonra bin dokuz yüz yirmi üç.
+
+Türkiye ile Yunanistan arasındaki nüfus mübadelesi. Buranın cemaati gitti. Ve manastır boş kaldı.
+
+[EKRAN DAMGASI: KAYIT — 1923 mübadelesi · manastır terk edildi]
+
+Şimdi "terk edildi" cümlesinin ne demek olduğunu anlatmam lazım. Çünkü o cümle çok yumuşak. Olan şey bu değil.
+
+Bir: define arayanlar geldi. Kazdılar. Zeminde çukurlar açtılar.
+
+[EKRAN DAMGASI: KAYIT — define kazıları, yapı tahrip edildi]
+
+İki: gelen ziyaretçiler fresklerin üstüne yazı ve resim kazıdı. Kendi adlarını, tarihleri, şekilleri.
+
+[EKRAN DAMGASI: KAYIT — freskler üzerine kazıma]
+
+Üç: fresklere ateş edildi. Deliklerin ne olduğunu az önce gördünüz.
+
+[EKRAN DAMGASI: KAYIT — fresklerde kurşun izleri]
+
+Dört: çatı, heyelan sonucu çöktü.
+
+[EKRAN DAMGASI: KAYIT — çatı heyelanla çöktü]
+
+[KALIP KIRMA: SAYAÇ grafiği — 1923 → bugün · 103 yıl]
+
+Yüz üç yıl. Bin altı yüz yıllık bir yapıyı bu hale getirmek için yüz üç yıl yetti.
+
+Şimdi kendinize bir soru sorun.
+
+Sümela'da bilet var. Görevli var. Korkuluk var. Otopark var. Restorasyon var. Tünel açılıyor, iskele kuruluyor, uzman çalışıyor.
+
+Burada ne var?
+
+Tabela bile zor bulunuyor. Yol tarifini navigasyondan buluyorsunuz. Kapıda kimse yok. Bilet gişesi yok. Bir uyarı levhası bile yok — çatısı çökmüş bir binanın önünde duruyorsunuz ve size bunu söyleyen hiçbir şey yok.
+
+Buraya gelen kişi sayısı bir yerde tutulmuyor bile.
+
+İkisi de aynı ilçede. İkisi de aynı yükseklikte. İkisi de aynı yüzyıllarda kurulmuş, aynı yüzyıllarda terk edilmiş.
+
+Biri ayakta. Biri çöküyor.
+
+Fark ne?
+
+[Kamera: yavaş, sabit — çökmüş çatının kırık hattı]
+
+Sümela'yı taşıyan şey bir rivayet. Gökten gelen bir ikona rivayeti. Güzel bir hikâye, yüzyıllardır anlatılıyor, insanları buraya getiriyor.
+
+[EKRAN DAMGASI: RİVAYET — Sümela'nın ikona anlatısı]
+
+Vazelon'u taşıyan şey ise bir rivayet değil.
+
+Ve işte üçüncü soruya geldik.
+
+═══════════════════════════════════════
+BÖLÜM 4 — SONA SAKLANAN: DEFTERLER (7:00–10:00)
+═══════════════════════════════════════
+(Kamera: boş, çökmüş iç mekân — sonra kesme, arşiv görseli / grafik kart)
+
+Bu manastırdan çıkan en değerli şey bir ikona değil. Bir fresk değil. Altın hiç değil.
+
+Kâğıt.
+
+[EKRAN DAMGASI: KAYIT — Vazelon Kodeksleri / Acta Vazelonis]
+
+Bu manastırda yüzyıllarca defter tutulmuş. Ayakta kaldığı süre boyunca yazılmış, saklanmış, biriktirilmiş. Bugün bu belgelere Vazelon Kodeksleri deniyor. Latince adıyla: Acta Vazelonis.
+
+Elimizdeki belgeler on üçüncü yüzyıldan on beşinci yüzyıla kadar uzanıyor. İki yüz yılı aşkın bir kayıt.
+
+[EKRAN DAMGASI: KAYIT — 13.–15. yüzyıl belgeleri]
+
+Peki bu defterlerde ne yazıyor? İmparatorlar mı? Savaşlar mı? Mucizeler mi?
+
+Hayır.
+
+[KALIP KIRMA: GRAFİK KART — maddeler tek tek ekrana düşer]
+
+Şunlar yazıyor:
+
+Köylüler arasındaki tarla alım satımları.
+
+Vasiyetnameler.
+
+Arazi sınırları.
+
+Evlilik sözleşmeleri.
+
+Ve manastırın yargı yetkisindeki yerel mahkeme tutanakları.
+
+[EKRAN DAMGASI: KAYIT — içerik: mülk alım-satımı, vasiyet, arazi sınırı, evlilik akdi,
+ yerel mahkeme tutanağı]
+
+Durun ve bunun ne anlama geldiğini düşünün. Çünkü ilk duyuşta sıkıcı geliyor. Değil.
+
+Ortaçağı biz genellikle yukarıdan biliriz. İmparatorlar, komutanlar, savaşlar, antlaşmalar. Sebebi basit: yazabilenler onlardı. Yazı pahalıydı, kâğıt pahalıydı, kâtip pahalıydı.
+
+Sıradan insan yazmaz. Yazamaz. Ve yazılmadığı için tarihte görünmez. Yedi yüz yıl önce bu dağda yaşamış bir çiftçinin adı, normal şartlarda öldüğü gün kaybolur.
+
+Bu defterlerde o çiftçi var.
+
+Adı var. Tarlasının nerede bittiği var. Komşusuyla sınır anlaşmazlığı var. Kızını kime verdiği var. Öldüğünde neyi kime bıraktığı var.
+
+[EKRAN DAMGASI: YORUM — kaynağın tarihsel önemi üzerine değerlendirme]
+
+Bu yüzden bu defterler, sanat tarihinden çok sosyal ve ekonomik tarih için değerli. Çünkü ortaçağ Karadeniz köylüsünün gündelik hayatına bakabildiğimiz az sayıdaki pencereden biri.
+
+Bir örnek üzerinden düşünelim. Diyelim ki iki köylü arasında bir tarla sınırı anlaşmazlığı var. Bugün mahkemeye gidersiniz. O gün manastıra gidiyorlar. Manastırın bu konuda yargı yetkisi var. Dinleniyor, karar veriliyor, ve o karar deftere yazılıyor: kimin kime ne dediği, sınırın nereden geçtiği, tanıkların adı.
+
+O defter o gün bir anlaşmazlığı çözmek için tutuldu. Kimse yedi yüz yıl sonra okunacağını düşünmedi.
+
+Ama okunuyor.
+
+[EKRAN DAMGASI: YORUM — kaydın niyetsiz kalıcılığı üzerine değerlendirme]
+
+Bu belgelerden biri bin dokuz yüz yirmi yedide yayımlandı. Uspenski ve Beneşeviç.
+
+[EKRAN DAMGASI: KAYIT — 1927, F. İ. Uspenskii ve V. N. Beneshevich yayını]
+
+Peki bu defterler şimdi nerede?
+
+[Kamera: kesme — boş iç mekân, çökmüş çatıdan gökyüzü görünüyor]
+
+Burada değil.
+
+Bir kısmı Petersburg'da. Bir kısmı Ankara'da, Türk Tarih Kurumu'nda.
+
+[EKRAN DAMGASI: KAYIT — belgelerin bugünkü yeri: Petersburg ve Türk Tarih Kurumu]
+
+Bunun tuhaf bir tarafı var. Defterler buradan çıktığı için kurtuldu. Burada kalsalardı, çatının altında kalırlardı. Ya da define arayanın küreğinin altında.
+
+Bir kaydı koruyan şey her zaman onu yazan bina olmuyor.
+⚠ YAYINDAN ÖNCE TEYİT — bkz. teyit listesi
+
+Üçüncü soru kapandı.
+
+Bu binanın çatısı çöktü. Freskleri kurşunlandı. Duvarına isimler kazındı. Zeminini define arayanlar kazdı. Cemaati yüz yıl önce gitti ve bir daha dönmedi.
+
+Ama içinde tutulan kayıt yaşıyor. Okunuyor. Yayımlanıyor. Üstüne tez yazılıyor.
+
+[KALIP KIRMA: GENİŞ — yapı, vadi, aşağıdaki yol aynı karede]
+
+Bina gitti. Kayıt kaldı.
+
+Ve şunu fark edin: o kayıt bir mucize anlatmıyor. Bir tarla sınırı anlatıyor. Bir vasiyeti anlatıyor. Bir adamın kızını kime verdiğini anlatıyor.
+
+Mucize anlatan metin yüzyıllar içinde büyür, değişir, süslenir. Her anlatan bir şey ekler. Sonunda elinizde kalan şey olayın kendisi değil, anlatılma biçimi olur.
+
+Bir tarla sınırı büyümez. Tarla neredeyse oradadır.
+
+Sıkıcı olan, kalıcı olandır.
+
+Rivayet uçar. Kayıt kalır.
+
+═══════════════════════════════════════
+10:00–10:25 — ÇAĞRI
+═══════════════════════════════════════
+(Kamera: kuzey duvarın önü, tek plan, sabit)
+
+Tek istek, ve bu sefer mekânla ilgili değil.
+
+Yorumlara şunu yazın: sizin ailenizden geriye kalan en eski YAZILI kayıt ne? Bir tapu, bir mektup, bir asker künyesi, bir defter — ne varsa. Kaç yıllık?
+
+Vazelon'un anlattığı şey tam olarak bu. Bir ailenin adı, bir kâğıt yaşadığı sürece yaşıyor.
+
+Karadeniz Dosyası devam ediyor. Bir sonraki bölümde üç kez yıkılıp üç kez yapılmış bir manastıra gidiyoruz.
+
+═══════════════════════════════════════
+10:25–10:45 — KAPANIŞ
+═══════════════════════════════════════
+(Kamera: açılış karesine dönüş — cehennem tasvirindeki yüz, yavaş uzaklaşma;
+ son cümlede kesme, konuşmacı)
+
+Bu cehennem tasviri dışarıda duruyor. Yüzyıllardır, içeri hiç girmeyecek insanlara bakıyor.
+
+Bugün ona bakan da neredeyse kimse yok.
+
+Ben Mustafa Bostancıoğlu, bu da Tarihi Dedektif. Rivayet değil, kayıt. Bir sonraki gizemde görüşmek üzere.
+
+[SERİ KARTI: Karadeniz Dosyası — 1: Sümela · 2: Vazelon · 3: Kuştul · 4: Trabzon Ayasofya]
+
+═══════════════════════════════════════
+İZLEYİCİ TUTMA HARİTASI
+═══════════════════════════════════════
+0:00  Cehennem freski çok yakın, tek cümle: "Bu cehennem tasviri dışarıda duruyor."
+0:03  Sümela karşıtlığı + "girişi bedava çünkü kimse gelmiyor" + üç soru + saklanan vaat
+0:25  Jenerik
+0:25  Neden burası — su, yükseklik, YOL; kalıp kırma: harita (Zigana güzergâhı)
+2:40  Dışarıdaki cehennem — duvar kime bakıyor; SORU 2 KAPANIR (4:30)
+4:50  Yüz yıl — mübadele, define, kazıma, kurşun, çöken çatı; sayaç grafiği
+7:00  SONA SAKLANAN: Acta Vazelonis, içeriği, ve nerede olduğu; SORU 3 KAPANIR
+10:00 Çağrı (aile kaydı sorusu)
+10:25 Kapanış, açılış karesine dönüş
+
+KALIP KIRMA (hiçbiri 90 sn'yi geçmiyor):
+0:25 yaklaşma/geniş → 1:05 damga → 1:50 HARİTA → 2:25 damga → 2:40 mekân değişimi
+(kuzey duvar) → 3:35 damga → 4:15 tele/tavan → 4:50 mekân değişimi (tahribat) →
+5:40 damga → 6:10 SAYAÇ grafiği → 7:00 mekân değişimi (iç/arşiv) → 7:45 GRAFİK KART →
+8:40 damga → 9:20 geniş plan → 10:00 sabit
+
+ÜÇ SORUNUN DENETİMİ
+  Soru 1 — neden 1.200 metrede, uçurum kenarında?  → 2:25'te kapanıyor.
+           Cevap: su + yükseklik + Zigana güzergâhı. Güzergâh kısmı YORUM,
+           Justinianus onarımı destekleyici kayıt. ✅ pozitif çerçeve
+  Soru 2 — cehennem neden DIŞ duvarda?             → 4:30'da kapanıyor.
+           Cevap: içeri girmeyecek yolcular için. YORUM damgalı, ama
+           freskin dışarıda olması KAYIT. ✅ gözlemle destekli
+  Soru 3 — en değerli şey neden burada değil?      → 9:20'de veriliyor.
+           Cevap: Acta Vazelonis — Petersburg ve TTK. ✅ kesin, sona saklandı
+
+REELS KESİTLERİ (5 adet)
+ 1. 0:00–2:00 · 120 sn · Sümela'ya milyonlar gidiyor, 20 dakika ötesine kimse ★★
+ 2. 2:40–4:30 · 110 sn · Cehennemi neden binanın DIŞINA çizdiler? ★
+ 3. 7:00–8:50 · 110 sn · Bu manastırın hazinesi altın değil, defter ★★★
+ 4. 4:50–6:20 ·  90 sn · Yüz yılda ne oldu: define, kazıma, kurşun, çöken çatı
+ 5. 8:50–10:25 ·  95 sn · Bina gitti, kayıt kaldı
+ Hepsi kendi içinde tamamlanır; fragman değil. Facebook sürümlerinde YouTube linki YOK.
+ ★ 3 numaralı kesit kanalın motto videosu — Facebook'ta önce bu denenmeli.
+
+DAMGA LİSTESİ
+KAYIT              — Kiremitli Köyü, Maçka, ~1.200 m · Vaftizci Yahya'ya adanmış ·
+                     kuzey DIŞ duvarda Cennet/Cehennem/Son Yargı freskleri ·
+                     tavanda beşikteki İsa tasviri · son onarım 19. yüzyıl ·
+                     1923 mübadelesi ve terk · define kazıları · freskler üzerine
+                     kazıma · fresklerde kurşun izleri · çatının heyelanla çökmesi ·
+                     Acta Vazelonis / Vazelon Kodeksleri, 13.–15. yüzyıl ·
+                     içerik: mülk alım-satımı, vasiyet, arazi sınırı, evlilik akdi,
+                     yerel mahkeme tutanağı · 1927 Uspenskii–Beneshevich yayını ·
+                     belgelerin Petersburg ve TTK'de bulunması
+BAZI KAYNAKLARA GÖRE — kuruluş 270 (ya da 270–317) · adın Zabulon dağından gelmesi ·
+                     565 Justinianus onarımı · Vazelon'un Sümela'dan eski olması
+RİVAYET            — Sümela'nın ikona anlatısı (bilerek RİVAYET damgalı; videonun
+                     karşıtlığı buna dayanıyor)
+YORUM              — konumun güzergâh üzerinden açıklanması · fresklerin dış duvarda
+                     olmasının sebebi · kodekslerin tarihsel önemi üzerine değerlendirme
+[SAHADA]           — tabela tarihleri · sahne sayısı · kurşun izi sayısı · beşikteki
+                     İsa tasvirinin durumu · kitabe · yol ve yürüyüş süresi
+
+⚠⚠ YAYINDAN ÖNCE MUTLAKA TEYİT EDİLECEK
+  1. KURULUŞ TARİHİ (270 / 270–317). Hook'un "Sümela'dan daha eski" iddiası buna bağlı.
+     İkinci bağımsız kaynak bulunamazsa damga "BAZI KAYNAKLARA GÖRE" kalır ve hook
+     "bazı kaynaklara göre Sümela'dan daha eski" olarak okunur — script zaten böyle yazıldı.
+  2. BELGELERİN BUGÜNKÜ YERİ. "Petersburg" için kaynaklar Leningrad dönemi adını
+     kullanıyor (bugün Sankt-Peterburg Devlet Tarih Müzesi). TTK tarafındaki fasikülün
+     envanter kaydı teyit edilmeli. Bu, videonun SONA SAKLANAN cevabı — en kritik teyit.
+  3. ACTA VAZELONIS İÇERİĞİ. Madde listesi (vasiyet, sınır, evlilik akdi, mahkeme
+     tutanağı) ikinci akademik kaynaktan doğrulanmalı. ODÜ e-arşivindeki tez ve
+     Fırat Ü. SBD makalesi bu iş için uygun.
+  4. ADIN ZABULON'DAN GELMESİ. Tek kaynakta gördüm; ikinci kaynak yoksa cümle
+     "yazılı kaynaklara göre" kalıbında kalır (script böyle yazıldı).
+  5. 565 JUSTİNİANUS ONARIMI — ikinci kaynak.
+  6. FRESKLERİN BUGÜNKÜ DURUMU. Kaynaklar 2010'lu yıllardan. Sahada ne kaldığını
+     GÖR ve metni ona göre düzelt. Olmayan bir freski anlatmak kanalın en büyük riski.
+
+KAYNAKLAR (açıklamaya girecek)
+Kültür Portalı — "Vazelon Manastırı" (T.C. Kültür ve Turizm Bakanlığı) ·
+Doğu Karadeniz Kültür Envanteri Projesi (karadeniz.gov.tr) ·
+Ordu Üniversitesi e-arşiv — "Trabzon Maçka'daki Vazelon (St. John) Manastırı" tezi ·
+Uspenskii & Beneshevich, Acta Vazelonis (1927) ·
+Vikipedi "Vazelon Manastırı" / "Vazelon Monastery" · saha tabelaları
+
+SESLENDİRME KELİME SAYISI: 1513  (kural: en az 1500) ✅
+  Sayım yalnızca okunan metin; başlık, kamera notu, ekran damgası ve Reels işaretleri hariç.
+  ~140 kelime/dk → yaklaşık 10 dk 40 sn seslendirme.

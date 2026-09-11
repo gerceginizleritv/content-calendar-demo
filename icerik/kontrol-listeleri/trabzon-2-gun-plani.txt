@@ -7,10 +7,15 @@ KARAR: ÜÇ AYRI VİDEO, TEK GEZİ
 Arama verisi (vidIQ, TR, aylık) üç mekânın da tek başına video taşıdığını gösterdi:
 
   sümela manastırı belgesel   5.406   rekabet 13,4   fırsat 68,1  ← en yüksek fırsat
+  vazelon manastırı           5.063   rekabet 25,6   fırsat 62,9  ← 2026-09-11'de eklendi
   kuştul manastırı            4.033   rekabet 22,0   fırsat 63,5
   trabzon ayasofya            3.649   rekabet 27,2   fırsat 61,0
   atatürk köşkü trabzon        <750   ölçülebilir talep YOK       ← tek başına video olmaz
   trabzon (şemsiye terim)   110.700   +%80,5 büyüme              ← başlıklarda geçmeli
+
+  AYRI GEZİ (bu hafta sonuna SIĞMAZ — Gümüşhane, stabilize yol):
+  santa harabeleri            4.143   rekabet 31,2   fırsat 59,9  ← kendi gezisi
+  krom vadisi                  <750   ölçülebilir talep YOK       ← Santa videosunun 2. yarısı
 
 Sokollu'da üç mekânı BİRLEŞTİRDİK çünkü tek omurga vardı (bir adam, yapıları, ölümü).
 Burada öyle bir omurga yok; birleştirmek "Trabzon'da 3 yer" listesi olur. Ayrı çekiyoruz.
@@ -24,8 +29,10 @@ Karadeniz'de eylül yağmurlu. Maçka (Sümela + Kuştul) açık hava ve yüksek
 şehir içi (Ayasofya + Köşk) yağmurda da çekilir. Bu yüzden:
 
   ☀ HAVA İYİYSE → Maçka'yı ÖNE AL
-     CUMARTESİ: varış → Maçka (Sümela sabah, Kuştul öğleden sonra)
+     CUMARTESİ: varış → Maçka (Sümela sabah, Kuştul VEYA Vazelon öğleden sonra)
      PAZAR:     Trabzon şehir (Ayasofya + Köşk) → akşam dönüş
+     ⚠ Pazar sabahı vakit kalırsa: dönüş yolunda Vazelon. Zigana yolu üstünde,
+       bilet ve saat kısıtı olmadığı için plana en kolay eklenen mekân burası.
 
   ☂ CUMARTESİ YAĞMURLUYSA → tersine çevir
      CUMARTESİ: Trabzon şehir (Ayasofya + Köşk)
@@ -39,10 +46,17 @@ Hava kararını CUMA AKŞAMI ver, Maçka için sabah saatine göre bak.
 ÖNCELİK SIRASI — vakit daralırsa neyi bırakacaksın
 ═══════════════════════════════════════
 1. SÜMELA      — en yüksek arama fırsatı, bırakılmaz
-2. KUŞTUL      — kendi başına ayakta, ama Sümela'dan sonra
-3. AYASOFYA    — şehir içi, yağmurda bile çekilir, esnek
-4. ATATÜRK KÖŞKÜ — video değil. Sadece B-roll ve olası "Karadeniz" geçiş görüntüsü.
+2. VAZELON     — Sümela'ya çok yakın talep (5.063), yol üstünde, bilet yok, saat kısıtı yok.
+   ⚠ Kuştul'la aynı yarım günü paylaşıyorlar. İkisini birden sıkıştırma.
+   Kuştul yolu kapalı / güvensiz çıkarsa YERİNE BU GEÇER — scripti ve çekim listesi hazır.
+3. KUŞTUL      — kendi başına ayakta, ama ulaşımı en zor olan ve içeri girmek riskli
+4. AYASOFYA    — şehir içi, yağmurda bile çekilir, esnek
+5. ATATÜRK KÖŞKÜ — video değil. Sadece B-roll ve olası "Karadeniz" geçiş görüntüsü.
    Vakit yoksa hiç gitme.
+
+⚠ ÜÇ DAĞ MEKÂNINI (Sümela + Vazelon + Kuştul) BİR GÜNE SIĞDIRMAYI DENEME.
+  Üçü de Maçka'da ve aynı ana yolu paylaşıyorlar, ama dağ yolu üç mekânı kaldırmaz.
+  Gerçekçi olan: SÜMELA sabah + (VAZELON ya da KUŞTUL) öğleden sonra.
 
 ═══════════════════════════════════════
 GENEL — HER MEKÂNDA
@@ -143,6 +157,40 @@ SAHADA DOLDUR
   1906 kitabesi var mı, nerede: ______
   Fresk / sıva kalıntısı var mı: ______
   Koruma altında mı, tabela var mı: ______
+
+═══════════════════════════════════════
+2b) VAZELON MANASTIRI — Kiremitli Köyü, Maçka  ★ 2026-09-11'de eklendi
+═══════════════════════════════════════
+Maçka'yı 14 km geç; Zigana yolunda Hamsiköy'e VARMADAN, Kiremitli Köyü ayrımından sap.
+Bir kısmı beton, bir kısmı köy yolu. Tabela az, navigasyonla git.
+⚠ Giriş ücreti YOK, saat kısıtı YOK, görevli YOK. Plana en kolay eklenen mekân bu.
+⚠ Çatı heyelanla çökmüş — iç mekân güvenli olmayabilir. Kararı yerinde ver, şüphedeysen girme.
+⚠ Çevrede yerleşim yok; gündüz git, gündüz çık.
+
+Bu videonun omurgası BİNA DEĞİL, BELGE: Acta Vazelonis (Vazelon Kodeksleri).
+İçeri girilmese de video tamdır — ana görsel olan freskler kuzey DIŞ duvarda.
+
+☐ ★ KUZEY DIŞ DUVAR FRESKLERİ — Cennet, Cehennem, Son Yargı. DIŞARIDA.
+  Geniş → orta (pan) → çok yakın (tek tek figürler)
+☐ ★ TAHRİBATIN ÜÇ TÜRÜ ayrı ayrı: kurşun izleri · fresk üstüne kazınmış yazılar · sıva dökülmesi
+  Sağlam ve tahrip olmuş yüzeyi AYNI KAREDE yakalarsan Bölüm 3'ün özeti odur.
+☐ ★ ÇÖKMÜŞ ÇATI — içeriden yukarı (güvenliyse) ya da dışarıdan kırık hat
+☐ ★ AŞAĞIDAKİ VADİ VE YOL (Zigana güzergâhı) — Bölüm 1'in cevap karesi, kaçırma
+☐ Karşı yamaçtan geniş plan, uçurumdaki konum
+☐ Yamaçtan sızan su ⚠ SAHADA ARA
+☐ Tavandaki beşikte İsa tasviri ⚠ SAHADA ARA, duruyor mu
+☐ Kitabe, define kazısı çukurları ⚠ SAHADA ARA
+☐ Tabelaların tamamı (kaynaklar çelişiyor, teyit için şart)
+
+SAHADA DOLDUR
+  Araçla nereye kadar: ______        Yürüyüş süresi: ______
+  İçeri girilebiliyor / güvenli mi: ______
+  Tabelada yazan kuruluş tarihi: ______
+  Kuzey duvarda kaç sahne sayılabiliyor: ______
+  Kurşun izi sayısı: ______          Beşikteki İsa duruyor mu: ______
+  Ziyaretçi var mıydı, kaç kişi: ______   ← Sümela karşıtlığı için değerli
+
+Tam liste: icerik/kontrol-listeleri/vazelon-cekim.txt
 
 ═══════════════════════════════════════
 3) TRABZON AYASOFYA — şehir içi
