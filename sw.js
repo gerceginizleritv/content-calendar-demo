@@ -20,7 +20,7 @@
    yeniden yaziliyor.
    ===================================================================== */
 
-const SURUM = 'shootboard-v4';
+const SURUM = 'shootboard-v5';
 const KABUK = [
   './app.html',
   './index.html',

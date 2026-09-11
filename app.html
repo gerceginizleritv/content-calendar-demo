@@ -1588,6 +1588,74 @@ textarea.sc-ai-brief{min-height:64px;resize:vertical;line-height:1.5;}
 /* Pencere acikken kaydirma ARKAYA gecmesin: pencerenin sonuna gelip
    kaydirmaya devam edince altindaki takvim kayiyordu, pencere kapaninca
    da takvim baska bir yerde duruyordu. */
+/* --- Cekim listesi ------------------------------------------------
+   Sahada kullaniliyor: kutular BUYUK (parmakla, ayakta, bazen eldivenle
+   dokunuluyor), satirlar birbirinden ayri. Masaustunde de ayni gorunuyor;
+   iki ayri duzen tutmak yerine dokunmaya gore tek duzen. */
+.cl-ust{display:flex;align-items:center;justify-content:space-between;gap:10px;
+  flex-wrap:wrap;margin-bottom:10px;}
+.cl-sayac{font-size:13px;color:var(--text-dim);font-variant-numeric:tabular-nums;}
+.cl-sayac b{color:var(--text);}
+.cl-ekle{display:flex;gap:8px;margin-bottom:14px;}
+.cl-ekle input{flex:1;min-width:0;padding:10px 12px;border:1px solid var(--line);
+  border-radius:8px;background:var(--bg);color:var(--text);font:inherit;font-size:13.5px;}
+.cl-grup{font-size:11px;text-transform:uppercase;letter-spacing:.07em;
+  color:var(--text-dim);margin:16px 0 6px;}
+.cl-grup:first-child{margin-top:0;}
+.cl-satir{display:flex;align-items:flex-start;gap:10px;padding:9px 10px;
+  border:1px solid var(--line);border-radius:9px;margin-bottom:7px;background:var(--bg);}
+.cl-satir.bitti{opacity:.55;}
+.cl-satir.bitti .cl-metin{text-decoration:line-through;}
+/* 24px kutu: parmak hedefi. Kutunun kendisi degil, cevresindeki dugme
+   tiklaniyor — kucuk bir kutuya nisan almak sahada zor. */
+.cl-kutu{flex:none;width:26px;height:26px;border-radius:7px;border:1.6px solid var(--line);
+  background:var(--surface);color:var(--accent);font-size:15px;line-height:1;
+  display:flex;align-items:center;justify-content:center;cursor:pointer;padding:0;}
+.cl-kutu.on{border-color:var(--accent);background:var(--accent-soft);}
+.cl-orta{flex:1;min-width:0;display:flex;flex-direction:column;gap:5px;}
+.cl-metin{font-size:13.5px;line-height:1.35;overflow-wrap:anywhere;}
+.cl-modal .modal-head h2{margin-bottom:4px;}
+.cl-modal .modal-head .hint,.ih-modal .modal-head .hint{margin:0;}
+.ih-modal .modal-head h2{margin-bottom:4px;}
+/* Bos not kutusu her satirda duruyordu: alti maddelik bir listede alti
+   tane bos kesik cizgili kutu, okunmasi gereken metinden daha cok yer
+   kapliyordu. Not ISTENDIGINDE aciliyor. */
+.cl-notac{align-self:flex-start;background:none;border:none;padding:0;
+  color:var(--text-dim);font:inherit;font-size:11.5px;cursor:pointer;}
+.cl-notac:hover{color:var(--accent);}
+.cl-not{width:100%;padding:5px 8px;border:1px dashed var(--line);border-radius:6px;
+  background:transparent;color:var(--text);font:inherit;font-size:12px;}
+.cl-not:focus{border-style:solid;border-color:var(--accent);outline:none;}
+.cl-sil{flex:none;background:none;border:none;color:var(--text-dim);font-size:15px;
+  cursor:pointer;padding:2px 4px;line-height:1;}
+.cl-sil:hover{color:var(--red);}
+.cl-dikkat{margin-top:16px;padding:12px 14px;border:1px solid var(--line);
+  border-left:3px solid var(--accent);border-radius:8px;background:var(--bg);
+  font-size:13px;line-height:1.5;white-space:pre-wrap;overflow-wrap:anywhere;}
+.cl-dikkat h4{margin:0 0 6px;font-size:11px;text-transform:uppercase;
+  letter-spacing:.07em;color:var(--text-dim);font-weight:700;}
+/* --- Ihtiyac kutuphanesi --- */
+.ih-ara{width:100%;padding:9px 12px;border:1px solid var(--line);border-radius:8px;
+  background:var(--bg);color:var(--text);font:inherit;font-size:13.5px;margin-bottom:12px;}
+.ih-satir{display:flex;align-items:center;gap:10px;padding:7px 9px;border-radius:8px;
+  cursor:pointer;}
+.ih-satir:hover{background:var(--bg);}
+.ih-satir .cl-metin{flex:1;min-width:0;}
+.ih-sil{flex:none;background:none;border:none;color:var(--text-dim);font-size:15px;
+  cursor:pointer;padding:2px 4px;line-height:1;}
+.ih-sil:hover{color:var(--red);}
+.ih-yeni{display:flex;gap:8px;flex-wrap:wrap;margin-top:14px;padding-top:14px;
+  border-top:1px solid var(--line);}
+.ih-yeni input{padding:9px 11px;border:1px solid var(--line);border-radius:8px;
+  background:var(--bg);color:var(--text);font:inherit;font-size:13.5px;}
+#ih_yeniAd{flex:3;min-width:150px;}
+#ih_yeniGrup{flex:2;min-width:110px;}
+.ih-toplu{margin-top:12px;font-size:13px;}
+.ih-toplu summary{cursor:pointer;color:var(--text-dim);}
+.ih-toplu textarea{width:100%;margin-top:8px;padding:9px 11px;border:1px solid var(--line);
+  border-radius:8px;background:var(--bg);color:var(--text);font:inherit;font-size:13px;
+  resize:vertical;}
+.ih-toplu .btn{margin-top:8px;}
 .overlay{display:none;position:fixed;inset:0;background:rgba(4,5,10,0.8);z-index:50;align-items:center;justify-content:center;padding:20px;overscroll-behavior:none;}
 .overlay.open{display:flex;}
 .modal{
@@ -3024,6 +3092,7 @@ textarea.sc-ai-brief{min-height:64px;resize:vertical;line-height:1.5;}
          oldugu surece, pencere bir kez kapatilinca geri donulemiyordu. -->
     <button class="btn btn-wide" id="pe_ideas"><span data-i18n="pe_ideas">Ideas…</span><span class="btn-tag" id="pe_ideasTag"></span></button>
     <button class="btn btn-wide" id="pe_script"><span data-i18n="pe_script">Scripts…</span><span class="btn-tag" id="pe_scriptTag"></span></button>
+    <button class="btn btn-wide" id="pe_liste"><span data-i18n="cl_open">Checklist</span><span class="btn-tag" id="pe_listeTag"></span></button>
     <button class="btn btn-wide" id="pe_deadlines" data-i18n="pe_deadlines">Step deadlines…</button>
     <div class="modal-actions">
       <button class="btn btn-danger" id="pe_delete" data-i18n="p_delete">Delete</button>
@@ -3207,6 +3276,76 @@ textarea.sc-ai-brief{min-height:64px;resize:vertical;line-height:1.5;}
       <button type="button" class="btn btn-danger" id="mk_delete" data-i18n="p_delete">Delete</button>
       <button type="button" class="btn" id="mk_cancel" data-i18n="btn_cancel">Cancel</button>
       <button type="button" class="btn btn-primary" id="mk_save" data-i18n="btn_save">Save</button>
+    </div>
+  </div>
+</div>
+
+<!-- CEKIM LISTESI. Kullanicinin telefonunda tuttugu "cekim kontrol
+     listesi"nin karsiligi. Kendi penceresi var, proje penceresinin
+     icinde DEGIL: sahada acilan sey bu; proje penceresi masa basinda
+     doldurulan form. Isaretleme ANINDA kaydediliyor, "Kaydet"e basmak
+     gerekmiyor — cami icinde kutuyu isaretleyip telefonu cebe koyan
+     kisi kaydetmeyi de hatirlamak zorunda kalmasin. -->
+<div class="overlay" id="cekimListesiOverlay">
+  <div class="modal modal-lg cl-modal">
+    <div class="modal-head">
+      <div>
+        <h2 data-i18n="cl_title">Shot checklist</h2>
+        <p class="hint" id="cl_proje"></p>
+      </div>
+      <button type="button" class="modal-x" id="cl_close" aria-label="Close">×</button>
+    </div>
+    <div class="cl-ust">
+      <div class="cl-sayac" id="cl_sayac"></div>
+      <button type="button" class="btn btn-sm" id="cl_kutuphane" data-i18n="cl_from_lib">Add from my kit list</button>
+    </div>
+    <div class="cl-ekle">
+      <input type="text" id="cl_yeni" maxlength="200" data-i18n-placeholder="cl_add_ph"
+             placeholder="Write an item — gear, a permission, a shot you must not miss…">
+      <button type="button" class="btn" id="cl_ekleBtn" data-i18n="cl_add">Add</button>
+    </div>
+    <div id="cl_liste"></div>
+    <!-- Projenin serbest metni: madde degil, OKUNACAK sey. Buraya salt
+         okunur geliyor ki sahada iki ayri yere bakmak gerekmesin. -->
+    <div class="cl-dikkat" id="cl_dikkat" hidden></div>
+    <div class="modal-actions">
+      <button type="button" class="btn" id="cl_temizle" data-i18n="cl_clear">Clear the ticks</button>
+      <button type="button" class="btn btn-primary" id="cl_bitti" data-i18n="btn_done">Done</button>
+    </div>
+  </div>
+</div>
+
+<!-- IHTIYAC KUTUPHANESI. Kisinin kendi malzemesi: bir kez yaziliyor,
+     her projede hazir bekliyor. Buradan secilen madde projeye KOPYA
+     olarak gidiyor; projede isaretlemek ya da cikarmak kutuphaneyi
+     bozmuyor. -->
+<div class="overlay" id="ihtiyacOverlay">
+  <div class="modal ih-modal">
+    <div class="modal-head">
+      <div>
+        <h2 data-i18n="ih_title">My kit list</h2>
+        <p class="hint" data-i18n="ih_hint">Write it once. It waits here for every shoot.</p>
+      </div>
+      <button type="button" class="modal-x" id="ih_close" aria-label="Close">×</button>
+    </div>
+    <input type="search" id="ih_ara" class="ih-ara" maxlength="80" data-i18n-placeholder="ih_search_ph" placeholder="Search">
+    <div id="ih_liste"></div>
+    <div class="ih-yeni">
+      <input type="text" id="ih_yeniAd" maxlength="120" data-i18n-placeholder="ih_new_ph"
+             placeholder="New item — power bank, light, makeup…">
+      <input type="text" id="ih_yeniGrup" maxlength="40" list="ih_gruplar" data-i18n-placeholder="ih_group_ph" placeholder="Group (optional)">
+      <datalist id="ih_gruplar"></datalist>
+      <button type="button" class="btn" id="ih_yeniBtn" data-i18n="cl_add">Add</button>
+    </div>
+    <details class="ih-toplu">
+      <summary data-i18n="ih_bulk">Paste a whole list</summary>
+      <textarea id="ih_topluMetin" rows="5" maxlength="6000" data-i18n-placeholder="ih_bulk_ph"
+                placeholder="One item per line"></textarea>
+      <button type="button" class="btn" id="ih_topluBtn" data-i18n="ih_bulk_add">Add them all</button>
+      <p class="hint" id="ih_topluNot" hidden></p>
+    </details>
+    <div class="modal-actions">
+      <button type="button" class="btn btn-primary" id="ih_bitti" data-i18n="btn_done">Done</button>
     </div>
   </div>
 </div>
@@ -4719,6 +4858,39 @@ const LANG = {
     p_delete: "Delete",
     p_none: "No projects yet. A project is the shoot, the brand job, the series that your posts come out of.",
     p_none_match: "No project matches that search.",
+    cl_title: "Shot checklist",
+    cl_open: "Checklist",
+    cl_progress: (n, tum)=> `<b>${n}</b> of ${tum} ready`,
+    cl_add_ph: "Write an item — gear, a permission, a shot you must not miss…",
+    cl_add: "Add",
+    cl_from_lib: "Add from my kit list",
+    cl_note_ph: "note",
+    cl_note_add: "+ note",
+    cl_clear: "Clear the ticks",
+    cl_clear_ask: "Clear every tick on this list?",
+    cl_empty: "Nothing on the list yet. Write what you must not forget, or take it from your kit list.",
+    cl_group_own: "Just for this shoot",
+    cl_group_place: (ad)=> `${ad} — from the place card`,
+    cl_group_lib: "From my kit list",
+    cl_cautions_head: "Watch out for",
+    cl_remove: "Remove from this list",
+    cl_limit: (n)=> `A checklist holds ${n} items.`,
+    ih_title: "My kit list",
+    ih_hint: "Write it once. It waits here for every shoot.",
+    ih_search_ph: "Search",
+    ih_new_ph: "New item — power bank, light, makeup…",
+    ih_group_ph: "Group (optional)",
+    ih_bulk: "Paste a whole list",
+    ih_bulk_ph: "One item per line",
+    ih_bulk_add: "Add them all",
+    ih_bulk_done: (n)=> n ? `${n} added.` : "Nothing new — they were already on the list.",
+    ih_empty: "Your kit list is empty. Add what you always take with you.",
+    ih_none_match: "Nothing matches.",
+    ih_group_other: "Other",
+    ih_groups: "Camera,Audio,Light,Power,Personal,Transport",
+    ih_del_ask: (ad)=> `Remove "${ad}" from your kit list? Lists you already built stay as they are.`,
+    ih_limit: (n)=> `Your kit list holds ${n} items.`,
+    btn_done: "Done",
     sira_akilli: "Sort: Smart",
     sira_yeni: "Sort: Newest added",
     sira_eski: "Sort: Oldest added",
@@ -5557,6 +5729,39 @@ const LANG = {
     p_delete: "Sil",
     p_none: "Henüz proje yok. Proje; paylaşımlarının çıktığı çekim, marka işi ya da seri demek.",
     p_none_match: "Bu aramaya uyan proje yok.",
+    cl_title: "\u00c7ekim listesi",
+    cl_open: "\u00c7ekim listesi",
+    cl_progress: (n, tum)=> `${tum} maddeden <b>${n}</b> tamam`,
+    cl_add_ph: "Madde yaz \u2014 malzeme, izin, ka\u00e7\u0131rmaman gereken bir plan\u2026",
+    cl_add: "Ekle",
+    cl_from_lib: "K\u00fct\u00fcphanemden ekle",
+    cl_note_ph: "not",
+    cl_note_add: "+ not",
+    cl_clear: "\u0130\u015faretleri temizle",
+    cl_clear_ask: "Bu listedeki b\u00fct\u00fcn i\u015faretler kald\u0131r\u0131ls\u0131n m\u0131?",
+    cl_empty: "Liste hen\u00fcz bo\u015f. Unutmaman gerekeni yaz ya da k\u00fct\u00fcphanenden al.",
+    cl_group_own: "Bu \u00e7ekime \u00f6zel",
+    cl_group_place: (ad)=> `${ad} \u2014 mekan kart\u0131ndan`,
+    cl_group_lib: "K\u00fct\u00fcphanemden",
+    cl_cautions_head: "\u00c7ekimde dikkat",
+    cl_remove: "Bu listeden \u00e7\u0131kar",
+    cl_limit: (n)=> `Bir \u00e7ekim listesine ${n} madde s\u0131\u011f\u0131yor.`,
+    ih_title: "\u0130htiya\u00e7 k\u00fct\u00fcphanem",
+    ih_hint: "Bir kez yaz\u0131yorsun, her \u00e7ekimde burada haz\u0131r duruyor.",
+    ih_search_ph: "Ara",
+    ih_new_ph: "Yeni madde \u2014 powerbank, \u0131\u015f\u0131k, makyaj\u2026",
+    ih_group_ph: "Grup (iste\u011fe ba\u011fl\u0131)",
+    ih_bulk: "Haz\u0131r bir listeyi yap\u0131\u015ft\u0131r",
+    ih_bulk_ph: "Her sat\u0131r bir madde",
+    ih_bulk_add: "Hepsini ekle",
+    ih_bulk_done: (n)=> n ? `${n} madde eklendi.` : "Yeni bir \u015fey yok \u2014 hepsi zaten listedeydi.",
+    ih_empty: "K\u00fct\u00fcphane bo\u015f. Her \u00e7ekimde yan\u0131na ald\u0131klar\u0131n\u0131 ekle.",
+    ih_none_match: "E\u015fle\u015fen yok.",
+    ih_group_other: "Di\u011fer",
+    ih_groups: "Kamera,Ses,I\u015f\u0131k,Enerji,Ki\u015fisel,Ula\u015f\u0131m",
+    ih_del_ask: (ad)=> `"${ad}" k\u00fct\u00fcphaneden \u00e7\u0131kar\u0131ls\u0131n m\u0131? Haz\u0131rlanm\u0131\u015f listeler oldu\u011fu gibi kal\u0131r.`,
+    ih_limit: (n)=> `K\u00fct\u00fcphaneye ${n} madde s\u0131\u011f\u0131yor.`,
+    btn_done: "Bitti",
     sira_akilli: "S\u0131ra: Ak\u0131ll\u0131",
     sira_yeni: "S\u0131ra: Yeni eklenen",
     sira_eski: "S\u0131ra: Eski eklenen",
@@ -6334,7 +6539,11 @@ function sanitizeProject(raw){
     mapsUrl:    str(raw.mapsUrl, 600),
     fieldNotes: str(raw.fieldNotes, 4000),
     cautions:   str(raw.cautions, 4000),
-    shotList:   str(raw.shotList, 4000)
+    shotList:   str(raw.shotList, 4000),
+    // Cekim listesi: sahada isaretlenen maddeler. Bozuk bir deger
+    // listeyi topluca dusurmesin diye madde madde temizleniyor.
+    checklist: Array.isArray(raw.checklist)
+      ? raw.checklist.map(listeMaddeTemizle).filter(Boolean).slice(0, LISTE_MAX) : []
   };
   // Her adimin kendi teslim tarihi olabiliyor; gecerse satirda kirmizi
   // cikiyor ve sayfanin ustunde sayiliyor.
@@ -6429,6 +6638,7 @@ function projeIcinKayitlar(id){
 const IKON_HARITA = `<svg class="pn-svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M20 10c0 5.5-8 12-8 12s-8-6.5-8-12a8 8 0 0 1 16 0z"/><circle cx="12" cy="10" r="2.8"/></svg>`;
 const IKON_FIKIR  = `<svg class="pn-svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M9 18h6M10 21h4"/><path d="M12 3a6 6 0 0 0-3.6 10.8c.5.4.8 1 .9 1.6l.1.6h5.2l.1-.6c.1-.6.4-1.2.9-1.6A6 6 0 0 0 12 3z"/></svg>`;
 const IKON_SCRIPT = `<svg class="pn-svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M6.5 3.5h8L19 8v12.5H6.5z"/><path d="M14 3.5V8h5"/><path d="M9.5 12.5h6M9.5 16h4"/></svg>`;
+const IKON_LISTE  = `<svg class="pn-svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 6.6l1.7 1.7L9 5"/><path d="M4 13.1l1.7 1.7L9 11.5"/><path d="M4 19.6l1.7 1.7L9 18"/><path d="M12.5 7h7.5M12.5 13.5h7.5M12.5 20h7.5"/></svg>`;
 const IKON_TAKVIM = `<svg class="pn-svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="3.2" y="5" width="17.6" height="15" rx="2.2"/><path d="M3.2 9.6h17.6M8 3.4v3.2M16 3.4v3.2"/><path d="M12 13v4M10 15h4"/></svg>`;
 
 // --- Proje sayfasi ---------------------------------------------------
@@ -6530,6 +6740,354 @@ function projeGunu(p){
   if(tarihler.length) return tarihler.sort()[0];
   return p.shootDate || '';
 }
+// ===== Cekim listesi ==============================================
+// Kullanicinin telefon notlarinda tuttugu "cekim kontrol listesi"nin
+// karsiligi. IKI KATMAN var ve ayri durmalari sart:
+//
+//   Kutuphane      kisinin kendi malzemesi (powerbank, isik, makyaj...).
+//                  Bir kez yaziliyor, her projede hazir bekliyor.
+//                  Hesaba bagli: user_prefs.prefs.ihtiyaclar.
+//   Proje listesi  O CEKIME ait maddeler. Kutuphaneden gelen madde
+//                  projeye KOPYA olarak giriyor. Isaretlemek, not yazmak
+//                  ya da cikarmak kutuphaneyi BOZMUYOR — yoksa bir
+//                  cekimde "powerbank'i cikardim" diyen kisi onu butun
+//                  projelerinden silmis olurdu.
+//
+// Ucuncu bir kaynak daha var: projenin duraklari. Mekan kartinda zaten
+// duran "izin" ve "dikkat edilecekler" notlari listeye kendiliginden
+// dusuyor. Ayni bilgiyi ikinci kez yazmak gerekmiyor.
+const IHTIYAC_KEY = 'demo_ihtiyaclar';
+const IHTIYAC_MAX = 300;
+const LISTE_MAX = 200;
+let ihtiyaclar = [];
+let listeProjesi = null;
+// Notu acilmis maddeler. Pencere kapaninca unutuluyor: bos birakilan
+// bir not kutusu bir dahaki acilista yine yer kaplamasin.
+let listeNotAcik = new Set();
+
+function yeniIhtiyacId(){ return 'ih_' + Date.now().toString(36) + '_' + Math.random().toString(36).slice(2,6); }
+function yeniListeId(){ return 'cl_' + Date.now().toString(36) + '_' + Math.random().toString(36).slice(2,6); }
+
+function ihtiyacTemizle(ham){
+  const ad = String((ham && ham.ad) || '').trim().slice(0, 120);
+  if(!ad) return null;
+  return { id: String((ham && ham.id) || yeniIhtiyacId()).slice(0, 40),
+           ad, grup: String((ham && ham.grup) || '').trim().slice(0, 40) };
+}
+// Ayni maddeyi iki kez eklememek icin karsilastirma: bas/son bosluk ve
+// buyuk/kucuk harf onemsiz. "Powerbank" ile "powerbank " ayni sey.
+function ihtiyacAnahtari(ad){ return String(ad || '').trim().toLocaleLowerCase('tr'); }
+function ihtiyacVarMi(ad){
+  const k = ihtiyacAnahtari(ad);
+  return ihtiyaclar.some(x=> ihtiyacAnahtari(x.ad) === k);
+}
+function saveIhtiyaclar(){
+  try{ localStorage.setItem(IHTIYAC_KEY, JSON.stringify(ihtiyaclar)); }catch(e){}
+  tercihPushKuyrukla();
+}
+function readIhtiyaclar(){
+  try{
+    const ham = JSON.parse(localStorage.getItem(IHTIYAC_KEY) || '[]');
+    return Array.isArray(ham) ? ham.map(ihtiyacTemizle).filter(Boolean).slice(0, IHTIYAC_MAX) : [];
+  }catch(e){ return []; }
+}
+function ihtiyacEkle(ad, grup){
+  if(!String(ad || '').trim()) return null;
+  if(ihtiyacVarMi(ad)) return ihtiyaclar.find(x=> ihtiyacAnahtari(x.ad) === ihtiyacAnahtari(ad));
+  if(ihtiyaclar.length >= IHTIYAC_MAX){ uyari(t('ih_limit')(IHTIYAC_MAX)); return null; }
+  const m = ihtiyacTemizle({ ad, grup });
+  if(!m) return null;
+  ihtiyaclar.push(m);
+  saveIhtiyaclar();
+  return m;
+}
+
+// ---- Projenin listesi ----------------------------------------------
+function listeMaddeTemizle(ham){
+  const metin = String((ham && ham.metin) || '').trim().slice(0, 200);
+  if(!metin) return null;
+  return {
+    id: String((ham && ham.id) || yeniListeId()).slice(0, 60),
+    metin,
+    grup: String((ham && ham.grup) || '').trim().slice(0, 60),
+    not: String((ham && ham.not) || '').trim().slice(0, 200),
+    bitti: (ham && ham.bitti) === true,
+    // 'elle' | 'kutuphane' | 'mekan'. Mekandan gelenler her acilista
+    // tazeleniyor; otekilere dokunulmuyor.
+    kaynak: ['elle','kutuphane','mekan'].indexOf(ham && ham.kaynak) !== -1 ? ham.kaynak : 'elle'
+  };
+}
+function projeListesi(pr){
+  return Array.isArray(pr && pr.checklist) ? pr.checklist : [];
+}
+function projeListesiYaz(pr, liste){
+  pr.checklist = liste.slice(0, LISTE_MAX);
+  projDirtyIsaretle(pr.id);
+  saveProjects();
+}
+// Mekan kartindaki izin ve dikkat notlari listeye madde olarak dusuyor.
+// Kimlik SABIT (mk:<mekan>:izin, mk:<mekan>:dikkat:3): ayni madde ikinci
+// kez eklenmiyor ve isaretin kayboluyor degil. Duraktan cikarilan bir
+// mekanin maddeleri listeden de dusuyor — ama ISARETLENMIS olani
+// duruyor: yapilmis bir isi listeden silmek, yapilmadi sanmaya yol acar.
+function mekanMaddeleri(pr){
+  const cikan = [];
+  projeMekanlari(pr).forEach(mid=>{
+    const m = mekanById(mid);
+    if(!m) return;
+    const ad = mekanAdi(m);
+    if((m.permission || '').trim()){
+      cikan.push({ id: 'mk:' + m.id + ':izin', metin: String(m.permission).trim().slice(0,200),
+                   grup: ad, kaynak: 'mekan' });
+    }
+    String(m.cautions || '').split(/\r?\n/).map(x=>x.trim()).filter(Boolean)
+      .slice(0, 20).forEach((satir, i)=>{
+        cikan.push({ id: 'mk:' + m.id + ':dikkat:' + i, metin: satir.slice(0,200),
+                     grup: ad, kaynak: 'mekan' });
+      });
+  });
+  return cikan.map(listeMaddeTemizle).filter(Boolean);
+}
+function listeyiMekanlardanTazele(pr){
+  const eski = projeListesi(pr);
+  const eskiler = new Map(eski.map(x=> [x.id, x]));
+  const gelen = mekanMaddeleri(pr);
+  const gelenler = new Set(gelen.map(x=> x.id));
+  const yeni = [];
+  // Once mekan disi maddeler oldugu gibi; sonra mekandan gelenler.
+  eski.forEach(x=>{
+    if(x.kaynak !== 'mekan'){ yeni.push(x); return; }
+    // Artik durak degil ama isaretlenmis: kalsin, listeden dusmesin.
+    if(!gelenler.has(x.id) && x.bitti) yeni.push(x);
+  });
+  gelen.forEach(x=>{
+    const vardi = eskiler.get(x.id);
+    // Mekan karti degismis olabilir: metin tazeleniyor, isaret ve not
+    // korunuyor.
+    yeni.push(vardi ? { ...x, bitti: vardi.bitti, not: vardi.not } : x);
+  });
+  const oncekiYazi = JSON.stringify(eski);
+  if(JSON.stringify(yeni) !== oncekiYazi) projeListesiYaz(pr, yeni);
+  return projeListesi(pr);
+}
+function listeSayilari(pr){
+  const liste = projeListesi(pr);
+  return { bitti: liste.filter(x=> x.bitti).length, tum: liste.length };
+}
+
+// ---- Cekim listesi penceresi ---------------------------------------
+function cekimListesiAc(id){
+  const pr = projectById(id);
+  if(!pr) return;
+  listeProjesi = pr;
+  listeNotAcik = new Set();
+  document.getElementById('cl_proje').textContent = pr.name;
+  document.getElementById('cl_yeni').value = '';
+  listeyiMekanlardanTazele(pr);
+  cekimListesiCiz();
+  document.getElementById('cekimListesiOverlay').classList.add('open');
+}
+function cekimListesiKapat(){
+  document.getElementById('cekimListesiOverlay').classList.remove('open');
+  listeProjesi = null;
+  renderProjects();
+}
+function listeGrupAdi(madde){
+  if(madde.kaynak === 'mekan') return t('cl_group_place')(madde.grup || '');
+  if(madde.kaynak === 'kutuphane') return madde.grup || t('cl_group_lib');
+  return t('cl_group_own');
+}
+function cekimListesiCiz(){
+  const pr = listeProjesi;
+  if(!pr) return;
+  const kap = document.getElementById('cl_liste');
+  const liste = projeListesi(pr);
+  const say = listeSayilari(pr);
+  document.getElementById('cl_sayac').innerHTML = say.tum
+    ? t('cl_progress')(say.bitti, say.tum) : '';
+  // Projenin serbest "cekimde dikkat" metni: madde degil, okunacak sey.
+  const dikkat = document.getElementById('cl_dikkat');
+  const metin = (pr.cautions || '').trim();
+  dikkat.hidden = !metin;
+  if(metin){
+    dikkat.innerHTML = '<h4>' + escapeHtml(t('cl_cautions_head')) + '</h4>'
+      + escapeHtml(metin);
+  }
+  if(!liste.length){
+    kap.innerHTML = '<p class="hint">' + escapeHtml(t('cl_empty')) + '</p>';
+    return;
+  }
+  // Gruplar ilk gorulme sirasinda duruyor: kullanicinin ekledigi sira
+  // anlamli, alfabetik siralamak onu bozardi.
+  const gruplar = [];
+  const kova = new Map();
+  liste.forEach(x=>{
+    const ad = listeGrupAdi(x);
+    if(!kova.has(ad)){ kova.set(ad, []); gruplar.push(ad); }
+    kova.get(ad).push(x);
+  });
+  kap.innerHTML = gruplar.map(ad=>
+    '<div class="cl-grup">' + escapeHtml(ad) + '</div>' +
+    kova.get(ad).map(x=>`
+      <div class="cl-satir ${x.bitti ? 'bitti' : ''}">
+        <button type="button" class="cl-kutu ${x.bitti ? 'on' : ''}" data-cl-tik="${escapeHtml(x.id)}"
+                aria-pressed="${x.bitti}" aria-label="${escapeHtml(x.metin)}">${x.bitti ? '✓' : ''}</button>
+        <div class="cl-orta">
+          <div class="cl-metin">${escapeHtml(x.metin)}</div>
+          ${(x.not || listeNotAcik.has(x.id))
+            ? `<input type="text" class="cl-not" maxlength="200" value="${escapeHtml(x.not || '')}"
+                 data-cl-not="${escapeHtml(x.id)}" placeholder="${escapeHtml(t('cl_note_ph'))}">`
+            : `<button type="button" class="cl-notac" data-cl-notac="${escapeHtml(x.id)}"
+                 >${escapeHtml(t('cl_note_add'))}</button>`}
+        </div>
+        <button type="button" class="cl-sil" data-cl-sil="${escapeHtml(x.id)}"
+                title="${escapeHtml(t('cl_remove'))}" aria-label="${escapeHtml(t('cl_remove'))}">×</button>
+      </div>`).join('')
+  ).join('');
+  kap.querySelectorAll('[data-cl-tik]').forEach(el=>{
+    el.addEventListener('click', ()=> listeMaddeTikla(el.dataset.clTik));
+  });
+  kap.querySelectorAll('[data-cl-sil]').forEach(el=>{
+    el.addEventListener('click', ()=> listeMaddeCikar(el.dataset.clSil));
+  });
+  // Not ANINDA kaydediliyor: sahada "sanduka sayisi 3" yazip telefonu
+  // cebe koyan kisi ayrica kaydetmeyi hatirlamak zorunda kalmasin.
+  kap.querySelectorAll('[data-cl-notac]').forEach(el=>{
+    el.addEventListener('click', ()=>{
+      listeNotAcik.add(el.dataset.clNotac);
+      cekimListesiCiz();
+      const yeni = kap.querySelector(`[data-cl-not="${el.dataset.clNotac}"]`);
+      if(yeni) yeni.focus();
+    });
+  });
+  kap.querySelectorAll('[data-cl-not]').forEach(el=>{
+    el.addEventListener('change', ()=> listeNotYaz(el.dataset.clNot, el.value));
+    el.addEventListener('blur', ()=> listeNotYaz(el.dataset.clNot, el.value));
+  });
+}
+function listeMaddeTikla(id){
+  const pr = listeProjesi;
+  if(!pr) return;
+  const liste = projeListesi(pr).map(x=> x.id === id ? { ...x, bitti: !x.bitti } : x);
+  projeListesiYaz(pr, liste);
+  cekimListesiCiz();
+}
+function listeNotYaz(id, deger){
+  const pr = listeProjesi;
+  if(!pr) return;
+  const yeni = String(deger || '').trim().slice(0, 200);
+  const liste = projeListesi(pr);
+  const madde = liste.find(x=> x.id === id);
+  if(!madde || madde.not === yeni) return;
+  projeListesiYaz(pr, liste.map(x=> x.id === id ? { ...x, not: yeni } : x));
+}
+function listeMaddeCikar(id){
+  const pr = listeProjesi;
+  if(!pr) return;
+  projeListesiYaz(pr, projeListesi(pr).filter(x=> x.id !== id));
+  cekimListesiCiz();
+}
+function listeMaddeEkle(metin, kaynak, grup){
+  const pr = listeProjesi;
+  if(!pr) return null;
+  const liste = projeListesi(pr);
+  if(liste.length >= LISTE_MAX){ uyari(t('cl_limit')(LISTE_MAX)); return null; }
+  const madde = listeMaddeTemizle({ metin, kaynak: kaynak || 'elle', grup: grup || '' });
+  if(!madde) return null;
+  // Ayni metin listede zaten varsa ikinci kez eklenmiyor.
+  if(liste.some(x=> ihtiyacAnahtari(x.metin) === ihtiyacAnahtari(madde.metin))) return null;
+  projeListesiYaz(pr, liste.concat([madde]));
+  return madde;
+}
+
+// ---- Ihtiyac kutuphanesi penceresi ---------------------------------
+let ihtiyacArama = '';
+function ihtiyacPenceresiAc(){
+  ihtiyacArama = '';
+  document.getElementById('ih_ara').value = '';
+  document.getElementById('ih_yeniAd').value = '';
+  document.getElementById('ih_yeniGrup').value = '';
+  document.getElementById('ih_topluMetin').value = '';
+  document.getElementById('ih_topluNot').hidden = true;
+  ihtiyacGruplariDoldur();
+  ihtiyacListesiCiz();
+  document.getElementById('ihtiyacOverlay').classList.add('open');
+}
+function ihtiyacPenceresiKapat(){
+  document.getElementById('ihtiyacOverlay').classList.remove('open');
+  cekimListesiCiz();
+}
+function ihtiyacGruplariDoldur(){
+  const kap = document.getElementById('ih_gruplar');
+  if(!kap) return;
+  // Onerilen gruplar + kullanicinin kendi yazdiklari.
+  const oneri = String(t('ih_groups') || '').split(',').map(x=>x.trim()).filter(Boolean);
+  const kendi = ihtiyaclar.map(x=> x.grup).filter(Boolean);
+  const hepsi = [...new Set(oneri.concat(kendi))];
+  kap.innerHTML = hepsi.map(x=> `<option value="${escapeHtml(x)}"></option>`).join('');
+}
+function ihtiyacListesiCiz(){
+  const kap = document.getElementById('ih_liste');
+  if(!kap) return;
+  const pr = listeProjesi;
+  const listedeki = new Set(projeListesi(pr || {}).map(x=> ihtiyacAnahtari(x.metin)));
+  const q = ihtiyacArama.trim().toLocaleLowerCase('tr');
+  const uyan = ihtiyaclar.filter(x=> !q
+    || x.ad.toLocaleLowerCase('tr').indexOf(q) !== -1
+    || (x.grup || '').toLocaleLowerCase('tr').indexOf(q) !== -1);
+  if(!uyan.length){
+    kap.innerHTML = '<p class="hint">' + escapeHtml(ihtiyaclar.length ? t('ih_none_match') : t('ih_empty')) + '</p>';
+    return;
+  }
+  const gruplar = [];
+  const kova = new Map();
+  uyan.forEach(x=>{
+    const ad = x.grup || t('ih_group_other');
+    if(!kova.has(ad)){ kova.set(ad, []); gruplar.push(ad); }
+    kova.get(ad).push(x);
+  });
+  kap.innerHTML = gruplar.map(ad=>
+    '<div class="cl-grup">' + escapeHtml(ad) + '</div>' +
+    kova.get(ad).map(x=>{
+      const secili = listedeki.has(ihtiyacAnahtari(x.ad));
+      return `<div class="ih-satir">
+        <button type="button" class="cl-kutu ${secili ? 'on' : ''}" data-ih-sec="${escapeHtml(x.id)}"
+                aria-pressed="${secili}" aria-label="${escapeHtml(x.ad)}">${secili ? '✓' : ''}</button>
+        <span class="cl-metin">${escapeHtml(x.ad)}</span>
+        <button type="button" class="ih-sil" data-ih-sil="${escapeHtml(x.id)}"
+                title="${escapeHtml(t('cl_remove'))}" aria-label="${escapeHtml(t('cl_remove'))}">×</button>
+      </div>`;
+    }).join('')
+  ).join('');
+  kap.querySelectorAll('[data-ih-sec]').forEach(el=>{
+    el.addEventListener('click', ()=> ihtiyacSecimiCevir(el.dataset.ihSec));
+  });
+  kap.querySelectorAll('[data-ih-sil]').forEach(el=>{
+    el.addEventListener('click', ()=> ihtiyacKutuphanedenSil(el.dataset.ihSil));
+  });
+}
+// Kutuphanede tiklamak maddeyi ACIK LISTEYE ekliyor/cikariyor.
+// Kutuphanenin kendisi degismiyor.
+function ihtiyacSecimiCevir(id){
+  const m = ihtiyaclar.find(x=> x.id === id);
+  const pr = listeProjesi;
+  if(!m || !pr) return;
+  const anahtar = ihtiyacAnahtari(m.ad);
+  const liste = projeListesi(pr);
+  const vardi = liste.find(x=> ihtiyacAnahtari(x.metin) === anahtar);
+  if(vardi) projeListesiYaz(pr, liste.filter(x=> x.id !== vardi.id));
+  else listeMaddeEkle(m.ad, 'kutuphane', m.grup);
+  ihtiyacListesiCiz();
+}
+async function ihtiyacKutuphanedenSil(id){
+  const m = ihtiyaclar.find(x=> x.id === id);
+  if(!m) return;
+  if(!await onayla(t('ih_del_ask')(m.ad))) return;
+  ihtiyaclar = ihtiyaclar.filter(x=> x.id !== id);
+  saveIhtiyaclar();
+  ihtiyacListesiCiz();
+}
+
 // ===== Eklenme tarihine gore sira ==================================
 // Tarih ZATEN kaydediliyordu (createdAt, buluta da gidiyor); eksik olan
 // onu gostermek ve ona gore siralayabilmekti. "Dun ekledigim hangisiydi"
@@ -6791,6 +7349,9 @@ function renderProjects(){
           <button type="button" class="pn-ico ${scriptSayisi(p.id)?'dolu':''}" data-proj-scripts="${escapeHtml(p.id)}"
                   title="${escapeHtml(t('sc_open_full'))}" aria-label="${escapeHtml(t('sc_open_full'))}"
                   >${IKON_SCRIPT}<b>${scriptSayisi(p.id) || 0}</b></button>
+          <button type="button" class="pn-ico ${listeSayilari(p).tum?'dolu':''}" data-proj-list="${escapeHtml(p.id)}"
+                  title="${escapeHtml(t('cl_open'))}" aria-label="${escapeHtml(t('cl_open'))}"
+                  >${IKON_LISTE}<b>${listeSayilari(p).tum ? listeSayilari(p).bitti + '/' + listeSayilari(p).tum : 0}</b></button>
           ${baglar}
           <span class="pn-meta"${yerAdlari.length > 1 ? ` title="${escapeHtml(yerAdlari.join(' → '))}"` : ''}>${[
             escapeHtml(projTypeName(p.type || 'other')),
@@ -6813,6 +7374,9 @@ function renderProjects(){
     <tbody>${satirlar}</tbody>
   </table></div>`;
 
+  kap.querySelectorAll('[data-proj-list]').forEach(el=>{
+    el.addEventListener('click', ()=> cekimListesiAc(el.dataset.projList));
+  });
   kap.querySelectorAll('.pflag').forEach(el=>{
     el.addEventListener('click', ()=>{
       const p = projectById(el.dataset.proj);
@@ -8912,6 +9476,8 @@ function openProjectEdit(id){
   document.getElementById('pe_scriptTag').textContent = kacScript ? t('sc_count')(kacScript) : t('sc_empty');
   const kacFikir = fikirSayisi(p.id);
   document.getElementById('pe_ideasTag').textContent = kacFikir ? t('fk_count')(kacFikir) : t('sc_empty');
+  const sayi = listeSayilari(p);
+  document.getElementById('pe_listeTag').textContent = sayi.tum ? sayi.bitti + '/' + sayi.tum : t('sc_empty');
   sahaAlanlariniDoldur(p);
   document.getElementById('pe_address').value = p.address || '';
   mekanSecimiDoldur(p.placeId || '', 'pe', projeMekanlari(p));
@@ -8994,7 +9560,8 @@ function projToRow(p, uid){
     format: p.format || '', permission: p.permission || '',
     script_url: p.scriptUrl || '', drive_url: p.driveUrl || '',
     maps_url: p.mapsUrl || '', field_notes: p.fieldNotes || '',
-    cautions: p.cautions || '', shot_list: p.shotList || ''
+    cautions: p.cautions || '', shot_list: p.shotList || '',
+    checklist: projeListesi(p)
   };
 }
 function projFromRow(r){
@@ -9010,6 +9577,7 @@ function projFromRow(r){
     placeIds: Array.isArray(r.place_ids) ? r.place_ids : [],
     mapsUrl: r.maps_url || '', fieldNotes: r.field_notes || '',
     cautions: r.cautions || '', shotList: r.shot_list || '',
+    checklist: Array.isArray(r.checklist) ? r.checklist : [],
     deadlines: (r.deadlines && typeof r.deadlines === 'object') ? r.deadlines : {},
     createdAt: r.created_at ? Date.parse(r.created_at) : Date.now()
   };
@@ -9027,7 +9595,15 @@ async function projPullRemote(){
 
 // sql/34 (place_ids) calistirilmadiysa false'a duser; satir o sutunsuz gider.
 let projMekanSutunu = true;
-function projSatirSutunsuz(r){ const k = Object.assign({}, r); delete k.place_ids; return k; }
+// sql/37 (checklist) icin ayni kalkan: betik calistirilmadiysa liste
+// TARAYICIDA kaliyor, kaybolmuyor; sutun acilinca ilk kayitta gidiyor.
+let projListeSutunu = true;
+function projSatirSutunsuz(r){
+  const k = Object.assign({}, r);
+  if(!projMekanSutunu) delete k.place_ids;
+  if(!projListeSutunu) delete k.checklist;
+  return k;
+}
 async function projPushChanges(){
   if(!sb || !session) return;
   const uid = session.user.id;
@@ -9046,11 +9622,17 @@ async function projPushChanges(){
     if(yazilacak.size){
       const rows = projects.filter(p=>yazilacak.has(p.id)).map(p=>projToRow(p, uid));
       if(rows.length){
-        let { error } = await sb.from('projects').upsert(projMekanSutunu ? rows : rows.map(projSatirSutunsuz), { onConflict: 'id' });
+        const tam = projMekanSutunu && projListeSutunu;
+        let { error } = await sb.from('projects').upsert(tam ? rows : rows.map(projSatirSutunsuz), { onConflict: 'id' });
         // sql/34 calistirilmamis: place_ids sutunu yok. Listesiz tekrar dene;
         // ilk durak place_id'de gider, gerisi betik calisinca.
         if(error && projMekanSutunu && /place_ids/.test(String(error.message || error))){
           projMekanSutunu = false;
+          ({ error } = await sb.from('projects').upsert(rows.map(projSatirSutunsuz), { onConflict: 'id' }));
+        }
+        // sql/37 calistirilmamis: checklist sutunu yok.
+        if(error && projListeSutunu && /checklist/.test(String(error.message || error))){
+          projListeSutunu = false;
           ({ error } = await sb.from('projects').upsert(rows.map(projSatirSutunsuz), { onConflict: 'id' }));
         }
         if(error) throw error;
@@ -9890,6 +10472,7 @@ function fikirScriptAfterSignOut(){
   scriptDirty.clear(); scriptRemoved.clear();
   loadFikirScript();
   loadMekanlar();
+  ihtiyaclar = readIhtiyaclar();
   paylasimYukle();
 }
 function readLocalProjects(key){
@@ -10296,6 +10879,17 @@ document.getElementById('pe_ideas').addEventListener('click', ()=>{
   if(document.getElementById('projectEditOverlay').classList.contains('open')) return; // kaydedilemedi
   fikirFiltresiYap(kimlik); setPage('ideas');
 });
+// Cekim listesi: form once KAYDEDILIYOR. Yeni eklenen bir durak
+// kaydedilmeden listeye gecilirse, mekandan gelmesi gereken maddeler
+// gelmez ve kullanici "niye bos" der.
+document.getElementById('pe_liste').addEventListener('click', ()=>{
+  const p = duzenlenenProje;
+  if(!p) return;
+  const kimlik = p.id;
+  document.getElementById('pe_save').click();
+  if(document.getElementById('projectEditOverlay').classList.contains('open')) return; // kaydedilemedi
+  cekimListesiAc(kimlik);
+});
 document.getElementById('pe_script').addEventListener('click', ()=>{
   const p = duzenlenenProje;
   if(!p) return;
@@ -10466,6 +11060,77 @@ document.getElementById('pe_deadlines').addEventListener('click', ()=>{
 });
 document.getElementById('p_name').addEventListener('keydown', e=>{ if(e.key === 'Enter') document.getElementById('p_add').click(); });
 document.getElementById('p_search').addEventListener('input', renderProjects);
+// ---- Cekim listesi penceresi ----------------------------------------
+// Isaretleme ve not ANINDA yaziliyor; bu dugmeler yalnizca pencereyi
+// yonetiyor. "Bitti" bir kaydetme dugmesi DEGIL, kapatma dugmesi.
+document.getElementById('cl_close').addEventListener('click', cekimListesiKapat);
+document.getElementById('cl_bitti').addEventListener('click', cekimListesiKapat);
+document.getElementById('cl_kutuphane').addEventListener('click', ihtiyacPenceresiAc);
+function cekimListesiYeniEkle(){
+  const kutu = document.getElementById('cl_yeni');
+  const metin = (kutu.value || '').trim();
+  if(!metin) return;
+  listeMaddeEkle(metin, 'elle');
+  kutu.value = '';
+  kutu.focus();
+  cekimListesiCiz();
+}
+document.getElementById('cl_ekleBtn').addEventListener('click', cekimListesiYeniEkle);
+document.getElementById('cl_yeni').addEventListener('keydown', e=>{
+  if(e.key === 'Enter'){ e.preventDefault(); cekimListesiYeniEkle(); }
+});
+document.getElementById('cl_temizle').addEventListener('click', async ()=>{
+  const pr = listeProjesi;
+  if(!pr || !listeSayilari(pr).bitti) return;
+  if(!await onayla(t('cl_clear_ask'))) return;
+  projeListesiYaz(pr, projeListesi(pr).map(x=> ({ ...x, bitti: false })));
+  cekimListesiCiz();
+});
+// ---- Ihtiyac kutuphanesi --------------------------------------------
+document.getElementById('ih_close').addEventListener('click', ihtiyacPenceresiKapat);
+document.getElementById('ih_bitti').addEventListener('click', ihtiyacPenceresiKapat);
+document.getElementById('ih_ara').addEventListener('input', e=>{
+  ihtiyacArama = e.target.value; ihtiyacListesiCiz();
+});
+function ihtiyacYeniEkle(){
+  const ad = document.getElementById('ih_yeniAd');
+  const grup = document.getElementById('ih_yeniGrup');
+  const metin = (ad.value || '').trim();
+  if(!metin) return;
+  const m = ihtiyacEkle(metin, grup.value);
+  // Buradan eklenen madde ACIK LISTEYE de giriyor: kisi zaten o cekim
+  // icin yaziyor, bir de ayrica isaretlemek zorunda kalmasin.
+  if(m && listeProjesi) listeMaddeEkle(m.ad, 'kutuphane', m.grup);
+  ad.value = '';
+  ad.focus();
+  ihtiyacGruplariDoldur();
+  ihtiyacListesiCiz();
+}
+document.getElementById('ih_yeniBtn').addEventListener('click', ihtiyacYeniEkle);
+document.getElementById('ih_yeniAd').addEventListener('keydown', e=>{
+  if(e.key === 'Enter'){ e.preventDefault(); ihtiyacYeniEkle(); }
+});
+// Toplu ekleme: elindeki listeyi oldugu gibi yapistir. Basindaki kutu,
+// tire, nokta ve numara isaretleri temizleniyor; zaten olan madde ikinci
+// kez eklenmiyor. Bunlar kutuphaneye giriyor, listeye DEGIL: yirmi
+// maddelik bir malzeme listesi tek bir cekime toptan yazilmamali.
+document.getElementById('ih_topluBtn').addEventListener('click', ()=>{
+  const kutu = document.getElementById('ih_topluMetin');
+  const satirlar = String(kutu.value || '').split(/\r?\n/)
+    .map(x=> x.replace(/^\s*(?:[-*\u2022\u25a1\u2610\u2611\u2713\u2714]|\[[ xX]?\]|\d+[.)])\s*/, '').trim())
+    .filter(Boolean).slice(0, 300);
+  let eklenen = 0;
+  satirlar.forEach(x=>{
+    if(ihtiyacVarMi(x)) return;
+    if(ihtiyacEkle(x, '')) eklenen++;
+  });
+  const not = document.getElementById('ih_topluNot');
+  not.textContent = t('ih_bulk_done')(eklenen);
+  not.hidden = false;
+  if(eklenen) kutu.value = '';
+  ihtiyacGruplariDoldur();
+  ihtiyacListesiCiz();
+});
 document.getElementById('p_sira').addEventListener('click', ()=>{
   projeSiraSecimi = siraSonraki(projeSiraSecimi);
   siraYaz(PROJE_SIRA_KEY, projeSiraSecimi);
@@ -10740,8 +11405,20 @@ function gelenAlinanOku(satir){
   gelenAlinan = Array.isArray(liste) ? liste.filter(x=> typeof x === 'string').slice(0, 5000) : [];
   gelenDefterHazir = true;
 }
+// Kutuphane buluttan: hesapta bir liste varsa o gecerli. Tarayicidaki
+// kopya cihaza ozel bir ayar degil, ayni listenin onbellegi.
+function ihtiyaclarBuluttan(uzak){
+  if(!Array.isArray(uzak)) return;
+  const temiz = uzak.map(ihtiyacTemizle).filter(Boolean).slice(0, IHTIYAC_MAX);
+  if(JSON.stringify(temiz) === JSON.stringify(ihtiyaclar)) return;
+  ihtiyaclar = temiz;
+  try{ localStorage.setItem(IHTIYAC_KEY, JSON.stringify(ihtiyaclar)); }catch(e){}
+}
 function tercihPrefsYap(){
   const prefs = { lang: currentLang };
+  // Ihtiyac kutuphanesi hesaba bagli: telefonda yazilan madde
+  // bilgisayarda da hazir olsun. Bos ise satira hic yazilmiyor.
+  if(ihtiyaclar.length) prefs.ihtiyaclar = ihtiyaclar;
   if(gelenAlinan.length) prefs.gelen_alinan = gelenAlinan;
   // Bayrak buradan yazilmiyor, yalnizca KORUNUYOR: bu islev satirin
   // tamamini yeniden yaziyor, atlanirsa ilk kaydetmede bayrak silinirdi.
@@ -10834,6 +11511,7 @@ async function tercihSenkron(){
     if(error) throw error;
     sinirlariUygula(data);
     hatirlatmaBuluttan(data && data.prefs && data.prefs.reminders);
+    ihtiyaclarBuluttan(data && data.prefs && data.prefs.ihtiyaclar);
     gelenAlinanOku(data);
     const uzakDil = data && data.prefs && data.prefs.lang;
     const uzakTs = data && data.updated_at ? Date.parse(data.updated_at) : 0;
@@ -15079,6 +15757,7 @@ load();
 loadProjects();
 loadFikirScript();
 loadMekanlar();
+ihtiyaclar = readIhtiyaclar();
 paylasimYukle();
 // Bir onceki surumde proje serbest metindi; o kayitlar gercek projeye
 // cevriliyor. Kayitlar yuklendikten SONRA calismali.

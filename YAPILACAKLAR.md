@@ -6,6 +6,40 @@ duruyor, neden ertelendiği de yazıyor ki aynı tartışma baştan yapılmasın
 
 ---
 
+## ÇEKİM LİSTESİ — ikinci tur (11 Eylül 2026)
+
+Birinci tur yapıldı: ihtiyaç kütüphanesi (`user_prefs.prefs.ihtiyaclar`),
+projenin çekim listesi (`projects.checklist`, sql/37), mekan kartındaki
+izin/dikkat notlarının kendiliğinden madde olması, sahada doldurulan
+not alanı, toplu yapıştırma.
+
+Konuşuldu, **ikinci tura bırakıldı**:
+
+1. **Hazır setler.** Kütüphaneden seçilmiş, isimlendirilmiş paketler:
+   "Sokak çekimi seti", "Röportaj seti". Yeni projede tek tıkla geliyor.
+   Kullanıcının kendi cümlesi: *"kendi listesini kendisi önceden
+   hazırlayıp sonrasında bu alanda değerlendirmesi daha iyi olabilir."*
+   Veri yeri hazır: kütüphane maddesinin `grup` alanı var, set bunun
+   üstüne bir ad + kimlik listesi olarak biner.
+
+2. **Telefonda çekim modu.** Tam ekran, tek sütun, çok büyük kutular,
+   ekran açık kalsın (Wake Lock), sayaç tepede sabit. Bugünkü pencere
+   telefonda çalışıyor ama "sahada, ayakta, tek elle" için tasarlanmadı.
+
+3. **Eksik çekimler.** Çekimden dönünce işaretlenmemiş maddeler
+   "eksik" olarak proje satırında ve mekan kartında görünsün — mekan
+   kartındaki "bekleyen çekim" rozetiyle aynı yere bağlanır.
+
+4. **Listeyi paylaşma / PDF.** Ekiple çalışıldığında listeyi göndermek.
+   Bugün yok; paylaşım altyapısı (`paylasim`) var, oraya bağlanabilir.
+
+5. **Scriptten çekim planı üretme.** Script metnindeki "TAŞ 1 — geniş +
+   çok yakın" gibi satırlar listeye madde olarak çıkabilir. Fazla
+   akıllı davranıp yanlış satırları madde yapma riski var; önce
+   kullanıcı birinci turu kullansın.
+
+---
+
 ## ÜCRETLİ SÜRÜME GEÇİNCE: hava servisini değiştir (11 Eylül 2026)
 
 **Bu madde bir tarihe değil, bir OLAYA bağlı: Shootboard para almaya
