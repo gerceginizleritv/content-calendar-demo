@@ -1,3 +1,12 @@
+# ⚠️ 2026-09-11 KURAL DEĞİŞİKLİĞİ — BAŞLIK METNİ
+# Eski: 2-3 kelime etiket ("GİZLİ KÜPLER")
+# Yeni: 3-4 satır, YER + TUHAF GERÇEK + SORU; SON SATIR SORU OLMALI
+#   ✅ "ORDU CADDESİ'NDE / DUVARDA BİR SARAY / KİMSE YUKARI BAKMIYOR / PEKİ NEDEN?"
+# Gerekçe: @tarihin_kayitlari (192K medyan) 12 kapağın 11'i soruyla bitiyor;
+#          @gerceginizleritv 12 kapağın hiçbiri bitmiyor.
+# Dayanak: instragramgrowth deposu, reports/06-derin-rakip-analizi.md bölüm 4
+# Aşağıdaki promptlardaki TEXT bloğu bu yapıya göre güncellenmeli.
+
 KAPAK GÖRSELİ PROMPT ŞABLONU (her uzun video, yatay + dikey)
 Kural belgesi: icerik/KURALLAR.md > Kapak görseli. Gemini ile üretilir; referans Mustafa'nın kendi fotoğrafı.
 Yalnızca [ ] alanları videoya göre değişir. Prompt İngilizce, başlık Türkçe.

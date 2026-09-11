@@ -61,7 +61,9 @@ Bir de şunu söyleyeyim: türbedeki üç isimden biri sizi şaşırtacak. Kayı
 
 Rivayet değil, kayıt.
 
-[REELS KESİM 1 — Hook, 0:00–0:25]
+[REELS KESİM 1 — 90–130 sn — Hook + Bölüm 1, kendi içinde tamamlanan anlatı]
+   (2026-09-11 kural değişikliği: kesit 25 sn değil, 90–130 sn. Gerekçe: nişte
+   ~116 sn medyan → 191.700 izlenme, ~42 sn → 1.681. Bkz. icerik/KURALLAR.md bölüm 1.)
 
 ═══════════════════════════════════════
 BÖLÜM 1 — İÇERİ İNİŞ: BU BİR CAMİ DEĞİL, BİR BODRUM (0:25–2:20)

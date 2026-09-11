@@ -30,14 +30,35 @@ ve komplo dili yok, örgüt adı yok.
 - **Kayıt / rivayet etiketi**: her iddia KAYIT, RİVAYET, YORUM ya da "BAZI
   KAYNAKLARA GÖRE" damgasıyla; belgesi olmayan hiçbir şey kayıt gibi
   anlatılmaz. Dosya sonunda damga listesi ve kaynaklar.
-- **Reels kesimleri** script içinde işaretli (`[REELS KESİM n — ...]`), 4–5 adet.
+- **Reels kesimleri** script içinde işaretli (`[REELS KESİM n — SÜRE — ...]`), 4–5 adet.
+  **⚠️ Süre kuralı (2026-09-11, rakip verisi).** Her kesite süre YAZILIR; belirtilmezse
+  kurguda tesadüfe kalıyor. Hedef bant **90–130 saniye.** Hook kesiti 25 sn değil,
+  **hook + Bölüm 1'in tamamı** — kendi içinde tamamlanan bir anlatı, fragman değil.
+  Gerekçe: nişteki medyan süre/izlenme — @tarihin_kayitlari ~116 sn → 191.700,
+  @kadimtarihtr ~65 sn → 40.550, @gerceginizleritv **~42 sn → 1.681**. Kanalın en kötü
+  içeriği aynı zamanda setin en kısası (24 sn).
+  *Uyarı:* süre tek başına çalışmıyor, merak sürdürmeyle birlikte çalışıyor. Uzun ama
+  sıkıcı kesit daha kötü sonuç verir.
+  Dayanak: `instragramgrowth`, `reports/06-derin-rakip-analizi.md` bölüm 3.
 - **Çekim kontrol listesi** scriptin başında; ayrıca Apple Notes'a
   yapıştırılabilir sade sürüm (`icerik/kontrol-listeleri/`).
 - **Sahada doldurulacaklar** (sayımlar, bugünkü kullanım) scriptte boş
   bırakılır; çekim sonrası v2'ye işlenir.
-- **Seri bağı** (Sinan Dosyası): başlıkta "1. Bölüm" YOK; 5 sn ortak jenerik
-  açılış karesinden sonra, kapanışta seri kartı, oynatma listesi. Her bölüm
-  tek başına izlenebilir.
+- **Seri bağı** (Sinan Dosyası): başlıkta "1. Bölüm" YOK; kapanışta seri kartı,
+  oynatma listesi. Her bölüm tek başına izlenebilir.
+- **⚠️ Jenerik yeri değişti (2026-09-11, tutunma verisi).** 5 sn ortak jenerik
+  artık açılış karesinden sonra DEĞİL, **hook bittikten sonra (~0:25)** girer.
+  Gerekçe: kanalın iki uç videosunun saniye saniye tutunma eğrisi, izleyicinin
+  **üçte birinin 11–14. saniyede, yarısından fazlasının 17–21. saniyede** gittiğini
+  gösteriyor — en iyi videoda bile. 0:03'e konan 5 sn jenerik tam o karar anının
+  önüne giriyor ve içerik yerine marka gösteriyor. Bu, aynı bölümdeki "giriş selamı,
+  kanal tanıtımı yok" kuralının ihlali; jenerik onun istisnası olarak konmuştu ama
+  aynı maliyeti taşıyor.
+  *Alternatif:* jenerik 0:03'te kalacaksa **5 sn → 1,5 sn** inmeli ve kesme değil,
+  görüntü üstüne **bindirme** olmalı.
+  *Test:* sonraki iki videodan birinde 0:03, diğerinde 0:25; 7 gün sonra 20. saniye
+  tutunması karşılaştırılır.
+  Dayanak: `instragramgrowth` deposu, `reports/12-icerik-stratejisi.md` bölüm 3.
 - Script Drive'a "Script — X (v1 …)" adıyla, mekân klasörüne yüklenir; kopyası
   `icerik/scriptler/`.
 
@@ -82,7 +103,15 @@ Nuruosmaniye (18 Eylül 2026) ve Sokollu (2 Ekim 2026) kayıtları.
 - Bakış kameraya değil konu nesnesine (sağa / yukarı); kaşlar çatık, ciddi.
 - Yüzde sıcak altın kenar ışığı, diğer tarafta soğuk gölge; arka plan flu, alacakaranlık.
 - TEK konu nesnesi, kalın parlayan SARI NEON HALKA içinde; halka her kapakta aynı kalınlıkta (seri kimliği).
-- Başlık iki katman: SARI büyük harf (ince koyu kontur) + KIRMIZI bant üstüne BEYAZ; 2–3 kelime; yüz ve halkayla çakışmaz.
+- Başlık iki katman: SARI büyük harf (ince koyu kontur) + KIRMIZI bant üstüne BEYAZ; yüz ve halkayla çakışmaz.
+- **⚠️ Başlık metni soruyla biter (2026-09-11, rakip verisi).** Eski kural "2–3 kelime"ydi;
+  **3–4 satıra** çıkarıldı ve **son satır soru olmalı.**
+  Yapı: **yer + tuhaf gerçek + soru.**
+  ✅ "ORDU CADDESİ'NDE / DUVARDA BİR SARAY / KİMSE YUKARI BAKMIYOR / **PEKİ NEDEN?**"
+  ❌ "GİZLİ KÜPLER" · "DEVEKUŞU YUMURTASI" · "KİMSE İNMEDİ"
+  Gerekçe: @tarihin_kayitlari'nın (192K medyan) 12 kapağının **11'i soruyla bitiyor**,
+  @gerceginizleritv'nin 12 kapağının **hiçbiri** bitmiyor. Bilgi merak ettirmez, cevap ettirir.
+  Dayanak: `instragramgrowth`, `reports/06-derin-rakip-analizi.md` bölüm 4.
 - **Başlık Gemini'de üretilir** (TEXT bloğu prompta girer; onay 2026-09-10).
   Türkçe harf bozulursa TEXT bloğu çıkarılır, alan boş bırakılır, başlık Canva'da eklenir.
 - Canva yalnızca damga temizliği ve boyutlandırma (1280x720 / 1080x1920).
@@ -100,7 +129,25 @@ Nuruosmaniye (18 Eylül 2026) ve Sokollu (2 Ekim 2026) kayıtları.
 - Ekipman: Osmo Action 4 (+gimbal), iPhone 12 Pro (2x tele: küçük detaylar),
   70 mm üstü objektif uzak kuş evleri için, mini tripod, yaka mikrofonu.
 
-## 5. Çalışma düzeni
+## 5. Yayın sonrası ölçüm (2026-09-11)
+
+Her uzun videodan **7 gün sonra** tek sayı not edilir:
+
+> **YouTube Studio → Analiz → Kitle Tutma → 20. saniyedeki oran.**
+> Bugünkü taban **%43**. Hedef **%65**.
+
+Bu, kanalın tek öncelikli metriğidir. Üç gelir kapısı da buna bağlı:
+- **YouTube YPP** — 4.000 saatlik eşiğin para birimi izlenme süresi. Tutunma iki katına
+  çıkarsa aynı dakika yarı izlenmeyle gelir (açık: 2.893 saat).
+- **Facebook Content Monetization** — uygunluk izlenme dakikası üzerinden, pencere son 60 gün.
+- **Sponsorluk** — fiyatı medyan erişim belirliyor.
+
+Ayrıca her ay: Facebook medyan reel izlenmesi (taban 6.900) ve YouTube 12 aylık uzun
+video izlenme saati (taban 1.107 / 4.000).
+
+Ölçümler `instragramgrowth` deposunda `data/` altına kaydedilir.
+
+## 6. Çalışma düzeni
 
 - Bu sohbet yalnızca video içerik araştırması ve hazırlığı içindir (kullanıcı
   kararı, 2026-09-10). Uygulama işleri ayrı.

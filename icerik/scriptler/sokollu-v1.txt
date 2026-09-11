@@ -11,7 +11,8 @@ Kurgu ilkeleri (Kuş Evleri v2 ile aynı):
 - SONA SAKLANAN: Eyüp'teki türbede kimin YATMADIĞI. Hook'ta "türbede biri eksik" diye vaat ediliyor, cevap yalnızca kapanışta veriliyor.
 - Her bölüm bir cevap veriyor, yeni bir soru açıyor.
 - Yaklaşık her 90 saniyede bir kalıp kırılıyor: harita, "rivayet / kayıt" damgası, yukarı tilt, arşiv gravür.
-- Seri bağı başlıkta değil: açılış karesinden sonra 5 saniyelik ortak "Sinan Dosyası" jeneriği, kapanışta seri kartı. Başlık tek başına ayakta durur.
+- Seri bağı başlıkta değil: 5 saniyelik ortak "Sinan Dosyası" jeneriği **hook bittikten sonra (~0:25)**, kapanışta seri kartı. Başlık tek başına ayakta durur.
+- (2026-09-11 kural değişikliği: jenerik 0:03'ten 0:25'e alındı. Tutunma eğrisi izleyicinin üçte birinin 11–14. saniyede gittiğini gösteriyor; jenerik o karar anının önüne giriyordu. Bkz. icerik/KURALLAR.md bölüm 1.)
 - Giriş-çıkış selamı, kanal tanıtımı, "abone ol" yok.
 
 Tahmini süre: ~11,5 dakika (seslendirme kelime sayısı dosya sonunda gerçek sayımla).
@@ -59,8 +60,6 @@ GEÇİŞ GÖRÜNTÜLERİ
 
 Bu taş, Kabe'den geldi.
 
-(5 sn "Sinan Dosyası" jeneriği)
-
 ═══════════════════════════════════════
 0:03–0:25 — HOOK — KADIRGA, CAMİ KAPISI ÖNÜ
 ═══════════════════════════════════════
@@ -76,7 +75,11 @@ Bir şey daha. Eyüp'teki türbesinde biri eksik. Kimin yatmadığını en sonda
 
 Rivayet değil, kayıt.
 
-[REELS KESİM 1 — Hook, 0:00–0:25]
+(5 sn "Sinan Dosyası" jeneriği — hook bittikten sonra)
+
+[REELS KESİM 1 — 90–130 sn — Hook + Bölüm 1, kendi içinde tamamlanan anlatı]
+   (2026-09-11 kural değişikliği: kesit 25 sn değil, 90–130 sn. Gerekçe: nişte
+   ~116 sn medyan → 191.700 izlenme, ~42 sn → 1.681. Bkz. icerik/KURALLAR.md bölüm 1.)
 
 ═══════════════════════════════════════
 BÖLÜM 1 — KADIRGA: MEDRESENİN ALTINDAN GEÇEN KAPI (0:25–2:20)
