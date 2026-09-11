@@ -1,0 +1,26 @@
+KAPAK GÖRSELİ PROMPT ŞABLONU (her uzun video, yatay + dikey)
+Kural belgesi: icerik/KURALLAR.md > Kapak görseli. Gemini ile üretilir; referans Mustafa'nın kendi fotoğrafı.
+Yalnızca [ ] alanları videoya göre değişir. Prompt İngilizce, başlık Türkçe.
+
+Use the attached photo as the exact face and identity reference: same man, same facial features, same salt-and-pepper beard and hair. Do not change his face or age.
+
+Photorealistic [YouTube thumbnail 16:9, 1920x1080 / vertical thumbnail 9:16, 1080x1920], in the style of a high-end documentary channel cover.
+
+[LEFT THIRD / BOTTOM 45%]: the man from the reference photo, tight head-and-shoulders, cut at the chest, wearing only a plain black crew-neck t-shirt, no logo. Head turned [right / up], eyes looking toward the object, brow furrowed, serious and suspicious expression, lips closed. Warm golden rim light on the edge of his face and hair, soft cool shadow on the other side, skin texture sharp.
+
+BACKGROUND: [mekân: avlu, sokak, kıyı vb.], deep depth of field blur, warm dusk light.
+
+[RIGHT HALF / MIDDLE]: [KONU NESNESİ, tek nesne, tarif] enclosed in a thick glowing yellow neon circle that lights the surface around it. This is the visual focus.
+
+TEXT, [upper right / top 20%], two stacked lines, bold condensed sans-serif, all caps:
+Line 1: "[SARI ÜST BAŞLIK]" in bright yellow with a thin dark outline.
+Line 2: "[KIRMIZI BANT BAŞLIK]" in white letters on a solid red rectangular banner.
+Turkish characters exactly as written. The text must not overlap the face or the glowing circle.
+
+Style: cinematic, very high contrast, saturated warm colors, crisp detail on the face, the object and the text. No other text, no watermark, no logos, no extra people.
+
+NOTLAR
+- Her kapakta TEK konu nesnesi. Sarı halka her kapakta aynı kalınlıkta: seri kimliği.
+- Yüz küçük gelirse ikinci tur: "make the man larger, head-and-shoulders fills the full height of the left third".
+- Türkçe harf (İ, Ş, Ğ) bozulursa TEXT bloğunu çıkar, alanı boş bıraktır ("Leave the upper right clean for a title"), başlığı Canva'da ekle.
+- Referans kapaklar: "Gizli Mimari / Kuş Sarayı" yatay ve dikey (Kuş Evleri, Gemini, başlık dahil üretildi).
