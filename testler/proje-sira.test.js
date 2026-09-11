@@ -15,19 +15,21 @@ const { chromium } = require('./araclar');
   console.log('PROJE SIRALAMASI');
 
   const r = await page.evaluate(async ()=>{
-    const c = window.onayla; window.onayla = ()=>false;
-    const kur = (ad, tarih)=>{
-      document.getElementById('p_type').value='studio';
-      document.getElementById('p_type').dispatchEvent(new Event('change'));
-      document.getElementById('p_name').value = ad;
-      document.getElementById('p_shoot').value = tarih || '';
-      document.getElementById('p_add').click();
+    const c = window.onayla; window.onayla = ()=>Promise.resolve(false);
+    // Tek pencere: "Yeni proje" de "Projeyi duzenle" de ayni yer.
+    const kur = async (ad, tarih)=>{
+      openProjectNew(ad);
+      document.getElementById('pe_type').value='studio';
+      document.getElementById('pe_type').dispatchEvent(new Event('change'));
+      document.getElementById('pe_shoot').value = tarih || '';
+      document.getElementById('pe_save').click();
+      await new Promise(r=>setTimeout(r,200));
     };
     // Ekleme sirasi BILEREK tarih sirasindan farkli
-    kur('Uzak proje',  '2026-12-01');
-    kur('Yakin proje', '2026-09-05');
-    kur('Orta proje',  '2026-10-10');
-    kur('Tarihsiz',    '');
+    await kur('Uzak proje',  '2026-12-01');
+    await kur('Yakin proje', '2026-09-05');
+    await kur('Orta proje',  '2026-10-10');
+    await kur('Tarihsiz',    '');
     await new Promise(r=>setTimeout(r,400));
     window.onayla = c;
     const ad = ()=> [...document.querySelectorAll('.proj-table tbody .pname')].map(x=>x.textContent.trim());

@@ -17,12 +17,12 @@ const PORT = process.argv[2] || '8098';
   await page.evaluate(async ()=>{
     document.querySelectorAll('.overlay.open').forEach(o=>o.classList.remove('open')); setPage('projects');
     const c=window.onayla; window.onayla=()=>false;
-    document.getElementById('p_type').value='studio';
-    document.getElementById('p_type').dispatchEvent(new Event('change'));
-    document.getElementById('p_name').value='Tarihsiz proje';
-    document.getElementById('p_shoot').value='';
-    document.getElementById('p_add').click();
-    await new Promise(r=>setTimeout(r,250)); window.onayla=c;
+    openProjectNew('Tarihsiz proje');
+    document.getElementById('pe_type').value='studio';
+    document.getElementById('pe_type').dispatchEvent(new Event('change'));
+    document.getElementById('pe_shoot').value='';
+    document.getElementById('pe_save').click();
+    await new Promise(r=>setTimeout(r,300)); window.onayla=c;
   });
   const bas = await page.evaluate(()=>({
     proje: projects.length, tarih: projects[0] && projects[0].shootDate,

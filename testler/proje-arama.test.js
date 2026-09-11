@@ -17,12 +17,15 @@ const PORT = process.argv[2] || '8098';
     document.querySelectorAll('.overlay.open').forEach(o=>o.classList.remove('open'));
     // Once iki proje kur ki acilir listede secili bir proje olsun
     setPage('projects');
-    const kur = (ad)=>{ const c=window.onayla; window.onayla=()=>false;
-      document.getElementById('p_type').value='studio';
-      document.getElementById('p_type').dispatchEvent(new Event('change'));
-      document.getElementById('p_name').value=ad;
-      document.getElementById('p_add').click(); window.onayla=c; };
-    kur('Zeyrek Camii'); kur('Rumeli Hisarı');
+    // Tek pencere: "Yeni proje" de "Projeyi duzenle" de ayni yer.
+    const kur = async (ad)=>{ const c=window.onayla; window.onayla=()=>Promise.resolve(false);
+      openProjectNew(ad);
+      document.getElementById('pe_type').value='studio';
+      document.getElementById('pe_type').dispatchEvent(new Event('change'));
+      document.getElementById('pe_save').click();
+      await new Promise(r=>setTimeout(r,250));
+      window.onayla=c; };
+    await kur('Zeyrek Camii'); await kur('Rumeli Hisarı');
     await new Promise(r=>setTimeout(r,250));
     const onceP = projects.length;
 

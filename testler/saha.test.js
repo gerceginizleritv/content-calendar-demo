@@ -17,11 +17,11 @@ const { chromium } = require('./araclar');
   // Proje kur ve pencereyi ac
   const ac = await page.evaluate(async ()=>{
     const c=window.onayla; window.onayla=()=>false;
-    document.getElementById('p_type').value='studio';
-    document.getElementById('p_type').dispatchEvent(new Event('change'));
-    document.getElementById('p_name').value='Zeyrek Camii';
-    document.getElementById('p_add').click();
-    await new Promise(r=>setTimeout(r,300)); window.onayla=c;
+    openProjectNew('Zeyrek Camii');
+    document.getElementById('pe_type').value='studio';
+    document.getElementById('pe_type').dispatchEvent(new Event('change'));
+    document.getElementById('pe_save').click();
+    await new Promise(r=>setTimeout(r,350)); window.onayla=c;
     document.querySelector('.pname').click();
     await new Promise(r=>setTimeout(r,250));
     const kat = document.getElementById('pe_fieldFold');

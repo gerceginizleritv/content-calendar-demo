@@ -41,16 +41,18 @@ const bak = (ad, ko, ek)=>{ if(ko){ g++; console.log('  ok  '+ad); } else { k++;
   // donduruyor. Soru "hayir"la bitince pencere acik kaliyor; kapatiliyor.
   async function projeKur(ad, mekan, adres){
     await p.click('#p_openNew');
-    await p.waitForSelector('#projectNewOverlay.open');
-    await p.selectOption('#p_type', 'venue');
-    await p.fill('#p_name', ad);
-    await p.fill('#p_address', adres || '');
-    if(mekan) await p.selectOption('#p_place', mekan);
+    await p.waitForSelector('#projectEditOverlay.open');
+    await p.selectOption('#pe_type', 'venue');
+    await p.fill('#pe_name', ad);
+    // Adres ONCE yaziliyor: mekan secilince adres alani gizleniyor
+    // (bilgi mekan kartindan geliyor), yazilan deger kayitta duruyor.
+    await p.fill('#pe_address', adres || '');
+    if(mekan) await p.click(`[data-mk-sec="${mekan}"]`);
     await p.waitForTimeout(100);
     await p.evaluate(()=>{ window.sorular = []; });
-    await p.click('#p_add');
+    await p.click('#pe_save');
     await p.waitForTimeout(450);
-    await p.evaluate(()=>{ document.getElementById('projectNewOverlay').classList.remove('open'); });
+    await p.evaluate(()=>{ document.getElementById('projectEditOverlay').classList.remove('open'); });
     return p.evaluate((ad)=>{
       const pr = projects.find(x=> x.name === ad) || null;
       const dugme = pr ? document.querySelector(`[data-proj-edit="${pr.id}"]`) : null;

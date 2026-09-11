@@ -22,7 +22,7 @@ const { chromium } = require('./araclar');
     const kutular = [...sayfa.querySelectorAll('input[type="text"], input[type="search"]')].map(x=>x.id);
     return { kutular, bosDurum: !!document.getElementById('p_emptyNew'),
              yeniDugme: !!document.getElementById('p_openNew'),
-             formSayfada: !!sayfa.querySelector('#p_name') };
+             formSayfada: !!sayfa.querySelector('#pe_name') };
   });
   k('Sayfada TEK metin kutusu var (arama)', r1.kutular.length===1 && r1.kutular[0]==='p_search', r1.kutular);
   k('Oluşturma formu sayfadan kalktı', r1.formSayfada===false);
@@ -33,28 +33,28 @@ const { chromium } = require('./araclar');
   await page.click('#p_emptyNew');
   await page.waitForTimeout(250);
   const r2 = await page.evaluate(()=>({
-    acik: document.getElementById('projectNewOverlay').classList.contains('open'),
+    acik: document.getElementById('projectEditOverlay').classList.contains('open'),
     odak: document.activeElement && document.activeElement.id,
-    adres: document.getElementById('p_addressWrap').hidden,
-    tur: document.getElementById('p_type').value
+    adres: document.getElementById('pe_addressWrap').hidden,
+    tur: document.getElementById('pe_type').value
   }));
   k('Pencere açılıyor', r2.acik===true);
-  k('İmleç ad kutusunda', r2.odak==='p_name', r2.odak);
+  k('İmleç ad kutusunda', r2.odak==='pe_name', r2.odak);
   k('Saha işinde adres alanı görünüyor', r2.adres===false, r2);
 
   // Stüdyo seçilince adres gizleniyor
-  await page.selectOption('#p_type', 'studio');
+  await page.selectOption('#pe_type', 'studio');
   await page.waitForTimeout(150);
-  const r3 = await page.evaluate(()=> document.getElementById('p_addressWrap').hidden);
+  const r3 = await page.evaluate(()=> document.getElementById('pe_addressWrap').hidden);
   k('Stüdyo işinde adres gizleniyor', r3===true);
 
   // Proje oluştur
   await page.evaluate(()=>{ window.onayla = ()=> Promise.resolve(false); });
-  await page.fill('#p_name', 'Kariye Mozaikleri');
-  await page.click('#p_add');
+  await page.fill('#pe_name', 'Kariye Mozaikleri');
+  await page.click('#pe_save');
   await page.waitForTimeout(500);
   const r4 = await page.evaluate(()=>({
-    kapandi: !document.getElementById('projectNewOverlay').classList.contains('open'),
+    kapandi: !document.getElementById('projectEditOverlay').classList.contains('open'),
     adet: projects.length,
     satir: [...document.querySelectorAll('.proj-table tbody .pname')].map(x=>x.textContent.trim()),
     bosDurum: !!document.getElementById('p_emptyNew')
@@ -66,11 +66,11 @@ const { chromium } = require('./araclar');
   // Pencere temiz açılıyor (önceki ad kalmıyor)
   await page.click('#p_openNew');
   await page.waitForTimeout(250);
-  const r5 = await page.evaluate(()=>({ ad: document.getElementById('p_name').value,
-                                        adres: document.getElementById('p_address').value,
-                                        tarih: document.getElementById('p_shoot').value }));
+  const r5 = await page.evaluate(()=>({ ad: document.getElementById('pe_name').value,
+                                        adres: document.getElementById('pe_address').value,
+                                        tarih: document.getElementById('pe_shoot').value }));
   k('Pencere boş açılıyor', r5.ad==='' && r5.adres==='' && r5.tarih==='', r5);
-  await page.evaluate(()=> closeProjectNew());
+  await page.evaluate(()=> closeProjectEdit());
 
   // Arama hâlâ çalışıyor
   await page.fill('#p_search', 'Kariye');

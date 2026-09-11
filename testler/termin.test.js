@@ -22,12 +22,12 @@ const { chromium } = require('./araclar');
   const olus = await page.evaluate(async ()=>{
     const c = window.onayla; window.__soruldu = null;
     window.onayla = (m)=>{ window.__soruldu = m; return true; };   // evet de
-    document.getElementById('p_type').value = 'studio';
-    document.getElementById('p_type').dispatchEvent(new Event('change'));
-    document.getElementById('p_name').value = 'Saha Çekimi — Trabzon';
-    document.getElementById('p_shoot').value = '2026-09-19';
-    document.getElementById('p_add').click();
-    await new Promise(r=>setTimeout(r,250));
+    openProjectNew('Saha Çekimi — Trabzon');
+    document.getElementById('pe_type').value = 'studio';
+    document.getElementById('pe_type').dispatchEvent(new Event('change'));
+    document.getElementById('pe_shoot').value = '2026-09-19';
+    document.getElementById('pe_save').click();
+    await new Promise(r=>setTimeout(r,350));
     window.onayla = c;
     return { soru: window.__soruldu,
              acik: document.getElementById('deadlineOverlay').classList.contains('open'),

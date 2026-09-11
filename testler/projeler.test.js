@@ -38,16 +38,17 @@ const { chromium } = require('./araclar');
 
   // Proje olustur (yeni form: ad + tur + cekim tarihi; anahtar kelime yok)
   const olus = await page.evaluate(async ()=>{
-    document.getElementById('p_type').value = 'studio';
-    document.getElementById('p_type').dispatchEvent(new Event('change'));
-    document.getElementById('p_name').value = 'Güz Stüdyo Çekimi';
-    document.getElementById('p_shoot').value = '2026-09-14';
-    document.getElementById('p_add').click();
-    await new Promise(r=>setTimeout(r,200));
+    // Tek pencere: "Yeni proje" de "Projeyi duzenle" de ayni yer.
+    openProjectNew('Güz Stüdyo Çekimi');
+    document.getElementById('pe_type').value = 'studio';
+    document.getElementById('pe_type').dispatchEvent(new Event('change'));
+    document.getElementById('pe_shoot').value = '2026-09-14';
+    document.getElementById('pe_save').click();
+    await new Promise(r=>setTimeout(r,300));
     return { adet: projects.length, satir: document.querySelectorAll('.proj-table tbody tr').length,
              ad: projects[0] && projects[0].name, cekim: projects[0] && projects[0].shootDate,
              adim: document.querySelectorAll('.proj-table tbody tr .pflag').length,
-             formTemiz: document.getElementById('p_name').value === '' };
+             formTemiz: !document.getElementById('projectEditOverlay').classList.contains('open') };
   });
   k('proje oluştu', olus.adet === 1 && olus.satir === 1, olus.ad);
   k('çekim tarihi kaydedildi', olus.cekim === '2026-09-14', olus.cekim);
@@ -56,9 +57,11 @@ const { chromium } = require('./araclar');
 
   const mukerrer = await page.evaluate(async ()=>{
     window.__uyari=null; const eskiAlert = window.uyari; window.uyari = m=>{ window.__uyari=m; };
-    document.getElementById('p_name').value = 'güz stüdyo çekimi';
-    document.getElementById('p_add').click();
-    await new Promise(r=>setTimeout(r,150));
+    openProjectNew('güz stüdyo çekimi');
+    document.getElementById('pe_type').value = 'studio';
+    document.getElementById('pe_save').click();
+    await new Promise(r=>setTimeout(r,250));
+    closeProjectEdit();
     window.uyari = eskiAlert;
     return { adet: projects.length, uyari: window.__uyari };
   });

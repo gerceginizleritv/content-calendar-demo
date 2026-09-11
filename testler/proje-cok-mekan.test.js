@@ -31,31 +31,37 @@ const bak = (ad, ko, ek)=>{ if(ko){ g++; console.log('  ok  '+ad); } else { k++;
     saveMekanlar(); projects = []; saveProjects(); setPage('projects');
   });
   const cipler = (onek)=> p.$$eval('#' + onek + '_placeList [data-cip]', e=> e.map(x=> x.dataset.cip).join(','));
-  const secili = (onek)=> p.$eval('#' + onek + '_place', e=> e.value);
+  // Eskiden bir <select> vardi; simdi kutucuklu liste. "Secili olan"
+  // sorusunun karsiligi isaretli satirlar.
+  const isaretli = ()=> p.$$eval('#pe_placeSecenek .secili', e=> e.map(x=> x.dataset.mkSec).join(','));
 
   console.log('[olusturma: iki durak]');
   await p.click('#p_openNew');
-  await p.waitForSelector('#projectNewOverlay.open');
-  await p.selectOption('#p_type', 'venue');
-  await p.fill('#p_name', 'Belgesel günü');
-  await p.selectOption('#p_place', 'm_han');
+  await p.waitForSelector('#projectEditOverlay.open');
+  await p.selectOption('#pe_type', 'venue');
+  await p.fill('#pe_name', 'Belgesel günü');
+  await p.click('[data-mk-sec="m_han"]');
   await p.waitForTimeout(100);
-  bak('ilk secim tek cip', await cipler('p') === 'm_han', await cipler('p'));
-  bak('tek cipte sira oku yok', await p.$$eval('#p_placeList [data-cip-yukari]', e=> e.length) === 0);
-  await p.selectOption('#p_place', 'm_carsi');
+  bak('ilk secim tek cip', await cipler('pe') === 'm_han', await cipler('pe'));
+  bak('tek cipte sira oku yok', await p.$$eval('#pe_placeList [data-cip-yukari]', e=> e.length) === 0);
+  await p.click('[data-mk-sec="m_carsi"]');
   await p.waitForTimeout(100);
-  bak('ikinci secim ikinci cip, ilki duruyor', await cipler('p') === 'm_han,m_carsi', await cipler('p'));
-  bak('kutu son secileni gosteriyor', await secili('p') === 'm_carsi');
-  bak('bilgi satiri son secilenin adresi', /Çarşı adresi/.test(await p.$eval('#p_placeBilgi', e=> e.textContent)));
-  await p.click('#p_placeList [data-cip="m_carsi"] [data-cip-yukari]');
+  bak('ikinci secim ikinci cip, ilki duruyor', await cipler('pe') === 'm_han,m_carsi', await cipler('pe'));
+  bak('secilenlerin kutucugu isaretli', (await isaretli()).split(',').sort().join(',') === 'm_carsi,m_han', await isaretli());
+  bak('bilgi satiri son secilenin adresi', /Çarşı adresi/.test(await p.$eval('#pe_placeBilgi', e=> e.textContent)));
+  await p.click('#pe_placeList [data-cip="m_carsi"] [data-cip-yukari]');
   await p.waitForTimeout(80);
-  bak('yukari al sirayi degistiriyor', await cipler('p') === 'm_carsi,m_han', await cipler('p'));
-  bak('ilk cipin yukari oku kapali', await p.$eval('#p_placeList [data-cip="m_carsi"] [data-cip-yukari]', e=> e.disabled));
-  await p.selectOption('#p_place', 'm_han');
+  bak('yukari al sirayi degistiriyor', await cipler('pe') === 'm_carsi,m_han', await cipler('pe'));
+  bak('ilk cipin yukari oku kapali', await p.$eval('#pe_placeList [data-cip="m_carsi"] [data-cip-yukari]', e=> e.disabled));
+  // Kutucuklu listede ikinci tik CIKARMA demek; ucuncu tik geri ekliyor.
+  await p.click('[data-mk-sec="m_han"]');
   await p.waitForTimeout(80);
-  bak('ayni mekan ikinci kez eklenmiyor', await cipler('p') === 'm_carsi,m_han', await cipler('p'));
+  bak('tekrar tiklamak duragi cikariyor', await cipler('pe') === 'm_carsi', await cipler('pe'));
+  await p.click('[data-mk-sec="m_han"]');
+  await p.waitForTimeout(80);
+  bak('tekrar eklenince sona giriyor', await cipler('pe') === 'm_carsi,m_han', await cipler('pe'));
   await p.evaluate(()=>{ window.sorular = []; });
-  await p.click('#p_add');
+  await p.click('#pe_save');
   await p.waitForTimeout(400);
   const pr = await p.evaluate(()=>{
     const x = projects[0]; if(!x) return null;
@@ -84,17 +90,21 @@ const bak = (ad, ko, ek)=>{ if(ko){ g++; console.log('  ok  '+ad); } else { k++;
   await p.waitForSelector('#projectEditOverlay.open');
   await p.waitForTimeout(100);
   bak('duzenlemede iki cip sirayla', await cipler('pe') === 'm_carsi,m_han', await cipler('pe'));
-  bak('kutu ilk duragi gosteriyor', await secili('pe') === 'm_carsi', await secili('pe'));
-  await p.selectOption('#pe_place', 'm_sahil');
+  bak('duzenlemede kutucuklar isaretli',
+      (await isaretli()).split(',').sort().join(',') === 'm_carsi,m_han', await isaretli());
+  await p.click('[data-mk-sec="m_sahil"]');
   await p.waitForTimeout(80);
   bak('ucuncu durak eklendi', await cipler('pe') === 'm_carsi,m_han,m_sahil', await cipler('pe'));
   await p.click('#pe_placeList [data-cip="m_carsi"] [data-cip-sil]');
   await p.waitForTimeout(80);
   bak('carpi ile cikarildi', await cipler('pe') === 'm_han,m_sahil', await cipler('pe'));
+  // Cipten cikarmak LISTEDEKI kutucugu da bosaltiyor: iki yer ayni
+  // durumu gosteriyor, birbirlerinden habersiz kalmiyorlar.
   await p.click('#pe_placeList [data-cip="m_sahil"] [data-cip-sil]');
   await p.waitForTimeout(80);
-  bak('kutudaki secim cikarilinca kutu ilk duraga donuyor', await secili('pe') === 'm_han' && await cipler('pe') === 'm_han', await secili('pe'));
-  await p.selectOption('#pe_place', 'm_sahil');
+  bak('cipten cikinca kutucuk da bosaliyor',
+      await isaretli() === 'm_han' && await cipler('pe') === 'm_han', await isaretli());
+  await p.click('[data-mk-sec="m_sahil"]');
   await p.waitForTimeout(80);
   await p.click('#pe_save');
   await p.waitForTimeout(300);
@@ -124,40 +134,44 @@ const bak = (ad, ko, ek)=>{ if(ko){ g++; console.log('  ok  '+ad); } else { k++;
 
   console.log('[adres sorusu ilk duraga bakiyor]');
   await p.click('#p_openNew');
-  await p.waitForSelector('#projectNewOverlay.open');
-  await p.selectOption('#p_type', 'venue');
-  await p.fill('#p_name', 'Son durak adressiz');
-  await p.selectOption('#p_place', 'm_carsi');
+  await p.waitForSelector('#projectEditOverlay.open');
+  await p.selectOption('#pe_type', 'venue');
+  await p.fill('#pe_name', 'Son durak adressiz');
+  await p.click('[data-mk-sec="m_carsi"]');
   await p.waitForTimeout(80);
-  await p.selectOption('#p_place', 'm_sahil');   // son secilen adressiz, ilk duragin adresi var
+  await p.click('[data-mk-sec="m_sahil"]');   // son secilen adressiz, ilk duragin adresi var
   await p.waitForTimeout(80);
   await p.evaluate(()=>{ window.sorular = []; });
-  await p.click('#p_add');
+  await p.click('#pe_save');
   await p.waitForTimeout(400);
   const sonDurak = await p.evaluate(()=> ({ var: !!projects.find(x=> x.name === 'Son durak adressiz'), sorular: window.sorular.slice() }));
   bak('ilk duragin adresi varken soru yok', sonDurak.var && !sonDurak.sorular.some(s=> /adres/i.test(s)), sonDurak.sorular.join(' | '));
   await p.evaluate(()=>{ document.querySelectorAll('.overlay.open').forEach(o=>o.classList.remove('open')); });
   await p.click('#p_openNew');
-  await p.waitForSelector('#projectNewOverlay.open');
-  await p.selectOption('#p_type', 'venue');
-  await p.fill('#p_name', 'Yalniz sahil');
-  await p.selectOption('#p_place', 'm_sahil');
+  await p.waitForSelector('#projectEditOverlay.open');
+  await p.selectOption('#pe_type', 'venue');
+  await p.fill('#pe_name', 'Yalniz sahil');
+  await p.click('[data-mk-sec="m_sahil"]');
   await p.waitForTimeout(80);
   await p.evaluate(()=>{ window.sorular = []; });
-  await p.click('#p_add');
+  await p.click('#pe_save');
   await p.waitForTimeout(400);
   bak('tek durak adressizse soru geliyor', await p.evaluate(()=> window.sorular.some(s=> /adres/i.test(s))));
   await p.evaluate(()=>{ document.querySelectorAll('.overlay.open').forEach(o=>o.classList.remove('open')); });
 
   console.log('[yeni proje penceresi temiz aciliyor]');
   await p.click('#p_openNew');
-  await p.waitForSelector('#projectNewOverlay.open');
-  bak('cip yok, kutu bos, liste gizli', await cipler('p') === '' && await secili('p') === '' && await p.$eval('#p_placeList', e=> e.hidden));
-  await p.evaluate(()=>{ document.getElementById('p_name').value = 'Program'; document.getElementById('p_type').value = 'studio';
-                         document.getElementById('p_place').value = 'm_sahil'; });
-  await p.click('#p_add');
+  await p.waitForSelector('#projectEditOverlay.open');
+  bak('cip yok, kutucuk isaretsiz, liste gizli',
+      await cipler('pe') === '' && await isaretli() === '' && await p.$eval('#pe_placeList', e=> e.hidden));
+  // Programla atanan secim de okunuyor: form durumu tek yerde tutuluyor,
+  // DOM'daki bir kutunun degerinden okunmuyor.
+  await p.evaluate(()=>{ document.getElementById('pe_name').value = 'Program';
+                         document.getElementById('pe_type').value = 'studio';
+                         projeMekanEkle('pe', 'm_sahil'); });
+  await p.click('#pe_save');
   await p.waitForTimeout(300);
-  bak('change tetiklenmeden secilen deger de tek durak sayiliyor',
+  bak('programla eklenen durak da kaydediliyor',
       await p.evaluate(()=> (projects.find(x=> x.name === 'Program') || {}).placeId === 'm_sahil'));
 
   bak('sayfa hatasi yok', hata.length === 0, hata.join(' | '));
