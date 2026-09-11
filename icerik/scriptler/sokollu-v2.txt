@@ -1,0 +1,424 @@
+SOKOLLU — DUVARDAKİ KABE TAŞLARI VE ÖLDÜRÜLEN SADRAZAM — VİDEO METNİ (v2 — TUTUNMA DENETİMİ)
+
+Tarihi Dedektif — Gerçeğin İzleri
+Sinan Dosyası — 2. Bölüm
+
+═══════════════════════════════════════
+v2'DE NE DEĞİŞTİ VE NEDEN
+═══════════════════════════════════════
+
+v1 iyi bir scriptti. v2, kanalın kendi tutunma eğrisiyle denetlendi ve dört yapısal
+düzeltme aldı. Anlatı, ses tonu, olgular ve damga sistemi v1'den; sıra ve yerleşim değişti.
+
+Dayanak: `instragramgrowth` deposu, `reports/12-icerik-stratejisi.md` bölüm 3.
+Ölçülen: kanalın üç videosunun saniye saniye eğrisi. İzleyicinin **üçte biri 11–14. saniyede**,
+**%57–59'u 17–21. saniyede** gidiyor — en iyi videoda bile. 2. dakikadan sonra eğri düzleşiyor.
+
+**Düzeltme 1 — Hook'tan format duyurusu çıkarıldı.**
+v1'de 13–18. saniyede şu vardı: *"Bugün tek adamın peşindeyim… Mimar Sinan bu adam için üç yapı
+dikti. Üçünü de gezeceğiz."* Bu cümleler tam karar anına denk geliyor ve **lojistik** anlatıyor —
+merak değil. "Bu video nedir" sorusuna cevap veriyor, oysa izleyici o saniyede "neden kalayım"
+sorusunu soruyor. Format duyurusu 0:25'e, Bölüm 1'in başına alındı.
+
+**Düzeltme 2 — Bölüm 1 yeniden sıralandı. (En önemli değişiklik.)**
+v1'de hook gerilim kuruyor, sonra Bölüm 1 *"Kadırga. Adı Bizans limanından geliyor"* ile coğrafyaya
+düşüyor ve 1:00–1:45 arası özgeçmişe giriyor (doğum yılı, devşirme, kaptan-ı derya, unvanlar).
+**Ansiklopedi içeriği, videonun en kritik dakikasında.** Eğri orada hâlâ düşüyor.
+v2'de hançer ipi Bölüm 1 boyunca kopmuyor: mimari hüner → İnebahtı → özgeçmiş **üç cümleye
+sıkıştırılıp** "on dört yıl — ve bir hançerle bitti" ile bağlanıyor.
+
+**Düzeltme 3 — Kalıp kırma boşluğu kapatıldı.**
+v1'de 6:20 ile 7:40 arasında **80 saniye** hiç kırılma yok — üstelik orası kanal projeleri ve saray
+entrikasının anlatıldığı en yoğun bilgi bölümü. v2'de 6:45'e [HARİTA: Don–Volga / Süveyş] girdi.
+
+**Düzeltme 4 — Üç sorunun ikisi "bilmiyoruz" ile kapanıyordu.**
+Soru 1 (taşlar nasıl geldi) ve Soru 3 (kim öldürdü) v1'de belgesizlikle kapanıyor. Bu marka için
+doğru ama **vaat–ödül olarak zayıf**: izleyici cevap bekliyor, "kayıt yok" alıyor. v2'de ikisi de
+**pozitif bulgu** olarak çerçevelendi — kaydın ne SÖYLEDİĞİ öne alındı, sustuğu yer arkaya.
+Sona saklanan cevap (türbede İsmihan yok) zaten kesin; o daireyi kapatıyor.
+
+**Ayrıca:** Reels kesitleri 4 → **5**'e çıkarıldı, her birine **açık aralık ve süre** yazıldı
+(90–130 sn). v1'de yalnızca "Hook 0:00–0:25" vardı; 25 sn, nişteki 116 sn medyanın beşte biri.
+Suikast bölümü v1'de hiç kesit değildi — videonun en paylaşılabilir parçası.
+
+Format notu: Tek adam, Sinan'ın üç yapısı. Üç mekân (Kadırga; Azapkapı; Eyüp), üç GEÇİŞ,
+[HARİTA + ARŞİV] ile Bosna, Mekke ve kanal projeleri.
+
+Kurgu ilkeleri:
+- 0–3 sn: tek görüntü, tek cümle. Kubbe yok, yüz yok.
+- 3–20 sn: SADECE merak. Format duyurusu, isim tanıtımı, kanal bilgisi YOK.
+- 20–25 sn: üç soru + sona saklanan vaat.
+- SONA SAKLANAN: Eyüp'teki türbede kimin YATMADIĞI. Yalnızca kapanışta veriliyor.
+- Her bölüm bir cevap veriyor, yeni bir soru açıyor.
+- Kalıp kırma en geç 90 saniyede bir. (v2'de en uzun boşluk 70 sn.)
+- Seri jeneriği hook bittikten SONRA (~0:25). Giriş selamı, kanal tanıtımı, "abone ol" YOK.
+
+Tahmini süre: ~11,5 dakika. Seslendirme kelime sayısı dosya sonunda gerçek sayımla.
+
+═══════════════════════════════════════
+ÇEKİM KONTROL LİSTESİ — SAHADA KAÇIRMA
+═══════════════════════════════════════
+
+Genel: Kadırga içi loş; çini ve taşlar için sabit kamera, düşük ISO, gerekirse mini tripod.
+Kabe taşları küçük ve yüksekte; 70 mm üstü objektif. Cami içi çekim için görevliden izin al,
+namaz vakitleri dışında çek.
+
+ÇEKİM GÜNÜ BÖLÜNMESİ (yeni): Kadırga + Azapkapı aynı gün (Haliç hattı, tramvayla bağlı —
+Geçiş 1 ve 2'nin görüntüsü de o gün çıkar). Eyüp ayrı gün.
+
+AÇILIŞ İÇİN (0–3 sn): Minber kapısının üstündeki Kabe taşı, çok yakın plan, yeşil çerçevesiyle.
+Bu görüntü ikinci kez ancak Bölüm 2'de görünür.
+
+KADIRGA SOKOLLU MEHMED PAŞA CAMİİ — 1571–72
+☐ Yokuştan yaklaşma, medresenin altındaki kapı; merdivenle avluya çıkış (tek plan, kesmesiz; gimbal)
+☐ Avlu: şadırvan, medrese hücreleri, kapı üstündeki dershane
+☐ Kitabe, yakın plan (Sokollu adı)
+☐ İç: mihrap duvarı çinileri baştan sona tilt; pandantif çinileri
+☐ Minber külahındaki çiniler
+☐ DÖRT TAŞ: giriş kapısı üstü, mihrap üstü, minber kapısı üstü, minber külahı altı.
+  Her biri için önce geniş (yeri), sonra çok yakın
+☐ Kadırga Meydanı, Esma Sultan Namazgâhı ile aynı kare (eski liman hissi)
+
+AZAPKAPI SOKOLLU MEHMED PAŞA CAMİİ — 1577–78
+☐ Galata Köprüsü ayağından geniş plan: cami ile ayrı duran minare aynı karede
+☐ Minareyi camiye bağlayan kemerli geçit, yakın
+☐ Alt kattaki dükkânlar / yükseltilmiş taban (fevkani yapı)
+☐ Saliha Sultan Çeşmesi (1732) ile aynı kare, kısa plan
+☐ İç: kubbe, sekizgen plan; Kadırga ile karşılaştırma için mihrap
+
+EYÜP SOKOLLU MEHMED PAŞA MEDRESESİ VE TÜRBESİ — 1568–69
+☐ Eyüp Sultan Camii'nden türbeye yürüyüş; türbenin sokaktan görünüşü
+☐ Türbe içi: sandukalar, SAYIM (kaç sanduka; sahada SAY)
+☐ Sokollu'nun sandukası, yakın
+☐ Karşıdaki medrese (bugünkü kullanımı sahada kontrol)
+
+GEÇİŞ GÖRÜNTÜLERİ
+☐ Kadırga'dan Sultanahmet'e yürüyüş; Ayasofya ve II. Selim türbesi dış plan
+☐ Karaköy tramvayı / Galata Köprüsü üstünden yürüyüş, Haliç
+☐ Haliç kıyısından Eyüp'e; vapur ya da otobüs camından
+☐ [HARİTA + ARŞİV] Sokolovići köyü (Bosna); Mescid-i Haram revakları gravürü;
+  Don–Volga ve Süveyş hatları; İnebahtı gravürü; Sokollu portresi (16. yy)
+
+═══════════════════════════════════════
+0:00–0:03 — AÇILIŞ KARESİ
+═══════════════════════════════════════
+(Kamera: minber kapısı üstündeki siyah taş, çok yakın plan, sessizlik, tek cümle)
+
+Bu taş, Kabe'den geldi.
+
+═══════════════════════════════════════
+0:03–0:25 — HOOK — KADIRGA, CAMİ KAPISI ÖNÜ
+═══════════════════════════════════════
+(Kamera: kesme, konuşmacı medresenin altındaki kapının önünde; ikinci cümlede kamera merdivene tilt)
+
+  ⚠️ KURAL: Bu 22 saniyede format duyurusu, isim tanıtımı, kanal bilgisi YOK.
+  Sadece merak yükselir. İzleyicinin üçte biri 11–14. saniyede karar veriyor.
+
+İstanbul'da bir cami var. Duvarlarında Kabe'nin dört parçası duruyor.
+
+Kapısında bir adamın adı yazıyor. Vakfiyesinde başka birinin.
+
+Ve adı yazan adam, sekiz yıl sonra kendi sarayında, dilekçe alırken hançerlendi.
+
+Üç soru var. Kabe'nin taşları bu duvara nasıl geldi? Bu cami gerçekten kimin? Ve sadrazamı kim öldürdü?
+
+Bir şey daha. Eyüp'teki türbesinde biri eksik. Kimin yatmadığını en sonda söylüyorum.
+
+Rivayet değil, kayıt.
+
+(5 sn "Sinan Dosyası" jeneriği — hook bittikten SONRA, 0:25'te)
+
+═══════════════════════════════════════
+BÖLÜM 1 — KADIRGA: MEDRESENİN ALTINDAN GEÇEN KAPI (0:25–2:20)
+═══════════════════════════════════════
+(Kamera: kapıdan girip merdivenle avluya çıkış, tek plan; avluda şadırvan; kitabe yakın plan)
+
+  ⚠️ v2 DEĞİŞİKLİĞİ: v1 burada coğrafya ve özgeçmişle açılıyordu. v2'de hançer ipi
+  kopmuyor; özgeçmiş üç cümleye indi ve "on dört yıl, sonra hançer" ile bağlandı.
+
+Adam Sokollu Mehmed Paşa. Mimar Sinan onun için İstanbul'da üç yapı dikti; bugün üçünü de gezeceğiz. Burası ilki.
+
+Ama daha kapıdan garip bir şey var. Bu, bir caminin kapısı gibi durmuyor. Medresenin kapısı gibi duruyor.
+
+Doğru gördünüz. Sinan burada avluyu medresenin dershanesinin altından geçirip merdivenle yukarı taşımış. İstanbul'da başka örneği yok. Yokuş bir sorundu; Sinan onu bir hüner gösterisine çevirmiş.
+
+Yukarı çıktık. Avlu, şadırvan, çevrede medrese hücreleri. Kapı üstündeki oda dershane. Yani öğrenciler caminin girişinin üstünde ders görüyordu.
+
+Kitabeye bakın. 979 yazıyor; miladi 1571–72. O yılı hatırlayın: İnebahtı. Osmanlı donanması Akdeniz'de ağır bir yenilgi aldı. Yani bu cami, imparatorluğun en kötü yılında bitti. Ve bitiren adam, o yenilginin faturasıyla uğraşan sadrazamdı.
+
+Kim bu adam? Bosna'da, Višegrad yakınında Sokolovići köyünde doğdu, 1505 civarı. Devşirme olarak alındı ve saraydan yetişti. 1565'te sadrazam oldu; üç padişaha, on dört yıl sadrazamlık etti.
+
+[HARİTA: Bosna, Sokolovići → İstanbul]
+
+On dört yıl. Osmanlı tarihinde bu neredeyse bir rekor — ve bir hançerle bitti. Ona geleceğiz.
+
+Bir ayrıntı daha, kayıtlı: Sokollu'nun akrabası Makarije Sokolović, 1557'de yeniden kurulan Sırp Ortodoks Peç Patrikhanesi'nin başına geçti. Yani Osmanlı sadrazamıyla Sırp patriği aynı aileden. Bunu efsane gibi anlatırlar; oysa Osmanlı ve kilise kayıtları birbirini tutuyor. Kayıt.
+
+[EKRAN DAMGASI: KAYIT — Peç Patrikhanesi, 1557]
+
+Bir de yere bakın. Sokollu'nun sarayı bu semtteydi; cami evinin dibine yapıldı. Sadrazamın her sabah divana yürüdüğü sokaklar bunlar. Saraydan bugün bir şey kalmadı; ama caminin yeri o sarayı işaret ediyor.
+
+Sekiz yıl sonra, o sarayda öldürülecek.
+
+Şimdi içeri giriyoruz. Taşlar için.
+
+[REELS KESİM 1 — 0:00–2:00 — 120 sn — "Kabe taşlı cami + medresenin altından geçen kapı"]
+   Kendi içinde tamamlanır: açılış karesi → hook → mimari hüner → "sekiz yıl sonra öldürülecek".
+   Kapanış kartı: "Taşlar nereden geldi? Tam bölüm kanalda." (Facebook sürümünde link YOK.)
+
+═══════════════════════════════════════
+BÖLÜM 2 — KADIRGA İÇİ: DÖRT TAŞ (2:20–4:30)
+═══════════════════════════════════════
+(Kamera: kapıdan iç mekâna; mihrap duvarı çinileri baştan sona tilt; sonra dört taş sırayla,
+her biri önce geniş sonra çok yakın; açılış karesi ikinci kez burada)
+
+İçerde ilk çarpan şey çini. Mihrap duvarı yerden kubbeye kadar İznik çinisi. Sinan çiniyi genellikle ölçülü kullanır; burada duvarı baştan sona kaplamış. Pandantiflere kadar çini var. İstanbul'daki Sinan camileri arasında bu nadir.
+
+Ama biz buraya çini için gelmedik.
+
+Şuraya bakın. Minberin kapısının üstünde, yeşil çerçevenin içinde, koyu renk küçük bir taş. Açılışta gördüğünüz taş bu. Aynı taştan cami içinde dört parça var: giriş kapısının üstünde, mihrabın üstünde, minber kapısında ve minberin külahının altında. Dördü de Kabe'den, Hacerü'l-Esved'den kopmuş parçalar olarak kabul ediliyor. Cami bu yüzden İstanbul'da "Kabe taşlı cami" diye biliniyor.
+
+Şimdi dedektiflik kısmı. Bu parçalar buraya nasıl geldi?
+
+  ⚠️ v2 DEĞİŞİKLİĞİ: v1 bu soruyu "belge yok" ile kapatıyordu. v2 önce kaydın
+  SÖYLEDİĞİNİ veriyor, sonra sustuğu yeri. Cevap var; sınırlı ama var.
+
+Kayıt şunu söylüyor: 1570'lerde Mekke'de Mescid-i Haram'ın revakları yeniden yapıldı. Proje Sinan'ın. Kabe'nin kendisinde de onarımlar oldu. Yani Sokollu'nun sadrazam olduğu yıllarda Mekke'de büyük bir şantiye vardı — ve o şantiyenin baş mimarı, şu an içinde durduğumuz camiyi yapan adamdı.
+
+[ARŞİV: Mescid-i Haram revakları gravürü, "Sinan'ın projesi, 1570'ler" damgası]
+
+Bu, taşların yolunu açıklayan tek belgeli bağlantı. Aynı yıllar, aynı mimar, iki şantiye.
+
+Gerisi rivayet: onarım sırasında çerçeveden kopan parçaların İstanbul'a gönderildiği ve Sokollu'ya verildiği anlatılır. Bunu doğrulayan tek bir belge yok. Parçaların buraya nasıl geldiğini kimse kayıtla gösteremiyor — ama dört yüz elli yıldır burada olduğu kayıtlı.
+
+[EKRAN DAMGASI: KAYIT — Sinan, Mekke şantiyesi, 1570'ler / RİVAYET — taşların gönderilmesi]
+
+Birinci soru kapandı. Cevap şu: kaydın gösterdiği yer Sinan'ın Mekke şantiyesi. Ötesi rivayet.
+
+Bir gözlem daha, çünkü camide ilk fark ettiğim şey bu oldu: taşlar göz hizasında değil. Dördü de yukarıda. Dokunulmasın diye mi, korunsun diye mi, yoksa Kabe'nin kendisinde olduğu gibi yüksekte dursun diye mi — kayıt yok. Sadece gözlem.
+
+[EKRAN DAMGASI: GÖZLEM — dört taş da göz hizasının üstünde]
+
+Bugün de görüyorsunuz: içeri giren herkes önce mihraba değil, minber kapısına yürüyor. Taşın altında bir an duruyor, sonra namaza geçiyor. Bu alışkanlık yüzyıllardır aynı.
+
+Şimdi ikinci soru. Bu cami gerçekten kimin?
+
+[REELS KESİM 2 — 2:20–4:20 — 120 sn — "Bu camide Kabe'nin dört parçası var"]
+   Kendi içinde tamamlanır: çini → dört taş → Mekke şantiyesi bağlantısı → "gerisi rivayet".
+   Kapanış: "Sizce nasıl geldiler? Yorumlara yazın."
+
+═══════════════════════════════════════
+GEÇİŞ 1 — KADIRGA'DAN SULTANAHMET'E: KİTABE BİR ŞEY DİYOR, VAKFİYE BAŞKA (4:30–5:40)
+═══════════════════════════════════════
+(Kamera: yokuştan yukarı yürüyüş, seslendirme; Ayasofya ve II. Selim türbesi dış plan arkada)
+
+Kapıdaki kitabede Sokollu Mehmed Paşa'nın adı var. Herkes Sokollu Camii diyor. Ben de öyle dedim, videonun başında. Ama caminin vakfiyesi — yani hukuki kuruluş belgesi — İsmihan Sultan adına.
+
+İsmihan Sultan kim? II. Selim'in kızı, Nurbanu Sultan'ın kızı, Kanuni'nin torunu. Ve Sokollu'nun eşi. 1562'de evlendiler; Sokollu elli beş yaşın üstünde, İsmihan on yedi civarında. Damat bir Boşnak devşirmesi, gelin hanedanın kızı.
+
+Yani arkamda kalan cami, kâğıt üstünde bir kadının eseri. Parayı vakıf olarak bağlayan İsmihan Sultan. Eşi kapıya adını yazdırmış — ya da halk yazmış; ama camiyi ayakta tutan gelir kaynağı İsmihan'ın.
+
+İkinci soru kapandı: hem Sokollu'nun, hem değil. Kitabe bir şey diyor, kayıt başka şey diyor. Kayıt İsmihan diyor.
+
+[EKRAN DAMGASI: KİTABE → Sokollu / VAKFİYE → İsmihan Sultan]
+
+Bu neden önemli? Çünkü İstanbul'da Sinan'ın kadın baniler için yaptığı yapılar var ve çoğu erkek adıyla anılıyor. Mihrimah Sultan'ın camileri istisna; onu daha önce çekmiştik. İsmihan'ın camisi ise dört yüz elli yıl boyunca kocasının adıyla anıldı. Kayıt bunu düzeltmek için var.
+
+Ve bu ismi aklınızda tutun. Videonun sonunda İsmihan Sultan bir kez daha karşımıza çıkacak — hiç beklemediğiniz bir yerde.
+
+Şimdi Karaköy'e iniyoruz. Sinan'ın Sokollu için yaptığı ikinci camiye. Minaresi camiye değmeyen camiye.
+
+[REELS KESİM 3 — 4:30–6:00 — 90 sn — "Bu caminin gerçek sahibi bir kadın"]
+   Kendi içinde tamamlanır: kitabe–vakfiye çelişkisi → İsmihan kim → 450 yıllık yanlış isim.
+   Kapanış: "Adı kapıda yazmayan kadın. Sizce neden? Yorumlara yazın."
+
+═══════════════════════════════════════
+BÖLÜM 3 — AZAPKAPI: MİNARESİ AYRI DURAN CAMİ (5:40–7:40)
+═══════════════════════════════════════
+(Kamera: Galata Köprüsü ayağından geniş plan, minare ve cami aynı karede; kemerli geçit yakın;
+alt kattaki dükkânlar; Saliha Sultan Çeşmesi kısa)
+
+Azapkapı. Galata Köprüsü'nün Karaköy ayağının dibi. Bu cami 1577–78 tarihli; yine Sinan, yine Sokollu adına. Kadırga'dan altı yıl sonra.
+
+Şimdi karşıdan bakın. Minare camiye bitişik değil. Ayrı bir kule gibi duruyor; camiye kemerli bir geçitle bağlanıyor. Sinan'ın İstanbul'daki büyük camilerinin hiçbirinde bu yok.
+
+Neden? Kayıt yok. Sinan bir açıklama bırakmadı. Yorum şu: burası Haliç kıyısı, zemin dolgu ve yumuşak; ayrıca yer dar. Sinan camiyi dükkânların üstüne oturtmuş, yani yükseltilmiş taban. Minarenin ağırlığını caminin taşıyıcı sisteminden ayırmak, zemin riskine karşı mantıklı bir çözüm. Ama bu benim ve bazı sanat tarihçilerinin yorumu; Sinan'ın kaydı değil. Ekrana öyle yazıyorum.
+
+[EKRAN DAMGASI: YORUM — zemin ve yer darlığı]
+
+Bir şey daha: bugün gördüğünüz minare orijinal değil. Cami yüzyıllar içinde birkaç kez ağır hasar gördü; minare 1940'lardaki onarımda yeniden yapıldı. Kemerli bağlantı fikri korunmuş. Yani baktığınız görüntü, Sinan'ın fikrinin 20. yüzyıl eliyle yeniden çizilmiş hali.
+
+Yanındaki çeşme Saliha Sultan Çeşmesi, 1732. Camiden yüz elli yıl sonra. Aynı karede iki dönem: Sinan'ın klasik dili ve Lale Devri sonrası barok. Şehir böyle üst üste yazılıyor.
+
+Şimdi tarihe dönelim. 1577. Osmanlı en geniş sınırlarında. Kıbrıs alınmış, İnebahtı'nın ardından donanma bir kışta yeniden kurulmuş. Sokollu'nun Venedik elçisine söylediği söz kayıtlı: "Siz İnebahtı'da sakalımızı kestiniz, biz Kıbrıs'ta kolunuzu. Sakal yeniden çıkar, kol çıkmaz." Bu cami, o özgüvenin yılında yapılıyor.
+
+  ⚠️ v2 DEĞİŞİKLİĞİ: v1'de 6:20–7:40 arası 80 saniye hiç kalıp kırılmıyordu — üstelik
+  en yoğun bilgi bölümü. Aşağıdaki harita o boşluğu kapatıyor.
+
+Sokollu'nun kafasındaki projeler de bu ölçekte. 1569'da Don ile Volga'yı bir kanalla birleştirip Karadeniz'i Hazar'a bağlamayı denedi; kazı başladı, kış ve Rus baskısıyla yarım kaldı. Süveyş'te Akdeniz'i Kızıldeniz'e bağlama fikri de onun döneminde masaya geldi.
+
+[HARİTA: Don–Volga hattı ve Süveyş hattı, "1569 / yarım kaldı" damgası]
+
+İkisi de kayıtlı, ikisi de bitmedi. Üç yüz yıl sonra başkaları yaptı.
+
+Ama aynı yıllarda saray içinde Sokollu'nun düşmanları çoğalıyor. III. Murad tahta çıkmış; etrafında sadrazamın gücünden rahatsız bir kadro var. Yakınları birer birer görevden alınıyor. Sokollu yetmişini geçmiş, hâlâ her sabah divana gidiyor.
+
+Bu caminin bitiminden iki yıl sonra, hançer geliyor.
+
+[REELS KESİM 4 — 5:40–7:20 — 100 sn — "Minaresi camiye değmeyen cami"]
+   Kendi içinde tamamlanır: görsel tuhaflık → neden → "orijinal değil" düzeltmesi.
+   Kapanış: "Sinan neden böyle yaptı? Kayıt yok. Sizce? Yorumlara yazın."
+
+═══════════════════════════════════════
+GEÇİŞ 2 — HALİÇ KIYISINDAN EYÜP'E: 11 EKİM 1579 (7:40–8:50)
+═══════════════════════════════════════
+(Kamera: Haliç kıyısı, vapur ya da otobüs camından; seslendirme; arşiv gravür ve portre araya girer)
+
+11 Ekim 1579. Sokollu kendi sarayında ikindi divanı yapıyor; halktan dilekçe alıyor. Sıradaki adam derviş kılığında. Elinde arzuhal var. Yaklaşıyor. Kâğıdı uzatırken hançeri çıkarıyor ve sadrazamın göğsüne saplıyor.
+
+Sokollu birkaç saat içinde ölüyor. Katil oracıkta yakalanıyor ve idam ediliyor.
+
+[ARŞİV: Sokollu portresi; 16. yy gravür; "11 Ekim 1579" damgası]
+
+Üçüncü soru: onu kim öldürdü?
+
+  ⚠️ v2 DEĞİŞİKLİĞİ: v1 bu soruyu da belgesizlikle kapatıyordu. v2'de kaydın
+  KESİN OLARAK söylediği önce geliyor; boşluk sonra, ve boşluğun kendisi bulgu olarak sunuluyor.
+
+Kayıt şunu kesin söylüyor: adam yakalandı ve aynı gün idam edildi. Sorgulanmadı. Ve adı bile kaynaklarda düzgün geçmiyor.
+
+Şimdi buna dikkat edin. İmparatorluğun sadrazamı öldürülüyor, katil canlı yakalanıyor — ve hemen idam ediliyor. Arkasında kim var, sorulmuyor. Kayıtta bıraktığı boşluk bu.
+
+Rivayet üç ayrı şey söylüyor: dirliği elinden alınmış eski bir sipahi, yani kişisel öfke. Ya da meczup. Ya da arkasında saraydan biri. Üçüncüsünün tek bir belgesi yok.
+
+[EKRAN DAMGASI: KAYIT — yakalandı, sorgusuz idam / RİVAYET — sipahi, meczup, saray]
+
+Üçüncü soru kapandı: kaydın verdiği cevap, cevabın kendisi değil — cevabın neden hiç aranmadığı.
+
+Ben size şunu söyleyebilirim: Sokollu'nun öldüğü gün Osmanlı'da bir dönem kapandı. Ondan sonraki yüz yılda sadrazamlar ortalama iki üç yıl dayanacak; on dört yıl bir daha görülmeyecek. Katil kim olursa olsun, sonuç bu.
+
+Cenazesi Eyüp'e götürüldü. On yıl önce Sinan'ın onun için yaptığı türbeye. Evet — türbe ölümünden önce hazırdı.
+
+Şimdi oraya gidiyoruz. Ve hook'ta verdiğim sözü orada tutuyorum: türbede kim eksik?
+
+[REELS KESİM 5 — 7:40–9:10 — 90 sn — "Sadrazamı öldüren adam sorgulanmadan idam edildi"]
+   Kendi içinde tamamlanır: suikast → sorgusuz idam → kayıttaki boşluk.
+   Kapanış: "Sizce arkasında kim vardı? Yorumlara yazın."
+   NOT: Videonun en paylaşılabilir parçası. v1'de kesit değildi.
+
+═══════════════════════════════════════
+BÖLÜM 4 — EYÜP: ÖNCEDEN HAZIRLANAN TÜRBE (8:50–10:50)
+═══════════════════════════════════════
+(Kamera: Eyüp Sultan'dan türbeye yürüyüş; türbe dış; içerde sandukalar, sayım ekranda;
+Sokollu'nun sandukası yakın)
+
+Eyüp. Eyüp Sultan Camii'nden birkaç dakika. Burası Sinan'ın Sokollu için yaptığı üçüncü yapı ve en eskisi: medrese ve türbe, 1568–69. Yani Kadırga'dan önce. Sokollu altmışını geçmişti; kendi mezarını hazırlattı ve yanına bir medrese koydurdu. On yıl sonra buraya gömüldü.
+
+Türbe sekizgen, sade. Kadırga'daki çini bolluğundan eser yok. İçerde birden fazla sanduka var; sayı ekranda. Sokollu'nun yanında çocukları ve aileden isimler yatıyor.
+
+[Sayım grafiği: "Sandukalar: —" sahada doldurulacak]
+
+Şimdi eksik olan kişi.
+
+Sokollu'nun eşi İsmihan Sultan burada değil.
+
+Kadırga'daki caminin vakfiyesinde adı yazan kadın — caminin gerçek sahibi — eşinin türbesine gömülmedi. Babası II. Selim'in Ayasofya'daki türbesine gömüldü. Hanedan kızı, kocasının değil babasının yanında yatıyor. Bu Osmanlı'da kural değil ama sık: hanedan kanı, devşirme bir damadın türbesine değil, padişah türbesine gider.
+
+[EKRAN DAMGASI: KAYIT — İsmihan Sultan, II. Selim Türbesi, Ayasofya]
+
+Yani Sokollu'nun hikâyesi tam bir daire. Kapıda onun adı, vakfiyede eşinin adı. Türbede o var, eşi yok. Hayatı boyunca hanedana girdi — ama ölümünde hanedan onu kendi içine almadı.
+
+Karşıya bakın, medrese. Sinan'ın medreseleri arasında en iyi korunmuşlardan biri. Öğrenci hücreleri, dershane. Sokollu ölürken burada ders vardı. Bugün de kullanılıyor.
+
+Sinan bu türbeyi yaptığında altmış beşini geçmişti; Sokollu da. İki yaşlı adam, biri devletin, biri mimarinin tepesinde. Sinan sadrazamdan dokuz yıl fazla yaşadı, doksanını geçti — ve o da kendi türbesini kendisi yaptı. Onun türbesi bu serinin ilk bölümüydü.
+
+Bugün üç yapı gezdik. Üçü de ayakta, üçü de aynı adam için, üçü de aynı mimarın. İstanbul'da başka hiçbir vezir için Sinan üç ayrı yapı dikmedi. Cami, cami, türbe. Bir Boşnak köyünden gelen adamın şehre bıraktığı iz.
+
+═══════════════════════════════════════
+10:50–11:15 — ÇAĞRI
+═══════════════════════════════════════
+(Kamera: türbe önü, tek plan, sabit)
+
+Tek istek. Kadırga'ya giderseniz dört taşı sırayla bulun; hangisini en zor bulduğunuzu yorumlara yazın. Ben en zor minber külahının altındakini buldum.
+
+Kadırga, Azapkapı ve Eyüp'ün üçünü aynı günde gezmek isteyenler için rotayı açıklamaya koyuyorum.
+
+Sinan Dosyası'nın bir sonraki bölümü Ayasofya'nın bahçesinde. İsmihan Sultan'ın yattığı türbede, aynı gece boğulan beş şehzade var.
+
+═══════════════════════════════════════
+11:15–11:30 — KAPANIŞ
+═══════════════════════════════════════
+(Kamera: açılış karesine dönüş; minber kapısındaki taş, yavaş uzaklaşma; son cümlede kesme, konuşmacı)
+
+Bu taş Kabe'den geldi. Nasıl geldiğini kimse kayıtla gösteremiyor. Ama dört yüz elli yıldır burada.
+
+Ben Mustafa Bostancıoğlu, bu da Tarihi Dedektif. Rivayet değil, kayıt. Bir sonraki gizemde görüşmek üzere.
+
+[SERİ KARTI: Sinan Dosyası — 1: Ustanın kafatası · 2: Sokollu · 3: Beş şehzade]
+
+═══════════════════════════════════════
+İZLEYİCİ TUTMA HARİTASI (v2)
+═══════════════════════════════════════
+0:00   Tek görüntü, tek cümle; kubbe yok, yüz yok
+0:03   Üç kısa cümle — merak yükselir, format duyurusu YOK  ← v2 değişikliği
+0:20   Üç soru + "türbede biri eksik" vaadi
+0:25   Jenerik (hook'tan SONRA)  ← v2 değişikliği
+0:25   Format duyurusu burada; mimari hüner; harita; "on dört yıl, sonra hançer"  ← v2
+2:00   [REELS KESİM 1 biter]
+2:20   İçeri: çini → dört taş → Mekke şantiyesi bağlantısı; SORU 1 KAPANIR (pozitif bulgu)  ← v2
+4:30   Geçiş 1: kitabe–vakfiye; SORU 2 KAPANIR; İsmihan adı sona bağlanır  ← v2
+5:40   Azapkapı: görsel tuhaflık + YORUM damgası
+6:45   [HARİTA: Don–Volga / Süveyş] — 80 sn'lik kalıp kırma boşluğu kapandı  ← v2
+7:40   Geçiş 2: suikast; SORU 3 KAPANIR (boşluğun kendisi bulgu)  ← v2
+8:50   Eyüp: sona saklanan cevap — İsmihan yok; daire kapanır
+10:50  Çağrı kısa, tek istek + sonraki bölüm teaser
+11:15  Kapanış, açılış çerçevesine dönüş
+
+KALIP KIRMA ARALIKLARI (hiçbiri 90 sn'yi geçmiyor):
+0:25 harita → 1:20 KAYIT damgası (55 sn) → 2:20 mekân değişimi (60 sn) →
+3:20 arşiv gravür (60 sn) → 4:00 damga (40 sn) → 4:30 mekân/geçiş (30 sn) →
+5:10 damga (40 sn) → 5:40 mekân değişimi (30 sn) → 6:20 YORUM damgası (40 sn) →
+6:45 harita (25 sn) → 7:40 mekân/geçiş (55 sn) → 8:10 arşiv (30 sn) →
+8:40 damga (30 sn) → 8:50 mekân değişimi (10 sn) → 9:20 sayım grafiği (30 sn) →
+10:10 damga (50 sn)
+
+ÜÇ SORUNUN DENETİMİ:
+  Soru 1 — taşlar nasıl geldi?   → 4:10'da kapanıyor. Cevap: Sinan'ın Mekke şantiyesi (KAYIT),
+                                    gerisi RİVAYET. ✅ pozitif bulgu
+  Soru 2 — cami kimin?           → 5:10'da kapanıyor. Cevap: İsmihan Sultan (VAKFİYE). ✅ kesin
+  Soru 3 — kim öldürdü?          → 8:30'da kapanıyor. Cevap: sorgusuz idam; boşluğun kendisi
+                                    bulgu. ✅ pozitif çerçeve
+  Sona saklanan — türbede kim eksik? → 9:40'ta veriliyor. Cevap: İsmihan Sultan. ✅ kesin, daire kapanıyor
+
+REELS KESİTLERİ (5 adet, toplam ~520 sn):
+  1. 0:00–2:00 · 120 sn · Kabe taşlı cami + medresenin altından geçen kapı
+  2. 2:20–4:20 · 120 sn · Dört taş + Mekke şantiyesi bağlantısı
+  3. 4:30–6:00 ·  90 sn · Caminin gerçek sahibi bir kadın
+  4. 5:40–7:20 · 100 sn · Minaresi camiye değmeyen cami
+  5. 7:40–9:10 ·  90 sn · Sadrazamı öldüren adam sorgusuz idam edildi
+  Hepsi kendi içinde tamamlanır; hiçbiri fragman değil. Facebook sürümlerinde YouTube linki YOK.
+
+═══════════════════════════════════════
+DAMGA LİSTESİ
+═══════════════════════════════════════
+KAYIT    — Peç Patrikhanesi akrabalığı (1557); Sinan'ın Mekke şantiyesi (1570'ler);
+           vakfiye İsmihan Sultan adına; katilin sorgusuz idamı; İsmihan'ın II. Selim
+           türbesine gömülmesi; Don–Volga kazısı (1569)
+RİVAYET  — Taşların Mekke'den gönderilip Sokollu'ya verilmesi; katilin kimliği (sipahi /
+           meczup / saray bağlantısı)
+YORUM    — Azapkapı'da minarenin ayrı durmasının zemin ve yer darlığıyla açıklanması
+GÖZLEM   — Dört taşın da göz hizasının üstünde olması; cemaatin önce minber kapısına yürümesi
+
+═══════════════════════════════════════
+SAHADA DOLDURULACAK
+═══════════════════════════════════════
+☐ Eyüp türbesindeki sanduka sayısı (ekran grafiği)
+☐ Eyüp medresesinin bugünkü kullanımı
+☐ Kadırga'da dört taşın tam konumları teyidi
+
+═══════════════════════════════════════
+SESLENDİRME KELİME SAYISI: 1635  (kural: en az 1500 ✅)
+v1: 1533 kelime · v2: 1635 kelime (+102). ~140 kelime/dk → ~11,7 dakika.
+Sayım yöntemi: yalnızca okunan metin; başlık, kamera notu, ekran damgası,
+uyarı kutusu ve Reels işaretleri hariç.
+═══════════════════════════════════════
