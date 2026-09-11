@@ -22,14 +22,16 @@ const { chromium } = require('./araclar');
         setLanguage(dil); setPage('projects');
         if(!projects.length){
           const c=window.onayla; window.onayla=()=>false;
-          [['Nuruosmaniye Camii','outdoor'],['İmrahor İlyas Bey Camii (Stüdyos Manastırı)','outdoor']].forEach(([ad,tur])=>{
-            document.getElementById('p_type').value=tur;
-            document.getElementById('p_type').dispatchEvent(new Event('change'));
-            document.getElementById('p_name').value=ad;
-            document.getElementById('p_address').value='İstanbul';
-            document.getElementById('p_add').click();
-          });
-          await new Promise(r=>setTimeout(r,400)); window.onayla=c;
+          for(const [ad,tur] of [['Nuruosmaniye Camii','outdoor'],
+                                 ['İmrahor İlyas Bey Camii (Stüdyos Manastırı)','outdoor']]){
+            openProjectNew(ad);
+            document.getElementById('pe_type').value=tur;
+            document.getElementById('pe_type').dispatchEvent(new Event('change'));
+            document.getElementById('pe_address').value='İstanbul';
+            document.getElementById('pe_save').click();
+            await new Promise(r=>setTimeout(r,250));
+          }
+          await new Promise(r=>setTimeout(r,300)); window.onayla=c;
         }
         renderProjects();
         await new Promise(r=>setTimeout(r,250));

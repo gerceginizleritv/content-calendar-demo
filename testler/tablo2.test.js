@@ -19,15 +19,18 @@ const { chromium } = require('./araclar');
 
   // Tur secimi ve adres alani
   const tur = await page.evaluate(async ()=>{
-    const sel = document.getElementById('p_type');
+    // Tek pencere: olusturma da duzenleme de ayni yer.
+    openProjectNew();
+    await new Promise(r=>setTimeout(r,150));
+    const sel = document.getElementById('pe_type');
     const out = { secenek: [...sel.options].map(o=>o.value), ilk: sel.value,
-                  adresAcik: !document.getElementById('p_addressWrap').hidden };
+                  adresAcik: !document.getElementById('pe_addressWrap').hidden };
     sel.value = 'studio'; sel.dispatchEvent(new Event('change'));
     await new Promise(r=>setTimeout(r,80));
-    out.studyoAdres = !document.getElementById('p_addressWrap').hidden;
+    out.studyoAdres = !document.getElementById('pe_addressWrap').hidden;
     sel.value = 'outdoor'; sel.dispatchEvent(new Event('change'));
     await new Promise(r=>setTimeout(r,80));
-    out.disCekimAdres = !document.getElementById('p_addressWrap').hidden;
+    out.disCekimAdres = !document.getElementById('pe_addressWrap').hidden;
     return out;
   });
   k('tür listesi geldi', tur.secenek.length === 7, tur.secenek.join(','));
@@ -37,9 +40,9 @@ const { chromium } = require('./araclar');
   // Adressiz saha isi: uyariyor
   const uyar = await page.evaluate(async ()=>{
     const c = window.onayla; window.__soruldu=false; window.onayla = ()=>{ window.__soruldu=true; return false; };
-    document.getElementById('p_name').value = 'NESTLE - UGC';
-    document.getElementById('p_add').click();
-    await new Promise(r=>setTimeout(r,150));
+    document.getElementById('pe_name').value = 'NESTLE - UGC';
+    document.getElementById('pe_save').click();
+    await new Promise(r=>setTimeout(r,250));
     window.onayla = c;
     return { soruldu: window.__soruldu, adet: projects.length };
   });
@@ -47,10 +50,10 @@ const { chromium } = require('./araclar');
 
   // Adresli olustur
   const olus = await page.evaluate(async ()=>{
-    document.getElementById('p_address').value = 'Yedikule Hisarı, Fatih, İstanbul';
-    document.getElementById('p_shoot').value = '2026-09-06';
-    document.getElementById('p_add').click();
-    await new Promise(r=>setTimeout(r,200));
+    document.getElementById('pe_address').value = 'Yedikule Hisarı, Fatih, İstanbul';
+    document.getElementById('pe_shoot').value = '2026-09-06';
+    document.getElementById('pe_save').click();
+    await new Promise(r=>setTimeout(r,300));
     return { adet: projects.length, tur: projects[0].type, adres: projects[0].address,
              satir: document.querySelectorAll('.proj-table tbody tr').length,
              sutun: document.querySelectorAll('.proj-table thead th').length,

@@ -16,17 +16,18 @@ const { chromium } = require('./araclar');
 
   const r = await page.evaluate(async ()=>{
     const c = window.onayla; window.onayla = ()=>false;
-    const kur = (ad, tarih)=>{
-      document.getElementById('p_type').value='studio';
-      document.getElementById('p_type').dispatchEvent(new Event('change'));
-      document.getElementById('p_name').value = ad;
-      document.getElementById('p_shoot').value = tarih || '';
-      document.getElementById('p_add').click();
+    const kur = async (ad, tarih)=>{
+      openProjectNew(ad);
+      document.getElementById('pe_type').value='studio';
+      document.getElementById('pe_type').dispatchEvent(new Event('change'));
+      document.getElementById('pe_shoot').value = tarih || '';
+      document.getElementById('pe_save').click();
+      await new Promise(r=>setTimeout(r,200));
     };
-    kur('A surende', '2026-09-05');
-    kur('B bitecek', '2026-09-06');
-    kur('C iptal',   '2026-09-07');
-    kur('D surende', '2026-09-08');
+    await kur('A surende', '2026-09-05');
+    await kur('B bitecek', '2026-09-06');
+    await kur('C iptal',   '2026-09-07');
+    await kur('D surende', '2026-09-08');
     await new Promise(r=>setTimeout(r,400));
     window.onayla = c;
     const ad = ()=> [...document.querySelectorAll('.proj-table tbody .pname')].map(x=>x.textContent.trim());
