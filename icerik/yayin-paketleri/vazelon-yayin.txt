@@ -75,30 +75,38 @@ T.C. Kültür ve Turizm Bakanlığı Kültür Portalı ("Vazelon Manastırı"), 
 ETİKETLER (hashtags alanı, virgüllü)
 vazelon manastırı, vazelon, trabzon, maçka, sümela manastırı, acta vazelonis, vazelon kodeksleri, tarihi dedektif, karadeniz, belgesel, tarih, bizans tarihi, trabzon imparatorluğu, trabzon gezilecek yerler, terk edilmiş manastır, zigana
 
-KAPAK PROMPTU (thumbPrompt) — YATAY 16:9
-Use the attached photo as the exact face and identity reference: same man, same facial features, same salt-and-pepper beard and hair. Do not change his face or age.
+KAPAK PROMPTU (thumbPrompt) — ⚠️ 11 EYLÜL 2026'DA YENİDEN YAZILDI
+Standart: icerik/MARKA-KIMLIGI.md bölüm 8.
+Önceki prompt üç kuralı ihlal ediyordu:
+  ✗ görünüm tarif ediliyordu ("salt-and-pepper beard") → YASAK; referans fotoğraf yeter
+  ✗ başlık metni prompta yazılmıştı → YASAK; başlığı work/add_title.py basar
+  ✗ "sarı neon halka" — üretim hattında olmayan uydurma öğe → kaldırıldı
+Ayrıca ESAS FORMAT DİKEY oldu (1080×1920), yatay YouTube için ayrıca üretilir.
 
-Photorealistic YouTube thumbnail, 16:9, 1920x1080, in the style of a high-end documentary channel cover.
+DİKEY 1080×1920 (esas)
 
-LEFT THIRD: the man from the reference photo, tight head-and-shoulders, cut at the chest, plain black crew-neck t-shirt, no logo. Head turned to the right, eyes looking sideways and slightly up toward the object on the right, brow furrowed, serious and troubled expression, lips closed. Warm golden rim light from the right, soft cool shadow on the left, skin texture sharp.
+Use the attached reference photo for the man's face, hair and likeness, and reproduce his face, hair and beard exactly as they appear in that photo; only his clothing may differ: a plain black crew-neck t-shirt, no logo.
 
-BACKGROUND: a ruined medieval stone monastery clinging to a steep forested mountainside high above a deep green valley in the Black Sea mountains, its roof collapsed and open to the sky, low mist between the trees, overcast dusk light, deep depth of field blur.
+Vertical 1080x1920 photograph. A ruined medieval stone monastery clinging to a steep forested mountainside high above a deep valley in the Black Sea mountains; its roof collapsed and open to the sky, low mist between the trees, overcast light.
 
-RIGHT HALF: a weathered Byzantine wall painting on a rough exterior stone wall, in sharp focus, showing worn medieval figures, the plaster cracked and pitted with small holes. The painting is enclosed in a thick glowing yellow neon circle that lights the stone around it. This is the visual focus.
+The man is in the UPPER HALF of the frame, head and shoulders, serious and troubled, brow furrowed, lips closed, no smile, looking to the side and slightly up toward the ruined wall — not at the camera. Warm rim light on his face from the right, cool shadow on the left, skin texture sharp.
 
-TEXT, upper right, THREE stacked lines, bold condensed sans-serif, all caps, tight line spacing:
-Line 1: "TRABZON'DA BİR MANASTIR" in bright yellow with a thin dark outline.
-Line 2: "ÇATISI ÇÖKMÜŞ, GİRİŞİ BEDAVA" in bright yellow with a thin dark outline.
-Line 3: "PEKİ NEDEN KİMSE GİTMİYOR?" in white letters on a solid red rectangular banner.
-Line 3 is the largest and heaviest. Turkish characters exactly as written. The text block must not overlap the face or the glowing circle.
+The BACKGROUND IS CLEARLY SOFT — shallow depth of field. The monastery and the valley are readable as a place but do not compete with him for attention.
 
-Style: cinematic, very high contrast, saturated but cold green-grey colors with warm light only on the face and inside the circle, crisp detail on the face, the wall painting and the text. No other text, no watermark, no logos, no extra people.
+The LOWER THIRD of the frame is plain and uncluttered.
 
-  ⚠ Gemini Türkçe harfleri bozarsa (İ, Ş, Ğ, ç): TEXT bloğunu çıkar, "leave the upper
-    right clean" de, üç satırı Canva'da ekle. SORU SATIRI ASLA ATILMAZ.
-  ⚠ DİKEY 9:16 için: metin üst %25'e, duvar resmi ortaya, adam alt %45'e, başı yukarı bakar.
-  ⚠ Kapakta GERÇEK freski kullanma kararı çekimden sonra verilir — sahadaki görüntü
-    prompttan güçlüyse gerçek kare tercih edilir.
+No text, no watermark, no logo, no second person.
+
+YATAY 1280×720 (YouTube)
+  Aynı prompt, iki değişiklikle:
+  · "Vertical 1080x1920" → "Horizontal 1280x720"
+  · "in the UPPER HALF of the frame" → "in the LEFT THIRD of the frame"
+  Başlık sağa ve üste yaslı basılır (MARKA-KIMLIGI.md 8.3).
+
+  ⚠ Mimik başlığa göre değişir. "Peki neden kimse gitmiyor?" için şaşkınlık değil
+    RAHATSIZLIK — terk edilmiş bir şeye bakan adam.
+  ⚠ Çekimden sonra: sahadaki gerçek fresk/çökmüş çatı karesi prompttan güçlüyse
+    GERÇEK KARE kullanılır. Kapakta gerçek görüntü her zaman tercih edilir.
 
 ═══════════════════════════════════════
 FACEBOOK (native upload — YouTube linki YOK)

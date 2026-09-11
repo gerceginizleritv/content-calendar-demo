@@ -1,9 +1,24 @@
 # İçerik Kuralları — Gerçeğin İzleri TV / Tarihi Dedektif
 
-Bu dosya, sohbette belirlenen ve Drive'daki "Kanal İçerik Anayasası (v3)"
-ile "ANAYASA GÜNCELLEMESİ" belgelerini tamamlayan kuralların depodaki
-kopyasıdır. Çelişki olursa Drive'daki anayasa geçerlidir; buradaki
-maddeler oradan alınmış ya da 2026-09-10 sohbetinde eklenmiştir.
+Bu dosya üretim kurallarının depodaki kopyasıdır.
+
+⚠️ **DÜZELTME (11 Eylül 2026).** Bu dosya daha önce üstün otorite olarak
+Drive'daki "Kanal İçerik Anayasası (v3)" belgesini gösteriyordu. **O belge
+başka bir kanala ait** — içeriği pazaryeri komisyon hesapları, KDV ve kargo
+desi ("GERÇEK KÂR" kanalı, "Pazaryeri Girişimciliği" klasörü). Tarihi
+Dedektif'le ilgisi yok. Referans kaldırıldı.
+
+**Otorite sırası (11 Eylül 2026'dan itibaren):**
+
+1. **`icerik/MARKA-KIMLIGI.md`** — marka kararları: ne söyleriz, neye
+   benzeriz, kimden para almayız, hangi platform birinci.
+2. **Kurgu kural seti** (`E:\CLAUDE VIDEOS` memory/*.md, 57 dosya) — teknik
+   uygulama: ölçü, dosya, betik, hat. Kendi alanında üstündür.
+3. **Bu dosya** — script ve yayın paketi üretim kuralları.
+4. Drive'daki "ANAYASA GÜNCELLEMESİ - ..." belgeleri — tarihsel kayıt.
+
+Çakışma olursa hangisinin alanıysa o kazanır; belirsizse kullanıcıya sorulur.
+Uzlaştırma tablosu: `MARKA-KIMLIGI.md` bölüm 20.
 
 Motto: **Rivayet değil, kayıt.** Konu: İstanbul'un tarih gizemleri. Paranormal
 ve komplo dili yok, örgüt adı yok.
@@ -95,7 +110,16 @@ kullanıcıya söylenir (Shootboard'da taşınabilir). Kayıtlar takvime ancak d
 main'e alınınca düşer; gelen kutusu yayındaki siteden okunur. Örnekler:
 Nuruosmaniye (18 Eylül 2026) ve Sokollu (2 Ekim 2026) kayıtları.
 
-## 3. Kapak görseli (2026-09-10)
+## 3. Kapak görseli (2026-09-10 · 11 Eylül'de MARKA-KIMLIGI.md'ye taşındı)
+
+⚠️ **Bu bölümün tamamı artık `icerik/MARKA-KIMLIGI.md` bölüm 8'de.**
+Orada yatay ve dikey şablon, prompt kalıbı ve yasaklar birlikte duruyor.
+Aşağıdaki maddeler tarihsel kayıt olarak bırakıldı; **çelişki olursa
+MARKA-KIMLIGI.md geçerlidir.** Özellikle şu üçü DEĞİŞTİ:
+  • Dikey kapak beyaz+mor değil, **sarı #FCDB00 + siyah kontur + #F80000 bant**
+  • Promptta görünüm tarifi ve başlık metni **YASAK**
+  • Kapakta arka plan **belirgin şekilde yumuşak** olmalı
+
 
 - Gemini ile, Mustafa'nın kendi fotoğrafı referans; yüz ve yaş değiştirilmez.
 - Yalnızca düz siyah bisiklet yaka tişört; logo, ceket, aksesuar yok.

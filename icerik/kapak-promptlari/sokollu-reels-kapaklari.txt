@@ -1,0 +1,139 @@
+SOKOLLU — REELS KAPAK PROMPTLARI (5 adet)
+Sinan Dosyası 2 · Script: sokollu-v2.txt · Takvim: 7–19 Ekim 2026
+
+⚠️ YENİ STANDART — icerik/MARKA-KIMLIGI.md bölüm 8 (11 Eylül 2026)
+   Bu dosya yeni kimlik kurallarına göre yazıldı. Eski kapaklardan üç farkı var:
+     1. DİKEY kapak artık beyaz Anton + mor ışıma DEĞİL.
+        Yatayın renk sistemi: sarı #FCDB00 + siyah kontur, son satır #F80000 bantta beyaz.
+        Mor #700D8A emekliye ayrıldı.
+     2. Başlık ÜÇ SATIR ve SON SATIR SORU. (Rakipte 12 kapağın 11'i soruyla bitiyor,
+        bizde hiçbiri bitmiyordu.)
+     3. Arka plan BELİRGİN ŞEKİLDE YUMUŞAK. vidIQ üç kapağımızın üçünde de
+        "görüntü fazla kalabalık" uyarısı verdi (entropi 7,45 / 7,70 / 7,72).
+
+⚠️ PROMPT YASAKLARI — en çok hata burada yapıldı
+   ✗ Görünüm tarifi YOK. Saç, sakal, yüz, yaş — tek kelime bile yazılmaz.
+     Hepsi referans fotoğraftan gelir. ("shaved head" 23 promptu bozmuştu.)
+   ✗ Başlık metni prompta YAZILMAZ. Başlığı work/add_title.py basar.
+   ✗ Filigran, logo, ikinci kişi, uydurma görsel öğe YOK.
+
+ÖLÇÜ: dikey 1080×1920 · Facebook native video kapağı da DİKEY
+AKIŞ: başlık yaz → prompt → Gemini 3.1 Pro (referans fotoğraf yüklü) → indir →
+      gözle kontrol → work/add_title.py dikey → TESLIM/REELS/<NNN>_Sokollu/
+
+ORTAK PROMPT GÖVDESİ — her kapakta aynı, sadece <MEKÂN> ve <MİMİK> değişir
+═══════════════════════════════════════════════════════════════════════
+
+Use the attached reference photo for the man's face, hair and likeness, and reproduce his face, hair and beard exactly as they appear in that photo; only his clothing may differ: a plain black crew-neck t-shirt, no logo.
+
+Vertical 1080x1920 photograph. <MEKÂN>
+
+The man is in the UPPER HALF of the frame, head and shoulders, <MİMİK>, lips closed, no smile, looking to the side and slightly up toward <NESNE> — not at the camera. Warm rim light on his face from the right, cool shadow on the left, skin texture sharp.
+
+The BACKGROUND IS CLEARLY SOFT — shallow depth of field. The location is readable but does not compete with him for attention.
+
+The LOWER THIRD of the frame is plain and uncluttered.
+
+No text, no watermark, no logo, no second person.
+
+═══════════════════════════════════════
+REELS #1 — TEASER · 7 Ekim · 120 sn
+"Kâbe taşlı cami" (hook + Bölüm 1'in tamamı)
+═══════════════════════════════════════
+BAŞLIK (add_title.py basar)
+  SARI 1:  İSTANBUL'DA BİR CAMİ
+  SARI 2:  DUVARINDA KÂBE'DEN DÖRT TAŞ
+  KIRMIZI: PEKİ NEDEN DÖRT TANE?
+
+<MEKÂN>  The interior of a 16th-century Ottoman mosque in Istanbul, İznik tile
+         panels in blue and turquoise covering the wall above a carved marble
+         doorway, soft light from high windows.
+<NESNE>  the tiled wall above the door
+<MİMİK>  serious and intent, brow furrowed, the look of someone who has just
+         noticed something
+
+  Alternatif başlık:
+    SARI 1:  BU TAŞLAR KÂBE'DEN GELDİ
+    SARI 2:  DÖRT AYRI YERE KONDU
+    KIRMIZI: PEKİ NEDEN SAKLANDILAR?
+
+═══════════════════════════════════════
+REELS #2 · 11 Ekim · 120 sn
+"Dört taş + Mekke şantiyesi bağlantısı"  ★ en güçlü kesit
+═══════════════════════════════════════
+BAŞLIK
+  SARI 1:  MEKKE'DE BİR ŞANTİYE VARDI
+  SARI 2:  ARTAN TAŞLAR İSTANBUL'A GELDİ
+  KIRMIZI: PEKİ KİM GÖNDERDİ?
+
+<MEKÂN>  Extreme close detail of a small dark stone set into an ornate İznik tile
+         panel inside an Ottoman mosque, the tilework glowing blue around it,
+         warm low light.
+<NESNE>  the small dark stone set in the tiles
+<MİMİK>  quiet astonishment held back, brow furrowed, jaw set
+
+═══════════════════════════════════════
+REELS #3 · 13 Ekim · 90 sn
+"Caminin gerçek sahibi bir kadın"
+═══════════════════════════════════════
+BAŞLIK
+  SARI 1:  HERKES SOKOLLU'NUN SANIYOR
+  SARI 2:  VAKFİYEDE BAŞKA BİR AD VAR
+  KIRMIZI: PEKİ CAMİYİ KİM YAPTIRDI?
+
+<MEKÂN>  The courtyard of a 16th-century Ottoman mosque complex in Istanbul seen
+         from the entrance stair, an ablution fountain at the centre, medrese
+         cells around it, late afternoon light.
+<NESNE>  the inscription panel above the courtyard door
+<MİMİK>  serious, questioning, head slightly tilted
+
+  ⚠ Bu kapakta kadın figürü ya da temsilî portre KULLANILMAZ. Kanıt kitabedir,
+    kişi değil. Görsel kitabeye ve avluya bakar.
+
+═══════════════════════════════════════
+REELS #4 · 15 Ekim · 100 sn
+"Minaresi camiye değmeyen cami" (Azapkapı)
+═══════════════════════════════════════
+BAŞLIK
+  SARI 1:  AZAPKAPI'DA BİR CAMİ
+  SARI 2:  MİNARESİ BİNAYA DEĞMİYOR
+  KIRMIZI: PEKİ NEDEN AYRI DURUYOR?
+
+<MEKÂN>  An Ottoman mosque beside a busy waterway in Istanbul, its single minaret
+         standing apart from the main building and joined to it by a small arched
+         passage, a bridge and grey water behind, overcast light.
+<NESNE>  the detached minaret
+<MİMİK>  puzzled and serious, brow furrowed
+
+  ⚠ Çekim notu: bu kare Atatürk (Unkapanı) Köprüsü'nün Azapkapı ayağından
+    çekilir — Galata Köprüsü DEĞİL.
+
+═══════════════════════════════════════
+REELS #5 · 19 Ekim · 90 sn
+"Sadrazamı öldüren adam sorgusuz idam edildi"
+═══════════════════════════════════════
+BAŞLIK
+  SARI 1:  SADRAZAM HANÇERLENDİ
+  SARI 2:  KATİL AYNI GÜN İDAM EDİLDİ
+  KIRMIZI: PEKİ KİMSE NEDEN SORGULAMADI?
+
+<MEKÂN>  The interior of an octagonal Ottoman tomb in Istanbul, several draped
+         cenotaphs in rows, dim light falling from small high windows, dust in
+         the air.
+<NESNE>  the nearest cenotaph
+<MİMİK>  grave and still, the look of someone standing at a grave
+
+  ⚠ Bu kapakta kan, bıçak, şiddet imgesi YOK. Kanalın tonu belgesel; gerilim
+    atmosferle kurulur. (Marka kimliği bölüm 1: jumpscare ve korku klişesi yasak.)
+
+═══════════════════════════════════════
+ÜRETİM SONRASI KONTROL
+═══════════════════════════════════════
+☐ Beş başlığın da SON SATIRI soru mu?
+☐ Hiçbiri 4 satır değil, hepsi 3 satır mı?
+☐ Arka plan gerçekten yumuşak mı — özne net, mekân okunuyor ama yarışmıyor mu?
+☐ Yazı yüzü, eli ve tutulan nesneyi örtmüyor mu?
+☐ Türkçe harfler doğru mu (İ, Ş, Ğ, Ç)? CSS uppercase KULLANILMADI mı?
+☐ Hepsi 1080×1920 mi? (Facebook native kapağı da dikey)
+☐ Promptların hiçbirinde görünüm tarifi ya da başlık metni kalmadı mı?
+☐ Sağ altta altın elmas filigranı var mı?

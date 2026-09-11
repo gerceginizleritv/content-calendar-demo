@@ -66,28 +66,36 @@ Trabzon İl Kültür ve Turizm Müdürlüğü, Doğu Karadeniz Kültür Envanter
 ETİKETLER (hashtags alanı, virgüllü)
 trabzon ayasofya, trabzon, komnenos, trabzon imparatorluğu, tarihi dedektif, karadeniz, belgesel, tarih, istanbul tarihi, bizans tarihi, osmanlı tarihi, âdem ile havva kabartması, rivayetdeğilkayıt, trabzon gezilecek yerler, i. manuel
 
-KAPAK PROMPTU (thumbPrompt) — YATAY 16:9
-Use the attached photo as the exact face and identity reference: same man, same facial features, same salt-and-pepper beard and hair. Do not change his face or age.
+KAPAK PROMPTU (thumbPrompt) — ⚠️ 11 EYLÜL 2026'DA YENİDEN YAZILDI
+Standart: icerik/MARKA-KIMLIGI.md bölüm 8.
+Önceki prompt üç kuralı ihlal ediyordu:
+  ✗ görünüm tarif ediliyordu ("salt-and-pepper beard") → YASAK; referans fotoğraf yeter
+  ✗ başlık metni prompta yazılmıştı → YASAK; başlığı work/add_title.py basar
+  ✗ "sarı neon halka" — üretim hattında olmayan uydurma öğe → kaldırıldı
+Ayrıca ESAS FORMAT DİKEY oldu (1080×1920), yatay YouTube için ayrıca üretilir.
 
-Photorealistic YouTube thumbnail, 16:9, 1920x1080, in the style of a high-end documentary channel cover.
+DİKEY 1080×1920 (esas)
 
-LEFT THIRD: the man from the reference photo, tight head-and-shoulders, cut at the chest, plain black crew-neck t-shirt, no logo. Head turned to the right, eyes looking sideways toward the object on the right, brow furrowed, serious and suspicious expression, lips closed. Warm golden rim light from the right, soft cool shadow on the left, skin texture sharp.
+Use the attached reference photo for the man's face, hair and likeness, and reproduce his face, hair and beard exactly as they appear in that photo; only his clothing may differ: a plain black crew-neck t-shirt, no logo.
 
-BACKGROUND: a 13th-century Byzantine stone church exterior in Trabzon seen from the garden, sea and overcast Black Sea sky behind, deep depth of field blur, warm dusk light.
+Vertical 1080x1920 photograph. The exterior south facade of a 13th-century Byzantine stone church in Trabzon, a carved stone relief frieze running along the rough stone wall, the Black Sea and an overcast sky behind, warm dusk light.
 
-RIGHT HALF: a carved stone relief frieze on a rough stone facade, in sharp focus, showing a biblical creation scene in worn medieval carving. The relief is enclosed in a thick glowing yellow neon circle that lights the stone around it. This is the visual focus.
+The man is in the UPPER HALF of the frame, head and shoulders, serious, brow furrowed, lips closed, no smile, looking to the side and slightly up toward the carved relief — not at the camera. Warm rim light on his face from the right, cool shadow on the left, skin texture sharp.
 
-TEXT, upper right, THREE stacked lines, bold condensed sans-serif, all caps, tight line spacing:
-Line 1: "TRABZON'DA BİR CAMİ" in bright yellow with a thin dark outline.
-Line 2: "DUVARINDA ÂDEM İLE HAVVA" in bright yellow with a thin dark outline.
-Line 3: "PEKİ NEDEN HÂLÂ ORADA?" in white letters on a solid red rectangular banner.
-Line 3 is the largest and heaviest. Turkish characters exactly as written. The text block must not overlap the face or the glowing circle.
+The BACKGROUND IS CLEARLY SOFT — shallow depth of field. The facade and the carving are readable as a place but do not compete with him for attention.
 
-Style: cinematic, very high contrast, saturated warm colors, crisp detail on the face, the relief and the text. No other text, no watermark, no logos, no extra people.
+The LOWER THIRD of the frame is plain and uncluttered.
 
-  ⚠ Gemini Türkçe harfleri bozarsa (İ, Ş, Ğ): TEXT bloğunu çıkar, "leave the upper right clean"
-    de, üç satırı Canva'da ekle. SORU SATIRI ASLA ATILMAZ.
-  ⚠ DİKEY 9:16 için: metin üst %25'e, kabartma ortaya, adam alt %45'e, başı yukarı bakar.
+No text, no watermark, no logo, no second person.
+
+YATAY 1280×720 (YouTube)
+  Aynı prompt, iki değişiklikle:
+  · "Vertical 1080x1920" → "Horizontal 1280x720"
+  · "in the UPPER HALF of the frame" → "in the LEFT THIRD of the frame"
+  Başlık sağa ve üste yaslı basılır (MARKA-KIMLIGI.md 8.3).
+
+  ⚠ Mimik: şaşkınlık değil SORU SORAN dikkat — bir şeyi çözmeye çalışan adam.
+  ⚠ Çekimden sonra: gerçek kabartma karesi prompttan güçlüyse GERÇEK KARE kullanılır.
 
 ═══════════════════════════════════════
 FACEBOOK (native upload — YouTube linki YOK)
