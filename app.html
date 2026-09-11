@@ -859,6 +859,12 @@ body.suruklenirken *{cursor:grabbing !important;}
   padding:14px 15px;border:1px solid var(--line);border-radius:10px;
   background:var(--bg);color:var(--text);font:inherit;font-size:14.5px;line-height:1.7;}
 .sc-text:focus{outline:2px solid var(--accent);outline-offset:-2px;}
+.sc-kayit-not{display:flex;align-items:center;flex-wrap:wrap;gap:10px;
+  margin:12px 0 0;padding:10px 12px;font-size:13px;
+  color:var(--text);background:var(--accent-soft);
+  border:1px solid var(--accent-dim);border-radius:9px;}
+.sc-kayit-not[hidden]{display:none;}
+.sc-kayit-not .btn{flex:none;}
 .sc-note{font-size:11.5px;color:var(--text-dim);margin:8px 0 2px;}
 /* Drive seridi metin alaninin hemen ustunde: metnin nereden gelecegi,
    metnin yaninda dursun. */
@@ -3320,6 +3326,17 @@ textarea.sc-ai-brief{min-height:64px;resize:vertical;line-height:1.5;}
       <p class="sc-note" data-i18n="sc_note">Once there is text here, the “Script” step is ticked on its own.</p>
     </div>
     </div>
+    <!-- Kaydettikten SONRA cikan sorma satiri. "Drive'a yaz" dugmesi 4.
+         adimda, pencerenin tepesinde duruyor; kullanici 6. adimda, en
+         altta yaziyor ve oraya kaydirmis oluyor. Yani dugme var ama
+         bulundugu yerden YOK. Bu satir eylemi isin bittigi yere getiriyor.
+         Yalnizca metin varsa ve script Drive'a hic gonderilmemisse cikiyor:
+         Drive kullanmayan biri her kayitta gereksiz bir soruyla
+         karsilasmasin. -->
+    <div class="sc-kayit-not" id="sc_saveNote" hidden>
+      <span data-i18n="sc_saved_ask">Script saved. Send it to Drive?</span>
+      <button type="button" class="btn btn-sm" id="sc_saveDrive" data-i18n="sc_saved_drive">Send to Drive</button>
+    </div>
     <div class="modal-actions">
       <button class="btn btn-danger" id="sc_delete" data-i18n="p_delete">Delete</button>
       <button class="btn" id="sc_cancel" data-i18n="btn_cancel">Cancel</button>
@@ -4654,6 +4671,9 @@ const LANG = {
     sc_title: "Script",
     sc_chip: "Script",
     sc_ph: "Write the script here. It stays with the project.",
+    sc_saved_ask: "Script saved. Send it to Drive?",
+    sc_saved_drive: "Send to Drive",
+    sc_saved_drive_ok: "Saved to Drive.",
     sc_note: "Once there is text here, the “Script” step is ticked on its own.",
     sc_chars: (n)=> `${n.toLocaleString('en-US')} characters`,
     sc_empty: "empty",
@@ -5483,6 +5503,9 @@ const LANG = {
     sc_title: "Script",
     sc_chip: "Script",
     sc_ph: "Scripti buraya yaz. Projenin yanında durur.",
+    sc_saved_ask: "Script kaydedildi. Drive'a göndermek ister misin?",
+    sc_saved_drive: "Drive'a gönder",
+    sc_saved_drive_ok: "Drive'a kaydedildi.",
     sc_note: "Burada metin olunca “Script” adımı kendiliğinden işaretlenir.",
     sc_chars: (n)=> `${n.toLocaleString('tr-TR')} karakter`,
     sc_empty: "boş",
@@ -8423,6 +8446,18 @@ async function driveYaz(){
     driveBaglantisi = { id: sonuc.id, ad: sonuc.name || '', zaman: sonuc.modifiedTime || '' };
     driveYazPenceresiKapat();
     driveDurum(t('dw_ok')(sonuc.name || ''), 'ok');
+    if(driveKayittanSonra){
+      driveKayittanSonra = false;
+      // Bag KAYDA da yazilmali: bu akista Kaydet'e artik basilmayacak,
+      // pencere kapaniyor. Yazilmazsa "bu script hangi belgede" bilgisi
+      // kaybolur ve bir dahaki sefere yeni belge onerilir.
+      if(acikScriptId) scriptGuncelle(acikScriptId, { driveFileId: driveBaglantisi.id,
+                                                     driveFileName: driveBaglantisi.ad,
+                                                     driveModified: driveBaglantisi.zaman });
+      showToast(t('sc_saved_drive_ok'));
+      closeScript();
+      renderScriptler();
+    }
   }catch(err){
     console.error('[drive] yazma hatasi', err);
     dwDurum(/izin/.test(err.message) ? t('sc_drive_denied') : t('dw_err'), 'error');
@@ -8435,6 +8470,9 @@ async function driveYaz(){
 // Pencere hem VAR OLAN bir scripti aciyor hem de YENI bir tane baslatiyor.
 // Yeni script kaydedilene kadar listeye girmiyor: vazgecilen bir taslak
 // listede yer kaplamamali.
+// Drive yazma "kaydettikten sonra" akisindan mi baslatildi: oyleyse
+// yazma bitince script penceresi de kapaniyor.
+let driveKayittanSonra = false;
 let acikScriptId = null;
 let yeniScriptTaslak = null;   // { text, title, projectId } — kaydedilmemis
 
@@ -8716,6 +8754,9 @@ function openScript(id, baslangic){
   document.getElementById('sc_aiBrief').value = '';
   document.getElementById('sc_newIdea').value = '';
   document.getElementById('sc_driveUndo').hidden = true;
+  // Onceki scriptten kalan sorma satiri yeni pencerede durmasin.
+  document.getElementById('sc_saveNote').hidden = true;
+  driveKayittanSonra = false;
   driveBaglantisi = { id: (veri.driveFileId || ''), ad: (veri.driveFileName || ''),
                       zaman: (veri.driveModified || '') };
   driveYazDugmesiTazele();
@@ -8742,10 +8783,24 @@ function scriptKaydet(){
                 driveModified: driveBaglantisi.zaman };
   const alanlar = { title: baslik, text: metin, projectId: pid, projectIds: pidler,
                     ideaIds: fikirIdleri, source: kaynak, ...bag };
-  if(acikScriptId) scriptGuncelle(acikScriptId, alanlar);
-  else scriptEkle(alanlar);
-  closeScript();
+  let kayit;
+  if(acikScriptId){ scriptGuncelle(acikScriptId, alanlar); kayit = scriptById(acikScriptId); }
+  else kayit = scriptEkle(alanlar);
   renderScriptler(); renderFikirler(); renderProjects();
+  // Kaydet ARTIK HER ZAMAN KAPATMIYOR. Metni olan ve Drive'a hic
+  // gonderilmemis bir scriptte pencere acik kaliyor ve "Drive'a gonder"
+  // soruluyor — o dugme 4. adimda, kullanicinin coktan gectigi bir yerde
+  // duruyordu. Oteki hallerde (bos taslak, zaten Drive'a bagli script,
+  // kayit olusmadi) eskisi gibi kapaniyor: Drive kullanmayan biri her
+  // kayitta gereksiz bir soru gormesin.
+  if(!kayit || !metin.trim() || driveBaglantisi.id){ closeScript(); return; }
+  // Yeni script kaydedildi: bundan sonraki Kaydet ikinci bir kopya
+  // olusturmasin, ayni kaydi guncellesin.
+  acikScriptId = kayit.id;
+  yeniScriptTaslak = null;
+  document.getElementById('sc_delete').hidden = false;
+  const not = document.getElementById('sc_saveNote');
+  if(not) not.hidden = false;
 }
 // --- Proje duzenleme penceresi ---------------------------------------
 let duzenlenenProje = null;
@@ -10299,6 +10354,12 @@ document.getElementById('sc_newIdea').addEventListener('keydown', e=>{
 document.getElementById('sc_cancel').addEventListener('click', closeScript);
 document.getElementById('scriptOverlay').addEventListener('click', e=>{ if(e.target.id==='scriptOverlay') closeScript(); });
 document.getElementById('sc_save').addEventListener('click', scriptKaydet);
+// Kaydettikten sonraki "Drive'a gonder": Drive penceresi ayni, tek fark
+// yazma bitince script penceresinin de kapanmasi.
+document.getElementById('sc_saveDrive').addEventListener('click', ()=>{
+  driveKayittanSonra = true;
+  driveYazPenceresiAc();
+});
 document.getElementById('sc_delete').addEventListener('click', async ()=>{
   if(!acikScriptId) return;
   const sc = scriptById(acikScriptId);

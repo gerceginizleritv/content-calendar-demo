@@ -56,7 +56,13 @@ const { chromium } = require('./araclar');
     const sayacDolu = document.getElementById('scCount').textContent;
     document.getElementById('sc_save').click();
     await bekle(300);
-    const kapandi = !document.getElementById('scriptOverlay').classList.contains('open');
+    // Kaydet ARTIK KAPATMIYOR: metin varsa pencere acik kaliyor ve
+    // "Drive'a gonderelim mi?" satiri cikiyor. Kullanici en altta,
+    // kaydet dugmesinin yaninda soruyu goruyor.
+    const acikKaldi = document.getElementById('scriptOverlay').classList.contains('open');
+    const notGorundu = !document.getElementById('sc_saveNote').hidden;
+    closeScript();
+    await bekle(150);
     const kayit = scriptler.find(s=>s.projectId === 'p_kariye');
     const kayitMetin = kayit.text, kayitBaslik = kayit.title;
     const cipSonra = cip('p_kariye').className;
@@ -106,7 +112,7 @@ const { chromium } = require('./araclar');
     await bekle(300);
     const projesiz = scriptler.find(s=>s.title === 'Projesiz bir fikir');
 
-    return { cipOnce, cipSayfa, cipFiltre, acildi, projeSecili, sayacBos, sayacDolu, kapandi,
+    return { cipOnce, cipSayfa, cipFiltre, acildi, projeSecili, sayacBos, sayacDolu, acikKaldi, notGorundu,
              kayitMetin, kayitBaslik, cipSonra, adimIsaretlendi,
              geriGeldi, iptalSonrasi, yereldeVar, silinceIsaretDuruyor,
              kirpildi, sinir: SCRIPT_MAX, balatUzunluk: balat ? balat.text.length : -1,
@@ -120,7 +126,8 @@ const { chromium } = require('./araclar');
   k('pencere DOĞRU projeyle açılıyor', r.projeSecili === 'p_kariye', r.projeSecili);
   k('boş sayaç "boş"', r.sayacBos === 'boş', r.sayacBos);
   k('yazınca sayaç karakter sayıyor', /karakter/.test(r.sayacDolu), r.sayacDolu);
-  k('kaydedince pencere kapandı', r.kapandi);
+  k('kaydedince pencere AÇIK KALIYOR', r.acikKaldi);
+  k('kaydedince Drive sorusu çıkıyor', r.notGorundu);
   k('metin kaydedildi', r.kayitMetin.startsWith('Kariye Camii'), r.kayitMetin.slice(0,30));
   k('başlık kaydedildi', r.kayitBaslik === 'Kariye — bölüm 1', r.kayitBaslik);
   k('dolu projede çip vurgulu', r.cipSonra.includes('dolu'), r.cipSonra);
