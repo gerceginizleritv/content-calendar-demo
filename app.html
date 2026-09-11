@@ -1025,6 +1025,10 @@ body.suruklenirken *{cursor:grabbing !important;}
 .mk-ad{font-size:14.5px;font-weight:600;}
 .mk-yer{font-size:12.5px;color:var(--text-dim);margin-top:2px;}
 .mk-adres{font-size:12.5px;color:var(--text-dim);margin-top:2px;overflow-wrap:anywhere;}
+/* Eklenme tarihi: kartin en altinda, kucuk ve soluk. Siralamayi
+   eklenme tarihine aldiginda neye gore siralandigi gorunur olsun. */
+.mk-eklendi{font-size:11px;color:var(--text-dim);margin-top:6px;
+  font-variant-numeric:tabular-nums;}
 .mk-rozetler{display:flex;gap:6px;flex-wrap:wrap;margin-top:auto;padding-top:9px;}
 .mk-rozet{font-size:11px;color:var(--text-dim);border:1px solid var(--line);
   border-radius:20px;padding:2px 8px;text-decoration:none;}
@@ -1393,6 +1397,10 @@ textarea.sc-ai-brief{min-height:64px;resize:vertical;line-height:1.5;}
 :root:not([data-theme="light"]) .proj-tools input{color-scheme:dark;}
 .proj-tools{display:flex;align-items:center;gap:12px;margin-bottom:14px;}
 .proj-tools .btn{flex-shrink:0;}
+/* Sira dugmesi: SECENEK LISTESI DEGIL, tiklandikca donen tek dugme.
+   Uzerinde her zaman ICINDE BULUNULAN sira yaziyor. */
+.btn-sira{font-variant-numeric:tabular-nums;white-space:nowrap;}
+.btn-sira.acik{border-color:var(--accent);color:var(--accent);}
 /* Hic proje yokken: aciklama ve tek bir dugme, ortada. */
 .proj-empty{display:flex;flex-direction:column;align-items:center;gap:12px;
   padding:34px 20px;border:1px dashed var(--line);border-radius:12px;
@@ -2697,6 +2705,7 @@ textarea.sc-ai-brief{min-height:64px;resize:vertical;line-height:1.5;}
     <div class="proj-tools">
       <input type="search" id="mk_search" data-i18n-placeholder="mk_search_ph" placeholder="Search places — name, city or address">
       <span class="proj-count" id="mk_count"></span>
+      <button type="button" class="btn btn-sira" id="mk_sira"></button>
       <!-- Fotografsiz mekan varsa cikiyor: tek tek pencere acmadan
            hepsine birden bakiyor. -->
       <button type="button" class="btn" id="mk_fotoHepsi" hidden data-i18n="mk_photo_all">Look for photos</button>
@@ -2727,6 +2736,7 @@ textarea.sc-ai-brief{min-height:64px;resize:vertical;line-height:1.5;}
     <div class="proj-tools">
       <input type="search" id="p_search" data-i18n-placeholder="p_search_ph" placeholder="Search projects — name, type or address">
       <span class="proj-count" id="p_count"></span>
+      <button type="button" class="btn btn-sira" id="p_sira"></button>
       <button type="button" class="btn btn-primary" id="p_openNew" data-i18n="p_add">+ Create project</button>
     </div>
     <!-- Filtre satiri: arama METIN arar, bu satir DURUM suzer. Ikisi
@@ -4709,6 +4719,12 @@ const LANG = {
     p_delete: "Delete",
     p_none: "No projects yet. A project is the shoot, the brand job, the series that your posts come out of.",
     p_none_match: "No project matches that search.",
+    sira_akilli: "Sort: Smart",
+    sira_yeni: "Sort: Newest added",
+    sira_eski: "Sort: Oldest added",
+    sira_aria: "Change the sort order",
+    sira_ipucu: "Smart order, newest added, oldest added",
+    eklendi: (g)=> `added ${g}`,
     p_count_all: (n)=> `${n} ${n===1?'project':'projects'}`,
     p_count_filtered: (n,tum)=> `${n} / ${tum} projects`,
     p_entries: (n,y)=> `${n} ${n===1?'entry':'entries'} · ${y} posted`,
@@ -5541,6 +5557,12 @@ const LANG = {
     p_delete: "Sil",
     p_none: "Henüz proje yok. Proje; paylaşımlarının çıktığı çekim, marka işi ya da seri demek.",
     p_none_match: "Bu aramaya uyan proje yok.",
+    sira_akilli: "S\u0131ra: Ak\u0131ll\u0131",
+    sira_yeni: "S\u0131ra: Yeni eklenen",
+    sira_eski: "S\u0131ra: Eski eklenen",
+    sira_aria: "S\u0131ralamay\u0131 de\u011fi\u015ftir",
+    sira_ipucu: "Ak\u0131ll\u0131 s\u0131ra, yeni eklenen, eski eklenen",
+    eklendi: (g)=> `${g} eklendi`,
     p_count_all: (n)=> `${n} proje`,
     p_count_filtered: (n,tum)=> `${n} / ${tum} proje`,
     p_entries: (n,y)=> `${n} kayıt · ${y} yayınlandı`,
@@ -6508,6 +6530,62 @@ function projeGunu(p){
   if(tarihler.length) return tarihler.sort()[0];
   return p.shootDate || '';
 }
+// ===== Eklenme tarihine gore sira ==================================
+// Tarih ZATEN kaydediliyordu (createdAt, buluta da gidiyor); eksik olan
+// onu gostermek ve ona gore siralayabilmekti. "Dun ekledigim hangisiydi"
+// sorusunun listede bir karsiligi yoktu.
+//
+// Tek dugme, uc durum: akilli sira -> yeni eklenen -> eski eklenen.
+// Akilli sira SILINMIYOR, dongunun icinde duruyor: projede yaklasan
+// termin, mekanda bekleyen cekim ustte demek hala varsayilan.
+const SIRA_DONGU = ['akilli', 'yeni', 'eski'];
+const PROJE_SIRA_KEY = 'demo_proje_sira';
+const MEKAN_SIRA_KEY = 'demo_mekan_sira';
+function siraOku(anahtar){
+  try{
+    const v = localStorage.getItem(anahtar);
+    return SIRA_DONGU.indexOf(v) !== -1 ? v : 'akilli';
+  }catch(e){ return 'akilli'; }
+}
+function siraYaz(anahtar, deger){ try{ localStorage.setItem(anahtar, deger); }catch(e){} }
+function siraSonraki(deger){
+  return SIRA_DONGU[(SIRA_DONGU.indexOf(deger) + 1) % SIRA_DONGU.length];
+}
+// Tarihi olmayan kayit (cok eski bir yedekten gelmis olabilir) sona
+// gidiyor: bilinmeyen bir tarih listenin basini tutmasin.
+function eklenmeSirala(liste, deger){
+  const eskiOnce = deger === 'eski';
+  return liste.slice().sort((a, b)=>{
+    const ta = typeof a.createdAt === 'number' ? a.createdAt : 0;
+    const tb = typeof b.createdAt === 'number' ? b.createdAt : 0;
+    if(!ta && !tb) return 0;
+    if(!ta) return 1;
+    if(!tb) return -1;
+    return eskiOnce ? ta - tb : tb - ta;
+  });
+}
+// Eklenme tarihi KISA yaziliyor: "11 Eyl". Bu yila ait degilse yil da
+// ekleniyor, yoksa gecen yilin kaydi bu yilinki gibi okunuyor.
+function eklenmeMetni(zaman){
+  if(typeof zaman !== 'number' || !zaman) return '';
+  try{
+    const g = new Date(zaman);
+    if(isNaN(g.getTime())) return '';
+    const dil = currentLang === 'tr' ? 'tr-TR' : 'en-US';
+    const ayni = g.getFullYear() === new Date().getFullYear();
+    return g.toLocaleDateString(dil, ayni
+      ? { day:'numeric', month:'short' }
+      : { day:'numeric', month:'short', year:'numeric' });
+  }catch(e){ return ''; }
+}
+function siraDugmesiTazele(id, deger){
+  const d = document.getElementById(id);
+  if(!d) return;
+  d.textContent = t('sira_' + deger);
+  d.title = t('sira_ipucu');
+  d.setAttribute('aria-label', t('sira_aria'));
+  d.classList.toggle('acik', deger !== 'akilli');
+}
 function projeSirasi(a, b){
   // Once durum: surendeki isler ustte, bitenler altta, iptaller en altta.
   const da = projeDurumu(a), db = projeDurumu(b);
@@ -6541,6 +6619,7 @@ function projeOzeti(){
 // Arama METIN arar (ad, tur, adres); bu filtre DURUM suzer. Ikisi
 // birlikte calisiyor: "cekimi bitmisler icinde Balat'i ara" mumkun.
 let projeFiltresi = 'hepsi';
+let projeSiraSecimi = siraOku(PROJE_SIRA_KEY);
 const PROJE_FILTRELERI = [
   { k:'hepsi',     etiket:'p_f_all',      olcut: p => true },
   { k:'devam',     etiket:'p_f_active',   olcut: p => !p.cancelled && !projeBitti(p) },
@@ -6597,7 +6676,10 @@ function renderProjects(){
   // Ozet aramadan BAGIMSIZ: filtreye gore degisen bir ozet, "toplam" diye
   // okunup yanlis anlasilir.
   renderProjeOzeti();
-  const hepsi = projects.slice().sort(projeSirasi);
+  siraDugmesiTazele('p_sira', projeSiraSecimi);
+  const hepsi = projeSiraSecimi === 'akilli'
+    ? projects.slice().sort(projeSirasi)
+    : eklenmeSirala(projects, projeSiraSecimi);
   renderProjeFiltre(hepsi);
   const liste = projeAra(projeFiltreUygula(hepsi), q);
 
@@ -6714,7 +6796,8 @@ function renderProjects(){
             escapeHtml(projTypeName(p.type || 'other')),
             yerAdlari.length ? escapeHtml(yerAdlari[0] + (yerAdlari.length > 1 ? ' +' + (yerAdlari.length - 1) : '')) : '',
             p.shootDate ? escapeHtml(tarihMetni(p.shootDate)) : '',
-            escapeHtml(t('p_entries')(kayitlar.length, yayinlanan))
+            escapeHtml(t('p_entries')(kayitlar.length, yayinlanan)),
+            eklenmeMetni(p.createdAt) ? escapeHtml(t('eklendi')(eklenmeMetni(p.createdAt))) : ''
           ].filter(Boolean).join(' · ')}</span>
         </div>
       </th>
@@ -7746,6 +7829,7 @@ function renderMekanlar(){
   document.getElementById('mk_count').textContent =
     mekanlar.length ? t('mk_count')(liste.length, mekanlar.length) : '';
   document.getElementById('mk_fotoHepsi').hidden = mekanFotosuzlar().length === 0;
+  siraDugmesiTazele('mk_sira', mekanSiraSecimi);
   if(!liste.length){
     // Bos ekranin ortasinda YOL GOSTEREN dugme. Ekleme dugmesi sayfanin
     // ust cubugunda da duruyor ama ilk kez gelen kisi bos bir alana
@@ -7773,6 +7857,9 @@ function renderMekanlar(){
         <div class="mk-ad">${escapeHtml(mekanAdi(m))}${aiRozet('places', m.id)}</div>
         ${yer ? `<div class="mk-yer">${escapeHtml(yer)}</div>` : ''}
         ${m.address ? `<div class="mk-adres">${escapeHtml(m.address)}</div>` : ''}
+        ${eklenmeMetni(m.createdAt)
+          ? `<div class="mk-eklendi">${escapeHtml(t('eklendi')(eklenmeMetni(m.createdAt)))}</div>`
+          : ''}
         <div class="mk-rozetler">
           ${bekleyen
             ? `<span class="mk-rozet mk-bekleyen">${escapeHtml(t('mk_waiting')(bekleyen))}</span>`
@@ -9146,7 +9233,9 @@ function mekanById(id){ return mekanlar.find(m=>m.id === id) || null; }
 // Once BEKLEYEN isi olanlar. Sayfayi acan kisi nerede is biriktigini bir
 // bakista gorsun; ad sirasi yalnizca esitleri ayirmak icin kaliyor, boylece
 // liste tahmin edilebilir duruyor.
+let mekanSiraSecimi = siraOku(MEKAN_SIRA_KEY);
 function mekanSiraliListe(){
+  if(mekanSiraSecimi !== 'akilli') return eklenmeSirala(mekanlar, mekanSiraSecimi);
   return mekanlar.slice().sort((a,b)=>
     mekanBekleyenleri(b.id).length - mekanBekleyenleri(a.id).length
     || a.name.localeCompare(b.name, 'tr'));
@@ -10377,6 +10466,16 @@ document.getElementById('pe_deadlines').addEventListener('click', ()=>{
 });
 document.getElementById('p_name').addEventListener('keydown', e=>{ if(e.key === 'Enter') document.getElementById('p_add').click(); });
 document.getElementById('p_search').addEventListener('input', renderProjects);
+document.getElementById('p_sira').addEventListener('click', ()=>{
+  projeSiraSecimi = siraSonraki(projeSiraSecimi);
+  siraYaz(PROJE_SIRA_KEY, projeSiraSecimi);
+  renderProjects();
+});
+document.getElementById('mk_sira').addEventListener('click', ()=>{
+  mekanSiraSecimi = siraSonraki(mekanSiraSecimi);
+  siraYaz(MEKAN_SIRA_KEY, mekanSiraSecimi);
+  renderMekanlar();
+});
 document.getElementById('f_projectSearch').addEventListener('input', ()=> projeSecimiTazele());
 
 // ===== Aciklama sablonlari =====

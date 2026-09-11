@@ -4,8 +4,13 @@
 #   ./testler/kosu.sh              hepsi
 #   ./testler/kosu.sh mekan sifre  yalnizca adi gecenler
 #
-# Sonuc ekrana DEGIL sonuc.txt'ye gidiyor: takim yuzlerce satir uretiyor,
-# ekranda bogulup gecen/kalan gorunmez oluyordu.
+# Testin KENDI ciktisi ekrana DEGIL sonuc.txt'ye gidiyor: takim yuzlerce
+# satir uretiyor, ekranda bogulup gecen/kalan gorunmez oluyordu. Ekrana
+# her testten yalnizca tek satir dusuyor -- koserken nerede kalindigi,
+# hangisinin takildigi ve ne kadar surdugu gorunsun diye:
+#
+#   [ 12/132] ok  mekan.test.js                        4sn
+#   [ 13/132] XX  script2.test.js                      9sn
 set -u
 cd "$(dirname "$0")"
 KOK="$(cd .. && pwd)"
@@ -48,7 +53,9 @@ done
 D_TIPI="arama duzeltme hafta modal proje projeler sablon3 senkron surukle tablo2 termin tz uygulama dil slate-tablo"
 LOK_TIPI="lok-klon lok-surukle"
 
-gecen=0; kalan=0
+# Kosacak testler ONCE toplaniyor: ekranda "12/132" yazabilmek icin
+# toplamin bastan bilinmesi gerekiyor.
+kosacak=()
 for f in *.test.js; do
   ad="${f%.test.js}"
   # Arguman verildiyse yalnizca adi gecenler kossun.
@@ -57,20 +64,35 @@ for f in *.test.js; do
     for istek in "$@"; do case "$ad" in *"$istek"*) uyuyor=1;; esac; done
     [ $uyuyor -eq 1 ] || continue
   fi
+  kosacak+=("$f")
+done
+toplam=${#kosacak[@]}
+echo "$toplam test kosuyor"
+
+gecen=0; kalan=0; sira=0
+for f in "${kosacak[@]}"; do
+  ad="${f%.test.js}"
+  sira=$((sira+1))
   case " $D_TIPI " in *" $ad "*) arg=". ";; *) arg="";; esac
   case " $LOK_TIPI " in *" $ad "*) arg=". 8099";; esac
   # hatirlatma takimi 60 kontrol kosuyor ve 200 saniyeyi asiyor.
   case "$ad" in hatirlatma) sure=420;; *) sure=200;; esac
+  basladi=$SECONDS
   out=$(timeout $sure node "$f" $arg 2>&1); kod=$?
+  surdu=$((SECONDS-basladi))
   if [ $kod -ne 0 ]; then
     kalan=$((kalan+1))
+    isaret="XX"
     echo "### BASARISIZ ($kod) $f" >> sonuc.txt
     echo "$out" | tail -14 >> sonuc.txt
     echo "" >> sonuc.txt
   else
     gecen=$((gecen+1))
+    isaret="ok"
     echo "ok  $f" >> sonuc.txt
   fi
+  # Ekrana tek satir: kacinci / kac, gecti mi, ne kadar surdu.
+  printf '[%3d/%d] %s  %-34s %4dsn\n' "$sira" "$toplam" "$isaret" "$f" "$surdu"
 done
 echo "=== BITTI — $gecen gecti, $kalan kaldi ===" >> sonuc.txt
 tail -1 sonuc.txt
