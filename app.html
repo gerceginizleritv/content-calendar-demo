@@ -2624,6 +2624,22 @@ textarea.sc-ai-brief{min-height:64px;resize:vertical;line-height:1.5;}
   textarea,
   #imp_metin{font-size:16px !important;}
 }
+/* DOKUNMATIKTE cipler gercek dugme oluyor. Olcum: masaustundeki hali
+   22x15 piksel — Apple'in alt siniri 44x44. Telefonda parmakla buna
+   isabet ettirmek zor, iskalayinca da hicbir sey olmuyor; kullanici
+   "tikliyorum bir yere gitmiyor" diyor. Haklı. Gorunur bir cerceve ve
+   36 piksel yukseklik hem hedefi buyutuyor hem "buraya basilir"
+   diyor. Satir artik SARIYOR: dort cip tek satira sigmiyordu ve
+   sonuncusu (cekim listesi) kirpiliyordu. */
+@media (hover:none){
+  .pn-alt{flex-wrap:wrap;white-space:normal;overflow:visible;gap:8px;margin-top:6px;}
+  .pn-ico{padding:7px 10px;min-height:36px;border:1px solid var(--line);
+    border-radius:9px;background:var(--bg);font-size:12px;}
+  .pn-ico.dolu{border-color:var(--accent-dim);}
+  .pn-ico b{font-size:11px;}
+  .pn-svg{width:15px;height:15px;}
+  .pn-meta{white-space:normal;}
+}
 </style>
 <script>
 // Kayitli tema tercihini ilk boyamadan once uygula — aksi halde acik temayi
