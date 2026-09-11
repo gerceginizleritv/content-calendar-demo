@@ -1400,6 +1400,9 @@ textarea.sc-ai-brief{min-height:64px;resize:vertical;line-height:1.5;}
 /* Sira dugmesi: SECENEK LISTESI DEGIL, tiklandikca donen tek dugme.
    Uzerinde her zaman ICINDE BULUNULAN sira yaziyor. */
 .btn-sira{font-variant-numeric:tabular-nums;white-space:nowrap;}
+.pe-drive{display:flex;gap:8px;align-items:center;}
+.pe-drive input{flex:1;min-width:0;}
+.pe-drive .btn{flex:none;}
 .btn-sira.acik{border-color:var(--accent);color:var(--accent);}
 /* Hic proje yokken: aciklama ve tek bir dugme, ortada. */
 .proj-empty{display:flex;flex-direction:column;align-items:center;gap:12px;
@@ -1635,6 +1638,17 @@ textarea.sc-ai-brief{min-height:64px;resize:vertical;line-height:1.5;}
 .cl-dikkat h4{margin:0 0 6px;font-size:11px;text-transform:uppercase;
   letter-spacing:.07em;color:var(--text-dim);font-weight:700;}
 /* --- Ihtiyac kutuphanesi --- */
+.ih-setler{display:flex;flex-wrap:wrap;gap:7px;margin-bottom:12px;}
+.ih-set{display:inline-flex;align-items:center;gap:6px;padding:5px 10px;font-size:12.5px;
+  border:1px solid var(--line);border-radius:20px;background:var(--bg);color:var(--text);
+  font-family:inherit;cursor:pointer;}
+.ih-set:hover{border-color:var(--accent);color:var(--accent);}
+.ih-set b{font-weight:600;color:var(--text-dim);font-variant-numeric:tabular-nums;}
+.ih-set-sil{background:none;border:none;color:var(--text-dim);font-size:14px;line-height:1;
+  cursor:pointer;padding:0 2px;}
+.ih-set-sil:hover{color:var(--red);}
+.ih-set-yeni{border-style:dashed;}
+.ih-setler .hint{width:100%;margin:0 0 2px;}
 .ih-ara{width:100%;padding:9px 12px;border:1px solid var(--line);border-radius:8px;
   background:var(--bg);color:var(--text);font:inherit;font-size:13.5px;margin-bottom:12px;}
 .ih-satir{display:flex;align-items:center;gap:10px;padding:7px 9px;border-radius:8px;
@@ -3048,29 +3062,27 @@ textarea.sc-ai-brief{min-height:64px;resize:vertical;line-height:1.5;}
     <details class="fold fold-modal" id="pe_fieldFold">
       <summary><span data-i18n="pe_field_title">Field details</span>
         <span class="fold-count" id="pe_fieldCount"></span></summary>
-      <div class="row2">
-        <div class="field"><label data-i18n="pe_topic">Topic</label>
-          <input type="text" id="pe_topic" maxlength="300"></div>
-        <div class="field"><label data-i18n="pe_format">Format</label>
-          <input type="text" id="pe_format" maxlength="60" list="pe_formatList">
-          <datalist id="pe_formatList"><option value="Saha"><option value="Masabaşı"><option value="Hibrit"></datalist>
-        </div>
-      </div>
-      <div class="row2">
-        <div class="field"><label data-i18n="pe_district">District</label>
-          <input type="text" id="pe_district" maxlength="120"></div>
-        <div class="field"><label data-i18n="pe_city">City</label>
-          <input type="text" id="pe_city" maxlength="120"></div>
-      </div>
-      <div class="field"><label data-i18n="pe_permission">Permission</label>
-        <input type="text" id="pe_permission" maxlength="300"></div>
-      <div class="field"><label data-i18n="pe_maps">Map link</label>
-        <input type="text" id="pe_maps" maxlength="600" placeholder="https://maps.app.goo.gl/..."></div>
+      <!-- IL, ILCE, HARITA ve IZIN buradan KALKTI. Ayni bilgiler mekan
+           kartinda zaten duruyordu ve mekan projeye baglanabiliyor:
+           kullanici ayni seyi iki kez yaziyordu. KONU ve FORMAT da
+           kalkti — proje adi ve anahtar kelimeler bunlari zaten
+           soyluyor. Kullanicinin karari (11 Eylul 2026).
+           Veri SILINMEDI: eski projelerde bu alanlar kayitta ve bulutta
+           oldugu gibi duruyor, "izin" filtresi de onlari gormeye devam
+           ediyor. Yalnizca form kalabaligi gitti. -->
       <div class="row2">
         <div class="field"><label data-i18n="pe_script_url">Script link</label>
           <input type="text" id="pe_scriptUrl" maxlength="600" placeholder="https://docs.google.com/..."></div>
         <div class="field"><label data-i18n="pe_drive_url">Drive folder</label>
-          <input type="text" id="pe_driveUrl" maxlength="600" placeholder="https://drive.google.com/..."></div>
+          <!-- Baglanti elle de yapistirilabiliyor: Drive'i hic
+               kullanmayan ya da izin vermek istemeyen biri icin tek yol
+               dugme olmamali. -->
+          <div class="pe-drive">
+            <input type="text" id="pe_driveUrl" maxlength="600" placeholder="https://drive.google.com/...">
+            <button type="button" class="btn btn-sm" id="pe_driveSec" data-i18n="pe_drive_pick">Pick from Drive</button>
+          </div>
+          <p class="hint" id="pe_driveNot" hidden></p>
+        </div>
       </div>
       <div class="field"><label data-i18n="pe_shotlist">Shot list</label>
         <textarea id="pe_shotList" rows="3" maxlength="4000"></textarea></div>
@@ -3328,6 +3340,9 @@ textarea.sc-ai-brief{min-height:64px;resize:vertical;line-height:1.5;}
       </div>
       <button type="button" class="modal-x" id="ih_close" aria-label="Close">×</button>
     </div>
+    <!-- Setler: cekim tipine gore hazir paketler. "Sokak cekimi seti"ne
+         bir kez dokununca icindeki butun malzeme listeye dusuyor. -->
+    <div class="ih-setler" id="ih_setler"></div>
     <input type="search" id="ih_ara" class="ih-ara" maxlength="80" data-i18n-placeholder="ih_search_ph" placeholder="Search">
     <div id="ih_liste"></div>
     <div class="ih-yeni">
@@ -4858,6 +4873,10 @@ const LANG = {
     p_delete: "Delete",
     p_none: "No projects yet. A project is the shoot, the brand job, the series that your posts come out of.",
     p_none_match: "No project matches that search.",
+    pe_drive_pick: "Pick from Drive",
+    pe_drive_picked: (ad)=> `Picked: ${ad}`,
+    pe_drive_wait: "Opening Drive…",
+    pe_drive_err: "Could not reach Drive. You can still paste the link by hand.",
     cl_title: "Shot checklist",
     cl_open: "Checklist",
     cl_progress: (n, tum)=> `<b>${n}</b> of ${tum} ready`,
@@ -4887,6 +4906,14 @@ const LANG = {
     ih_empty: "Your kit list is empty. Add what you always take with you.",
     ih_none_match: "Nothing matches.",
     ih_group_other: "Other",
+    set_head: "My kits — one tap drops the whole kit in",
+    set_new: "+ Make a kit from this list",
+    set_ask: "What is this kit called? (Street shoot, Interview…)",
+    set_empty_warn: "Add the gear to this list first, then turn it into a kit.",
+    set_added: (n)=> n ? `${n} added.` : "They were already on the list.",
+    set_made: (ad, n)=> `"${ad}" saved — ${n} items.`,
+    set_del_ask: (ad)=> `Remove the kit "${ad}"? The items stay in your kit list.`,
+    set_limit: (n)=> `You can keep ${n} kits.`,
     ih_groups: "Camera,Audio,Light,Power,Personal,Transport",
     ih_del_ask: (ad)=> `Remove "${ad}" from your kit list? Lists you already built stay as they are.`,
     ih_limit: (n)=> `Your kit list holds ${n} items.`,
@@ -5729,6 +5756,10 @@ const LANG = {
     p_delete: "Sil",
     p_none: "Henüz proje yok. Proje; paylaşımlarının çıktığı çekim, marka işi ya da seri demek.",
     p_none_match: "Bu aramaya uyan proje yok.",
+    pe_drive_pick: "Drive'dan se\u00e7",
+    pe_drive_picked: (ad)=> `Se\u00e7ildi: ${ad}`,
+    pe_drive_wait: "Drive a\u00e7\u0131l\u0131yor\u2026",
+    pe_drive_err: "Drive'a ula\u015f\u0131lamad\u0131. Ba\u011flant\u0131y\u0131 elle de yap\u0131\u015ft\u0131rabilirsin.",
     cl_title: "\u00c7ekim listesi",
     cl_open: "\u00c7ekim listesi",
     cl_progress: (n, tum)=> `${tum} maddeden <b>${n}</b> tamam`,
@@ -5758,6 +5789,14 @@ const LANG = {
     ih_empty: "K\u00fct\u00fcphane bo\u015f. Her \u00e7ekimde yan\u0131na ald\u0131klar\u0131n\u0131 ekle.",
     ih_none_match: "E\u015fle\u015fen yok.",
     ih_group_other: "Di\u011fer",
+    set_head: "Setlerim \u2014 tek dokunu\u015fla hepsi listeye d\u00fc\u015fer",
+    set_new: "+ Listedekilerden set yap",
+    set_ask: "Bu setin ad\u0131 ne olsun? (Sokak \u00e7ekimi, R\u00f6portaj\u2026)",
+    set_empty_warn: "\u00d6nce k\u00fct\u00fcphaneden malzeme ekle, sonra onlardan set yap.",
+    set_added: (n)=> n ? `${n} madde eklendi.` : "Hepsi zaten listedeydi.",
+    set_made: (ad, n)=> `"${ad}" kaydedildi \u2014 ${n} madde.`,
+    set_del_ask: (ad)=> `"${ad}" seti silinsin mi? Maddeler k\u00fct\u00fcphanende kal\u0131r.`,
+    set_limit: (n)=> `${n} set tutabilirsin.`,
     ih_groups: "Kamera,Ses,I\u015f\u0131k,Enerji,Ki\u015fisel,Ula\u015f\u0131m",
     ih_del_ask: (ad)=> `"${ad}" k\u00fct\u00fcphaneden \u00e7\u0131kar\u0131ls\u0131n m\u0131? Haz\u0131rlanm\u0131\u015f listeler oldu\u011fu gibi kal\u0131r.`,
     ih_limit: (n)=> `K\u00fct\u00fcphaneye ${n} madde s\u0131\u011f\u0131yor.`,
@@ -6802,6 +6841,108 @@ function ihtiyacEkle(ad, grup){
   return m;
 }
 
+// ---- Hazir setler ---------------------------------------------------
+// Cekim tipine gore paketler: "Sokak cekimi seti", "Roportaj seti".
+// Set, kutuphanedeki maddelerin ADLARINI tutuyor, kimliklerini degil:
+// kutuphanede her yerde kimlik degil AD esleniyor (ayni ad iki kez
+// eklenemiyor zaten), boylece set elle yazilmis bir maddeyle de tutuyor.
+const SET_KEY = 'demo_ihtiyac_setleri';
+const SET_MAX = 20;
+let ihtiyacSetleri = [];
+function yeniSetId(){ return 'st_' + Date.now().toString(36) + '_' + Math.random().toString(36).slice(2,6); }
+function setTemizle(ham){
+  const ad = String((ham && ham.ad) || '').trim().slice(0, 60);
+  if(!ad) return null;
+  const maddeler = Array.isArray(ham && ham.maddeler)
+    ? [...new Set(ham.maddeler.filter(x=> typeof x === 'string')
+        .map(x=> x.trim().slice(0,120)).filter(Boolean))].slice(0, 100)
+    : [];
+  if(!maddeler.length) return null;
+  return { id: String((ham && ham.id) || yeniSetId()).slice(0,40), ad, maddeler };
+}
+function saveSetler(){
+  try{ localStorage.setItem(SET_KEY, JSON.stringify(ihtiyacSetleri)); }catch(e){}
+  tercihPushKuyrukla();
+}
+function readSetler(){
+  try{
+    const ham = JSON.parse(localStorage.getItem(SET_KEY) || '[]');
+    return Array.isArray(ham) ? ham.map(setTemizle).filter(Boolean).slice(0, SET_MAX) : [];
+  }catch(e){ return []; }
+}
+function setlerBuluttan(uzak){
+  if(!Array.isArray(uzak)) return;
+  const temiz = uzak.map(setTemizle).filter(Boolean).slice(0, SET_MAX);
+  if(JSON.stringify(temiz) === JSON.stringify(ihtiyacSetleri)) return;
+  ihtiyacSetleri = temiz;
+  try{ localStorage.setItem(SET_KEY, JSON.stringify(ihtiyacSetleri)); }catch(e){}
+}
+function setleriCiz(){
+  const kap = document.getElementById('ih_setler');
+  if(!kap) return;
+  const setler = ihtiyacSetleri.map(s=>
+    `<span class="ih-set" data-set-ekle="${escapeHtml(s.id)}" role="button" tabindex="0">
+       ${escapeHtml(s.ad)}<b>${s.maddeler.length}</b>
+       <button type="button" class="ih-set-sil" data-set-sil="${escapeHtml(s.id)}"
+               title="${escapeHtml(t('cl_remove'))}" aria-label="${escapeHtml(t('cl_remove'))}">×</button>
+     </span>`).join('');
+  kap.innerHTML = (ihtiyacSetleri.length ? `<p class="hint">${escapeHtml(t('set_head'))}</p>` : '')
+    + setler
+    + `<button type="button" class="ih-set ih-set-yeni" id="ih_setYap">${escapeHtml(t('set_new'))}</button>`;
+  kap.querySelectorAll('[data-set-ekle]').forEach(el=>{
+    el.addEventListener('click', e=>{
+      if(e.target.closest('[data-set-sil]')) return;
+      setiListeyeEkle(el.dataset.setEkle);
+    });
+  });
+  kap.querySelectorAll('[data-set-sil]').forEach(el=>{
+    el.addEventListener('click', ()=> setiSil(el.dataset.setSil));
+  });
+  document.getElementById('ih_setYap').addEventListener('click', setYap);
+}
+function setiListeyeEkle(id){
+  const s = ihtiyacSetleri.find(x=> x.id === id);
+  if(!s || !listeProjesi) return;
+  let eklenen = 0;
+  s.maddeler.forEach(ad=>{
+    const kutuphanede = ihtiyaclar.find(x=> ihtiyacAnahtari(x.ad) === ihtiyacAnahtari(ad));
+    if(listeMaddeEkle(ad, 'kutuphane', kutuphanede ? kutuphanede.grup : '')) eklenen++;
+  });
+  const not = document.getElementById('ih_topluNot');
+  not.textContent = t('set_added')(eklenen);
+  not.hidden = false;
+  ihtiyacListesiCiz();
+}
+// Set ACIK LISTEDEN yapiliyor: kullanici zaten bu cekim icin neyi
+// sectigini biliyor. Ayri bir "set duzenleme" ekrani kurmak, ayni isi
+// ikinci bir yerde tekrar yaptirmak olurdu.
+async function setYap(){
+  const pr = listeProjesi;
+  const adaylar = projeListesi(pr || {}).filter(x=> x.kaynak === 'kutuphane').map(x=> x.metin);
+  if(!adaylar.length){ uyari(t('set_empty_warn')); return; }
+  if(ihtiyacSetleri.length >= SET_MAX){ uyari(t('set_limit')(SET_MAX)); return; }
+  const ad = await sor(t('set_ask'));
+  if(ad === null) return;
+  const s = setTemizle({ ad, maddeler: adaylar });
+  if(!s) return;
+  // Ayni adli set uzerine yaziliyor: "Sokak cekimi" iki kez durmasin.
+  ihtiyacSetleri = ihtiyacSetleri.filter(x=> x.ad.toLocaleLowerCase('tr') !== s.ad.toLocaleLowerCase('tr'));
+  ihtiyacSetleri.push(s);
+  saveSetler();
+  setleriCiz();
+  const not = document.getElementById('ih_topluNot');
+  not.textContent = t('set_made')(s.ad, s.maddeler.length);
+  not.hidden = false;
+}
+async function setiSil(id){
+  const s = ihtiyacSetleri.find(x=> x.id === id);
+  if(!s) return;
+  if(!await onayla(t('set_del_ask')(s.ad))) return;
+  ihtiyacSetleri = ihtiyacSetleri.filter(x=> x.id !== id);
+  saveSetler();
+  setleriCiz();
+}
+
 // ---- Projenin listesi ----------------------------------------------
 function listeMaddeTemizle(ham){
   const metin = String((ham && ham.metin) || '').trim().slice(0, 200);
@@ -7010,6 +7151,7 @@ function ihtiyacPenceresiAc(){
   document.getElementById('ih_topluMetin').value = '';
   document.getElementById('ih_topluNot').hidden = true;
   ihtiyacGruplariDoldur();
+  setleriCiz();
   ihtiyacListesiCiz();
   document.getElementById('ihtiyacOverlay').classList.add('open');
 }
@@ -7168,10 +7310,21 @@ function projeOzeti(){
     { anahtar:'ps_filmed',    deger: say('filmed') },
     { anahtar:'ps_published', deger: say('published') },
     { anahtar:'ps_done',      deger: projects.filter(p=>!p.cancelled && projeBitti(p)).length },
-    { anahtar:'ps_permission',deger: projects.filter(p=>!p.cancelled && (p.permission||'').trim()).length,
+    { anahtar:'ps_permission',deger: projects.filter(p=>!p.cancelled && projeIzni(p)).length,
       sifirsaGizle:true },
     { anahtar:'ps_cancelled', deger: projects.filter(p=>p.cancelled).length, sifirsaGizle:true }
   ];
+}
+// Projenin izin durumu. Izin alani projeden KALKTI; bilgi mekan
+// kartinda duruyor. Filtre yalnizca projenin kendi alanina baksaydi,
+// izin isteyen bir mekana bagli proje "izin gerekmiyor" gorunurdu.
+// Eski projelerin kendi alani da okunmaya devam ediyor: yazilmis bir
+// bilgi filtreden dusmesin.
+function projeIzni(p){
+  if(((p && p.permission) || '').trim()) return p.permission.trim();
+  const mekan = projeMekanlari(p || {}).map(id=> mekanById(id)).filter(Boolean)
+    .find(m=> (m.permission || '').trim());
+  return mekan ? mekan.permission.trim() : '';
 }
 // ---- Durum filtresi --------------------------------------------------
 // Arama METIN arar (ad, tur, adres); bu filtre DURUM suzer. Ikisi
@@ -7189,7 +7342,7 @@ const PROJE_FILTRELERI = [
   // ust uste iki sayi blogu vardi, biri okunuyor oteki calisiyordu ve
   // ayni sayilari gosteriyorlardi. Simdi tek blok, hepsi tiklanabilir.
   { k:'yayinda',   etiket:'p_f_published',olcut: p => !p.cancelled && p.published },
-  { k:'izin',      etiket:'p_f_permit',   olcut: p => !p.cancelled && (p.permission||'').trim() !== '' },
+  { k:'izin',      etiket:'p_f_permit',   olcut: p => !p.cancelled && projeIzni(p) !== '' },
   { k:'bitti',     etiket:'p_f_done',     olcut: p => !p.cancelled && projeBitti(p) },
   { k:'iptal',     etiket:'p_f_cancelled',olcut: p => !!p.cancelled }
 ];
@@ -7432,9 +7585,6 @@ function closeDeadlines(){
 // dolu" saymak ayni kaynaktan yapiliyor. Ayri ayri yazilsaydi biri
 // eklenip digeri unutuldugunda alan sessizce kaybolurdu.
 const SAHA_ALANLARI = [
-  ['pe_topic','topic'], ['pe_format','format'],
-  ['pe_district','district'], ['pe_city','city'],
-  ['pe_permission','permission'], ['pe_maps','mapsUrl'],
   ['pe_scriptUrl','scriptUrl'], ['pe_driveUrl','driveUrl'],
   ['pe_shotList','shotList'], ['pe_cautions','cautions'],
   ['pe_fieldNotes','fieldNotes']
@@ -8850,12 +9000,23 @@ function driveIzinIste(){
     istemci.requestAccessToken({ prompt: '' });
   });
 }
-function drivePickerAc(token){
+// klasor=true ise KLASOR seciliyor (proje penceresindeki "Drive klasoru"
+// alani icin), yoksa belge (script penceresi).
+//
+// Izin kapsami yine drive.file: Picker, Google'in KENDI penceresi ve
+// kullanicinin orada sectigi seye erisim veriyor. Yani "klasor secme"
+// icin Drive'in tamamini gorme izni istemek gerekmiyor.
+function drivePickerAc(token, klasor){
   return new Promise((coz)=>{
     gapi.load('picker', ()=>{
-      const gorunum = new google.picker.DocsView(google.picker.ViewId.DOCS)
-        .setIncludeFolders(false)
-        .setSelectFolderEnabled(false);
+      const gorunum = klasor
+        ? new google.picker.DocsView(google.picker.ViewId.FOLDERS)
+            .setIncludeFolders(true)
+            .setSelectFolderEnabled(true)
+            .setMimeTypes('application/vnd.google-apps.folder')
+        : new google.picker.DocsView(google.picker.ViewId.DOCS)
+            .setIncludeFolders(false)
+            .setSelectFolderEnabled(false);
       const picker = new google.picker.PickerBuilder()
         .setAppId(DRIVE_CLIENT_ID.split('-')[0])
         .setOAuthToken(token)
@@ -9479,6 +9640,7 @@ function openProjectEdit(id){
   const sayi = listeSayilari(p);
   document.getElementById('pe_listeTag').textContent = sayi.tum ? sayi.bitti + '/' + sayi.tum : t('sc_empty');
   sahaAlanlariniDoldur(p);
+  document.getElementById('pe_driveNot').hidden = true;
   document.getElementById('pe_address').value = p.address || '';
   mekanSecimiDoldur(p.placeId || '', 'pe', projeMekanlari(p));
   const tur = document.getElementById('pe_type');
@@ -9598,10 +9760,15 @@ let projMekanSutunu = true;
 // sql/37 (checklist) icin ayni kalkan: betik calistirilmadiysa liste
 // TARAYICIDA kaliyor, kaybolmuyor; sutun acilinca ilk kayitta gidiyor.
 let projListeSutunu = true;
-function projSatirSutunsuz(r){
-  const k = Object.assign({}, r);
-  if(!projMekanSutunu) delete k.place_ids;
-  if(!projListeSutunu) delete k.checklist;
+// Her kalkanin KENDI islevi var. Ikisini tek fonksiyonda birlestirmek
+// fonksiyonun anlamini bayraklara baglar: "bu satirdan neyin cikacagi"
+// disaridan okunamaz olur.
+function projSatirSutunsuz(r){ const k = Object.assign({}, r); delete k.place_ids; return k; }
+function projSatirListesiz(r){ const k = Object.assign({}, r); delete k.checklist; return k; }
+function projSatirUyarla(r){
+  let k = r;
+  if(!projMekanSutunu) k = projSatirSutunsuz(k);
+  if(!projListeSutunu) k = projSatirListesiz(k);
   return k;
 }
 async function projPushChanges(){
@@ -9622,18 +9789,17 @@ async function projPushChanges(){
     if(yazilacak.size){
       const rows = projects.filter(p=>yazilacak.has(p.id)).map(p=>projToRow(p, uid));
       if(rows.length){
-        const tam = projMekanSutunu && projListeSutunu;
-        let { error } = await sb.from('projects').upsert(tam ? rows : rows.map(projSatirSutunsuz), { onConflict: 'id' });
+        let { error } = await sb.from('projects').upsert(rows.map(projSatirUyarla), { onConflict: 'id' });
         // sql/34 calistirilmamis: place_ids sutunu yok. Listesiz tekrar dene;
         // ilk durak place_id'de gider, gerisi betik calisinca.
         if(error && projMekanSutunu && /place_ids/.test(String(error.message || error))){
           projMekanSutunu = false;
-          ({ error } = await sb.from('projects').upsert(rows.map(projSatirSutunsuz), { onConflict: 'id' }));
+          ({ error } = await sb.from('projects').upsert(rows.map(projSatirUyarla), { onConflict: 'id' }));
         }
         // sql/37 calistirilmamis: checklist sutunu yok.
         if(error && projListeSutunu && /checklist/.test(String(error.message || error))){
           projListeSutunu = false;
-          ({ error } = await sb.from('projects').upsert(rows.map(projSatirSutunsuz), { onConflict: 'id' }));
+          ({ error } = await sb.from('projects').upsert(rows.map(projSatirUyarla), { onConflict: 'id' }));
         }
         if(error) throw error;
       }
@@ -10473,6 +10639,7 @@ function fikirScriptAfterSignOut(){
   loadFikirScript();
   loadMekanlar();
   ihtiyaclar = readIhtiyaclar();
+  ihtiyacSetleri = readSetler();
   paylasimYukle();
 }
 function readLocalProjects(key){
@@ -10878,6 +11045,30 @@ document.getElementById('pe_ideas').addEventListener('click', ()=>{
   document.getElementById('pe_save').click();
   if(document.getElementById('projectEditOverlay').classList.contains('open')) return; // kaydedilemedi
   fikirFiltresiYap(kimlik); setPage('ideas');
+});
+// Drive klasoru: elle baglanti yapistirmak yerine Google'in kendi
+// penceresinden secme. Secilen klasorun ADI da yaziliyor — ciplak bir
+// baglantiya bakip hangi klasor oldugunu anlamak mumkun degil.
+document.getElementById('pe_driveSec').addEventListener('click', async ()=>{
+  const dugme = document.getElementById('pe_driveSec');
+  const not = document.getElementById('pe_driveNot');
+  dugme.disabled = true;
+  not.textContent = t('pe_drive_wait'); not.hidden = false;
+  try{
+    await driveBetikleri();
+    const token = await driveIzinIste();
+    const klasor = await drivePickerAc(token, true);
+    if(!klasor){ not.hidden = true; return; }
+    document.getElementById('pe_driveUrl').value =
+      'https://drive.google.com/drive/folders/' + klasor.id;
+    not.textContent = t('pe_drive_picked')(klasor.name || '');
+    sahaSayaciniTazele();
+  }catch(err){
+    console.error('[drive] klasor secimi', err);
+    not.textContent = t('pe_drive_err');
+  }finally{
+    dugme.disabled = false;
+  }
 });
 // Cekim listesi: form once KAYDEDILIYOR. Yeni eklenen bir durak
 // kaydedilmeden listeye gecilirse, mekandan gelmesi gereken maddeler
@@ -11419,6 +11610,7 @@ function tercihPrefsYap(){
   // Ihtiyac kutuphanesi hesaba bagli: telefonda yazilan madde
   // bilgisayarda da hazir olsun. Bos ise satira hic yazilmiyor.
   if(ihtiyaclar.length) prefs.ihtiyaclar = ihtiyaclar;
+  if(ihtiyacSetleri.length) prefs.ihtiyac_setleri = ihtiyacSetleri;
   if(gelenAlinan.length) prefs.gelen_alinan = gelenAlinan;
   // Bayrak buradan yazilmiyor, yalnizca KORUNUYOR: bu islev satirin
   // tamamini yeniden yaziyor, atlanirsa ilk kaydetmede bayrak silinirdi.
@@ -11512,6 +11704,7 @@ async function tercihSenkron(){
     sinirlariUygula(data);
     hatirlatmaBuluttan(data && data.prefs && data.prefs.reminders);
     ihtiyaclarBuluttan(data && data.prefs && data.prefs.ihtiyaclar);
+    setlerBuluttan(data && data.prefs && data.prefs.ihtiyac_setleri);
     gelenAlinanOku(data);
     const uzakDil = data && data.prefs && data.prefs.lang;
     const uzakTs = data && data.updated_at ? Date.parse(data.updated_at) : 0;
@@ -15758,6 +15951,7 @@ loadProjects();
 loadFikirScript();
 loadMekanlar();
 ihtiyaclar = readIhtiyaclar();
+ihtiyacSetleri = readSetler();
 paylasimYukle();
 // Bir onceki surumde proje serbest metindi; o kayitlar gercek projeye
 // cevriliyor. Kayitlar yuklendikten SONRA calismali.

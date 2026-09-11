@@ -33,17 +33,13 @@ const { chromium } = require('./araclar');
   k('düzenleme penceresi açıldı', ac.pencere === true);
   k('“Saha detayları” bölümü var', ac.bolumVar === true);
   k('BOŞ PROJEDE BÖLÜM KATLI', ac.bosProjedeKapali === true);
-  k('on bir saha alanı tanımlı', ac.alanSayisi === 11, ac.alanSayisi);
+  k('beş saha alanı tanımlı', ac.alanSayisi === 5, ac.alanSayisi);
   k('boşken sayaç yazmıyor', ac.sayac === '', JSON.stringify(ac.sayac));
 
   // Doldur, kaydet, geri oku
   const kaydet = await page.evaluate(async ()=>{
     document.getElementById('pe_fieldFold').open = true;
     const g = (id,v)=>{ const el=document.getElementById(id); el.value=v; el.dispatchEvent(new Event('input')); };
-    g('pe_topic','Bizans hastanesi ve Molla Zeyrek');
-    g('pe_district','Fatih'); g('pe_city','İstanbul');
-    g('pe_format','Saha'); g('pe_permission','Vakıf izni gerekiyor');
-    g('pe_maps','https://maps.app.goo.gl/zeyrek');
     g('pe_scriptUrl','https://docs.google.com/document/d/abc');
     g('pe_driveUrl','https://drive.google.com/drive/folders/xyz');
     g('pe_shotList','Giriş çekimi, kubbe detayı, mezar odası kapısı');
@@ -54,19 +50,22 @@ const { chromium } = require('./araclar');
     await new Promise(r=>setTimeout(r,350));
     const p = projects[0];
     return { sayac, kapandi: !document.getElementById('projectEditOverlay').classList.contains('open'),
-             konu:p.topic, ilce:p.district, sehir:p.city, format:p.format,
-             izin:p.permission, harita:p.mapsUrl, script:p.scriptUrl, drive:p.driveUrl,
+             script:p.scriptUrl, drive:p.driveUrl,
              cekilecek:p.shotList, dikkat:p.cautions, notlar:p.fieldNotes,
+             // Kalkan alanlarin kutusu penceredE YOK
+             kalkanKutular: ['pe_topic','pe_format','pe_district','pe_city','pe_permission','pe_maps']
+               .filter(id=> document.getElementById(id)),
              depo: JSON.parse(localStorage.getItem('demo_projects')||'[]')[0] };
   });
-  k('SAYAÇ DOLU ALAN SAYISINI YAZIYOR', /11 dolu/.test(kaydet.sayac), kaydet.sayac);
+  k('SAYAÇ DOLU ALAN SAYISINI YAZIYOR', /5 dolu/.test(kaydet.sayac), kaydet.sayac);
   k('pencere kapandı', kaydet.kapandi === true);
-  k('ON BİR ALANIN HEPSİ KAYDEDİLDİ',
-     kaydet.konu && kaydet.ilce==='Fatih' && kaydet.sehir==='İstanbul' && kaydet.format==='Saha' &&
-     kaydet.izin && kaydet.harita && kaydet.script && kaydet.drive &&
-     kaydet.cekilecek && kaydet.dikkat && kaydet.notlar,
-     kaydet.ilce+' / '+kaydet.sehir+' / '+kaydet.format);
-  k('tarayıcıya da yazıldı', kaydet.depo && kaydet.depo.district === 'Fatih', (kaydet.depo||{}).district);
+  k('BEŞ ALANIN HEPSİ KAYDEDİLDİ',
+     kaydet.script && kaydet.drive && kaydet.cekilecek && kaydet.dikkat && kaydet.notlar,
+     kaydet.cekilecek);
+  // İl, ilçe, harita, izin, konu ve format PENCEREDEN KALKTI: aynı bilgi
+  // mekan kartında duruyordu ve mekan projeye bağlanabiliyor.
+  k('kalkan altı alanın kutusu pencerede YOK', kaydet.kalkanKutular.length === 0, kaydet.kalkanKutular);
+  k('tarayıcıya da yazıldı', kaydet.depo && /kubbe detayı/.test(kaydet.depo.shotList||''), (kaydet.depo||{}).shotList);
 
   // Yenileyince duruyor + bolum ACIK aciliyor
   await page.reload({waitUntil:'domcontentloaded'});
@@ -76,23 +75,25 @@ const { chromium } = require('./araclar');
     setPage('projects'); await new Promise(r=>setTimeout(r,200));
     document.querySelector('.pname').click();
     await new Promise(r=>setTimeout(r,250));
-    return { konu: document.getElementById('pe_topic').value,
+    return { cekilecek: document.getElementById('pe_shotList').value,
              dikkat: document.getElementById('pe_cautions').value.slice(0,20),
              acik: document.getElementById('pe_fieldFold').open,
              sayac: document.getElementById('pe_fieldCount').textContent.trim() };
   });
-  k('YENİLEYİNCE ALANLAR DURUYOR', /Bizans/.test(sonra.konu), sonra.konu);
+  k('YENİLEYİNCE ALANLAR DURUYOR', /kubbe detayı/.test(sonra.cekilecek), sonra.cekilecek);
   k('DOLU PROJEDE BÖLÜM AÇIK AÇILIYOR', sonra.acik === true);
-  k('sayaç yine doğru', /11 dolu/.test(sonra.sayac), sonra.sayac);
+  k('sayaç yine doğru', /5 dolu/.test(sonra.sayac), sonra.sayac);
 
   // Buluta giden satirda alanlar var mi
   const satir = await page.evaluate(()=>{
     const r = projToRow(projects[0], 'u1');
     return { anahtarlar: Object.keys(r), ilce: r.district, cekilecek: r.shot_list };
   });
+  // Alanlar FORMDAN kalktı, VERİDEN değil: eski projelerde yazılmış
+  // il/ilçe/izin kayıtta ve bulutta olduğu gibi duruyor.
   k('BULUT SATIRINDA SAHA ALANLARI VAR',
-     satir.anahtarlar.includes('district') && satir.anahtarlar.includes('shot_list') &&
-     satir.ilce === 'Fatih', satir.ilce);
+     satir.anahtarlar.includes('district') && satir.anahtarlar.includes('shot_list'),
+     satir.anahtarlar.length);
 
   // Buluttan gelen satir geri okunuyor mu
   const geri = await page.evaluate(()=>{
