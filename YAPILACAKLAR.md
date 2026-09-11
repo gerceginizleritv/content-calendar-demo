@@ -6,6 +6,50 @@ duruyor, neden ertelendiği de yazıyor ki aynı tartışma baştan yapılmasın
 
 ---
 
+## ÜCRETLİ SÜRÜME GEÇİNCE: hava servisini değiştir (11 Eylül 2026)
+
+**Bu madde bir tarihe değil, bir OLAYA bağlı: Shootboard para almaya
+başladığı gün.** Kullanıcı kararı: "şimdi dokunmuyorum ama paralı
+versiyona geçtiğimizde mutlaka bu değişikliği yapmak için listeye ekle."
+
+### Ne yapılacak
+
+`havaCek()` içindeki `api.open-meteo.com` çağrısı **met.no**
+(Norveç Meteoroloji Enstitüsü, Locationforecast) ile değiştirilecek.
+Yarım günlük iş: kodda tek bir fetch fonksiyonu var, yanıttaki alan
+adları eşlenecek, `hava.test.js` içindeki taklit cevap yeni biçime
+uyarlanacak.
+
+### Neden
+
+Open-Meteo'nun ücretsiz katmanı **ticari olmayan kullanım** için. Ürün
+para almaya başladığı an o katman bize kapanır: ya ticari plana para
+ödenecek ya da başka bir kaynağa geçilecek. met.no ticari kullanıma da
+açık; karşılığında isteklerde uygulamayı tanıtan bir `User-Agent` başlığı
+göndermek ve kaynağı belirtmek gerekiyor. (Şartlar bu ortamdan
+doğrulanamadı — ağ kapalı. Geçiş günü ikisinin de kendi sayfasından
+teyit edilecek.)
+
+Alternatifler: ABD için NWS, Almanya için DWD. Hepsi devlet kurumu,
+verileri kamuya açık.
+
+### Neden ŞİMDİ yapılmıyor
+
+30 kişilik ücretsiz denemede her iki servis de fazlasıyla bedava.
+Bugün değiştirmek, henüz olmayan bir sorunu çözmek olurdu.
+
+### Bu maddeye GİRMEYEN şey
+
+Gün doğumu, gün batımı, altın saat, mavi saat. Onlar koordinattan
+HESAPLANIYOR, dışarıdan veri gelmiyor: maliyeti sonsuza kadar sıfır,
+internet olmadan da çalışıyor. Çekim planlamada asıl işe yarayan kısım
+da bu. Servis değişikliği yalnızca sıcaklık/yağış/rüzgârı ilgilendiriyor.
+
+### Aynı olaya bağlı öteki madde
+
+**Barındırmayı taşımak** — GitHub Pages ticari SaaS'a izin vermiyor.
+Cloudflare Pages ya da Netlify. İkisi aynı gün yapılmalı.
+
 ## AI erişimi: herhangi bir yapay zekâ Shootboard'a yazsın, okusun (10 Eylül 2026)
 
 Kullanıcı sordu: "ChatGPT/Claude ile başka bir sohbette plan ve script

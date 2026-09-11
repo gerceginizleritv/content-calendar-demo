@@ -19,8 +19,9 @@ and text. Shootboard never publishes anything itself; it only holds the plan.
 2. **Hand over a package:** write the result in the JSON format below as
    one code block. The creator copies it and pastes it into Shootboard's
    **Import** window; everything lands in the right place.
-3. **If the creator gives you an API key** you can send the package
-   directly and read what is already in the account (see "API").
+
+You do not need to connect to Shootboard or make any request: writing the
+package is enough — the creator carries it across.
 
 ## Package format
 
@@ -84,29 +85,3 @@ Never **invent** an address; leave it empty and the creator finds it on the map 
 - Never write `uploaded: true`; the creator ticks what has been posted.
 - Never invent an address, a permission, a phone number; leave the field empty.
 - Deliver the package as a single ```json block, with one sentence before it saying what it is. No comments inside the JSON.
-
-## API (only when the creator gave you a key)
-
-Base URL: `https://dyemvzmpnlpnzwebuciu.supabase.co/functions/v1/ai`
-Every request: `Authorization: Bearer shb_...` (the creator's key); JSON bodies with `Content-Type: application/json`.
-
-| Endpoint | What it does |
-|---|---|
-| `GET /me` | account limits, counts, language |
-| `GET /schema` | the JSON schema of this package |
-| `GET /projects` · `GET /places` · `GET /scripts` · `GET /ideas` | lists in the account |
-| `GET /entries?from=YYYY-MM-DD&to=YYYY-MM-DD` | calendar entries (default: 7 days back, 60 days ahead) |
-| `POST /import` | body = package. Response: assigned ids, updated items, warnings, `importId` |
-| `POST /undo` | body `{"importId": "..."}`; reverts that import (created items are removed, updated ones restored) |
-| `GET /imports` | recent imports |
-
-Example:
-
-```
-curl -X POST https://dyemvzmpnlpnzwebuciu.supabase.co/functions/v1/ai/import \
-  -H "Authorization: Bearer shb_..." -H "Content-Type: application/json" \
-  -d @package.json
-```
-
-The key is full access to the creator's account: never repeat it in text or store it anywhere.
-After sending something, tell the creator the `importId` from the response; they can also undo it from inside Shootboard.

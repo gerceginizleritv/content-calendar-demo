@@ -1,4 +1,4 @@
-// AI ERISIMI — PAKET DOGRULAMA (supabase/functions/ai/dogrula.js).
+// AI PAKETI — DOGRULAMA (ai/dogrula.js).
 //
 // Tarayici yok: dogrula.js saf bir modul, Node ile dogrudan kosuyor.
 // Olculen sey: bir yapay zekanin urettigi paket uygulamanin beyaz
@@ -10,7 +10,7 @@ let g = 0, k = 0;
 const bak = (ad, ko, ek)=>{ if(ko){ g++; console.log('  ok  '+ad); } else { k++; console.log('  YOK '+ad+(ek?' -> '+ek:'')); } };
 
 (async () => {
-  const m = await import('../supabase/functions/ai/dogrula.js');
+  const m = await import('../ai/dogrula.js');
   const { paketiCoz, basvuruCoz, adAnahtari, tarihGecerli, saatGecerli, kimlikUret, SINIRLAR } = m;
 
   // 1) Ornek paket: bes liste, hepsi okunuyor.

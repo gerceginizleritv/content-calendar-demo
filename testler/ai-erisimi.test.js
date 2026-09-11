@@ -208,43 +208,24 @@ async function sayfaAc(t, oncesi){
       hesapPenceresiniAc();
     });
     await p.waitForSelector('#hesapOverlay.open');
-    await p.waitForFunction(()=> /No keys yet/.test(document.getElementById('aiAnahtarListe').textContent), null, { timeout: 5000 }).catch(()=>{});
-    bak('AI erisimi bolumu var ve "anahtar yok" yaziyor', await p.$eval('#hesapAi', el=> !el.hidden) && /No keys yet/.test(await p.$eval('#aiAnahtarListe', el=> el.textContent)));
-    bak('anahtar kutusu kapali', await p.$eval('#aiAnahtarKutusu', el=> el.hidden));
-    await p.click('#aiAnahtarYeni');
-    await p.waitForFunction(()=> !document.getElementById('aiAnahtarKutusu').hidden, null, { timeout: 8000 });
-    const anahtar = await p.$eval('#aiAnahtarMetin', el=> el.value);
-    bak('anahtar shb_ ile basliyor, 36 karakter', /^shb_[A-Za-z0-9]{32}$/.test(anahtar), anahtar);
-    const satir = await p.evaluate(()=> window.__db.api_keys[0]);
-    const ozet = crypto.createHash('sha256').update(anahtar).digest('hex');
-    bak('buluta yalnizca SHA-256 ozeti gitti', satir && satir.key_hash === ozet && satir.user_id === 'kim-1' && satir.label === 'ChatGPT' && satir.key_prefix === anahtar.slice(0, 12), JSON.stringify(satir));
-    bak('satirda duz anahtar YOK', !JSON.stringify(satir).includes(anahtar));
-    bak('yetkiler read+write', Array.isArray(satir.scopes) && satir.scopes.includes('read') && satir.scopes.includes('write'));
-    await p.waitForFunction(()=> document.querySelectorAll('#aiAnahtarListe [data-ai-anahtar]').length === 1, null, { timeout: 5000 });
-    bak('listede etiket ve on ek', /ChatGPT/.test(await p.$eval('#aiAnahtarListe', el=> el.textContent)) && (await p.$eval('#aiAnahtarListe', el=> el.textContent)).includes(anahtar.slice(0, 12)));
-    bak('listede duz anahtar yok', !(await p.$eval('#aiAnahtarListe', el=> el.textContent)).includes(anahtar));
-    await p.click('#aiAnahtarListe [data-ai-iptal]');
-    await p.waitForFunction(()=> /No keys yet/.test(document.getElementById('aiAnahtarListe').textContent), null, { timeout: 5000 });
-    const iptal = await p.evaluate(()=> window.__db.api_keys[0].revoked_at);
-    bak('iptal: revoked_at yazildi, liste bosaldi', !!iptal);
+    // ANAHTAR YOLU KALDIRILDI. Kullanicinin anahtar uretip bir yere
+    // baglamasi gerekiyordu (Custom GPT, otomasyon araci, kendi betigi);
+    // sohbet pencereleri istek atamadigi icin anahtari sohbete veren kisi
+    // hicbir sey olmadigini goruyordu. Yazilimci olmayan kullaniciya
+    // kurulum isi yaptiran bir yol, yol degil. Yapistirma yolu duruyor.
+    bak('anahtar üretme düğmesi YOK', await p.$('#aiAnahtarYeni') === null);
+    bak('anahtar listesi YOK', await p.$('#aiAnahtarListe') === null);
+    bak('"buluttan yenile" YOK', await p.$('#aiYenile') === null);
+    bak('bölüm duruyor: kart düğmesi ve aktarım listesi var',
+        await p.$('#aiKartKopyala') !== null && await p.$('#aiAktarimListe') !== null);
+    bak('başlık anahtardan bahsetmiyor',
+        !/key|anahtar/i.test(await p.$eval('#hesapAi', el=> el.textContent)),
+        (await p.$eval('#hesapAi', el=> el.textContent)).slice(0, 120));
 
-    // Tablo kurulmamis: anlasilir mesaj.
-    await p.evaluate(()=>{ window.__tabloYok.api_keys = true; aiBolumuCiz(); });
-    await p.waitForFunction(()=> /not set up/.test(document.getElementById('aiAnahtarDurum').textContent), null, { timeout: 5000 }).catch(()=>{});
-    bak('sql/35 yoksa "kurulmadi" uyarisi', /not set up/.test(await p.$eval('#aiAnahtarDurum', el=> el.textContent)), await p.$eval('#aiAnahtarDurum', el=> el.textContent));
-    await p.evaluate(()=>{ window.__tabloYok.api_keys = false; });
-
-    // Buluttan yenile: bulutta olan kayit ekrana geliyor.
-    await p.evaluate(()=>{
-      window.__db.calendar_events.push({ id: 'bulut-1', user_id: 'kim-1', type: 'video', platform: 'youtube', title: 'Bulut kaydi', post_date: '2026-09-15', post_time: '10:00', uploaded: false, content: {}, workspace_id: null, project_id: null, deleted_at: null });
-      window.__db.ai_aktarimlar.push({ id: 'ak_bulut', user_id: 'kim-1', created_at: new Date().toISOString(), kaynak: 'Claude', ozet: { created: { entries: 1 }, updated: {} }, kayitlar: ['bulut-1'], projeler: [], mekanlar: [], scriptler: [], fikirler: [], onceki: {}, geri_alindi_at: null });
-      dirtyIds.clear(); removedIds.clear(); projDirty.clear(); fikirDirty.clear(); scriptDirty.clear(); mekanDirty.clear();
-    });
-    await p.click('#aiYenile');
-    await p.waitForFunction(()=> events.some(e=> e.id === 'bulut-1'), null, { timeout: 8000 });
-    const yenile = await p.evaluate(()=> ({ var: events.some(e=> e.id === 'bulut-1'), rozet: aiEklenenler.has('entries:bulut-1'), liste: document.getElementById('aiAktarimListe').textContent }));
-    bak('buluttan yenile: bulut kaydi geldi, AI rozeti ve defter satiri var', yenile.var && yenile.rozet && /Claude/.test(yenile.liste), JSON.stringify(yenile));
-    bak('hesap silme tablolari yeni tablolari kapsiyor', await p.evaluate(()=> HESAP_TABLOLARI.includes('api_keys') && HESAP_TABLOLARI.includes('ai_aktarimlar')));
+    // api_keys tablosu sql/36 ile dusuruldu; defter (ai_aktarimlar) duruyor.
+    bak('hesap silme defteri kapsiyor, olmayan tabloyu aramiyor',
+        await p.evaluate(()=> HESAP_TABLOLARI.includes('ai_aktarimlar')
+                              && !HESAP_TABLOLARI.includes('api_keys')));
     bak('sayfa hatasi yok', hatalar.length === 0, hatalar.join(' | ').slice(0, 300));
     await p.context().close();
   }

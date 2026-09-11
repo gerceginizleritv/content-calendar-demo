@@ -20,8 +20,9 @@ planı tutar.
 2. **Paketi ver:** sonucu aşağıdaki JSON biçiminde, tek bir kod bloğu
    olarak yaz. Üretici bunu kopyalayıp Shootboard'da **İçe Aktar**
    penceresine yapıştırır; her şey doğru yerine düşer.
-3. **API anahtarı verildiyse** paketi doğrudan gönderebilir, hesaptaki
-   planı okuyabilirsin (aşağıda "API").
+
+Shootboard'a senin bağlanman gerekmiyor, bir yere istek atman da
+gerekmiyor: paketi yazman yeterli, taşıyan üretici.
 
 ## Paket biçimi
 
@@ -85,29 +86,3 @@ Adres **uydurma**; bilmiyorsan boş bırak, üretici Shootboard'da haritadan bul
 - `uploaded: true` yazma; yayınlanmış olanı üretici işaretler.
 - Bilmediğin adresi, izni, telefon numarasını **uydurma**; alanı boş bırak.
 - Paketi tek bir ```json bloğunda ver; öncesinde bir cümleyle ne olduğunu söyle. JSON dışında yorum satırı koyma.
-
-## API (yalnızca üretici anahtar verdiyse)
-
-Taban adres: `https://dyemvzmpnlpnzwebuciu.supabase.co/functions/v1/ai`
-Her isteğe: `Authorization: Bearer shb_...` (üreticinin verdiği anahtar) ve JSON gövdelerde `Content-Type: application/json`.
-
-| Uç | Ne yapar |
-|---|---|
-| `GET /me` | hesap sınırları, kayıt sayıları, dil |
-| `GET /schema` | bu paketin JSON şeması |
-| `GET /projects` · `GET /places` · `GET /scripts` · `GET /ideas` | hesaptaki listeler |
-| `GET /entries?from=YYYY-MM-DD&to=YYYY-MM-DD` | takvim kayıtları (varsayılan: 7 gün geri, 60 gün ileri) |
-| `POST /import` | gövde = paket. Yanıt: verilen kimlikler, güncellenenler, uyarılar, `importId` |
-| `POST /undo` | gövde `{"importId": "..."}`; o aktarımı geri alır (eklenenler kalkar, güncellenenler eski haline döner) |
-| `GET /imports` | son aktarımlar |
-
-Örnek:
-
-```
-curl -X POST https://dyemvzmpnlpnzwebuciu.supabase.co/functions/v1/ai/import \
-  -H "Authorization: Bearer shb_..." -H "Content-Type: application/json" \
-  -d @paket.json
-```
-
-Anahtar üreticinin hesabına tam erişimdir: onu asla metin içinde tekrarlama, başka bir yere yazma.
-Bir şey gönderdikten sonra yanıttaki `importId`'yi söyle; üretici Shootboard'dan da geri alabilir.

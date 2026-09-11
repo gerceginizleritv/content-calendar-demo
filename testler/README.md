@@ -70,12 +70,11 @@ Testler tek tip değil, `kosu.sh` her birine beklediğini veriyor:
 Artık koşulmayan testler ve neden emekli oldukları. Silmiyoruz: biri
 "bu neden test edilmiyor" diye sorduğunda cevabı burada.
 
-## Tarayıcısız testler
+## Tarayıcısız test
 
-`ai-erisimi-dogrula.test.js` ve `ai-erisimi-sunucu.test.js` tarayıcı açmaz:
-ilki `supabase/functions/ai/dogrula.js` modülünü doğrudan koşar, ikincisi
-`tek-dosya.ts`'yi bu sürece yükleyip bellekteki bir PostgREST taklidine
-karşı uçları dener. TypeScript'i Node'un kendisi soyar (22.18+ / 23.6+);
-daha eski Node'da `typescript@5` (transpileModule) yedek yoldur; ikisi de
-yoksa test kendini atlar ve geçmiş sayılır. `typescript@7` işe yaramaz:
-JS API'si yok.
+`ai-erisimi-dogrula.test.js` tarayıcı açmaz: `ai/dogrula.js` modülünü
+doğrudan koşar. AI paketinin doğrulanması saf bir iş — biçim, sınırlar,
+tarih ve kimlik kontrolleri — ve tarayıcıya ihtiyacı yok.
+
+(Bir de `ai-erisimi-sunucu.test.js` vardı; API anahtarı yolunun Edge
+Function'ını deniyordu. O yol kaldırıldı, test de kalktı.)

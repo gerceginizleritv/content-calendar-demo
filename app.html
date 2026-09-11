@@ -3851,27 +3851,19 @@ textarea.sc-ai-brief{min-height:64px;resize:vertical;line-height:1.5;}
       <ul class="yedek-liste" id="yedekListe"></ul>
     </div>
 
-    <!-- AI erisimi: anahtar uretme/iptal, asistan karti, son aktarimlar,
-         buluttan yenileme. Anahtarin duz metni yalnizca bu ekranda ve bir
-         kez gorunur; buluta SHA-256 ozeti gider. -->
+    <!-- AI ile plan aktarma. API anahtari YOLU KALDIRILDI: kullanicinin
+         anahtar uretip bir yere baglamasi gerekiyordu, bu kimsenin
+         yapmadigi bir kurulum isiydi. Kalan yol kurulumsuz: AI bir JSON
+         paketi veriyor, kullanici Ice Aktar'a yapistiriyor. Burada yalnizca
+         karti kopyalamak ve gecmise bakip geri almak var. -->
     <div class="hesap-satir hesap-satir-dikey" id="hesapAi">
       <div>
-        <div class="hesap-ad" data-i18n="ai_er_baslik">AI access</div>
-        <p class="hint hesap-not" data-i18n="ai_er_not">Let ChatGPT, Claude or any other AI add plans and scripts to this account and read what is here. Paste the assistant card into the chat first; give it a key only if it should write directly.</p>
+        <div class="hesap-ad" data-i18n="ai_er_baslik">Plans from an AI</div>
+        <p class="hint hesap-not" data-i18n="ai_er_not">Plan with ChatGPT, Claude or Gemini, then bring the result here.</p>
       </div>
       <div class="ai-er-dugmeler">
         <button type="button" class="btn" id="aiKartKopyala" data-i18n="ai_er_kart">Copy assistant card</button>
-        <button type="button" class="btn btn-primary" id="aiAnahtarYeni" data-i18n="ai_er_yeni">New key</button>
-        <button type="button" class="btn" id="aiYenile" data-i18n="ai_er_yenile">Refresh from cloud</button>
       </div>
-      <div class="ai-er-kutu" id="aiAnahtarKutusu" hidden>
-        <p class="hint" data-i18n="ai_er_bir_kez">This key is shown once. Copy it now and give it to the AI; it is not stored here.</p>
-        <div class="sifre-satir">
-          <input type="text" id="aiAnahtarMetin" readonly spellcheck="false" autocomplete="off">
-          <button type="button" class="btn sifre-goz" id="aiAnahtarKopyala" data-i18n="ai_er_kopyala">Copy</button>
-        </div>
-      </div>
-      <ul class="yedek-liste" id="aiAnahtarListe"></ul>
       <div class="ai-status" id="aiAnahtarDurum"></div>
       <div class="hesap-ad ai-er-alt" data-i18n="ai_er_aktarimlar">Recent AI imports</div>
       <ul class="yedek-liste" id="aiAktarimListe"></ul>
@@ -4147,34 +4139,17 @@ const LANG = {
     hesap_sil_kismi: "Your content is deleted \u2014 calendar, projects, ideas, scripts, places, settings and files are gone from the server. Your sign-in record could not be removed automatically; write to us from Feedback and we will finish it.",
     hesap_sil_err: "The account could not be deleted right now and your data is still there. Please try again \u2014 if it keeps failing, write to us from Feedback.",
     // AI erisimi
-    ai_er_baslik: "AI access",
-    ai_er_not: "Let ChatGPT, Claude or any other AI add plans and scripts to this account and read what is here. Paste the assistant card into the chat first; give it a key only if it should write directly.",
+    ai_er_baslik: "Plans from an AI",
+    ai_er_not: "Plan with ChatGPT, Claude or Gemini, then bring the result here. Copy the assistant card, paste it at the top of the chat, and when the AI hands you a package, paste that into Import. Nothing to set up.",
     ai_er_kart: "Copy assistant card",
     ai_er_kart_kopyalandi: "Assistant card copied. Paste it at the top of your AI chat.",
     ai_er_kart_hata: "Could not copy — the card opened in a new tab instead.",
-    ai_er_yeni: "New key",
-    ai_er_etiket_sor: "What is this key for? A name you will recognise in the list.",
-    ai_er_bir_kez: "This key is shown once. Copy it now and give it to the AI; it is not stored here.",
-    ai_er_kopyala: "Copy",
-    ai_er_kopyalandi: "Key copied.",
-    ai_er_bos: "No keys yet. A key lets an AI write to this account directly; pasting a package needs none.",
-    ai_er_kurulmadi: "AI access is not set up on the server yet (sql/35). Pasting a package into Import still works.",
-    ai_er_giris: "Sign in first.",
-    ai_er_olusturuldu: (d)=> `created ${d}`,
-    ai_er_son: (d)=> `last used ${d}`,
-    ai_er_hic: "never used",
-    ai_er_iptal: "Revoke",
-    ai_er_iptal_sor: (ad)=> `Revoke “${ad}”? Anything using it stops working right away.`,
-    ai_er_iptal_edildi: "Key revoked.",
     ai_er_aktarimlar: "Recent AI imports",
     ai_er_aktarim_yok: "Nothing imported by an AI yet.",
     ai_er_geri_al: "Undo",
     ai_er_geri_al_sor: (n)=> `Undo this import? ${n} added item${n===1?'':'s'} will be removed and changed ones restored.`,
     ai_er_geri_alindi: "Import undone.",
     ai_er_geri_alinmis: "undone",
-    ai_er_yenile: "Refresh from cloud",
-    ai_er_yenilendi: "Refreshed from the cloud.",
-    ai_er_bekleyen: "Some changes have not reached the cloud yet; try again in a moment.",
     ai_rozet: (k)=> `Added by ${k}`,
     ai_uyari_proje: (ad)=> `Project “${ad}” not found — added without a project.`,
     ai_uyari_mekan: (ad)=> `Place “${ad}” not found — that stop was skipped.`,
@@ -4993,34 +4968,17 @@ const LANG = {
     hesap_sil_kismi: "İçeriğin silindi — takvimin, projelerin, fikirlerin, scriptlerin, mekanların, ayarların ve dosyaların sunucudan kaldırıldı. Giriş kaydın kendiliğinden silinemedi; Geri Bildirim'den bize yaz, biz tamamlayalım.",
     hesap_sil_err: "Hesap şu anda silinemedi, verilerin duruyor. Lütfen tekrar dene — sürerse Geri Bildirim'den bize yaz.",
     // AI erisimi
-    ai_er_baslik: "AI erişimi",
-    ai_er_not: "ChatGPT, Claude ya da başka bir yapay zekâ bu hesaba plan ve script eklesin, buradakileri okusun. Önce asistan kartını sohbete yapıştır; anahtarı yalnızca doğrudan yazması gerekiyorsa ver.",
+    ai_er_baslik: "AI'dan gelen planlar",
+    ai_er_not: "ChatGPT, Claude ya da Gemini ile planla, sonucu buraya getir. Asistan kartını kopyala, sohbetin başına yapıştır; AI sana bir paket verdiğinde onu İçe Aktar'a yapıştır. Kurulacak bir şey yok.",
     ai_er_kart: "Asistan kartını kopyala",
     ai_er_kart_kopyalandi: "Asistan kartı kopyalandı. AI sohbetinin başına yapıştır.",
     ai_er_kart_hata: "Kopyalanamadı — kart yeni sekmede açıldı.",
-    ai_er_yeni: "Yeni anahtar",
-    ai_er_etiket_sor: "Bu anahtar ne için? Listede tanıyacağın bir ad.",
-    ai_er_bir_kez: "Bu anahtar bir kez gösterilir. Şimdi kopyala ve AI'ya ver; burada saklanmaz.",
-    ai_er_kopyala: "Kopyala",
-    ai_er_kopyalandi: "Anahtar kopyalandı.",
-    ai_er_bos: "Henüz anahtar yok. Anahtar, AI'nın bu hesaba doğrudan yazmasını sağlar; paket yapıştırmak için gerekmez.",
-    ai_er_kurulmadi: "AI erişimi sunucuda henüz kurulmadı (sql/35). İçe Aktar'a paket yapıştırmak yine çalışır.",
-    ai_er_giris: "Önce giriş yap.",
-    ai_er_olusturuldu: (d)=> `${d} oluşturuldu`,
-    ai_er_son: (d)=> `son kullanım ${d}`,
-    ai_er_hic: "hiç kullanılmadı",
-    ai_er_iptal: "İptal et",
-    ai_er_iptal_sor: (ad)=> `“${ad}” iptal edilsin mi? Onu kullanan her şey hemen durur.`,
-    ai_er_iptal_edildi: "Anahtar iptal edildi.",
     ai_er_aktarimlar: "Son AI aktarımları",
     ai_er_aktarim_yok: "Henüz bir AI aktarımı yok.",
     ai_er_geri_al: "Geri al",
     ai_er_geri_al_sor: (n)=> `Bu aktarım geri alınsın mı? Eklenen ${n} öğe silinir, değişenler eski haline döner.`,
     ai_er_geri_alindi: "Aktarım geri alındı.",
     ai_er_geri_alinmis: "geri alındı",
-    ai_er_yenile: "Buluttan yenile",
-    ai_er_yenilendi: "Buluttan yenilendi.",
-    ai_er_bekleyen: "Bazı değişiklikler henüz buluta gitmedi; az sonra tekrar dene.",
     ai_rozet: (k)=> `${k} ekledi`,
     ai_uyari_proje: (ad)=> `“${ad}” projesi bulunamadı — projesiz eklendi.`,
     ai_uyari_mekan: (ad)=> `“${ad}” mekanı bulunamadı — o durak atlandı.`,
@@ -14464,7 +14422,7 @@ let aiDefterBulutVar = null;    // null: bilinmiyor, false: sql/35 calistirilmam
 function aiDefterKey(){ return session ? AI_DEFTER_KEY + '_' + session.user.id : AI_DEFTER_KEY; }
 // Dogrulama modulu bir kez yukleniyor; sunucuyla ayni dosya.
 function aiDogrulaYukle(){
-  if(!aiDogrulaSozu) aiDogrulaSozu = import('./supabase/functions/ai/dogrula.js').catch(e=>{ aiDogrulaSozu = null; throw e; });
+  if(!aiDogrulaSozu) aiDogrulaSozu = import('./ai/dogrula.js').catch(e=>{ aiDogrulaSozu = null; throw e; });
   return aiDogrulaSozu;
 }
 function aiRozetleriHesapla(){
@@ -14523,7 +14481,10 @@ async function aiDefteriOku(){
 async function aiDefteriBulutaYaz(d){
   if(!sb || !session || aiDefterBulutVar === false) return;
   try{
-    const { error } = await sb.from('ai_aktarimlar').insert(Object.assign({}, d, { user_id: session.user.id, key_id: null }));
+    // key_id sutunu kalkti (sql/36): API anahtari yolundan kalmaydi ve
+    // yapistirma yolu ona hep null yaziyordu. Sutun yokken null yazmak
+    // da hata verir, o yuzden hic gonderilmiyor.
+    const { error } = await sb.from('ai_aktarimlar').insert(Object.assign({}, d, { user_id: session.user.id }));
     if(error) throw error;
     aiDefterBulutVar = true;
   }catch(err){
@@ -14900,84 +14861,10 @@ async function impPaketUygula(){
 // ---- Hesabim > AI erisimi: anahtarlar --------------------------------
 // Anahtar tarayicida uretiliyor; buluta yalnizca SHA-256 ozeti gidiyor.
 // Duz metin yalnizca bu ekranda, bir kez.
-function aiAnahtarUret(){
-  const harfler = 'ABCDEFGHJKLMNPQRSTUVWXYZabcdefghijkmnopqrstuvwxyz23456789';
-  const a = new Uint8Array(32);
-  crypto.getRandomValues(a);
-  return 'shb_' + Array.from(a, b=> harfler[b % harfler.length]).join('');
-}
-async function sha256Hex(metin){
-  const buf = await crypto.subtle.digest('SHA-256', new TextEncoder().encode(metin));
-  return Array.from(new Uint8Array(buf), b=> b.toString(16).padStart(2, '0')).join('');
-}
 function aiDurumYaz(metin, hata){
   const d = document.getElementById('aiAnahtarDurum');
   if(!d) return;
   d.textContent = metin || ''; d.className = 'ai-status' + (hata ? ' error' : '');
-}
-async function aiAnahtarlariCiz(){
-  const kap = document.getElementById('aiAnahtarListe');
-  if(!kap) return;
-  if(!sb || !session){ kap.innerHTML = ''; return; }
-  try{
-    const { data, error } = await sb.from('api_keys')
-      .select('id,label,key_prefix,created_at,last_used_at,revoked_at').order('created_at', { ascending: true });
-    if(error) throw error;
-    const etkin = (Array.isArray(data) ? data : []).filter(k=> !k.revoked_at);
-    if(!etkin.length){ kap.innerHTML = `<li class="hint">${escapeHtml(t('ai_er_bos'))}</li>`; return; }
-    const tarih = (iso)=> iso ? new Date(iso).toLocaleDateString(currentLang === 'tr' ? 'tr-TR' : 'en-US', { day: '2-digit', month: '2-digit', year: '2-digit' }) : '';
-    kap.innerHTML = etkin.map(k=> `<li data-ai-anahtar="${escapeHtml(k.id)}">
-      <span class="ai-er-sol">
-        <span class="yedek-gun">${escapeHtml(k.label || 'AI')} · ${escapeHtml(k.key_prefix || 'shb_')}…</span>
-        <small>${escapeHtml(t('ai_er_olusturuldu')(tarih(k.created_at)))} · ${escapeHtml(k.last_used_at ? t('ai_er_son')(tarih(k.last_used_at)) : t('ai_er_hic'))}</small>
-      </span>
-      <button type="button" class="fk-mini" data-ai-iptal="${escapeHtml(k.id)}" data-ai-etiket="${escapeHtml(k.label || '')}">${escapeHtml(t('ai_er_iptal'))}</button>
-    </li>`).join('');
-    aiDurumYaz('');
-  }catch(err){
-    kap.innerHTML = '';
-    if(aiTabloYok(err)) aiDurumYaz(t('ai_er_kurulmadi'), true);
-    else { console.error('[ai] anahtarlar okunamadi', err); aiDurumYaz(t('auth_sync_err'), true); }
-  }
-}
-async function aiAnahtarYeni(){
-  if(!sb || !session){ showToast(t('ai_er_giris')); return; }
-  const etiket = await sor(t('ai_er_etiket_sor'), 'ChatGPT');
-  if(etiket === null) return;
-  const anahtar = aiAnahtarUret();
-  const btn = document.getElementById('aiAnahtarYeni');
-  btn.disabled = true;
-  try{
-    const ozet = await sha256Hex(anahtar);
-    const { error } = await sb.from('api_keys').insert({
-      id: 'ak_' + Date.now().toString(36) + '_' + Math.random().toString(36).slice(2, 8),
-      user_id: session.user.id,
-      label: String(etiket || '').trim().slice(0, 60) || 'AI',
-      key_hash: ozet, key_prefix: anahtar.slice(0, 12), scopes: ['read', 'write']
-    });
-    if(error) throw error;
-    const kutu = document.getElementById('aiAnahtarKutusu');
-    kutu.hidden = false;
-    const giris = document.getElementById('aiAnahtarMetin');
-    giris.value = anahtar;
-    giris.focus(); giris.select();
-    aiDurumYaz('');
-    track('funnel/ai-key-created');
-    await aiAnahtarlariCiz();
-  }catch(err){
-    if(aiTabloYok(err)) aiDurumYaz(t('ai_er_kurulmadi'), true);
-    else { console.error('[ai] anahtar yazilamadi', err); aiDurumYaz(t('auth_sync_err'), true); }
-  }finally{ btn.disabled = false; }
-}
-async function aiAnahtarIptal(id, etiket){
-  if(!sb || !session) return;
-  if(!await onayla({ baslik: t('ai_er_iptal'), govde: t('ai_er_iptal_sor')(etiket || 'AI'), tamam: t('ai_er_iptal'), tehlike: true })) return;
-  try{
-    const { error } = await sb.from('api_keys').update({ revoked_at: new Date().toISOString() }).eq('id', id);
-    if(error) throw error;
-    showToast(t('ai_er_iptal_edildi'));
-    await aiAnahtarlariCiz();
-  }catch(err){ console.error('[ai] anahtar iptal edilemedi', err); aiDurumYaz(t('auth_sync_err'), true); }
 }
 async function panoyaKopyala(metin){
   try{ await navigator.clipboard.writeText(metin); return true; }
@@ -15008,52 +14895,13 @@ async function aiKartKopyala(){
     window.open(dosya, '_blank', 'noopener');
   }
 }
-// Buluttan yenile: AI, API ile yazdiginda uygulama bunu yeniden acmadan
-// gormuyor (gercek zamanli abonelik yok). Once bekleyen degisiklikler
-// gonderiliyor; gonderilemediyse yenileme YAPILMIYOR — bulut kopyasi
-// yereli ezmesin.
-async function bulutTazele(){
-  if(!sb || !session){ showToast(t('ai_er_giris')); return; }
-  const btn = document.getElementById('aiYenile');
-  if(btn) btn.disabled = true;
-  try{
-    await pushChanges(); await projPushChanges(); await fikirPush(); await scriptPush(); await mekanPush();
-    if(dirtyIds.size || removedIds.size || projDirty.size || projRemoved.size || fikirDirty.size || scriptDirty.size || mekanDirty.size){
-      showToast(t('ai_er_bekleyen')); return;
-    }
-    const [uzakKayitlar, uzakProjeler] = await Promise.all([pullRemote(), projPullRemote()]);
-    events = uzakKayitlar; save();
-    projects = uzakProjeler; saveProjects();
-    await fikirScriptBulutSenkron();
-    await aiDefteriOku();
-    renderCal(); renderProjects();
-    aiAktarimlariCiz(document.getElementById('aiAktarimListe'));
-    showToast(t('ai_er_yenilendi'));
-  }catch(err){
-    console.error('[bulut] yenileme hatasi', err);
-    showToast(t('auth_sync_err'));
-  }finally{ if(btn) btn.disabled = false; }
-}
 function aiBolumuCiz(){
-  const kutu = document.getElementById('aiAnahtarKutusu');
-  if(kutu){ kutu.hidden = true; document.getElementById('aiAnahtarMetin').value = ''; }
   aiDurumYaz('');
-  aiAnahtarlariCiz();
   aiAktarimlariCiz(document.getElementById('aiAktarimListe'));
 }
 (function aiKur(){
   const bul = id => document.getElementById(id);
-  if(bul('aiAnahtarYeni')) bul('aiAnahtarYeni').addEventListener('click', aiAnahtarYeni);
   if(bul('aiKartKopyala')) bul('aiKartKopyala').addEventListener('click', aiKartKopyala);
-  if(bul('aiYenile')) bul('aiYenile').addEventListener('click', bulutTazele);
-  if(bul('aiAnahtarKopyala')) bul('aiAnahtarKopyala').addEventListener('click', async ()=>{
-    if(await panoyaKopyala(bul('aiAnahtarMetin').value)) showToast(t('ai_er_kopyalandi'));
-    else { bul('aiAnahtarMetin').focus(); bul('aiAnahtarMetin').select(); }
-  });
-  if(bul('aiAnahtarListe')) bul('aiAnahtarListe').addEventListener('click', e=>{
-    const btn = e.target.closest('[data-ai-iptal]');
-    if(btn) aiAnahtarIptal(btn.dataset.aiIptal, btn.dataset.aiEtiket);
-  });
   // Ilk cizimden once: yerel defter rozetleri belirliyor.
   aiDefteriYerelOku();
 })();
@@ -17077,7 +16925,7 @@ async function hesapDosyalariniSil(){
 // herhangi bir sebeple calismazsa devreye giren yedek yol bu.
 const HESAP_TABLOLARI = ['calendar_events','projects','ideas','scripts',
                          'places','caption_templates','user_prefs',
-                         'api_keys','ai_aktarimlar'];
+                         'ai_aktarimlar'];
 async function hesapVerisiniSil(){
   if(!sb || !session) return { takilan: [] };
   const kim = session.user.id;
