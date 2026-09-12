@@ -600,7 +600,7 @@ REELS KESİTLERİ (7 adet, toplam ~740 sn):
   7. 12:45–14:00 ·  75 sn · 245 yıl, altı kuşak — ve adı olmayan üç mezar  ← v3
   Hepsi kendi içinde tamamlanır; hiçbiri fragman değil. Facebook sürümlerinde YouTube linki YOK.
   Kapak başlıkları soruyla biter (KURALLAR.md böl. 9); kapak promptları için
-  `icerik/kapak-promptlari/sokollu-reels-kapaklari.txt` — 6 ve 7 için EKLENECEK.
+  `icerik/kapak-promptlari/sokollu-reels-kapaklari.txt` — 6 ve 7 EKLENDİ (v3).
 
 ═══════════════════════════════════════
 DAMGA LİSTESİ

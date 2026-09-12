@@ -1,5 +1,9 @@
-SOKOLLU — REELS KAPAK PROMPTLARI (5 adet)
-Sinan Dosyası 2 · Script: sokollu-v2.txt · Takvim: 7–19 Ekim 2026
+SOKOLLU — REELS KAPAK PROMPTLARI (7 adet)
+Sinan Dosyası 2 · Script: sokollu-v3.txt · Takvim: 7–26 Ekim 2026
+
+⚠️ v3 EKİ (12 Eylül 2026) — #6 ve #7 çekimden SONRA eklendi.
+   Bölüm 4 sahada yeniden yazıldı: türbede 19 gömü, 16 levha, 3 isimsiz mezar sayıldı.
+   Bu iki kesit serinin en güçlü malzemesi ve ikisi de yalnızca v3'te var.
 
 ⚠️ YENİ STANDART — icerik/MARKA-KIMLIGI.md bölüm 8 (11 Eylül 2026)
    Bu dosya yeni kimlik kurallarına göre yazıldı. Eski kapaklardan üç farkı var:
@@ -127,9 +131,49 @@ BAŞLIK
     atmosferle kurulur. (Marka kimliği bölüm 1: jumpscare ve korku klişesi yasak.)
 
 ═══════════════════════════════════════
+REELS #6 · 23 Ekim · 110 sn                                          ← v3, YENİ
+"Bu türbeyi neden yaptırdı?" (script 9:55–11:45)
+═══════════════════════════════════════
+BAŞLIK (add_title.py basar)
+  SARI 1:  İKİ YILDA ÜÇ OĞLUNU GÖMDÜ
+  SARI 2:  TÜRBEYİ ERTESİ YIL YAPTIRDI
+  KIRMIZI: PEKİ BU ODA KİMİN İÇİNDİ?
+
+<MEKÂN>  The interior of an octagonal Ottoman tomb in Istanbul, low draped
+         cenotaphs and plain floor graves covered with white gravel, small brass
+         plaques at their heads, weak daylight from high windows, completely empty.
+<NESNE>  a small brass plaque at the head of the nearest floor grave
+<MİMİK>  quiet and unsettled, reading something he did not expect
+
+  ⚠ Serinin en güçlü kesiti. Kapakta çocuk imgesi, mezar taşı yakın planı ya da
+    duygu sömürüsü YOK — cümle zaten ağır, görüntü sakin kalacak.
+  ⚠ Başlıktaki iki satır KAYIT (levha tarihleri). "Türbeyi ertesi yıl yaptırdı"
+    tarih sırasıdır, sebep iddiası değil. Videonun içinde YORUM damgası basılıyor;
+    kapak bu sınırı aşmıyor. (KURALLAR.md böl. 4b — vaat denetimi.)
+
+═══════════════════════════════════════
+REELS #7 · 26 Ekim · 75 sn                                           ← v3, YENİ
+"245 yıl, altı kuşak — ve adı olmayan üç mezar" (script 12:45–14:00)
+═══════════════════════════════════════
+BAŞLIK (add_title.py basar)
+  SARI 1:  BİR AİLE 245 YIL BURAYA GÖMÜLDÜ
+  SARI 2:  ON DOKUZ MEZAR, ON ALTI LEVHA
+  KIRMIZI: PEKİ ÜÇÜ NEDEN İSİMSİZ?
+
+<MEKÂN>  The interior of an octagonal Ottoman tomb in Istanbul, a row of plain
+         floor graves covered with white gravel receding into shadow, three of
+         them bare with no plaque at the head, dust in the still air.
+<NESNE>  the bare head of a grave with no plaque
+<MİMİK>  still and thoughtful, the look of someone who has finished counting
+
+  ⚠ Bu sayım sahada 12 Eylül 2026'da yapıldı ve başka hiçbir yayında yok.
+    Kanalın "rivayet değil, kayıt" iddiasının en saf örneği — başlık bu yüzden
+    rakamla kuruluyor, sıfatla değil.
+
+═══════════════════════════════════════
 ÜRETİM SONRASI KONTROL
 ═══════════════════════════════════════
-☐ Beş başlığın da SON SATIRI soru mu?
+☐ Yedi başlığın da SON SATIRI soru mu?
 ☐ Hiçbiri 4 satır değil, hepsi 3 satır mı?
 ☐ Arka plan gerçekten yumuşak mı — özne net, mekân okunuyor ama yarışmıyor mu?
 ☐ Yazı yüzü, eli ve tutulan nesneyi örtmüyor mu?
@@ -137,3 +181,6 @@ BAŞLIK
 ☐ Hepsi 1080×1920 mi? (Facebook native kapağı da dikey)
 ☐ Promptların hiçbirinde görünüm tarifi ya da başlık metni kalmadı mı?
 ☐ Sağ altta altın elmas filigranı var mı?
+☐ #6 ve #7: türbe içi üç kapakta (#5, #6, #7) da aynı mekân — üçü yan yana
+  konduğunda birbirinden ayırt ediliyor mu? Değilse #7'yi dışarı, medrese
+  cephesine al.
