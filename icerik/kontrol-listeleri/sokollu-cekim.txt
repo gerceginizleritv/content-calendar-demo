@@ -51,7 +51,8 @@ GEÇİŞ 1 — KADIRGA → SULTANAHMET
   ⚠ DÜZELTME: önceki sürümde "Galata Köprüsü Karaköy ayağı" yazıyordu — yanlıştı.
     Cami Galata Köprüsü'nde değil, Atatürk Köprüsü'nün Beyoğlu tarafı ayağında.
 ☐ Minareyi camiye bağlayan kemerli geçit, yakın
-☐ Alt kattaki dükkânlar / yükseltilmiş taban
+☑ Alt kattaki dükkânlar / yükseltilmiş taban — ÇEKİLDİ 12 Eyl: çoğu kapalı, biri açık (BERBER).
+  ⚠ Berber dükkânının planı Bölüm 3'ün yeni beat'i — kurguda mutlaka kullanılacak
 ☐ Saliha Sultan Çeşmesi (1732) ile aynı kare
 ☐ İç: kubbe, sekizgen plan, mihrap
 ☐ Konuşma: Bölüm 3 (köprü ayağı, minare arkada)
