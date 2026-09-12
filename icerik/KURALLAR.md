@@ -153,6 +153,36 @@ MARKA-KIMLIGI.md geçerlidir.** Özellikle şu üçü DEĞİŞTİ:
 - Ekipman: Osmo Action 4 (+gimbal), iPhone 12 Pro (2x tele: küçük detaylar),
   70 mm üstü objektif uzak kuş evleri için, mini tripod, yaka mikrofonu.
 
+## 4b. VAAT DENETİMİ — yayından önce, zorunlu (2026-09-12)
+
+**Başlıkta, etiketlerde, kapakta ve caption'da geçen HER vaat anlatıda karşılanmalı.**
+Karşılanmıyorsa ya anlatıya eklenir ya o vaat metinlerden çıkarılır. Üçüncü yol yok.
+
+Kontrol şöyle yapılır — yayın paketi hazırken, seslendirme metnini yanına koy:
+
+☐ Başlıktaki iddia videoda cevaplanıyor mu?
+☐ Kapaktaki SORU videoda cevaplanıyor mu?
+☐ Caption'ın ilk paragrafında vadedilen şey videoda var mı?
+☐ Etiketlerde geçen konular anlatıda gerçekten geçiyor mu?
+☐ Hook'ta açılan üç sorunun üçü de kapanıyor mu?
+
+**Gerekçe — yaşanmış olay.** İstanbul Arkeoloji Müzeleri videosunun (4 Eylül 2026)
+Facebook caption'ı ilk paragrafta şunu yazıyordu:
+
+> *"Çözüldüğünde ortaya dünyanın bilinen en eski aşk şiiri çıktı. 📜"*
+
+Ama anlatıda o tablete hiç dönülmedi. Sonuç: **iki ayrı izleyici** yorumlarda
+"hani aşk şiiri?" diye sordu (8 ve 11 Eylül). Soran iki kişi, merak edip
+sormayanların görünen kısmı.
+
+Video sayfanın en çok izlenen uzun videosu oldu (14.507) — yani **vaat işe
+yaradı ama karşılığı verilmedi.** Bu, kanalın "rivayet değil, kayıt" sözünü
+doğrudan zedeler: izleyiciye söz verip tutmamak, kaynak göstermemekle aynı
+ailedendir.
+
+Telafi: Istanbul 2461 tableti ayrı bir bölüm olarak takvime alındı
+(`icerik/PLAN-ask-siiri-tableti.md`), ve iki yorumcuya söz verildi.
+
 ## 5. Yayın sonrası ölçüm (2026-09-11)
 
 Her uzun videodan **7 gün sonra** tek sayı not edilir:

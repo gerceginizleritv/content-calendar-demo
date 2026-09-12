@@ -180,6 +180,12 @@ Her iddia dört etiketten birini alır. **Etiketsiz iddia yayınlanmaz.**
 > Ben Mustafa Bostancıoğlu, bu da Tarihi Dedektif. Rivayet değil, kayıt.
 > Bir sonraki gizemde görüşmek üzere.
 
+**⚠️ VAAT DENETİMİ (2026-09-12, zorunlu).** Başlıkta, etiketlerde, kapakta ve
+caption'da geçen **her vaat anlatıda karşılanmalı.** Karşılanmıyorsa ya anlatıya
+eklenir ya metinlerden çıkarılır. Kontrol listesi: `KURALLAR.md` bölüm 4b.
+*Gerekçe: Arkeoloji Müzeleri caption'ı "dünyanın en eski aşk şiiri" vadetti,
+anlatıda hiç dönülmedi, iki izleyici yorumlarda sordu.*
+
 **Uzunluk:** en az 1500 seslendirme kelimesi. Yalnızca okunan metin sayılır;
 başlık, kamera notu, damga ve reels işaretleri sayılmaz. Sayı dosya sonuna
 gerçek rakamla yazılır.
@@ -588,7 +594,8 @@ kitap, yayınevi · müze ve kültür kurumları · harita ve navigasyon
 ## 18. YASAKLAR — tek sayfa özet
 
 **Anlatımda:** paranormal çerçeve · jumpscare · komplo dili · siyasi/dini taraf ·
-grup hedefleme · etiketsiz iddia · kaynaksız kesinlik · olmayan şeyi anlatmak
+grup hedefleme · etiketsiz iddia · kaynaksız kesinlik · olmayan şeyi anlatmak ·
+**karşılığı verilmeyen vaat** (başlık/etiket/kapak/caption)
 
 **İlk 20 saniyede:** jenerik · kanal tanıtımı · isim · format duyurusu · cevabı vermek
 
@@ -623,6 +630,7 @@ birden fazla cross-cutting · kullanıcının kadrajını ezmek
 | 11 Eyl 2026 | Kapakta arka plan yumuşatma zorunlu oldu | vidIQ entropi 7,45–7,72 |
 | 11 Eyl 2026 | Ses kimliği tanımlandı | yeni |
 | 11 Eyl 2026 | Kişi/persona tanımlandı | yeni |
+| 12 Eyl 2026 | **Vaat denetimi** zorunlu oldu | Arkeoloji caption'ı, 2 izleyici yorumu |
 
 ---
 
