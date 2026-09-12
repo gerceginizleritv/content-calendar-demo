@@ -1,6 +1,17 @@
 # Istanbul 2461 — "Aşk Şiiri" bölümü · plan
 
-**Durum:** takvime alınacak · **Sebep: verilen söz** · 12 Eylül 2026
+**Durum: ⏸ BEKLEMEDE** · 12 Eylül 2026, kullanıcı kararı
+
+> Tabletin çekimi **yapılmamış.** Elde görüntü yok, yeni bir müze ziyareti gerekiyor.
+> Kullanıcı bunu şimdilik beklemeye aldı. Takvimde slot **tutulmuyor**.
+>
+> **Yeniden açılma koşulu:** Eski Şark Eserleri Müzesi'ne gidilmesi.
+> O ziyaret planlandığında bu dosya güncellenir, 6 Kasım (ya da uygun ilk
+> İstanbul Cuması) slotu yeniden değerlendirilir.
+>
+> ⚠️ **Söz duruyor.** İki izleyiciye 12 Eylül'de "ayrı bir bölüm çekeceğim"
+> denildi — tarihsiz. Söz iptal değil, ertelendi. Uzun süre sarkarsa o iki
+> yoruma bir ara bilgi notu düşülmeli.
 
 ## Neden bu bölüm var
 
@@ -106,20 +117,25 @@ Takvimde 24 Ekim – 10 Aralık arası yedi Cuma boş. Karadeniz bölümleri ara
 | 4 Aralık | İstanbul |
 | 11 Aralık | Karadeniz 4 — Trabzon Ayasofya |
 
-⚠ **6 Kasım iki ay sonra.** Verilen söz tarihsiz verildi, ama iki ay beklemek uzun.
-**Önerilen telafi: yakın tarihte bir REELS.** Tek nesne, tek hikâye, 90–130 sn —
-reels için ideal malzeme. Sözü hızlı kapatır, uzun bölüm yerinde kalır.
+⚠ **Bu tablo şu an geçersiz** — bölüm beklemede, slot tutulmuyor. Yukarıdaki
+dağılım Karadeniz bölümleri için referans olarak duruyor; İstanbul slotlarına
+başka bir konu girecek.
 
-## ❗ Çekim öncesi tek soru
+## Çekim durumu — CEVAPLANDI
 
-**Arkeoloji Müzeleri çekiminde bu tabletin görüntüsü alındı mı?**
+**Tabletin görüntüsü alınmamış** (kullanıcı, 12 Eylül).
 
-- **Alındıysa** → reels hemen kurgulanabilir, yeni çekim gerekmez.
-- **Alınmadıysa** → müzeye tekrar gidilecek. Eski Şark Eserleri ayrı bir bina,
-  Mezopotamya salonu; bilet ve giriş ayrıca kontrol edilmeli.
+Müzeye tekrar gidilecek. Eski Şark Eserleri **ayrı bir bina**, Mezopotamya salonu;
+bilet ve giriş ayrıca kontrol edilmeli. O ziyarette çekilecekler:
 
-Bu cevap gelmeden script yazılmaz — çünkü elde görüntü yoksa videonun yapısı
-değişir (arşiv + grafik ağırlıklı olur).
+☐ Tablet — geniş (vitrindeki yeri) → orta → ÇOK YAKIN (çivi yazısı okunacak kadar)
+☐ Vitrin künyesi / tabelası, fotoğraf (envanter numarası ve tarih teyidi için)
+☐ Mezopotamya salonunun geniş planı — "çekmecelerde bekleyen binlerce tablet"
+  cümlesinin görsel karşılığı
+☐ Başka çivi yazılı tabletler, sıra sıra — ölçek hissi
+☐ Salonun boşluğu / ziyaretçi yoğunluğu (varsa)
+
+Script bu çekimden sonra yazılır.
 
 ---
 
