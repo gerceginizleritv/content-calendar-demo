@@ -243,7 +243,17 @@ Gerekçe: onlar kendilerine *Romaioi* (Romalılar) diyordu, devletin adı
 *Romalıların İmparatorluğu*'ydu. "Bizans" kelimesini **1557'de**, devlet yıkıldıktan
 yüz yıl sonra Hieronymus Wolf uydurdu. Yani adın kendisi bir rivayet.
 En az beş izleyici bunu ayrı ayrı yazdı; 12 Eylül'de yorumda kanalın resmî pozisyonu
-olarak ilan edildi. **Mevcut scriptler bu karara göre taranacak.**
+olarak ilan edildi.
+
+**Tarama yapıldı (12 Eyl 2026).** Değiştirilenler — henüz çekilmemiş/yayınlanmamış olanlar:
+`vazelon-v1` · `trabzon-ayasofya-v1` (2 yer) · `trabzon-ayasofya-yayin`
+
+**Bilerek değiştirilmeyenler:**
+- `yeralti-camii-v1` (7 yer) — **video yayınlandı.** Scripti geriye dönük değiştirmek,
+  dosyayı yayındaki sesle çelişir hale getirirdi. Kural **12 Eylül'den ileri** geçerlidir;
+  yayınlanmış videolar geriye dönük yeniden yazılmaz.
+- `sokollu-v1`, `sokollu-v2`, `sokollu-v3`'ün değişiklik kaydı — bunlar **arşiv**.
+  Geçmişte ne yazdığının kaydı; değiştirilirse kayıt olmaktan çıkar.
 
 ## 5. Yayın sonrası ölçüm (2026-09-11)
 
