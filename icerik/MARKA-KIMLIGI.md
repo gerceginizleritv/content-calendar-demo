@@ -403,6 +403,29 @@ güvenilirliği düşürür.
 
 ---
 
+## 10b. SAHA ÇEKİMİ — TRAFİK (12 Eyl 2026, izleyici verisi)
+
+**Trafik ihlali içeren plan yayınlanmaz.** Emniyet şeridi, tercihli yol, kırmızı ışık,
+ters yön. Kurgu ne kadar iyi olursa olsun o plan kesilir.
+
+Bu bir kurgu tercihi değil, **marka kuralı**. İki sebebi var:
+
+1. **Hukuki risk.** Plakanın ve ihlalin göründüğü bir kayıt, kamuya açık delildir.
+2. **Sözü zayıflatıyor.** Kuralları kayda geçiren bir kanalın kendi kuralı çiğnemesi
+   izleyicide karşılık buluyor. 60 yılı aşkın sürücü olduğunu yazan bir izleyici,
+   trafik şubesini işaret eden bir başkası ve toplam **20 yorum** bunu söyledi.
+
+**Motor kalır.** Motosiklet kanalın kimliğidir ve değişmez. Kural sadece
+*ihlal görüntüsü* hakkındadır — sürüşün kendisi değil.
+
+**Yol bölümünün uzunluğu ayrı bir konudur ve kural değildir.**
+15–17 Ağustos 2026 videolarında yol planları uzundu ve 20 yorum bunu söyledi.
+**18 Ağustos'tan sonraki hiçbir videoda tek bir şikâyet yok** — mesele acemilikti,
+kullanıcı tarafından çözüldü. Buraya kural yazmaya gerek görülmedi; not olarak duruyor
+ki ileride biri aynı veriye bakıp yanlış sonuç çıkarmasın.
+
+---
+
 ## 11. SES KİMLİĞİ
 
 v1'de yoktu. Reels dağıtımında tanınırlığın eksik ayağı.
@@ -609,6 +632,9 @@ ikinci kişi · yüzü/eli örten yazı · CSS uppercase
 **Kurguda:** jump cut · sentetik SFX · video başına ikiden fazla üçlü kolaj ·
 birden fazla cross-cutting · kullanıcının kadrajını ezmek
 
+**Sahada/yolda:** trafik ihlali içeren plan (emniyet şeridi · tercihli yol · kırmızı ışık ·
+ters yön) — bölüm 10b
+
 **Ticari:** bölüm 16 listesi
 
 ---
@@ -631,6 +657,7 @@ birden fazla cross-cutting · kullanıcının kadrajını ezmek
 | 11 Eyl 2026 | Ses kimliği tanımlandı | yeni |
 | 11 Eyl 2026 | Kişi/persona tanımlandı | yeni |
 | 12 Eyl 2026 | **Vaat denetimi** zorunlu oldu | Arkeoloji caption'ı, 2 izleyici yorumu |
+| 12 Eyl 2026 | **Trafik ihlali planı yasaklandı** (böl. 10b) | 20 izleyici yorumu, 15–17 Ağu videoları |
 
 ---
 

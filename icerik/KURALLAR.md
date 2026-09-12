@@ -183,6 +183,68 @@ ailedendir.
 Telafi: Istanbul 2461 tableti ayrı bir bölüm olarak takvime alındı
 (`icerik/PLAN-ask-siiri-tableti.md`), ve iki yorumcuya söz verildi.
 
+**İkinci vaka (12 Eyl 2026'da bulundu) — bu kuralı tesadüften örüntüye çeviren.**
+Süleymaniye videosunda (12 Ağustos) "gizli duvar" vadedilmiş, anlatıda karşılığı
+verilmemiş. Bir izleyici yazmış:
+
+> *"Güzel bir video olmuş. **Gizli duvar konusunu açıklasaydınız iyi olurdu.
+> Görüntüsü de yok. Merak ettik.**"*
+
+**Üçüncü vaka:** Kapalı kapı videosunun tanıtımı "İstanbul surları" diyor, anlatı
+Patrikhane diyor — bkz. bölüm 4c, H-003.
+
+Yani bu kural **tek bir olaya değil, üç ayrı olaya** dayanıyor. Vaat denetimi
+atlanabilir bir adım değildir.
+
+## 4c. YAYINLANMIŞ HATALAR KAYDI (2026-09-12)
+
+Bu kanalın sözü "rivayet değil, kayıt". O halde **kendi hatalarının da kaydı olmalı.**
+Yayına çıkmış her maddi hata buraya yazılır: ne söylendi, doğrusu ne, nasıl bulundu.
+Amaç ceza değil, **aynı hatanın ikinci kez yapılmaması.**
+
+Kural: bir hata buraya yazıldıysa, ilgili yorumcuya da **açıkça cevap verilir.**
+Sessizce düzeltmek bu kanalın işi değil.
+
+---
+
+**H-001 · Süleymaniye: kalfalık / ustalık eseri karıştırıldı**
+· *Video:* Süleymaniye (12 Ağustos 2026)
+· *Söylenen:* Süleymaniye ustalık eseri olarak anlatıldı
+· *Doğrusu:* Sinan'ın kendi sıralaması — **Şehzade çıraklık, Süleymaniye kalfalık,
+  Selimiye (Edirne) ustalık.** Kaynak: Tezkiretü'l-Bünyan, kendi ağzından.
+· *Nasıl bulundu:* İzleyici yorumu, **8 beğeni** almış — yani izleyici de görmüş
+· *Durum:* 12 Eyl 2026'da yorumda açıkça kabul edildi
+
+**H-002 · Süleymaniye: kubbe çapı ile yüksekliği karıştırıldı**
+· *Video:* Süleymaniye (12 Ağustos 2026)
+· *Doğrusu:* kubbe **çapı ≈ 26,5 m**, zeminden **yüksekliği 53 m** — yükseklik çapın
+  tam iki katı. Bundan sonra ikisi ayrı ayrı değil, **bu oran** olarak verilecek.
+· *Nasıl bulundu:* Aynı izleyicinin ikinci düzeltmesi
+· *Durum:* 12 Eyl 2026'da yorumda kabul edildi
+
+**H-003 · Patrikhane'nin kapalı kapısı "İstanbul surlarında" diye tanıtıldı**
+· *Video:* Kapalı kapı (17 Ağustos 2026)
+· *Doğrusu:* O kapı **Fener Rum Patrikhanesi'nin orta kapısı.** 1821'de Patrik
+  V. Grigorios orada asıldıktan sonra kaynatıldı, o gün bugündür açılmadı.
+  **Kara surlarıyla ilgisi yok.**
+· *Ağırlaştırıcı:* Videonun kendi anlatısı zaten Patrikhane dediği için tanıtım
+  metni anlatıyla da çelişiyordu — bu aynı zamanda bir **vaat denetimi** ihlali (böl. 4b)
+· *Nasıl bulundu:* İzleyici yorumu, aynı yorumda yol bölümünün uzunluğu da eleştirilmiş
+· *Durum:* 12 Eyl 2026'da yorumda kabul edildi
+
+---
+
+**Ayrıca bir terminoloji kararı (12 Eyl 2026):**
+
+Bundan sonra **"Doğu Roma"** kullanılacak. "Bizans" sadece literatürde geçtiği için,
+ilk kullanımda parantez içinde verilecek.
+
+Gerekçe: onlar kendilerine *Romaioi* (Romalılar) diyordu, devletin adı
+*Romalıların İmparatorluğu*'ydu. "Bizans" kelimesini **1557'de**, devlet yıkıldıktan
+yüz yıl sonra Hieronymus Wolf uydurdu. Yani adın kendisi bir rivayet.
+En az beş izleyici bunu ayrı ayrı yazdı; 12 Eylül'de yorumda kanalın resmî pozisyonu
+olarak ilan edildi. **Mevcut scriptler bu karara göre taranacak.**
+
 ## 5. Yayın sonrası ölçüm (2026-09-11)
 
 Her uzun videodan **7 gün sonra** tek sayı not edilir:
