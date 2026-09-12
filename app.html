@@ -1625,6 +1625,11 @@ textarea.sc-ai-brief{min-height:64px;resize:vertical;line-height:1.5;}
 .cl-ekle{display:flex;gap:8px;margin-bottom:14px;}
 .cl-ekle input{flex:1;min-width:0;padding:10px 12px;border:1px solid var(--line);
   border-radius:8px;background:var(--bg);color:var(--text);font:inherit;font-size:13.5px;}
+.cl-bos{font-size:13px;line-height:1.55;color:var(--text-dim);}
+.cl-bos p{margin:0 0 8px;}
+.cl-bos ul{margin:0;padding-left:18px;}
+.cl-bos li{margin-bottom:6px;}
+.cl-bos b{color:var(--text);font-weight:600;}
 .cl-grup{font-size:11px;text-transform:uppercase;letter-spacing:.07em;
   color:var(--text-dim);margin:16px 0 6px;}
 .cl-grup:first-child{margin-top:0;}
@@ -4924,7 +4929,10 @@ const LANG = {
     cl_note_add: "+ note",
     cl_clear: "Clear the ticks",
     cl_clear_ask: "Clear every tick on this list?",
-    cl_empty: "Nothing on the list yet. Write what you must not forget, or take it from your kit list.",
+    cl_empty_head: "Nothing on the list yet. Items reach it from three places:",
+    cl_empty_mekan: "The place card — whatever you wrote under Permission and Watch out for lands here on its own, once that place is a stop of this project.",
+    cl_empty_kutuphane: "Your kit list — power bank, light, microphone. Written once, ready for every shoot. \"Add from my kit list\" above.",
+    cl_empty_elle: "By hand — the ones only this shoot needs. The box above.",
     cl_group_own: "Just for this shoot",
     cl_group_place: (ad)=> `${ad} — from the place card`,
     cl_group_lib: "From my kit list",
@@ -5812,7 +5820,10 @@ const LANG = {
     cl_note_add: "+ not",
     cl_clear: "\u0130\u015faretleri temizle",
     cl_clear_ask: "Bu listedeki b\u00fct\u00fcn i\u015faretler kald\u0131r\u0131ls\u0131n m\u0131?",
-    cl_empty: "Liste hen\u00fcz bo\u015f. Unutmaman gerekeni yaz ya da k\u00fct\u00fcphanenden al.",
+    cl_empty_head: "Liste hen\u00fcz bo\u015f. Maddeler buraya \u00fc\u00e7 yerden gelir:",
+    cl_empty_mekan: "Mekan kart\u0131ndan \u2014 o mekan\u0131n \"\u0130zin\" ve \"\u00c7ekimde dikkat\" alanlar\u0131na yazd\u0131klar\u0131n, mekan\u0131 bu projeye durak olarak ekledi\u011finde kendili\u011finden d\u00fc\u015fer.",
+    cl_empty_kutuphane: "\u0130htiya\u00e7 k\u00fct\u00fcphanenden \u2014 powerbank, \u0131\u015f\u0131k, mikrofon. Bir kez yaz\u0131l\u0131r, her \u00e7ekimde haz\u0131rd\u0131r. Yukar\u0131daki \"K\u00fct\u00fcphanemden ekle\".",
+    cl_empty_elle: "Elle \u2014 yaln\u0131zca bu \u00e7ekime \u00f6zel olanlar. Yukar\u0131daki kutu.",
     cl_group_own: "Bu \u00e7ekime \u00f6zel",
     cl_group_place: (ad)=> `${ad} \u2014 mekan kart\u0131ndan`,
     cl_group_lib: "K\u00fct\u00fcphanemden",
@@ -7095,7 +7106,18 @@ function cekimListesiCiz(){
       + escapeHtml(metin);
   }
   if(!liste.length){
-    kap.innerHTML = '<p class="hint">' + escapeHtml(t('cl_empty')) + '</p>';
+    // Bos ekran "bozuk" hissi veriyordu: kullanici listeyi aciyor, hicbir
+    // sey gormuyor ve calismadigini saniyor. Oysa liste UC KAYNAKTAN
+    // doluyor ve ucu de kullanicinin elinde. Bos ekranin isi bunu
+    // soylemek.
+    kap.innerHTML = `<div class="cl-bos">
+      <p>${escapeHtml(t('cl_empty_head'))}</p>
+      <ul>
+        <li>${escapeHtml(t('cl_empty_mekan'))}</li>
+        <li>${escapeHtml(t('cl_empty_kutuphane'))}</li>
+        <li>${escapeHtml(t('cl_empty_elle'))}</li>
+      </ul>
+    </div>`;
     return;
   }
   // Gruplar ilk gorulme sirasinda duruyor: kullanicinin ekledigi sira

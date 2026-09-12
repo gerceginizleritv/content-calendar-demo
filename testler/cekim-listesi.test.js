@@ -37,6 +37,18 @@ const { chromium } = require('./araclar');
     setPage('projects'); renderProjects();
     await bekle(200);
 
+    // 0) BOS LISTE: maddelerin nereden geldigini soyluyor. Bos ekran
+    //    "bozuk" hissi vermemeli.
+    const bosProje = { ...projects[0], id:'p_bos', name:'Boş proje', placeIds:[], placeId:'',
+                       cautions:'', checklist:[] };
+    projects.push(bosProje); saveProjects();
+    cekimListesiAc('p_bos');
+    await bekle(200);
+    const bosMetin = document.getElementById('cl_liste').textContent.replace(/\s+/g,' ').trim();
+    const bosMaddeSayisi = document.querySelectorAll('#cl_liste .cl-bos li').length;
+    cekimListesiKapat();
+    await bekle(150);
+
     // 1) Proje satirindaki cip listeyi aciyor
     const cip = document.querySelector('[data-proj-list="p_sokollu"]');
     const cipVar = !!cip;
@@ -143,7 +155,7 @@ const { chromium } = require('./araclar');
     // 12) Kütüphane tarayıcıya yazılıyor
     const kutuphaneYerel = JSON.parse(localStorage.getItem('demo_ihtiyaclar') || '[]');
 
-    return { cipVar, acildi, ilkMaddeler, mekandanSayi, grupBasliklari, dikkatGorunuyor, dikkatMetni,
+    return { bosMetin, bosMaddeSayisi, cipVar, acildi, ilkMaddeler, mekandanSayi, grupBasliklari, dikkatGorunuyor, dikkatMetni,
              elleEklendi, tekrarSayisi, yereldeIsaret, sayacMetni, notKaydedildi,
              notKutusuGizli: !notKutusuOnce,
              kutuphaneAcildi, kutuphanedeVar, listedeVar, topluAdlar, topluNot, powerbankSayisi,
@@ -152,6 +164,9 @@ const { chromium } = require('./araclar');
              kutuphaneYerelSayi: kutuphaneYerel.length };
   });
 
+  k('boş listede üç kaynak da anlatılıyor', r.bosMaddeSayisi === 3, r.bosMaddeSayisi);
+  k('boş metin mekan kartını gösteriyor', /Mekan kartından/.test(r.bosMetin), r.bosMetin.slice(0,70));
+  k('boş metin kütüphaneyi gösteriyor', /kütüphanenden/i.test(r.bosMetin));
   k('proje satırında çekim listesi çipi var', r.cipVar);
   k('çip listeyi açıyor', r.acildi);
   k('mekan kartının izin/dikkat notları madde olmuş', r.mekandanSayi === 3, r.mekandanSayi);
