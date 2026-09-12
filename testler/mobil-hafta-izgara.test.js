@@ -53,6 +53,7 @@ const durum = p => p.evaluate(()=>{
   return {
     kayabilir: kap.scrollWidth > kap.clientWidth + 1,
     kayma: Math.round(kap.scrollLeft),
+    enFazlaKayma: Math.round(kap.scrollWidth - kap.clientWidth),
     saatYapisik: saat ? getComputedStyle(saat).position === 'sticky' : false,
     saatGorunur: icinde(saat),
     saatX: saat ? Math.round(saat.getBoundingClientRect().left - k.left) : null,
@@ -115,8 +116,15 @@ const durum = p => p.evaluate(()=>{
   await p.waitForTimeout(600);
   d = await durum(p);
   bak('bugune donuldu ve gorunuyor', d.bugunVar && d.bugunGorunur, JSON.stringify(d));
-  bak('bugun saat sutununun hemen saginda', d.bugunX !== null && d.bugunX >= 0 && d.bugunX <= 60,
-      String(d.bugunX));
+  // HAFTANIN GUNUNE BAGLI: bugun haftanin son sutunlarindaysa (cumartesi,
+  // pazar) izgara sonuna kadar kaydirilsa bile bugun saat sutununun
+  // dibine gelemez — sagindaki gun sayisi kadar ileride durur. Test eskiden
+  // her zaman x <= 60 bekliyordu ve HAFTA SONLARI dusuyordu; urun degil,
+  // varsayim yanlisti. Dogru kural: bugunu gormek icin kaydirmak
+  // gerekmemeli — ya sola yaslanmis ya da izgara zaten sonuna gelmis.
+  bak('bugunu gormek icin kaydirmak gerekmiyor',
+      d.bugunX !== null && d.bugunX >= 0 && (d.bugunX <= 60 || d.kayma >= d.enFazlaKayma - 2),
+      JSON.stringify({ bugunX: d.bugunX, kayma: d.kayma, enFazla: d.enFazlaKayma }));
 
   console.log('[gun gorunumu tek sutun: kaydirma yok]');
   await p.evaluate(()=> setView('day'));
