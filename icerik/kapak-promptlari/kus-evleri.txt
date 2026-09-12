@@ -1,0 +1,32 @@
+# ⚠️ 2026-09-11 KURAL DEĞİŞİKLİĞİ — BAŞLIK METNİ
+# Eski: 2-3 kelime etiket ("GİZLİ KÜPLER")
+# Yeni: 3-4 satır, YER + TUHAF GERÇEK + SORU; SON SATIR SORU OLMALI
+#   ✅ "ORDU CADDESİ'NDE / DUVARDA BİR SARAY / KİMSE YUKARI BAKMIYOR / PEKİ NEDEN?"
+# Gerekçe: @tarihin_kayitlari (192K medyan) 12 kapağın 11'i soruyla bitiyor;
+#          @gerceginizleritv 12 kapağın hiçbiri bitmiyor.
+# Dayanak: instragramgrowth deposu, reports/06-derin-rakip-analizi.md bölüm 4
+# Aşağıdaki promptlardaki TEXT bloğu bu yapıya göre güncellenmeli.
+
+KAPAK PROMPTLARI — KUŞ EVLERİ
+Başlık: sarı "GİZLİ MİMARİ" + kırmızı bant "KUŞ SARAYI". Yatay kapak Gemini'de üretildi ve onaylandı; dikey aşağıdaki promptla üretildi ve onaylandı.
+
+DİKEY — 9:16
+
+Use the attached photo as the exact face and identity reference: same man, same facial features, same salt-and-pepper beard and hair. Do not change his face or age.
+
+Photorealistic vertical thumbnail, 9:16, 1080x1920, in the style of a high-end documentary channel cover.
+
+TOP 20%: two stacked text lines, centered, bold condensed sans-serif, all caps:
+Line 1: "GİZLİ MİMARİ" in bright yellow with a thin dark outline.
+Line 2: "KUŞ SARAYI" in white letters on a solid red rectangular banner.
+Turkish characters exactly as written.
+
+MIDDLE: a rough, weathered cut-stone mosque wall in sharp focus. Mounted on it, a miniature Ottoman palace carved from the same stone: a small domed building with two tiny minarets, arched windows, a balcony and a projecting bay, no larger than an arm's length. It is enclosed in a thick glowing yellow neon circle that lights the stone around it. This is the visual focus.
+
+BOTTOM 45%: the man from the reference photo, head-and-shoulders, cut at the chest, wearing only a plain black crew-neck t-shirt, no logo. His head is tilted up, eyes looking up toward the miniature palace, brow furrowed, serious and suspicious expression, lips closed. Warm golden rim light on the edge of his face and hair from above, soft cool shadow below, skin texture sharp.
+
+BACKGROUND: the arcaded courtyard of an 18th-century Ottoman mosque in Istanbul, stone columns and arches, deep depth of field blur, warm dusk light.
+
+Style: cinematic, very high contrast, saturated warm colors, crisp detail on the face, the miniature palace and the text. No other text, no watermark, no logos, no extra people.
+
+YATAY — 16:9 (aynı kimlik; yatay düzen için SABLON.txt'deki LEFT THIRD / RIGHT HALF / upper right seçeneklerini kullan, konu nesnesi ve başlık aynı)

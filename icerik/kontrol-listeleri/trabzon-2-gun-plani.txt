@@ -1,0 +1,251 @@
+TRABZON — İKİ GÜNLÜK ÇEKİM PLANI
+Cumartesi gidiş · Pazar akşamı dönüş · Üç uzun video + yedek malzeme
+
+═══════════════════════════════════════
+KARAR: ÜÇ AYRI VİDEO, TEK GEZİ
+═══════════════════════════════════════
+Arama verisi (vidIQ, TR, aylık) üç mekânın da tek başına video taşıdığını gösterdi:
+
+  sümela manastırı belgesel   5.406   rekabet 13,4   fırsat 68,1  ← en yüksek fırsat
+  vazelon manastırı           5.063   rekabet 25,6   fırsat 62,9  ← 2026-09-11'de eklendi
+  kuştul manastırı            4.033   rekabet 22,0   fırsat 63,5
+  trabzon ayasofya            3.649   rekabet 27,2   fırsat 61,0
+  atatürk köşkü trabzon        <750   ölçülebilir talep YOK       ← tek başına video olmaz
+  trabzon (şemsiye terim)   110.700   +%80,5 büyüme              ← başlıklarda geçmeli
+
+  AYRI GEZİ (bu hafta sonuna SIĞMAZ — Gümüşhane, stabilize yol):
+  santa harabeleri            4.143   rekabet 31,2   fırsat 59,9  ← kendi gezisi
+  krom vadisi                  <750   ölçülebilir talep YOK       ← Santa videosunun 2. yarısı
+
+Sokollu'da üç mekânı BİRLEŞTİRDİK çünkü tek omurga vardı (bir adam, yapıları, ölümü).
+Burada öyle bir omurga yok; birleştirmek "Trabzon'da 3 yer" listesi olur. Ayrı çekiyoruz.
+
+Yayın aralıklı olacak (kullanıcı kararı): arka arkaya değil, aralarına İstanbul bölümleri girecek.
+
+═══════════════════════════════════════
+GÜN PLANI — HAVAYA GÖRE İKİ SENARYO
+═══════════════════════════════════════
+Karadeniz'de eylül yağmurlu. Maçka (Sümela + Kuştul) açık hava ve yüksek irtifa;
+şehir içi (Ayasofya + Köşk) yağmurda da çekilir. Bu yüzden:
+
+  ☀ HAVA İYİYSE → Maçka'yı ÖNE AL
+     CUMARTESİ: varış → Maçka (Sümela sabah, Kuştul VEYA Vazelon öğleden sonra)
+     PAZAR:     Trabzon şehir (Ayasofya + Köşk) → akşam dönüş
+     ⚠ Pazar sabahı vakit kalırsa: dönüş yolunda Vazelon. Zigana yolu üstünde,
+       bilet ve saat kısıtı olmadığı için plana en kolay eklenen mekân burası.
+
+  ☂ CUMARTESİ YAĞMURLUYSA → tersine çevir
+     CUMARTESİ: Trabzon şehir (Ayasofya + Köşk)
+     PAZAR:     Maçka (Sümela sabah) → Kuştul → akşam dönüş
+     ⚠ Bu senaryoda Kuştul sıkışır. Pazar akşamı dönüş varsa Kuştul'u kısa tut,
+       ya da Kuştul'u bir sonraki geziye bırak — Sümela önceliklidir (fırsat skoru en yüksek).
+
+Hava kararını CUMA AKŞAMI ver, Maçka için sabah saatine göre bak.
+
+═══════════════════════════════════════
+ÖNCELİK SIRASI — vakit daralırsa neyi bırakacaksın
+═══════════════════════════════════════
+1. SÜMELA      — en yüksek arama fırsatı, bırakılmaz
+2. VAZELON     — Sümela'ya çok yakın talep (5.063), yol üstünde, bilet yok, saat kısıtı yok.
+   ⚠ Kuştul'la aynı yarım günü paylaşıyorlar. İkisini birden sıkıştırma.
+   Kuştul yolu kapalı / güvensiz çıkarsa YERİNE BU GEÇER — scripti ve çekim listesi hazır.
+3. KUŞTUL      — kendi başına ayakta, ama ulaşımı en zor olan ve içeri girmek riskli
+4. AYASOFYA    — şehir içi, yağmurda bile çekilir, esnek
+5. ATATÜRK KÖŞKÜ — video değil. Sadece B-roll ve olası "Karadeniz" geçiş görüntüsü.
+   Vakit yoksa hiç gitme.
+
+⚠ ÜÇ DAĞ MEKÂNINI (Sümela + Vazelon + Kuştul) BİR GÜNE SIĞDIRMAYI DENEME.
+  Üçü de Maçka'da ve aynı ana yolu paylaşıyorlar, ama dağ yolu üç mekânı kaldırmaz.
+  Gerçekçi olan: SÜMELA sabah + (VAZELON ya da KUŞTUL) öğleden sonra.
+
+═══════════════════════════════════════
+GENEL — HER MEKÂNDA
+═══════════════════════════════════════
+☐ Osmo Action 4 + gimbal, 2 yedek pil, şarj dolu
+☐ iPhone 12 Pro (2x tele — yüksekteki detaylar, freskler)
+☐ 70 mm üstü objektif (kaya yüzündeki detaylar, uzaktaki yapı)
+☐ Mini tripod, yaka mikrofonu, rüzgâr süngeri ⚠ Karadeniz rüzgârlı, süngersiz ses gitmez
+☐ Yağmurluk / kamera için poşet — nem yüksek, lens buğulanır, bez getir
+☐ Her mekânda 10 sn sessiz ORTAM SESİ (vadi, kuş, su, rüzgâr — kurguda altlık olacak)
+☐ Her mekânda sıra: GENİŞ (yapının yerdeki yeri) → ORTA → ÇOK YAKIN
+☐ Motorla geliş planı — yolculuk "emek = değer" sinyali, kısa da olsa çek
+
+⚠ İZİN: Sümela Kültür ve Turizm Bakanlığı'na bağlı ücretli alan. Profesyonel çekim
+  (tripod, harici mikrofon) için görevliye önceden sor. Reddedilirse elde çekim /
+  telefonla devam — planı buna göre kurdum (DIŞARI sürümleri).
+
+═══════════════════════════════════════
+1) SÜMELA MANASTIRI — Altındere Vadisi, Maçka
+═══════════════════════════════════════
+Sabah git. Sebep: ışık, kalabalık az, sis kalkmadan vadi planı.
+
+AÇILIŞ KARESİ ADAYLARI (0–3 sn, videonun kaderi bu karede)
+☐ A: Kaya yüzündeki manastır, vadinin karşısından, çok uzak plan — insan ölçeği yok
+☐ B: Kaya kilisenin içindeki bir freskin gözü, çok yakın
+☐ C: Tırmanış basamaklarından yukarı bakış, yapı tepede
+   (Üçünü de çek, kurguda seçeriz.)
+
+DIŞARIDAN — HER DURUMDA ÇEK (içeri giremezsen video bunun üstüne kurulacak)
+☐ Vadinin karşı yamacından geniş plan: manastır + kaya yüzü + orman, insan ölçeği için
+☐ Aynı plandan tele sıkıştırma — yapının kayaya "yapışmışlığı"
+☐ Yaklaşma yolu: park → patika → basamaklar (gimbal, kesmesiz yürüyüş)
+☐ Basamakların dikliği (aşağı bakan plan) — "1.200 metre" cümlesinin görsel karşılığı
+☐ Su kemeri / kanalı kalıntıları ⚠ SAHADA ARA, konumunu not et
+☐ Kaya yüzünden sızan su — manastırın su kaynağı meselesi
+☐ Vadi ve orman geniş planları (geçiş görüntüsü, Kuştul videosunda da kullanılır)
+☐ KONUŞMA: dış hook + "neden buraya?" bölümü — manastır arkanda kalacak şekilde
+
+İÇERİDEN — GİREBİLİRSEN
+☐ Kaya Kilise: mağara ağzının kapatılmış hali, apsis, arka duvarın çıplak kaya oluşu
+☐ İç duvar freskleri — geniş, sonra tek tek sahne yakın planları
+☐ Avluya bakan dış duvar freskleri (Aleksios III dönemi) ⚠ hangi duvarda, SAHADA TEYİT ET
+☐ ★ GRAFİTİ İZLERİ — freskler üzerine kazınmış isimler/tarihler, ÇOK YAKIN
+   Bu videonun en önemli görüntüsü. 1920'ler–1960'lar arası manastır boş ve korumasızken
+   kazınmış. Restorasyon bunları temizliyor. Temizlenmiş ve temizlenmemiş alanı AYNI KAREDE
+   yakalarsan, "kayıt" kavramının görsel kanıtı olur.
+☐ Restorasyon çalışması varsa: iskele, uzmanlar, temizlenen yüzey (izinle)
+☐ Şapel, keşiş hücreleri, kütüphane olduğu söylenen mekân ⚠ SAHADA SOR
+☐ ★ GİZLİ TÜNEL — 2015–2017 restorasyonunda bulundu. Ziyarete açık mı, görülebiliyor mu?
+   ⚠ SAHADA GÖREVLİYE SOR. Açıksa ağzını çek; kapalıysa kapalı kapıyı çek — ikisi de işe yarar.
+☐ Manastırdan vadiye bakış (içeriden dışarı — "buradan ne görünüyor")
+
+SAHADA DOLDUR
+  Giriş ücreti / bilet sistemi: ______
+  Tripod-mikrofon izni verildi mi: ______
+  Gizli tünel ziyarete açık mı: ______
+  Restorasyon aktif mi, hangi bölümde: ______
+  Kaç kat / kaç oda gezilebiliyor: ______
+  İçeride fotoğraf-video yasağı olan bölüm var mı: ______
+
+═══════════════════════════════════════
+2) KUŞTUL (PERİSTERA) MANASTIRI — Şimşirli, Maçka
+═══════════════════════════════════════
+⚠ Ulaşım Sümela'dan zor. Dağ yolu. Araçla nereye kadar çıkılıyor, yürüyüş ne kadar —
+  SAHADA ÖĞREN ve NOT ET (bir sonraki gezi için ve videoda "buraya gelmek zor" cümlesi için).
+⚠ Yapı harap durumda: ana gövde ve yıkık duvarlar ayakta. İçeri girmek GÜVENLİ OLMAYABİLİR.
+  Girme kararını yerinde ver; şüphedeysen girme, DIŞARI sürümü zaten hazır.
+
+AÇILIŞ KARESİ ADAYLARI
+☐ A: Vadinin zirvesindeki yapı, aşağıdan yukarı, tek plan
+☐ B: Yanmış/kararmış taş duvar dokusu, çok yakın (1904 yangınının izi)
+☐ C: Boş pencere boşluğundan vadiye bakış
+
+DIŞARIDAN — HER DURUMDA ÇEK
+☐ Zirvedeki konumu gösteren geniş plan — "neden buraya" sorusunun görseli
+☐ Yaklaşma: araç nerede bitiyor, yürüyüş nasıl (gimbal)
+☐ ★ DUVARLARDAKİ FARKLI DÖNEM İZLERİ — taş dokusu, harç, örgü farkları
+   Bu videonun omurgası: yapı 752'de kurulmuş, 1203'te yağmalanmış, 1393'te yeniden
+   açılmış, 1904'te yanmış, 1906'da YENİDEN YAPILMIŞ. Duvarda bu katmanlar görünüyorsa
+   kamerada göster. ⚠ Farklı dönem örgülerini SAHADA ARA.
+☐ Yangın izi: kararmış taş, çatlamış yüzey ⚠ SAHADA ARA
+☐ Kubbe / çatı durumu — ne kaldı, ne çöktü
+☐ Pencere ve kapı boşlukları, dışarıdan
+☐ Çevre: orman, vadi, terk edilmişlik hissi
+☐ KONUŞMA: hook + "üç kez yıkıldı, üç kez yapıldı" bölümü
+
+İÇERİDEN — GÜVENLİYSE VE GİREBİLİRSEN
+☐ Ana gövde içi, geniş
+☐ Kalan fresk / sıva izi var mı ⚠ SAHADA ARA
+☐ Kitabe, yazıt, tarih taşı ⚠ ARA — 1906 onarımının kitabesi varsa VİDEONUN EN DEĞERLİ KARESİ
+☐ Tavan / kubbe içeriden
+☐ Zemin, moloz, ne kalmış
+☐ İçeriden dışarı bakan pencere planı
+
+SAHADA DOLDUR
+  Araçla nereye kadar: ______   Yürüyüş süresi: ______
+  İçeri girilebiliyor mu / güvenli mi: ______
+  1906 kitabesi var mı, nerede: ______
+  Fresk / sıva kalıntısı var mı: ______
+  Koruma altında mı, tabela var mı: ______
+
+═══════════════════════════════════════
+2b) VAZELON MANASTIRI — Kiremitli Köyü, Maçka  ★ 2026-09-11'de eklendi
+═══════════════════════════════════════
+Maçka'yı 14 km geç; Zigana yolunda Hamsiköy'e VARMADAN, Kiremitli Köyü ayrımından sap.
+Bir kısmı beton, bir kısmı köy yolu. Tabela az, navigasyonla git.
+⚠ Giriş ücreti YOK, saat kısıtı YOK, görevli YOK. Plana en kolay eklenen mekân bu.
+⚠ Çatı heyelanla çökmüş — iç mekân güvenli olmayabilir. Kararı yerinde ver, şüphedeysen girme.
+⚠ Çevrede yerleşim yok; gündüz git, gündüz çık.
+
+Bu videonun omurgası BİNA DEĞİL, BELGE: Acta Vazelonis (Vazelon Kodeksleri).
+İçeri girilmese de video tamdır — ana görsel olan freskler kuzey DIŞ duvarda.
+
+☐ ★ KUZEY DIŞ DUVAR FRESKLERİ — Cennet, Cehennem, Son Yargı. DIŞARIDA.
+  Geniş → orta (pan) → çok yakın (tek tek figürler)
+☐ ★ TAHRİBATIN ÜÇ TÜRÜ ayrı ayrı: kurşun izleri · fresk üstüne kazınmış yazılar · sıva dökülmesi
+  Sağlam ve tahrip olmuş yüzeyi AYNI KAREDE yakalarsan Bölüm 3'ün özeti odur.
+☐ ★ ÇÖKMÜŞ ÇATI — içeriden yukarı (güvenliyse) ya da dışarıdan kırık hat
+☐ ★ AŞAĞIDAKİ VADİ VE YOL (Zigana güzergâhı) — Bölüm 1'in cevap karesi, kaçırma
+☐ Karşı yamaçtan geniş plan, uçurumdaki konum
+☐ Yamaçtan sızan su ⚠ SAHADA ARA
+☐ Tavandaki beşikte İsa tasviri ⚠ SAHADA ARA, duruyor mu
+☐ Kitabe, define kazısı çukurları ⚠ SAHADA ARA
+☐ Tabelaların tamamı (kaynaklar çelişiyor, teyit için şart)
+
+SAHADA DOLDUR
+  Araçla nereye kadar: ______        Yürüyüş süresi: ______
+  İçeri girilebiliyor / güvenli mi: ______
+  Tabelada yazan kuruluş tarihi: ______
+  Kuzey duvarda kaç sahne sayılabiliyor: ______
+  Kurşun izi sayısı: ______          Beşikteki İsa duruyor mu: ______
+  Ziyaretçi var mıydı, kaç kişi: ______   ← Sümela karşıtlığı için değerli
+
+Tam liste: icerik/kontrol-listeleri/vazelon-cekim.txt
+
+═══════════════════════════════════════
+3) TRABZON AYASOFYA — şehir içi
+═══════════════════════════════════════
+⚠ Bugün cami olarak kullanılıyor. Namaz vakti dışında çek, görevliden izin al.
+⚠ 2013'teki müze→cami dönüşümü siyasi olarak tartışmalı bir konu.
+   MARKA KURALI: kanal siyasi dil kullanmıyor. Tarih sırasını KAYIT olarak düz ver
+   (1250–60 yapım, 1964 müze, 2013 cami), taraf tutma, yorum ekleme.
+   Videonun omurgası mimari ve kabartma olsun — orası tartışmasız ve görsel.
+
+☐ ★ GÜNEY CEPHE FRİZİ — Âdem ile Havva'nın yaratılışı, taş kabartma şerit halinde.
+   Bu, yapının en ayırt edici özelliği ve DIŞARIDAN çekilebiliyor.
+   Geniş (frizin yerdeki yeri) → orta (şerit boyunca pan) → çok yakın (tek tek sahneler)
+☐ ★ GÜNEY CEPHE KEMER KİLİT TAŞI — tek başlı kartal motifi, Komnenos arması
+   ⚠ SAHADA KONUMUNU BUL, tele ile çek
+☐ Yapının geniş planı, çevresiyle
+☐ Çan kulesi (ayrı yapı) ⚠ girilebiliyor mu SOR
+☐ İç: kubbe, sütunlar, mihrap
+☐ Freskler: 2013 dönüşümünde bir kısmı örtüldü/perdelendi.
+   ⚠ SAHADA GÖR: hangisi görünür, hangisi kapalı. Görünen kısımları çek.
+☐ Denize / şehre bakan konum
+☐ KONUŞMA: hook güney cephe frizinin önünde (kabartma arkanda görünsün)
+
+SAHADA DOLDUR
+  Namaz vakitleri: ______        Çekim izni: ______
+  Kartal kilit taşı nerede: ______
+  Hangi freskler görünür durumda: ______
+  Çan kulesine girilebiliyor mu: ______
+
+═══════════════════════════════════════
+4) ATATÜRK KÖŞKÜ — video DEĞİL, sadece malzeme
+═══════════════════════════════════════
+Arama hacmi <750. Tek başına video taşımaz. Vakit varsa 20 dakika, yoksa hiç gitme.
+☐ Köşkün dış planı, bahçe
+☐ Şehre / denize bakan manzara (Karadeniz serisi geçiş görüntüsü)
+☐ İçeri girilebiliyorsa: birkaç oda planı, B-roll olarak
+
+═══════════════════════════════════════
+GEÇİŞ VE SERİ GÖRÜNTÜLERİ — ÜÇ VİDEODA DA KULLANILACAK
+═══════════════════════════════════════
+☐ Motorla dağ yolu, viraj, sis (Karadeniz kimliği)
+☐ Trabzon şehir girişi / tabela
+☐ Maçka tabelası, Altındere Vadisi girişi
+☐ Yağmur / sis / bulut planları (bol çek — atmosfer bu seride ana koz)
+☐ Sabah sisi kalkarken vadi (zamanlama: gün doğumu sonrası ilk saat)
+☐ Kendi yüzünle giriş takeleri: her mekân için 3–5 tane açılış cümlesi denemesi
+   (haftada 2 içerikte kameraya çıkma kararı — bu gezide üçünde de dene)
+
+═══════════════════════════════════════
+ÇEKİM SONRASI — DÖNÜNCE
+═══════════════════════════════════════
+☐ "SAHADA DOLDUR" alanlarını scriptlere işle → v2 sürümleri
+☐ Hangi senaryo gerçekleşti (İÇERİ / DIŞARI) — scriptlerden birini seç, diğerini arşivle
+☐ Üç video için Shootboard kayıtlarını gir (24 Ekim sonrası boş haftalara aralıklı)
+☐ Kapak promptları: yeni kural — 3–4 satır, son satır SORU
+☐ Her videodan 5 reels kesiti, 90–130 sn, aralıklarıyla
+
+SESLENDİRME KELİME HEDEFİ: her video en az 1500 kelime (~10–11 dk)

@@ -1,0 +1,185 @@
+TRABZON AYASOFYA — YAYIN PAKETİ
+Karadeniz Dosyası 4 · Script: trabzon-ayasofya-v1.txt
+
+⚠ TARİH HENÜZ YOK. Çekim sonrası, hangi hafta yayınlanacağı belli olunca
+  gelen/kayitlar.json'a iki kayıt yazılacak (YouTube Cuma 20:00 + Facebook 21:00).
+  Takvimde 24 Ekim – 10 Aralık arası boş; DÖRT Karadeniz bölümü oraya ARALIKLI dağıtılacak,
+  aralarına İstanbul bölümleri girecek (kullanıcı kararı).
+
+═══════════════════════════════════════
+YOUTUBE
+═══════════════════════════════════════
+
+BAŞLIK (SEO, ≤100 karakter hedefi)
+  Şehir 1461'de Fethedildi, Bu Kilise 123 Yıl Daha Kilise Kaldı | Trabzon Ayasofya
+
+  Alternatifler:
+  · Bir Caminin Duvarında Âdem ile Havva Var | Trabzon Ayasofya'nın 123 Yılı
+  · Trabzon Ayasofya: Yanındaki Kule Çan Kulesi Değil, Rasathane
+
+  ⚠ "Trabzon" başlıkta ŞART — şemsiye terim 110.700 arama/ay, +%80,5 büyüme.
+  ⚠ 1584 teyit edilemezse başlık: "...Bir Asırdan Uzun Süre Kilise Kaldı"
+
+KAPAK BAŞLIĞI (shortTitle, büyük harf)
+  Üç satır, SON SATIR SORU (kural: KURALLAR.md bölüm 3):
+    SARI 1:  TRABZON'DA BİR CAMİ
+    SARI 2:  DUVARINDA ÂDEM İLE HAVVA
+    KIRMIZI: PEKİ NEDEN HÂLÂ ORADA?
+
+  Alternatif (123 yıl ekseni):
+    SARI 1:  ŞEHİR 1461'DE ALINDI
+    SARI 2:  BU KİLİSE 123 YIL DAHA KİLİSE KALDI
+    KIRMIZI: NEDEN?
+
+AÇIKLAMA
+  (hook paragrafı → özet → "Bu videoda:" → yorum sorusu → seri satırı →
+   "Rivayet değil, kayıt." → Kaynaklar → kanal linkleri → hashtag)
+
+Trabzon'da, denize bakan bir yamaçta bir cami var. Güney cephesinde, taşa kazınmış bir Âdem ile Havva duruyor. Yedi yüz yıldır orada.
+
+Bu yapı 1250'lerde kilise olarak yapıldı. Trabzon 1461'de fethedildi. Ve kaynaklara göre burası camiye 1584'te çevrildi — arada yüz yirmi üç yıl var.
+
+Bu videoda:
+• Güney cephedeki yaratılış frizi: taşın kitap gibi kullanılması, içeri girmeyene anlatma
+• Kemer kilit taşındaki tek başlı kartal — Trabzon'u 257 yıl yöneten Komnenosların arması
+• 1461 ile 1584 arasındaki yüz yirmi üç yıl: Osmanlı'da fethedilen şehirlerde ibadet yapılarının akıbeti tek bir kurala bağlı değildi
+• Birinci Dünya Savaşı: Rus işgali döneminde depo ve askerî hastane
+• 1957–62: Bizans fresklerini ortaya çıkaran ekip Edinburgh Üniversitesi'nden geldi
+• Yapıdan 25 metre ötedeki kule — ve neden çan kulesi olmadığı
+
+Frizde kaç ayrı sahne sayabiliyorsunuz? Yorumlarda buluşalım.
+
+Karadeniz Dosyası'nın dördüncü ve son bölümü. Önceki bölümler: Sümela Manastırı, Vazelon Manastırı, Kuştul (Peristera) Manastırı.
+
+Rivayet değil, kayıt.
+
+📍 Kaynaklar:
+Trabzon İl Kültür ve Turizm Müdürlüğü, Doğu Karadeniz Kültür Envanteri Projesi, Vikipedi ("Ayasofya (Trabzon)"), Özhan Öztürk Makaleleri, KTÜ Sanal Kent — saha ziyaretinde doğrulanan bilgiler dahil edilmiştir.
+
+🔔 Abone ol, her hafta yeni bir gizem: youtube.com/@gerceginizleritv
+📸 Instagram: instagram.com/gerceginizleritv
+🎵 TikTok: @gerceginizleritv
+📱 Facebook: facebook.com/gerceginizleritv
+
+#belgesel #tarih #trabzon #trabzonayasofya #tarihidedektif #komnenos #karadeniz #rivayetdeğilkayıt
+
+ETİKETLER (hashtags alanı, virgüllü)
+trabzon ayasofya, trabzon, komnenos, trabzon imparatorluğu, tarihi dedektif, karadeniz, belgesel, tarih, istanbul tarihi, bizans tarihi, osmanlı tarihi, âdem ile havva kabartması, rivayetdeğilkayıt, trabzon gezilecek yerler, i. manuel
+
+KAPAK PROMPTU (thumbPrompt) — ⚠️ 11 EYLÜL 2026'DA YENİDEN YAZILDI
+Standart: icerik/MARKA-KIMLIGI.md bölüm 8.
+Önceki prompt üç kuralı ihlal ediyordu:
+  ✗ görünüm tarif ediliyordu ("salt-and-pepper beard") → YASAK; referans fotoğraf yeter
+  ✗ başlık metni prompta yazılmıştı → YASAK; başlığı work/add_title.py basar
+  ✗ "sarı neon halka" — üretim hattında olmayan uydurma öğe → kaldırıldı
+Ayrıca ESAS FORMAT DİKEY oldu (1080×1920), yatay YouTube için ayrıca üretilir.
+
+DİKEY 1080×1920 (esas)
+
+Use the attached reference photo for the man's face, hair and likeness, and reproduce his face, hair and beard exactly as they appear in that photo; only his clothing may differ: a plain black crew-neck t-shirt, no logo.
+
+Vertical 1080x1920 photograph. The exterior south facade of a 13th-century Byzantine stone church in Trabzon, a carved stone relief frieze running along the rough stone wall, the Black Sea and an overcast sky behind, warm dusk light.
+
+The man is in the UPPER HALF of the frame, head and shoulders, serious, brow furrowed, lips closed, no smile, looking to the side and slightly up toward the carved relief — not at the camera. Warm rim light on his face from the right, cool shadow on the left, skin texture sharp.
+
+The BACKGROUND IS CLEARLY SOFT — shallow depth of field. The facade and the carving are readable as a place but do not compete with him for attention.
+
+The LOWER THIRD of the frame is plain and uncluttered.
+
+No text, no watermark, no logo, no second person.
+
+YATAY 1280×720 (YouTube)
+  Aynı prompt, iki değişiklikle:
+  · "Vertical 1080x1920" → "Horizontal 1280x720"
+  · "in the UPPER HALF of the frame" → "in the LEFT THIRD of the frame"
+  Başlık sağa ve üste yaslı basılır (MARKA-KIMLIGI.md 8.3).
+
+  ⚠ Mimik: şaşkınlık değil SORU SORAN dikkat — bir şeyi çözmeye çalışan adam.
+  ⚠ Çekimden sonra: gerçek kabartma karesi prompttan güçlüyse GERÇEK KARE kullanılır.
+
+═══════════════════════════════════════
+FACEBOOK (native upload — YouTube linki YOK)
+═══════════════════════════════════════
+
+BAŞLIK (kısa)
+  Şehir 1461'de Fethedildi, Bu Kilise 123 Yıl Daha Kilise Kaldı
+
+METİN
+Trabzon'da bir caminin duvarında, taşa kazınmış bir Âdem ile Havva var. 🏛️
+
+Bu yapı 1250'lerde kilise olarak yapıldı. Trabzon 1461'de fethedildi. Ve kaynaklara göre camiye 1584'te çevrildi — arada yüz yirmi üç yıl var.
+
+Yapıdan 25 metre ötede bir kule duruyor. Herkes ona çan kulesi diyor. Değil.
+
+Ne olduğunu videonun sonunda söylüyorum.
+
+Sizce bu kabartma neden hâlâ orada? Yorumlara yazın.
+
+Rivayet değil, kayıt.
+
+Sayfamda Abonelikler açık. 🙏
+
+#belgesel #tarih #trabzon #trabzonayasofya #karadeniz #tarihidedektif
+
+  ⚠ KURAL: Facebook'a video NATIVE yüklenir. Açıklamada ASLA "YouTube'da izle" ya da
+    YouTube linki OLMAZ. (Ölçüm: 6 bağlantı gönderisi, toplam 1 tepki.)
+
+ETİKETLER (kısa liste)
+trabzon ayasofya, trabzon, komnenos, karadeniz, tarihi dedektif
+
+KAPAK
+YouTube kapağının aynısı; Facebook dikey paylaşımda 9:16 kırpımı kullanılır.
+
+═══════════════════════════════════════
+REELS KESİTLERİ — 5 ADET
+═══════════════════════════════════════
+Dört platforma birden (Facebook · Instagram · TikTok · YouTube Shorts), 20:00.
+Her kesit KENDİ İÇİNDE TAMAMLANIR, fragman değil. Facebook sürümlerinde link YOK.
+
+ 1. 0:00–2:00 · 120 sn · "Bir caminin duvarında Âdem ile Havva var"
+    Kabartma → yapı → kartal → hanedan
+    Kapanış: "Sizce bu kabartma neden hâlâ duruyor? Yorumlara yazın."
+
+ 2. 2:20–4:10 · 110 sn · "Taş burada kitap gibi kullanılmış" ★
+    Friz → dış cephede olmasının anlamı → sahne sayımı
+    Kapanış: "Kaç sahne sayabiliyorsunuz? Yorumlara yazın."
+
+ 3. 4:20–6:20 · 120 sn · "Şehir 1461'de alındı, bu kilise 123 yıl daha kilise kaldı" ★★
+    ★★ En paylaşılabilir parça. Fetih + tarih kalıbı, arama hacmi yüksek.
+    Kapanış: "Sizce neden bu kadar bekledi? Yorumlara yazın."
+
+ 4. 8:20–10:10 · 110 sn · "Bu çan kulesi değil, bir rasathane"
+    Kule → 1427/1443 → gözlem ve astronomi → son 34 yıl
+    Kapanış: "Son yıllarında gökyüzüne bakan bir devlet. Yorumlara yazın."
+
+ 5. 6:40–8:10 · 90 sn · "Kilise, cami, depo, hastane — aynı duvarlar"
+    Rus işgali → fresk temizliği → 1964 → 2013 (düz kayıt, yorum yok)
+    Kapanış: "Aynı duvarlar. Sizce başka ne gördü? Yorumlara yazın."
+
+═══════════════════════════════════════
+STORY VE TEASER
+═══════════════════════════════════════
+☐ TEASER REELS — yayından 2 gün önce, 4 platform, 20:00
+  Kesit 1 kullanılır (videonun kendi açılışı, açık uçla biter).
+  Gerekçe: reel kendi dağıtımını kazanır; carousel kazanmaz (ölçüm: reel 1.724, albüm 17).
+☐ STORY — yayından 1 gün önce, FB + IG, 10:00
+  "Yarın 20:00 — Karadeniz Dosyası'nın son bölümü. Bir caminin duvarında Âdem ile Havva."
+
+  ⚠ Teaser'ın işe yarayıp yaramadığı HENÜZ ÖLÇÜLMEDİ. İlk test 9 Ekim Sokollu videosu.
+    O sonuç geldikten sonra bu bölüm güncellenecek.
+
+═══════════════════════════════════════
+YAYIN ÖNCESİ SON KONTROL
+═══════════════════════════════════════
+☐ 1584 tarihi ikinci kaynakla teyit edildi mi? Edilmediyse başlık ve hook yumuşatıldı mı?
+☐ Kulenin gözlemevi işlevi teyit edildi mi? (sona saklanan cevap buna bağlı)
+☐ 2013 bölümü tek cümle mi, yorum sızmış mı?
+☐ Facebook metninde YouTube linki YOK mu?
+☐ Kapak başlığının son satırı SORU mu?
+☐ Beş kesitin süresi 90–130 sn bandında mı?
+☐ Seslendirme kelime sayısı ≥1500 mü?
+☐ Açıklamada kaynaklar var mı?
+
+YAYINDAN 7 GÜN SONRA
+☐ YouTube Studio → Kitle Tutma → 20. SANİYEDEKİ ORAN: ______%
+  Taban %43 · Hedef %65 · instagramgrowth deposu data/ klasörüne kaydedilecek
