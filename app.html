@@ -2720,6 +2720,12 @@ textarea.sc-ai-brief{min-height:64px;resize:vertical;line-height:1.5;}
             <rect x="7" y="12.4" width="3" height="3" rx="0.6" fill="currentColor" stroke="none"/>
           </svg><span data-i18n="tab_calendar">Calendar</span>
         </button>
+        <button type="button" class="tab" id="tabKit" role="tab">
+          <svg class="tab-ico" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+            <path d="M3.5 8.5h17v11a1.5 1.5 0 0 1-1.5 1.5H5a1.5 1.5 0 0 1-1.5-1.5z"/>
+            <path d="M9 8.5V6a3 3 0 0 1 6 0v2.5"/><path d="M3.5 13h17"/>
+          </svg><span data-i18n="tab_kit">Kit</span>
+        </button>
         <button type="button" class="tab" id="tabTemplates" role="tab">
           <svg class="tab-ico" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
             <rect x="4" y="3.5" width="16" height="17" rx="2.2"/><path d="M8 8.5h8M8 12.5h8M8 16.5h5"/>
@@ -2870,6 +2876,32 @@ textarea.sc-ai-brief{min-height:64px;resize:vertical;line-height:1.5;}
          soyluyor; bos bir filtreye tiklayip bos liste gormek yoruyor. -->
     <div class="proj-filtre" id="p_filtre" role="group" data-i18n-aria="p_f_aria"></div>
     <div id="projectList"></div>
+  </div>
+
+  <!-- CEKIM KUTUPHANESI kendi sayfasi. Ayni kutuphane cekim listesinden
+       de aciliyor; fark tek bir seyde: PENCEREDE bir maddeye dokunmak onu
+       acik projenin listesine ekliyor, SAYFADA yalnizca SECIYOR — secim
+       de set kurmaya yariyor. Boylece cekimden once oturup malzemeni ve
+       setlerini bir proje acmadan hazirlayabiliyorsun. -->
+  <div id="kitPage" hidden>
+    <p class="hint" data-i18n="ih_page_intro">Everything you take on a shoot, written once. Tick a few and turn them into a kit — ready to drop into any project's checklist.</p>
+    <div class="ih-setler" id="ihs_setler"></div>
+    <input type="search" id="ihs_ara" class="ih-ara" maxlength="80" data-i18n-placeholder="ih_search_ph" placeholder="Search">
+    <div id="ihs_liste"></div>
+    <div class="ih-yeni">
+      <input type="text" id="ihs_yeniAd" maxlength="120" data-i18n-placeholder="ih_new_ph"
+             placeholder="New item — power bank, light, makeup…">
+      <input type="text" id="ihs_yeniGrup" maxlength="40" list="ihs_gruplar" data-i18n-placeholder="ih_group_ph" placeholder="Group (optional)">
+      <datalist id="ihs_gruplar"></datalist>
+      <button type="button" class="btn" id="ihs_yeniBtn" data-i18n="cl_add">Add</button>
+    </div>
+    <details class="ih-toplu">
+      <summary data-i18n="ih_bulk">Paste a whole list</summary>
+      <textarea id="ihs_topluMetin" rows="5" maxlength="6000" data-i18n-placeholder="ih_bulk_ph"
+                placeholder="One item per line"></textarea>
+      <button type="button" class="btn" id="ihs_topluBtn" data-i18n="ih_bulk_add">Add them all</button>
+      <p class="hint" id="ihs_topluNot" hidden></p>
+    </details>
   </div>
 
   <div id="templatesPage" hidden>
@@ -4950,6 +4982,11 @@ const LANG = {
     ih_bulk_done: (n)=> n ? `${n} added.` : "Nothing new — they were already on the list.",
     ih_empty: "Your kit list is empty. Add what you always take with you.",
     ih_none_match: "Nothing matches.",
+    tab_kit: "Kit",
+    ih_page_intro: "Everything you take on a shoot, written once. Tick a few and turn them into a kit — one tap drops the whole kit into any project's checklist.",
+    ih_page_empty: "Nothing here yet. Write what you always take with you, or paste a list you already have.",
+    set_new_sayfa: "+ Make a kit from the ticked ones",
+    set_empty_sayfa: "Tick the gear first, then turn it into a kit.",
     ih_group_other: "Other",
     set_head: "My kits — one tap drops the whole kit in",
     set_new: "+ Make a kit from this list",
@@ -5841,6 +5878,11 @@ const LANG = {
     ih_bulk_done: (n)=> n ? `${n} madde eklendi.` : "Yeni bir \u015fey yok \u2014 hepsi zaten listedeydi.",
     ih_empty: "K\u00fct\u00fcphane bo\u015f. Her \u00e7ekimde yan\u0131na ald\u0131klar\u0131n\u0131 ekle.",
     ih_none_match: "E\u015fle\u015fen yok.",
+    tab_kit: "Malzeme",
+    ih_page_intro: "\u00c7ekime giderken yan\u0131na ald\u0131\u011f\u0131n her \u015fey, bir kez yaz\u0131l\u0131r. Birka\u00e7\u0131n\u0131 i\u015faretleyip set yaparsan, bir projenin \u00e7ekim listesine tek dokunu\u015fla hepsi d\u00fc\u015fer.",
+    ih_page_empty: "Hen\u00fcz bir \u015fey yok. Her \u00e7ekimde yan\u0131na ald\u0131klar\u0131n\u0131 yaz ya da haz\u0131r bir listeyi yap\u0131\u015ft\u0131r.",
+    set_new_sayfa: "+ \u0130\u015faretlilerden set yap",
+    set_empty_sayfa: "\u00d6nce malzemeyi i\u015faretle, sonra onlardan set yap.",
     ih_group_other: "Di\u011fer",
     set_head: "Setlerim \u2014 tek dokunu\u015fla hepsi listeye d\u00fc\u015fer",
     set_new: "+ Listedekilerden set yap",
@@ -6928,8 +6970,17 @@ function setlerBuluttan(uzak){
   ihtiyacSetleri = temiz;
   try{ localStorage.setItem(SET_KEY, JSON.stringify(ihtiyacSetleri)); }catch(e){}
 }
-function setleriCiz(){
-  const kap = document.getElementById('ih_setler');
+// Kutuphane IKI yerde ciziliyor: cekim listesinden acilan pencere
+// (onek 'ih') ve menudeki kendi sayfasi (onek 'ihs'). Ayni islevler
+// ikisini de ciziyor — tek fark TIKLAMANIN ne yaptigi:
+//   pencere: madde acik projenin listesine girer/cikar
+//   sayfa  : madde yalnizca SECILIR; secim set kurmaya yarar
+// Sayfadaki secim gecici: sayfadan cikinca unutuluyor, hicbir yere
+// kaydedilmiyor.
+const sayfaSecimi = new Set();
+function setleriCiz(onek){
+  const ek = onek || 'ih';
+  const kap = document.getElementById(ek + '_setler');
   if(!kap) return;
   const setler = ihtiyacSetleri.map(s=>
     `<span class="ih-set" data-set-ekle="${escapeHtml(s.id)}" role="button" tabindex="0">
@@ -6937,19 +6988,34 @@ function setleriCiz(){
        <button type="button" class="ih-set-sil" data-set-sil="${escapeHtml(s.id)}"
                title="${escapeHtml(t('cl_remove'))}" aria-label="${escapeHtml(t('cl_remove'))}">×</button>
      </span>`).join('');
+  const sayfa = ek === 'ihs';
   kap.innerHTML = (ihtiyacSetleri.length ? `<p class="hint">${escapeHtml(t('set_head'))}</p>` : '')
     + setler
-    + `<button type="button" class="ih-set ih-set-yeni" id="ih_setYap">${escapeHtml(t('set_new'))}</button>`;
+    + `<button type="button" class="ih-set ih-set-yeni" data-set-yap>${escapeHtml(t(sayfa ? 'set_new_sayfa' : 'set_new'))}</button>`;
   kap.querySelectorAll('[data-set-ekle]').forEach(el=>{
     el.addEventListener('click', e=>{
       if(e.target.closest('[data-set-sil]')) return;
-      setiListeyeEkle(el.dataset.setEkle);
+      if(sayfa) setiSayfadaSec(el.dataset.setEkle);
+      else setiListeyeEkle(el.dataset.setEkle);
     });
   });
   kap.querySelectorAll('[data-set-sil]').forEach(el=>{
     el.addEventListener('click', ()=> setiSil(el.dataset.setSil));
   });
-  document.getElementById('ih_setYap').addEventListener('click', setYap);
+  kap.querySelector('[data-set-yap]').addEventListener('click', ()=> setYap(ek));
+}
+// Sayfada bir sete dokunmak onu ACIYOR: icindeki maddeler isaretleniyor.
+// Boylece var olan bir seti gorebiliyor, birkac madde ekleyip ayni adla
+// kaydederek guncelleyebiliyorsun.
+function setiSayfadaSec(id){
+  const s = ihtiyacSetleri.find(x=> x.id === id);
+  if(!s) return;
+  sayfaSecimi.clear();
+  s.maddeler.forEach(ad=>{
+    const m = ihtiyaclar.find(x=> ihtiyacAnahtari(x.ad) === ihtiyacAnahtari(ad));
+    if(m) sayfaSecimi.add(m.id);
+  });
+  kitSayfasiCiz();
 }
 function setiListeyeEkle(id){
   const s = ihtiyacSetleri.find(x=> x.id === id);
@@ -6959,18 +7025,26 @@ function setiListeyeEkle(id){
     const kutuphanede = ihtiyaclar.find(x=> ihtiyacAnahtari(x.ad) === ihtiyacAnahtari(ad));
     if(listeMaddeEkle(ad, 'kutuphane', kutuphanede ? kutuphanede.grup : '')) eklenen++;
   });
-  const not = document.getElementById('ih_topluNot');
-  not.textContent = t('set_added')(eklenen);
-  not.hidden = false;
+  ihNot('ih', t('set_added')(eklenen));
   ihtiyacListesiCiz();
+}
+// Not satiri her iki yerde de var; hangisi aciksa oraya yaziliyor.
+function ihNot(onek, metin){
+  const not = document.getElementById(onek + '_topluNot');
+  if(!not) return;
+  not.textContent = metin;
+  not.hidden = !metin;
 }
 // Set ACIK LISTEDEN yapiliyor: kullanici zaten bu cekim icin neyi
 // sectigini biliyor. Ayri bir "set duzenleme" ekrani kurmak, ayni isi
 // ikinci bir yerde tekrar yaptirmak olurdu.
-async function setYap(){
-  const pr = listeProjesi;
-  const adaylar = projeListesi(pr || {}).filter(x=> x.kaynak === 'kutuphane').map(x=> x.metin);
-  if(!adaylar.length){ uyari(t('set_empty_warn')); return; }
+async function setYap(onek){
+  const sayfa = onek === 'ihs';
+  // Sayfada isaretlenenler, pencerede o projenin listesindekiler.
+  const adaylar = sayfa
+    ? [...sayfaSecimi].map(id=> (ihtiyaclar.find(x=> x.id === id) || {}).ad).filter(Boolean)
+    : projeListesi(listeProjesi || {}).filter(x=> x.kaynak === 'kutuphane').map(x=> x.metin);
+  if(!adaylar.length){ uyari(t(sayfa ? 'set_empty_sayfa' : 'set_empty_warn')); return; }
   if(ihtiyacSetleri.length >= SET_MAX){ uyari(t('set_limit')(SET_MAX)); return; }
   const ad = await sor(t('set_ask'));
   if(ad === null) return;
@@ -6980,10 +7054,8 @@ async function setYap(){
   ihtiyacSetleri = ihtiyacSetleri.filter(x=> x.ad.toLocaleLowerCase('tr') !== s.ad.toLocaleLowerCase('tr'));
   ihtiyacSetleri.push(s);
   saveSetler();
-  setleriCiz();
-  const not = document.getElementById('ih_topluNot');
-  not.textContent = t('set_made')(s.ad, s.maddeler.length);
-  not.hidden = false;
+  setleriCiz(onek);
+  ihNot(onek || 'ih', t('set_made')(s.ad, s.maddeler.length));
 }
 async function setiSil(id){
   const s = ihtiyacSetleri.find(x=> x.id === id);
@@ -6991,7 +7063,7 @@ async function setiSil(id){
   if(!await onayla(t('set_del_ask')(s.ad))) return;
   ihtiyacSetleri = ihtiyacSetleri.filter(x=> x.id !== id);
   saveSetler();
-  setleriCiz();
+  setleriCiz('ih'); setleriCiz('ihs');
 }
 
 // ---- Projenin listesi ----------------------------------------------
@@ -7212,17 +7284,20 @@ function ihtiyacPenceresiAc(){
   document.getElementById('ih_yeniGrup').value = '';
   document.getElementById('ih_topluMetin').value = '';
   document.getElementById('ih_topluNot').hidden = true;
-  ihtiyacGruplariDoldur();
-  setleriCiz();
-  ihtiyacListesiCiz();
+  ihtiyacGruplariDoldur('ih');
+  setleriCiz('ih');
+  ihtiyacListesiCiz('ih');
   document.getElementById('ihtiyacOverlay').classList.add('open');
 }
 function ihtiyacPenceresiKapat(){
   document.getElementById('ihtiyacOverlay').classList.remove('open');
   cekimListesiCiz();
+  // Sayfa arkada duruyor olabilir: pencerede eklenen madde orada da
+  // gorunsun.
+  kitSayfasiCiz();
 }
-function ihtiyacGruplariDoldur(){
-  const kap = document.getElementById('ih_gruplar');
+function ihtiyacGruplariDoldur(onek){
+  const kap = document.getElementById((onek || 'ih') + '_gruplar');
   if(!kap) return;
   // Onerilen gruplar + kullanicinin kendi yazdiklari.
   const oneri = String(t('ih_groups') || '').split(',').map(x=>x.trim()).filter(Boolean);
@@ -7230,17 +7305,28 @@ function ihtiyacGruplariDoldur(){
   const hepsi = [...new Set(oneri.concat(kendi))];
   kap.innerHTML = hepsi.map(x=> `<option value="${escapeHtml(x)}"></option>`).join('');
 }
-function ihtiyacListesiCiz(){
-  const kap = document.getElementById('ih_liste');
+function ihtiyacListesiCiz(onek){
+  const ek = onek || 'ih';
+  const sayfa = ek === 'ihs';
+  const kap = document.getElementById(ek + '_liste');
   if(!kap) return;
-  const pr = listeProjesi;
-  const listedeki = new Set(projeListesi(pr || {}).map(x=> ihtiyacAnahtari(x.metin)));
-  const q = ihtiyacArama.trim().toLocaleLowerCase('tr');
+  // Isaretin ANLAMI iki yerde farkli: pencerede "bu cekimin listesinde",
+  // sayfada "seti kurarken bunu al".
+  const secili = sayfa
+    ? id => sayfaSecimi.has(id)
+    : id => {
+        const m = ihtiyaclar.find(x=> x.id === id);
+        const listedeki = new Set(projeListesi(listeProjesi || {}).map(x=> ihtiyacAnahtari(x.metin)));
+        return !!m && listedeki.has(ihtiyacAnahtari(m.ad));
+      };
+  const q = (sayfa ? sayfaArama : ihtiyacArama).trim().toLocaleLowerCase('tr');
   const uyan = ihtiyaclar.filter(x=> !q
     || x.ad.toLocaleLowerCase('tr').indexOf(q) !== -1
     || (x.grup || '').toLocaleLowerCase('tr').indexOf(q) !== -1);
   if(!uyan.length){
-    kap.innerHTML = '<p class="hint">' + escapeHtml(ihtiyaclar.length ? t('ih_none_match') : t('ih_empty')) + '</p>';
+    kap.innerHTML = '<p class="hint">'
+      + escapeHtml(ihtiyaclar.length ? t('ih_none_match') : t(sayfa ? 'ih_page_empty' : 'ih_empty'))
+      + '</p>';
     return;
   }
   const gruplar = [];
@@ -7253,10 +7339,10 @@ function ihtiyacListesiCiz(){
   kap.innerHTML = gruplar.map(ad=>
     '<div class="cl-grup">' + escapeHtml(ad) + '</div>' +
     kova.get(ad).map(x=>{
-      const secili = listedeki.has(ihtiyacAnahtari(x.ad));
+      const acik = secili(x.id);
       return `<div class="ih-satir">
-        <button type="button" class="cl-kutu ${secili ? 'on' : ''}" data-ih-sec="${escapeHtml(x.id)}"
-                aria-pressed="${secili}" aria-label="${escapeHtml(x.ad)}">${secili ? '✓' : ''}</button>
+        <button type="button" class="cl-kutu ${acik ? 'on' : ''}" data-ih-sec="${escapeHtml(x.id)}"
+                aria-pressed="${acik}" aria-label="${escapeHtml(x.ad)}">${acik ? '✓' : ''}</button>
         <span class="cl-metin">${escapeHtml(x.ad)}</span>
         <button type="button" class="ih-sil" data-ih-sil="${escapeHtml(x.id)}"
                 title="${escapeHtml(t('cl_remove'))}" aria-label="${escapeHtml(t('cl_remove'))}">×</button>
@@ -7264,11 +7350,25 @@ function ihtiyacListesiCiz(){
     }).join('')
   ).join('');
   kap.querySelectorAll('[data-ih-sec]').forEach(el=>{
-    el.addEventListener('click', ()=> ihtiyacSecimiCevir(el.dataset.ihSec));
+    el.addEventListener('click', ()=>{
+      if(sayfa) sayfaSeciminiCevir(el.dataset.ihSec);
+      else ihtiyacSecimiCevir(el.dataset.ihSec);
+    });
   });
   kap.querySelectorAll('[data-ih-sil]').forEach(el=>{
     el.addEventListener('click', ()=> ihtiyacKutuphanedenSil(el.dataset.ihSil));
   });
+}
+let sayfaArama = '';
+function sayfaSeciminiCevir(id){
+  if(sayfaSecimi.has(id)) sayfaSecimi.delete(id); else sayfaSecimi.add(id);
+  kitSayfasiCiz();
+}
+// Menudeki kutuphane sayfasi.
+function kitSayfasiCiz(){
+  ihtiyacGruplariDoldur('ihs');
+  setleriCiz('ihs');
+  ihtiyacListesiCiz('ihs');
 }
 // Kutuphanede tiklamak maddeyi ACIK LISTEYE ekliyor/cikariyor.
 // Kutuphanenin kendisi degismiyor.
@@ -7288,8 +7388,10 @@ async function ihtiyacKutuphanedenSil(id){
   if(!m) return;
   if(!await onayla(t('ih_del_ask')(m.ad))) return;
   ihtiyaclar = ihtiyaclar.filter(x=> x.id !== id);
+  sayfaSecimi.delete(id);
   saveIhtiyaclar();
-  ihtiyacListesiCiz();
+  ihtiyacListesiCiz('ih');
+  kitSayfasiCiz();
 }
 
 // ===== Eklenme tarihine gore sira ==================================
@@ -10854,6 +10956,7 @@ const SAYFALAR = [
   ['places',    'placesPage',    'tabPlaces'],
   ['projects',  'projectsPage',  'tabProjects'],
   ['calendar',  'calendarPage',  'tabCalendar'],
+  ['kit',       'kitPage',       'tabKit'],
   ['templates', 'templatesPage', 'tabTemplates']
 ];
 function setPage(ad){
@@ -10868,10 +10971,12 @@ function setPage(ad){
   if(ad === 'ideas') renderFikirler();
   if(ad === 'scripts') renderScriptler();
   if(ad === 'places') renderMekanlar();
+  if(ad === 'kit') kitSayfasiCiz();
 }
 
 document.getElementById('tabCalendar').addEventListener('click', ()=> setPage('calendar'));
 document.getElementById('tabProjects').addEventListener('click', ()=>{ track('funnel/projects-opened'); setPage('projects'); });
+document.getElementById('tabKit').addEventListener('click', ()=> setPage('kit'));
 document.getElementById('tabTemplates').addEventListener('click', ()=>{ track('funnel/templates-opened'); setPage('templates'); });
 // GOVDE KILIDI. Bir pencere ya da alt sayfa acikken arkadaki sayfa
 // durmali: eskiden pencerenin sonuna gelip kaydirmaya devam edince
@@ -11401,32 +11506,43 @@ document.getElementById('cl_temizle').addEventListener('click', async ()=>{
 document.getElementById('ih_close').addEventListener('click', ihtiyacPenceresiKapat);
 document.getElementById('ih_bitti').addEventListener('click', ihtiyacPenceresiKapat);
 document.getElementById('ih_ara').addEventListener('input', e=>{
-  ihtiyacArama = e.target.value; ihtiyacListesiCiz();
+  ihtiyacArama = e.target.value; ihtiyacListesiCiz('ih');
 });
-function ihtiyacYeniEkle(){
-  const ad = document.getElementById('ih_yeniAd');
-  const grup = document.getElementById('ih_yeniGrup');
+document.getElementById('ihs_ara').addEventListener('input', e=>{
+  sayfaArama = e.target.value; ihtiyacListesiCiz('ihs');
+});
+function ihtiyacYeniEkle(onek){
+  const ek = onek || 'ih';
+  const ad = document.getElementById(ek + '_yeniAd');
+  const grup = document.getElementById(ek + '_yeniGrup');
   const metin = (ad.value || '').trim();
   if(!metin) return;
   const m = ihtiyacEkle(metin, grup.value);
-  // Buradan eklenen madde ACIK LISTEYE de giriyor: kisi zaten o cekim
-  // icin yaziyor, bir de ayrica isaretlemek zorunda kalmasin.
-  if(m && listeProjesi) listeMaddeEkle(m.ad, 'kutuphane', m.grup);
+  // Pencereden eklenen madde ACIK LISTEYE de giriyor: kisi zaten o cekim
+  // icin yaziyor, bir de ayrica isaretlemek zorunda kalmasin. Sayfada
+  // acik bir cekim yok; yeni madde dogrudan isaretleniyor, cunku oradaki
+  // isaretin anlami "seti kurarken bunu al".
+  if(m && ek === 'ihs') sayfaSecimi.add(m.id);
+  else if(m && listeProjesi) listeMaddeEkle(m.ad, 'kutuphane', m.grup);
   ad.value = '';
   ad.focus();
-  ihtiyacGruplariDoldur();
-  ihtiyacListesiCiz();
+  ihtiyacGruplariDoldur(ek);
+  ihtiyacListesiCiz(ek);
+  if(ek === 'ihs') setleriCiz('ihs');
 }
-document.getElementById('ih_yeniBtn').addEventListener('click', ihtiyacYeniEkle);
-document.getElementById('ih_yeniAd').addEventListener('keydown', e=>{
-  if(e.key === 'Enter'){ e.preventDefault(); ihtiyacYeniEkle(); }
+['ih', 'ihs'].forEach(ek=>{
+  document.getElementById(ek + '_yeniBtn').addEventListener('click', ()=> ihtiyacYeniEkle(ek));
+  document.getElementById(ek + '_yeniAd').addEventListener('keydown', e=>{
+    if(e.key === 'Enter'){ e.preventDefault(); ihtiyacYeniEkle(ek); }
+  });
 });
 // Toplu ekleme: elindeki listeyi oldugu gibi yapistir. Basindaki kutu,
 // tire, nokta ve numara isaretleri temizleniyor; zaten olan madde ikinci
 // kez eklenmiyor. Bunlar kutuphaneye giriyor, listeye DEGIL: yirmi
 // maddelik bir malzeme listesi tek bir cekime toptan yazilmamali.
-document.getElementById('ih_topluBtn').addEventListener('click', ()=>{
-  const kutu = document.getElementById('ih_topluMetin');
+['ih', 'ihs'].forEach(ek=>
+document.getElementById(ek + '_topluBtn').addEventListener('click', ()=>{
+  const kutu = document.getElementById(ek + '_topluMetin');
   const satirlar = String(kutu.value || '').split(/\r?\n/)
     .map(x=> x.replace(/^\s*(?:[-*\u2022\u25a1\u2610\u2611\u2713\u2714]|\[[ xX]?\]|\d+[.)])\s*/, '').trim())
     .filter(Boolean).slice(0, 300);
@@ -11435,13 +11551,11 @@ document.getElementById('ih_topluBtn').addEventListener('click', ()=>{
     if(ihtiyacVarMi(x)) return;
     if(ihtiyacEkle(x, '')) eklenen++;
   });
-  const not = document.getElementById('ih_topluNot');
-  not.textContent = t('ih_bulk_done')(eklenen);
-  not.hidden = false;
+  ihNot(ek, t('ih_bulk_done')(eklenen));
   if(eklenen) kutu.value = '';
-  ihtiyacGruplariDoldur();
-  ihtiyacListesiCiz();
-});
+  ihtiyacGruplariDoldur(ek);
+  ihtiyacListesiCiz(ek);
+}));
 document.getElementById('p_sira').addEventListener('click', ()=>{
   projeSiraSecimi = siraSonraki(projeSiraSecimi);
   siraYaz(PROJE_SIRA_KEY, projeSiraSecimi);
