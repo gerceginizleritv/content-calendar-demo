@@ -45,9 +45,19 @@ izlenme süresi hem YPP hem Facebook uygunluk para birimi olduğu için uzunluk 
 "Galata Köprüsü ayağından" yazıyordu; cami Galata Köprüsü'nde değil, **Atatürk (Unkapanı)
 Köprüsü'nün Beyoğlu tarafı ayağında.** Sahada doğrulandı.
 
-**Hâlâ açık (yayından önce kapatılacak):** medresenin bugünkü kullanımı; kalan 3 levhasız
-gömünün kim olduğuna dair herhangi bir kayıt; Safiyye Hanım Sultan'ın İsmihan Sultan'ın kızı
-olup olmadığının teyidi (şu an "BAZI KAYNAKLARA GÖRE" damgasıyla veriliyor).
+**Düzeltme 11 (13 Eyl) — omurga çıkarım değil, KAYIT.**
+Düzeltme 5'te türbenin yapılış sebebini "tarih sırasından çıkarım" diye YORUM damgasıyla
+vermiştim. Araştırınca çıktı ki bu zaten kayıtlı: TDV İslâm Ansiklopedisi ve Eyüpsultan
+Belediyesi kaydı, türbenin 976 (1568) yılında **genç yaşta ölen oğulları için**
+yaptırıldığını yazıyor. Damga **KAYIT**'a yükseltildi, "bu benim çıkarımım" cümlesi çıkarıldı.
+Bölüm 4'ün omurgası artık varsayım değil, belge.
+
+**Düzeltme 12 (13 Eyl) — Safiyye Hanım Sultan teyit edildi.**
+İsmihan Sultan'ın hayatta kalan tek kızı. Damga "BAZI KAYNAKLARA GÖRE"den **KAYIT**'a geçti.
+
+**Hâlâ açık (yayından önce):** kalan 3 levhasız gömünün kim olduğu — muhtemelen hiç
+kapanmayacak, zaten videonun son beat'i bu. Ve medreseyi kullanan vakfın adı (küçük teyit,
+seslendirmeyi durdurmaz).
 
 ═══════════════════════════════════════
 v2'DE NE DEĞİŞTİ VE NEDEN (geçmiş — v3'te korundu)
@@ -431,9 +441,10 @@ Sultan-zâde Pir Mehmed Bey. Sokollu'nun oğlu. Bin beş yüz altmış yedide, b
 
 Ve ondan sonra bu odayı yaptırdı.
 
-Bu benim çıkarımım, kaydı yok. Tarihler kayıt; aradaki bağ yorum. Ama sıra ortada: önce ölümler, sonra yapı.
+Bunu ben çıkarmadım. Türbenin yapılış sebebi kayıtlı: kaynaklar bu yapının Sokollu'nun genç yaşta ölen oğulları için yaptırıldığını yazıyor.
 
-[EKRAN DAMGASI: YORUM — türbenin yapılış sebebi, tarih sırasından çıkarım]
+[EKRAN DAMGASI: KAYIT — türbe 976 / 1568'de, genç yaşta ölen oğulları için yaptırıldı
+ (TDV İslâm Ansiklopedisi, "Sokullu Mehmed Paşa Külliyesi — Eyüp")]
 
 Sokollu bu odayı kendisi için de yaptırmış olabilir. Ama önce çocuklarını koyacak bir yer arıyordu.
 
@@ -467,8 +478,7 @@ Ama kızı burada.
 
 Safiyye Hanım Sultan. Bin beş yüz altmış ikide doğdu, Cafer Paşa'nın eşi. Unvanı Hanım Sultan — yani padişah kızının kızı.
 
-[EKRAN DAMGASI: BAZI KAYNAKLARA GÖRE — Safiyye'nin İsmihan Sultan'ın kızı olması;
- unvan güçlü işaret, kesin kanıt değil]
+[EKRAN DAMGASI: KAYIT — Safiyye Hanım Sultan, İsmihan Sultan'ın hayatta kalan tek kızı]
 
 Anne babasının türbesine gitti. Kızı babasının türbesinde kaldı.
 
@@ -572,7 +582,7 @@ Ben Mustafa Bostancıoğlu, bu da Tarihi Dedektif. Rivayet değil, kayıt. Bir s
 11:05  [TARİH ŞERİDİ] 1566 · 1566 · 1567 · 1568 TÜRBE — omurga cümlesi + YORUM damgası  ← v3
 11:40  Kâsım Paşa 1571 "şehit" / Sokollu 1579 "şehit" — aynı kelime  ← v3
 12:05  Sona saklanan cevap: İsmihan Sultan burada değil; daire kapanır
-12:25  Safiyye Hanım Sultan — BAZI KAYNAKLARA GÖRE damgası  ← v3
+12:25  Safiyye Hanım Sultan — KAYIT damgası (teyit edildi 13 Eyl)  ← v3
 12:40  Medrese: bugün bir vakıf — "yaptırdığı okul hâlâ boş değil"  ← v3
 13:05  [SOY AĞACI] altı kuşak → [SAYAÇ] 1506 → 1751 · 245 yıl  ← v3
 13:25  SON BEAT: 19 gömü, 16 levha, üçü isimsiz  ← v3
@@ -625,21 +635,34 @@ KAYIT    — Peç Patrikhanesi akrabalığı (1557); Sinan'ın Mekke şantiyesi 
 RİVAYET  — Taşların Mekke'den gönderilip Sokollu'ya verilmesi; katilin kimliği (sipahi /
            meczup / saray bağlantısı)
 YORUM    — Azapkapı'da minarenin ayrı durmasının zemin ve yer darlığıyla açıklanması
-           ← v3: türbenin 1568'de üç çocuk ölümünden SONRA yaptırılmış olması.
-           Tarihler kayıt, nedensel bağ çıkarım. Ekranda açıkça söyleniyor.
-BAZI KAYNAKLARA GÖRE
-         — ← v3: Safiyye Hanım Sultan'ın İsmihan Sultan'ın kızı olması. "Hanım Sultan"
-           unvanı güçlü işaret (padişah kızının kızı), kesin kanıt değil.
+           (v3'te tek YORUM damgası bu kaldı — türbe maddesi KAYIT'a yükseldi)
 GÖZLEM   — Dört taşın da göz hizasının üstünde olması; cemaatin önce minber kapısına yürümesi
            ← v3: 19 gömü, 16 levha, 3 isimsiz. Sahada 12 Eylül 2026'da sayıldı;
            başka hiçbir yayında geçmiyor. Videonun son beat'i bu.
            ← v3: Azapkapı alt katındaki dükkânların çoğu kapalı, biri açık (berber).
            Sahada 12 Eylül 2026'da görüldü.
 
-⚠ YAYINDAN ÖNCE DOĞRULA (iki madde, ikisi de Bölüm 4'ü etkiler):
-  1. Kurd Bey'in başka bir yerden nakledilip edilmediği. Nakil varsa 1566→1568 çıkarımı zayıflar.
-  2. Safiyye Hanım Sultan'ın anne tarafı. Teyit edilemezse damga "BAZI KAYNAKLARA GÖRE" kalır.
-  İkisi de kapanmazsa cümleler damgalı haliyle yayınlanır — çıkarılmaz, abartılmaz.
+✅ YAYINDAN ÖNCE DOĞRULANACAKLAR — KAPANDI (13 Eylül 2026)
+
+  1. Türbenin yapılış sebebi — **ÇIKARIM DEĞİL, KAYIT.**
+     TDV İslâm Ansiklopedisi ("Sokullu Mehmed Paşa Külliyesi — Eyüp") ve Eyüpsultan
+     Belediyesi kaydı aynı şeyi yazıyor: türbe 976 (1568), **genç yaşta ölen oğulları
+     için** yaptırıldı. Sokollu 1579'da öldürülünce buraya gömüldü.
+     → Damga YORUM'dan **KAYIT**'a yükseltildi, seslendirme cümlesi değiştirildi.
+     Bu, Bölüm 4'ün omurgasını çıkarım olmaktan çıkarıp belgeye oturtuyor.
+
+  2. Safiyye Hanım Sultan'ın anne tarafı — **TEYİT EDİLDİ.**
+     İsmihan Sultan'ın **hayatta kalan tek kızı** (1563 – 24 Ocak 1594).
+     → Damga "BAZI KAYNAKLARA GÖRE"den **KAYIT**'a yükseltildi.
+     Not: levhada doğum 1562 yazıyor, kaynaklarda 1563 geçiyor. Metinde yıl
+     söylenmiyor, sadece "İsmihan Sultan'ın kızı" deniyor — çelişki yok.
+
+  ⚠ Tek açık kalan: levhadaki "1562" ile kaynaktaki "1563" farkı. Ekrana yıl
+    basılacaksa levhadaki tarih kullanılır ve kaynak farkı belirtilir.
+
+  📌 Erişim notu: islamansiklopedisi.org.tr ve eyupsultan.bel.tr bu ortamdan
+    doğrudan açılamadı (egress engeli). Doğrulama iki bağımsız arama sonucunun
+    örtüşmesine dayanıyor. Yayından önce kaynak sayfaları gözle açıp teyit et.
 
 ═══════════════════════════════════════
 SAHADA DOLDURULACAK
@@ -657,8 +680,8 @@ SAHADA DOLDURULACAK
 ✅ SESLENDİRMEYE HAZIR — bütün [SAHADA DOLDUR] satırları kapandı.
 
 ═══════════════════════════════════════
-SESLENDİRME KELİME SAYISI: 1969  (kural: en az 1500 ✅)
-v1: 1533 · v2: 1635 · v3: 1969 (+334, tamamı saha verisinden).
+SESLENDİRME KELİME SAYISI: 1970  (kural: en az 1500 ✅)
+v1: 1533 · v2: 1635 · v3: 1970 (saha verisi + 13 Eyl kaynak teyidi).
 140 kelime/dk → 14:04 seslendirme + 5 sn jenerik ≈ **14:25**.
 Bölüm bazında: hook 60 · B1 229 · B2 278 · Geçiş1 179 · B3 355 · Geçiş2 183 ·
 B4 600 · Çağrı 51 · Kapanış 30 = 1969.
