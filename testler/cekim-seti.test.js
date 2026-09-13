@@ -50,7 +50,9 @@ const { chromium } = require('./araclar');
     await bekle(100);
 
     // Set yap (sor() penceresi açılıyor, adı yazıp Tamam)
-    document.getElementById('ih_setYap').click();
+    // Set yapma dugmesi iki yerde birden var (pencere ve kutuphane
+    // sayfasi); kimlik yerine hangi kapsayicida oldugu ile bulunuyor.
+    document.querySelector('#ih_setler [data-set-yap]').click();
     await bekle(200);
     const sorAcik = document.getElementById('dlgOverlay').classList.contains('open');
     document.getElementById('dlgInput').value = 'Sokak çekimi seti';

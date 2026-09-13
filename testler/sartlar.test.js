@@ -83,8 +83,8 @@ const bak = (ad, ko, ek)=>{ if(ko){ g++; console.log('  ok  '+ad); } else { k++;
   // Sira kullanicinin istegiyle degisti: once Fikirler, sonra Mekanlar,
   // sonra Projeler — isin akisi bu yonde.
   bak('Fikirler en ustte', sira[0] === 'tabIdeas', sira.join(' > '));
-  bak('sira: fikir, mekan, proje, script, takvim, sablon',
-      sira.join(',') === 'tabIdeas,tabPlaces,tabProjects,tabScripts,tabCalendar,tabTemplates',
+  bak('sira: fikir, mekan, proje, script, takvim, malzeme, sablon',
+      sira.join(',') === 'tabIdeas,tabPlaces,tabProjects,tabScripts,tabCalendar,tabKit,tabTemplates',
       sira.join(' > '));
   bak('sekmeler hala calisiyor', await p3.evaluate(async () => {
     document.getElementById('tabIdeas').click();

@@ -21,12 +21,14 @@ const { chromium } = require('./araclar');
   // Sekmeler: fikir ve script projeden bagimsiz birer sayfa; mekanlar da
   // eski lokasyon takibinden tasindi. Projeler EN USTTE: cekim asil orada
   // yurutuluyor.
-  k('altı sekme var', await page.evaluate(()=> document.querySelectorAll('.tab').length === 6));
+  // Yedinci sekme: Malzeme (cekim kutuphanesi). Kutuphane onceden yalnizca
+  // cekim listesinin icinden aciliyordu; kullanici menude de istedi.
+  k('yedi sekme var', await page.evaluate(()=> document.querySelectorAll('.tab').length === 7));
   k('açılışta projeler sekmesi', await page.evaluate(()=> document.getElementById('projectsPage').hidden === false));
-  k('sekmelerde ikon var', await page.evaluate(()=> document.querySelectorAll('.tab .tab-ico').length === 6));
+  k('sekmelerde ikon var', await page.evaluate(()=> document.querySelectorAll('.tab .tab-ico').length === 7));
   k('sıra: fikir, mekan, proje…', await page.evaluate(()=>
     [...document.querySelectorAll('.rail-nav .tab')].map(x=>x.id).join(',')
-      === 'tabIdeas,tabPlaces,tabProjects,tabScripts,tabCalendar,tabTemplates'))
+      === 'tabIdeas,tabPlaces,tabProjects,tabScripts,tabCalendar,tabKit,tabTemplates'))
 
   await page.click('#tabCalendar'); await page.waitForTimeout(200);
   k('takvim sekmesine geçiliyor', await page.evaluate(()=> document.getElementById('calendarPage').hidden === false));
