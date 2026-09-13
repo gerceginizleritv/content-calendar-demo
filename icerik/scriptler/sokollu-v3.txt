@@ -191,7 +191,7 @@ Rivayet değil, kayıt.
 (5 sn "Sinan Dosyası" jeneriği — hook bittikten SONRA, 0:25'te)
 
 ═══════════════════════════════════════
-BÖLÜM 1 — KADIRGA: MEDRESENİN ALTINDAN GEÇEN KAPI (0:30–2:10)
+BÖLÜM 1 — KADIRGA: MEDRESENİN ALTINDAN GEÇEN KAPI (0:35–2:10)
 ═══════════════════════════════════════
 (Kamera: kapıdan girip merdivenle avluya çıkış, tek plan; avluda şadırvan; kitabe yakın plan)
 
@@ -229,7 +229,7 @@ Sekiz yıl sonra, o sarayda öldürülecek.
    Kapanış kartı: "Taşlar nereden geldi? Tam bölüm kanalda." (Facebook sürümünde link YOK.)
 
 ═══════════════════════════════════════
-BÖLÜM 2 — KADIRGA İÇİ: DÖRT TAŞ (2:10–4:10)
+BÖLÜM 2 — KADIRGA İÇİ: DÖRT TAŞ (2:10–4:00)
 ═══════════════════════════════════════
 (Kamera: kapıdan iç mekâna; mihrap duvarı çinileri baştan sona tilt; sonra dört taş sırayla,
 her biri önce geniş sonra çok yakın; açılış karesi ikinci kez burada)
@@ -261,16 +261,18 @@ Bir gözlem daha, çünkü camide ilk fark ettiğim şey bu oldu: taşlar göz h
 
 [EKRAN DAMGASI: GÖZLEM — dört taş da göz hizasının üstünde]
 
-Bugün de görüyorsunuz: içeri giren herkes önce mihraba değil, minber kapısına yürüyor. Taşın altında bir an duruyor, sonra namaza geçiyor. Bu alışkanlık yüzyıllardır aynı.
+  ✂️ ÇIKARILDI (13 Eyl, kullanıcı kararı): burada "içeri giren herkes önce minber
+    kapısına yürüyor..." diye bir gözlem paragrafı vardı. SESLENDİRİLMEDİ,
+    scriptten de çıkarıldı. Kurguda aranmayacak.
 
 Şimdi ikinci soru. Bu cami gerçekten kimin?
 
-[REELS KESİM 2 — 2:20–4:20 — 120 sn — "Bu camide Kabe'nin dört parçası var"]
+[REELS KESİM 2 — 2:10–4:00 — 110 sn — "Bu camide Kabe'nin dört parçası var"]
    Kendi içinde tamamlanır: çini → dört taş → Mekke şantiyesi bağlantısı → "gerisi rivayet".
    Kapanış: "Sizce nasıl geldiler? Yorumlara yazın."
 
 ═══════════════════════════════════════
-GEÇİŞ 1 — KADIRGA'DAN SULTANAHMET'E: KİTABE BİR ŞEY DİYOR, VAKFİYE BAŞKA (4:10–5:30)
+GEÇİŞ 1 — KADIRGA'DAN SULTANAHMET'E: KİTABE BİR ŞEY DİYOR, VAKFİYE BAŞKA (4:00–5:15)
 ═══════════════════════════════════════
 (Kamera: yokuştan yukarı yürüyüş, seslendirme; Ayasofya ve II. Selim türbesi dış plan arkada)
 
@@ -290,12 +292,12 @@ Ve bu ismi aklınızda tutun. Videonun sonunda İsmihan Sultan bir kez daha kar�
 
 Şimdi Karaköy'e iniyoruz. Sinan'ın Sokollu için yaptığı ikinci camiye. Minaresi camiye değmeyen camiye.
 
-[REELS KESİM 3 — 4:30–6:00 — 90 sn — "Bu caminin gerçek sahibi bir kadın"]
+[REELS KESİM 3 — 4:00–5:30 — 90 sn — "Bu caminin gerçek sahibi bir kadın"]
    Kendi içinde tamamlanır: kitabe–vakfiye çelişkisi → İsmihan kim → 450 yıllık yanlış isim.
    Kapanış: "Adı kapıda yazmayan kadın. Sizce neden? Yorumlara yazın."
 
 ═══════════════════════════════════════
-BÖLÜM 3 — AZAPKAPI: MİNARESİ AYRI DURAN CAMİ (5:30–8:05)
+BÖLÜM 3 — AZAPKAPI: MİNARESİ AYRI DURAN CAMİ (5:15–7:50)
 ═══════════════════════════════════════
 (Kamera: Atatürk (Unkapanı) Köprüsü Azapkapı ayağından geniş plan, minare ve cami aynı karede; kemerli geçit yakın;
 alt kattaki dükkânlar; Saliha Sultan Çeşmesi kısa)
@@ -344,12 +346,12 @@ Ama aynı yıllarda saray içinde Sokollu'nun düşmanları çoğalıyor. III. M
 
 Bu caminin bitiminden iki yıl sonra, hançer geliyor.
 
-[REELS KESİM 4 — 5:40–7:20 — 100 sn — "Minaresi camiye değmeyen cami"]
+[REELS KESİM 4 — 5:15–7:05 — 110 sn — "Minaresi camiye değmeyen cami + altındaki berber"]
    Kendi içinde tamamlanır: görsel tuhaflık → neden → "orijinal değil" düzeltmesi.
    Kapanış: "Sinan neden böyle yaptı? Kayıt yok. Sizce? Yorumlara yazın."
 
 ═══════════════════════════════════════
-GEÇİŞ 2 — HALİÇ KIYISINDAN EYÜP'E: 11 EKİM 1579 (8:05–9:25)
+GEÇİŞ 2 — HALİÇ KIYISINDAN EYÜP'E: 11 EKİM 1579 (7:50–9:05)
 ═══════════════════════════════════════
 (Kamera: Haliç kıyısı, vapur ya da otobüs camından; seslendirme; arşiv gravür ve portre araya girer)
 
@@ -380,13 +382,13 @@ Cenazesi Eyüp'e götürüldü. On yıl önce Sinan'ın onun için yaptığı t�
 
 Şimdi oraya gidiyoruz. Ve hook'ta verdiğim sözü orada tutuyorum: türbede kim eksik?
 
-[REELS KESİM 5 — 7:40–9:10 — 90 sn — "Sadrazamı öldüren adam sorgulanmadan idam edildi"]
+[REELS KESİM 5 — 7:50–9:20 — 90 sn — "Sadrazamı öldüren adam sorgulanmadan idam edildi"]
    Kendi içinde tamamlanır: suikast → sorgusuz idam → kayıttaki boşluk.
    Kapanış: "Sizce arkasında kim vardı? Yorumlara yazın."
    NOT: Videonun en paylaşılabilir parçası. v1'de kesit değildi.
 
 ═══════════════════════════════════════
-BÖLÜM 4 — EYÜP: TÜRBEYİ KİM İÇİN YAPTIRDI (9:25–13:45)
+BÖLÜM 4 — EYÜP: TÜRBEYİ KİM İÇİN YAPTIRDI (9:05–13:25)
 ═══════════════════════════════════════
 (Kamera: Eyüp Sultan avlusu, kalabalık, ortam sesi açık; sonra yürüyüş;
  sonra ANİ SESSİZLİĞE KESME — türbe içi)
@@ -416,6 +418,9 @@ Türbe sekizgen, sade. Kadırga'daki çini bolluğundan eser yok.
 Üzerinde sanduka olmayan on iki mezar daha var; zeminde, üstü beyaz çakıl. Toplam on dokuz.
 
 [SAYIM GRAFİĞİ: 7 sanduka · 12 zemin mezarı · 19 gömü]
+
+[REELS KESİM 6 BAŞLAR — 9:45–11:35 — 110 sn — "Bu türbeyi neden yaptırdı?"
+ ★ serinin en güçlü kesiti; ani sessizlik kesmesi bu kesitin İÇİNDE kalmalı]
 
 Ve neredeyse hepsinin önünde küçük bir pirinç levha duruyor. Onları tek tek okudum.
 
@@ -494,6 +499,8 @@ Dört yüz elli yıl önce ders için yapılmış bu avlu, hâlâ bir kurumun i�
 
 Ve türbe kapanmadı.
 
+[REELS KESİM 7 BAŞLAR — 12:35–13:45 — 70 sn — "245 yıl, altı kuşak, üç isimsiz mezar"]
+
 [KALIP KIRMA: SOY AĞACI grafiği — kademeli, kuşak kuşak]
 
 İbrahim Paşa, Sokollu'nun oğlu, bin altı yüz yirmi birde öldü. Levhasında bir cümle daha var: İbrahim Hanzâde ailesinin ceddidir.
@@ -539,7 +546,7 @@ Bugün üç yapı gezdik. Üçü de ayakta, üçü de aynı adam için, üçü d
 Bir Boşnak köyünden gelen adamın şehre bıraktığı iz.
 
 ═══════════════════════════════════════
-13:45–14:10 — ÇAĞRI
+13:25–13:45 — ÇAĞRI
 ═══════════════════════════════════════
 (Kamera: türbe önü, tek plan, sabit)
 
@@ -550,7 +557,7 @@ Kadırga, Azapkapı ve Eyüp'ün üçünü aynı günde gezmek isteyenler için 
 Sinan Dosyası'nın bir sonraki bölümü Ayasofya'nın bahçesinde. İsmihan Sultan'ın yattığı türbede, aynı gece boğulan beş şehzade var.
 
 ═══════════════════════════════════════
-14:10–14:25 — KAPANIŞ
+13:45–14:00 — KAPANIŞ
 ═══════════════════════════════════════
 (Kamera: açılış karesine dönüş; minber kapısındaki taş, yavaş uzaklaşma; son cümlede kesme, konuşmacı)
 
@@ -566,28 +573,28 @@ Ben Mustafa Bostancıoğlu, bu da Tarihi Dedektif. Rivayet değil, kayıt. Bir s
 0:00   Tek görüntü, tek cümle; kubbe yok, yüz yok
 0:03   Üç kısa cümle — merak yükselir, format duyurusu YOK
 0:20   Üç soru + "türbede biri eksik" vaadi
-0:25   Jenerik (hook'tan SONRA)
-0:30   Format duyurusu burada; mimari hüner; harita; "on dört yıl, sonra hançer"
+0:30   Jenerik (hook'tan SONRA)
+0:35   Format duyurusu burada; mimari hüner; harita; "on dört yıl, sonra hançer"
 2:00   [REELS KESİM 1 biter]
 2:10   İçeri: çini → dört taş → Mekke şantiyesi bağlantısı; SORU 1 KAPANIR (pozitif bulgu)
-4:10   Geçiş 1: kitabe–vakfiye; SORU 2 KAPANIR; İsmihan adı sona bağlanır
-5:30   Azapkapı: görsel tuhaflık + YORUM damgası
-6:20   ★ ALT KAT: dükkânlar, açık berber — vakıf kirası bağlantısı + GÖZLEM damgası  ← v3
-7:00   [HARİTA: Don–Volga / Süveyş]
-8:05   Geçiş 2: suikast; SORU 3 KAPANIR (boşluğun kendisi bulgu)
-9:25   Eyüp Sultan avlusu, kalabalık, ORTAM SESİ AÇIK  ← v3
-9:40   ★ ANİ SESSİZLİĞE KESME — boş türbe. Videonun en güçlü tek anı.  ← v3
-10:05  [SAYIM GRAFİĞİ] 7 sanduka · 12 zemin mezarı · 19 gömü  ← v3
-10:30  Üç çocuk levhası: 1566 · 1566 · 1567  ← v3
-11:05  [TARİH ŞERİDİ] 1566 · 1566 · 1567 · 1568 TÜRBE — omurga cümlesi + YORUM damgası  ← v3
-11:40  Kâsım Paşa 1571 "şehit" / Sokollu 1579 "şehit" — aynı kelime  ← v3
-12:05  Sona saklanan cevap: İsmihan Sultan burada değil; daire kapanır
-12:25  Safiyye Hanım Sultan — KAYIT damgası (teyit edildi 13 Eyl)  ← v3
-12:40  Medrese: bugün bir vakıf — "yaptırdığı okul hâlâ boş değil"  ← v3
-13:05  [SOY AĞACI] altı kuşak → [SAYAÇ] 1506 → 1751 · 245 yıl  ← v3
-13:25  SON BEAT: 19 gömü, 16 levha, üçü isimsiz  ← v3
-13:45  Çağrı kısa, tek istek + sonraki bölüm teaser
-14:10  Kapanış, açılış çerçevesine dönüş
+4:00   Geçiş 1: kitabe–vakfiye; SORU 2 KAPANIR; İsmihan adı sona bağlanır
+5:15   Azapkapı: görsel tuhaflık + YORUM damgası
+6:05   ★ ALT KAT: dükkânlar, açık berber — vakıf kirası bağlantısı + GÖZLEM damgası  ← v3
+6:45   [HARİTA: Don–Volga / Süveyş]
+7:50   Geçiş 2: suikast; SORU 3 KAPANIR (boşluğun kendisi bulgu)
+9:05   Eyüp Sultan avlusu, kalabalık, ORTAM SESİ AÇIK  ← v3
+9:20   ★ ANİ SESSİZLİĞE KESME — boş türbe. Videonun en güçlü tek anı.  ← v3
+9:45   [SAYIM GRAFİĞİ] 7 sanduka · 12 zemin mezarı · 19 gömü  ← v3
+10:10  Üç çocuk levhası: 1566 · 1566 · 1567  ← v3
+10:45  [TARİH ŞERİDİ] 1566 · 1566 · 1567 · 1568 TÜRBE — omurga cümlesi + YORUM damgası  ← v3
+11:20  Kâsım Paşa 1571 "şehit" / Sokollu 1579 "şehit" — aynı kelime  ← v3
+11:45  Sona saklanan cevap: İsmihan Sultan burada değil; daire kapanır
+12:05  Safiyye Hanım Sultan — KAYIT damgası (teyit edildi 13 Eyl)  ← v3
+12:20  Medrese: bugün bir vakıf — "yaptırdığı okul hâlâ boş değil"  ← v3
+12:45  [SOY AĞACI] altı kuşak → [SAYAÇ] 1506 → 1751 · 245 yıl  ← v3
+13:05  SON BEAT: 19 gömü, 16 levha, üçü isimsiz  ← v3
+13:25  Çağrı kısa, tek istek + sonraki bölüm teaser
+13:45  Kapanış, açılış çerçevesine dönüş
 
 KALIP KIRMA ARALIKLARI (hiçbiri 90 sn'yi geçmiyor):
 0:30 harita → 1:20 KAYIT damgası (50 sn) → 2:10 mekân değişimi (50 sn) →
@@ -609,18 +616,19 @@ En uzun boşluk: 65 sn (Geçiş 2 girişi). Bölüm 4'ün tamamında en uzun bo�
                                     bulgu. ✅ pozitif çerçeve
   Sona saklanan — türbede kim eksik? → 11:55'te veriliyor. Cevap: İsmihan Sultan. ✅ kesin, daire kapanıyor
 
-REELS KESİTLERİ (7 adet, toplam ~740 sn):
+REELS KESİTLERİ (7 adet, toplam ~700 sn):
   1. 0:00–2:00 · 120 sn · Kabe taşlı cami + medresenin altından geçen kapı
-  2. 2:10–4:10 · 120 sn · Dört taş + Mekke şantiyesi bağlantısı
-  3. 4:10–5:40 ·  90 sn · Caminin gerçek sahibi bir kadın
-  4. 5:30–7:20 · 110 sn · Minaresi camiye değmeyen cami + altındaki berber  ← v3, uzadı
-  5. 8:05–9:35 ·  90 sn · Sadrazamı öldüren adam sorgusuz idam edildi
-  6. 10:05–11:55 · 110 sn · Bu türbeyi neden yaptırdı? (üç çocuk + 1568 tarih şeridi)  ← v3
-     ★ Serinin en güçlü kesiti. Ani sessizlik kesmesi bu kesitin içinde kalmalı.
-  7. 13:00–14:10 ·  70 sn · 245 yıl, altı kuşak — ve adı olmayan üç mezar  ← v3
+  2. 2:10–4:00 · 110 sn · Dört taş + Mekke şantiyesi bağlantısı
+  3. 4:00–5:30 ·  90 sn · Caminin gerçek sahibi bir kadın
+  4. 5:15–7:05 · 110 sn · Minaresi camiye değmeyen cami + altındaki berber
+  5. 7:50–9:20 ·  90 sn · Sadrazamı öldüren adam sorgusuz idam edildi
+  6. 9:45–11:35 · 110 sn · Bu türbeyi neden yaptırdı? (üç çocuk + 1568 tarih şeridi)
+     ★ Serinin en güçlü kesiti. Ani sessizlik kesmesi bu kesitin İÇİNDE kalmalı.
+  7. 12:35–13:45 ·  70 sn · 245 yıl, altı kuşak — ve adı olmayan üç mezar
   Hepsi kendi içinde tamamlanır; hiçbiri fragman değil. Facebook sürümlerinde YouTube linki YOK.
-  Kapak başlıkları soruyla biter (KURALLAR.md böl. 9); kapak promptları için
-  `icerik/kapak-promptlari/sokollu-reels-kapaklari.txt` — 6 ve 7 EKLENDİ (v3).
+  Kapak promptları: `icerik/kapak-promptlari/sokollu-reels-kapaklari.txt` (7'si de hazır).
+  ⚠️ Satır içi [REELS KESİM n] işaretleri bu listeyle birebir aynı. 13 Eyl'de
+    ikisi de yeniden hesaplandı — daha önce v2 zamanlamasını taşıyorlardı.
 
 ═══════════════════════════════════════
 DAMGA LİSTESİ
@@ -636,7 +644,8 @@ RİVAYET  — Taşların Mekke'den gönderilip Sokollu'ya verilmesi; katilin kim
            meczup / saray bağlantısı)
 YORUM    — Azapkapı'da minarenin ayrı durmasının zemin ve yer darlığıyla açıklanması
            (v3'te tek YORUM damgası bu kaldı — türbe maddesi KAYIT'a yükseldi)
-GÖZLEM   — Dört taşın da göz hizasının üstünde olması; cemaatin önce minber kapısına yürümesi
+GÖZLEM   — Dört taşın da göz hizasının üstünde olması
+           ("cemaatin minber kapısına yürümesi" maddesi 13 Eyl'de çıkarıldı — seslendirilmedi)
            ← v3: 19 gömü, 16 levha, 3 isimsiz. Sahada 12 Eylül 2026'da sayıldı;
            başka hiçbir yayında geçmiyor. Videonun son beat'i bu.
            ← v3: Azapkapı alt katındaki dükkânların çoğu kapalı, biri açık (berber).
@@ -680,15 +689,14 @@ SAHADA DOLDURULACAK
 ✅ SESLENDİRMEYE HAZIR — bütün [SAHADA DOLDUR] satırları kapandı.
 
 ═══════════════════════════════════════
-SESLENDİRME KELİME SAYISI: 1970  (kural: en az 1500 ✅)
-v1: 1533 · v2: 1635 · v3: 1970 (saha verisi + 13 Eyl kaynak teyidi).
-140 kelime/dk → 14:04 seslendirme + 5 sn jenerik ≈ **14:25**.
-Bölüm bazında: hook 60 · B1 229 · B2 278 · Geçiş1 179 · B3 355 · Geçiş2 183 ·
-B4 600 · Çağrı 51 · Kapanış 30 = 1969.
-Bölüm başlıklarındaki zaman aralıkları bu sayımdan türetildi — v2'deki aralıklar
-kelime sayısıyla tutmuyordu, v3'te hepsi yeniden hesaplandı.
-Sayım yöntemi: yalnızca okunan metin; başlık, kamera notu, ekran damgası,
-uyarı kutusu ve Reels işaretleri hariç.
-Uzunluk notu: kural asgari 1500 kelime koyuyor, tavan koymuyor. Eğri 2. dakikadan sonra
-düzleşiyor; izlenme süresi hem YouTube YPP hem Facebook uygunluk para birimi.
+SESLENDİRME KELİME SAYISI: 1950  (kural: en az 1500 ✅)
+v1: 1533 · v2: 1635 · v3: 1950
+140 kelime/dk → 13:55 seslendirme + 5 sn jenerik ≈ **14:00**.
+Bölüm bazında: hook 64 · B1 229 · B2 254 · Geçiş1 179 · B3 355 · Geçiş2 183 ·
+B4 601 · Çağrı 51 · Kapanış 34 = 1950.
+
+⚠️ 13 EYLÜL SAYIMI — SESLENDİRME SONRASI.
+Kullanıcı "minber kapısına yürüme" gözlem paragrafını (Bölüm 2) seslendirmedi ve
+scriptten çıkardı. Bütün bölüm aralıkları ve 7 reels kesiti bu sayımdan yeniden
+türetildi. Kurguda geçerli olan zamanlama BUDUR; daha eski hiçbir aralık kullanılmaz.
 ═══════════════════════════════════════
