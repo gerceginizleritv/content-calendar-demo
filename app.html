@@ -2181,6 +2181,15 @@ textarea.sc-ai-brief{min-height:64px;resize:vertical;line-height:1.5;}
 .cal-day-month{margin-left:3px;text-transform:uppercase;letter-spacing:.03em;
   font-size:9px;color:var(--text-dim);font-weight:600;}
 .cal-day.today .cal-day-month{color:var(--accent);}
+/* Gun damgasi ay adiyla ayni agirlikta: gun SAYISI one cikmaya devam
+   etsin, damga ve ay yaninda sessizce dursun.
+   GENIS EKRANDA GIZLI: orada izgaranin ust satiri zaten "PZT SAL ÇAR..."
+   diyor ve damga her hucrede onun tekrari olurdu — "PZT" sutununun
+   altinda "PZT 30 KAS". Telefonda o ust satir gizlendigi icin damga
+   oradaki tek kaynak, geri geliyor. */
+.cal-day-dow{display:none;margin-right:3px;text-transform:uppercase;
+  letter-spacing:.03em;font-size:9px;color:var(--text-dim);font-weight:600;}
+.cal-day.today .cal-day-dow{color:var(--accent);}
 
 /* Ziyaret sayaci sagda, butonlardan ayri durur */
 /* Gizlilik baglantisi bu ikiliyi saga itiyor; sessiz dursun diye dugme degil,
@@ -2207,6 +2216,11 @@ textarea.sc-ai-brief{min-height:64px;resize:vertical;line-height:1.5;}
   .banner{font-size:12.5px;line-height:1.5;}
   .eyebrow{margin-bottom:6px;}
 
+  /* Izgaranin ust satiri ("PZT SAL ÇAR...") telefonda gizli; gun adini
+     tasiyan tek yer hucrenin kendisi kaliyor. Bu kural temel kuraldan
+     SONRA gelmek zorunda: ayni ozgullukte iki kural varsa sonraki
+     kazaniyor, once yazilinca eziliyordu. */
+  .cal-day-dow{display:inline;}
   /* Bos gunler gizleniyor: cogu gun bos ve hepsi tam satir kapliyordu */
   .cal-empty{display:none;}
   /* Bugun istisna: pencerenin cipasi o, bos olsa da gorunmesi gerekiyor —
@@ -13839,9 +13853,15 @@ function renderCal(){
     // Yil yine yalnizca CIPA gunlerde (ayin 1'i, penceredeki ilk gun) ve
     // yalnizca bu yildan farkliysa: 35 hucreye birden yil yazmak tekrar
     // olurdu.
+    // Gun damgasi da hucrede: telefonda ay gorunumu tek sutunlu bir liste
+    // ve ustteki gun adi satiri gizli, yani "31 Agu"nun hangi gune denk
+    // geldigi hicbir yerde yazmiyordu. Sira takvimin geri kalaniyla ayni:
+    // gun adi, gun sayisi, ay.
     const par = takvimGunParcalari(d, d.getDate() === 1 || i === 0);
     cell.dataset.gun = key;
-    cell.innerHTML = `<div class="cal-day-num">${escapeHtml(par.gun)}`
+    cell.innerHTML = `<div class="cal-day-num">`
+      + `<span class="cal-day-dow">${escapeHtml(par.dow)}</span>`
+      + escapeHtml(par.gun)
       + `<span class="cal-day-month">${escapeHtml(par.ay)}</span></div>`;
 
     let dayEvents = events.filter(e=>e.date===key && gecerliKayit(e))

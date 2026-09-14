@@ -106,7 +106,9 @@ const { chromium } = require('./araclar');
   // Önemli olan kısaltma değil SIRA: gün adı, gün sayısı, ay.
   k('gün görünümü AYNI sırada', /^Çar(şamba)?\s*30\s*Ara(lık)?/.test(sira.day), sira.day);
   k('tablo AYNI sırada', /^Çar\s*30\s*Ara/.test(sira.table), sira.table);
-  k('ay ızgarasında HER hücrede ay adı', /^\d+\s*Ara/.test(sira.month), sira.month);
+  // Hücre metni artık gün damgasıyla başlıyor (telefonda görünür, geniş
+  // ekranda gizli ama metinde var): "Sal 1 Ara".
+  k('ay ızgarasında HER hücrede ay adı', /\d+\s*Ara/.test(sira.month), sira.month);
   // Ay ızgarasının üst satırı: dile göre
   const gunAdlari = await m2.evaluate(()=>{
     setLanguage('tr'); setView('month'); renderCal();
@@ -120,6 +122,29 @@ const { chromium } = require('./araclar');
   });
   k('İngilizcede de doğru', en[0] === 'MON' && en[6] === 'SUN', en);
   await m2.close();
+
+  // --- GÜN DAMGASI: hangi ekranda nereden geliyor
+  // Telefonda ay görünümü tek sütunlu bir liste ve ızgaranın üst satırı
+  // gizli; gün adını taşıyan tek yer hücrenin kendisi. Geniş ekranda ise
+  // üst satır zaten "PZT SAL ÇAR..." diyor, damga her hücrede onun
+  // tekrarı olurdu.
+  const damga = p => p.evaluate(()=>{
+    setLanguage('tr'); setPage('calendar'); setView('month'); renderCal();
+    const dw = document.querySelector('.cal-day-dow');
+    const ust = document.querySelector('.cal-dow');
+    return { hucre: !!dw && getComputedStyle(dw).display !== 'none',
+             ustSatir: !!ust && getComputedStyle(ust).display !== 'none',
+             metin: (document.querySelector('.cal-day-num')||{}).textContent || '' };
+  });
+  const m3 = await ac(1280);
+  const dMasa = await damga(m3);
+  await m3.close();
+  const t3 = await ac(390);
+  const dTel = await damga(t3);
+  await t3.close();
+  k('geniş ekranda gün adı ÜST SATIRDA', dMasa.ustSatir === true && dMasa.hucre === false, dMasa);
+  k('telefonda gün adı HÜCREDE', dTel.hucre === true && dTel.ustSatir === false, dTel);
+  k('hücrede sıra: gün adı, gün, ay', /^[A-Za-zÇĞİÖŞÜçğıöşü]{3}\d+/.test(dTel.metin), dTel.metin);
 
   console.log(hata ? '\n'+hata+' HATA' : '\nHEPSİ GEÇTİ');
   await b.close();
