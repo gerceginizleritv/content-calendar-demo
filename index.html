@@ -21,7 +21,7 @@
 <meta name="twitter:title" content="Shootboard — Content Calendar for Video Creators">
 <meta name="twitter:description" content="One shoot becomes ten posts. A planning board for creators who shoot first and post later. It never auto-posts.">
 <meta name="twitter:image" content="https://shootboard.app/og.png">
-<meta name="theme-color" content="#F4F7FA">
+<meta name="theme-color" content="#F1EDE3">
 <link rel="icon" href="favicon.svg" type="image/svg+xml">
 <link rel="icon" href="favicon-32x32.png" sizes="32x32">
 <link rel="apple-touch-icon" href="apple-touch-icon.png">
@@ -41,42 +41,45 @@
 <style>
 :root{
   color-scheme: light;
-  --kagit:#F4F7FA; --yuzey:#FFFFFF; --yuzey2:#EDF1F6;
-  --cizgi:#DFE5EC; --cizgi-soft:#EAEFF4;
-  --mavi:#2563C7; --mavi-koyu:#1D53AC; --mavi-soft:#E8EFFB;
-  --murekkep:#141C27; --solgun:#4C5C70; --hayalet:#6E7E92;
+  --kagit:#F1EDE3; --yuzey:#FBF9F3; --yuzey2:#E7E2D5;
+  --cizgi:#D7D1C2; --cizgi-soft:#E3DED1;
+  --mavi:#C4350A; --mavi-koyu:#A22B06; --mavi-soft:#FAE6DC;
+  --sinyal:#FF4A15;
+  --murekkep:#15130F; --solgun:#585349; --hayalet:#7A7466;
   --uzeri:#FFFFFF;
-  --amber:#8F5309; --amber-soft:#FBF0DE;
-  --yesil:#25714F; --kirmizi:#A33329;
-  --yt:#B03329; --ig:#983068; --tt:#0C6068; --fb:#2A559C; --li:#14526F;
-  --golge:0 1px 2px rgba(20,28,39,.05), 0 8px 24px -12px rgba(20,28,39,.14);
-  --golge-guclu:0 2px 4px rgba(20,28,39,.06), 0 18px 44px -18px rgba(20,28,39,.22);
+  --amber:#845509; --amber-soft:#F8EDD8;
+  --yesil:#25654A; --kirmizi:#A3301F;
+  --yt:#A9331F; --ig:#8E2E5F; --tt:#0B5C5C; --fb:#28508F; --li:#154D66;
+  --golge:0 1px 2px rgba(33,26,14,.06), 0 8px 24px -12px rgba(33,26,14,.18);
+  --golge-guclu:0 2px 4px rgba(33,26,14,.07), 0 18px 44px -18px rgba(33,26,14,.26);
 }
 @media (prefers-color-scheme: dark){
   :root:not([data-theme="light"]){
     color-scheme: dark;
-    --kagit:#0F151D; --yuzey:#18212C; --yuzey2:#202B38;
-    --cizgi:#2A3644; --cizgi-soft:#222D3A;
-    --mavi:#7DAEF5; --mavi-koyu:#9CC3F8; --mavi-soft:#1B2A42;
-    --murekkep:#E6ECF3; --solgun:#A2B0C1; --hayalet:#8593A5;
-    --uzeri:#0F151D;
-    --amber:#F0A445; --amber-soft:#33270F;
-    --yesil:#5FC094; --kirmizi:#F08079;
-    --yt:#F08079; --ig:#E27BB2; --tt:#4FB9C2; --fb:#7DA9EA; --li:#5FA9D4;
+    --kagit:#15130F; --yuzey:#1E1B16; --yuzey2:#272219;
+    --cizgi:#37312A; --cizgi-soft:#2C271F;
+    --mavi:#FF7A45; --mavi-koyu:#FF9569; --mavi-soft:#3A1E12;
+    --sinyal:#FF6A30;
+    --murekkep:#F0EBE0; --solgun:#ABA496; --hayalet:#8B8476;
+    --uzeri:#15130F;
+    --amber:#E8A94A; --amber-soft:#33280F;
+    --yesil:#66C295; --kirmizi:#F0857A;
+    --yt:#F0857A; --ig:#E27BB2; --tt:#4FB9C2; --fb:#89AEEA; --li:#6FB3DA;
     --golge:0 1px 2px rgba(0,0,0,.3), 0 8px 24px -12px rgba(0,0,0,.6);
     --golge-guclu:0 2px 4px rgba(0,0,0,.35), 0 18px 44px -18px rgba(0,0,0,.7);
   }
 }
 :root[data-theme="dark"]{
   color-scheme: dark;
-  --kagit:#0F151D; --yuzey:#18212C; --yuzey2:#202B38;
-  --cizgi:#2A3644; --cizgi-soft:#222D3A;
-  --mavi:#7DAEF5; --mavi-koyu:#9CC3F8; --mavi-soft:#1B2A42;
-  --murekkep:#E6ECF3; --solgun:#A2B0C1; --hayalet:#8593A5;
-  --uzeri:#0F151D;
-  --amber:#F0A445; --amber-soft:#33270F;
-  --yesil:#5FC094; --kirmizi:#F08079;
-  --yt:#F08079; --ig:#E27BB2; --tt:#4FB9C2; --fb:#7DA9EA; --li:#5FA9D4;
+  --kagit:#15130F; --yuzey:#1E1B16; --yuzey2:#272219;
+  --cizgi:#37312A; --cizgi-soft:#2C271F;
+  --mavi:#FF7A45; --mavi-koyu:#FF9569; --mavi-soft:#3A1E12;
+  --sinyal:#FF6A30;
+  --murekkep:#F0EBE0; --solgun:#ABA496; --hayalet:#8B8476;
+  --uzeri:#15130F;
+  --amber:#E8A94A; --amber-soft:#33280F;
+  --yesil:#66C295; --kirmizi:#F0857A;
+  --yt:#F0857A; --ig:#E27BB2; --tt:#4FB9C2; --fb:#89AEEA; --li:#6FB3DA;
   --golge:0 1px 2px rgba(0,0,0,.3), 0 8px 24px -12px rgba(0,0,0,.6);
   --golge-guclu:0 2px 4px rgba(0,0,0,.35), 0 18px 44px -18px rgba(0,0,0,.7);
 }
@@ -165,7 +168,7 @@ a{color:inherit;}
   box-shadow:var(--golge-guclu);overflow:hidden;
 }
 .pano-cubuk{
-  display:flex;align-items:center;gap:7px;padding:11px 14px;
+  display:flex;align-items:center;gap:7px 10px;flex-wrap:wrap;padding:11px 14px;
   background:var(--yuzey2);border-bottom:1px solid var(--cizgi);
 }
 .pano-nokta{width:9px;height:9px;border-radius:50%;background:var(--cizgi);}
@@ -173,87 +176,129 @@ a{color:inherit;}
   margin-left:8px;font-family:'IBM Plex Mono',monospace;font-size:11px;
   letter-spacing:1.4px;text-transform:uppercase;color:var(--solgun);font-weight:500;
 }
-.pano-govde{padding:14px;}
-.gun-satir{display:grid;grid-template-columns:repeat(7,1fr);gap:5px;margin-bottom:7px;}
-.gun-ad{
-  font-family:'IBM Plex Mono',monospace;font-size:10px;letter-spacing:.6px;font-weight:500;
-  text-transform:uppercase;color:var(--solgun);text-align:center;
+/* Klaket şeridi: panonun tepesindeki diyagonal bant. Ürünün dünyasından
+   gelen tek süs — set klaketinin şeridi. */
+.klaket-serit{
+  display:block;height:7px;
+  background:repeating-linear-gradient(115deg,var(--murekkep) 0 13px,var(--kagit) 13px 26px);
 }
-/* minmax(0,1fr): duz "1fr" sutunun en kucuk boyutunu ICERIGE baglar,
-   uzun bir kayit adi butun izgarayi genisletiyordu. */
-.izgara{display:grid;grid-template-columns:repeat(7,minmax(0,1fr));gap:5px;}
-.hucre{
-  min-width:0;min-height:66px;background:var(--kagit);border:1px solid var(--cizgi-soft);border-radius:7px;
-  padding:5px;display:flex;flex-direction:column;gap:3px;
+.pano-sayac{
+  margin-left:auto;display:inline-flex;align-items:center;gap:8px;
+  font-family:'IBM Plex Mono',monospace;font-size:11px;color:var(--solgun);font-weight:500;
 }
-.hucre-no{font-family:'IBM Plex Mono',monospace;font-size:10px;color:var(--solgun);line-height:1;}
-/* Kayit metni platform renginin USTUNDE degil, YANINDA duruyor: 9-10 piksellik
-   beyaz yazi renkli zeminde okunmuyordu, koyu temada iyice kayboluyordu. */
-.kayit{
-  display:flex;align-items:center;gap:4px;
-  font-size:9.5px;line-height:1.3;font-weight:600;border-radius:4px;padding:3px 5px;
-  background:var(--yuzey);color:var(--murekkep);
-  border:1px solid var(--cizgi-soft);border-left:3px solid var(--p);
-  min-width:0;overflow:hidden;
-}
-.kayit-ad{overflow:hidden;text-overflow:ellipsis;white-space:nowrap;min-width:0;}
+.pano-sayac b{color:var(--yesil);font-weight:600;}
+.pano-sayac i{width:3px;height:3px;border-radius:50%;background:var(--hayalet);display:block;flex:none;}
 
-/* "Yayinlandi" tiki */
-.f0ok{
+/* ---------- kahraman: zaman çizgisi ----------
+   Ay ızgarası yerine kurgu masasından tanıdık şerit. Sol sütun platform,
+   sağ taraf ondört gün. Çekim günü tek sütun halinde işaretli; o çekimden
+   çıkan paylaşımlar sonraki günlere yayılıyor — ürünün tek cümlesi bu.
+   --et sol sütunun genişliği; klip konumları ona göre hesaplanıyor, bu
+   yüzden telefonda --et daralınca her şey birlikte daralıyor.            */
+.zc{--et:104px;--gun:10;position:relative;}
+.zc-cetvel{
+  display:grid;grid-template-columns:var(--et) repeat(var(--gun),minmax(0,1fr));
+  border-bottom:1px solid var(--cizgi);
+}
+.zc-ay{
+  font-family:'IBM Plex Mono',monospace;font-size:10px;letter-spacing:1.2px;
+  text-transform:uppercase;color:var(--hayalet);padding:9px 0 9px 14px;
+  overflow:hidden;white-space:nowrap;min-width:0;
+}
+.zc-gun{
+  position:relative;   /* çekim günü bandı sayının ÜSTÜNE binmesin */
+  font-family:'IBM Plex Mono',monospace;font-size:10px;color:var(--solgun);
+  text-align:center;padding:9px 0;min-width:0;
+}
+.zc-gun.zc-cek{color:var(--mavi);font-weight:600;}
+
+.zc-serit{
+  position:relative;min-height:46px;
+  display:grid;grid-template-columns:var(--et) repeat(var(--gun),minmax(0,1fr));
+  align-items:center;border-bottom:1px solid var(--cizgi-soft);
+}
+.zc-serit:last-of-type{border-bottom:0;}
+/* Gün çizgileri ayrı hücre olarak değil, tek bir zemin deseni olarak
+   çiziliyor: ondört boş div yerine tek satır CSS. */
+.zc-serit::before{
+  content:"";position:absolute;left:var(--et);right:0;top:0;bottom:0;pointer-events:none;
+  background:repeating-linear-gradient(to right,var(--cizgi-soft) 0 1px,transparent 1px calc(100%/10));
+}
+.zc-ad{
+  display:flex;align-items:center;gap:7px;padding-left:14px;min-width:0;
+  font-family:'IBM Plex Mono',monospace;font-size:10px;letter-spacing:.8px;
+  text-transform:uppercase;color:var(--solgun);
+}
+.zc-ad i{width:7px;height:7px;border-radius:2px;flex:none;display:block;}
+.zc-ad b{font-weight:500;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;min-width:0;}
+
+.zc-klip{
+  position:absolute;z-index:1;top:8px;bottom:8px;
+  left:calc(var(--et) + (100% - var(--et)) * var(--b) / var(--gun) + 3px);
+  width:calc((100% - var(--et)) * var(--u) / var(--gun) - 6px);
+  display:flex;align-items:center;gap:5px;padding:0 7px;min-width:0;overflow:hidden;
+  border-radius:5px;font-size:10.5px;font-weight:600;line-height:1.2;
+  background:var(--yuzey);color:var(--murekkep);
+  border:1px solid var(--cizgi);border-left:3px solid var(--p);
+}
+.zc-klip span{overflow:hidden;text-overflow:ellipsis;white-space:nowrap;min-width:0;}
+.zc-klip.zc-bek{background:transparent;border-style:dashed;color:var(--solgun);font-weight:500;}
+.zc-ok{
   flex:none;width:9px;height:9px;border-radius:50%;background:var(--yesil);position:relative;
 }
-.f0ok::after{
+.zc-ok::after{
   content:"";position:absolute;left:2.3px;top:3.2px;width:3.4px;height:1.7px;
   border-left:1.2px solid #fff;border-bottom:1.2px solid #fff;transform:rotate(-45deg);
 }
+/* Çekim günü: bütün şeritleri baştan sona kesen tek sütun. */
+.zc-band{
+  position:absolute;z-index:0;top:0;bottom:0;
+  left:var(--et);width:calc((100% - var(--et)) / var(--gun));
+  background:var(--mavi-soft);
+  border-left:1px solid var(--mavi);border-right:1px solid var(--mavi);
+  pointer-events:none;
+}
 
-/* ===== Kahraman panosu: kayitlar dusuyor, biri baska gune tasiniyor,
-   ikisi yayinlandi olarak isaretleniyor. Tek dongu 13 saniye. ===== */
-.pano.canli .hucre{position:relative;}
-.pano.canli .f0hedef{transition:none;}
-.canli.oyna .f0k,.canli.oyna .f0tasi,.canli.oyna .f0gelen,
-.canli.oyna .f0ok,.canli.oyna .f0hedef{animation-duration:13s;}
-.canli.oyna .f0k{animation-name:f0k;animation-delay:var(--g);animation-timing-function:cubic-bezier(.22,.75,.3,1);}
-.canli.oyna .f0tasi{animation-name:f0tasi;animation-timing-function:cubic-bezier(.4,0,.2,1);}
-.canli.oyna .f0gelen{animation-name:f0gelen;animation-timing-function:cubic-bezier(.22,.75,.3,1);}
-.canli.oyna .f0hedef{animation-name:f0hedef;}
-.canli.oyna .f0ok{animation-name:f0ok;animation-delay:var(--t);}
-.pano.canli .f0gelen{opacity:0;}
-.pano.canli .f0ok{opacity:0;}
-.pano.canli .f0k,.pano.canli .f0tasi,.pano.canli .f0gelen{transform-origin:left center;}
+/* ===== Kahraman zaman çizgisi: klipler soldan sırayla beliriyor, ikisine
+   yayınlandı tiki düşüyor. Animasyon KISA ve bittiği yerde duruyor —
+   uzun bir döngünün sonunda çizginin boşalması istenmiyor. ===== */
+.pano.canli .zc-ok{opacity:0;}
+.canli.oyna .zc-klip{animation:zcGir .85s var(--g) both cubic-bezier(.22,.75,.3,1);}
+.canli.oyna .zc-ok{animation:zcOk .45s var(--t) both;}
+@keyframes zcGir{
+  from{opacity:0;transform:translateX(-10px);}
+  to{opacity:1;transform:none;}
+}
+@keyframes zcOk{
+  0%{opacity:0;transform:scale(.3);}
+  60%{opacity:1;transform:scale(1.3);}
+  100%{opacity:1;transform:scale(1);}
+}
+/* Hareket istemeyende çizgi dolu ve sabit duruyor. */
+@media (prefers-reduced-motion: reduce){
+  .canli.oyna .zc-klip,.canli.oyna .zc-ok{animation:none!important;}
+  .pano.canli .zc-ok{opacity:1;}
+}
 
-@keyframes f0k{
-  0%,3%{opacity:0;transform:translateY(-9px) scale(.94);}
-  9%,92%{opacity:1;transform:none;}
-  98%,100%{opacity:0;transform:translateY(-5px) scale(.97);}
+/* Telefonda sol sütun yalnızca renk noktasına iniyor; klip konumları
+   --et'e bağlı olduğu için hepsi birlikte daralıyor, taşma olmuyor. */
+@media (max-width:760px){
+  .zc{--et:30px;}
+  .pano-sayac{margin-left:0;width:100%;}
+  .zc-ad{padding-left:11px;}
+  .zc-ad b{display:none;}
+  .zc-ay{padding-left:0;font-size:0;}
 }
-/* Tasinan kayit: once yerinde duruyor, sonra kalkiyor ve kayboluyor */
-@keyframes f0tasi{
-  0%,3%{opacity:0;transform:translateY(-9px) scale(.94);}
-  9%,38%{opacity:1;transform:none;box-shadow:none;}
-  44%{opacity:1;transform:translateY(-5px) scale(1.07) rotate(-2deg);
-      box-shadow:0 6px 14px -4px rgba(20,28,39,.35);}
-  50%,100%{opacity:0;transform:translateY(-3px) scale(1.02) rotate(-1deg);box-shadow:none;}
+@media (max-width:520px){
+  .zc-gun:nth-of-type(2n+1){visibility:hidden;}
+  .zc-klip{font-size:9.5px;padding:0 5px;}
 }
-/* Hedef gun: kayit gelmeden once isaretleniyor */
-@keyframes f0hedef{
-  0%,36%{box-shadow:none;}
-  42%,54%{box-shadow:inset 0 0 0 1.5px var(--mavi);}
-  62%,100%{box-shadow:none;}
+/* 360'in altinda tik, klip metnini yiyor: kesik yazı yerine tiki gizliyoruz,
+   yayınlandı/bekliyor ayrımı dolu-kesik çerçeveden zaten okunuyor. */
+@media (max-width:360px){
+  .zc-ok{display:none;}
 }
-/* Yeni gununde beliriyor */
-@keyframes f0gelen{
-  0%,48%{opacity:0;transform:translateY(-8px) scale(.94);}
-  55%,92%{opacity:1;transform:none;}
-  98%,100%{opacity:0;transform:translateY(-5px) scale(.97);}
-}
-/* Yayinlandi tikleri */
-@keyframes f0ok{
-  0%,66%{opacity:0;transform:scale(.3);}
-  71%{opacity:1;transform:scale(1.35);}
-  75%,92%{opacity:1;transform:scale(1);}
-  98%,100%{opacity:0;transform:scale(.3);}
-}
+
 .pano-alt{
   display:flex;flex-wrap:wrap;gap:12px;padding:11px 14px;border-top:1px solid var(--cizgi);
   background:var(--yuzey2);font-family:'IBM Plex Mono',monospace;font-size:11px;
@@ -788,41 +833,53 @@ a{color:inherit;}
         <p class="kahraman-not" data-i18n="hero_note">It works without an account too — your calendar stays in that browser. Sign in and the same plan follows you to your phone.</p>
       </div>
 
-      <div class="pano canli" id="kahramanPano" data-i18n-attr="aria-label:aria_board">
+      <div class="pano canli" id="kahramanPano" role="img"
+           aria-label="Example shoot and publishing timeline"
+           data-i18n-attr="aria-label:aria_board">
+        <span class="klaket-serit" aria-hidden="true"></span>
         <div class="pano-cubuk">
-          <span class="pano-nokta"></span><span class="pano-nokta"></span><span class="pano-nokta"></span>
-          <span class="pano-baslik" data-i18n="board_title">March · Month view</span>
+          <span class="pano-baslik" data-i18n="board_title">September · Sokollu Bridge</span>
+          <span class="pano-sayac"><b data-i18n="board_out">4 out</b><i></i><span data-i18n="board_wait">6 waiting</span></span>
         </div>
-        <div class="pano-govde">
-          <div class="gun-satir">
-            <span class="gun-ad" data-i18n="d1">Mon</span><span class="gun-ad" data-i18n="d2">Tue</span>
-            <span class="gun-ad" data-i18n="d3">Wed</span><span class="gun-ad" data-i18n="d4">Thu</span>
-            <span class="gun-ad" data-i18n="d5">Fri</span><span class="gun-ad" data-i18n="d6">Sat</span>
-            <span class="gun-ad" data-i18n="d7">Sun</span>
+
+        <div class="zc">
+          <span class="zc-band" aria-hidden="true"></span>
+          <div class="zc-cetvel">
+            <span class="zc-ay" data-i18n="board_month">Sep</span>
+            <span class="zc-gun zc-cek">14</span>
+            <span class="zc-gun">15</span>
+            <span class="zc-gun">16</span>
+            <span class="zc-gun">17</span>
+            <span class="zc-gun">18</span>
+            <span class="zc-gun">19</span>
+            <span class="zc-gun">20</span>
+            <span class="zc-gun">21</span>
+            <span class="zc-gun">22</span>
+            <span class="zc-gun">23</span>
           </div>
-          <div class="izgara">
-            <div class="hucre"><span class="hucre-no">3</span><span class="f0k kayit" style="--p:var(--yt);--g:0.10s"><span class="kayit-ad" data-i18n="e1">Video</span><i class="f0ok" style="--t:0s"></i></span></div>
-            <div class="hucre"><span class="hucre-no">4</span></div>
-            <div class="hucre"><span class="hucre-no">5</span><span class="f0k kayit" style="--p:var(--ig);--g:0.22s"><span class="kayit-ad" data-i18n="e2">Reel</span><i class="f0ok" style="--t:.45s"></i></span></div>
-            <div class="hucre"><span class="hucre-no">6</span><span class="f0k kayit" style="--p:var(--tt);--g:0.34s"><span class="kayit-ad" data-i18n="e3">Short</span></span></div>
-            <div class="hucre"><span class="hucre-no">7</span></div>
-            <div class="hucre"><span class="hucre-no">8</span><span class="f0k kayit f0tasi" style="--p:var(--fb);--g:0.46s"><span class="kayit-ad" data-i18n="e4">Carousel</span></span></div>
-            <div class="hucre f0hedef"><span class="hucre-no">9</span><span class="f0gelen kayit" style="--p:var(--fb)"><span class="kayit-ad" data-i18n="e4">Carousel</span></span></div>
-            <div class="hucre"><span class="hucre-no">10</span><span class="f0k kayit" style="--p:var(--ig);--g:0.58s"><span class="kayit-ad" data-i18n="e5">Story</span></span></div>
-            <div class="hucre"><span class="hucre-no">11</span><span class="f0k kayit" style="--p:var(--li);--g:0.70s"><span class="kayit-ad" data-i18n="e6">Text</span></span></div>
-            <div class="hucre"><span class="hucre-no">12</span></div>
-            <div class="hucre"><span class="hucre-no">13</span><span class="f0k kayit" style="--p:var(--yt);--g:0.82s"><span class="kayit-ad" data-i18n="e7">Short</span></span></div>
-            <div class="hucre"><span class="hucre-no">14</span><span class="f0k kayit" style="--p:var(--tt);--g:0.94s"><span class="kayit-ad" data-i18n="e8">Short v2</span></span></div>
-            <div class="hucre"><span class="hucre-no">15</span></div>
-            <div class="hucre"><span class="hucre-no">16</span><span class="f0k kayit" style="--p:var(--ig);--g:1.06s"><span class="kayit-ad" data-i18n="e9">Reel</span></span></div>
+          <div class="zc-serit">
+            <span class="zc-ad"><i style="background:var(--yt)"></i><b>YouTube</b></span>
+            <span class="zc-klip" style="--b:2.6;--u:3;--p:var(--yt);--g:.15s"><span data-i18n="zc_1">Long video</span><i class="zc-ok" style="--t:1.5s"></i></span>
+          </div>
+          <div class="zc-serit">
+            <span class="zc-ad"><i style="background:var(--ig)"></i><b>Instagram</b></span>
+            <span class="zc-klip" style="--b:3.6;--u:2;--p:var(--ig);--g:.3s"><span data-i18n="zc_2">Reel</span><i class="zc-ok" style="--t:1.8s"></i></span>
+            <span class="zc-klip zc-bek" style="--b:7.2;--u:2.5;--p:var(--ig);--g:.75s"><span data-i18n="zc_3">Story</span></span>
+          </div>
+          <div class="zc-serit">
+            <span class="zc-ad"><i style="background:var(--tt)"></i><b>TikTok</b></span>
+            <span class="zc-klip zc-bek" style="--b:5.4;--u:2.6;--p:var(--tt);--g:.45s"><span data-i18n="zc_4">Short</span></span>
+          </div>
+          <div class="zc-serit">
+            <span class="zc-ad"><i style="background:var(--fb)"></i><b>Facebook</b></span>
+            <span class="zc-klip zc-bek" style="--b:6.4;--u:3;--p:var(--fb);--g:.6s"><span data-i18n="zc_5">Carousel</span></span>
           </div>
         </div>
+
         <div class="pano-alt">
-          <span><i style="background:var(--yt)"></i>YouTube</span>
-          <span><i style="background:var(--ig)"></i>Instagram</span>
-          <span><i style="background:var(--tt)"></i>TikTok</span>
-          <span><i style="background:var(--fb)"></i>Facebook</span>
-          <span><i style="background:var(--li)"></i>LinkedIn</span>
+          <span><i style="background:var(--mavi)"></i><span data-i18n="leg_shoot">Shoot day</span></span>
+          <span><i style="background:var(--yesil)"></i><span data-i18n="leg_out">Published</span></span>
+          <span><i style="background:transparent;border:1px dashed var(--hayalet)"></i><span data-i18n="leg_wait">Waiting</span></span>
         </div>
       </div>
     </div>
@@ -1691,7 +1748,7 @@ var METIN = {
     nav_what:"Nedir", nav_how:"Nasıl çalışır", nav_features:"Özellikler", nav_ai:"AI", nav_login:"Giriş",
     btn_open:"Giriş yap / Kayıt ol",
     btn_open_kisa:"Giriş",
-    aria_lang:"Dili değiştir", aria_theme:"Temayı değiştir", aria_board:"Örnek yayın takvimi",
+    aria_lang:"Dili değiştir", aria_theme:"Temayı değiştir", aria_board:"Örnek çekim ve yayın zaman çizgisi",
 
     marka_alt:"Video üreticileri için içerik takvimi",
     hero_tag:"İçerik takvimi — otomatik paylaşım değil",
@@ -1701,10 +1758,11 @@ var METIN = {
     hero_cta2:"Shootboard nedir?",
     hero_note:"Hesapsız da çalışır — takvimin o tarayıcıda kalır. Giriş yaptığında aynı plan telefonuna da gelir.",
 
-    board_title:"Mart · Ay görünümü",
-    d1:"Pzt", d2:"Sal", d3:"Çar", d4:"Per", d5:"Cum", d6:"Cmt", d7:"Paz",
-    e1:"Video", e2:"Reel", e3:"Kısa", e4:"Carousel",
-    e5:"Hikâye", e6:"Metin", e7:"Short", e8:"Kısa v2", e9:"Reel",
+    board_title:"Eylül · Sokollu Köprüsü",
+    board_month:"Eyl", board_out:"4 çıktı", board_wait:"6 bekliyor",
+    zc_1:"Uzun video", zc_2:"Reel", zc_3:"Hikâye",
+    zc_4:"Short", zc_5:"Karusel",
+    leg_shoot:"Çekim günü", leg_out:"Yayınlandı", leg_wait:"Bekliyor",
 
     what_eyebrow:"Shootboard nedir",
     what_h2:"İçerik üreten bir ekibin plan masası.",
