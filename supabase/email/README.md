@@ -132,7 +132,73 @@ npx supabase functions deploy hosgeldin --no-verify-jwt
 2. Resend → **Emails** (https://resend.com/emails): iki gönderim de
    "Delivered" görünmeli.
 3. Supabase → **Edge Functions → hosgeldin → Logs**: `[hosgeldin] gonderildi`
-   satırı. `gizli anahtar uyusmuyor` görürsen SQL'deki anahtar ile secret farklı.
+   satırı.
+
+### E-posta gitmediyse: nereye bakılır
+
+Zincir dört halkalı — kayıt → tetikleyici → fonksiyon → Resend. Hangi halkanın
+koptuğunu tek sorgu söyler. SQL Editor'de:
+
+```sql
+select created, status_code, left(content, 300) as cevap
+from net._http_response
+order by created desc
+limit 10;
+```
+
+Bu, veritabanının dışarıya yaptığı çağrıların kaydı (birkaç saat sonra
+siliniyor, taze bir kayıtla test et).
+
+| Ne görürsün | Ne demek | Ne yapılır |
+|---|---|---|
+| Hiç satır yok | Tetikleyici hiç çalışmamış | Database → Webhooks açık mı; `sql/20` çalıştırılmış mı (aşağıdaki tetikleyici sorgusu) |
+| `404 NOT_FOUND` | Adres yanlış — fonksiyonun kısa adı tutmuyor | Panelde fonksiyonun gerçek adresini oku, `sql/20`'deki iki adresi ona çevir |
+| `401 gizli anahtar uyusmuyor` | Tetikleyicideki anahtar ile `HOSGELDIN_WEBHOOK_SECRET` farklı | İkisini eşitle; anahtarı tetikleyiciden okumak için aşağıdaki sorgu |
+| `502 {"resend":401}` | Resend API anahtarı geçersiz | resend.com → API Keys → yeni anahtar → Secrets'ta `RESEND_API_KEY` |
+| `502 {"resend":403}` | Alan adı doğrulanmamış ya da anahtarın izni yok | Resend → Domains (Verified mi), anahtarın izni "Sending access" mi |
+| `200 {"ok":true}` | Fonksiyon gönderdi | Sorun varsa Resend → Emails; teslim edilmiş ama gelmiyorsa spam |
+
+Tetikleyicilerin durumu (gizli anahtarı ekrana yazmadan):
+
+```sql
+select tgname, tgenabled,
+       pg_get_triggerdef(oid) like '%DEGISTIR_GIZLI_ANAHTAR%' as anahtar_degismemis
+from pg_trigger
+where tgrelid = 'auth.users'::regclass and not tgisinternal;
+```
+
+İki satır beklenir, `tgenabled` = `O`, `anahtar_degismemis` = `false`.
+Tetikleyicideki gerçek anahtarı okumak için:
+
+```sql
+select substring(pg_get_triggerdef(oid) from '"x-webhook-secret":"([^"]+)"')
+from pg_trigger
+where tgrelid = 'auth.users'::regclass and tgname = 'hosgeldin_epostasi_dil';
+```
+
+Hesabın dilinin yazılıp yazılmadığı (uygulama tarafı sağlam mı):
+
+```sql
+select email, raw_user_meta_data->>'lang' as dil, created_at
+from auth.users order by created_at desc limit 5;
+```
+
+`dil` boşsa sorun uygulamada, doluysa Supabase tarafında.
+
+Mevcut bir hesaba e-postayı yeniden göndermek (dili silip geri yazınca
+tetikleyici yeniden çalışır, hesabın başka hiçbir alanına dokunulmaz):
+
+```sql
+update auth.users set raw_user_meta_data = raw_user_meta_data - 'lang'
+where email = 'ornek@ornek.com';
+
+update auth.users set raw_user_meta_data = raw_user_meta_data || '{"lang":"tr"}'::jsonb
+where email = 'ornek@ornek.com';
+```
+
+14 Eylül'de bu zincirin üç halkası birden kırıktı: adres `hyper-worker` iken
+tetikleyici `hosgeldin` çağırıyordu (404), anahtarlar uyuşmuyordu (401), Resend
+anahtarı geçersizdi (502). Üçü de yukarıdaki sorguyla sırayla bulundu.
 
 Hoşgeldin e-postası her zaman tek dilde gider: e-posta ile açılan hesapta
 kayıt anındaki arayüz dili, Google ile açılan hesapta uygulamanın ilk
