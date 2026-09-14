@@ -1529,8 +1529,12 @@ textarea.sc-ai-brief{min-height:64px;resize:vertical;line-height:1.5;}
 .ct-date{padding:8px 9px;white-space:nowrap;background:var(--surface-2);
   font-variant-numeric:tabular-nums;position:sticky;left:0;z-index:1;
   width:78px;min-width:78px;border-right:1px solid var(--line);}
-.ct-daynum{font-size:15px;font-weight:700;color:var(--text);margin-right:5px;}
+/* Sira her yerde ayni: gun adi, gun sayisi, ay. Bosluk gun ADINDAN
+   SONRA veriliyor (once sayidan sonraydi; sira degisince iki oge
+   yapisiyordu). */
+.ct-daynum{font-size:15px;font-weight:700;color:var(--text);}
 .ct-dow,.ct-mon{font-size:10px;color:var(--text-dim);text-transform:uppercase;letter-spacing:.05em;}
+.ct-dow{margin-right:5px;}
 .ct-mon{display:block;}
 .cal-table tr.ct-today .ct-date{background:var(--accent-soft);}
 .cal-table tr.ct-today .ct-daynum{color:var(--accent);}
@@ -2170,7 +2174,13 @@ textarea.sc-ai-brief{min-height:64px;resize:vertical;line-height:1.5;}
 .cal-past .cal-day-num{opacity:.55;font-weight:400;}
 .cal-past .cal-chip{opacity:.8;}
 /* Ayin ilk gunu: pencere ay sinirini umursamadigi icin gecisi hucre gosterir */
-.cal-day-month{margin-left:4px;text-transform:uppercase;letter-spacing:.04em;color:var(--accent);font-weight:700;}
+/* Ay adi artik HER hucrede. Once yalnizca gecis gunlerinde vardi ve
+   vurgulu (accent, kalin) duruyordu; her hucrede o vurgu gurultu olurdu.
+   Kucuk ve soluk: gun sayisi okunakli kaliyor, ay adi yaninda sessizce
+   duruyor. */
+.cal-day-month{margin-left:3px;text-transform:uppercase;letter-spacing:.03em;
+  font-size:9px;color:var(--text-dim);font-weight:600;}
+.cal-day.today .cal-day-month{color:var(--accent);}
 
 /* Ziyaret sayaci sagda, butonlardan ayri durur */
 /* Gizlilik baglantisi bu ikiliyi saga itiyor; sessiz dursun diye dugme degil,
@@ -13402,9 +13412,11 @@ function renderCalTable(){
     const bugunMu = d.toDateString() === bugun.toDateString();
     const gecmis = d < bugun;
     govde += '<tr class="' + (bugunMu ? 'ct-today' : '') + (gecmis ? ' ct-past' : '') + '">';
-    govde += '<td class="ct-date"><span class="ct-daynum">' + d.getDate() + '</span>'
-          + '<span class="ct-dow">' + d.toLocaleDateString(locale,{weekday:'short'}) + '</span>'
-          + '<span class="ct-mon">' + escapeHtml(takvimAyEtiketi(d, i === 0 || d.getDate() === 1)) + '</span></td>';
+    // Sira her yerde ayni: gun adi, gun sayisi, ay.
+    const par = takvimGunParcalari(d, i === 0 || d.getDate() === 1);
+    govde += '<td class="ct-date"><span class="ct-dow">' + escapeHtml(par.dow) + '</span>'
+          + '<span class="ct-daynum">' + escapeHtml(par.gun) + '</span>'
+          + '<span class="ct-mon">' + escapeHtml(par.ay) + '</span></td>';
 
     platformlar.forEach(p=>{
       const gun = events.filter(e => e.date===key && getPlatform(e)===p && gecerliKayit(e))
@@ -13516,11 +13528,11 @@ function renderSaatIzgarasi(gunSayisi){
   ekle('hg-corner');
   gunler.forEach((g, i)=>{
     const bugunMu = g.d.toDateString() === bugun.toDateString();
-    const cipa = i === 0 || g.d.getDate() === 1;
+    const par = takvimGunParcalari(g.d, i === 0 || g.d.getDate() === 1);
     ekle('hg-dayhead' + (bugunMu ? ' today' : ''),
-      `<span class="hg-dow">${escapeHtml(g.d.toLocaleDateString(locale,{weekday:'short'}))}</span>` +
-      `<span class="hg-daynum">${g.d.getDate()}</span>` +
-      `<span class="hg-mon">${escapeHtml(takvimAyEtiketi(g.d, cipa))}</span>`);
+      `<span class="hg-dow">${escapeHtml(par.dow)}</span>` +
+      `<span class="hg-daynum">${escapeHtml(par.gun)}</span>` +
+      `<span class="hg-mon">${escapeHtml(par.ay)}</span>`);
   });
 
   // Erken/saatsiz seridi: yalnizca icerigi varsa
@@ -13630,6 +13642,19 @@ function cokDarTakvimBasligi(){
 //   2. Yili HER ZAMAN yazmak tablolari genisletirdi; kullanicinin sarti
 //      "tablolari bozmadan" idi. Bu yuzden kosullu: normal kullanimda
 //      hicbir sey degismiyor, yil degisince kendiliginden beliriyor.
+// TAKVIMDE HER TARIH AYNI SIRADA: gun adi, gun sayisi, ay (gerekirse
+// yil) — "Çar 30 Ara". Onceden uc ayri sira vardi ve ayni bilgi her
+// gorunumde baska turlu okunuyordu:
+//   hafta izgarasi  Çar 30 Ara
+//   tablo satiri    30 Çar Ara
+//   gun basligi     30 Ara Çar
+// Kullanicinin istegi: "hepsi tek bir gorunumde olsun".
+function takvimGunParcalari(d, cipa){
+  const dil = currentLang === 'tr' ? 'tr-TR' : 'en-US';
+  return { dow: d.toLocaleDateString(dil, { weekday:'short' }),
+           gun: String(d.getDate()),
+           ay:  takvimAyEtiketi(d, cipa) };
+}
 function takvimAyEtiketi(d, cipa){
   const bicim = { month: 'short' };
   // Yil iki sart birden saglaninca yaziliyor:
@@ -13681,7 +13706,13 @@ function araligiYaz(){
       ? { weekday:'short', day:'numeric', month:'short' }
       : { weekday:'long', day:'numeric', month:'long', year:'numeric' };
     if(takvimYiliGerekli(bas, null)) bicim.year = 'numeric';
-    document.getElementById('rangeLabel').textContent = bas.toLocaleDateString(locale, bicim);
+    // SIRA elle kuruluyor: Intl Turkcede gun adini SONA atiyor
+    // ("30 Ara Çar"), oysa takvimin geri kalaninda sira "Çar 30 Ara".
+    const dil = locale;
+    const gunAdi = bas.toLocaleDateString(dil, { weekday: bicim.weekday });
+    const kalan = bas.toLocaleDateString(dil,
+      Object.assign({}, bicim, { weekday: undefined }));
+    document.getElementById('rangeLabel').textContent = gunAdi + ' ' + kalan;
     return;
   }
   const bas = calWindowStart(), bit = calWindowEnd();
@@ -13756,13 +13787,20 @@ function renderCal(){
   grid.classList.remove('hour-grid');
   grid.style.gridTemplateColumns = '';
   grid.innerHTML = '';
-  const dows = ['MON','TUE','WED','THU','FRI','SAT','SUN'];
-  dows.forEach(dw=>{
+  // Gun adlari KODA GOMULU INGILIZCEYDI: arayuz Turkcedeyken ust satir
+  // 'MON TUE WED' diye duruyordu. Artik dilden uretiliyor. Buyuk harfe
+  // cevirme de dile gore: Turkcede 'i' -> 'I' degil 'İ' olmali.
+  const dil = currentLang === 'tr' ? 'tr-TR' : 'en-US';
+  // 2024-01-01 bir PAZARTESI; hafta oradan baslatiliyor.
+  const pzt = new Date(2024, 0, 1);
+  for(let g = 0; g < 7; g++){
+    const gun = new Date(pzt); gun.setDate(pzt.getDate() + g);
     const el = document.createElement('div');
     el.className = 'cal-dow';
-    el.textContent = dw;
+    el.textContent = gun.toLocaleDateString(dil, { weekday:'short' })
+                        .toLocaleUpperCase(currentLang === 'tr' ? 'tr' : 'en');
     grid.appendChild(el);
-  });
+  }
 
   const start = calWindowStart();
   const today = new Date(); today.setHours(0,0,0,0);
@@ -13784,14 +13822,17 @@ function renderCal(){
       + (d.toDateString()===today.toDateString() ? ' today' : '')
       + (gecmis ? ' cal-past' : '')
       + (ayDisi ? ' cal-out' : '');
-    // Pencerede ay adi hicbir yerde yazmadigi icin gecisi hucre tasiyor:
-    // ayin 1'i ve penceredeki ilk gun ay adiyla birlikte cikiyor.
-    // Ay adi ayin 1'inde ve penceredeki ilk gunde cikiyor; YIL DEGISTIYSE
-    // her ikisinde de yil da yaziliyor.
-    const ayEtiketi = (d.getDate() === 1 || i === 0)
-      ? `<span class="cal-day-month">${escapeHtml(takvimAyEtiketi(d))}</span>` : '';
+    // Ay adi HER hucrede. Onceden yalnizca ayin 1'inde ve penceredeki
+    // ilk gunde yaziyordu; geri kalan gunlerde hucrede yalnizca bir sayi
+    // duruyordu ve "hangi ay" sorusunun cevabi yalnizca baslikta kaliyordu.
+    // Kullanicinin karari: her hucrede yazsin, yazi tipi kuculsun.
+    // Yil yine yalnizca CIPA gunlerde (ayin 1'i, penceredeki ilk gun) ve
+    // yalnizca bu yildan farkliysa: 35 hucreye birden yil yazmak tekrar
+    // olurdu.
+    const par = takvimGunParcalari(d, d.getDate() === 1 || i === 0);
     cell.dataset.gun = key;
-    cell.innerHTML = `<div class="cal-day-num">${d.getDate()}${ayEtiketi}</div>`;
+    cell.innerHTML = `<div class="cal-day-num">${escapeHtml(par.gun)}`
+      + `<span class="cal-day-month">${escapeHtml(par.ay)}</span></div>`;
 
     let dayEvents = events.filter(e=>e.date===key && gecerliKayit(e))
       .sort((a,b)=>(a.time||'').localeCompare(b.time||''));

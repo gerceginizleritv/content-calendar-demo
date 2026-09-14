@@ -92,6 +92,35 @@ const { chromium } = require('./araclar');
   k('telefonda ay adı kırpılmıyor', r.kirpik === false);
   await tel.close();
 
+  // --- TEK BİÇİM: aynı sıra her görünümde (Çar 30 Ara)
+  const m2 = await ac(1280);
+  const sira = {};
+  for(const gor of ['week','day','table','month']){
+    const x = await git(m2, gor, bu + '-12-30');
+    sira[gor] = gor === 'month' ? x.ay.filter(y=>/Ara/.test(y))[0]
+              : gor === 'table' ? x.tablo[0]
+              : gor === 'day'   ? x.baslik : x.hafta[0];
+  }
+  k('hafta: gün adı, gün, ay', /^Çar\s*30\s*Ara/.test(sira.week), sira.week);
+  // Gün görünümünde masaüstünde UZUN biçim var ("Çarşamba 30 Aralık 2026").
+  // Önemli olan kısaltma değil SIRA: gün adı, gün sayısı, ay.
+  k('gün görünümü AYNI sırada', /^Çar(şamba)?\s*30\s*Ara(lık)?/.test(sira.day), sira.day);
+  k('tablo AYNI sırada', /^Çar\s*30\s*Ara/.test(sira.table), sira.table);
+  k('ay ızgarasında HER hücrede ay adı', /^\d+\s*Ara/.test(sira.month), sira.month);
+  // Ay ızgarasının üst satırı: dile göre
+  const gunAdlari = await m2.evaluate(()=>{
+    setLanguage('tr'); setView('month'); renderCal();
+    return [...document.querySelectorAll('.cal-dow')].map(x=>x.textContent);
+  });
+  k('gün adları TÜRKÇE (koda gömülü değil)',
+     gunAdlari[0] === 'PZT' && gunAdlari[2] === 'ÇAR', gunAdlari);
+  const en = await m2.evaluate(()=>{
+    setLanguage('en'); setView('month'); renderCal();
+    return [...document.querySelectorAll('.cal-dow')].map(x=>x.textContent);
+  });
+  k('İngilizcede de doğru', en[0] === 'MON' && en[6] === 'SUN', en);
+  await m2.close();
+
   console.log(hata ? '\n'+hata+' HATA' : '\nHEPSİ GEÇTİ');
   await b.close();
   process.exit(hata ? 1 : 0);
