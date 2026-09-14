@@ -13649,6 +13649,22 @@ function cokDarTakvimBasligi(){
 //   tablo satiri    30 Çar Ara
 //   gun basligi     30 Ara Çar
 // Kullanicinin istegi: "hepsi tek bir gorunumde olsun".
+// Gun adi HER ZAMAN BASTA. Ingilizce zaten boyle yaziyor
+// ("Monday, September 14, 2026") ve oradaki virgul korunmali; Turkce ise
+// gun adini SONA atiyor ("30 Aralık 2026 Çarşamba"). Bu yuzden dilin
+// ciktisi parcalanip yalnizca GEREKIYORSA yeniden diziliyor — her iki
+// dile de kendi noktalamasiyla saygi gosteriliyor.
+function gunAdiOnce(d, bicim, dil){
+  let parcalar;
+  try{ parcalar = new Intl.DateTimeFormat(dil, bicim).formatToParts(d); }
+  catch(e){ return d.toLocaleDateString(dil, bicim); }
+  const i = parcalar.findIndex(x=> x.type === 'weekday');
+  if(i <= 0) return parcalar.map(x=> x.value).join('');   // zaten basta
+  const gunAdi = parcalar[i].value;
+  const kalan = parcalar.filter((x, j)=> j !== i).map(x=> x.value).join('')
+    .replace(/^[\s,.\u00A0]+/, '').replace(/[\s,.\u00A0]+$/, '');
+  return gunAdi + ' ' + kalan;
+}
 function takvimGunParcalari(d, cipa){
   const dil = currentLang === 'tr' ? 'tr-TR' : 'en-US';
   return { dow: d.toLocaleDateString(dil, { weekday:'short' }),
@@ -13706,13 +13722,7 @@ function araligiYaz(){
       ? { weekday:'short', day:'numeric', month:'short' }
       : { weekday:'long', day:'numeric', month:'long', year:'numeric' };
     if(takvimYiliGerekli(bas, null)) bicim.year = 'numeric';
-    // SIRA elle kuruluyor: Intl Turkcede gun adini SONA atiyor
-    // ("30 Ara Çar"), oysa takvimin geri kalaninda sira "Çar 30 Ara".
-    const dil = locale;
-    const gunAdi = bas.toLocaleDateString(dil, { weekday: bicim.weekday });
-    const kalan = bas.toLocaleDateString(dil,
-      Object.assign({}, bicim, { weekday: undefined }));
-    document.getElementById('rangeLabel').textContent = gunAdi + ' ' + kalan;
+    document.getElementById('rangeLabel').textContent = gunAdiOnce(bas, bicim, locale);
     return;
   }
   const bas = calWindowStart(), bit = calWindowEnd();
