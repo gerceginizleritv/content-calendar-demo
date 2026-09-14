@@ -100,9 +100,18 @@ async function sayfa(b, ayar = {}) {
     await p.waitForTimeout(200);
     ok('koyuya gecti', await p.getAttribute('html','data-theme') === 'dark');
     ok('localStorage dark', await p.evaluate(()=>localStorage.getItem('demo_theme')) === 'dark');
-    ok('theme-color guncellendi', await p.getAttribute('meta[name="theme-color"]','content') === '#0F151D');
+    // Palet degisebilir, kural degismez: theme-color govdenin zeminiyle ayni
+    // olmali, yoksa telefonda ust cubuk baska renkte kalir. Sabit bir hex
+    // yazmak testi paletin esiri yapiyordu.
+    const kagit = await p.evaluate(()=>getComputedStyle(document.documentElement).getPropertyValue('--kagit').trim());
+    const meta = await p.getAttribute('meta[name="theme-color"]','content');
+    ok('theme-color govde zeminiyle ayni', meta.toLowerCase() === kagit.toLowerCase(), meta + ' vs ' + kagit);
     const zemin = await p.evaluate(()=>getComputedStyle(document.body).backgroundColor);
-    ok('govde zemini koyu', zemin === 'rgb(15, 21, 29)', zemin);
+    const koyuMu = await p.evaluate(()=>{
+      const c = getComputedStyle(document.body).backgroundColor.match(/\d+/g).map(Number);
+      return (c[0]*299 + c[1]*587 + c[2]*114) / 1000 < 90;
+    });
+    ok('govde zemini koyu', koyuMu, zemin);
     await p.close();
   }
   {
@@ -118,8 +127,12 @@ async function sayfa(b, ayar = {}) {
     const p = await sayfa(b);
     await p.goto(KOK, { waitUntil:'domcontentloaded' });
     await p.waitForTimeout(300);
+    // Sayiyi sabitlemek yerine dizinle bolumleri karsilastiriyoruz: boylece
+    // yeni bir ozellik bolumu eklenip dizine kart konmazsa test yakalar.
     const kart = await p.$$('.dizin-kart');
-    ok('dokuz kart var', kart.length === 9, kart.length);
+    const bolum = await p.$$('.ozellik');
+    ok('her bolumun dizinde kartı var', kart.length === bolum.length && kart.length >= 9,
+       kart.length + ' kart / ' + bolum.length + ' bölüm');
     let hepsiVar = true, eksik = [];
     for(const k of kart){
       const h = await k.getAttribute('href');
