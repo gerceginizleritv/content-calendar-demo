@@ -641,7 +641,14 @@ body.suruklenirken *{cursor:grabbing !important;}
   .hg-chip{font-size:10.5px;padding:2px 4px;gap:3px;}
   .hg-chip .cal-badge{display:none;}
   .hg-dayhead{flex-direction:column;gap:0;padding:5px 3px;align-items:center;}
-  .hg-mon{display:none;}
+  /* AY ADI TELEFONDA DA DURUYOR. Onceden gizleniyordu ve basliklar
+     "ÇAR 30 / PER 31 / CUM 1" diye okunuyordu: hangi ay oldugu hicbir
+     yerde yazmiyordu, ay sonunda ve ozellikle aralik-ocak gecisinde
+     hangi gune bakildigi anlasilmiyordu. Ucuncu satir olarak, en kucuk
+     ve en soluk halde giriyor — sutun genisligi degismiyor, yalnizca
+     baslik birkac piksel uzuyor. */
+  .hg-mon{display:block;font-size:9.5px;line-height:1.25;color:var(--text-dim);
+    white-space:nowrap;}
 }
 
 /* --- Proje tablosu ---
@@ -13397,7 +13404,7 @@ function renderCalTable(){
     govde += '<tr class="' + (bugunMu ? 'ct-today' : '') + (gecmis ? ' ct-past' : '') + '">';
     govde += '<td class="ct-date"><span class="ct-daynum">' + d.getDate() + '</span>'
           + '<span class="ct-dow">' + d.toLocaleDateString(locale,{weekday:'short'}) + '</span>'
-          + '<span class="ct-mon">' + d.toLocaleDateString(locale,{month:'short'}) + '</span></td>';
+          + '<span class="ct-mon">' + escapeHtml(takvimAyEtiketi(d, i === 0 || d.getDate() === 1)) + '</span></td>';
 
     platformlar.forEach(p=>{
       const gun = events.filter(e => e.date===key && getPlatform(e)===p && gecerliKayit(e))
@@ -13507,12 +13514,13 @@ function renderSaatIzgarasi(gunSayisi){
 
   // Baslik satiri
   ekle('hg-corner');
-  gunler.forEach(g=>{
+  gunler.forEach((g, i)=>{
     const bugunMu = g.d.toDateString() === bugun.toDateString();
+    const cipa = i === 0 || g.d.getDate() === 1;
     ekle('hg-dayhead' + (bugunMu ? ' today' : ''),
       `<span class="hg-dow">${escapeHtml(g.d.toLocaleDateString(locale,{weekday:'short'}))}</span>` +
       `<span class="hg-daynum">${g.d.getDate()}</span>` +
-      `<span class="hg-mon">${escapeHtml(g.d.toLocaleDateString(locale,{month:'short'}))}</span>`);
+      `<span class="hg-mon">${escapeHtml(takvimAyEtiketi(g.d, cipa))}</span>`);
   });
 
   // Erken/saatsiz seridi: yalnizca icerigi varsa
@@ -13615,6 +13623,30 @@ function cokDarTakvimBasligi(){
 // Yil YALNIZCA gerektiginde yaziliyor: icinde bulundugumuz yila bakan
 // biri zaten hangi yilda oldugunu biliyor. Pencere baska bir yila
 // gectigi anda yil geri geliyor — bilgi kaybi yok, gurultu yok.
+// Takvimdeki gun etiketlerinde ay adi. YIL yalnizca bu yildan farkliysa
+// ekleniyor. Sebep iki tane:
+//   1. Aralik-ocak gecisinde "1 Oca" ile "1 Ara" ayni ekranda durabiliyor
+//      ve hangisinin hangi yila ait oldugu okunmuyordu.
+//   2. Yili HER ZAMAN yazmak tablolari genisletirdi; kullanicinin sarti
+//      "tablolari bozmadan" idi. Bu yuzden kosullu: normal kullanimda
+//      hicbir sey degismiyor, yil degisince kendiliginden beliriyor.
+function takvimAyEtiketi(d, cipa){
+  const bicim = { month: 'short' };
+  // Yil iki sart birden saglaninca yaziliyor:
+  //   - gun bu yila ait DEGIL, ve
+  //   - o gun pencerenin CIPASI: ilk sutun ya da ayin 1'i.
+  // Ikinci sart olmasa ocak haftasinin yedi sutununda da "2027" yazardi;
+  // hem tekrar hem de sutunlari genisletirdi. Bir cipa haftanin tamamini
+  // zaten belirsizlikten cikariyor.
+  if(d.getFullYear() !== new Date().getFullYear() && cipa !== false){
+    // Telefonda sutun dar: dort haneli yil kirpiliyordu ("Oca 202").
+    // Iki hane sigiyor ve "Oca 27" okunuyor.
+    bicim.year = darTakvimBasligi() ? '2-digit' : 'numeric';
+  }
+  // Dil BURADA uretiliyor: 'locale' cizim islevlerinin kendi icinde
+  // tanimli bir degisken, disarida yok.
+  return d.toLocaleDateString(currentLang === 'tr' ? 'tr-TR' : 'en-US', bicim);
+}
 function takvimYiliGerekli(bas, bit){
   if(!darTakvimBasligi()) return true;
   const buYil = new Date().getFullYear();
@@ -13653,12 +13685,22 @@ function araligiYaz(){
     return;
   }
   const bas = calWindowStart(), bit = calWindowEnd();
-  const sonBicim = { day:'numeric', month:'short' };
-  if(takvimYiliGerekli(bas, bit)) sonBicim.year = 'numeric';
-  document.getElementById('rangeLabel').textContent =
-    bas.toLocaleDateString(locale, {day:'numeric', month:'short'})
-    + ' – '
-    + bit.toLocaleDateString(locale, sonBicim);
+  const bicim = { day:'numeric', month:'short' };
+  if(takvimYiliGerekli(bas, bit)) bicim.year = 'numeric';
+  // Aralik ARALIK BICIMIYLE yaziliyor. Elle "bas – bit" birlestirince ay
+  // adi iki kez giriyordu ("Sep 14 – Sep 20") ve 320 piksellik ekranda
+  // Ingilizce basliga sigmiyordu, kirpiliyordu. formatRange ayni aya
+  // dusen iki tarihi kendisi kisaltiyor ("Sep 14 – 20", "14–20 Eyl") ve
+  // bunu her dilin kendi kuralina gore yapiyor.
+  let metin = '';
+  try{
+    metin = new Intl.DateTimeFormat(locale, bicim).formatRange(bas, bit);
+  }catch(e){
+    // formatRange'i tanimayan eski tarayici: eski davranis.
+    metin = bas.toLocaleDateString(locale, {day:'numeric', month:'short'})
+          + ' – ' + bit.toLocaleDateString(locale, bicim);
+  }
+  document.getElementById('rangeLabel').textContent = metin;
 }
 
 // Kaydin projesi. Bos olabilir; bos olan kayitlar filtrede "Projesiz"
@@ -13744,8 +13786,10 @@ function renderCal(){
       + (ayDisi ? ' cal-out' : '');
     // Pencerede ay adi hicbir yerde yazmadigi icin gecisi hucre tasiyor:
     // ayin 1'i ve penceredeki ilk gun ay adiyla birlikte cikiyor.
+    // Ay adi ayin 1'inde ve penceredeki ilk gunde cikiyor; YIL DEGISTIYSE
+    // her ikisinde de yil da yaziliyor.
     const ayEtiketi = (d.getDate() === 1 || i === 0)
-      ? `<span class="cal-day-month">${d.toLocaleDateString(locale,{month:'short'})}</span>` : '';
+      ? `<span class="cal-day-month">${escapeHtml(takvimAyEtiketi(d))}</span>` : '';
     cell.dataset.gun = key;
     cell.innerHTML = `<div class="cal-day-num">${d.getDate()}${ayEtiketi}</div>`;
 
