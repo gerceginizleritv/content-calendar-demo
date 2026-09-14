@@ -1576,6 +1576,37 @@ textarea.sc-ai-brief{min-height:64px;resize:vertical;line-height:1.5;}
   font-size:11.5px;overflow:hidden;transition:background .12s,border-color .12s;border-radius:0 5px 5px 0;
   min-height:44px;  /* parmak ucu hedefi — eskiden 24px idi */
 }
+.dil-serit-wrap{border:1px solid var(--line);border-radius:10px;padding:10px 11px 11px;background:var(--surface-2);}
+.dil-serit{display:flex;flex-wrap:wrap;gap:6px;align-items:center;}
+.dil-sek{
+  display:inline-flex;align-items:center;gap:6px;padding:7px 11px;min-height:36px;
+  border:1px solid var(--line);border-radius:8px;background:var(--surface);
+  color:var(--text-dim);font-size:12.5px;font-weight:600;cursor:pointer;
+  font-family:inherit;line-height:1;
+}
+.dil-sek:hover{border-color:var(--accent);color:var(--text);}
+.dil-sek.acik{background:var(--accent);border-color:var(--accent);color:var(--on-accent);}
+.dil-sek .dil-dolu{width:6px;height:6px;border-radius:50%;background:var(--green);flex:none;}
+.dil-sek.acik .dil-dolu{background:var(--on-accent);}
+.dil-sek-ekle{border-style:dashed;font-weight:500;}
+.dil-sil{
+  border:0;background:none;color:inherit;font-size:15px;line-height:1;padding:0 0 0 2px;
+  cursor:pointer;opacity:.6;font-family:inherit;
+}
+.dil-sil:hover{opacity:1;}
+.dil-not{margin:9px 0 0;font-size:11.5px;color:var(--text-dim);line-height:1.5;}
+.dil-secici{display:flex;flex-wrap:wrap;gap:6px;margin-top:10px;}
+.dil-secici button{
+  padding:7px 10px;min-height:34px;border:1px solid var(--line);border-radius:8px;
+  background:var(--surface);color:var(--text);font-size:12.5px;cursor:pointer;font-family:inherit;
+}
+.dil-secici button:hover{border-color:var(--accent);}
+/* Takvim cipinde: bu kaydin kac dili hazir. Kayit acmadan gorunsun. */
+.cal-dil{
+  font-family:'IBM Plex Mono',monospace;font-size:9px;letter-spacing:.5px;
+  padding:2px 4px;border-radius:3px;background:var(--accent-soft);color:var(--accent);
+  flex:none;white-space:nowrap;
+}
 .cal-pico{width:15px;height:15px;flex:none;display:block;}
 .cal-pico svg{width:100%;height:100%;display:block;}
 .cal-time{
@@ -3742,6 +3773,15 @@ textarea.sc-ai-brief{min-height:64px;resize:vertical;line-height:1.5;}
          kendiliginden degismesini bekliyorsa once burada fark eder. -->
     <p class="posted-hint" data-i18n="posted_hint">Tick this after you publish. Shootboard does not listen to the platforms — you mark it.</p>
 
+    <!-- Cok dilli alanlar: YALNIZCA YouTube uzun video ve Shorts'ta. Baslik ve
+         aciklamayi dil dil girmeye izin veren tek platform o; digerlerinde
+         ayri paylasim yapiliyor, serit bos yere yer kaplardi. -->
+    <div class="field dil-serit-wrap" id="dilSeritWrap" hidden>
+      <div class="dil-serit" id="dilSerit"></div>
+      <div class="dil-secici" id="dilSecici" hidden></div>
+      <p class="dil-not" data-i18n="dil_not">YouTube shows each viewer the title and description in their own language. Fill a language in and paste it into the upload's translation fields.</p>
+    </div>
+
     <div class="field">
       <div class="field-header">
         <label data-i18n="f_caption_label">Caption</label>
@@ -4982,6 +5022,11 @@ const LANG = {
     pe_drive_picked: (ad)=> `Picked: ${ad}`,
     pe_drive_wait: "Opening Drive…",
     pe_drive_err: "Could not reach Drive. You can still paste the link by hand.",
+    dil_ekle: "+ Add a language",
+    dil_limit: (n)=> `At most ${n} languages on one entry.`,
+    dil_sil_ask: (ad)=> `Remove ${ad}? What you wrote in it goes with it.`,
+    dil_rozet_ipucu: "Languages ready on this entry",
+    dil_not: "YouTube shows every viewer the title and description in their own language. Fill a language in here, then paste it into the translation fields of the upload.",
     cl_title: "Shot checklist",
     cl_open: "Checklist",
     cl_progress: (n, tum)=> `<b>${n}</b> of ${tum} ready`,
@@ -5878,6 +5923,11 @@ const LANG = {
     pe_drive_picked: (ad)=> `Se\u00e7ildi: ${ad}`,
     pe_drive_wait: "Drive a\u00e7\u0131l\u0131yor\u2026",
     pe_drive_err: "Drive'a ula\u015f\u0131lamad\u0131. Ba\u011flant\u0131y\u0131 elle de yap\u0131\u015ft\u0131rabilirsin.",
+    dil_ekle: "+ Dil ekle",
+    dil_limit: (n)=> `Bir kayıtta en çok ${n} dil olabilir.`,
+    dil_sil_ask: (ad)=> `${ad} kaldırılsın mı? O dilde yazdıkların da gider.`,
+    dil_rozet_ipucu: "Bu kayıtta hazır olan diller",
+    dil_not: "YouTube her izleyiciye başlığı ve açıklamayı kendi dilinde gösteriyor. Buraya bir dili doldur, yüklerken çeviri alanlarına yapıştır.",
     cl_title: "\u00c7ekim listesi",
     cl_open: "\u00c7ekim listesi",
     cl_progress: (n, tum)=> `${tum} maddeden <b>${n}</b> tamam`,
@@ -13498,7 +13548,7 @@ function hgChip(ev){
   chip.title = (ev.title || '') + ' · ' + (ev.time || '') + ' · ' + CAL_SM_NAMES[ev.platform];
   chip.innerHTML =
     `<span class="cal-pico" style="color:${CAL_SM_COLORS[ev.platform]}">${PLATFORM_ICONS[ev.platform]||''}</span>` +
-    `<span class="cal-badge">${escapeHtml(typeLabel(ev.type))}</span>` + aiRozet('entries', ev.id) +
+    `<span class="cal-badge">${escapeHtml(typeLabel(ev.type))}</span>` + dilRozeti(ev) + aiRozet('entries', ev.id) +
     `<span class="cal-time">${escapeHtml(ev.time||'')}</span>` +
     `<span class="cal-chip-title">${escapeHtml(ev.title||'')}</span>`;
   suruklenebilirYap(chip, ev);
@@ -13888,7 +13938,7 @@ function renderCal(){
       // Renk platformu, etiket tipi anlatir: isaret hem kimligi hem rengi tasidigi
       // icin ayri bir renk cubuguna gerek kalmiyor.
       chip.innerHTML = `<span class="cal-pico" style="color:${CAL_SM_COLORS[ev.platform]}" title="${CAL_SM_NAMES[ev.platform]}">${PLATFORM_ICONS[ev.platform]||''}</span>
-        <span class="cal-badge">${escapeHtml(typeLabel(ev.type))}</span>${aiRozet('entries', ev.id)}
+        <span class="cal-badge">${escapeHtml(typeLabel(ev.type))}</span>${dilRozeti(ev)}${aiRozet('entries', ev.id)}
         <span class="cal-time">${escapeHtml(ev.time||'')}</span>${
           (ev.content && gecerliTz(ev.content.timezone) && ev.content.timezone !== yerelTz())
             ? `<span class="cal-tz" title="${escapeHtml(ev.content.timezone)}">${escapeHtml(tzFark(ev.content.timezone) || ev.content.timezone.split('/').pop())}</span>` : ''}
@@ -13986,12 +14036,213 @@ function populateSelects(){
   });
 }
 
+// ===== Cok dilli baslik ve aciklama ==========================================
+// YouTube tek videoya birden cok dilde baslik/aciklama tasiyor; izleyici
+// kendi dilinde goruyor. Uygulamada bunun hazirlandigi yer yoktu.
+//
+// Veri: ANA DIL mevcut alanlarda (content.caption, content.videoTitle...)
+// oldugu gibi kaliyor — eski kayitlar, yedek, paylasim ve disa aktarma
+// hicbir sey bilmeden calismaya devam ediyor. EK diller content.diller
+// icinde duruyor. Bu yuzden tabloda degisiklik gerekmedi: content zaten
+// jsonb.
+const DIL_ALANLARI = [
+  { anahtar:'videoTitle', id:'f_videotitle' },
+  { anahtar:'caption',    id:'f_caption'    },
+  { anahtar:'hashtags',   id:'f_hashtags'   },
+  { anahtar:'shortTitle', id:'f_shorttitle' }
+];
+const DIL_ANA = '_ana';
+const DIL_MAX = 8;
+// Ad kendi dilinde yaziliyor (kullanici oyle taniyor), ingilizcesi AI'a
+// gidiyor (model dili ingilizce adiyla daha guvenilir anliyor).
+const DIL_LISTESI = [
+  ['tr','Türkçe','Turkish'],       ['en','English','English'],
+  ['de','Deutsch','German'],       ['fr','Français','French'],
+  ['es','Español','Spanish'],      ['it','Italiano','Italian'],
+  ['pt','Português','Portuguese'], ['nl','Nederlands','Dutch'],
+  ['ru','Русский','Russian'],      ['uk','Українська','Ukrainian'],
+  ['pl','Polski','Polish'],        ['el','Ελληνικά','Greek'],
+  ['ar','العربية','Arabic'],        ['fa','فارسی','Persian'],
+  ['az','Azərbaycanca','Azerbaijani'], ['sr','Srpski','Serbian'],
+  ['bg','Български','Bulgarian'],  ['ja','日本語','Japanese'],
+  ['ko','한국어','Korean'],          ['zh','中文','Chinese'],
+  ['hi','हिन्दी','Hindi'],            ['id','Indonesia','Indonesian']
+];
+const dilAdi   = k => (DIL_LISTESI.find(d=>d[0]===k)||[k,k.toUpperCase()])[1];
+const dilIngAd = k => (DIL_LISTESI.find(d=>d[0]===k)||[k,k,k])[2];
+
+// Kovalar: acik olan sekmenin metni KUTULARDA, digerleri burada bekliyor.
+let dilKovalari = {};
+let dilAktif = DIL_ANA;
+let dilAnaKod = 'tr';
+
+function dilKutulariniOku(){
+  const o = {};
+  DIL_ALANLARI.forEach(a=>{ o[a.anahtar] = (document.getElementById(a.id)||{}).value || ''; });
+  return o;
+}
+function dilKutulariniYaz(o){
+  DIL_ALANLARI.forEach(a=>{
+    const el = document.getElementById(a.id);
+    if(el) el.value = (o && o[a.anahtar]) || '';
+  });
+}
+function dilDolu(o){ return !!(o && DIL_ALANLARI.some(a=> (o[a.anahtar]||'').trim())); }
+
+// Acik sekmenin yazdiklarini kovasina koyuyor. Sekme degistirmeden ONCE ve
+// kaydetmeden ONCE cagriliyor; atlanirsa kullanicinin son yazdigi kaybolur.
+function dilAktifiSakla(){ dilKovalari[dilAktif] = dilKutulariniOku(); }
+
+function dilKurulumu(icerik, tur, platform){
+  dilKovalari = { [DIL_ANA]: {
+    videoTitle:(icerik&&icerik.videoTitle)||'', caption:(icerik&&icerik.caption)||'',
+    hashtags:(icerik&&icerik.hashtags)||'',     shortTitle:(icerik&&icerik.shortTitle)||''
+  } };
+  const ek = (icerik && icerik.diller) || {};
+  Object.keys(ek).forEach(k=>{ if(k !== DIL_ANA) dilKovalari[k] = ek[k] || {}; });
+  dilAnaKod = (icerik && icerik.anaDil) || currentLang || 'tr';
+  dilAktif = DIL_ANA;
+  document.getElementById('dilSecici').hidden = true;
+  dilSeridiCiz();
+}
+
+function dilSeridiCiz(){
+  const serit = document.getElementById('dilSerit');
+  if(!serit) return;
+  serit.innerHTML = '';
+  const kodlar = [DIL_ANA].concat(Object.keys(dilKovalari).filter(k=> k !== DIL_ANA));
+  kodlar.forEach(k=>{
+    const acik = k === dilAktif;
+    const sek = document.createElement('button');
+    sek.type = 'button';
+    sek.className = 'dil-sek' + (acik ? ' acik' : '');
+    sek.dataset.dil = k;
+    const ad = k === DIL_ANA ? dilAdi(dilAnaKod) : dilAdi(k);
+    const veri = acik ? dilKutulariniOku() : dilKovalari[k];
+    sek.innerHTML = (dilDolu(veri) ? '<span class="dil-dolu"></span>' : '') + escapeHtml(ad)
+      + (k === DIL_ANA ? '' : ' <span class="dil-sil" role="button" tabindex="-1">\u00d7</span>');
+    sek.addEventListener('click', e=>{
+      if(e.target.classList.contains('dil-sil')){ e.stopPropagation(); dilSil(k); return; }
+      dileGec(k);
+    });
+    serit.appendChild(sek);
+  });
+  if(kodlar.length < DIL_MAX){
+    const ekle = document.createElement('button');
+    ekle.type = 'button';
+    ekle.className = 'dil-sek dil-sek-ekle';
+    ekle.textContent = t('dil_ekle');
+    ekle.addEventListener('click', dilSeciciAc);
+    serit.appendChild(ekle);
+  }
+}
+
+function dileGec(k){
+  if(k === dilAktif) return;
+  dilAktifiSakla();
+  dilAktif = k;
+  dilKutulariniYaz(dilKovalari[k] || {});
+  document.getElementById('dilSecici').hidden = true;
+  dilSeridiCiz();
+}
+
+function dilSeciciAc(){
+  const kutu = document.getElementById('dilSecici');
+  if(!kutu.hidden){ kutu.hidden = true; return; }
+  const varOlan = Object.keys(dilKovalari).concat([dilAnaKod]);
+  kutu.innerHTML = '';
+  DIL_LISTESI.filter(d=> varOlan.indexOf(d[0]) === -1).forEach(d=>{
+    const dug = document.createElement('button');
+    dug.type = 'button';
+    dug.textContent = d[1];
+    dug.addEventListener('click', ()=> dilEkle(d[0]));
+    kutu.appendChild(dug);
+  });
+  kutu.hidden = false;
+}
+
+function dilEkle(k){
+  if(dilKovalari[k]) return;
+  if(Object.keys(dilKovalari).length >= DIL_MAX){ uyari(t('dil_limit')(DIL_MAX)); return; }
+  dilKovalari[k] = {};
+  document.getElementById('dilSecici').hidden = true;
+  dileGec(k);
+}
+
+async function dilSil(k){
+  if(k === DIL_ANA) return;
+  if(dilDolu(k === dilAktif ? dilKutulariniOku() : dilKovalari[k])){
+    if(!await onayla(t('dil_sil_ask')(dilAdi(k)))) return;
+  }
+  delete dilKovalari[k];
+  if(dilAktif === k){ dilAktif = DIL_ANA; dilKutulariniYaz(dilKovalari[DIL_ANA] || {}); }
+  dilSeridiCiz();
+}
+
+// Serit yalnizca YouTube uzun video ve Shorts'ta. Gorunmemesi veriyi
+// SILMIYOR: platformu degistirip geri donen kullanici cevirilerini
+// yerinde bulsun.
+function dilSeridiGerekir(tur, platform){
+  return platform === 'youtube' && (tur === 'video' || tur === 'shorts');
+}
+function dilSeridiTazele(){
+  const sarmal = document.getElementById('dilSeritWrap');
+  if(!sarmal) return;
+  const tekli = !document.getElementById('platformMultiWrap')
+             || document.getElementById('platformMultiWrap').style.display === 'none';
+  let gerek;
+  if(tekli){
+    gerek = dilSeridiGerekir(document.getElementById('f_type').value,
+                             document.getElementById('f_platform').value);
+  } else {
+    // Yeni kayitta coklu secim var: YouTube isaretliyse ve video/shorts
+    // turlerinden biri secilmisse serit cikiyor. Ceviriler kaydederken
+    // yalnizca UYGUN kayitlara yaziliyor.
+    const pf = Array.from(document.querySelectorAll('#platformChecks input:checked')).map(e=>e.value);
+    const tp = secilenTipler();
+    gerek = pf.indexOf('youtube') !== -1 && tp.some(x=> x==='video' || x==='shorts');
+  }
+  if(!gerek && dilAktif !== DIL_ANA){
+    // Serit kapanirken acik sekmenin yazdigi kaybolmasin.
+    dilAktifiSakla();
+    dilAktif = DIL_ANA;
+    dilKutulariniYaz(dilKovalari[DIL_ANA] || {});
+  }
+  sarmal.hidden = !gerek;
+  if(gerek) dilSeridiCiz();
+}
+
+// Kaydederken: acik sekme kovasina, ana dil normal alanlara, gerisi
+// content.diller'e. Bos diller hic yazilmiyor.
+function dilleriTopla(){
+  dilAktifiSakla();
+  const ana = dilKovalari[DIL_ANA] || {};
+  const ek = {};
+  Object.keys(dilKovalari).forEach(k=>{
+    if(k === DIL_ANA) return;
+    if(dilDolu(dilKovalari[k])) ek[k] = dilKovalari[k];
+  });
+  return { ana, ek, anaDil: dilAnaKod };
+}
+
+// Takvim cipindeki damga: ana dil + dolu ek diller, buyuk harf.
+function dilRozeti(ev){
+  const c = ev && ev.content;
+  if(!c || !dilSeridiGerekir(ev.type, ev.platform)) return '';
+  const ek = Object.keys(c.diller || {}).filter(k=> dilDolu(c.diller[k]));
+  if(!ek.length) return '';
+  const ana = (c.anaDil || 'tr').toUpperCase();
+  const hepsi = [ana].concat(ek.map(k=> k.toUpperCase()));
+  return `<span class="cal-dil" title="${escapeHtml(t('dil_rozet_ipucu'))}">${escapeHtml(hepsi.join(' '))}</span>`;
+}
+
 function refreshTypeDependentFields(){
   const type = document.getElementById('f_type').value;
   document.getElementById('thumbWrap').style.display = (type==='video'||type==='shorts'||type==='reels') ? '' : 'none';
   document.getElementById('videoTitleWrap').style.display = (type==='video'||type==='shorts') ? '' : 'none';
   document.getElementById('shortTitleWrap').style.display = (type==='video'||type==='shorts'||type==='reels') ? '' : 'none';
   document.getElementById('carouselWrap').style.display = (type==='carousel') ? '' : 'none';
+  dilSeridiTazele();
   if(type === 'carousel'){
     const container = document.getElementById('carouselSlides');
     if(container.children.length === 0){
@@ -14038,6 +14289,7 @@ function openModal(ev, hazirTarih, hazirSaat){
     document.getElementById('f_videotitle').value = c.videoTitle||'';
     document.getElementById('f_shorttitle').value = c.shortTitle||'';
     document.getElementById('f_thumb').value = c.thumbPrompt||'';
+    dilKurulumu(c, ev.type, ev.platform);
     document.getElementById('carouselSlides').innerHTML = '';
     refreshTypeDependentFields();
     if(ev.type === 'carousel'){
@@ -14064,6 +14316,7 @@ function openModal(ev, hazirTarih, hazirSaat){
     document.getElementById('f_videotitle').value = '';
     document.getElementById('f_shorttitle').value = '';
     document.getElementById('f_thumb').value = '';
+    dilKurulumu(null, 'video', '');
     document.getElementById('carouselSlides').innerHTML = '';
     refreshTypeDependentFields();
   }
@@ -14086,6 +14339,14 @@ function setUploadToggle(val){
 }
 
 document.getElementById('f_type').addEventListener('change', refreshTypeDependentFields);
+// Serit platforma da bagli (yalnizca YouTube), o yuzden platform degisince
+// de tazeleniyor. Yeni kayittaki coklu kutular icin de ayni sey: isaret
+// degistikce serit acilip kapaniyor.
+document.getElementById('f_platform').addEventListener('change', dilSeridiTazele);
+['platformChecks','typeChecks'].forEach(id=>{
+  const kap = document.getElementById(id);
+  if(kap) kap.addEventListener('change', dilSeridiTazele);
+});
 document.getElementById('addBtn').addEventListener('click', ()=> openModal(null));
 document.getElementById('cancelBtn').addEventListener('click', closeModal);
 document.getElementById('editOverlay').addEventListener('click', (e)=>{ if(e.target.id==='editOverlay') closeModal(); });
@@ -14134,18 +14395,27 @@ document.getElementById('saveBtn').addEventListener('click', async ()=>{
     ? document.getElementById('f_type').value
     : (secilenTipler()[0] || 'video');
 
+  // Acik olan dil sekmesi hangisiyse kutulardaki metin ONUN; ana dilin
+  // metni kovada bekliyor olabilir. Once hepsi toplaniyor, sonra ana dil
+  // normal alanlara yaziliyor — yoksa Ingilizce sekmesi acikken kaydeden
+  // kullanicinin Turkce aciklamasi Ingilizceyle ezilirdi.
+  const dilPaketi = dilleriTopla();
   const content = {
     projectId: proje.id,
     concept: proje.name,
     timezone: document.getElementById('f_tz').value || yerelTz(),
-    caption: document.getElementById('f_caption').value,
-    hashtags: document.getElementById('f_hashtags').value,
-    videoTitle: document.getElementById('f_videotitle').value,
-    shortTitle: document.getElementById('f_shorttitle').value,
+    caption: dilPaketi.ana.caption || '',
+    hashtags: dilPaketi.ana.hashtags || '',
+    videoTitle: dilPaketi.ana.videoTitle || '',
+    shortTitle: dilPaketi.ana.shortTitle || '',
     thumbPrompt: document.getElementById('f_thumb').value,
     slidePrompts: (currentEvent ? type==='carousel' : secilenTipler().includes('carousel'))
       ? Array.from({length:9},(_,i)=> (document.getElementById('slide'+(i+1))||{}).value || '') : []
   };
+  if(Object.keys(dilPaketi.ek).length){
+    content.diller = dilPaketi.ek;
+    content.anaDil = dilPaketi.anaDil;
+  }
   const uploaded = document.getElementById('uploadToggle').dataset.val === '1';
 
   if(currentEvent){
@@ -14186,6 +14456,13 @@ document.getElementById('saveBtn').addEventListener('click', async ()=>{
       // Karusel gorselleri yalnizca karusel kaydina ait; Reels kaydinda
       // dokuz slayt prompt'u tasimak gereksiz yer kaplardi.
       if(c.type !== 'carousel') icerik.slidePrompts = [];
+      // Ceviriler de oyle: tek modaldan YouTube ve Instagram birlikte
+      // secilebiliyor, ama cok dilli baslik yalnizca YouTube uzun video ve
+      // Shorts'ta anlamli. Digerlerine bulasmasin.
+      if(!dilSeridiGerekir(c.type, c.platform)){
+        delete icerik.diller;
+        delete icerik.anaDil;
+      }
       const yeni = { id:newId(), type:c.type, platform:c.platform, title, date, time, uploaded, content: icerik };
       events.push(yeni); markDirty(yeni.id);
     });
@@ -15411,6 +15688,25 @@ const AI_ALAN_TARIFI = {
 };
 
 function aiAlanPrompt(alan){
+  // Acik olan dil sekmesi ana dil degilse is 'yeniden yazmak' degil
+  // CEVIRMEK: ana dilde metin varken modelden sifirdan uretmesini istemek,
+  // ayni videoya iki ayri metin yazdirmak demek olurdu.
+  const hedef = (typeof dilAktif !== 'undefined' && dilAktif !== DIL_ANA) ? dilAktif : null;
+  if(hedef){
+    const kaynak = ((dilKovalari[DIL_ANA] || {})[alan] || '').trim();
+    if(kaynak){
+      return 'Here is what the creator is planning:\n\n' + aiKayitBaglami()
+        + '\n\nThe creator already wrote this in ' + dilIngAd(dilAnaKod) + ':\n---\n'
+        + kaynak + '\n---\n\nTranslate it into ' + dilIngAd(hedef)
+        + '. Keep the same voice and roughly the same length. Do not translate word for'
+        + ' word where it would sound foreign — say it the way someone writing in '
+        + dilIngAd(hedef) + ' would say it. Keep proper nouns, place names and brand'
+        + ' names as they are. Return ONLY the translated text, nothing else.';
+    }
+    // Ana dil bos: cevirecek bir sey yok, dogrudan o dilde yaziyor.
+    return 'Here is what the creator is planning:\n\n' + aiKayitBaglami()
+         + '\n\n' + AI_ALAN_TARIFI[alan](dilIngAd(hedef));
+  }
   return 'Here is what the creator is planning:\n\n' + aiKayitBaglami()
        + '\n\n' + AI_ALAN_TARIFI[alan](aiDilAdi());
 }
