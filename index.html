@@ -690,6 +690,19 @@ a{color:inherit;}
 @keyframes f4d{ 0%,3%{opacity:0;transform:scale(.4);} 8%{opacity:1;transform:scale(1.35);} 12%,90%{opacity:1;transform:scale(1);} 97%,100%{opacity:0;transform:scale(.4);} }
 @keyframes f4c{ 0%,3%{opacity:0;} 10%,90%{opacity:1;} 97%,100%{opacity:0;} }
 
+/* 10 — dil sekmeleri, tek video ve ayni videoyu kendi dilinde goren uc
+   izleyici. Anlatilmasi zor olan sey "tek yukleme, uc dil" oldugu icin
+   gorsel bunu tek karede soyluyor. */
+.canli.oyna .dlSek,.canli.oyna .dlVideo,.canli.oyna .dlOk,
+.canli.oyna .dlSat,.canli.oyna .dlDamga{animation-duration:10s;animation-delay:var(--g);}
+.canli.oyna .dlSek{animation-name:mkZipla;}
+.canli.oyna .dlVideo{animation-name:mkKart;}
+.canli.oyna .dlOk{animation-name:clOk;}
+.canli.oyna .dlSat{animation-name:clSat;}
+.canli.oyna .dlDamga{animation-name:mkGel;}
+.canli .dlSek,.canli .dlVideo{transform-box:fill-box;transform-origin:center;}
+.canli .dlSat,.canli .dlDamga{transform-box:fill-box;transform-origin:left center;}
+
 /* 05 — mekan kartlari sirayla gelir; gorselin uc kademesi (fotograf, harita
    karesi, bas harfler) ve mekandan cekim listesine dusen iki not.
    Kartin hic bos kalmamasi urunun anlatilmasi gereken ayrintisi. */
@@ -1130,7 +1143,7 @@ a{color:inherit;}
     <div class="sar">
       <div class="bolum-bas">
         <span class="etiket" data-i18n="feat_eyebrow">Features</span>
-        <h2 data-i18n="feat_h2">Eleven parts, one board</h2>
+        <h2 data-i18n="feat_h2">Twelve parts, one board</h2>
         <p data-i18n="feat_p">Click a heading and it takes you to the section that explains what that part does.</p>
       </div>
       <div class="dizin-izgara">
@@ -1143,8 +1156,9 @@ a{color:inherit;}
         <a class="dizin-kart" href="#o07"><span class="dizin-no">07</span><h3 data-i18n="c7t">Deadlines</h3><p data-i18n="c7p">Every step has its own date. It turns red on its own when it slips.</p><span class="dizin-ok" data-i18n="card_go">Go to the detail →</span></a>
         <a class="dizin-kart" href="#o08"><span class="dizin-no">08</span><h3 data-i18n="c8t">Calendar</h3><p data-i18n="c8p">Two independent tags: what it is, and where it goes.</p><span class="dizin-ok" data-i18n="card_go">Go to the detail →</span></a>
         <a class="dizin-kart" href="#o09"><span class="dizin-no">09</span><h3 data-i18n="c9t">The entry window</h3><p data-i18n="c9p">Everything for one post, each field copied with one tap.</p><span class="dizin-ok" data-i18n="card_go">Go to the detail →</span></a>
-        <a class="dizin-kart" href="#o10"><span class="dizin-no">10</span><h3 data-i18n="c10t">Templates</h3><p data-i18n="c10p">Write the closing once; it goes at the end of every caption.</p><span class="dizin-ok" data-i18n="card_go">Go to the detail →</span></a>
-        <a class="dizin-kart" href="#o11"><span class="dizin-no">11</span><h3 data-i18n="c11t">The same plan everywhere</h3><p data-i18n="c11p">Google or an email link. No password.</p><span class="dizin-ok" data-i18n="card_go">Go to the detail →</span></a>
+        <a class="dizin-kart" href="#o10"><span class="dizin-no">10</span><h3 data-i18n="c10t">Several languages</h3><p data-i18n="c10p">One video, each viewer their own title. YouTube long-form and Shorts.</p><span class="dizin-ok" data-i18n="card_go">Go to the detail →</span></a>
+        <a class="dizin-kart" href="#o11"><span class="dizin-no">11</span><h3 data-i18n="c11t">Templates</h3><p data-i18n="c11p">Write the closing once; it goes at the end of every caption.</p><span class="dizin-ok" data-i18n="card_go">Go to the detail →</span></a>
+        <a class="dizin-kart" href="#o12"><span class="dizin-no">12</span><h3 data-i18n="c12t">The same plan everywhere</h3><p data-i18n="c12p">Google or an email link. No password.</p><span class="dizin-ok" data-i18n="card_go">Go to the detail →</span></a>
       </div>
     </div>
   </section>
@@ -1616,27 +1630,114 @@ a{color:inherit;}
         </div>
       </section>
 
+      <!-- 10 — COK DILLI BASLIK: tek videonun uc izleyicide uc ayri dilde
+           gorunmesi. Animasyon once serit sekmelerini, sonra ayni videoyu
+           izleyen uc kisiyi kendi dilindeki basligiyla gosteriyor. -->
       <section class="ozellik" id="o10">
         <div>
-          <span class="ozellik-no" data-i18n="f10n">10 — Templates</span>
-          <h3 data-i18n="f10h">Write the closing once</h3>
+          <span class="ozellik-no" data-i18n="f10n">10 — Titles in several languages</span>
+          <h3 data-i18n="f10h">One video, everyone's own language</h3>
+          <p data-i18n="f10p">YouTube carries a title and a description in several languages on a single video: the German viewer reads German, the Turkish viewer reads Turkish, and it is the same upload. Shootboard is where you prepare that — a language strip opens in the entry window, and pressing a tab switches the four fields the viewer actually sees over to that language. The ✨ button translates what you already wrote instead of inventing a second, different text for the same video.</p>
+          <ul class="puanlar">
+            <li data-i18n="f10a">Title, description, tags and cover text — everything the viewer sees, not your own notes.</li>
+            <li data-i18n="f10b">The calendar stamps each entry with the languages that are ready, so you see it without opening anything.</li>
+            <li data-i18n="f10c">It appears only on YouTube long-form and Shorts. Elsewhere another language means another post, so the strip would only be in the way.</li>
+            <li data-i18n="f10d">Change the platform and the translations stay where they are — nothing is thrown away behind your back.</li>
+          </ul>
+        </div>
+        <div class="ozellik-gorsel canli">
+          <svg viewBox="0 0 420 210" role="img" data-i18n-attr="aria-label:g10">
+            <!-- dil seridi -->
+            <g font-family="IBM Plex Mono, monospace" font-size="9" font-weight="500">
+              <g class="dlSek" style="--g:0.00s">
+                <rect x="10" y="12" width="40" height="20" rx="7" fill="var(--mavi)"/>
+                <text x="30" y="25.5" text-anchor="middle" fill="var(--uzeri)" data-i18n="g10a">TR</text>
+              </g>
+              <g class="dlSek" style="--g:0.25s">
+                <rect x="55" y="12" width="40" height="20" rx="7" fill="var(--kagit)" stroke="var(--cizgi)"/>
+                <text x="75" y="25.5" text-anchor="middle" fill="var(--solgun)" data-i18n="g10b">EN</text>
+              </g>
+              <g class="dlSek" style="--g:0.45s">
+                <rect x="100" y="12" width="40" height="20" rx="7" fill="var(--kagit)" stroke="var(--cizgi)"/>
+                <text x="120" y="25.5" text-anchor="middle" fill="var(--solgun)" data-i18n="g10c">DE</text>
+              </g>
+              <g class="dlSek" style="--g:0.65s">
+                <rect x="145" y="12" width="26" height="20" rx="7" fill="none" stroke="var(--cizgi)" stroke-dasharray="3 3"/>
+                <text x="158" y="26" text-anchor="middle" fill="var(--hayalet)">+</text>
+              </g>
+            </g>
+
+            <!-- tek video -->
+            <g class="dlVideo" style="--g:0.85s">
+              <rect x="10" y="48" width="112" height="64" rx="9" fill="var(--yuzey2)" stroke="var(--cizgi)"/>
+              <path d="M56 68 l22 12 l-22 12 Z" fill="var(--mavi)"/>
+              <rect x="10" y="120" width="112" height="7" rx="3.5" fill="var(--murekkep)" opacity=".45"/>
+              <rect x="10" y="132" width="72" height="5" rx="2.5" fill="var(--solgun)" opacity=".35"/>
+              <text x="10" y="156" font-family="IBM Plex Mono, monospace" font-size="8.5" fill="var(--hayalet)" data-i18n="g10v">ONE UPLOAD</text>
+            </g>
+
+            <!-- ayni videoyu ucu de goruyor, herkes kendi dilinde -->
+            <g class="dlOk" style="--g:1.1s">
+              <path d="M128 80 h26" fill="none" stroke="var(--cizgi)" stroke-width="1.5" stroke-dasharray="4 4"/>
+              <path d="M128 60 q18 0 18 -16" fill="none" stroke="var(--cizgi)" stroke-width="1.5" stroke-dasharray="4 4"/>
+              <path d="M128 100 q18 0 18 16" fill="none" stroke="var(--cizgi)" stroke-width="1.5" stroke-dasharray="4 4"/>
+            </g>
+
+            <g font-family="IBM Plex Sans, sans-serif" font-size="10.5">
+              <g class="dlSat" style="--g:1.35s">
+                <rect x="160" y="30" width="250" height="38" rx="9" fill="var(--yuzey)" stroke="var(--cizgi)"/>
+                <circle cx="180" cy="49" r="9" fill="var(--mavi-soft)"/>
+                <text x="180" y="52.5" text-anchor="middle" font-family="IBM Plex Mono, monospace" font-size="7.5" fill="var(--mavi)" data-i18n="g10a">TR</text>
+                <text x="197" y="46" fill="var(--murekkep)" font-weight="600" data-i18n="g10t1">Sokollu Köprüsü</text>
+                <text x="197" y="59" font-size="8.5" fill="var(--solgun)" data-i18n="g10d1">Türkiye'den izleyen</text>
+              </g>
+              <g class="dlSat" style="--g:1.75s">
+                <rect x="160" y="76" width="250" height="38" rx="9" fill="var(--yuzey)" stroke="var(--cizgi)"/>
+                <circle cx="180" cy="95" r="9" fill="var(--mavi-soft)"/>
+                <text x="180" y="98.5" text-anchor="middle" font-family="IBM Plex Mono, monospace" font-size="7.5" fill="var(--mavi)" data-i18n="g10b">EN</text>
+                <text x="197" y="92" fill="var(--murekkep)" font-weight="600" data-i18n="g10t2">The Bridge of Sokollu</text>
+                <text x="197" y="105" font-size="8.5" fill="var(--solgun)" data-i18n="g10d2">Watching from the US</text>
+              </g>
+              <g class="dlSat" style="--g:2.15s">
+                <rect x="160" y="122" width="250" height="38" rx="9" fill="var(--yuzey)" stroke="var(--cizgi)"/>
+                <circle cx="180" cy="141" r="9" fill="var(--mavi-soft)"/>
+                <text x="180" y="144.5" text-anchor="middle" font-family="IBM Plex Mono, monospace" font-size="7.5" fill="var(--mavi)" data-i18n="g10c">DE</text>
+                <text x="197" y="138" fill="var(--murekkep)" font-weight="600" data-i18n="g10t3">Die Sokollu-Brücke</text>
+                <text x="197" y="151" font-size="8.5" fill="var(--solgun)" data-i18n="g10d3">Aus Deutschland</text>
+              </g>
+            </g>
+
+            <!-- takvimdeki damga -->
+            <g class="dlDamga" style="--g:2.6s">
+              <rect x="160" y="172" width="86" height="20" rx="7" fill="var(--mavi-soft)"/>
+              <text x="203" y="185.5" text-anchor="middle" font-family="IBM Plex Mono, monospace" font-size="8.5" fill="var(--mavi)" data-i18n="g10r">TR EN DE</text>
+              <text x="254" y="185.5" font-family="IBM Plex Mono, monospace" font-size="8" fill="var(--hayalet)" data-i18n="g10s">stamped on the calendar</text>
+            </g>
+          </svg>
+        </div>
+      </section>
+
+      <section class="ozellik" id="o11">
+        <div>
+          <span class="ozellik-no" data-i18n="f11n">11 — Templates</span>
+          <h3 data-i18n="f11h">Write the closing once</h3>
           <p data-i18n-html="f8p">The standard closing of a caption — your handles, links, a call to action — is written once and appended to the <strong>end</strong> of every caption; what you wrote for that particular post always stays on top. If one platform needs different wording, you define an exception for that platform and the rest carry on with the general text.</p>
           <ul class="puanlar">
-            <li data-i18n="f10a">It goes at the END; your own words always come first.</li>
-            <li data-i18n="f10b">An exception for any platform you like.</li>
-            <li data-i18n="f10c">It drops in the moment you pick a platform on a new entry.</li>
+            <li data-i18n="f11a">It goes at the END; your own words always come first.</li>
+            <li data-i18n="f11b">An exception for any platform you like.</li>
+            <li data-i18n="f11c">It drops in the moment you pick a platform on a new entry.</li>
           </ul>
         </div>
         <div class="ozellik-gorsel canli">
           <svg viewBox="0 0 420 210" role="img" data-i18n-attr="aria-label:g8">
             <rect x="20" y="20" width="150" height="80" rx="9" fill="var(--kagit)" stroke="var(--cizgi)"/>
-            <text x="36" y="40" font-family="IBM Plex Mono, monospace" font-size="9" fill="var(--solgun)" data-i18n="g10a">WHAT YOU WROTE</text>
+            <text x="36" y="40" font-family="IBM Plex Mono, monospace" font-size="9" fill="var(--solgun)" data-i18n="g11a">WHAT YOU WROTE</text>
             <rect x="36" y="50" width="118" height="6" rx="3" fill="var(--cizgi)"/>
             <rect x="36" y="62" width="96" height="6" rx="3" fill="var(--cizgi)"/>
             <rect x="36" y="74" width="110" height="6" rx="3" fill="var(--cizgi)"/>
 
             <rect x="20" y="118" width="150" height="72" rx="9" fill="var(--mavi-soft)" stroke="var(--mavi)"/>
-            <text x="36" y="138" font-family="IBM Plex Mono, monospace" font-size="9" fill="var(--mavi)" data-i18n="g10b">TEMPLATE · ONCE</text>
+            <text x="36" y="138" font-family="IBM Plex Mono, monospace" font-size="9" fill="var(--mavi)" data-i18n="g11b">TEMPLATE · ONCE</text>
             <rect x="36" y="148" width="104" height="6" rx="3" fill="var(--mavi)" opacity=".5"/>
             <rect x="36" y="160" width="88" height="6" rx="3" fill="var(--mavi)" opacity=".5"/>
             <rect x="36" y="172" width="112" height="6" rx="3" fill="var(--mavi)" opacity=".5"/>
@@ -1645,7 +1746,7 @@ a{color:inherit;}
             <path class="f8ok" d="M219 98 L227 104 L219 110" fill="none" stroke="var(--mavi)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
 
             <rect x="242" y="20" width="158" height="170" rx="9" fill="var(--yuzey)" stroke="var(--mavi)" stroke-width="1.5"/>
-            <text x="258" y="40" font-family="IBM Plex Mono, monospace" font-size="8.5" fill="var(--solgun)" data-i18n="g10c">CAPTION AS SENT</text>
+            <text x="258" y="40" font-family="IBM Plex Mono, monospace" font-size="8.5" fill="var(--solgun)" data-i18n="g11c">CAPTION AS SENT</text>
             <g class="f8ust">
               <rect x="258" y="50" width="118" height="6" rx="3" fill="var(--cizgi)"/>
               <rect x="258" y="62" width="96" height="6" rx="3" fill="var(--cizgi)"/>
@@ -1657,26 +1758,26 @@ a{color:inherit;}
               <rect x="258" y="120" width="88" height="6" rx="3" fill="var(--mavi)" opacity=".5"/>
               <rect x="258" y="132" width="112" height="6" rx="3" fill="var(--mavi)" opacity=".5"/>
             </g>
-            <text class="f8not" x="321" y="168" text-anchor="middle" font-family="IBM Plex Mono, monospace" font-size="8.5" fill="var(--solgun)" data-i18n="g10d">template always last</text>
+            <text class="f8not" x="321" y="168" text-anchor="middle" font-family="IBM Plex Mono, monospace" font-size="8.5" fill="var(--solgun)" data-i18n="g11d">template always last</text>
           </svg>
         </div>
       </section>
 
-      <section class="ozellik" id="o11">
+      <section class="ozellik" id="o12">
         <div>
-          <span class="ozellik-no" data-i18n="f11n">11 — The cloud</span>
-          <h3 data-i18n="f11h">The same plan on every device</h3>
-          <p data-i18n="f11p">When you sign in, your calendar, your projects, your ideas, your scripts and your templates come with you to every device. Everything works without signing in too — it just stays in that browser. When you open Shootboard, whatever hasn't gone out yet meets you as a list, so nothing quietly slides past its date.</p>
+          <span class="ozellik-no" data-i18n="f12n">12 — The cloud</span>
+          <h3 data-i18n="f12h">The same plan on every device</h3>
+          <p data-i18n="f12p">When you sign in, your calendar, your projects, your ideas, your scripts and your templates come with you to every device. Everything works without signing in too — it just stays in that browser. When you open Shootboard, whatever hasn't gone out yet meets you as a list, so nothing quietly slides past its date.</p>
           <ul class="puanlar">
-            <li data-i18n="f11a">Google or an email link — no password to invent.</li>
-            <li data-i18n="f11b">A deletion leaves a tombstone: what you deleted never comes back to life.</li>
-            <li data-i18n="f11c">The pending list can be dismissed for the session; the ⏳ button reopens it.</li>
+            <li data-i18n="f12a">Google or an email link — no password to invent.</li>
+            <li data-i18n="f12b">A deletion leaves a tombstone: what you deleted never comes back to life.</li>
+            <li data-i18n="f12c">The pending list can be dismissed for the session; the ⏳ button reopens it.</li>
           </ul>
         </div>
         <div class="ozellik-gorsel canli">
           <svg viewBox="0 0 420 210" role="img" data-i18n-attr="aria-label:g9">
             <rect x="150" y="14" width="120" height="46" rx="12" fill="var(--mavi-soft)" stroke="var(--mavi)"/>
-            <text x="210" y="42" text-anchor="middle" font-family="IBM Plex Mono, monospace" font-size="10.5" fill="var(--mavi)" data-i18n="g11a">ONE PLAN</text>
+            <text x="210" y="42" text-anchor="middle" font-family="IBM Plex Mono, monospace" font-size="10.5" fill="var(--mavi)" data-i18n="g12a">ONE PLAN</text>
 
             <path id="y1" d="M210 62 L210 78 L70 78 L70 96" stroke="var(--cizgi)" stroke-width="1.5" fill="none" stroke-linecap="round"/>
             <path id="y2" d="M210 62 L210 96" stroke="var(--cizgi)" stroke-width="1.5" fill="none" stroke-linecap="round"/>
@@ -1693,7 +1794,7 @@ a{color:inherit;}
               <g class="f9c" style="--g:1.35s"><rect x="26" y="140" width="42" height="14" rx="3" fill="var(--tt)" opacity=".85"/></g>
               <g class="f9c" style="--g:1.45s"><rect x="72" y="140" width="42" height="14" rx="3" fill="var(--fb)" opacity=".85"/></g>
               <rect x="52" y="176" width="36" height="4" rx="2" fill="var(--cizgi)"/>
-              <text x="70" y="198" text-anchor="middle" font-family="IBM Plex Mono, monospace" font-size="9.5" fill="var(--solgun)" data-i18n="g11b">computer</text>
+              <text x="70" y="198" text-anchor="middle" font-family="IBM Plex Mono, monospace" font-size="9.5" fill="var(--solgun)" data-i18n="g12b">computer</text>
             </g>
             <g>
               <rect x="184" y="96" width="52" height="76" rx="8" fill="var(--kagit)" stroke="var(--cizgi)"/>
@@ -1701,7 +1802,7 @@ a{color:inherit;}
               <g class="f9c" style="--g:1.60s"><rect x="192" y="124" width="36" height="12" rx="3" fill="var(--yt)" opacity=".85"/></g>
               <g class="f9c" style="--g:1.70s"><rect x="192" y="140" width="36" height="12" rx="3" fill="var(--tt)" opacity=".85"/></g>
               <rect x="200" y="160" width="20" height="3" rx="1.5" fill="var(--cizgi)"/>
-              <text x="210" y="198" text-anchor="middle" font-family="IBM Plex Mono, monospace" font-size="9.5" fill="var(--solgun)" data-i18n="g11c">phone</text>
+              <text x="210" y="198" text-anchor="middle" font-family="IBM Plex Mono, monospace" font-size="9.5" fill="var(--solgun)" data-i18n="g12c">phone</text>
             </g>
             <g>
               <rect x="298" y="96" width="104" height="76" rx="8" fill="var(--kagit)" stroke="var(--cizgi)"/>
@@ -1710,7 +1811,7 @@ a{color:inherit;}
               <g class="f9c" style="--g:2.05s"><rect x="310" y="130" width="38" height="14" rx="3" fill="var(--yt)" opacity=".85"/></g>
               <g class="f9c" style="--g:2.15s"><rect x="352" y="130" width="38" height="14" rx="3" fill="var(--ig)" opacity=".85"/></g>
               <rect x="336" y="158" width="28" height="3" rx="1.5" fill="var(--cizgi)"/>
-              <text x="350" y="198" text-anchor="middle" font-family="IBM Plex Mono, monospace" font-size="9.5" fill="var(--solgun)" data-i18n="g11d">tablet</text>
+              <text x="350" y="198" text-anchor="middle" font-family="IBM Plex Mono, monospace" font-size="9.5" fill="var(--solgun)" data-i18n="g12d">tablet</text>
             </g>
           </svg>
         </div>
@@ -1970,7 +2071,7 @@ var METIN = {
     s5t:"Yayın", s5p:"Çıktıkça işaretle. Bekleyenler listede kalır.",
 
     feat_eyebrow:"Özellikler",
-    feat_h2:"On bir parça, tek pano",
+    feat_h2:"On iki parça, tek pano",
     feat_p:"Bir başlığa tıkla, o özelliğin ne işe yaradığını anlatan bölüme gitsin.",
     card_go:"Detaya git →",
     c1t:"Fikirler", c1p:"Kartlardan bir duvar. Birleştir, ayır, süz.",
@@ -1982,8 +2083,8 @@ var METIN = {
     c7t:"Terminler", c7p:"Her adımın kendi tarihi. Gecikince kendiliğinden kırmızıya döner.",
     c8t:"Takvim", c8p:"İki bağımsız etiket: ne olduğu ve nereye gideceği.",
     c9t:"Kayıt penceresi", c9p:"Bir paylaşımın her şeyi, her alan tek dokunuşla kopyalanır.",
-    c10t:"Şablonlar", c10p:"Kapanışı bir kez yaz, her açıklamanın sonuna eklensin.",
-    c11t:"Her cihazda aynı plan", c11p:"Google ya da e-posta linki. Şifre yok.",
+    c11t:"Şablonlar", c11p:"Kapanışı bir kez yaz, her açıklamanın sonuna eklensin.",
+    c12t:"Her cihazda aynı plan", c12p:"Google ya da e-posta linki. Şifre yok.",
 
     f1n:"01 — Fikirler", f1h:"Kartlardan bir duvar",
     f1p:"Her fikir bir kart: bir açı, bir soru, bir sahne, konuşulacak bir kişi. Kartın boyu ne kadar yazdığını bir bakışta gösterir. Bir kartı ötekinin üstüne bıraktığında ikisi tek kartta birleşir; birleşik karttan bir parçayı sürükleyip çıkardığında yeniden kendi kartı olur.",
@@ -2066,21 +2167,35 @@ var METIN = {
     g9:"Bir kaydın düzenleme penceresi",
     g9a:"BAŞLIK", g9b:"KAPAK YAZISI", g9c:"AÇIKLAMA",
 
-    f10n:"10 — Şablonlar", f10h:"Kapanışı bir kez yaz",
-    f10p:"Açıklamanın standart kapanışı — hesap adların, linkler, bir çağrı — bir kez yazılır ve her açıklamanın <strong>sonuna</strong> eklenir; o posta özel yazdığın hep üstte kalır. Bir platformda farklı bir metin gerekiyorsa o platforma istisna tanımlarsın, kalanlar genel metinle devam eder.",
-    f10a:"SONA eklenir; senin yazın her zaman önde.",
-    f10b:"İstediğin platforma özel istisna.",
-    f10c:"Yeni kayıtta platformu seçer seçmez düşer.",
-    g10:"Şablonun açıklamanın sonuna eklenmesi",
-    g10a:"SENİN YAZDIĞIN", g10b:"ŞABLON · BİR KEZ", g10c:"GİDEN AÇIKLAMA", g10d:"şablon hep altta",
+    c10t:"Çok dilli başlık", c10p:"Tek video, her izleyiciye kendi dilinde başlık. YouTube uzun video ve Shorts.",
+    f10n:"10 — Çok dilli başlık", f10h:"Tek video, izleyicinin kendi dili",
+    f10p:"YouTube tek bir videoya birden çok dilde başlık ve açıklama taşır: Alman izleyici Almanca okur, Türk izleyici Türkçe, ve bu aynı yüklemedir. Shootboard bunu hazırladığın yerdir — kayıt penceresinde bir dil şeridi açılır, sekmeye bastığında izleyicinin gördüğü dört alan o dile geçer. ✨ düğmesi yazdığını çevirir; aynı videoya ikinci, başka bir metin uydurmaz.",
+    f10a:"Başlık, açıklama, etiketler ve kapak kısa metni — izleyicinin gördüğü her şey, senin kendi notların değil.",
+    f10b:"Takvim her kaydın hangi dilleri hazır olduğunu damgalar; açmadan görürsün.",
+    f10c:"Yalnızca YouTube uzun video ve Shorts'ta çıkar. Başka yerde farklı dil ayrı gönderi demek, orada şerit yalnızca yol tıkardı.",
+    f10d:"Platformu değiştirsen de çeviriler yerinde kalır — arkandan hiçbir şey atılmaz.",
+    g10:"Dil sekmeleri, tek bir video ve aynı videoyu kendi dilinde gören üç izleyici",
+    g10a:"TR", g10b:"EN", g10c:"DE", g10v:"TEK YÜKLEME",
+    g10t1:"Sokollu Köprüsü",       g10d1:"Türkiye'den izliyor",
+    g10t2:"The Bridge of Sokollu", g10d2:"ABD'den izliyor",
+    g10t3:"Die Sokollu-Brücke",    g10d3:"Almanya'dan izliyor",
+    g10r:"TR EN DE", g10s:"takvimde damga",
 
-    f11n:"11 — Bulut", f11h:"Her cihazda aynı plan",
-    f11p:"Giriş yaptığında takvimin, projelerin, fikirlerin, scriptlerin ve şablonların seninle birlikte her cihaza gelir. Giriş yapmadan da her şey çalışır — sadece o tarayıcıda kalır. Shootboard'u açtığında hâlâ yayınlanmamış olanlar bir listeyle karşına çıkar, böylece hiçbir şey tarihini sessizce geçmez.",
-    f11a:"Google ya da e-posta linki — uydurulacak şifre yok.",
-    f11b:"Silme bir mezar taşı bırakır: silinen bir daha geri dirilmez.",
-    f11c:"Bekleyenler listesi o oturum için kapatılabilir; ⏳ düğmesi geri açar.",
-    g11:"Aynı planın üç cihazda görünmesi",
-    g11a:"TEK PLAN", g11b:"bilgisayar", g11c:"telefon", g11d:"tablet",
+    f11n:"11 — Şablonlar", f11h:"Kapanışı bir kez yaz",
+    f11p:"Açıklamanın standart kapanışı — hesap adların, linkler, bir çağrı — bir kez yazılır ve her açıklamanın <strong>sonuna</strong> eklenir; o posta özel yazdığın hep üstte kalır. Bir platformda farklı bir metin gerekiyorsa o platforma istisna tanımlarsın, kalanlar genel metinle devam eder.",
+    f11a:"SONA eklenir; senin yazın her zaman önde.",
+    f11b:"İstediğin platforma özel istisna.",
+    f11c:"Yeni kayıtta platformu seçer seçmez düşer.",
+    g11:"Şablonun açıklamanın sonuna eklenmesi",
+    g11a:"SENİN YAZDIĞIN", g11b:"ŞABLON · BİR KEZ", g11c:"GİDEN AÇIKLAMA", g11d:"şablon hep altta",
+
+    f12n:"12 — Bulut", f12h:"Her cihazda aynı plan",
+    f12p:"Giriş yaptığında takvimin, projelerin, fikirlerin, scriptlerin ve şablonların seninle birlikte her cihaza gelir. Giriş yapmadan da her şey çalışır — sadece o tarayıcıda kalır. Shootboard'u açtığında hâlâ yayınlanmamış olanlar bir listeyle karşına çıkar, böylece hiçbir şey tarihini sessizce geçmez.",
+    f12a:"Google ya da e-posta linki — uydurulacak şifre yok.",
+    f12b:"Silme bir mezar taşı bırakır: silinen bir daha geri dirilmez.",
+    f12c:"Bekleyenler listesi o oturum için kapatılabilir; ⏳ düğmesi geri açar.",
+    g12:"Aynı planın üç cihazda görünmesi",
+    g12a:"TEK PLAN", g12b:"bilgisayar", g12c:"telefon", g12d:"tablet",
 
     login_eyebrow:"Giriş",
     login_h2:"Üç yol var. Üçü de aynı yere çıkar.",
