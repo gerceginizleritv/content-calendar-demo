@@ -1,0 +1,265 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Shootboard — Deneme geri bildirimi</title>
+<meta name="description" content="Shootboard deneme dönemi geri bildirim formu. Dört soru, iki dakika.">
+<meta name="robots" content="noindex">
+<meta name="theme-color" content="#F1EDE3">
+<link rel="icon" href="favicon.svg" type="image/svg+xml">
+<link rel="icon" href="favicon-32x32.png" sizes="32x32">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500&family=IBM+Plex+Sans:wght@400;500;600;700&display=swap">
+<script>
+// Tema ilk boyamadan ONCE: uygulamayla ayni anahtar, iki sayfa arasinda tasiniyor.
+(function(){
+  try{
+    var t = localStorage.getItem('demo_theme');
+    if(t === 'dark' || t === 'light') document.documentElement.setAttribute('data-theme', t);
+  }catch(e){}
+})();
+</script>
+<style>
+:root{
+  color-scheme: light;
+  --kagit:#F1EDE3; --yuzey:#FBF9F3; --yuzey2:#E7E2D5;
+  --cizgi:#D7D1C2; --cizgi-soft:#E3DED1;
+  --mavi:#C4350A; --mavi-koyu:#A22B06; --mavi-soft:#FAE6DC;
+  --murekkep:#15130F; --solgun:#585349; --hayalet:#7A7466;
+  --uzeri:#FFFFFF; --yesil:#25654A;
+  --golge:0 1px 2px rgba(33,26,14,.06), 0 8px 24px -12px rgba(33,26,14,.18);
+}
+@media (prefers-color-scheme: dark){
+  :root:not([data-theme="light"]){
+    color-scheme: dark;
+    --kagit:#15130F; --yuzey:#1E1B16; --yuzey2:#272219;
+    --cizgi:#37312A; --cizgi-soft:#2C271F;
+    --mavi:#FF7A45; --mavi-koyu:#FF9569; --mavi-soft:#3A1E12;
+    --murekkep:#F0EBE0; --solgun:#ABA496; --hayalet:#8B8476;
+    --uzeri:#15130F; --yesil:#66C295;
+    --golge:0 1px 2px rgba(0,0,0,.3), 0 8px 24px -12px rgba(0,0,0,.6);
+  }
+}
+:root[data-theme="dark"]{
+  color-scheme: dark;
+  --kagit:#15130F; --yuzey:#1E1B16; --yuzey2:#272219;
+  --cizgi:#37312A; --cizgi-soft:#2C271F;
+  --mavi:#FF7A45; --mavi-koyu:#FF9569; --mavi-soft:#3A1E12;
+  --murekkep:#F0EBE0; --solgun:#ABA496; --hayalet:#8B8476;
+  --uzeri:#15130F; --yesil:#66C295;
+  --golge:0 1px 2px rgba(0,0,0,.3), 0 8px 24px -12px rgba(0,0,0,.6);
+}
+*{box-sizing:border-box;}
+body{
+  margin:0;background:var(--kagit);color:var(--murekkep);
+  font-family:'IBM Plex Sans','Segoe UI',system-ui,-apple-system,sans-serif;
+  font-size:15.5px;line-height:1.65;-webkit-font-smoothing:antialiased;
+}
+.sar{max-width:640px;margin:0 auto;padding-inline:20px;}
+
+/* Klaket seridi: uygulamanin kimligiyle ayni imza */
+.serit{height:7px;background:repeating-linear-gradient(115deg,var(--murekkep) 0 13px,var(--kagit) 13px 26px);}
+
+header{padding-block:30px 6px;}
+.etiket{
+  font-family:'IBM Plex Mono',monospace;font-size:11px;letter-spacing:1.6px;
+  text-transform:uppercase;color:var(--mavi);font-weight:500;
+}
+h1{margin:10px 0 12px;font-size:clamp(25px,5vw,34px);line-height:1.15;letter-spacing:-.6px;text-wrap:balance;}
+.alt{margin:0;color:var(--solgun);font-size:15px;max-width:54ch;}
+
+form{padding-block:26px 40px;}
+fieldset{
+  border:1px solid var(--cizgi);border-radius:13px;background:var(--yuzey);
+  padding:20px 20px 22px;margin:0 0 16px;box-shadow:var(--golge);
+}
+/* Baslik <div class="soru" id="s1"> DEGIL: tarayici legend'i cerceve hizasinda ciziyor ve iki
+   satira dusunce kutunun disinda duruyordu. Erisilebilirlik aria-labelledby
+   ile korunuyor — radyo grubu adini yine bu basliktan aliyor. */
+.soru{font-weight:600;font-size:15.5px;line-height:1.4;margin:0 0 2px;}
+.ipucu{margin:2px 0 14px;font-size:13px;color:var(--solgun);line-height:1.5;}
+.secenekler{display:grid;gap:8px;}
+.sec{
+  display:flex;align-items:flex-start;gap:11px;padding:12px 13px;min-height:48px;
+  border:1px solid var(--cizgi);border-radius:9px;background:var(--kagit);cursor:pointer;
+  transition:border-color .12s,background .12s;
+}
+.sec:hover{border-color:var(--mavi);}
+.sec input{margin:3px 0 0;accent-color:var(--mavi);width:17px;height:17px;flex:none;}
+.sec span{min-width:0;}
+.sec b{display:block;font-weight:600;font-size:14.5px;}
+.sec em{display:block;font-style:normal;font-size:12.5px;color:var(--solgun);margin-top:2px;line-height:1.45;}
+.sec:has(input:checked){border-color:var(--mavi);background:var(--mavi-soft);}
+
+textarea,input[type="text"],input[type="email"]{
+  width:100%;border:1px solid var(--cizgi);border-radius:9px;background:var(--kagit);
+  color:var(--murekkep);font:inherit;font-size:15px;padding:12px 13px;
+}
+textarea{min-height:104px;resize:vertical;line-height:1.55;}
+textarea:focus,input:focus,.sec:focus-within{outline:2px solid var(--mavi);outline-offset:1px;}
+.ikili{display:grid;gap:12px;grid-template-columns:1fr 1fr;}
+@media(max-width:560px){.ikili{grid-template-columns:1fr;}}
+label.kucuk{display:block;font-size:12.5px;color:var(--solgun);margin-bottom:6px;}
+
+.gonder{
+  display:inline-flex;align-items:center;justify-content:center;
+  background:var(--mavi);color:var(--uzeri);border:0;border-radius:10px;
+  padding:15px 28px;font:inherit;font-size:15.5px;font-weight:600;cursor:pointer;min-height:50px;
+}
+.gonder:hover{background:var(--mavi-koyu);}
+.gonder:disabled{opacity:.6;cursor:default;}
+.durum{margin:12px 0 0;font-size:14px;min-height:20px;}
+.durum.hata{color:#A3301F;}
+:root[data-theme="dark"] .durum.hata,
+:root:not([data-theme="light"]) .durum.hata{color:#F2808F;}
+@media (prefers-color-scheme: light){:root:not([data-theme="dark"]) .durum.hata{color:#A3301F;}}
+.durum.oldu{color:var(--yesil);}
+
+.tesekkur{
+  border:1px solid var(--cizgi);border-radius:13px;background:var(--yuzey);
+  padding:30px 24px;text-align:center;box-shadow:var(--golge);
+}
+.tesekkur h2{margin:0 0 10px;font-size:22px;}
+.tesekkur p{margin:0;color:var(--solgun);}
+
+footer{border-top:1px solid var(--cizgi);padding-block:18px 34px;}
+footer p{margin:0;font-size:12.5px;color:var(--hayalet);}
+footer a{color:var(--solgun);}
+[hidden]{display:none!important;}
+</style>
+</head>
+<body>
+<span class="serit" aria-hidden="true"></span>
+
+<div class="sar">
+  <header>
+    <span class="etiket">Shootboard · deneme dönemi</span>
+    <h1>Dört soru, iki dakika</h1>
+    <p class="alt">Bu formu okuyan tek kişi var, o da Shootboard'u yazan kişi. Kibar olmana
+      gerek yok — işe yarayan tek cevap dürüst olanı.</p>
+  </header>
+
+  <form id="form">
+    <fieldset aria-labelledby="s1">
+      <div class="soru" id="s1">1. Bu hafta Shootboard'u kaç kez açtın?</div>
+      <p class="ipucu">Az açtıysan da yaz. "Hiç açmadım" en değerli cevaplardan biri —
+        sebebini bilmek istiyorum.</p>
+      <div class="secenekler">
+        <label class="sec"><input type="radio" name="siklik" value="hic" required><span><b>Hiç açmadım</b><em>Unuttum, vaktim olmadı ya da ihtiyaç duymadım</em></span></label>
+        <label class="sec"><input type="radio" name="siklik" value="bir-iki"><span><b>Bir iki kez</b><em>Baktım, biraz kurcaladım</em></span></label>
+        <label class="sec"><input type="radio" name="siklik" value="birkac"><span><b>Birkaç kez</b><em>Gerçekten bir şeyler planladım</em></span></label>
+        <label class="sec"><input type="radio" name="siklik" value="hergun"><span><b>Neredeyse her gün</b><em>İşimin parçası oldu</em></span></label>
+      </div>
+    </fieldset>
+
+    <fieldset aria-labelledby="s2">
+      <div class="soru" id="s2">2. Nerede takıldın?</div>
+      <p class="ipucu">Bozulan, anlaşılmayan, sinir bozan bir şey. Tek cümle yeter.
+        "Şunu arıyordum, bulamadım" de yeter.</p>
+      <textarea name="takildim" placeholder="Örnek: Mekân eklerken haritayı bulamadım. / Telefonda çekim listesi açılmadı. / Projeyi silmenin yolunu bulamadım."></textarea>
+    </fieldset>
+
+    <fieldset aria-labelledby="s3">
+      <div class="soru" id="s3">3. Shootboard yarın kapansa ne hissederdin?</div>
+      <p class="ipucu">Bu soru garip duruyor ama "tavsiye eder miydin"den çok daha
+        dürüst bir cevap veriyor.</p>
+      <div class="secenekler">
+        <label class="sec"><input type="radio" name="kapansa" value="farketmez" required><span><b>Fark etmezdi</b></span></label>
+        <label class="sec"><input type="radio" name="kapansa" value="biraz"><span><b>Biraz canım sıkılırdı</b><em>Başka bir yolunu bulurdum</em></span></label>
+        <label class="sec"><input type="radio" name="kapansa" value="cok"><span><b>Gerçekten eksikliğini hissederdim</b><em>Yerine koyacağım bir şey yok</em></span></label>
+      </div>
+    </fieldset>
+
+    <fieldset aria-labelledby="s4">
+      <div class="soru" id="s4">4. Bir şey eklenecek olsa ne olsun?</div>
+      <p class="ipucu">Aklına ilk geleni yaz. Küçük bir şey de olabilir.</p>
+      <textarea name="olsun" placeholder="Örnek: Çekim listesini telefona bildirim olarak gönderse."></textarea>
+    </fieldset>
+
+    <fieldset aria-labelledby="s5">
+      <div class="soru" id="s5">Kim olduğun (isteğe bağlı)</div>
+      <p class="ipucu">Bir şeyi düzeltirsem haber verebilmek için. Boş bırakabilirsin.</p>
+      <div class="ikili">
+        <div>
+          <label class="kucuk" for="ad">Adın</label>
+          <input type="text" id="ad" name="ad" autocomplete="name">
+        </div>
+        <div>
+          <label class="kucuk" for="eposta">E-posta</label>
+          <input type="email" id="eposta" name="eposta" autocomplete="email" placeholder="sen@ornek.com">
+        </div>
+      </div>
+    </fieldset>
+
+    <button class="gonder" id="gonder" type="submit">Gönder</button>
+    <p class="durum" id="durum" role="status"></p>
+  </form>
+
+  <div class="tesekkur" id="tesekkur" hidden>
+    <h2>Teşekkürler.</h2>
+    <p>Okuyacağım — hepsini, tek tek.</p>
+  </div>
+
+  <footer>
+    <p>
+      <a href="./index.html">Shootboard</a> ·
+      <a href="./kilavuz.html">Kullanım kılavuzu</a> ·
+      <a href="./privacy.html">Gizlilik</a>
+    </p>
+  </footer>
+</div>
+
+<script>
+// Uygulamadaki geri bildirim formuyla AYNI ucu kullaniyor: cevaplar dogrudan
+// e-postaya dusuyor, veritabani ya da giris gerekmiyor. Denemeciler linke
+// tiklayip yaziyor, o kadar.
+const UC = 'https://api.web3forms.com/submit';
+const ANAHTAR = '64552f4d-d476-4ec9-9983-8960b94b564c';
+
+const SIKLIK = { hic:'Hiç açmadım', 'bir-iki':'Bir iki kez', birkac:'Birkaç kez', hergun:'Neredeyse her gün' };
+const KAPANSA = { farketmez:'Fark etmezdi', biraz:'Biraz canım sıkılırdı', cok:'Gerçekten eksikliğini hissederdim' };
+
+const form = document.getElementById('form');
+const durum = document.getElementById('durum');
+const dugme = document.getElementById('gonder');
+
+form.addEventListener('submit', async (e)=>{
+  e.preventDefault();
+  const v = new FormData(form);
+  // Alan adlari duz Turkce: Web3Forms bunlari oldugu gibi e-postanin govdesine
+  // yaziyor, yani gelen kutusunda okunacak etiketler bunlar.
+  const paket = {
+    access_key: ANAHTAR,
+    subject: 'Shootboard deneme geri bildirimi',
+    'Kaç kez açtı': SIKLIK[v.get('siklik')] || '—',
+    'Nerede takıldı': (v.get('takildim') || '').trim() || '—',
+    'Kapansa ne hissederdi': KAPANSA[v.get('kapansa')] || '—',
+    'Ne eklensin': (v.get('olsun') || '').trim() || '—',
+    'Ad': (v.get('ad') || '').trim() || '—',
+    'E-posta': (v.get('eposta') || '').trim() || '—'
+  };
+  dugme.disabled = true;
+  durum.textContent = 'Gönderiliyor…';
+  durum.className = 'durum';
+  try{
+    const c = await fetch(UC, {
+      method:'POST',
+      headers:{ 'Content-Type':'application/json', 'Accept':'application/json' },
+      body: JSON.stringify(paket)
+    });
+    if(!c.ok) throw new Error('HTTP ' + c.status);
+    form.hidden = true;
+    document.getElementById('tesekkur').hidden = false;
+    document.getElementById('tesekkur').scrollIntoView({ block:'center' });
+  }catch(err){
+    // Yazdiklarini kaybetmesin: form duruyor, tekrar denenebiliyor.
+    dugme.disabled = false;
+    durum.textContent = 'Gönderilemedi (' + err.message + '). Bağlantını kontrol edip tekrar dene — yazdıkların duruyor.';
+    durum.className = 'durum hata';
+  }
+});
+</script>
+</body>
+</html>
