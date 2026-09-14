@@ -289,8 +289,12 @@ yalnızca iki auth sorusu için başlıklı bir pencere. Genel olan esas alınd�
 **E-posta tarafı (5 Eylül):** Resend bağlandı, SMTP kuruldu, şablonlar
 Supabase'e girildi, `hosgeldin` fonksiyonu dağıtıldı, `sql/20` çalıştırıldı.
 `hello@shootboard.app` Cloudflare Email Routing ile Gmail'e düşüyor.
-**Kalan:** `_dmarc` TXT kaydı (`v=DMARC1; p=none;`) — ilk e-posta Gmail'de
-spam'e düştü, asıl sebebi bu.
+**14 Eylül'de doğrulandı:** DNS sorgusuyla bakıldı, üç kayıt da yerinde —
+`_dmarc` (`v=DMARC1; p=none;`), `resend._domainkey` DKIM ve
+`send.shootboard.app` SPF (`v=spf1 include:amazonses.com ~all`).
+İlk e-postanın spam'e düşmesi bu kayıtlar girilmeden önceydi; artık
+eksik yok. Gerçek bir kayıt e-postasıyla SPF/DKIM/DMARC'ın PASS
+verdiğini görmek kaldı.
 
 Panelden kurulum iki kez düştü: ad kutusu rastgele bir isimle (`dynamic-task`)
 dolu geliyor ve değiştirilmezse tetikleyicinin çağırdığı adla uyuşmuyor;
