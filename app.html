@@ -6,7 +6,7 @@
 <title>Shootboard — Content Calendar (One Shoot, Every Post)</title>
 <meta name="description" content="One shoot becomes ten posts. Shootboard keeps every Reel, Short, carousel and story on one board with its own caption, cover text and time slot — a planning board, not an auto-poster.">
 <link rel="manifest" href="manifest.json">
-<meta name="theme-color" content="#10131C">
+<meta name="theme-color" content="#15130F">
 <link rel="icon" href="favicon.svg" type="image/svg+xml">
 <link rel="icon" href="favicon.ico" sizes="any">
 <link rel="icon" href="favicon-32x32.png" sizes="32x32" type="image/png">
@@ -26,13 +26,13 @@
    ciziliyor, koyu temada siyah ustune siyah kaliyordu. */
 :root{
   color-scheme: light;
-  --bg:#F4F7FA; --surface:#FFFFFF; --surface-2:#EDF1F6; --line:#DFE5EC; --line-soft:#EAEFF4;
-  --accent:#2563C7; --accent-dim:#8B9AAB; --accent-glow:rgba(37,99,199,0.28); --accent-soft:#E8EFFB;
-  --accent-hover:#1D53AC;
-  --text:#141C27; --text-dim:#5B6B7F;
-  --amber:#E0871F; --amber-soft:#FBF0DE;
-  --green:#2E8B62;
-  --red:#C4453C;
+  --bg:#F1EDE3; --surface:#FBF9F3; --surface-2:#E7E2D5; --line:#D7D1C2; --line-soft:#E3DED1;
+  --accent:#C4350A; --accent-dim:#9A9384; --accent-glow:rgba(196,53,10,0.26); --accent-soft:#FAE6DC;
+  --accent-hover:#A22B06;
+  --text:#15130F; --text-dim:#585349;
+  --amber:#8A5F0B; --amber-soft:#F8EDD8;
+  --green:#25654A;
+  --red:#9E1B32;
   --on-accent:#FFFFFF;
   --p-youtube:#DA4B42; --p-instagram:#C0478E; --p-tiktok:#14868F; --p-facebook:#3B6FC4;
   --p-threads:#616B78; --p-x:#232B36; --p-pinterest:#A8322C; --p-linkedin:#1C6C9C;
@@ -41,30 +41,30 @@
 @media (prefers-color-scheme: dark){
   :root:not([data-theme="light"]){
     color-scheme: dark;
-    --bg:#0F151D; --surface:#18212C; --surface-2:#202B38; --line:#2A3644; --line-soft:#222D3A;
-    --accent:#6BA0EE; --accent-dim:#6F7F92; --accent-glow:rgba(107,160,238,0.30); --accent-soft:#1B2A42;
-    --accent-hover:#8AB6F3;
-    --text:#E6ECF3; --text-dim:#93A2B4;
-    --amber:#F0A445; --amber-soft:#33270F;
-    --green:#4FB185;
-    --red:#E8706A;
-    --on-accent:#0F151D;
-    --p-youtube:#E8706A; --p-instagram:#D96BA6; --p-tiktok:#3CA9B2; --p-facebook:#6B9AE0;
+    --bg:#15130F; --surface:#1E1B16; --surface-2:#272219; --line:#37312A; --line-soft:#2C271F;
+    --accent:#FF7A45; --accent-dim:#8B8476; --accent-glow:rgba(255,122,69,0.30); --accent-soft:#3A1E12;
+    --accent-hover:#FF9569;
+    --text:#F0EBE0; --text-dim:#ABA496;
+    --amber:#E8A94A; --amber-soft:#33280F;
+    --green:#66C295;
+    --red:#F2808F;
+    --on-accent:#15130F;
+    --p-youtube:#F2808F; --p-instagram:#D96BA6; --p-tiktok:#3CA9B2; --p-facebook:#6B9AE0;
     --p-threads:#8A94A2; --p-x:#9AA4B2; --p-pinterest:#D4685F; --p-linkedin:#4E9AC8;
   }
 }
 /* acik secim diger yonde de kazanir */
 :root[data-theme="dark"]{
   color-scheme: dark;
-  --bg:#0F151D; --surface:#18212C; --surface-2:#202B38; --line:#2A3644; --line-soft:#222D3A;
-  --accent:#6BA0EE; --accent-dim:#6F7F92; --accent-glow:rgba(107,160,238,0.30); --accent-soft:#1B2A42;
-  --accent-hover:#8AB6F3;
-  --text:#E6ECF3; --text-dim:#93A2B4;
-  --amber:#F0A445; --amber-soft:#33270F;
-  --green:#4FB185;
-  --red:#E8706A;
-  --on-accent:#0F151D;
-  --p-youtube:#E8706A; --p-instagram:#D96BA6; --p-tiktok:#3CA9B2; --p-facebook:#6B9AE0;
+  --bg:#15130F; --surface:#1E1B16; --surface-2:#272219; --line:#37312A; --line-soft:#2C271F;
+  --accent:#FF7A45; --accent-dim:#8B8476; --accent-glow:rgba(255,122,69,0.30); --accent-soft:#3A1E12;
+  --accent-hover:#FF9569;
+  --text:#F0EBE0; --text-dim:#ABA496;
+  --amber:#E8A94A; --amber-soft:#33280F;
+  --green:#66C295;
+  --red:#F2808F;
+  --on-accent:#15130F;
+  --p-youtube:#F2808F; --p-instagram:#D96BA6; --p-tiktok:#3CA9B2; --p-facebook:#6B9AE0;
   --p-threads:#8A94A2; --p-x:#9AA4B2; --p-pinterest:#D4685F; --p-linkedin:#4E9AC8;
 }
 *{box-sizing:border-box;}
@@ -1271,28 +1271,28 @@ textarea.sc-ai-brief{min-height:64px;resize:vertical;line-height:1.5;}
 .fk-add-label{font-size:12px;text-transform:uppercase;letter-spacing:.06em;font-weight:600;}
 /* Alti yumusak ton. Renk kimlikten turetiliyor: ayni fikir her acilista
    ayni renkte, duvar yenilemede baskalasmiyor. */
-.fk-card.renk0{--fk-tag:#C4453C;--fk-tag-text:#fff;}
+.fk-card.renk0{--fk-tag:#9E1B32;--fk-tag-text:#fff;}
 .fk-card.renk1{--fk-tag:#A86A12;--fk-tag-text:#fff;}
-.fk-card.renk2{--fk-tag:#2E8B62;--fk-tag-text:#fff;}
+.fk-card.renk2{--fk-tag:#25654A;--fk-tag-text:#fff;}
 .fk-card.renk3{--fk-tag:#7A6810;--fk-tag-text:#fff;}
 .fk-card.renk4{--fk-tag:#6A4BB0;--fk-tag-text:#fff;}
 .fk-card.renk5{--fk-tag:#4A5A6E;--fk-tag-text:#fff;}
 /* Koyu temada rozet tonlari biraz aciliyor. Medya sorgusu SART:
    :root:not([data-theme="light"]) tek basina acik temada da esleser. */
 @media (prefers-color-scheme: dark){
-  :root:not([data-theme="light"]) .fk-card.renk0{--fk-tag:#C4453C;}
+  :root:not([data-theme="light"]) .fk-card.renk0{--fk-tag:#9E1B32;}
   :root:not([data-theme="light"]) .fk-card.renk1{--fk-tag:#B87A1E;}
-  :root:not([data-theme="light"]) .fk-card.renk2{--fk-tag:#2E8B62;}
+  :root:not([data-theme="light"]) .fk-card.renk2{--fk-tag:#25654A;}
   :root:not([data-theme="light"]) .fk-card.renk3{--fk-tag:#8E7A15;}
   :root:not([data-theme="light"]) .fk-card.renk4{--fk-tag:#6A4BB0;}
-  :root:not([data-theme="light"]) .fk-card.renk5{--fk-tag:#5B6B7F;}
+  :root:not([data-theme="light"]) .fk-card.renk5{--fk-tag:#585349;}
 }
-:root[data-theme="dark"] .fk-card.renk0{--fk-tag:#C4453C;}
+:root[data-theme="dark"] .fk-card.renk0{--fk-tag:#9E1B32;}
 :root[data-theme="dark"] .fk-card.renk1{--fk-tag:#B87A1E;}
-:root[data-theme="dark"] .fk-card.renk2{--fk-tag:#2E8B62;}
+:root[data-theme="dark"] .fk-card.renk2{--fk-tag:#25654A;}
 :root[data-theme="dark"] .fk-card.renk3{--fk-tag:#8E7A15;}
 :root[data-theme="dark"] .fk-card.renk4{--fk-tag:#6A4BB0;}
-:root[data-theme="dark"] .fk-card.renk5{--fk-tag:#5B6B7F;}
+:root[data-theme="dark"] .fk-card.renk5{--fk-tag:#585349;}
 /* Scriptler sayfasi: kart listesi. */
 .sc-tools{display:flex;align-items:center;gap:12px;margin-bottom:14px;}
 .sc-card{display:flex;flex-direction:column;gap:6px;width:100%;text-align:left;
@@ -17472,7 +17472,7 @@ function applyThemeLabel(){
   const dark = currentTheme() === 'dark';
   btn.textContent = dark ? '\u2600 ' + t('btn_theme_light') : '\uD83C\uDF19 ' + t('btn_theme_dark');
   const meta = document.querySelector('meta[name="theme-color"]');
-  if(meta) meta.setAttribute('content', dark ? '#0F151D' : '#F4F7FA');
+  if(meta) meta.setAttribute('content', dark ? '#15130F' : '#F1EDE3');
 }
 document.getElementById('themeBtn').addEventListener('click', ()=>{
   const next = currentTheme() === 'dark' ? 'light' : 'dark';

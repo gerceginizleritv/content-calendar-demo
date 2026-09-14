@@ -690,6 +690,37 @@ a{color:inherit;}
 @keyframes f4d{ 0%,3%{opacity:0;transform:scale(.4);} 8%{opacity:1;transform:scale(1.35);} 12%,90%{opacity:1;transform:scale(1);} 97%,100%{opacity:0;transform:scale(.4);} }
 @keyframes f4c{ 0%,3%{opacity:0;} 10%,90%{opacity:1;} 97%,100%{opacity:0;} }
 
+/* 05 — mekan kartlari sirayla gelir; gorselin uc kademesi (fotograf, harita
+   karesi, bas harfler) ve mekandan cekim listesine dusen iki not.
+   Kartin hic bos kalmamasi urunun anlatilmasi gereken ayrintisi. */
+.canli.oyna .mkKart,.canli.oyna .mkEtiket,.canli.oyna .mkNot,
+.canli.oyna .mkFoto,.canli.oyna .mkPin,.canli.oyna .mkHarf{animation-duration:10s;animation-delay:var(--g);}
+.canli.oyna .mkKart{animation-name:mkKart;}
+.canli.oyna .mkEtiket,.canli.oyna .mkNot{animation-name:mkGel;}
+.canli.oyna .mkFoto{animation-name:mkCiz;}
+.canli.oyna .mkPin,.canli.oyna .mkHarf{animation-name:mkZipla;}
+.canli .mkKart,.canli .mkPin,.canli .mkHarf{transform-box:fill-box;transform-origin:center;}
+.canli .mkNot,.canli .mkEtiket{transform-box:fill-box;transform-origin:left center;}
+@keyframes mkKart{ 0%,2%{opacity:0;transform:translateY(10px) scale(.97);} 10%,92%{opacity:1;transform:none;} 98%,100%{opacity:0;transform:translateY(5px) scale(.99);} }
+@keyframes mkGel{ 0%,12%{opacity:0;transform:translateX(-8px);} 20%,92%{opacity:1;transform:none;} 98%,100%{opacity:0;} }
+@keyframes mkCiz{ 0%,8%{opacity:0;} 22%,92%{opacity:.55;} 98%,100%{opacity:0;} }
+@keyframes mkZipla{ 0%,10%{opacity:0;transform:scale(.3);} 16%{opacity:1;transform:scale(1.25);} 21%,92%{opacity:1;transform:scale(1);} 98%,100%{opacity:0;transform:scale(.4);} }
+
+/* 06 — kutuphaneden secilen maddeler listeye gecer, set uc maddeyi birden
+   goturur, mekandan gelenler kendi etiketiyle duser, sonra tikler kosar. */
+.canli.oyna .clCip,.canli.oyna .clSet,.canli.oyna .clSat,
+.canli.oyna .clTik,.canli.oyna .clSayac,.canli.oyna .clOk{animation-duration:10s;animation-delay:var(--g);}
+.canli.oyna .clCip,.canli.oyna .clSet{animation-name:mkKart;}
+.canli.oyna .clSat{animation-name:clSat;}
+.canli.oyna .clTik{animation-name:clTik;}
+.canli.oyna .clSayac{animation-name:mkGel;}
+.canli.oyna .clOk{animation-name:clOk;}
+.canli .clSat{transform-box:fill-box;transform-origin:left center;}
+.canli .clTik{transform-box:fill-box;transform-origin:center;}
+@keyframes clSat{ 0%,4%{opacity:0;transform:translateX(-14px);} 14%,92%{opacity:1;transform:none;} 98%,100%{opacity:0;} }
+@keyframes clTik{ 0%,3%{opacity:0;transform:scale(.3);} 8%{opacity:1;transform:scale(1.35);} 13%,92%{opacity:1;transform:scale(1);} 98%,100%{opacity:0;transform:scale(.4);} }
+@keyframes clOk{ 0%,6%{opacity:0;} 16%,88%{opacity:.5;} 96%,100%{opacity:0;} }
+
 /* 05 — tarihler yesile doner, geciken kirmizi yanip soner */
 .canli.oyna .f5ok{animation-name:f5ok;animation-duration:10s;animation-delay:var(--g);}
 .canli.oyna .f5gec{animation-name:f5gec;animation-duration:1.7s;animation-delay:2.6s;}
@@ -1099,7 +1130,7 @@ a{color:inherit;}
     <div class="sar">
       <div class="bolum-bas">
         <span class="etiket" data-i18n="feat_eyebrow">Features</span>
-        <h2 data-i18n="feat_h2">Nine parts, one board</h2>
+        <h2 data-i18n="feat_h2">Eleven parts, one board</h2>
         <p data-i18n="feat_p">Click a heading and it takes you to the section that explains what that part does.</p>
       </div>
       <div class="dizin-izgara">
@@ -1107,11 +1138,13 @@ a{color:inherit;}
         <a class="dizin-kart" href="#o02"><span class="dizin-no">02</span><h3 data-i18n="c2t">Scripts</h3><p data-i18n="c2p">A record of its own. It travels to and from Google Drive.</p><span class="dizin-ok" data-i18n="card_go">Go to the detail →</span></a>
         <a class="dizin-kart" href="#o03"><span class="dizin-no">03</span><h3 data-i18n="c3t">Write with AI</h3><p data-i18n="c3p">Drafts, titles and captions with your own Gemini key.</p><span class="dizin-ok" data-i18n="card_go">Go to the detail →</span></a>
         <a class="dizin-kart" href="#o04"><span class="dizin-no">04</span><h3 data-i18n="c4t">Projects</h3><p data-i18n="c4p">Seven steps, one row. Everyone sees where the work is.</p><span class="dizin-ok" data-i18n="card_go">Go to the detail →</span></a>
-        <a class="dizin-kart" href="#o05"><span class="dizin-no">05</span><h3 data-i18n="c5t">Deadlines</h3><p data-i18n="c5p">Every step has its own date. It turns red on its own when it slips.</p><span class="dizin-ok" data-i18n="card_go">Go to the detail →</span></a>
-        <a class="dizin-kart" href="#o06"><span class="dizin-no">06</span><h3 data-i18n="c6t">Calendar</h3><p data-i18n="c6p">Two independent tags: what it is, and where it goes.</p><span class="dizin-ok" data-i18n="card_go">Go to the detail →</span></a>
-        <a class="dizin-kart" href="#o07"><span class="dizin-no">07</span><h3 data-i18n="c7t">The entry window</h3><p data-i18n="c7p">Everything for one post, each field copied with one tap.</p><span class="dizin-ok" data-i18n="card_go">Go to the detail →</span></a>
-        <a class="dizin-kart" href="#o08"><span class="dizin-no">08</span><h3 data-i18n="c8t">Templates</h3><p data-i18n="c8p">Write the closing once; it goes at the end of every caption.</p><span class="dizin-ok" data-i18n="card_go">Go to the detail →</span></a>
-        <a class="dizin-kart" href="#o09"><span class="dizin-no">09</span><h3 data-i18n="c9t">The same plan everywhere</h3><p data-i18n="c9p">Google or an email link. No password.</p><span class="dizin-ok" data-i18n="card_go">Go to the detail →</span></a>
+        <a class="dizin-kart" href="#o05"><span class="dizin-no">05</span><h3 data-i18n="c5t">Locations</h3><p data-i18n="c5p">Permission, warnings, map, photo. Recorded once, read live.</p><span class="dizin-ok" data-i18n="card_go">Go to the detail →</span></a>
+        <a class="dizin-kart" href="#o06"><span class="dizin-no">06</span><h3 data-i18n="c6t">Shot-day checklist</h3><p data-i18n="c6p">Write a thing once, use it on every shoot. Sets add a group in one tap.</p><span class="dizin-ok" data-i18n="card_go">Go to the detail →</span></a>
+        <a class="dizin-kart" href="#o07"><span class="dizin-no">07</span><h3 data-i18n="c7t">Deadlines</h3><p data-i18n="c7p">Every step has its own date. It turns red on its own when it slips.</p><span class="dizin-ok" data-i18n="card_go">Go to the detail →</span></a>
+        <a class="dizin-kart" href="#o08"><span class="dizin-no">08</span><h3 data-i18n="c8t">Calendar</h3><p data-i18n="c8p">Two independent tags: what it is, and where it goes.</p><span class="dizin-ok" data-i18n="card_go">Go to the detail →</span></a>
+        <a class="dizin-kart" href="#o09"><span class="dizin-no">09</span><h3 data-i18n="c9t">The entry window</h3><p data-i18n="c9p">Everything for one post, each field copied with one tap.</p><span class="dizin-ok" data-i18n="card_go">Go to the detail →</span></a>
+        <a class="dizin-kart" href="#o10"><span class="dizin-no">10</span><h3 data-i18n="c10t">Templates</h3><p data-i18n="c10p">Write the closing once; it goes at the end of every caption.</p><span class="dizin-ok" data-i18n="card_go">Go to the detail →</span></a>
+        <a class="dizin-kart" href="#o11"><span class="dizin-no">11</span><h3 data-i18n="c11t">The same plan everywhere</h3><p data-i18n="c11p">Google or an email link. No password.</p><span class="dizin-ok" data-i18n="card_go">Go to the detail →</span></a>
       </div>
     </div>
   </section>
@@ -1327,52 +1360,204 @@ a{color:inherit;}
         </div>
       </section>
 
+      <!-- 05 — MEKANLAR: karttaki gorselin uc kademesi (fotograf, harita,
+           bas harfler) ve mekandan listeye dusen iki not canlandiriliyor. -->
       <section class="ozellik" id="o05">
         <div>
-          <span class="ozellik-no" data-i18n="f5n">05 — Deadlines</span>
-          <h3 data-i18n="f5h">A deadline for every step</h3>
-          <p data-i18n="f5p">Each of the seven steps can carry its own date. You enter them in a single window instead of seven boxes scattered across a table. A date that passes while its step is still unticked turns red on its own, and the strip at the top of the Projects page tells you how many have slipped.</p>
+          <span class="ozellik-no" data-i18n="f5n">05 — Locations</span>
+          <h3 data-i18n="f5h">You always go back to the same place</h3>
+          <p data-i18n="f5p">If you shoot on location, you record a place once: address, map, who grants permission and how long it takes, and what to watch out for there — no tripod indoors, power only in the courtyard, crowded before noon. Link a project to the place and all of it shows up inside the project window, read live rather than copied: update the place's note and every project shot there sees the new version.</p>
           <ul class="puanlar">
-            <li data-i18n="f5a">One window, seven dates.</li>
-            <li data-i18n="f5b">What's late turns red without you doing anything.</li>
-            <li data-i18n="f5c">Ticking the step closes the matter — the date stops nudging you.</li>
+            <li data-i18n="f5a">A card is never blank: your photo if there is one, otherwise a map square drawn from the coordinates, otherwise initials in a colour of their own.</li>
+            <li data-i18n="f5b">The map comes from OpenStreetMap — no key, no account, no fee.</li>
+            <li data-i18n="f5c">Permission and warning notes drop into the shot-day checklist by themselves.</li>
+            <li data-i18n="f5d">One project can be tied to several places; one place carries all the projects shot there.</li>
+          </ul>
+        </div>
+        <div class="ozellik-gorsel canli">
+          <svg viewBox="0 0 420 210" role="img" data-i18n-attr="aria-label:g5">
+            <defs>
+              <!-- Gorsel alani ustten yuvarlak, alttan duz: yuvarlak dikdortgen
+                   ile duz bir dikdortgenin birlesimi. -->
+              <clipPath id="mkA"><rect x="11" y="15" width="124" height="60" rx="9"/><rect x="11" y="50" width="124" height="25"/></clipPath>
+              <clipPath id="mkB"><rect x="148" y="15" width="124" height="60" rx="9"/><rect x="148" y="50" width="124" height="25"/></clipPath>
+              <clipPath id="mkC"><rect x="285" y="15" width="124" height="60" rx="9"/><rect x="285" y="50" width="124" height="25"/></clipPath>
+            </defs>
+
+            <!-- kart 1: FOTOGRAF -->
+            <g class="mkKart" style="--g:0.00s">
+              <rect x="10" y="14" width="126" height="118" rx="10" fill="var(--yuzey)" stroke="var(--cizgi)"/>
+              <g clip-path="url(#mkA)">
+                <rect x="11" y="15" width="124" height="60" fill="var(--mavi-soft)"/>
+                <path d="M11 58 q28 -16 54 -4 q30 14 70 -6 v27 H11 Z" fill="var(--yesil)" opacity=".30"/>
+                <rect x="11" y="66" width="124" height="9" fill="var(--tt)" opacity=".32"/>
+                <g class="mkFoto" stroke="var(--murekkep)" stroke-width="2" fill="none" opacity=".55">
+                  <path d="M28 52 a11 11 0 0 1 22 0"/><path d="M56 52 a11 11 0 0 1 22 0"/><path d="M84 52 a11 11 0 0 1 22 0"/>
+                  <path d="M20 52 h96" stroke-width="3"/>
+                  <path d="M20 44 h96" stroke-width="1.4" opacity=".7"/>
+                </g>
+              </g>
+              <rect x="20" y="86" width="72" height="8" rx="4" fill="var(--murekkep)" opacity=".55"/>
+              <rect x="20" y="100" width="48" height="6" rx="3" fill="var(--solgun)" opacity=".40"/>
+              <g class="mkEtiket" style="--g:1.9s">
+                <rect x="20" y="112" width="60" height="13" rx="6" fill="var(--yesil)" opacity=".16"/>
+                <text x="50" y="121.5" text-anchor="middle" font-family="IBM Plex Mono, monospace" font-size="7.5" fill="var(--yesil)" data-i18n="g5e1">PHOTO</text>
+              </g>
+            </g>
+
+            <!-- kart 2: HARITA KARESI -->
+            <g class="mkKart" style="--g:0.30s">
+              <rect x="147" y="14" width="126" height="118" rx="10" fill="var(--yuzey)" stroke="var(--cizgi)"/>
+              <g clip-path="url(#mkB)">
+                <rect x="148" y="15" width="124" height="60" fill="var(--yuzey2)"/>
+                <g stroke="var(--cizgi)" stroke-width="1">
+                  <path d="M148 32 h124"/><path d="M148 50 h124"/><path d="M148 65 h124"/>
+                  <path d="M175 15 v60"/><path d="M205 15 v60"/><path d="M242 15 v60"/>
+                </g>
+                <path d="M148 60 q30 -14 57 -10 q28 4 67 -18" fill="none" stroke="var(--amber)" stroke-width="3" opacity=".75"/>
+                <g class="mkPin" style="--g:1.2s">
+                  <path d="M210 52 c0 -7 -5 -10 -5 -15 a5 5 0 0 1 10 0 c0 5 -5 8 -5 15 Z" fill="var(--mavi)"/>
+                  <circle cx="210" cy="37" r="2" fill="var(--uzeri)"/>
+                </g>
+              </g>
+              <rect x="157" y="86" width="60" height="8" rx="4" fill="var(--murekkep)" opacity=".55"/>
+              <rect x="157" y="100" width="52" height="6" rx="3" fill="var(--solgun)" opacity=".40"/>
+              <g class="mkEtiket" style="--g:2.2s">
+                <rect x="157" y="112" width="66" height="13" rx="6" fill="var(--mavi)" opacity=".14"/>
+                <text x="190" y="121.5" text-anchor="middle" font-family="IBM Plex Mono, monospace" font-size="7.5" fill="var(--mavi)" data-i18n="g5e2">MAP</text>
+              </g>
+            </g>
+
+            <!-- kart 3: BAS HARFLER -->
+            <g class="mkKart" style="--g:0.60s">
+              <rect x="284" y="14" width="126" height="118" rx="10" fill="var(--yuzey)" stroke="var(--cizgi)"/>
+              <g clip-path="url(#mkC)">
+                <rect x="285" y="15" width="124" height="60" fill="var(--ig)" opacity=".16"/>
+                <text class="mkHarf" style="--g:1.5s" x="347" y="55" text-anchor="middle" font-family="IBM Plex Sans, sans-serif" font-size="26" font-weight="600" fill="var(--ig)" data-i18n="g5h">ES</text>
+              </g>
+              <rect x="294" y="86" width="66" height="8" rx="4" fill="var(--murekkep)" opacity=".55"/>
+              <rect x="294" y="100" width="42" height="6" rx="3" fill="var(--solgun)" opacity=".40"/>
+              <g class="mkEtiket" style="--g:2.5s">
+                <rect x="294" y="112" width="76" height="13" rx="6" fill="var(--ig)" opacity=".14"/>
+                <text x="332" y="121.5" text-anchor="middle" font-family="IBM Plex Mono, monospace" font-size="7.5" fill="var(--ig)" data-i18n="g5e3">INITIALS</text>
+              </g>
+            </g>
+
+            <!-- mekandan cekim listesine dusen iki not -->
+            <g class="mkNot" style="--g:3.1s">
+              <path d="M73 136 v12 q0 6 6 6 h34" fill="none" stroke="var(--mavi)" stroke-width="1.4" opacity=".55" stroke-dasharray="3 3"/>
+              <rect x="118" y="146" width="140" height="20" rx="7" fill="var(--mavi-soft)"/>
+              <text x="128" y="159.5" font-family="IBM Plex Mono, monospace" font-size="8.5" fill="var(--mavi)" data-i18n="g5n1">PERMIT · Vakıflar · 3 days</text>
+            </g>
+            <g class="mkNot" style="--g:3.5s">
+              <rect x="118" y="172" width="196" height="20" rx="7" fill="var(--amber-soft)"/>
+              <text x="128" y="185.5" font-family="IBM Plex Mono, monospace" font-size="8.5" fill="var(--amber)" data-i18n="g5n2">CAREFUL · no tripod indoors</text>
+            </g>
+          </svg>
+        </div>
+      </section>
+
+      <!-- 06 — CEKIM LISTESI: kutuphaneden secim, setle toplu ekleme,
+           mekandan gelen maddeler ve isaretleme sayaci. -->
+      <section class="ozellik" id="o06">
+        <div>
+          <span class="ozellik-no" data-i18n="f6n">06 — Shot-day checklist</span>
+          <h3 data-i18n="f6h">One page before you leave the house</h3>
+          <p data-i18n="f6p">Power bank, lights, make-up kit, the spare battery you forgot last time. You write each thing once and it stays in your library; for every shoot you tick the ones you need off that library instead of typing them again. Groups you reach for often — an interview kit, a night shoot — get saved as a set and land in the list in one tap.</p>
+          <ul class="puanlar">
+            <li data-i18n="f6a">The needs library is written once and used on every shoot.</li>
+            <li data-i18n="f6b">Sets you build yourself add a whole group of items at once.</li>
+            <li data-i18n="f6c">Permission and warning notes from the location arrive on their own and are marked as coming from there.</li>
+            <li data-i18n="f6d">Every item can carry a note of its own; what you tick is counted at the top.</li>
+          </ul>
+        </div>
+        <div class="ozellik-gorsel canli">
+          <svg viewBox="0 0 420 210" role="img" data-i18n-attr="aria-label:g6">
+            <!-- sol: ihtiyac kutuphanesi -->
+            <text x="10" y="18" font-family="IBM Plex Mono, monospace" font-size="8" fill="var(--hayalet)" data-i18n="g6k">LIBRARY</text>
+            <g font-family="IBM Plex Sans, sans-serif" font-size="9">
+              <g class="clCip" style="--g:0.00s"><rect x="10" y="26" width="86" height="19" rx="9" fill="var(--kagit)" stroke="var(--cizgi)"/><text x="22" y="39" fill="var(--solgun)" data-i18n="g6c1">Power bank</text></g>
+              <g class="clCip" style="--g:0.15s"><rect x="10" y="50" width="66" height="19" rx="9" fill="var(--kagit)" stroke="var(--cizgi)"/><text x="22" y="63" fill="var(--solgun)" data-i18n="g6c2">Lights</text></g>
+              <g class="clCip" style="--g:0.30s"><rect x="10" y="74" width="92" height="19" rx="9" fill="var(--kagit)" stroke="var(--cizgi)"/><text x="22" y="87" fill="var(--solgun)" data-i18n="g6c3">Make-up kit</text></g>
+              <g class="clCip" style="--g:0.45s"><rect x="10" y="98" width="74" height="19" rx="9" fill="var(--kagit)" stroke="var(--cizgi)"/><text x="22" y="111" fill="var(--solgun)" data-i18n="g6c4">Tripod</text></g>
+            </g>
+            <!-- set rozeti: uc maddeyi birden goturuyor -->
+            <g class="clSet" style="--g:1.5s">
+              <rect x="10" y="126" width="108" height="22" rx="11" fill="var(--mavi)"/>
+              <text x="64" y="140.5" text-anchor="middle" font-family="IBM Plex Mono, monospace" font-size="8.5" fill="var(--uzeri)" data-i18n="g6s">SET · Interview</text>
+            </g>
+
+            <!-- kutuphaneden listeye akis -->
+            <path class="clOk" d="M112 60 h34" fill="none" stroke="var(--mavi)" stroke-width="1.6" opacity=".5" stroke-dasharray="4 4"/>
+            <path class="clOk" style="--g:.2s" d="M124 137 q22 0 22 -22" fill="none" stroke="var(--mavi)" stroke-width="1.6" opacity=".5" stroke-dasharray="4 4"/>
+
+            <!-- sag: o cekimin listesi -->
+            <rect x="152" y="10" width="258" height="192" rx="12" fill="var(--yuzey)" stroke="var(--cizgi)"/>
+            <text x="166" y="28" font-family="IBM Plex Mono, monospace" font-size="8" fill="var(--hayalet)" data-i18n="g6l">SOKOLLU BRIDGE · CHECKLIST</text>
+            <g class="clSayac" style="--g:3.4s">
+              <rect x="344" y="17" width="52" height="16" rx="8" fill="var(--yesil)" opacity=".16"/>
+              <text x="370" y="28.5" text-anchor="middle" font-family="IBM Plex Mono, monospace" font-size="8.5" fill="var(--yesil)" data-i18n="g6n">4 / 6</text>
+            </g>
+            <path d="M152 38 h258" stroke="var(--cizgi)" stroke-width="1"/>
+
+            <g font-family="IBM Plex Sans, sans-serif" font-size="9.5" fill="var(--murekkep)">
+              <g class="clSat" style="--g:0.7s"><rect x="166" y="46" width="12" height="12" rx="3.5" fill="none" stroke="var(--cizgi)" stroke-width="1.4"/><g class="clTik" style="--g:2.5s"><rect x="166" y="46" width="12" height="12" rx="3.5" fill="var(--yesil)"/><path d="M169 52.2 l2.2 2.2 l4 -4.6" fill="none" stroke="var(--uzeri)" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/></g><text x="186" y="55" data-i18n="g6r1">Power bank</text></g>
+              <g class="clSat" style="--g:0.9s"><rect x="166" y="70" width="12" height="12" rx="3.5" fill="none" stroke="var(--cizgi)" stroke-width="1.4"/><g class="clTik" style="--g:2.7s"><rect x="166" y="70" width="12" height="12" rx="3.5" fill="var(--yesil)"/><path d="M169 76.2 l2.2 2.2 l4 -4.6" fill="none" stroke="var(--uzeri)" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/></g><text x="186" y="79" data-i18n="g6r2">Lights</text></g>
+              <g class="clSat" style="--g:1.9s"><rect x="166" y="94" width="12" height="12" rx="3.5" fill="none" stroke="var(--cizgi)" stroke-width="1.4"/><g class="clTik" style="--g:2.9s"><rect x="166" y="94" width="12" height="12" rx="3.5" fill="var(--yesil)"/><path d="M169 100.2 l2.2 2.2 l4 -4.6" fill="none" stroke="var(--uzeri)" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/></g><text x="186" y="103" data-i18n="g6r3">Lav mic</text><rect x="252" y="94" width="34" height="12" rx="6" fill="var(--mavi)" opacity=".14"/><text x="269" y="103" text-anchor="middle" font-family="IBM Plex Mono, monospace" font-size="7" fill="var(--mavi)" data-i18n="g6set">SET</text></g>
+              <g class="clSat" style="--g:2.05s"><rect x="166" y="118" width="12" height="12" rx="3.5" fill="none" stroke="var(--cizgi)" stroke-width="1.4"/><g class="clTik" style="--g:3.1s"><rect x="166" y="118" width="12" height="12" rx="3.5" fill="var(--yesil)"/><path d="M169 124.2 l2.2 2.2 l4 -4.6" fill="none" stroke="var(--uzeri)" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/></g><text x="186" y="127" data-i18n="g6r4">Reflector</text><rect x="252" y="118" width="34" height="12" rx="6" fill="var(--mavi)" opacity=".14"/><text x="269" y="127" text-anchor="middle" font-family="IBM Plex Mono, monospace" font-size="7" fill="var(--mavi)" data-i18n="g6set">SET</text></g>
+              <g class="clSat" style="--g:2.2s"><rect x="166" y="142" width="12" height="12" rx="3.5" fill="none" stroke="var(--cizgi)" stroke-width="1.4"/><text x="186" y="151" data-i18n="g6r5">Permit letter</text><rect x="286" y="142" width="52" height="12" rx="6" fill="var(--amber)" opacity=".16"/><text x="312" y="151" text-anchor="middle" font-family="IBM Plex Mono, monospace" font-size="7" fill="var(--amber)" data-i18n="g6mek">LOCATION</text></g>
+              <g class="clSat" style="--g:2.35s"><rect x="166" y="166" width="12" height="12" rx="3.5" fill="none" stroke="var(--cizgi)" stroke-width="1.4"/><text x="186" y="175" data-i18n="g6r6">No tripod indoors</text><rect x="318" y="166" width="52" height="12" rx="6" fill="var(--amber)" opacity=".16"/><text x="344" y="175" text-anchor="middle" font-family="IBM Plex Mono, monospace" font-size="7" fill="var(--amber)" data-i18n="g6mek">LOCATION</text></g>
+            </g>
+          </svg>
+        </div>
+      </section>
+
+      <section class="ozellik" id="o07">
+        <div>
+          <span class="ozellik-no" data-i18n="f7n">07 — Deadlines</span>
+          <h3 data-i18n="f7h">A deadline for every step</h3>
+          <p data-i18n="f7p">Each of the seven steps can carry its own date. You enter them in a single window instead of seven boxes scattered across a table. A date that passes while its step is still unticked turns red on its own, and the strip at the top of the Projects page tells you how many have slipped.</p>
+          <ul class="puanlar">
+            <li data-i18n="f7a">One window, seven dates.</li>
+            <li data-i18n="f7b">What's late turns red without you doing anything.</li>
+            <li data-i18n="f7c">Ticking the step closes the matter — the date stops nudging you.</li>
           </ul>
         </div>
         <div class="ozellik-gorsel canli">
           <svg viewBox="0 0 420 210" role="img" data-i18n-attr="aria-label:g5">
             <rect x="60" y="12" width="300" height="186" rx="12" fill="var(--kagit)" stroke="var(--cizgi)"/>
-            <text x="80" y="36" font-family="IBM Plex Mono, monospace" font-size="10" fill="var(--solgun)" data-i18n="g5t">DEADLINES</text>
-            <text x="80" y="60" font-family="IBM Plex Sans, sans-serif" font-size="11" fill="var(--murekkep)" data-i18n="g5a">Script</text><rect x="238" y="49" width="92" height="18" rx="5" fill="var(--yuzey)" stroke="var(--cizgi)"/><text x="284" y="62" text-anchor="middle" font-family="IBM Plex Mono, monospace" font-size="10" fill="var(--solgun)">04.03</text><circle cx="212" cy="55" r="6" fill="none" stroke="var(--cizgi)" stroke-width="1.5"/><g class="f5ok" style="--g:0.40s"><circle cx="212" cy="55" r="6" fill="var(--yesil)"/><path d="M209 55.3 l2 2 l3.6 -4.2" fill="none" stroke="var(--uzeri)" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></g><text x="80" y="86" font-family="IBM Plex Sans, sans-serif" font-size="11" fill="var(--murekkep)" data-i18n="g5b">Filming</text><rect x="238" y="75" width="92" height="18" rx="5" fill="var(--yuzey)" stroke="var(--cizgi)"/><text x="284" y="88" text-anchor="middle" font-family="IBM Plex Mono, monospace" font-size="10" fill="var(--solgun)">09.03</text><circle cx="212" cy="81" r="6" fill="none" stroke="var(--cizgi)" stroke-width="1.5"/><g class="f5ok" style="--g:0.90s"><circle cx="212" cy="81" r="6" fill="var(--yesil)"/><path d="M209 81.3 l2 2 l3.6 -4.2" fill="none" stroke="var(--uzeri)" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></g><text x="80" y="112" font-family="IBM Plex Sans, sans-serif" font-size="11" fill="var(--murekkep)" data-i18n="g5c">Audio</text><rect x="238" y="101" width="92" height="18" rx="5" fill="var(--yuzey)" stroke="var(--cizgi)"/><text x="284" y="114" text-anchor="middle" font-family="IBM Plex Mono, monospace" font-size="10" fill="var(--solgun)">11.03</text><circle cx="212" cy="107" r="6" fill="none" stroke="var(--cizgi)" stroke-width="1.5"/><g class="f5ok" style="--g:1.40s"><circle cx="212" cy="107" r="6" fill="var(--yesil)"/><path d="M209 107.3 l2 2 l3.6 -4.2" fill="none" stroke="var(--uzeri)" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></g><text x="80" y="138" font-family="IBM Plex Sans, sans-serif" font-size="11" fill="var(--murekkep)" data-i18n="g5d">Edit</text><g class="f5gec"><rect x="238" y="127" width="92" height="18" rx="5" fill="var(--kirmizi)" fill-opacity=".09" stroke="var(--kirmizi)"/><text x="284" y="140" text-anchor="middle" font-family="IBM Plex Mono, monospace" font-size="10" fill="var(--kirmizi)" data-i18n="g5f">15.03 · late</text></g><circle cx="212" cy="133" r="6" fill="none" stroke="var(--kirmizi)" stroke-width="1.5"/><text x="80" y="164" font-family="IBM Plex Sans, sans-serif" font-size="11" fill="var(--murekkep)" data-i18n="g5e">Approval</text><rect x="238" y="153" width="92" height="18" rx="5" fill="var(--yuzey)" stroke="var(--cizgi)" stroke-dasharray="3 3"/><text x="284" y="166" text-anchor="middle" font-family="IBM Plex Mono, monospace" font-size="10" fill="var(--solgun)">—</text><circle cx="212" cy="159" r="6" fill="none" stroke="var(--cizgi)" stroke-width="1.5"/>
+            <text x="80" y="36" font-family="IBM Plex Mono, monospace" font-size="10" fill="var(--solgun)" data-i18n="g7t">DEADLINES</text>
+            <text x="80" y="60" font-family="IBM Plex Sans, sans-serif" font-size="11" fill="var(--murekkep)" data-i18n="g7a">Script</text><rect x="238" y="49" width="92" height="18" rx="5" fill="var(--yuzey)" stroke="var(--cizgi)"/><text x="284" y="62" text-anchor="middle" font-family="IBM Plex Mono, monospace" font-size="10" fill="var(--solgun)">04.03</text><circle cx="212" cy="55" r="6" fill="none" stroke="var(--cizgi)" stroke-width="1.5"/><g class="f5ok" style="--g:0.40s"><circle cx="212" cy="55" r="6" fill="var(--yesil)"/><path d="M209 55.3 l2 2 l3.6 -4.2" fill="none" stroke="var(--uzeri)" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></g><text x="80" y="86" font-family="IBM Plex Sans, sans-serif" font-size="11" fill="var(--murekkep)" data-i18n="g7b">Filming</text><rect x="238" y="75" width="92" height="18" rx="5" fill="var(--yuzey)" stroke="var(--cizgi)"/><text x="284" y="88" text-anchor="middle" font-family="IBM Plex Mono, monospace" font-size="10" fill="var(--solgun)">09.03</text><circle cx="212" cy="81" r="6" fill="none" stroke="var(--cizgi)" stroke-width="1.5"/><g class="f5ok" style="--g:0.90s"><circle cx="212" cy="81" r="6" fill="var(--yesil)"/><path d="M209 81.3 l2 2 l3.6 -4.2" fill="none" stroke="var(--uzeri)" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></g><text x="80" y="112" font-family="IBM Plex Sans, sans-serif" font-size="11" fill="var(--murekkep)" data-i18n="g7c">Audio</text><rect x="238" y="101" width="92" height="18" rx="5" fill="var(--yuzey)" stroke="var(--cizgi)"/><text x="284" y="114" text-anchor="middle" font-family="IBM Plex Mono, monospace" font-size="10" fill="var(--solgun)">11.03</text><circle cx="212" cy="107" r="6" fill="none" stroke="var(--cizgi)" stroke-width="1.5"/><g class="f5ok" style="--g:1.40s"><circle cx="212" cy="107" r="6" fill="var(--yesil)"/><path d="M209 107.3 l2 2 l3.6 -4.2" fill="none" stroke="var(--uzeri)" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></g><text x="80" y="138" font-family="IBM Plex Sans, sans-serif" font-size="11" fill="var(--murekkep)" data-i18n="g7d">Edit</text><g class="f5gec"><rect x="238" y="127" width="92" height="18" rx="5" fill="var(--kirmizi)" fill-opacity=".09" stroke="var(--kirmizi)"/><text x="284" y="140" text-anchor="middle" font-family="IBM Plex Mono, monospace" font-size="10" fill="var(--kirmizi)" data-i18n="g7f">15.03 · late</text></g><circle cx="212" cy="133" r="6" fill="none" stroke="var(--kirmizi)" stroke-width="1.5"/><text x="80" y="164" font-family="IBM Plex Sans, sans-serif" font-size="11" fill="var(--murekkep)" data-i18n="g7e">Approval</text><rect x="238" y="153" width="92" height="18" rx="5" fill="var(--yuzey)" stroke="var(--cizgi)" stroke-dasharray="3 3"/><text x="284" y="166" text-anchor="middle" font-family="IBM Plex Mono, monospace" font-size="10" fill="var(--solgun)">—</text><circle cx="212" cy="159" r="6" fill="none" stroke="var(--cizgi)" stroke-width="1.5"/>
           </svg>
         </div>
       </section>
 
-      <section class="ozellik" id="o06">
+      <section class="ozellik" id="o08">
         <div>
-          <span class="ozellik-no" data-i18n="f6n">06 — Calendar</span>
-          <h3 data-i18n="f6h">Two independent tags</h3>
-          <p data-i18n="f6p">Every entry carries both what it is (Reel, Short, video, story, carousel…) and where it goes (YouTube, Instagram, TikTok, Facebook and more). Those are deliberately separate: the same footage goes out as a Reel on Instagram and a Short on YouTube. You can filter on either or both; the project filter now has its own search box too.</p>
+          <span class="ozellik-no" data-i18n="f8n">08 — Calendar</span>
+          <h3 data-i18n="f8h">Two independent tags</h3>
+          <p data-i18n="f8p">Every entry carries both what it is (Reel, Short, video, story, carousel…) and where it goes (YouTube, Instagram, TikTok, Facebook and more). Those are deliberately separate: the same footage goes out as a Reel on Instagram and a Short on YouTube. You can filter on either or both; the project filter now has its own search box too.</p>
           <ul class="puanlar">
-            <li data-i18n="f6a">Month, week, day and table views of the same plan.</li>
-            <li data-i18n="f6b">Press and drag an entry to another day — with a mouse or a finger.</li>
-            <li data-i18n="f6c">Planning for several countries? Give the entry its own time zone.</li>
+            <li data-i18n="f8a">Month, week, day and table views of the same plan.</li>
+            <li data-i18n="f8b">Press and drag an entry to another day — with a mouse or a finger.</li>
+            <li data-i18n="f8c">Planning for several countries? Give the entry its own time zone.</li>
           </ul>
         </div>
         <div class="ozellik-gorsel canli">
           <svg viewBox="0 0 420 210" role="img" data-i18n-attr="aria-label:g6">
             <rect x="10" y="16" width="180" height="76" rx="9" fill="var(--kagit)" stroke="var(--cizgi)"/>
-            <text x="26" y="36" font-family="IBM Plex Mono, monospace" font-size="9.5" fill="var(--solgun)" data-i18n="g6a">TYPE — WHAT IT IS</text>
+            <text x="26" y="36" font-family="IBM Plex Mono, monospace" font-size="9.5" fill="var(--solgun)" data-i18n="g8a">TYPE — WHAT IT IS</text>
             <g font-family="IBM Plex Sans, sans-serif" font-size="10" fill="var(--murekkep)">
-              <rect x="26" y="46" width="44" height="18" rx="9" fill="var(--yuzey)" stroke="var(--cizgi)"/><text x="48" y="59" text-anchor="middle" data-i18n="g6v">Video</text>
+              <rect x="26" y="46" width="44" height="18" rx="9" fill="var(--yuzey)" stroke="var(--cizgi)"/><text x="48" y="59" text-anchor="middle" data-i18n="g8v">Video</text>
               <rect x="76" y="46" width="42" height="18" rx="9" fill="var(--yuzey)" stroke="var(--cizgi)"/><text x="97" y="59" text-anchor="middle">Reel</text>
               <rect x="124" y="46" width="46" height="18" rx="9" fill="var(--yuzey)" stroke="var(--cizgi)"/><text x="147" y="59" text-anchor="middle">Short</text>
               <rect x="26" y="68" width="60" height="18" rx="9" fill="var(--yuzey)" stroke="var(--cizgi)"/><text x="56" y="81" text-anchor="middle">Carousel</text>
-              <rect x="92" y="68" width="50" height="18" rx="9" fill="var(--yuzey)" stroke="var(--cizgi)"/><text x="117" y="81" text-anchor="middle" data-i18n="g6s">Story</text>
+              <rect x="92" y="68" width="50" height="18" rx="9" fill="var(--yuzey)" stroke="var(--cizgi)"/><text x="117" y="81" text-anchor="middle" data-i18n="g8s">Story</text>
               <g class="f6t1"><rect x="76" y="46" width="42" height="18" rx="9" fill="var(--mavi-soft)" stroke="var(--mavi)"/><text x="97" y="59" text-anchor="middle" fill="var(--mavi)">Reel</text></g>
               <g class="f6t2"><rect x="124" y="46" width="46" height="18" rx="9" fill="var(--mavi-soft)" stroke="var(--mavi)"/><text x="147" y="59" text-anchor="middle" fill="var(--mavi)">Short</text></g>
             </g>
             <rect x="10" y="106" width="180" height="88" rx="9" fill="var(--kagit)" stroke="var(--cizgi)"/>
-            <text x="26" y="126" font-family="IBM Plex Mono, monospace" font-size="9.5" fill="var(--solgun)" data-i18n="g6b">PLATFORM — WHERE IT GOES</text>
+            <text x="26" y="126" font-family="IBM Plex Mono, monospace" font-size="9.5" fill="var(--solgun)" data-i18n="g8b">PLATFORM — WHERE IT GOES</text>
             <g font-family="IBM Plex Sans, sans-serif" font-size="10" font-weight="600">
               <rect x="26" y="136" width="62" height="18" rx="9" fill="var(--yuzey)" stroke="var(--cizgi)"/><text x="57" y="149" text-anchor="middle" fill="var(--solgun)">YouTube</text>
               <rect x="94" y="136" width="70" height="18" rx="9" fill="var(--yuzey)" stroke="var(--cizgi)"/><text x="129" y="149" text-anchor="middle" fill="var(--solgun)">Instagram</text>
@@ -1384,7 +1569,7 @@ a{color:inherit;}
             <path d="M204 105 L232 105" stroke="var(--mavi)" stroke-width="2" stroke-linecap="round"/>
             <path d="M225 99 L233 105 L225 111" fill="none" stroke="var(--mavi)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
             <rect x="246" y="16" width="164" height="178" rx="10" fill="var(--yuzey)" stroke="var(--mavi)" stroke-width="1.5"/>
-            <text x="262" y="36" font-family="IBM Plex Mono, monospace" font-size="9.5" fill="var(--mavi)" data-i18n="g6c">ONE SHOOT, THREE EXITS</text>
+            <text x="262" y="36" font-family="IBM Plex Mono, monospace" font-size="9.5" fill="var(--mavi)" data-i18n="g8c">ONE SHOOT, THREE EXITS</text>
             <g class="f6c1">
               <rect x="262" y="48" width="132" height="38" rx="7" fill="var(--kagit)" stroke="var(--cizgi)"/>
               <rect x="272" y="57" width="8" height="20" rx="2" fill="var(--ig)"/>
@@ -1407,15 +1592,15 @@ a{color:inherit;}
         </div>
       </section>
 
-      <section class="ozellik" id="o07">
+      <section class="ozellik" id="o09">
         <div>
-          <span class="ozellik-no" data-i18n="f7n">07 — The entry window</span>
-          <h3 data-i18n="f7h">Everything for one post</h3>
-          <p data-i18n="f7p">Open a cell and the caption, the tags, the video title the viewer will see, the short text for the cover and the cover-image brief are all in front of you — each copied with one tap. The same footage going out from three places? Duplicate it and just enter the new dates.</p>
+          <span class="ozellik-no" data-i18n="f9n">09 — The entry window</span>
+          <h3 data-i18n="f9h">Everything for one post</h3>
+          <p data-i18n="f9p">Open a cell and the caption, the tags, the video title the viewer will see, the short text for the cover and the cover-image brief are all in front of you — each copied with one tap. The same footage going out from three places? Duplicate it and just enter the new dates.</p>
           <ul class="puanlar">
-            <li data-i18n="f7a">A ✨ AI button next to the title, the cover text and the caption.</li>
-            <li data-i18n="f7b">Duplicating keeps everything and only asks you for the new dates.</li>
-            <li data-i18n="f7c">You tick “published” yourself — Shootboard doesn't listen to the platforms.</li>
+            <li data-i18n="f9a">A ✨ AI button next to the title, the cover text and the caption.</li>
+            <li data-i18n="f9b">Duplicating keeps everything and only asks you for the new dates.</li>
+            <li data-i18n="f9c">You tick “published” yourself — Shootboard doesn't listen to the platforms.</li>
           </ul>
         </div>
         <div class="ozellik-gorsel canli">
@@ -1423,34 +1608,34 @@ a{color:inherit;}
             <rect x="40" y="10" width="340" height="190" rx="12" fill="var(--kagit)" stroke="var(--cizgi)"/>
             <path d="M40 22 a12 12 0 0 1 12 -12 h316 a12 12 0 0 1 12 12 v22 h-340 z" fill="var(--yuzey2)"/>
             <text x="58" y="32" font-family="IBM Plex Mono, monospace" font-size="10" fill="var(--solgun)">05.03 · 18:00 · INSTAGRAM · REEL</text>
-            <text x="58" y="56" font-family="IBM Plex Mono, monospace" font-size="9" fill="var(--solgun)" data-i18n="g7a">TITLE</text><rect x="58" y="62" width="240" height="18" rx="5" fill="var(--yuzey)" stroke="var(--cizgi)"/><rect class="f7d" style="--g:0.30s" x="66" y="70" width="150" height="6" rx="3" fill="var(--cizgi)"/><g class="f7ai" style="--g:0.30s"><rect x="308" y="62" width="26" height="18" rx="5" fill="var(--mavi-soft)" stroke="var(--mavi)"/><path d="M321 66.5 l1.9 4.3 l4.3 1.9 l-4.3 1.9 l-1.9 4.3 l-1.9 -4.3 l-4.3 -1.9 l4.3 -1.9 z" fill="var(--mavi)"/></g><g class="f7kop" style="--g:0.80s"><rect x="340" y="62" width="26" height="18" rx="5" fill="var(--yuzey)" stroke="var(--cizgi)"/><rect x="348" y="68" width="10" height="7" rx="1.5" fill="none" stroke="var(--solgun)" stroke-width="1.2"/><rect x="350.5" y="65.5" width="10" height="7" rx="1.5" fill="var(--yuzey)" stroke="var(--solgun)" stroke-width="1.2"/></g><g class="f7ok" style="--g:0.80s"><rect x="340" y="62" width="26" height="18" rx="5" fill="var(--yesil)" fill-opacity=".16" stroke="var(--yesil)"/><path d="M348 71.2 l3 3 l6 -7" fill="none" stroke="var(--yesil)" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></g>
-            <text x="58" y="98" font-family="IBM Plex Mono, monospace" font-size="9" fill="var(--solgun)" data-i18n="g7b">COVER TEXT</text><rect x="58" y="104" width="240" height="18" rx="5" fill="var(--yuzey)" stroke="var(--cizgi)"/><rect class="f7d" style="--g:1.10s" x="66" y="112" width="98" height="6" rx="3" fill="var(--cizgi)"/><g class="f7ai" style="--g:1.10s"><rect x="308" y="104" width="26" height="18" rx="5" fill="var(--mavi-soft)" stroke="var(--mavi)"/><path d="M321 108.5 l1.9 4.3 l4.3 1.9 l-4.3 1.9 l-1.9 4.3 l-1.9 -4.3 l-4.3 -1.9 l4.3 -1.9 z" fill="var(--mavi)"/></g><g class="f7kop" style="--g:1.60s"><rect x="340" y="104" width="26" height="18" rx="5" fill="var(--yuzey)" stroke="var(--cizgi)"/><rect x="348" y="110" width="10" height="7" rx="1.5" fill="none" stroke="var(--solgun)" stroke-width="1.2"/><rect x="350.5" y="107.5" width="10" height="7" rx="1.5" fill="var(--yuzey)" stroke="var(--solgun)" stroke-width="1.2"/></g><g class="f7ok" style="--g:1.60s"><rect x="340" y="104" width="26" height="18" rx="5" fill="var(--yesil)" fill-opacity=".16" stroke="var(--yesil)"/><path d="M348 113.2 l3 3 l6 -7" fill="none" stroke="var(--yesil)" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></g>
-            <text x="58" y="142" font-family="IBM Plex Mono, monospace" font-size="9" fill="var(--solgun)" data-i18n="g7c">CAPTION</text><rect x="58" y="148" width="240" height="38" rx="5" fill="var(--yuzey)" stroke="var(--cizgi)"/><rect class="f7d" style="--g:1.90s" x="66" y="156" width="200" height="6" rx="3" fill="var(--cizgi)"/><rect class="f7d" style="--g:2.08s" x="66" y="168" width="168" height="6" rx="3" fill="var(--cizgi)"/><g class="f7ai" style="--g:1.90s"><rect x="308" y="148" width="26" height="18" rx="5" fill="var(--mavi-soft)" stroke="var(--mavi)"/><path d="M321 152.5 l1.9 4.3 l4.3 1.9 l-4.3 1.9 l-1.9 4.3 l-1.9 -4.3 l-4.3 -1.9 l4.3 -1.9 z" fill="var(--mavi)"/></g><g class="f7kop" style="--g:2.40s"><rect x="340" y="148" width="26" height="18" rx="5" fill="var(--yuzey)" stroke="var(--cizgi)"/><rect x="348" y="154" width="10" height="7" rx="1.5" fill="none" stroke="var(--solgun)" stroke-width="1.2"/><rect x="350.5" y="151.5" width="10" height="7" rx="1.5" fill="var(--yuzey)" stroke="var(--solgun)" stroke-width="1.2"/></g><g class="f7ok" style="--g:2.40s"><rect x="340" y="148" width="26" height="18" rx="5" fill="var(--yesil)" fill-opacity=".16" stroke="var(--yesil)"/><path d="M348 157.2 l3 3 l6 -7" fill="none" stroke="var(--yesil)" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></g>
+            <text x="58" y="56" font-family="IBM Plex Mono, monospace" font-size="9" fill="var(--solgun)" data-i18n="g9a">TITLE</text><rect x="58" y="62" width="240" height="18" rx="5" fill="var(--yuzey)" stroke="var(--cizgi)"/><rect class="f7d" style="--g:0.30s" x="66" y="70" width="150" height="6" rx="3" fill="var(--cizgi)"/><g class="f7ai" style="--g:0.30s"><rect x="308" y="62" width="26" height="18" rx="5" fill="var(--mavi-soft)" stroke="var(--mavi)"/><path d="M321 66.5 l1.9 4.3 l4.3 1.9 l-4.3 1.9 l-1.9 4.3 l-1.9 -4.3 l-4.3 -1.9 l4.3 -1.9 z" fill="var(--mavi)"/></g><g class="f7kop" style="--g:0.80s"><rect x="340" y="62" width="26" height="18" rx="5" fill="var(--yuzey)" stroke="var(--cizgi)"/><rect x="348" y="68" width="10" height="7" rx="1.5" fill="none" stroke="var(--solgun)" stroke-width="1.2"/><rect x="350.5" y="65.5" width="10" height="7" rx="1.5" fill="var(--yuzey)" stroke="var(--solgun)" stroke-width="1.2"/></g><g class="f7ok" style="--g:0.80s"><rect x="340" y="62" width="26" height="18" rx="5" fill="var(--yesil)" fill-opacity=".16" stroke="var(--yesil)"/><path d="M348 71.2 l3 3 l6 -7" fill="none" stroke="var(--yesil)" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></g>
+            <text x="58" y="98" font-family="IBM Plex Mono, monospace" font-size="9" fill="var(--solgun)" data-i18n="g9b">COVER TEXT</text><rect x="58" y="104" width="240" height="18" rx="5" fill="var(--yuzey)" stroke="var(--cizgi)"/><rect class="f7d" style="--g:1.10s" x="66" y="112" width="98" height="6" rx="3" fill="var(--cizgi)"/><g class="f7ai" style="--g:1.10s"><rect x="308" y="104" width="26" height="18" rx="5" fill="var(--mavi-soft)" stroke="var(--mavi)"/><path d="M321 108.5 l1.9 4.3 l4.3 1.9 l-4.3 1.9 l-1.9 4.3 l-1.9 -4.3 l-4.3 -1.9 l4.3 -1.9 z" fill="var(--mavi)"/></g><g class="f7kop" style="--g:1.60s"><rect x="340" y="104" width="26" height="18" rx="5" fill="var(--yuzey)" stroke="var(--cizgi)"/><rect x="348" y="110" width="10" height="7" rx="1.5" fill="none" stroke="var(--solgun)" stroke-width="1.2"/><rect x="350.5" y="107.5" width="10" height="7" rx="1.5" fill="var(--yuzey)" stroke="var(--solgun)" stroke-width="1.2"/></g><g class="f7ok" style="--g:1.60s"><rect x="340" y="104" width="26" height="18" rx="5" fill="var(--yesil)" fill-opacity=".16" stroke="var(--yesil)"/><path d="M348 113.2 l3 3 l6 -7" fill="none" stroke="var(--yesil)" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></g>
+            <text x="58" y="142" font-family="IBM Plex Mono, monospace" font-size="9" fill="var(--solgun)" data-i18n="g9c">CAPTION</text><rect x="58" y="148" width="240" height="38" rx="5" fill="var(--yuzey)" stroke="var(--cizgi)"/><rect class="f7d" style="--g:1.90s" x="66" y="156" width="200" height="6" rx="3" fill="var(--cizgi)"/><rect class="f7d" style="--g:2.08s" x="66" y="168" width="168" height="6" rx="3" fill="var(--cizgi)"/><g class="f7ai" style="--g:1.90s"><rect x="308" y="148" width="26" height="18" rx="5" fill="var(--mavi-soft)" stroke="var(--mavi)"/><path d="M321 152.5 l1.9 4.3 l4.3 1.9 l-4.3 1.9 l-1.9 4.3 l-1.9 -4.3 l-4.3 -1.9 l4.3 -1.9 z" fill="var(--mavi)"/></g><g class="f7kop" style="--g:2.40s"><rect x="340" y="148" width="26" height="18" rx="5" fill="var(--yuzey)" stroke="var(--cizgi)"/><rect x="348" y="154" width="10" height="7" rx="1.5" fill="none" stroke="var(--solgun)" stroke-width="1.2"/><rect x="350.5" y="151.5" width="10" height="7" rx="1.5" fill="var(--yuzey)" stroke="var(--solgun)" stroke-width="1.2"/></g><g class="f7ok" style="--g:2.40s"><rect x="340" y="148" width="26" height="18" rx="5" fill="var(--yesil)" fill-opacity=".16" stroke="var(--yesil)"/><path d="M348 157.2 l3 3 l6 -7" fill="none" stroke="var(--yesil)" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></g>
           </svg>
         </div>
       </section>
 
-      <section class="ozellik" id="o08">
+      <section class="ozellik" id="o10">
         <div>
-          <span class="ozellik-no" data-i18n="f8n">08 — Templates</span>
-          <h3 data-i18n="f8h">Write the closing once</h3>
+          <span class="ozellik-no" data-i18n="f10n">10 — Templates</span>
+          <h3 data-i18n="f10h">Write the closing once</h3>
           <p data-i18n-html="f8p">The standard closing of a caption — your handles, links, a call to action — is written once and appended to the <strong>end</strong> of every caption; what you wrote for that particular post always stays on top. If one platform needs different wording, you define an exception for that platform and the rest carry on with the general text.</p>
           <ul class="puanlar">
-            <li data-i18n="f8a">It goes at the END; your own words always come first.</li>
-            <li data-i18n="f8b">An exception for any platform you like.</li>
-            <li data-i18n="f8c">It drops in the moment you pick a platform on a new entry.</li>
+            <li data-i18n="f10a">It goes at the END; your own words always come first.</li>
+            <li data-i18n="f10b">An exception for any platform you like.</li>
+            <li data-i18n="f10c">It drops in the moment you pick a platform on a new entry.</li>
           </ul>
         </div>
         <div class="ozellik-gorsel canli">
           <svg viewBox="0 0 420 210" role="img" data-i18n-attr="aria-label:g8">
             <rect x="20" y="20" width="150" height="80" rx="9" fill="var(--kagit)" stroke="var(--cizgi)"/>
-            <text x="36" y="40" font-family="IBM Plex Mono, monospace" font-size="9" fill="var(--solgun)" data-i18n="g8a">WHAT YOU WROTE</text>
+            <text x="36" y="40" font-family="IBM Plex Mono, monospace" font-size="9" fill="var(--solgun)" data-i18n="g10a">WHAT YOU WROTE</text>
             <rect x="36" y="50" width="118" height="6" rx="3" fill="var(--cizgi)"/>
             <rect x="36" y="62" width="96" height="6" rx="3" fill="var(--cizgi)"/>
             <rect x="36" y="74" width="110" height="6" rx="3" fill="var(--cizgi)"/>
 
             <rect x="20" y="118" width="150" height="72" rx="9" fill="var(--mavi-soft)" stroke="var(--mavi)"/>
-            <text x="36" y="138" font-family="IBM Plex Mono, monospace" font-size="9" fill="var(--mavi)" data-i18n="g8b">TEMPLATE · ONCE</text>
+            <text x="36" y="138" font-family="IBM Plex Mono, monospace" font-size="9" fill="var(--mavi)" data-i18n="g10b">TEMPLATE · ONCE</text>
             <rect x="36" y="148" width="104" height="6" rx="3" fill="var(--mavi)" opacity=".5"/>
             <rect x="36" y="160" width="88" height="6" rx="3" fill="var(--mavi)" opacity=".5"/>
             <rect x="36" y="172" width="112" height="6" rx="3" fill="var(--mavi)" opacity=".5"/>
@@ -1459,7 +1644,7 @@ a{color:inherit;}
             <path class="f8ok" d="M219 98 L227 104 L219 110" fill="none" stroke="var(--mavi)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
 
             <rect x="242" y="20" width="158" height="170" rx="9" fill="var(--yuzey)" stroke="var(--mavi)" stroke-width="1.5"/>
-            <text x="258" y="40" font-family="IBM Plex Mono, monospace" font-size="8.5" fill="var(--solgun)" data-i18n="g8c">CAPTION AS SENT</text>
+            <text x="258" y="40" font-family="IBM Plex Mono, monospace" font-size="8.5" fill="var(--solgun)" data-i18n="g10c">CAPTION AS SENT</text>
             <g class="f8ust">
               <rect x="258" y="50" width="118" height="6" rx="3" fill="var(--cizgi)"/>
               <rect x="258" y="62" width="96" height="6" rx="3" fill="var(--cizgi)"/>
@@ -1471,26 +1656,26 @@ a{color:inherit;}
               <rect x="258" y="120" width="88" height="6" rx="3" fill="var(--mavi)" opacity=".5"/>
               <rect x="258" y="132" width="112" height="6" rx="3" fill="var(--mavi)" opacity=".5"/>
             </g>
-            <text class="f8not" x="321" y="168" text-anchor="middle" font-family="IBM Plex Mono, monospace" font-size="8.5" fill="var(--solgun)" data-i18n="g8d">template always last</text>
+            <text class="f8not" x="321" y="168" text-anchor="middle" font-family="IBM Plex Mono, monospace" font-size="8.5" fill="var(--solgun)" data-i18n="g10d">template always last</text>
           </svg>
         </div>
       </section>
 
-      <section class="ozellik" id="o09">
+      <section class="ozellik" id="o11">
         <div>
-          <span class="ozellik-no" data-i18n="f9n">09 — The cloud</span>
-          <h3 data-i18n="f9h">The same plan on every device</h3>
-          <p data-i18n="f9p">When you sign in, your calendar, your projects, your ideas, your scripts and your templates come with you to every device. Everything works without signing in too — it just stays in that browser. When you open Shootboard, whatever hasn't gone out yet meets you as a list, so nothing quietly slides past its date.</p>
+          <span class="ozellik-no" data-i18n="f11n">11 — The cloud</span>
+          <h3 data-i18n="f11h">The same plan on every device</h3>
+          <p data-i18n="f11p">When you sign in, your calendar, your projects, your ideas, your scripts and your templates come with you to every device. Everything works without signing in too — it just stays in that browser. When you open Shootboard, whatever hasn't gone out yet meets you as a list, so nothing quietly slides past its date.</p>
           <ul class="puanlar">
-            <li data-i18n="f9a">Google or an email link — no password to invent.</li>
-            <li data-i18n="f9b">A deletion leaves a tombstone: what you deleted never comes back to life.</li>
-            <li data-i18n="f9c">The pending list can be dismissed for the session; the ⏳ button reopens it.</li>
+            <li data-i18n="f11a">Google or an email link — no password to invent.</li>
+            <li data-i18n="f11b">A deletion leaves a tombstone: what you deleted never comes back to life.</li>
+            <li data-i18n="f11c">The pending list can be dismissed for the session; the ⏳ button reopens it.</li>
           </ul>
         </div>
         <div class="ozellik-gorsel canli">
           <svg viewBox="0 0 420 210" role="img" data-i18n-attr="aria-label:g9">
             <rect x="150" y="14" width="120" height="46" rx="12" fill="var(--mavi-soft)" stroke="var(--mavi)"/>
-            <text x="210" y="42" text-anchor="middle" font-family="IBM Plex Mono, monospace" font-size="10.5" fill="var(--mavi)" data-i18n="g9a">ONE PLAN</text>
+            <text x="210" y="42" text-anchor="middle" font-family="IBM Plex Mono, monospace" font-size="10.5" fill="var(--mavi)" data-i18n="g11a">ONE PLAN</text>
 
             <path id="y1" d="M210 62 L210 78 L70 78 L70 96" stroke="var(--cizgi)" stroke-width="1.5" fill="none" stroke-linecap="round"/>
             <path id="y2" d="M210 62 L210 96" stroke="var(--cizgi)" stroke-width="1.5" fill="none" stroke-linecap="round"/>
@@ -1507,7 +1692,7 @@ a{color:inherit;}
               <g class="f9c" style="--g:1.35s"><rect x="26" y="140" width="42" height="14" rx="3" fill="var(--tt)" opacity=".85"/></g>
               <g class="f9c" style="--g:1.45s"><rect x="72" y="140" width="42" height="14" rx="3" fill="var(--fb)" opacity=".85"/></g>
               <rect x="52" y="176" width="36" height="4" rx="2" fill="var(--cizgi)"/>
-              <text x="70" y="198" text-anchor="middle" font-family="IBM Plex Mono, monospace" font-size="9.5" fill="var(--solgun)" data-i18n="g9b">computer</text>
+              <text x="70" y="198" text-anchor="middle" font-family="IBM Plex Mono, monospace" font-size="9.5" fill="var(--solgun)" data-i18n="g11b">computer</text>
             </g>
             <g>
               <rect x="184" y="96" width="52" height="76" rx="8" fill="var(--kagit)" stroke="var(--cizgi)"/>
@@ -1515,7 +1700,7 @@ a{color:inherit;}
               <g class="f9c" style="--g:1.60s"><rect x="192" y="124" width="36" height="12" rx="3" fill="var(--yt)" opacity=".85"/></g>
               <g class="f9c" style="--g:1.70s"><rect x="192" y="140" width="36" height="12" rx="3" fill="var(--tt)" opacity=".85"/></g>
               <rect x="200" y="160" width="20" height="3" rx="1.5" fill="var(--cizgi)"/>
-              <text x="210" y="198" text-anchor="middle" font-family="IBM Plex Mono, monospace" font-size="9.5" fill="var(--solgun)" data-i18n="g9c">phone</text>
+              <text x="210" y="198" text-anchor="middle" font-family="IBM Plex Mono, monospace" font-size="9.5" fill="var(--solgun)" data-i18n="g11c">phone</text>
             </g>
             <g>
               <rect x="298" y="96" width="104" height="76" rx="8" fill="var(--kagit)" stroke="var(--cizgi)"/>
@@ -1524,7 +1709,7 @@ a{color:inherit;}
               <g class="f9c" style="--g:2.05s"><rect x="310" y="130" width="38" height="14" rx="3" fill="var(--yt)" opacity=".85"/></g>
               <g class="f9c" style="--g:2.15s"><rect x="352" y="130" width="38" height="14" rx="3" fill="var(--ig)" opacity=".85"/></g>
               <rect x="336" y="158" width="28" height="3" rx="1.5" fill="var(--cizgi)"/>
-              <text x="350" y="198" text-anchor="middle" font-family="IBM Plex Mono, monospace" font-size="9.5" fill="var(--solgun)" data-i18n="g9d">tablet</text>
+              <text x="350" y="198" text-anchor="middle" font-family="IBM Plex Mono, monospace" font-size="9.5" fill="var(--solgun)" data-i18n="g11d">tablet</text>
             </g>
           </svg>
         </div>
@@ -1784,18 +1969,20 @@ var METIN = {
     s5t:"Yayın", s5p:"Çıktıkça işaretle. Bekleyenler listede kalır.",
 
     feat_eyebrow:"Özellikler",
-    feat_h2:"Dokuz parça, tek pano",
+    feat_h2:"On bir parça, tek pano",
     feat_p:"Bir başlığa tıkla, o özelliğin ne işe yaradığını anlatan bölüme gitsin.",
     card_go:"Detaya git →",
     c1t:"Fikirler", c1p:"Kartlardan bir duvar. Birleştir, ayır, süz.",
     c2t:"Scriptler", c2p:"Kendi başına bir kayıt. Google Drive'la gidip gelir.",
     c3t:"AI ile yaz", c3p:"Kendi Gemini anahtarınla taslak, başlık, açıklama.",
     c4t:"Projeler", c4p:"Yedi adım, tek satır. İş nerede, herkes görür.",
-    c5t:"Terminler", c5p:"Her adımın kendi tarihi. Gecikince kendiliğinden kırmızıya döner.",
-    c6t:"Takvim", c6p:"İki bağımsız etiket: ne olduğu ve nereye gideceği.",
-    c7t:"Kayıt penceresi", c7p:"Bir paylaşımın her şeyi, her alan tek dokunuşla kopyalanır.",
-    c8t:"Şablonlar", c8p:"Kapanışı bir kez yaz, her açıklamanın sonuna eklensin.",
-    c9t:"Her cihazda aynı plan", c9p:"Google ya da e-posta linki. Şifre yok.",
+    c5t:"Mekanlar", c5p:"İzin, dikkat notları, harita, fotoğraf. Bir kez kaydedilir, canlı okunur.",
+    c6t:"Çekim listesi", c6p:"Bir kez yaz, her çekimde kullan. Setler bir dokunuşta ekler.",
+    c7t:"Terminler", c7p:"Her adımın kendi tarihi. Gecikince kendiliğinden kırmızıya döner.",
+    c8t:"Takvim", c8p:"İki bağımsız etiket: ne olduğu ve nereye gideceği.",
+    c9t:"Kayıt penceresi", c9p:"Bir paylaşımın her şeyi, her alan tek dokunuşla kopyalanır.",
+    c10t:"Şablonlar", c10p:"Kapanışı bir kez yaz, her açıklamanın sonuna eklensin.",
+    c11t:"Her cihazda aynı plan", c11p:"Google ya da e-posta linki. Şifre yok.",
 
     f1n:"01 — Fikirler", f1h:"Kartlardan bir duvar",
     f1p:"Her fikir bir kart: bir açı, bir soru, bir sahne, konuşulacak bir kişi. Kartın boyu ne kadar yazdığını bir bakışta gösterir. Bir kartı ötekinin üstüne bıraktığında ikisi tek kartta birleşir; birleşik karttan bir parçayı sürükleyip çıkardığında yeniden kendi kartı olur.",
@@ -1829,46 +2016,69 @@ var METIN = {
     g4s1:"SCR", g4s2:"ÇEK", g4s3:"SES", g4s4:"KRG", g4s5:"ONY", g4s6:"PKT", g4s7:"YYN",
     g4t1:"12 proje", g4t2:"4 yayında", g4t3:"2 onay bekliyor", g4t4:"1 gecikti",
 
-    f5n:"05 — Terminler", f5h:"Her adımın kendi tarihi",
-    f5p:"Yedi adımın her biri kendi tarihini taşıyabilir. Tarihleri tabloya dağılmış yedi kutu yerine tek pencerede girersin. Adım hâlâ işaretlenmemişken geçen bir tarih kendiliğinden kırmızıya döner, Projeler sayfasının üstündeki şerit de kaç tanesinin geciktiğini söyler.",
-    f5a:"Tek pencere, yedi tarih.",
-    f5b:"Geciken, sen bir şey yapmadan kırmızıya döner.",
-    f5c:"Adımı işaretlemek konuyu kapatır — tarih artık dürtmez.",
-    g5:"Yedi adımın termin tarihleri", g5t:"TERMİNLER",
-    g5a:"Script", g5b:"Çekim", g5c:"Ses", g5d:"Kurgu", g5e:"Onay", g5f:"15.03 · geç",
+    f5n:"05 — Mekanlar", f5h:"Aynı yere ikinci kez gidersin",
+    f5p:"Sahada çekim yapıyorsan bir yeri bir kez kaydedersin: adres, harita, izin kimden alınıyor ve ne kadar sürüyor, orada nelere dikkat edileceği — içeride tripod yasak, elektrik sadece avluda, öğleden önce kalabalık. Projeyi mekana bağladığında bunların hepsi proje penceresinde görünür; kopyalanmaz, canlı okunur: mekanın notunu güncellersen orada çekilen bütün projeler yeni hâlini görür.",
+    f5a:"Kart hiçbir zaman boş kalmaz: fotoğrafın varsa o, yoksa koordinattan çizilen harita karesi, o da yoksa kendi renginde baş harfler.",
+    f5b:"Harita OpenStreetMap'ten gelir — anahtar yok, hesap yok, ücret yok.",
+    f5c:"İzin ve dikkat notları çekim listesine kendiliğinden düşer.",
+    f5d:"Bir proje birden çok mekana bağlanabilir; bir mekan orada çekilen bütün projeleri taşır.",
+    g5:"Üç mekan kartı: biri fotoğraflı, biri harita kareli, biri baş harfli; altında mekandan çekim listesine düşen izin ve dikkat notları",
+    g5e1:"FOTOĞRAF", g5e2:"HARİTA", g5e3:"BAŞ HARF", g5h:"ES",
+    g5n1:"İZİN · Vakıflar · 3 gün", g5n2:"DİKKAT · içeride tripod yasak",
 
-    f6n:"06 — Takvim", f6h:"İki bağımsız etiket",
-    f6p:"Her kayıt hem ne olduğunu (Reel, Short, video, hikâye, carousel…) hem nereye gideceğini (YouTube, Instagram, TikTok, Facebook ve dahası) taşır. Bunlar bilerek ayrıdır: aynı çekim Instagram'da Reel, YouTube'da Short olarak çıkar. İkisine ayrı ayrı ya da birlikte süzebilirsin; proje filtresinin kendi arama kutusu da var.",
-    f6a:"Aynı planın ay, hafta, gün ve tablo görünümü.",
-    f6b:"Bir kaydı basılı tutup başka güne sürükle — fareyle de parmakla da.",
-    f6c:"Birden fazla ülkeye mi planlıyorsun? Kayda kendi saat dilimini ver.",
-    g6:"Tür ve platform etiketlerinin ayrı olması",
-    g6a:"TÜR — NE OLDUĞU", g6b:"PLATFORM — NEREYE", g6c:"AYNI ÇEKİM, ÜÇ ÇIKIŞ",
-    g6v:"Video", g6s:"Hikâye",
+    f6n:"06 — Çekim listesi", f6h:"Evden çıkmadan önce tek sayfa",
+    f6p:"Powerbank, ışık, makyaj malzemesi, geçen sefer unuttuğun yedek pil. Her birini bir kez yazarsın ve kütüphanende durur; her çekim için yeniden yazmak yerine o kütüphaneden seçersin. Sık kullandığın grupları — röportaj takımı, gece çekimi — set olarak kaydedersin, tek dokunuşla listeye gelir.",
+    f6a:"İhtiyaç kütüphanesi bir kez yazılır, her çekimde kullanılır.",
+    f6b:"Kendi kurduğun setler bir grubu birden ekler.",
+    f6c:"Mekandan gelen izin ve dikkat notları kendiliğinden düşer, geldiği yer işaretlidir.",
+    f6d:"Her maddenin kendi notu olabilir; işaretlediklerin üstte sayılır.",
+    g6:"Solda ihtiyaç kütüphanesi ve bir set rozeti, sağda o çekimin listesi: maddeler işaretleniyor, mekandan gelenler ayrı etiketli",
+    g6k:"KÜTÜPHANE", g6l:"SOKOLLU KÖPRÜSÜ · ÇEKİM LİSTESİ", g6n:"4 / 6",
+    g6c1:"Powerbank", g6c2:"Işık", g6c3:"Makyaj malzemesi", g6c4:"Tripod",
+    g6s:"SET · Röportaj", g6set:"SET", g6mek:"MEKAN",
+    g6r1:"Powerbank", g6r2:"Işık", g6r3:"Yaka mikrofonu", g6r4:"Reflektör",
+    g6r5:"İzin yazısı", g6r6:"İçeride tripod yasak",
 
-    f7n:"07 — Kayıt penceresi", f7h:"Bir paylaşımın her şeyi",
-    f7p:"Bir kutucuğu açtığında açıklama, etiketler, izleyicinin göreceği video başlığı, kapağa yazılacak kısa metin ve kapak görseli tarifi karşındadır — hepsi tek dokunuşla kopyalanır. Aynı çekim üç ayrı yerden mi çıkacak? Çoğalt ve sadece yeni tarihleri gir.",
-    f7a:"Başlığın, kapak yazısının ve açıklamanın yanında ✨ AI.",
-    f7b:"Çoğaltma her şeyi korur, senden yalnızca yeni tarihleri ister.",
-    f7c:"“Yayınlandı”yı sen işaretlersin — Shootboard platformları dinlemez.",
-    g7:"Bir kaydın düzenleme penceresi",
-    g7a:"BAŞLIK", g7b:"KAPAK YAZISI", g7c:"AÇIKLAMA",
+    f7n:"07 — Terminler", f7h:"Her adımın kendi tarihi",
+    f7p:"Yedi adımın her biri kendi tarihini taşıyabilir. Tarihleri tabloya dağılmış yedi kutu yerine tek pencerede girersin. Adım hâlâ işaretlenmemişken geçen bir tarih kendiliğinden kırmızıya döner, Projeler sayfasının üstündeki şerit de kaç tanesinin geciktiğini söyler.",
+    f7a:"Tek pencere, yedi tarih.",
+    f7b:"Geciken, sen bir şey yapmadan kırmızıya döner.",
+    f7c:"Adımı işaretlemek konuyu kapatır — tarih artık dürtmez.",
+    g7:"Yedi adımın termin tarihleri", g7t:"TERMİNLER",
+    g7a:"Script", g7b:"Çekim", g7c:"Ses", g7d:"Kurgu", g7e:"Onay", g7f:"15.03 · geç",
 
-    f8n:"08 — Şablonlar", f8h:"Kapanışı bir kez yaz",
-    f8p:"Açıklamanın standart kapanışı — hesap adların, linkler, bir çağrı — bir kez yazılır ve her açıklamanın <strong>sonuna</strong> eklenir; o posta özel yazdığın hep üstte kalır. Bir platformda farklı bir metin gerekiyorsa o platforma istisna tanımlarsın, kalanlar genel metinle devam eder.",
-    f8a:"SONA eklenir; senin yazın her zaman önde.",
-    f8b:"İstediğin platforma özel istisna.",
-    f8c:"Yeni kayıtta platformu seçer seçmez düşer.",
-    g8:"Şablonun açıklamanın sonuna eklenmesi",
-    g8a:"SENİN YAZDIĞIN", g8b:"ŞABLON · BİR KEZ", g8c:"GİDEN AÇIKLAMA", g8d:"şablon hep altta",
+    f8n:"08 — Takvim", f8h:"İki bağımsız etiket",
+    f8p:"Her kayıt hem ne olduğunu (Reel, Short, video, hikâye, carousel…) hem nereye gideceğini (YouTube, Instagram, TikTok, Facebook ve dahası) taşır. Bunlar bilerek ayrıdır: aynı çekim Instagram'da Reel, YouTube'da Short olarak çıkar. İkisine ayrı ayrı ya da birlikte süzebilirsin; proje filtresinin kendi arama kutusu da var.",
+    f8a:"Aynı planın ay, hafta, gün ve tablo görünümü.",
+    f8b:"Bir kaydı basılı tutup başka güne sürükle — fareyle de parmakla da.",
+    f8c:"Birden fazla ülkeye mi planlıyorsun? Kayda kendi saat dilimini ver.",
+    g8:"Tür ve platform etiketlerinin ayrı olması",
+    g8a:"TÜR — NE OLDUĞU", g8b:"PLATFORM — NEREYE", g8c:"AYNI ÇEKİM, ÜÇ ÇIKIŞ",
+    g8v:"Video", g8s:"Hikâye",
 
-    f9n:"09 — Bulut", f9h:"Her cihazda aynı plan",
-    f9p:"Giriş yaptığında takvimin, projelerin, fikirlerin, scriptlerin ve şablonların seninle birlikte her cihaza gelir. Giriş yapmadan da her şey çalışır — sadece o tarayıcıda kalır. Shootboard'u açtığında hâlâ yayınlanmamış olanlar bir listeyle karşına çıkar, böylece hiçbir şey tarihini sessizce geçmez.",
-    f9a:"Google ya da e-posta linki — uydurulacak şifre yok.",
-    f9b:"Silme bir mezar taşı bırakır: silinen bir daha geri dirilmez.",
-    f9c:"Bekleyenler listesi o oturum için kapatılabilir; ⏳ düğmesi geri açar.",
-    g9:"Aynı planın üç cihazda görünmesi",
-    g9a:"TEK PLAN", g9b:"bilgisayar", g9c:"telefon", g9d:"tablet",
+    f9n:"09 — Kayıt penceresi", f9h:"Bir paylaşımın her şeyi",
+    f9p:"Bir kutucuğu açtığında açıklama, etiketler, izleyicinin göreceği video başlığı, kapağa yazılacak kısa metin ve kapak görseli tarifi karşındadır — hepsi tek dokunuşla kopyalanır. Aynı çekim üç ayrı yerden mi çıkacak? Çoğalt ve sadece yeni tarihleri gir.",
+    f9a:"Başlığın, kapak yazısının ve açıklamanın yanında ✨ AI.",
+    f9b:"Çoğaltma her şeyi korur, senden yalnızca yeni tarihleri ister.",
+    f9c:"“Yayınlandı”yı sen işaretlersin — Shootboard platformları dinlemez.",
+    g9:"Bir kaydın düzenleme penceresi",
+    g9a:"BAŞLIK", g9b:"KAPAK YAZISI", g9c:"AÇIKLAMA",
+
+    f10n:"10 — Şablonlar", f10h:"Kapanışı bir kez yaz",
+    f10p:"Açıklamanın standart kapanışı — hesap adların, linkler, bir çağrı — bir kez yazılır ve her açıklamanın <strong>sonuna</strong> eklenir; o posta özel yazdığın hep üstte kalır. Bir platformda farklı bir metin gerekiyorsa o platforma istisna tanımlarsın, kalanlar genel metinle devam eder.",
+    f10a:"SONA eklenir; senin yazın her zaman önde.",
+    f10b:"İstediğin platforma özel istisna.",
+    f10c:"Yeni kayıtta platformu seçer seçmez düşer.",
+    g10:"Şablonun açıklamanın sonuna eklenmesi",
+    g10a:"SENİN YAZDIĞIN", g10b:"ŞABLON · BİR KEZ", g10c:"GİDEN AÇIKLAMA", g10d:"şablon hep altta",
+
+    f11n:"11 — Bulut", f11h:"Her cihazda aynı plan",
+    f11p:"Giriş yaptığında takvimin, projelerin, fikirlerin, scriptlerin ve şablonların seninle birlikte her cihaza gelir. Giriş yapmadan da her şey çalışır — sadece o tarayıcıda kalır. Shootboard'u açtığında hâlâ yayınlanmamış olanlar bir listeyle karşına çıkar, böylece hiçbir şey tarihini sessizce geçmez.",
+    f11a:"Google ya da e-posta linki — uydurulacak şifre yok.",
+    f11b:"Silme bir mezar taşı bırakır: silinen bir daha geri dirilmez.",
+    f11c:"Bekleyenler listesi o oturum için kapatılabilir; ⏳ düğmesi geri açar.",
+    g11:"Aynı planın üç cihazda görünmesi",
+    g11a:"TEK PLAN", g11b:"bilgisayar", g11c:"telefon", g11d:"tablet",
 
     login_eyebrow:"Giriş",
     login_h2:"Üç yol var. Üçü de aynı yere çıkar.",

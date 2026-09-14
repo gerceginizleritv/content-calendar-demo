@@ -4,7 +4,7 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Shootboard Kullanım Kılavuzu — İçerik Takvimi ve Çekim Planlama Rehberi</title>
-<meta name="description" content="Shootboard kullanım kılavuzu: içerik takvimi kurma, çekim planlama, proje adımları, mekan kaydı, fikir ve script yönetimi, Gemini ile ücretsiz AI, hatırlatmalar ve yedekleme. Adım adım, ekran ekran.">
+<meta name="description" content="Shootboard kullanım kılavuzu: içerik takvimi kurma, çekim planlama, proje adımları, mekan kaydı, çekim listesi, fikir ve script yönetimi, Gemini ile ücretsiz AI, hatırlatmalar ve yedekleme. Adım adım, ekran ekran.">
 <meta name="keywords" content="içerik takvimi, çekim planlama, içerik üreticisi planlama, YouTube içerik planı, sosyal medya içerik takvimi, script yazma, Gemini AI ücretsiz, video prodüksiyon takibi">
 <link rel="canonical" href="https://shootboard.app/kilavuz.html">
 <link rel="alternate" hreflang="tr" href="https://shootboard.app/kilavuz.html">
@@ -13,22 +13,22 @@
 <meta property="og:type" content="article">
 <meta property="og:locale" content="tr_TR">
 <meta property="og:title" content="Shootboard Kullanım Kılavuzu — İçerik Takvimi ve Çekim Planlama">
-<meta property="og:description" content="Bir çekimden çıkan on paylaşımı tek yerden yönetmek: projeler, mekanlar, fikirler, scriptler, takvim, AI ve hatırlatmalar. Adım adım kılavuz.">
+<meta property="og:description" content="Bir çekimden çıkan on paylaşımı tek yerden yönetmek: projeler, mekanlar, çekim listesi, fikirler, scriptler, takvim, AI ve hatırlatmalar. Adım adım kılavuz.">
 <meta property="og:url" content="https://shootboard.app/kilavuz.html">
 <meta name="twitter:card" content="summary">
 <link rel="icon" href="favicon.svg" type="image/svg+xml">
 <link rel="icon" href="favicon.ico" sizes="any">
 <style>
 :root{
-  --bg:#F4F7FA; --surface:#FFFFFF; --surface-2:#EDF1F6; --line:#DFE5EC;
-  --text:#16202B; --text-dim:#54637A; --accent:#2563C7; --accent-soft:#E8EFFB;
-  --amber:#B4700F; --green:#1F7A50;
+  --bg:#F1EDE3; --surface:#FBF9F3; --surface-2:#E7E2D5; --line:#D7D1C2;
+  --text:#15130F; --text-dim:#585349; --accent:#C4350A; --accent-soft:#FAE6DC;
+  --amber:#8A5F0B; --green:#25654A;
 }
 @media (prefers-color-scheme: dark){
   :root{
-    --bg:#10131C; --surface:#171D28; --surface-2:#1F2734; --line:#2B3442;
-    --text:#E7ECF3; --text-dim:#A2B0C2; --accent:#7AA6EE; --accent-soft:#1B2740;
-    --amber:#E0A54A; --green:#5DBE92;
+    --bg:#15130F; --surface:#1E1B16; --surface-2:#272219; --line:#37312A;
+    --text:#F0EBE0; --text-dim:#ABA496; --accent:#FF7A45; --accent-soft:#3A1E12;
+    --amber:#E8A94A; --green:#66C295;
   }
 }
 *{box-sizing:border-box;}
@@ -132,7 +132,7 @@ th{color:var(--text-dim);font-weight:600;font-size:.8rem;text-transform:uppercas
   padding:9px 11px;font-size:.85rem;background:var(--bg);}
 .fikir .rozet{display:inline-block;margin-left:8px;font-size:.72rem;border-radius:99px;
   border:1px solid var(--line);padding:2px 8px;color:var(--text-dim);vertical-align:middle;}
-.fikir .rozet.gec{border-color:#C4453C;color:#C4453C;}
+.fikir .rozet.gec{border-color:#9E1B32;color:#9E1B32;}
 .fikir .tik{display:inline-block;margin-right:7px;font-size:.72rem;border-radius:99px;
   border:1px solid var(--line);padding:2px 7px;color:var(--text-dim);}
 .gosterim.gorunur .tarihlenen{animation:belir 5s ease-in-out infinite;}
@@ -184,6 +184,7 @@ footer{border-top:1px solid var(--line);margin-top:56px;padding-top:22px;
       <li><a href="#ilk">İlk on dakika</a></li>
       <li><a href="#projeler">Projeler ve yedi adım</a></li>
       <li><a href="#mekanlar">Mekanlar</a></li>
+      <li><a href="#cekim-listesi">Çekim listesi</a></li>
       <li><a href="#fikirler">Fikirler</a></li>
       <li><a href="#scriptler">Scriptler</a></li>
       <li><a href="#ai">AI: Gemini'nin ücretsiz sürümü</a></li>
@@ -350,8 +351,60 @@ footer{border-top:1px solid var(--line);margin-top:56px;padding-top:22px;
         o normal, kart yine haritayla dolu görünür.</p>
     </section>
 
-    <section class="bolum" id="fikirler">
+    <section class="bolum" id="cekim-listesi">
       <p class="etiket">Adım 5</p>
+      <h2>Çekim listesi</h2>
+      <p>Çekime çıkmadan önce "neyi unutuyorum" sorusu hep aynıdır: powerbank, yedek pil,
+        yaka mikrofonu, izin yazısı. Her projenin kendi çekim listesi var; proje penceresindeki
+        <strong>Çekim listesi</strong> düğmesiyle açılır.</p>
+
+      <h3>Maddeler üç yerden gelir</h3>
+      <ul>
+        <li><strong>Mekan kartından.</strong> O mekanın "İzin" ve "Çekimde dikkat" alanlarına
+          yazdıkların, mekanı projeye durak olarak eklediğinde listeye kendiliğinden düşer.
+          Mekanın notunu sonradan değiştirirsen liste de güncellenir — işaretlediklerin ve
+          düştüğün notlar korunur.</li>
+        <li><strong>İhtiyaç kütüphanenden.</strong> Yukarıdaki "Kütüphanemden ekle" ile
+          seçersin. Kütüphaneye bir kez yazdığın madde her çekimde hazır durur.</li>
+        <li><strong>Elle.</strong> Yalnızca bu çekime özel olanlar — üstteki kutuya yazıp
+          eklersin.</li>
+      </ul>
+      <p>Liste içinde iki grup görürsün: <em>Bu çekime özel</em> ve <em>Kütüphanemden</em>.
+        Mekandan gelenler ayrı başlık altında, geldiği yer belli olacak şekilde durur.</p>
+
+      <h3>İhtiyaç kütüphanesi</h3>
+      <p>Üst menüdeki <strong>Malzeme</strong> bağlantısı kütüphaneyi açar. Burası çekime
+        giderken yanına aldığın her şeyin bir kez yazıldığı yer. Maddeleri gruplayabilirsin
+        (Kamera, Ses, Işık, Enerji, Kişisel, Ulaşım) ama zorunlu değil.</p>
+      <p>Elinde hazır bir liste varsa — telefonunun notlarındaki gibi — tek tek yazmana gerek
+        yok: <strong>"Hazır bir listeyi yapıştır"</strong> ile her satırı bir madde olarak
+        alır.</p>
+
+      <h3>Setler: bir dokunuşta bir grup</h3>
+      <p>Aynı malzemeleri aynı tür çekimde tekrar tekrar seçiyorsan onları <strong>set</strong>
+        yaparsın. Kütüphane sayfasında birkaç maddeyi işaretle, <strong>"İşaretlilerden set
+        yap"</strong>a bas, bir ad ver: "Sokak çekimi", "Röportaj", "Gece". Bundan sonra
+        herhangi bir projenin çekim listesinde o sete dokunduğunda maddelerin hepsi birden
+        düşer.</p>
+      <p>Bir çekim listesini olduğu gibi sete çevirmek de mümkün: listenin altındaki
+        "Listedekilerden set yap". İyi geçen bir çekimin hazırlığını bir dahakine aynen
+        tekrarlamanın en kısa yolu budur.</p>
+
+      <h3>İşaretlemek</h3>
+      <p>Hazırlanırken maddeleri işaretlersin; üstte kaçının bittiği yazar. Bir maddeye not
+        düşebilirsin ("+ not") — "büyük olan, siyah çanta" gibi. Çekim bitince
+        <strong>"İşaretleri temizle"</strong> ile hepsini sıfırlarsın; maddeler durur,
+        yalnızca işaretler kalkar. Aynı yere ikinci kez giderken liste seni bekliyor olur.</p>
+
+      <div class="kutu">
+        <p><strong>Bir maddeyi listeden çıkarmak kütüphaneden silmez.</strong> "Bu listeden
+          çıkar" yalnızca o projeyi ilgilendirir; madde kütüphanende durmaya devam eder.
+          Kütüphaneden silmek istersen Malzeme sayfasından silersin.</p>
+      </div>
+    </section>
+
+    <section class="bolum" id="fikirler">
+      <p class="etiket">Adım 6</p>
       <h2>Fikirler</h2>
       <p>Fikir, henüz script olmamış her şey: bir cümle, bir soru, bir sahne. Fikirler sayfası
         aklına geleni attığın yer — düzenli olması gerekmiyor, çünkü fikirler düzenli gelmiyor.</p>
@@ -398,7 +451,7 @@ footer{border-top:1px solid var(--line);margin-top:56px;padding-top:22px;
     </section>
 
     <section class="bolum" id="scriptler">
-      <p class="etiket">Adım 6</p>
+      <p class="etiket">Adım 7</p>
       <h2>Scriptler</h2>
       <p>Script, projenin bir alanı değil kendi kaydı. Sebebi pratik: proje satırı her termin
         değişikliğinde bütün olarak buluta gider; script onun içinde olsaydı telefondaki eski
@@ -420,7 +473,7 @@ footer{border-top:1px solid var(--line);margin-top:56px;padding-top:22px;
     </section>
 
     <section class="bolum" id="ai">
-      <p class="etiket">Adım 7</p>
+      <p class="etiket">Adım 8</p>
       <h2>AI: Gemini'nin ücretsiz sürümü</h2>
       <p>Shootboard'daki yapay zekâ <strong>senin kendi Google Gemini anahtarınla</strong> çalışır.
         Uygulamanın arkasında bir AI aboneliği yok; istek doğrudan senin tarayıcından Google'a
@@ -475,7 +528,7 @@ footer{border-top:1px solid var(--line);margin-top:56px;padding-top:22px;
     </section>
 
     <section class="bolum" id="takvim">
-      <p class="etiket">Adım 8</p>
+      <p class="etiket">Adım 9</p>
       <h2>Takvim ve kayıtlar</h2>
       <p>Kayıt, tek bir paylaşım demek. Her kayıt iki bağımsız etiket taşır:
         <strong>ne olduğu</strong> (Reel, Short, video, story, carousel, metin postu, anket) ve
@@ -508,7 +561,7 @@ footer{border-top:1px solid var(--line);margin-top:56px;padding-top:22px;
     </section>
 
     <section class="bolum" id="sablonlar">
-      <p class="etiket">Adım 9</p>
+      <p class="etiket">Adım 10</p>
       <h2>Açıklama şablonları</h2>
       <p>Her paylaşımın altına yazdığın aynı iki satır — abonelik çağrısı, bağlantılar, imza —
         her seferinde yeniden yazılmasın diye. Model tek cümleyle: <strong>bir genel metin</strong>,
@@ -522,7 +575,7 @@ footer{border-top:1px solid var(--line);margin-top:56px;padding-top:22px;
     </section>
 
     <section class="bolum" id="hatirlatma">
-      <p class="etiket">Adım 10</p>
+      <p class="etiket">Adım 11</p>
       <h2>Hatırlatmalar ve takvim aboneliği</h2>
       <p>Termin tarihi girdiysen Shootboard seni uyarabilir. İki kanal var:</p>
       <ul>
@@ -539,7 +592,7 @@ footer{border-top:1px solid var(--line);margin-top:56px;padding-top:22px;
     </section>
 
     <section class="bolum" id="iceaktar">
-      <p class="etiket">Adım 11</p>
+      <p class="etiket">Adım 12</p>
       <h2>Tablodan içe aktarma</h2>
       <p>Bugün bir tabloda çalışıyorsan elini boşaltmadan geçebilmelisin. Alt satırdaki
         <strong>"İçe Aktar"</strong> düğmesi CSV, Google Sheets, Excel ve Notion'dan
@@ -557,7 +610,7 @@ footer{border-top:1px solid var(--line);margin-top:56px;padding-top:22px;
     </section>
 
     <section class="bolum" id="paylas">
-      <p class="etiket">Adım 12</p>
+      <p class="etiket">Adım 13</p>
       <h2>Paylaşılabilir bağlantı</h2>
       <p>Kurgucuya ya da müşteriye "şu hafta neler çıkıyor" diye göstermek için ekran görüntüsü
         göndermeye gerek yok. <strong>Salt-okunur bir bağlantı</strong> üretebilirsin. Bağlantıyı
@@ -569,7 +622,7 @@ footer{border-top:1px solid var(--line);margin-top:56px;padding-top:22px;
     </section>
 
     <section class="bolum" id="yedek">
-      <p class="etiket">Adım 13</p>
+      <p class="etiket">Adım 14</p>
       <h2>Yedek ve veri güvenliği</h2>
       <p>Veri üç yerde birden durur ve bu sıralama bilerek böyle:</p>
       <ol class="liste">
@@ -597,7 +650,7 @@ footer{border-top:1px solid var(--line);margin-top:56px;padding-top:22px;
     </section>
 
     <section class="bolum" id="hesap">
-      <p class="etiket">Adım 14</p>
+      <p class="etiket">Adım 15</p>
       <h2>Hesap, gizlilik, silme</h2>
       <p>Hesap açmanın tek amacı verinin cihazlar arasında taşınması. İki yol var: Google ile tek
         tık, ya da e-posta + şifre. Şifreni unutursan giriş bağlantısı istersin — kimse kilitli
@@ -612,7 +665,7 @@ footer{border-top:1px solid var(--line);margin-top:56px;padding-top:22px;
     </section>
 
     <section class="bolum sss" id="sss">
-      <p class="etiket">Adım 15</p>
+      <p class="etiket">Adım 16</p>
       <h2>Sık sorulanlar</h2>
       <dl>
         <dt>Shootboard benim adıma paylaşım yapar mı?</dt>
@@ -711,7 +764,7 @@ footer{border-top:1px solid var(--line);margin-top:56px;padding-top:22px;
     {
       "@type": "TechArticle",
       "headline": "Shootboard Kullanım Kılavuzu",
-      "description": "İçerik takvimi kurma, çekim planlama, proje adımları, mekan kaydı, fikir ve script yönetimi, Gemini ile ücretsiz AI, hatırlatmalar ve yedekleme.",
+      "description": "İçerik takvimi kurma, çekim planlama, proje adımları, mekan kaydı, çekim listesi, fikir ve script yönetimi, Gemini ile ücretsiz AI, hatırlatmalar ve yedekleme.",
       "inLanguage": "tr",
       "url": "https://shootboard.app/kilavuz.html",
       "about": ["içerik takvimi", "çekim planlama", "sosyal medya içerik planı"]
