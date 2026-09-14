@@ -41,9 +41,14 @@ async function say(p, s){ return p.$$eval(s, e=> e.length).catch(()=> 0); }
     bak('canonical var', /shootboard\.app\//.test(bilgi.kanonik), bilgi.kanonik);
     bak('hreflang tr+en+x-default', bilgi.alternatif.length === 3, bilgi.alternatif.join(' '));
     bak('og etiketleri var', bilgi.og === true);
-    bak('on bes bolum', bilgi.bolumler.length === 15, String(bilgi.bolumler.length));
-    bak('sol menu on bes bagli', bilgi.menu.length === 15, String(bilgi.menu.length));
-    bak('mobil serit menuden uretildi', bilgi.mob === 15, String(bilgi.mob));
+    // Sabit sayi yerine kural: kilavuza bolum eklenince test bosuna dusmesin,
+    // ama menuye satir konmadan bolum eklenirse yakalasin. Ucu birbirine esit
+    // olmali — sol menu, mobil serit ve bolumler ayni listeyi gosteriyor.
+    bak('bolum sayisi makul', bilgi.bolumler.length >= 15, String(bilgi.bolumler.length));
+    bak('sol menu bolumlerle ayni sayida', bilgi.menu.length === bilgi.bolumler.length,
+        bilgi.menu.length + ' menu / ' + bilgi.bolumler.length + ' bolum');
+    bak('mobil serit menuden uretildi', bilgi.mob === bilgi.menu.length,
+        bilgi.mob + ' serit / ' + bilgi.menu.length + ' menu');
     // Menudeki her baglantinin karsiligi olmali: kirik ic baglanti kalmasin.
     const eksik = bilgi.menu.filter(h=> bilgi.bolumler.indexOf(h.slice(1)) === -1);
     bak('menudeki baglantilarin hepsi bir bolume gidiyor', eksik.length === 0, eksik.join(','));
