@@ -8,6 +8,17 @@
 -- yoktur; uygulama ilk açılışta yazar → o UPDATE anında gider. Böylece hiçbir
 -- kullanıcıya iki dilli e-posta gitmez.
 --
+-- ADRESTEKİ AD: Fonksiyonun panelde GÖRÜNEN adı ile ADRESTE geçen kısa adı
+-- ayrı şeylerdir. Panelden (Deploy via Editor) kurulunca görünen ad yazdığın
+-- şey olur, kısa ad ise rastgele üretilir ve sonradan değiştirilemez. Bizim
+-- kurulumda görünen ad "hosgeldin", adresteki kısa ad "hyper-worker";
+-- aşağıdaki iki adres bu yüzden hyper-worker diyor. Bu tutmazsa tetikleyici
+-- 404 alır ve hiç e-posta gitmez — 14 Eylül'de tam olarak bu yaşandı.
+-- Doğru adres panelde yazıyor: Edge Functions → fonksiyon → başlığın altındaki
+-- https://....supabase.co/functions/v1/<kısa ad>. Fonksiyonu bir gün komut
+-- satırından (supabase functions deploy hosgeldin) kurarsan kısa ad
+-- "hosgeldin" olur; o zaman buradaki iki adresi de ona çevir.
+--
 -- Önce:
 --   1. Supabase panel → Database → Webhooks → "Enable Database Webhooks".
 --   2. supabase secrets set RESEND_API_KEY=re_... HOSGELDIN_WEBHOOK_SECRET=<uzun rastgele>
@@ -31,7 +42,7 @@ create trigger hosgeldin_epostasi_yeni
   for each row
   when (new.raw_user_meta_data ? 'lang')
   execute function supabase_functions.http_request(
-    'https://dyemvzmpnlpnzwebuciu.supabase.co/functions/v1/hosgeldin',
+    'https://dyemvzmpnlpnzwebuciu.supabase.co/functions/v1/hyper-worker',
     'POST',
     '{"Content-Type":"application/json","x-webhook-secret":"DEGISTIR_GIZLI_ANAHTAR"}',
     '{}',
@@ -44,7 +55,7 @@ create trigger hosgeldin_epostasi_dil
   for each row
   when (old.raw_user_meta_data ->> 'lang' is null and new.raw_user_meta_data ->> 'lang' is not null)
   execute function supabase_functions.http_request(
-    'https://dyemvzmpnlpnzwebuciu.supabase.co/functions/v1/hosgeldin',
+    'https://dyemvzmpnlpnzwebuciu.supabase.co/functions/v1/hyper-worker',
     'POST',
     '{"Content-Type":"application/json","x-webhook-secret":"DEGISTIR_GIZLI_ANAHTAR"}',
     '{}',

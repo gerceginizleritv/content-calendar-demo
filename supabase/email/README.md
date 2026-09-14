@@ -89,7 +89,19 @@ fonksiyonun adı sonradan değiştirilemiyor. Editördeki tek dosyanın içini s
 **ikinci bir dosya ekleme**: o dosyada index.ts ile sablonlar.js birleşiktir.
 (Editörde iki ayrı dosya oluşturmak da çalışır, ama `sablonlar.js` eklenmeden
 Deploy'a basılırsa dağıtım "Module not found" ile düşer; tek dosyada bu risk
-yok.) Fonksiyon ayarlarında **Verify JWT** kapalı olmalı. Sonra **Edge Functions → Secrets** bölümünde iki gizli değer ekle:
+yok.) Fonksiyon ayarlarında **Verify JWT** kapalı olmalı.
+
+**Adresteki kısa ad tuzağı.** Panelden kurulan fonksiyonun iki adı olur:
+başlıkta gördüğün **görünen ad** (senin yazdığın) ve adreste geçen **kısa ad**
+(panel rastgele üretir, sonradan değiştirilemez). Tetikleyici adrese göre
+çağırdığı için önemli olan kısa addır. Dağıtımdan sonra fonksiyonun sayfasında
+başlığın altında yazan adrese bak:
+`https://....supabase.co/functions/v1/<kısa ad>`. `sql/20-hosgeldin-webhook.sql`
+içindeki iki adres birebir bunu göstermeli; göstermezse tetikleyici 404 alır ve
+hiç e-posta gitmez. Komut satırından dağıtırsan kısa ad `hosgeldin` olur, bu
+sorun hiç çıkmaz.
+
+Sonra **Edge Functions → Secrets** bölümünde iki gizli değer ekle:
 
 - `RESEND_API_KEY`: Resend anahtarı
 - `HOSGELDIN_WEBHOOK_SECRET`: en az 32 karakterlik rastgele bir metin. Bir parola
