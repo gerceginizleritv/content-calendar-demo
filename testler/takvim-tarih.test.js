@@ -30,10 +30,21 @@ const { chromium } = require('./araclar');
     const bugun = new Date(); bugun.setHours(0,0,0,0);
     const hedef = new Date(tarih); hedef.setHours(0,0,0,0);
     const gunFark = Math.round((hedef - bugun) / 86400000);
+    // Hafta ve tablo gorunumu haftanin PAZARTESISINDEN basliyor
+    // (app.html: d.setDate(d.getDate() - mondayOffset + ... + haftaGunKaymasi)),
+    // o yuzden kayma bugunden degil o pazartesiden olculuyor.
+    //
+    // Bugunden olcmek testi "bugun pazartesi mi" sorusuna bagliyordu:
+    // 14 Eylul pazartesiydi ve gecti, 15 Eylul sali oldu ve dustu. Takvim
+    // testinin hangi gun kostuguna bagli olmasi, aranan hatayi bulmak
+    // yerine gurultu uretir.
+    const pazartesi = new Date(bugun);
+    pazartesi.setDate(pazartesi.getDate() - ((pazartesi.getDay() + 6) % 7));
+    const haftaFark = Math.round((hedef - pazartesi) / 86400000);
     haftaGunKaymasi = 0; gunKaymasi = 0; ayKaymasi = 0;
     if(gorunum === 'month'){
       ayKaymasi = (hedef.getFullYear()-bugun.getFullYear())*12 + (hedef.getMonth()-bugun.getMonth());
-    } else if(gorunum === 'day'){ gunKaymasi = gunFark; } else { haftaGunKaymasi = gunFark; }
+    } else if(gorunum === 'day'){ gunKaymasi = gunFark; } else { haftaGunKaymasi = haftaFark; }
     renderCal();
     const al = s => [...document.querySelectorAll(s)].map(x=>x.textContent.replace(/\s+/g,' ').trim());
     const gorunuyor = s => { const e = document.querySelector(s);
