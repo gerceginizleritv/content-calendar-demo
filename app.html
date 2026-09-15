@@ -3782,6 +3782,17 @@ textarea.sc-ai-brief{min-height:64px;resize:vertical;line-height:1.5;}
       <p class="dil-not" data-i18n="dil_not">YouTube shows each viewer the title and description in their own language. Fill a language in and paste it into the upload's translation fields.</p>
     </div>
 
+    <div class="field" id="videoTitleWrap" style="display:none;">
+      <div class="field-header">
+        <label data-i18n="f_videotitle_label">Video Title (public — what viewers see in search/suggested)</label>
+        <span style="display:flex;gap:6px;">
+          <button type="button" class="copy-btn ai-btn" id="aiTitleBtn" data-i18n="btn_ai_write">✨ AI</button>
+          <button type="button" class="copy-btn" data-copy="f_videotitle" data-i18n="btn_copy">Copy</button>
+        </span>
+      </div>
+      <textarea id="f_videotitle" maxlength="150" style="min-height:34px;" data-i18n-placeholder="f_videotitle_ph" placeholder="The actual title that goes on the upload — different from the note above"></textarea>
+    </div>
+
     <div class="field">
       <div class="field-header">
         <label data-i18n="f_caption_label">Caption</label>
@@ -3806,17 +3817,6 @@ textarea.sc-ai-brief{min-height:64px;resize:vertical;line-height:1.5;}
         </span>
       </div>
       <textarea id="f_hashtags" maxlength="400" style="min-height:44px;" data-i18n-placeholder="f_hashtags_ph" placeholder="product launch, saas, startup"></textarea>
-    </div>
-
-    <div class="field" id="videoTitleWrap" style="display:none;">
-      <div class="field-header">
-        <label data-i18n="f_videotitle_label">Video Title (public — what viewers see in search/suggested)</label>
-        <span style="display:flex;gap:6px;">
-          <button type="button" class="copy-btn ai-btn" id="aiTitleBtn" data-i18n="btn_ai_write">✨ AI</button>
-          <button type="button" class="copy-btn" data-copy="f_videotitle" data-i18n="btn_copy">Copy</button>
-        </span>
-      </div>
-      <textarea id="f_videotitle" maxlength="150" style="min-height:34px;" data-i18n-placeholder="f_videotitle_ph" placeholder="The actual title that goes on the upload — different from the note above"></textarea>
     </div>
 
     <div class="field" id="shortTitleWrap" style="display:none;">
