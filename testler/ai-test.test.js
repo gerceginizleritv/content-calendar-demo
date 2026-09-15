@@ -28,6 +28,22 @@ const { chromium } = require('./araclar');
       r.fulfill({status:200,contentType:'application/json',
         body: JSON.stringify({models:[{name:'models/gemini-3.7-flash'},{name:'models/gemini-2.5-flash'},{name:'models/x'}]})});
     });
+    // Liste geldikten SONRA uygulama modelleri tek tek deniyor ve sonucu ayni
+    // kutuya yaziyor. Burada olculen sey liste adiminin ciktisi, o yuzden
+    // denemeler yavaslatiliyor: 900 ms'lik olcum aninda liste mesaji hala
+    // ekranda olsun.
+    //
+    // Bu istekler ONCE hic taklit edilmiyordu, gercek aga cikiyorlardi. Test
+    // geciyordu cunku agdaki zaman asimi 15 saniye suruyor ve olcum o sirada
+    // yapiliyordu. Ag hizli reddetmeye baslayinca denemeler milisaniyelerde
+    // dustu, liste mesajinin uzerine "hicbir model yanit vermedi" yazildi ve
+    // test kirildi. Yani test agin YAVAS olmasina bel baglamisti; artik
+    // hicbir sey aga bagli degil.
+    await p.route('**generativelanguage.googleapis.com/v1beta/models/**', async r=>{
+      await new Promise(c=> setTimeout(c, 2500));
+      r.fulfill({status:503,contentType:'application/json',
+        body: JSON.stringify({error:{message:'busy'}})});
+    });
   });
   await page.click('#aiSettingsBtn'); await page.waitForTimeout(250);
   let g = await page.evaluate(()=>({ var: !!document.getElementById('aiTestBtn'),
