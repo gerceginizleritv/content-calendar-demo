@@ -14,8 +14,16 @@ const KOK = process.argv[2] || 'http://127.0.0.1:8098';
 let g = 0, k = 0;
 const bak = (ad, ko, ek)=>{ if(ko){ g++; console.log('  ok  '+ad); } else { k++; console.log('  YOK '+ad+(ek?' -> '+ek:'')); } };
 
+// Telefonda ekranin dibine sabitlenen SERIT. Bir sure bu dogrudan
+// .rail-nav'di; "Bugun" dugmesi menunun yanina girince ikisi tek kaba
+// alindi (.alt-serit) ve sabitleme kaba tasindi. Testin olctugu kural
+// ayni kaldi, yalnizca hangi ogenin sabit oldugu degisti: menuyu
+// olcmeye devam etseydi "cubugun altinda 6 piksel bosluk var" gibi
+// yanlis bir sonuc cikardi -- oradaki 6 piksel kabin kendi dolgusu.
+const SERIT = '.alt-serit';
+
 // Sabit konumlandirmayi kendine baglayan ata var mi?
-const SABIT_OGELER = ['#rail > .rail-nav', '#addBtn', '#railFoot', '#railArka'];
+const SABIT_OGELER = ['#rail > ' + SERIT, '#addBtn', '#railFoot', '#railArka'];
 const atalariIncele = (p, sec) => p.evaluate(s=>{
   const el = document.querySelector(s);
   if(!el) return { yok:true };
@@ -64,14 +72,14 @@ async function ac(t, w){
     const hata = []; p.on('pageerror', e=> hata.push(String(e)));
     console.log('['+w+'px]');
 
-    const nav = await p.evaluate(()=>{
-      const e = document.querySelector('.rail-nav');
+    const nav = await p.evaluate((SERIT)=>{
+      const e = document.querySelector(SERIT);
       const r = e.getBoundingClientRect();
       return { poz: getComputedStyle(e).position,
                alt: Math.round(r.bottom), ust: Math.round(r.top),
                x: Math.round(r.left), sag: Math.round(r.right),
                ekran: window.innerHeight, genislik: window.innerWidth };
-    });
+    }, SERIT);
     bak('sekme cubugu sabit', nav.poz === 'fixed', nav.poz);
     bak('EKRANIN DIBINDE', Math.abs(nav.alt - nav.ekran) <= 1,
         'alt kenar ' + nav.alt + ', ekran ' + nav.ekran);
@@ -87,26 +95,26 @@ async function ac(t, w){
     }
 
     // "+" dugmesi de sekme cubugunun USTUNDE kalmali.
-    const fab = await p.evaluate(()=>{
+    const fab = await p.evaluate((SERIT)=>{
       const b = document.getElementById('addBtn').getBoundingClientRect();
-      const n = document.querySelector('.rail-nav').getBoundingClientRect();
+      const n = document.querySelector(SERIT).getBoundingClientRect();
       return { poz: getComputedStyle(document.getElementById('addBtn')).position,
                alt: Math.round(b.bottom), navUst: Math.round(n.top), ekran: window.innerHeight };
-    });
+    }, SERIT);
     bak('"+" dugmesi sabit', fab.poz === 'fixed', fab.poz);
     bak('"+" sekme cubugunun ustunde', fab.alt <= fab.navUst + 1,
         fab.alt + ' / ' + fab.navUst);
     bak('"+" ekranin icinde', fab.alt <= fab.ekran, fab.alt + ' / ' + fab.ekran);
 
     // Sayfa dibindeki icerik cubugun arkasinda kalmasin.
-    const dip = await p.evaluate(()=>{
+    const dip = await p.evaluate((SERIT)=>{
       const f = document.querySelector('.site-foot');
       if(!f) return null;
       window.scrollTo(0, document.documentElement.scrollHeight);
       const r = f.getBoundingClientRect();
-      const n = document.querySelector('.rail-nav').getBoundingClientRect();
+      const n = document.querySelector(SERIT).getBoundingClientRect();
       return { footAlt: Math.round(r.bottom), navUst: Math.round(n.top) };
-    });
+    }, SERIT);
     await p.waitForTimeout(250);
     if(dip) bak('en alta inince icerik cubugun arkasinda kalmiyor',
                 dip.footAlt <= dip.navUst + 1, dip.footAlt + ' / ' + dip.navUst);
@@ -119,6 +127,15 @@ async function ac(t, w){
   const d = await ac(t, 1280);
   bak('sabit degil', await d.evaluate(()=> getComputedStyle(document.querySelector('.rail-nav')).position) === 'static',
       await d.evaluate(()=> getComputedStyle(document.querySelector('.rail-nav')).position));
+  // Kap masaustunde display:contents ile yok sayiliyor; kutusu olsaydi
+  // seride fazladan bir satir eklerdi.
+  bak('kap masaustunde kutu acmiyor',
+      await d.evaluate((S)=> getComputedStyle(document.querySelector(S)).display, SERIT) === 'contents',
+      await d.evaluate((S)=> getComputedStyle(document.querySelector(S)).display, SERIT));
+  // "Bugun" dugmesi menunun ICINDE degil: tablist'e bir sekme daha
+  // eklemek onu sekiz esit parcaya bolerdi ve o bir sekme degil.
+  bak('"Bugun" tablist disinda',
+      await d.evaluate(()=> !document.querySelector('.rail-nav #bugunBtn') && !!document.querySelector('#bugunBtn')));
   await d.close();
 
   console.log('\n'+g+' gecti, '+k+' kaldi');
