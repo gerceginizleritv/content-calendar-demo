@@ -52,7 +52,8 @@ const AN  = '2026-06-17T12:00:00';
       eksikler: sadelestir(o.eksikler),
       bugunYayin: o.bugunYayin.map(e=> e.id),
       gecikenKayit: o.gecikenKayit.map(e=> e.id),
-      toplam: o.toplam, yeni: o.yeni, temiz: o.temiz, bugun: o.bugun
+      toplam: o.toplam, dikkat: o.dikkat,
+      yeni: o.yeni, temiz: o.temiz, bugun: o.bugun
     };
   }, [projeler, kayitlar, GUN, AN]);
 
@@ -190,6 +191,31 @@ const AN  = '2026-06-17T12:00:00';
                  [ kayit('e9', { date:'2026-06-19', content:{ projectId:'dolu' } }) ]);
   bak('takvimde kaydi olanda kayit eksigi yok',
       (o.eksikler[0]||{}).neler.indexOf('kayit') === -1, JSON.stringify(o.eksikler[0]));
+
+  console.log('[rozet sayisi ustuste binmiyor]');
+  // Ilk olcumde rozet ayni isi iki kez sayiyordu: saati gecmis bir kayit
+  // hem "bugun takvimde" hem "isaretlenmeyi bekleyen" listesindeydi,
+  // eksikler de yaklasan cekimlerin kendisiydi. Rozet ortada olandan
+  // fazlasini gosterirse kullanici ona bir daha inanmaz.
+  o = await ozet([
+    proje('r1', { shootDate:'2026-06-18' }),          // cekim + eksikler (2 liste)
+    proje('r2', { deadlines:{ script: GUN } }),       // bugun biten termin
+    proje('r3', { deadlines:{ filmed:'2026-06-01' } })// geciken adim
+  ], [
+    kayit('gec', { time:'08:00' })                    // bugunYayin + gecikenKayit
+  ]);
+  bak('dikkat yalnizca cakismayanlari sayiyor', o.dikkat === 3,
+      'dikkat=' + o.dikkat + ' toplam=' + o.toplam);
+  bak('toplam ustuste binenleri de sayiyor', o.toplam === 6,
+      'toplam=' + o.toplam);
+  bak('yaklasan cekim rozete girmiyor',
+      o.cekim.length === 1 && o.dikkat === 3, 'cekim=' + o.cekim.length);
+
+  // Yalnizca yaklasan cekimi olan biri icin rozet BOS olmali: "yarin
+  // cekim var" bir uyari degil, bir bilgi.
+  o = await ozet([ proje('yalniz', { shootDate:'2026-06-18' }) ], []);
+  bak('sadece cekim varken rozet bos', o.dikkat === 0, 'dikkat=' + o.dikkat);
+  bak('ama sayfa bos degil', o.temiz === false, 'toplam=' + o.toplam);
 
   console.log('[gun farki]');
   const gf = await p.evaluate(()=> ({

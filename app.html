@@ -175,6 +175,49 @@ body{
 .mk-hava .hv-bas{font-size:11px;padding-right:0;}
 .mk-hava .hv-satir{gap:6px 16px;}
 
+/* "Bugun" menude DEGIL. Menudeki yedi sekme isin akisini anlatiyor
+   (fikir -> script -> proje -> takvim); burasi o akisin bir adimi degil,
+   girilen kapi. Menuye konulsaydi sekiz sekme olur ve telefonda alt
+   serit tek tek 45 piksele dusup sikisirdi. Logoya da baglanmadi:
+   logo her yerde "ana sayfaya don" demek, oysa burasi uygulamanin
+   icinde bir sayfa -- kullanici logodan cikis bekler, sayfa bulur. */
+/* Masaustunde kap YOK sayiliyor: dugme ve menu dogrudan seridin
+   cocugu gibi diziliyor, aralarina seridin kendi 16 piksellik bosluğu
+   giriyor. Telefonda ayni kap alt serit oluyor. */
+.alt-serit{display:contents;}
+
+.bugun-btn{
+  display:flex;align-items:center;gap:8px;width:100%;
+  font:inherit;font-size:13px;font-weight:600;text-align:left;
+  padding:10px 11px;border-radius:9px;cursor:pointer;
+  border:1px solid var(--line);background:var(--surface-2);color:var(--text);
+}
+.bugun-btn:hover{border-color:var(--accent-dim);}
+.bugun-btn:focus-visible{outline:2px solid var(--accent);outline-offset:2px;}
+.bugun-btn.active{background:var(--accent-soft);border-color:var(--accent);color:var(--accent);}
+/* Kurgu masasinin oynatma imleci: "su an" isareti. Menudeki cizgi
+   ikonlarla ayni aileden ama dolu -- bu dugme onlardan biri degil. */
+.bugun-ico{width:17px;height:17px;flex:none;}
+.bugun-sayi{
+  margin-left:auto;flex:none;min-width:19px;padding:1px 6px;
+  border-radius:999px;background:var(--accent);color:#fff;
+  font-size:11px;font-weight:700;text-align:center;
+  font-variant-numeric:tabular-nums;
+}
+.bugun-sayi[hidden]{display:none;}
+
+/* ---- Bugun sayfasi: SUSSUZ ilk hal --------------------------------
+   Bilerek duz metin. Once "dogru seyleri topluyor mu" gorulecek;
+   kart, renk ve tiklanabilirlik bir sonraki adimda. Erken suslemek,
+   yanlis veriyi guzel gostermekten baska ise yaramaz. */
+.bugun-ham{
+  font-family:ui-monospace,SFMono-Regular,Menlo,Consolas,monospace;
+  font-size:12.5px;line-height:1.75;white-space:pre-wrap;
+  margin:0;padding:14px 16px;border:1px dashed var(--line);
+  border-radius:10px;background:var(--surface-2);color:var(--text);
+  overflow-x:auto;
+}
+
 .rail-nav{display:flex;flex-direction:column;gap:2px;}
 /* Serit icindeki sekme: alt cizgi yerine sol vurgu, ve tam genislik. */
 .rail-nav .tab{
@@ -2349,6 +2392,10 @@ textarea.sc-ai-brief{min-height:64px;resize:vertical;line-height:1.5;}
      kendisi kisaliyor. */
   .rail-brand{flex:1 1 0;min-width:0;}
   .rail-me{flex:0 0 auto;min-width:0;gap:6px;margin-left:8px;}
+  /* Kendi satirina iniyor. flex-basis:100% SART: ustteki serit marka,
+     kimlik ve "..." dugmesini TEK satirda tutuyor (mobil-hava testi
+     bunu 320-412 piksel arasinda olcuyor); bu dugme o satiri bolmesin.
+     order hava seridinin (9) ardindan geliyor. */
   .rail-more{flex:none;}
   .avatar{width:28px;height:28px;font-size:11px;}
   /* Bu dugme bir baslik cubugu ogesi: 44px'lik dokunma hedefi burada
@@ -2404,13 +2451,45 @@ textarea.sc-ai-brief{min-height:64px;resize:vertical;line-height:1.5;}
   .rail-prefs .lang-select{flex:1;min-height:42px;}
   .rail-prefs .btn{flex:1;min-height:42px;justify-content:center;}
 
-  /* Sekmeler altta, sabit. Basparmagin dogal menzili. */
-  .rail-nav{
+  /* Sekmeler altta, sabit. Basparmagin dogal menzili.
+     Sabitleme artik KAPTA: "Bugun" dugmesi de ayni serit icinde
+     duruyor ve boylari kendiliginden esitleniyor. Once dugme ayri
+     sabitlenip yukseklik elle esitlenmisti; menunun boyu icerigine
+     gore degistigi icin bu her yazi tipi degisikliginde kayardi.
+     Dikey yer HIC harcanmiyor -- ust seridi buyuten ilk deneme uc
+     testin piksel tavanina takildi ve haklilardi: buyuyen serit
+     takvimi her ekranda asagi itiyor. */
+  .alt-serit{
+    display:flex;align-items:stretch;gap:2px;
     position:fixed;left:0;right:0;bottom:0;z-index:40;
     background:var(--surface);border-top:1px solid var(--line);
     padding:6px 6px calc(6px + env(safe-area-inset-bottom));
     box-shadow:0 -6px 24px -12px rgba(0,0,0,.35);
-    width:auto;gap:2px;margin:0;
+  }
+  .rail-nav{
+    flex:1 1 auto;min-width:0;
+    position:static;background:none;border-top:0;box-shadow:none;
+    padding:0;width:auto;gap:2px;margin:0;
+  }
+  /* Sekme DEGIL: yazisi yok, dar, ve ince bir cizgiyle menuden
+     ayrilmis. Yazi da konulsaydi sekiz esit parca olur, 360 piksellik
+     telefonda her biri 45 piksele duser ve "Sablonlar" kirpilirdi.
+     Ikon + rozet tek basina anlasiliyor; uzun basinca baslik cikiyor. */
+  .bugun-btn{
+    flex:0 0 auto;width:44px;min-height:52px;
+    flex-direction:column;justify-content:center;gap:3px;
+    position:relative;padding:6px 0;margin-right:4px;
+    border:0;border-right:1px solid var(--line);border-radius:0;
+    background:none;font-size:10.5px;
+  }
+  .bugun-btn:hover{border-color:var(--line);}
+  .bugun-btn.active{background:var(--accent-soft);border-radius:8px 0 0 8px;}
+  .bugun-btn .bugun-ad{display:none;}
+  .bugun-ico{width:22px;height:22px;}
+  /* Rozet ikonun ustune biniyor: yaninda yer yok. */
+  .bugun-sayi{
+    position:absolute;top:3px;right:2px;margin:0;
+    min-width:16px;padding:0 4px;font-size:10px;line-height:16px;
   }
   .rail-nav .tab{flex-direction:column;gap:3px;padding:6px 2px;font-size:10.5px;
     border-bottom:0;border-radius:8px;min-height:52px;}
@@ -2750,6 +2829,27 @@ textarea.sc-ai-brief{min-height:64px;resize:vertical;line-height:1.5;}
         <span aria-hidden="true">⋯</span>
       </button>
 
+      <!-- "Bugun" ile menu TEK KAPTA, cunku telefonda ikisi birlikte alt
+           seridi olusturuyor. Masaustunde kap display:contents ile
+           kayboluyor: ikisi de dogrudan seridin cocugu gibi diziliyor.
+           Kap olmasaydi telefonda dugmeyi menunun yanina koymak icin
+           position:fixed ve elle yukseklik esitlemesi gerekirdi. -->
+      <div class="alt-serit">
+
+      <!-- Girilen kapi. Menunun DISINDA: sekme degil, tablist'in de
+           disinda duruyor. Gerekcesi .bugun-btn kuralinin yanindaki
+           notta. -->
+      <button type="button" class="bugun-btn" id="bugunBtn"
+              data-i18n-title="bugun_tab" data-i18n-aria="bugun_tab">
+        <svg class="bugun-ico" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+             stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+          <path d="M12 8.5V21"/>
+          <path d="M4 3h16v4.2l-8 2.6-8-2.6z" fill="currentColor" stroke="none"/>
+        </svg>
+        <span class="bugun-ad" data-i18n="bugun_tab">Today</span>
+        <b class="bugun-sayi" id="bugunSayi" hidden></b>
+      </button>
+
       <!-- Sira isin akisi: fikir -> script -> proje -> takvim. Menunun
            kendisi urunun nasil kullanildigini anlatiyor. -->
       <nav class="rail-nav" role="tablist">
@@ -2794,6 +2894,7 @@ textarea.sc-ai-brief{min-height:64px;resize:vertical;line-height:1.5;}
           </svg><span data-i18n="tab_templates">Templates</span>
         </button>
       </nav>
+      </div>
 
       <!-- Alt grup: her zaman erisilebilir olmasi gereken ama sik
            kullanilmayan seyler. -->
@@ -2866,6 +2967,13 @@ textarea.sc-ai-brief{min-height:64px;resize:vertical;line-height:1.5;}
     <span data-i18n="nudge_text">Only this browser knows about this calendar.</span>
     <button class="btn btn-primary btn-sm" id="nudgeCta" data-i18n="nudge_cta">Keep it on every device</button>
     <button class="btn btn-sm" id="nudgeDismiss" data-i18n="nudge_dismiss">Not now</button>
+  </div>
+
+  <!-- BUGUN. Sayfalarin ilki ama menude yok: buraya serit dugmesinden
+       giriliyor. Icerigi tamamen bugunOzeti() yaziyor. -->
+  <div id="bugunPage" hidden>
+    <p class="hint hint-top" data-i18n="bugun_intro">One screen for today: what is coming up, what slipped, what is still missing.</p>
+    <pre class="bugun-ham" id="bugunHam"></pre>
   </div>
 
   <!-- FIKIRLER. Projeden bagimsiz: is cogu zaman burada basliyor.
@@ -4708,6 +4816,25 @@ const LANG = {
     tpl_limit: (n)=> `Up to ${n} templates.`,
     tab_calendar: "Calendar",
     tab_projects: "Projects",
+    bugun_tab: "Today",
+    bugun_intro: "One screen for today: what is coming up, what slipped, what is still missing.",
+    bugun_h: (tarih)=> `TODAY — ${tarih}`,
+    bugun_yeni: "Nothing here yet. Create a project, or put your first entry on the calendar.",
+    bugun_temiz: "Nothing waiting for today.",
+    bugun_cekim: "UPCOMING SHOOTS",
+    bugun_termin: "DUE TODAY",
+    bugun_geciken: "OVERDUE STEPS",
+    bugun_yayin: "ON THE CALENDAR TODAY",
+    bugun_isaret: "WAITING TO BE TICKED",
+    bugun_eksik: "MISSING BEFORE THE SHOOT",
+    bugun_gun0: "today",
+    bugun_gun1: "tomorrow",
+    bugun_gunN: (n)=> `in ${n} days`,
+    bugun_eksik_script: "no script",
+    bugun_eksik_yer: "no address",
+    bugun_eksik_liste: "no shot checklist",
+    bugun_eksik_kayit: "nothing on the calendar",
+    bugun_isaretli: "ticked",
     p_name_ph: "Project name — e.g. Autumn Studio Shoot",
     p_keywords_ph: "Keywords (optional) — brand, client, topic",
     p_address_ph: "Address — where is the shoot?",
@@ -5609,6 +5736,25 @@ const LANG = {
     tpl_limit: (n)=> `En fazla ${n} şablon.`,
     tab_calendar: "Takvim",
     tab_projects: "Projeler",
+    bugun_tab: "Bugün",
+    bugun_intro: "Bugünün tek ekranı: ne yaklaşıyor, ne kaçtı, ne eksik kaldı.",
+    bugun_h: (tarih)=> `BUGÜN — ${tarih}`,
+    bugun_yeni: "Burada henüz bir şey yok. Bir proje oluştur ya da takvime ilk kaydını koy.",
+    bugun_temiz: "Bugün için bekleyen bir iş yok.",
+    bugun_cekim: "YAKLAŞAN ÇEKİMLER",
+    bugun_termin: "BUGÜN BİTEN TERMİNLER",
+    bugun_geciken: "GECİKEN ADIMLAR",
+    bugun_yayin: "BUGÜN TAKVİMDE",
+    bugun_isaret: "İŞARETLENMEYİ BEKLEYEN",
+    bugun_eksik: "ÇEKİMDEN ÖNCE EKSİK",
+    bugun_gun0: "bugün",
+    bugun_gun1: "yarın",
+    bugun_gunN: (n)=> `${n} gün sonra`,
+    bugun_eksik_script: "scripti yok",
+    bugun_eksik_yer: "adresi yok",
+    bugun_eksik_liste: "çekim listesi yok",
+    bugun_eksik_kayit: "takvimde kaydı yok",
+    bugun_isaretli: "işaretli",
     p_name_ph: "Proje adı — örn. Güz Stüdyo Çekimi",
     p_keywords_ph: "Anahtar kelimeler (isteğe bağlı) — marka, müşteri, konu",
     p_address_ph: "Adres — çekim nerede?",
@@ -6259,6 +6405,9 @@ function setLanguage(lang, buluttanGeldi){
   if(document.querySelector('#placeOverlay.open')) mekanHavaYenile();
   const turPen = document.getElementById('tourOverlay');
   if(turPen && turPen.classList.contains('open')) renderTourStep();
+  // Bugun sayfasinin metnini de kod uretiyor: bolum basliklari, "yarin",
+  // eksik adlari. data-i18n ile degismiyorlar.
+  if(typeof bugunDegisti === 'function') bugunDegisti();
 }
 
 // Language-aware labels for content type / status (platform brand names like
@@ -6508,6 +6657,10 @@ function save(){
   }
   // Paylasilan kopya da tazeleniyor: baglanti yoksa hicbir sey yapmiyor.
   paylasimGecikmeliYaz();
+  // Serit dugmesindeki sayi kayittan besleniyor; sayfa kapaliyken de
+  // dogru durmasi lazim. Tanimlanmadan once cagrilma ihtimaline karsi
+  // korumali: save() sayfanin acilisinda da calisiyor.
+  if(typeof bugunDegisti === 'function') bugunDegisti();
 }
 
 async function pushChanges(){
@@ -6796,6 +6949,7 @@ function saveProjects(){
   // iptal). Abonelik dosyasi bu tek kapidan tazeleniyor; kendisi
   // kanal kapaliysa hicbir sey yapmiyor.
   if(typeof takvimTazeleKuyrukla === 'function') takvimTazeleKuyrukla();
+  if(typeof bugunDegisti === 'function') bugunDegisti();
 }
 
 function projectById(id){
@@ -7296,13 +7450,24 @@ function bugunOzeti(gun, simdi){
     return neler.length ? { p:c.p, tarih:c.tarih, kacGun:c.kacGun, neler } : null;
   }).filter(Boolean);
 
-  // Iki bos hal birbirinden AYRI: hic verisi olmayan yeni kullaniciya
-  // "her sey tamam" demek, uygulamayi bos yere bitmis gosterir.
+  // IKI AYRI SAYI, cunku iki ayri soruya cevap veriyorlar.
+  //
+  // toplam: ekranda gosterilecek bir sey var mi. Bos sayfa kararini bu
+  // veriyor, ustuste binmesi onemli degil.
+  //
+  // dikkat: kac AYRI is bekliyor. Serit dugmesindeki rozet bunu
+  // gosteriyor ve rozette ustuste binme yalan olur: bugunYayin'daki
+  // saati gecmis kayit zaten gecikenKayit'ta, eksikler de yaklasan
+  // cekimlerin kendisi. Ilk olcumde rozet "10" diyordu, oysa ortada
+  // alti ayri is vardi. Rozete yalnizca CAKISMAYAN uc kume giriyor:
+  // bugun biten termin, gecikmis adim, isaretlenmeyi bekleyen kayit.
+  // Yaklasan cekim ve eksikler bilgi; uyari degil, sayilmiyorlar.
   const toplam = cekim.length + bugunAdim.length + gecikenAdim.length
                + bugunYayin.length + gecikenKayit.length + eksikler.length;
+  const dikkat = bugunAdim.length + gecikenAdim.length + gecikenKayit.length;
   return {
     bugun, cekim, bugunAdim, gecikenAdim, bugunYayin, gecikenKayit, eksikler,
-    toplam,
+    toplam, dikkat,
     yeni:  projects.length === 0 && events.length === 0,
     temiz: toplam === 0
   };
@@ -11120,6 +11285,10 @@ function secilenTipler(){
 // Takvim "ne zaman cikacak", projeler "nerede kaldi" sorusunun cevabi.
 // Ayni veri, iki farkli soru.
 const SAYFALAR = [
+  // Bugun menude degil ama bir SAYFA: setPage onu da acip kapatiyor ve
+  // "acik olan" isaretini serit dugmesine koyuyor. Ucuncu alan sekme
+  // olmak zorunda degil, yalnizca isareti tasiyacak bir oge.
+  ['bugun',     'bugunPage',     'bugunBtn'],
   ['ideas',     'ideasPage',     'tabIdeas'],
   ['scripts',   'scriptsPage',   'tabScripts'],
   ['places',    'placesPage',    'tabPlaces'],
@@ -11141,6 +11310,69 @@ function setPage(ad){
   if(ad === 'scripts') renderScriptler();
   if(ad === 'places') renderMekanlar();
   if(ad === 'kit') kitSayfasiCiz();
+  if(ad === 'bugun') bugunCiz();
+}
+
+document.getElementById('bugunBtn').addEventListener('click', ()=>{
+  track('funnel/bugun-opened'); setPage('bugun');
+});
+
+// ---- Bugun sayfasi: SUSSUZ ilk hal ---------------------------------
+// Kasitli olarak duz metin. Bu adimin isi "dogru seyleri topluyor mu"
+// sorusunu GOZLE cevaplamak; kart, renk ve tiklanabilirlik bir sonraki
+// adimda geliyor. Erken suslemek yanlis veriyi guzel gosterir.
+//
+// Metinler simdiden i18n'den okunuyor: bir sonraki adim yalnizca
+// bicimi degistirsin, sozleri yeniden yazmak zorunda kalmasin.
+function bugunGunMetni(n){
+  return n === 0 ? t('bugun_gun0') : n === 1 ? t('bugun_gun1') : t('bugun_gunN')(n);
+}
+function bugunCiz(){
+  const kutu = document.getElementById('bugunHam');
+  if(!kutu) return;
+  const o = bugunOzeti();
+  const sat = [t('bugun_h')(tarihMetni(o.bugun)), ''];
+  const bolum = (baslik, satirlar)=>{
+    if(!satirlar.length) return;
+    sat.push(baslik, ...satirlar.map(x=> '  ' + x), '');
+  };
+
+  bolum(t('bugun_cekim'), o.cekim.map(c=>
+    c.p.name + ' — ' + bugunGunMetni(c.kacGun) + ' (' + tarihMetni(c.tarih) + ')'));
+  bolum(t('bugun_termin'), o.bugunAdim.map(x=> x.p.name + ' — ' + t('step_' + x.k)));
+  bolum(t('bugun_geciken'), o.gecikenAdim.map(x=>
+    x.p.name + ' — ' + t('step_' + x.k) + ' (' + tarihMetni(x.tarih) + ')'));
+  bolum(t('bugun_yayin'), o.bugunYayin.map(e=>
+    (e.time || '--:--') + '  ' + typeName(e.type) + ' / ' + (CAL_SM_NAMES[e.platform] || e.platform)
+    + '  ' + (e.title || '') + (e.uploaded ? '  [' + t('bugun_isaretli') + ']' : '')));
+  bolum(t('bugun_isaret'), o.gecikenKayit.map(e=>
+    tarihMetni(e.date) + ' ' + (e.time || '') + '  ' + (e.title || '')));
+  bolum(t('bugun_eksik'), o.eksikler.map(x=>
+    x.p.name + ' (' + bugunGunMetni(x.kacGun) + ') — '
+    + x.neler.map(n=> t('bugun_eksik_' + n)).join(', ')));
+
+  // Iki bos hal AYRI: hic verisi olmayana "her sey tamam" demek
+  // uygulamayi bos yere bitmis gosterir.
+  if(o.temiz) sat.push(o.yeni ? t('bugun_yeni') : t('bugun_temiz'));
+  kutu.textContent = sat.join('\n').replace(/\n+$/, '');
+}
+
+// Serit dugmesindeki sayi: bugun ilgilenilecek kac sey var. Sayfa acik
+// olmasa da dogru durmasi lazim, o yuzden cizimden BAGIMSIZ cagriliyor.
+function bugunSayiTazele(){
+  const r = document.getElementById('bugunSayi');
+  if(!r) return;
+  const n = bugunOzeti().dikkat;
+  r.hidden = n === 0;
+  r.textContent = n > 99 ? '99+' : String(n);
+}
+// Veri degistiginde cagrilan TEK kapi. Sayi her zaman, sayfa yalnizca
+// acikken tazeleniyor: kapali bir sayfayi her kayitta yeniden cizmek
+// bos is.
+function bugunDegisti(){
+  bugunSayiTazele();
+  const sayfa = document.getElementById('bugunPage');
+  if(sayfa && !sayfa.hidden) bugunCiz();
 }
 
 document.getElementById('tabCalendar').addEventListener('click', ()=> setPage('calendar'));
@@ -16709,6 +16941,8 @@ try{
   if(SAYFALAR.some(x=> x[0] === v)) acilisSayfasi = v;
 }catch(e){}
 setPage(acilisSayfasi);
+// Serit sayisi acilista bir kez: save() henuz cagrilmamis olabilir.
+bugunSayiTazele();
 havaBaslat();
 // Every time the demo loads: "How this works" tour first, then — once that's
 // closed (skipped or finished) — the Pending popup, so a first-time visitor
