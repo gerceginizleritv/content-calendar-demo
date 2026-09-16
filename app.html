@@ -7220,6 +7220,94 @@ function listeSayilari(pr){
   return { bitti: liste.filter(x=> x.bitti).length, tum: liste.length };
 }
 
+// ---- Bugun ozeti ----------------------------------------------------
+// Parcalar veride birbirine BAGLI ama ekranda degil: proje sayfasi
+// "nerede kaldi", takvim "ne zaman cikacak" diyor; ikisini tek bakista
+// birlestiren bir yer yoktu. Kullanici bu yuzden "arada kopukluk var"
+// diyor, oysa bag duruyor — yalnizca gorunmuyor.
+//
+// Bu fonksiyon hicbir sey CIZMIYOR, yalnizca topluyor. Boylece ekran
+// yazilmadan test edilebiliyor ve ayni ozet baska yerlerde de (serit
+// rozeti, bildirim, bekleyenler) kullanilabiliyor.
+//
+// Gun ve an DISARIDAN aliniyor. Bu takimda iki test tam olarak "bugun
+// hangi gun" varsayimi yuzunden kirildi; ayni tuzaga bir daha
+// dusmemek icin zaman bir parametre, bir kaynak degil.
+const BUGUN_UFUK = 7;   // "yaklasan" kac gun ileri bakiyor
+
+// Iki 'YYYY-MM-DD' arasinda kac gun var. Ikisi de yerel gece yarisina
+// sabitleniyor: saat dilimi farki bir gunu yanlis tarafa yuvarlamasin.
+function gunFarki(a, b){
+  const x = new Date(a + 'T00:00:00'), y = new Date(b + 'T00:00:00');
+  if(isNaN(x) || isNaN(y)) return null;
+  return Math.round((x - y) / 86400000);
+}
+
+function bugunOzeti(gun, simdi){
+  const bugun = gun || bugunKey();
+  const an = simdi || new Date();
+  // Iptal edilen is hicbir listede yok: yapilmayacak bir sey icin her
+  // gun uyari gostermek, uyarinin tamamini anlamsizlastirir.
+  const canli = projects.filter(p=> !p.cancelled);
+
+  // 1. Yaklasan cekimler — bugun dahil BUGUN_UFUK gun ileri.
+  const cekim = canli
+    .filter(p=>{
+      if(projeBitti(p)) return false;
+      const f = p.shootDate ? gunFarki(p.shootDate, bugun) : null;
+      return f !== null && f >= 0 && f < BUGUN_UFUK;
+    })
+    .map(p=> ({ p, tarih: p.shootDate, kacGun: gunFarki(p.shootDate, bugun) }))
+    .sort((a,b)=> a.kacGun - b.kacGun);
+
+  // 2. Termini bugun olanlar ve gecmis olanlar AYRI iki liste. Ayni
+  //    listede dursalardi ikisi de kirmizi gorunur, "bugun yetistir" ile
+  //    "kacirdin" arasindaki fark kaybolurdu. Bugun gecmis sayilmiyor:
+  //    gunun sonuna kadar zamani var.
+  const bugunAdim = [], gecikenAdim = [];
+  canli.forEach(p=> PROJ_STEPS.forEach(k=>{
+    const d = adimTarihi(p, k);
+    if(!d || p[k]) return;
+    if(d === bugun) bugunAdim.push({ p, k, tarih:d });
+    else if(d < bugun) gecikenAdim.push({ p, k, tarih:d });
+  }));
+  // En eski gecikme en ustte: en cok bekleyen en cok aciliyeti olandir.
+  gecikenAdim.sort((a,b)=> a.tarih < b.tarih ? -1 : a.tarih > b.tarih ? 1 : 0);
+
+  // 3. Takvim tarafi. bugunYayin isaretlenmisleri de iceriyor: "bugun uc
+  //    paylasim, biri cikti" demek icin ikisi de lazim.
+  const kayitAn = e=> new Date(e.date + 'T' + (e.time || '00:00') + ':00');
+  const bugunYayin = events.filter(e=> e.date === bugun)
+    .sort((a,b)=> (a.time||'') < (b.time||'') ? -1 : (a.time||'') > (b.time||'') ? 1 : 0);
+  // Saati gecmis ama isaretlenmemisler. Liste KIRPILMIYOR: kac tane
+  // oldugu bilginin kendisi. Kacini gosterecegi ekranin karari.
+  const gecikenKayit = events.filter(e=> !e.uploaded && kayitAn(e) <= an)
+    .sort((a,b)=> kayitAn(a) - kayitAn(b));
+
+  // 4. Yaklasan cekimin eksikleri. YALNIZCA yaklasanlara bakiliyor: her
+  //    projenin eksigini saymak, listeyi hicbir zaman bitmeyen bir is
+  //    listesine cevirir ve o liste okunmaz.
+  const eksikler = cekim.map(c=>{
+    const neler = [];
+    if(!scriptSayisi(c.p.id) && !((c.p.scriptUrl || '').trim())) neler.push('script');
+    if(adresGerekir(c.p.type) && !projeYeri(c.p)) neler.push('yer');
+    if(!listeSayilari(c.p).tum) neler.push('liste');
+    if(!projeIcinKayitlar(c.p.id).length) neler.push('kayit');
+    return neler.length ? { p:c.p, tarih:c.tarih, kacGun:c.kacGun, neler } : null;
+  }).filter(Boolean);
+
+  // Iki bos hal birbirinden AYRI: hic verisi olmayan yeni kullaniciya
+  // "her sey tamam" demek, uygulamayi bos yere bitmis gosterir.
+  const toplam = cekim.length + bugunAdim.length + gecikenAdim.length
+               + bugunYayin.length + gecikenKayit.length + eksikler.length;
+  return {
+    bugun, cekim, bugunAdim, gecikenAdim, bugunYayin, gecikenKayit, eksikler,
+    toplam,
+    yeni:  projects.length === 0 && events.length === 0,
+    temiz: toplam === 0
+  };
+}
+
 // ---- Cekim listesi penceresi ---------------------------------------
 function cekimListesiAc(id){
   const pr = projectById(id);
