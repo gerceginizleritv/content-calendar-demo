@@ -53,7 +53,7 @@ https://shootboard.app/ai/sema.json
 - `platform` **required**: `youtube` `instagram` `tiktok` `facebook` `threads` `x` `pinterest` `linkedin`.
 - `type`: `video` (long-form) · `shorts` (YouTube Shorts) · `reels` (Instagram/Facebook Reels, TikTok) · `carousel` · `story` · `text_post` (Threads, X, LinkedIn text) · `poll`. Default `video`.
 - `title` ≤ 300 (shown on the calendar card, keep it short), `project` (project name or id), `uploaded` (already posted; `false` for anything planned).
-- `content`: `caption` ≤ 5000, `hashtags` ≤ 1000 (one string, `#` each), `videoTitle` ≤ 300, `shortTitle` ≤ 300, `thumbPrompt` ≤ 5000, `slidePrompts` (carousel; up to 9 strings), `timezone` (IANA, e.g. `Europe/Istanbul`; empty = the creator's zone).
+- `content`: `caption` ≤ 5000, `hashtags` ≤ 1000 (one string, `#` each), `videoTitle` ≤ 300, `shortTitle` ≤ 300, `thumbPrompt` ≤ 5000, `slidePrompts` (carousel; up to 9 strings), `timezone` (IANA, e.g. `Europe/Istanbul`; empty = the creator's zone), `anaDil` (two-letter code of the language the main fields are written in, e.g. `tr`) and `diller` (the same post in other languages: `{"en": {"videoTitle": …, "caption": …, "hashtags": …, "shortTitle": …}}`, up to 8 languages, two-letter keys). Multi-language titles only make sense for YouTube long-form video and Shorts; on other platforms a different language means a separate post.
 - A video going out on four platforms is **four entries**, each with text written for its platform.
 
 **projects** (a shoot)

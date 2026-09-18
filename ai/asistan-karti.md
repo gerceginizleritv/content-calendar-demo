@@ -54,7 +54,7 @@ https://shootboard.app/ai/sema.json
 - `platform` **zorunlu**: `youtube` `instagram` `tiktok` `facebook` `threads` `x` `pinterest` `linkedin`.
 - `type`: `video` (uzun) · `shorts` (YouTube Shorts) · `reels` (Instagram/Facebook Reels, TikTok) · `carousel` · `story` · `text_post` (Threads, X, LinkedIn metni) · `poll`. Varsayılan `video`.
 - `title` ≤ 300 (takvim kartında görünür, kısa tut), `project` (proje adı ya da kimliği), `uploaded` (yayınlandı mı; planlananlar için `false`).
-- `content`: `caption` ≤ 5000, `hashtags` ≤ 1000 (tek metin, `#` ile), `videoTitle` ≤ 300, `shortTitle` ≤ 300, `thumbPrompt` ≤ 5000, `slidePrompts` (carousel; en çok 9 metin), `timezone` (IANA, ör. `Europe/Istanbul`; boşsa üreticinin dilimi).
+- `content`: `caption` ≤ 5000, `hashtags` ≤ 1000 (tek metin, `#` ile), `videoTitle` ≤ 300, `shortTitle` ≤ 300, `thumbPrompt` ≤ 5000, `slidePrompts` (carousel; en çok 9 metin), `timezone` (IANA, ör. `Europe/Istanbul`; boşsa üreticinin dilimi), `anaDil` (ana metinlerin dili, iki harf, ör. `tr`) ve `diller` (aynı paylaşımın başka dillerdeki hâli: `{"en": {"videoTitle": …, "caption": …, "hashtags": …, "shortTitle": …}}`, en çok 8 dil, iki harfli kod). Çok dilli başlık yalnızca YouTube uzun video ve Shorts'ta anlamlı; diğer platformlarda farklı dil ayrı paylaşım demek.
 - Aynı video dört platformda paylaşılacaksa **dört ayrı kayıt** yaz; her birinin metni platformuna göre olsun.
 
 **projects** (çekim)

@@ -6732,7 +6732,34 @@ function sanitizeEvent(raw){
                      && /^[A-Za-z0-9_-]{1,64}$/.test(c.projectId)) ? c.projectId : '',
       // 9 x 5000 tek basina 45 KB ediyordu; bir gorsel prompt'u icin 2000
       // fazlasiyla yeterli ve arayuzdeki sinir zaten 1000.
-      slidePrompts: Array.isArray(c.slidePrompts) ? c.slidePrompts.slice(0,9).map(x=>str(x,2000)) : []
+      slidePrompts: Array.isArray(c.slidePrompts) ? c.slidePrompts.slice(0,9).map(x=>str(x,2000)) : [],
+      // COK DILLI BASLIK VE ACIKLAMA. Beyaz listede olmadigi icin her
+      // yuklemede sessizce dusuyordu: kullanici Ingilizce basligi yaziyor,
+      // Supabase'e gidiyor, sayfa yenilenince seritte yalnizca Turkce
+      // kaliyor ve kayit bir daha kaydedilince ceviri BULUTTA DA siliniyordu.
+      // Kaydetme tarafi (dilleriTopla) bastan beri dogruydu; kayip okuma
+      // tarafindaydi ve sessiz oldugu icin gec fark edildi.
+      //
+      // DIL_MAX ve DIL_LISTESI'ne burada BILEREK referans verilmiyor: ikisi
+      // de bu fonksiyondan cok sonra tanimli (const, TDZ) ve sanitizeEvent
+      // acilista, onlar tanimlanmadan once calisiyor. Sekiz siniri ve desen
+      // bu yuzden yerel.
+      diller: (c.diller && typeof c.diller === 'object' && !Array.isArray(c.diller))
+        ? Object.keys(c.diller)
+            .filter(k => /^[a-z]{2}$/.test(k) && c.diller[k] && typeof c.diller[k] === 'object')
+            .slice(0, 8)
+            .reduce((o, k) => {
+              const d = c.diller[k];
+              const t = { videoTitle: str(d.videoTitle, 300), caption: str(d.caption, 5000),
+                          hashtags: str(d.hashtags, 1000), shortTitle: str(d.shortTitle, 300) };
+              // Bos dil kaydedilmiyor: yalnizca sekmesi acilip hicbir sey
+              // yazilmamis bir dil, yedegi bos yere sisirir ve damgada
+              // gorunup kullaniciyi yaniltir.
+              if (t.videoTitle.trim() || t.caption.trim() || t.hashtags.trim() || t.shortTitle.trim()) o[k] = t;
+              return o;
+            }, {})
+        : undefined,
+      anaDil: (typeof c.anaDil === 'string' && /^[a-z]{2}$/.test(c.anaDil)) ? c.anaDil : undefined
     }
   };
 }

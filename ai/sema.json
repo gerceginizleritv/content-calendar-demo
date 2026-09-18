@@ -93,7 +93,28 @@
             "shortTitle": { "type": "string", "maxLength": 300, "description": "Title for shorts / reels." },
             "thumbPrompt": { "type": "string", "maxLength": 5000, "description": "Thumbnail idea or image-generation prompt." },
             "slidePrompts": { "type": "array", "maxItems": 9, "items": { "type": "string", "maxLength": 2000 }, "description": "Carousel only: one prompt/description per slide, in order." },
-            "timezone": { "type": "string", "maxLength": 64, "description": "IANA time zone the date/time are given in (e.g. Europe/Istanbul). Leave empty for the creator's own zone." }
+            "timezone": { "type": "string", "maxLength": 64, "description": "IANA time zone the date/time are given in (e.g. Europe/Istanbul). Leave empty for the creator's own zone." },
+            "anaDil": {
+              "type": "string",
+              "pattern": "^[a-z]{2}$",
+              "description": "Two-letter code of the language the main videoTitle/caption/hashtags/shortTitle are written in (e.g. tr). Only meaningful together with diller."
+            },
+            "diller": {
+              "type": "object",
+              "maxProperties": 8,
+              "propertyNames": { "pattern": "^[a-z]{2}$" },
+              "additionalProperties": {
+                "type": "object",
+                "properties": {
+                  "videoTitle": { "type": "string", "maxLength": 300 },
+                  "caption": { "type": "string", "maxLength": 5000 },
+                  "hashtags": { "type": "string", "maxLength": 1000 },
+                  "shortTitle": { "type": "string", "maxLength": 300 }
+                },
+                "additionalProperties": false
+              },
+              "description": "Extra languages for the same post, keyed by two-letter code (e.g. en, de). The main language stays in the plain content fields; only the translations go here. YouTube shows each viewer the title and description in their own language, so this is used for YouTube long-form video and Shorts. Empty languages are dropped."
+            }
           },
           "additionalProperties": false
         }

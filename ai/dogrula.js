@@ -179,6 +179,56 @@ function projeOku(ham, sira, hatalar) {
   });
 }
 
+// Cok dilli baslik/aciklama. YouTube tek videoya birden cok dilde baslik
+// tasiyor; kayit bunlari content.diller altinda tutuyor.
+//
+// Sinirlar app.html'deki sanitizeEvent ile AYNI olmak zorunda: burada
+// gecen ama orada dusen bir alan, kullaniciya "aktarildi" denip sonra
+// sessizce kaybolur.
+function dillerOku(c, sira, hatalar) {
+  if (!c.diller || typeof c.diller !== 'object' || Array.isArray(c.diller)) return undefined;
+  const cikti = {};
+  let sayi = 0;
+  Object.keys(c.diller).forEach(k => {
+    if (!/^[a-z]{2}$/.test(k)) {
+      hatalar.push({ liste: 'entries', sira, alan: `content.diller.${k}`,
+                     sebep: 'language key must be a two-letter code; dropped' });
+      return;
+    }
+    const d = c.diller[k];
+    if (!d || typeof d !== 'object' || Array.isArray(d)) {
+      hatalar.push({ liste: 'entries', sira, alan: `content.diller.${k}`,
+                     sebep: 'must be an object; dropped' });
+      return;
+    }
+    if (sayi >= 8) {
+      hatalar.push({ liste: 'entries', sira, alan: `content.diller.${k}`,
+                     sebep: 'at most 8 languages; dropped' });
+      return;
+    }
+    const t = temizNesne({
+      videoTitle: metin(d.videoTitle, 300), caption: metin(d.caption, 5000),
+      hashtags: metin(d.hashtags, 1000), shortTitle: metin(d.shortTitle, 300)
+    });
+    // Bos dil dusuyor: sekmesi acilip hicbir sey yazilmamis bir dil
+    // damgada gorunup kullaniciyi yaniltir.
+    if (Object.keys(t).some(a => (t[a] || '').trim())) { cikti[k] = t; sayi++; }
+  });
+  return sayi ? cikti : undefined;
+}
+
+// Ana dil: cevirilerin hangi dilden yapildigi. Gecersiz deger sessizce
+// dusmuyor, hatalar listesine yaziliyor -- dosyadaki oteki alanlarin
+// (timezone, type, id) davranisiyla ayni.
+function anaDilOku(c, sira, hatalar) {
+  const v = metin(c.anaDil, 8);
+  if (v === undefined || v === '') return undefined;
+  if (/^[a-z]{2}$/.test(v)) return v;
+  hatalar.push({ liste: 'entries', sira, alan: 'content.anaDil',
+                 sebep: 'must be a two-letter language code; dropped' });
+  return undefined;
+}
+
 function kayitOku(ham, sira, hatalar) {
   const date = tarih(ham.date);
   if (!date) { hatalar.push({ liste: 'entries', sira, alan: 'date', sebep: 'date is required, YYYY-MM-DD' }); return null; }
@@ -207,7 +257,9 @@ function kayitOku(ham, sira, hatalar) {
       thumbPrompt: metin(c.thumbPrompt, 5000),
       slidePrompts: Array.isArray(c.slidePrompts)
         ? c.slidePrompts.slice(0, 9).map(x => typeof x === 'string' ? x.slice(0, 2000) : '') : undefined,
-      timezone: tz && tzGecerli(tz) ? tz : undefined
+      timezone: tz && tzGecerli(tz) ? tz : undefined,
+      diller: dillerOku(c, sira, hatalar),
+      anaDil: anaDilOku(c, sira, hatalar)
     });
   }
   const projectRef = basvurular(ham.project, undefined, 1);

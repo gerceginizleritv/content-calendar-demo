@@ -72,6 +72,52 @@ const bak = (ad, ko, ek)=>{ if(ko){ g++; console.log('  ok  '+ad); } else { k++;
   bak('basvuruCoz adla, harf duyarsiz', basvuruCoz('hanlar bölgesi', olanlar).id === 'pr_a' && basvuruCoz('HANLAR BÖLGESİ', olanlar).id === 'pr_a');
   bak('basvuruCoz bulamazsa null', basvuruCoz('yok', olanlar) === null && basvuruCoz('', olanlar) === null);
 
+  // 6) Cok dilli baslik/aciklama. Sinirlar app.html'deki sanitizeEvent ile
+  //    AYNI olmak zorunda: burada gecip orada dusen bir alan, kullaniciya
+  //    "aktarildi" denip sonra sessizce kaybolur. Bir kez tam olarak bu
+  //    oldu -- diller okuma yolunda dusuyordu.
+  const dil = paketiCoz({ entries: [
+    { date: '2026-10-09', platform: 'youtube', type: 'video', title: 'Sokollu',
+      content: { videoTitle: 'Sokollu Köprüsü', anaDil: 'tr',
+        diller: {
+          en: { videoTitle: 'The Bridge of Sokollu', caption: 'Sinan\'s bridge.' },
+          english: { videoTitle: 'gecersiz kod' },
+          de: { videoTitle: '', caption: '' },
+          fr: 'nesne degil',
+          es: { videoTitle: 'x'.repeat(400) }
+        } } },
+    { date: '2026-10-11', platform: 'youtube', type: 'shorts', title: 'kod bozuk',
+      content: { anaDil: 'TURKCE' } },
+    { date: '2026-10-13', platform: 'instagram', type: 'reels', title: 'dilsiz',
+      content: { caption: 'sade' } }
+  ] });
+  const dc = dil.entries[0].content;
+  bak('diller okunuyor', !!(dc.diller && dc.diller.en), JSON.stringify(dc.diller));
+  bak('ceviri metni aynen geciyor', dc.diller.en.videoTitle === 'The Bridge of Sokollu');
+  bak('anaDil okunuyor', dc.anaDil === 'tr', String(dc.anaDil));
+  bak('gecersiz dil kodu dusuyor ve uyari veriyor',
+      !dc.diller.english && dil.hatalar.some(h=> h.alan === 'content.diller.english'),
+      JSON.stringify(dil.hatalar.map(h=> h.alan)));
+  bak('bos dil dusuyor', !dc.diller.de, JSON.stringify(Object.keys(dc.diller)));
+  bak('nesne olmayan dil dusuyor ve uyari veriyor',
+      !dc.diller.fr && dil.hatalar.some(h=> h.alan === 'content.diller.fr'));
+  bak('uzun baslik 300e kirpiliyor', dc.diller.es.videoTitle.length === 300,
+      dc.diller.es.videoTitle.length);
+  bak('gecersiz anaDil dusuyor ve uyari veriyor',
+      dil.entries[1].content.anaDil === undefined
+      && dil.hatalar.some(h=> h.alan === 'content.anaDil'),
+      JSON.stringify(dil.hatalar.map(h=> h.alan)));
+  // Verilmeyen alan CIKTIDA OLMAMALI: ada gore guncellemede var olan
+  // kaydin cevirisini bos bir degerle ezmesin.
+  bak('dili olmayan kayitta diller/anaDil YOK',
+      !('diller' in dil.entries[2].content) && !('anaDil' in dil.entries[2].content),
+      JSON.stringify(dil.entries[2].content));
+  const cokDil = paketiCoz({ entries: [{ date: '2026-10-09', platform: 'youtube',
+    content: { diller: 'ab cd ef gh ij kl mn op qr st'.split(' ')
+      .reduce((o,x)=> (o[x] = { videoTitle: x }, o), {}) } }] });
+  bak('en cok sekiz dil', Object.keys(cokDil.entries[0].content.diller).length === 8,
+      Object.keys(cokDil.entries[0].content.diller).length);
+
   console.log(`\n${g} gecti, ${k} kaldi`);
   process.exit(k ? 1 : 0);
 })().catch(e=>{ console.error(e); process.exit(1); });
