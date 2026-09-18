@@ -218,14 +218,35 @@ const gunler = (n)=> {
     await s2.close();
     return ad;
   };
-  bak('yeni ziyaret Bugün ile açılıyor', (await temizSayfa()) === 'bugunPage',
+  // Acilis KIME gore degisiyor: girisli kullanici is yapmaya geliyor
+  // (Bugun), ziyaretci urunu degerlendirmeye geliyor ve demonun anlattigi
+  // sey dolu takvim. Ziyaretciye Bugun acilsaydi neredeyse bos bir ekran
+  // gorurdu -- demo kayitlari yarindan basliyor.
+  bak('ziyaretçi Takvim ile açılıyor', (await temizSayfa()) === 'calendarPage',
       await temizSayfa());
+  bak('girişli kullanıcı Bugün ile açılıyor',
+      (await temizSayfa("localStorage.setItem('demo_girisli','1');")) === 'bugunPage',
+      await temizSayfa("localStorage.setItem('demo_girisli','1');"));
   // Eski surumden kalan kalici anahtar acilisi ele gecirmemeli.
   bak('eski kalıcı demo_page açılışı ele geçirmiyor',
-      (await temizSayfa("localStorage.setItem('demo_page','templates');")) === 'bugunPage');
+      (await temizSayfa("localStorage.setItem('demo_girisli','1'); localStorage.setItem('demo_page','templates');")) === 'bugunPage');
   // Ama sekme icinde yenileme yeri koruyor.
   bak('oturum içinde hatırlanan sayfa korunuyor',
-      (await temizSayfa("sessionStorage.setItem('demo_page','calendar');")) === 'calendarPage');
+      (await temizSayfa("localStorage.setItem('demo_girisli','1'); sessionStorage.setItem('demo_page','templates');")) === 'templatesPage');
+
+  // Butun ozellik bu bayraga dayaniyor: yanlis yazilirsa ya ziyaretci
+  // Bugun'e duser (bos ekran) ya da girisli kullanici Takvim'e.
+  console.log('[giriş bayrağı]');
+  bak('ziyaretçide bayrak yok',
+      (await p.evaluate(()=> localStorage.getItem('demo_girisli'))) === null);
+  await p.evaluate(()=> oturumBildirildi({ user:{ id:'11111111-1111-1111-1111-111111111111' } }));
+  await p.waitForTimeout(300);
+  bak('oturum gelince bayrak yazılıyor',
+      (await p.evaluate(()=> localStorage.getItem('demo_girisli'))) === '1');
+  await p.evaluate(()=> oturumBildirildi(null));
+  await p.waitForTimeout(300);
+  bak('çıkınca bayrak siliniyor',
+      (await p.evaluate(()=> localStorage.getItem('demo_girisli'))) === null);
 
   console.log('[yeni kullanıcı boş ekranda yol buluyor]');
   await p.evaluate(()=>{ projects = []; events = []; saveProjects(); save(); setPage('bugun'); });

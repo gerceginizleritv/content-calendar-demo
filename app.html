@@ -17205,15 +17205,54 @@ renderProjects();
 // yazilmis kisa bir liste vardi ('calendar' ve 'templates'); yeni
 // sayfalar eklenince kimse bu satiri hatirlamadi ve Fikirler/Scriptler
 // sayfasinda yenileyen herkes projelere dusuyordu.
-// ACILIS SAYFASI. Uzun sure 'projects'ti; Bugun once serit dugmesinden
-// girilen bir sayfa olarak yazildi ve bir hafta boyle kullanildi.
-// Geri almak icin tek satir: asagidaki 'bugun' yerine 'projects' yazmak
-// ve ustteki sessionStorage'i localStorage'a dondurmek yeter.
-let acilisSayfasi = 'bugun';
+// Bu tarayicida giris yapilmis mi. Acilis sayfasi karari buna bakiyor ve
+// karar SENKRON verilmek zorunda: oturumu Supabase'e sormak asenkron, once
+// bir sayfa acip sonra digerine atlamak gozle gorulur bir sicrama olurdu.
+//
+// Supabase'in kendi anahtarini (sb-<ref>-auth-token) okumak da mumkundu;
+// bilerek yapilmadi -- ucuncu partinin ic bicimine bagli kalir ve o bicim
+// degisince hicbir uyari vermeden yanlis cevap verirdi. Kendi bayragimiz
+// tek kapidan (oturumBildirildi) yaziliyor.
+//
+// Bu surumden ONCE giris yapmis kullanici bayragi henuz tasimiyor: bir
+// kez Takvim'e duser, oturum gelince bayrak yazilir, sonraki ziyaretler
+// Bugun'den baslar. Tek seferlik ve zararsiz.
+//
+// TANIM YERI ONEMLI: acilis blogundan ONCE olmak zorunda. Once asagida,
+// oturumBildirildi'nin yaninda duruyordu ve acilis blogu onu okumaya
+// calisinca TDZ hatasi veriyordu; hata try/catch'e dusuyor, kimse
+// gormuyor ve girisli kullanici da ziyaretci gibi Takvim'e aciliyordu.
+const GIRIS_BAYRAGI = 'demo_girisli';
+function girisBayragi(acik){
+  try{
+    if(acik) localStorage.setItem(GIRIS_BAYRAGI, '1');
+    else localStorage.removeItem(GIRIS_BAYRAGI);
+  }catch(e){ /* onemsiz */ }
+}
+
+// ACILIS SAYFASI — kime gore degisiyor.
+//
+// Girisli kullanici IS YAPMAYA geliyor: "bugun ne var" sorusuyla aciyor,
+// cevabi Bugun sayfasi veriyor.
+//
+// Ziyaretci ise URUNU DEGERLENDIRMEYE geliyor ve demonun anlattigi sey
+// dolu takvim. Ziyaretciye de Bugun acilsaydi neredeyse bos bir ekran
+// gorurdu: demo kayitlari YARINDAN basliyor, bugune hicbiri denk
+// gelmiyor. Bu olculdu, varsayilmadi.
+//
+// Karar SENKRON veriliyor (bkz. GIRIS_BAYRAGI): once bir sayfa acip
+// oturum gelince otekine atlamak gorunur bir sicrama olurdu.
+//
+// Geri almak icin: asagidaki kosulu silip tek bir sayfa adi birakmak ve
+// ustteki sessionStorage'i localStorage'a dondurmek yeter.
+let acilisSayfasi = 'calendar';
 try{
+  if(localStorage.getItem(GIRIS_BAYRAGI) === '1') acilisSayfasi = 'bugun';
+  // Sekme icinde yenileme yeri koruyor; yeni ziyaret yukaridaki karara
+  // gore basliyor.
   const v = sessionStorage.getItem('demo_page');
   if(SAYFALAR.some(x=> x[0] === v)) acilisSayfasi = v;
-  // Kalici anahtar artik kullanilmiyor; eski surumlerden kalani
+  // Kalici sayfa anahtari artik kullanilmiyor; eski surumlerden kalani
   // temizliyoruz ki ileride birisi onu okuyup yanilmasin.
   localStorage.removeItem('demo_page');
 }catch(e){}
@@ -18748,6 +18787,7 @@ function afterSignOut(){
 let senkronKullanici = null;
 function oturumBildirildi(s){
   session = s;
+  girisBayragi(!!s);
   refreshAuthUi();
   if(s && s.user.id !== senkronKullanici){
     senkronKullanici = s.user.id;
