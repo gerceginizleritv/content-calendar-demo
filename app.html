@@ -290,6 +290,26 @@ body{
   background:var(--surface-2);color:var(--text-dim);font-size:14px;text-align:center;
 }
 .bg-bos p{margin:0;max-width:44ch;line-height:1.6;}
+
+/* ---- Hesap etiketleri penceresi ---------------------------------- */
+.hs_not{margin:-4px 0 14px;line-height:1.55;}
+.hs-liste{list-style:none;margin:0 0 16px;padding:0;display:flex;
+  flex-direction:column;gap:6px;}
+.hs-liste li{display:flex;align-items:center;gap:10px;
+  border:1px solid var(--line-soft);border-radius:9px;padding:8px 10px;}
+.hs-liste .hs-pf{flex:none;display:inline-flex;width:18px;height:18px;}
+.hs-liste .hs-ad{font-weight:600;font-size:13.5px;}
+.hs-liste .hs-yan{flex:1 1 auto;min-width:0;font-size:12px;color:var(--text-dim);
+  overflow:hidden;text-overflow:ellipsis;white-space:nowrap;}
+.hs-liste .hs-islem{flex:none;display:flex;gap:4px;}
+.hs-liste .hs-islem .btn{min-height:0;padding:4px 9px;font-size:11.5px;}
+/* Platformu bilinmeyen hesap: listede DURUYOR ama kayit penceresinde
+   gorunmez. Silmek yerine isaretleniyor ki kullanici duzeltebilsin. */
+.hs-liste li.hs-eksik{border-color:var(--amber);}
+.hs-liste .hs-uyari{flex:none;font-size:11px;color:var(--amber);}
+.hs-bos{margin:0 0 16px;padding:16px;border:1px dashed var(--line);
+  border-radius:10px;color:var(--text-dim);font-size:13px;text-align:center;}
+.hs-form{border-top:1px solid var(--line);padding-top:14px;}
 @media(max-width:560px){
   /* Telefonda tarih ve ad tek satira sigmiyor; yan bilgi alta iniyor. */
   .bg-satir{flex-wrap:wrap;gap:4px 8px;padding:9px 11px;}
@@ -1975,6 +1995,14 @@ textarea.sc-ai-brief{min-height:64px;resize:vertical;line-height:1.5;}
 .field .pcheck:has(input:checked){border-color:var(--accent);background:var(--accent-soft);}
 .pcheck:hover{border-color:var(--accent-dim);}
 .pcheck input{width:auto;accent-color:var(--accent);}
+/* Hesap gruplari: her secili platform kendi basligiyla ayri bir blok.
+   Baslik <span>, <label> DEGIL -- yukaridaki ".field label" kurali onu
+   mono/buyuk harf/soluk yapip okunmaz hale getirirdi. */
+.hs-grup{margin-bottom:10px;}
+.hs-grup:last-child{margin-bottom:0;}
+.hs-grup-ad{display:flex;align-items:center;gap:6px;margin-bottom:6px;
+  font-size:11px;letter-spacing:.06em;text-transform:uppercase;color:var(--text-dim);}
+.hs-grup-ad svg{width:14px;height:14px;}
 .upload-toggle{display:flex;align-items:center;gap:9px;border:1px solid var(--line);padding:11px 13px;min-height:44px;margin:15px 0;cursor:pointer;border-radius:6px;}
 /* Bos kutu da gorunmeli: arka plani ve kenari acikca boyaniyor, yoksa koyu
    temada zeminle ayni tona dusuyordu. */
@@ -3052,6 +3080,10 @@ textarea.sc-ai-brief{min-height:64px;resize:vertical;line-height:1.5;}
         <button class="rail-link" id="havaGosterBtn" hidden data-i18n="hv_show">Weather &amp; light</button>
         <button class="rail-link" id="aiSettingsBtn" data-i18n="btn_ai_settings">✨ AI (Gemini)</button>
         <button class="rail-link" id="remindersBtn" data-i18n="rm_btn">🔔 Reminders</button>
+        <!-- Hesap etiketleri MENUYE girmiyor: alt cubukta 560 pikselde
+             zaten yer savasi verildi ve bu her gun acilan bir sey degil,
+             bir kez kurulup unutulan bir ayar. -->
+        <button class="rail-link" id="hesapEtiketBtn" data-i18n="hs_btn">🏷 Account labels</button>
         <!-- Tur "nasil calisir"i gosteriyor; kilavuz NEDEN oyle
              calistigini ve her modulun ne ise yaradigini anlatiyor. -->
         <a class="rail-link" id="kilavuzLink" href="guide.html" target="_blank" rel="noopener"
@@ -3306,6 +3338,15 @@ textarea.sc-ai-brief{min-height:64px;resize:vertical;line-height:1.5;}
         <span data-i18n="filter_platform">Platform</span><span class="fbadge" hidden></span><span class="fcaret" aria-hidden="true">▾</span>
       </button>
       <div class="fpanel" hidden><div class="legend" id="platformLegend"></div></div>
+    </div>
+    <!-- Hesap satiri: filtreSeridiniTazele icerigi bos olan her .fdrop'u
+         zaten gizliyor, o yuzden ayrica hidden yazmaya gerek yok --
+         satir ancak takvimde hesaba baglanmis bir kayit varsa cikiyor. -->
+    <div class="fdrop" data-drop="hesap">
+      <button type="button" class="fbtn" aria-expanded="false" aria-haspopup="true">
+        <span data-i18n="filter_hesap">Account</span><span class="fbadge" hidden></span><span class="fcaret" aria-hidden="true">▾</span>
+      </button>
+      <div class="fpanel" hidden><div class="legend" id="hesapLegend"></div></div>
     </div>
     <div class="fdrop" data-drop="concept" hidden>
       <button type="button" class="fbtn" aria-expanded="false" aria-haspopup="true">
@@ -3581,6 +3622,56 @@ textarea.sc-ai-brief{min-height:64px;resize:vertical;line-height:1.5;}
       <button type="button" class="btn btn-danger" id="pay_kapat" hidden data-i18n="pay_off">Turn the link off</button>
       <button type="button" class="btn" id="pay_iptal" data-i18n="btn_close">Close</button>
       <button type="button" class="btn btn-primary" id="pay_olustur" data-i18n="pay_create">Create the link</button>
+    </div>
+  </div>
+</div>
+
+<!-- HESAP ETIKETLERI. Tek pencere: ustte liste, altta ekleme/duzenleme
+     formu. Ayri bir "ekle" penceresi acmak iki tikla ayni isi yapardi.
+
+     Metin BAGLANTI OLMADIGINI acikca soylemek zorunda. Kullanici
+     "hesabimi ekledim" deyip Shootboard'in kendi adina paylasim
+     yapmasini beklerse, yanlis beklentinin patladigi yer burasi olur. -->
+<div class="overlay" id="hesapOverlay2">
+  <div class="modal" style="max-width:560px;">
+    <div class="modal-head">
+      <h2 data-i18n="hs_title">Account labels</h2>
+      <button type="button" class="modal-x" id="hs_kapat"
+              data-i18n-title="btn_close" data-i18n-aria="btn_close" title="Close">×</button>
+    </div>
+    <p class="hint hs_not" data-i18n="hs_intro">If you have more than one account on the same platform, add them here; when you plan a post you tick which one it goes to. Shootboard never connects to any account and never posts anything on your behalf — this is only a label.</p>
+
+    <ul class="hs-liste" id="hs_liste"></ul>
+
+    <div class="hs-form">
+      <div class="row2">
+        <div class="field">
+          <label data-i18n="hs_ad">Name</label>
+          <input type="text" id="hs_ad" maxlength="80" data-i18n-placeholder="hs_ad_ph" placeholder="Personal">
+        </div>
+        <div class="field">
+          <label data-i18n="hs_platform">Platform</label>
+          <select id="hs_platform"></select>
+        </div>
+      </div>
+      <div class="row2">
+        <div class="field">
+          <label data-i18n="hs_kullanici">Username</label>
+          <input type="text" id="hs_handle" maxlength="80" placeholder="@…">
+        </div>
+        <div class="field">
+          <label data-i18n="hs_adres">Address</label>
+          <input type="url" id="hs_url" maxlength="600" placeholder="https://…">
+        </div>
+      </div>
+      <div class="field">
+        <label data-i18n="hs_not">Note</label>
+        <input type="text" id="hs_notlar" maxlength="1000" data-i18n-placeholder="hs_not_ph" placeholder="Optional">
+      </div>
+      <div class="modal-actions">
+        <button type="button" class="btn" id="hs_vazgec" hidden data-i18n="btn_cancel">Cancel</button>
+        <button type="button" class="btn btn-primary" id="hs_kaydet" data-i18n="hs_ekle">Add</button>
+      </div>
     </div>
   </div>
 </div>
@@ -3996,6 +4087,21 @@ textarea.sc-ai-brief{min-height:64px;resize:vertical;line-height:1.5;}
     <div class="field" id="platformMultiWrap">
       <label data-i18n="f_platforms_label">Platform(s) — check all that this same content goes to</label>
       <div class="platform-checks" id="platformChecks"></div>
+    </div>
+
+    <!-- HESAP ETIKETI. Alan KOSULLU: ancak secili bir platformda birden
+         cok hesap tanimliysa ortaya cikiyor. Tek kanali olan uretici
+         hicbir ek tik gormuyor -- ozelligin bedelini yalnizca ona
+         ihtiyaci olan odesin. Coklu secim coklu kayit uretiyor, tipki
+         platform kutulari gibi. -->
+    <div class="field" id="hesapMultiWrap" hidden>
+      <label data-i18n="f_hesap_label">Which account?</label>
+      <div id="hesapGruplar"></div>
+      <p class="hint" data-i18n="f_hesap_not">Tick one or more — each ticked account gets its own entry. Leave a platform untouched and its entry is created without an account.</p>
+    </div>
+    <div class="field" id="hesapSingleWrap" hidden>
+      <label data-i18n="f_hesap_label">Which account?</label>
+      <select id="f_hesap"></select>
     </div>
 
     <div class="field">
@@ -4773,6 +4879,8 @@ const LANG = {
     filters_title: "Filter the calendar",
     filters_sub: "show only what you pick — nothing is deleted",
     filter_type: "Type",
+    filter_hesap: "Account",
+    filter_hesapsiz: "No account",
     filter_platform: "Platform",
     filter_project: "Project",
     filter_search_ph: "Search project",
@@ -4842,6 +4950,11 @@ const LANG = {
     modal_new_title: "New Entry",
     modal_edit_title: "Edit Entry",
     f_type_label: "Content Type",
+    // Kayittaki hesap alani. "Hangi hesaba?" sorusu, "hesap bagla" degil.
+    f_hesap_label: "Which account?",
+    f_hesap_not: "Tick one or more — each ticked account gets its own entry. Leave a platform untouched and its entry is created without an account.",
+    f_hesap_yok: "— not specified —",
+    f_hesap_silinmis: "deleted account",
     f_platform_label: "Platform",
     f_platforms_label: "Platform(s) — check all that this same content goes to",
     f_title_label: "Title / Note",
@@ -4914,6 +5027,7 @@ const LANG = {
     f_thumb_label: "Cover / Thumbnail Image Prompt",
     f_thumb_ph: "Describe the cover image for an AI image generator...",
     carousel_title: "Carousel Slide Prompts (9)",
+    btn_edit: "Edit",
     btn_delete: "Delete",
     btn_clone: "Duplicate…",
     f_concept_label: "Project / Concept",
@@ -5372,6 +5486,25 @@ const LANG = {
     step_approved: "Approved",
     step_package: "Package",
     step_published: "Published",
+    // HESAP ETIKETLERI. "Etiket" kelimesi metinlerde bilerek gecmiyor
+    // ama fikir her yerde: burada saklanan sey bir BAG degil, bir AD.
+    hs_btn: "🏷 Account labels",
+    hs_title: "Account labels",
+    hs_intro: "If you have more than one account on the same platform, add them here; when you plan a post you tick which one it goes to. Shootboard never connects to any account and never posts anything on your behalf — this is only a label.",
+    hs_ad: "Name",
+    hs_ad_ph: "Personal",
+    hs_platform: "Platform",
+    hs_kullanici: "Username",
+    hs_adres: "Address",
+    hs_not: "Note",
+    hs_not_ph: "Optional",
+    hs_ekle: "Add",
+    hs_bos: "No accounts yet. You only need this if you have two or more accounts on the same platform.",
+    hs_platformsuz: "no platform",
+    hs_ad_gerek: "Give the account a name — that is how you will recognise it in the list.",
+    hs_limit: (n)=> `Up to ${n} accounts.`,
+    hs_sil: (ad)=> `Delete “${ad}”?`,
+    hs_sil_bagli: (ad, n)=> `“${ad}” is used by ${n} entr${n === 1 ? 'y' : 'ies'}. Those entries are not deleted; they will show the account as removed. Delete it?`,
     rm_btn: "🔔 Reminders",
     rm_title: "Deadline reminders",
     rm_lead: "Shootboard can tell you about a step before its deadline passes. Two channels, each switched on separately.",
@@ -5701,6 +5834,8 @@ const LANG = {
     filters_title: "Takvimi filtrele",
     filters_sub: "sadece seçtiklerini gösterir — hiçbir şey silinmez",
     filter_type: "Tür",
+    filter_hesap: "Hesap",
+    filter_hesapsiz: "Hesapsız",
     filter_platform: "Platform",
     filter_project: "Proje",
     filter_search_ph: "Proje ara",
@@ -5770,6 +5905,11 @@ const LANG = {
     modal_new_title: "Yeni Giriş",
     modal_edit_title: "Girişi Düzenle",
     f_type_label: "İçerik Tipi",
+    // Kayittaki hesap alani.
+    f_hesap_label: "Hangi hesaba?",
+    f_hesap_not: "Bir ya da birden çok işaretle — işaretlediğin her hesap için ayrı bir kayıt oluşur. Bir platformu hiç işaretlemezsen o kayıt hesapsız oluşur.",
+    f_hesap_yok: "— belirtilmedi —",
+    f_hesap_silinmis: "silinmiş hesap",
     f_platform_label: "Platform",
     f_platforms_label: "Platform(lar) — aynı içeriğin gideceği tüm hesapları işaretle",
     f_title_label: "Başlık / Not",
@@ -5842,6 +5982,7 @@ const LANG = {
     f_thumb_label: "Kapak / Thumbnail Görsel Prompt'u",
     f_thumb_ph: "AI görsel üretici için kapak görselini tarif et...",
     carousel_title: "Carousel Slayt Prompt'ları (9)",
+    btn_edit: "Düzenle",
     btn_delete: "Sil",
     btn_clone: "Çoğalt…",
     f_concept_label: "Proje / Konsept",
@@ -6298,6 +6439,24 @@ const LANG = {
     step_approved: "Onay",
     step_package: "Yayın Paketi",
     step_published: "Yayın",
+    // HESAP ETIKETLERI.
+    hs_btn: "🏷 Hesap etiketleri",
+    hs_title: "Hesap etiketleri",
+    hs_intro: "Aynı platformda birden çok hesabın varsa buraya ekle; paylaşımı planlarken hangisine gideceğini işaretlersin. Shootboard hiçbir hesaba bağlanmaz, senin adına hiçbir yere gönderi atmaz — bu yalnızca bir etiket.",
+    hs_ad: "Ad",
+    hs_ad_ph: "Kişisel",
+    hs_platform: "Platform",
+    hs_kullanici: "Kullanıcı adı",
+    hs_adres: "Adres",
+    hs_not: "Not",
+    hs_not_ph: "Isteğe bağlı",
+    hs_ekle: "Ekle",
+    hs_bos: "Henüz hesap yok. Buna ancak aynı platformda iki ya da daha fazla hesabın varsa ihtiyaç duyarsın.",
+    hs_platformsuz: "platformsuz",
+    hs_ad_gerek: "Hesaba bir ad ver — listede onu bu adla tanıyacaksın.",
+    hs_limit: (n)=> `En fazla ${n} hesap.`,
+    hs_sil: (ad)=> `“${ad}” silinsin mi?`,
+    hs_sil_bagli: (ad, n)=> `“${ad}” ${n} kayıtta kullanılıyor. O kayıtlar silinmiyor; hesabı silinmiş olarak gösterecekler. Yine de silinsin mi?`,
     rm_btn: "🔔 Hatırlatmalar",
     rm_title: "Termin hatırlatmaları",
     rm_lead: "Shootboard bir adımın termini geçmeden sana haber verebilir. İki kanal var, her biri ayrı ayrı açılıyor.",
@@ -6624,6 +6783,7 @@ let events = [];
 let activeTypeFilters = new Set();
 let activePlatformFilters = new Set();
 let activeConceptFilters = new Set();
+let activeHesapFilters = new Set();
 let activeStatusFilters = new Set();
 const activeTzFilters = new Set();
 let weekOffset = 0;  // 0 = icinde bulunulan hafta (pencere buradan baslar)
@@ -10724,7 +10884,11 @@ let hesaplar = [];   // [{id, name, platform, handle, url, notes}]
 const hesapDirty = new Set(), hesapRemoved = new Set();
 let hesapPushTimer = null;
 function hesapKey(){ return session ? HESAP_KEY + '_' + session.user.id : HESAP_KEY; }
-function yeniHesapId(){ return 'hs_' + Date.now().toString(36) + '_' + Math.random().toString(36).slice(2,6); }
+// ADI BILEREK UZUN: paylasim sablonundaki hesap satirlarinin da bir
+// yeniHesapId()'si var (asagida, 'ac_' uretiyor). Ikisi de ust duzey
+// function bildirimi oldugu icin ayni adi tasisalardi sonraki oncekini
+// sessizce ezerdi -- hata vermez, yalnizca yanlis kimlik uretirdi.
+function yeniHesapEtiketId(){ return 'hs_' + Date.now().toString(36) + '_' + Math.random().toString(36).slice(2,6); }
 
 function hesapTemizle(ham){
   if(!ham || typeof ham !== 'object') return null;
@@ -10733,7 +10897,7 @@ function hesapTemizle(ham){
   // Adsiz hesap listede tutunamaz: kullanici onu ayirt edemez.
   if(!ad) return null;
   return {
-    id: (typeof ham.id === 'string' && /^[A-Za-z0-9_-]{1,64}$/.test(ham.id)) ? ham.id : yeniHesapId(),
+    id: (typeof ham.id === 'string' && /^[A-Za-z0-9_-]{1,64}$/.test(ham.id)) ? ham.id : yeniHesapEtiketId(),
     name: ad,
     // Bilinmeyen platform bos'a dusuyor: kayit penceresinde hicbir
     // platformun altinda gorunmez ama listede durur, kullanici duzeltir.
@@ -13847,6 +14011,47 @@ function renderLegend(){
     tzEl.querySelector('#tzReset').addEventListener('click', ()=>{ activeTzFilters.clear(); renderLegend(); renderCal(); });
   }
 
+  // Hesap satiri. Proje satirinin aynisi ve ayni sebeple: satir VERIDEN
+  // turuyor, tanimli hesaplardan degil. Uc hesap tanimlayip hicbirini
+  // kullanmamis birine bos bir filtre gostermenin anlami yok.
+  const hesapEl = document.getElementById('hesapLegend');
+  const kullanilan = kullanilanHesaplar();
+  if(!kullanilan.length){
+    hesapEl.hidden = true;
+    hesapEl.innerHTML = '';
+    activeHesapFilters.clear();
+  }else{
+    hesapEl.hidden = false;
+    const hesapsiz = events.some(e=> !evHesapId(e));
+    const sayimH = new Map();
+    events.forEach(e=>{ const k = evHesapId(e); sayimH.set(k, (sayimH.get(k)||0) + 1); });
+    // Silinmis bir hesaba bagli kayitlar da listede: yoksa o kayitlar
+    // filtreyle bir daha hic bulunamazdi.
+    const secenekH = kullanilan.map(id=>{
+      const h = hesapById(id);
+      return { id, ad: h ? h.name : t('f_hesap_silinmis'), pf: h ? h.platform : '' };
+    }).sort((a,b)=> a.ad.localeCompare(b.ad, currentLang === 'tr' ? 'tr' : 'en'));
+    if(hesapsiz) secenekH.push({ id:'', ad: t('filter_hesapsiz'), pf:'' });
+    hesapEl.innerHTML = secenekH.map(o=>
+      `<span class="legend-item ${activeHesapFilters.has(o.id)?'active':''}" `
+      + `data-hesap="${escapeHtml(o.id)}" title="${escapeHtml(o.ad)}">`
+      + (o.pf
+          ? `<span class="pico" style="color:${CAL_SM_COLORS[o.pf]}">${PLATFORM_ICONS[o.pf]}</span>`
+          : '<span class="tcode">HSP</span>')
+      + `${escapeHtml(o.ad)}<span class="lcount">${sayimH.get(o.id)||0}</span></span>`).join('')
+      + `<span class="legend-reset ${activeHesapFilters.size?'show':''}" id="hesapReset">${escapeHtml(t('btn_clear_filter'))}</span>`;
+    hesapEl.querySelectorAll('.legend-item').forEach(el=>{
+      el.addEventListener('click', ()=>{
+        const k = el.dataset.hesap;
+        activeHesapFilters.has(k) ? activeHesapFilters.delete(k) : activeHesapFilters.add(k);
+        trackOnce('funnel/hesap-filtered');
+        renderLegend(); renderCal();
+      });
+    });
+    hesapEl.querySelector('#hesapReset').addEventListener('click', ()=>{
+      activeHesapFilters.clear(); renderLegend(); renderCal(); });
+  }
+
   const konseptEl = document.getElementById('conceptLegend');
   const konseptler = kullanilanKonseptler();
   const projesiz = events.some(e=>!evKonsept(e));
@@ -13907,6 +14112,7 @@ const FILTRE_KUMELERI = {
   type: () => activeTypeFilters,
   platform: () => activePlatformFilters,
   concept: () => activeConceptFilters,
+  hesap: () => activeHesapFilters,
   tz: () => activeTzFilters,
   status: () => activeStatusFilters
 };
@@ -14551,12 +14757,22 @@ function kullanilanKonseptler(){
   return [...k].sort((a,b)=>a.localeCompare(b, currentLang === 'tr' ? 'tr' : 'en'));
 }
 
+// Kaydin hesabi. Bos olabilir: hesap alani ancak ayni platformda birden
+// cok hesap varken soruluyor, geri kalan her kayit hesapsiz.
+function evHesapId(e){ return (e.content || {}).hesapId || ''; }
+function kullanilanHesaplar(){
+  const k = new Set();
+  events.forEach(e=>{ const x = evHesapId(e); if(x) k.add(x); });
+  return [...k];
+}
+
 function gecerliKayit(e){
   return (activeTypeFilters.size===0 || activeTypeFilters.has(getType(e)))
       && (activePlatformFilters.size===0 || activePlatformFilters.has(getPlatform(e)))
       && (activeStatusFilters.size===0 || activeStatusFilters.has(e.uploaded ? 'posted' : 'scheduled'))
       && (activeTzFilters.size===0 || activeTzFilters.has(evTz(e)))
-      && (activeConceptFilters.size===0 || activeConceptFilters.has(evKonsept(e)));
+      && (activeConceptFilters.size===0 || activeConceptFilters.has(evKonsept(e)))
+      && (activeHesapFilters.size===0 || activeHesapFilters.has(evHesapId(e)));
 }
 
 function renderCal(){
@@ -14946,6 +15162,73 @@ function dilSeridiTazele(){
   if(gerek) dilSeridiCiz();
 }
 
+// ===== Kayittaki hesap etiketi =============================================
+// Alan KOSULLU. Gorunme kurali tek yerde duruyor ki uc cagiran da ayni
+// cevabi alsin: yeni kayitta secili platformlardan birinde birden cok
+// hesap varsa, duzenlemede o platformda birden cok hesap varsa YA DA
+// kayit zaten bir hesaba bagliysa.
+//
+// Son sart onemli: iki YouTube hesabindan biri sonradan silinirse
+// hesapSeritGerekir artik false doner. Alan gizlenirse kullanici kaydin
+// hala bir hesaba bagli oldugunu goremez ve degistiremezdi.
+function modalHesapTazele(){
+  const tek = document.getElementById('hesapSingleWrap');
+  const cok = document.getElementById('hesapMultiWrap');
+  if(!tek || !cok) return;
+  const yeniKayit = !currentEvent;
+
+  if(yeniKayit){
+    tek.hidden = true;
+    const pfler = Array.from(document.querySelectorAll('#platformChecks input:checked'))
+      .map(el=> el.value).filter(hesapSeritGerekir);
+    cok.hidden = pfler.length === 0;
+    const kutu = document.getElementById('hesapGruplar');
+    // Isaretler korunuyor: kullanici bir platformu isaretleyip hesabini
+    // sectikten sonra BASKA bir platform eklerse ilk secimi kaybetmesin.
+    const onceki = {};
+    kutu.querySelectorAll('input:checked').forEach(el=>{ onceki[el.value] = true; });
+    kutu.innerHTML = pfler.map(pf=>
+      '<div class="hs-grup"><span class="hs-grup-ad">'
+      + '<span style="color:' + CAL_SM_COLORS[pf] + '">' + (PLATFORM_ICONS[pf] || '') + '</span>'
+      + escapeHtml(CAL_SM_NAMES[pf]) + '</span><div class="platform-checks">'
+      + platformHesaplari(pf).map(h=>
+          '<label class="pcheck"><input type="checkbox" data-hs-pf="' + escapeHtml(pf)
+          + '" value="' + escapeHtml(h.id) + '">' + escapeHtml(h.name) + '</label>').join('')
+      + '</div></div>').join('');
+    kutu.querySelectorAll('input').forEach(el=>{ if(onceki[el.value]) el.checked = true; });
+    return;
+  }
+
+  cok.hidden = true;
+  const pf = document.getElementById('f_platform').value;
+  const liste = platformHesaplari(pf);
+  const mevcut = (currentEvent.content || {}).hesapId || '';
+  tek.hidden = liste.length < 2 && !mevcut;
+  if(tek.hidden) return;
+  const sec = document.getElementById('f_hesap');
+  let html = '<option value="">' + escapeHtml(t('f_hesap_yok')) + '</option>'
+    + liste.map(h=> '<option value="' + escapeHtml(h.id) + '">'
+                    + escapeHtml(h.name) + '</option>').join('');
+  // Silinmis ya da platformu degismis bir hesaba bagliysa, o bag yine de
+  // listede duruyor. Sessizce dusurmek kaydin gecmisini yalanlardi;
+  // kullanici gorsun, isterse kendi elleriyle kaldirsin.
+  if(mevcut && !liste.some(h=> h.id === mevcut)){
+    const h = hesapById(mevcut);
+    html += '<option value="' + escapeHtml(mevcut) + '">'
+          + escapeHtml(h ? h.name : t('f_hesap_silinmis')) + '</option>';
+  }
+  sec.innerHTML = html;
+  sec.value = mevcut;
+}
+
+// Yeni kayitta secili platform basina isaretlenen hesaplar. Hicbiri
+// isaretli degilse bos dizi: o platform icin TEK kayit cikiyor ve
+// hesapsiz oluyor -- "belirtmedim" gecerli bir cevap.
+function secilenHesaplar(pf){
+  return Array.from(document.querySelectorAll('#hesapGruplar input:checked'))
+    .filter(el=> el.dataset.hsPf === pf).map(el=> el.value);
+}
+
 // Kaydederken: acik sekme kovasina, ana dil normal alanlara, gerisi
 // content.diller'e. Bos diller hic yazilmiyor.
 function dilleriTopla(){
@@ -15054,6 +15337,7 @@ function openModal(ev, hazirTarih, hazirSaat){
     document.getElementById('carouselSlides').innerHTML = '';
     refreshTypeDependentFields();
   }
+  modalHesapTazele();
   document.getElementById('editOverlay').classList.add('open');
   // Kaydirma her acilista basa alinmali: uzun formda asagi inip Iptal'e basan
   // biri, sonraki acilista pencereyi biraktigi yerden goruyordu.
@@ -15076,10 +15360,12 @@ document.getElementById('f_type').addEventListener('change', refreshTypeDependen
 // Serit platforma da bagli (yalnizca YouTube), o yuzden platform degisince
 // de tazeleniyor. Yeni kayittaki coklu kutular icin de ayni sey: isaret
 // degistikce serit acilip kapaniyor.
-document.getElementById('f_platform').addEventListener('change', dilSeridiTazele);
+document.getElementById('f_platform').addEventListener('change', ()=>{
+  dilSeridiTazele(); modalHesapTazele();
+});
 ['platformChecks','typeChecks'].forEach(id=>{
   const kap = document.getElementById(id);
-  if(kap) kap.addEventListener('change', dilSeridiTazele);
+  if(kap) kap.addEventListener('change', ()=>{ dilSeridiTazele(); modalHesapTazele(); });
 });
 document.getElementById('addBtn').addEventListener('click', ()=> openModal(null));
 document.getElementById('cancelBtn').addEventListener('click', closeModal);
@@ -15152,6 +15438,19 @@ document.getElementById('saveBtn').addEventListener('click', async ()=>{
   }
   const uploaded = document.getElementById('uploadToggle').dataset.val === '1';
 
+  // HESAP BAGI -- duzenlemede. content bastan kuruldugu icin bu alan
+  // acikca tasinmazsa her kayitta duserdi; 'diller' ile birebir ayni
+  // tuzak. Alan GIZLIYKEN de eski bag korunuyor: gizli olmasi
+  // kullanicinin 'hesabi kaldir' demesi degil, sormaya gerek olmamasi
+  // demek.
+  if(currentEvent){
+    const alan = document.getElementById('hesapSingleWrap');
+    const deger = (alan && !alan.hidden)
+      ? document.getElementById('f_hesap').value
+      : ((currentEvent.content || {}).hesapId || '');
+    if(deger) content.hesapId = deger;
+  }
+
   if(currentEvent){
     Object.assign(currentEvent, { type, platform: document.getElementById('f_platform').value, title, date, time, uploaded, content });
     markDirty(currentEvent.id);
@@ -15163,8 +15462,15 @@ document.getElementById('saveBtn').addEventListener('click', async ()=>{
     // tur-platform ciftine bir kayit dusuyor.
     const tipler = secilenTipler();
     if(tipler.length===0){ uyari(t('alert_select_type')); return; }
+    // Ucuncu boyut: hesap. Bir platformda iki hesap isaretlendiyse o
+    // platform icin IKI kayit cikiyor -- platform kutularinin aynisi.
+    // Hicbiri isaretli degilse tek kayit, hesapsiz.
     const ciftler = [];
-    tipler.forEach(tp=> platforms.forEach(pf=> ciftler.push({type:tp, platform:pf})));
+    tipler.forEach(tp=> platforms.forEach(pf=>{
+      const hsler = secilenHesaplar(pf);
+      if(hsler.length) hsler.forEach(hid=> ciftler.push({type:tp, platform:pf, hesapId:hid}));
+      else ciftler.push({type:tp, platform:pf});
+    }));
     // Bir modaldan secilen her platform icin ayri kayit cikiyor; sinir toplam
     // uzerinden kontrol ediliyor ki 99 kayitliyken uc platform secilip 102'ye
     // cikilamasin.
@@ -15190,6 +15496,10 @@ document.getElementById('saveBtn').addEventListener('click', async ()=>{
       // Karusel gorselleri yalnizca karusel kaydina ait; Reels kaydinda
       // dokuz slayt prompt'u tasimak gereksiz yer kaplardi.
       if(c.type !== 'carousel') icerik.slidePrompts = [];
+      // Hesap kaydin kendi platformuna ait: content kopyalandigi icin
+      // acikca siliniyor, yoksa YouTube hesabi Instagram kaydina bulasirdi.
+      delete icerik.hesapId;
+      if(c.hesapId) icerik.hesapId = c.hesapId;
       // Ceviriler de oyle: tek modaldan YouTube ve Instagram birlikte
       // secilebiliyor, ama cok dilli baslik yalnizca YouTube uzun video ve
       // Shorts'ta anlamli. Digerlerine bulasmasin.
@@ -18455,6 +18765,147 @@ function hatirlatmalariAc(){
 // Ayarlar once yukleniyor: asagidaki dinleyiciler ve acilis bildirimi
 // bunlara bakiyor. const/let tanimlarindan SONRA olmasi zorunlu.
 hatirlatmaYukle();
+
+// ---- Hesap etiketleri penceresi -----------------------------------
+// Tek pencere: ustte liste, altta ekleme/duzenleme formu. Ayri bir
+// "ekle" penceresi acmak iki tikla ayni isi yapardi.
+let hesapDuzenId = null;
+
+function hesapPlatformDoldur(){
+  const sel = document.getElementById('hs_platform');
+  if(!sel) return;
+  const onceki = sel.value;
+  sel.innerHTML = CAL_SM_PLATFORMS.map(x=>
+    `<option value="${x}">${escapeHtml(CAL_SM_NAMES[x])}</option>`).join('');
+  if(onceki) sel.value = onceki;
+}
+
+function hesapFormuTemizle(){
+  hesapDuzenId = null;
+  ['hs_ad','hs_handle','hs_url','hs_notlar'].forEach(id=>{
+    const el = document.getElementById(id); if(el) el.value = '';
+  });
+  document.getElementById('hs_kaydet').textContent = t('hs_ekle');
+  document.getElementById('hs_vazgec').hidden = true;
+}
+
+function hesapFormunaAl(h){
+  hesapDuzenId = h.id;
+  document.getElementById('hs_ad').value = h.name;
+  document.getElementById('hs_platform').value = h.platform || CAL_SM_PLATFORMS[0];
+  document.getElementById('hs_handle').value = h.handle;
+  document.getElementById('hs_url').value = h.url;
+  document.getElementById('hs_notlar').value = h.notes;
+  document.getElementById('hs_kaydet').textContent = t('btn_save');
+  document.getElementById('hs_vazgec').hidden = false;
+  document.getElementById('hs_ad').focus();
+}
+
+function hesaplariCiz(){
+  const kutu = document.getElementById('hs_liste');
+  if(!kutu) return;
+  if(!hesaplar.length){
+    kutu.innerHTML = '<li class="hs-bos">' + escapeHtml(t('hs_bos')) + '</li>';
+    return;
+  }
+  // Once platforma, sonra ada gore: ayni platformun hesaplari yan yana
+  // dursun, kullanici "YouTube'da kac tanem var" sorusunu bakisla
+  // cevaplasin.
+  const sirali = hesaplar.slice().sort((a,b)=>
+    (a.platform || 'zz').localeCompare(b.platform || 'zz')
+    || a.name.localeCompare(b.name, currentLang === 'tr' ? 'tr' : 'en'));
+  kutu.innerHTML = sirali.map(h=>{
+    const yan = [h.handle ? '@' + h.handle : '', h.platform ? CAL_SM_NAMES[h.platform] : '', h.notes]
+      .filter(Boolean).join(' · ');
+    return '<li class="' + (h.platform ? '' : 'hs-eksik') + '">'
+      + (h.platform
+          ? '<span class="hs-pf" style="color:' + CAL_SM_COLORS[h.platform] + '">'
+            + (PLATFORM_ICONS[h.platform] || '') + '</span>'
+          : '')
+      + '<span class="hs-ad">' + escapeHtml(h.name) + '</span>'
+      + '<span class="hs-yan">' + escapeHtml(yan) + '</span>'
+      + (h.platform ? '' : '<span class="hs-uyari">' + escapeHtml(t('hs_platformsuz')) + '</span>')
+      + '<span class="hs-islem">'
+      + '<button type="button" class="btn" data-hs-duzen="' + escapeHtml(h.id) + '">'
+        + escapeHtml(t('btn_edit')) + '</button>'
+      + '<button type="button" class="btn" data-hs-sil="' + escapeHtml(h.id) + '">'
+        + escapeHtml(t('btn_delete')) + '</button>'
+      + '</span></li>';
+  }).join('');
+  kutu.querySelectorAll('[data-hs-duzen]').forEach(el=>{
+    el.addEventListener('click', ()=>{
+      const h = hesapById(el.dataset.hsDuzen);
+      if(h) hesapFormunaAl(h);
+    });
+  });
+  kutu.querySelectorAll('[data-hs-sil]').forEach(el=>{
+    el.addEventListener('click', ()=> hesapSil(el.dataset.hsSil));
+  });
+}
+
+async function hesapSil(id){
+  const h = hesapById(id);
+  if(!h) return;
+  // Kac kayit bu hesaba bagli: kullanici silmeden once bilmeli.
+  const bagli = events.filter(e=> (e.content || {}).hesapId === id).length;
+  if(!await onayla(bagli ? t('hs_sil_bagli')(h.name, bagli) : t('hs_sil')(h.name))) return;
+  hesaplar = hesaplar.filter(x=> x.id !== id);
+  hesapRemoved.add(id); hesapDirty.delete(id);
+  // KAYITLAR SILINMIYOR ve bagi da BOSALTILMIYOR: proje silmedeki
+  // davranis. Kayit "silinmis hesap" olarak gorunuyor. Sessizce
+  // bosaltmak gecmisi yalanlamak olurdu.
+  saveHesaplar();
+  if(hesapDuzenId === id) hesapFormuTemizle();
+  hesaplariCiz(); renderCal();
+}
+
+function hesapKaydet(){
+  const ad = document.getElementById('hs_ad').value.trim();
+  if(!ad){ uyari(t('hs_ad_gerek')); document.getElementById('hs_ad').focus(); return; }
+  if(!hesapDuzenId && hesaplar.length >= HESAP_ADET){ uyari(t('hs_limit')(HESAP_ADET)); return; }
+  const alanlar = {
+    name: ad,
+    platform: document.getElementById('hs_platform').value,
+    handle: document.getElementById('hs_handle').value,
+    url: document.getElementById('hs_url').value,
+    notes: document.getElementById('hs_notlar').value
+  };
+  if(hesapDuzenId){
+    const h = hesapById(hesapDuzenId);
+    if(h){
+      const t2 = hesapTemizle(Object.assign({}, h, alanlar, { updatedAt: Date.now() }));
+      if(t2){ Object.assign(h, t2); hesapDirty.add(h.id); }
+    }
+  }else{
+    const yeni = hesapTemizle(Object.assign({ id: yeniHesapEtiketId() }, alanlar));
+    if(yeni){ hesaplar.push(yeni); hesapDirty.add(yeni.id); }
+  }
+  saveHesaplar();
+  hesapFormuTemizle();
+  hesaplariCiz();
+  renderCal();
+}
+
+function hesapEtiketleriniAc(){
+  hesapPlatformDoldur();
+  hesapFormuTemizle();
+  hesaplariCiz();
+  document.getElementById('hesapOverlay2').classList.add('open');
+}
+document.getElementById('hesapEtiketBtn').addEventListener('click', ()=>{
+  track('funnel/hesap-etiket-opened');
+  // Alt sayfa kendini kapatiyor: railFoot uzerindeki ortak dinleyici
+  // her .rail-link tiklamasinda kapat() cagiriyor. Buraya ayrica
+  // yazmak gerekmiyor -- remindersBtn de aynen boyle calisiyor.
+  hesapEtiketleriniAc();
+});
+document.getElementById('hs_kaydet').addEventListener('click', hesapKaydet);
+document.getElementById('hs_vazgec').addEventListener('click', ()=>{ hesapFormuTemizle(); });
+document.getElementById('hs_kapat').addEventListener('click', ()=>
+  document.getElementById('hesapOverlay2').classList.remove('open'));
+document.getElementById('hesapOverlay2').addEventListener('click', (e)=>{
+  if(e.target.id === 'hesapOverlay2') document.getElementById('hesapOverlay2').classList.remove('open');
+});
 
 document.getElementById('remindersBtn').addEventListener('click', hatirlatmalariAc);
 document.getElementById('rm_kapatBtn').addEventListener('click',
