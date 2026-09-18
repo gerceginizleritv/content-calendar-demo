@@ -39,7 +39,12 @@ const { chromium } = require('./araclar');
     //    alani degil, kendi basina bir kayit.
     cip('p_kariye').click();
     await bekle(300);
-    const cipSayfa = localStorage.getItem('demo_page');
+    // Acik sayfaya DOGRUDAN bakiliyor. Once depolama anahtari
+    // (localStorage 'demo_page') okunuyordu; o anahtar acilis sayfasi
+    // kullaniciya gore degisince oturumluk oldu ve test, davranis hic
+    // bozulmadigi halde dustu. Olculecek sey hangi sayfanin ACIK oldugu,
+    // o bilginin nerede saklandigi degil.
+    const cipSayfa = document.getElementById('scriptsPage').hidden ? 'degil' : 'scripts';
     const cipFiltre = scriptFiltresi;
     // Pencere o sayfadan aciliyor, proje bagi hazir geliyor
     openScript(null, { projectId:'p_kariye' });

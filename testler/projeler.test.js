@@ -24,7 +24,15 @@ const { chromium } = require('./araclar');
   // Yedinci sekme: Malzeme (cekim kutuphanesi). Kutuphane onceden yalnizca
   // cekim listesinin icinden aciliyordu; kullanici menude de istedi.
   k('yedi sekme var', await page.evaluate(()=> document.querySelectorAll('.tab').length === 7));
-  k('açılışta projeler sekmesi', await page.evaluate(()=> document.getElementById('projectsPage').hidden === false));
+  // Acilis artik Projeler DEGIL: girisi olmayan ziyaretci Takvim'le
+  // aciliyor (demonun anlattigi sey dolu takvim), girisli kullanici
+  // Bugun'le. Ayrintisi bugun-sayfa testinde; burada olculen sey
+  // Projeler sayfasinin sekmesinden acilabildigi.
+  k('ziyaretçi Takvim ile açılıyor',
+     await page.evaluate(()=> document.getElementById('calendarPage').hidden === false));
+  await page.click('#tabProjects'); await page.waitForTimeout(250);
+  k('Projeler sekmesi sayfayı açıyor',
+     await page.evaluate(()=> document.getElementById('projectsPage').hidden === false));
   k('sekmelerde ikon var', await page.evaluate(()=> document.querySelectorAll('.tab .tab-ico').length === 7));
   k('sıra: fikir, mekan, proje…', await page.evaluate(()=>
     [...document.querySelectorAll('.rail-nav .tab')].map(x=>x.id).join(',')
