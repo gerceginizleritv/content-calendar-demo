@@ -285,9 +285,11 @@ body{
 /* Bos haller. Ikisi AYRI: hic verisi olmayana "her sey tamam" demek
    uygulamayi bos yere bitmis gosterir. */
 .bg-bos{
-  margin:0;padding:22px 18px;border:1px dashed var(--line);border-radius:12px;
+  display:flex;flex-direction:column;align-items:center;gap:14px;
+  margin:0;padding:26px 18px;border:1px dashed var(--line);border-radius:12px;
   background:var(--surface-2);color:var(--text-dim);font-size:14px;text-align:center;
 }
+.bg-bos p{margin:0;max-width:44ch;line-height:1.6;}
 @media(max-width:560px){
   /* Telefonda tarih ve ad tek satira sigmiyor; yan bilgi alta iniyor. */
   .bg-satir{flex-wrap:wrap;gap:4px 8px;padding:9px 11px;}
@@ -4933,6 +4935,8 @@ const LANG = {
     bugun_h: (tarih)=> `TODAY — ${tarih}`,
     bugun_yeni: "Nothing here yet. Create a project, or put your first entry on the calendar.",
     bugun_temiz: "Nothing waiting for today.",
+    bugun_sonraki: (tarih)=> `The next entry is on ${tarih}.`,
+    bugun_takvime: "Open the calendar",
     bugun_cekim: "UPCOMING SHOOTS",
     bugun_termin: "DUE TODAY",
     bugun_geciken: "OVERDUE STEPS",
@@ -5856,6 +5860,8 @@ const LANG = {
     bugun_h: (tarih)=> `BUGÜN — ${tarih}`,
     bugun_yeni: "Burada henüz bir şey yok. Bir proje oluştur ya da takvime ilk kaydını koy.",
     bugun_temiz: "Bugün için bekleyen bir iş yok.",
+    bugun_sonraki: (tarih)=> `Sıradaki kayıt ${tarih} tarihinde.`,
+    bugun_takvime: "Takvimi aç",
     bugun_cekim: "YAKLAŞAN ÇEKİMLER",
     bugun_termin: "BUGÜN BİTEN TERMİNLER",
     bugun_geciken: "GECİKEN ADIMLAR",
@@ -7607,9 +7613,14 @@ function bugunOzeti(gun, simdi){
   const toplam = cekim.length + bugunAdim.length + gecikenAdim.length
                + bugunYayin.length + gecikenKayit.length + eksikler.length;
   const dikkat = bugunAdim.length + gecikenAdim.length + gecikenKayit.length;
+  // Bugun bos oldugunda "sirada ne var" sorusunun cevabi. Bos ekranin
+  // cikmaz sokak olmamasi icin: plani dolu ama bugune denk gelmeyen
+  // kullaniciya "hicbir sey yok" demek, uygulamayi bos gosterir.
+  const sonraki = events.filter(e=> e.date > bugun)
+    .sort((a,b)=> a.date < b.date ? -1 : a.date > b.date ? 1 : 0)[0] || null;
   return {
     bugun, cekim, bugunAdim, gecikenAdim, bugunYayin, gecikenKayit, eksikler,
-    toplam, dikkat,
+    toplam, dikkat, sonraki,
     yeni:  projects.length === 0 && events.length === 0,
     temiz: toplam === 0
   };
@@ -11445,7 +11456,13 @@ function setPage(ad){
     document.getElementById(sayfa).hidden = anahtar !== ad;
     document.getElementById(sekme).classList.toggle('active', anahtar === ad);
   });
-  try{ localStorage.setItem('demo_page', ad); }catch(e){ /* onemsiz */ }
+  // Acik sayfa OTURUMLUK hatirlaniyor, kalici degil. Sebep: Bugun artik
+  // acilis sayfasi ve butun meselesi "uygulamayi actiginda bugunu gormek".
+  // localStorage'da kalsaydi, bir kez Projeler'e gecen kullanici bir daha
+  // Bugun'u hic gormezdi -- ozellik varolur ama hicbir ise yaramazdi.
+  // sessionStorage ikisini birden veriyor: sekme icinde yenileme yerini
+  // koruyor, yeni bir ziyaret Bugun'den basliyor.
+  try{ sessionStorage.setItem('demo_page', ad); }catch(e){ /* onemsiz */ }
   if(ad === 'projects') renderProjects();
   if(ad === 'templates') renderSablon();
   if(ad === 'ideas') renderFikirler();
@@ -11496,8 +11513,35 @@ function bugunCiz(){
   const gun = '<h2 class="bg-gun">' + E(t('bugun_h')(tarihMetni(o.bugun))) + '</h2>';
 
   if(o.temiz){
-    govde.innerHTML = gun + '<p class="bg-bos">'
-      + E(o.yeni ? t('bugun_yeni') : t('bugun_temiz')) + '</p>';
+    // Hic verisi olmayana METIN YETMIYOR. Bugun artik acilis sayfasi,
+    // yani yeni kullanicinin gordugu ILK ekran; onunde bir dugme
+    // olmazsa "peki simdi ne yapacagim" sorusu cevapsiz kaliyor.
+    // Projeler sayfasinin bos hali de ayni dugmeyi gosteriyor.
+    // Bos halin UCU var, ucune de ayri cevap veriliyor:
+    //   yeni      -> hic verisi yok: "basla" + proje dugmesi
+    //   sonraki   -> plani dolu ama bugune denk gelmiyor: ne zaman
+    //                oldugunu soyle ve takvime goturt
+    //   gercekten -> her sey bitmis: yalnizca "temiz"
+    // Ortadaki hal en sik olani ve en cok yanlis anlasilani: yalnizca
+    // "bekleyen is yok" deseydi, dolu bir takvimi olan kullanici
+    // uygulamayi bos sanirdi.
+    const bosIc = [];
+    if(o.yeni){
+      bosIc.push('<p>' + E(t('bugun_yeni')) + '</p>',
+        '<button type="button" class="btn btn-primary" id="bg_yeniProje">'
+        + E(t('p_add')) + '</button>');
+    }else{
+      bosIc.push('<p>' + E(t('bugun_temiz'))
+        + (o.sonraki ? ' ' + E(t('bugun_sonraki')(tarihMetni(o.sonraki.date))) : '')
+        + '</p>');
+      if(o.sonraki) bosIc.push('<button type="button" class="btn" id="bg_takvim">'
+        + E(t('bugun_takvime')) + '</button>');
+    }
+    govde.innerHTML = gun + '<div class="bg-bos">' + bosIc.join('') + '</div>';
+    const yeniDug = document.getElementById('bg_yeniProje');
+    if(yeniDug) yeniDug.addEventListener('click', ()=> openProjectNew());
+    const takDug = document.getElementById('bg_takvim');
+    if(takDug) takDug.addEventListener('click', ()=> setPage('calendar'));
     return;
   }
 
@@ -17161,10 +17205,17 @@ renderProjects();
 // yazilmis kisa bir liste vardi ('calendar' ve 'templates'); yeni
 // sayfalar eklenince kimse bu satiri hatirlamadi ve Fikirler/Scriptler
 // sayfasinda yenileyen herkes projelere dusuyordu.
-let acilisSayfasi = 'projects';
+// ACILIS SAYFASI. Uzun sure 'projects'ti; Bugun once serit dugmesinden
+// girilen bir sayfa olarak yazildi ve bir hafta boyle kullanildi.
+// Geri almak icin tek satir: asagidaki 'bugun' yerine 'projects' yazmak
+// ve ustteki sessionStorage'i localStorage'a dondurmek yeter.
+let acilisSayfasi = 'bugun';
 try{
-  const v = localStorage.getItem('demo_page');
+  const v = sessionStorage.getItem('demo_page');
   if(SAYFALAR.some(x=> x[0] === v)) acilisSayfasi = v;
+  // Kalici anahtar artik kullanilmiyor; eski surumlerden kalani
+  // temizliyoruz ki ileride birisi onu okuyup yanilmasin.
+  localStorage.removeItem('demo_page');
 }catch(e){}
 setPage(acilisSayfasi);
 // Serit sayisi acilista bir kez: save() henuz cagrilmamis olabilir.

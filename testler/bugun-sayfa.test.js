@@ -197,6 +197,77 @@ const gunler = (n)=> {
   bak('bos halde de tarih yaziyor',
       (await p.evaluate(()=> !!document.querySelector('#bugunGovde .bg-gun'))) === true);
 
+  console.log('[açılış sayfası]');
+  // Bugün artık ön kapı. Hatirlanan sayfa OTURUMLUK: sekme icinde yenileme
+  // yeri koruyor ama yeni bir ziyaret Bugun'den basliyor. Kalici olsaydi,
+  // bir kez Projeler'e gecen kullanici Bugun'u bir daha hic gormezdi.
+  const temizSayfa = async (once)=>{
+    const s2 = await t.newContext({ viewport:{ width:1280, height:1000 } });
+    const q = await s2.newPage();
+    await q.route('**supabase.co**', r=> r.abort());
+    await q.route('**accounts.google.com**', r=> r.abort());
+    await q.route('**/goatcounter**', r=> r.abort());
+    await q.addInitScript(`try{ localStorage.setItem('demo_tour_done','1');
+      ${once || ''} }catch(e){}`);
+    await q.goto(KOK + '/app.html', { waitUntil:'domcontentloaded' });
+    await q.waitForTimeout(1300);
+    const ad = await q.evaluate(()=>{
+      const a = [...document.querySelectorAll('.rail-main > div[id$="Page"]')].find(d=> !d.hidden);
+      return a ? a.id : 'yok';
+    });
+    await s2.close();
+    return ad;
+  };
+  bak('yeni ziyaret Bugün ile açılıyor', (await temizSayfa()) === 'bugunPage',
+      await temizSayfa());
+  // Eski surumden kalan kalici anahtar acilisi ele gecirmemeli.
+  bak('eski kalıcı demo_page açılışı ele geçirmiyor',
+      (await temizSayfa("localStorage.setItem('demo_page','templates');")) === 'bugunPage');
+  // Ama sekme icinde yenileme yeri koruyor.
+  bak('oturum içinde hatırlanan sayfa korunuyor',
+      (await temizSayfa("sessionStorage.setItem('demo_page','calendar');")) === 'calendarPage');
+
+  console.log('[yeni kullanıcı boş ekranda yol buluyor]');
+  await p.evaluate(()=>{ projects = []; events = []; saveProjects(); save(); setPage('bugun'); });
+  await p.waitForTimeout(300);
+  bak('boş Bugün ekranında proje düğmesi var',
+      (await p.evaluate(()=> !!document.getElementById('bg_yeniProje'))) === true);
+  await p.click('#bg_yeniProje');
+  await p.waitForTimeout(400);
+  bak('düğme proje penceresini açıyor',
+      (await p.evaluate(()=> !!document.querySelector('#projectEditOverlay.open'))) === true);
+  await p.evaluate(()=>{ document.querySelectorAll('.overlay.open').forEach(o=> o.classList.remove('open')); });
+  // "Her sey tamam" hali BASKA: veri var, bugun is yok. Orada dugme
+  // olmamali -- kullaniciya yapacak is uydurmus oluruz.
+  await p.evaluate(()=>{
+    projects = [{ id:'z', name:'Bitmiş', type:'desk', shootDate:'', script:true, filmed:true,
+      audio:true, edited:true, approved:true, package:true, published:true, deadlines:{} }]
+      .map(sanitizeProject).filter(Boolean);
+    events = []; saveProjects(); save(); setPage('bugun');
+  });
+  await p.waitForTimeout(300);
+  bak('"her şey tamam" halinde düğme YOK',
+      (await p.evaluate(()=> !!document.getElementById('bg_yeniProje'))) === false);
+
+  // UCUNCU bos hal: plan dolu ama bugune denk gelmiyor. En sik olani ve
+  // en cok yanlis anlasilani -- yalnizca "bekleyen is yok" deseydi, dolu
+  // bir takvimi olan kullanici uygulamayi bos sanirdi. Demo ziyaretcisi
+  // tam olarak bu halde: sekiz kayit var, hepsi ileri tarihli.
+  await p.evaluate((yarin)=>{
+    projects = []; events = [{ id:'ileri', type:'reels', platform:'instagram',
+      title:'Yarınki', date:yarin, time:'10:00', uploaded:false, content:{} }];
+    saveProjects(); save(); setPage('bugun');
+  }, gunler(3));
+  await p.waitForTimeout(300);
+  const ileriMetin = await p.evaluate(()=> (document.querySelector('#bugunGovde .bg-bos')||{}).textContent || '');
+  bak('boş gün "sıradaki ne zaman" diyor', /Sıradaki kayıt/.test(ileriMetin), ileriMetin.slice(0,90));
+  bak('takvime götüren düğme var',
+      (await p.evaluate(()=> !!document.getElementById('bg_takvim'))) === true);
+  await p.click('#bg_takvim');
+  await p.waitForTimeout(350);
+  bak('düğme takvimi açıyor', (await acikSayfa()) === 'calendarPage', await acikSayfa());
+  await kapat();
+
   bak('js hatası yok', hata.length === 0, hata.slice(0,2).join(' | '));
 
   await t.close();
