@@ -122,7 +122,15 @@ const OTURUM = { user:{ id: UID, email:'a@b.c', app_metadata:{provider:'email'},
                             null, { timeout: 8000 });
     const satirlar = await p.$$eval('#yedekListe li', e=> e.map(x=> x.textContent.trim()));
     bak('yedekler listeleniyor', satirlar.length === 3, JSON.stringify(satirlar));
-    bak('gun okunabilir yaziyor', /2026-09-07/.test(satirlar[0]), satirlar[0]);
+    // Gun artik uygulamanin her yerindeki bicimde yaziliyor (07.09.26):
+    // dar bir izgara hucresinde tam ISO tarih yer kapliyordu. Bilgi
+    // kaybolmasin diye tam tarih ipucunda (title) duruyor -- test ikisini
+    // birden tutuyor, yoksa "kisalttim" diye tarihi tamamen kaybetmek
+    // serbest kalirdi.
+    bak('gun okunabilir yaziyor', /07\.09\.26/.test(satirlar[0]), satirlar[0]);
+    const ipucu = await p.$$eval('#yedekListe .yedek-gun',
+                                 e=> e.map(x=> x.getAttribute('title')));
+    bak('tam tarih ipucunda duruyor', ipucu[0] === '2026-09-07', JSON.stringify(ipucu));
 
     // Geri yukleme: dosyayi indirip birlestiriyor.
     await p.evaluate((uid)=>{

@@ -1204,11 +1204,7 @@ a.mk-rozet:hover{border-color:var(--accent);color:var(--accent);}
    uc satiri gecerse kayiyor. */
 textarea.sc-title{resize:none;overflow-y:auto;max-height:96px;line-height:1.45;
   font-family:inherit;}
-.hesap-satir-dikey{display:block;}
-.yedek-liste{list-style:none;margin:10px 0 0;padding:0;display:flex;flex-direction:column;gap:6px;}
-.yedek-liste li{display:flex;align-items:center;justify-content:space-between;gap:10px;
-  font-size:13px;color:var(--text-dim);border:1px solid var(--line-soft);
-  border-radius:8px;padding:7px 10px;}
+.yedek-liste{list-style:none;margin:10px 0 0;padding:0;}
 .yedek-liste .yedek-gun{color:var(--text);font-variant-numeric:tabular-nums;}
 .ai-hesaba{display:flex;gap:8px;align-items:flex-start;margin-top:10px;font-size:13px;
   color:var(--text);cursor:pointer;}
@@ -2024,6 +2020,42 @@ textarea.sc-ai-brief{min-height:64px;resize:vertical;line-height:1.5;}
 .hesap-ad{font-size:14px;font-weight:600;}
 .hesap-not{margin:4px 0 0;}
 .hesap-satir .btn{flex:none;}
+/* Dikey satir: baslik ustte, icerik altta. Bu kural .hesap-satir'in
+   ARDINDA olmak ZORUNDA -- once yukarida, dosyanin 800 satir
+   oncesinde duruyordu ve ayni ozgullukteki .hesap-satir onu eziyordu.
+   Sonuc: "Otomatik yedekler" basligi solda, yedi gunluk liste sagda
+   kaliyor ve pencere gereksiz uzuyordu. Bu dosyada temel kurallarla
+   medya kurallari ic ice; "hangisi once yaziliyor" gorunmez bir tuzak. */
+.hesap-satir-dikey{display:block;}
+
+/* Yedi gun IZGARADA, alt alta degil. Yedi satir tek sutunda pencereyi
+   bir ekran boyu uzatiyordu; dar sutunlarda ucu bir arada duruyor. */
+.hesap-satir-dikey .yedek-liste{
+  display:grid;grid-template-columns:repeat(auto-fill,minmax(150px,1fr));gap:6px;
+}
+.hesap-satir-dikey .yedek-liste li{
+  display:flex;align-items:center;justify-content:space-between;gap:8px;
+  font-size:12.5px;color:var(--text-dim);
+  border:1px solid var(--line-soft);border-radius:8px;padding:5px 6px 5px 9px;
+}
+/* Dugme satirin icinde: once genel .btn olcusuyle geliyordu ve hucreyi
+   sisiriyordu. */
+.hesap-satir-dikey .yedek-liste .btn{
+  flex:none;min-height:0;padding:4px 9px;font-size:11.5px;
+}
+/* Tek satirlik bilgi ("yukleniyor", "yedek yok") izgaranin tamamini
+   kaplasin, dar bir hucreye sikismasin. */
+.hesap-satir-dikey .yedek-liste li.yedek-tek{
+  grid-column:1/-1;border:0;padding:4px 0;justify-content:flex-start;
+}
+/* Ice aktarma listesi ayni sinifi kullaniyor ama tek sutun kaliyor:
+   oradaki satirlar uzun metin tasiyor, dar bir izgara hucresine
+   sigmaz. Izgara yalnizca dikey satirin icinde gecerli. */
+#imp_aiListe{display:flex;flex-direction:column;gap:6px;}
+#imp_aiListe li{display:flex;align-items:center;justify-content:space-between;gap:10px;
+  font-size:13px;color:var(--text-dim);border:1px solid var(--line-soft);
+  border-radius:8px;padding:7px 10px;}
+
 /* AI erisimi: kartlardaki "AI" rozeti ve hesap penceresindeki bolum. */
 .ai-rozet{display:inline-block;margin-left:5px;padding:1px 4px;border-radius:4px;
   font:600 9px/1.4 'IBM Plex Mono',monospace;letter-spacing:.04em;
@@ -15351,14 +15383,19 @@ async function yedekListesiCiz(){
   if(!kutu) return;
   bolum.hidden = !session;
   if(!session) return;
-  kutu.innerHTML = '<li>' + escapeHtml(t('yedek_oto_yukleniyor')) + '</li>';
+  // yedek-tek: izgarada tek hucreye sikismasin, satirin tamamini kaplasin.
+  kutu.innerHTML = '<li class="yedek-tek">' + escapeHtml(t('yedek_oto_yukleniyor')) + '</li>';
   const liste = await yedekListesi();
   if(!liste.length){
-    kutu.innerHTML = '<li>' + escapeHtml(t('yedek_oto_yok')) + '</li>';
+    kutu.innerHTML = '<li class="yedek-tek">' + escapeHtml(t('yedek_oto_yok')) + '</li>';
     return;
   }
+  // Tarih uygulamanin geri kalaniyla ayni bicimde: dar bir izgara
+  // hucresinde "2026-09-18" yer kapliyor, "18.09.26" kapamiyor. Tam
+  // tarih ipucunda duruyor.
   kutu.innerHTML = liste.slice(0, YEDEK_SAKLA).map(x=>
-    '<li><span class="yedek-gun">' + escapeHtml(x.name.replace(/\.json$/, '')) + '</span>'
+    '<li><span class="yedek-gun" title="' + escapeHtml(x.name.replace(/\.json$/, '')) + '">'
+    + escapeHtml(tarihMetni(x.name.replace(/\.json$/, ''))) + '</span>'
     + '<button type="button" class="btn btn-sm" data-yedek="' + escapeHtml(x.name) + '">'
     + escapeHtml(t('yedek_oto_geri')) + '</button></li>').join('');
   kutu.querySelectorAll('[data-yedek]').forEach(d=>{
