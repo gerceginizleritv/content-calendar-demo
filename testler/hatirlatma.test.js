@@ -8,7 +8,12 @@ const SB = `window.supabase={createClient(){return {
                    upsert(r){ window.__upsert=(window.__upsert||[]).concat(r); return Promise.resolve({error:null}); } }; },
   storage:{ from(){ return {
     upload(yol, govde, o){ window.__yuk=(window.__yuk||[]).concat([{yol, tip:o&&o.contentType}]);
-      return govde.text().then(m=>{ window.__ics=m; return {error: window.__yukHata||null}; }); },
+      return govde.text().then(m=>{
+        // IKI dosya yaziliyor: terminler ve paylasimlar. Once tek dosya
+        // vardi ve "sonuncuyu al" yetiyordu; artik sonuncu PAYLASIM
+        // dosyasi, yani terminleri olcen her sey bos bir dosyaya bakardi.
+        if(/-paylasim\.ics$/.test(yol)) window.__icsPay=m; else window.__ics=m;
+        return {error: window.__yukHata||null}; }); },
     remove(yollar){ window.__sil=(window.__sil||[]).concat(yollar); return Promise.resolve({error:null}); }
   }; } }
 };}};`;
@@ -80,10 +85,21 @@ async function ac(b, ayar={}) {
     ok('kur düğmesi göründü', await p.isVisible('#rm_kurBtn'));
     await p.click('#rm_kurBtn'); await p.waitForTimeout(600);
     const y = await p.evaluate(()=>window.__yuk);
-    ok('Storage\'a yazıldı', !!y && y.length===1, JSON.stringify(y));
-    ok('doğru Content-Type', y && /text\/calendar/.test(y[0].tip), y && y[0].tip);
-    ok('yol kullanıcı klasöründe', y && y[0].yol.startsWith('11111111-1111-1111-1111-111111111111/'), y && y[0].yol);
-    ok('dosya adı jeton', y && /^[0-9a-f-]{36}\.ics$/i.test(y[0].yol.split('/')[1]), y && y[0].yol);
+    // IKI dosya: terminler ve paylasimlar ayri takvimler. Google'da renk
+    // abonelik basina veriliyor, olay basina degil -- tek dosya olsaydi
+    // ikisine ayri renk verilemezdi.
+    ok('Storage\'a iki dosya yazıldı', !!y && y.length===2, JSON.stringify(y));
+    ok('ikisi de text/calendar', y && y.every(x=>/text\/calendar/.test(x.tip)),
+       y && y.map(x=>x.tip).join(' | '));
+    ok('ikisi de kullanıcı klasöründe',
+       y && y.every(x=>x.yol.startsWith('11111111-1111-1111-1111-111111111111/')),
+       y && y.map(x=>x.yol).join(' | '));
+    ok('terminler dosyası önce ve jeton adında',
+       y && /^[0-9a-f-]{36}\.ics$/i.test(y[0].yol.split('/')[1]), y && y[0].yol);
+    ok('paylaşım dosyası ayırt edilebilir',
+       y && /^[0-9a-f-]{36}-paylasim\.ics$/i.test(y[1].yol.split('/')[1]), y && y[1].yol);
+    const adresPay = await p.inputValue('#rm_adresPay');
+    ok('paylaşım adresi de gösterildi', /-paylasim\.ics$/.test(adresPay), adresPay);
     const adres = await p.inputValue('#rm_adres');
     ok('adres gösterildi', /\/storage\/v1\/object\/public\/takvim\//.test(adres), adres);
     ok('durum "açık"', (await p.textContent('#rm_takvimDurum')).length>0);
@@ -175,13 +191,23 @@ async function ac(b, ayar={}) {
     await p.check('#rm_takvim'); await p.waitForTimeout(200);
     await p.click('#rm_kurBtn'); await p.waitForTimeout(600);
     const ilkYol = (await p.evaluate(()=>window.__yuk))[0].yol;
+    const ilkAdet = (await p.evaluate(()=>window.__yuk)).length;
     // Uygulama artik kendi onayla() penceresini kullaniyor.
     await p.evaluate(()=>{ window.onayla = ()=> Promise.resolve(true); });
     await p.click('#rm_yenileBtn'); await p.waitForTimeout(800);
     const y = await p.evaluate(()=>window.__yuk);
     const sil = await p.evaluate(()=>window.__sil);
-    ok('yeni adres yazıldı', y.length===2 && y[1].yol!==ilkYol, y.map(x=>x.yol).join(' , '));
+    // Her yayinda iki dosya yaziliyor, yenileme ikisini de yeni jetonla
+    // tazeliyor.
+    const yeniler = y.slice(ilkAdet);
+    ok('yeni adres yazıldı', yeniler.length===2 && yeniler.every(x=>x.yol!==ilkYol),
+       y.map(x=>x.yol).join(' , '));
     ok('eski adres silindi', !!sil && sil.includes(ilkYol), JSON.stringify(sil));
+    // Eski PAYLASIM dosyasi da silinmeli: kalsaydi iptal edilmis bir adres
+    // eski paylasimlari sunmaya devam ederdi.
+    ok('eski paylaşım dosyası da silindi',
+       !!sil && sil.some(x=>/-paylasim\.ics$/.test(x) && x.split('/')[1].startsWith(ilkYol.split('/')[1].replace('.ics',''))),
+       JSON.stringify(sil));
     ok('abonelik açık kaldı', await p.isVisible('#rm_adresSatir'));
     await p.close();
   }

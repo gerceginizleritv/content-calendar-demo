@@ -62,7 +62,12 @@ const tetik = (p, saat, once) => p.evaluate(([s,o])=>{ hatirlatma.saat=s; return
     await p.click('#remindersBtn'); await p.waitForTimeout(250);
     const kapsam = await p.textContent('.rm-kapsam');
     ok('kapsam cümlesi var', /proje adımlarının terminleri/i.test(kapsam), kapsam.slice(0,60));
-    ok('paylaşımların girmediği yazıyor', /paylaşımlar eklenmez/i.test(kapsam));
+    // Eskiden "paylaşımlar eklenmez" yazıyordu ve doğruydu. Paylaşımlar
+    // artık KENDİ ayrı takvimine giriyor; ölçülen şey cümlenin hâlâ
+    // doğruyu söylemesi: hatırlatma kurulan şey yalnızca terminler.
+    ok('paylaşımlara hatırlatma kurulmadığı yazıyor',
+       /payla[şs][ıi]m/i.test(kapsam) && /hat[ıi]rlatma kurulmuyor|alarms[ıi]z/i.test(kapsam),
+       kapsam.slice(0,140));
     ok('kalın etiket düz metin değil', !/<b>/.test(kapsam));
     const not = await p.textContent('[data-i18n="rm_when_gecikti_note"]');
     ok('geciktiğinde notu var', /yalnızca tarayıcı bildiriminde/i.test(not), not.slice(0,50));
@@ -78,7 +83,11 @@ const tetik = (p, saat, once) => p.evaluate(([s,o])=>{ hatirlatma.saat=s; return
     await p.click('#remindersBtn'); await p.waitForTimeout(250);
     await p.check('#rm_takvim'); await p.waitForTimeout(250);
     await p.click('#rm_kurBtn'); await p.waitForTimeout(700);
+    // __ics TERMINLER dosyasi. Paylasim dosyasinda alarm YOK ve olmamali:
+    // her paylasim icin telefon titremesin.
     const ics = await p.evaluate(()=>window.__ics || '');
+    const icsPay = await p.evaluate(()=>window.__icsPay || '');
+    ok('paylaşım dosyasında alarm YOK', icsPay.indexOf('BEGIN:VALARM') === -1);
     ok('bir gün önce tetiği 07:45\'e göre', ics.includes('TRIGGER;VALUE=DURATION:-PT16H15M'), (ics.match(/TRIGGER[^\r\n]*/g)||[]).join(' | '));
     ok('termin günü tetiği 07:45\'e göre', ics.includes('TRIGGER;VALUE=DURATION:PT7H45M'));
     ok('eski sabit 09:00 tetiği YOK', !/TRIGGER;VALUE=DURATION:-PT15H\r?\n/.test(ics));

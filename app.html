@@ -2898,7 +2898,12 @@ textarea.sc-ai-brief{min-height:64px;resize:vertical;line-height:1.5;}
   background:var(--bg);color:var(--text);font-family:inherit;font-size:14px;}
 .rm-saat .rm-not{margin:0;}
 .rm-adres-et{margin:14px 0 6px;font-size:12.5px;color:var(--text-dim);}
-.rm-adres{display:flex;gap:8px;margin-top:10px;}
+.rm-adres{display:flex;gap:8px;margin-top:6px;}
+/* Iki adresi birbirinden ayiran kucuk baslik. Adresler tek basina
+   birbirinin ayni gorunuyor; hangisinin hangisi oldugu yazmasa
+   kullanici yanlis olani takvimine yapistirir. */
+.rm-adres-alt{margin:12px 0 0;font-size:11px;letter-spacing:.06em;
+  text-transform:uppercase;color:var(--text-dim);}
 .rm-adres input{
   flex:1;min-width:0;font-family:'IBM Plex Mono',monospace;font-size:11.5px;
   padding:8px 10px;border:1px solid var(--line);border-radius:8px;
@@ -4321,10 +4326,20 @@ textarea.sc-ai-brief{min-height:64px;resize:vertical;line-height:1.5;}
       <p class="rm-not" data-i18n="rm_ch_cal_lead">Your deadlines are published as a calendar address.</p>
       <div id="rm_adresSatir" hidden>
         <p class="rm-adres-et" data-i18n="rm_adres_et">This is the address you paste into your calendar:</p>
+        <p class="rm-adres-alt" data-i18n="rm_adres_termin">Deadlines</p>
         <div class="rm-adres">
           <input type="text" id="rm_adres" readonly>
           <button type="button" class="btn btn-sm" id="rm_kopyaBtn" data-i18n="rm_cal_copy">Copy address</button>
         </div>
+        <!-- Paylasimlar AYRI bir adres: Google'da renk abonelik basina
+             veriliyor, olay basina degil. Ayri adres olmasaydi "terminleri
+             kapatip yalnizca paylasimlara bakayim" diye bir sey olamazdi. -->
+        <p class="rm-adres-alt" data-i18n="rm_adres_paylasim">Posts</p>
+        <div class="rm-adres">
+          <input type="text" id="rm_adresPay" readonly>
+          <button type="button" class="btn btn-sm" id="rm_kopyaPayBtn" data-i18n="rm_cal_copy">Copy address</button>
+        </div>
+        <p class="rm-not" data-i18n="rm_adres_iki">These are two separate calendars. Subscribe to both, or only the one you want; in your calendar app you can give each its own colour.</p>
       </div>
       <div class="rm-dugmeler">
         <button type="button" class="btn btn-sm btn-primary" id="rm_kurBtn" data-i18n="rm_cal_start">Create the calendar address</button>
@@ -5513,7 +5528,7 @@ const LANG = {
     rm_when_gun: "On the deadline day",
     rm_when_gecikti: "When a step is already late",
     rm_when_gecikti_note: "“When a step is already late” works in the browser notification only. A calendar file writes its reminders in advance, so it cannot know later that a step slipped.",
-    rm_kapsam: "These reminders are for <b>project step deadlines</b> — script, filming, audio, edit, approval, packaging, publishing. The posts on your publishing calendar are not included; you open Shootboard for those.",
+    rm_kapsam: "These <b>reminders</b> are for <b>project step deadlines</b> — script, filming, audio, edit, approval, packaging, publishing. Your posts get no reminder: they go to a calendar of their own, without an alarm, so your phone does not buzz for every single post.",
     rm_saat_et: "Reminder time",
     rm_saat_not: "Applies to calendar reminders.",
     rm_when_none: "Pick at least one moment, otherwise nothing is sent.",
@@ -5525,7 +5540,11 @@ const LANG = {
     rm_ch_browser_none: "This browser cannot show notifications.",
     rm_ch_browser_note: "For now the notification arrives when you open Shootboard. Sending while Shootboard is closed is the next step.",
     rm_ch_cal: "Your own calendar",
-    rm_ch_cal_lead: "Your deadlines are published as a calendar address. You add it to Google Calendar, your phone or Outlook once, and the reminder is done by the calendar itself.",
+    rm_ch_cal_lead: "Two calendar addresses are published: one for your deadlines, one for your posts. You add them to Google Calendar, your phone or Outlook once. Deadlines carry the reminder; posts just sit on the calendar at their own time.",
+    rm_cal_name_pay: "Shootboard — posts",
+    rm_adres_termin: "Deadlines",
+    rm_adres_paylasim: "Posts",
+    rm_adres_iki: "These are two separate calendars. Subscribe to both, or only the one you want; in your calendar app you can give each its own colour. Posts carry only the platform, the content type and your title — nothing else. A post you have marked as uploaded stays on the calendar with a ✓ in front of it.",
     rm_cal_name: "Shootboard — deadlines",
     rm_cal_on: "Subscription is on",
     rm_cal_start: "Create the calendar address",
@@ -5536,7 +5555,7 @@ const LANG = {
     rm_cal_off_ask: "Cancel the subscription? The old address stops working and the calendar that uses it empties out.",
     rm_cal_how: "How do I add it?",
     rm_adres_et: "This is the address you paste into your calendar:",
-    rm_cal_how_0: "First press <b>Copy address</b> above. Then, in your calendar:",
+    rm_cal_how_0: "Copy the address you want above — deadlines, posts, or both, one at a time. Then, in your calendar:",
     rm_cal_how_g: "Google Calendar (on a computer): left menu → <b>Other calendars</b> + → <b>From URL</b> → paste the address → <b>Add calendar</b>. The box asks for nothing else; leave “Make the calendar publicly accessible” unticked.",
     rm_cal_how_i: "iPhone: Settings → Apps → Calendar → Calendar Accounts → Add Account → Other → <b>Add Subscribed Calendar</b> → paste the address.",
     rm_cal_how_o: "Outlook: Add calendar → <b>Subscribe from web</b> → paste the address.",
@@ -6465,7 +6484,7 @@ const LANG = {
     rm_when_gun: "Termin günü",
     rm_when_gecikti: "Adım geciktiğinde",
     rm_when_gecikti_note: "“Adım geciktiğinde” yalnızca tarayıcı bildiriminde çalışır. Takvim dosyası hatırlatmalarını önceden yazıyor, bu yüzden bir adımın sonradan geciktiğini bilemez.",
-    rm_kapsam: "Bu hatırlatmalar <b>proje adımlarının terminleri</b> içindir — script, çekim, ses, kurgu, onay, paketleme, yayın. Yayın takvimindeki paylaşımlar eklenmez; onlar için Shootboard'u açarsın.",
+    rm_kapsam: "Bu <b>hatırlatmalar</b> <b>proje adımlarının terminleri</b> içindir — script, çekim, ses, kurgu, onay, paketleme, yayın. Paylaşımların için hatırlatma kurulmuyor: onlar kendi ayrı takvimine, alarmsız giriyor — her paylaşım için telefonun titremesin diye.",
     rm_saat_et: "Hatırlatma saati",
     rm_saat_not: "Takvim hatırlatmaları için geçerli.",
     rm_when_none: "En az bir an seç, yoksa hiçbir şey gönderilmez.",
@@ -6477,7 +6496,11 @@ const LANG = {
     rm_ch_browser_none: "Bu tarayıcı bildirim gösteremiyor.",
     rm_ch_browser_note: "Şimdilik bildirim, Shootboard'u açtığında geliyor. Shootboard kapalıyken gönderim sonraki adım.",
     rm_ch_cal: "Kendi takvimin",
-    rm_ch_cal_lead: "Terminlerin bir takvim adresi olarak yayınlanıyor. Bu adresi Google Takvim'e, telefonuna ya da Outlook'a bir kez ekliyorsun; hatırlatmayı takvimin kendisi yapıyor.",
+    rm_ch_cal_lead: "İki takvim adresi yayınlanıyor: biri terminlerin, biri paylaşımların için. Bu adresleri Google Takvim'e, telefonuna ya da Outlook'a bir kez ekliyorsun. Hatırlatmayı terminler taşıyor; paylaşımlar takvimde kendi saatinde duruyor.",
+    rm_cal_name_pay: "Shootboard — paylaşımlar",
+    rm_adres_termin: "Terminler",
+    rm_adres_paylasim: "Paylaşımlar",
+    rm_adres_iki: "Bunlar iki ayrı takvim. İkisine de abone olabilirsin, yalnızca istediğine de; takvim uygulamanda her birine ayrı renk verebilirsin. Paylaşımlarda yalnızca platform, içerik türü ve senin yazdığın başlık var — başka hiçbir şey gitmiyor. Yüklendi olarak işaretlediğin paylaşım takvimde kalıyor, başında ✓ ile.",
     rm_cal_name: "Shootboard — terminler",
     rm_cal_on: "Abonelik açık",
     rm_cal_start: "Takvim adresini oluştur",
@@ -6488,7 +6511,7 @@ const LANG = {
     rm_cal_off_ask: "Abonelik iptal edilsin mi? Eski adres çalışmayı bırakır ve onu kullanan takvim boşalır.",
     rm_cal_how: "Nasıl eklerim?",
     rm_adres_et: "Takvimine yapıştıracağın adres bu:",
-    rm_cal_how_0: "Önce yukarıdaki <b>Adresi kopyala</b> düğmesine bas. Sonra takviminde:",
+    rm_cal_how_0: "Yukarıdan istediğin adresi kopyala — terminler, paylaşımlar ya da ikisi, teker teker. Sonra takviminde:",
     rm_cal_how_g: "Google Takvim (bilgisayardan): sol menüde <b>Diğer takvimler</b> + → <b>URL'den</b> → adresi yapıştır → <b>Takvim ekle</b>. O pencere başka bir şey istemiyor; “Takvimi herkese açık yap” kutusunu işaretleme.",
     rm_cal_how_i: "iPhone: Ayarlar → Uygulamalar → Takvim → Takvim Hesapları → Hesap Ekle → Diğer → <b>Abone Olunan Takvim Ekle</b> → adresi yapıştır.",
     rm_cal_how_o: "Outlook: Takvim ekle → <b>Web'den abone ol</b> → adresi yapıştır.",
@@ -7009,6 +7032,10 @@ function save(){
   }
   // Paylasilan kopya da tazeleniyor: baglanti yoksa hicbir sey yapmiyor.
   paylasimGecikmeliYaz();
+  // Paylasim takvimi kayitlardan besleniyor: burasi eklenmeseydi yeni bir
+  // kayit girildiginde abonelik dosyasi eski kalirdi. Terminler icin ayni
+  // cagri saveProjects icinde duruyor.
+  if(typeof takvimTazeleKuyrukla === 'function') takvimTazeleKuyrukla();
   // Serit dugmesindeki sayi kayittan besleniyor; sayfa kapaliyken de
   // dogru durmasi lazim. Tanimlanmadan once cagrilma ihtimaline karsi
   // korumali: save() sayfanin acilisinda da calisiyor.
@@ -18026,6 +18053,92 @@ function icsOlaySayisi(){
   return n;
 }
 
+// ---- Paylasim takvimi (AYRI besleme) ---------------------------------
+// Terminler ve paylasimlar AYRI iki dosya. Sebep Google: abone olunan bir
+// takvimde olay basina renk YOK, renk abonelik basina veriliyor. Ikisi
+// tek dosyada olsaydi "terminlerimi kapatip yalnizca paylasimlara bakayim"
+// diye bir sey olamazdi.
+//
+// Icine YALNIZCA platform, tur ve kaydin basligi giriyor. Aciklama,
+// hashtag, proje adi, mekan, hesap adi GIRMIYOR -- terminler dosyasindaki
+// kuralin aynisi: abonelik adresi sizsa bile kullanicinin icerigi
+// disariya cikmasin.
+const PLATFORM_EMOJI = { youtube:'\u25B6\uFE0F', instagram:'\uD83D\uDCF8',
+  tiktok:'\uD83C\uDFB5', facebook:'\uD83D\uDC4D', threads:'\uD83E\uDDF5',
+  x:'\u2716\uFE0F', pinterest:'\uD83D\uDCCC', linkedin:'\uD83D\uDCBC' };
+
+// Bir saat diliminin VERILEN ANDAKI ofseti (dakika). "Simdi" degil o an:
+// yaz saati yuzunden Ekim ile Aralik arasinda fark bir saat olabiliyor ve
+// "simdiki ofseti" kullanmak gelecek kayitlari bir saat kaydiriyordu.
+function tzOfsetDk(tz, an){
+  try{
+    const b = new Intl.DateTimeFormat('en-US', { timeZone: tz, hour12:false,
+      year:'numeric', month:'2-digit', day:'2-digit',
+      hour:'2-digit', minute:'2-digit', second:'2-digit' });
+    const o = {};
+    b.formatToParts(an).forEach(x=>{ if(x.type !== 'literal') o[x.type] = x.value; });
+    const gibi = Date.UTC(+o.year, +o.month - 1, +o.day, (+o.hour) % 24, +o.minute, +o.second);
+    return Math.round((gibi - an.getTime()) / 60000);
+  }catch(e){ return 0; }
+}
+// "9 Ekim 19:00, Europe/Istanbul" -> gercek an. Iki gecis: ilk tahminin
+// ofseti yanlis dusebilir (tam yaz saati gecis gecesinde), ikinci olcum
+// duzeltiyor.
+function yerelSaatiAn(tarih, saat, tz){
+  const [y, ay, g] = String(tarih).split('-').map(Number);
+  const [ss, dd] = String(saat || '00:00').split(':').map(Number);
+  if(!y || !ay || !g) return null;
+  const tahmin = Date.UTC(y, ay - 1, g, ss || 0, dd || 0, 0);
+  const ofs1 = tzOfsetDk(tz, new Date(tahmin));
+  let an = new Date(tahmin - ofs1 * 60000);
+  const ofs2 = tzOfsetDk(tz, an);
+  if(ofs2 !== ofs1) an = new Date(tahmin - ofs2 * 60000);
+  return an;
+}
+
+// Takvimde gorunen satir. Yayinlanmislar takvimde KALIYOR (gecmiste ne
+// zaman ne cikti sorusunun cevabi orada) ama basinda bir onay isareti
+// tasiyor, yoksa gecmis ile onundeki is ayni goruntude karisiyordu.
+function paylasimBasligi(e){
+  const pf = e.platform || '';
+  const parca = [(PLATFORM_EMOJI[pf] || ''), (CAL_SM_NAMES[pf] || pf)].filter(Boolean).join(' ');
+  const tur = typeName(e.type);
+  const bas = String(e.title || '').trim();
+  let s = parca + (tur ? ' \u00B7 ' + tur : '');
+  if(bas) s += ' \u2014 ' + bas;
+  return (e.uploaded ? '\u2713 ' : '') + s;
+}
+
+function icsPaylasimMetni(){
+  const damga = icsZaman(new Date());
+  const sat = ['BEGIN:VCALENDAR','VERSION:2.0','PRODID:-//Shootboard//Paylasimlar//TR',
+               'CALSCALE:GREGORIAN','METHOD:PUBLISH',
+               'X-WR-CALNAME:' + icsKacir(t('rm_cal_name_pay')),
+               'REFRESH-INTERVAL;VALUE=DURATION:PT6H','X-PUBLISHED-TTL:PT6H'];
+  events.forEach(e=>{
+    const an = yerelSaatiAn(e.date, e.time, evTz(e));
+    if(!an || isNaN(an)) return;
+    sat.push('BEGIN:VEVENT');
+    // UID kaydin kimligine SABIT: saat degisince ayni olay guncelleniyor,
+    // yeni bir kopya olusmuyor.
+    sat.push('UID:slate-pay-' + icsKacir(e.id) + '@slate');
+    sat.push('DTSTAMP:' + damga);
+    // UTC olarak yaziliyor: VTIMEZONE blogu yazmadan dogru saati vermenin
+    // tek guvenli yolu bu ve her takvim uygulamasi anliyor.
+    sat.push('DTSTART:' + icsZaman(an));
+    sat.push('DURATION:PT30M');
+    sat.push('SUMMARY:' + icsKacir(paylasimBasligi(e)));
+    sat.push('STATUS:CONFIRMED');
+    // Gunu "mesgul" gostermiyor: paylasim bir randevu degil.
+    sat.push('TRANSP:TRANSPARENT');
+    // ALARM YOK. Hatirlatma ayarlari (bir gun once / termin gunu) proje
+    // adimlari icin; her paylasima da alarm basmak bildirim yagmuru olurdu.
+    sat.push('END:VEVENT');
+  });
+  sat.push('END:VCALENDAR');
+  return sat.map(icsKatla).join('\r\n') + '\r\n';
+}
+
 // ---- Abonelik: Storage'a yaziliyor -----------------------------------
 // Edge Function GEREKMIYOR: Storage dosyayi dogru Content-Type ile
 // herkese acik bir adresten suniyor. Kova ve politikalar
@@ -18037,6 +18150,19 @@ function takvimAdresi(){
 }
 function takvimYolu(jeton){
   return session.user.id + '/' + (jeton || hatirlatma.jeton) + '.ics';
+}
+// Paylasim beslemesi AYNI jetonu kullaniyor, yalnizca dosya adi farkli.
+// Bilerek: "Yenile / iptal et" tek dugme kalsin ve ikisini birden
+// gecersiz kilsin. Bedeli su -- birinin adresini paylasan kisi otekini de
+// tahmin edilebilir kilmis olur; ikisi de ayni kisinin verisi oldugu icin
+// bu kabul edildi. Ayri jeton isteyen olursa iki ayri iptal de gerekir.
+function paylasimTakvimAdresi(){
+  if(!session || !hatirlatma.jeton) return '';
+  return SUPABASE_URL + '/storage/v1/object/public/takvim/'
+       + session.user.id + '/' + hatirlatma.jeton + '-paylasim.ics';
+}
+function paylasimTakvimYolu(jeton){
+  return session.user.id + '/' + (jeton || hatirlatma.jeton) + '-paylasim.ics';
 }
 // Hata ekrani: bilinen bir sebep varsa onu, yoksa SUNUCUNUN kendi
 // cumlesini gosteriyor. Genel "tekrar dene" yalnizca hicbir bilgi
@@ -18631,10 +18757,9 @@ document.getElementById('pay_kapat').addEventListener('click', async ()=>{
 async function takvimYayinla(){
   if(!sb || !session){ const e = new Error('giris'); e.anahtar = 'rm_cal_need_login'; throw e; }
   if(!hatirlatma.jeton){ hatirlatma.jeton = jetonUret(); hatirlatmaKaydet(); }
+  const secenek = { contentType: 'text/calendar; charset=utf-8', upsert: true, cacheControl: '600' };
   const govde = new Blob([icsMetni()], { type:'text/calendar;charset=utf-8' });
-  const { error } = await sb.storage.from('takvim').upload(takvimYolu(), govde, {
-    contentType: 'text/calendar; charset=utf-8', upsert: true, cacheControl: '600'
-  });
+  const { error } = await sb.storage.from('takvim').upload(takvimYolu(), govde, secenek);
   if(error){
     // Kova yoksa sebebi soylenmeli: kullanicinin yapacagi is belli
     // (sql/19 betigini calistirmak), "hata olustu" demek onu bosa dusurur.
@@ -18652,13 +18777,24 @@ async function takvimYayinla(){
   // Dosya GERCEKTEN yazildi. Adres ancak bundan sonra gosteriliyor:
   // once jeton uretilir uretilmez gosteriliyordu ve kullanici, yazilmamis
   // bir dosyanin adresini takvimine ekleyebiliyordu — o adres olu doguyordu.
+  // Paylasim dosyasi terminlerden SONRA yaziliyor ve hatasi yayini
+  // BOZMUYOR: terminler zaten yazildi, oradaki abonelik calisiyor. Ikisini
+  // tek basarisizliga baglamak, calisan bir aboneligi ikincisi yuzunden
+  // "kurulmadi" saymak olurdu.
+  try{
+    const payGovde = new Blob([icsPaylasimMetni()], { type:'text/calendar;charset=utf-8' });
+    const r = await sb.storage.from('takvim').upload(paylasimTakvimYolu(), payGovde, secenek);
+    if(r.error) console.error('[takvim] paylasim dosyasi yazilamadi', r.error);
+  }catch(e){ console.error('[takvim] paylasim dosyasi yazilamadi', e); }
+
   hatirlatma.yayinlandi = true;
   hatirlatmaKaydet();
   return takvimAdresi();
 }
 async function takvimSil(jeton){
   if(!sb || !session || !jeton) return;
-  try{ await sb.storage.from('takvim').remove([takvimYolu(jeton)]); }
+  try{ await sb.storage.from('takvim').remove([takvimYolu(jeton),
+                                                paylasimTakvimYolu(jeton)]); }
   catch(e){ console.error('[takvim] eski dosya silinemedi', e); }
 }
 // Terminler degistiginde abonelik dosyasini tazele. Her tusa basista
@@ -18740,6 +18876,8 @@ function hatirlatmaEkraniTazele(){
   const adres = takvimAdresi();
   el('rm_adresSatir').hidden = !(hatirlatma.takvim && adres && hatirlatma.yayinlandi);
   if(adres) el('rm_adres').value = adres;
+  const payAdres = paylasimTakvimAdresi();
+  if(payAdres) el('rm_adresPay').value = payAdres;
   el('rm_kurBtn').hidden = !hatirlatma.takvim || !!adres;
   el('rm_yenileBtn').hidden = !hatirlatma.takvim || !adres;
   const tv = el('rm_takvimDurum');
@@ -19007,17 +19145,22 @@ document.getElementById('rm_yenileBtn').addEventListener('click', async ()=>{
   }finally{ btn.disabled = false; }
 });
 
-document.getElementById('rm_kopyaBtn').addEventListener('click', async ()=>{
+// Iki adres, tek davranis. Pano izni yoksa metni seciyor: kullanici
+// Ctrl+C ile alabilsin.
+async function takvimAdresiKopyala(kutuId, adres){
   const cikti = document.getElementById('rm_takvimDurum');
   try{
-    await navigator.clipboard.writeText(takvimAdresi());
+    await navigator.clipboard.writeText(adres);
     cikti.textContent = t('rm_cal_copied'); cikti.className = 'rm-durum ok';
   }catch(e){
-    // Pano izni yoksa metni sec: kullanici Ctrl+C ile alabilsin.
-    const kutu = document.getElementById('rm_adres');
+    const kutu = document.getElementById(kutuId);
     kutu.focus(); kutu.select();
   }
-});
+}
+document.getElementById('rm_kopyaBtn').addEventListener('click',
+  ()=> takvimAdresiKopyala('rm_adres', takvimAdresi()));
+document.getElementById('rm_kopyaPayBtn').addEventListener('click',
+  ()=> takvimAdresiKopyala('rm_adresPay', paylasimTakvimAdresi()));
 
 document.getElementById('rm_dosyaBtn').addEventListener('click', ()=>{
   const cikti = document.getElementById('rm_dosyaDurum');
