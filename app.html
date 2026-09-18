@@ -4599,7 +4599,8 @@ const LANG = {
     yedek_onay_govde: "Everything in the file will be added; where a record already exists, the file wins. Nothing else you have now is removed.",
     yedek_onay_tamam: "Restore",
     yedek_tarih: (g)=> `Backup taken: ${g}`,
-    yedek_ozet: (s)=> `${s.kayit} entries · ${s.proje} projects · ${s.fikir} ideas · ${s.script} scripts · ${s.mekan} places`,
+    yedek_ozet: (s)=> `${s.kayit} entries · ${s.proje} projects · ${s.fikir} ideas · ${s.script} scripts · ${s.mekan} places`
+      + (s.ihtiyac ? ` · ${s.ihtiyac} kit items` : '') + (s.set ? ` · ${s.set} kits` : ''),
     yedek_bitti: (y, d)=> `Restored: ${y} new, ${d} updated.`,
     yedek_oto_baslik: "Automatic backups",
     yedek_oto_not: "Taken once a day on its own, the last seven are kept. You do not have to do anything.",
@@ -5526,7 +5527,8 @@ const LANG = {
     yedek_onay_govde: "Dosyadaki kayıtlar eklenecek; aynı kayıttan varsa dosyadaki geçerli olacak. Şu an duran başka hiçbir şey silinmiyor.",
     yedek_onay_tamam: "Geri yükle",
     yedek_tarih: (g)=> `Yedek tarihi: ${g}`,
-    yedek_ozet: (s)=> `${s.kayit} kayıt · ${s.proje} proje · ${s.fikir} fikir · ${s.script} script · ${s.mekan} mekan`,
+    yedek_ozet: (s)=> `${s.kayit} kayıt · ${s.proje} proje · ${s.fikir} fikir · ${s.script} script · ${s.mekan} mekan`
+      + (s.ihtiyac ? ` · ${s.ihtiyac} malzeme` : '') + (s.set ? ` · ${s.set} set` : ''),
     yedek_bitti: (y, d)=> `Geri yüklendi: ${y} yeni, ${d} güncellenmiş kayıt.`,
     yedek_oto_baslik: "Otomatik yedekler",
     yedek_oto_not: "Günde bir kez kendiliğinden alınıyor, son yedisi duruyor. Senin bir şey yapman gerekmiyor.",
@@ -15175,13 +15177,37 @@ function yedekGovdesi(){
     scriptler: scriptler,
     mekanlar:  mekanlar,
     sablon:    sablon,
-    hatirlatma: yerelOku(HATIRLATMA_ANAHTARI)
+    hatirlatma: yerelOku(HATIRLATMA_ANAHTARI),
+    // IHTIYAC KUTUPHANESI VE SETLER. Ikisi de kullanicinin ELLE yazdigi
+    // icerik ama uzun sure yedegin disinda kaldilar: user_prefs.prefs
+    // icinde durdukları icin gozden kacmislardi. Supabase'te olduklari
+    // icin gunluk kullanımda kaybolmuyorlar, ama yedekten donen kisi
+    // takvimini geri aliyor kutuphanesini almiyordu ve disa aktarilan
+    // dosya eksik cikiyordu -- ustelik bunu kimse soylemiyordu.
+    ihtiyaclar: ihtiyaclar,
+    setler:     ihtiyacSetleri
+    //
+    // prefs'in GERI KALANI bilerek disarida:
+    //   ai.key     -> kullanicinin Gemini anahtari. Indirilen dosyaya
+    //                 yazilsaydi, o dosyayi birine gonderen kisi
+    //                 anahtarini da gondermis olurdu.
+    //   share.jeton-> paylasim jetonu. Dosyayi eline gecirenin o takvimi
+    //                 okumasi demek.
+    // Ikisi de Supabase'te duruyor ve oradan kaybolmuyor. Birisi ileride
+    // "eksik kalmis" diye eklemesin diye buraya yaziliyor.
+    //
+    // hatirlatma.jeton yedekte DURUYOR (eskiden beri): takvim aboneligi
+    // o jetonla calisiyor, cikarilsaydi geri yukleyen kisinin telefon
+    // takvimi sessizce kopardi.
   };
 }
 function yedekSayilari(y){
   return { kayit: (y.kayitlar||[]).length, proje: (y.projeler||[]).length,
            fikir: (y.fikirler||[]).length, script: (y.scriptler||[]).length,
-           mekan: (y.mekanlar||[]).length };
+           mekan: (y.mekanlar||[]).length,
+           // Onay penceresinde de gorunuyor: kullanici neyin gelecegini
+           // basmadan once bilmeli.
+           ihtiyac: (y.ihtiyaclar||[]).length, set: (y.setler||[]).length };
 }
 document.getElementById('exportBtn').addEventListener('click', ()=>{
   const govde = yedekGovdesi();
@@ -15243,9 +15269,31 @@ async function yedekGeriYukle(dosya){
      && (veri.sablon.updatedAt || 0) > (sablon.updatedAt || 0)){
     sablon = veri.sablon; sablonDegisti();
   }
+  // Kutuphane ve setler oteki listelerle AYNI yoldan: kimlige gore
+  // birlestirme, yani yedek mevcut kutuphaneyi silmiyor, uzerine
+  // ekliyor. Silmek geri alinamaz; eklemek geri alinabilir.
+  const ih = yedekBirlestir(ihtiyaclar, veri.ihtiyaclar, ihtiyacTemizle);
+  ihtiyaclar = ih.liste.slice(0, IHTIYAC_MAX); saveIhtiyaclar();
+  const st = yedekBirlestir(ihtiyacSetleri, veri.setler, setTemizle);
+  ihtiyacSetleri = st.liste.slice(0, SET_MAX); saveSetler();
+
+  // HATIRLATMA yedege eskiden beri YAZILIYORDU ama hic geri
+  // YUKLENMIYORDU: yazilip bir daha okunmayan bir alandi, yer kapliyor
+  // ve "yedeklendi" diye yanlis bir guven veriyordu. Artik geri geliyor.
+  // Tarayici bildirim izni HARIC (hatirlatmaBuluttan ile ayni kural):
+  // izin cihaza ait, baska cihazdan gelen yedekle acilamaz.
+  if(veri.hatirlatma && typeof veri.hatirlatma === 'object'){
+    hatirlatmaBuluttan(veri.hatirlatma);
+  }
+
   renderCal(); renderProjects(); renderFikirler(); renderScriptler(); renderMekanlar(); renderSablon();
-  const eklenen = k.yeni + pr.yeni + fk.yeni + sc.yeni + mk.yeni;
-  const guncel  = k.degisen + pr.degisen + fk.degisen + sc.degisen + mk.degisen;
+  // Kutuphane sayfasinin tamami (gruplar + setler + liste): yalnizca
+  // ihtiyacListesiCiz cagrilsaydi onek varsayilana ('ih') duser ve
+  // menudeki Malzeme sayfasi ('ihs') eski halinde kalirdi.
+  kitSayfasiCiz();
+  const eklenen = k.yeni + pr.yeni + fk.yeni + sc.yeni + mk.yeni + ih.yeni + st.yeni;
+  const guncel  = k.degisen + pr.degisen + fk.degisen + sc.degisen + mk.degisen
+                + ih.degisen + st.degisen;
   uyari(t('yedek_bitti')(eklenen, guncel));
 }
 // ---- Otomatik yedek ---------------------------------------------------
