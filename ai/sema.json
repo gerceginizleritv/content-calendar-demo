@@ -94,6 +94,16 @@
             "thumbPrompt": { "type": "string", "maxLength": 5000, "description": "Thumbnail idea or image-generation prompt." },
             "slidePrompts": { "type": "array", "maxItems": 9, "items": { "type": "string", "maxLength": 2000 }, "description": "Carousel only: one prompt/description per slide, in order." },
             "timezone": { "type": "string", "maxLength": 64, "description": "IANA time zone the date/time are given in (e.g. Europe/Istanbul). Leave empty for the creator's own zone." },
+            "hesap": {
+              "type": "string",
+              "maxLength": 80,
+              "description": "Which of the creator's own accounts on that platform this post goes to, BY NAME (e.g. \"Kişisel\", \"Marka\"). Only useful when the creator has more than one account on the same platform. This is a label the creator typed in Shootboard, not a connection: Shootboard never signs in to any account and never posts anything. Unknown names are ignored."
+            },
+            "hesapId": {
+              "type": "string",
+              "maxLength": 64,
+              "description": "The account's id, if you happen to know it (e.g. it came from an export). Prefer \"hesap\" with the name; the id is resolved from the name on import."
+            },
             "anaDil": {
               "type": "string",
               "pattern": "^[a-z]{2}$",

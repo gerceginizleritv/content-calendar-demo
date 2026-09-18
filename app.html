@@ -6799,7 +6799,17 @@ function sanitizeEvent(raw){
               return o;
             }, {})
         : undefined,
-      anaDil: (typeof c.anaDil === 'string' && /^[a-z]{2}$/.test(c.anaDil)) ? c.anaDil : undefined
+      anaDil: (typeof c.anaDil === 'string' && /^[a-z]{2}$/.test(c.anaDil)) ? c.anaDil : undefined,
+      // HESAP ETIKETI. Beyaz listeye eklenmezse her sayfa yenilemesinde
+      // sessizce duserdi -- "diller" ile birebir ayni hata, bir kez
+      // yasandi. Ayni alan dort yerde birden taniniyor: burasi,
+      // ai/dogrula.js, ai/sema.json ve iki asistan karti.
+      //
+      // Silinmis bir hesabin kimligi BILEREK duruyor: kayit "silinmis
+      // hesap" olarak gorunuyor, sessizce bosaltilmiyor. Bosaltmak
+      // gecmisi yalanlamak olurdu.
+      hesapId: (typeof c.hesapId === 'string' && /^[A-Za-z0-9_-]{1,64}$/.test(c.hesapId))
+                 ? c.hesapId : undefined
     }
   };
 }
@@ -10689,6 +10699,98 @@ function mekanRowOku(r){
                         createdAt: r.created_at ? Date.parse(r.created_at) : Date.now(),
                         updatedAt: r.updated_at ? Date.parse(r.updated_at) : 0 });
 }
+
+// ---- Sosyal medya hesap etiketleri ---------------------------------
+// Bir paylasimin "nereye" gidecegi bugune kadar yalnizca PLATFORM olarak
+// tutuluyordu. Iki YouTube kanali olan (ya da kisisel + marka Instagram'i
+// olan) uretici icin bu yetmiyor: ayni platforma cikan iki paylasimi
+// takvimde birbirinden ayiramiyor.
+//
+// BU BIR BAGLANTI DEGIL, BIR ETIKET. Saklanan sey kullanicinin kendi
+// yazdigi bir ad. OAuth yok, API yok, jeton yok, otomatik paylasim yok;
+// MARKA.md'deki "hesaplarina baglanmaz" ilkesi duruyor. Arayuz metni de
+// bunu acikca soylemek zorunda, yoksa kullanici "bagladim, artik kendi
+// atar" saniyor.
+//
+// Kalip bilerek Mekanlar'in aynisi (sql/38 = sql/24): bir kez tanimlanan,
+// kayitlarin atifta bulundugu, kendi penceresi olan varlik. Ayni kalibi
+// izleyince gunluk yedek, bulut senkronu ve disa/ice aktarma
+// kendiliginden geliyor -- prefs icine konsaydi ucu de ayri ayri
+// yazilmak zorunda kalirdi (ihtiyac kutuphanesinde tam olarak bu
+// unutulmustu).
+const HESAP_KEY = 'demo_accounts';
+const HESAP_ADET = 60;
+let hesaplar = [];   // [{id, name, platform, handle, url, notes}]
+const hesapDirty = new Set(), hesapRemoved = new Set();
+let hesapPushTimer = null;
+function hesapKey(){ return session ? HESAP_KEY + '_' + session.user.id : HESAP_KEY; }
+function yeniHesapId(){ return 'hs_' + Date.now().toString(36) + '_' + Math.random().toString(36).slice(2,6); }
+
+function hesapTemizle(ham){
+  if(!ham || typeof ham !== 'object') return null;
+  const y = (v, n)=> (typeof v === 'string' ? v.slice(0, n) : '');
+  const ad = y(ham.name, 80).trim();
+  // Adsiz hesap listede tutunamaz: kullanici onu ayirt edemez.
+  if(!ad) return null;
+  return {
+    id: (typeof ham.id === 'string' && /^[A-Za-z0-9_-]{1,64}$/.test(ham.id)) ? ham.id : yeniHesapId(),
+    name: ad,
+    // Bilinmeyen platform bos'a dusuyor: kayit penceresinde hicbir
+    // platformun altinda gorunmez ama listede durur, kullanici duzeltir.
+    platform: CAL_SM_PLATFORMS.indexOf(ham.platform) !== -1 ? ham.platform : '',
+    // Bastaki @ temizleniyor: kullanici bazen yaziyor bazen yazmiyor,
+    // ikisi ayni hesap.
+    handle: y(ham.handle, 80).trim().replace(/^@+/, ''),
+    url: y(ham.url, 600).trim(),
+    notes: y(ham.notes, 1000),
+    createdAt: typeof ham.createdAt === 'number' ? ham.createdAt : Date.now(),
+    updatedAt: typeof ham.updatedAt === 'number' ? ham.updatedAt : Date.now()
+  };
+}
+function hesapById(id){ return hesaplar.find(h=> h.id === id) || null; }
+// O platformun hesaplari. Kayit penceresindeki alan buna bakiyor:
+// IKIDEN AZ ise alan hic gorunmuyor, tek kanalli uretici hicbir ek tik
+// gormuyor. Alan ancak ikinci hesap eklenince ortaya cikiyor.
+function platformHesaplari(platform){
+  return hesaplar.filter(h=> h.platform === platform)
+    .sort((a,b)=> a.name.localeCompare(b.name, currentLang === 'tr' ? 'tr' : 'en'));
+}
+function hesapSeritGerekir(platform){ return platformHesaplari(platform).length > 1; }
+
+function loadHesaplar(){
+  try{
+    const h = JSON.parse(localStorage.getItem(hesapKey()) || 'null');
+    hesaplar = Array.isArray(h) ? h.map(hesapTemizle).filter(Boolean).slice(0, HESAP_ADET) : [];
+  }catch(e){ hesaplar = []; }
+}
+function saveHesaplar(){
+  try{ localStorage.setItem(hesapKey(), JSON.stringify(hesaplar)); }catch(e){ kotaHatasi(e); }
+  if(session){ clearTimeout(hesapPushTimer); hesapPushTimer = setTimeout(hesapPush, 700); }
+}
+// sql/38 henuz calistirilmadiysa tablo yok: hesap kaydetmek uygulamayi
+// durdurmasin, veri tarayicida kalsin ve betik calisinca yukari gitsin.
+let hesapTablosu = true;
+async function hesapPush(){
+  if(!hesapTablosu) return;
+  const hata = await kayitPush('accounts', hesaplar, hesapDirty, hesapRemoved, hesapRowYap);
+  if(hata && /accounts/i.test(String((hata && hata.message) || hata || ''))){
+    hesapTablosu = false;
+    console.warn('[bulut] accounts tablosu yok (sql/38); hesaplar tarayicida kaliyor');
+  }
+}
+function hesapRowYap(h, uid){
+  return { id: h.id, user_id: uid, name: h.name, platform: h.platform,
+           handle: h.handle, url: h.url, notes: h.notes, deleted_at: null,
+           created_at: new Date(h.createdAt).toISOString(),
+           updated_at: new Date(h.updatedAt).toISOString() };
+}
+function hesapRowOku(r){
+  return hesapTemizle({ id: r.id, name: r.name || '', platform: r.platform || '',
+                        handle: r.handle || '', url: r.url || '', notes: r.notes || '',
+                        createdAt: r.created_at ? Date.parse(r.created_at) : Date.now(),
+                        updatedAt: r.updated_at ? Date.parse(r.updated_at) : 0 });
+}
+
 function loadMekanlar(){
   try{
     const m = JSON.parse(localStorage.getItem(mekanKey()) || 'null');
@@ -11310,29 +11412,37 @@ function bulutBekleniyor(){ return !!(sb && session) && !bulutIlkOkumaBitti; }
 async function fikirScriptBulutSenkron(){
   if(!sb || !session) return;
   try{
-    const [f, s, m] = await Promise.all([
+    const [f, s, m, h] = await Promise.all([
       sb.from('ideas').select('*').is('deleted_at', null),
       sb.from('scripts').select('*').is('deleted_at', null),
-      sb.from('places').select('*').is('deleted_at', null)
+      sb.from('places').select('*').is('deleted_at', null),
+      sb.from('accounts').select('*').is('deleted_at', null)
     ]);
     if(f.error) throw f.error;
     if(s.error) throw s.error;
     // Mekanlar tablosu henuz kurulmamis olabilir (sql/24): eksikligi butun
     // senkronu dusurmesin, digerleri gelmeye devam etsin.
     if(m.error) console.warn('[bulut] mekanlar okunamadi', m.error);
+    // Hesaplar da ayni sekilde (sql/38). Tablo yoksa yazma da kapatiliyor,
+    // yoksa her kaydetmede bosuna hata basardi.
+    if(h.error){ hesapTablosu = false; console.warn('[bulut] hesaplar okunamadi', h.error); }
     const degistiF = listeKat(fikirler,  (f.data || []).map(fikirRowOku).filter(Boolean),  fikirDirty);
     const degistiS = listeKat(scriptler, (s.data || []).map(scriptRowOku).filter(Boolean), scriptDirty);
     const degistiM = m.error ? false
       : listeKat(mekanlar, (m.data || []).map(mekanRowOku).filter(Boolean), mekanDirty);
+    const degistiH = h.error ? false
+      : listeKat(hesaplar, (h.data || []).map(hesapRowOku).filter(Boolean), hesapDirty);
     if(degistiF) saveFikirler();
     if(degistiS) saveScriptler();
     if(degistiM) saveMekanlar();
+    if(degistiH) saveHesaplar();
     // Cizim her halukarda: bayrak kalkinca bos ekranin metni de degisiyor,
     // degisen kayit olmasa bile ekran tazelenmeli.
     bulutIlkOkumaBitti = true;
     ekraniTazele();
     await fikirPush(); await scriptPush();
     if(!m.error) await mekanPush();
+    if(!h.error) await hesapPush();
   }catch(err){
     console.error('[bulut] fikir/script okuma hatasi', err);
     // Okuma dustuyse de bekleme bitti: kimse sonsuza kadar "yukleniyor"
@@ -11373,7 +11483,7 @@ function fikirScriptAfterSignOut(){
   mekanDirty.clear(); mekanRemoved.clear();
   scriptDirty.clear(); scriptRemoved.clear();
   loadFikirScript();
-  loadMekanlar();
+  loadMekanlar(); loadHesaplar();
   ihtiyaclar = readIhtiyaclar();
   ihtiyacSetleri = readSetler();
   paylasimYukle();
@@ -15217,7 +15327,8 @@ function yedekGovdesi(){
     // takvimini geri aliyor kutuphanesini almiyordu ve disa aktarilan
     // dosya eksik cikiyordu -- ustelik bunu kimse soylemiyordu.
     ihtiyaclar: ihtiyaclar,
-    setler:     ihtiyacSetleri
+    setler:     ihtiyacSetleri,
+    hesaplar:   hesaplar
     //
     // prefs'in GERI KALANI bilerek disarida:
     //   ai.key     -> kullanicinin Gemini anahtari. Indirilen dosyaya
@@ -15239,7 +15350,8 @@ function yedekSayilari(y){
            mekan: (y.mekanlar||[]).length,
            // Onay penceresinde de gorunuyor: kullanici neyin gelecegini
            // basmadan once bilmeli.
-           ihtiyac: (y.ihtiyaclar||[]).length, set: (y.setler||[]).length };
+           ihtiyac: (y.ihtiyaclar||[]).length, set: (y.setler||[]).length,
+           hesap: (y.hesaplar||[]).length };
 }
 document.getElementById('exportBtn').addEventListener('click', ()=>{
   const govde = yedekGovdesi();
@@ -15308,6 +15420,9 @@ async function yedekGeriYukle(dosya){
   ihtiyaclar = ih.liste.slice(0, IHTIYAC_MAX); saveIhtiyaclar();
   const st = yedekBirlestir(ihtiyacSetleri, veri.setler, setTemizle);
   ihtiyacSetleri = st.liste.slice(0, SET_MAX); saveSetler();
+  const hs = yedekBirlestir(hesaplar, veri.hesaplar, hesapTemizle);
+  hesaplar = hs.liste.slice(0, HESAP_ADET);
+  hesaplar.forEach(x=> hesapDirty.add(x.id)); saveHesaplar();
 
   // HATIRLATMA yedege eskiden beri YAZILIYORDU ama hic geri
   // YUKLENMIYORDU: yazilip bir daha okunmayan bir alandi, yer kapliyor
@@ -15323,9 +15438,9 @@ async function yedekGeriYukle(dosya){
   // ihtiyacListesiCiz cagrilsaydi onek varsayilana ('ih') duser ve
   // menudeki Malzeme sayfasi ('ihs') eski halinde kalirdi.
   kitSayfasiCiz();
-  const eklenen = k.yeni + pr.yeni + fk.yeni + sc.yeni + mk.yeni + ih.yeni + st.yeni;
+  const eklenen = k.yeni + pr.yeni + fk.yeni + sc.yeni + mk.yeni + ih.yeni + st.yeni + hs.yeni;
   const guncel  = k.degisen + pr.degisen + fk.degisen + sc.degisen + mk.degisen
-                + ih.degisen + st.degisen;
+                + ih.degisen + st.degisen + hs.degisen;
   uyari(t('yedek_bitti')(eklenen, guncel));
 }
 // ---- Otomatik yedek ---------------------------------------------------
@@ -17270,6 +17385,7 @@ load();
 loadProjects();
 loadFikirScript();
 loadMekanlar();
+loadHesaplar();
 ihtiyaclar = readIhtiyaclar();
 ihtiyacSetleri = readSetler();
 paylasimYukle();
@@ -18754,7 +18870,7 @@ async function afterSignIn(){
   // Scriptler de buluttan BAGIMSIZ yukleniyor: hesaba ozel anahtar bu
   // noktada belli oldu. Sablonlarda bunun tersi bir kez veri kaybettirdi.
   loadFikirScript();
-  loadMekanlar();
+  loadMekanlar(); loadHesaplar();
   paylasimYukle();
   // Bulut eslestirmesi BEKLENMEDEN baslatiliyor: kendi try/catch'i var,
   // gerektiginde ekrani kendisi tazeliyor. Await edilseydi takvim tek

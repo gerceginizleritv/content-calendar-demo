@@ -259,7 +259,14 @@ function kayitOku(ham, sira, hatalar) {
         ? c.slidePrompts.slice(0, 9).map(x => typeof x === 'string' ? x.slice(0, 2000) : '') : undefined,
       timezone: tz && tzGecerli(tz) ? tz : undefined,
       diller: dillerOku(c, sira, hatalar),
-      anaDil: anaDilOku(c, sira, hatalar)
+      anaDil: anaDilOku(c, sira, hatalar),
+      // Hesap etiketi. Paketi ureten AI kullanicinin hesap KIMLIKLERINI
+      // bilemez; ad da kabul ediliyor ve uygulama ice aktarirken ada gore
+      // cozuyor (projeler ve mekanlarla ayni kalip). Burada yalnizca
+      // tasiniyor: gecerli bir kimlik degilse ad olarak birakiliyor,
+      // eslesmezse uygulama sessizce bos birakir.
+      hesapId: metin(c.hesapId, 64),
+      hesap: metin(c.hesap, 80)
     });
   }
   const projectRef = basvurular(ham.project, undefined, 1);
