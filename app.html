@@ -12901,6 +12901,12 @@ function tercihPrefsYap(){
   // Bayrak buradan yazilmiyor, yalnizca KORUNUYOR: bu islev satirin
   // tamamini yeniden yaziyor, atlanirsa ilk kaydetmede bayrak silinirdi.
   if(gelenKutusuAcik) prefs.gelen_kutusu = true;
+  // MCP bayragi da AYNI sebeple korunuyor. Bir kez atlandi ve sonucu
+  // tam olarak yukarida yazan sey oldu: bayrak Supabase'ten elle
+  // acildi, uygulama ilk prefs yaziminda sildi, ekran bellekteki
+  // degerle acik kalmaya devam etti ve "anahtar uret" RLS kuralina
+  // takildi. Ekranin acik olmasi bayragin DURDUGU anlamina gelmiyordu.
+  if(mcpAcik) prefs.mcp = true;
   // AI anahtari yalnizca kullanici acikca istediyse hesaba yaziliyor.
   if(aiHesabaKaydet){
     const ayar = getAiSettings();
