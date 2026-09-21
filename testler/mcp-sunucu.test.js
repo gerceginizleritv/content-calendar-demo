@@ -407,6 +407,34 @@ async function arac(anahtar, ad, args){
   bak('hiçbir DELETE isteği gitmedi', !yazilanlar.some(y=> y.yontem === 'DELETE'));
 
   // ------------------------------------------------- REST (PC yukleyicisi)
+  console.log('[list_entries story yayin durumunu da soyluyor]');
+  // Sartname Bolum 10: kullanici (ve asistan) "bu story bagli mi, otomatik
+  // acik mi" sorusunu gorebilmeli. Yeni ARAC eklenmedi; var olan aracin
+  // cevabi durust hale getirildi.
+  const stGiris = await arac(ANAHTAR_A, 'shootboard_list_entries',
+    { since:'2026-12-01', until:'2026-12-31' });
+  const st2 = stGiris.entries.find(e=> e.id === 'st_2');
+  bak('story kaydinda autoPublish var', st2 && st2.autoPublish === false, JSON.stringify(st2));
+  bak('story kaydinda publishState var', st2 && st2.publishState === 'pending', String(st2 && st2.publishState));
+  bak('mediaName gorunuyor', st2 && /kopru_k1\.mp4$/.test(st2.mediaName || ''), String(st2 && st2.mediaName));
+  // uploaded ve publishState AYRI: ikisi de cevapta, karistirilmasin.
+  bak('uploaded ayri alan olarak duruyor', st2 && st2.uploaded === false, String(st2 && st2.uploaded));
+  // Story OLMAYAN kayitta bu alanlar HIC olmamali: bes bos alan her
+  // kayda eklenirse cevap siser ve asistan "burada bir sey var" sanir.
+  const ytGiris = await arac(ANAHTAR_A, 'shootboard_list_entries',
+    { since:'2026-10-01', until:'2026-10-31' });
+  const yt1 = ytGiris.entries.find(e=> e.id === 'ev_1');
+  bak('video kaydinda yayin alanlari YOK',
+      yt1 && yt1.autoPublish === undefined && yt1.publishState === undefined,
+      JSON.stringify(Object.keys(yt1 || {})));
+  // Arac aciklamasi da farki soylemeli: asistan uploaded ile publishState'i
+  // karistirirsa kullaniciya "yayinlandi" der, oysa o kullanicinin isareti.
+  const listeAciklama = (await rpc(ANAHTAR_A, 'tools/list', {})).govde.result.tools
+    .find(t=> t.name === 'shootboard_list_entries').description;
+  bak('aciklama uploaded ile publishState farkini soyluyor',
+      /uploaded is the user/i.test(listeAciklama) && /publishState belongs to the system/i.test(listeAciklama),
+      listeAciklama.slice(-120));
+
   console.log('[REST: dosya adindan kayit bulma]');
   // Sartname Bolum 2, Secenek B. Shootboard'a upload arayuzu EKLENMIYOR;
   // PC scripti dosyayi R2'ye koyup buraya mediaUrl yaziyor.

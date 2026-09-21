@@ -184,9 +184,27 @@ function projeAdi(id: string | null | undefined, projeler: any[]): string {
 function kayitDisari(r: any, projeler: any[]) {
   const c = (r.content && typeof r.content === 'object') ? r.content : {};
   const pid = r.project_id || c.projectId || '';
-  return { id: r.id, date: r.post_date, time: (r.post_time || '').slice(0, 5), type: r.type, platform: r.platform,
+  const o: any = { id: r.id, date: r.post_date, time: (r.post_time || '').slice(0, 5), type: r.type, platform: r.platform,
            title: r.title || '', uploaded: !!r.uploaded, project: projeAdi(pid, projeler) || c.concept || '', projectId: pid,
            content: kayitIcerigi(c) };
+  // Otomatik yayin alanlari YALNIZCA story kayitlarinda. Oteki turlerde
+  // her kayda bes bos alan eklemek cevabi sisirir ve asistana "burada bir
+  // sey var" dedirtir -- yok.
+  //
+  // uploaded ve publishState AYRI SEYLER ve ikisi de burada:
+  //   uploaded     = kullanicinin isareti ("portala yukledim")
+  //   publishState = sistemin durumu (bekliyor / yayinlandi / hata)
+  // Ikisi karistirilmasin diye yan yana duruyorlar.
+  if (r.type === 'story') {
+    o.autoPublish  = r.auto_publish === true;
+    o.publishState = r.publish_state || 'pending';
+    o.mediaUrl     = r.media_url || '';
+    o.mediaName    = r.media_name || '';
+    if (r.published_at) o.publishedAt = r.published_at;
+    if (r.last_error)   o.lastError   = r.last_error;
+    if (r.attempt_count) o.attemptCount = r.attempt_count;
+  }
+  return o;
 }
 // content'in disariya verilen hali. ai/sema.json'daki Entry.content ile
 // AYNI alan kumesi olmali: bir alan burada eksik kalirsa asistan onu hic
@@ -559,7 +577,12 @@ const ARACLAR = [
       'List the posts planned on the Shootboard content calendar in a date range. ' +
       'Use this before proposing a plan: it is how you find which days are already ' +
       'taken and which are free. Dates and times are returned exactly as the user ' +
-      'stored them, in their own local calendar — do not shift them into another time zone.',
+      'stored them, in their own local calendar \u2014 do not shift them into another time zone. ' +
+      'Story entries also carry their auto-publish state: autoPublish says whether the ' +
+      'scheduler will post it, publishState is where it stands (pending / in_progress / ' +
+      'published / failed), and mediaUrl says whether a file is attached yet. Do not ' +
+      'confuse publishState with uploaded \u2014 uploaded is the user\u0027s own mark, ' +
+      'publishState belongs to the system.',
     inputSchema: {
       type: 'object',
       properties: {
