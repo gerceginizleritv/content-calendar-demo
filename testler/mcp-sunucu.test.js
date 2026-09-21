@@ -505,6 +505,13 @@ async function arac(anahtar, ad, args){
   const dz = JSON.parse(await duz.text());
   bak('anahtarsiz duz adres bilgi donduruyor, veri DEGIL',
       dz.service === 'shootboard-mcp' && !dz.entries && !!dz.hint, JSON.stringify(dz).slice(0,120));
+  // Dagitilan surum KENDINI TANITMALI. Eski surum ile yeni surum ayni
+  // cevabi verdigi icin bir kez "dagittim" saniip eski surumle ugrasildi;
+  // kontrol hicbir sey olcmemisti.
+  bak('cevap hangi uclari destekledigini soyluyor',
+      Array.isArray(dz.endpoints) && dz.endpoints.some(x=> /api\/entries\/find/.test(x)),
+      JSON.stringify(dz.endpoints));
+  bak('surum REST\'li surumu gosteriyor', dz.version === '1.1.0', String(dz.version));
 
   console.log('[slug\'dan bagimsiz]');
   // Fonksiyon adi ne olursa olsun calismali. Supabase'te slug sonradan

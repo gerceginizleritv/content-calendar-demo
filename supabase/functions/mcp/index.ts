@@ -61,7 +61,11 @@ import { SEMA } from './sema.ts';
 
 const SUPABASE_URL = Deno.env.get('SUPABASE_URL') ?? '';
 const SERVIS_ANAHTARI = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY') ?? '';
-const SURUM = '1.0.0';
+// Surum, dagitimin tuttugunu ANLAMAK icin var. Bir kez su oldu:
+// fonksiyon yeniden dagitilmadi ama GET cevabi eski ve yeni surumde
+// birebir ayniydi, yani kontrol hicbir sey olcmedi ve hata baska
+// yerde arandi. Surum ve uc listesi artik cevapta.
+const SURUM = '1.1.0';
 
 const CORS: Record<string, string> = {
   'Access-Control-Allow-Origin': '*',
@@ -902,6 +906,8 @@ const MCP_SURUM = '2025-11-25';
 const BILINEN_SURUMLER = ['2024-11-05', '2025-03-26', '2025-06-18', '2025-11-25', '2026-07-28'];
 
 const SUNUCU_BILGISI = { name: 'shootboard', title: 'Shootboard', version: SURUM };
+// Dagitilan surumun NE YAPABILDIGI. Bir uc eksikse buradan gorunuyor.
+const UCLAR = ['POST /(mcp)', 'GET /api/entries/find?file=', 'PATCH /api/entries/{id}'];
 
 type AracSonuc = { ok: boolean; [k: string]: unknown };
 function aracHata(mesaj: string, ayrinti?: unknown): AracSonuc {
@@ -1034,6 +1040,7 @@ Deno.serve(async (req: Request) => {
     if (!kim) {
       return json({ ok: true, service: 'shootboard-mcp', version: SURUM, transport: 'streamable-http',
                     protocolVersions: BILINEN_SURUMLER,
+                    endpoints: UCLAR,
                     hint: 'Add your key to the URL: /functions/v1/mcp/shb_...  Generate one in Shootboard → Account.' });
     }
     const s = await sinirlar(kim.user_id);
@@ -1041,7 +1048,8 @@ Deno.serve(async (req: Request) => {
       sayim('calendar_events', `user_id=eq.${kim.user_id}&deleted_at=is.null`),
       sayim('projects', `user_id=eq.${kim.user_id}&deleted_at=is.null`)
     ]);
-    return json({ ok: true, service: 'shootboard-mcp', version: SURUM, keyId: kim.id, scopes: kim.scopes,
+    return json({ ok: true, service: 'shootboard-mcp', version: SURUM, endpoints: UCLAR,
+                  keyId: kim.id, scopes: kim.scopes,
                   counts: { entries: kayit, projects: proje },
                   limits: { entries: s.entries, projects: s.projects },
                   today: new Date().toISOString().slice(0, 10),
