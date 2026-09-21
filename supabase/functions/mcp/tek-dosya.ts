@@ -1802,6 +1802,151 @@ async function aracUpdateEntry(kim: Kim, a: any) {
            warnings: paket.hatalar.map((x: any) => ({ field: x.alan || '', reason: x.sebep })) };
 }
 
+
+// ---- PC yükleyicisi için REST uçları ---------------------------------------
+// Şartname Bölüm 2, Seçenek B: render bitince PC'de çalışan küçük bir
+// script dosyayı R2'ye koyuyor ve Shootboard kaydına mediaUrl yazıyor.
+// Shootboard'a upload arayüzü EKLENMİYOR (kullanıcı kararı).
+//
+// Bu uçlar MCP değil, düz REST: bir betik Authorization başlığı
+// gönderebiliyor, claude.ai gönderemiyor. İkisi aynı anahtarı kullanıyor.
+//
+// Adres:  .../functions/v1/mcp/api/entries/...
+//         Authorization: Bearer shb_...
+
+// Dosya adından tarih: "2026-10-05_story_konu_k1.mp4" -> "2026-10-05"
+function dosyaAdindanTarih(ad: string): string {
+  const m = /(\d{4}-\d{2}-\d{2})/.exec(String(ad || ''));
+  return m && tarihGecerli(m[1]) ? m[1] : '';
+}
+
+// Kaydın yayın alanlarını dışarı verilen hali. uploaded BİLEREK burada
+// da yok: bu uçların işi yayın durumu, kullanıcının işareti değil.
+function yayinDisari(r: any) {
+  return {
+    id: r.id, date: r.post_date, time: (r.post_time || '').slice(0, 5),
+    type: r.type, platform: r.platform, title: r.title || '',
+    autoPublish: r.auto_publish === true,
+    mediaUrl: r.media_url || '', mediaName: r.media_name || '',
+    mediaBytes: r.media_bytes ?? null, mediaMime: r.media_mime || '',
+    publishAt: r.publish_at || null, publishState: r.publish_state || 'pending',
+    publishedAt: r.published_at || null, externalId: r.external_id || '',
+    lastError: r.last_error || '', attemptCount: r.attempt_count ?? 0
+  };
+}
+
+// Kaydın kendi saat dilimindeki tarih+saati UTC'ye çeviriyor.
+// ŞARTNAMEDEN SAPMA (bilerek): şartname "Türkiye sabit UTC+3, DST yazma"
+// diyor. Shootboard kayıtları kendi saat dilimini taşıyor
+// (content.timezone) ve kullanıcıları yalnızca Türkiye'de değil; sabit
+// +3 yazmak başka dilimdeki her kaydı yanlış saate koyardı. Dönüşüm
+// kaydın KENDİ diliminden yapılıyor -- paylaşım takvimi beslemesinde de
+// aynısı yapılıyor ve orada yaz saati testle ölçülüyor.
+function yayinAniHesapla(tarih: string, saat: string, tz: string): string | null {
+  if (!tarihGecerli(tarih)) return null;
+  const [y, ay, g] = tarih.split('-').map(Number);
+  const [ss, dd] = String(saat || '00:00').split(':').map(Number);
+  const tahmin = Date.UTC(y, ay - 1, g, ss || 0, dd || 0, 0);
+  const ofset = (an: Date): number => {
+    try {
+      const b = new Intl.DateTimeFormat('en-US', { timeZone: tz || 'UTC', hour12: false,
+        year: 'numeric', month: '2-digit', day: '2-digit',
+        hour: '2-digit', minute: '2-digit', second: '2-digit' });
+      const o: any = {};
+      b.formatToParts(an).forEach(x => { if (x.type !== 'literal') o[x.type] = x.value; });
+      const gibi = Date.UTC(+o.year, +o.month - 1, +o.day, (+o.hour) % 24, +o.minute, +o.second);
+      return Math.round((gibi - an.getTime()) / 60000);
+    } catch { return 0; }
+  };
+  const o1 = ofset(new Date(tahmin));
+  let an = new Date(tahmin - o1 * 60000);
+  const o2 = ofset(an);
+  if (o2 !== o1) an = new Date(tahmin - o2 * 60000);
+  return isNaN(an.getTime()) ? null : an.toISOString();
+}
+
+// GET /api/entries/find?file=2026-10-05_story_konu_k1.mp4
+// Once tam dosya adi, sonra adin icindeki tarihteki story kayitlari.
+async function apiKayitBul(uid: string, dosya: string) {
+  const ad = String(dosya || '').trim();
+  if (!ad) return { durum: 400, govde: { ok: false, error: 'file: required, e.g. ?file=2026-10-05_story_konu_k1.mp4' } };
+
+  const { veri: tam } = await rest(
+    `/calendar_events?user_id=eq.${uid}&deleted_at=is.null&media_name=eq.${encodeURIComponent(ad)}&select=*&limit=5`);
+  if (Array.isArray(tam) && tam.length) {
+    return { durum: 200, govde: { ok: true, matchedBy: 'mediaName', count: tam.length, entries: tam.map(yayinDisari) } };
+  }
+
+  const tarih = dosyaAdindanTarih(ad);
+  if (!tarih) {
+    return { durum: 404, govde: { ok: false,
+      error: `no entry carries the file name "${ad}", and no date could be read from it. Name files like 2026-10-05_story_topic.mp4, or set mediaName on the entry first.` } };
+  }
+  const { veri } = await rest(
+    `/calendar_events?user_id=eq.${uid}&deleted_at=is.null&type=eq.story&post_date=eq.${tarih}&select=*&order=post_time.asc.nullsfirst&limit=20`);
+  const satirlar = Array.isArray(veri) ? veri : [];
+  if (!satirlar.length) {
+    return { durum: 404, govde: { ok: false,
+      error: `no story entry on ${tarih}. Create the entry in Shootboard first, then run the uploader.` } };
+  }
+  // Birden cok aday varsa SECIM YAPILMIYOR: yanlis kayda yazmak,
+  // yazmamaktan kotu. Betik kullaniciya soruyor.
+  return { durum: 200, govde: { ok: true, matchedBy: 'date', date: tarih,
+    count: satirlar.length, entries: satirlar.map(yayinDisari),
+    note: satirlar.length > 1 ? 'more than one story on that date; pick one by id' : undefined } };
+}
+
+// PATCH /api/entries/{id}
+async function apiKaydiYama(uid: string, id: string, govde: any) {
+  if (!id) return { durum: 400, govde: { ok: false, error: 'id: required in the path, /api/entries/{id}' } };
+  const { veri } = await rest(
+    `/calendar_events?id=eq.${encodeURIComponent(id)}&user_id=eq.${uid}&deleted_at=is.null&select=*&limit=1`);
+  const satir = Array.isArray(veri) && veri[0];
+  if (!satir) return { durum: 404, govde: { ok: false, error: `no entry "${id}" in this account.` } };
+
+  const yama: any = { updated_at: simdi() };
+  const hatalar: string[] = [];
+
+  if (govde.mediaUrl !== undefined) {
+    const u = String(govde.mediaUrl || '');
+    // Graph API dosyayi BU adresten cekiyor: https sart, yonlendirme
+    // kabul etmiyor. Sema dogrulamasi burada yapilamaz (Meta cekmeden
+    // belli olmuyor) ama en azindan bicim denetleniyor.
+    if (u && !/^https:\/\/[^\s]+$/i.test(u)) hatalar.push('mediaUrl: must be a plain https:// URL (Instagram fetches the file from it; redirects are not followed)');
+    else yama.media_url = u || null;
+  }
+  if (govde.mediaName !== undefined) yama.media_name = String(govde.mediaName || '').slice(0, 300) || null;
+  if (govde.mediaMime !== undefined) yama.media_mime = String(govde.mediaMime || '').slice(0, 100) || null;
+  if (govde.mediaBytes !== undefined) {
+    const n = Number(govde.mediaBytes);
+    if (!Number.isFinite(n) || n < 0) hatalar.push('mediaBytes: must be a positive number');
+    // 100 MB Instagram'in siniri. Buyugu reddediliyor: yayin aninda
+    // ogrenmek, yukleme aninda ogrenmekten cok daha pahali.
+    else if (n > 100 * 1024 * 1024) hatalar.push(`mediaBytes: ${Math.round(n / 1048576)} MB is over Instagram's 100 MB limit for stories`);
+    else yama.media_bytes = Math.round(n);
+  }
+  if (govde.autoPublish !== undefined) yama.auto_publish = govde.autoPublish === true;
+
+  if (hatalar.length) return { durum: 422, govde: { ok: false, error: hatalar[0], details: hatalar } };
+
+  // publish_at kaydin KENDI tarih/saat/diliminden tureiyor. Cagiranin
+  // gonderdigi bir deger kabul edilmiyor: donusum TEK BIR YERDE olsun.
+  const c = (satir.content && typeof satir.content === 'object') ? satir.content : {};
+  const an = yayinAniHesapla(satir.post_date, (satir.post_time || '').slice(0, 5), c.timezone || 'UTC');
+  if (an) yama.publish_at = an;
+
+  // ⛔ uploaded YAMAYA GIRMIYOR ve girmeyecek. O alan kullanicinin kendi
+  // isareti; bu uc otomasyonun parcasi. Sartname Bolum 1.
+  delete yama.uploaded;
+
+  await rest(`/calendar_events?id=eq.${encodeURIComponent(id)}&user_id=eq.${uid}`,
+             { method: 'PATCH', govde: yama, prefer: 'return=minimal' });
+  const { veri: sonra } = await rest(
+    `/calendar_events?id=eq.${encodeURIComponent(id)}&user_id=eq.${uid}&select=*&limit=1`);
+  const yeni = Array.isArray(sonra) && sonra[0];
+  return { durum: 200, govde: { ok: true, entry: yeni ? yayinDisari(yeni) : null } };
+}
+
 // ---- MCP protokol katmanı --------------------------------------------------
 const MCP_SURUM = '2025-11-25';
 // Tanıdığımız sürümler. İstemci bunlardan birini isterse aynen geri
@@ -1872,12 +2017,22 @@ Deno.serve(async (req: Request) => {
   if (!SUPABASE_URL || !SERVIS_ANAHTARI) return hata(500, 'config', 'SUPABASE_URL / SUPABASE_SERVICE_ROLE_KEY missing');
 
   const url = new URL(req.url);
-  const yol = url.pathname.replace(/^\/functions\/v1/, '').replace(/^\/mcp/, '').replace(/\/+$/, '');
+  // Fonksiyonun ADI yoldan cikariliyor ama ADA BAKILMIYOR: Supabase'te
+  // slug olusturulduktan sonra degistirilemiyor ve yanlis adla kurulan
+  // bir fonksiyon, sabit bir '/mcp' beklendiginde anahtari bulamayip
+  // "unauthorized" diyordu -- yani hata, adresi degil anahtari
+  // suclatiyordu. Ilk segment neyse atiliyor.
+  let yol = url.pathname.replace(/^\/functions\/v1/, '').replace(/^\/[^/]+/, '').replace(/\/+$/, '');
 
-  // Kimlik: once yolun icinden, sonra basliktan. Yol icindeki sekil
-  // claude.ai icin -- orada anahtar yapistirilacak bir kutu yok.
+  // Anahtar yolun ilk parcasinda olabilir: /<anahtar>/... claude.ai icin
+  // TEK yol bu, cunku orada API anahtari yapistirilacak bir kutu yok.
+  // Betikler (PC yukleyicisi, curl) Authorization basligi da kullanabilir.
+  let yoldakiAnahtar = '';
+  const ayrim = /^\/(shb_[A-Za-z0-9]{20,80})(\/.*)?$/.exec(yol);
+  if (ayrim) { yoldakiAnahtar = ayrim[1]; yol = (ayrim[2] || '').replace(/\/+$/, ''); }
+
   let kim: Kim | null = null;
-  try { kim = await kimBu(req, yol); }
+  try { kim = await kimBu(req, yoldakiAnahtar ? '/' + yoldakiAnahtar : ''); }
   catch (e) {
     console.error('[mcp] anahtar bakılamadı', e);
     const m = e instanceof RestHata ? String(e.message) : '';
@@ -1885,6 +2040,38 @@ Deno.serve(async (req: Request) => {
       return hata(503, 'not_installed', 'sql/39-mcp-erisimi.sql has not been run yet');
     }
     return hata(500, 'server', 'key lookup failed');
+  }
+
+  // ---- REST uclari (PC yukleyicisi) ----------------------------------
+  // MCP'den ONCE bakiliyor: /api/... yolu JSON-RPC degil.
+  if (yol.startsWith('/api/')) {
+    if (!kim) {
+      return hata(401, 'unauthorized',
+        'missing or revoked key. Send "Authorization: Bearer shb_..." or put the key in the path.');
+    }
+    try {
+      if (req.method === 'GET' && yol === '/api/entries/find') {
+        const r = await apiKayitBul(kim.user_id, url.searchParams.get('file') || '');
+        return json(r.govde, r.durum);
+      }
+      const yama = /^\/api\/entries\/([^/]+)$/.exec(yol);
+      if (yama && req.method === 'PATCH') {
+        if (!kim.scopes.includes('write')) return hata(403, 'forbidden', 'this key cannot write');
+        let g: any;
+        try { g = await req.json(); } catch { return hata(400, 'bad_json', 'body must be JSON'); }
+        const r = await apiKaydiYama(kim.user_id, decodeURIComponent(yama[1]), g || {});
+        return json(r.govde, r.durum);
+      }
+      return hata(404, 'not_found',
+        `unknown endpoint ${req.method} ${yol}. Available: GET /api/entries/find?file=..., PATCH /api/entries/{id}`);
+    } catch (e) {
+      console.error('[api] hata', yol, e);
+      const m = e instanceof RestHata ? String(e.message) : String((e as any)?.message || e);
+      if (/publish_state|media_url|auto_publish|story_/.test(m) && /does not exist|schema cache|column/.test(m)) {
+        return hata(503, 'not_installed', 'sql/41-story-otomatik-yayin.sql has not been run yet');
+      }
+      return hata(500, 'server', 'database: ' + m.slice(0, 200));
+    }
   }
 
   if (req.method === 'GET') {

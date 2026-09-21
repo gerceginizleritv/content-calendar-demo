@@ -57,6 +57,7 @@ function tablolariKur(){
     calendar_events: [
       { id:'ev_1', user_id:UID_A, project_id:'pr_1', post_date:'2026-10-09', post_time:'19:00:00', type:'video', platform:'youtube',
         title:'Sokollu tanıtım', uploaded:false, deleted_at:null,
+        auto_publish:false, publish_state:'pending', attempt_count:0,
         content:{ caption:'Merhaba', videoTitle:'Sokollu Köprüsü', anaDil:'tr',
                   diller:{ en:{ videoTitle:'The Bridge of Sokollu' } }, hesapId:'hs_a', timezone:'Europe/Istanbul' } },
       { id:'ev_2', user_id:UID_A, project_id:'pr_2', post_date:'2026-10-12', post_time:'09:30:00', type:'reels', platform:'instagram',
@@ -66,7 +67,18 @@ function tablolariKur(){
       { id:'ev_sil', user_id:UID_A, project_id:null, post_date:'2026-10-10', post_time:null, type:'video', platform:'youtube',
         title:'Silinmis', uploaded:false, deleted_at:'2026-02-02T00:00:00Z', content:{} },
       { id:'ev_b', user_id:UID_B, project_id:'pr_9', post_date:'2026-10-09', post_time:'12:00:00', type:'video', platform:'youtube',
-        title:'BASKASININ KAYDI', uploaded:false, deleted_at:null, content:{} }
+        title:'BASKASININ KAYDI', uploaded:false, deleted_at:null, content:{} },
+      // Story kayitlari: PC yukleyicisi bunlari ariyor.
+      { id:'st_1', user_id:UID_A, post_date:'2026-12-05', post_time:'12:00:00', type:'story', platform:'instagram',
+        title:'Balıklı story', uploaded:true, deleted_at:null, content:{ timezone:'Europe/Istanbul' },
+        auto_publish:false, publish_state:'pending', attempt_count:0, media_url:null, media_name:null },
+      { id:'st_2', user_id:UID_A, post_date:'2026-12-06', post_time:'09:00:00', type:'story', platform:'instagram',
+        title:'Adi bagli story', uploaded:false, deleted_at:null, content:{ timezone:'Europe/Istanbul' },
+        auto_publish:false, publish_state:'pending', attempt_count:0,
+        media_url:null, media_name:'2026-12-06_story_kopru_k1.mp4' },
+      { id:'st_b', user_id:UID_B, post_date:'2026-12-05', post_time:'12:00:00', type:'story', platform:'instagram',
+        title:'BASKASININ STORYSI', uploaded:false, deleted_at:null, content:{},
+        auto_publish:false, publish_state:'pending', attempt_count:0 }
     ],
     scripts: [], ideas: [], ai_aktarimlar: []
   };
@@ -393,6 +405,103 @@ async function arac(anahtar, ad, args){
   const silDene = await arac(ANAHTAR_A, 'shootboard_delete_entry', { id:'ev_1' });
   bak('silme aracı çağrılamıyor', silDene.ok === false && /unknown tool/.test(silDene.error), String(silDene.error).slice(0,90));
   bak('hiçbir DELETE isteği gitmedi', !yazilanlar.some(y=> y.yontem === 'DELETE'));
+
+  // ------------------------------------------------- REST (PC yukleyicisi)
+  console.log('[REST: dosya adindan kayit bulma]');
+  // Sartname Bolum 2, Secenek B. Shootboard'a upload arayuzu EKLENMIYOR;
+  // PC scripti dosyayi R2'ye koyup buraya mediaUrl yaziyor.
+  const rest = async (yontem, yolu, govde, anahtar = ANAHTAR_A)=>{
+    const r = await ele(new Request('https://sahte.supabase.co/functions/v1/mcp' + yolu, {
+      method: yontem,
+      headers: Object.assign({ 'Content-Type':'application/json' },
+                             anahtar ? { authorization: 'Bearer ' + anahtar } : {}),
+      body: govde === undefined ? undefined : JSON.stringify(govde)
+    }));
+    const m = await r.text();
+    return { durum: r.status, govde: m ? JSON.parse(m) : null };
+  };
+
+  const bulAd = await rest('GET', '/api/entries/find?file=2026-12-06_story_kopru_k1.mp4');
+  bak('tam dosya adiyla bulunuyor',
+      bulAd.govde.ok === true && bulAd.govde.entries[0].id === 'st_2', JSON.stringify(bulAd.govde).slice(0,140));
+  bak('eslesme yontemi bildiriliyor', bulAd.govde.matchedBy === 'mediaName', String(bulAd.govde.matchedBy));
+
+  const bulTarih = await rest('GET', '/api/entries/find?file=2026-12-05_story_balikli_k1.mp4');
+  bak('ad bagli degilse tarihten bulunuyor',
+      bulTarih.govde.ok === true && bulTarih.govde.entries.some(e=> e.id === 'st_1'),
+      JSON.stringify(bulTarih.govde).slice(0,140));
+  // ASIL SINIR: baska hesabin ayni tarihli storysi gelmemeli.
+  bak('BASKA HESABIN storysi gelmiyor',
+      !bulTarih.govde.entries.some(e=> e.id === 'st_b'),
+      JSON.stringify(bulTarih.govde.entries.map(e=>e.id)));
+
+  const bulYok = await rest('GET', '/api/entries/find?file=2030-01-01_story_yok.mp4');
+  bak('o tarihte kayit yoksa ne yapilacagi yaziyor',
+      bulYok.durum === 404 && /Create the entry/.test(bulYok.govde.error), String(bulYok.govde.error).slice(0,90));
+  const bulBozuk = await rest('GET', '/api/entries/find?file=render_final.mp4');
+  bak('tarihsiz dosya adinda adlandirma anlatiliyor',
+      bulBozuk.durum === 404 && /Name files like/.test(bulBozuk.govde.error), String(bulBozuk.govde.error).slice(0,110));
+  bak('dosya adi verilmezse soyleniyor',
+      (await rest('GET', '/api/entries/find')).durum === 400);
+
+  console.log('[REST: PATCH ile mediaUrl yazma]');
+  const yama = await rest('PATCH', '/api/entries/st_1', {
+    mediaUrl: 'https://medya.ornek.com/2026-12-05_story_balikli_k1.mp4',
+    mediaName: '2026-12-05_story_balikli_k1.mp4',
+    mediaBytes: 12 * 1024 * 1024, mediaMime: 'video/mp4', autoPublish: true });
+  bak('yama kabul edildi', yama.govde.ok === true, JSON.stringify(yama.govde).slice(0,140));
+  bak('mediaUrl yazildi', yama.govde.entry.mediaUrl.indexOf('https://') === 0, yama.govde.entry.mediaUrl);
+  bak('autoPublish acildi', yama.govde.entry.autoPublish === true);
+  bak('boyut ve tur yazildi',
+      yama.govde.entry.mediaBytes === 12582912 && yama.govde.entry.mediaMime === 'video/mp4',
+      JSON.stringify(yama.govde.entry));
+  // publishAt kaydin KENDI diliminden turemeli: 12:00 TSI = 09:00Z.
+  bak('publishAt kaydin saat diliminden turedi',
+      /2026-12-05T09:00:00/.test(yama.govde.entry.publishAt || ''), String(yama.govde.entry.publishAt));
+
+  console.log('[⛔ uploaded ALANINA DOKUNULMUYOR]');
+  // Sartname Bolum 1: bu kural bir veri kaybindan dogdu, pazarlik konusu
+  // degil. Cagiran acikca gondermeye calissa bile yazilmamali.
+  const oncekiUploaded = tablolar.calendar_events.find(r=> r.id === 'st_1').uploaded;
+  await rest('PATCH', '/api/entries/st_1', { uploaded: false, mediaMime: 'video/mp4' });
+  bak('uploaded degismedi (st_1 hala true)',
+      tablolar.calendar_events.find(r=> r.id === 'st_1').uploaded === oncekiUploaded,
+      String(tablolar.calendar_events.find(r=> r.id === 'st_1').uploaded));
+  bak('hicbir PATCH govdesinde uploaded gecmedi',
+      !yazilanlar.some(y=> y.yontem === 'PATCH' && y.govde && 'uploaded' in y.govde),
+      JSON.stringify(yazilanlar.filter(y=>y.yontem==='PATCH').map(y=>Object.keys(y.govde||{}))));
+  bak('yanitta da uploaded sizmiyor',
+      !('uploaded' in (yama.govde.entry || {})), JSON.stringify(Object.keys(yama.govde.entry||{})));
+
+  console.log('[REST: reddedilenler]');
+  const kotu = await rest('PATCH', '/api/entries/st_1', { mediaUrl: 'http://guvensiz.ornek.com/a.mp4' });
+  bak('http:// reddediliyor, sebebi yaziyor',
+      kotu.durum === 422 && /https/.test(kotu.govde.error), String(kotu.govde.error).slice(0,100));
+  const buyuk = await rest('PATCH', '/api/entries/st_1', { mediaBytes: 250 * 1024 * 1024 });
+  bak('100 MB ustu reddediliyor, kac MB oldugu yaziliyor',
+      buyuk.durum === 422 && /MB/.test(buyuk.govde.error), String(buyuk.govde.error).slice(0,100));
+  const baskasi2 = await rest('PATCH', '/api/entries/st_b', { mediaMime: 'video/mp4' });
+  bak('BASKA HESABIN kaydi yamanamiyor', baskasi2.durum === 404, String(baskasi2.durum));
+  bak('anahtarsiz REST reddediliyor',
+      (await rest('GET', '/api/entries/find?file=a.mp4', undefined, '')).durum === 401);
+  const bilinmeyenUc = await rest('GET', '/api/olmayan');
+  bak('bilinmeyen uc ne oldugunu soyluyor',
+      /Available:/.test(bilinmeyenUc.govde.message || ''),
+      String(bilinmeyenUc.govde.message).slice(0,100));
+
+  console.log('[slug\'dan bagimsiz]');
+  // Fonksiyon adi ne olursa olsun calismali. Supabase'te slug sonradan
+  // degistirilemiyor; sabit '/mcp' beklemek, yanlis adla kurulan
+  // fonksiyonda "unauthorized" dedirtip adresi degil anahtari
+  // suclatiyordu -- bu bir kez gercekten yasandi.
+  const baskaAd = await ele(new Request('https://sahte.supabase.co/functions/v1/bright-function/' + ANAHTAR_A, {
+    method:'POST', headers:{ 'Content-Type':'application/json' },
+    body: JSON.stringify({ jsonrpc:'2.0', id:9, method:'tools/list' }) }));
+  bak('baska slug ile de araclar donuyor',
+      (JSON.parse(await baskaAd.text()).result || {}).tools !== undefined);
+  const baskaAdRest = await ele(new Request('https://sahte.supabase.co/functions/v1/herneyse/api/entries/find?file=2026-12-06_story_kopru_k1.mp4', {
+    method:'GET', headers:{ authorization:'Bearer ' + ANAHTAR_A } }));
+  bak('baska slug ile REST de calisiyor', baskaAdRest.status === 200, String(baskaAdRest.status));
 
   console.log('[üretilen dosyalar güncel mi]');
   // tek-dosya.ts panelden kuranin yapistirdigi sey. Kaynaklar degisip bu
