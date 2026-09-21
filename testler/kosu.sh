@@ -13,6 +13,11 @@
 #   [ 13/132] XX  script2.test.js                      9sn
 set -u
 cd "$(dirname "$0")"
+
+# MCP sunucusu testi Edge Function'in .ts dosyasini Node icinde yukluyor
+# (Deno ve fetch sahte, gerisi gercek kod). Node'un tur siyirma bayragi
+# olmadan o import patlar. Oteki testler icin zararsiz.
+export NODE_OPTIONS="${NODE_OPTIONS:-} --experimental-strip-types"
 KOK="$(cd .. && pwd)"
 
 # Testlerin arguman duzeni tek tip degil; her biri bekledigini alsin.

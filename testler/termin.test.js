@@ -18,14 +18,20 @@ const { chromium } = require('./araclar');
   const k=(ad,s,ek)=>{ console.log((s?'  ✔ ':'  ✖ ')+ad+(ek!==undefined?' → '+ek:'')); if(!s) hata++; };
   console.log('TERMIN PENCERESI + KOMPAKT TABLO');
 
+  // Cekim tarihi BUGUNE GORELI. Eskiden sabit bir gun yaziyordu
+  // ('2026-09-19') ve o gun gelip gecince "gelecek tarih" gecmis
+  // oldu: test, kodda hicbir sey degismeden kaldi. Tarihe duyarli
+  // bir olcum sabit gun tasiyamaz.
+  const ILERI = new Date(Date.now() + 30*86400000).toISOString().slice(0,10);
+
   // Proje olustur -> termin soruluyor
-  const olus = await page.evaluate(async ()=>{
+  const olus = await page.evaluate(async (ileri)=>{
     const c = window.onayla; window.__soruldu = null;
     window.onayla = (m)=>{ window.__soruldu = m; return true; };   // evet de
     openProjectNew('Saha Çekimi — Trabzon');
     document.getElementById('pe_type').value = 'studio';
     document.getElementById('pe_type').dispatchEvent(new Event('change'));
-    document.getElementById('pe_shoot').value = '2026-09-19';
+    document.getElementById('pe_shoot').value = ileri;
     document.getElementById('pe_save').click();
     await new Promise(r=>setTimeout(r,350));
     window.onayla = c;
@@ -33,7 +39,7 @@ const { chromium } = require('./araclar');
              acik: document.getElementById('deadlineOverlay').classList.contains('open'),
              satir: document.querySelectorAll('#dlRows .dl-row').length,
              kim: document.getElementById('dlWho').textContent };
-  });
+  }, ILERI);
   k('proje kurulunca termin soruluyor', /teslim tarihi|deadline/i.test(olus.soru||''), (olus.soru||'').slice(0,50));
   k('evet deyince pencere açıldı', olus.acik === true);
   k('pencerede yedi adım var', olus.satir === 7, olus.satir);
@@ -50,15 +56,15 @@ const { chromium } = require('./araclar');
              basSag: Math.round(bt.right), kutuSag: Math.round(kutu.right),
              ustte: bt.bottom <= kutu.top };
   });
-  k('başlangıç tarihi yazıyor', bas.metin === '2026-09-19', bas.metin);
+  k('başlangıç tarihi yazıyor', bas.metin === ILERI, bas.metin);
   k('proje adı ile aynı satırda', Math.abs(bas.adSol - bas.adimSol) <= 1, bas.adSol + ' / ' + bas.adimSol);
   k('tarih kutularının üstünde ve hizasında', bas.ustte && Math.abs(bas.basSag - bas.kutuSag) <= 2, bas.basSag + ' / ' + bas.kutuSag);
 
   // Tarihleri gir ve kaydet
-  const kaydet = await page.evaluate(async ()=>{
+  const kaydet = await page.evaluate(async (ileri)=>{
     const g = (k,v)=>{ const el = document.querySelector(`[data-dl-step="${k}"]`); el.value = v; };
     g('script','2020-01-01');          // gecmis
-    g('filmed','2026-09-19');
+    g('filmed', ileri);
     g('edited','2030-01-01');          // gelecek
     document.getElementById('dlSave').click();
     await new Promise(r=>setTimeout(r,250));
@@ -69,7 +75,7 @@ const { chromium } = require('./araclar');
              metinler: [...document.querySelectorAll('.proj-table .pdate')].map(x=>x.textContent.trim()),
              gecikmis: document.querySelectorAll('.proj-table .pdate.late').length,
              serit: !document.getElementById('p_overdue').hidden };
-  });
+  }, ILERI);
   k('pencere kapandı, tarihler kaydedildi', kaydet.kapandi && kaydet.dl.script === '2020-01-01' && kaydet.dl.edited === '2030-01-01', JSON.stringify(kaydet.dl.script));
   k('TABLODA ARTIK TARİH KUTUSU YOK', kaydet.kutuSayisi === 0, kaydet.kutuSayisi);
   k('tarihler metin olarak görünüyor', kaydet.metinler.filter(x=>/\d/.test(x)).length === 3, kaydet.metinler.filter(x=>/\d/.test(x)).join(' | '));
@@ -96,7 +102,7 @@ const { chromium } = require('./araclar');
              serit: !document.getElementById('p_overdue').hidden, shoot: projects[0].shootDate };
   });
   k('hepsini temizle çalışıyor', !/2020|2026|2030/.test(temizle.dl) && temizle.gecikmis === 0 && temizle.serit === false);
-  k('temizle PROJE BAŞLANGICINA dokunmuyor', temizle.shoot === '2026-09-19', temizle.shoot);
+  k('temizle PROJE BAŞLANGICINA dokunmuyor', temizle.shoot === ILERI, temizle.shoot);
 
   // Adim bitince gecikme kalkmali
   const bitir = await page.evaluate(async ()=>{

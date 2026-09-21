@@ -4560,6 +4560,25 @@ textarea.sc-ai-brief{min-height:64px;resize:vertical;line-height:1.5;}
       <ul class="yedek-liste" id="aiAktarimListe"></ul>
     </div>
 
+    <!-- MCP ERISIMI. Bayrakla aciliyor (user_prefs.prefs.mcp): herkese
+         acik degil. Bir e-posta adresi GOMULMUYOR -- bayrak hesabin kendi
+         ayarlarinda duruyor, kaynak kodda kimsenin adi gecmiyor. -->
+    <div class="hesap-satir hesap-satir-dikey" id="hesapMcp" hidden>
+      <div class="hesap-ad" data-i18n="mcp_baslik">Connect Claude to your calendar</div>
+      <p class="hint hesap-not" data-i18n="mcp_not">Claude can read your calendar and write plans into it directly, instead of you pasting packages by hand. It can add and change entries; it cannot delete anything.</p>
+      <p class="hint hesap-not mcp-uyari" data-i18n="mcp_uyari">The address below contains your key, so it is a secret: anyone who has it can write to your calendar. Do not share it. You can revoke it here at any time.</p>
+      <ul class="yedek-liste" id="mcpListe"></ul>
+      <div id="mcpYeniSatir" hidden>
+        <p class="rm-adres-et" data-i18n="mcp_adres_et">Paste this into claude.ai → Settings → Connectors → Add custom connector. It is shown once.</p>
+        <div class="rm-adres">
+          <input type="text" id="mcpAdres" readonly>
+          <button type="button" class="btn btn-sm" id="mcpKopyaBtn" data-i18n="rm_cal_copy">Copy address</button>
+        </div>
+      </div>
+      <div class="ai-status" id="mcpDurum"></div>
+      <button type="button" class="btn" id="mcpUretBtn" data-i18n="mcp_uret">Create a connection address</button>
+    </div>
+
     <!-- Geri donusu yok: ayri bir bolumde, kirmizi cerceveli. -->
     <div class="hesap-tehlike">
       <div class="hesap-ad" data-i18n="hesap_sil_baslik">Delete your account</div>
@@ -5541,6 +5560,18 @@ const LANG = {
     rm_ch_browser_note: "For now the notification arrives when you open Shootboard. Sending while Shootboard is closed is the next step.",
     rm_ch_cal: "Your own calendar",
     rm_ch_cal_lead: "Two calendar addresses are published: one for your deadlines, one for your posts. You add them to Google Calendar, your phone or Outlook once. Deadlines carry the reminder; posts just sit on the calendar at their own time.",
+    // MCP erisimi.
+    mcp_baslik: "Connect Claude to your calendar",
+    mcp_not: "Claude can read your calendar and write plans into it directly, instead of you pasting packages by hand. It can add and change entries; it cannot delete anything.",
+    mcp_uyari: "The address below contains your key, so it is a secret: anyone who has it can write to your calendar. Do not share it. You can revoke it here at any time.",
+    mcp_adres_et: "Paste this into claude.ai → Settings → Connectors → Add custom connector. It is shown once.",
+    mcp_uret: "Create a connection address",
+    mcp_uretildi: "Address created. Copy it now — it is not shown again.",
+    mcp_bos: "No connection yet.",
+    mcp_iptal: "Revoke",
+    mcp_iptal_sor: "Revoke this address? Claude stops being able to reach your calendar through it, immediately and for good.",
+    mcp_iptal_oldu: "Revoked. That address no longer works.",
+    mcp_kurulmadi: "The table is not there yet — run sql/39-mcp-erisimi.sql in Supabase first.",
     rm_cal_name_pay: "Shootboard — posts",
     rm_adres_termin: "Deadlines",
     rm_adres_paylasim: "Posts",
@@ -6497,6 +6528,18 @@ const LANG = {
     rm_ch_browser_note: "Şimdilik bildirim, Shootboard'u açtığında geliyor. Shootboard kapalıyken gönderim sonraki adım.",
     rm_ch_cal: "Kendi takvimin",
     rm_ch_cal_lead: "İki takvim adresi yayınlanıyor: biri terminlerin, biri paylaşımların için. Bu adresleri Google Takvim'e, telefonuna ya da Outlook'a bir kez ekliyorsun. Hatırlatmayı terminler taşıyor; paylaşımlar takvimde kendi saatinde duruyor.",
+    // MCP erisimi.
+    mcp_baslik: "Claude'u takvimine bağla",
+    mcp_not: "Claude takvimini okuyabilir ve planları doğrudan içine yazabilir; paketi elle yapıştırman gerekmez. Kayıt ekleyip değiştirebilir, silemez.",
+    mcp_uyari: "Aşağıdaki adres anahtarını içeriyor, yani bir sırdır: eline geçen herkes takvimine yazabilir. Kimseyle paylaşma. İstediğin an buradan iptal edebilirsin.",
+    mcp_adres_et: "Bunu claude.ai → Ayarlar → Connectors → Özel connector ekle altına yapıştır. Bir kez gösteriliyor.",
+    mcp_uret: "Bağlantı adresi oluştur",
+    mcp_uretildi: "Adres oluştu. Şimdi kopyala — bir daha gösterilmiyor.",
+    mcp_bos: "Henüz bağlantı yok.",
+    mcp_iptal: "İptal et",
+    mcp_iptal_sor: "Bu adres iptal edilsin mi? Claude bu adresten takvimine bir daha ulaşamaz — anında ve kalıcı olarak.",
+    mcp_iptal_oldu: "İptal edildi. O adres artık çalışmıyor.",
+    mcp_kurulmadi: "Tablo henüz yok — önce Supabase'te sql/39-mcp-erisimi.sql betigini çalıştır.",
     rm_cal_name_pay: "Shootboard — paylaşımlar",
     rm_adres_termin: "Terminler",
     rm_adres_paylasim: "Paylaşımlar",
@@ -12816,6 +12859,9 @@ let gelenKutusuAcik = false;
 
 function gelenAlinanOku(satir){
   gelenKutusuAcik = !!(satir && satir.prefs && satir.prefs.gelen_kutusu);
+  // MCP erisimi bayragi. Kaynak koda e-posta GOMULMUYOR: bayrak hesabin
+  // kendi ayarlarinda duruyor, Supabase panelinden aciliyor.
+  mcpAcik = !!(satir && satir.prefs && satir.prefs.mcp);
   // Bulutta jeton varsa yerelde olmayanı tamamlıyor; yereldeki daha
   // yeniyse dokunmuyor.
   const uzakPay = satir && satir.prefs && satir.prefs.share;
@@ -19965,7 +20011,114 @@ function hesapPenceresiniAc(){
   bul('hesapOverlay').classList.add('open');
   yedekListesiCiz();
   aiBolumuCiz();
+  mcpBolumuCiz();
 }
+// ===== MCP erisimi ========================================================
+// Claude'u takvime baglayan adres. Anahtar ADRESIN ICINDE tasiniyor cunku
+// claude.ai'in ozel connector penceresinde API anahtari yapistirilacak bir
+// kutu yok -- yalnizca URL ve OAuth var. Tam OAuth sunucusu yazmak bu isin
+// geri kalanindan buyuk oldugu icin secim bu; bedeli, adresin bir SIR
+// olmasi ve ekranin bunu acikca yazmasi.
+//
+// Duz anahtar HIC SAKLANMIYOR: yalnizca SHA-256 ozeti tabloya gidiyor.
+// Kullaniciya bir kez gosteriliyor; kaybederse yenisi uretiliyor.
+let mcpAcik = false;
+const MCP_UC = SUPABASE_URL + '/functions/v1/mcp/';
+
+async function mcpOzet(metin){
+  const buf = await crypto.subtle.digest('SHA-256', new TextEncoder().encode(metin));
+  return Array.from(new Uint8Array(buf), b=> b.toString(16).padStart(2, '0')).join('');
+}
+function mcpAnahtarUret(){
+  // 32 karakter, harf+rakam. Math.random YETMEZ: bu bir kimlik bilgisi,
+  // tahmin edilebilir olmamali.
+  const harf = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789';
+  const ham = new Uint8Array(32);
+  crypto.getRandomValues(ham);
+  return 'shb_' + Array.from(ham, x=> harf[x % harf.length]).join('');
+}
+
+async function mcpBolumuCiz(){
+  const kap = document.getElementById('hesapMcp');
+  if(!kap) return;
+  kap.hidden = !mcpAcik;
+  if(!mcpAcik || !sb || !session) return;
+  const liste = document.getElementById('mcpListe');
+  liste.innerHTML = '';
+  try{
+    const { data, error } = await sb.from('api_keys')
+      .select('id,label,key_prefix,created_at,last_used_at,revoked_at')
+      .is('revoked_at', null).order('created_at', { ascending:false });
+    if(error) throw error;
+    if(!data || !data.length){
+      liste.innerHTML = '<li class="yedek-bos">' + escapeHtml(t('mcp_bos')) + '</li>';
+      return;
+    }
+    liste.innerHTML = data.map(k=>
+      '<li><span class="yedek-ad">' + escapeHtml(k.key_prefix || 'shb_') + '</span>'
+      + '<span class="yedek-tarih" title="' + escapeHtml(k.created_at || '') + '">'
+      + escapeHtml(tarihMetni(k.created_at)) + '</span>'
+      + '<button type="button" class="btn btn-sm" data-mcp-iptal="' + escapeHtml(k.id) + '">'
+      + escapeHtml(t('mcp_iptal')) + '</button></li>').join('');
+    liste.querySelectorAll('[data-mcp-iptal]').forEach(el=>{
+      el.addEventListener('click', ()=> mcpIptal(el.dataset.mcpIptal));
+    });
+  }catch(e){
+    // Tablo yoksa (sql/39 calistirilmadi) sebebi yazilsin: "bir sey oldu"
+    // demek kullaniciyi yapacagi isten habersiz birakir.
+    const m = String((e && e.message) || e);
+    const dr = document.getElementById('mcpDurum');
+    dr.textContent = /relation|does not exist|schema cache/i.test(m) ? t('mcp_kurulmadi') : m;
+    dr.className = 'ai-status hata';
+  }
+}
+
+async function mcpIptal(id){
+  if(!await onayla(t('mcp_iptal_sor'))) return;
+  const dr = document.getElementById('mcpDurum');
+  try{
+    const { error } = await sb.from('api_keys')
+      .update({ revoked_at: new Date().toISOString() }).eq('id', id);
+    if(error) throw error;
+    document.getElementById('mcpYeniSatir').hidden = true;
+    dr.textContent = t('mcp_iptal_oldu'); dr.className = 'ai-status ok';
+    mcpBolumuCiz();
+  }catch(e){ dr.textContent = String((e && e.message) || e); dr.className = 'ai-status hata'; }
+}
+
+document.getElementById('mcpUretBtn').addEventListener('click', async ()=>{
+  const dugme = document.getElementById('mcpUretBtn');
+  const dr = document.getElementById('mcpDurum');
+  if(!sb || !session){ dr.textContent = t('rm_cal_need_login'); dr.className = 'ai-status hata'; return; }
+  dugme.disabled = true;
+  dr.textContent = ''; dr.className = 'ai-status';
+  try{
+    const anahtar = mcpAnahtarUret();
+    const { error } = await sb.from('api_keys').insert({
+      id: 'ak_' + Date.now().toString(36) + '_' + Math.random().toString(36).slice(2, 8),
+      user_id: session.user.id,
+      label: 'MCP',
+      key_hash: await mcpOzet(anahtar),
+      key_prefix: anahtar.slice(0, 12),
+      scopes: ['read', 'write']
+    });
+    if(error) throw error;
+    // Adres BIR KEZ gosteriliyor: duz anahtar hicbir yerde saklanmiyor.
+    document.getElementById('mcpAdres').value = MCP_UC + anahtar;
+    document.getElementById('mcpYeniSatir').hidden = false;
+    dr.textContent = t('mcp_uretildi'); dr.className = 'ai-status ok';
+    track('funnel/mcp-key-created');
+    mcpBolumuCiz();
+  }catch(e){
+    const m = String((e && e.message) || e);
+    dr.textContent = /relation|does not exist|schema cache/i.test(m) ? t('mcp_kurulmadi') : m;
+    dr.className = 'ai-status hata';
+  }
+  dugme.disabled = false;
+});
+document.getElementById('mcpKopyaBtn').addEventListener('click', ()=>
+  takvimAdresiKopyala('mcpAdres', document.getElementById('mcpAdres').value));
+
 document.getElementById('hesapKapat').addEventListener('click', ()=>
   document.getElementById('hesapOverlay').classList.remove('open'));
 document.getElementById('hesapOverlay').addEventListener('click', (e)=>{
