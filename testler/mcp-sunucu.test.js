@@ -489,6 +489,23 @@ async function arac(anahtar, ad, args){
       /Available:/.test(bilinmeyenUc.govde.message || ''),
       String(bilinmeyenUc.govde.message).slice(0,100));
 
+  console.log('[anahtar YOLDA + REST birlikte]');
+  // Tarayicidan denemenin TEK yolu bu: bir adres cubugu Authorization
+  // basligi gonderemez. Bu birlesim once test edilmemisti ve kullanici
+  // "calismiyor" dedigin de once burayi suclamak gerekti -- bosluk
+  // koddaydi degil testteydi, ama ayni sey.
+  const yoldaAnahtar = await ele(new Request(
+    'https://sahte.supabase.co/functions/v1/mcp/' + ANAHTAR_A
+    + '/api/entries/find?file=2026-12-06_story_kopru_k1.mp4', { method:'GET' }));
+  const ya = JSON.parse(await yoldaAnahtar.text());
+  bak('yoldaki anahtarla REST calisiyor (baslik YOK)',
+      ya.ok === true && ya.entries[0].id === 'st_2', JSON.stringify(ya).slice(0,140));
+  // Duz adres bilgi donduruyor: kullanicinin gordugu sey buydu.
+  const duz = await ele(new Request('https://sahte.supabase.co/functions/v1/mcp', { method:'GET' }));
+  const dz = JSON.parse(await duz.text());
+  bak('anahtarsiz duz adres bilgi donduruyor, veri DEGIL',
+      dz.service === 'shootboard-mcp' && !dz.entries && !!dz.hint, JSON.stringify(dz).slice(0,120));
+
   console.log('[slug\'dan bagimsiz]');
   // Fonksiyon adi ne olursa olsun calismali. Supabase'te slug sonradan
   // degistirilemiyor; sabit '/mcp' beklemek, yanlis adla kurulan
