@@ -44,6 +44,18 @@
 -- niyetine bırakılan bir kural, bir gün birinin eklediği tek satırla
 -- bozulur.
 
+-- ══════════════════════════════════════════════════════════════════
+-- NEDEN ÜÇ AYRI begin/commit
+-- ══════════════════════════════════════════════════════════════════
+-- Bu betik önce TEK bir işlemdi ve bir kez şu oldu: sonraki bir
+-- ifade hata verdi, Postgres BÜTÜN işlemi geri aldı, sütunlar da
+-- gitti. Kullanıcı "çalıştırdım" dedi, tablo boştu, hata bambaşka
+-- bir yerde arandı ("column media_name does not exist").
+--
+-- Üç ayrı işlem: biri patlasa ötekiler duruyor ve SQL Editor hangi
+-- bölümün patladığını gösteriyor. Hepsi tekrar çalıştırılabilir.
+
+-- ═══ 1/3 ═══ ALANLAR ══════════════════════════════════════════════
 begin;
 
 -- ── Bölüm 1: alanlar ──────────────────────────────────────────────
@@ -75,6 +87,11 @@ alter table public.calendar_events
   -- sayılmıyor. Bu damga "ne zaman tekrar bak" demek.
   add column if not exists retry_after    timestamptz;
 
+commit;
+
+-- ═══ 2/3 ═══ KISIT VE INDEKSLER ═══════════════════════════════════
+begin;
+
 -- Durum kümesi kısıt olarak yazılıyor: yazım hatası bir kaydı sessizce
 -- görünmez yapmasın (scheduler yalnızca 'pending' arıyor).
 do $$
@@ -97,6 +114,11 @@ create index if not exists calendar_events_yayin_kuyrugu
 create index if not exists calendar_events_media_name_idx
   on public.calendar_events (user_id, media_name)
   where media_name is not null;
+
+commit;
+
+-- ═══ 3/3 ═══ DURUM GECISLERI ══════════════════════════════════════
+begin;
 
 -- ── Bölüm 4 + 8: durum geçişleri ──────────────────────────────────
 --
@@ -241,7 +263,27 @@ revoke all on function public.story_ertele(text, integer, text)   from public, a
 
 commit;
 
--- Kontrol
+-- ═══ KONTROL ══════════════════════════════════════════════════════
+-- ONCE: sutunlar GERCEKTEN var mi? Bos donerse 1/3 blogu patlamis
+-- demektir ve yukaridaki hatayi SQL Editor'da gormussundur.
+select column_name
+  from information_schema.columns
+ where table_schema = 'public' and table_name = 'calendar_events'
+   and column_name in ('auto_publish','media_url','media_bytes','media_mime',
+                       'media_name','publish_at','publish_state','published_at',
+                       'external_id','last_error','attempt_count','idem_key','retry_after')
+ order by column_name;
+-- 13 satir donmeli.
+
+-- SONRA: dort fonksiyon kuruldu mu? 3/3 blogu patlamissa bos doner.
+select routine_name
+  from information_schema.routines
+ where routine_schema = 'public' and routine_name like 'story\_%'
+ order by routine_name;
+-- 4 satir donmeli: story_basarisiz, story_ertele, story_kuyruk_al,
+-- story_yayinlandi
+
+-- Sayilar
 select count(*) filter (where auto_publish)                as otomatik_acik,
        count(*) filter (where publish_state = 'pending')   as bekleyen,
        count(*) filter (where publish_state = 'published') as yayinlanmis,
