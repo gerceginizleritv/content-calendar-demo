@@ -1,0 +1,608 @@
+// OTOMATIK STORY YAYINI — worker.
+//
+// Sartname Bolum 11'deki test sirasi. Tarayici acmiyor: Edge Function
+// Node icinde yukleniyor (Deno ve fetch sahte, gerisi GERCEK kod).
+//
+// SAHTE OLAN NE
+//   · Graph API   -- komut dosyasi: her ucun ne dondurecegi testte
+//   · PostgREST   -- bellekte birkac satir
+//   · Resend      -- giden e-postalar bir diziye dusuyor
+//   · SAAT        -- Date.now() testin kontrolunde. Gercek saatle
+//                    "10 dakikadir asili" gibi bir sey olculemez.
+//
+// SQL fonksiyonlari burada JS olarak yeniden yaziliyor (sql/41 ve
+// sql/42'deki semantikle). Bu bir zayiflik ve boyle biliniyor: SQL'in
+// KENDISI burada olculmuyor, worker'in o fonksiyonlari DOGRU SIRAYLA
+// ve dogru argumanlarla cagirdigi olculuyor. SQL tarafinin kontrolu
+// sql/42'nin sonundaki sorgularda.
+//
+// ══════════════════════════════════════════════════════════════════
+// EN ONEMLI OLCUM: 10. MADDE
+// ══════════════════════════════════════════════════════════════════
+// "Worker'i yayin cagrisinin ortasinda oldur -> cift yayin var mi"
+//
+// Sartname: "10. madde atlanirsa sistem er gec ayni story'yi iki kez
+// atar." Asagida uc ayri coküs bicimi var ve UCUNUN DE olcusu ayni:
+// media_publish cagri sayisi. Cift yayin geri alinamaz.
+const yol = require('path');
+const KOK_DIZIN = yol.join(__dirname, '..');
+let g = 0, k = 0;
+const bak = (ad, ko, ek)=>{ if(ko){ g++; console.log('  ok  '+ad); } else { k++; console.log('  YOK '+ad+(ek?' -> '+ek:'')); } };
+
+const IG = 'ig_17841400000000000';
+const UID = 'user-aaaa';
+const GIZLI = 'cron-gizli-anahtari';
+const TOKEN = 'EAAG' + 'x'.repeat(40);
+
+// ---- saat ------------------------------------------------------------------
+// Worker'in butun zaman kararlari (tavan, butce, asili esigi) Date.now()
+// uzerinden. Gercek saatle olculemezler.
+let SAAT = Date.parse('2026-12-05T12:00:00Z');
+const gercekNow = Date.now;
+Date.now = ()=> SAAT;
+const ilerlet = (ms)=> { SAAT += ms; };
+const su = ()=> new Date(SAAT).toISOString();
+
+// ---- sahte veritabani ------------------------------------------------------
+let satirlar, durumlar, epostalar;
+function bosKayit(ek){
+  return Object.assign({
+    id:'st_1', user_id:UID, type:'story', platform:'instagram', title:'Balıklı story',
+    uploaded:false, deleted_at:null, post_date:'2026-12-05', post_time:'15:00:00',
+    auto_publish:true, publish_state:'pending', publish_at:'2026-12-05T12:00:00Z',
+    published_at:null, external_id:null, last_error:null, attempt_count:0,
+    retry_after:null, publish_ref:null, publish_ref_at:null, publish_called_at:null,
+    media_url:'https://medya.test/2026-12-05_story.mp4', media_mime:'video/mp4',
+    media_bytes:12345678, media_name:'2026-12-05_story.mp4',
+    idem_key:'11111111-1111-1111-1111-111111111111',
+    content:{ timezone:'Europe/Istanbul' }, updated_at: su()
+  }, ek || {});
+}
+function tabloyuKur(ek){
+  satirlar = [ bosKayit(ek) ];
+  durumlar = {};
+  epostalar = [];
+}
+
+// ---- SQL fonksiyonlarinin JS karsiligi --------------------------------------
+const bul = (id)=> satirlar.find(r=> r.id === id);
+const dk = (n)=> n * 60 * 1000;
+
+const SQL = {
+  story_asili_topla({ p_dakika }){
+    let n = 0;
+    for(const r of satirlar){
+      if(r.type === 'story' && r.publish_state === 'in_progress' && !r.deleted_at
+         && Date.parse(r.updated_at) < SAAT - dk(Math.max(p_dakika, 1))){
+        r.publish_state = 'pending'; r.updated_at = su(); n++;
+      }
+    }
+    return n;
+  },
+  story_kuyruk_al({ p_limit }){
+    const aday = satirlar.filter(r=>
+      r.type === 'story' && r.auto_publish === true && r.publish_state === 'pending'
+      && !r.deleted_at && r.publish_at && Date.parse(r.publish_at) <= SAAT
+      && (!r.retry_after || Date.parse(r.retry_after) <= SAAT)
+      && r.attempt_count < 3
+    ).sort((a,b)=> Date.parse(a.publish_at) - Date.parse(b.publish_at)).slice(0, p_limit);
+    return aday.map(r=>{
+      r.publish_state = 'in_progress'; r.attempt_count += 1; r.updated_at = su();
+      return { id:r.id, user_id:r.user_id, media_url:r.media_url, media_bytes:r.media_bytes,
+        media_mime:r.media_mime, publish_at:r.publish_at, attempt_count:r.attempt_count,
+        idem_key:r.idem_key, external_id:r.external_id, title:r.title, content:r.content,
+        publish_ref:r.publish_ref, publish_ref_at:r.publish_ref_at,
+        publish_called_at:r.publish_called_at };
+    });
+  },
+  story_iz_konteyner({ p_id, p_ref }){
+    const r = bul(p_id); if(!r || r.publish_state !== 'in_progress') return false;
+    r.publish_ref = p_ref; r.publish_ref_at = su(); r.publish_called_at = null; r.updated_at = su();
+    return true;
+  },
+  story_iz_yayin_cagrisi({ p_id }){
+    const r = bul(p_id); if(!r || r.publish_state !== 'in_progress') return false;
+    r.publish_called_at = su(); r.updated_at = su(); return true;
+  },
+  story_yayinlandi({ p_id, p_external_id }){
+    const r = bul(p_id); if(!r || r.publish_state !== 'in_progress') return false;
+    r.publish_state = 'published'; r.published_at = su();
+    r.external_id = r.external_id || p_external_id;
+    r.last_error = null; r.retry_after = null;
+    r.publish_ref = null; r.publish_ref_at = null; r.publish_called_at = null;
+    r.updated_at = su(); return true;
+  },
+  story_basarisiz({ p_id, p_hata, p_kalici }){
+    const r = bul(p_id); if(!r || r.publish_state !== 'in_progress') return false;
+    const son = !!p_kalici || r.attempt_count >= 3;
+    r.publish_state = son ? 'failed' : 'pending';
+    r.last_error = String(p_hata || '').slice(0, 2000);
+    r.retry_after = p_kalici ? null
+      : new Date(SAAT + (r.attempt_count === 1 ? dk(1) : r.attempt_count === 2 ? dk(5) : dk(15))).toISOString();
+    if(son){ r.publish_ref = null; r.publish_ref_at = null; r.publish_called_at = null; }
+    r.updated_at = su(); return true;
+  },
+  story_ertele({ p_id, p_dakika, p_sebep }){
+    const r = bul(p_id); if(!r || r.publish_state !== 'in_progress') return false;
+    r.publish_state = 'pending';
+    r.attempt_count = Math.max(r.attempt_count - 1, 0);
+    r.retry_after = new Date(SAAT + dk(Math.max(p_dakika, 1))).toISOString();
+    r.last_error = String(p_sebep || '').slice(0, 2000);
+    r.updated_at = su(); return true;
+  }
+};
+
+// ---- Graph komut dosyasi ----------------------------------------------------
+// Her test bunu kendi senaryosuna gore kuruyor.
+let META, cagrilar;
+function metaKur(ek){
+  cagrilar = { media:0, publish:0, durum:0, kota:0, stories:0, debug:0 };
+  META = Object.assign({
+    token: { data:{ is_valid:true, expires_at:0 } },
+    kota:  { data:[{ config:{ quota_total:25, quota_duration:86400 }, quota_usage:3 }] },
+    // Yoklama sirasi: her cagrida bir sonraki. Bitince sonuncusu tekrar.
+    durumSirasi: ['FINISHED'],
+    storyler: [],           // /stories'in dondurecegi yayindaki story'ler
+    mediaHatasi: null,      // konteyner yaratmada hata
+    yayinDavranisi: 'ok'    // 'ok' | 'kaybolan-yanit' | {kod, altKod, mesaj}
+  }, ek || {});
+}
+const grafHata = (kod, mesaj, altKod)=> ({
+  __http: 400,
+  error: { message:mesaj, type:'OAuthException', code:kod, error_subcode: altKod || undefined }
+});
+
+function grafCevap(adres, yontem, gonderi){
+  const u = new URL(adres);
+  const p = u.pathname.replace('/v21.0', '');
+
+  if(p === '/debug_token'){ cagrilar.debug++; return META.token; }
+  if(p === `/${IG}/content_publishing_limit`){ cagrilar.kota++; return META.kota; }
+  if(p === `/${IG}/stories`){
+    cagrilar.stories++;
+    if(META.storiesHatasi) return META.storiesHatasi;
+    return { data: META.storyler };
+  }
+  if(p === `/${IG}/media` && yontem === 'POST'){
+    cagrilar.media++;
+    if(META.mediaHatasi) return META.mediaHatasi;
+    return { id: 'cont_' + cagrilar.media };
+  }
+  if(p === `/${IG}/media_publish` && yontem === 'POST'){
+    cagrilar.publish++;
+    const d = META.yayinDavranisi;
+    if(d === 'kaybolan-yanit'){
+      // ⚠ COKUS ANI. Cagri Meta'ya ULASTI, story CIKTI -- ama yanit
+      // Shootboard'a donmedi. Sistemin en tehlikeli hali: kayit
+      // "yayinlanmadi" gorunuyor, Instagram'da story duruyor.
+      META.storyler = META.storyler.concat([{ id:'media_cokme', timestamp: su() }]);
+      throw new Error('baglanti koptu');
+    }
+    if(d && typeof d === 'object') return grafHata(d.kod, d.mesaj, d.altKod);
+    META.storyler = META.storyler.concat([{ id:'media_' + cagrilar.publish, timestamp: su() }]);
+    return { id: 'media_' + cagrilar.publish };
+  }
+  // /{konteyner}?fields=status_code,status
+  if(/^\/cont_\d+$/.test(p)){
+    const i = Math.min(cagrilar.durum, META.durumSirasi.length - 1);
+    cagrilar.durum++;
+    const kod = META.durumSirasi[i];
+    // Yoklama gercek zamanda beklemiyor; saati BURADA ilerletiyoruz ki
+    // tavan/butce hesaplari olculebilsin.
+    ilerlet(5000);
+    return { status_code: kod, status: kod === 'ERROR' ? 'Medya formati desteklenmiyor' : kod };
+  }
+  return grafHata(100, 'bilinmeyen uc: ' + p);
+}
+
+// ---- sahte fetch ------------------------------------------------------------
+const yanit = (govde, durum)=> Promise.resolve({
+  ok: durum < 400, status: durum,
+  text: ()=> Promise.resolve(typeof govde === 'string' ? govde : JSON.stringify(govde)),
+  json: ()=> Promise.resolve(govde)
+});
+
+function sahteFetch(adres, secenek){
+  const url = String(adres);
+  const yontem = (secenek && secenek.method) || 'GET';
+
+  if(url.indexOf('https://graf.test') === 0){
+    let c;
+    try { c = grafCevap(url, yontem, secenek && secenek.body); }
+    catch(e){ return Promise.reject(e); }           // ag kopmasi
+    const durum = c && c.__http ? c.__http : 200;
+    return yanit(c, durum);
+  }
+
+  if(url.indexOf('/rest/v1/rpc/') > -1){
+    const ad = url.split('/rest/v1/rpc/')[1];
+    const args = JSON.parse(secenek.body || '{}');
+    if(!SQL[ad]) return yanit({ message:'fonksiyon yok: ' + ad }, 404);
+    return yanit(SQL[ad](args), 200);
+  }
+  if(url.indexOf('/rest/v1/sistem_durumu') > -1){
+    if(yontem === 'POST'){
+      for(const s of JSON.parse(secenek.body)) durumlar[s.anahtar] = s.veri;
+      return yanit([], 201);
+    }
+    const es = /anahtar=eq\.([^&]+)/.exec(url);
+    const ad = es ? decodeURIComponent(es[1]) : '';
+    return yanit(durumlar[ad] ? [{ veri: durumlar[ad] }] : [], 200);
+  }
+  if(url.indexOf('/rest/v1/calendar_events') > -1){
+    return yanit(satirlar.filter(r=> r.auto_publish).map(r=> ({ user_id:r.user_id })), 200);
+  }
+  if(url.indexOf('/auth/v1/admin/users/') > -1){
+    return yanit({ email:'bostancioglum@example.test' }, 200);
+  }
+  if(url.indexOf('api.resend.com') > -1){
+    epostalar.push(JSON.parse(secenek.body));
+    return yanit({ id:'mail_1' }, 200);
+  }
+  return yanit({ message:'beklenmeyen adres: ' + url }, 500);
+}
+
+// ---- worker'i yukle ---------------------------------------------------------
+const ORTAM = {
+  SUPABASE_URL: 'https://sahte.supabase.co',
+  SUPABASE_SERVICE_ROLE_KEY: 'servis-anahtari',
+  STORY_WORKER_SECRET: GIZLI,
+  META_PAGE_TOKEN: TOKEN,
+  META_IG_USER_ID: IG,
+  META_APP_ID: '1234567890',
+  META_APP_SECRET: 'app-gizli-dizgesi-uzun',
+  RESEND_API_KEY: 're_test',
+  GRAF_TABANI: 'https://graf.test/v21.0',
+  STORY_YOKLAMA_MS: '1',
+  // Butce cagri aninda okunuyor; testler bunu degistirerek hem tavan
+  // hem butce yolunu ayri ayri olcebiliyor.
+  STORY_BUTCE_MS: '600000'
+};
+let ele;
+async function workeriYukle(){
+  globalThis.Deno = { env:{ get:(a)=> ORTAM[a] ?? '' }, serve:(h)=>{ ele = h; } };
+  globalThis.fetch = sahteFetch;
+  await import(yol.join(KOK_DIZIN, 'supabase', 'functions', 'story-yayin', 'index.ts'));
+}
+async function turAt(gizli){
+  const r = await ele(new Request('https://sahte.supabase.co/functions/v1/story-yayin', {
+    method:'POST', headers:{ 'x-webhook-secret': gizli === undefined ? GIZLI : gizli }
+  }));
+  const metin = await r.text();
+  return { durum:r.status, govde: metin ? JSON.parse(metin) : null };
+}
+
+(async () => {
+  await workeriYukle();
+  bak('fonksiyon Deno.serve ile ayağa kalktı', typeof ele === 'function');
+
+  // ----------------------------------------------------------- 0. kapı
+  console.log('[kapı]');
+  {
+    const r = await ele(new Request('https://sahte.supabase.co/functions/v1/story-yayin'));
+    const b = JSON.parse(await r.text());
+    // Dağıtımın gerçekten yerine geçtiği başka türlü anlaşılmıyor: bir
+    // kez eski sürüm "doğrulandı" sanılıp sorun günlerce yanlış yerde
+    // arandı. Sürüm ve uçlar o yüzden GET'te.
+    bak('GET sürümü söylüyor', typeof b.surum === 'string' && b.surum.length > 0, JSON.stringify(b));
+    bak('GET uçları sayıyor', Array.isArray(b.uclar) && b.uclar.length === 2);
+    bak('GET yapılandırmayı VAR/YOK olarak söylüyor, değerleri değil',
+      b.yapilandirma.page_token === true && JSON.stringify(b).indexOf(TOKEN) === -1);
+  }
+  {
+    tabloyuKur(); metaKur();
+    const r = await turAt('yanlis-anahtar');
+    bak('gizli anahtar uyuşmazsa 401', r.durum === 401, String(r.durum));
+    bak('yanlış anahtarla kuyruğa DOKUNULMUYOR', satirlar[0].publish_state === 'pending');
+  }
+
+  // --------------------------------------------- 2. fotoğraf story'si
+  console.log('[2 · fotoğraf story]');
+  {
+    tabloyuKur({ media_mime:'image/jpeg', media_url:'https://medya.test/a.jpg' });
+    metaKur();
+    const r = await turAt();
+    bak('yayınlandı', satirlar[0].publish_state === 'published', satirlar[0].last_error || '');
+    bak('externalId yazıldı', satirlar[0].external_id === 'media_1', String(satirlar[0].external_id));
+    bak('fotoğrafta image_url gitti, video_url değil', cagrilar.media === 1 && cagrilar.publish === 1);
+    bak('başarıda iz temizlendi',
+      satirlar[0].publish_ref === null && satirlar[0].publish_called_at === null);
+    bak('⛔ uploaded’a DOKUNULMADI', satirlar[0].uploaded === false);
+  }
+
+  // ------------------------------------------------- 3. video story'si
+  console.log('[3 · video story]');
+  {
+    tabloyuKur(); metaKur({ durumSirasi:['IN_PROGRESS','IN_PROGRESS','FINISHED'] });
+    await turAt();
+    bak('hazır olana kadar yoklandı', cagrilar.durum === 3, String(cagrilar.durum));
+    bak('hazır olmadan YAYINLANMADI — yoklama bitince yayın',
+      satirlar[0].publish_state === 'published' && cagrilar.publish === 1);
+  }
+
+  // ------------------------------------------- 5. zamanlanmış kayıt
+  console.log('[5 · zamanlama]');
+  {
+    tabloyuKur({ publish_at:'2026-12-05T12:05:00Z' });   // 5 dk sonrası
+    metaKur();
+    await turAt();
+    bak('zamanı gelmemiş kayıt ALINMIYOR',
+      satirlar[0].publish_state === 'pending' && cagrilar.media === 0);
+    ilerlet(dk(6));
+    await turAt();
+    bak('zamanı gelince yayınlanıyor', satirlar[0].publish_state === 'published');
+  }
+  {
+    tabloyuKur({ auto_publish:false }); metaKur();
+    await turAt();
+    bak('otomatik yayın kapalıysa DOKUNULMUYOR',
+      satirlar[0].publish_state === 'pending' && cagrilar.media === 0);
+  }
+
+  // ------------------------------------------ 6. aynı kayıt iki kez
+  console.log('[6 · tekrar]');
+  {
+    tabloyuKur(); metaKur();
+    await turAt();
+    const ilk = cagrilar.publish;
+    await turAt();
+    bak('yayınlanmış kayıt bir daha kuyruğa girmiyor', cagrilar.publish === ilk && ilk === 1);
+  }
+  {
+    // Katman 2: externalId dolu ise hiçbir şey yapılmaz.
+    tabloyuKur({ external_id:'media_onceki' }); metaKur();
+    await turAt();
+    bak('externalId doluysa YAYIN ÇAĞRISI YAPILMIYOR', cagrilar.publish === 0);
+    bak('externalId doluysa kayıt yayınlanmış sayılıyor', satirlar[0].publish_state === 'published');
+    bak('eski externalId korunuyor', satirlar[0].external_id === 'media_onceki');
+  }
+
+  // --------------------------------------------- 7. bozuk mediaUrl
+  console.log('[7 · bozuk medya]');
+  {
+    tabloyuKur(); metaKur({ mediaHatasi: grafHata(100, 'The video file you uploaded could not be fetched') });
+    await turAt();
+    bak('#100 kalıcı: tek denemede failed', satirlar[0].publish_state === 'failed',
+      satirlar[0].publish_state + ' / ' + satirlar[0].attempt_count);
+    bak('bildirim gitti', epostalar.length === 1, JSON.stringify(epostalar));
+    bak('bildirimde Meta’nın hata kodu var',
+      epostalar.length > 0 && epostalar[0].text.indexOf('#100') > -1);
+    bak('kalıcı hatada tekrar denenmiyor (retry_after yok)', satirlar[0].retry_after === null);
+  }
+  {
+    tabloyuKur(); metaKur({ durumSirasi:['ERROR'] });
+    await turAt();
+    bak('konteyner ERROR → medya reddi, kalıcı', satirlar[0].publish_state === 'failed');
+    bak('Meta’nın status metni lastError’a yazıldı',
+      String(satirlar[0].last_error).indexOf('desteklenmiyor') > -1, satirlar[0].last_error);
+  }
+  {
+    tabloyuKur({ media_url:null }); metaKur();
+    await turAt();
+    bak('medya bağlı değilse Meta’ya hiç gidilmiyor',
+      cagrilar.media === 0 && satirlar[0].publish_state === 'failed');
+  }
+  {
+    // Geçici hata: 3 deneme, 1dk → 5dk → 15dk.
+    tabloyuKur(); metaKur({ yayinDavranisi:{ kod:2, mesaj:'An unexpected error has occurred' } });
+    await turAt();
+    bak('#2 geçici: pending’e dönüyor', satirlar[0].publish_state === 'pending');
+    bak('1. denemeden sonra 1 dakika bekliyor',
+      Date.parse(satirlar[0].retry_after) - SAAT === dk(1), satirlar[0].retry_after);
+    bak('geçici hatada HENÜZ bildirim yok', epostalar.length === 0);
+    ilerlet(dk(2)); await turAt();
+    bak('2. denemeden sonra 5 dakika', Date.parse(satirlar[0].retry_after) - SAAT === dk(5));
+    ilerlet(dk(6)); await turAt();
+    bak('3 denemede failed', satirlar[0].publish_state === 'failed', String(satirlar[0].attempt_count));
+    bak('failed olunca bildirim gidiyor', epostalar.length === 1);
+  }
+
+  // ------------------------------------------------- 8. token ölü
+  console.log('[8 · token]');
+  {
+    tabloyuKur(); metaKur({ token:{ data:{ is_valid:false, error:{ message:'Session has expired' } } } });
+    const r = await turAt();
+    bak('token geçersizse tur durakladı', r.govde.durakladi === 'token', JSON.stringify(r.govde));
+    bak('KUYRUK HİÇ ALINMADI — kayıt pending kaldı', satirlar[0].publish_state === 'pending');
+    bak('deneme hakkı harcanmadı', satirlar[0].attempt_count === 0);
+    bak('kayıt failed YAPILMADI', satirlar[0].publish_state !== 'failed');
+    bak('Meta’ya yayın çağrısı gitmedi', cagrilar.media === 0 && cagrilar.publish === 0);
+    bak('kullanıcı uyarıldı', epostalar.length === 1, JSON.stringify(epostalar.map(e=> e.subject)));
+    bak('uyarıda token’ın kendisi YOK',
+      epostalar.length > 0 && JSON.stringify(epostalar[0]).indexOf(TOKEN) === -1);
+    await turAt();
+    bak('aynı uyarı gün içinde tekrar gitmiyor', epostalar.length === 1);
+    bak('token kontrolü 6 saatte bir: ikinci turda tekrar sorulmadı', cagrilar.debug === 1);
+  }
+  {
+    tabloyuKur();
+    metaKur({ token:{ data:{ is_valid:true, expires_at: Math.floor((SAAT + dk(60*24*3)) / 1000) } } });
+    await turAt();
+    bak('süre 7 günden yakınsa uyarı gidiyor', epostalar.length === 1,
+      JSON.stringify(epostalar.map(e=> e.subject)));
+    bak('uyarıya rağmen yayın SÜRÜYOR', satirlar[0].publish_state === 'published');
+  }
+
+  // --------------------------------------------------- 9. kota
+  console.log('[9 · kota]');
+  {
+    tabloyuKur();
+    metaKur({ kota:{ data:[{ config:{ quota_total:25, quota_duration:86400 }, quota_usage:24 }] } });
+    await turAt();
+    bak('kota doluysa yayınlanmıyor', cagrilar.publish === 0);
+    bak('kota doluysa pending kalıyor', satirlar[0].publish_state === 'pending');
+    // Sartname Bolum 7: "attemptCount ARTIRILMAZ (bu bir hata degil,
+    // bir bekleme)". Uc kez kota dolu olan kayit denemelerini tuketip
+    // failed olmamali.
+    bak('DENEME HAKKI HARCANMADI', satirlar[0].attempt_count === 0, String(satirlar[0].attempt_count));
+    bak('bir saat sonraya ertelendi', Date.parse(satirlar[0].retry_after) - SAAT === dk(60));
+    bak('kota ertelemesi bildirim ÜRETMİYOR', epostalar.length === 0);
+  }
+  {
+    tabloyuKur(); metaKur({ yayinDavranisi:{ kod:4, mesaj:'Application request limit reached' } });
+    await turAt();
+    bak('#4 hız sınırı: erteleme, hata değil',
+      satirlar[0].publish_state === 'pending' && satirlar[0].attempt_count === 0);
+  }
+  {
+    // Kota ucu okunamadi diye 24 saatlik bir story kacirilmiyor.
+    tabloyuKur(); metaKur({ kota: grafHata(2, 'temporary') });
+    await turAt();
+    bak('kota okunamazsa yayına devam ediliyor', satirlar[0].publish_state === 'published');
+  }
+
+  // ══════════════════════════════════════════════════════════════
+  // 10. WORKER'I YAYIN ÇAĞRISININ ORTASINDA ÖLDÜR
+  // ══════════════════════════════════════════════════════════════
+  console.log('[10 · çöküş — çift yayın]');
+  {
+    // (a) Cagri Meta'ya ULASTI, story CIKTI, yanit KAYBOLDU.
+    tabloyuKur(); metaKur({ yayinDavranisi:'kaybolan-yanit' });
+    await turAt();
+    bak('yanıt kaybolunca kayıt pending’e döndü', satirlar[0].publish_state === 'pending');
+    bak('çöküş izi DURUYOR', !!satirlar[0].publish_ref && !!satirlar[0].publish_called_at);
+    const ilkYayin = cagrilar.publish;
+
+    META.yayinDavranisi = 'ok';
+    ilerlet(dk(2));
+    await turAt();
+    bak('kurtarmada Instagram’a soruldu', cagrilar.stories === 1);
+    bak('★ İKİNCİ KEZ YAYINLANMADI', cagrilar.publish === ilkYayin && ilkYayin === 1,
+      'publish çağrısı: ' + cagrilar.publish);
+    bak('çıkmış story kayda bağlandı', satirlar[0].publish_state === 'published'
+      && satirlar[0].external_id === 'media_cokme', String(satirlar[0].external_id));
+    bak('Instagram’da tek story var', META.storyler.length === 1);
+  }
+  {
+    // (b) Worker gercekten OLDU: kayit 'in_progress' kaldi. Bu hal
+    // sql/42'deki story_asili_topla olmadan HIC islenmez -- kuyruk
+    // sorgusu yalnizca 'pending' ariyor.
+    tabloyuKur({
+      publish_state:'in_progress', attempt_count:1,
+      publish_ref:'cont_1', publish_ref_at: su(), publish_called_at: su(),
+      updated_at: new Date(SAAT - dk(11)).toISOString()
+    });
+    metaKur({ storyler:[{ id:'media_oldurulen', timestamp: su() }] });
+    await turAt();
+    bak('asılı kalan kayıt kuyruğa geri alındı', satirlar[0].publish_state === 'published',
+      satirlar[0].publish_state);
+    bak('★ öldürülen worker’ın story’si TEKRAR ATILMADI', cagrilar.publish === 0,
+      'publish çağrısı: ' + cagrilar.publish);
+    bak('çıkan story’nin kimliği kayda yazıldı', satirlar[0].external_id === 'media_oldurulen');
+  }
+  {
+    // (c) Cagri yapildi ama Meta'ya HIC ULASMADI: /stories bos.
+    // Burada tekrar yayinlamak DOGRU -- yoksa story hic cikmaz.
+    tabloyuKur({
+      publish_state:'in_progress', attempt_count:1,
+      publish_ref:'cont_1', publish_ref_at: su(), publish_called_at: su(),
+      updated_at: new Date(SAAT - dk(11)).toISOString()
+    });
+    metaKur({ storyler:[] });
+    await turAt();
+    bak('çıkmadığı anlaşılırsa yayın TEKRARLANIYOR', cagrilar.publish === 1);
+    bak('aynı konteyner kullanıldı, yenisi yaratılmadı', cagrilar.media === 0);
+    bak('sonunda yayınlandı', satirlar[0].publish_state === 'published');
+  }
+  {
+    // (d) Instagram'a SORULAMIYOR. Bilmemek, ikinci kez atmaktan iyidir.
+    tabloyuKur({
+      publish_state:'in_progress', attempt_count:1,
+      publish_ref:'cont_1', publish_ref_at: su(), publish_called_at: su(),
+      updated_at: new Date(SAAT - dk(11)).toISOString()
+    });
+    metaKur({ storiesHatasi: grafHata(2, 'temporary') });
+    await turAt();
+    bak('★ sonuç bilinmiyorsa YAYINLANMIYOR', cagrilar.publish === 0);
+    bak('beklemeye alındı', satirlar[0].publish_state === 'pending'
+      && Date.parse(satirlar[0].retry_after) - SAAT === dk(5));
+    bak('iz korundu — bir sonraki tur yine soracak', !!satirlar[0].publish_called_at);
+  }
+  {
+    // (e) Konteyner yaratildi ama yayin cagrisi HIC yapilmadi.
+    // Burada Instagram'a sormaya gerek yok: hicbir sey cikmis olamaz.
+    tabloyuKur({
+      publish_state:'in_progress', attempt_count:1,
+      publish_ref:'cont_1', publish_ref_at: su(), publish_called_at: null,
+      updated_at: new Date(SAAT - dk(11)).toISOString()
+    });
+    metaKur();
+    await turAt();
+    bak('yayın çağrısı yapılmamışsa Instagram’a SORULMUYOR', cagrilar.stories === 0);
+    bak('aynı konteynerden devam edildi', cagrilar.media === 0 && cagrilar.publish === 1);
+  }
+  {
+    // İz SIRASI: yayın çağrısından ÖNCE yazılmazsa üçüncü katman hiç
+    // çalışmaz. Ölçü: publish çağrısı geldiğinde iz satırda olmalı.
+    tabloyuKur(); metaKur();
+    let izVarMiydi = null;
+    const eskiYayin = META.yayinDavranisi;
+    META.yayinDavranisi = 'ok';
+    const asilFetch = globalThis.fetch;
+    globalThis.fetch = (a, s)=>{
+      if(String(a).indexOf('/media_publish') > -1 && izVarMiydi === null){
+        izVarMiydi = !!bul('st_1').publish_called_at;
+      }
+      return asilFetch(a, s);
+    };
+    await turAt();
+    globalThis.fetch = asilFetch; META.yayinDavranisi = eskiYayin;
+    bak('★ iz, yayın çağrısından ÖNCE yazılıyor', izVarMiydi === true, String(izVarMiydi));
+  }
+
+  // ------------------------------------------- konteyner tavanı
+  console.log('[tavan]');
+  {
+    // Bolum 5: "120 saniye sonra basarisiz say. Sonsuz dongu yazma."
+    // Yoklamanin her cagrisi saati 5 sn ilerletiyor.
+    tabloyuKur(); metaKur({ durumSirasi:['IN_PROGRESS'] });
+    await turAt();
+    bak('120 saniyede hazır olmayan konteyner bırakılıyor',
+      satirlar[0].publish_state === 'pending' && cagrilar.publish === 0);
+    bak('sonsuz döngü yok: yoklama sayısı sınırlı', cagrilar.durum <= 26, String(cagrilar.durum));
+    bak('sebebi kayda yazıldı', String(satirlar[0].last_error).indexOf('120') > -1, satirlar[0].last_error);
+    // İZ TEMİZLENMEZSE tekrar denemeler anlamsızlaşır: 2. deneme aynı
+    // konteynerle başlar, yaşı zaten tavanı aşmıştır, anında düşer.
+    // Üç deneme birkaç dakikada tükenir ve kullanıcı gerçek bir tekrar
+    // denemesi hiç görmez.
+    bak('★ tavan dolunca iz temizlendi — sonraki deneme yeni konteyner yapacak',
+      satirlar[0].publish_ref === null, String(satirlar[0].publish_ref));
+    const oncekiMedya = cagrilar.media;
+    META.durumSirasi = ['FINISHED'];
+    ilerlet(dk(2));
+    await turAt();
+    bak('2. deneme gerçekten yeni konteyner yarattı ve yayınladı',
+      cagrilar.media === oncekiMedya + 1 && satirlar[0].publish_state === 'published');
+  }
+  {
+    tabloyuKur(); metaKur({ durumSirasi:['EXPIRED'] });
+    await turAt();
+    bak('düşen konteyner baştan denenecek',
+      satirlar[0].publish_state === 'pending' && satirlar[0].publish_ref === null);
+  }
+  {
+    // TUR BUTCESI tavandan once dolarsa: bu bir hata DEGIL. Kayit
+    // ertelenir, deneme hakki geri verilir, iz DURUR ve bir sonraki
+    // tur ayni konteyneri kaldigi yerden yoklar -- tavan da kaldigi
+    // yerden sayar.
+    tabloyuKur(); metaKur({ durumSirasi:['IN_PROGRESS'] });
+    ORTAM.STORY_BUTCE_MS = '30000';
+    const r = await turAt();
+    ORTAM.STORY_BUTCE_MS = '600000';
+    bak('tur bütçesi dolunca ertelendi', r.govde.sonuc['butce-bitti'] === 1, JSON.stringify(r.govde));
+    bak('bütçe bitişi HATA sayılmıyor: deneme hakkı geri verildi',
+      satirlar[0].attempt_count === 0, String(satirlar[0].attempt_count));
+    bak('iz DURUYOR — sonraki tur aynı konteynerden devam edecek',
+      satirlar[0].publish_ref === 'cont_1', String(satirlar[0].publish_ref));
+    const oncekiMedya = cagrilar.media;
+    META.durumSirasi = ['FINISHED'];
+    ilerlet(dk(1));
+    await turAt();
+    bak('sonraki turda yeni konteyner YARATILMADI', cagrilar.media === oncekiMedya);
+    bak('aynı konteynerle yayınlandı', satirlar[0].publish_state === 'published');
+  }
+
+  Date.now = gercekNow;
+  console.log('\n' + g + ' gecti, ' + k + ' kaldi');
+  process.exit(k ? 1 : 0);
+})().catch(e=>{ Date.now = gercekNow; console.error(e); process.exit(1); });
