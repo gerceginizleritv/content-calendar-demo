@@ -1892,35 +1892,17 @@ function yayinDisari(r: any) {
   };
 }
 
-// Kaydın kendi saat dilimindeki tarih+saati UTC'ye çeviriyor.
-// ŞARTNAMEDEN SAPMA (bilerek): şartname "Türkiye sabit UTC+3, DST yazma"
-// diyor. Shootboard kayıtları kendi saat dilimini taşıyor
-// (content.timezone) ve kullanıcıları yalnızca Türkiye'de değil; sabit
-// +3 yazmak başka dilimdeki her kaydı yanlış saate koyardı. Dönüşüm
-// kaydın KENDİ diliminden yapılıyor -- paylaşım takvimi beslemesinde de
-// aynısı yapılıyor ve orada yaz saati testle ölçülüyor.
-function yayinAniHesapla(tarih: string, saat: string, tz: string): string | null {
-  if (!tarihGecerli(tarih)) return null;
-  const [y, ay, g] = tarih.split('-').map(Number);
-  const [ss, dd] = String(saat || '00:00').split(':').map(Number);
-  const tahmin = Date.UTC(y, ay - 1, g, ss || 0, dd || 0, 0);
-  const ofset = (an: Date): number => {
-    try {
-      const b = new Intl.DateTimeFormat('en-US', { timeZone: tz || 'UTC', hour12: false,
-        year: 'numeric', month: '2-digit', day: '2-digit',
-        hour: '2-digit', minute: '2-digit', second: '2-digit' });
-      const o: any = {};
-      b.formatToParts(an).forEach(x => { if (x.type !== 'literal') o[x.type] = x.value; });
-      const gibi = Date.UTC(+o.year, +o.month - 1, +o.day, (+o.hour) % 24, +o.minute, +o.second);
-      return Math.round((gibi - an.getTime()) / 60000);
-    } catch { return 0; }
-  };
-  const o1 = ofset(new Date(tahmin));
-  let an = new Date(tahmin - o1 * 60000);
-  const o2 = ofset(an);
-  if (o2 !== o1) an = new Date(tahmin - o2 * 60000);
-  return isNaN(an.getTime()) ? null : an.toISOString();
-}
+// publish_at ARTIK BURADA HESAPLANMIYOR.
+//
+// Hesap sql/45'teki veritabani tetikleyicisine tasindi. Sebebi iki
+// hesabin sessizce ayrismasiydi: burasi saat dilimi bos oldugunda
+// 'UTC' variyordu, uygulama tarafi Europe/Istanbul. Ayni kayit, kimin
+// yazdigina gore uc saat kayabiliyordu.
+//
+// Tetikleyici KIMIN yazdigini umursamiyor -- uygulama, MCP, PC
+// yukleyicisi, hangisi satiri degistirirse degistirsin publish_at
+// tarih/saat/dilimle uyumlu kaliyor. Sartname Bolum 4'un istedigi
+// "donusum TEK BIR YERDE" tam olarak bu.
 
 // GET /api/entries/find?file=2026-10-05_story_konu_k1.mp4
 // Once tam dosya adi, sonra adin icindeki tarihteki story kayitlari.
@@ -1986,11 +1968,9 @@ async function apiKaydiYama(uid: string, id: string, govde: any) {
 
   if (hatalar.length) return { durum: 422, govde: { ok: false, error: hatalar[0], details: hatalar } };
 
-  // publish_at kaydin KENDI tarih/saat/diliminden tureiyor. Cagiranin
-  // gonderdigi bir deger kabul edilmiyor: donusum TEK BIR YERDE olsun.
-  const c = (satir.content && typeof satir.content === 'object') ? satir.content : {};
-  const an = yayinAniHesapla(satir.post_date, (satir.post_time || '').slice(0, 5), c.timezone || 'UTC');
-  if (an) yama.publish_at = an;
+  // publish_at yamaya GIRMIYOR: onu sql/45'teki tetikleyici yaziyor
+  // (yukaridaki nota bak). Buradan gonderilen bir deger ikinci bir
+  // dogruluk kaynagi olurdu.
 
   // ⛔ uploaded YAMAYA GIRMIYOR ve girmeyecek. O alan kullanicinin kendi
   // isareti; bu uc otomasyonun parcasi. Sartname Bolum 1.
@@ -2001,7 +1981,17 @@ async function apiKaydiYama(uid: string, id: string, govde: any) {
   const { veri: sonra } = await rest(
     `/calendar_events?id=eq.${encodeURIComponent(id)}&user_id=eq.${uid}&select=*&limit=1`);
   const yeni = Array.isArray(sonra) && sonra[0];
-  return { durum: 200, govde: { ok: true, entry: yeni ? yayinDisari(yeni) : null } };
+  const cikti = yeni ? yayinDisari(yeni) : null;
+  // publish_at'i tetikleyici yaziyor. Tarih ve saat varken hala bossa,
+  // sql/45 calistirilmamis demektir ve o kayit ASLA yayinlanmaz --
+  // kuyruk publish_at null olani hic almiyor. Sessiz kalmasin: bu
+  // cevabi PC yukleyicisi ekrana basiyor.
+  if (yeni && !yeni.publish_at && yeni.post_date && yeni.post_time && cikti) {
+    (cikti as any).warning =
+      'publishAt is empty, so this entry will never publish. The database trigger that fills it ' +
+      'is missing — run sql/45-yayin-saati-senkron.sql.';
+  }
+  return { durum: 200, govde: { ok: true, entry: cikti } };
 }
 
 // ---- MCP protokol katmanı --------------------------------------------------

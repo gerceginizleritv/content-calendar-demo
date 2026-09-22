@@ -252,6 +252,8 @@ def main():
         print(f"  yayin    : {kayit.get('publishAt') or '(tarih/saat eksik)'}")
         print(f"  otomatik : {'ACIK' if kayit.get('autoPublish') else 'kapali'}")
         print(f"  durum    : {kayit.get('publishState')}")
+        if kayit.get("uyari") or kayit.get("warning"):
+            print(f"  ⚠ {kayit.get('warning') or kayit.get('uyari')}")
         if not kayit.get("autoPublish"):
             print("  (Shootboard'da 'Otomatik yayinla' kutusunu isaretlemeyi unutma)")
     print()

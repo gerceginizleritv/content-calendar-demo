@@ -540,9 +540,19 @@ async function arac(anahtar, ad, args){
   bak('boyut ve tur yazildi',
       yama.govde.entry.mediaBytes === 12582912 && yama.govde.entry.mediaMime === 'video/mp4',
       JSON.stringify(yama.govde.entry));
-  // publishAt kaydin KENDI diliminden turemeli: 12:00 TSI = 09:00Z.
-  bak('publishAt kaydin saat diliminden turedi',
-      /2026-12-05T09:00:00/.test(yama.govde.entry.publishAt || ''), String(yama.govde.entry.publishAt));
+  // publish_at'i ARTIK BU UC YAZMIYOR: sql/45'teki tetikleyici yaziyor.
+  // Iki hesap sessizce ayrismisti -- burasi saat dilimi bos oldugunda
+  // 'UTC' variyordu, uygulama Europe/Istanbul; ayni kayit kimin
+  // yazdigina gore uc saat kayabiliyordu.
+  bak('publish_at YAMAYA KONMUYOR (tetikleyicinin isi)',
+      !yazilanlar.some(y=> y.tablo === 'calendar_events' && 'publish_at' in (y.govde || {})),
+      JSON.stringify(yazilanlar.filter(y=> y.tablo === 'calendar_events').map(y=> Object.keys(y.govde || {}))));
+  // Sahte PostgREST'te tetikleyici yok, yani publish_at bos kaliyor --
+  // tam da sql/45 calistirilmamis bir kurulumun hali. O kayit ASLA
+  // yayinlanmaz (kuyruk publish_at null olani hic almiyor), o yuzden
+  // sessiz kalmamali.
+  bak('publishAt boşsa UYARI dönüyor',
+      /sql\/45/.test(String(yama.govde.entry.warning || '')), String(yama.govde.entry.warning));
 
   console.log('[⛔ uploaded ALANINA DOKUNULMUYOR]');
   // Sartname Bolum 1: bu kural bir veri kaybindan dogdu, pazarlik konusu
