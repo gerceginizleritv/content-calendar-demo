@@ -2011,6 +2011,10 @@ textarea.sc-ai-brief{min-height:64px;resize:vertical;line-height:1.5;}
 .posted-hint{font-size:11.5px;color:var(--text-dim);margin:-9px 0 15px;line-height:1.5;}
 /* Otomatik story yayini. Kutucuk kullanicinin, alttaki satirlar sistemin:
    ikisi gorsel olarak da ayri dursun diye durum satiri cerceveli. */
+/* Sistemin koydugu isaret, kullanicininkinden ayirt edilebilir olmali:
+   ayni gorunselligi verseydik "ben mi isaretledim?" sorusu kalirdi. */
+.upload-toggle.sistem{border-style:dashed;}
+.upload-toggle.sistem .box{color:var(--green);}
 .oy-durum{border:1px solid var(--line);border-radius:6px;padding:10px 12px;margin:-9px 0 15px;
   font-size:12px;line-height:1.7;color:var(--text-dim);}
 .oy-durum b{color:var(--text);font-weight:600;}
@@ -4149,6 +4153,9 @@ textarea.sc-ai-brief{min-height:64px;resize:vertical;line-height:1.5;}
     <!-- Yanlis beklentinin patladigi an tam olarak burasi: kullanici isaretin
          kendiliginden degismesini bekliyorsa once burada fark eder. -->
     <p class="posted-hint" data-i18n="posted_hint">Tick this after you publish. Shootboard does not listen to the platforms — you mark it.</p>
+    <!-- Sistem yayinladiginda gorunuyor: satir bitmis duruyor ama
+         kullanicinin kendi isareti YAZILMIYOR (sartname Bolum 1). -->
+    <p class="posted-hint" id="uploadSistemNot" data-i18n="oy_sistem_isaret" hidden>Shootboard published this one, so it counts as done. Your own tick is still yours to make.</p>
 
     <!-- OTOMATIK STORY YAYINI. Yalnizca story kayitlarinda gorunuyor.
          Ustteki "Yayinlandi" kutucugundan AYRI bir sey ve oyle de
@@ -4904,6 +4911,7 @@ const LANG = {
     oy_yeni: "Save the entry first, then you can switch automatic publishing on.",
     oy_deneme: (n)=> `${n} attempt${n===1?'':'s'}`,
     oy_yazilamadi: "Could not save that. Check your connection and try again.",
+    oy_sistem_isaret: "Shootboard published this one, so it counts as done. Your own tick is still yours to make.",
     ai_uyari_medya_adi: (n)=> `${n} entr${n===1?'y':'ies'} carried a file name — ignored here. File names are set through the connector.`,
     ai_say_entries: (n)=> `${n} entr${n===1?'y':'ies'}`,
     ai_say_projects: (n)=> `${n} project${n===1?'':'s'}`,
@@ -5888,6 +5896,7 @@ const LANG = {
     oy_yeni: "Önce kaydı kaydet, sonra otomatik yayını açabilirsin.",
     oy_deneme: (n)=> `${n} deneme`,
     oy_yazilamadi: "Kaydedilemedi. Bağlantını kontrol edip tekrar dene.",
+    oy_sistem_isaret: "Bunu Shootboard yayınladı, yapılmış sayılıyor. Kendi işaretin yine senin bileğine kalıyor.",
     ai_uyari_medya_adi: (n)=> `${n} kayıtta dosya adı vardı — burada uygulanmadı. Dosya adı bağlantı üzerinden yazılıyor.`,
     ai_say_entries: (n)=> `${n} kayıt`,
     ai_say_projects: (n)=> `${n} proje`,
@@ -7025,6 +7034,26 @@ function yayinBilgisi(r){
     deneme:     Number(r.attempt_count) || 0
   };
 }
+// ══════════════════════════════════════════════════════════════════
+// KAYIT BITTI MI?
+// ══════════════════════════════════════════════════════════════════
+// Iki ayri sey ayni soruya cevap veriyor:
+//   uploaded                -> KULLANICI kendi eliyle isaretledi
+//   yayin.durum='published' -> SISTEM yayinladi
+//
+// ⛔ Sartname Bolum 1, worker'in uploaded'a yazmasini yasakliyor ve o
+// kural yerinde duruyor: sistem kullanicinin isaretine dokunmuyor.
+// Ama "yapilacaklar" listesi uploaded'a degil, ISIN BITIP BITMEDIGINE
+// bakmali. Otomatik yayinlanan bir story yapilacak is degil -- oysa
+// gecikmis gorevler penceresi onu kirmizi nokta ile "saati coktan
+// gecmis" diye sayiyordu.
+//
+// Bu ayrim korunuyor cunku ikisi ayni sey degil: bir hafta sonrasina
+// planlanmis bir story bugun bitmis DEGIL; sistem yayinladigi an
+// bitmis oluyor, kullanici hicbir sey yapmadan.
+function kayitBitti(e){
+  return !!(e && (e.uploaded || (e.yayin && e.yayin.durum === 'published')));
+}
 // Yerel onbellekten de gelebiliyor; beyaz liste orada da uygulaniyor.
 function yayinTemiz(y){
   if(!y || typeof y !== 'object') return null;
@@ -7964,7 +7993,7 @@ function bugunOzeti(gun, simdi){
     .sort((a,b)=> (a.time||'') < (b.time||'') ? -1 : (a.time||'') > (b.time||'') ? 1 : 0);
   // Saati gecmis ama isaretlenmemisler. Liste KIRPILMIYOR: kac tane
   // oldugu bilginin kendisi. Kacini gosterecegi ekranin karari.
-  const gecikenKayit = events.filter(e=> !e.uploaded && kayitAn(e) <= an)
+  const gecikenKayit = events.filter(e=> !kayitBitti(e) && kayitAn(e) <= an)
     .sort((a,b)=> kayitAn(a) - kayitAn(b));
 
   // 4. Yaklasan cekimin eksikleri. YALNIZCA yaklasanlara bakiliyor: her
@@ -8462,7 +8491,7 @@ function renderProjects(){
   const basliklar = PROJ_STEPS.map(k=>`<th>${escapeHtml(t('step_'+k))}</th>`).join('');
   const satirlar = liste.map(p=>{
     const kayitlar = projeIcinKayitlar(p.id);
-    const yayinlanan = kayitlar.filter(e=>e.uploaded).length;
+    const yayinlanan = kayitlar.filter(kayitBitti).length;
     const yer = projeYeri(p);
     // Duraklar: ilkinin adi, fazlasi "+2"; hepsi ipucunda.
     const yerAdlari = projeMekanlari(p).map(id=> mekanById(id)).filter(Boolean).map(mekanAdi);
@@ -12072,10 +12101,10 @@ function bugunCiz(){
     git: ()=> openModal(e) })), true);
 
   ekle(t('bugun_yayin'), o.bugunYayin.map(e=> ({
-    sinif: e.uploaded ? 'bitti' : '', ne: e.time || '--:--',
+    sinif: kayitBitti(e) ? 'bitti' : '', ne: e.time || '--:--',
     ad: e.title || typeName(e.type),
     yan: (CAL_SM_NAMES[e.platform] || e.platform)
-         + (e.uploaded ? ' · ' + t('bugun_isaretli') : ''),
+         + (kayitBitti(e) ? ' · ' + t('bugun_isaretli') : ''),
     git: ()=> openModal(e) })));
 
   ekle(t('bugun_cekim'), o.cekim.map(c=> ({
@@ -14615,7 +14644,7 @@ function renderCalTable(){
         govde += '<td class="ct-cell ct-empty" data-date="'+key+'"><span>+</span></td>';
       }else{
         govde += '<td class="ct-cell" data-date="'+key+'">' + gun.map(ev=>{
-          const durum = ev.uploaded ? 'posted' : 'scheduled';
+          const durum = kayitBitti(ev) ? 'posted' : 'scheduled';
           const tz = cokPazar ? '<span class="ct-tz">'+escapeHtml(tzKisa(evTz(ev)))+'</span>' : '';
           return '<button type="button" class="ct-chip '+durum+'" data-id="'+escapeHtml(ev.id)+'" title="'
                + escapeHtml((ev.title||'') + ' · ' + typeLabel(getType(ev))) + '">'
@@ -14670,7 +14699,7 @@ function hgErkenMi(ev){
 }
 function hgChip(ev){
   const chip = document.createElement('div');
-  chip.className = 'cal-chip hg-chip' + (ev.uploaded ? ' live' : '');
+  chip.className = 'cal-chip hg-chip' + (kayitBitti(ev) ? ' live' : '');
   chip.title = (ev.title || '') + ' · ' + (ev.time || '') + ' · ' + CAL_SM_NAMES[ev.platform];
   chip.innerHTML =
     `<span class="cal-pico" style="color:${CAL_SM_COLORS[ev.platform]}">${PLATFORM_ICONS[ev.platform]||''}</span>` +
@@ -14955,7 +14984,7 @@ function kullanilanHesaplar(){
 function gecerliKayit(e){
   return (activeTypeFilters.size===0 || activeTypeFilters.has(getType(e)))
       && (activePlatformFilters.size===0 || activePlatformFilters.has(getPlatform(e)))
-      && (activeStatusFilters.size===0 || activeStatusFilters.has(e.uploaded ? 'posted' : 'scheduled'))
+      && (activeStatusFilters.size===0 || activeStatusFilters.has(kayitBitti(e) ? 'posted' : 'scheduled'))
       && (activeTzFilters.size===0 || activeTzFilters.has(evTz(e)))
       && (activeConceptFilters.size===0 || activeConceptFilters.has(evKonsept(e)))
       && (activeHesapFilters.size===0 || activeHesapFilters.has(evHesapId(e)));
@@ -15088,7 +15117,7 @@ function renderCal(){
       // haftanin satir yuksekligini buyutmesin.
       row.className = 'cal-chip-row' + (katlanabilir && idx >= CAL_MAX_CHIPS ? ' overflow' : '');
       const chip = document.createElement('div');
-      chip.className = 'cal-chip' + (ev.uploaded ? ' live' : '');
+      chip.className = 'cal-chip' + (kayitBitti(ev) ? ' live' : '');
       // Renk platformu, etiket tipi anlatir: isaret hem kimligi hem rengi tasidigi
       // icin ayri bir renk cubuguna gerek kalmiyor.
       chip.innerHTML = `<span class="cal-pico" style="color:${CAL_SM_COLORS[ev.platform]}" title="${CAL_SM_NAMES[ev.platform]}">${PLATFORM_ICONS[ev.platform]||''}</span>
@@ -15097,7 +15126,7 @@ function renderCal(){
           (ev.content && gecerliTz(ev.content.timezone) && ev.content.timezone !== yerelTz())
             ? `<span class="cal-tz" title="${escapeHtml(ev.content.timezone)}">${escapeHtml(tzFark(ev.content.timezone) || ev.content.timezone.split('/').pop())}</span>` : ''}
         <span class="cal-chip-title">${escapeHtml(ev.title||'')}</span>
-        <span class="cal-state${ev.uploaded?' on-air':''}">${escapeHtml(t(ev.uploaded ? 'state_posted' : 'state_not_posted'))}</span>${yayinNoktasi(ev)}`;
+        <span class="cal-state${kayitBitti(ev)?' on-air':''}">${escapeHtml(t(kayitBitti(ev) ? 'state_posted' : 'state_not_posted'))}</span>${yayinNoktasi(ev)}`;
       suruklenebilirYap(chip, ev);
       // Dokunmatikte kaydi acan sey tiklama; surukleme yapildiysa tarayici
       // zaten tiklama uretmiyor (touchend'de engelleniyor).
@@ -15503,7 +15532,7 @@ function openModal(ev, hazirTarih, hazirSaat){
     document.getElementById('f_time').value = ev.time||'';
     populateTz();
     document.getElementById('f_tz').value = (ev.content && ev.content.timezone) || yerelTz();
-    setUploadToggle(!!ev.uploaded);
+    setUploadToggle(!!ev.uploaded, kayitBitti(ev) && !ev.uploaded);
     const c = ev.content || {};
     document.getElementById('f_caption').value = c.caption||'';
     document.getElementById('f_hashtags').value = c.hashtags||'';
@@ -15635,12 +15664,20 @@ async function otomatikYayinYaz(id, acik){
   return true;
 }
 
-function setUploadToggle(val){
+// ikinci parametre: SISTEM yayinladi ama kullanici kendi isaretini
+// koymamis. O zaman satir bitmis gorunuyor ama dataset.val DEGISMIYOR --
+// kaydetme tarafi (saveEvent) o degeri okuyup uploaded'a yaziyor ve
+// buradan '1' dersek sistemin yaptigi is kullanicinin isareti gibi
+// kaydedilirdi. Sartname Bolum 1'in ayirdigi tam olarak bu iki sey.
+function setUploadToggle(val, sistem){
   const t = document.getElementById('uploadToggle');
   const b = document.getElementById('uploadBox');
-  t.classList.toggle('checked', val);
-  b.textContent = val ? '✓' : '';
+  t.classList.toggle('checked', !!(val || sistem));
+  t.classList.toggle('sistem', !!sistem && !val);
+  b.textContent = (val || sistem) ? '✓' : '';
   t.dataset.val = val ? '1' : '0';
+  const not = document.getElementById('uploadSistemNot');
+  if(not) not.hidden = !(sistem && !val);
 }
 
 document.getElementById('f_type').addEventListener('change', ()=>{ refreshTypeDependentFields(); otoYayinTazele(); });
@@ -17415,7 +17452,7 @@ function showPendingPopup(autoMode){
     pendingAutoShown = true;
   }
   const now = new Date();
-  const pending = events.filter(e=>!e.uploaded).map(e=>{
+  const pending = events.filter(e=> !kayitBitti(e)).map(e=>{
     const dt = new Date(e.date + 'T' + (e.time||'00:00') + ':00');
     return { ev:e, dt, overdue: dt <= now };
   }).sort((a,b)=> a.dt - b.dt);
@@ -18399,7 +18436,7 @@ function paylasimBasligi(e){
   const bas = String(e.title || '').trim();
   let s = parca + (tur ? ' \u00B7 ' + tur : '');
   if(bas) s += ' \u2014 ' + bas;
-  return (e.uploaded ? '\u2713 ' : '') + s;
+  return (kayitBitti(e) ? '\u2713 ' : '') + s;
 }
 
 function icsPaylasimMetni(){
@@ -18933,7 +18970,7 @@ function paylasimGovdesi(){
     .map(e=>{
       const p = e.projectId ? projectById(e.projectId) : null;
       return { tarih: e.date, saat: e.time || '', tur: e.type, platform: e.platform,
-               baslik: (e.title || '').slice(0, 300), yayinlandi: e.uploaded === true,
+               baslik: (e.title || '').slice(0, 300), yayinlandi: kayitBitti(e),
                proje: p ? p.name : '' };
     });
   return JSON.stringify({ v: 1, olusturuldu: new Date().toISOString(),

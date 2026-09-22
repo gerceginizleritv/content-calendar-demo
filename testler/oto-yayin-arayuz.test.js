@@ -89,13 +89,13 @@ const { chromium } = require('./araclar');
     events.length = 0;
     events.push(sanitizeEvent(fromRow(satir)));
     events.push(sanitizeEvent(fromRow(Object.assign({}, satir, {
-      id:'ev_bekleyen', publish_state:'pending', published_at:null,
+      id:'ev_bekleyen', title:'OTO-BEKLEYEN', publish_state:'pending', published_at:null,
       media_name:null, media_bytes:null, media_url:null, attempt_count:0 }))));
     events.push(sanitizeEvent(fromRow(Object.assign({}, satir, {
-      id:'ev_hatali', publish_state:'failed', published_at:null,
+      id:'ev_hatali', title:'OTO-HATALI', publish_state:'failed', published_at:null,
       last_error:'#100 The video file could not be fetched', attempt_count:3 }))));
     events.push(sanitizeEvent(fromRow(Object.assign({}, satir, {
-      id:'ev_video', type:'video', auto_publish:false }))));
+      id:'ev_video', title:'OTO-VIDEO', type:'video', auto_publish:false }))));
     renderCal();
 
     const oku = (id)=>{
@@ -119,7 +119,7 @@ const { chromium } = require('./araclar');
     return { y, bek, ht, vd, yeni,
              noktalar: [...document.querySelectorAll('.ev-yayin')].map(n=> n.className) };
   }, {
-    id:'ev_oto', user_id:'u', type:'story', platform:'instagram', title:'Story',
+    id:'ev_oto', user_id:'u', type:'story', platform:'instagram', title:'OTO-YAYINLANAN',
     post_date:'2026-12-20', post_time:'11:53:00', uploaded:false, content:{ timezone:'Europe/Istanbul' },
     auto_publish:true, publish_state:'published', published_at:'2026-12-20T08:53:00Z',
     media_name:'2026-12-20_story_sokollu_k1.mp4', media_bytes:12582912,
@@ -180,6 +180,60 @@ const { chromium } = require('./araclar');
   k('★ sistem yayınladı ama kullanıcının işareti DEĞİŞMEDİ', ayrim.uploadedKutu === '0', ayrim.uploadedKutu);
   k('yayın kutusu ayrı ve açık', ayrim.yayinKutu === '1');
   k('durumda "yayınlandı" yazıyor', /Yayınland|Published/.test(ayrim.durum));
+
+  // ---- 5. Sistem yayinladi = is bitti ------------------------------------
+  // Kullanici bildirdi: sistem story'yi yayinladi, ama "Yuklendi"
+  // kutucugu isaretli olmadigi icin "Henuz Yuklenmemis" listesi onu
+  // hala yapilacak is sayiyor ve "saati coktan gecmis" diye KIRMIZI
+  // gosteriyordu. Olan bitmis bir isi bitmemis gibi gostermek.
+  //
+  // ⛔ Cozum uploaded'a yazmak DEGIL: sartname Bolum 1 onu yasakliyor ve
+  // o alan kullanicinin kendi defteri. Cozum, "bitti mi" sorusunu
+  // uploaded'a degil ISIN KENDISINE sormak.
+  console.log('[sistem yayınladı = iş bitti]');
+  const bitti = await page.evaluate(async ()=>{
+    const e = events.find(x=> x.id === 'ev_oto');
+    e.uploaded = false;                       // kullanici isaretlememis
+    e.yayin.durum = 'published';              // ama sistem yayinlamis
+    const bekleyenler = ()=>{
+      document.getElementById('pendingBtn').click();
+      const g = document.getElementById('pendingBody').textContent;
+      document.getElementById('pendingOverlay').classList.remove('open');
+      return g;
+    };
+    const listeIle = bekleyenler();
+    e.yayin.durum = 'pending';
+    const listeOnce = bekleyenler();
+    e.yayin.durum = 'published';
+
+    openModal(e);
+    const kutu = document.getElementById('uploadToggle');
+    const modal = { gorunum: kutu.classList.contains('checked'),
+                    sistemIsareti: kutu.classList.contains('sistem'),
+                    deger: kutu.dataset.val,
+                    not: !document.getElementById('uploadSistemNot').hidden };
+    // ASIL OLCU: KAYDETMEK uploaded'i degistirmemeli. saveEvent kutunun
+    // dataset.val'ini okuyup uploaded'a yaziyor; gorunumu '1' yapsaydik
+    // sistemin isi kullanicinin isareti olarak kaydedilirdi.
+    document.getElementById('saveBtn').click();
+    await new Promise(r=> setTimeout(r, 300));
+    const sonra = events.find(x=> x.id === 'ev_oto');
+    return { listeIle, listeOnce, modal,
+             uploadedSonra: sonra ? sonra.uploaded : null,
+             durumSonra: sonra && sonra.yayin ? sonra.yayin.durum : null,
+             bittiMi: kayitBitti(sonra) };
+  });
+  k('★ yayınlanan kayıt "henüz yüklenmemiş" listesinden ÇIKTI',
+     !/OTO-YAYINLANAN/.test(bitti.listeIle) && /OTO-YAYINLANAN/.test(bitti.listeOnce),
+     'yayınlıyken: ' + (/OTO-YAYINLANAN/.test(bitti.listeIle) ? 'VAR' : 'yok')
+     + ' · beklerken: ' + (/OTO-YAYINLANAN/.test(bitti.listeOnce) ? 'var' : 'YOK'));
+  k('kayıt bitmiş sayılıyor', bitti.bittiMi === true);
+  k('kutucuk bitmiş görünüyor', bitti.modal.gorunum === true);
+  k('sistemin işareti kullanıcınınkinden ayırt ediliyor', bitti.modal.sistemIsareti === true);
+  k('sebebi yazıyor', bitti.modal.not === true);
+  // ⛔ Sartname Bolum 1.
+  k('★ kaydetmek uploaded’a YAZMIYOR', bitti.uploadedSonra === false, String(bitti.uploadedSonra));
+  k('yayın durumu da korunuyor', bitti.durumSonra === 'published', String(bitti.durumSonra));
 
   k('sayfa hatası yok', hatalar.length === 0, hatalar.slice(0,2).join(' | '));
   await b.close();
