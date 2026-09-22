@@ -93,11 +93,12 @@ commit;
 
 notify pgrst, 'reload schema';
 
--- ⚠ KALAN AÇIK: 1. PARÇA BAŞARISIZ OLURSA 2. PARÇA YİNE ÇIKIYOR.
--- Sıra doğru ama bağ yok: cevap kartı, sorusu çıkmamışken tek başına
--- yayınlanabiliyor ve 24 saat öyle duruyor. Bunun çözümü "seri"
--- kavramı -- önceki parçası yayınlanmamış bir parçanın kuyruğa hiç
--- alınmaması. Ayrı bir iş olarak duruyor.
+-- ✔ KAPANDI (sql/48). Burada duran açık şuydu: sıra doğruydu ama bağ
+-- yoktu -- 1. parça başarısız olsa bile 2. parça çıkıyor, cevap kartı
+-- sorusu görünmeden 24 saat öyle duruyordu. sql/48 seriyi dosya
+-- adından tanıyor (<kök>_k<N>) ve önceki parçası yayınlanmamış bir
+-- parçayı yayınlatmıyor. Bu dosya SIRAYI belirlemeye devam ediyor;
+-- seri kontrolü yayın anında, worker'da yapılıyor.
 
 -- ═══ KONTROL ══════════════════════════════════════════════════════
 select p.proname, pg_get_function_result(p.oid) like '%platform text%' as platform_var

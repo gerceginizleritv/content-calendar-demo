@@ -46,7 +46,7 @@
 //
 // Dağıtım:  supabase functions deploy story-yayin --no-verify-jwt
 
-const SURUM = '1.3.0';
+const SURUM = '1.4.0';
 const UCLAR = ['GET / (servis bilgisi)', 'POST / (bir tur)'];
 
 const SUPABASE_URL   = Deno.env.get('SUPABASE_URL') ?? '';
@@ -479,9 +479,50 @@ async function kaydiYayinla(k: any, bitis: number): Promise<string> {
     console.log('[story]', k.id, 'yayın çağrısı sonuçsuz kalmış, çıkmamış — tekrar yayınlanıyor');
   }
 
+  // ---- Seri: önceki parça çıkmadan bu parça çıkmaz (sql/48) ----------------
+  // Çok parçalı story'ler birbirini takip ediyor. 1/2 hiç çıkmazsa
+  // 2/2'nin tek başına çıkması, hiç çıkmamasından kötü: izleyici
+  // eksik olanı değil, ANLAMSIZ olanı görüyor.
+  //
+  // Seriyi dosya adı söylüyor: <kök>_k<N>.<uzantı>. Aynı kök + aynı
+  // platform = aynı seri. Ayrıntı ve sınırlar sql/48'in başında.
+  const seri = await seriOncekiParca(k.id);
+  if (seri) {
+    if (seri.durum === 'basarisiz') {
+      // Kalıcı: önceki parça 'failed' olmuş, kendiliğinden düzelmez.
+      // kaliciHata bildirimi de gönderiyor -- kullanıcı ikisini de
+      // elle yayınlamak isteyebilir, story 24 saatlik.
+      await kaliciHata(k, `Önceki parça yayınlanamadı (${seri.parca}); `
+        + `bu parça tek başına yayınlanmadı.`);
+      return 'seri-kirildi';
+    }
+    // Geçici: önceki parça henüz çıkmadı (kota, tekrar denemesi,
+    // sırası gelmedi). HATA DEĞİL -- ertelemede deneme hakkı geri
+    // veriliyor, yoksa bekleyen parça üç turda hakkını tüketirdi.
+    await rpc('story_ertele', { p_id: k.id, p_dakika: 1,
+      p_sebep: `Önceki parça (${seri.parca}) henüz yayınlanmadı; sırası bekleniyor.` });
+    return 'seri-bekliyor';
+  }
+
   return pf === 'facebook'
     ? await facebookYayinla(k)
     : await instagramYayinla(k, bitis);
+}
+
+// Önünde duran, henüz yayınlanmamış parça. sql/48 çalıştırılmamışsa
+// fonksiyon yoktur: tur DURMUYOR, koruma o tur çalışmıyor. Sessiz
+// kalmıyor ama -- günlüğe düşüyor, çünkü "koruma var sanıp korumasız
+// yayınlamak" en kötü ihtimal.
+async function seriOncekiParca(id: string): Promise<{ durum: string; parca: string } | null> {
+  try {
+    const y = await rpc('story_seri_onceki', { p_id: id });
+    const s = Array.isArray(y) ? y[0] : y;
+    return s && s.durum ? { durum: String(s.durum), parca: String(s.parca ?? '') } : null;
+  } catch (e) {
+    console.warn('[story] seri kontrolü yapılamadı (sql/48 çalıştırıldı mı?):',
+      temizle((e as Error).message));
+    return null;
+  }
 }
 
 // ══════════════════════════════════════════════════════════════════
