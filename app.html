@@ -2009,6 +2009,23 @@ textarea.sc-ai-brief{min-height:64px;resize:vertical;line-height:1.5;}
 .upload-toggle .box{width:17px;height:17px;border:1.5px solid var(--accent-dim);background:var(--surface);display:flex;align-items:center;justify-content:center;font-size:11px;border-radius:3px;flex:none;}
 .upload-toggle.checked .box{background:var(--green);color:#fff;border-color:var(--green);}
 .posted-hint{font-size:11.5px;color:var(--text-dim);margin:-9px 0 15px;line-height:1.5;}
+/* Otomatik story yayini. Kutucuk kullanicinin, alttaki satirlar sistemin:
+   ikisi gorsel olarak da ayri dursun diye durum satiri cerceveli. */
+.oy-durum{border:1px solid var(--line);border-radius:6px;padding:10px 12px;margin:-9px 0 15px;
+  font-size:12px;line-height:1.7;color:var(--text-dim);}
+.oy-durum b{color:var(--text);font-weight:600;}
+.oy-durum .oy-hata{color:var(--red);display:block;margin-top:5px;word-break:break-word;}
+.oy-nokta{display:inline-block;width:8px;height:8px;border-radius:50%;margin-right:6px;
+  vertical-align:1px;background:var(--text-dim);}
+.oy-nokta.yayinlandi{background:var(--green);}
+.oy-nokta.hata{background:var(--red);}
+.oy-nokta.suruyor{background:var(--amber);}
+/* Takvim kartindaki nokta: kucuk, kartin kendi duzenini bozmuyor. */
+.ev-yayin{display:inline-block;width:6px;height:6px;border-radius:50%;margin-left:5px;
+  vertical-align:middle;background:var(--text-dim);}
+.ev-yayin.yayinlandi{background:var(--green);}
+.ev-yayin.hata{background:var(--red);}
+.ev-yayin.suruyor{background:var(--amber);}
 .section-title{font-family:'Archivo',sans-serif;color:var(--accent);font-weight:700;font-size:12px;text-transform:uppercase;letter-spacing:1px;margin:20px 0 12px;border-top:1px solid var(--line);padding-top:16px;}
 .modal-actions{display:flex;justify-content:flex-end;gap:9px;margin-top:20px;}
 /* Sifre kutusu ile yanindaki dugme tek satirda; kutu kalan yeri aliyor. */
@@ -4133,6 +4150,17 @@ textarea.sc-ai-brief{min-height:64px;resize:vertical;line-height:1.5;}
          kendiliginden degismesini bekliyorsa once burada fark eder. -->
     <p class="posted-hint" data-i18n="posted_hint">Tick this after you publish. Shootboard does not listen to the platforms — you mark it.</p>
 
+    <!-- OTOMATIK STORY YAYINI. Yalnizca story kayitlarinda gorunuyor.
+         Ustteki "Yayinlandi" kutucugundan AYRI bir sey ve oyle de
+         duruyor: o kullanicinin kendi isareti, burasi sistemin isi. -->
+    <div id="otoYayinWrap" hidden>
+      <div class="upload-toggle" id="otoYayinToggle">
+        <span class="box" id="otoYayinBox"></span>
+        <span data-i18n="oy_label">Publish automatically</span>
+      </div>
+      <div class="oy-durum" id="otoYayinDurum"></div>
+    </div>
+
     <!-- Cok dilli alanlar: YALNIZCA YouTube uzun video ve Shorts'ta. Baslik ve
          aciklamayi dil dil girmeye izin veren tek platform o; digerlerinde
          ayri paylasim yapiliyor, serit bos yere yer kaplardi. -->
@@ -4864,6 +4892,18 @@ const LANG = {
     ai_rozet: (k)=> `Added by ${k}`,
     ai_uyari_proje: (ad)=> `Project “${ad}” not found — added without a project.`,
     ai_uyari_mekan: (ad)=> `Place “${ad}” not found — that stop was skipped.`,
+    oy_label: "Publish automatically",
+    oy_not: "Shootboard posts this story to Instagram at the time above. It is the only thing Shootboard publishes by itself — everything else you post yourself.",
+    oy_dosya_yok: "No file linked yet. The uploader on your computer links it after the render.",
+    oy_dosya: (ad, mb)=> `File: ${ad}${mb ? ' · ' + mb + ' MB' : ''}`,
+    oy_bekliyor: "Waiting",
+    oy_suruyor: "Publishing",
+    oy_yayinlandi: "Published",
+    oy_hata: "Failed",
+    oy_saatsiz: "No time set, so it will not publish. Give it a time.",
+    oy_yeni: "Save the entry first, then you can switch automatic publishing on.",
+    oy_deneme: (n)=> `${n} attempt${n===1?'':'s'}`,
+    oy_yazilamadi: "Could not save that. Check your connection and try again.",
     ai_uyari_medya_adi: (n)=> `${n} entr${n===1?'y':'ies'} carried a file name — ignored here. File names are set through the connector.`,
     ai_say_entries: (n)=> `${n} entr${n===1?'y':'ies'}`,
     ai_say_projects: (n)=> `${n} project${n===1?'':'s'}`,
@@ -5836,6 +5876,18 @@ const LANG = {
     ai_rozet: (k)=> `${k} ekledi`,
     ai_uyari_proje: (ad)=> `“${ad}” projesi bulunamadı — projesiz eklendi.`,
     ai_uyari_mekan: (ad)=> `“${ad}” mekanı bulunamadı — o durak atlandı.`,
+    oy_label: "Otomatik yayınla",
+    oy_not: "Shootboard bu story'yi yukarıdaki saatte Instagram'a kendi atıyor. Shootboard'ın kendiliğinden yayınladığı tek şey bu — geri kalan her şeyi sen yayınlıyorsun.",
+    oy_dosya_yok: "Henüz dosya bağlı değil. Render bitince bilgisayarındaki yükleyici bağlıyor.",
+    oy_dosya: (ad, mb)=> `Dosya: ${ad}${mb ? ' · ' + mb + ' MB' : ''}`,
+    oy_bekliyor: "Bekliyor",
+    oy_suruyor: "Yayınlanıyor",
+    oy_yayinlandi: "Yayınlandı",
+    oy_hata: "Hata",
+    oy_saatsiz: "Saat girilmemiş, bu yüzden yayınlanmayacak. Bir saat ver.",
+    oy_yeni: "Önce kaydı kaydet, sonra otomatik yayını açabilirsin.",
+    oy_deneme: (n)=> `${n} deneme`,
+    oy_yazilamadi: "Kaydedilemedi. Bağlantını kontrol edip tekrar dene.",
     ai_uyari_medya_adi: (n)=> `${n} kayıtta dosya adı vardı — burada uygulanmadı. Dosya adı bağlantı üzerinden yazılıyor.`,
     ai_say_entries: (n)=> `${n} kayıt`,
     ai_say_projects: (n)=> `${n} proje`,
@@ -6925,6 +6977,15 @@ function toRow(e, uid){
            // gonderseydi ayni kayitlar orada gorunmez olurdu ve geri
            // donus noktamiz elimizden giderdi.
            workspace_id: e.workspaceId || null,
+           // OTOMATIK YAYIN SUTUNLARI BURADA YOK VE OLMAYACAK.
+           // auto_publish, publish_state, media_url, publish_at ... hepsi
+           // gercek sutun. PostgREST upsert'te YALNIZCA gonderilen
+           // sutunlari guncelliyor, yani bu liste uygulamanin onlara
+           // dokunamamasinin TEK sebebi. Biri buraya eklenirse worker'in
+           // yazdigi durum, tarayicidaki bayat kopyayla sessizce ezilir --
+           // bu depoda ayni sinif hata uc kez yasandi. Kutucugun yazdigi
+           // tek alan (auto_publish) ayri bir yoldan gidiyor:
+           // otomatikYayinYaz().
            // Proje kimligi content icinde de duruyor; ayri sutun sorgu ve
            // ileride rapor icin. Ikisi ayni degerden yaziliyor.
            project_id: (e.content && e.content.projectId) || null };
@@ -6940,7 +7001,45 @@ function fromRow(r){
   return { id: r.id, type: r.type, platform: r.platform, title: r.title || '',
            date: r.post_date, time: (r.post_time || '').slice(0,5),
            uploaded: !!r.uploaded, content: icerik,
-           workspaceId: r.workspace_id || null };
+           workspaceId: r.workspace_id || null,
+           yayin: yayinBilgisi(r) };
+}
+// Otomatik story yayininin durumu. SALT OKUNUR: burasi worker'in
+// yazdigini GOSTERIYOR, yazmiyor.
+//
+// uploaded ve durum AYRI SEYLER, karistirilmasin:
+//   uploaded = kullanicinin isareti ("portala yukledim")
+//   durum    = sistemin durumu (bekliyor / yayinlandi / hata)
+// Sartname Bolum 1; kural bir veri kaybindan dogdu.
+function yayinBilgisi(r){
+  if(!r || r.type !== 'story') return null;
+  return {
+    otomatik:   r.auto_publish === true,
+    durum:      r.publish_state || 'pending',
+    dosya:      r.media_name || '',
+    bayt:       Number(r.media_bytes) || 0,
+    medyaVar:   !!r.media_url,
+    yayinAn:    r.publish_at || '',
+    yayinlandi: r.published_at || '',
+    hata:       r.last_error || '',
+    deneme:     Number(r.attempt_count) || 0
+  };
+}
+// Yerel onbellekten de gelebiliyor; beyaz liste orada da uygulaniyor.
+function yayinTemiz(y){
+  if(!y || typeof y !== 'object') return null;
+  const s = (v, n)=> (typeof v === 'string' ? v.slice(0, n) : '');
+  return {
+    otomatik:   y.otomatik === true,
+    durum:      ['pending','in_progress','published','failed'].includes(y.durum) ? y.durum : 'pending',
+    dosya:      s(y.dosya, 300),
+    bayt:       Number(y.bayt) || 0,
+    medyaVar:   y.medyaVar === true,
+    yayinAn:    s(y.yayinAn, 40),
+    yayinlandi: s(y.yayinlandi, 40),
+    hata:       s(y.hata, 2000),
+    deneme:     Number(y.deneme) || 0
+  };
 }
 // Saat dilimi dogrulamasi desenle degil, Intl'in kendisiyle yapiliyor.
 // Onceki desen kontrolu (regex.test) verilen degeri once string'e ceviriyordu;
@@ -6975,6 +7074,12 @@ function sanitizeEvent(raw){
     // typeof kontrolu sart: desen kontrolu degeri once metne cevirir.
     workspaceId: (typeof raw.workspaceId === 'string'
                   && /^[0-9a-f-]{36}$/i.test(raw.workspaceId)) ? raw.workspaceId : null,
+    // Beyaz listede OLMAK ZORUNDA. Olmasaydi sanitize onu her yuklemede
+    // sessizce duserdi ve kayit acildiginda "otomatik yayin kapali, dosya
+    // bagli degil" gorunurdu -- oysa sistem yayinlamaya devam ediyor
+    // olurdu. Tam olarak bu sinif hata cok dilli baslikta ve MCP
+    // bayraginda yasandi.
+    yayin: yayinTemiz(raw.yayin),
     content: {
       caption:      str(c.caption, 5000),
       hashtags:     str(c.hashtags, 1000),
@@ -14856,6 +14961,24 @@ function gecerliKayit(e){
       && (activeHesapFilters.size===0 || activeHesapFilters.has(evHesapId(e)));
 }
 
+// Sartname Bolum 10: "Takvim gorunumunde kucuk bir nokta yeter: gri
+// bekliyor, yesil yayinlandi, kirmizi hata."
+//
+// Yalnizca OTOMATIK YAYINI ACIK story'lerde cikiyor. Kapaliyken nokta
+// koymak, sistemin o kayitla ilgilendigini soylemek olurdu -- ilgilenmiyor.
+// Ustteki "yayinlandi/yayinlanmadi" etiketi bambaska bir sey: o
+// kullanicinin kendi isareti (uploaded).
+function yayinNoktasi(ev){
+  const y = ev && ev.yayin;
+  if(!y || !y.otomatik) return '';
+  const sinif = y.durum === 'published' ? 'yayinlandi'
+              : y.durum === 'failed' ? 'hata'
+              : y.durum === 'in_progress' ? 'suruyor' : '';
+  const baslik = y.durum === 'published' ? t('oy_yayinlandi')
+               : y.durum === 'failed' ? (y.hata || t('oy_hata'))
+               : y.durum === 'in_progress' ? t('oy_suruyor') : t('oy_bekliyor');
+  return `<span class="ev-yayin ${sinif}" title="${escapeHtml(baslik)}"></span>`;
+}
 function renderCal(){
   renderEntryCount();
   // Filtre satirlari veriden turuyor (kullanilan projeler, kullanilan saat
@@ -14974,7 +15097,7 @@ function renderCal(){
           (ev.content && gecerliTz(ev.content.timezone) && ev.content.timezone !== yerelTz())
             ? `<span class="cal-tz" title="${escapeHtml(ev.content.timezone)}">${escapeHtml(tzFark(ev.content.timezone) || ev.content.timezone.split('/').pop())}</span>` : ''}
         <span class="cal-chip-title">${escapeHtml(ev.title||'')}</span>
-        <span class="cal-state${ev.uploaded?' on-air':''}">${escapeHtml(t(ev.uploaded ? 'state_posted' : 'state_not_posted'))}</span>`;
+        <span class="cal-state${ev.uploaded?' on-air':''}">${escapeHtml(t(ev.uploaded ? 'state_posted' : 'state_not_posted'))}</span>${yayinNoktasi(ev)}`;
       suruklenebilirYap(chip, ev);
       // Dokunmatikte kaydi acan sey tiklama; surukleme yapildiysa tarayici
       // zaten tiklama uretmiyor (touchend'de engelleniyor).
@@ -15418,7 +15541,7 @@ function openModal(ev, hazirTarih, hazirSaat){
     document.getElementById('carouselSlides').innerHTML = '';
     refreshTypeDependentFields();
   }
-  modalHesapTazele();
+  modalHesapTazele(); otoYayinTazele();
   document.getElementById('editOverlay').classList.add('open');
   // Kaydirma her acilista basa alinmali: uzun formda asagi inip Iptal'e basan
   // biri, sonraki acilista pencereyi biraktigi yerden goruyordu.
@@ -15429,6 +15552,89 @@ function closeModal(){
   document.getElementById('editOverlay').classList.remove('open');
   currentEvent = null;
 }
+// ══════════════════════════════════════════════════════════════════
+// OTOMATIK STORY YAYINI — kaydin icindeki gorunum
+// ══════════════════════════════════════════════════════════════════
+// Sartname Bolum 10. Iki sey gosteriliyor ve ikisi AYRI kaynaktan:
+//   · kutucuk  -> kullanicinin karari (auto_publish)
+//   · durum    -> sistemin isi (publish_state, worker yaziyor)
+// Ustteki "Yayinlandi" kutucugu ise bambaska bir sey: kullanicinin
+// kendi elle isareti. Ucu birbirine karismasin diye ayri duruyorlar.
+function otoYayinTazele(){
+  const kap = document.getElementById('otoYayinWrap');
+  if(!kap) return;
+  const tur = document.getElementById('f_type').value;
+  // Yeni kayitta tur coklu kutulardan geliyor; story isaretliyse de goster.
+  const yeniStory = !currentEvent && !!document.querySelector('#typeChecks input[value="story"]:checked');
+  if(tur !== 'story' && !yeniStory){ kap.hidden = true; return; }
+  kap.hidden = false;
+
+  const d = document.getElementById('otoYayinDurum');
+  const y = currentEvent && currentEvent.yayin;
+
+  // YENI KAYIT: satir daha veritabaninda yok, auto_publish yazilamaz.
+  // Kutucugu calisiyormus gibi gostermek, isaretleyip kaydeden birinin
+  // hicbir sey olmadigini ancak yayin gunu anlamasi demek olurdu.
+  if(!currentEvent){
+    setOtoYayinToggle(false, true);
+    d.innerHTML = '<span class="oy-nokta"></span>' + escapeHtml(t('oy_yeni'));
+    return;
+  }
+  setOtoYayinToggle(!!(y && y.otomatik), false);
+
+  const durum = (y && y.durum) || 'pending';
+  const sinif = durum === 'published' ? 'yayinlandi'
+              : durum === 'failed' ? 'hata'
+              : durum === 'in_progress' ? 'suruyor' : '';
+  const etiket = durum === 'published' ? t('oy_yayinlandi')
+               : durum === 'failed' ? t('oy_hata')
+               : durum === 'in_progress' ? t('oy_suruyor') : t('oy_bekliyor');
+
+  const satirlar = [];
+  let bas = '<span class="oy-nokta ' + sinif + '"></span><b>' + escapeHtml(etiket) + '</b>';
+  if(durum === 'published' && y.yayinlandi){
+    const an = new Date(y.yayinlandi);
+    if(!isNaN(an)) bas += ' · ' + an.toLocaleString(currentLang === 'tr' ? 'tr-TR' : 'en-GB',
+                                { day:'2-digit', month:'2-digit', hour:'2-digit', minute:'2-digit' });
+  }
+  if(y.deneme > 1) bas += ' · ' + t('oy_deneme')(y.deneme);
+  satirlar.push(bas);
+
+  satirlar.push(y.dosya
+    ? escapeHtml(t('oy_dosya')(y.dosya, y.bayt ? (y.bayt / 1048576).toFixed(1) : ''))
+    : escapeHtml(t('oy_dosya_yok')));
+
+  // Saati olmayan story yayinlanmiyor (sql/45): geceyarisina dusurmek
+  // kullanicinin hic istemedigi bir saatte yayin demek. Sebep burada
+  // yaziyor, yoksa "otomatik acik ama hicbir sey olmuyor" olurdu.
+  if(!document.getElementById('f_time').value) satirlar.push(escapeHtml(t('oy_saatsiz')));
+
+  satirlar.push('<span class="hint" style="display:block;margin-top:6px">' + escapeHtml(t('oy_not')) + '</span>');
+  if(y.hata) satirlar.push('<span class="oy-hata">' + escapeHtml(y.hata) + '</span>');
+  d.innerHTML = satirlar.join('<br>');
+}
+function setOtoYayinToggle(val, kapali){
+  const tg = document.getElementById('otoYayinToggle');
+  const b  = document.getElementById('otoYayinBox');
+  if(!tg) return;
+  tg.classList.toggle('checked', !!val);
+  b.textContent = val ? '✓' : '';
+  tg.dataset.val = val ? '1' : '0';
+  tg.style.opacity = kapali ? '.5' : '';
+  tg.dataset.kapali = kapali ? '1' : '0';
+}
+// ⚠ BU, save()/toRow() YOLUNDAN GITMIYOR ve gitmemeli.
+// toRow butun satiri gonderiyor; auto_publish oraya eklenseydi worker'in
+// yazdigi oteki yayin sutunlari da tarayicinin bayat kopyasiyla birlikte
+// gidip gelmeye baslardi. Burada YALNIZCA tek sutun yaziliyor.
+async function otomatikYayinYaz(id, acik){
+  if(!sb || !session) return false;
+  const { error } = await sb.from('calendar_events')
+    .update({ auto_publish: !!acik }).eq('id', id);
+  if(error){ console.error('[oto-yayin]', error); return false; }
+  return true;
+}
+
 function setUploadToggle(val){
   const t = document.getElementById('uploadToggle');
   const b = document.getElementById('uploadBox');
@@ -15437,7 +15643,28 @@ function setUploadToggle(val){
   t.dataset.val = val ? '1' : '0';
 }
 
-document.getElementById('f_type').addEventListener('change', refreshTypeDependentFields);
+document.getElementById('f_type').addEventListener('change', ()=>{ refreshTypeDependentFields(); otoYayinTazele(); });
+document.getElementById('f_time').addEventListener('change', otoYayinTazele);
+// Kutucuk: once yaziliyor, sonra ekran degisiyor. Ters olsaydi yazma
+// basarisizken kullanici acik gorup oyle birakirdi.
+document.getElementById('otoYayinToggle').addEventListener('click', async ()=>{
+  const tg = document.getElementById('otoYayinToggle');
+  if(tg.dataset.kapali === '1' || !currentEvent) return;
+  const yeni = tg.dataset.val !== '1';
+  setOtoYayinToggle(yeni, true);              // yazma bitene kadar kilitli
+  const ok = await otomatikYayinYaz(currentEvent.id, yeni);
+  if(ok){
+    currentEvent.yayin = currentEvent.yayin || { durum:'pending', dosya:'', bayt:0,
+                                                 medyaVar:false, yayinAn:'', yayinlandi:'',
+                                                 hata:'', deneme:0 };
+    currentEvent.yayin.otomatik = yeni;
+    otoYayinTazele();
+    renderCal();
+  }else{
+    setOtoYayinToggle(!yeni, false);
+    uyari(t('oy_yazilamadi'));
+  }
+});
 // Serit platforma da bagli (yalnizca YouTube), o yuzden platform degisince
 // de tazeleniyor. Yeni kayittaki coklu kutular icin de ayni sey: isaret
 // degistikce serit acilip kapaniyor.
@@ -15446,7 +15673,7 @@ document.getElementById('f_platform').addEventListener('change', ()=>{
 });
 ['platformChecks','typeChecks'].forEach(id=>{
   const kap = document.getElementById(id);
-  if(kap) kap.addEventListener('change', ()=>{ dilSeridiTazele(); modalHesapTazele(); });
+  if(kap) kap.addEventListener('change', ()=>{ dilSeridiTazele(); modalHesapTazele(); otoYayinTazele(); });
 });
 document.getElementById('addBtn').addEventListener('click', ()=> openModal(null));
 document.getElementById('cancelBtn').addEventListener('click', closeModal);
