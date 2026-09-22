@@ -596,7 +596,15 @@ async function arac(anahtar, ad, args){
   bak('cevap hangi uclari destekledigini soyluyor',
       Array.isArray(dz.endpoints) && dz.endpoints.some(x=> /api\/entries\/find/.test(x)),
       JSON.stringify(dz.endpoints));
-  bak('surum REST\'li surumu gosteriyor', dz.version === '1.1.0', String(dz.version));
+  // Surum SABIT YAZILMIYOR: oyle olsaydi her yukseltmede bu test
+  // kirilirdi ve yukseltmeyi atlamak "kolay yol" olurdu. Bir kez tam
+  // olarak bu oldu -- surum alani "dagitim yerine gecti mi" sorusuna
+  // cevap vermek icin var, ama degisiklikte yukseltilmedigi icin eski
+  // ve yeni ayni cevabi verdi ve alan hicbir ise yaramadi.
+  const kaynakSurum = (/const SURUM = '([^']+)'/.exec(
+    require('fs').readFileSync(yol.join(KOK_DIZIN, 'supabase', 'functions', 'mcp', 'index.ts'), 'utf8')) || [])[1];
+  bak('surum kaynaktaki SURUM ile ayni', !!kaynakSurum && dz.version === kaynakSurum,
+      String(dz.version) + ' vs ' + String(kaynakSurum));
 
   console.log('[slug\'dan bagimsiz]');
   // Fonksiyon adi ne olursa olsun calismali. Supabase'te slug sonradan
