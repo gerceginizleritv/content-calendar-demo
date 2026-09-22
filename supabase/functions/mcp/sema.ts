@@ -214,7 +214,7 @@ export const SEMA = {
       },
       "storyPrompt": {
        "type": "string",
-       "maxLength": 4000,
+       "maxLength": 6000,
        "description": "Story only: the image/video generation prompt for THIS card. Use this instead of thumbPrompt on story entries — thumbPrompt means \"video cover art\" everywhere else and mixing the two makes it unclear which one the renderer should read."
       },
       "storyKartlar": {
@@ -224,7 +224,7 @@ export const SEMA = {
       },
       "storyYonerge": {
        "type": "string",
-       "maxLength": 2000,
+       "maxLength": 6000,
        "description": "Story only: production directives for THIS card, one \"key: value\" per line, e.g. \"damga: KAYIT\", \"kaynak: 1622 · Yedikule\", \"cta: Tam bolum kanalda\", \"muzik: soru\", \"sure: 5\". A multi-card story is several entries (one per card, k1/k2 in mediaName), so this describes one card. Do NOT use slidePrompts for any of this: that field belongs to carousels and the app clears it on every other post type, so anything left there is lost the first time the user saves the entry."
       },
       "timezone": {

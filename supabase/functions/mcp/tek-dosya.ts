@@ -293,9 +293,9 @@ function kayitOku(ham, sira, hatalar) {
       // slidePrompts HICBIRI ICIN KULLANILAMAZ: o alan karuselin ve
       // uygulama baska her tipte onu bosaltiyor -- oraya yazilan sey,
       // kullanici kaydi ilk actigi an kayboluyor.
-      storyPrompt: metin(c.storyPrompt, 4000),
+      storyPrompt: metin(c.storyPrompt, 6000),
       storyKartlar: metin(c.storyKartlar, 6000),
-      storyYonerge: metin(c.storyYonerge, 2000)
+      storyYonerge: metin(c.storyYonerge, 6000)
     });
   }
   const projectRef = basvurular(ham.project, undefined, 1);
@@ -610,7 +610,7 @@ const SEMA = {
       },
       "storyPrompt": {
        "type": "string",
-       "maxLength": 4000,
+       "maxLength": 6000,
        "description": "Story only: the image/video generation prompt for THIS card. Use this instead of thumbPrompt on story entries — thumbPrompt means \"video cover art\" everywhere else and mixing the two makes it unclear which one the renderer should read."
       },
       "storyKartlar": {
@@ -620,7 +620,7 @@ const SEMA = {
       },
       "storyYonerge": {
        "type": "string",
-       "maxLength": 2000,
+       "maxLength": 6000,
        "description": "Story only: production directives for THIS card, one \"key: value\" per line, e.g. \"damga: KAYIT\", \"kaynak: 1622 · Yedikule\", \"cta: Tam bolum kanalda\", \"muzik: soru\", \"sure: 5\". A multi-card story is several entries (one per card, k1/k2 in mediaName), so this describes one card. Do NOT use slidePrompts for any of this: that field belongs to carousels and the app clears it on every other post type, so anything left there is lost the first time the user saves the entry."
       },
       "timezone": {
@@ -1153,6 +1153,7 @@ const SERVIS_ANAHTARI = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY') ?? '';
 // fonksiyon yeniden dagitilmadi ama GET cevabi eski ve yeni surumde
 // birebir ayniydi, yani kontrol hicbir sey olcmedi ve hata baska
 // yerde arandi. Surum ve uc listesi artik cevapta.
+// 1.5.1 — story alanlarinin sinirlari 6000'e cikti.
 // 1.5.0 — story alanlari: storyPrompt, storyKartlar, storyYonerge.
 // 1.4.0 — content.storyKart alani eklendi (1.5.0'da storyYonerge oldu).
 // 1.3.0 — publish_at hesabi sql/45'teki tetikleyiciye tasindi.
@@ -1166,7 +1167,7 @@ const SERVIS_ANAHTARI = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY') ?? '';
 // Bu kural UC KEZ unutuldu ve ucuncusunde artik soze birakilmadi:
 // birlestir.py, kaynak degisip surum ayni kalirsa HATA VERIP duruyor
 // ve tek-dosya.ts'i uretmiyor. Yani unutuldugu an belli oluyor.
-const SURUM = '1.5.0';
+const SURUM = '1.5.1';
 
 const CORS: Record<string, string> = {
   'Access-Control-Allow-Origin': '*',

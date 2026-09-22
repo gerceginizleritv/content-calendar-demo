@@ -280,9 +280,9 @@ function kayitOku(ham, sira, hatalar) {
       // slidePrompts HICBIRI ICIN KULLANILAMAZ: o alan karuselin ve
       // uygulama baska her tipte onu bosaltiyor -- oraya yazilan sey,
       // kullanici kaydi ilk actigi an kayboluyor.
-      storyPrompt: metin(c.storyPrompt, 4000),
+      storyPrompt: metin(c.storyPrompt, 6000),
       storyKartlar: metin(c.storyKartlar, 6000),
-      storyYonerge: metin(c.storyYonerge, 2000)
+      storyYonerge: metin(c.storyYonerge, 6000)
     });
   }
   const projectRef = basvurular(ham.project, undefined, 1);

@@ -65,6 +65,7 @@ const SERVIS_ANAHTARI = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY') ?? '';
 // fonksiyon yeniden dagitilmadi ama GET cevabi eski ve yeni surumde
 // birebir ayniydi, yani kontrol hicbir sey olcmedi ve hata baska
 // yerde arandi. Surum ve uc listesi artik cevapta.
+// 1.5.1 — story alanlarinin sinirlari 6000'e cikti.
 // 1.5.0 — story alanlari: storyPrompt, storyKartlar, storyYonerge.
 // 1.4.0 — content.storyKart alani eklendi (1.5.0'da storyYonerge oldu).
 // 1.3.0 — publish_at hesabi sql/45'teki tetikleyiciye tasindi.
@@ -78,7 +79,7 @@ const SERVIS_ANAHTARI = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY') ?? '';
 // Bu kural UC KEZ unutuldu ve ucuncusunde artik soze birakilmadi:
 // birlestir.py, kaynak degisip surum ayni kalirsa HATA VERIP duruyor
 // ve tek-dosya.ts'i uretmiyor. Yani unutuldugu an belli oluyor.
-const SURUM = '1.5.0';
+const SURUM = '1.5.1';
 
 const CORS: Record<string, string> = {
   'Access-Control-Allow-Origin': '*',

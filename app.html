@@ -4248,7 +4248,7 @@ textarea.sc-ai-brief{min-height:64px;resize:vertical;line-height:1.5;}
           <label data-i18n="f_storyprompt_label">Image prompt for this card</label>
           <button type="button" class="copy-btn" data-copy="f_storyprompt" data-i18n="btn_copy">Copy</button>
         </div>
-        <textarea id="f_storyprompt" maxlength="4000" data-i18n-placeholder="f_storyprompt_ph"
+        <textarea id="f_storyprompt" maxlength="6000" data-i18n-placeholder="f_storyprompt_ph"
                   placeholder="Vertical 9:16, golden hour, bridge silhouette..."></textarea>
       </div>
       <div class="field">
@@ -4264,7 +4264,7 @@ textarea.sc-ai-brief{min-height:64px;resize:vertical;line-height:1.5;}
           <label data-i18n="f_storyyonerge_label">Card directions</label>
           <button type="button" class="copy-btn" data-copy="f_storyyonerge" data-i18n="btn_copy">Copy</button>
         </div>
-        <textarea id="f_storyyonerge" maxlength="2000" data-i18n-placeholder="f_storyyonerge_ph"
+        <textarea id="f_storyyonerge" maxlength="6000" data-i18n-placeholder="f_storyyonerge_ph"
                   placeholder="damga: KAYIT&#10;kaynak: 1622 · Yedikule&#10;cta: Tam bölüm kanalda"></textarea>
         <p class="hint" data-i18n="f_storykart_not">One "key: value" per line. The renderer reads these; Shootboard only carries them.</p>
       </div>
@@ -7186,9 +7186,9 @@ function sanitizeEvent(raw){
       // fazlasiyla yeterli ve arayuzdeki sinir zaten 1000.
       slidePrompts: Array.isArray(c.slidePrompts) ? c.slidePrompts.slice(0,9).map(x=>str(x,2000)) : [],
       // Beyaz listede OLMAK ZORUNDA, yoksa her yuklemede sessizce duser.
-      storyPrompt:  str(c.storyPrompt, 4000),
+      storyPrompt:  str(c.storyPrompt, 6000),
       storyKartlar: str(c.storyKartlar, 6000),
-      storyYonerge: str(c.storyYonerge, 2000),
+      storyYonerge: str(c.storyYonerge, 6000),
       // COK DILLI BASLIK VE ACIKLAMA. Beyaz listede olmadigi icin her
       // yuklemede sessizce dusuyordu: kullanici Ingilizce basligi yaziyor,
       // Supabase'e gidiyor, sayfa yenilenince seritte yalnizca Turkce
