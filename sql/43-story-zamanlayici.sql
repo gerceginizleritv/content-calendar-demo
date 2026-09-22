@@ -36,16 +36,26 @@ create extension if not exists pg_net  with schema extensions;
 -- Üretmek için (tarayıcı konsolu):
 --   crypto.randomUUID() + crypto.randomUUID()
 --
--- <BURAYA-GIZLI-ANAHTAR> yerine o değeri koy:
-select vault.create_secret(
-  '<BURAYA-GIZLI-ANAHTAR>',
-  'story_worker_secret',
-  'story-yayin Edge Function çağrısının x-webhook-secret başlığı'
-);
--- Değiştirmek gerekirse (yeniden create_secret HATA verir):
---   select vault.update_secret(
---     (select id from vault.secrets where name = 'story_worker_secret'),
---     '<YENI-DEGER>');
+-- <BURAYA-GIZLI-ANAHTAR> yerine o değeri koy. İKİ YERDE geçiyor;
+-- ikisini de değiştir.
+--
+-- Düz bir create_secret çağrısı, betik ikinci kez çalıştırıldığında
+-- "duplicate key" ile patlar -- ve bu betikte bir hatanın bedeli ağır:
+-- SQL Editor hepsini tek işlemde koşuyor, sondaki bir hata baştaki
+-- kurulumu da geri alıyor. Onun için varsa günceller, yoksa yaratır.
+do $$
+declare v_id uuid;
+begin
+  select id into v_id from vault.secrets where name = 'story_worker_secret';
+  if v_id is null then
+    perform vault.create_secret(
+      '<BURAYA-GIZLI-ANAHTAR>',
+      'story_worker_secret',
+      'story-yayin Edge Function çağrısının x-webhook-secret başlığı');
+  else
+    perform vault.update_secret(v_id, '<BURAYA-GIZLI-ANAHTAR>');
+  end if;
+end $$;
 
 -- ═══ 3/4 ═══ İŞ ═══════════════════════════════════════════════════
 -- Önce varsa eskisini kaldır: bu betik tekrar çalıştırılabilir olsun
@@ -82,10 +92,17 @@ select jobid, jobname, schedule, active
 -- 1 satır, active = true olmalı.
 
 -- Son koşular (cron'un kendi kaydı: isteği ATABİLDİ Mİ, cevabı değil).
-select status, start_time, return_message
-  from cron.job_run_details
- where jobname = 'story-yayin'
- order by start_time desc
+--
+-- DİKKAT: cron.job_run_details'te jobname SÜTUNU YOK -- yalnızca jobid var.
+-- Burada bir kez 'where jobname = ...' yazıldı ve betik "column jobname
+-- does not exist" ile patladı. SQL Editor betiğin tamamını tek işlemde
+-- çalıştırdığı için Vault kaydı ve cron işi de birlikte geri alındı:
+-- sondaki bir kontrol sorgusu, baştaki kurulumu iptal etti.
+select d.status, d.start_time, d.return_message
+  from cron.job_run_details d
+  join cron.job j on j.jobid = d.jobid
+ where j.jobname = 'story-yayin'
+ order by d.start_time desc
  limit 5;
 
 -- Worker NE CEVAP VERDİ. Asıl bakılacak yer burası: pg_net isteği
