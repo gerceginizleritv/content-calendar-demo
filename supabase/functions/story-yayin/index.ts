@@ -46,7 +46,7 @@
 //
 // Dağıtım:  supabase functions deploy story-yayin --no-verify-jwt
 
-const SURUM = '1.2.1';
+const SURUM = '1.3.0';
 const UCLAR = ['GET / (servis bilgisi)', 'POST / (bir tur)'];
 
 const SUPABASE_URL   = Deno.env.get('SUPABASE_URL') ?? '';
@@ -551,7 +551,10 @@ async function instagramYayinla(k: any, bitis: number): Promise<string> {
       // Tur bütçesi bitti, tavan dolmadı. HATA DEĞİL: erteleniyor,
       // deneme hakkı geri veriliyor, bir sonraki tur AYNI konteyneri
       // kaldığı yerden yokluyor.
-      await rpc('story_ertele', { p_id: k.id, p_dakika: 1, p_sebep: 'Medya hâlâ işleniyor; bir sonraki turda devam.' });
+      // p_dakika 0 = "bekleme yok, sıradaki turda al" (sql/47). 1
+      // yazsaydık retry_after dakika ortasına düşer, bir sonraki turu
+      // ıskalar ve "bir dakika" pratikte ikiye çıkardı.
+      await rpc('story_ertele', { p_id: k.id, p_dakika: 0, p_sebep: 'Medya hâlâ işleniyor; bir sonraki turda devam.' });
       return 'butce-bitti';
     }
     await bekle(YOKLAMA_MS);
@@ -724,6 +727,79 @@ async function basarisizBildir(k: any, mesaj: string) {
 }
 
 // ══════════════════════════════════════════════════════════════════
+// KONTEYNERLERİ ÖNDEN YARAT — parçalar arka arkaya çıksın diye
+// ══════════════════════════════════════════════════════════════════
+// SORUN. Instagram videoyu kendisi indirip işliyor ve bu bir dakikayı
+// aşabiliyor. Kayıtlar uçtan uca sırayla işlenirse bu beklemeler
+// TOPLANIYOR. 22 Eylül 2026'da iki parçalı bir story'de ölçtük:
+//
+//   13:45:00  tur başladı
+//   13:46:41  1/2 yayında   (~100 sn'nin neredeyse tamamı bekleme)
+//   13:48:58  2/2 yayında   -> aradaki fark 2 dk 17 sn
+//
+// Oysa parçalar birbirini takip ediyor; araya iki dakika girmesi
+// içeriği bozuyor.
+//
+// ÇÖZÜM. Konteyner yaratmak yayınlamak DEĞİL -- Meta'ya "şu adresteki
+// videoyu işlemeye başla" demek. O yüzden turun en başında hepsi için
+// birden yaratılabiliyor. 1. parça yayınlanırken 2. parçanın işlenmesi
+// çoktan başlamış oluyor: beklemeler toplanmak yerine ÜST ÜSTE
+// biniyor ve ikinci yayın birkaç saniye sonra çıkıyor.
+//
+// ⚠ YAYIN SIRASI BURADA DEĞİŞMİYOR. Aşağıdaki tur döngüsü listeyi yine
+// baştan sona, sql/46'nın verdiği sırayla (publish_at, media_name, id)
+// yayınlıyor. 2. parçanın konteyneri önce hazır olsa bile 1. parça
+// yayınlanmadan sıra ona gelmiyor.
+//
+// ⚠ ÇÖKÜŞ İZİ BOZULMUYOR. story_iz_konteyner publish_ref'i yazıp
+// publish_called_at'i boşaltıyor; Bölüm 8'in okuduğu "iz var, çağrı
+// yok -> hiçbir şey çıkmış olamaz" durumu aynen korunuyor. İzi olan
+// kayıtlar (elde konteyner ya da kurtarma durumu) zaten eleniyor.
+async function konteynerleriHazirla(liste: any[], bitis: number): Promise<number> {
+  const adaylar = liste.filter((k) =>
+       String(k.platform || 'instagram') === 'instagram'
+    && !k.external_id      // zaten yayında
+    && !k.publish_ref      // elde konteyner var ya da kurtarma izi var
+    && k.media_url);
+  // Tek kayıt varsa üst üste binecek bir şey yok: boşuna istek atma.
+  if (adaylar.length < 2) return 0;
+
+  // Kota doluysa hiç başlama. Konteyner yaratmak kotayı harcamıyor ama
+  // yayın yapılamayacağı için hepsi boşa gider ve süresi dolar.
+  const kota = await kotaDolu();
+  if (kota.dolu) return 0;
+
+  let n = 0;
+  for (const k of adaylar) {
+    // Bütçenin son saniyelerinde yeni istek açmıyoruz.
+    if (Date.now() > bitis - 20_000) break;
+    try {
+      const video = String(k.media_mime ?? '').startsWith('video/');
+      const alan: Record<string, string> = { media_type: 'STORIES' };
+      alan[video ? 'video_url' : 'image_url'] = String(k.media_url);
+      const y = await graf(`/${IG_USER_ID}/media`, { method: 'POST', alan });
+      const konteyner = String(y?.id ?? '');
+      if (!konteyner) continue;
+      await rpc('story_iz_konteyner', { p_id: k.id, p_ref: konteyner });
+      // Bellekteki kayıt da güncelleniyor, yoksa instagramYayinla
+      // birazdan İKİNCİ bir konteyner yaratır.
+      k.publish_ref = konteyner;
+      k.publish_ref_at = simdi();
+      n++;
+    } catch (e) {
+      // ⚠ HATA YUTULUYOR -- ama kaybolmuyor. Burada sınıflandırma
+      // YAPMIYORUZ: kaydın kendi sırası geldiğinde instagramYayinla
+      // aynı isteği yeniden deneyecek ve hata kaydiIsle'nin
+      // try/catch'ine düşüp doğru kovaya girecek (kalıcı / geçici /
+      // kota ayrımı, bildirim, deneme sayısı). Aynı mantığı iki yerde
+      // yazmak, iki yerde ayrışması demek olurdu.
+      console.warn('[story] önden konteyner yaratılamadı', k.id, temizle((e as Error).message));
+    }
+  }
+  return n;
+}
+
+// ══════════════════════════════════════════════════════════════════
 // BİR TUR
 // ══════════════════════════════════════════════════════════════════
 async function tur(): Promise<Record<string, unknown>> {
@@ -753,11 +829,17 @@ async function tur(): Promise<Record<string, unknown>> {
   const kayitlar = await rpc('story_kuyruk_al', { p_limit: TUR_BASINA });
   const liste = Array.isArray(kayitlar) ? kayitlar : [];
   const sonuc: Record<string, number> = {};
+
+  // Yayından ÖNCE: bu turdaki Instagram kayıtlarının konteynerlerini
+  // hep birlikte yarat. Sıra değişmiyor, yalnızca beklemeler üst üste
+  // biniyor. Ayrıntı fonksiyonun başında.
+  const ondenHazir = await konteynerleriHazirla(liste, bitis);
+  if (ondenHazir) sonuc['konteyner-onden'] = ondenHazir;
   for (const k of liste) {
     // Kalan süre bir yayını taşımıyorsa BAŞLAMA: yarıda kalan kayıt
     // 'in_progress' kalır ve bir sonraki tura kadar kilitlenir.
     if (Date.now() > bitis - 15_000) {
-      await rpc('story_ertele', { p_id: k.id, p_dakika: 1, p_sebep: 'Tur bütçesi doldu, sıradaki turda.' });
+      await rpc('story_ertele', { p_id: k.id, p_dakika: 0, p_sebep: 'Tur bütçesi doldu, sıradaki turda.' });
       sonuc['butce-bitti'] = (sonuc['butce-bitti'] ?? 0) + 1;
       continue;
     }

@@ -133,7 +133,13 @@ const SQL = {
     const r = bul(p_id); if(!r || r.publish_state !== 'in_progress') return false;
     r.publish_state = 'pending';
     r.attempt_count = Math.max(r.attempt_count - 1, 0);
-    r.retry_after = new Date(SAAT + dk(Math.max(p_dakika, 1))).toISOString();
+    // sql/47: 0 (ya da negatif) = "bekleme yok, siradaki turda al".
+    // Eskiden greatest(p_dakika,1) vardi ve bu, "bir dakika ertele"
+    // demenin pratikte IKI dakikaya mal olmasi demekti: retry_after
+    // dakika ortasina duser, bir sonraki turu iskalardi.
+    r.retry_after = (Number(p_dakika) || 0) <= 0
+      ? null
+      : new Date(SAAT + dk(p_dakika)).toISOString();
     r.last_error = String(p_sebep || '').slice(0, 2000);
     r.updated_at = su(); return true;
   }
@@ -144,7 +150,11 @@ const SQL = {
 let META, cagrilar;
 function metaKur(ek){
   cagrilar = { media:0, publish:0, durum:0, kota:0, stories:0, debug:0,
-               fbBaslat:0, fbYukle:0, fbBitir:0, fbFoto:0, fbFotoStory:0 };
+               fbBaslat:0, fbYukle:0, fbBitir:0, fbFoto:0, fbFotoStory:0,
+               // Sayilar "kac kere" diyor, sira "hangi sirayla" diyor.
+               // Konteynerlerin yayinlardan ONCE yaratildigi ancak
+               // siradan okunabiliyor.
+               sira: [] };
   META = Object.assign({
     token: { data:{ is_valid:true, expires_at:0 } },
     kota:  { data:[{ config:{ quota_total:25, quota_duration:86400 }, quota_usage:3 }] },
@@ -205,11 +215,14 @@ function grafCevap(adres, yontem, gonderi){
   }
   if(p === `/${IG}/media` && yontem === 'POST'){
     cagrilar.media++;
+    cagrilar.sira.push('media');
     if(META.mediaHatasi) return META.mediaHatasi;
     return { id: 'cont_' + cagrilar.media };
   }
   if(p === `/${IG}/media_publish` && yontem === 'POST'){
     cagrilar.publish++;
+    const kim = /creation_id=([^&]+)/.exec(gonderi || '');
+    cagrilar.sira.push('publish:' + (kim ? decodeURIComponent(kim[1]) : '?'));
     const d = META.yayinDavranisi;
     if(d === 'kaybolan-yanit'){
       // ⚠ COKUS ANI. Cagri Meta'ya ULASTI, story CIKTI -- ama yanit
@@ -841,6 +854,106 @@ async function turAt(gizli){
     await turAt();
     bak('sonraki turda yeni konteyner YARATILMADI', cagrilar.media === oncekiMedya);
     bak('aynı konteynerle yayınlandı', satirlar[0].publish_state === 'published');
+  }
+
+  // ═══════════════════════════════════════════════════════════════
+  // ÇOK PARÇALI STORY — PARÇALAR ARKA ARKAYA ÇIKMALI
+  // ═══════════════════════════════════════════════════════════════
+  // 22 Eylul 2026, ilk gercek iki parcali video yayini:
+  //   13:46:41  1/2 Instagram
+  //   13:48:58  2/2 Instagram   -> 2 dk 17 sn
+  // Parcalar birbirini takip ediyor; arada iki dakika olmasi icerigi
+  // bozuyor. Sebep yayin sirasi DEGILDI (o dogruydu): her videonun
+  // Instagram tarafindaki islenmesi SIRAYLA bekleniyordu, yani
+  // beklemeler toplaniyordu.
+  console.log('[parçalar arka arkaya]');
+  {
+    tabloyuKur({ media_name:'2026-12-05_story_k1.mp4', title:'Balıklı (1/2)' },
+               [{ media_name:'2026-12-05_story_k2.mp4', title:'Balıklı (2/2)' }]);
+    metaKur();
+    const r = await turAt();
+    const sira = cagrilar.sira.join(' > ');
+
+    bak('iki parça da yayınlandı',
+      satirlar[0].publish_state === 'published' && satirlar[1].publish_state === 'published',
+      JSON.stringify(r.govde));
+    bak('tur önden konteyner yarattığını söylüyor',
+      r.govde.sonuc['konteyner-onden'] === 2, JSON.stringify(r.govde.sonuc));
+
+    // ★ ASIL OLCUM. Iki konteyner de ILK yayindan once yaratilmis
+    // olmali: 2. parcanin islenmesi, 1. parca yayinlanirken suruyor
+    // olsun diye. Eski davranista sira soyleydi:
+    //   media > publish:cont_1 > media > publish:cont_2
+    // ve ortadaki "media" 2. videonun beklemesini BASLATIYORDU.
+    const yayinlar = cagrilar.sira.map((x,i)=> x.indexOf('publish:') === 0 ? i : -1).filter(i=> i > -1);
+    const medyalar = cagrilar.sira.map((x,i)=> x === 'media' ? i : -1).filter(i=> i > -1);
+    bak('★ iki konteyner de İLK yayından ÖNCE yaratıldı',
+      medyalar.length === 2 && yayinlar.length === 2 && medyalar[1] < yayinlar[0], sira);
+
+    // Onden yaratmak SIRAYI bozmamali: 1/2 hala once cikiyor.
+    bak('★ yayın sırası korundu — 1/2 önce, 2/2 sonra',
+      cagrilar.sira.filter(x=> x.indexOf('publish:') === 0).join(',')
+        === 'publish:cont_1,publish:cont_2', sira);
+    bak('sıra kayda da yansıdı',
+      Date.parse(satirlar[0].published_at) <= Date.parse(satirlar[1].published_at),
+      satirlar[0].published_at + ' / ' + satirlar[1].published_at);
+    bak('fazladan konteyner yaratılmadı', cagrilar.media === 2, String(cagrilar.media));
+  }
+  {
+    // Tek kayitta ust uste binecek bir sey yok: bos yere istek atma.
+    tabloyuKur(); metaKur();
+    const r = await turAt();
+    bak('tek kayıtta önden yaratma yapılmıyor',
+      r.govde.sonuc['konteyner-onden'] === undefined && cagrilar.media === 1,
+      JSON.stringify(r.govde.sonuc) + ' media=' + cagrilar.media);
+  }
+  {
+    // Elinde konteyner olan kayit (onceki turdan kalma) ATLANMALI --
+    // yoksa her turda yenisi yaratilir, eskisi bosa duser ve tavan
+    // hesabi anlamsizlasir.
+    // Uc kayit: birinin izi VAR (onceki turdan kalma konteyner),
+    // ikisinin yok. Onden yaratma yalnizca izsiz ikisine dokunmali.
+    tabloyuKur({ media_name:'k1.mp4', publish_ref:'cont_9', publish_ref_at: su() },
+               [{ media_name:'k2.mp4' }, { media_name:'k3.mp4' }]);
+    metaKur();
+    await turAt();
+    bak('★ izi olan kayda yeni konteyner yapılmadı',
+      cagrilar.media === 2, String(cagrilar.media) + ' | ' + cagrilar.sira.join(' > '));
+    bak('eski konteynerle yayınlandı',
+      cagrilar.sira.filter(x=> x.indexOf('publish:') === 0)[0] === 'publish:cont_9',
+      cagrilar.sira.join(' > '));
+    bak('üçü de yayınlandı ve sıra bozulmadı',
+      satirlar.every(r=> r.publish_state === 'published')
+      && cagrilar.sira.filter(x=> x.indexOf('publish:') === 0).join(',')
+         === 'publish:cont_9,publish:cont_1,publish:cont_2',
+      cagrilar.sira.join(' > '));
+  }
+  {
+    // Onden yaratma PATLARSA tur olmemeli: kayit kendi sirasi
+    // geldiginde normal yoldan denenir ve hata ORADA siniflandirilir.
+    tabloyuKur({ media_name:'k1.mp4' }, [{ media_name:'k2.mp4' }]);
+    metaKur({ mediaHatasi: grafHata(100, 'Invalid parameter') });
+    const r = await turAt();
+    bak('önden yaratma patlasa da tur 200 dönüyor', r.durum === 200, String(r.durum));
+    bak('kayıtlar sessizce kaybolmadı: hata kaydedildi',
+      !!satirlar[0].last_error && !!satirlar[1].last_error,
+      JSON.stringify([satirlar[0].last_error, satirlar[1].last_error]));
+    bak('hiçbir şey yayınlanmadı', cagrilar.publish === 0, String(cagrilar.publish));
+  }
+  {
+    // sql/47: butce bitisinde "0 dakika" = siradaki tur. retry_after
+    // NULL kalmali; dolu kalirsa kayit bir sonraki turu iskalar ve
+    // parcalar arasi bosluk geri gelir.
+    tabloyuKur(); metaKur({ durumSirasi:['IN_PROGRESS'] });
+    ORTAM.STORY_BUTCE_MS = '30000';
+    await turAt();
+    ORTAM.STORY_BUTCE_MS = '600000';
+    bak('★ bütçe bitişinde retry_after NULL — sıradaki tur hemen alabilir',
+      satirlar[0].retry_after === null, String(satirlar[0].retry_after));
+    META.durumSirasi = ['FINISHED'];
+    const r2 = await turAt();
+    bak('gerçekten sıradaki turda alındı (saat ilerletilmeden)',
+      satirlar[0].publish_state === 'published', JSON.stringify(r2.govde));
   }
 
   Date.now = gercekNow;
