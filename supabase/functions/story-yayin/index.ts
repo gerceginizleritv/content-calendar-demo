@@ -28,6 +28,7 @@
 //                         (cron kullanıcı oturumu taşımaz).
 //   META_PAGE_TOKEN       Süresiz sayfa token'ı (Bölüm 3, 3. adım)
 //   META_IG_USER_ID       Instagram iş hesabının Graph kimliği
+//   META_PAGE_ID          Facebook sayfasının kimliği (sayfa story'si için)
 //   META_APP_ID           /debug_token için (token sağlık işi)
 //   META_APP_SECRET       /debug_token için
 //   RESEND_API_KEY        Bildirim e-postası (Bölüm 9: sessiz
@@ -45,7 +46,7 @@
 //
 // Dağıtım:  supabase functions deploy story-yayin --no-verify-jwt
 
-const SURUM = '1.1.0';
+const SURUM = '1.2.0';
 const UCLAR = ['GET / (servis bilgisi)', 'POST / (bir tur)'];
 
 const SUPABASE_URL   = Deno.env.get('SUPABASE_URL') ?? '';
@@ -53,6 +54,7 @@ const SERVIS         = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY') ?? '';
 const WORKER_SECRET  = Deno.env.get('STORY_WORKER_SECRET') ?? '';
 const PAGE_TOKEN     = Deno.env.get('META_PAGE_TOKEN') ?? '';
 const IG_USER_ID     = Deno.env.get('META_IG_USER_ID') ?? '';
+const pageId         = () => Deno.env.get('META_PAGE_ID') ?? '';
 const APP_ID         = Deno.env.get('META_APP_ID') ?? '';
 const APP_SECRET     = Deno.env.get('META_APP_SECRET') ?? '';
 const RESEND_KEY     = Deno.env.get('RESEND_API_KEY') ?? '';
@@ -366,12 +368,17 @@ async function kotaDolu(): Promise<{ dolu: boolean; not: string }> {
 //
 // Sorgulanamıyorsa YAYINLANMIYOR. Bilmemek, ikinci kez yayınlamaktan
 // iyidir: çift story geri alınamaz, gecikmiş story alınabilir.
-async function cikmisMi(cagriAni: string): Promise<{ biliniyor: boolean; id: string }> {
+async function cikmisMi(pf: string, cagriAni: string): Promise<{ biliniyor: boolean; id: string }> {
+  // Her platformun kendi listesi ve kendi zaman alanı var.
+  const uc    = pf === 'facebook' ? `/${pageId()}/stories` : `/${IG_USER_ID}/stories`;
+  const alan  = pf === 'facebook' ? 'id,creation_time' : 'id,timestamp';
   let veri: any;
   try {
-    veri = await graf(`/${IG_USER_ID}/stories`, { alan: { fields: 'id,timestamp' } });
+    veri = await graf(uc, { alan: { fields: alan } });
   } catch (e) {
-    console.warn('[story] /stories okunamadı:', siniflandir(e).mesaj);
+    // SORULAMADI ≠ ÇIKMADI. Ayrımı korumak şart: "çıkmadı" sayarsak
+    // tekrar yayınlarız ve çift story geri alınamaz.
+    console.warn('[story]', uc, 'okunamadı:', siniflandir(e).mesaj);
     return { biliniyor: false, id: '' };
   }
   const an = Date.parse(cagriAni) || 0;
@@ -379,12 +386,35 @@ async function cikmisMi(cagriAni: string): Promise<{ biliniyor: boolean; id: str
   // Saat farkı ve Meta'nın kendi damgası için iki dakikalık pay.
   const esik = an - 120_000;
   for (const m of (veri?.data ?? [])) {
-    const t = Date.parse(m?.timestamp ?? '');
+    // creation_time saniye de gelebiliyor, ISO da.
+    const ham = m?.timestamp ?? m?.creation_time ?? '';
+    const t = typeof ham === 'number' ? ham * 1000 : Date.parse(String(ham));
     if (t && t >= esik) return { biliniyor: true, id: String(m.id) };
   }
   // Liste geldi ve o pencerede hiçbir şey yok: çıkmamış. Story 24
   // saat duruyor, yeni çıkmış bir story listede olmak ZORUNDA.
   return { biliniyor: true, id: '' };
+}
+
+// Graph'a FormData ile POST. Fotoğraf yüklemede alanlar arasında url
+// var ve graf()'ın urlencoded gövdesi bunun için yeterli olsa da,
+// Meta'nın /photos ucu multipart bekliyor.
+async function grafFormla(yol: string, govde: FormData) {
+  const adres = GRAF_TABANI.replace(/\/+$/, '') + yol;
+  let r: Response;
+  try {
+    r = await fetch(adres, { method: 'POST', body: govde });
+  } catch (e) {
+    throw new GrafHata(0, null, null, 'ağa ulaşılamadı: ' + (e as Error).message);
+  }
+  const metin = await r.text();
+  let veri: any = null;
+  try { veri = metin ? JSON.parse(metin) : null; } catch { veri = { ham: metin }; }
+  if (!r.ok || veri?.error) {
+    const h = veri?.error || {};
+    throw new GrafHata(r.status, h.code ?? null, h.error_subcode ?? null, h.message || `HTTP ${r.status}`);
+  }
+  return veri;
 }
 
 // Konteyner izini sil. story_iz_konteyner'a boş kimlik vermek "artık
@@ -396,28 +426,32 @@ const izTemizle = (id: string) => rpc('story_iz_konteyner', { p_id: id, p_ref: n
 // ══════════════════════════════════════════════════════════════════
 // TEK KAYDIN YAYINI — Bölüm 5
 // ══════════════════════════════════════════════════════════════════
-// Bugün yayınlayabildiğimiz platformlar. Şartname Bölüm 6 (Facebook
-// sayfa story'si) kullanıcı kararıyla ertelendi ve TAMAMEN FARKLI bir
-// akış: Instagram dosyayı URL'den çekiyor, Facebook dosyayı yükletiyor.
-const YAYINLANABILIR = ['instagram'];
+// Yayınlayabildiğimiz platformlar. İkisi TAMAMEN FARKLI akışlar ve
+// şartname Bölüm 6 bunları ortaklaştırmamayı özellikle söylüyor:
+// Instagram dosyayı adresten ÇEKİYOR, Facebook dosyayı bize
+// YÜKLETİYOR. Ortak olan yalnızca ön kontroller ve çöküş izi.
+const YAYINLANABILIR = ['instagram', 'facebook'];
 
 async function kaydiYayinla(k: any, bitis: number): Promise<string> {
-  // ⚠ PLATFORM KONTROLÜ, HER ŞEYDEN ÖNCE.
+  // ⚠ PLATFORM, HER ŞEYDEN ÖNCE.
   // Shootboard'da her sosyal medya AYRI kayıt. Kuyruk `type = 'story'`
-  // süzüyor, platform süzmüyor -- yani Facebook için planlanmış bir
-  // kayıt da buraya gelir. Bu kontrol olmasaydı o kayıt INSTAGRAM'A
-  // yayınlanırdı: kullanıcının Facebook'a koyduğu story, Instagram'da
-  // ikinci kez çıkar ve hiçbir yerde hata görünmezdi.
-  //
-  // Hata değil ERTELEME: kayıt bozuk değil, sıra henüz gelmedi. Deneme
-  // hakkı harcanmıyor, sebep last_error'da görünüyor, ve Facebook
-  // desteği geldiği gün bu kayıtlar elle hiçbir şey yapılmadan
-  // yayınlanmaya başlıyor.
+  // süzüyor, platform süzmüyor -- yani hangi platforma gideceğini
+  // burada okumak zorundayız. Bu kontrol olmasaydı Facebook için
+  // planlanmış bir kayıt Instagram'a yayınlanırdı ve hiçbir yerde hata
+  // görünmezdi.
   const pf = String(k.platform || 'instagram');
   if (!YAYINLANABILIR.includes(pf)) {
+    // Hata değil ERTELEME: kayıt bozuk değil, o platform henüz yok.
+    // Deneme hakkı harcanmıyor; desteği geldiği gün elle hiçbir şey
+    // yapılmadan yayınlanmaya başlıyor.
     await rpc('story_ertele', { p_id: k.id, p_dakika: 180,
       p_sebep: `${pf} yayını henüz kurulmadı; kayıt bekliyor. Şimdilik elle yayınla.` });
     return 'platform-desteklenmiyor';
+  }
+  if (pf === 'facebook' && !pageId()) {
+    await rpc('story_ertele', { p_id: k.id, p_dakika: 180,
+      p_sebep: 'META_PAGE_ID tanımlı değil; Facebook yayını yapılamıyor.' });
+    return 'yapilandirma-eksik';
   }
   // Katman 2: external_id dolu ise bu kayıt zaten yayınlanmış.
   if (k.external_id) {
@@ -425,28 +459,41 @@ async function kaydiYayinla(k: any, bitis: number): Promise<string> {
     return 'zaten-yayinda';
   }
   if (!k.media_url) {
-    await rpc('story_basarisiz', { p_id: k.id, p_hata: 'Medya bağlı değil: mediaUrl boş.', p_kalici: true });
+    await kaliciHata(k, 'Medya bağlı değil: mediaUrl boş.');
     return 'medyasiz';
   }
 
   // ---- Katman 3: çöküş izi -------------------------------------------------
-  let konteyner: string = k.publish_ref || '';
-  if (konteyner && k.publish_called_at) {
-    const { biliniyor, id } = await cikmisMi(k.publish_called_at);
+  // publish_called_at DOLU ise yayın çağrısı yapıldı ve sonucu bilinmiyor.
+  if (k.publish_ref && k.publish_called_at) {
+    const { biliniyor, id } = await cikmisMi(pf, k.publish_called_at);
     if (!biliniyor) {
       await rpc('story_ertele', { p_id: k.id, p_dakika: 5,
-        p_sebep: 'Yayın çağrısının sonucu bilinmiyor; Instagram sorulamadı. Çift yayın olmasın diye bekleniyor.' });
+        p_sebep: `Yayın çağrısının sonucu bilinmiyor; ${pf} sorulamadı. Çift yayın olmasın diye bekleniyor.` });
       return 'kurtarma-belirsiz';
     }
     if (id) {
       await rpc('story_yayinlandi', { p_id: k.id, p_external_id: id });
       return 'kurtarildi-yayinda';
     }
-    // Çıkmamış. Konteyner hâlâ geçerliyse aynısıyla devam edilecek.
     console.log('[story]', k.id, 'yayın çağrısı sonuçsuz kalmış, çıkmamış — tekrar yayınlanıyor');
   }
 
-  // ---- Kota (Bölüm 7) ------------------------------------------------------
+  return pf === 'facebook'
+    ? await facebookYayinla(k)
+    : await instagramYayinla(k, bitis);
+}
+
+// ══════════════════════════════════════════════════════════════════
+// INSTAGRAM — Bölüm 5
+// ══════════════════════════════════════════════════════════════════
+// İki adımlı: konteyner yarat, hazır olunca yayınla. Dosyayı Instagram
+// KENDİSİ çekiyor, biz yalnızca adresi veriyoruz.
+async function instagramYayinla(k: any, bitis: number): Promise<string> {
+  // ---- Kota (Bölüm 7) — yalnızca Instagram ---------------------------------
+  // Facebook sayfa story'sinin ayrı kotası var ve şartname "pratikte
+  // sorun çıkarmıyor" diyor; content_publishing_limit ucu da IG hesabına
+  // ait, sayfaya değil.
   const kota = await kotaDolu();
   if (kota.dolu) {
     await rpc('story_ertele', { p_id: k.id, p_dakika: 60, p_sebep: kota.not + ' — dolu, bir saat sonra tekrar denenecek.' });
@@ -455,11 +502,12 @@ async function kaydiYayinla(k: any, bitis: number): Promise<string> {
 
   // ---- Adım 1: konteyner ---------------------------------------------------
   const video = String(k.media_mime ?? '').startsWith('video/');
+  let konteyner: string = k.publish_ref || '';
   // Konteynerin yaşı NEREDEN sayılıyor: elde hazır bir konteyner varsa
   // sql/42'deki publish_ref_at damgasından, yenisi yaratılıyorsa
-  // şimdiden. Bu ayrım şartnamedeki "120 saniye" sınırının tek anlamlı
-  // okunuşu: süre bellekte tutulsaydı worker her kesildiğinde sıfırlanır
-  // ve tavan hiç dolmazdı.
+  // şimdiden. Şartnamedeki "120 saniye" sınırı ancak böyle anlamlı:
+  // süre bellekte tutulsaydı worker her kesildiğinde sıfırlanır ve
+  // tavan hiç dolmazdı.
   let refAn = Date.parse(k.publish_ref_at ?? '') || 0;
   if (!konteyner) {
     const alan: Record<string, string> = { media_type: 'STORIES' };
@@ -482,12 +530,10 @@ async function kaydiYayinla(k: any, bitis: number): Promise<string> {
       // Bölüm 5: "ERROR → başarısız, status alanını lastError'a yaz."
       // Neredeyse her zaman medya sorunudur; tekrar denemek render'ı
       // düzeltmez ve kullanıcının elle yayınlama şansını da yer.
-      await rpc('story_basarisiz', { p_id: k.id,
-        p_hata: 'Instagram medyayı işleyemedi: ' + temizle(String(d?.status ?? 'ERROR')), p_kalici: true });
+      await kaliciHata(k, 'Instagram medyayı işleyemedi: ' + temizle(String(d?.status ?? 'ERROR')));
       return 'medya-reddedildi';
     }
     if (kod === 'EXPIRED') {
-      // Konteyner 24 saatte düşmüş; bu kimlikle bir daha iş yapılamaz.
       await izTemizle(k.id);
       await rpc('story_basarisiz', { p_id: k.id, p_hata: 'Konteyner süresi doldu, baştan denenecek.', p_kalici: false });
       return 'konteyner-dustu';
@@ -496,16 +542,15 @@ async function kaydiYayinla(k: any, bitis: number): Promise<string> {
     if (Date.now() + YOKLAMA_MS >= konteynerSon) {
       // İZ TEMİZLENMEK ZORUNDA. Temizlenmezse bir sonraki deneme aynı
       // konteynerle başlar, yaşı zaten 120 saniyeyi aşmıştır ve anında
-      // yine başarısız olur -- üç deneme birkaç dakikada tükenir ve
-      // kullanıcı hiç gerçek bir tekrar denemesi görmez.
+      // yine başarısız olur -- üç deneme birkaç dakikada tükenir.
       await izTemizle(k.id);
       await rpc('story_basarisiz', { p_id: k.id, p_hata: 'Medya 120 saniyede hazır olmadı.', p_kalici: false });
       return 'konteyner-zaman-asimi';
     }
     if (Date.now() + YOKLAMA_MS >= bitis - 5_000) {
-      // Tur bütçesi bitti, tavan dolmadı. Bu bir HATA DEĞİL: erteleniyor,
-      // deneme hakkı geri veriliyor ve bir sonraki tur AYNI konteyneri
-      // kaldığı yerden yokluyor -- tavan da kaldığı yerden sayıyor.
+      // Tur bütçesi bitti, tavan dolmadı. HATA DEĞİL: erteleniyor,
+      // deneme hakkı geri veriliyor, bir sonraki tur AYNI konteyneri
+      // kaldığı yerden yokluyor.
       await rpc('story_ertele', { p_id: k.id, p_dakika: 1, p_sebep: 'Medya hâlâ işleniyor; bir sonraki turda devam.' });
       return 'butce-bitti';
     }
@@ -515,12 +560,128 @@ async function kaydiYayinla(k: any, bitis: number): Promise<string> {
   // ---- Adım 3: yayınla -----------------------------------------------------
   // ⚠ SIRA ÖNEMLİ. İz önce yazılıyor, yayın sonra çağrılıyor. Ters
   // olsaydı tam aradaki çöküş hiçbir iz bırakmaz ve üçüncü katman
-  // (Bölüm 8) hiç çalışmazdı -- yani çift yayın kapısı burada açılır.
+  // (Bölüm 8) hiç çalışmazdı -- çift yayın kapısı orada açılır.
   await rpc('story_iz_yayin_cagrisi', { p_id: k.id });
   const y = await graf(`/${IG_USER_ID}/media_publish`, { method: 'POST', alan: { creation_id: konteyner } });
-  const medyaId = String(y?.id ?? '');
-  await rpc('story_yayinlandi', { p_id: k.id, p_external_id: medyaId });
+  await rpc('story_yayinlandi', { p_id: k.id, p_external_id: String(y?.id ?? '') });
   return 'yayinlandi';
+}
+
+// ══════════════════════════════════════════════════════════════════
+// FACEBOOK SAYFA STORY'Sİ — Bölüm 6
+// ══════════════════════════════════════════════════════════════════
+// ⚠ Şartname: "TAMAMEN FARKLI BİR AKIŞ. Instagram koduyla
+// ortaklaştırmaya çalışma." Haklı, çünkü fark tek satırlık değil:
+//
+//   Instagram  dosyayı ADRESTEN ÇEKİYOR    -> biz sadece url veriyoruz
+//   Facebook   dosyayı BİZE YÜKLETİYOR     -> baytları biz taşıyoruz
+//
+// Yani Facebook yolunda dosya R2'den bu fonksiyonun içinden geçip
+// Meta'ya gidiyor. Belleğe ALINMIYOR, akıtılıyor: 100 MB'lık bir
+// videoyu Edge Function'ın belleğine koymak sınırı zorlar.
+//
+// VİDEO üç aşama: start -> upload -> finish
+// FOTOĞRAF iki aşama: photos(published=false) -> photo_stories
+//
+// İZ NE TUTUYOR
+//   publish_ref = video_id (ya da photo_id)
+//   publish_called_at = YAYINLAYAN çağrıdan hemen önce
+//                       (video'da finish, fotoğrafta photo_stories)
+// Yükleme yayınlamıyor, o yüzden yükleme sırasındaki bir çöküş çift
+// yayın üretemez. İz varken publish_called_at boşsa BAŞTAN başlıyoruz:
+// hiçbir şey çıkmış olamaz ve yeni bir video_id almak, yarım kalmış
+// bir yüklemeyi kurtarmaya çalışmaktan basit ve güvenli.
+async function facebookYayinla(k: any): Promise<string> {
+  const video = String(k.media_mime ?? '').startsWith('video/');
+  if (k.publish_ref && !k.publish_called_at) {
+    console.log('[story]', k.id, 'yarım kalmış Facebook yüklemesi — baştan');
+    await izTemizle(k.id);
+  }
+
+  // ---- Medyayı R2'den al ---------------------------------------------------
+  let medya: Response;
+  try {
+    medya = await fetch(String(k.media_url));
+  } catch (e) {
+    throw new GrafHata(0, null, null, 'medya adresine ulaşılamadı: ' + (e as Error).message);
+  }
+  if (!medya.ok || !medya.body) {
+    // Adres bozuksa bu kalıcı: dosya yerine gelene kadar tekrar denemek
+    // üç hakkı tüketmekten başka işe yaramaz.
+    await kaliciHata(k, `Medya adresi ${medya.status} döndürdü; Facebook'a yüklenemez.`);
+    return 'medya-alinamadi';
+  }
+  const boyut = Number(k.media_bytes) || Number(medya.headers.get('content-length')) || 0;
+  if (!boyut) {
+    medya.body.cancel();
+    await kaliciHata(k, 'Dosya boyutu bilinmiyor; Facebook yüklemesi file_size istiyor.');
+    return 'boyut-yok';
+  }
+
+  if (video) {
+    // AŞAMA 1 — başlat
+    const bas = await graf(`/${pageId()}/video_stories`, { method: 'POST', alan: { upload_phase: 'start' } });
+    const videoId = String(bas?.video_id ?? '');
+    const yuklemeAdresi = String(bas?.upload_url ?? '');
+    if (!videoId || !yuklemeAdresi) {
+      medya.body.cancel();
+      throw new GrafHata(0, null, null, 'video_stories start beklenen alanları döndürmedi');
+    }
+    await rpc('story_iz_konteyner', { p_id: k.id, p_ref: videoId });
+
+    // AŞAMA 2 — dosyayı yükle. Gövde AKITILIYOR.
+    const yanit = await fetch(yuklemeAdresi, {
+      method: 'POST',
+      headers: { 'Authorization': `OAuth ${PAGE_TOKEN}`, 'offset': '0', 'file_size': String(boyut) },
+      body: medya.body,
+      // Deno akıtılan gövdede bunu istiyor; olmazsa gövdeyi belleğe alır.
+      ...({ duplex: 'half' } as any)
+    });
+    const metin = await yanit.text();
+    if (!yanit.ok) {
+      throw new GrafHata(yanit.status, null, null, 'video yüklenemedi: ' + temizle(metin).slice(0, 300));
+    }
+
+    // AŞAMA 3 — bitir. YAYINLAYAN ÇAĞRI BU, iz ondan önce yazılıyor.
+    await rpc('story_iz_yayin_cagrisi', { p_id: k.id });
+    const bit = await graf(`/${pageId()}/video_stories`, {
+      method: 'POST', alan: { upload_phase: 'finish', video_id: videoId }
+    });
+    await rpc('story_yayinlandi', { p_id: k.id, p_external_id: String(bit?.post_id ?? bit?.id ?? videoId) });
+    return 'yayinlandi';
+  }
+
+  // ---- FOTOĞRAF: iki aşama -------------------------------------------------
+  // published=false ile yüklenen fotoğraf sayfada GÖRÜNMÜYOR; yalnızca
+  // story'ye malzeme oluyor. Bu yüzden bu adım bir yayın değil ve
+  // çöküş izi de burada "yayın çağrıldı" demiyor.
+  const govde = new FormData();
+  govde.append('url', String(k.media_url));
+  govde.append('published', 'false');
+  govde.append('access_token', PAGE_TOKEN);
+  medya.body.cancel();
+  const foto = await grafFormla(`/${pageId()}/photos`, govde);
+  const fotoId = String(foto?.id ?? '');
+  if (!fotoId) throw new GrafHata(0, null, null, 'photos beklenen id dönmedi');
+  await rpc('story_iz_konteyner', { p_id: k.id, p_ref: fotoId });
+
+  await rpc('story_iz_yayin_cagrisi', { p_id: k.id });
+  const y = await graf(`/${pageId()}/photo_stories`, { method: 'POST', alan: { photo_id: fotoId } });
+  await rpc('story_yayinlandi', { p_id: k.id, p_external_id: String(y?.post_id ?? y?.id ?? fotoId) });
+  return 'yayinlandi';
+}
+
+// ⛔ KALICI HATA = BİLDİRİM. Bölüm 9: "SESSİZ BAŞARISIZLIK YASAK."
+//
+// Bu yardımcı bir kolaylık değil, bir düzeltme. Akışın İÇİNDE kalıcı
+// olarak başarısız olan yollar (medya bağlı değil, Instagram medyayı
+// reddetti, medya adresi ölü) doğrudan story_basarisiz çağırıp normal
+// dönüyordu -- bildirim ise yalnızca kaydiIsle'nin catch bloğundaydı.
+// Yani en kesin başarısızlıklar, kullanıcıya haber verilmeyen tek
+// başarısızlıklardı. Story 24 saatlik; kaçan gün geri gelmez.
+async function kaliciHata(k: any, mesaj: string): Promise<void> {
+  await rpc('story_basarisiz', { p_id: k.id, p_hata: mesaj, p_kalici: true });
+  await basarisizBildir(k, mesaj);
 }
 
 // Kayıt başına hata sarmalı: sınıflandır, doğru geçişi çağır, gerekirse
@@ -607,7 +768,7 @@ Deno.serve(async (req: Request) => {
     return json({ ok: true, servis: 'shootboard-story-yayin', surum: SURUM, uclar: UCLAR,
       yapilandirma: {
         // Değerler DEĞİL, yalnızca tanımlı olup olmadıkları.
-        page_token: !!PAGE_TOKEN, ig_user_id: !!IG_USER_ID,
+        page_token: !!PAGE_TOKEN, ig_user_id: !!IG_USER_ID, page_id: !!pageId(),
         app_kimlik: !!(APP_ID && APP_SECRET), resend: !!RESEND_KEY, secret: !!WORKER_SECRET
       } });
   }

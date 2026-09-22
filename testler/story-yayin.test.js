@@ -30,6 +30,7 @@ let g = 0, k = 0;
 const bak = (ad, ko, ek)=>{ if(ko){ g++; console.log('  ok  '+ad); } else { k++; console.log('  YOK '+ad+(ek?' -> '+ek:'')); } };
 
 const IG = 'ig_17841400000000000';
+const SAYFA = '880482471822163';
 const UID = 'user-aaaa';
 const GIZLI = 'cron-gizli-anahtari';
 const TOKEN = 'EAAG' + 'x'.repeat(40);
@@ -136,7 +137,8 @@ const SQL = {
 // Her test bunu kendi senaryosuna gore kuruyor.
 let META, cagrilar;
 function metaKur(ek){
-  cagrilar = { media:0, publish:0, durum:0, kota:0, stories:0, debug:0 };
+  cagrilar = { media:0, publish:0, durum:0, kota:0, stories:0, debug:0,
+               fbBaslat:0, fbYukle:0, fbBitir:0, fbFoto:0, fbFotoStory:0 };
   META = Object.assign({
     token: { data:{ is_valid:true, expires_at:0 } },
     kota:  { data:[{ config:{ quota_total:25, quota_duration:86400 }, quota_usage:3 }] },
@@ -144,6 +146,9 @@ function metaKur(ek){
     durumSirasi: ['FINISHED'],
     storyler: [],           // /stories'in dondurecegi yayindaki story'ler
     mediaHatasi: null,      // konteyner yaratmada hata
+    fbBaslatHatasi: null,
+    fbYuklemeHatasi: false,
+    medyaHatasi: 0,         // R2'den medya cekilirken donen HTTP kodu
     yayinDavranisi: 'ok'    // 'ok' | 'kaybolan-yanit' | {kod, altKod, mesaj}
   }, ek || {});
 }
@@ -158,10 +163,39 @@ function grafCevap(adres, yontem, gonderi){
 
   if(p === '/debug_token'){ cagrilar.debug++; return META.token; }
   if(p === `/${IG}/content_publishing_limit`){ cagrilar.kota++; return META.kota; }
-  if(p === `/${IG}/stories`){
+  if(p === `/${IG}/stories` || p === `/${SAYFA}/stories`){
     cagrilar.stories++;
     if(META.storiesHatasi) return META.storiesHatasi;
     return { data: META.storyler };
+  }
+  // ---- Facebook sayfa story'si (Bolum 6) ----
+  if(p === `/${SAYFA}/video_stories` && yontem === 'POST'){
+    const asama = /upload_phase=start/.test(gonderi || '') ? 'start' : 'finish';
+    if(asama === 'start'){
+      cagrilar.fbBaslat++;
+      if(META.fbBaslatHatasi) return META.fbBaslatHatasi;
+      return { video_id:'fbv_' + cagrilar.fbBaslat,
+               upload_url:'https://rupload.test/video-upload/fbv_' + cagrilar.fbBaslat };
+    }
+    // BITIR = YAYINLAYAN cagri.
+    cagrilar.fbBitir++;
+    const d = META.yayinDavranisi;
+    if(d === 'kaybolan-yanit'){
+      META.storyler = META.storyler.concat([{ id:'fb_cokme', creation_time: su() }]);
+      throw new Error('baglanti koptu');
+    }
+    if(d && typeof d === 'object') return grafHata(d.kod, d.mesaj, d.altKod);
+    META.storyler = META.storyler.concat([{ id:'fbpost_' + cagrilar.fbBitir, creation_time: su() }]);
+    return { success:true, post_id:'fbpost_' + cagrilar.fbBitir };
+  }
+  if(p === `/${SAYFA}/photos` && yontem === 'POST'){
+    cagrilar.fbFoto++;
+    return { id:'fbfoto_' + cagrilar.fbFoto };
+  }
+  if(p === `/${SAYFA}/photo_stories` && yontem === 'POST'){
+    cagrilar.fbFotoStory++;
+    META.storyler = META.storyler.concat([{ id:'fbfotopost', creation_time: su() }]);
+    return { post_id:'fbfotopost' };
   }
   if(p === `/${IG}/media` && yontem === 'POST'){
     cagrilar.media++;
@@ -206,6 +240,26 @@ function sahteFetch(adres, secenek){
   const url = String(adres);
   const yontem = (secenek && secenek.method) || 'GET';
 
+  // Medya dosyasi: worker onu R2'den cekip Facebook'a akitiyor.
+  if(url.indexOf('https://medya.test') === 0){
+    if(META.medyaHatasi) return yanit({}, META.medyaHatasi);
+    return Promise.resolve({ ok:true, status:200,
+      headers:new Map([['content-length','12345678']]),
+      body:{ cancel(){ META.govdeIptal = (META.govdeIptal||0)+1; } },
+      text:()=>Promise.resolve(''), json:()=>Promise.resolve({}) });
+  }
+  // Meta'nin ayri yukleme sunucusu (Graph degil).
+  if(url.indexOf('https://rupload.test') === 0){
+    cagrilar.fbYukle++;
+    META.sonYukleme = { yetki: (secenek.headers||{})['Authorization'] || '',
+                        boyut: (secenek.headers||{})['file_size'] || '',
+                        ofset: (secenek.headers||{})['offset'] || '',
+                        akiyor: !!(secenek.body && typeof secenek.body.cancel === 'function'),
+                        duplex: secenek.duplex || '' };
+    if(META.fbYuklemeHatasi) return yanit({ error:'yukleme reddedildi' }, 400);
+    return yanit({ h:'upload_handle' }, 200);
+  }
+
   if(url.indexOf('https://graf.test') === 0){
     let c;
     try { c = grafCevap(url, yontem, secenek && secenek.body); }
@@ -249,6 +303,7 @@ const ORTAM = {
   STORY_WORKER_SECRET: GIZLI,
   META_PAGE_TOKEN: TOKEN,
   META_IG_USER_ID: IG,
+  META_PAGE_ID: SAYFA,
   META_APP_ID: '1234567890',
   META_APP_SECRET: 'app-gizli-dizgesi-uzun',
   RESEND_API_KEY: 're_test',
@@ -375,12 +430,17 @@ async function turAt(gizli){
     bak('konteyner ERROR → medya reddi, kalıcı', satirlar[0].publish_state === 'failed');
     bak('Meta’nın status metni lastError’a yazıldı',
       String(satirlar[0].last_error).indexOf('desteklenmiyor') > -1, satirlar[0].last_error);
+    bak('★ medya reddi de BİLDİRİM üretiyor', epostalar.length === 1, String(epostalar.length));
   }
   {
     tabloyuKur({ media_url:null }); metaKur();
     await turAt();
     bak('medya bağlı değilse Meta’ya hiç gidilmiyor',
       cagrilar.media === 0 && satirlar[0].publish_state === 'failed');
+    // ⛔ Bolum 9: sessiz basarisizlik yasak. Akisin ICINDE kalici olarak
+    // basarisiz olan yollar bildirim uretmiyordu; en kesin
+    // basarisizliklar, haber verilmeyen tek basarisizliklardi.
+    bak('★ medyasız kayıt da BİLDİRİM üretiyor', epostalar.length === 1, String(epostalar.length));
   }
   {
     // Geçici hata: 3 deneme, 1dk → 5dk → 15dk.
@@ -413,17 +473,122 @@ async function turAt(gizli){
     bak('★ Facebook kaydı Instagram’a YAYINLANMADI',
       cagrilar.media === 0 && cagrilar.publish === 0,
       'media:' + cagrilar.media + ' publish:' + cagrilar.publish);
+    bak('Facebook kendi akışına gitti', cagrilar.fbBitir === 1, String(cagrilar.fbBitir));
+  }
+  {
+    // Desteklenmeyen platform: kayit bozuk degil, sira henuz gelmedi.
+    tabloyuKur({ platform:'tiktok' }); metaKur();
+    await turAt();
+    bak('desteklenmeyen platform hiçbir yere yayınlanmıyor',
+      cagrilar.media === 0 && cagrilar.publish === 0 && cagrilar.fbBaslat === 0);
     bak('hata değil, erteleme: kayıt pending kaldı', satirlar[0].publish_state === 'pending');
     bak('deneme hakkı harcanmadı', satirlar[0].attempt_count === 0, String(satirlar[0].attempt_count));
     // Sessizce dusmemeli: kullanici neden yayinlanmadigini gorebilmeli.
     bak('sebebi kayda yazıldı',
-      /facebook/i.test(String(satirlar[0].last_error)), satirlar[0].last_error);
+      /tiktok/i.test(String(satirlar[0].last_error)), satirlar[0].last_error);
     bak('bildirim üretmiyor (bu bir arıza değil)', epostalar.length === 0);
   }
   {
     tabloyuKur({ platform:'instagram' }); metaKur();
     await turAt();
     bak('Instagram kaydı normal yayınlanıyor', satirlar[0].publish_state === 'published');
+  }
+
+  // ══════════════════════════════════════════════════════════════
+  // 4. FACEBOOK SAYFA STORY'Sİ — Bolum 6
+  // ══════════════════════════════════════════════════════════════
+  // Sartname: "TAMAMEN FARKLI BIR AKIS. Instagram koduyla
+  // ortaklastirmaya calisma." Fark tek satirlik degil:
+  //   Instagram dosyayi ADRESTEN CEKIYOR
+  //   Facebook  dosyayi BIZE YUKLETIYOR
+  console.log('[4 · Facebook sayfa story]');
+  {
+    tabloyuKur({ platform:'facebook' }); metaKur();
+    await turAt();
+    bak('üç aşama da çağrıldı (start → upload → finish)',
+      cagrilar.fbBaslat === 1 && cagrilar.fbYukle === 1 && cagrilar.fbBitir === 1,
+      `start:${cagrilar.fbBaslat} upload:${cagrilar.fbYukle} finish:${cagrilar.fbBitir}`);
+    bak('yayınlandı', satirlar[0].publish_state === 'published', satirlar[0].last_error || '');
+    bak('post_id externalId’ye yazıldı', satirlar[0].external_id === 'fbpost_1', String(satirlar[0].external_id));
+    // Instagram akisi HIC calismamali: iki platform ortaklasmiyor.
+    bak('★ Instagram akışı hiç çalışmadı', cagrilar.media === 0 && cagrilar.publish === 0,
+      `media:${cagrilar.media} publish:${cagrilar.publish}`);
+    // Sartname Bolum 7: content_publishing_limit IG hesabina ait,
+    // sayfaya degil. Facebook'un ayri kotasi var.
+    bak('Instagram kotası sorulmadı', cagrilar.kota === 0, String(cagrilar.kota));
+    bak('⛔ uploaded’a dokunulmadı', satirlar[0].uploaded === false);
+  }
+  {
+    // 100 MB'lik bir videoyu Edge Function'in bellegine koymak siniri
+    // zorlar: govde AKITILMALI, kopyalanmamali.
+    tabloyuKur({ platform:'facebook' }); metaKur();
+    await turAt();
+    bak('★ dosya belleğe alınmadan akıtıldı',
+      META.sonYukleme && META.sonYukleme.akiyor === true && META.sonYukleme.duplex === 'half',
+      JSON.stringify(META.sonYukleme));
+    bak('file_size başlığı gönderildi', META.sonYukleme.boyut === '12345678', META.sonYukleme.boyut);
+    bak('offset 0 ile başlıyor', META.sonYukleme.ofset === '0', META.sonYukleme.ofset);
+    bak('yükleme OAuth başlığıyla gidiyor', /^OAuth /.test(META.sonYukleme.yetki));
+    bak('token yükleme başlığında ama kayda sızmıyor',
+      String(JSON.stringify(satirlar[0])).indexOf(TOKEN) === -1);
+  }
+  {
+    tabloyuKur({ platform:'facebook', media_mime:'image/jpeg', media_url:'https://medya.test/a.jpg' });
+    metaKur();
+    await turAt();
+    bak('fotoğrafta iki aşama: photos → photo_stories',
+      cagrilar.fbFoto === 1 && cagrilar.fbFotoStory === 1 && cagrilar.fbBaslat === 0,
+      `foto:${cagrilar.fbFoto} story:${cagrilar.fbFotoStory} video:${cagrilar.fbBaslat}`);
+    bak('fotoğraf story’si yayınlandı', satirlar[0].publish_state === 'published');
+  }
+  {
+    // ⛔ CIFT YAYIN — Facebook'ta da. Yayinlayan cagri "finish";
+    // yanit kaybolursa bir sonraki tur Instagram'daki gibi ONCE
+    // Facebook'a soruyor.
+    tabloyuKur({ platform:'facebook' }); metaKur({ yayinDavranisi:'kaybolan-yanit' });
+    await turAt();
+    bak('yanıt kaybolunca pending’e döndü', satirlar[0].publish_state === 'pending');
+    bak('çöküş izi duruyor', !!satirlar[0].publish_ref && !!satirlar[0].publish_called_at);
+    const ilkBitir = cagrilar.fbBitir;
+    META.yayinDavranisi = 'ok';
+    ilerlet(dk(2));
+    await turAt();
+    bak('★ Facebook’a soruldu, İKİNCİ KEZ YAYINLANMADI',
+      cagrilar.fbBitir === ilkBitir && cagrilar.stories === 1,
+      `finish:${cagrilar.fbBitir} stories:${cagrilar.stories}`);
+    bak('çıkan story kayda bağlandı',
+      satirlar[0].publish_state === 'published' && satirlar[0].external_id === 'fb_cokme',
+      String(satirlar[0].external_id));
+  }
+  {
+    // Yukleme yayinlamiyor: aradaki cokus cift yayin uretemez, o yuzden
+    // bastan baslamak guvenli ve yarim kalmis yuklemeyi kurtarmaya
+    // calismaktan basit.
+    tabloyuKur({ platform:'facebook', publish_state:'in_progress', attempt_count:1,
+                 publish_ref:'fbv_eski', publish_ref_at: su(), publish_called_at: null,
+                 updated_at: new Date(SAAT - dk(11)).toISOString() });
+    metaKur();
+    await turAt();
+    bak('yarım kalmış yükleme baştan başlıyor',
+      cagrilar.fbBaslat === 1 && satirlar[0].publish_state === 'published');
+    bak('yeni video_id alındı', satirlar[0].external_id === 'fbpost_1');
+  }
+  {
+    tabloyuKur({ platform:'facebook' }); metaKur({ medyaHatasi:404 });
+    await turAt();
+    bak('medya adresi ölüyse kalıcı hata', satirlar[0].publish_state === 'failed',
+      satirlar[0].last_error);
+    bak('Meta’ya hiç gidilmedi', cagrilar.fbBaslat === 0);
+    bak('bildirim gitti', epostalar.length === 1);
+  }
+  {
+    tabloyuKur({ platform:'facebook' }); metaKur();
+    ORTAM.META_PAGE_ID = '';
+    await turAt();
+    ORTAM.META_PAGE_ID = SAYFA;
+    bak('sayfa kimliği yoksa erteleniyor, hata değil',
+      satirlar[0].publish_state === 'pending' && satirlar[0].attempt_count === 0,
+      satirlar[0].last_error);
   }
 
   // ------------------------------------------------- 8. token ölü
