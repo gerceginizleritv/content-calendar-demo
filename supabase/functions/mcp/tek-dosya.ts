@@ -284,10 +284,18 @@ function kayitOku(ham, sira, hatalar) {
       // eslesmezse uygulama sessizce bos birakir.
       hesapId: metin(c.hesapId, 64),
       hesap: metin(c.hesap, 80),
-      // Story kartinin uretim yonergeleri. slidePrompts KULLANILAMAZ:
-      // o alan karuselin ve uygulama baska her tipte onu bosaltiyor --
-      // oraya yazilan sey, kullanici kaydi ilk actigi an kayboluyor.
-      storyKart: metin(c.storyKart, 2000)
+      // STORY ALANLARI. Ucu de yalnizca story kaydinda anlamli ve
+      // birbirinden AYRI is yapiyor; ayni bilgi iki yere yazilmasin
+      // diye video alanlarindan odunc alinmiyor.
+      //   storyPrompt   -> gorsel uretim promptu   (thumbPrompt degil)
+      //   storyKartlar  -> kartin uzerindeki metinler (shortTitle/caption degil)
+      //   storyYonerge  -> damga / kaynak / cta / muzik / sure
+      // slidePrompts HICBIRI ICIN KULLANILAMAZ: o alan karuselin ve
+      // uygulama baska her tipte onu bosaltiyor -- oraya yazilan sey,
+      // kullanici kaydi ilk actigi an kayboluyor.
+      storyPrompt: metin(c.storyPrompt, 4000),
+      storyKartlar: metin(c.storyKartlar, 6000),
+      storyYonerge: metin(c.storyYonerge, 2000)
     });
   }
   const projectRef = basvurular(ham.project, undefined, 1);
@@ -600,10 +608,20 @@ const SEMA = {
        },
        "description": "Carousel only: one prompt/description per slide, in order."
       },
-      "storyKart": {
+      "storyPrompt": {
+       "type": "string",
+       "maxLength": 4000,
+       "description": "Story only: the image/video generation prompt for THIS card. Use this instead of thumbPrompt on story entries — thumbPrompt means \"video cover art\" everywhere else and mixing the two makes it unclear which one the renderer should read."
+      },
+      "storyKartlar": {
+       "type": "string",
+       "maxLength": 6000,
+       "description": "Story only: the texts that go ON this card, as JSON or plain text — whatever the renderer expects. Use this instead of shortTitle/caption on story entries: those two carry a single headline and a single body, while a card usually needs several named texts at once."
+      },
+      "storyYonerge": {
        "type": "string",
        "maxLength": 2000,
-       "description": "Story only: production directives for THIS card, one \"key: value\" per line, e.g. \"damga: KAYIT\", \"kaynak: 1622 · Yedikule\", \"cta: Tam bolum kanalda\", \"muzik: soru\", \"sure: 5\". A multi-card story is several entries (one per card, k1/k2 in mediaName), so this describes one card. Do NOT use slidePrompts for this: that field belongs to carousels and the app clears it on every other post type, so anything left there is lost the first time the user saves the entry."
+       "description": "Story only: production directives for THIS card, one \"key: value\" per line, e.g. \"damga: KAYIT\", \"kaynak: 1622 · Yedikule\", \"cta: Tam bolum kanalda\", \"muzik: soru\", \"sure: 5\". A multi-card story is several entries (one per card, k1/k2 in mediaName), so this describes one card. Do NOT use slidePrompts for any of this: that field belongs to carousels and the app clears it on every other post type, so anything left there is lost the first time the user saves the entry."
       },
       "timezone": {
        "type": "string",
@@ -1135,7 +1153,8 @@ const SERVIS_ANAHTARI = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY') ?? '';
 // fonksiyon yeniden dagitilmadi ama GET cevabi eski ve yeni surumde
 // birebir ayniydi, yani kontrol hicbir sey olcmedi ve hata baska
 // yerde arandi. Surum ve uc listesi artik cevapta.
-// 1.4.0 — content.storyKart alani eklendi.
+// 1.5.0 — story alanlari: storyPrompt, storyKartlar, storyYonerge.
+// 1.4.0 — content.storyKart alani eklendi (1.5.0'da storyYonerge oldu).
 // 1.3.0 — publish_at hesabi sql/45'teki tetikleyiciye tasindi.
 // 1.2.0 — mediaName yazilabilir alan oldu.
 //
@@ -1147,7 +1166,7 @@ const SERVIS_ANAHTARI = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY') ?? '';
 // Bu kural UC KEZ unutuldu ve ucuncusunde artik soze birakilmadi:
 // birlestir.py, kaynak degisip surum ayni kalirsa HATA VERIP duruyor
 // ve tek-dosya.ts'i uretmiyor. Yani unutuldugu an belli oluyor.
-const SURUM = '1.4.0';
+const SURUM = '1.5.0';
 
 const CORS: Record<string, string> = {
   'Access-Control-Allow-Origin': '*',
@@ -1305,10 +1324,11 @@ function kayitIcerigi(c: any) {
     slidePrompts: Array.isArray(c.slidePrompts) ? c.slidePrompts : [],
     timezone: c.timezone || ''
   };
-  // Story kartinin uretim yonergeleri. Bos gecilmiyor: story olmayan her
-  // kayda bos bir alan eklemek cevabi sisirir ve asistana "burada bir sey
-  // var" dedirtir.
-  if (c.storyKart) o.storyKart = c.storyKart;
+  // Story alanlari. Bos gecilmiyor: story olmayan her kayda uc bos alan
+  // eklemek cevabi sisirir ve asistana "burada bir sey var" dedirtir.
+  if (c.storyPrompt)  o.storyPrompt  = c.storyPrompt;
+  if (c.storyKartlar) o.storyKartlar = c.storyKartlar;
+  if (c.storyYonerge) o.storyYonerge = c.storyYonerge;
   // Bos olanlar JSON'a HIC yazilmiyor: cevirisi olmayan kayit bos bir
   // "diller" tasimasin, asistan "burada bir sey var" sanmasin.
   if (c.diller && typeof c.diller === 'object' && !Array.isArray(c.diller)

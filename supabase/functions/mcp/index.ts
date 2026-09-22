@@ -65,7 +65,8 @@ const SERVIS_ANAHTARI = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY') ?? '';
 // fonksiyon yeniden dagitilmadi ama GET cevabi eski ve yeni surumde
 // birebir ayniydi, yani kontrol hicbir sey olcmedi ve hata baska
 // yerde arandi. Surum ve uc listesi artik cevapta.
-// 1.4.0 — content.storyKart alani eklendi.
+// 1.5.0 — story alanlari: storyPrompt, storyKartlar, storyYonerge.
+// 1.4.0 — content.storyKart alani eklendi (1.5.0'da storyYonerge oldu).
 // 1.3.0 — publish_at hesabi sql/45'teki tetikleyiciye tasindi.
 // 1.2.0 — mediaName yazilabilir alan oldu.
 //
@@ -77,7 +78,7 @@ const SERVIS_ANAHTARI = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY') ?? '';
 // Bu kural UC KEZ unutuldu ve ucuncusunde artik soze birakilmadi:
 // birlestir.py, kaynak degisip surum ayni kalirsa HATA VERIP duruyor
 // ve tek-dosya.ts'i uretmiyor. Yani unutuldugu an belli oluyor.
-const SURUM = '1.4.0';
+const SURUM = '1.5.0';
 
 const CORS: Record<string, string> = {
   'Access-Control-Allow-Origin': '*',
@@ -235,10 +236,11 @@ function kayitIcerigi(c: any) {
     slidePrompts: Array.isArray(c.slidePrompts) ? c.slidePrompts : [],
     timezone: c.timezone || ''
   };
-  // Story kartinin uretim yonergeleri. Bos gecilmiyor: story olmayan her
-  // kayda bos bir alan eklemek cevabi sisirir ve asistana "burada bir sey
-  // var" dedirtir.
-  if (c.storyKart) o.storyKart = c.storyKart;
+  // Story alanlari. Bos gecilmiyor: story olmayan her kayda uc bos alan
+  // eklemek cevabi sisirir ve asistana "burada bir sey var" dedirtir.
+  if (c.storyPrompt)  o.storyPrompt  = c.storyPrompt;
+  if (c.storyKartlar) o.storyKartlar = c.storyKartlar;
+  if (c.storyYonerge) o.storyYonerge = c.storyYonerge;
   // Bos olanlar JSON'a HIC yazilmiyor: cevirisi olmayan kayit bos bir
   // "diller" tasimasin, asistan "burada bir sey var" sanmasin.
   if (c.diller && typeof c.diller === 'object' && !Array.isArray(c.diller)

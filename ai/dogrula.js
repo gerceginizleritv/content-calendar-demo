@@ -267,10 +267,18 @@ function kayitOku(ham, sira, hatalar) {
       // eslesmezse uygulama sessizce bos birakir.
       hesapId: metin(c.hesapId, 64),
       hesap: metin(c.hesap, 80),
-      // Story kartinin uretim yonergeleri. slidePrompts KULLANILAMAZ:
-      // o alan karuselin ve uygulama baska her tipte onu bosaltiyor --
-      // oraya yazilan sey, kullanici kaydi ilk actigi an kayboluyor.
-      storyKart: metin(c.storyKart, 2000)
+      // STORY ALANLARI. Ucu de yalnizca story kaydinda anlamli ve
+      // birbirinden AYRI is yapiyor; ayni bilgi iki yere yazilmasin
+      // diye video alanlarindan odunc alinmiyor.
+      //   storyPrompt   -> gorsel uretim promptu   (thumbPrompt degil)
+      //   storyKartlar  -> kartin uzerindeki metinler (shortTitle/caption degil)
+      //   storyYonerge  -> damga / kaynak / cta / muzik / sure
+      // slidePrompts HICBIRI ICIN KULLANILAMAZ: o alan karuselin ve
+      // uygulama baska her tipte onu bosaltiyor -- oraya yazilan sey,
+      // kullanici kaydi ilk actigi an kayboluyor.
+      storyPrompt: metin(c.storyPrompt, 4000),
+      storyKartlar: metin(c.storyKartlar, 6000),
+      storyYonerge: metin(c.storyYonerge, 2000)
     });
   }
   const projectRef = basvurular(ham.project, undefined, 1);

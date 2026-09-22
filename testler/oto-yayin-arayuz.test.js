@@ -271,7 +271,9 @@ async function kaydet(page){
   const kart = await page.evaluate(async ()=>{
     const e = events.find(x=> x.id === 'ev_oto');
     e.content = Object.assign({}, e.content, {
-      storyKart: 'damga: KAYIT\nkaynak: 1622 · Yedikule\ncta: Tam bölüm kanalda',
+      storyPrompt: 'Dikey 9:16, altın saat',
+      storyKartlar: '{"buyuk":"KÖPRÜNÜN ALTINDA NE VAR?"}',
+      storyYonerge: 'damga: KAYIT\nkaynak: 1622 · Yedikule\ncta: Tam bölüm kanalda',
       shortTitle: 'KÖPRÜNÜN ALTINDA NE VAR?',
       thumbPrompt: 'Dikey 9:16, altın saat, köprü siluети',
       slidePrompts: ['bu karusel alani', 'story kaydinda yasamaz']
@@ -280,7 +282,9 @@ async function kaydet(page){
     const gorunur = (id)=> getComputedStyle(document.getElementById(id)).display !== 'none';
     const acik = { kart: gorunur('storyKartWrap'), kisa: gorunur('shortTitleWrap'),
                    kapak: gorunur('thumbWrap'), karusel: gorunur('carouselWrap'),
-                   deger: document.getElementById('f_storykart').value };
+                   deger: document.getElementById('f_storyyonerge').value,
+                   prompt: document.getElementById('f_storyprompt').value,
+                   kartlar: document.getElementById('f_storykartlar').value };
     return { acik };
   });
   // KAYDET: tuzagin tetiklendigi an.
@@ -293,13 +297,15 @@ async function kaydet(page){
     const videoda = gorunur('storyKartWrap');
     closeModal();
     return { videoda,
-             kartSonra: (sonra.content || {}).storyKart || '',
+             kartSonra: (sonra.content || {}).storyYonerge || '',
+             promptSonra: (sonra.content || {}).storyPrompt || '',
+             kartlarSonra: (sonra.content || {}).storyKartlar || '',
              kisaSonra: (sonra.content || {}).shortTitle || '',
              kapakSonra: (sonra.content || {}).thumbPrompt || '',
              slaytSonra: ((sonra.content || {}).slidePrompts || []).length,
              temizden: (sanitizeEvent({ id:'x', type:'story', platform:'instagram',
                date:'2026-12-20', time:'11:53',
-               content:{ storyKart: 'damga: KAYIT' } }).content || {}).storyKart };
+               content:{ storyYonerge: 'damga: KAYIT' } }).content || {}).storyYonerge };
   });
   Object.assign(kart, kartSonuc);
   k('story kaydında görünüyor', kart.acik.kart === true);
@@ -307,10 +313,15 @@ async function kaydet(page){
   k('story’de kapak metni de görünüyor', kart.acik.kisa === true);
   k('story’de görsel prompt’u da görünüyor', kart.acik.kapak === true);
   k('karusel alanı story’de açılmıyor', kart.acik.karusel === false);
-  k('alan kayıttan dolduruluyor', /damga: KAYIT/.test(kart.acik.deger), kart.acik.deger.slice(0,40));
+  k('yönergeler kayıttan dolduruluyor', /damga: KAYIT/.test(kart.acik.deger), kart.acik.deger.slice(0,40));
+  k('görsel prompt’u dolduruluyor', /altın saat/.test(kart.acik.prompt), kart.acik.prompt.slice(0,40));
+  k('kart metinleri dolduruluyor', /KÖPRÜNÜN/.test(kart.acik.kartlar), kart.acik.kartlar.slice(0,40));
   // ASIL OLCU.
   k('★ KAYDETMEK kart yönergelerini SİLMİYOR',
      /damga: KAYIT/.test(kart.kartSonra) && /cta:/.test(kart.kartSonra), kart.kartSonra.slice(0,60));
+  k('★ görsel prompt’u ve kart metinleri de korunuyor',
+     /altın saat/.test(kart.promptSonra) && /KÖPRÜNÜN/.test(kart.kartlarSonra),
+     kart.promptSonra.slice(0,30) + ' | ' + kart.kartlarSonra.slice(0,30));
   k('kapak metni ve görsel prompt’u da korunuyor',
      /KÖPRÜNÜN/.test(kart.kisaSonra) && /9:16/.test(kart.kapakSonra));
   // Karsilastirma: slidePrompts AYNI kayitta silindi. Alanin neden ayri

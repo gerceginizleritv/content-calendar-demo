@@ -4241,14 +4241,33 @@ textarea.sc-ai-brief{min-height:64px;resize:vertical;line-height:1.5;}
          kaydetme yolu baska her tipte onu bosaltiyor
          (icerik.slidePrompts = []). Oraya yazilan sey, kullanici kaydi
          ilk kez acip kaydettiginde sessizce kaybolurdu. -->
-    <div class="field" id="storyKartWrap" style="display:none;">
-      <div class="field-header">
-        <label data-i18n="f_storykart_label">Story card directions</label>
-        <button type="button" class="copy-btn" data-copy="f_storykart" data-i18n="btn_copy">Copy</button>
+    <div id="storyKartWrap" style="display:none;">
+      <div class="section-title" data-i18n="story_bolum">Story card</div>
+      <div class="field">
+        <div class="field-header">
+          <label data-i18n="f_storyprompt_label">Image prompt for this card</label>
+          <button type="button" class="copy-btn" data-copy="f_storyprompt" data-i18n="btn_copy">Copy</button>
+        </div>
+        <textarea id="f_storyprompt" maxlength="4000" data-i18n-placeholder="f_storyprompt_ph"
+                  placeholder="Vertical 9:16, golden hour, bridge silhouette..."></textarea>
       </div>
-      <textarea id="f_storykart" maxlength="2000" data-i18n-placeholder="f_storykart_ph"
-                placeholder="damga: KAYIT&#10;kaynak: 1622 · Yedikule&#10;cta: Tam bölüm kanalda"></textarea>
-      <p class="hint" data-i18n="f_storykart_not">One "key: value" per line. The renderer reads these; Shootboard only carries them.</p>
+      <div class="field">
+        <div class="field-header">
+          <label data-i18n="f_storykartlar_label">Texts on this card</label>
+          <button type="button" class="copy-btn" data-copy="f_storykartlar" data-i18n="btn_copy">Copy</button>
+        </div>
+        <textarea id="f_storykartlar" maxlength="6000" data-i18n-placeholder="f_storykartlar_ph"
+                  placeholder='{"buyuk": "...", "orta": "...", "kucuk": "..."}'></textarea>
+      </div>
+      <div class="field">
+        <div class="field-header">
+          <label data-i18n="f_storyyonerge_label">Card directions</label>
+          <button type="button" class="copy-btn" data-copy="f_storyyonerge" data-i18n="btn_copy">Copy</button>
+        </div>
+        <textarea id="f_storyyonerge" maxlength="2000" data-i18n-placeholder="f_storyyonerge_ph"
+                  placeholder="damga: KAYIT&#10;kaynak: 1622 · Yedikule&#10;cta: Tam bölüm kanalda"></textarea>
+        <p class="hint" data-i18n="f_storykart_not">One "key: value" per line. The renderer reads these; Shootboard only carries them.</p>
+      </div>
     </div>
 
     <div id="carouselWrap" style="display:none;">
@@ -5123,8 +5142,13 @@ const LANG = {
     f_shorttitle_label: "Cover Short Text (3–5 words to put ON the thumbnail)",
     f_shorttitle_ph: "e.g. IT'S FINALLY HERE",
     f_thumb_label: "Cover / Thumbnail Image Prompt",
-    f_storykart_label: "Story card directions",
-    f_storykart_ph: "damga: KAYIT\nkaynak: 1622 · Yedikule\ncta: Tam bölüm kanalda",
+    story_bolum: "Story card",
+    f_storyprompt_label: "Image prompt for this card",
+    f_storyprompt_ph: "Vertical 9:16, golden hour, bridge silhouette...",
+    f_storykartlar_label: "Texts on this card",
+    f_storykartlar_ph: "{\"buyuk\": \"...\", \"orta\": \"...\"}",
+    f_storyyonerge_label: "Card directions",
+    f_storyyonerge_ph: "damga: KAYIT\nkaynak: 1622 · Yedikule\ncta: Tam bölüm kanalda",
     f_storykart_not: "One \"key: value\" per line. The renderer reads these; Shootboard only carries them.",
     f_thumb_ph: "Describe the cover image for an AI image generator...",
     carousel_title: "Carousel Slide Prompts (9)",
@@ -6111,8 +6135,13 @@ const LANG = {
     f_shorttitle_label: "Kapak Kısa Başlığı (thumbnail üzerine yazılacak, 3-5 kelime)",
     f_shorttitle_ph: "örn. SONUNDA ÇIKTI",
     f_thumb_label: "Kapak / Thumbnail Görsel Prompt'u",
-    f_storykart_label: "Story kartı yönergeleri",
-    f_storykart_ph: "damga: KAYIT\nkaynak: 1622 · Yedikule\ncta: Tam bölüm kanalda",
+    story_bolum: "Story kartı",
+    f_storyprompt_label: "Bu kartın görsel prompt'u",
+    f_storyprompt_ph: "Dikey 9:16, altın saat, köprü silueti...",
+    f_storykartlar_label: "Kartın üzerindeki metinler",
+    f_storykartlar_ph: "{\"buyuk\": \"...\", \"orta\": \"...\"}",
+    f_storyyonerge_label: "Kart yönergeleri",
+    f_storyyonerge_ph: "damga: KAYIT\nkaynak: 1622 · Yedikule\ncta: Tam bölüm kanalda",
     f_storykart_not: "Satır başına bir \"anahtar: değer\". Bunları render tarafı okuyor; Shootboard yalnızca taşıyor.",
     f_thumb_ph: "AI görsel üretici için kapak görselini tarif et...",
     carousel_title: "Carousel Slayt Prompt'ları (9)",
@@ -7157,7 +7186,9 @@ function sanitizeEvent(raw){
       // fazlasiyla yeterli ve arayuzdeki sinir zaten 1000.
       slidePrompts: Array.isArray(c.slidePrompts) ? c.slidePrompts.slice(0,9).map(x=>str(x,2000)) : [],
       // Beyaz listede OLMAK ZORUNDA, yoksa her yuklemede sessizce duser.
-      storyKart:    str(c.storyKart, 2000),
+      storyPrompt:  str(c.storyPrompt, 4000),
+      storyKartlar: str(c.storyKartlar, 6000),
+      storyYonerge: str(c.storyYonerge, 2000),
       // COK DILLI BASLIK VE ACIKLAMA. Beyaz listede olmadigi icin her
       // yuklemede sessizce dusuyordu: kullanici Ingilizce basligi yaziyor,
       // Supabase'e gidiyor, sayfa yenilenince seritte yalnizca Turkce
@@ -15567,7 +15598,9 @@ function openModal(ev, hazirTarih, hazirSaat){
     document.getElementById('f_videotitle').value = c.videoTitle||'';
     document.getElementById('f_shorttitle').value = c.shortTitle||'';
     document.getElementById('f_thumb').value = c.thumbPrompt||'';
-    document.getElementById('f_storykart').value = c.storyKart||'';
+    document.getElementById('f_storyprompt').value = c.storyPrompt||'';
+    document.getElementById('f_storykartlar').value = c.storyKartlar||'';
+    document.getElementById('f_storyyonerge').value = c.storyYonerge||'';
     dilKurulumu(c, ev.type, ev.platform);
     document.getElementById('carouselSlides').innerHTML = '';
     refreshTypeDependentFields();
@@ -15595,7 +15628,9 @@ function openModal(ev, hazirTarih, hazirSaat){
     document.getElementById('f_videotitle').value = '';
     document.getElementById('f_shorttitle').value = '';
     document.getElementById('f_thumb').value = '';
-    document.getElementById('f_storykart').value = '';
+    document.getElementById('f_storyprompt').value = '';
+    document.getElementById('f_storykartlar').value = '';
+    document.getElementById('f_storyyonerge').value = '';
     dilKurulumu(null, 'video', '');
     document.getElementById('carouselSlides').innerHTML = '';
     refreshTypeDependentFields();
@@ -15808,7 +15843,9 @@ document.getElementById('saveBtn').addEventListener('click', async ()=>{
     // gizli olsa bile degeri DOM'da duruyor ve buradan geri yaziliyor;
     // tipe bakip bosaltmak, tipi yanlislikla degistirip geri alan
     // kullanicinin verisini silerdi.
-    storyKart: document.getElementById('f_storykart').value,
+    storyPrompt: document.getElementById('f_storyprompt').value,
+    storyKartlar: document.getElementById('f_storykartlar').value,
+    storyYonerge: document.getElementById('f_storyyonerge').value,
     slidePrompts: (currentEvent ? type==='carousel' : secilenTipler().includes('carousel'))
       ? Array.from({length:9},(_,i)=> (document.getElementById('slide'+(i+1))||{}).value || '') : []
   };
@@ -15878,7 +15915,9 @@ document.getElementById('saveBtn').addEventListener('click', async ()=>{
       if(c.type !== 'carousel') icerik.slidePrompts = [];
       // Ayni sebep: tek modaldan video + story birlikte secilebiliyor ve
       // content kopyalaniyor. Kart yonergeleri story'nin isi.
-      if(c.type !== 'story') delete icerik.storyKart;
+      if(c.type !== 'story'){
+        delete icerik.storyPrompt; delete icerik.storyKartlar; delete icerik.storyYonerge;
+      }
       // Hesap kaydin kendi platformuna ait: content kopyalandigi icin
       // acikca siliniyor, yoksa YouTube hesabi Instagram kaydina bulasirdi.
       delete icerik.hesapId;

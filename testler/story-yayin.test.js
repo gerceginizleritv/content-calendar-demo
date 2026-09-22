@@ -59,8 +59,9 @@ function bosKayit(ek){
     content:{ timezone:'Europe/Istanbul' }, updated_at: su()
   }, ek || {});
 }
-function tabloyuKur(ek){
+function tabloyuKur(ek, ekler){
   satirlar = [ bosKayit(ek) ];
+  (ekler || []).forEach((x, i)=> satirlar.push(bosKayit(Object.assign({ id:'st_' + (i+2) }, x))));
   durumlar = {};
   epostalar = [];
 }
@@ -86,7 +87,12 @@ const SQL = {
       && !r.deleted_at && r.publish_at && Date.parse(r.publish_at) <= SAAT
       && (!r.retry_after || Date.parse(r.retry_after) <= SAAT)
       && r.attempt_count < 3
-    ).sort((a,b)=> Date.parse(a.publish_at) - Date.parse(b.publish_at)).slice(0, p_limit);
+    // sql/46: publish_at esitse dosya adi (parca sirasi), sonra id.
+    ).sort((a,b)=>
+      (Date.parse(a.publish_at) - Date.parse(b.publish_at))
+      || String(a.media_name || '').localeCompare(String(b.media_name || ''))
+      || String(a.id).localeCompare(String(b.id))
+    ).slice(0, p_limit);
     return aday.map(r=>{
       r.publish_state = 'in_progress'; r.attempt_count += 1; r.updated_at = su();
       return { id:r.id, user_id:r.user_id, media_url:r.media_url, media_bytes:r.media_bytes,
@@ -455,6 +461,41 @@ async function turAt(gizli){
     ilerlet(dk(6)); await turAt();
     bak('3 denemede failed', satirlar[0].publish_state === 'failed', String(satirlar[0].attempt_count));
     bak('failed olunca bildirim gidiyor', epostalar.length === 1);
+  }
+
+  // ══════════════════════════════════════════════════════════════
+  // COK PARCALI STORY — SIRA
+  // ══════════════════════════════════════════════════════════════
+  // Birbirini takip eden kartlar ARKA ARKAYA cikmali: soru, hemen
+  // ardindan cevap. Worker bir turda birden cok kaydi SIRAYLA
+  // yayinliyor, yani ayni dakikadaki iki parca saniyeler arayla cikar
+  // -- eksik olan tek sey SIRANIN KENDISIYDI.
+  //
+  // 'order by publish_at' iki parca ayni saatteyse BERABERE kaliyor ve
+  // Postgres hangisini once verecegini garanti etmiyor: cevap karti
+  // sorudan once cikabilirdi. Her seferinde degil, BAZEN -- boyle bir
+  // hatayi uretimde fark etmek cok zor. sql/46 beraberligi dosya
+  // adiyla boziyor, cunku _k1 / _k2 sirayi zaten tasiyor.
+  console.log('[çok parçalı story · sıra]');
+  {
+    tabloyuKur(
+      { id:'st_k2', media_name:'2026-12-05_story_sokollu_k2.mp4', title:'Cevap' },
+      [{ id:'st_k1', media_name:'2026-12-05_story_sokollu_k1.mp4', title:'Soru' }]);
+    metaKur();
+    const r = await turAt();
+    bak('ikisi de AYNI turda alındı', r.govde.alinan === 2, JSON.stringify(r.govde));
+    bak('ikisi de yayınlandı',
+      satirlar.every(x=> x.publish_state === 'published'),
+      satirlar.map(x=> x.publish_state).join(','));
+    // ★ SIRA: k1 once yayinlanmali. Meta'ya giden sira cagri
+    // sirasiyla ayni oldugu icin external_id'ler bunu soyluyor.
+    const k1 = satirlar.find(x=> x.id === 'st_k1');
+    const k2 = satirlar.find(x=> x.id === 'st_k2');
+    bak('★ k1 k2’den ÖNCE yayınlandı',
+      k1.external_id === 'media_1' && k2.external_id === 'media_2',
+      'k1:' + k1.external_id + ' k2:' + k2.external_id);
+    // Ayni dakika: aralarinda dakikalar yok.
+    bak('aynı saatte, arka arkaya', k1.publish_at === k2.publish_at, String(k1.publish_at));
   }
 
   // ══════════════════════════════════════════════════════════════

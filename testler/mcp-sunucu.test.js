@@ -458,19 +458,23 @@ async function arac(anahtar, ad, args){
     // kayboluyor. Ayri alan tam da bu yuzden acildi.
     const kartPaket = { shootboard:1, source:'test', entries:[
       { id:'ev_md1', date:'2026-12-20', time:'11:53', type:'story', platform:'instagram',
-        content:{ storyKart:'damga: KAYIT\nkaynak: 1622 · Yedikule' } }]};
+        content:{ storyPrompt:'Dikey 9:16', storyKartlar:'{"buyuk":"SORU"}',
+                  storyYonerge:'damga: KAYIT\nkaynak: 1622 · Yedikule' } }]};
     const kr = await arac(ANAHTAR_A, 'shootboard_import', { package: kartPaket });
-    bak('storyKart içe aktarmadan geçiyor', kr.ok === true, JSON.stringify(kr).slice(0,140));
-    bak('storyKart content’e yazıldı',
-        /damga: KAYIT/.test(String((tablolar.calendar_events.find(x=> x.id==='ev_md1').content||{}).storyKart)),
-        JSON.stringify((tablolar.calendar_events.find(x=> x.id==='ev_md1').content||{}).storyKart));
+    bak('story alanları içe aktarmadan geçiyor', kr.ok === true, JSON.stringify(kr).slice(0,140));
+    const kic = tablolar.calendar_events.find(x=> x.id==='ev_md1').content || {};
+    bak('üç story alanı da content’e yazıldı',
+        /damga: KAYIT/.test(String(kic.storyYonerge)) && /9:16/.test(String(kic.storyPrompt))
+        && /SORU/.test(String(kic.storyKartlar)), JSON.stringify(kic).slice(0,200));
     const kliste = await arac(ANAHTAR_A, 'shootboard_list_entries', { since:'2026-12-20', until:'2026-12-20' });
     const kgeri = (kliste.entries || []).find(e=> e.id === 'ev_md1');
     // Yazilip geri okunamayan bir alan, asistanin "yok" sanip ustune
     // yazdigi bir alandir. dogrula.js'te tam olarak bu oldu.
-    bak('★ storyKart geri de okunuyor',
-        /damga: KAYIT/.test(String((kgeri || {}).content && kgeri.content.storyKart)),
-        JSON.stringify((kgeri || {}).content).slice(0,160));
+    bak('★ üçü de geri okunuyor',
+        !!(kgeri && kgeri.content && /damga: KAYIT/.test(String(kgeri.content.storyYonerge))
+           && /9:16/.test(String(kgeri.content.storyPrompt))
+           && /SORU/.test(String(kgeri.content.storyKartlar))),
+        JSON.stringify((kgeri || {}).content).slice(0,200));
 
     // ⛔ Bu alan uploaded'a DOKUNMAMALI.
     bak('⛔ mediaName yazmak uploaded’ı değiştirmiyor',
