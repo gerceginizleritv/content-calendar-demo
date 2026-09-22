@@ -1,3 +1,8 @@
 
 # Playwright testleri cikti klasoru verilmeden calistirildiginda buraya yaziyor
 undefined/
+
+# Python derleme onbellegi. pc/story-izle.py, story-yukle.py'yi ice
+# aktardigi icin calistirildigi her makinede pc/__pycache__ olusuyor.
+__pycache__/
+*.pyc
