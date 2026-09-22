@@ -580,6 +580,12 @@ async function turAt(gizli){
       satirlar[0].last_error);
     bak('Meta’ya hiç gidilmedi', cagrilar.fbBaslat === 0);
     bak('bildirim gitti', epostalar.length === 1);
+    // Bildirimde platform SABIT yaziliydi ve ilk gercek Facebook
+    // denemesinde "Platform: Instagram" dedi -- hatayi okuyan kisi
+    // yanlis yerde arardi.
+    bak('★ bildirim doğru platformu söylüyor',
+      epostalar.length > 0 && /Platform *: *Facebook/.test(epostalar[0].text),
+      (epostalar[0] || {}).text ? epostalar[0].text.split('\n').find(x=> /Platform/.test(x)) : '-');
   }
   {
     tabloyuKur({ platform:'facebook' }); metaKur();

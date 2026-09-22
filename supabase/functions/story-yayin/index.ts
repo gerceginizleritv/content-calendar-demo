@@ -46,7 +46,7 @@
 //
 // Dağıtım:  supabase functions deploy story-yayin --no-verify-jwt
 
-const SURUM = '1.2.0';
+const SURUM = '1.2.1';
 const UCLAR = ['GET / (servis bilgisi)', 'POST / (bir tur)'];
 
 const SUPABASE_URL   = Deno.env.get('SUPABASE_URL') ?? '';
@@ -707,9 +707,16 @@ async function kaydiIsle(k: any, bitis: number): Promise<string> {
 async function basarisizBildir(k: any, mesaj: string) {
   const alici = await hesapEpostasi(k.user_id);
   const ne = k.title ? `"${k.title}"` : 'başlıksız story';
+  // PLATFORM KAYITTAN OKUNUYOR, sabit yazılmıyor. Sabitti ve ilk
+  // gerçek Facebook denemesinde bildirim "Platform: Instagram" dedi --
+  // yani hatayı okuyan kişi yanlış yerde arardı. Şartname Bölüm 9
+  // bildirimde "hangi kayıt, hangi platform" istiyor; platformu
+  // uydurmak bilgi vermemekten kötü.
+  const pfAd = ({ instagram: 'Instagram', facebook: 'Facebook' } as Record<string, string>)[
+                 String(k.platform || '')] || String(k.platform || '?');
   await epostaGonder(alici, 'Shootboard · Story yayınlanamadı',
     `${ne} yayınlanamadı.\n\n`
-    + `Platform : Instagram\n`
+    + `Platform : ${pfAd}\n`
     + `Zaman    : ${k.publish_at ?? '-'}\n`
     + `Hata     : ${temizle(mesaj)}\n\n`
     + `Story 24 saatlik; bugünü kaçırmamak için elle yayınlamak isteyebilirsin.\n`
