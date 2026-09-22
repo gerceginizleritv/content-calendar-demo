@@ -22,7 +22,7 @@ dosyalık sürümü üretir.
 yeniden çalıştırılır, yoksa panele yapıştırılan sürüm eskide kalır.
 Testler bunu ayrıca denetliyor (testler/mcp-sunucu.test.js).
 """
-import io, os, json, hashlib
+import io, os, re, json, hashlib
 
 os.chdir(os.path.dirname(os.path.abspath(__file__)))
 KOK = os.path.join('..', '..', '..')
@@ -43,7 +43,8 @@ io.open('sema.ts', 'w', encoding='utf-8', newline='\n').write(sema_ts)
 
 # --- 3) tek-dosya.ts ---------------------------------------------------------
 dog = uyari + kaynak
-idx = io.open('index.ts', encoding='utf-8').read()
+idx_ham = io.open('index.ts', encoding='utf-8').read()
+idx = idx_ham
 
 # Tek dosyada modül sınırı yok: dışa aktarım sözcükleri kalkıyor.
 dog = dog.replace('\nexport function ', '\nfunction ').replace('\nexport const ', '\nconst ')
@@ -72,9 +73,38 @@ tek = (baslik + '\n// ---- dogrula.js ----\n\n' + dog.rstrip() +
        '\n\n// ---- index.ts ----\n\n' + idx.lstrip())
 io.open('tek-dosya.ts', 'w', encoding='utf-8', newline='\n').write(tek)
 
-# Kaynakların özeti: test "tek-dosya.ts eskimiş mi" diye buna bakıyor.
-ozet = hashlib.sha256((kaynak + sema_ts + io.open('index.ts', encoding='utf-8').read()).encode('utf-8')).hexdigest()
-io.open('.kaynak-ozeti', 'w', encoding='utf-8', newline='\n').write(ozet + '\n')
+# --- 4) sürüm denetimi -------------------------------------------------------
+# NEDEN BURADA DURUYOR. index.ts'teki SURUM, dağıtılan sürümün gerçekten
+# yerine geçip geçmediğini anlamanın TEK yolu: panelden yapıştırılan kod
+# sessizce eski kalabiliyor ve GET cevabı ikisinde de aynı görünüyor.
+#
+# Bu kural üç kez unutuldu. İlkinde eski sürüm "doğrulandı" sanıldı ve
+# sorun günlerce yanlış yerde arandı. Üçüncüsünde artık söze
+# bırakılmıyor: kaynak değişip sürüm aynı kalırsa bu betik DURUYOR ve
+# tek-dosya.ts'i üretmiyor. Testler de tek-dosya.ts'in bayat oluşuna
+# bakıyor, yani unutmanın sessiz kalacağı bir yol kalmıyor.
+surum = re.search(r"const SURUM = '([^']+)'", idx_ham)
+surum = surum.group(1) if surum else ''
+ozet = hashlib.sha256((kaynak + sema_ts + idx_ham).encode('utf-8')).hexdigest()
+
+onceki_ozet = onceki_surum = ''
+try:
+    satirlar = io.open('.kaynak-ozeti', encoding='utf-8').read().split()
+    onceki_ozet = satirlar[0] if satirlar else ''
+    onceki_surum = satirlar[1] if len(satirlar) > 1 else ''
+except IOError:
+    pass
+
+if onceki_ozet and onceki_ozet != ozet and onceki_surum and onceki_surum == surum:
+    raise SystemExit(
+        "\nDURDU: kaynak degisti ama SURUM ayni kaldi (%s).\n"
+        "\n"
+        "index.ts'teki SURUM sabitini yukselt, sonra bu betigi tekrar\n"
+        "calistir. Yukseltilmezse panele yapistirilan yeni surum ile\n"
+        "eski surum AYNI cevabi verir ve dagitimin yerine gectigini\n"
+        "dogrulamanin yolu kalmaz -- bu tam olarak iki kez yasandi.\n" % surum)
+
+io.open('.kaynak-ozeti', 'w', encoding='utf-8', newline='\n').write(ozet + '\n' + surum + '\n')
 
 print('dogrula.js, sema.ts ve tek-dosya.ts yeniden üretildi')
-print('kaynak özeti:', ozet[:16])
+print('surum:', surum, '· kaynak ozeti:', ozet[:16])

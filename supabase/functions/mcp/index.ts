@@ -65,14 +65,18 @@ const SERVIS_ANAHTARI = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY') ?? '';
 // fonksiyon yeniden dagitilmadi ama GET cevabi eski ve yeni surumde
 // birebir ayniydi, yani kontrol hicbir sey olcmedi ve hata baska
 // yerde arandi. Surum ve uc listesi artik cevapta.
+// 1.3.0 — publish_at hesabi sql/45'teki tetikleyiciye tasindi.
 // 1.2.0 — mediaName yazilabilir alan oldu.
 //
-// ⚠ BU NUMARAYI HER DAGITIMDA YUKSELT. Alan zaten "dagitilan surum
-// gercekten yerine gecti mi" sorusuna cevap vermek icin var; bir
-// degisiklikte yukseltilmezse eski ve yeni ayni cevabi verir ve alan
-// hicbir ise yaramaz. Bir kez boyle oldu ve sorun gunlerce yanlis
-// yerde arandi -- sonra ayni hata bu satirda tekrarlandi.
-const SURUM = '1.2.0';
+// ⚠ KAYNAK DEGISTIYSE BU NUMARA DA DEGISMELI.
+// Alan "dagitilan surum gercekten yerine gecti mi" sorusuna cevap
+// vermek icin var; degisiklikte yukseltilmezse eski ve yeni dagitim
+// ayni cevabi verir ve alan hicbir ise yaramaz.
+//
+// Bu kural UC KEZ unutuldu ve ucuncusunde artik soze birakilmadi:
+// birlestir.py, kaynak degisip surum ayni kalirsa HATA VERIP duruyor
+// ve tek-dosya.ts'i uretmiyor. Yani unutuldugu an belli oluyor.
+const SURUM = '1.3.0';
 
 const CORS: Record<string, string> = {
   'Access-Control-Allow-Origin': '*',

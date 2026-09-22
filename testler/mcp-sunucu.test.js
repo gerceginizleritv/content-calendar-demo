@@ -640,9 +640,19 @@ async function arac(anahtar, ad, args){
   const beklenen = crypto.createHash('sha256').update(
       fs.readFileSync(yol.join(KOK_DIZIN, 'ai', 'dogrula.js'), 'utf8')
       + oku('sema.ts') + oku('index.ts')).digest('hex');
+  // .kaynak-ozeti iki satir: kaynaklarin ozeti ve o an gecerli SURUM.
+  // Surum orada duruyor cunku birlestir.py "kaynak degisti ama surum
+  // ayni kaldi" halinde DURUYOR -- dagitilan surumun yerine gecip
+  // gecmedigini anlamanin tek yolu o numara ve uc kez yukseltilmesi
+  // unutuldu.
+  const ozetSatirlari = oku('.kaynak-ozeti').trim().split(/\s+/);
   bak('tek-dosya.ts kaynaklarla aynı sürümde',
-      oku('.kaynak-ozeti').trim() === beklenen,
+      ozetSatirlari[0] === beklenen,
       'birlestir.py yeniden çalıştırılmalı');
+  const kaynakSurumu = (/const SURUM = '([^']+)'/.exec(oku('index.ts')) || [])[1];
+  bak('kaydedilen sürüm index.ts ile aynı',
+      !!kaynakSurumu && ozetSatirlari[1] === kaynakSurumu,
+      String(ozetSatirlari[1]) + ' vs ' + String(kaynakSurumu));
   bak('dogrula.js ai/ ile aynı',
       oku('dogrula.js').includes(fs.readFileSync(yol.join(KOK_DIZIN, 'ai', 'dogrula.js'), 'utf8')));
   bak('tek-dosya.ts içe aktarma satırı taşımıyor',
