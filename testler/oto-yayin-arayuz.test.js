@@ -18,6 +18,22 @@
 //   3. uploaded ile durum AYRI. Kullanicinin isareti ile sistemin
 //      durumu ayni yerden okunursa kural kagit uzerinde kalir.
 const { chromium } = require('./araclar');
+// saveEvent proje secimini await ile cozuyor ve proje yoksa bir diyalog
+// aciyor. Bassiz tarayicida o diyalog hic kapanmadigi icin kaydetme
+// SESSIZCE asili kaliyor: hata yok, uyari yok, hicbir sey degismiyor.
+// Bu, "kaydettim ve alan korundu" diyen bir olcumu bos birakir -- ilk
+// yazdigimda tam olarak oyle oldu. Proje cozumu test icin sabitleniyor;
+// olculen sey content'in ne olduğu, projenin nasil secildigi degil.
+async function kaydet(page){
+  return await page.evaluate(async ()=>{
+    const eski = window.secilenProjeyiCoz;
+    window.secilenProjeyiCoz = async ()=> ({ id:'pr_test', name:'Test Projesi' });
+    document.getElementById('saveBtn').click();
+    await new Promise(r=> setTimeout(r, 400));
+    window.secilenProjeyiCoz = eski;
+  });
+}
+
 (async () => {
   const b = await chromium.launch({ });
   const page = await b.newPage({ viewport:{width:1250,height:950} });
@@ -212,17 +228,21 @@ const { chromium } = require('./araclar');
                     sistemIsareti: kutu.classList.contains('sistem'),
                     deger: kutu.dataset.val,
                     not: !document.getElementById('uploadSistemNot').hidden };
-    // ASIL OLCU: KAYDETMEK uploaded'i degistirmemeli. saveEvent kutunun
-    // dataset.val'ini okuyup uploaded'a yaziyor; gorunumu '1' yapsaydik
-    // sistemin isi kullanicinin isareti olarak kaydedilirdi.
-    document.getElementById('saveBtn').click();
-    await new Promise(r=> setTimeout(r, 300));
+    return { listeIle, listeOnce, modal };
+  });
+  // ASIL OLCU: KAYDETMEK uploaded'i degistirmemeli. saveEvent kutunun
+  // dataset.val'ini okuyup uploaded'a yaziyor; gorunumu '1' yapsaydik
+  // sistemin isi kullanicinin isareti olarak kaydedilirdi.
+  await kaydet(page);
+  const bittiSonra = await page.evaluate(()=>{
     const sonra = events.find(x=> x.id === 'ev_oto');
-    return { listeIle, listeOnce, modal,
-             uploadedSonra: sonra ? sonra.uploaded : null,
+    closeModal();
+    return { uploadedSonra: sonra ? sonra.uploaded : null,
+             baslikSonra: sonra ? sonra.title : null,
              durumSonra: sonra && sonra.yayin ? sonra.yayin.durum : null,
              bittiMi: kayitBitti(sonra) };
   });
+  Object.assign(bitti, bittiSonra);
   k('★ yayınlanan kayıt "henüz yüklenmemiş" listesinden ÇIKTI',
      !/OTO-YAYINLANAN/.test(bitti.listeIle) && /OTO-YAYINLANAN/.test(bitti.listeOnce),
      'yayınlıyken: ' + (/OTO-YAYINLANAN/.test(bitti.listeIle) ? 'VAR' : 'yok')
@@ -232,8 +252,71 @@ const { chromium } = require('./araclar');
   k('sistemin işareti kullanıcınınkinden ayırt ediliyor', bitti.modal.sistemIsareti === true);
   k('sebebi yazıyor', bitti.modal.not === true);
   // ⛔ Sartname Bolum 1.
+  // Once kaydetmenin gercekten calistigini dogrula: calismiyorsa asagidaki
+  // olcum bos olur ve "korundu" demek hicbir sey demek olmaz.
+  k('kaydetme gerçekten çalıştı', bitti.baslikSonra === 'OTO-YAYINLANAN', String(bitti.baslikSonra));
   k('★ kaydetmek uploaded’a YAZMIYOR', bitti.uploadedSonra === false, String(bitti.uploadedSonra));
   k('yayın durumu da korunuyor', bitti.durumSonra === 'published', String(bitti.durumSonra));
+
+  // ---- 6. Story kart yonergeleri ------------------------------------------
+  // ⛔ Bu veri slidePrompts'a KONULAMAZ ve sebebi kaydetme yolunda:
+  //      if(c.type !== 'carousel') icerik.slidePrompts = [];
+  //    ve content her kaydetmede bastan kuruluyor:
+  //      slidePrompts: type==='carousel' ? [...] : []
+  //    Yani story kaydina yazilan slidePrompts, kullanici o kaydi bir kez
+  //    acip kaydettiginde -- saatini duzeltmek icin bile -- SESSIZCE
+  //    siliniyor. Ayri bir alan actik; olculen sey o alanin ayni tuzaga
+  //    dusmemesi.
+  console.log('[story kart yönergeleri]');
+  const kart = await page.evaluate(async ()=>{
+    const e = events.find(x=> x.id === 'ev_oto');
+    e.content = Object.assign({}, e.content, {
+      storyKart: 'damga: KAYIT\nkaynak: 1622 · Yedikule\ncta: Tam bölüm kanalda',
+      shortTitle: 'KÖPRÜNÜN ALTINDA NE VAR?',
+      thumbPrompt: 'Dikey 9:16, altın saat, köprü siluети',
+      slidePrompts: ['bu karusel alani', 'story kaydinda yasamaz']
+    });
+    openModal(e);
+    const gorunur = (id)=> getComputedStyle(document.getElementById(id)).display !== 'none';
+    const acik = { kart: gorunur('storyKartWrap'), kisa: gorunur('shortTitleWrap'),
+                   kapak: gorunur('thumbWrap'), karusel: gorunur('carouselWrap'),
+                   deger: document.getElementById('f_storykart').value };
+    return { acik };
+  });
+  // KAYDET: tuzagin tetiklendigi an.
+  await kaydet(page);
+  const kartSonuc = await page.evaluate(()=>{
+    const gorunur = (id)=> getComputedStyle(document.getElementById(id)).display !== 'none';
+    const sonra = events.find(x=> x.id === 'ev_oto');
+    // Video kaydinda alan gorunmemeli.
+    openModal(events.find(x=> x.id === 'ev_video'));
+    const videoda = gorunur('storyKartWrap');
+    closeModal();
+    return { videoda,
+             kartSonra: (sonra.content || {}).storyKart || '',
+             kisaSonra: (sonra.content || {}).shortTitle || '',
+             kapakSonra: (sonra.content || {}).thumbPrompt || '',
+             slaytSonra: ((sonra.content || {}).slidePrompts || []).length,
+             temizden: (sanitizeEvent({ id:'x', type:'story', platform:'instagram',
+               date:'2026-12-20', time:'11:53',
+               content:{ storyKart: 'damga: KAYIT' } }).content || {}).storyKart };
+  });
+  Object.assign(kart, kartSonuc);
+  k('story kaydında görünüyor', kart.acik.kart === true);
+  k('video kaydında görünmüyor', kart.videoda === false);
+  k('story’de kapak metni de görünüyor', kart.acik.kisa === true);
+  k('story’de görsel prompt’u da görünüyor', kart.acik.kapak === true);
+  k('karusel alanı story’de açılmıyor', kart.acik.karusel === false);
+  k('alan kayıttan dolduruluyor', /damga: KAYIT/.test(kart.acik.deger), kart.acik.deger.slice(0,40));
+  // ASIL OLCU.
+  k('★ KAYDETMEK kart yönergelerini SİLMİYOR',
+     /damga: KAYIT/.test(kart.kartSonra) && /cta:/.test(kart.kartSonra), kart.kartSonra.slice(0,60));
+  k('kapak metni ve görsel prompt’u da korunuyor',
+     /KÖPRÜNÜN/.test(kart.kisaSonra) && /9:16/.test(kart.kapakSonra));
+  // Karsilastirma: slidePrompts AYNI kayitta silindi. Alanin neden ayri
+  // olmasi gerektiginin kaniti bu satir.
+  k('★ karşılaştırma: slidePrompts aynı kayıtta SİLİNDİ', kart.slaytSonra === 0, String(kart.slaytSonra));
+  k('★ sanitizeEvent düşürmüyor', kart.temizden === 'damga: KAYIT', String(kart.temizden));
 
   k('sayfa hatası yok', hatalar.length === 0, hatalar.slice(0,2).join(' | '));
   await b.close();

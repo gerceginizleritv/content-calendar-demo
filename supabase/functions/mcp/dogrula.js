@@ -270,7 +270,11 @@ function kayitOku(ham, sira, hatalar) {
       // tasiniyor: gecerli bir kimlik degilse ad olarak birakiliyor,
       // eslesmezse uygulama sessizce bos birakir.
       hesapId: metin(c.hesapId, 64),
-      hesap: metin(c.hesap, 80)
+      hesap: metin(c.hesap, 80),
+      // Story kartinin uretim yonergeleri. slidePrompts KULLANILAMAZ:
+      // o alan karuselin ve uygulama baska her tipte onu bosaltiyor --
+      // oraya yazilan sey, kullanici kaydi ilk actigi an kayboluyor.
+      storyKart: metin(c.storyKart, 2000)
     });
   }
   const projectRef = basvurular(ham.project, undefined, 1);

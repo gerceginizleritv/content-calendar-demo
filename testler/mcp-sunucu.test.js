@@ -452,6 +452,26 @@ async function arac(anahtar, ad, args){
     bak('boş mediaName bağı koparıyor',
         tablolar.calendar_events.find(x=> x.id === 'ev_md1').media_name === null,
         String(tablolar.calendar_events.find(x=> x.id === 'ev_md1').media_name));
+    // storyKart: story kartinin uretim yonergeleri. slidePrompts
+    // KULLANILAMAZ -- o alan karuselin ve uygulama baska her tipte onu
+    // bosaltiyor, yani oraya yazilan sey kullanici kaydi ilk actiginda
+    // kayboluyor. Ayri alan tam da bu yuzden acildi.
+    const kartPaket = { shootboard:1, source:'test', entries:[
+      { id:'ev_md1', date:'2026-12-20', time:'11:53', type:'story', platform:'instagram',
+        content:{ storyKart:'damga: KAYIT\nkaynak: 1622 · Yedikule' } }]};
+    const kr = await arac(ANAHTAR_A, 'shootboard_import', { package: kartPaket });
+    bak('storyKart içe aktarmadan geçiyor', kr.ok === true, JSON.stringify(kr).slice(0,140));
+    bak('storyKart content’e yazıldı',
+        /damga: KAYIT/.test(String((tablolar.calendar_events.find(x=> x.id==='ev_md1').content||{}).storyKart)),
+        JSON.stringify((tablolar.calendar_events.find(x=> x.id==='ev_md1').content||{}).storyKart));
+    const kliste = await arac(ANAHTAR_A, 'shootboard_list_entries', { since:'2026-12-20', until:'2026-12-20' });
+    const kgeri = (kliste.entries || []).find(e=> e.id === 'ev_md1');
+    // Yazilip geri okunamayan bir alan, asistanin "yok" sanip ustune
+    // yazdigi bir alandir. dogrula.js'te tam olarak bu oldu.
+    bak('★ storyKart geri de okunuyor',
+        /damga: KAYIT/.test(String((kgeri || {}).content && kgeri.content.storyKart)),
+        JSON.stringify((kgeri || {}).content).slice(0,160));
+
     // ⛔ Bu alan uploaded'a DOKUNMAMALI.
     bak('⛔ mediaName yazmak uploaded’ı değiştirmiyor',
         tablolar.calendar_events.find(x=> x.id === 'ev_md2').uploaded === false,

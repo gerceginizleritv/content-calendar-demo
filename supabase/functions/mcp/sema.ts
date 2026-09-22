@@ -212,6 +212,11 @@ export const SEMA = {
        },
        "description": "Carousel only: one prompt/description per slide, in order."
       },
+      "storyKart": {
+       "type": "string",
+       "maxLength": 2000,
+       "description": "Story only: production directives for THIS card, one \"key: value\" per line, e.g. \"damga: KAYIT\", \"kaynak: 1622 · Yedikule\", \"cta: Tam bolum kanalda\", \"muzik: soru\", \"sure: 5\". A multi-card story is several entries (one per card, k1/k2 in mediaName), so this describes one card. Do NOT use slidePrompts for this: that field belongs to carousels and the app clears it on every other post type, so anything left there is lost the first time the user saves the entry."
+      },
       "timezone": {
        "type": "string",
        "maxLength": 64,
