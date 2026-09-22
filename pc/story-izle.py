@@ -169,7 +169,7 @@ def dosyayi_isle(y, yol, ad, otomatik_ac, zorla):
     # Once yukleseydik, kayit acilana kadar her turda R2'ye ayni dosyayi
     # bir daha koyardik.
     try:
-        kayit_id = y.kaydi_bul(kok, anahtar, ad)
+        kayit_idler = y.kaydi_bul(kok, anahtar, ad)
     except SystemExit as e:
         # sys.exit(1) SystemExit(1) uretiyor; str() alinirsa ekrana "1"
         # yaziliyor ve hicbir sey anlatmiyor. Metin varsa o, yoksa
@@ -190,9 +190,16 @@ def dosyayi_isle(y, yol, ad, otomatik_ac, zorla):
             return ('adres-sorunlu', '; '.join(sorunlar))
         print("  (--zorla verildi, devam ediliyor)")
 
-    kayit = y.kayda_yaz(kok, anahtar, kayit_id, url, boyut, mime, ad, otomatik_ac)
-    return ('baglandi', f"{kayit['id']} · yayin {kayit.get('publishAt') or '?'} · "
-                        f"otomatik {'ACIK' if kayit.get('autoPublish') else 'kapali'}")
+    # Birden cok kayit olabilir: Shootboard'da her sosyal medya ayri
+    # kayit, ayni story IG'ye ve FB'ye gidiyorsa iki kayit ayni dosyayi
+    # gosteriyor. Hepsine bagliyoruz.
+    notlar = []
+    for kayit_id in kayit_idler:
+        kayit = y.kayda_yaz(kok, anahtar, kayit_id, url, boyut, mime, ad, otomatik_ac)
+        notlar.append(f"{kayit.get('platform') or '?'} {kayit['id']} · "
+                      f"yayin {kayit.get('publishAt') or '?'} · "
+                      f"otomatik {'ACIK' if kayit.get('autoPublish') else 'kapali'}")
+    return ('baglandi', ' | '.join(notlar))
 
 
 def main():

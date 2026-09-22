@@ -4864,6 +4864,7 @@ const LANG = {
     ai_rozet: (k)=> `Added by ${k}`,
     ai_uyari_proje: (ad)=> `Project “${ad}” not found — added without a project.`,
     ai_uyari_mekan: (ad)=> `Place “${ad}” not found — that stop was skipped.`,
+    ai_uyari_medya_adi: (n)=> `${n} entr${n===1?'y':'ies'} carried a file name — ignored here. File names are set through the connector.`,
     ai_say_entries: (n)=> `${n} entr${n===1?'y':'ies'}`,
     ai_say_projects: (n)=> `${n} project${n===1?'':'s'}`,
     ai_say_places: (n)=> `${n} place${n===1?'':'s'}`,
@@ -5835,6 +5836,7 @@ const LANG = {
     ai_rozet: (k)=> `${k} ekledi`,
     ai_uyari_proje: (ad)=> `“${ad}” projesi bulunamadı — projesiz eklendi.`,
     ai_uyari_mekan: (ad)=> `“${ad}” mekanı bulunamadı — o durak atlandı.`,
+    ai_uyari_medya_adi: (n)=> `${n} kayıtta dosya adı vardı — burada uygulanmadı. Dosya adı bağlantı üzerinden yazılıyor.`,
     ai_say_entries: (n)=> `${n} kayıt`,
     ai_say_projects: (n)=> `${n} proje`,
     ai_say_places: (n)=> `${n} mekan`,
@@ -17441,6 +17443,13 @@ async function aiPaketiUygula(cozum, kaynakEk){
   if(cozum.projects.length) saveProjects();
 
   // -- kayitlar
+  // mediaName GERCEK BIR SUTUN ve tarayici onu yazmiyor: toRow() bulut
+  // yazimini butun satir olarak gonderiyor, o sutun oraya konsaydi
+  // uygulamadaki bayat kopya, PC yukleyicisinin yazdigi adi ezerdi.
+  // Yani burada uygulanamaz -- ama SESSIZCE dusmesin: bu depoda tam
+  // olarak boyle kayiplar yasandi (cok dilli baslik, MCP bayragi).
+  const medyaAdli = cozum.entries.filter(k=> k.mediaName).length;
+  if(medyaAdli) uyarilar.push(t('ai_uyari_medya_adi')(medyaAdli));
   cozum.entries.forEach(k=>{
     const eski = k.id ? events.find(e=> e.id === k.id) : null;
     const proje = projeBul(k.projectRef);
@@ -17688,6 +17697,11 @@ function impPaketEkrani(){
   c.entries.forEach(k=>{ if(k.projectRef && !bul(k.projectRef, projeAdaylari)) eksikProje.add(k.projectRef); });
   c.scripts.concat(c.ideas).forEach(x=>{ (x.projectRefs || []).forEach(r=>{ if(!bul(r, projeAdaylari)) eksikProje.add(r); }); });
   c.projects.forEach(p=>{ (p.placeRefs || []).forEach(r=>{ if(!bul(r, mekanAdaylari)) eksikMekan.add(r); }); });
+  // Ayni uyari uygulama aninda da veriliyor; burada ONCEDEN gorunmesi
+  // icin: kullanici Ice Aktar'a basmadan once dosya adlarinin
+  // uygulanmayacagini bilsin.
+  const medyaAdli = c.entries.filter(k=> k.mediaName).length;
+  if(medyaAdli) uyarilar.push(t('ai_uyari_medya_adi')(medyaAdli));
   eksikProje.forEach(ad=> uyarilar.push(t('ai_uyari_proje')(ad)));
   eksikMekan.forEach(ad=> uyarilar.push(t('ai_uyari_mekan')(ad)));
   document.getElementById('imp_uyari').textContent = uyarilar.length

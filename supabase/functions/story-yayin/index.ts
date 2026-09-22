@@ -45,7 +45,7 @@
 //
 // Dağıtım:  supabase functions deploy story-yayin --no-verify-jwt
 
-const SURUM = '1.0.0';
+const SURUM = '1.1.0';
 const UCLAR = ['GET / (servis bilgisi)', 'POST / (bir tur)'];
 
 const SUPABASE_URL   = Deno.env.get('SUPABASE_URL') ?? '';
@@ -396,7 +396,29 @@ const izTemizle = (id: string) => rpc('story_iz_konteyner', { p_id: id, p_ref: n
 // ══════════════════════════════════════════════════════════════════
 // TEK KAYDIN YAYINI — Bölüm 5
 // ══════════════════════════════════════════════════════════════════
+// Bugün yayınlayabildiğimiz platformlar. Şartname Bölüm 6 (Facebook
+// sayfa story'si) kullanıcı kararıyla ertelendi ve TAMAMEN FARKLI bir
+// akış: Instagram dosyayı URL'den çekiyor, Facebook dosyayı yükletiyor.
+const YAYINLANABILIR = ['instagram'];
+
 async function kaydiYayinla(k: any, bitis: number): Promise<string> {
+  // ⚠ PLATFORM KONTROLÜ, HER ŞEYDEN ÖNCE.
+  // Shootboard'da her sosyal medya AYRI kayıt. Kuyruk `type = 'story'`
+  // süzüyor, platform süzmüyor -- yani Facebook için planlanmış bir
+  // kayıt da buraya gelir. Bu kontrol olmasaydı o kayıt INSTAGRAM'A
+  // yayınlanırdı: kullanıcının Facebook'a koyduğu story, Instagram'da
+  // ikinci kez çıkar ve hiçbir yerde hata görünmezdi.
+  //
+  // Hata değil ERTELEME: kayıt bozuk değil, sıra henüz gelmedi. Deneme
+  // hakkı harcanmıyor, sebep last_error'da görünüyor, ve Facebook
+  // desteği geldiği gün bu kayıtlar elle hiçbir şey yapılmadan
+  // yayınlanmaya başlıyor.
+  const pf = String(k.platform || 'instagram');
+  if (!YAYINLANABILIR.includes(pf)) {
+    await rpc('story_ertele', { p_id: k.id, p_dakika: 180,
+      p_sebep: `${pf} yayını henüz kurulmadı; kayıt bekliyor. Şimdilik elle yayınla.` });
+    return 'platform-desteklenmiyor';
+  }
   // Katman 2: external_id dolu ise bu kayıt zaten yayınlanmış.
   if (k.external_id) {
     await rpc('story_yayinlandi', { p_id: k.id, p_external_id: k.external_id });

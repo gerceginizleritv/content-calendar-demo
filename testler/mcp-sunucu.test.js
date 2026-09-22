@@ -401,6 +401,63 @@ async function arac(anahtar, ad, args){
   bak('geçersiz platform reddediliyor, sebebi yazıyor',
       bozukTur.ok === false && /platform/.test(JSON.stringify(bozukTur)), JSON.stringify(bozukTur).slice(0,140));
 
+  // ══════════════════════════════════════════════════════════════
+  // mediaName — PLANLAMA TARAFI DOSYA ADINI KAYDA YAZIYOR
+  // ══════════════════════════════════════════════════════════════
+  // PC yukleyicisi kaydi once TAM DOSYA ADINDAN ariyor, bulamazsa
+  // dosya adindaki tarihe dusuyor. Tarihle arama, o gunde birden
+  // cok story varsa belirsiz -- ve belirsizlikte yukleyici duruyor.
+  // Cok parcali story (k1, k2) ile "ayni gun IG + FB" tam olarak o
+  // durumu yaratiyor. Cozum, adi PLANLAMA aninda kayda yazmak.
+  //
+  // Alan content'in ICINDE DEGIL, gercek sutun. Sebebi bu depoda iki
+  // kez yasandi: uygulama content'i butun olarak yaziyor ve orada
+  // duran bir alan, kullanici kaydi bir kez acip kaydettiginde
+  // sessizce siliniyor.
+  console.log('[mediaName: planlama dosya adini yaziyor]');
+  {
+    const paket = { shootboard:1, source:'test', entries:[
+      { id:'ev_md1', date:'2026-12-20', time:'11:53', type:'story', platform:'instagram',
+        title:'Sokollu (1/2)', mediaName:'2026-12-20_story_sokollu_k1.mp4' },
+      { id:'ev_md2', date:'2026-12-20', time:'11:55', type:'story', platform:'instagram',
+        title:'Sokollu (2/2)', mediaName:'2026-12-20_story_sokollu_k2.mp4' }
+    ]};
+    const r = await arac(ANAHTAR_A, 'shootboard_import', { package: paket });
+    bak('mediaName taşıyan paket kabul edildi', r.ok === true, JSON.stringify(r).slice(0,160));
+    const s1 = tablolar.calendar_events.find(x=> x.id === 'ev_md1');
+    bak('mediaName GERÇEK SÜTUNA yazıldı',
+        s1 && s1.media_name === '2026-12-20_story_sokollu_k1.mp4', s1 && String(s1.media_name));
+    bak('content’in İÇİNE yazılmadı',
+        s1 && !(s1.content || {}).mediaName, JSON.stringify(s1 && s1.content).slice(0,120));
+    // Ayni gunde iki story: tarihle arama artik belirsiz, ad ile degil.
+    const s2 = tablolar.calendar_events.find(x=> x.id === 'ev_md2');
+    bak('aynı günün ikinci parçası ayrı adla duruyor',
+        s2 && s2.media_name === '2026-12-20_story_sokollu_k2.mp4', s2 && String(s2.media_name));
+
+    const liste = await arac(ANAHTAR_A, 'shootboard_list_entries', { since:'2026-12-20', until:'2026-12-20' });
+    const geri = (liste.entries || []).find(e=> e.id === 'ev_md1');
+    bak('list_entries mediaName’i geri veriyor',
+        geri && geri.mediaName === '2026-12-20_story_sokollu_k1.mp4', JSON.stringify(geri).slice(0,160));
+
+    // Yazilip geri okunamayan bir alan olmasin: update ile de degisiyor.
+    const d = await arac(ANAHTAR_A, 'shootboard_update_entry',
+                         { id:'ev_md1', mediaName:'2026-12-20_story_sokollu_k1_v2.mp4' });
+    bak('update_entry mediaName değiştiriyor',
+        d.ok === true && d.entry.mediaName === '2026-12-20_story_sokollu_k1_v2.mp4',
+        JSON.stringify(d).slice(0,160));
+    bak('değişen alan bildiriliyor',
+        JSON.stringify(d.changed) === JSON.stringify(['mediaName']), JSON.stringify(d.changed));
+    // Bos dizge = bagi kopar. Baska turlu kaldirmanin yolu olmazdi.
+    const sil = await arac(ANAHTAR_A, 'shootboard_update_entry', { id:'ev_md1', mediaName:'' });
+    bak('boş mediaName bağı koparıyor',
+        tablolar.calendar_events.find(x=> x.id === 'ev_md1').media_name === null,
+        String(tablolar.calendar_events.find(x=> x.id === 'ev_md1').media_name));
+    // ⛔ Bu alan uploaded'a DOKUNMAMALI.
+    bak('⛔ mediaName yazmak uploaded’ı değiştirmiyor',
+        tablolar.calendar_events.find(x=> x.id === 'ev_md2').uploaded === false,
+        String(tablolar.calendar_events.find(x=> x.id === 'ev_md2').uploaded));
+  }
+
   console.log('[silme gerçekten yok]');
   const silDene = await arac(ANAHTAR_A, 'shootboard_delete_entry', { id:'ev_1' });
   bak('silme aracı çağrılamıyor', silDene.ok === false && /unknown tool/.test(silDene.error), String(silDene.error).slice(0,90));

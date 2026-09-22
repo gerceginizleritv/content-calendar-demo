@@ -169,6 +169,11 @@ export const SEMA = {
      "default": false,
      "description": "Already posted. Leave false for anything planned."
     },
+    "mediaName": {
+     "type": "string",
+     "maxLength": 300,
+     "description": "File name of the rendered media for this entry, e.g. \"2026-10-05_story_sokollu_k1.mp4\". The desktop uploader finds the entry by this name. Set it whenever you plan a story: without it the uploader falls back to the date in the file name, and a day holding more than one story is ambiguous — it then refuses to guess and stops. Stored on the entry itself, not inside content, so the app cannot overwrite it. The in-app Import window ignores this field; it is applied through the MCP tools."
+    },
     "content": {
      "type": "object",
      "description": "What actually goes out. All optional.",

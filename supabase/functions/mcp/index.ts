@@ -195,6 +195,11 @@ function kayitDisari(r: any, projeler: any[]) {
   //   uploaded     = kullanicinin isareti ("portala yukledim")
   //   publishState = sistemin durumu (bekliyor / yayinlandi / hata)
   // Ikisi karistirilmasin diye yan yana duruyorlar.
+  // mediaName TUR AYRIMI YAPMADAN veriliyor: artik yazilabilir bir alan
+  // (shootboard_import ve shootboard_update_entry). Yalnizca story'de
+  // gosterilseydi, baska bir ture yazan asistan yazdigini geri okuyamaz,
+  // alan da yazilip okunamayan bir sey olurdu.
+  if (r.media_name) o.mediaName = r.media_name;
   if (r.type === 'story') {
     o.autoPublish  = r.auto_publish === true;
     o.publishState = r.publish_state || 'pending';
@@ -430,7 +435,11 @@ async function aktar(kim: Kim, ham: unknown, ozet: string | null = null) {
     // bir sonraki açılışta o addan sessizce proje üretirdi. Uyarı yeter.
     if (k.projectRef !== undefined) { icerik.projectId = proje ? proje.id : ''; icerik.concept = proje ? proje.name : ''; }
     const degisen: any = { type: k.type, platform: k.platform, title: k.title, post_date: k.date,
-                           post_time: k.time === undefined ? undefined : (k.time || null), uploaded: k.uploaded };
+                           post_time: k.time === undefined ? undefined : (k.time || null), uploaded: k.uploaded,
+                           // Gercek sutun, content'in icinde degil: uygulama content'i
+                           // butun olarak yaziyor ve orada dursa bir kayit acilip
+                           // kaydedildiginde sessizce silinirdi.
+                           media_name: k.mediaName };
     Object.keys(degisen).forEach(kk => { if (degisen[kk] === undefined) delete degisen[kk]; });
     if (k.projectRef !== undefined) degisen.project_id = proje ? proje.id : null;
     if (eski) {
@@ -442,6 +451,7 @@ async function aktar(kim: Kim, ham: unknown, ozet: string | null = null) {
       kayitSatirlari.push({ id, user_id: uid, type: k.type, platform: k.platform, title: k.title || '', post_date: k.date,
                             post_time: k.time || null, uploaded: k.uploaded === true, workspace_id: null,
                             project_id: proje ? proje.id : null, deleted_at: null,
+                            media_name: k.mediaName || null,
                             content: { caption: '', hashtags: '', videoTitle: '', shortTitle: '', thumbPrompt: '', timezone: '',
                                        concept: proje ? proje.name : '',
                                        projectId: proje ? proje.id : '', slidePrompts: [], ...icerik } });
@@ -630,10 +640,10 @@ const ARACLAR = [
     name: 'shootboard_update_entry',
     title: 'Update one entry',
     description:
-      'Change one existing calendar entry — its date, time, title, upload state or ' +
-      'text fields. Only the fields you pass are changed; everything else is left ' +
-      'alone. Find the id with shootboard_list_entries. There is no delete tool: ' +
-      'entries can only be removed by the user, inside the app.',
+      'Change one existing calendar entry — its date, time, title, upload state, ' +
+      'media file name or text fields. Only the fields you pass are changed; ' +
+      'everything else is left alone. Find the id with shootboard_list_entries. ' +
+      'There is no delete tool: entries can only be removed by the user, inside the app.',
     inputSchema: {
       type: 'object',
       properties: {
@@ -644,6 +654,7 @@ const ARACLAR = [
         type: alan('type'),
         platform: alan('platform'),
         uploaded: alan('uploaded'),
+        mediaName: alan('mediaName'),
         content: { ...ICERIK, description: 'Text fields to change. Fields you leave out keep their current value.' }
       },
       required: ['id'],
@@ -731,8 +742,8 @@ async function aracUpdateEntry(kim: Kim, a: any) {
   const satir = Array.isArray(veri) && veri[0];
   if (!satir) return aracHata(`id: no entry "${id}" in this account. It may have been deleted, or it belongs to someone else.`);
 
-  const degisti = ['date', 'time', 'title', 'type', 'platform', 'uploaded', 'content'].filter(k => a[k] !== undefined);
-  if (!degisti.length) return aracHata('nothing to change: pass at least one of date, time, title, type, platform, uploaded, content.');
+  const degisti = ['date', 'time', 'title', 'type', 'platform', 'uploaded', 'mediaName', 'content'].filter(k => a[k] !== undefined);
+  if (!degisti.length) return aracHata('nothing to change: pass at least one of date, time, title, type, platform, uploaded, mediaName, content.');
 
   // DOGRULAMA YENIDEN YAZILMIYOR. Mevcut satirla gelen alanlar birlestirilip
   // TEK KAYITLIK bir paket kuruluyor ve paketiCoz'dan geciriliyor -- Ice
@@ -748,6 +759,7 @@ async function aracUpdateEntry(kim: Kim, a: any) {
     platform: a.platform !== undefined ? a.platform : satir.platform,
     title: a.title !== undefined ? a.title : (satir.title || ''),
     uploaded: a.uploaded !== undefined ? a.uploaded : !!satir.uploaded,
+    mediaName: a.mediaName !== undefined ? a.mediaName : (satir.media_name || ''),
     content: birlesikIcerik
   };
   const paket: any = paketiCoz({ shootboard: 1, source: 'mcp', entries: [aday] });
@@ -765,6 +777,8 @@ async function aracUpdateEntry(kim: Kim, a: any) {
   if (a.type !== undefined) yama.type = temiz.type;
   if (a.platform !== undefined) yama.platform = temiz.platform;
   if (a.uploaded !== undefined) yama.uploaded = !!temiz.uploaded;
+  // Bos dizge "adi kaldir" demek: bagi koparmanin baska yolu olmasin.
+  if (a.mediaName !== undefined) yama.media_name = temiz.mediaName || null;
   if (a.content !== undefined) yama.content = { ...eski, ...(temiz.content || {}) };
 
   await rest(`/calendar_events?id=eq.${encodeURIComponent(id)}&user_id=eq.${uid}`,

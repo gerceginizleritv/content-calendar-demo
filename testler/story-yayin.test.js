@@ -92,7 +92,7 @@ const SQL = {
         media_mime:r.media_mime, publish_at:r.publish_at, attempt_count:r.attempt_count,
         idem_key:r.idem_key, external_id:r.external_id, title:r.title, content:r.content,
         publish_ref:r.publish_ref, publish_ref_at:r.publish_ref_at,
-        publish_called_at:r.publish_called_at };
+        publish_called_at:r.publish_called_at, platform:r.platform };
     });
   },
   story_iz_konteyner({ p_id, p_ref }){
@@ -395,6 +395,35 @@ async function turAt(gizli){
     ilerlet(dk(6)); await turAt();
     bak('3 denemede failed', satirlar[0].publish_state === 'failed', String(satirlar[0].attempt_count));
     bak('failed olunca bildirim gidiyor', epostalar.length === 1);
+  }
+
+  // ══════════════════════════════════════════════════════════════
+  // PLATFORM — YANLIS YERE YAYIN
+  // ══════════════════════════════════════════════════════════════
+  // Shootboard'da her sosyal medya AYRI kayit: ayni story hem IG'ye
+  // hem FB'ye gidiyorsa takvimde iki kayit var. Kuyruk sorgusu
+  // `type = 'story'` suzuyor, platform suzmuyor -- yani FB kaydi da
+  // worker'a gelir. Kontrol olmasaydi o kayit INSTAGRAM'A yayinlanir,
+  // kullanicinin Facebook'a koydugu story Instagram'da IKINCI KEZ
+  // cikar ve hicbir yerde hata gorunmezdi.
+  console.log('[platform · yanlış yere yayın]');
+  {
+    tabloyuKur({ platform:'facebook' }); metaKur();
+    await turAt();
+    bak('★ Facebook kaydı Instagram’a YAYINLANMADI',
+      cagrilar.media === 0 && cagrilar.publish === 0,
+      'media:' + cagrilar.media + ' publish:' + cagrilar.publish);
+    bak('hata değil, erteleme: kayıt pending kaldı', satirlar[0].publish_state === 'pending');
+    bak('deneme hakkı harcanmadı', satirlar[0].attempt_count === 0, String(satirlar[0].attempt_count));
+    // Sessizce dusmemeli: kullanici neden yayinlanmadigini gorebilmeli.
+    bak('sebebi kayda yazıldı',
+      /facebook/i.test(String(satirlar[0].last_error)), satirlar[0].last_error);
+    bak('bildirim üretmiyor (bu bir arıza değil)', epostalar.length === 0);
+  }
+  {
+    tabloyuKur({ platform:'instagram' }); metaKur();
+    await turAt();
+    bak('Instagram kaydı normal yayınlanıyor', satirlar[0].publish_state === 'published');
   }
 
   // ------------------------------------------------- 8. token ölü

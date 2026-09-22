@@ -276,6 +276,10 @@ function kayitOku(ham, sira, hatalar) {
     title: metin(ham.title, 300),
     projectRef: projectRef ? projectRef[0] : undefined,
     uploaded: mantik(ham.uploaded),
+    // Render ciktisinin dosya adi. content'in ICINDE DEGIL: uygulama
+    // content'i butun olarak yaziyor, orada dursa bir kayit acilip
+    // kaydedildiginde sessizce silinirdi.
+    mediaName: metin(ham.mediaName, 300),
     content
   });
 }

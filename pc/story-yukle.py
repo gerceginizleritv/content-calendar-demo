@@ -12,9 +12,14 @@ NE YAPAR
   1. Dosyayi Cloudflare R2'ye (ya da S3'e) koyar, dogru Content-Type ile
   2. Yayinlanan adresi GERCEKTEN DENER -- Meta'nin cekebilecegi bir
      adres mi diye (asagida "NEDEN DENIYOR")
-  3. Shootboard'da o dosyaya ait story kaydini bulur
-  4. Kayda mediaUrl/mediaBytes/mediaMime/mediaName yazar ve
+  3. Shootboard'da o dosyaya ait story kaydini (ya da KAYITLARINI) bulur
+  4. Her birine mediaUrl/mediaBytes/mediaMime/mediaName yazar ve
      autoPublish'i acar
+
+  Neden birden cok kayit: Shootboard'da her sosyal medya AYRI kayit.
+  Ayni story hem Instagram'a hem Facebook'a gidiyorsa iki kayit var ve
+  ikisi de ayni dosyayi gosteriyor. Kayitlarda mediaName yaziliysa
+  ikisine de baglanir -- tahmin degil, kayitlarin kendi istegi.
 
 NEDEN ADRESI DENIYOR
   Instagram dosyayi PUBLIC BIR HTTPS URL'DEN CEKIYOR ve:
@@ -139,8 +144,23 @@ def adresi_dene(url, beklenen_mime, beklenen_boyut):
 
 
 def kaydi_bul(kok, anahtar, dosya_adi, kayit_id=None):
+    """Bu dosyanin baglanacagi kayit KIMLIKLERI. Her zaman liste doner.
+
+    Birden cok olabilmesinin sebebi Shootboard'in kendi modeli: her sosyal
+    medya icin AYRI kayit aciliyor. Ayni story Instagram'a ve Facebook'a
+    gidiyorsa takvimde iki kayit var ve ikisi de AYNI dosyayi gosteriyor.
+
+    Ama "birden cok" her zaman ayni sey degil:
+
+      mediaName ile eslesti -> kayitlarin KENDISI bu dosyayi adiyla
+        istemis. Tahmin yok, hepsine baglaniyor.
+
+      tarih ile eslesti     -> dosya adindaki gunde birden cok story var
+        ve hangisi oldugu BILINMIYOR. Burada secim yapilmiyor; yanlis
+        kayda yazmak, yazmamaktan kotu.
+    """
     if kayit_id:
-        return kayit_id
+        return [kayit_id]
     r = requests.get(f"{kok}/api/entries/find",
                      params={"file": dosya_adi},
                      headers={"Authorization": f"Bearer {anahtar}"}, timeout=30)
@@ -148,15 +168,27 @@ def kaydi_bul(kok, anahtar, dosya_adi, kayit_id=None):
     if not veri.get("ok"):
         sys.exit("Kayit bulunamadi: " + str(veri.get("error") or r.status_code))
     kayitlar = veri.get("entries") or []
+    nasil = veri.get("matchedBy")
+
+    if nasil == "mediaName" and kayitlar:
+        for k in kayitlar:
+            print(f"  kayit: {k['id']}  {k['date']} {k['time']}  "
+                  f"{k.get('platform') or '?'}  {k.get('title') or '(basliksiz)'}")
+        if len(kayitlar) > 1:
+            print(f"  ({len(kayitlar)} kayit ayni dosyayi istiyor, hepsine baglanacak)")
+        return [k["id"] for k in kayitlar]
+
     if len(kayitlar) == 1:
         k = kayitlar[0]
         print(f"  kayit: {k['id']}  {k['date']} {k['time']}  {k.get('title') or '(basliksiz)'}")
-        return k["id"]
-    # Birden cok aday varsa SECIM YAPILMIYOR: yanlis kayda yazmak,
-    # yazmamaktan kotu.
-    print("\nO tarihte birden cok story var. --id ile birini sec:\n")
+        return [k["id"]]
+
+    print("\nO tarihte birden cok story var ve hangisi oldugu belli degil.")
+    print("Kaliciysa: planlama tarafinda kayitlara mediaName yaz, bu is bir")
+    print("daha sormaz. Simdilik --id ile birini sec:\n")
     for k in kayitlar:
-        print(f"  --id {k['id']}   {k['date']} {k['time']}  {k.get('title') or '(basliksiz)'}")
+        print(f"  --id {k['id']}   {k['date']} {k['time']}  "
+              f"{k.get('platform') or '?'}  {k.get('title') or '(basliksiz)'}")
     sys.exit(1)
 
 
@@ -213,15 +245,15 @@ def main():
     else:
         print("  adres temiz: 200, dogru tur, yonlendirme yok")
 
-    kayit_id = kaydi_bul(kok, anahtar, ad, a.id)
-    kayit = kayda_yaz(kok, anahtar, kayit_id, url, boyut, mime, ad, not a.otomatik_acma)
-
-    print(f"\nBAGLANDI  {kayit['id']}")
-    print(f"  yayin    : {kayit.get('publishAt') or '(tarih/saat eksik)'}")
-    print(f"  otomatik : {'ACIK' if kayit.get('autoPublish') else 'kapali'}")
-    print(f"  durum    : {kayit.get('publishState')}")
-    if not kayit.get("autoPublish"):
-        print("  (Shootboard'da 'Otomatik yayinla' kutusunu isaretlemeyi unutma)")
+    kayit_idler = kaydi_bul(kok, anahtar, ad, a.id)
+    for kayit_id in kayit_idler:
+        kayit = kayda_yaz(kok, anahtar, kayit_id, url, boyut, mime, ad, not a.otomatik_acma)
+        print(f"\nBAGLANDI  {kayit['id']}  ({kayit.get('platform') or '?'})")
+        print(f"  yayin    : {kayit.get('publishAt') or '(tarih/saat eksik)'}")
+        print(f"  otomatik : {'ACIK' if kayit.get('autoPublish') else 'kapali'}")
+        print(f"  durum    : {kayit.get('publishState')}")
+        if not kayit.get("autoPublish"):
+            print("  (Shootboard'da 'Otomatik yayinla' kutusunu isaretlemeyi unutma)")
     print()
 
 
