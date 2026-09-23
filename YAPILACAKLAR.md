@@ -6,6 +6,85 @@ duruyor, neden ertelendiği de yazıyor ki aynı tartışma baştan yapılmasın
 
 ---
 
+## OTOMATİK STORY YAYINI — çalışıyor (22–23 Eylül 2026)
+
+Instagram ve Facebook sayfa story'leri artık kendiliğinden yayınlanıyor.
+Kullanıcının elle yaptığı tek iş kaldı: render'ı klasöre bırakmak.
+
+ZİNCİR
+  planlama sohbeti --MCP--> takvim kaydı (autoPublish açık, medya yok)
+  render dosyası --> E:\CLAUDE VIDEOS\story\cikti
+  Görev Zamanlayıcı (5 dk) --> pc/story-izle.bat --> pc/story-izle.py
+      --> R2'ye yükle, mediaName ile kaydı bul, bağla, autoPublish aç
+  pg_cron (1 dk) --> pg_net --> Edge Function story-yayin
+      --> Instagram (konteyner + media_publish) / Facebook (rupload)
+  hata olursa Resend ile e-posta
+
+DOSYALAR
+  sql/41  kuyruk, durum sütunları, RPC'ler
+  sql/42  çöküş izi (publish_ref / publish_called_at) + story_asili_topla
+  sql/43  pg_cron + pg_net + Vault
+  sql/44  kuyruk platformu da döndürüyor
+  sql/45  publish_at'i post_date+post_time'dan üreten tetikleyici
+  sql/46  parça sırası: publish_at, media_name, id
+  sql/47  story_ertele(0) = "bekleme yok, sıradaki tur"
+  sql/48  seri: önceki parça çıkmadan sonraki çıkmaz
+  supabase/functions/story-yayin/index.ts   worker
+  pc/story-yukle.py   elle yükleme
+  pc/story-izle.py    klasör izleyici
+  pc/story-izle.bat   Görev Zamanlayıcı sarmalayıcısı
+
+PAZARLIK KONUSU OLMAYAN KURALLAR
+  ⛔ Hiçbir kod `uploaded` sütununa yazmıyor. Bu kullanıcının kendi
+     işareti; sistemin durumu `publish_state`. Kural söz değil YAPI:
+     worker calendar_events'i hiç UPDATE etmiyor, yalnızca o sütuna
+     erişemeyen security-definer RPC'leri çağırıyor; toRow() bütün
+     yayın sütunlarını bilerek dışarıda bırakıyor.
+  ⛔ MCP sunucusunda silme aracı yok. Kaydı yalnızca kullanıcı,
+     uygulamanın içinden siler.
+  ⛔ MCP erişimi yalnızca hesap sahibinin kendi anahtarıyla.
+
+SAHADA ÖLÇÜLEN, SONRA DÜZELTİLEN
+  22 Eylül, ilk çok parçalı video yayını: Instagram'da 1/2 ile 2/2
+  arasına 2 dk 17 sn girdi. İki ayrı sebebi vardı:
+   1. Konteyner beklemeleri TOPLANIYORDU (her video ~100 sn). Artık
+      turun başında hepsi birlikte yaratılıyor, beklemeler üst üste
+      biniyor. Yayın sırası değişmiyor.
+   2. "Bir dakika ertele" pratikte iki dakikaydı: tur dakika ortasında
+      bittiği için retry_after bir sonraki turu ıskalıyordu. sql/47.
+
+AÇIK KALANLAR (sebebiyle)
+
+1. **Ayarlar sayfasında Meta bağlantı durumu** (şartname Bölüm 10'un
+   üçüncü maddesi). BİLEREK ertelendi: tehlikeli durum zaten kapalı --
+   worker token'ı yokluyor, bozulunca kuyruğu durduruyor ve e-posta
+   atıyor. O satırın gerçek faydası "hangi sayfaya/hesaba bağlıyım"
+   sorusunu tek bakışta cevaplamak; 22 Eylül'de bu soru saatler aldı.
+   Ayrıca `sistem_durumu` tarayıcıya kapalı, ayrı bir uç gerekiyor.
+
+2. **`shb_` MCP anahtarını değiştir.** Anahtarın tamamı sohbet
+   kaydında iki kez geçti. Depoya GİRMEDİ (çalışan ağaç ve git
+   geçmişi temiz, 23 Eylül'de bakıldı). O anahtarla yapılabilecek en
+   kötü şey takvime çöp kayıt eklemek: silme aracı yok, Meta'ya yayın
+   yapamıyor, Meta token'ını okuyamıyor. Temizlik işi, olay değil.
+
+3. **Planlama sohbetine kural:** çok parçalı story'de bütün parçalar
+   AYNI `time` değerini almalı. 23 Eylül'de 09:00 / 09:02 diye
+   planlanmıştı; kuyruk bir kaydı `publish_at` gelmeden alamadığı
+   için parçalar arasına iki dakika giriyordu -- kod kusuru değil,
+   plan kusuru. Sıra `mediaName`'deki `_k1`/`_k2`'den geliyor.
+
+4. **İzleyici yalnızca bilgisayar açıkken çalışıyor.** Kapalıyken tur
+   atmıyor; açılınca kaçan turlar telafi ediliyor. Yayın Supabase'de,
+   ondan bağımsız -- ama yalnızca önceden yüklenmiş medya için.
+
+5. **Seri koruması `auto_publish` kapalı önceki parçayı bekletmiyor.**
+   Onu elle yayınlayacak demektir ve sistem ne zaman yapıldığını
+   bilemez; bekletseydi sonraki parça sonsuza kadar kuyrukta dönerdi.
+   Bilinçli boşluk, sql/48'in başında yazılı.
+
+---
+
 ## ÇEKİM LİSTESİ — ikinci tur (11 Eylül 2026)
 
 Birinci tur yapıldı: ihtiyaç kütüphanesi (`user_prefs.prefs.ihtiyaclar`),

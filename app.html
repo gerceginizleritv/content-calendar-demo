@@ -14201,7 +14201,6 @@ function evTz(ev){
   const z = ev && ev.content && ev.content.timezone;
   return gecerliTz(z) ? z : yerelTz();
 }
-function tzKisa(tz){ return String(tz||'').split('/').pop().replace(/_/g,' '); }
 // Takvimde gecen dilimler, en cok kullanilan basta.
 function kullanilanTzler(){
   const sayim = new Map();
