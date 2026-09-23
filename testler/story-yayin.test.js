@@ -70,7 +70,29 @@ function tabloyuKur(ek, ekler){
 const bul = (id)=> satirlar.find(r=> r.id === id);
 const dk = (n)=> n * 60 * 1000;
 
+// sql/48'deki kalibin JS karsiligi: <kok>_k<N>.<uzanti>
+const SERI_KALIP = /_k(\d+)\.[A-Za-z0-9]+$/;
+const seriKok  = (ad)=> SERI_KALIP.test(String(ad || '')) ? String(ad).replace(SERI_KALIP, '') : null;
+const seriSira = (ad)=> { const m = SERI_KALIP.exec(String(ad || '')); return m ? Number(m[1]) : null; };
+
 const SQL = {
+  story_seri_onceki({ p_id }){
+    const k = bul(p_id); if(!k) return [];
+    const kok = seriKok(k.media_name), sira = seriSira(k.media_name);
+    if(kok === null || sira === null) return [];          // seri degil
+    const onde = satirlar.filter(e=>
+      e.type === 'story' && !e.deleted_at && e.id !== p_id
+      && e.user_id === k.user_id && e.platform === k.platform
+      && e.auto_publish === true
+      && seriKok(e.media_name) === kok
+      && seriSira(e.media_name) !== null && seriSira(e.media_name) < sira
+      && e.publish_state !== 'published'
+    ).sort((a,b)=> seriSira(a.media_name) - seriSira(b.media_name));
+    if(!onde.length) return [];
+    const e = onde[0];
+    return [{ durum: e.publish_state === 'failed' ? 'basarisiz' : 'bekliyor',
+              parca: e.media_name }];
+  },
   story_asili_topla({ p_dakika }){
     let n = 0;
     for(const r of satirlar){
@@ -954,6 +976,91 @@ async function turAt(gizli){
     const r2 = await turAt();
     bak('gerçekten sıradaki turda alındı (saat ilerletilmeden)',
       satirlar[0].publish_state === 'published', JSON.stringify(r2.govde));
+  }
+
+  // ═══════════════════════════════════════════════════════════════
+  // SERI — ONCEKI PARCA CIKMADAN SONRAKI CIKMAZ (sql/48)
+  // ═══════════════════════════════════════════════════════════════
+  // sql/46 sirayi cozdu, sql/47 arayi kapatti. Bu da ucuncu soru:
+  // 1/2 hic cikmazsa 2/2 ne olacak? Eskiden cikiyordu -- izleyici
+  // eksik olani degil, ANLAMSIZ olani goruyordu.
+  console.log('[seri]');
+  const K1 = '2026-12-05_story_yedikule_k1.mp4';
+  const K2 = '2026-12-05_story_yedikule_k2.mp4';
+  {
+    // 1/2 KALICI patliyor (Instagram medyayi reddediyor) -> 2/2 CIKMAMALI.
+    tabloyuKur({ media_name:K1, title:'Yedikule (1/2)' },
+               [{ media_name:K2, title:'Yedikule (2/2)' }]);
+    // ⚠ 'ERROR' SONRA 'FINISHED': 1/2'nin medyasi reddediliyor, 2/2'nin
+    // medyasi SAGLAM. Ikisi de ERROR olsaydi "2/2 cikmadi" olcumu
+    // yanlis sebeple gecerdi -- koruma kaldirilsa bile 2/2 kendi
+    // medyasi yuzunden patlar, test yine yesil kalirdi.
+    metaKur({ durumSirasi:['ERROR','FINISHED'] });
+    const r = await turAt();
+    bak('1/2 kalıcı hata aldı', satirlar[0].publish_state === 'failed', satirlar[0].last_error);
+    bak('★ 2/2 TEK BAŞINA yayınlanmadı',
+      cagrilar.publish === 0 && satirlar[1].publish_state === 'failed',
+      JSON.stringify(r.govde.sonuc) + ' publish=' + cagrilar.publish);
+    bak('sebep hangi parça olduğunu söylüyor',
+      String(satirlar[1].last_error).indexOf('_k1') > -1, satirlar[1].last_error);
+    bak('ikisi için de e-posta gitti', epostalar.length === 2, String(epostalar.length));
+  }
+  {
+    // 1/2 henuz cikmamis (bir sonraki tura ertelenmis) -> 2/2 BEKLEMELI,
+    // ama bu bir HATA degil: deneme hakki harcanmamali.
+    tabloyuKur({ media_name:K1, retry_after: new Date(SAAT + dk(30)).toISOString() },
+               [{ media_name:K2 }]);
+    metaKur();
+    const r = await turAt();
+    bak('kuyruğa yalnızca 2/2 girdi', r.govde.alinan === 1, JSON.stringify(r.govde));
+    bak('★ 1/2 çıkmadan 2/2 yayınlanmadı',
+      cagrilar.publish === 0 && r.govde.sonuc['seri-bekliyor'] === 1, JSON.stringify(r.govde.sonuc));
+    bak('bekleme HATA sayılmadı: deneme hakkı geri verildi',
+      satirlar[1].publish_state === 'pending' && satirlar[1].attempt_count === 0,
+      satirlar[1].publish_state + '/' + satirlar[1].attempt_count);
+  }
+  {
+    // 1/2 cikmissa 2/2 normal yayinlanir -- koruma yolu KAPATMIYOR.
+    tabloyuKur({ media_name:K1, publish_state:'published', published_at: su(), external_id:'media_onceki' },
+               [{ media_name:K2 }]);
+    metaKur();
+    await turAt();
+    bak('1/2 yayındaysa 2/2 çıkıyor',
+      satirlar[1].publish_state === 'published' && cagrilar.publish === 1,
+      satirlar[1].publish_state + ' publish=' + cagrilar.publish);
+  }
+  {
+    // ★ PLATFORM SERIYE DAHIL. Instagram'daki 1/2 patlamis olabilir ama
+    // Facebook'taki 1/2 cikmissa FACEBOOK'UN serisi saglamdir.
+    // Platformu anahtara katmasaydik saglam seriyi de keserdik.
+    tabloyuKur({ media_name:K1, platform:'instagram', publish_state:'failed' },
+               [{ media_name:K1, platform:'facebook', publish_state:'published',
+                  published_at: su(), external_id:'fb_onceki' },
+                { media_name:K2, platform:'facebook' }]);
+    metaKur();
+    await turAt();
+    bak('★ Instagram serisi kırık diye Facebook serisi kesilmedi',
+      satirlar[2].publish_state === 'published', satirlar[2].publish_state + ' / ' + satirlar[2].last_error);
+  }
+  {
+    // Adinda _k<N> olmayan dosya tek basina bir story: hicbir sey
+    // onu bekletmemeli.
+    tabloyuKur({ media_name:K1, publish_state:'failed' },
+               [{ media_name:'2026-12-05_story_tek.mp4' }]);
+    metaKur();
+    await turAt();
+    bak('serisiz dosya bekletilmiyor',
+      satirlar[1].publish_state === 'published', satirlar[1].publish_state + ' / ' + satirlar[1].last_error);
+  }
+  {
+    // Onceki parcanin autoPublish'i KAPALIYSA onu elle yayinlayacaksin
+    // demektir; sistem ne zaman yaptigini bilemez. Bekletseydik sonraki
+    // parca sonsuza kadar kuyrukta donerdi. Bilincli bosluk.
+    tabloyuKur({ media_name:K1, auto_publish:false }, [{ media_name:K2 }]);
+    metaKur();
+    await turAt();
+    bak('elle yayınlanacak önceki parça bekletmiyor',
+      satirlar[1].publish_state === 'published', satirlar[1].publish_state + ' / ' + satirlar[1].last_error);
   }
 
   Date.now = gercekNow;
