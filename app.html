@@ -8711,9 +8711,13 @@ function renderProjects(){
     el.addEventListener('click', ()=>{
       const p = projectById(el.dataset.proj);
       if(!p) return;
-      p[el.dataset.step] = !p[el.dataset.step];
+      const adim = el.dataset.step;
+      // Isaretleniyor mu, kaldiriliyor mu: teklif yalnizca isaretlemede.
+      const isaretlendi = !p[adim];
+      p[adim] = !p[adim];
       projDirtyIsaretle(p.id);
       saveProjects(); renderProjects();
+      if(adim === 'package' && isaretlendi) paketTakvimTeklifi(p);
     });
   });
   // Rozetler kendi sayfalarina goturuyor, o projeye suzulmus halde.
@@ -8730,6 +8734,31 @@ function renderProjects(){
     el.addEventListener('click', ()=> openProjectEdit(el.dataset.projEdit));
   });
 
+}
+
+// ===== Yayin paketi hazir -> takvim kaydi ============================
+// Paket hazir olmak "icerik dagitilmaya hazir" demek; takvim kaydi
+// acmanin dogal ani burasi. YAYIN adimi degil -- o isin BITTIGINI
+// soyluyor ve o noktada kayitlar coktan acilmis olur.
+//
+// ⚠ YALNIZCA O PROJENIN HIC TAKVIM KAYDI YOKSA aciliyor. Kutuyu
+// isaretleyip kayitlari coktan acmis oldugu gunlerde pencerenin karsiya
+// cikmasi yardim degil kesinti olurdu; bir kez ise yarayan sey her
+// seferinde tekrarlaninca rahatsiz ediyor.
+//
+// ⚠ YALNIZCA ISARETLERKEN. Tiki kaldirmak "paket hazir degilmis" demek;
+// o anda kayit acmayi teklif etmek anlamsiz.
+//
+// Mekan AYRICA secilmiyor cunku kayitta mekan alani yok: mekan projeye
+// ait, projeyi secmek onu da getiriyor.
+function projeninKayitlari(pid){
+  return events.filter(e=> ((e.content || {}).projectId || '') === pid);
+}
+function paketTakvimTeklifi(p){
+  if(!p || projeninKayitlari(p.id).length) return;
+  // Tarih yayin termininden geliyor: paketi hazirlayan kisi o gunu
+  // zaten dusunmustur. Termin yoksa openModal bugunu koyuyor.
+  openModal(null, adimTarihi(p, 'published') || undefined, undefined, p.id);
 }
 
 // --- Termin tarihleri penceresi --------------------------------------
@@ -15678,7 +15707,9 @@ function refreshTypeDependentFields(){
 // hazirSaat: saat izgarasinda bos bir SAAT hucresine tiklandiginda saat de
 // dolu gelsin — izgaranin butun anlami kaydin saatiyle yerinin ayni sey
 // olmasi.
-function openModal(ev, hazirTarih, hazirSaat){
+// hazirProje: proje sayfasindan "Yayin Paketi" tiklenerek acildiginda
+// kayit o projeye bagli gelsin diye.
+function openModal(ev, hazirTarih, hazirSaat, hazirProje){
   currentEvent = ev || null;
   const isNew = !ev;
   document.getElementById('typeMultiWrap').style.display = isNew ? '' : 'none';
@@ -15722,7 +15753,7 @@ function openModal(ev, hazirTarih, hazirSaat){
     document.getElementById('f_type').value = 'video';
     // Hicbiri onceden isaretli gelmiyor: platformu kullanici bilerek secsin.
     document.querySelectorAll('#platformChecks input').forEach(el=> el.checked = false);
-    projeSecimiTazele('');
+    projeSecimiTazele(hazirProje || '');
     modalSablonBlogu = '';
     typeChecksDoldur();
     document.querySelectorAll('#typeChecks input').forEach(el=> el.checked = false);
