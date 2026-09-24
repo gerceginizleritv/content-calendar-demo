@@ -43,11 +43,23 @@ const bak = (ad, ko, ek)=>{ if(ko){ g++; console.log('  ok  '+ad); } else { k++;
                          setLanguage('tr'); });
   await p.evaluate(()=>{ window.maybeAskFeedback = ()=>{}; window.maybeShowCloudNudge = ()=>{}; });
 
+  // ⚠ saveEvent proje secimini await ile cozuyor ve proje yoksa bir
+  // diyalog aciyor. Bassiz tarayicida o diyalog hic kapanmadigi icin
+  // kaydetme SESSIZCE asili kaliyor: hata yok, uyari yok, hicbir sey
+  // degismiyor. Bu testi ilk yazdigimda tam olarak oyle oldu ve butun
+  // "kayit" olcumleri bos kaldi. Proje cozumu sabitleniyor; olculen sey
+  // saatlerin kayda nasil dustugu, projenin nasil secildigi degil.
   const kaydet = async ()=>{
-    await p.evaluate(()=>{ document.querySelectorAll('.overlay.open').forEach(o=>{
-      if(o.id !== 'editOverlay') o.classList.remove('open'); }); });
-    await p.click('#saveBtn');
-    await p.waitForTimeout(650);
+    await p.evaluate(async ()=>{
+      document.querySelectorAll('.overlay.open').forEach(o=>{
+        if(o.id !== 'editOverlay') o.classList.remove('open'); });
+      const eski = window.secilenProjeyiCoz;
+      window.secilenProjeyiCoz = async ()=> ({ id:'pr_test', name:'Test Projesi' });
+      document.getElementById('saveBtn').click();
+      await new Promise(r=> setTimeout(r, 500));
+      window.secilenProjeyiCoz = eski;
+    });
+    await p.waitForTimeout(250);
     await p.evaluate(()=>{ document.querySelectorAll('.overlay.open').forEach(o=> o.classList.remove('open')); });
   };
   const sifirla = ()=> p.evaluate(()=>{ events = []; save(); });
