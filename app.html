@@ -5662,6 +5662,9 @@ const LANG = {
     step_edited: "Edited",
     step_approved: "Approved",
     step_package: "Package",
+    paket_bos_baslik: "Nothing was added to the calendar",
+    paket_bos_govde: "The Package tick says the posts are planned. Should I untick it?",
+    paket_bos_kaldir: "Untick it",
     step_published: "Published",
     // HESAP ETIKETLERI. "Etiket" kelimesi metinlerde bilerek gecmiyor
     // ama fikir her yerde: burada saklanan sey bir BAG degil, bir AD.
@@ -6663,6 +6666,9 @@ const LANG = {
     step_edited: "Kurgu",
     step_approved: "Onay",
     step_package: "Yayın Paketi",
+    paket_bos_baslik: "Takvime hiç kayıt eklenmedi",
+    paket_bos_govde: "«Yayın Paketi» işareti, gönderilerin planlandığını anlatıyor. İşareti kaldırayım mı?",
+    paket_bos_kaldir: "İşareti kaldır",
     step_published: "Yayın",
     // HESAP ETIKETLERI.
     hs_btn: "🏷 Hesap etiketleri",
@@ -8754,11 +8760,44 @@ function renderProjects(){
 function projeninKayitlari(pid){
   return events.filter(e=> ((e.content || {}).projectId || '') === pid);
 }
+// Pencere bu tikten acildiysa hangi proje icin acildigi burada duruyor.
+// Kapanista geri donup "kayit gercekten olustu mu" diye bakmak icin.
+let paketTeklifProje = null;
+
 function paketTakvimTeklifi(p){
   if(!p || projeninKayitlari(p.id).length) return;
+  paketTeklifProje = p.id;
   // Tarih yayin termininden geliyor: paketi hazirlayan kisi o gunu
   // zaten dusunmustur. Termin yoksa openModal bugunu koyuyor.
   openModal(null, adimTarihi(p, 'published') || undefined, undefined, p.id);
+}
+
+// Pencere kapandi: kayit gercekten olustu mu?
+//
+// Tik, "dagitim planlandi" anlamina geliyor ve o anlam kayitlarin
+// VARLIGINA bagli. Pencereyi bos kapatan kullanicida tik kaliyordu ve
+// proje satiri gercek olmayan bir sey soyluyordu.
+//
+// ⚠ TIK KENDILIGINDEN GERI ALINMIYOR, SORULUYOR. Paketi isaretleyip
+// kayitlari sonra acmak mesru bir sira; sessizce geri almak
+// kullanicinin kararini ezerdi. Varsayilan (Vazgec) tiki KORUYOR:
+// yanlislikla kaybedilmesindense gereksiz durmasi iyidir.
+function paketTeklifSonu(){
+  const pid = paketTeklifProje;
+  paketTeklifProje = null;
+  if(!pid) return;
+  // Kaydedildiyse tik artik dogruyu soyluyor, sorulacak bir sey yok.
+  if(projeninKayitlari(pid).length) return;
+  const p = projectById(pid);
+  // Kullanici arada tiki kendisi kaldirmissa da sorulmuyor.
+  if(!p || !p.package) return;
+  onayla({ baslik: t('paket_bos_baslik'), govde: t('paket_bos_govde'),
+           tamam: t('paket_bos_kaldir') }).then(kaldir=>{
+    if(!kaldir) return;
+    p.package = false;
+    projDirtyIsaretle(p.id);
+    saveProjects(); renderProjects();
+  });
 }
 
 // --- Termin tarihleri penceresi --------------------------------------
@@ -15786,6 +15825,10 @@ function openModal(ev, hazirTarih, hazirSaat, hazirProje){
 function closeModal(){
   document.getElementById('editOverlay').classList.remove('open');
   currentEvent = null;
+  // Butun kapatma yollari buradan geciyor: Vazgec, perdeye tiklama, ×
+  // (× perdeye tiklanmis gibi davraniyor) ve kaydetme. Kaydetmede kayit
+  // zaten olustugu icin asagidaki kontrol sessizce geciyor.
+  paketTeklifSonu();
 }
 // ══════════════════════════════════════════════════════════════════
 // OTOMATIK STORY YAYINI — kaydin icindeki gorunum

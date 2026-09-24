@@ -19,6 +19,13 @@
 //
 //   3. BASKA ADIMLAR ACMAMALI. Yedi adimdan yalnizca biri bu pencereyi
 //      aciyor; digerleri eskisi gibi sessizce isaretleniyor.
+//
+//   4. PENCERE BOS KAPANIRSA TIK SORULMALI. Tik "dagitim planlandi"
+//      demek ve o anlam kayitlarin VARLIGINA bagli; pencereyi bos
+//      kapatan kullanicida tik kalirsa proje satiri gercek olmayan bir
+//      sey soyler. Kullanicinin bildirdigi kusur tam olarak buydu.
+//      Tik KENDILIGINDEN geri alinmiyor, SORULUYOR: paketi isaretleyip
+//      kayitlari sonra acmak mesru bir sira.
 const { chromium } = require('./araclar');
 const KOK = process.argv[2] || 'http://127.0.0.1:8098';
 let g = 0, k = 0;
@@ -125,7 +132,85 @@ const bak = (ad, ko, ek)=>{ if(ko){ g++; console.log('  ok  '+ad); } else { k++;
   bak('★ tik kaldırılırken pencere açılmıyor', m.acik === false, JSON.stringify(m));
   bak('adım gerçekten kaldırıldı', await adimDurumu('pr_a','package') === false);
 
-  // ------------------------------------------- 4. baska adimlar acmiyor
+  // ------------------------------------ 4. bos kapaninca tik soruluyor
+  console.log('[boş kapanınca tik soruluyor]');
+  await p.evaluate(()=>{
+    window.__onaySayi = 0; window.__onayMetin = []; window.__onayCevap = true;
+    window.onayla = async (o)=>{
+      window.__onaySayi++;
+      window.__onayMetin.push(typeof o === 'string' ? o : JSON.stringify(o));
+      return window.__onayCevap;
+    };
+  });
+  const onay = ()=> p.evaluate(()=>({ sayi: window.__onaySayi, metin: window.__onayMetin }));
+  const onaySifirla = (c)=> p.evaluate((c)=>{ window.__onaySayi = 0; window.__onayMetin = []; window.__onayCevap = c; }, c);
+
+  await kur(false); await p.waitForTimeout(400);
+  await onaySifirla(true);                 // "İşareti kaldır" deniyor
+  await tikla('pr_a', 'package');
+  bak('pencere açıldı', (await modal()).acik === true);
+  await kapat();
+  await p.waitForTimeout(400);
+  let o = await onay();
+  bak('★ boş kapanınca soruldu', o.sayi === 1, JSON.stringify(o));
+  bak('soru neyin kaldırılacağını söylüyor',
+    /paket_bos|Paket|Package/i.test(o.metin.join(' ')), o.metin.join(' ').slice(0,160));
+  bak('★ "kaldır" denince tik geri alındı',
+    await adimDurumu('pr_a','package') === false);
+
+  // Vazgec: tik KALMALI. Varsayilan davranis tiki korumali, yoksa paketi
+  // bilerek isaretleyip kayitlari sonra acacak kisi onu kaybeder.
+  await kur(false); await p.waitForTimeout(400);
+  await onaySifirla(false);                // "Vazgeç" deniyor
+  await tikla('pr_a', 'package');
+  await kapat();
+  await p.waitForTimeout(400);
+  bak('★ "vazgeç" denince tik DURUYOR', await adimDurumu('pr_a','package') === true);
+
+  // Kaydedilirse hic sorulmamali: tik artik dogruyu soyluyor.
+  await kur(false); await p.waitForTimeout(400);
+  await onaySifirla(true);
+  await tikla('pr_a', 'package');
+  await p.evaluate(async ()=>{
+    document.querySelectorAll('#typeChecks input').forEach(el=>{
+      if(el.value === 'video'){ el.checked = true; el.dispatchEvent(new Event('change',{bubbles:true})); }
+    });
+    document.querySelectorAll('#platformChecks input').forEach(el=>{
+      if(el.value === 'youtube'){ el.checked = true; el.dispatchEvent(new Event('change',{bubbles:true})); }
+    });
+    document.getElementById('f_title').value = 'Yeni gönderi';
+    const eski = window.secilenProjeyiCoz;
+    window.secilenProjeyiCoz = async ()=> ({ id:'pr_a', name:'Trabzon Seferi' });
+    document.getElementById('saveBtn').click();
+    await new Promise(r=> setTimeout(r, 600));
+    window.secilenProjeyiCoz = eski;
+  });
+  await p.waitForTimeout(400);
+  o = await onay();
+  bak('kayıt gerçekten oluştu', await p.evaluate(()=> events.length) > 0,
+    String(await p.evaluate(()=> events.length)));
+  bak('★ kaydedilince hiç sorulmuyor', o.sayi === 0, JSON.stringify(o));
+  bak('tik duruyor', await adimDurumu('pr_a','package') === true);
+
+  // Normal "+" dugmesinden acilan pencere bos kapanirsa hicbir sey
+  // sorulmamali: o pencerenin tikle ilgisi yok.
+  //
+  // ⚠ PAKET BURADA ISARETLI OLMALI. Ilk yazdigimda isaretsizdi ve olcum
+  // BOSA GECIYORDU: diyalogu engelleyen sey olctugum koruma degil,
+  // "tik zaten isaretli degil" kontroluydu. Mutasyon bunu yakaladi --
+  // pencere kaynagi kontrolunu kaldirdigimda test yine yesil kaldi.
+  await kur(false); await p.waitForTimeout(400);
+  await p.evaluate(()=>{ const pr = projectById('pr_a'); pr.package = true; saveProjects(); renderProjects(); });
+  await p.waitForTimeout(250);
+  await onaySifirla(true);
+  await p.evaluate(()=>{ openModal(null); });
+  await p.waitForTimeout(300);
+  await kapat();
+  await p.waitForTimeout(400);
+  bak('★ normal pencere boş kapanınca sorulmuyor', (await onay()).sayi === 0,
+    JSON.stringify(await onay()));
+
+  // ------------------------------------------- 5. baska adimlar acmiyor
   console.log('[diğer adımlar]');
   await kur(false);
   await p.waitForTimeout(400);
