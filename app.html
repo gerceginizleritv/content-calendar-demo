@@ -2211,6 +2211,9 @@ textarea.sc-ai-brief{min-height:64px;resize:vertical;line-height:1.5;}
 .ai-test-liste .tm-hata{color:var(--red);}
 .ai-durum .ai-durum-key{font-family:'JetBrains Mono',monospace;font-size:11px;color:var(--text-dim);}
 .ai-status{font-size:11.5px;color:var(--text-dim);margin-top:6px;min-height:14px;}
+/* Tek tusla hepsini yaz: dugme ve aciklamasi yan yana. */
+.ai-toplu{display:flex;align-items:center;gap:10px;flex-wrap:wrap;}
+.ai-toplu-not{font-size:11.5px;color:var(--text-dim);line-height:1.5;}
 .ai-status.error{color:var(--red);}
 .ai-status.ok{color:var(--green);}
 /* "Tam turu gor": dugme degil baglanti gibi — asil eylem "Tamam". */
@@ -4205,6 +4208,17 @@ textarea.sc-ai-brief{min-height:64px;resize:vertical;line-height:1.5;}
       <p class="dil-not" data-i18n="dil_not">YouTube shows each viewer the title and description in their own language. Fill a language in and paste it into the upload's translation fields.</p>
     </div>
 
+    <!-- TEK TUSLA HEPSI. Alan listesi kodda SABIT DEGIL: hangi alanin
+         gorunecegi ture gore degisiyor ve o karar
+         refreshTypeDependentFields'da duruyor. Listeyi ikinci kez yazmak,
+         bu depoda dort yerli beyaz listenin basina geleni tekrarlamak
+         olurdu -- biri guncellenir, oburu unutulur. O yuzden alanlar
+         gorunur olup olmadiklarina bakilarak seciliyor. -->
+    <div class="field ai-toplu">
+      <button type="button" class="copy-btn ai-btn" id="aiHepsiBtn" data-i18n="btn_ai_hepsi">✨ Write every field with AI</button>
+      <span class="ai-toplu-not" data-i18n="ai_hepsi_not">Fills the fields below, one after another.</span>
+    </div>
+
     <div class="field" id="videoTitleWrap" style="display:none;">
       <div class="field-header">
         <label data-i18n="f_videotitle_label">Video Title (public — what viewers see in search/suggested)</label>
@@ -5121,6 +5135,14 @@ const LANG = {
     f_caption_label: "Caption",
     f_caption_ph: "Write the caption for this post...",
     btn_ai_draft: "✨ Draft with AI",
+    btn_ai_hepsi: "✨ Write every field with AI",
+    ai_hepsi_not: "Fills the fields below, one after another.",
+    ai_hepsi_onay: (n)=> n === 1
+      ? "One field already has text you wrote. It will be overwritten. Continue?"
+      : `${n} fields already have text you wrote. They will be overwritten. Continue?`,
+    ai_hepsi_calisiyor: (i, n)=> `writing ${i}/${n}…`,
+    ai_hepsi_bitti: (n)=> n === 1 ? "1 field written." : `${n} fields written.`,
+    ai_hepsi_yarim: (i, n)=> `Stopped at ${i}/${n}.`,
     btn_ai_settings: "✨ AI (Gemini)",
     btn_ai_write: "✨ AI",
     sc_words: (n)=> `${n} words`,
@@ -6116,6 +6138,14 @@ const LANG = {
     f_caption_label: "Caption",
     f_caption_ph: "Bu paylaşım için caption'ı yaz...",
     btn_ai_draft: "✨ AI ile Taslak Oluştur",
+    btn_ai_hepsi: "✨ Hepsini AI ile yaz",
+    ai_hepsi_not: "Aşağıdaki alanları sırayla dolduruyor.",
+    ai_hepsi_onay: (n)=> n === 1
+      ? "Bir alanda senin yazdığın metin var. Üzerine yazılacak. Devam edilsin mi?"
+      : `${n} alanda senin yazdığın metin var. Üzerine yazılacak. Devam edilsin mi?`,
+    ai_hepsi_calisiyor: (i, n)=> `${i}/${n} yazılıyor…`,
+    ai_hepsi_bitti: (n)=> n === 1 ? "1 alan yazıldı." : `${n} alan yazıldı.`,
+    ai_hepsi_yarim: (i, n)=> `${i}/${n} yazıldıktan sonra durdu.`,
     btn_ai_settings: "✨ AI (Gemini)",
     btn_ai_write: "✨ AI",
     sc_words: (n)=> `${n} kelime`,
@@ -17552,21 +17582,28 @@ document.getElementById('aiForgetBtn').addEventListener('click', async ()=>{
 // Kayit penceresindeki uc alan da ayni yoldan uretiliyor: aciklama,
 // video basligi ve kapak yazisi. Uretimden once DOLU alan sorulmadan
 // ezilmiyor — elle yazilmis bir basligi tek tikla kaybetmek olurdu.
-async function aiAlanUret(alan, alanId, dugmeId, calisanEtiket){
+// `secenek.sorma` DOLU ALANI SORMADAN eziyor. Yalnizca toplu yazma
+// kullaniyor ve orada soru bir kez, en basta soruluyor. Bes alani tek
+// tek sormak kullaniciyi okumadan "Tamam"a basmaya alistirir; o noktadan
+// sonra uyari korumaz, yalnizca gecikme uretir.
+// Donus: true = alan yazildi, false = yazilmadi (anahtar yok, iptal,
+// bos yanit, hata). Toplu yazma buna bakip duruyor.
+async function aiAlanUret(alan, alanId, dugmeId, calisanEtiket, secenek){
   const durumEl = document.getElementById('aiStatus');
   durumEl.dataset.temelSinif = 'ai-status';
   const baglam = aiKayitBaglami();
   if(!aiBaglamVarMi(baglam)){
     durumEl.textContent = t('ai_no_context');
     durumEl.className = 'ai-status error';
-    return;
+    return false;
   }
   const kutu = document.getElementById(alanId);
-  if(kutu.value.trim().length > 3 && !await onayla(t('ai_field_overwrite'))) return;
+  const sor = !(secenek && secenek.sorma);
+  if(sor && kutu.value.trim().length > 3 && !await onayla(t('ai_field_overwrite'))) return false;
   const dugme = document.getElementById(dugmeId);
   const ham = await aiCalistir(dugme, durumEl, calisanEtiket, aiAlanPrompt(alan),
                                { sure: AI_ZAMAN_ASIMI });
-  if(ham === null) return;
+  if(ham === null) return false;
   // Tek satira indirilmesi GEREKEN alanlar: baslik, kapak yazisi, etiket
   // listesi. Aciklama ve kapak gorseli tarifi cok satirli olabiliyor;
   // onlari kirpmak metnin yarisini atmak demek.
@@ -17575,7 +17612,7 @@ async function aiAlanUret(alan, alanId, dugmeId, calisanEtiket){
   if(!temiz){
     durumEl.textContent = t('ai_error_prefix') + 'boş yanıt' + t('ai_error_suffix');
     durumEl.className = 'ai-status error';
-    return;
+    return false;
   }
   kutu.value = temiz.slice(0, kutu.maxLength > 0 ? kutu.maxLength : temiz.length);
   trackOnce('funnel/ai-draft-generated');
@@ -17583,7 +17620,81 @@ async function aiAlanUret(alan, alanId, dugmeId, calisanEtiket){
     ? t('ai_drafted_prefix') + 'Gemini' + t('ai_drafted_suffix')
     : t('ai_field_done');
   durumEl.className = 'ai-status ok';
+  return true;
 }
+
+// ===== Tek tusla hepsini yaz =================================================
+// Bes ayri dugmeye tek tek basmak, ayni kararin bes kez verilmesi
+// demekti. Bu dugme ayni fonksiyonu sirayla cagiriyor.
+//
+// ⚠ ALAN LISTESI GORUNURLUKTEN TURUYOR, sabit degil. Hangi alanin
+// gorunecegine refreshTypeDependentFields karar veriyor (video'da video
+// basligi var, story'de yok). Listeyi burada ikinci kez yazsaydik biri
+// guncellenir oburu unutulurdu -- bu depoda dort yerli beyaz listenin
+// basina tam olarak bu geldi. offsetParent null ise alan ekranda yok,
+// o kadar.
+//
+// ⚠ SIRAYLA, paralel degil. Gerekce metin tutarliligi DEGIL: prompt'a
+// giden baglam (aiKayitBaglami) oteki icerik alanlarini zaten okumuyor,
+// yani basligi once yazmak aciklamayi etkilemiyor. Sebepler baska:
+// ekranda ilerleme gorunuyor, kullanicinin kendi anahtarina ayni anda
+// bes istek gitmiyor, ve biri patlarsa yarim kalmis bir karmasa birakmak
+// yerine duruyor.
+const AI_TOPLU_ALANLAR = [
+  { alan:'videoTitle',  id:'f_videotitle', dugme:'aiTitleBtn' },
+  { alan:'shortTitle',  id:'f_shorttitle', dugme:'aiShortBtn' },
+  { alan:'caption',     id:'f_caption',    dugme:'aiDraftBtn' },
+  { alan:'hashtags',    id:'f_hashtags',   dugme:'aiTagsBtn'  },
+  { alan:'thumbPrompt', id:'f_thumb',      dugme:'aiThumbBtn' }
+];
+function aiToplananAlanlar(){
+  return AI_TOPLU_ALANLAR.filter(a=>{
+    const el = document.getElementById(a.id);
+    return el && el.offsetParent !== null;
+  });
+}
+async function aiHepsiniYaz(){
+  const durumEl = document.getElementById('aiStatus');
+  durumEl.dataset.temelSinif = 'ai-status';
+  if(!aiBaglamVarMi(aiKayitBaglami())){
+    durumEl.textContent = t('ai_no_context');
+    durumEl.className = 'ai-status error';
+    return;
+  }
+  const liste = aiToplananAlanlar();
+  if(!liste.length) return;
+
+  // TEK uyari, alan basina degil.
+  const dolu = liste.filter(a=> document.getElementById(a.id).value.trim().length > 3);
+  if(dolu.length && !await onayla(t('ai_hepsi_onay')(dolu.length))) return;
+
+  const dugme = document.getElementById('aiHepsiBtn');
+  const eskiMetin = dugme.textContent;
+  dugme.disabled = true;
+  let yazilan = 0;
+  for(let i = 0; i < liste.length; i++){
+    const a = liste[i];
+    dugme.textContent = t('ai_hepsi_calisiyor')(i + 1, liste.length);
+    const oldu = await aiAlanUret(a.alan, a.id, a.dugme,
+                                  t('ai_hepsi_calisiyor')(i + 1, liste.length),
+                                  { sorma: true });
+    if(!oldu){
+      // Hata mesaji aiAlanUret'te zaten yazildi; ustune yazmiyoruz.
+      dugme.disabled = false; dugme.textContent = eskiMetin;
+      if(yazilan){
+        durumEl.textContent = t('ai_hepsi_yarim')(yazilan, liste.length);
+        durumEl.className = 'ai-status error';
+      }
+      return;
+    }
+    yazilan++;
+  }
+  dugme.disabled = false; dugme.textContent = eskiMetin;
+  durumEl.textContent = t('ai_hepsi_bitti')(yazilan);
+  durumEl.className = 'ai-status ok';
+  trackOnce('funnel/ai-hepsi');
+}
+document.getElementById('aiHepsiBtn').addEventListener('click', aiHepsiniYaz);
 
 function runAiDraft(){ return aiAlanUret('caption', 'f_caption', 'aiDraftBtn', t('ai_drafting')); }
 document.getElementById('aiDraftBtn').addEventListener('click', runAiDraft);
