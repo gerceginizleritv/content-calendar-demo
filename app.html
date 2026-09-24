@@ -1995,6 +1995,14 @@ textarea.sc-ai-brief{min-height:64px;resize:vertical;line-height:1.5;}
 .field .pcheck:has(input:checked){border-color:var(--accent);background:var(--accent-soft);}
 .pcheck:hover{border-color:var(--accent-dim);}
 .pcheck input{width:auto;accent-color:var(--accent);}
+/* Platform basina saat satirlari. Platform adi <span>, <label> DEGIL:
+   yukaridaki ".field label" kurali onu mono/buyuk harf/blok yapar ve ad
+   okunmaz hale gelirdi -- hesap gruplarinda ayni tuzaga bir kez dusulmustu. */
+.psaat{display:flex;align-items:center;gap:10px;margin-top:8px;}
+.psaat .psaat-ad{display:flex;align-items:center;gap:7px;min-width:140px;
+  font-family:'IBM Plex Sans',sans-serif;font-size:12.5px;font-weight:500;
+  text-transform:none;letter-spacing:normal;color:var(--text);}
+.psaat input[type=time]{width:auto;flex:0 0 auto;}
 /* Hesap gruplari: her secili platform kendi basligiyla ayri bir blok.
    Baslik <span>, <label> DEGIL -- yukaridaki ".field label" kurali onu
    mono/buyuk harf/soluk yapip okunmaz hale getirirdi. */
@@ -4115,6 +4123,26 @@ textarea.sc-ai-brief{min-height:64px;resize:vertical;line-height:1.5;}
       <div class="platform-checks" id="platformChecks"></div>
     </div>
 
+    <!-- PLATFORM BASINA SAAT. Alan KOSULLU: ancak iki ya da daha fazla
+         platform isaretlendiginde ortaya cikiyor, anahtar acilmadikca da
+         saat satirlari yok. Her yere ayni anda atan uretici hicbir yeni
+         tik gormuyor -- hesap etiketindeki kuralin aynisi: ozelligin
+         bedelini yalnizca ona ihtiyaci olan odesin.
+
+         SADECE SAAT, tarih degil. Asil ihtiyac ayni videoyu YouTube'a
+         19:00'da, Facebook'a baska bir saatte koymak; farkli GUN
+         gerekiyorsa kayit acildiktan sonra duzenlenir. Tarihi de buraya
+         koymak alani iki katina cikarirdi.
+
+         SAAT PLATFORM SEVIYESINDE, tur x platform ciftinde degil: Reels
+         ve Story birlikte secilip iki platforma gonderilirse dort kayit
+         cikar ama iki saat girilir. Cift bazli olsaydi kullanicinin
+         karsisina bir izgara cikardi. -->
+    <div class="field" id="platformSaatWrap" hidden>
+      <label class="pcheck"><input type="checkbox" id="f_saat_farkli"><span data-i18n="f_saat_farkli_label">Different time on each platform</span></label>
+      <div id="platformSaatSatirlari" hidden></div>
+    </div>
+
     <!-- HESAP ETIKETI. Alan KOSULLU: ancak secili bir platformda birden
          cok hesap tanimliysa ortaya cikiyor. Tek kanali olan uretici
          hicbir ek tik gormuyor -- ozelligin bedelini yalnizca ona
@@ -5074,6 +5102,8 @@ const LANG = {
     f_hesap_silinmis: "deleted account",
     f_platform_label: "Platform",
     f_platforms_label: "Platform(s) — check all that this same content goes to",
+    f_saat_farkli_label: "Different time on each platform",
+    f_saat_farkli_not: "A row you leave empty uses the time above.",
     f_title_label: "Title / Note",
     f_title_ph: "e.g. Product Launch Teaser",
     f_date_label: "Date",
@@ -6067,6 +6097,8 @@ const LANG = {
     f_hesap_silinmis: "silinmiş hesap",
     f_platform_label: "Platform",
     f_platforms_label: "Platform(lar) — aynı içeriğin gideceği tüm hesapları işaretle",
+    f_saat_farkli_label: "Her platformda farklı saat",
+    f_saat_farkli_not: "Boş bıraktığın satır yukarıdaki saati kullanır.",
     f_title_label: "Başlık / Not",
     f_title_ph: "örn. Ürün Lansmanı Fragmanı",
     f_date_label: "Tarih",
@@ -15266,10 +15298,59 @@ function populateSelects(){
   if(prevChecked.length){
     document.querySelectorAll('#platformChecks input').forEach(el=>{ el.checked = prevChecked.includes(el.value); });
   }
-  // Platform secimi degisince sablon metni aciklamaya dusuyor.
+  // Platform secimi degisince sablon metni aciklamaya dusuyor; saat
+  // satirlari da o secime bagli.
   document.querySelectorAll('#platformChecks input').forEach(el=>{
     el.addEventListener('change', modalSablonSenkron);
+    el.addEventListener('change', platformSaatSenkron);
   });
+}
+
+// ===== Platform basina saat ==================================================
+// Ayni icerik birden cok platforma giderken saatler ayni olmak zorunda
+// degil: YouTube'a 19:00, Facebook'a baska bir saat. Veri bunu zaten
+// destekliyordu -- her kayit kendi `time` degerini tasiyor. Eksik olan
+// tek sey, coklu secimin hepsine AYNI saati damgalamasiydi; kullanici
+// once kaydi olusturup sonra tek tek duzeltmek zorunda kaliyordu.
+//
+// Alan kosullu: iki platformdan azi secilmisse hic gorunmuyor.
+function platformSaatSenkron(){
+  const wrap = document.getElementById('platformSaatWrap');
+  const kutu = document.getElementById('platformSaatSatirlari');
+  const anahtar = document.getElementById('f_saat_farkli');
+  if(!wrap || !kutu || !anahtar) return;
+  // Duzenlemede coklu platform yok (tek bir select var): alan kapali.
+  const yeniKayit = document.getElementById('platformMultiWrap').style.display !== 'none';
+  const secili = Array.from(document.querySelectorAll('#platformChecks input:checked')).map(el=>el.value);
+
+  if(!yeniKayit || secili.length < 2){
+    wrap.hidden = true; kutu.hidden = true; kutu.innerHTML = '';
+    anahtar.checked = false;
+    return;
+  }
+  wrap.hidden = false;
+  if(!anahtar.checked){ kutu.hidden = true; kutu.innerHTML = ''; return; }
+
+  // Yazilmis saatler yeniden cizimde kaybolmasin: kullanici ucuncu
+  // platformu isaretledinde ilk ikisine girdigi saatler duruyor.
+  const onceki = {};
+  kutu.querySelectorAll('input[data-pf]').forEach(el=>{ onceki[el.dataset.pf] = el.value; });
+  const varsayilan = document.getElementById('f_time').value || '';
+  kutu.innerHTML = secili.map(pf=>`
+    <div class="psaat">
+      <span class="psaat-ad"><span class="pico" style="color:${CAL_SM_COLORS[pf]}">${PLATFORM_ICONS[pf]}</span>${escapeHtml(CAL_SM_NAMES[pf])}</span>
+      <input type="time" data-pf="${escapeHtml(pf)}" value="${escapeHtml(onceki[pf] !== undefined ? onceki[pf] : varsayilan)}">
+    </div>`).join('')
+    + `<p class="posted-hint">${escapeHtml(t('f_saat_farkli_not'))}</p>`;
+  kutu.hidden = false;
+}
+// Bir kaydin saati. Anahtar kapaliysa ya da satir bos birakildiysa
+// ustteki saat kullaniliyor -- ipucu metni de bunu soyluyor.
+function platformSaati(pf, varsayilan){
+  const anahtar = document.getElementById('f_saat_farkli');
+  if(!anahtar || !anahtar.checked) return varsayilan;
+  const el = document.querySelector('#platformSaatSatirlari input[data-pf="' + pf + '"]');
+  return (el && el.value) ? el.value : varsayilan;
 }
 
 // ===== Cok dilli baslik ve aciklama ==========================================
@@ -15634,7 +15715,7 @@ function openModal(ev, hazirTarih, hazirSaat){
     document.getElementById('carouselSlides').innerHTML = '';
     refreshTypeDependentFields();
   }
-  modalHesapTazele(); otoYayinTazele();
+  modalHesapTazele(); otoYayinTazele(); platformSaatSenkron();
   document.getElementById('editOverlay').classList.add('open');
   // Kaydirma her acilista basa alinmali: uzun formda asagi inip Iptal'e basan
   // biri, sonraki acilista pencereyi biraktigi yerden goruyordu.
@@ -15746,6 +15827,10 @@ function setUploadToggle(val, sistem){
 
 document.getElementById('f_type').addEventListener('change', ()=>{ refreshTypeDependentFields(); otoYayinTazele(); });
 document.getElementById('f_time').addEventListener('change', otoYayinTazele);
+// Anahtar acilinca satirlar ciziliyor, kapaninca kayboluyor. Saatler
+// kutuda duruyor; kapatip acan biri yazdiklarini kaybediyor -- bilerek:
+// anahtari kapatmak "hepsi ayni saatte" demek.
+document.getElementById('f_saat_farkli').addEventListener('change', platformSaatSenkron);
 // Kutucuk: once yaziliyor, sonra ekran degisiyor. Ters olsaydi yazma
 // basarisizken kullanici acik gorup oyle birakirdi.
 document.getElementById('otoYayinToggle').addEventListener('click', async ()=>{
@@ -15928,7 +16013,10 @@ document.getElementById('saveBtn').addEventListener('click', async ()=>{
         delete icerik.diller;
         delete icerik.anaDil;
       }
-      const yeni = { id:newId(), type:c.type, platform:c.platform, title, date, time, uploaded, content: icerik };
+      // SAAT KAYIT BASINA. Ustteki alan varsayilan; anahtar aciksa o
+      // platformun kendi satiri geciyor.
+      const yeni = { id:newId(), type:c.type, platform:c.platform, title, date,
+                     time: platformSaati(c.platform, time), uploaded, content: icerik };
       events.push(yeni); markDirty(yeni.id);
     });
     trackOnce('funnel/entry-created');
