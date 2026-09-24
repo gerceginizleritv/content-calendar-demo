@@ -5443,6 +5443,9 @@ const LANG = {
     hv_k_80: "Showers", hv_k_95: "Thunderstorm",
     ai_anahtar_gerek: "This needs a Gemini key. Opening the AI window — paste the key there, then try again.",
     ai_hesaba: "Keep this key in my account (so my other devices have it too)",
+    ai_cihaz_baslik: "The key works",
+    ai_cihaz_govde: "Right now it only lives on this device. Keep it in your account so your phone and your other devices have it too?",
+    ai_cihaz_tut: "Keep it in my account",
     ai_hesaba_not: "Stored in your own row, which only you can read. Leave it off and the key never leaves this device.",
     mk_empty: "No places yet. Add the ones you shoot at and you will not type the address again.",
     mk_no_match: "No place matches that search.",
@@ -6447,6 +6450,9 @@ const LANG = {
     hv_k_80: "Sa\u011Fanak", hv_k_95: "G\u00F6k g\u00FCr\u00FClt\u00FCl\u00FC",
     ai_anahtar_gerek: "Bunun için Gemini anahtarı gerekiyor. AI penceresi açılıyor — anahtarı oraya yapıştır, sonra tekrar dene.",
     ai_hesaba: "Anahtarı hesabımda tut (diğer cihazlarımda da olsun)",
+    ai_cihaz_baslik: "Anahtar çalışıyor",
+    ai_cihaz_govde: "Şu an yalnızca bu cihazda duruyor. Hesabında tutayım mı — telefonunda ve diğer cihazlarında da hazır olsun?",
+    ai_cihaz_tut: "Hesabımda tut",
     ai_hesaba_not: "Yalnızca senin okuyabildiğin kendi satırında durur. Kapalı bırakırsan anahtar bu cihazdan hiç çıkmaz.",
     mk_empty: "Henüz mekan yok. Çekim yaptığın yerleri ekle, adresi bir daha yazmayasın.",
     mk_no_match: "Bu aramaya uyan mekan yok.",
@@ -17049,6 +17055,27 @@ function saveAiSettings(s){
   localStorage.setItem('demo_ai_settings', JSON.stringify(s));
   if(aiHesabaKaydet) tercihPushKuyrukla();
 }
+// Anahtar dogrulandiktan sonra bir kez: "diger cihazlarinda da olsun mu?"
+//
+// ⚠ VARSAYILAN DEGISMIYOR, yalnizca SORULUYOR. Varsayilani acmak bir
+// kimlik bilgisini kullanici istemeden sunucuya kopyalamak olurdu ve
+// kutunun altindaki soz tam olarak bunu engelliyor: "Kapali birakirsan
+// anahtar bu cihazdan hic cikmaz."
+//
+// Oturum yoksa hic sorulmuyor: yazacak bir hesap satiri yok.
+// Zaten aciksa da sorulmuyor: cevabi belli.
+async function aiCihazlarArasiSor(){
+  if(!session || aiHesabaKaydet) return;
+  const evet = await onayla({ baslik: t('ai_cihaz_baslik'),
+                              govde: t('ai_cihaz_govde'),
+                              not: t('ai_hesaba_not'),
+                              tamam: t('ai_cihaz_tut') });
+  if(!evet) return;
+  aiHesabaYaz(true);
+  const kutu = document.getElementById('ai_hesaba');
+  if(kutu) kutu.checked = true;
+  trackOnce('funnel/ai-key-hesaba');
+}
 
 document.getElementById('aiSettingsCancelBtn').addEventListener('click', ()=> document.getElementById('aiSettingsOverlay').classList.remove('open'));
 document.getElementById('aiSettingsOverlay').addEventListener('click', (e)=>{ if(e.target.id==='aiSettingsOverlay') document.getElementById('aiSettingsOverlay').classList.remove('open'); });
@@ -17084,6 +17111,14 @@ document.getElementById('aiSettingsSaveBtn').addEventListener('click', async ()=
     saveAiSettings({ provider:'gemini', key });
     trackOnce('funnel/ai-key-connected');
     document.getElementById('aiSettingsOverlay').classList.remove('open');
+    // ⚠ CIHAZLAR ARASI SORUSU BURADA SORULUYOR, kutuda degil.
+    // Ozellik zaten vardi (ai_hesaba kutusu) ama kimse gormuyordu --
+    // kullanicinin kendisi bile atlamisti: "ben bile atlamisim". Sebep
+    // yeri: kutu, kullanicinin anahtari CALISTIRMAYA odaklandigi anda
+    // formun altinda pasif bir onay kutusu olarak duruyor. Dogru an
+    // anahtarin dogrulandigi an; soru o zaman bir anlam tasiyor.
+    // Kutu duruyor: fikrini sonra degistirmenin yolu o.
+    await aiCihazlarArasiSor();
     // Uretim yalnizca kullanici bir KAYIT duzenlerken buraya geldiyse
     // baslatiliyor. Sol menuden gelindiginde kayit penceresi kapali:
     // uretim gorunmez bir alana yazar, durum mesaji da gorunmezdi.
