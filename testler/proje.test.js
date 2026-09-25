@@ -1,4 +1,4 @@
-const { chromium } = require('./araclar');
+const { chromium, ORNEKSIZ } = require('./araclar');
 (async () => {
   const D = process.argv[2];
   const b = await chromium.launch({ });
@@ -7,6 +7,10 @@ const { chromium } = require('./araclar');
   page.on('pageerror', e=>hatalar.push(String(e)));
   page.on('console', m=>{ if(m.type()==='error' && !/Failed to load resource/.test(m.text())) hatalar.push(m.text()); });
   await page.addInitScript(()=>{ try{ localStorage.setItem('demo_seen_intro','1'); }catch(e){} });
+  // Bu test PROJESIZ bir baslangic olcuyor ve kendi projelerini kuruyor.
+  // Uygulama ilk acilista ornek proje de kuruyor; ornekler ornek-veri
+  // testinde olculuyor, burada gurultu.
+  await page.addInitScript(ORNEKSIZ);
   await page.route('**/supabase-js**', r=>r.fulfill({status:200,contentType:'application/javascript',
     body:'window.supabase={createClient(){return {auth:{getSession:()=>Promise.resolve({data:{session:null}}),onAuthStateChange(){return {data:{subscription:{unsubscribe(){}}}}}}};}};'}));
   await page.route('**/goatcounter**', r=>r.abort());
@@ -23,6 +27,18 @@ const { chromium } = require('./araclar');
   // Hic proje yokken filtre satiri gorunmemeli
   k('proje yokken filtre satırı gizli',
     await page.evaluate(()=> document.getElementById('conceptLegend').hidden === true));
+
+  // PROJESIZ bir kayit: asagidaki iki olcum bunu gerektiriyor --
+  // "Projesiz" cipi ancak projesiz kayit varsa cikiyor, filtrenin listeyi
+  // DARALTTIGINI gormek icin de disarida kalacak bir kayit gerekiyor.
+  // Onceden bu is ornek kayitlarla kendiliginden oluyordu; ornekler artik
+  // proje de kurdugu icin bu test onlarsiz kosuyor ve kendi durumunu
+  // acikca kuruyor.
+  await page.evaluate(()=>{
+    events.push(sanitizeEvent({ id:'projesiz1', type:'video', platform:'youtube',
+      title:'Projesiz kayıt', date:'2026-09-11', time:'12:00', content:{} }));
+    save(); renderCal();
+  });
 
   // Yeni kayit: proje modalden olusturuluyor (artik serbest metin degil secim)
   const olustur = await page.evaluate(async ()=>{

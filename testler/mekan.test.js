@@ -1,7 +1,7 @@
 // Mekanlar: cekim yerleri kutuphanesi. Eski lokasyon takibinde projeler
 // mekanlarin altinda duruyordu; tasima sirasinda mekan diye bir kayit
 // kalmamis, adres her projenin icine ayri yazilmisti.
-const { chromium } = require('./araclar');
+const { chromium, ORNEKSIZ } = require('./araclar');
 const KOK = process.argv[2] || 'http://127.0.0.1:8098';
 let g = 0, k = 0;
 const bak = (ad, ko, ek)=>{ if(ko){ g++; console.log('  ok  '+ad); } else { k++; console.log('  YOK '+ad+(ek?' -> '+ek:'')); } };
@@ -10,6 +10,10 @@ const bak = (ad, ko, ek)=>{ if(ko){ g++; console.log('  ok  '+ad); } else { k++;
   const t = await chromium.launch({ });
   const p = await (await t.newContext({ viewport:{width:1280,height:1000} })).newPage();
   const hata = []; p.on('pageerror', e => hata.push(String(e)));
+  // Bu test BOS bir mekan listesi olcuyor ("bos halde ne yapilacagi
+  // yaziyor", "mekan kaydedildi"). Uygulama ilk acilista bir ornek mekan
+  // kuruyor; ornekler ornek-veri testinde olculuyor, burada gurultu.
+  await p.addInitScript(ORNEKSIZ);
   await p.goto(KOK + '/app.html', { waitUntil:'networkidle' });
   await p.evaluate(() => { try{ localStorage.setItem('demo_tour_done','1'); }catch(e){} });
   await p.reload({ waitUntil:'networkidle' });

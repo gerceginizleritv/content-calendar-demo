@@ -1,10 +1,14 @@
-const { chromium } = require('./araclar');
+const { chromium, ORNEKSIZ } = require('./araclar');
 (async () => {
   const b = await chromium.launch({ });
   const page = await b.newPage({ viewport:{width:1440,height:1000} });
   let hata=0; const k=(a,s,e)=>{ console.log((s?'  ✔ ':'  ✖ ')+a+(e!==undefined?' → '+JSON.stringify(e):'')); if(!s) hata++; };
   page.on('pageerror', e=>{ console.log('  SAYFA HATASI: '+e); hata++; });
   await page.addInitScript(()=>{ try{ localStorage.setItem('demo_seen_intro','1'); localStorage.setItem('demo_pitch','kapali'); }catch(e){} });
+  // Bu test proje SIRALAMASINI olcuyor ve kendi dort projesini kuruyor.
+  // Uygulamanin ilk acilista kurdugu ornek projeler listeye karisiyordu;
+  // ornekler ornek-veri testinde olculuyor, burada gurultu.
+  await page.addInitScript(ORNEKSIZ);
   await page.route('**/supabase-js**', r=>r.fulfill({status:200,contentType:'application/javascript',
     body:'window.supabase={createClient(){return {auth:{getSession:()=>Promise.resolve({data:{session:null}}),onAuthStateChange(){return {data:{subscription:{unsubscribe(){}}}}}}};}};'}));
   await page.route('**/goatcounter**', r=>r.abort());

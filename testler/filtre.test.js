@@ -107,11 +107,23 @@ const { chromium } = require('./araclar');
   k('dışarı tıklayınca kapanıyor', kapan.acik === true && kapan.kapali === true);
   k('Escape ile kapanıyor', kapan.escIle === true);
 
-  // 6) Icerigi olmayan filtre gorunmuyor (proje yokken)
-  const bos = await page.evaluate(()=>({
-    proje: document.querySelector('.fdrop[data-drop="concept"]').hidden,
-    pazar: document.querySelector('.fdrop[data-drop="tz"]').hidden,
-    tur: document.querySelector('.fdrop[data-drop="type"]').hidden }));
+  // 6) Icerigi olmayan filtre gorunmuyor.
+  // Bu olcum BOS hali soruyor, o yuzden bos hali kendi kuruyor.
+  // Onceden ekranin kendiliginden projesiz gelmesine guveniyordu;
+  // uygulama ilk acilista ornek proje de kurunca olcum dustu -- oysa
+  // kural degismemisti, yalnizca "bos" varsayimi artik dogru degildi.
+  const bos = await page.evaluate(async ()=>{
+    const yedekK = events.slice(), yedekP = projects.slice();
+    events = []; projects = []; renderCal();
+    await new Promise(r=> setTimeout(r, 100));
+    const s = {
+      proje: document.querySelector('.fdrop[data-drop="concept"]').hidden,
+      pazar: document.querySelector('.fdrop[data-drop="tz"]').hidden,
+      tur: document.querySelector('.fdrop[data-drop="type"]').hidden };
+    events = yedekK; projects = yedekP; renderCal();
+    await new Promise(r=> setTimeout(r, 100));
+    return s;
+  });
   k('boş filtre düğmesi gizli (proje/pazar)', bos.proje === true && bos.pazar === true, JSON.stringify(bos));
   k('dolu filtre düğmesi görünür', bos.tur === false);
 
