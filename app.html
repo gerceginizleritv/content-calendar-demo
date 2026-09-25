@@ -1730,6 +1730,26 @@ textarea.sc-ai-brief{min-height:64px;resize:vertical;line-height:1.5;}
 .cal-day-num{font-family:'IBM Plex Mono',monospace;font-size:11px;color:var(--text-dim);margin-bottom:7px;}
 .cal-day.today .cal-day-num{color:var(--accent);font-weight:700;}
 .cal-chip-row{display:flex;gap:3px;margin-bottom:3px;}
+/* Örnek şeridi: uyarı değil, bilgi. Kırmızı ya da sarı değil; takvimin
+   rengiyle aynı ailede, ama çerçevesi kesik çizgili -- "geçici" demek
+   için metne gerek kalmıyor. */
+.ornek-serit{
+  display:flex;align-items:center;gap:10px;flex-wrap:wrap;
+  margin:0 0 10px;padding:9px 12px;
+  border:1px dashed var(--line);border-radius:8px;background:var(--surface-2);
+  font-size:12.5px;color:var(--text-dim);
+}
+.ornek-serit[hidden]{display:none;}
+.ornek-serit-im{color:var(--text-dim);font-size:11px;line-height:1;}
+.ornek-serit #ornekSeritMetin{flex:1;min-width:180px;}
+.ornek-serit-x{
+  background:none;border:0;color:var(--text-dim);cursor:pointer;
+  font-size:17px;line-height:1;padding:4px 6px;font-family:inherit;
+}
+.ornek-serit-x:hover{color:var(--text);}
+/* Örnek kayıt takvimde: kesik çizgili sol kenar. Yeni bir rozet
+   eklemiyor -- çip zaten kalabalık ve telefonda yer yok. */
+.cal-chip.ornek{border-left-style:dashed;}
 .cal-chip{
   flex:1;display:flex;align-items:center;gap:7px;background:var(--surface);
   border-left:2px solid var(--line);padding:7px 9px;cursor:pointer;
@@ -3361,6 +3381,17 @@ textarea.sc-ai-brief{min-height:64px;resize:vertical;line-height:1.5;}
     </div>
   </div>
 
+  <!-- "Bunlar örnek" şeridi. Takvimin hemen üstünde, yani kullanıcının
+       zaten baktığı yerde. İçeriğini JS yazıyor; örnek kalmadığı an
+       kendiliğinden kayboluyor. -->
+  <div class="ornek-serit" id="ornekSerit" hidden>
+    <span class="ornek-serit-im">○</span>
+    <span id="ornekSeritMetin"></span>
+    <button type="button" class="btn btn-sm" id="ornekKaldirBtn2" data-i18n="ornek_kaldir_btn">Remove the samples</button>
+    <button type="button" class="ornek-serit-x" id="ornekSeritX" data-i18n-title="ornek_serit_kapat"
+            data-i18n-aria="ornek_serit_kapat">×</button>
+  </div>
+
   <div class="cal-nav">
     <div class="cal-nav-left">
       <!-- Ay: butunu gormek icin. Hafta: yogun bir haftayi katlamadan calismak
@@ -3456,6 +3487,10 @@ textarea.sc-ai-brief{min-height:64px;resize:vertical;line-height:1.5;}
     <button class="foot-link" id="restoreBtn" data-i18n="btn_restore">Restore Backup</button>
     <input type="file" id="yedekDosya" accept="application/json,.json" hidden>
     <button class="foot-link" id="resetBtn" data-i18n="btn_reset">Reset Demo</button>
+    <!-- Şerit kapatılmış olsa bile kaldırma yolu burada duruyor. Örnek
+         kalmayınca gizleniyor: yapacak işi olmayan bir düğme, olmayan
+         bir düğmeden kötü. -->
+    <button class="foot-link" id="ornekKaldirBtn" data-i18n="ornek_kaldir_btn" hidden>Remove the samples</button>
   </footer>
 </div>
 
@@ -5006,6 +5041,13 @@ const LANG = {
     oy_hata: "Failed",
     oy_saatsiz: "No time set, so it will not publish. Give it a time.",
     oy_yeni: "Save the entry first, then you can switch automatic publishing on.",
+    ornek_serit: (n)=> `${n} sample entries, two projects and a place are already here — so you can see how a full week looks. They are examples, not your work.`,
+    ornek_kaldir_btn: "Remove the samples",
+    ornek_serit_kapat: "Hide this note",
+    ornek_kaldir_onay: "Remove all the sample entries, projects and the sample place? Anything you added yourself stays.",
+    ornek_kaldirildi: (k, d)=> `Samples removed — ${k} entries and ${d} other items.`,
+    ornek_ilk_kayit: "That is your first entry. Shall I clear the samples now?",
+    ornek_rozet_title: "Sample entry",
     oy_kapali: "Automatic publishing is off for this account",
     oy_kapali_aciklama: "For Shootboard to post on your behalf, three things have to be in place:",
     oy_sart_1: "Your Instagram / Facebook account connected to Shootboard",
@@ -6021,6 +6063,13 @@ const LANG = {
     oy_hata: "Hata",
     oy_saatsiz: "Saat girilmemiş, bu yüzden yayınlanmayacak. Bir saat ver.",
     oy_yeni: "Önce kaydı kaydet, sonra otomatik yayını açabilirsin.",
+    ornek_serit: (n)=> `${n} örnek kayıt, iki proje ve bir mekân hazır duruyor — dolu bir hafta nasıl görünüyor göresin diye. Bunlar örnek, senin işin değil.`,
+    ornek_kaldir_btn: "Örnekleri kaldır",
+    ornek_serit_kapat: "Bu notu gizle",
+    ornek_kaldir_onay: "Bütün örnek kayıtlar, projeler ve örnek mekân kaldırılsın mı? Senin eklediğin hiçbir şey silinmiyor.",
+    ornek_kaldirildi: (k, d)=> `Örnekler kaldırıldı — ${k} kayıt ve ${d} diğer öğe.`,
+    ornek_ilk_kayit: "İlk kaydını girdin. Örnekleri şimdi kaldırayım mı?",
+    ornek_rozet_title: "Örnek kayıt",
     oy_kapali: "Otomatik yayın bu hesapta kapalı",
     oy_kapali_aciklama: "Shootboard'ın senin yerine paylaşabilmesi için üç şey gerekiyor:",
     oy_sart_1: "Instagram / Facebook hesabının Shootboard'a bağlanması",
@@ -7404,6 +7453,66 @@ function ornekleriKaldir(){
   ornekKaldirildiYaz();
   saveMekanlar(); saveProjects(); save();
   return { kayit: kayit.length, proje: proje.length, mekan: mekan.length };
+}
+
+// ---- "Bunlar örnek" şeridi -------------------------------------------
+// Kullanıcıya örnekleri SÖYLEMEK, kaldırmayı mümkün kılmak kadar önemli.
+// İşaretsiz sekiz kayıt gören biri "başkasının hesabına mı girdim" diye
+// düşünebiliyordu; tek tek silmek de ürünün ilk beş dakikasını temizlik
+// işine çeviriyordu.
+//
+// Şerit takvimin hemen üstünde: kullanıcının zaten baktığı yer. Örnek
+// kalmadığı an kendiliğinden kayboluyor -- kapatmak için ayrı bir iş
+// yok. "Şimdilik dursun" diyen × ile gizliyor; o zaman da kaldırma
+// düğmesi Ayarlar'daki yerinde duruyor, yani çıkış yolu kaybolmuyor.
+const ORNEK_SERIT_KAPALI_KEY = 'demo_ornek_serit_kapali';
+
+function ornekSeridiKapaliMi(){
+  try{ return localStorage.getItem(ORNEK_SERIT_KAPALI_KEY) === '1'; }catch(e){ return false; }
+}
+function ornekSeridiTazele(){
+  const s = document.getElementById('ornekSerit');
+  if(!s) return;
+  const gorunsun = ornekVarMi() && !ornekSeridiKapaliMi();
+  s.hidden = !gorunsun;
+  if(gorunsun){
+    const n = document.getElementById('ornekSeritMetin');
+    if(n) n.textContent = t('ornek_serit')(events.filter(ornekKayitMi).length);
+  }
+  // Alttaki kalıcı düğme örnek durdukça açık. Şerit gizlenmiş olsa bile
+  // çıkış yolu burada duruyor.
+  const dip = document.getElementById('ornekKaldirBtn');
+  if(dip) dip.hidden = !ornekVarMi();
+}
+
+async function ornekleriKaldirSor(){
+  if(!ornekVarMi()) return false;
+  if(!await onayla(t('ornek_kaldir_onay'))) return false;
+  const s = ornekleriKaldir();
+  renderCal(); renderProjects(); renderMekanlar();
+  ornekSeridiTazele();
+  showToast(t('ornek_kaldirildi')(s.kayit, s.proje + s.mekan));
+  track('funnel/samples-removed');
+  return true;
+}
+
+// Kullanıcı KENDİ ilk kaydını girdiğinde örneklerin işi bitiyor: tam o
+// anda bir kez soruluyor. Daha erken sormak (ilk açılışta) turun önüne
+// geçerdi; hiç sormamak, şeridi fark etmeyeni örneklerle bırakırdı.
+// "Hayır" da bir cevap: bir daha sorulmuyor, şerit yerinde duruyor.
+const ORNEK_SORULDU_KEY = 'demo_ornek_soruldu';
+async function ornekIlkKayittaSor(){
+  try{ if(localStorage.getItem(ORNEK_SORULDU_KEY) === '1') return; }catch(e){ return; }
+  if(!ornekVarMi()) return;
+  // Kullanıcının kendi kaydı var mı? Yoksa sorulacak bir şey yok.
+  if(!events.some(e=> !ornekKayitMi(e))) return;
+  try{ localStorage.setItem(ORNEK_SORULDU_KEY, '1'); }catch(e){}
+  if(!await onayla(t('ornek_ilk_kayit'))) return;
+  const s = ornekleriKaldir();
+  renderCal(); renderProjects(); renderMekanlar();
+  ornekSeridiTazele();
+  showToast(t('ornek_kaldirildi')(s.kayit, s.proje + s.mekan));
+  track('funnel/samples-removed-first-entry');
 }
 let events = [];
 let activeTypeFilters = new Set();
@@ -15625,6 +15734,11 @@ function yayinNoktasi(ev){
 }
 function renderCal(){
   renderEntryCount();
+  // Şerit burada tazeleniyor, ayrı ayrı çağrıldığı yerlerde değil: kullanıcı
+  // örnekleri TEK TEK de silebiliyor ve o yolların hepsi zaten takvimi
+  // yeniden çiziyor. Tek yerden bakmak, "son örnek silindi ama şerit
+  // duruyor" halini imkânsız kılıyor.
+  ornekSeridiTazele();
   // Filtre satirlari veriden turuyor (kullanilan projeler, kullanilan saat
   // dilimleri). Takvim her yenilendiginde onlar da yenilenmeli; aksi halde
   // yeni bir proje giren kullanici filtresini ancak sayfayi yenileyince
@@ -15732,7 +15846,9 @@ function renderCal(){
       // haftanin satir yuksekligini buyutmesin.
       row.className = 'cal-chip-row' + (katlanabilir && idx >= CAL_MAX_CHIPS ? ' overflow' : '');
       const chip = document.createElement('div');
-      chip.className = 'cal-chip' + (kayitBitti(ev) ? ' live' : '');
+      chip.className = 'cal-chip' + (kayitBitti(ev) ? ' live' : '')
+                     + (ornekKayitMi(ev) ? ' ornek' : '');
+      if(ornekKayitMi(ev)) chip.title = t('ornek_rozet_title');
       // Renk platformu, etiket tipi anlatir: isaret hem kimligi hem rengi tasidigi
       // icin ayri bir renk cubuguna gerek kalmiyor.
       chip.innerHTML = `<span class="cal-pico" style="color:${CAL_SM_COLORS[ev.platform]}" title="${CAL_SM_NAMES[ev.platform]}">${PLATFORM_ICONS[ev.platform]||''}</span>
@@ -16469,6 +16585,11 @@ document.getElementById('saveBtn').addEventListener('click', async ()=>{
   // normal alanlara yaziliyor — yoksa Ingilizce sekmesi acikken kaydeden
   // kullanicinin Turkce aciklamasi Ingilizceyle ezilirdi.
   const dilPaketi = dilleriTopla();
+  // ⚠ Bu nesne alanları TEK TEK sayıyor, kaydın eski content'ini
+  // YAYMIYOR. Örnek işareti de bu yüzden buraya kendiliğinden
+  // gelmiyor: bir örneği klonlayan kişinin kendi kaydı "Örnekleri
+  // kaldır" ile silinmiyor. Düzenlemede işaret aşağıda AÇIKÇA
+  // taşınıyor -- yani iki davranış da burada, tesadüfen değil.
   const content = {
     projectId: proje.id,
     concept: proje.name,
@@ -16505,6 +16626,11 @@ document.getElementById('saveBtn').addEventListener('click', async ()=>{
       ? document.getElementById('f_hesap').value
       : ((currentEvent.content || {}).hesapId || '');
     if(deger) content.hesapId = deger;
+    // ÖRNEK İŞARETİ düzenlemede taşınıyor. content formdan baştan
+    // kuruluyor; taşınmasaydı bir örneği açıp Kaydet'e basmak onu
+    // sessizce "gerçek kayda" çevirirdi ve "Örnekleri kaldır" onu geride
+    // bırakırdı. hesapId ve diller ile birebir aynı tuzak.
+    if((currentEvent.content || {}).ornek === true) content.ornek = true;
   }
 
   if(currentEvent){
@@ -16583,6 +16709,10 @@ document.getElementById('saveBtn').addEventListener('click', async ()=>{
     maybeShowCloudNudge();
   }
   save(); closeModal(); renderCal();
+  // Kullanıcının KENDİ ilk kaydı girildi: örneklerin işi tam burada
+  // bitiyor, bir kez soruluyor. (Aynı satır silme yolunda da var; burası
+  // KAYDETME yolu.)
+  ornekIlkKayittaSor();
 });
 
 // Olcum anahtari 'month-navigated' olarak birakildi: adim artik hafta ama
@@ -16944,7 +17074,8 @@ const TOUR_STEPS_I18N = {
       body:"Shootboard follows the order the work actually happens in. You note an idea, turn it into a script, open a project when the shoot becomes real, and place the posts on the calendar. Nothing forces that order — a script can exist before any project, and a project can start without a single idea.",
       points:["Ideas and Scripts live on their own pages, not under a project.",
               "Attaching a project is optional and can be done later.",
-              "The left rail runs in that order: Ideas, Places, Projects — where a shoot is actually run — then Scripts, Calendar, Kit and Templates."] },
+              "The left rail runs in that order: Ideas, Places, Projects — where a shoot is actually run — then Scripts, Calendar, Kit and Templates.",
+              "What you see is sample data — entries, two projects and a place. It is there to show the shape of a week, not to be your work. One button above the calendar clears all of it."] },
     { title:"Ideas: a wall of cards",
       body:"Every idea is a card — an angle, a question, a scene, a person to talk to. Card size shows you at a glance how much you have written. Drop one card on another and they merge into a single card holding both pieces; drag a piece back out and it becomes its own card again.",
       points:["Drop on the middle to merge, on the edge to reorder.",
@@ -16996,7 +17127,8 @@ const TOUR_STEPS_I18N = {
       body:"Shootboard işin gerçekte olduğu sırayı izliyor. Bir fikri not ediyorsun, onu script'e çeviriyorsun, çekim somutlaşınca proje açıyorsun ve paylaşımları takvime yerleştiriyorsun. Bu sıra zorunlu değil: script proje olmadan da var olabilir, proje de tek bir fikir olmadan başlayabilir.",
       points:["Fikirler ve Scriptler kendi sayfalarında yaşıyor, projenin altında değil.",
               "Projeye bağlamak isteğe bağlı ve sonradan da yapılabiliyor.",
-              "Sol menü de o sırayla: Fikirler, Mekanlar, Projeler — çekim asıl orada yürüyor — sonra Scriptler, Takvim, Malzeme ve Şablonlar."] },
+              "Sol menü de o sırayla: Fikirler, Mekanlar, Projeler — çekim asıl orada yürüyor — sonra Scriptler, Takvim, Malzeme ve Şablonlar.",
+              "Ekranda gördüğün şey ÖRNEK veri: kayıtlar, iki proje ve bir mekân. Dolu bir haftanın neye benzediğini göstermek için duruyor, senin işin değil. Takvimin üstündeki tek düğme hepsini kaldırıyor."] },
     { title:"Fikirler: kartlardan bir duvar",
       body:"Her fikir bir kart — bir açı, bir soru, bir sahne, konuşulacak bir kişi. Kartın boyu ne kadar yazdığını bir bakışta gösteriyor. Bir kartı ötekinin üstüne bırakınca ikisi tek kartta birleşiyor; birleşik karttan bir parçayı sürükleyip çıkarınca yeniden kendi kartı oluyor.",
       points:["Ortasına bırakınca birleşiyor, kenarına bırakınca sıra değişiyor.",
@@ -18892,6 +19024,17 @@ loadMekanlar();
 // Üç liste de okundu: boşsa örnekler şimdi kuruluyor, kayıtlar gerçek
 // projelere bağlı olarak.
 ornekleriGerekirseKur();
+['ornekKaldirBtn', 'ornekKaldirBtn2'].forEach(id=>{
+  const dug = document.getElementById(id);
+  if(dug) dug.addEventListener('click', ()=> ornekleriKaldirSor());
+});
+{
+  const x = document.getElementById('ornekSeritX');
+  if(x) x.addEventListener('click', ()=>{
+    try{ localStorage.setItem(ORNEK_SERIT_KAPALI_KEY, '1'); }catch(e){}
+    ornekSeridiTazele();
+  });
+}
 loadHesaplar();
 ihtiyaclar = readIhtiyaclar();
 ihtiyacSetleri = readSetler();
