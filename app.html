@@ -2040,6 +2040,9 @@ textarea.sc-ai-brief{min-height:64px;resize:vertical;line-height:1.5;}
   font-size:12px;line-height:1.7;color:var(--text-dim);}
 .oy-durum b{color:var(--text);font-weight:600;}
 .oy-durum .oy-hata{color:var(--red);display:block;margin-top:5px;word-break:break-word;}
+/* Sart listesi: madde isaretleri metnin hizasini bozmasin diye iceride. */
+.oy-sart{margin:6px 0 4px;padding-left:18px;}
+.oy-sart li{margin:2px 0;}
 .oy-nokta{display:inline-block;width:8px;height:8px;border-radius:50%;margin-right:6px;
   vertical-align:1px;background:var(--text-dim);}
 .oy-nokta.yayinlandi{background:var(--green);}
@@ -5003,6 +5006,12 @@ const LANG = {
     oy_hata: "Failed",
     oy_saatsiz: "No time set, so it will not publish. Give it a time.",
     oy_yeni: "Save the entry first, then you can switch automatic publishing on.",
+    oy_kapali: "Automatic publishing is off for this account",
+    oy_kapali_aciklama: "For Shootboard to post on your behalf, three things have to be in place:",
+    oy_sart_1: "Your Instagram / Facebook account connected to Shootboard",
+    oy_sart_2: "The small uploader running on your computer — it attaches the video file",
+    oy_sart_3: "A publish time on the entry",
+    oy_kapali_nasil: "Setup is still done one account at a time. Write to us from Feedback and we'll switch it on.",
     oy_deneme: (n)=> `${n} attempt${n===1?'':'s'}`,
     oy_yazilamadi: "Could not save that. Check your connection and try again.",
     oy_sistem_isaret: "Shootboard published this one, so it counts as done. Your own tick is still yours to make.",
@@ -6012,6 +6021,12 @@ const LANG = {
     oy_hata: "Hata",
     oy_saatsiz: "Saat girilmemiş, bu yüzden yayınlanmayacak. Bir saat ver.",
     oy_yeni: "Önce kaydı kaydet, sonra otomatik yayını açabilirsin.",
+    oy_kapali: "Otomatik yayın bu hesapta kapalı",
+    oy_kapali_aciklama: "Shootboard'ın senin yerine paylaşabilmesi için üç şey gerekiyor:",
+    oy_sart_1: "Instagram / Facebook hesabının Shootboard'a bağlanması",
+    oy_sart_2: "Bilgisayarındaki küçük yükleyicinin çalışması — video dosyasını o bağlıyor",
+    oy_sart_3: "Kayıtta bir yayın saati olması",
+    oy_kapali_nasil: "Kurulum şimdilik hesap hesap yapılıyor. Geri bildirimden yaz, açalım.",
     oy_deneme: (n)=> `${n} deneme`,
     oy_yazilamadi: "Kaydedilemedi. Bağlantını kontrol edip tekrar dene.",
     oy_sistem_isaret: "Bunu Shootboard yayınladı, yapılmış sayılıyor. Kendi işaretin yine senin bileğine kalıyor.",
@@ -13316,6 +13331,11 @@ function gelenAlinanOku(satir){
   // MCP erisimi bayragi. Kaynak koda e-posta GOMULMUYOR: bayrak hesabin
   // kendi ayarlarinda duruyor, Supabase panelinden aciliyor.
   mcpAcik = !!(satir && satir.prefs && satir.prefs.mcp);
+  // Otomatik story yayini bayragi. MCP gibi: kaynak koda e-posta
+  // gomulmuyor, bayrak hesabin kendi ayarlarinda duruyor. Buradan
+  // yalnizca OKUNUYOR -- yazilmiyor. PREFS_BIZIM'de de yok, yani
+  // tercihPrefsYap onu yabanci defterde oldugu gibi koruyor.
+  storyYayinAcik = !!(satir && satir.prefs && satir.prefs.story_yayin);
   // Bulutta jeton varsa yerelde olmayanı tamamlıyor; yereldeki daha
   // yeniyse dokunmuyor.
   const uzakPay = satir && satir.prefs && satir.prefs.share;
@@ -15984,6 +16004,25 @@ function otoYayinTazele(){
 
   const d = document.getElementById('otoYayinDurum');
   const y = currentEvent && currentEvent.yayin;
+
+  // HESAPTA ACIK DEGILSE tik calismiyor -- ve calisiyormus gibi de
+  // durmuyor. Onceden herkese tiklanabilir gorunuyordu: bayragi olmayan
+  // biri tiki aciyor, hicbir sey olmuyor, ekranda yalnizca "Bekliyor"
+  // yaziyordu. Calismayan bir dugme, sebebini soylemeyen bir dugmeden
+  // daha kotu: kullanici hatanin kendisinde oldugunu dusunuyor.
+  //
+  // Bu kontrol yeni-kayit kontrolunden ONCE: bayraksiz birine "once
+  // kaydet" demek, kaydettiginde calisacagini soylemek olurdu.
+  if(!storyYayinAcik){
+    setOtoYayinToggle(false, true);
+    d.innerHTML = '<span class="oy-nokta"></span><b>' + escapeHtml(t('oy_kapali')) + '</b>'
+      + '<br>' + escapeHtml(t('oy_kapali_aciklama'))
+      + '<ul class="oy-sart"><li>' + escapeHtml(t('oy_sart_1'))
+      + '</li><li>' + escapeHtml(t('oy_sart_2'))
+      + '</li><li>' + escapeHtml(t('oy_sart_3')) + '</li></ul>'
+      + '<span class="hint">' + escapeHtml(t('oy_kapali_nasil')) + '</span>';
+    return;
+  }
 
   // YENI KAYIT: satir daha veritabaninda yok, auto_publish yazilamaz.
   // Kutucugu calisiyormus gibi gostermek, isaretleyip kaydeden birinin
@@ -20820,6 +20859,7 @@ function hesapPenceresiniAc(){
 // Duz anahtar HIC SAKLANMIYOR: yalnizca SHA-256 ozeti tabloya gidiyor.
 // Kullaniciya bir kez gosteriliyor; kaybederse yenisi uretiliyor.
 let mcpAcik = false;
+let storyYayinAcik = false;
 const MCP_UC = SUPABASE_URL + '/functions/v1/mcp/';
 
 async function mcpOzet(metin){
