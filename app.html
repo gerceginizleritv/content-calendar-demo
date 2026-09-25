@@ -7108,41 +7108,303 @@ function typeName(key){ return (TYPE_NAMES[currentLang]||TYPE_NAMES.en)[key] || 
 function typeLabel(key){ return (TYPE_LABELS[currentLang]||TYPE_LABELS.en)[key] || key || ''; }
 function statusLabel(key){ return (STATUS_LABELS[currentLang]||STATUS_LABELS.en)[key] || key || ''; }
 
-function seedData(){
-  const today = new Date();
-  const d = (offset)=>{ const x = new Date(today); x.setDate(x.getDate()+offset); return x.toISOString().slice(0,10); };
-  // Kimlikler her uretimde yeniden veriliyor: sabit 'seed1' gibi degerler her
-  // tarayicida ayni oldugu icin hesaplar arasi cakismaya yol aciyordu.
-  return kimlikleriTazele([
-    { id:'seed1', type:'video', platform:'youtube', title:'Product Launch — Full Walkthrough', date:d(1), time:'18:00', uploaded:false,
-      content:{ caption:"We just shipped the biggest update of the year. In this video I walk through every new feature, why we built it, and what's coming next.\n\nTimestamps in the description. Let me know what you think in the comments!", hashtags:'product launch, saas, startup, behind the scenes', videoTitle:'We Rebuilt Our Entire App — Here\'s Everything New', shortTitle:"IT'S FINALLY HERE", thumbPrompt:'High-contrast YouTube thumbnail, bold white text "IT\'S HERE", excited expression, product screenshot in the background, bright accent color pop.', slidePrompts:[] } },
-    { id:'seed2', type:'reels', platform:'instagram', title:'60-Second Feature Teaser', date:d(1), time:'19:00', uploaded:false,
-      content:{ caption:"This one feature alone saves our users 4 hours a week. 👀\n\nFull breakdown in today's video — link in bio.", hashtags:'productivity, saas, worksmarter, techtok, startuplife', shortTitle:'4 HOURS SAVED / WEEK', thumbPrompt:'Vertical 9:16 Reels cover. Clean product UI screenshot with a bold minimal headline overlay, soft gradient background, plenty of negative space for text.', slidePrompts:[] } },
-    { id:'seed3', type:'reels', platform:'facebook', title:'60-Second Feature Teaser', date:d(1), time:'20:00', uploaded:false,
-      content:{ caption:"This one feature alone saves our users 4 hours a week. 👀\n\nFull video posted above.", hashtags:'productivity, saas', shortTitle:'4 HOURS SAVED / WEEK', thumbPrompt:'Same cover as Instagram Reels version, 9:16 vertical.', slidePrompts:[] } },
-    { id:'seed4', type:'carousel', platform:'instagram', title:'5 Mistakes New Users Make', date:d(3), time:'12:00', uploaded:false,
-      content:{ caption:"Save this before you make these 5 mistakes 👇\n\nWe pulled these from real support tickets — they're more common than you'd think.", hashtags:'productivitytips, saastips, howto', thumbPrompt:'', slidePrompts:[
-        'Carousel slide 1/9 (cover). Bold headline "5 MISTAKES NEW USERS MAKE", dark background, clean sans-serif typography, minimal icon.',
-        'Carousel slide 2/9. Mistake #1 headline with a simple before/after style illustration, consistent brand color palette.',
-        'Carousel slide 3/9. Mistake #2 headline with supporting icon.',
-        'Carousel slide 4/9. Mistake #3 headline with supporting icon.',
-        'Carousel slide 5/9. Mistake #4 headline with supporting icon.',
-        'Carousel slide 6/9. Mistake #5 headline with supporting icon.',
-        'Carousel slide 7/9. Quick recap slide, all 5 mistakes listed compactly.',
-        'Carousel slide 8/9. "Which one surprised you?" question slide, friendly tone.',
-        'Carousel slide 9/9 (closing/CTA). "Follow for more tips like this" with logo, matching brand palette.'
-      ] } },
-    { id:'seed5', type:'story', platform:'instagram', title:'Poll — Which feature next?', date:d(2), time:'10:00', uploaded:false,
-      content:{ caption:'Screen text: "Which feature should we build next?" — poll sticker with two options.', hashtags:'', thumbPrompt:'Vertical 9:16 story background, on-brand color gradient, clean space reserved for the native poll sticker.', slidePrompts:[] } },
-    { id:'seed6', type:'poll', platform:'facebook', title:'Community Poll — Feature Vote', date:d(4), time:'14:00', uploaded:false,
-      content:{ caption:"Help us prioritize! Which of these would help you most?\n\nA) Dark mode\nB) Mobile app\nC) Team collaboration\n\nVote below 👇", hashtags:'communityfeedback, productroadmap', thumbPrompt:'', slidePrompts:[] } },
-    { id:'seed7', type:'text_post', platform:'facebook', title:'Behind-the-scenes note', date:d(5), time:'11:00', uploaded:false,
-      content:{ caption:"Small team update: we spent this whole week just on load-time improvements. Nothing flashy to show, but the app now opens twice as fast. Sometimes the best work is invisible.", hashtags:'buildinpublic, startuplife', thumbPrompt:'', slidePrompts:[] } },
-    { id:'seed8', type:'shorts', platform:'youtube', title:'One Tip in 30 Seconds', date:d(6), time:'17:00', uploaded:true,
-      content:{ caption:"One setting most people never find — and it fixes the #1 complaint we get. 30 seconds, worth it.", hashtags:'shorts, producttips, tutorial, quicktip', videoTitle:'The Setting Everyone Misses (Fixes Your #1 Complaint)', shortTitle:'1 SETTING FIXES IT', thumbPrompt:'YouTube Shorts cover, bold "1 SETTING" text, high contrast, mobile screen mockup in frame.', slidePrompts:[] } },
-  ]);
+// ══════════════════════════════════════════════════════════════════
+// ÖRNEK VERİ
+// ══════════════════════════════════════════════════════════════════
+// Boş bir takvim hiçbir şey anlatmıyor: yeni gelen kişi neyin nereye
+// yazıldığını göremiyor. O yüzden ilk açılışta örnekler duruyor.
+//
+// Üç kural:
+//
+//   1. İŞARETLİ. Her örnek kayıt content.ornek taşıyor; örnek proje ve
+//      mekânların kimliğinde _ornek_ geçiyor. Böylece "bunlar örnek"
+//      demek de, hepsini birden kaldırmak da TEK bir ölçüte bakıyor.
+//      Ayrıca tutulan bir kimlik listesi YOK: liste ile kayıtlar bir
+//      gün ayrışırdı ve "kaldır" düğmesi ya fazlasını silerdi ya
+//      eksiğini.
+//
+//   2. KULLANICININ DİLİNDE. Türkçe tarayıcıyla gelen birine İngilizce
+//      "Product Launch — Full Walkthrough" göstermek, zaten var olan
+//      "ben başkasının hesabına mı girdim" hissini büyütüyordu.
+//
+//   3. GERÇEK BİR AKIŞ. Yalnızca kayıt değil; 2 proje ve 1 mekân da
+//      geliyor ve kayıtlar projelere bağlı. Önceden 8 kayıt vardı ama
+//      0 proje: tur "önce projeni aç, mekânını seç" diye anlatırken
+//      ekranda ne proje ne mekân vardı.
+//
+// ⚠ YAPI ve METİN ayrı duruyor. Yapı (gün, saat, tür, platform, hangi
+// proje) aşağıda TEK kopya; yalnızca metin dile göre değişiyor. İkisini
+// birden dile koymak, iki listenin bir gün ayrışması demekti -- bu
+// depoda aynı sınıf hata birkaç kez yaşandı.
+const ORNEK_YAPI = [
+  { gun:1, saat:'18:00', tur:'video',     platform:'youtube',   proje:0 },
+  { gun:1, saat:'19:00', tur:'reels',     platform:'instagram', proje:0 },
+  { gun:1, saat:'20:00', tur:'reels',     platform:'facebook',  proje:0 },
+  { gun:3, saat:'12:00', tur:'carousel',  platform:'instagram', proje:0 },
+  { gun:2, saat:'10:00', tur:'story',     platform:'instagram', proje:1 },
+  { gun:4, saat:'14:00', tur:'poll',      platform:'facebook',  proje:1 },
+  { gun:5, saat:'11:00', tur:'text_post', platform:'facebook',  proje:1 },
+  { gun:6, saat:'17:00', tur:'shorts',    platform:'youtube',   proje:1, yuklendi:true }
+];
+
+const ORNEK_METIN = {
+  en: {
+    mekanlar: [
+      { ad:'Office — Studio Corner', sehir:'', ilce:'',
+        not:'The corner we film everything in. Ring light on the left, window light after 3pm. This is a sample place — remove it whenever you like.' }
+    ],
+    projeler: [
+      { ad:'Product Launch', tur:'indoor', mekan:0,
+        not:'Sample project. One launch video cut into four posts across three platforms — the pattern most of a week looks like.' },
+      { ad:'Quick Tips', tur:'indoor', mekan:0,
+        not:'Sample project. Short, repeatable pieces that fill the gaps between the big ones.' }
+    ],
+    kayitlar: [
+      { baslik:'Product Launch — Full Walkthrough',
+        caption:"We just shipped the biggest update of the year. In this video I walk through every new feature, why we built it, and what's coming next.\n\nTimestamps in the description. Let me know what you think in the comments!",
+        hashtags:'product launch, saas, startup, behind the scenes',
+        videoTitle:"We Rebuilt Our Entire App — Here's Everything New",
+        shortTitle:"IT'S FINALLY HERE",
+        thumbPrompt:'High-contrast YouTube thumbnail, bold white text "IT\'S HERE", excited expression, product screenshot in the background, bright accent color pop.' },
+      { baslik:'60-Second Feature Teaser',
+        caption:"This one feature alone saves our users 4 hours a week. \u{1F440}\n\nFull breakdown in today's video — link in bio.",
+        hashtags:'productivity, saas, worksmarter, techtok, startuplife',
+        shortTitle:'4 HOURS SAVED / WEEK',
+        thumbPrompt:'Vertical 9:16 Reels cover. Clean product UI screenshot with a bold minimal headline overlay, soft gradient background, plenty of negative space for text.' },
+      { baslik:'60-Second Feature Teaser',
+        caption:"This one feature alone saves our users 4 hours a week. \u{1F440}\n\nFull video posted above.",
+        hashtags:'productivity, saas',
+        shortTitle:'4 HOURS SAVED / WEEK',
+        thumbPrompt:'Same cover as Instagram Reels version, 9:16 vertical.' },
+      { baslik:'5 Mistakes New Users Make',
+        caption:"Save this before you make these 5 mistakes \u{1F447}\n\nWe pulled these from real support tickets — they're more common than you'd think.",
+        hashtags:'productivitytips, saastips, howto',
+        slidePrompts:[
+          'Carousel slide 1/9 (cover). Bold headline "5 MISTAKES NEW USERS MAKE", dark background, clean sans-serif typography, minimal icon.',
+          'Carousel slide 2/9. Mistake #1 headline with a simple before/after style illustration, consistent brand color palette.',
+          'Carousel slide 3/9. Mistake #2 headline with supporting icon.',
+          'Carousel slide 4/9. Mistake #3 headline with supporting icon.',
+          'Carousel slide 5/9. Mistake #4 headline with supporting icon.',
+          'Carousel slide 6/9. Mistake #5 headline with supporting icon.',
+          'Carousel slide 7/9. Quick recap slide, all 5 mistakes listed compactly.',
+          'Carousel slide 8/9. "Which one surprised you?" question slide, friendly tone.',
+          'Carousel slide 9/9 (closing/CTA). "Follow for more tips like this" with logo, matching brand palette.'
+        ] },
+      { baslik:'Poll — Which feature next?',
+        caption:'Screen text: "Which feature should we build next?" — poll sticker with two options.',
+        thumbPrompt:'Vertical 9:16 story background, on-brand color gradient, clean space reserved for the native poll sticker.' },
+      { baslik:'Community Poll — Feature Vote',
+        caption:"Help us prioritize! Which of these would help you most?\n\nA) Dark mode\nB) Mobile app\nC) Team collaboration\n\nVote below \u{1F447}",
+        hashtags:'communityfeedback, productroadmap' },
+      { baslik:'Behind-the-scenes note',
+        caption:"Small team update: we spent this whole week just on load-time improvements. Nothing flashy to show, but the app now opens twice as fast. Sometimes the best work is invisible.",
+        hashtags:'buildinpublic, startuplife' },
+      { baslik:'One Tip in 30 Seconds',
+        caption:"One setting most people never find — and it fixes the #1 complaint we get. 30 seconds, worth it.",
+        hashtags:'shorts, producttips, tutorial, quicktip',
+        videoTitle:'The Setting Everyone Misses (Fixes Your #1 Complaint)',
+        shortTitle:'1 SETTING FIXES IT',
+        thumbPrompt:'YouTube Shorts cover, bold "1 SETTING" text, high contrast, mobile screen mockup in frame.' }
+    ]
+  },
+  tr: {
+    mekanlar: [
+      { ad:'Ofis — Stüdyo Köşesi', sehir:'', ilce:'',
+        not:'Her şeyi çektiğimiz köşe. Halka ışık solda, 15.00\'ten sonra pencere ışığı geliyor. Bu bir örnek mekân — istediğin an kaldırabilirsin.' }
+    ],
+    projeler: [
+      { ad:'Ürün Tanıtımı', tur:'indoor', mekan:0,
+        not:'Örnek proje. Tek bir tanıtım videosu, üç platformda dört ayrı paylaşıma bölünmüş — bir haftanın çoğu böyle görünüyor.' },
+      { ad:'Kısa İpuçları', tur:'indoor', mekan:0,
+        not:'Örnek proje. Büyük işlerin arasını dolduran, tekrarlanabilir kısa içerikler.' }
+    ],
+    kayitlar: [
+      { baslik:'Ürün Tanıtımı — Baştan Sona',
+        caption:"Yılın en büyük güncellemesini yayınladık. Bu videoda bütün yeni özellikleri tek tek gösteriyorum: neyi neden yaptık, sırada ne var.\n\nZaman damgaları açıklamada. Ne düşündüğünü yorumlarda yaz!",
+        hashtags:'ürün tanıtımı, yazılım, girişim, kamera arkası',
+        videoTitle:'Uygulamayı Baştan Yazdık — İşte Değişen Her Şey',
+        shortTitle:'SONUNDA ÇIKTI',
+        thumbPrompt:'Yüksek kontrastlı YouTube kapağı, kalın beyaz "ÇIKTI" yazısı, heyecanlı ifade, arkada ürün ekran görüntüsü, canlı bir vurgu rengi.' },
+      { baslik:'60 Saniyelik Özellik Tanıtımı',
+        caption:"Tek bir özellik haftada 4 saat kazandırıyor. \u{1F440}\n\nTamamı bugünkü videoda — bağlantı profilde.",
+        hashtags:'verimlilik, yazılım, akıllıçalış, teknoloji, girişim',
+        shortTitle:'HAFTADA 4 SAAT',
+        thumbPrompt:'Dikey 9:16 Reels kapağı. Sade ürün ekranı, üstünde kalın ve kısa bir başlık, yumuşak degrade arka plan, yazı için bolca boşluk.' },
+      { baslik:'60 Saniyelik Özellik Tanıtımı',
+        caption:"Tek bir özellik haftada 4 saat kazandırıyor. \u{1F440}\n\nVideonun tamamı yukarıda.",
+        hashtags:'verimlilik, yazılım',
+        shortTitle:'HAFTADA 4 SAAT',
+        thumbPrompt:'Instagram Reels kapağının aynısı, 9:16 dikey.' },
+      { baslik:'Yeni Kullanıcıların Yaptığı 5 Hata',
+        caption:"Bu 5 hatayı yapmadan önce kaydet \u{1F447}\n\nHepsini gerçek destek taleplerinden çıkardık — sandığından daha yaygın.",
+        hashtags:'ipuçları, yazılım, nasılyapılır',
+        slidePrompts:[
+          'Karusel 1/9 (kapak). Kalın başlık "YENİ KULLANICILARIN YAPTIĞI 5 HATA", koyu arka plan, sade sans-serif tipografi, minimal ikon.',
+          'Karusel 2/9. 1. hata başlığı, basit bir öncesi/sonrası çizimi, tutarlı renk paleti.',
+          'Karusel 3/9. 2. hata başlığı ve destekleyici ikon.',
+          'Karusel 4/9. 3. hata başlığı ve destekleyici ikon.',
+          'Karusel 5/9. 4. hata başlığı ve destekleyici ikon.',
+          'Karusel 6/9. 5. hata başlığı ve destekleyici ikon.',
+          'Karusel 7/9. Kısa özet: beş hata tek ekranda.',
+          'Karusel 8/9. "Hangisi seni şaşırttı?" sorusu, samimi bir ton.',
+          'Karusel 9/9 (kapanış). "Böyle ipuçları için takip et" ve logo, aynı palet.'
+        ] },
+      { baslik:'Anket — Sıradaki özellik hangisi?',
+        caption:'Ekran yazısı: "Sıradaki özellik hangisi olsun?" — iki seçenekli anket çıkartması.',
+        thumbPrompt:'Dikey 9:16 hikâye arka planı, markaya uygun renk geçişi, anket çıkartması için temiz bir boşluk.' },
+      { baslik:'Topluluk Anketi — Özellik Oylaması',
+        caption:"Sıralamayı birlikte yapalım! Hangisi sana en çok yardımcı olur?\n\nA) Koyu tema\nB) Mobil uygulama\nC) Ekip çalışması\n\nAşağıdan oy ver \u{1F447}",
+        hashtags:'topluluk, yol haritası' },
+      { baslik:'Kamera arkası notu',
+        caption:"Küçük bir ekip notu: bütün haftayı yalnızca açılış hızına ayırdık. Gösterilecek parlak bir şey yok ama uygulama artık iki kat hızlı açılıyor. Bazen en iyi iş görünmeyen iştir.",
+        hashtags:'açıkgeliştirme, girişim' },
+      { baslik:'30 Saniyede Tek İpucu',
+        caption:"Çoğu kişinin hiç bulamadığı bir ayar — ve en çok gelen şikâyeti çözüyor. 30 saniye, değer.",
+        hashtags:'shorts, ipuçları, rehber, kısabilgi',
+        videoTitle:'Herkesin Kaçırdığı Ayar (En Çok Gelen Şikâyeti Çözüyor)',
+        shortTitle:'TEK AYAR ÇÖZÜYOR',
+        thumbPrompt:'YouTube Shorts kapağı, kalın "TEK AYAR" yazısı, yüksek kontrast, kadrajda telefon ekranı.' }
+    ]
+  }
+};
+
+function ornekMetin(){ return ORNEK_METIN[currentLang] || ORNEK_METIN.en; }
+
+// Örnek proje ve mekânlar kimliklerinden tanınıyor. Kimlik zaten her
+// yere taşınıyor (yerel depo, bulut satırı, yedek dosyası) ve hiçbir
+// şema değişikliği istemiyor. Kayıtlarda aynı numara YAPILAMIYOR:
+// kimlikleriTazele buluta çıkmadan önce UUID olmayan kayıt kimliklerini
+// yeniliyor (iki hesabın aynı kimliği yazması birincil anahtarı
+// çakıştırıyordu), o yüzden kayıt işareti content.ornek'te duruyor.
+const ORNEK_IM = '_ornek_';
+function ornekKimlik(on){
+  return on + ORNEK_IM + Date.now().toString(36) + '_' + Math.random().toString(36).slice(2,7);
+}
+function ornekKimlikMi(id){ return typeof id === 'string' && id.indexOf(ORNEK_IM) !== -1; }
+function ornekKayitMi(e){ return !!(e && e.content && e.content.ornek === true); }
+function ornekProjeMi(p){ return !!(p && ornekKimlikMi(p.id)); }
+function ornekMekanMi(m){ return !!(m && ornekKimlikMi(m.id)); }
+function ornekVarMi(){
+  return events.some(ornekKayitMi) || projects.some(ornekProjeMi) || mekanlar.some(ornekMekanMi);
 }
 
+function seedData(projeIds){
+  const bugun = new Date();
+  const gun = (k)=>{ const x = new Date(bugun); x.setDate(x.getDate()+k); return x.toISOString().slice(0,10); };
+  const metin = ornekMetin().kayitlar;
+  // Kimlik verilmediyse ZATEN DURAN örnek projelere bağlanıyor. "Demoyu
+  // sıfırla" ve çıkış yolları seedData'yı argümansız çağırıyor; boş
+  // bırakılsaydı örnek projeler ekranda durur ama hiçbir kayıt onlara
+  // bağlı olmazdı -- Projeler sayfası "0 kayıt" derdi.
+  const pid = projeIds || projects.filter(ornekProjeMi).map(p=> p.id);
+  // Kimlikler her üretimde yeniden veriliyor: sabit 'seed1' gibi değerler
+  // her tarayıcıda aynı olduğu için hesaplar arası çakışmaya yol açıyordu.
+  return kimlikleriTazele(ORNEK_YAPI.map((y, i)=>{
+    const m = metin[i] || {};
+    return {
+      id: 'ornek' + (i+1), type: y.tur, platform: y.platform,
+      title: m.baslik || '', date: gun(y.gun), time: y.saat,
+      uploaded: y.yuklendi === true,
+      content: {
+        // ⚠ TEK İŞARET. "Kaldır" düğmesi de, takvimdeki rozet de buna
+        // bakıyor; ayrıca tutulan bir liste olsaydı ikisi ayrışırdı.
+        ornek: true,
+        projectId: pid[y.proje] || '',
+        caption: m.caption || '', hashtags: m.hashtags || '',
+        videoTitle: m.videoTitle || '', shortTitle: m.shortTitle || '',
+        thumbPrompt: m.thumbPrompt || '', slidePrompts: m.slidePrompts || []
+      }
+    };
+  }));
+}
+
+// ---- Örnekleri kurma ve toplu kaldırma -------------------------------
+// Kullanıcının örnekleri tek tek silmesi, ürünün ilk beş dakikasını
+// temizlik işine çeviriyordu. Tek düğme hepsini kaldırıyor.
+const ORNEK_KALDIRILDI_KEY = 'demo_ornek_kaldirildi';
+
+function ornekKaldirildiMi(){
+  try{ return localStorage.getItem(ORNEK_KALDIRILDI_KEY) === '1'; }catch(e){ return false; }
+}
+function ornekKaldirildiYaz(){
+  try{ localStorage.setItem(ORNEK_KALDIRILDI_KEY, '1'); }catch(e){}
+}
+
+// Örnekler YALNIZCA gerçekten boş bir başlangıçta kuruluyor. Üç ayrı
+// koşul var ve üçü de gerekli:
+//   · kullanıcı daha önce kaldırdıysa GERİ GELMİYOR -- kaldırdığı şeyin
+//     geri gelmesi, ürünün onu dinlemediği anlamına gelir;
+//   · elinde kayıt, proje ya da mekân varsa hiç karışılmıyor;
+//   · örnekler zaten duruyorsa ikinci kez kurulmuyor.
+function ornekleriGerekirseKur(){
+  if(ornekKaldirildiMi()) return false;
+  if(events.length || projects.length || mekanlar.length) return false;
+  ornekleriKur();
+  return true;
+}
+
+function ornekleriKur(){
+  const mk = ornekMetin().mekanlar.map(m=> mekanTemizle({
+    id: ornekKimlik('mk'), name: m.ad, city: m.sehir || '', district: m.ilce || '',
+    notes: m.not || ''
+  })).filter(Boolean);
+  mekanlar = mk.concat(mekanlar);
+  mk.forEach(m=> mekanDirty.add(m.id));
+  saveMekanlar();
+
+  const pr = ornekMetin().projeler.map(p=> sanitizeProject({
+    id: ornekKimlik('pr'), name: p.ad, notes: p.not || '', type: p.tur || 'other',
+    placeIds: (mk[p.mekan] ? [mk[p.mekan].id] : [])
+  })).filter(Boolean);
+  projects = pr.concat(projects);
+  pr.forEach(p=> projDirty.add(p.id));
+  saveProjects();
+
+  events = seedData(pr.map(p=> p.id)).concat(events);
+  markAllDirty();
+  save();
+}
+
+// Kaldırma TEK ÖLÇÜTE bakıyor (işaretin kendisi), ayrıca tutulan bir
+// kimlik listesine değil. Liste olsaydı kullanıcı arada bir örneği
+// silince ya da düzenleyince liste ile gerçek ayrışır, düğme ya
+// fazlasını silerdi ya eksiğini.
+//
+// Kullanıcının DÜZENLEDİĞİ bir örnek de kalkıyor: işaret kaydın
+// kendisinde duruyor ve düzenleme onu kaldırmıyor. Bu bilinçli --
+// "örnekleri kaldır" dediğinde bir kısmının kalması daha şaşırtıcı
+// olurdu. Bir örneği sahiplenmek isteyen onu kopyalayabilir.
+function ornekleriKaldir(){
+  const kayit = events.filter(ornekKayitMi);
+  const proje = projects.filter(ornekProjeMi);
+  const mekan = mekanlar.filter(ornekMekanMi);
+  if(!kayit.length && !proje.length && !mekan.length){
+    ornekKaldirildiYaz();
+    return { kayit:0, proje:0, mekan:0 };
+  }
+
+  kayit.forEach(e=> markRemoved(e.id));
+  events = events.filter(e=> !ornekKayitMi(e));
+
+  proje.forEach(p=> projSilindiIsaretle(p.id));
+  projects = projects.filter(p=> !ornekProjeMi(p));
+
+  mekan.forEach(m=>{ mekanDirty.delete(m.id); mekanRemoved.add(m.id); });
+  mekanlar = mekanlar.filter(m=> !ornekMekanMi(m));
+
+  // Örnek projeye bağlı GERÇEK bir kayıt kalmışsa (kullanıcı kendi
+  // kaydını örnek projeye bağlamış olabilir) bağ kopuyor, kayıt duruyor.
+  const gidenProje = new Set(proje.map(p=> p.id));
+  events.forEach(e=>{
+    if(e.content && gidenProje.has(e.content.projectId)){
+      delete e.content.projectId; delete e.content.concept; markDirty(e.id);
+    }
+  });
+
+  ornekKaldirildiYaz();
+  saveMekanlar(); saveProjects(); save();
+  return { kayit: kayit.length, proje: proje.length, mekan: mekan.length };
+}
 let events = [];
 let activeTypeFilters = new Set();
 let activePlatformFilters = new Set();
@@ -7345,6 +7607,17 @@ function sanitizeEvent(raw){
     // bayraginda yasandi.
     yayin: yayinTemiz(raw.yayin),
     content: {
+      // ÖRNEK İŞARETİ. Beyaz listede olmak ZORUNDA: düşseydi ilk
+      // yeniden yüklemede örnekler sıradan kayıt olur, "Örnekleri
+      // kaldır" düğmesi hiçbir şey bulamazdı.
+      //
+      // ⚠ Bu alan AI şemasına (ai/sema.json, ai/dogrula.js) ve MCP
+      // sunucusuna BİLEREK eklenmedi. Onlar DIŞARIDAN gelen içeriği
+      // doğruluyor; oradan gelen bir kayıt kendini "örnek" ilan
+      // edebilseydi, kullanıcının gerçek işi toplu kaldırmaya
+      // takılabilirdi. İşareti yalnızca uygulamanın kendi tohumu
+      // koyuyor.
+      ornek:        c.ornek === true,
       caption:      str(c.caption, 5000),
       hashtags:     str(c.hashtags, 1000),
       videoTitle:   str(c.videoTitle, 300),
@@ -7433,8 +7706,12 @@ function readLocal(key){
 }
 function load(){
   const yerel = readLocal(storageKey());
-  if(yerel){ events = yerel; }
-  else { events = seedData(); save(); }
+  events = yerel || [];
+  // ⚠ ÖRNEKLER BURADA KURULMUYOR. Eskiden kurulurdu ve yalnızca kayıt
+  // üretirdi; proje ve mekân listesi daha okunmamış olduğu için
+  // kayıtlar hiçbir projeye bağlanamıyordu -- tur "önce projeni aç"
+  // diye anlatırken ekranda 8 kayıt, 0 proje duruyordu. Kurulum artık
+  // üç liste de okunduktan sonra, ornekleriGerekirseKur() ile.
 }
 // Yerel kopya her zaman yaziliyor: cevrimdisi da, hesapsiz da calissin diye.
 // Giris yapilmissa degisen satirlar ayrica buluta gonderiliyor.
@@ -16631,8 +16908,16 @@ document.getElementById('yedekDosya').addEventListener('change', async (e)=>{
 });
 document.getElementById('resetBtn').addEventListener('click', async ()=>{
   if(!await onayla(t('confirm_reset'))) return;
-  events.forEach(e=>markRemoved(e.id));
-  events = seedData(); markAllDirty(); save(); renderCal();
+  // Düğmenin sözü "orijinal örnek içeriğine dön". Duran örnekler ÖNCE
+  // kalkıyor, yoksa ikinci bir takım eklenirdi.
+  ornekleriKaldir();
+  events.forEach(e=> markRemoved(e.id));
+  events = [];
+  // Kaldırma işareti de siliniyor: kullanıcı örnekleri açıkça geri
+  // istiyor, "bir kez kaldırdın" cevabı vermek doğru olmazdı.
+  try{ localStorage.removeItem(ORNEK_KALDIRILDI_KEY); }catch(e){}
+  ornekleriKur();
+  renderCal(); renderProjects(); renderMekanlar();
 });
 
 document.addEventListener('click', (e)=>{
@@ -18604,6 +18889,9 @@ load();
 loadProjects();
 loadFikirScript();
 loadMekanlar();
+// Üç liste de okundu: boşsa örnekler şimdi kuruluyor, kayıtlar gerçek
+// projelere bağlı olarak.
+ornekleriGerekirseKur();
 loadHesaplar();
 ihtiyaclar = readIhtiyaclar();
 ihtiyacSetleri = readSetler();

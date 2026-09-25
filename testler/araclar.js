@@ -81,3 +81,16 @@ exports.menuAc = async function(page){
 };
 // Depo koku: testler app.html'i diskten okurken kullaniyor.
 exports.KOK = path.resolve(__dirname, '..');
+
+// ORNEKSIZ BASLANGIC.
+// Uygulama ilk acilista ornek kayit, proje ve mekan kuruyor (ornek-veri
+// testi bunu olcuyor). Bos liste bekleyen testler icin o kurulum gurultu:
+// "mekan listesi bos" diyen bir olcum, ekranda ornek mekan dururken
+// dogru olamaz.
+//
+// Bu takoz ornekleri "zaten kaldirilmis" sayiyor -- kurulumu bastiran
+// gercek bayrak da bu. Testin kendi durumunu acikca kurmasini sagliyor;
+// ornekleri ISTEYEN test bunu cagirmiyor.
+//
+//   await p.addInitScript(ORNEKSIZ);   // goto'dan ONCE
+exports.ORNEKSIZ = `try{ localStorage.setItem('demo_ornek_kaldirildi','1'); }catch(e){}`;
