@@ -1,10 +1,15 @@
-const { chromium, devices } = require('./araclar');
+const { chromium, devices, ORNEKSIZ } = require('./araclar');
 const PORT = process.argv[2] || '8098';
 (async () => {
   const b = await chromium.launch({ });
   const page = await b.newPage({ viewport:{width:1250,height:950} });
   const hatalar=[]; page.on('pageerror', e=>hatalar.push(String(e)));
   await page.addInitScript(()=>{ try{ localStorage.setItem('demo_seen_intro','1'); }catch(e){} });
+  // Bu test BOS bir proje/mekan listesi bekliyor ve kendi kurdugunu
+  // olcuyor. Uygulama ilk acilista ornek proje, mekan ve kayit kuruyor;
+  // ornekler ornek-veri / ornek-serit testlerinde olculuyor, burada
+  // gurultu.
+  await page.addInitScript(ORNEKSIZ);
   await page.route('**/supabase-js**', r=>r.fulfill({status:200,contentType:'application/javascript',
     body:'window.supabase={createClient(){return {auth:{getSession:()=>Promise.resolve({data:{session:null}}),onAuthStateChange(){return {data:{subscription:{unsubscribe(){}}}}}}};}};'}));
   await page.route('**/goatcounter**', r=>r.abort());

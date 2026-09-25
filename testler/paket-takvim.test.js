@@ -26,7 +26,7 @@
 //      sey soyler. Kullanicinin bildirdigi kusur tam olarak buydu.
 //      Tik KENDILIGINDEN geri alinmiyor, SORULUYOR: paketi isaretleyip
 //      kayitlari sonra acmak mesru bir sira.
-const { chromium } = require('./araclar');
+const { chromium, ORNEKSIZ } = require('./araclar');
 const KOK = process.argv[2] || 'http://127.0.0.1:8098';
 let g = 0, k = 0;
 const bak = (ad, ko, ek)=>{ if(ko){ g++; console.log('  ok  '+ad); } else { k++; console.log('  YOK '+ad+(ek?' -> '+ek:'')); } };
@@ -39,6 +39,10 @@ const bak = (ad, ko, ek)=>{ if(ko){ g++; console.log('  ok  '+ad); } else { k++;
   await p.route('**supabase.co**', r=> r.abort());
   await p.route('**/goatcounter**', r=> r.abort());
 
+  // Bu test KAYDETMEDEN SONRA hangi sorunun cikacagini olcuyor. Ornekler
+  // dururken ilk gercek kayitta "ornekleri kaldirayim mi" da soruluyor ve
+  // olcum yanlis soruyu yakaliyordu. Ornek veri bu testin konusu degil.
+  await p.addInitScript(ORNEKSIZ);
   await p.goto(KOK + '/app.html', { waitUntil:'domcontentloaded' });
   await p.waitForTimeout(1200);
   await p.evaluate(()=>{ try{ localStorage.setItem('demo_tour_done','1'); }catch(e){} });

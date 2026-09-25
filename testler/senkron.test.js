@@ -1,4 +1,4 @@
-const { chromium } = require('./araclar');
+const { chromium, ORNEKSIZ } = require('./araclar');
 (async () => {
   const D = process.argv[2];
   const b = await chromium.launch({ });
@@ -6,6 +6,10 @@ const { chromium } = require('./araclar');
   const hatalar=[];
   page.on('pageerror', e=>hatalar.push(String(e)));
   page.on('console', m=>{ if(m.type()==='error' && !/Failed to load resource/.test(m.text())) hatalar.push(m.text()); });
+  await page.addInitScript(ORNEKSIZ);
+  // Bu test BOS bir proje/mekan listesi bekliyor ve kendi kurdugunu
+  // olcuyor. Uygulama ilk acilista ornek proje, mekan ve kayit kuruyor;
+  // ornekler ornek-veri / ornek-serit testlerinde olculuyor.
   await page.addInitScript(()=>{
     try{ localStorage.setItem('demo_seen_intro','1'); }catch(e){}
     // Supabase taklidi: hangi tabloya ne gonderildigini kaydediyor.
@@ -114,7 +118,11 @@ const { chromium } = require('./araclar');
   // Kayitlarda proje kimligi ayri sutuna da yaziliyor
   const kayit = await page.evaluate(async ()=>{
     const p = projeEkle('Yeni Proje','', '', 'vlog','');
-    const e = events[0];
+    // Kendi kaydini kuruyor. Onceden ekranin ornek kayitlarla gelmesine
+    // guveniyordu (events[0]); ornekler kapatilinca dizi bostu.
+    events.push(sanitizeEvent({ id:'snk1', type:'video', platform:'youtube',
+      title:'Senkron kaydi', date:'2026-10-05', time:'10:00', content:{} }));
+    const e = events[events.length - 1];
     e.content.projectId = p.id;
     markDirty(e.id); save();
     await new Promise(r=>setTimeout(r,700));

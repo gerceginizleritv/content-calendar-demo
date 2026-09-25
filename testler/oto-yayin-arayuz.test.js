@@ -17,7 +17,7 @@
 //      yayinlamaya devam ediyorken.
 //   3. uploaded ile durum AYRI. Kullanicinin isareti ile sistemin
 //      durumu ayni yerden okunursa kural kagit uzerinde kalir.
-const { chromium } = require('./araclar');
+const { chromium, ORNEKSIZ } = require('./araclar');
 // saveEvent proje secimini await ile cozuyor ve proje yoksa bir diyalog
 // aciyor. Bassiz tarayicida o diyalog hic kapanmadigi icin kaydetme
 // SESSIZCE asili kaliyor: hata yok, uyari yok, hicbir sey degismiyor.
@@ -41,12 +41,19 @@ async function kaydet(page){
   page.on('pageerror', e=>hatalar.push(String(e)));
   page.on('console', m=>{ if(m.type()==='error' && !/Failed to load resource/.test(m.text())) hatalar.push(m.text()); });
   await page.addInitScript(()=>{ try{ localStorage.setItem('demo_seen_intro','1'); }catch(e){} });
+  // Ornek veri bu testin konusu degil; kayitlari kendisi kuruyor.
+  await page.addInitScript(ORNEKSIZ);
   await page.route('**/supabase-js**', r=>r.fulfill({status:200,contentType:'application/javascript',
     body:'window.supabase={createClient(){return {auth:{getSession:()=>Promise.resolve({data:{session:null}}),onAuthStateChange(){return {data:{subscription:{unsubscribe(){}}}}}}};}};'}));
   await page.route('**/goatcounter**', r=>r.abort());
   await page.goto('http://127.0.0.1:8098/app.html',{waitUntil:'domcontentloaded'});
   await page.waitForTimeout(1500);
-  await page.evaluate(()=>{ document.querySelectorAll('.overlay.open').forEach(o=>o.classList.remove('open')); });
+  await page.evaluate(()=>{ document.querySelectorAll('.overlay.open').forEach(o=>o.classList.remove('open'));
+    // OTOMATIK YAYIN HESAPTA ACIK. Bayrak olmayan hesapta tik kilitli ve
+    // yerinde "su uc sey gerekiyor" yaziyor -- o davranis kendi testinde
+    // (oto-yayin-bayrak). Buradaki konu tikin ACIKKEN ne gosterdigi.
+    storyYayinAcik = true;
+  });
 
   let hata=0;
   const k=(ad,s,ek)=>{ console.log((s?'  ✔ ':'  ✖ ')+ad+(ek!==undefined?' → '+ek:'')); if(!s) hata++; };
