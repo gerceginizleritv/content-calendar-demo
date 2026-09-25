@@ -46,6 +46,11 @@ const su = ()=> new Date(SAAT).toISOString();
 
 // ---- sahte veritabani ------------------------------------------------------
 let satirlar, durumlar, epostalar;
+// sql/49: user_prefs.prefs.story_yayin bayragi olan hesaplar. Kuyruk
+// YALNIZCA bunlarin kayitlarini aliyor -- worker tek bir Meta hesabina
+// yayinladigi icin baskasinin kaydini almak, onun icerigini hesap
+// sahibinin Instagram'ina cikarmak olurdu.
+let yayinBayrakli;
 function bosKayit(ek){
   return Object.assign({
     id:'st_1', user_id:UID, type:'story', platform:'instagram', title:'Balıklı story',
@@ -64,6 +69,7 @@ function tabloyuKur(ek, ekler){
   (ekler || []).forEach((x, i)=> satirlar.push(bosKayit(Object.assign({ id:'st_' + (i+2) }, x))));
   durumlar = {};
   epostalar = [];
+  yayinBayrakli = [UID];
 }
 
 // ---- SQL fonksiyonlarinin JS karsiligi --------------------------------------
@@ -109,6 +115,8 @@ const SQL = {
       && !r.deleted_at && r.publish_at && Date.parse(r.publish_at) <= SAAT
       && (!r.retry_after || Date.parse(r.retry_after) <= SAAT)
       && r.attempt_count < 3
+      // sql/49: sahip kontrolu
+      && yayinBayrakli.includes(r.user_id)
     // sql/46: publish_at esitse dosya adi (parca sirasi), sonra id.
     ).sort((a,b)=>
       (Date.parse(a.publish_at) - Date.parse(b.publish_at))
@@ -1061,6 +1069,47 @@ async function turAt(gizli){
     await turAt();
     bak('elle yayınlanacak önceki parça bekletmiyor',
       satirlar[1].publish_state === 'published', satirlar[1].publish_state + ' / ' + satirlar[1].last_error);
+  }
+
+  // ═══════════════════════════════════════════════════════════════
+  // KUYRUK KIMIN KAYDINI ALIYOR (sql/49)
+  // ═══════════════════════════════════════════════════════════════
+  // Kuyruk sahibe bakmiyordu: `user_id` suzgeci yoktu ve worker TEK bir
+  // Meta hesabina yayinliyor. Baska bir kullanici story kaydi acip
+  // "Otomatik yayinla"yi isaretlerse kaydi hesap sahibinin
+  // Instagram'ina cikardi. Bugun olmuyordu ama sebebi kuyruk degildi:
+  // media_url yalnizca MCP'den yazilabiliyor ve MCP tek hesaba kilitli.
+  // Yani koruma BASKA BIR ALT SISTEMDE ve tesadufen duruyordu.
+  console.log('[kuyruk sahibi]');
+  {
+    tabloyuKur(); metaKur();
+    // Kayit BASKASINA ait: bayrak listesinde yok.
+    satirlar[0].user_id = 'user-baskasi';
+    const r = await turAt();
+    bak('★ başkasının kaydı kuyruğa ALINMIYOR', r.govde.alinan === 0, JSON.stringify(r.govde));
+    bak('★ hiçbir şey yayınlanmadı', cagrilar.publish === 0 && cagrilar.media === 0,
+      'publish=' + cagrilar.publish + ' media=' + cagrilar.media);
+    bak('kayıt bekliyor durumda kaldı, bozulmadı',
+      satirlar[0].publish_state === 'pending' && satirlar[0].attempt_count === 0,
+      satirlar[0].publish_state + '/' + satirlar[0].attempt_count);
+  }
+  {
+    // Bayragi olan hesabin kaydi eskisi gibi yayinlaniyor: koruma
+    // calisani engellemiyor.
+    tabloyuKur(); metaKur();
+    const r = await turAt();
+    bak('sahibin kaydı normal yayınlanıyor',
+      r.govde.alinan === 1 && satirlar[0].publish_state === 'published', JSON.stringify(r.govde));
+  }
+  {
+    // Ayni turda ikisi birden: yalnizca sahibinki cikmali.
+    tabloyuKur({ media_name:'a.mp4' }, [{ media_name:'b.mp4', user_id:'user-baskasi' }]);
+    metaKur();
+    const r = await turAt();
+    bak('★ karışık turda yalnızca sahibin kaydı alındı',
+      r.govde.alinan === 1 && satirlar[0].publish_state === 'published'
+      && satirlar[1].publish_state === 'pending',
+      JSON.stringify(r.govde) + ' | ' + satirlar.map(x=> x.publish_state).join(','));
   }
 
   Date.now = gercekNow;

@@ -347,7 +347,9 @@ body{
 .rail-link:hover{background:var(--surface-2);color:var(--text);}
 .rail-link:focus-visible{outline:2px solid var(--accent);outline-offset:2px;}
 .rail-prefs{display:flex;gap:6px;align-items:center;margin-top:8px;}
-.rail-prefs .lang-select{flex:1;min-width:0;}
+/* Dil anahtari artik kimlik blogunda: giris dugmesiyle ayni genislikte,
+   hemen altinda. */
+.rail-lang{margin-top:6px;width:100%;}
 /* "..." düğmesi ve alt sayfa yalnızca telefonda var; geniş ekranda
    bağlantılar zaten şeridin altında alt alta duruyor. */
 .rail-more{display:none;}
@@ -378,7 +380,13 @@ body{
   .avatar{width:34px;height:34px;font-size:13px;}
   /* Girisilmemisken bos daire dar ekranda yalnizca gurultu. */
   .avatar.bos{display:none;}
-  .btn.rail-auth{width:auto;}
+  .btn.rail-auth{width:auto;white-space:nowrap;}
+  /* Dil anahtari ust cubukta: tam ad ("Türkçe") yerine dar bir kutu.
+     Genis birakildiginda marka adi "S."ye dusuyor ve "Giriş yap" iki
+     satira boluniyordu -- olculdu. Kutu daralinca ikisi de yerine
+     oturuyor, secenek metni yine tam okunuyor cunku acilir liste
+     kutunun genisligiyle sinirli degil. */
+  .rail-lang{width:auto;margin-top:0;padding-left:8px;padding-right:20px;}
   .rail-nav{flex-direction:row;gap:4px;width:100%;
     border-top:1px solid var(--line-soft);padding-top:8px;}
   /* min-width:0 SART: flex ogeleri varsayilan olarak icerikten dar
@@ -964,9 +972,14 @@ body.suruklenirken *{cursor:grabbing !important;}
 :root:not([data-theme="light"]) .dl-start input{color-scheme:dark;}
 /* Pencere genisliginde, kendi satirinda duran ikincil dugme. */
 .btn-wide{display:block;width:100%;margin-top:4px;}
-/* Dugmenin sagindaki durum etiketi: "Script…" yazisi solda kalsin,
-   kac karakter oldugu sagda. */
-#pe_script{display:flex;justify-content:space-between;align-items:center;gap:10px;}
+/* Rozetli satirlar (Fikirler… / Scriptler… / Çekim listesi) YAN YANA iki
+   parca tasiyor: ad solda, sayi ya da "boş" sagda. Uc satirdan yalnizca
+   biri flex'e cevrilmisti; oteki ikisinde rozet ada yapisik cikiyordu
+   -- "Fikirler…boş", "Çekim listesiboş". Kural artik rozeti TASIYAN
+   her satira uyguluyor, tek tek degil: yeni bir satir eklendiginde de
+   kendiliginden dogru diziliyor. */
+.btn-wide:has(.btn-tag){display:flex;align-items:center;
+  justify-content:space-between;gap:10px;text-align:left;}
 .btn-tag{font-size:11.5px;font-weight:400;color:var(--text-dim);
   font-variant-numeric:tabular-nums;}
 
@@ -3020,6 +3033,12 @@ textarea.sc-ai-brief{min-height:64px;resize:vertical;line-height:1.5;}
         <div class="avatar" id="railAvatar" aria-hidden="true"></div>
         <div class="rail-name" id="railName" hidden></div>
         <button class="btn btn-sm rail-auth" id="authBtn" data-i18n="btn_signin">☁ Sign in</button>
+        <!-- DIL ANAHTARI BURADA, "⋯" menusunun dibinde degil. Eskiden
+             seridin en altindaki tercihler kutusundaydi: masaustunde
+             kaydirmadan gorunmuyordu, telefonda "⋯" menusunun icinde
+             iki dokunus otedeydi. Yanlis dilde acilmis bir ekranda
+             kullanicinin ilk aradigi sey bu. -->
+        <select id="langSelect" class="lang-select rail-lang" aria-label="Language"></select>
       </div>
 
       <!-- Hava ve isik. Icerigi tamamen JS yaziyor: izin istenmemis
@@ -3080,7 +3099,7 @@ textarea.sc-ai-brief{min-height:64px;resize:vertical;line-height:1.5;}
         <button type="button" class="tab" id="tabScripts" role="tab">
           <svg class="tab-ico" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
             <path d="M6.5 3.5h8L19 8v12.5H6.5z"/><path d="M14 3.5V8h5"/><path d="M9.5 12.5h6M9.5 16h4"/>
-          </svg><span class="tab-ad" data-i18n="tab_scripts">Scripts</span><span class="tab-ad-k" data-i18n="tab_scripts_k">Scripts</span>
+          </svg><span class="tab-ad" data-i18n="tab_scripts">Scripts</span><span class="tab-ad-k" lang="en" data-i18n="tab_scripts_k">Scripts</span>
         </button>
         <button type="button" class="tab" id="tabCalendar" role="tab">
           <svg class="tab-ico" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
@@ -3132,7 +3151,6 @@ textarea.sc-ai-brief{min-height:64px;resize:vertical;line-height:1.5;}
              yetersiz birakirdi. Yalnizca oturum acikken gorunuyor. -->
         <button class="rail-link" id="trialFbBtn" hidden data-i18n="dfb_link">📝 Trial feedback</button>
         <div class="rail-prefs">
-          <select id="langSelect" class="lang-select" aria-label="Language"></select>
           <button class="btn btn-sm" id="themeBtn">🌙 Dark</button>
         </div>
       </div>
@@ -3876,7 +3894,7 @@ textarea.sc-ai-brief{min-height:64px;resize:vertical;line-height:1.5;}
 <div class="overlay" id="scriptOverlay">
   <div class="modal modal-lg sc-modal">
     <div class="sc-head">
-      <h2 data-i18n="sc_title">Script</h2>
+      <h2 lang="en" data-i18n="sc_title">Script</h2>
       <div class="sc-count" id="scCount"></div>
     </div>
     <!-- Sira, isin sirasi: once neyden yazilacagi (fikirler), sonra
@@ -3942,7 +3960,7 @@ textarea.sc-ai-brief{min-height:64px;resize:vertical;line-height:1.5;}
     </div>
 
     <div class="sc-blok sc-blok-duz">
-      <div class="sc-blok-bas"><span data-i18n="sc_drive_step">4 · Drive</span></div>
+      <div class="sc-blok-bas"><span lang="en" data-i18n="sc_drive_step">4 · Drive</span></div>
       <div class="sc-bar">
       <button type="button" class="btn btn-sm" id="sc_drive">
         <svg viewBox="0 0 24 24" aria-hidden="true" class="sc-drive-ico">
@@ -3978,7 +3996,7 @@ textarea.sc-ai-brief{min-height:64px;resize:vertical;line-height:1.5;}
 
     <div class="sc-blok sc-blok-duz">
       <div class="sc-blok-bas">
-        <span data-i18n="sc_text_step">6 · The script</span>
+        <span lang="en" data-i18n="sc_text_step">6 · The script</span>
         <!-- Bicimlendirme METNI DEGISTIRMIYOR, isaret ekliyor: script duz
              metin olarak duruyor. Drive'a giden, AI'a giden ve yedege
              yazilan sey ayni metin; zengin metin olsaydi ucu de bozulurdu. -->
@@ -4232,7 +4250,7 @@ textarea.sc-ai-brief{min-height:64px;resize:vertical;line-height:1.5;}
 
     <div class="field">
       <div class="field-header">
-        <label data-i18n="f_caption_label">Caption</label>
+        <label lang="en" data-i18n="f_caption_label">Caption</label>
         <span style="display:flex;gap:6px;">
           <button type="button" class="copy-btn ai-btn" id="aiDraftBtn" data-i18n="btn_ai_draft">✨ Draft with AI</button>
           <button type="button" class="copy-btn" data-copy="f_caption" data-i18n="btn_copy">Copy</button>
@@ -6890,7 +6908,7 @@ function t(key){
 }
 function applyStaticI18n(){
   document.querySelectorAll('[data-i18n]').forEach(el=>{
-    el.textContent = t(el.dataset.i18n);
+    latinYaz(el, t(el.dataset.i18n));
   });
   document.querySelectorAll('[data-i18n-html]').forEach(el=>{
     el.innerHTML = t(el.dataset.i18nHtml);
@@ -6911,15 +6929,93 @@ function applyStaticI18n(){
   // bu yuzden dil degisince elle tazeleniyor.
   if(typeof bulutOkumaBasarisiz !== 'undefined') bulutHatasiUygula(bulutOkumaBasarisiz);
 }
+// Dar ekranda KISA KOD ("TR"), genis ekranda tam ad ("Türkçe").
+// Anahtar ust cubuga tasinince tam ad marka adini "Sho..." haline
+// dusuruyordu; kisa kod ikisini de yerine oturtuyor. Acilir liste
+// kutunun genisligiyle sinirli degil, yani secim yaparken yine tam
+// adlar okunuyor -- kisalan yalnizca KAPALI haldeki etiket.
+const DAR_EKRAN = ()=> { try{ return window.matchMedia('(max-width:560px)').matches; }catch(e){ return false; } };
+// ⚠ TURKCE BUYUK HARF TUZAGI.
+// CSS `text-transform:uppercase` dil duyarli: belge lang="tr" iken
+// "Script" -> "SCRİPT", "Drive" -> "DRİVE", "Caption" -> "CAPTİON"
+// oluyor. Turkce kurali DOGRU uyguluyor ama kelime Ingilizce oldugu
+// icin ekranda yazim hatasi gibi duruyor -- proje tablosunun basliginda
+// "SCRİPT", yanindaki dogru yazilmis "ÇEKİM" ile yan yana.
+//
+// Cozum kelimeyi Ingilizce ISARETLEMEK: tarayici o parcada Ingilizce
+// buyutme kurallarini kullaniyor ve "SCRIPT" cikiyor. Ceviri
+// sozlugunu bozmuyor, ekranin geri kalanina dokunmuyor.
+//
+// ⚠ TEK TEK isaretleniyor, toptan DEGIL: ayni yerde "Çekim", "Onay"
+// gibi Turkce kelimeler de var ve onlara lang="en" koymak ters tuzaga
+// dusurur ("ÇEKİM" yerine "ÇEKIM").
+const LATIN_ETIKET = ['script', 'drive', 'caption'];
+function latinMi(metin){
+  return LATIN_ETIKET.includes(String(metin || '').trim().toLowerCase());
+}
+function langIsareti(metin){ return latinMi(metin) ? ' lang="en"' : ''; }
+
+// Karisik etiketlerde ("Script baglantisi", "Drive klasoru") terim tek
+// basina degil: elemanin tamamina lang="en" koymak yanindaki Turkce
+// kelimeyi de Ingilizce buyutur. Bu yuzden metin terimden BOLUNUYOR ve
+// yalnizca terim kendi <span lang="en"> icine aliniyor.
+//
+// Bolme kalibi LATIN_ETIKET'ten uretiliyor -- ayni liste iki yerde
+// durmasin diye. Listeye kelime eklendiginde hem tek basina duran
+// etiketler hem karisik cumleler ayni anda duzeliyor.
+const LATIN_TERIM_BOL = new RegExp('\\b(' + LATIN_ETIKET.join('|') + ')\\b', 'gi');
+function latinYaz(el, metin){
+  const s = String(metin == null ? '' : metin);
+  const parcalar = s.split(LATIN_TERIM_BOL);
+  if(parcalar.length === 1){ el.textContent = s; return; }
+  el.textContent = '';
+  parcalar.forEach(parca=>{
+    if(parca === '' || parca == null) return;
+    if(latinMi(parca)){
+      const im = document.createElement('span');
+      im.lang = 'en';
+      im.textContent = parca;
+      el.appendChild(im);
+    } else {
+      el.appendChild(document.createTextNode(parca));
+    }
+  });
+}
+
 function populateLangSelect(){
   const sel = document.getElementById('langSelect');
-  sel.innerHTML = Object.keys(LANG_NAMES).map(code=>`<option value="${code}">${LANG_NAMES[code]}</option>`).join('');
+  if(!sel) return;
+  const dar = DAR_EKRAN();
+  sel.innerHTML = Object.keys(LANG_NAMES).map(code=>
+    `<option value="${code}">${dar ? code.toUpperCase() : LANG_NAMES[code]}</option>`).join('');
   sel.value = currentLang;
 }
+// Ekran donunce ya da pencere boyu degisince etiket de degissin.
+try{
+  window.matchMedia('(max-width:560px)').addEventListener('change', ()=> populateLangSelect());
+}catch(e){}
 function detectDefaultLang(){
-  // The demo always opens in English by default, regardless of browser
-  // locale — visitors can switch to Türkçe (or any future language) manually
-  // via the language selector, and that manual choice is what gets saved.
+  // TARAYICININ DILI. Eskiden burasi kosulsuz 'en' donduruyordu ve
+  // gerekcesi "bu bir demo, ziyaretci dili kendi secsin" idi. O karar
+  // demo zamanindan kalmaydi: bugun uygulama kendi alan adinda ve
+  // kullanicilarin cogu Turkce. Turkce bir tarayiciyla gelen kisi
+  // Ingilizce bir ekran goruyor ve dil anahtarini aramak zorunda
+  // kaliyordu.
+  //
+  // navigator.languages TERCIH SIRASIYLA geliyor; ilk TANIDIGIMIZ dile
+  // duselim. Yalnizca navigator.language'e bakmak, ana dili Turkce ama
+  // arayuzu Ingilizce bir tarayicida yanlis cevap verirdi.
+  //
+  // Kullanicinin KENDI secimi bunu her zaman eziyor: setLanguage secimi
+  // localStorage'a yaziyor ve acilista once ona bakiliyor.
+  try{
+    const diller = (navigator.languages && navigator.languages.length)
+      ? navigator.languages : [navigator.language || ''];
+    for(const d of diller){
+      const kod = String(d || '').toLowerCase().split('-')[0];
+      if(LANG[kod]) return kod;
+    }
+  }catch(e){}
   return 'en';
 }
 function setLanguage(lang, buluttanGeldi){
@@ -8616,7 +8712,8 @@ function renderProjects(){
   }
 
   const bugun = bugunKey();
-  const basliklar = PROJ_STEPS.map(k=>`<th>${escapeHtml(t('step_'+k))}</th>`).join('');
+  const basliklar = PROJ_STEPS.map(k=>
+    `<th${langIsareti(t('step_'+k))}>${escapeHtml(t('step_'+k))}</th>`).join('');
   const satirlar = liste.map(p=>{
     const kayitlar = projeIcinKayitlar(p.id);
     const yayinlanan = kayitlar.filter(kayitBitti).length;
@@ -8631,7 +8728,7 @@ function renderProjects(){
       // bos ise kucuk bir takvim isareti — kesik cizgili "+" neyin
       // dugmesi oldugunu soylemiyordu.
       return `<td class="pcell ${p[k]?'done':''}">
-        <span class="pcell-et">${escapeHtml(t('step_'+k))}</span>
+        <span class="pcell-et"${langIsareti(t('step_'+k))}>${escapeHtml(t('step_'+k))}</span>
         <button type="button" class="pflag ${p[k]?'on':''}" data-proj="${escapeHtml(p.id)}" data-step="${k}"
                 title="${escapeHtml(t('step_'+k))}"
                 aria-label="${escapeHtml(t('step_'+k))}"><span class="pbox">${p[k]?'✓':''}</span></button>
@@ -16491,7 +16588,7 @@ const TOUR_STEPS_I18N = {
       body:"Shootboard follows the order the work actually happens in. You note an idea, turn it into a script, open a project when the shoot becomes real, and place the posts on the calendar. Nothing forces that order — a script can exist before any project, and a project can start without a single idea.",
       points:["Ideas and Scripts live on their own pages, not under a project.",
               "Attaching a project is optional and can be done later.",
-              "The left rail starts with Projects — that is where a shoot is actually run — then Ideas, Scripts, Calendar, Templates."] },
+              "The left rail runs in that order: Ideas, Places, Projects — where a shoot is actually run — then Scripts, Calendar, Kit and Templates."] },
     { title:"Ideas: a wall of cards",
       body:"Every idea is a card — an angle, a question, a scene, a person to talk to. Card size shows you at a glance how much you have written. Drop one card on another and they merge into a single card holding both pieces; drag a piece back out and it becomes its own card again.",
       points:["Drop on the middle to merge, on the edge to reorder.",
@@ -16543,7 +16640,7 @@ const TOUR_STEPS_I18N = {
       body:"Shootboard işin gerçekte olduğu sırayı izliyor. Bir fikri not ediyorsun, onu script'e çeviriyorsun, çekim somutlaşınca proje açıyorsun ve paylaşımları takvime yerleştiriyorsun. Bu sıra zorunlu değil: script proje olmadan da var olabilir, proje de tek bir fikir olmadan başlayabilir.",
       points:["Fikirler ve Scriptler kendi sayfalarında yaşıyor, projenin altında değil.",
               "Projeye bağlamak isteğe bağlı ve sonradan da yapılabiliyor.",
-              "Sol menü Projeler ile başlıyor — çekim asıl orada yürüyor — sonra Fikirler, Scriptler, Takvim, Şablonlar."] },
+              "Sol menü de o sırayla: Fikirler, Mekanlar, Projeler — çekim asıl orada yürüyor — sonra Scriptler, Takvim, Malzeme ve Şablonlar."] },
     { title:"Fikirler: kartlardan bir duvar",
       body:"Her fikir bir kart — bir açı, bir soru, bir sahne, konuşulacak bir kişi. Kartın boyu ne kadar yazdığını bir bakışta gösteriyor. Bir kartı ötekinin üstüne bırakınca ikisi tek kartta birleşiyor; birleşik karttan bir parçayı sürükleyip çıkarınca yeniden kendi kartı oluyor.",
       points:["Ortasına bırakınca birleşiyor, kenarına bırakınca sıra değişiyor.",
