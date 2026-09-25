@@ -1,10 +1,15 @@
-const { chromium } = require('./araclar');
+const { chromium, ORNEKSIZ } = require('./araclar');
 (async () => {
   const b = await chromium.launch({ });
   const page = await b.newPage({ serviceWorkers:'block', viewport:{width:1440,height:1000}, colorScheme:'light' });
   let hata=0; const k=(a,s,e)=>{ console.log((s?'  ✔ ':'  ✖ ')+a+(e!==undefined?' → '+JSON.stringify(e):'')); if(!s) hata++; };
   page.on('pageerror', e=>{ console.log('  SAYFA HATASI: '+e); hata++; });
   await page.addInitScript(()=>{ try{ localStorage.setItem('demo_seen_intro','1'); localStorage.setItem('demo_pitch','kapali'); }catch(e){} });
+  // Bu test BOS bir proje/mekan listesi bekliyor ve kendi kurdugunu
+  // olcuyor. Uygulama ilk acilista ornek proje, mekan ve kayit kuruyor;
+  // ornekler ornek-veri / ornek-serit testlerinde olculuyor, burada
+  // gurultu.
+  await page.addInitScript(ORNEKSIZ);
   // Gelen kutusu bu testin konusu degil: kutuyu yoldan cekiyoruz,
   // yoksa acilista eklenen kayitlar sayimlari kaydiriyor.
   await page.route('**/gelen/kayitlar.json', r=>r.fulfill({status:404,body:''}));

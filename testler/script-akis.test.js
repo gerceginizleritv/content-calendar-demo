@@ -1,7 +1,7 @@
 // "Bu fikirlerden script yaz" akisi. Eskiden butun fikirleri sormadan tek
 // bir metne dokuyor ve tek projeye bagliyordu. Artik: fikirler secilebilir,
 // projeler coklu, metin bos baslar, secim kayitta durur.
-const { chromium } = require('./araclar');
+const { chromium, ORNEKSIZ } = require('./araclar');
 const KOK = process.argv[2] || 'http://127.0.0.1:8098';
 let g = 0, k = 0;
 const bak = (ad, ko, ek)=>{ if(ko){ g++; console.log('  ok  '+ad); } else { k++; console.log('  YOK '+ad+(ek?' -> '+ek:'')); } };
@@ -25,6 +25,10 @@ const KUR = () => {
   const t = await chromium.launch({ });
   const p = await (await t.newContext({ viewport:{width:1200,height:1000} })).newPage();
   const hata = []; p.on('pageerror', e => hata.push(String(e)));
+  // Bu test BOS bir proje/mekan listesi bekliyor ve kendi kurdugunu
+  // olcuyor. Uygulama ilk acilista ornek proje, mekan ve kayit kuruyor;
+  // ornekler ornek-veri / ornek-serit testlerinde olculuyor.
+  await p.addInitScript(ORNEKSIZ);
   await p.goto(KOK + '/app.html', { waitUntil:'networkidle' });
   await p.evaluate(TOHUM);
   await p.reload({ waitUntil:'networkidle' });
