@@ -6,6 +6,12 @@
 //
 // Baglantilar TASINMADI, yerinde kaldi; serit CSS ile alt sayfaya
 // donusuyor. Test bunu da olcuyor: dugmeler hala seridin icinde mi.
+//
+// DIL ANAHTARI bunun ISTISNASI ve sonradan disari alindi. Alt sayfada
+// iken bulunamiyordu: "..." dugmesine basmayi gerektiren bir sey,
+// uygulamayi kendi dilinde gormeyen birinin arayacagi son yer. Artik
+// ust seritte, dugmeye basmadan gorunuyor. Tema alt sayfada kaldi --
+// nadiren degistirilen bir ayar, ayni aciliga ihtiyaci yok.
 const { chromium } = require('./araclar');
 const KOK = process.argv[2] || 'http://127.0.0.1:8098';
 let g = 0, k = 0;
@@ -36,9 +42,26 @@ async function ac(t, w){
   bak('hepsi hala seridin icinde',
       await p.evaluate(ids=> ids.every(id=>{ const e = document.getElementById(id);
         return !!(e && e.closest('#railFoot')); }), BAGLANTILAR));
-  bak('dil ve tema da alt sayfada',
-      await p.evaluate(()=> !!document.getElementById('langSelect').closest('#railFoot')
-                         && !!document.getElementById('themeBtn').closest('#railFoot')));
+  // TEMA alt sayfada kaliyor: nadiren degistirilen bir ayar.
+  bak('tema alt sayfada',
+      await p.evaluate(()=> !!document.getElementById('themeBtn').closest('#railFoot')));
+  // DIL anahtari alt sayfadan CIKTI. Orada iken kullanici onu bulamiyordu
+  // -- "..." dugmesine basmayi gerektiren bir sey, uygulamayi kendi
+  // dilinde gormeyen birinin arayacagi son yer. Artik ust seritte,
+  // dugmeye basmadan gorunuyor.
+  bak('dil anahtari alt sayfada DEGIL',
+      await p.evaluate(()=> !document.getElementById('langSelect').closest('#railFoot')));
+  bak('dil anahtari ust seritte',
+      await p.evaluate(()=> !!document.getElementById('langSelect').closest('.rail-me')));
+  bak('dil anahtari alt sayfa KAPALIYKEN gorunuyor',
+      await p.isVisible('#langSelect'));
+  // Ust seritte yer dar: tam ad ("Türkçe") marka adini kirpiyordu,
+  // kapali etiket kisa koda dusuyor.
+  bak('dar ekranda kisa kod',
+      await p.evaluate(()=> Array.from(document.querySelectorAll('#langSelect option'))
+                              .every(o=> o.textContent.trim().length <= 3)),
+      await p.evaluate(()=> Array.from(document.querySelectorAll('#langSelect option'))
+                              .map(o=> o.textContent).join(',')));
 
   console.log('[kapaliyken]');
   const acikMi = ()=> p.$eval('#railFoot', e=> e.classList.contains('acik'));

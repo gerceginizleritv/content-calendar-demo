@@ -13227,6 +13227,9 @@ function tercihPushKuyrukla(){
 }
 async function tercihPush(){
   if(!sb || !session) return;
+  // Okuyamadan yazmak, bilmedigimiz anahtarlari bos bir defterle ezmek
+  // olurdu. Yerel tercih yerinde; sonraki degisiklik tekrar deniyor.
+  if(!prefsOkundu) return;
   try{
     const { error } = await sb.from('user_prefs').upsert([{
       user_id: session.user.id,
@@ -13280,7 +13283,35 @@ let gelenDefterHazir = false;  // defter buluttan okunabildi mi
 // e-posta ya da kullanici kimligi gomulmuyor.
 let gelenKutusuAcik = false;
 
+// ⚠ TERCIH SATIRI TAMAMEN YENIDEN YAZILIYOR.
+// tercihPrefsYap prefs'in tamamini uretiyor; orada sayilmayan her
+// anahtar ilk kaydetmede SILINIYOR. Ayni tuzaga iki kez dusuldu
+// (once gelen_kutusu, sonra mcp) ve ikisinde de belirti ayniydi:
+// bayrak Supabase panelinden aciliyor, uygulama ilk kayitta siliyor,
+// ekran bellekteki degerle acik kalmaya devam ediyor -- yani hata
+// GORUNMUYOR, yalnizca o bayraga bagli is sessizce durmus oluyor.
+//
+// Ucuncusunu beklemek yerine kural tersine cevrildi: uygulamanin
+// YONETTIGI anahtarlar asagida sayili, GERI KALAN her sey oldugu gibi
+// korunuyor. Panelden acilan yeni bir bayrak (story_yayin gibi) artik
+// kendiliginden ayakta kaliyor; kimsenin bu listeyi hatirlamasi
+// gerekmiyor.
+//
+// Listeye anahtar EKLEMEK, o anahtarin yonetimini uygulamaya almak
+// demek: tercihPrefsYap onu yazmiyorsa silinir. Tersi guvenli.
+const PREFS_BIZIM = ['lang', 'ihtiyaclar', 'ihtiyac_setleri', 'gelen_alinan',
+                     'gelen_kutusu', 'mcp', 'ai', 'share', 'reminders'];
+let prefsYabanci = {};
+// Satir OKUNDU MU. Okunamadan yazmak, bilmedigimiz anahtarlari bos bir
+// defterle ezmek olurdu. Yeni kullanicida satir yok ama okuma basarili
+// sayiliyor (maybeSingle null donuyor), o yuzden ilk yazim engellenmiyor.
+let prefsOkundu = false;
+
 function gelenAlinanOku(satir){
+  const ham = (satir && satir.prefs) || {};
+  prefsYabanci = {};
+  Object.keys(ham).forEach(k=>{ if(PREFS_BIZIM.indexOf(k) === -1) prefsYabanci[k] = ham[k]; });
+  prefsOkundu = true;
   gelenKutusuAcik = !!(satir && satir.prefs && satir.prefs.gelen_kutusu);
   // MCP erisimi bayragi. Kaynak koda e-posta GOMULMUYOR: bayrak hesabin
   // kendi ayarlarinda duruyor, Supabase panelinden aciliyor.
@@ -13315,7 +13346,8 @@ function ihtiyaclarBuluttan(uzak){
   try{ localStorage.setItem(IHTIYAC_KEY, JSON.stringify(ihtiyaclar)); }catch(e){}
 }
 function tercihPrefsYap(){
-  const prefs = { lang: currentLang };
+  // Yabancilar ONCE: asagidaki bilinen anahtarlar onlari ezebilsin.
+  const prefs = Object.assign({}, prefsYabanci, { lang: currentLang });
   // Ihtiyac kutuphanesi hesaba bagli: telefonda yazilan madde
   // bilgisayarda da hazir olsun. Bos ise satira hic yazilmiyor.
   if(ihtiyaclar.length) prefs.ihtiyaclar = ihtiyaclar;
