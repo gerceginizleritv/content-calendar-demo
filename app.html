@@ -5041,6 +5041,9 @@ const LANG = {
     oy_hata: "Failed",
     oy_saatsiz: "No time set, so it will not publish. Give it a time.",
     oy_yeni: "Save the entry first, then you can switch automatic publishing on.",
+    oy_not_reels: "Shootboard posts this reel to Instagram at the time above, cover and caption included. It is the only thing Shootboard posts by itself \u2014 everything else you post.",
+    oy_kapak_var: "Cover attached.",
+    oy_kapak_yok: "No cover file \u2014 Instagram will pick a frame from the video.",
     ornek_serit: (n)=> `${n} sample entries, two projects and a place are already here — so you can see how a full week looks. They are examples, not your work.`,
     ornek_kaldir_btn: "Remove the samples",
     ornek_serit_kapat: "Hide this note",
@@ -6063,6 +6066,9 @@ const LANG = {
     oy_hata: "Hata",
     oy_saatsiz: "Saat girilmemiş, bu yüzden yayınlanmayacak. Bir saat ver.",
     oy_yeni: "Önce kaydı kaydet, sonra otomatik yayını açabilirsin.",
+    oy_not_reels: "Shootboard bu reel'i yukarıdaki saatte Instagram'a kendi atıyor — kapağı ve alt yazısıyla. Shootboard'ın kendiliğinden yayınladığı tek şey bu — geri kalan her şeyi sen yayınlıyorsun.",
+    oy_kapak_var: "Kapak bağlı.",
+    oy_kapak_yok: "Kapak dosyası yok — Instagram videodan kendi karesini seçecek.",
     ornek_serit: (n)=> `${n} örnek kayıt, iki proje ve bir mekân hazır duruyor — dolu bir hafta nasıl görünüyor göresin diye. Bunlar örnek, senin işin değil.`,
     ornek_kaldir_btn: "Örnekleri kaldır",
     ornek_serit_kapat: "Bu notu gizle",
@@ -7626,12 +7632,22 @@ function fromRow(r){
 //   uploaded = kullanicinin isareti ("portala yukledim")
 //   durum    = sistemin durumu (bekliyor / yayinlandi / hata)
 // Sartname Bolum 1; kural bir veri kaybindan dogdu.
+// Otomatik yayınlanabilen türler. TEK LİSTE: aşağıdaki üç yer de
+// buna bakıyor (satırdan okuma, kayıt penceresi, kapak alanı). Ayrı
+// ayrı yazılsalardı biri reels'i öğrenir, öteki öğrenmezdi -- ve
+// sonucu "kutucuk açık görünüyor ama hiçbir şey olmuyor" olurdu.
+// sql/50'deki `type in ('story','reels')` ile aynı küme.
+const YAYIN_TURLERI = ['story', 'reels'];
+const yayinlanabilirTur = (t)=> YAYIN_TURLERI.includes(String(t || ''));
+
 function yayinBilgisi(r){
-  if(!r || r.type !== 'story') return null;
+  if(!r || !yayinlanabilirTur(r.type)) return null;
   return {
     otomatik:   r.auto_publish === true,
     durum:      r.publish_state || 'pending',
     dosya:      r.media_name || '',
+    // Reels kapağı. Story'de her zaman boş.
+    kapak:      r.cover_url || '',
     bayt:       Number(r.media_bytes) || 0,
     medyaVar:   !!r.media_url,
     yayinAn:    r.publish_at || '',
@@ -7668,6 +7684,10 @@ function yayinTemiz(y){
     otomatik:   y.otomatik === true,
     durum:      ['pending','in_progress','published','failed'].includes(y.durum) ? y.durum : 'pending',
     dosya:      s(y.dosya, 300),
+    // ⚠ Beyaz listede OLMAK ZORUNDA: düşseydi kapak her yüklemede
+    // sessizce kaybolur ve pencere "kapak yok" derdi -- oysa Instagram
+    // kapağı alıyor olurdu.
+    kapak:      s(y.kapak, 600),
     bayt:       Number(y.bayt) || 0,
     medyaVar:   y.medyaVar === true,
     yayinAn:    s(y.yayinAn, 40),
@@ -16379,7 +16399,7 @@ function closeModal(){
   paketTeklifSonu();
 }
 // ══════════════════════════════════════════════════════════════════
-// OTOMATIK STORY YAYINI — kaydin icindeki gorunum
+// OTOMATIK YAYIN (story + reels) — kaydin icindeki gorunum
 // ══════════════════════════════════════════════════════════════════
 // Sartname Bolum 10. Iki sey gosteriliyor ve ikisi AYRI kaynaktan:
 //   · kutucuk  -> kullanicinin karari (auto_publish)
@@ -16390,9 +16410,11 @@ function otoYayinTazele(){
   const kap = document.getElementById('otoYayinWrap');
   if(!kap) return;
   const tur = document.getElementById('f_type').value;
-  // Yeni kayitta tur coklu kutulardan geliyor; story isaretliyse de goster.
-  const yeniStory = !currentEvent && !!document.querySelector('#typeChecks input[value="story"]:checked');
-  if(tur !== 'story' && !yeniStory){ kap.hidden = true; return; }
+  // Yeni kayıtta tür çoklu kutulardan geliyor; yayınlanabilir bir tür
+  // işaretliyse de göster.
+  const yeniYayin = !currentEvent && YAYIN_TURLERI.some(t=>
+    !!document.querySelector('#typeChecks input[value="' + t + '"]:checked'));
+  if(!yayinlanabilirTur(tur) && !yeniYayin){ kap.hidden = true; return; }
   kap.hidden = false;
 
   const d = document.getElementById('otoYayinDurum');
@@ -16449,12 +16471,21 @@ function otoYayinTazele(){
     ? escapeHtml(t('oy_dosya')(y.dosya, y.bayt ? (y.bayt / 1048576).toFixed(1) : ''))
     : escapeHtml(t('oy_dosya_yok')));
 
+  // KAPAK yalnızca reels'te anlamlı ve yalnızca orada gösteriliyor.
+  // Kapak YOKLUĞU bir hata değil: Instagram videodan kendi karesini
+  // seçiyor ve yayın durmuyor. Satır bunu açıkça söylüyor, yoksa
+  // kullanıcı eksik bir şey olduğunu sanıp beklerdi.
+  if(tur === 'reels'){
+    satirlar.push(y.kapak ? escapeHtml(t('oy_kapak_var')) : escapeHtml(t('oy_kapak_yok')));
+  }
+
   // Saati olmayan story yayinlanmiyor (sql/45): geceyarisina dusurmek
   // kullanicinin hic istemedigi bir saatte yayin demek. Sebep burada
   // yaziyor, yoksa "otomatik acik ama hicbir sey olmuyor" olurdu.
   if(!document.getElementById('f_time').value) satirlar.push(escapeHtml(t('oy_saatsiz')));
 
-  satirlar.push('<span class="hint" style="display:block;margin-top:6px">' + escapeHtml(t('oy_not')) + '</span>');
+  satirlar.push('<span class="hint" style="display:block;margin-top:6px">'
+    + escapeHtml(tur === 'reels' ? t('oy_not_reels') : t('oy_not')) + '</span>');
   if(y.hata) satirlar.push('<span class="oy-hata">' + escapeHtml(y.hata) + '</span>');
   d.innerHTML = satirlar.join('<br>');
 }
