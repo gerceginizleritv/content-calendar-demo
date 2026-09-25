@@ -166,6 +166,52 @@ async function ac(t, locale, oncesi){
     await c.close();
   }
 
+  console.log('[işaret düzenlemede kalıyor, KOPYAYA geçmiyor]');
+  {
+    const { c, p } = await ac(t, 'tr-TR');
+    // Bir örneği açıp Kaydet'e basmak onu sessizce "gerçek kayda"
+    // çevirseydi, "Örnekleri kaldır" onu geride bırakırdı. content
+    // formdan baştan kuruluyor; işaret açıkça taşınıyor.
+    const duzenle = await p.evaluate(async ()=>{
+      const ornek = events.find(ornekKayitMi);
+      openModal(ornek);
+      document.getElementById('f_title').value = 'Başlığı değiştirdim';
+      document.getElementById('saveBtn').click();
+      await new Promise(r=> setTimeout(r, 700));
+      const e = events.find(x=> x.title === 'Başlığı değiştirdim');
+      return { bulundu: !!e, hala: e ? ornekKayitMi(e) : null };
+    });
+    bak('düzenlenen örnek kaydedildi', duzenle.bulundu === true);
+    bak('düzenlenince işaret DURUYOR', duzenle.hala === true, JSON.stringify(duzenle));
+
+    // Klonlama ise YENİ bir kayıt ve işareti taşımamalı, yoksa
+    // kullanıcının kendi kaydı "Örnekleri kaldır" ile silinirdi.
+    // Güvence tek bir satırda değil, kaydetme yolundaki content
+    // nesnesinin kendisinde: alanları tek tek sayıyor, eski content'i
+    // yaymıyor. Bu ölçüm o tasarımın bekçisi -- biri content'i
+    // currentEvent.content üzerinden kurmaya kalkarsa burada düşer.
+    const klon = await p.evaluate(async ()=>{
+      const ornek = events.find(ornekKayitMi);
+      openModal(ornek);
+      document.getElementById('cloneBtn').click();
+      await new Promise(r=> setTimeout(r, 300));
+      document.getElementById('f_title').value = 'Kopyam';
+      document.getElementById('f_date').value = '2026-09-25';
+      document.getElementById('f_time').value = '09:00';
+      document.querySelectorAll('#typeChecks input').forEach(x=> x.checked = false);
+      document.querySelector('#typeChecks input').checked = true;
+      document.querySelectorAll('#platformChecks input').forEach(x=> x.checked = false);
+      document.querySelector('#platformChecks input').checked = true;
+      document.getElementById('saveBtn').click();
+      await new Promise(r=> setTimeout(r, 700));
+      const e = events.find(x=> x.title === 'Kopyam');
+      return { bulundu: !!e, ornek: e ? ornekKayitMi(e) : null };
+    });
+    bak('klon kaydedildi', klon.bulundu === true, JSON.stringify(klon));
+    bak('klon ÖRNEK DEĞİL', klon.ornek === false, JSON.stringify(klon));
+    await c.close();
+  }
+
   console.log('[elinde veri olana karışılmıyor]');
   {
     const { c, p } = await ac(t, 'tr-TR', `try{
