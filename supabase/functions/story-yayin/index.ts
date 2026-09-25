@@ -46,7 +46,7 @@
 //
 // Dağıtım:  supabase functions deploy story-yayin --no-verify-jwt
 
-const SURUM = '1.4.0';
+const SURUM = '1.5.0';
 const UCLAR = ['GET / (servis bilgisi)', 'POST / (bir tur)'];
 
 const SUPABASE_URL   = Deno.env.get('SUPABASE_URL') ?? '';
@@ -74,6 +74,16 @@ const butceMs    = () => sayi('STORY_BUTCE_MS', 110_000);
 const YOKLAMA_MS = sayi('STORY_YOKLAMA_MS', 5_000);
 // Bölüm 5: "Üst sınır koy: 120 saniye sonra başarısız say."
 const KONTEYNER_TAVANI_MS = 120_000;
+// REELS AYRI BİR TAVAN İSTİYOR. Story genelde 15 saniyelik bir klip;
+// reel 60-90 saniye olabiliyor ve Instagram'ın işlemesi dakikalar
+// sürüyor. 120 saniyeyi reels'e de uygulamak, hazır olmak üzere olan
+// her videoyu "hazır olmadı" diye düşürmek demekti.
+//
+// Bu tavan turun bütçesinden BAĞIMSIZ: bütçe dolunca kayıt erteleniyor
+// ve bir sonraki tur AYNI konteyneri kaldığı yerden yokluyor (aşağıda,
+// 'butce-bitti'). Yani on dakika beklemek on dakika meşgul olmak
+// değil; yalnızca konteyneri düşürmeden önce tanınan süre.
+const REELS_KONTEYNER_TAVANI_MS = 10 * 60 * 1000;
 // Bir turda en fazla kaç kayıt. Bölüm 4'teki LIMIT 10 kuyruk sorgusu
 // için; burada süre bütçesi zaten sınırlıyor, düşük tutmak gecikmeyi
 // azaltıyor.
@@ -368,9 +378,15 @@ async function kotaDolu(): Promise<{ dolu: boolean; not: string }> {
 //
 // Sorgulanamıyorsa YAYINLANMIYOR. Bilmemek, ikinci kez yayınlamaktan
 // iyidir: çift story geri alınamaz, gecikmiş story alınabilir.
-async function cikmisMi(pf: string, cagriAni: string): Promise<{ biliniyor: boolean; id: string }> {
-  // Her platformun kendi listesi ve kendi zaman alanı var.
-  const uc    = pf === 'facebook' ? `/${pageId()}/stories` : `/${IG_USER_ID}/stories`;
+async function cikmisMi(k: any, cagriAni: string): Promise<{ biliniyor: boolean; id: string }> {
+  const pf = String(k.platform || 'instagram');
+  const reel = reelMi(k);
+  // Her platformun VE her türün kendi listesi var. Yanlış listeye
+  // bakmak "çıkmamış" cevabı üretir ve o cevap yeniden yayın demek:
+  // bir reel story listesinde asla görünmez.
+  const uc = pf === 'facebook'
+    ? (reel ? `/${pageId()}/video_reels` : `/${pageId()}/stories`)
+    : (reel ? `/${IG_USER_ID}/media`     : `/${IG_USER_ID}/stories`);
   const alan  = pf === 'facebook' ? 'id,creation_time' : 'id,timestamp';
   let veri: any;
   try {
@@ -391,8 +407,22 @@ async function cikmisMi(pf: string, cagriAni: string): Promise<{ biliniyor: bool
     const t = typeof ham === 'number' ? ham * 1000 : Date.parse(String(ham));
     if (t && t >= esik) return { biliniyor: true, id: String(m.id) };
   }
-  // Liste geldi ve o pencerede hiçbir şey yok: çıkmamış. Story 24
-  // saat duruyor, yeni çıkmış bir story listede olmak ZORUNDA.
+  // ⚠ REELS'TE BOŞ LİSTE "ÇIKMADI" DEMEK DEĞİL — HENÜZ.
+  // Story 24 saatlik ve /stories anında güncelleniyor; yeni çıkmış bir
+  // story listede olmak zorunda. /media için aynı kesinlik yok: yeni
+  // yayınlanan bir reel listeye birkaç saniye geç düşebiliyor.
+  //
+  // Asimetri burada karar veriyor. Yanlış "çıkmadı" cevabı YENİDEN
+  // YAYIN demek ve bir reel profilde KALICI duruyor -- elle silmek
+  // gerekir. Yanlış "bilmiyorum" cevabı ise yalnızca beş dakika
+  // gecikme. O yüzden çağrının üstünden iki dakika geçmediyse boş
+  // liste "bilmiyorum" sayılıyor; sonraki denemede /media çoktan
+  // güncellenmiş olur.
+  if (reel && Date.now() - an < 120_000) {
+    console.warn('[story]', uc, 'boş döndü ama çağrı henüz taze — emin değiliz');
+    return { biliniyor: false, id: '' };
+  }
+  // Liste geldi ve o pencerede hiçbir şey yok: çıkmamış.
   return { biliniyor: true, id: '' };
 }
 
@@ -422,6 +452,63 @@ async function grafFormla(yol: string, govde: FormData) {
 // Bunu ayrı bir fonksiyon yapmak kasıtlı: izi temizlemeyi unutmak
 // sessiz bir tuzak ve bir kez kurulmuştu.
 const izTemizle = (id: string) => rpc('story_iz_konteyner', { p_id: id, p_ref: null });
+
+// ══════════════════════════════════════════════════════════════════
+// TÜR: STORY MÜ REELS Mİ — Bölüm 5b
+// ══════════════════════════════════════════════════════════════════
+// Kuyruk sql/50'den beri `type` döndürüyor. Alan YOKSA story sayılıyor
+// ve bu bilinçli: worker sql/50 çalıştırılmadan önce de yayında
+// olabilir, o zaman kuyruk `type` vermez ve gelen her kayıt zaten
+// story'dir. Yani eksik alan, yanlış davranış değil ESKİ davranış.
+const reelMi = (k: any) => String(k?.type ?? 'story') === 'reels';
+// Kullanıcıya gösterilecek kelime. Bildirim ve hata metinleri "story"
+// diyordu; bir reel için yanlış olurdu.
+const turAdi = (k: any) => (reelMi(k) ? 'reel' : 'story');
+
+// Reels alt yazısı kaydın kendi içeriğinden geliyor -- Shootboard'da
+// zaten yazılmış olan metin. Instagram sınırı 2200 karakter; fazlası
+// konteyneri reddettiriyor, o yüzden BURADA kırpılıyor: yayın anında
+// öğrenmek, kayıt anında öğrenmekten pahalı.
+function altYazi(k: any): string {
+  const c = (k?.content && typeof k.content === 'object') ? k.content : {};
+  return String(c.caption ?? '').slice(0, 2200);
+}
+// Reel hem Reels sekmesinde hem profil akışında görünsün mü?
+// VARSAYILAN AÇIK: üreticilerin çoğu ikisini de istiyor ve kapalı bir
+// varsayılan "reel'im akışta yok" diye fark edilmeyen bir kayıp olurdu.
+// Kayıt bazında kapatılabiliyor (content.shareToFeed === false).
+const paylasimAkista = (k: any) =>
+  !(k?.content && typeof k.content === 'object' && k.content.shareToFeed === false);
+
+// ⚠ INSTAGRAM KONTEYNERİNİN ALANLARI — TEK YERDE.
+// Bu alanlar İKİ yerden yaratılıyor: sıradan yayın (instagramYayinla)
+// ve turun başındaki önden yaratma (konteynerleriHazirla). Ayrı ayrı
+// yazılsalardı biri reels'i öğrenir, öteki story sanmaya devam ederdi
+// -- ve önden yaratılan konteyner yayında KULLANILDIĞI için kazanan
+// yanlış olan olurdu. Bu depoda "aynı liste iki yerde" hatası birkaç
+// kez yaşandı; burada baştan tek kopya.
+function igKonteynerAlanlari(k: any): Record<string, string> {
+  const video = String(k.media_mime ?? '').startsWith('video/');
+  if (!reelMi(k)) {
+    const alan: Record<string, string> = { media_type: 'STORIES' };
+    alan[video ? 'video_url' : 'image_url'] = String(k.media_url);
+    return alan;
+  }
+  // REELS her zaman video. (Fotoğraf gelirse yayın yoluna hiç
+  // girmiyor; kontrol instagramYayinla'nın başında.)
+  const alan: Record<string, string> = {
+    media_type: 'REELS',
+    video_url: String(k.media_url),
+    share_to_feed: paylasimAkista(k) ? 'true' : 'false'
+  };
+  const yazi = altYazi(k);
+  if (yazi) alan.caption = yazi;
+  // KAPAK İSTEĞE BAĞLI. Yoksa alan hiç gönderilmiyor ve Instagram
+  // videodan kendi karesini seçiyor. Kapaksız çıkan bir reel,
+  // çıkmayan bir reel'den iyidir.
+  if (k.cover_url) alan.cover_url = String(k.cover_url);
+  return alan;
+}
 
 // ══════════════════════════════════════════════════════════════════
 // TEK KAYDIN YAYINI — Bölüm 5
@@ -466,7 +553,7 @@ async function kaydiYayinla(k: any, bitis: number): Promise<string> {
   // ---- Katman 3: çöküş izi -------------------------------------------------
   // publish_called_at DOLU ise yayın çağrısı yapıldı ve sonucu bilinmiyor.
   if (k.publish_ref && k.publish_called_at) {
-    const { biliniyor, id } = await cikmisMi(pf, k.publish_called_at);
+    const { biliniyor, id } = await cikmisMi(k, k.publish_called_at);
     if (!biliniyor) {
       await rpc('story_ertele', { p_id: k.id, p_dakika: 5,
         p_sebep: `Yayın çağrısının sonucu bilinmiyor; ${pf} sorulamadı. Çift yayın olmasın diye bekleniyor.` });
@@ -541,8 +628,15 @@ async function instagramYayinla(k: any, bitis: number): Promise<string> {
     return 'kota-ertelendi';
   }
 
+  // ---- Reels VİDEO olmak zorunda -------------------------------------------
+  // Kalıcı hata: fotoğrafı reel yapmanın yolu yok ve tekrar denemek
+  // dosyayı videoya çevirmiyor.
+  if (reelMi(k) && !String(k.media_mime ?? '').startsWith('video/')) {
+    await kaliciHata(k, `Reels yalnızca video olabilir; bağlı dosya ${k.media_mime || 'bilinmeyen tür'}.`);
+    return 'reels-video-degil';
+  }
+
   // ---- Adım 1: konteyner ---------------------------------------------------
-  const video = String(k.media_mime ?? '').startsWith('video/');
   let konteyner: string = k.publish_ref || '';
   // Konteynerin yaşı NEREDEN sayılıyor: elde hazır bir konteyner varsa
   // sql/42'deki publish_ref_at damgasından, yenisi yaratılıyorsa
@@ -551,16 +645,15 @@ async function instagramYayinla(k: any, bitis: number): Promise<string> {
   // tavan hiç dolmazdı.
   let refAn = Date.parse(k.publish_ref_at ?? '') || 0;
   if (!konteyner) {
-    const alan: Record<string, string> = { media_type: 'STORIES' };
-    alan[video ? 'video_url' : 'image_url'] = String(k.media_url);
-    const y = await graf(`/${IG_USER_ID}/media`, { method: 'POST', alan });
+    const y = await graf(`/${IG_USER_ID}/media`, { method: 'POST', alan: igKonteynerAlanlari(k) });
     konteyner = String(y?.id ?? '');
     if (!konteyner) throw new GrafHata(0, null, null, 'konteyner kimliği dönmedi');
     await rpc('story_iz_konteyner', { p_id: k.id, p_ref: konteyner });
     refAn = Date.now();
   }
   if (!refAn) refAn = Date.now();
-  const konteynerSon = refAn + KONTEYNER_TAVANI_MS;
+  // Tavan türe göre: reels'in işlenmesi dakikalar sürebiliyor.
+  const konteynerSon = refAn + (reelMi(k) ? REELS_KONTEYNER_TAVANI_MS : KONTEYNER_TAVANI_MS);
 
   // ---- Adım 2: hazır olana kadar yokla ------------------------------------
   while (true) {
@@ -585,7 +678,8 @@ async function instagramYayinla(k: any, bitis: number): Promise<string> {
       // konteynerle başlar, yaşı zaten 120 saniyeyi aşmıştır ve anında
       // yine başarısız olur -- üç deneme birkaç dakikada tükenir.
       await izTemizle(k.id);
-      await rpc('story_basarisiz', { p_id: k.id, p_hata: 'Medya 120 saniyede hazır olmadı.', p_kalici: false });
+      const saniye = Math.round((reelMi(k) ? REELS_KONTEYNER_TAVANI_MS : KONTEYNER_TAVANI_MS) / 1000);
+      await rpc('story_basarisiz', { p_id: k.id, p_hata: `Medya ${saniye} saniyede hazır olmadı.`, p_kalici: false });
       return 'konteyner-zaman-asimi';
     }
     if (Date.now() + YOKLAMA_MS >= bitis - 5_000) {
@@ -637,6 +731,10 @@ async function instagramYayinla(k: any, bitis: number): Promise<string> {
 // bir yüklemeyi kurtarmaya çalışmaktan basit ve güvenli.
 async function facebookYayinla(k: any): Promise<string> {
   const video = String(k.media_mime ?? '').startsWith('video/');
+  if (reelMi(k) && !video) {
+    await kaliciHata(k, `Reels yalnızca video olabilir; bağlı dosya ${k.media_mime || 'bilinmeyen tür'}.`);
+    return 'reels-video-degil';
+  }
   if (k.publish_ref && !k.publish_called_at) {
     console.log('[story]', k.id, 'yarım kalmış Facebook yüklemesi — baştan');
     await izTemizle(k.id);
@@ -663,13 +761,20 @@ async function facebookYayinla(k: any): Promise<string> {
   }
 
   if (video) {
+    // ⚠ UC TÜRE GÖRE. İskelet aynı (start -> rupload -> finish) ama
+    // Facebook story'si ile reel'i AYRI kaynaklar: video_stories bir
+    // reel üretmiyor, video_reels de bir story. Tek satırlık bir fark
+    // gibi duruyor, sonucu tamamen farklı bir gönderi.
+    const reel = reelMi(k);
+    const uc = reel ? `/${pageId()}/video_reels` : `/${pageId()}/video_stories`;
+
     // AŞAMA 1 — başlat
-    const bas = await graf(`/${pageId()}/video_stories`, { method: 'POST', alan: { upload_phase: 'start' } });
+    const bas = await graf(uc, { method: 'POST', alan: { upload_phase: 'start' } });
     const videoId = String(bas?.video_id ?? '');
     const yuklemeAdresi = String(bas?.upload_url ?? '');
     if (!videoId || !yuklemeAdresi) {
       medya.body.cancel();
-      throw new GrafHata(0, null, null, 'video_stories start beklenen alanları döndürmedi');
+      throw new GrafHata(0, null, null, uc + ' start beklenen alanları döndürmedi');
     }
     await rpc('story_iz_konteyner', { p_id: k.id, p_ref: videoId });
 
@@ -687,10 +792,16 @@ async function facebookYayinla(k: any): Promise<string> {
     }
 
     // AŞAMA 3 — bitir. YAYINLAYAN ÇAĞRI BU, iz ondan önce yazılıyor.
+    const bitisAlanlari: Record<string, string> = { upload_phase: 'finish', video_id: videoId };
+    if (reel) {
+      // video_state ZORUNLU: yazılmazsa reel TASLAK olarak kalıyor ve
+      // hiçbir yerde hata görünmüyor -- kullanıcı yayınlandı sanıyor.
+      bitisAlanlari.video_state = 'PUBLISHED';
+      const yazi = altYazi(k);
+      if (yazi) bitisAlanlari.description = yazi;
+    }
     await rpc('story_iz_yayin_cagrisi', { p_id: k.id });
-    const bit = await graf(`/${pageId()}/video_stories`, {
-      method: 'POST', alan: { upload_phase: 'finish', video_id: videoId }
-    });
+    const bit = await graf(uc, { method: 'POST', alan: bitisAlanlari });
     await rpc('story_yayinlandi', { p_id: k.id, p_external_id: String(bit?.post_id ?? bit?.id ?? videoId) });
     return 'yayinlandi';
   }
@@ -750,7 +861,7 @@ async function kaydiIsle(k: any, bitis: number): Promise<string> {
 
 async function basarisizBildir(k: any, mesaj: string) {
   const alici = await hesapEpostasi(k.user_id);
-  const ne = k.title ? `"${k.title}"` : 'başlıksız story';
+  const ne = k.title ? `"${k.title}"` : `başlıksız ${turAdi(k)}`;
   // PLATFORM KAYITTAN OKUNUYOR, sabit yazılmıyor. Sabitti ve ilk
   // gerçek Facebook denemesinde bildirim "Platform: Instagram" dedi --
   // yani hatayı okuyan kişi yanlış yerde arardı. Şartname Bölüm 9
@@ -758,12 +869,20 @@ async function basarisizBildir(k: any, mesaj: string) {
   // uydurmak bilgi vermemekten kötü.
   const pfAd = ({ instagram: 'Instagram', facebook: 'Facebook' } as Record<string, string>)[
                  String(k.platform || '')] || String(k.platform || '?');
-  await epostaGonder(alici, 'Shootboard · Story yayınlanamadı',
+  // ⚠ ACELE AYNI DEĞİL. Story 24 saatlik: kaçan gün geri gelmiyor,
+  // o yüzden "bugün elle yayınla" demek doğru. Reel kalıcı: aynı
+  // cümle gereksiz bir telaş yaratır ve yarın yayınlamak da olur.
+  const reel = reelMi(k);
+  const kapanis = reel
+    ? 'Reel kalıcı bir gönderi; acelesi yok ama elle de yayınlayabilirsin.'
+    : 'Story 24 saatlik; bugünü kaçırmamak için elle yayınlamak isteyebilirsin.';
+  await epostaGonder(alici, `Shootboard · ${reel ? 'Reel' : 'Story'} yayınlanamadı`,
     `${ne} yayınlanamadı.\n\n`
+    + `Tür      : ${reel ? 'Reels' : 'Story'}\n`
     + `Platform : ${pfAd}\n`
     + `Zaman    : ${k.publish_at ?? '-'}\n`
     + `Hata     : ${temizle(mesaj)}\n\n`
-    + `Story 24 saatlik; bugünü kaçırmamak için elle yayınlamak isteyebilirsin.\n`
+    + kapanis + `\n`
     + `Kayıt: ${APP_URL}\n`);
 }
 
@@ -801,7 +920,10 @@ async function konteynerleriHazirla(liste: any[], bitis: number): Promise<number
        String(k.platform || 'instagram') === 'instagram'
     && !k.external_id      // zaten yayında
     && !k.publish_ref      // elde konteyner var ya da kurtarma izi var
-    && k.media_url);
+    && k.media_url
+    // Video olmayan bir reel zaten yayınlanamıyor; burada konteyner
+    // yaratmak boşuna istek olurdu. Kalıcı hatayı asıl yol veriyor.
+    && !(reelMi(k) && !String(k.media_mime ?? '').startsWith('video/')));
   // Tek kayıt varsa üst üste binecek bir şey yok: boşuna istek atma.
   if (adaylar.length < 2) return 0;
 
@@ -815,10 +937,10 @@ async function konteynerleriHazirla(liste: any[], bitis: number): Promise<number
     // Bütçenin son saniyelerinde yeni istek açmıyoruz.
     if (Date.now() > bitis - 20_000) break;
     try {
-      const video = String(k.media_mime ?? '').startsWith('video/');
-      const alan: Record<string, string> = { media_type: 'STORIES' };
-      alan[video ? 'video_url' : 'image_url'] = String(k.media_url);
-      const y = await graf(`/${IG_USER_ID}/media`, { method: 'POST', alan });
+      // Alanlar TEK YERDEN: igKonteynerAlanlari. Burada ikinci bir
+      // kopya olsaydı, önden yaratılan konteyner yayında kullanıldığı
+      // için kazanan o kopya olurdu.
+      const y = await graf(`/${IG_USER_ID}/media`, { method: 'POST', alan: igKonteynerAlanlari(k) });
       const konteyner = String(y?.id ?? '');
       if (!konteyner) continue;
       await rpc('story_iz_konteyner', { p_id: k.id, p_ref: konteyner });
