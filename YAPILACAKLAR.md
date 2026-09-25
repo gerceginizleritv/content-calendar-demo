@@ -55,30 +55,53 @@ SAHADA ÖLÇÜLEN, SONRA DÜZELTİLEN
 
 AÇIK KALANLAR (sebebiyle)
 
-1. **Ayarlar sayfasında Meta bağlantı durumu** (şartname Bölüm 10'un
-   üçüncü maddesi). BİLEREK ertelendi: tehlikeli durum zaten kapalı --
-   worker token'ı yokluyor, bozulunca kuyruğu durduruyor ve e-posta
-   atıyor. O satırın gerçek faydası "hangi sayfaya/hesaba bağlıyım"
-   sorusunu tek bakışta cevaplamak; 22 Eylül'de bu soru saatler aldı.
-   Ayrıca `sistem_durumu` tarayıcıya kapalı, ayrı bir uç gerekiyor.
+1. **Ayarlar sayfasında Meta bağlantı durumu** — ✖ KAPATILDI
+   (25 Eylül, kullanıcı kararı: "atla bu konuyu").
+   Şartname Bölüm 10'un üçüncü maddesiydi. Yapılmama sebebi: tehlikeli
+   durum zaten kapalı -- worker token'ı yokluyor, bozulunca kuyruğu
+   durduruyor ve e-posta atıyor, yani sessizce ölmüyor. O satırın tek
+   gerçek faydası "hangi sayfaya/hesaba bağlıyım" sorusunu tek bakışta
+   cevaplamaktı; 22 Eylül'de bu soru saatler almıştı. Maliyeti:
+   `sistem_durumu` tarayıcıya kapalı, ayrı bir uç gerekiyor.
+   AÇILMA KOŞULU: token bir daha sorun çıkarırsa geri dönülür.
 
-2. **`shb_` MCP anahtarını değiştir.** Anahtarın tamamı sohbet
-   kaydında iki kez geçti. Depoya GİRMEDİ (çalışan ağaç ve git
-   geçmişi temiz, 23 Eylül'de bakıldı). O anahtarla yapılabilecek en
-   kötü şey takvime çöp kayıt eklemek: silme aracı yok, Meta'ya yayın
-   yapamıyor, Meta token'ını okuyamıyor. Temizlik işi, olay değil.
+2. **`shb_` MCP anahtarını değiştir** — ✖ KAPATILDI
+   (25 Eylül, kullanıcı kararı).
+   Anahtarın tamamı sohbet kaydında iki kez geçti ama YAYIMLANMADI:
+   depoya girmedi, çalışan ağaç ve git geçmişi 23 Eylül'de kontrol
+   edildi, temiz. O anahtarla yapılabilecek en kötü şey takvime çöp
+   kayıt eklemek -- silme aracı yok, Meta'ya yayın yapamıyor, Meta
+   token'ını okuyamıyor. Sohbet kaydına ulaşabilen tek taraf hesabın
+   kendisi.
+   AÇILMA KOŞULU: anahtar herkese açık bir yere düşerse -- depoya
+   girerse ya da paylaşılan bir ekran görüntüsünde görünürse.
 
-3. **Planlama sohbetine kural:** çok parçalı story'de bütün parçalar
+3. **NVIDIA (build.nvidia.com) ücretsiz modelleri** — ✖ MÜMKÜN DEĞİL
+   (24 Eylül'de denendi). `integrate.api.nvidia.com` tarayıcıdan
+   çağrılmayı desteklemiyor: ön uçtaki OPTIONS isteğine
+   `Access-Control-Allow-Origin` başlığı dönmüyor. Araya sunucu koymak
+   teknik olarak mümkün ama kullanıcının anahtarı bizim sunucumuzdan
+   geçerdi ve "anahtarını görmeyiz" sözü bozulurdu -- Gemini'nin
+   seçilme sebebi de zaten buydu.
+   BAŞKA BİR SAĞLAYICI DÜŞÜNÜLÜRSE otuz saniyelik test, tarayıcı
+   konsolunda:
+     fetch('https://<saglayici>/v1/models', { headers:{ Authorization:'Bearer test' } })
+       .then(r => console.log('CORS AÇIK, durum:', r.status))
+       .catch(e => console.log('CORS KAPALI:', e.message));
+   401 görürsen aday olabilir; "Failed to fetch" görürsen daha ileri
+   gitmeye gerek yok.
+
+4. **Planlama sohbetine kural:** çok parçalı story'de bütün parçalar
    AYNI `time` değerini almalı. 23 Eylül'de 09:00 / 09:02 diye
    planlanmıştı; kuyruk bir kaydı `publish_at` gelmeden alamadığı
    için parçalar arasına iki dakika giriyordu -- kod kusuru değil,
    plan kusuru. Sıra `mediaName`'deki `_k1`/`_k2`'den geliyor.
 
-4. **İzleyici yalnızca bilgisayar açıkken çalışıyor.** Kapalıyken tur
+5. **İzleyici yalnızca bilgisayar açıkken çalışıyor.** Kapalıyken tur
    atmıyor; açılınca kaçan turlar telafi ediliyor. Yayın Supabase'de,
    ondan bağımsız -- ama yalnızca önceden yüklenmiş medya için.
 
-5. **Seri koruması `auto_publish` kapalı önceki parçayı bekletmiyor.**
+6. **Seri koruması `auto_publish` kapalı önceki parçayı bekletmiyor.**
    Onu elle yayınlayacak demektir ve sistem ne zaman yapıldığını
    bilemez; bekletseydi sonraki parça sonsuza kadar kuyrukta dönerdi.
    Bilinçli boşluk, sql/48'in başında yazılı.
