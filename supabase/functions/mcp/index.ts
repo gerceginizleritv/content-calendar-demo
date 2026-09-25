@@ -79,7 +79,7 @@ const SERVIS_ANAHTARI = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY') ?? '';
 // Bu kural UC KEZ unutuldu ve ucuncusunde artik soze birakilmadi:
 // birlestir.py, kaynak degisip surum ayni kalirsa HATA VERIP duruyor
 // ve tek-dosya.ts'i uretmiyor. Yani unutuldugu an belli oluyor.
-const SURUM = '1.5.1';
+const SURUM = '1.6.0';
 
 const CORS: Record<string, string> = {
   'Access-Control-Allow-Origin': '*',
@@ -836,6 +836,10 @@ function yayinDisari(r: any) {
     type: r.type, platform: r.platform, title: r.title || '',
     autoPublish: r.auto_publish === true,
     mediaUrl: r.media_url || '', mediaName: r.media_name || '',
+    // Reels kapağı. Story'de her zaman boş; alanın kendisi türe göre
+    // gizlenmiyor çünkü "boş" ile "yok" aynı şey ve yükleyici zaten
+    // türe bakıyor.
+    coverUrl: r.cover_url || '',
     mediaBytes: r.media_bytes ?? null, mediaMime: r.media_mime || '',
     publishAt: r.publish_at || null, publishState: r.publish_state || 'pending',
     publishedAt: r.published_at || null, externalId: r.external_id || '',
@@ -856,7 +860,9 @@ function yayinDisari(r: any) {
 // "donusum TEK BIR YERDE" tam olarak bu.
 
 // GET /api/entries/find?file=2026-10-05_story_konu_k1.mp4
-// Once tam dosya adi, sonra adin icindeki tarihteki story kayitlari.
+// Once tam dosya adi, sonra adin icindeki tarihteki YAYINLANABILIR
+// kayitlar (story + reels). Tur suzgeci 'story' iken reels yukleyicisi
+// dosya adindan kaydi bulamiyordu -- ad tam eslesmedikce.
 async function apiKayitBul(uid: string, dosya: string) {
   const ad = String(dosya || '').trim();
   if (!ad) return { durum: 400, govde: { ok: false, error: 'file: required, e.g. ?file=2026-10-05_story_konu_k1.mp4' } };
@@ -873,17 +879,17 @@ async function apiKayitBul(uid: string, dosya: string) {
       error: `no entry carries the file name "${ad}", and no date could be read from it. Name files like 2026-10-05_story_topic.mp4, or set mediaName on the entry first.` } };
   }
   const { veri } = await rest(
-    `/calendar_events?user_id=eq.${uid}&deleted_at=is.null&type=eq.story&post_date=eq.${tarih}&select=*&order=post_time.asc.nullsfirst&limit=20`);
+    `/calendar_events?user_id=eq.${uid}&deleted_at=is.null&type=in.(story,reels)&post_date=eq.${tarih}&select=*&order=post_time.asc.nullsfirst&limit=20`);
   const satirlar = Array.isArray(veri) ? veri : [];
   if (!satirlar.length) {
     return { durum: 404, govde: { ok: false,
-      error: `no story entry on ${tarih}. Create the entry in Shootboard first, then run the uploader.` } };
+      error: `no story or reels entry on ${tarih}. Create the entry in Shootboard first, then run the uploader.` } };
   }
   // Birden cok aday varsa SECIM YAPILMIYOR: yanlis kayda yazmak,
   // yazmamaktan kotu. Betik kullaniciya soruyor.
   return { durum: 200, govde: { ok: true, matchedBy: 'date', date: tarih,
     count: satirlar.length, entries: satirlar.map(yayinDisari),
-    note: satirlar.length > 1 ? 'more than one story on that date; pick one by id' : undefined } };
+    note: satirlar.length > 1 ? 'more than one entry on that date; pick one by id' : undefined } };
 }
 
 // PATCH /api/entries/{id}
@@ -905,14 +911,29 @@ async function apiKaydiYama(uid: string, id: string, govde: any) {
     if (u && !/^https:\/\/[^\s]+$/i.test(u)) hatalar.push('mediaUrl: must be a plain https:// URL (Instagram fetches the file from it; redirects are not followed)');
     else yama.media_url = u || null;
   }
+  // REELS KAPAĞI. mediaUrl ile AYNI kurallar: Instagram bunu da kendisi
+  // çekiyor, yönlendirme kabul etmiyor.
+  if (govde.coverUrl !== undefined) {
+    const c = String(govde.coverUrl || '');
+    if (c && !/^https:\/\/[^\s]+$/i.test(c)) hatalar.push('coverUrl: must be a plain https:// URL (Instagram fetches the cover from it; redirects are not followed)');
+    else yama.cover_url = c || null;
+  }
   if (govde.mediaName !== undefined) yama.media_name = String(govde.mediaName || '').slice(0, 300) || null;
   if (govde.mediaMime !== undefined) yama.media_mime = String(govde.mediaMime || '').slice(0, 100) || null;
   if (govde.mediaBytes !== undefined) {
     const n = Number(govde.mediaBytes);
+    // ⚠ SINIR TÜRE GÖRE. 100 MB story'nin sınırı; reels'inki çok daha
+    // yüksek (Instagram 1 GB'a kadar kabul ediyor). Sınır sabit
+    // kalsaydı HER reel daha yüklenmeden reddedilirdi -- ve hata
+    // mesajı "story limit" dediği için sebebi de yanlış görünürdü.
+    //
+    // Tür KAYITTAN okunuyor, gövdeden değil: yükleyici türü
+    // göndermiyor ve göndermesi de gerekmemeli, kayıt zaten biliyor.
+    const reel = String(satir.type || '') === 'reels';
+    const tavan = reel ? 1024 * 1024 * 1024 : 100 * 1024 * 1024;
     if (!Number.isFinite(n) || n < 0) hatalar.push('mediaBytes: must be a positive number');
-    // 100 MB Instagram'in siniri. Buyugu reddediliyor: yayin aninda
-    // ogrenmek, yukleme aninda ogrenmekten cok daha pahali.
-    else if (n > 100 * 1024 * 1024) hatalar.push(`mediaBytes: ${Math.round(n / 1048576)} MB is over Instagram's 100 MB limit for stories`);
+    // Yayın anında öğrenmek, yükleme anında öğrenmekten çok daha pahalı.
+    else if (n > tavan) hatalar.push(`mediaBytes: ${Math.round(n / 1048576)} MB is over Instagram's ${Math.round(tavan / 1048576)} MB limit for ${reel ? 'reels' : 'stories'}`);
     else yama.media_bytes = Math.round(n);
   }
   if (govde.autoPublish !== undefined) yama.auto_publish = govde.autoPublish === true;
