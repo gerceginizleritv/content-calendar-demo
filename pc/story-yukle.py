@@ -143,8 +143,12 @@ def adresi_dene(url, beklenen_mime, beklenen_boyut):
     return sorun
 
 
-def kaydi_bul(kok, anahtar, dosya_adi, kayit_id=None):
+def kaydi_bul(kok, anahtar, dosya_adi, kayit_id=None, tur_adi="story"):
     """Bu dosyanin baglanacagi kayit KIMLIKLERI. Her zaman liste doner.
+
+    tur_adi YALNIZCA ekrana yazilan kelime. Eslestirme mantigi ortak ve
+    OYLE KALMALI: reels yukleyicisi de bu islevi cagiriyor. Ayri bir
+    kopya cikarilsaydi, buradaki bir duzeltme oteki tarafa hic gecmezdi.
 
     Birden cok olabilmesinin sebebi Shootboard'in kendi modeli: her sosyal
     medya icin AYRI kayit aciliyor. Ayni story Instagram'a ve Facebook'a
@@ -183,7 +187,7 @@ def kaydi_bul(kok, anahtar, dosya_adi, kayit_id=None):
         print(f"  kayit: {k['id']}  {k['date']} {k['time']}  {k.get('title') or '(basliksiz)'}")
         return [k["id"]]
 
-    print("\nO tarihte birden cok story var ve hangisi oldugu belli degil.")
+    print(f"\nO tarihte birden cok {tur_adi} var ve hangisi oldugu belli degil.")
     print("Kaliciysa: planlama tarafinda kayitlara mediaName yaz, bu is bir")
     print("daha sormaz. Simdilik --id ile birini sec:\n")
     for k in kayitlar:
@@ -192,9 +196,14 @@ def kaydi_bul(kok, anahtar, dosya_adi, kayit_id=None):
     sys.exit(1)
 
 
-def kayda_yaz(kok, anahtar, kayit_id, url, boyut, mime, ad, otomatik):
+def kayda_yaz(kok, anahtar, kayit_id, url, boyut, mime, ad, otomatik, kapak_url=None):
     govde = {"mediaUrl": url, "mediaBytes": boyut, "mediaMime": mime,
              "mediaName": ad, "autoPublish": bool(otomatik)}
+    # REELS KAPAGI. Yalnizca verilirse gonderiliyor: None gecmek
+    # "kapagi sil" demek olurdu ve story yolunda her cagri kapagi
+    # bosaltirdi.
+    if kapak_url:
+        govde["coverUrl"] = kapak_url
     # ⛔ uploaded BURADA YOK ve olmayacak. Sartname Bolum 1.
     r = requests.patch(f"{kok}/api/entries/{kayit_id}", json=govde,
                        headers={"Authorization": f"Bearer {anahtar}"}, timeout=30)

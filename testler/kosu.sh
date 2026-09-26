@@ -60,9 +60,13 @@ LOK_TIPI="lok-klon lok-surukle"
 
 # Kosacak testler ONCE toplaniyor: ekranda "12/132" yazabilmek icin
 # toplamin bastan bilinmesi gerekiyor.
+# PYTHON TESTLERI DE KOSUYOR. pc/ altindaki yukleyiciler Python ve
+# JS'ten olculemiyor; olculmeseler "calisiyor sanilan" tek parca
+# onlar olurdu.
 kosacak=()
-for f in *.test.js; do
-  ad="${f%.test.js}"
+for f in *.test.js *.test.py; do
+  [ -e "$f" ] || continue
+  ad="${f%.test.js}"; ad="${ad%.test.py}"
   # Arguman verildiyse yalnizca adi gecenler kossun.
   if [ $# -gt 0 ]; then
     uyuyor=0
@@ -76,14 +80,17 @@ echo "$toplam test kosuyor"
 
 gecen=0; kalan=0; sira=0
 for f in "${kosacak[@]}"; do
-  ad="${f%.test.js}"
+  ad="${f%.test.js}"; ad="${ad%.test.py}"
   sira=$((sira+1))
   case " $D_TIPI " in *" $ad "*) arg=". ";; *) arg="";; esac
   case " $LOK_TIPI " in *" $ad "*) arg=". 8099";; esac
   # hatirlatma takimi 60 kontrol kosuyor ve 200 saniyeyi asiyor.
   case "$ad" in hatirlatma) sure=420;; *) sure=200;; esac
   basladi=$SECONDS
-  out=$(timeout $sure node "$f" $arg 2>&1); kod=$?
+  case "$f" in
+    *.test.py) out=$(timeout $sure python3 "$f" 2>&1); kod=$? ;;
+    *)         out=$(timeout $sure node "$f" $arg 2>&1); kod=$? ;;
+  esac
   surdu=$((SECONDS-basladi))
   if [ $kod -ne 0 ]; then
     kalan=$((kalan+1))
