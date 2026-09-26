@@ -1,0 +1,113 @@
+TRABZON AYASOFYA — ÇEKİM KONTROL LİSTESİ
+Karadeniz Dosyası 3 · Script: trabzon-ayasofya-v1.txt
+
+═══════════════════════════════════════
+ÖNCE OKU — BU MEKÂNIN ÜÇ ÖZELLİĞİ
+═══════════════════════════════════════
+1. Yapı bugün CAMİ olarak kullanılıyor. Namaz vakti dışında çek, görevliden izin al,
+   ibadet mekânı kurallarına uy, cemaat varken çekme, yüz görünmesin.
+2. Videonun ÜÇ ANA NESNESİ DE DIŞARIDA. İçeri giremesen de video tam çıkar.
+   Bu yüzden tek script var (Sümela ve Kuştul'da iki sürüm vardı).
+3. 2013'teki müze→cami dönüşümü SİYASİ OLARAK TARTIŞMALI. Sahada kimseyle bu konuda
+   tartışma, görüş sorma, kayda alma. Video tarih sırasını düz veriyor, taraf tutmuyor.
+
+═══════════════════════════════════════
+GENEL
+═══════════════════════════════════════
+☐ Osmo Action 4 + gimbal, 2 yedek pil
+☐ iPhone 12 Pro (2x tele — kilit taşı ve friz detayları için ŞART)
+☐ 70 mm üstü objektif — kartal kilit taşı yüksekte, tele olmadan çekilmez
+☐ Mini tripod, yaka mikrofonu, rüzgâr süngeri (deniz kıyısı, rüzgârlı)
+☐ 10 sn sessiz ortam sesi
+☐ Sıra: GENİŞ (nesnenin yapıdaki yeri) → ORTA → ÇOK YAKIN
+☐ TÜM TABELALARI FOTOĞRAFLA — tarih teyidi için, script bunlara bağlı
+
+═══════════════════════════════════════
+★ 1 — GÜNEY CEPHE FRİZİ (Âdem ile Havva)
+═══════════════════════════════════════
+Videonun açılış karesi ve omurgası. Burada kaçırılan telafi edilemez.
+☐ Geniş: frizin güney cephedeki YERİ — yapının ölçeğiyle birlikte
+☐ Orta: şerit boyunca YAVAŞ PAN (tek plan, kesmesiz, gimbal)
+☐ ÇOK YAKIN: her sahne ayrı ayrı — tek tek, acele etme
+☐ AÇILIŞ KARESİ ADAYI: tek bir figür, çok yakın, yapı görünmesin
+☐ KAPANIŞ İÇİN: aynı kareden yavaş uzaklaşma (geri zoom / geri kaydırma)
+☐ Farklı saatlerde ışık denemesi — kabartma yan ışıkta derinlik kazanır
+  ⚠ Öğle güneşi kabartmayı düzleştirir. Sabah ya da ikindi tercih et.
+☐ SAY: frizde kaç ayrı sahne var? ______ (script bu sayıyı soruyor)
+
+═══════════════════════════════════════
+★ 2 — KEMER KİLİT TAŞI (tek başlı kartal)
+═══════════════════════════════════════
+☐ ⚠ ÖNCE BUL. Güney cephedeki kemerin tam tepesindeki taş. Bulamazsan görevliye sor.
+☐ Geniş: kemerin tamamı, kilit taşının yeri belli olsun
+☐ TELE: kartal motifi, okunacak kadar yakın
+☐ Konumunu not et: ______
+
+═══════════════════════════════════════
+★ 3 — KULE (yapıdan ~25 m ötede)
+═══════════════════════════════════════
+Videonun SONA SAKLANAN cevabı. "Çan kulesi değil, rasathane."
+☐ Yapıdan kuleye giden mesafeyi YÜRÜ (gimbal, tek plan) — 25 metre görsel olarak anlaşılsın
+☐ Kule geniş plan — dört köşe planı görünsün
+☐ Kule yakın — taş dokusu, pencereler
+☐ Kule ve ana yapı AYNI KAREDE — ayrı durdukları anlaşılsın
+☐ ⚠ İÇİNE GİRİLEBİLİYOR MU? SOR: ______
+   Girilebiliyorsa: iç duvarlardaki resimler ÇOK ÖNEMLİ — geniş + yakın
+   Girilemiyorsa: kapalı kapıyı çek, o da işe yarar
+☐ Yukarı bakan plan — gökyüzü ve kule aynı karede (rasathane cümlesinin görseli)
+
+═══════════════════════════════════════
+DİĞER — DIŞARIDAN
+═══════════════════════════════════════
+☐ Yapının geniş planı, çevresiyle
+☐ Denize / şehre bakan konum
+☐ Güney cephenin tamamı, tek karede
+☐ Yapının dört cephesi — kısa birer plan
+☐ Bahçe, çevre duvarı, giriş
+
+═══════════════════════════════════════
+İÇERİDEN — GİREBİLİRSEN
+═══════════════════════════════════════
+☐ Kubbe, içeriden yukarı
+☐ Sütunlar, kemerler
+☐ Mihrap
+☐ ⚠ FRESKLER: 2013 düzenlemesinde bir kısmı örtüldü.
+   HANGİSİ GÖRÜNÜR, HANGİSİ KAPALI — gör, çek, not et: ______
+☐ Zemin, halı, mekânın bugünkü kullanımı (kısa, saygılı)
+☐ İçeriden dışarı bakan bir plan
+
+═══════════════════════════════════════
+KONUŞMA — NEREDE ÇEKİLECEK
+═══════════════════════════════════════
+☐ HOOK (0:03–0:25) — güney cephenin önünde, kabartma arkanda görünsün
+  ⚠ İlk 22 saniyede format duyurusu, isim tanıtımı, kanal bilgisi YOK
+☐ Bölüm 1 (kim yaptı) — yapının geniş görüldüğü bir noktada
+☐ Bölüm 2 (kabartma) — frizin önünde, elle gösterebileceğin mesafede
+☐ Bölüm 3 (123 yıl) — yapının bütününü gören bir noktada
+☐ Bölüm 4 (sonraki yüz yıl) — içeride ya da cephede
+☐ Bölüm 5 (kule) — kulenin önünde
+☐ ÇAĞRI + KAPANIŞ — güney cephe önü, sabit plan
+☐ YÜZLE GİRİŞ TAKELERİ: 3–5 farklı açılış cümlesi denemesi (haftada 2 içerik kuralı)
+
+═══════════════════════════════════════
+SAHADA DOLDUR — DÖNÜNCE SCRIPTE İŞLENECEK
+═══════════════════════════════════════
+Namaz vakitleri: ______
+Çekim izni alındı mı, kimden: ______
+Kartal kilit taşı nerede: ______
+Frizde kaç sahne: ______
+Kuleye girilebiliyor mu: ______
+Kulenin içinde ne var: ______
+Hangi freskler görünür: ______
+TABELADA yazan yapım tarihi: ______
+TABELADA yazan cami oluş tarihi: ______   ⚠ script 1584 diyor, tabelayla karşılaştır
+İçeri girilebildi mi: ______ (girilemediyse sebep: ______)
+
+═══════════════════════════════════════
+YAYINDAN ÖNCE TEYİT (çekimden bağımsız, masabaşı)
+═══════════════════════════════════════
+☐ 1584 cami dönüşümü ve bunu yapan kişi — kaynaklar tam örtüşmüyor, İKİNCİ KAYNAK ŞART
+  Bulunamazsa: damga "BAZI KAYNAKLARA GÖRE", hook "bir asırdan uzun süre" olur
+☐ Kulenin gözlemevi işlevi — sona saklanan cevap, ikinci kaynak gerekli
+☐ I. Manuel'in unvanı ve 1250–60 tarihleri
+☐ 2013 bölümü tek cümle mi, yorum sızmış mı — kurguda tekrar kontrol
