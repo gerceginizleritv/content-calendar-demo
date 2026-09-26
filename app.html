@@ -2845,15 +2845,37 @@ textarea.sc-ai-brief{min-height:64px;resize:vertical;line-height:1.5;}
      yolu yok. Bos halde soluk bir "+", dolu halde tarihin kendisi. */
   .proj-table .pdate.bos{opacity:.45;}
 
-  /* Filtre seridi: yuvarlak cipler, tek satir, yana kayar. Ayirici cizgi
-     ve ozet yazisi telefonda yer kaplamaktan baska is gormuyor. */
-  .filter-bar{flex-wrap:nowrap;overflow-x:auto;-webkit-overflow-scrolling:touch;
-    padding-bottom:4px;scrollbar-width:none;gap:6px;margin-bottom:8px;}
-  .filter-bar::-webkit-scrollbar{display:none;}
+  /* Filtre seridi: yuvarlak cipler. Ayirici cizgi ve ozet yazisi
+     telefonda yer kaplamaktan baska is gormuyor.
+
+     ⚠ SERIT YANA KAYMIYOR, SARIYOR. Eskiden tek satirdi ve
+     `overflow-x:auto` ile yana kayiyordu. IKI ayri sebeple degisti:
+
+     1. iOS SAFARI'DE FILTRE PANELINI KIRIYORDU. Panel position:fixed
+        ve serdin ICINDE duruyor. iOS'ta kaydirilabilir bir kapsayici
+        (overflow + -webkit-overflow-scrolling) icindeki fixed cocuk
+        viewport'a degil O KAPSAYICIYA gore konumlaniyor ve ona
+        KIRPILIYOR. Sonuc: alttan acilmasi gereken panel 40 piksellik
+        serit satirina sikisiyor, serdin kaydirma miktari kadar da sola
+        kayiyor -- basligin bas harfleri kesiliyor ("PLATFORM" ->
+        "_ATFORM") ve secenekler ekranin disinda kaliyor. Kullanici
+        paneli aciyor ama HICBIR SEY SECEMIYOR. 26 Eylul 2026'da iPhone
+        Safari'de bildirildi; Chromium bu davranisi gostermiyor, o
+        yuzden ancak seride transform verilerek yeniden uretilebildi
+        (transform da fixed icin kapsayici blok uretiyor).
+
+     2. Yatay kaydirma zaten kesfedilmiyor. Bu depoda ayni ders bir kez
+        daha ogrenildi: sol seridin ikincil baglantilari da yana kayan
+        bir seritteydi ve kullanici sondakileri hic gormuyordu.
+        "Kaydirma bir cozum degil, sorunun ertelenmesi."
+
+     Sarmanin bedeli dar ekranda ikinci bir cip satiri; kazanci
+     calisan bir filtre paneli. */
+  .filter-bar{flex-wrap:wrap;overflow:visible;gap:6px;margin-bottom:8px;}
   .filter-sep,.fsummary{display:none;}
   .fbtn,.fclear,.btn-pending{white-space:nowrap;flex:none;}
   .fbtn,.btn-pending{border-radius:18px;min-height:36px;padding:0 12px;}
-  .fdrop{position:static;}   /* panel sabit konumlu, kapsayici kaydirilabilir */
+  .fdrop{position:static;}   /* panel viewport'a gore, alttan acilan sayfa */
 
   /* Filtre paneli: arkasi karartilmis alt sayfa, basligi ve Kapat dugmesi
      var. Disariya dokunmak paneli kapatir ve ALTTAKI takvime gecmez —
