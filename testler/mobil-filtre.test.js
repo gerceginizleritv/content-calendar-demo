@@ -60,11 +60,15 @@ async function ac(t, genislik){
   await p.evaluate(()=>{
     document.querySelectorAll('.overlay.open').forEach(o=> o.classList.remove('open'));
     setLanguage('tr'); setPage('calendar');
-    // Filtre cipleri veriden turuyor: en az bir kayit lazim.
-    events.push(sanitizeEvent({ id:'f1', type:'reels', platform:'instagram',
-      title:'Bir kayıt', date:'2026-09-26', time:'09:00', content:{} }));
-    events.push(sanitizeEvent({ id:'f2', type:'story', platform:'facebook',
-      title:'İkinci kayıt', date:'2026-09-26', time:'10:00', content:{} }));
+    // Filtre cipleri veriden turuyor. Sayi da onemli: "kapaninca sayfa
+    // yeniden kayiyor" olcumu ancak sayfa GERCEKTEN kaydirilabilirse bir
+    // sey olcuyor. Iki kayitla sayfa kisa kaliyor, scrollTo hicbir sey
+    // yapmiyor ve olcum sessizce bosa dusuyordu.
+    for(let i = 0; i < 40; i++){
+      events.push(sanitizeEvent({ id:'f'+i, type: i % 2 ? 'reels' : 'story',
+        platform: i % 2 ? 'instagram' : 'facebook', title:'Kayıt ' + i,
+        date:'2026-09-' + String((i % 28) + 1).padStart(2,'0'), time:'09:00', content:{} }));
+    }
     save(); renderCal();
   });
   await p.waitForTimeout(400);
@@ -157,6 +161,60 @@ const kotuAtalar = (p, secici)=> p.evaluate(({ sec, kaynak })=>{
     });
     bak('★ seçim uygulanıyor', secim.secili === 1, JSON.stringify(secim));
     bak('seçim rozette görünüyor', secim.rozetGorunur === true, JSON.stringify(secim));
+
+    // ══════════════════════════════════════════════════════════
+    // KAPANABILIYOR MU — "ekranda kitleniyor" sikayetinin olcumu
+    // ══════════════════════════════════════════════════════════
+    // Panel secimden sonra BILEREK acik kaliyor (coklu secim). O yuzden
+    // cikis yolunun her zaman CALISMASI ve GORUNMESI sart: gorunmeyen
+    // bir panel + karartilmis ekran + kilitli govde, kullanici icin
+    // "donmus ekran" demek.
+    const kapatDugme = await p.$('.fdrop[data-drop="platform"] .fpanel .fpanel-close');
+    bak('★ kapat düğmesi görünür', !!(kapatDugme && await kapatDugme.isVisible()));
+    // Kilit ACIKKEN gercekten donduruyor mu? Sinif adina degil
+    // mekanizmaya bakiliyor: sinif dursa da kural uygulanmiyorsa kilit
+    // yok demektir.
+    bak('gövde kilitli (panel açıkken doğru)',
+        await p.evaluate(()=> document.body.classList.contains('govde-kilit')
+                           && getComputedStyle(document.body).position === 'fixed'),
+        await p.evaluate(()=> document.body.className + ' / ' + getComputedStyle(document.body).position));
+
+    await p.tap('.fdrop[data-drop="platform"] .fpanel .fpanel-close');
+    await p.waitForTimeout(350);
+    let kilit = await p.evaluate(()=> ({
+      kilit: document.body.classList.contains('govde-kilit'),
+      perde: !!document.querySelector('.fbackdrop.open'),
+      acik: document.querySelectorAll('#filterBar .fdrop.open').length,
+      secili: activePlatformFilters.size }));
+    bak('★ × ile kapanıyor', kilit.acik === 0 && kilit.perde === false, JSON.stringify(kilit));
+    bak('★ gövde kilidi KALKIYOR', kilit.kilit === false, JSON.stringify(kilit));
+    bak('seçim kapanınca kaybolmuyor', kilit.secili === 1, String(kilit.secili));
+    // Kaydirma denemesi sayfanin UZUNLUGUNA bagliydi ve o da gorunume
+    // gore degisiyor: kisa bir sayfada scrollTo hicbir sey yapmiyor ve
+    // olcum sessizce bosa dusuyordu. Onun yerine DONDURAN MEKANIZMANIN
+    // kendisi olculuyor -- body'nin position:fixed ve tepe kaydirmasi.
+    const govde = await p.evaluate(()=> ({
+      pozisyon: getComputedStyle(document.body).position,
+      top: document.body.style.top,
+      sinif: document.body.className
+    }));
+    bak('★ gövde artık position:fixed DEĞİL', govde.pozisyon !== 'fixed', JSON.stringify(govde));
+    bak('★ gövdenin tepe kaydırması temizlendi', govde.top === '', JSON.stringify(govde));
+
+    // Perde de bir cikis yolu. iOS duz bir div'e click gondermeyebiliyor;
+    // cursor:pointer o yuzden var, fare icin degil.
+    await p.tap('.fdrop[data-drop="platform"] .fbtn');
+    await p.waitForTimeout(300);
+    bak('perde imleç olarak tıklanabilir işaretli (iOS şartı)',
+        await p.evaluate(()=> getComputedStyle(document.querySelector('.fbackdrop')).cursor === 'pointer'),
+        await p.evaluate(()=> getComputedStyle(document.querySelector('.fbackdrop')).cursor));
+    await p.touchscreen.tap(195, 60);
+    await p.waitForTimeout(350);
+    kilit = await p.evaluate(()=> ({
+      kilit: document.body.classList.contains('govde-kilit'),
+      acik: document.querySelectorAll('#filterBar .fdrop.open').length }));
+    bak('★ perdeye dokununca da kapanıyor', kilit.acik === 0 && kilit.kilit === false,
+        JSON.stringify(kilit));
 
     bak('js hatası yok', hata.length === 0, hata.slice(0,2).join(' | '));
     await c.close();
