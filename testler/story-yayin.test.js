@@ -59,7 +59,7 @@ function bosKayit(ek){
     published_at:null, external_id:null, last_error:null, attempt_count:0,
     retry_after:null, publish_ref:null, publish_ref_at:null, publish_called_at:null,
     media_url:'https://medya.test/2026-12-05_story.mp4', media_mime:'video/mp4',
-    media_bytes:12345678, media_name:'2026-12-05_story.mp4',
+    media_bytes:12345678, media_name:'2026-12-05_story.mp4', cover_url:null,
     idem_key:'11111111-1111-1111-1111-111111111111',
     content:{ timezone:'Europe/Istanbul' }, updated_at: su()
   }, ek || {});
@@ -87,7 +87,9 @@ const SQL = {
     const kok = seriKok(k.media_name), sira = seriSira(k.media_name);
     if(kok === null || sira === null) return [];          // seri degil
     const onde = satirlar.filter(e=>
-      e.type === 'story' && !e.deleted_at && e.id !== p_id
+      // sql/50: seri AYNI TUR icinde. Ayni cekimden cikan bir story,
+      // ayni koku paylasan bir reel'i bekletmemeli.
+      e.type === k.type && !e.deleted_at && e.id !== p_id
       && e.user_id === k.user_id && e.platform === k.platform
       && e.auto_publish === true
       && seriKok(e.media_name) === kok
@@ -111,7 +113,9 @@ const SQL = {
   },
   story_kuyruk_al({ p_limit }){
     const aday = satirlar.filter(r=>
-      r.type === 'story' && r.auto_publish === true && r.publish_state === 'pending'
+      // sql/50: story VE reels
+      (r.type === 'story' || r.type === 'reels')
+      && r.auto_publish === true && r.publish_state === 'pending'
       && !r.deleted_at && r.publish_at && Date.parse(r.publish_at) <= SAAT
       && (!r.retry_after || Date.parse(r.retry_after) <= SAAT)
       && r.attempt_count < 3
@@ -129,7 +133,10 @@ const SQL = {
         media_mime:r.media_mime, publish_at:r.publish_at, attempt_count:r.attempt_count,
         idem_key:r.idem_key, external_id:r.external_id, title:r.title, content:r.content,
         publish_ref:r.publish_ref, publish_ref_at:r.publish_ref_at,
-        publish_called_at:r.publish_called_at, platform:r.platform };
+        publish_called_at:r.publish_called_at, platform:r.platform,
+        // sql/50: worker konteynere STORIES mi REELS mi yazacagini
+        // buradan okuyor. Donmezse her reel story olarak yayinlanir.
+        type:r.type, cover_url:r.cover_url };
     });
   },
   story_iz_konteyner({ p_id, p_ref }){
@@ -181,6 +188,11 @@ let META, cagrilar;
 function metaKur(ek){
   cagrilar = { media:0, publish:0, durum:0, kota:0, stories:0, debug:0,
                fbBaslat:0, fbYukle:0, fbBitir:0, fbFoto:0, fbFotoStory:0,
+               // Reels: hangi uca gidildi ve konteynere NE yazildi.
+               // Sayilar yetmiyor -- "REELS mi STORIES mi" ancak
+               // govdeden okunuyor ve yanlisi hata vermiyor.
+               fbReelsBaslat:0, fbReelsBitir:0,
+               mediaGovde: [], fbBitirGovde: [], igMediaListe:0,
                // Sayilar "kac kere" diyor, sira "hangi sirayla" diyor.
                // Konteynerlerin yayinlardan ONCE yaratildigi ancak
                // siradan okunabiliyor.
@@ -191,12 +203,28 @@ function metaKur(ek){
     // Yoklama sirasi: her cagrida bir sonraki. Bitince sonuncusu tekrar.
     durumSirasi: ['FINISHED'],
     storyler: [],           // /stories'in dondurecegi yayindaki story'ler
+    medyalar: [],           // /media'nin dondurecegi yayindaki gonderiler (reels)
+    fbReeller: [],          // /video_reels'in dondurecegi yayindaki reel'ler
     mediaHatasi: null,      // konteyner yaratmada hata
     fbBaslatHatasi: null,
     fbYuklemeHatasi: false,
     medyaHatasi: 0,         // R2'den medya cekilirken donen HTTP kodu
     yayinDavranisi: 'ok'    // 'ok' | 'kaybolan-yanit' | {kod, altKod, mesaj}
   }, ek || {});
+}
+// urlencoded govdeyi nesneye cevirir. Konteynere ne yazildigini
+// olcmenin tek yolu bu: alan adi yanlissa Meta hata vermiyor, yalnizca
+// baska bir sey yayinliyor.
+function alanlar(gonderi){
+  const o = {};
+  String(gonderi || '').split('&').forEach(par=>{
+    if(!par) return;
+    const i = par.indexOf('=');
+    const ad = decodeURIComponent((i < 0 ? par : par.slice(0, i)).replace(/\+/g, ' '));
+    const dg = i < 0 ? '' : decodeURIComponent(par.slice(i + 1).replace(/\+/g, ' '));
+    o[ad] = dg;
+  });
+  return o;
 }
 const grafHata = (kod, mesaj, altKod)=> ({
   __http: 400,
@@ -246,8 +274,37 @@ function grafCevap(adres, yontem, gonderi){
   if(p === `/${IG}/media` && yontem === 'POST'){
     cagrilar.media++;
     cagrilar.sira.push('media');
+    // GOVDE SAKLANIYOR: media_type, caption, cover_url, share_to_feed
+    // ancak buradan okunabiliyor ve yanlisi hicbir yerde hata vermiyor.
+    cagrilar.mediaGovde.push(alanlar(gonderi));
     if(META.mediaHatasi) return META.mediaHatasi;
     return { id: 'cont_' + cagrilar.media };
+  }
+  // Yayindaki gonderiler. Reels'te cikmisMi buraya bakiyor, /stories'e degil.
+  if(p === `/${IG}/media` && yontem === 'GET'){
+    cagrilar.igMediaListe++;
+    return { data: META.medyalar };
+  }
+  // ---- Facebook sayfa REEL'i ----
+  if(p === `/${SAYFA}/video_reels`){
+    if(yontem !== 'POST'){ return { data: META.fbReeller }; }
+    const asama = /upload_phase=start/.test(gonderi || '') ? 'start' : 'finish';
+    if(asama === 'start'){
+      cagrilar.fbReelsBaslat++;
+      if(META.fbBaslatHatasi) return META.fbBaslatHatasi;
+      return { video_id:'fbr_' + cagrilar.fbReelsBaslat,
+               upload_url:'https://rupload.test/video-upload/fbr_' + cagrilar.fbReelsBaslat };
+    }
+    cagrilar.fbReelsBitir++;
+    cagrilar.fbBitirGovde.push(alanlar(gonderi));
+    const d = META.yayinDavranisi;
+    if(d === 'kaybolan-yanit'){
+      META.fbReeller = META.fbReeller.concat([{ id:'fbr_cokme', creation_time: su() }]);
+      throw new Error('baglanti koptu');
+    }
+    if(d && typeof d === 'object') return grafHata(d.kod, d.mesaj, d.altKod);
+    META.fbReeller = META.fbReeller.concat([{ id:'fbreel_' + cagrilar.fbReelsBitir, creation_time: su() }]);
+    return { success:true, post_id:'fbreel_' + cagrilar.fbReelsBitir };
   }
   if(p === `/${IG}/media_publish` && yontem === 'POST'){
     cagrilar.publish++;
@@ -1110,6 +1167,188 @@ async function turAt(gizli){
       r.govde.alinan === 1 && satirlar[0].publish_state === 'published'
       && satirlar[1].publish_state === 'pending',
       JSON.stringify(r.govde) + ' | ' + satirlar.map(x=> x.publish_state).join(','));
+  }
+
+  // ══════════════════════════════════════════════════════════════
+  // REELS (sql/50 + worker 1.5.0)
+  // ══════════════════════════════════════════════════════════════
+  // Reels ile story arasindaki fark KONTEYNERDE ve BITIS CAGRISINDA
+  // duruyor. Ikisi de hata vermiyor: yanlis yazilirsa Instagram sessizce
+  // BASKA BIR SEY yayinliyor -- bir reel bekleyen kullanici 24 saatte
+  // kaybolan bir story aliyor. O yuzden burada sayilar degil GOVDELER
+  // olculuyor.
+  const reelKayit = (ek)=> Object.assign({
+    type:'reels', media_name:'2026-12-05_reels_konu.mp4',
+    media_url:'https://medya.test/2026-12-05_reels_konu.mp4',
+    content:{ timezone:'Europe/Istanbul', caption:'Balıklı Meryem Ana · kısa anlatım' }
+  }, ek || {});
+
+  console.log('[reels · instagram konteyneri]');
+  {
+    tabloyuKur(reelKayit({ cover_url:'https://medya.test/2026-12-05_reels_konu.jpg' }));
+    metaKur();
+    const r = await turAt();
+    const gv = cagrilar.mediaGovde[0] || {};
+    bak('★ konteyner REELS diyor', gv.media_type === 'REELS', JSON.stringify(gv));
+    bak('video_url veriliyor', gv.video_url === 'https://medya.test/2026-12-05_reels_konu.mp4', gv.video_url);
+    bak('★ kapak konteynere geçiyor',
+      gv.cover_url === 'https://medya.test/2026-12-05_reels_konu.jpg', gv.cover_url);
+    bak('alt yazı kaydın içeriğinden geliyor',
+      gv.caption === 'Balıklı Meryem Ana · kısa anlatım', gv.caption);
+    bak('akışta da paylaşılıyor (varsayılan)', gv.share_to_feed === 'true', gv.share_to_feed);
+    bak('image_url YOK (reels video)', gv.image_url === undefined, gv.image_url);
+    bak('yayınlandı', satirlar[0].publish_state === 'published', JSON.stringify(r.govde));
+  }
+  {
+    // Kapak isteğe bağlı: yoksa alan hiç gitmiyor ve yayın DURMUYOR.
+    tabloyuKur(reelKayit()); metaKur();
+    await turAt();
+    const gv = cagrilar.mediaGovde[0] || {};
+    bak('kapaksız reel: cover_url gönderilmiyor', gv.cover_url === undefined, gv.cover_url);
+    bak('kapaksız reel yine de yayınlanıyor', satirlar[0].publish_state === 'published');
+  }
+  {
+    // Kayıt bazında kapatılabiliyor.
+    tabloyuKur(reelKayit({ content:{ timezone:'Europe/Istanbul', shareToFeed:false } }));
+    metaKur();
+    await turAt();
+    bak('shareToFeed:false konteynere yansıyor',
+      (cagrilar.mediaGovde[0] || {}).share_to_feed === 'false',
+      JSON.stringify(cagrilar.mediaGovde[0]));
+  }
+  {
+    // ⚠ GERILEME KORUMASI: story hâlâ story.
+    tabloyuKur(); metaKur();
+    await turAt();
+    const gv = cagrilar.mediaGovde[0] || {};
+    bak('★ story konteyneri STORIES kalıyor', gv.media_type === 'STORIES', JSON.stringify(gv));
+    bak('story konteynerine caption GİRMİYOR', gv.caption === undefined, gv.caption);
+  }
+
+  console.log('[reels · video olmak zorunda]');
+  {
+    tabloyuKur(reelKayit({ media_mime:'image/jpeg',
+      media_url:'https://medya.test/2026-12-05_reels_konu.jpg' }));
+    metaKur();
+    await turAt();
+    bak('★ fotoğraf reel olamaz: kalıcı hata',
+      satirlar[0].publish_state === 'failed', satirlar[0].publish_state);
+    bak('hiç konteyner yaratılmadı', cagrilar.media === 0, String(cagrilar.media));
+    bak('kullanıcıya bildirildi', epostalar.length === 1, String(epostalar.length));
+  }
+
+  console.log('[reels · facebook ayrı bir uç]');
+  {
+    tabloyuKur(reelKayit({ platform:'facebook' })); metaKur();
+    await turAt();
+    // video_stories bir reel URETMIYOR; uc yanlissa story cikar.
+    bak('★ video_reels ucuna gidildi', cagrilar.fbReelsBaslat === 1, String(cagrilar.fbReelsBaslat));
+    bak('★ video_stories ucuna GİDİLMEDİ', cagrilar.fbBaslat === 0, String(cagrilar.fbBaslat));
+    const bt = cagrilar.fbBitirGovde[0] || {};
+    bak('★ video_state PUBLISHED (yoksa taslakta kalır)',
+      bt.video_state === 'PUBLISHED', JSON.stringify(bt));
+    bak('açıklama gönderildi', bt.description === 'Balıklı Meryem Ana · kısa anlatım', bt.description);
+    bak('yayınlandı', satirlar[0].publish_state === 'published', satirlar[0].publish_state);
+  }
+  {
+    // ⚠ GERILEME KORUMASI: Facebook story hâlâ video_stories.
+    tabloyuKur({ platform:'facebook' }); metaKur();
+    await turAt();
+    bak('★ facebook story video_stories kalıyor',
+      cagrilar.fbBaslat === 1 && cagrilar.fbReelsBaslat === 0,
+      'stories=' + cagrilar.fbBaslat + ' reels=' + cagrilar.fbReelsBaslat);
+    bak('story bitişinde video_state YOK',
+      (cagrilar.fbBitirGovde[0] || {}).video_state === undefined,
+      JSON.stringify(cagrilar.fbBitirGovde[0] || {}));
+  }
+
+  console.log('[reels · önden yaratılan konteyner de REELS]');
+  {
+    // ⚠ ASIL TUZAK: konteyner alanlari IKI yerde uretiliyordu. Onden
+    // yaratilan konteyner yayinda KULLANILIYOR, yani o kopya yanlissa
+    // kazanan yanlis olan olur ve hicbir yerde hata gorunmez.
+    tabloyuKur(reelKayit({ id:'st_1', media_name:'a_reels.mp4' }),
+               [reelKayit({ media_name:'b_reels.mp4' })]);
+    metaKur();
+    await turAt();
+    bak('iki konteyner de önden yaratıldı', cagrilar.media === 2, String(cagrilar.media));
+    bak('★ önden yaratılan konteynerlerin İKİSİ de REELS',
+      cagrilar.mediaGovde.every(x=> x.media_type === 'REELS'),
+      JSON.stringify(cagrilar.mediaGovde.map(x=> x.media_type)));
+    bak('ikisi de yayınlandı',
+      satirlar.every(x=> x.publish_state === 'published'),
+      satirlar.map(x=> x.publish_state).join(','));
+  }
+
+  console.log('[reels · konteyner tavanı story\'den uzun]');
+  {
+    // Reels'in islenmesi dakikalar surebiliyor. 120 saniyelik story
+    // tavani uygulansaydi hazir olmak uzere olan her video dusurulurdu.
+    // Yoklama her cagrida 5 sn ilerletiyor; 40 yoklama = 200 sn.
+    tabloyuKur(reelKayit()); metaKur({ durumSirasi: Array(40).fill('IN_PROGRESS').concat(['FINISHED']) });
+    await turAt();
+    bak('★ 200 saniyede düşürülmedi (story tavanı 120 sn)',
+      !/saniyede hazır olmadı/.test(satirlar[0].last_error || ''),
+      satirlar[0].publish_state + ' | ' + satirlar[0].last_error);
+  }
+  {
+    // Story AYNI kosulda dusuyor: tavan gercekten ture bagli.
+    tabloyuKur(); metaKur({ durumSirasi: Array(40).fill('IN_PROGRESS').concat(['FINISHED']) });
+    await turAt();
+    bak('★ story aynı koşulda 120 saniyede düşüyor',
+      /120 saniyede hazır olmadı/.test(satirlar[0].last_error || ''),
+      satirlar[0].publish_state + ' | ' + satirlar[0].last_error);
+  }
+
+  console.log('[reels · çöküş kurtarması doğru listeye bakıyor]');
+  {
+    // Cagri gitti, yanit donmedi, reel CIKTI. /stories'e bakilsaydi
+    // "cikmamis" denir ve reel IKINCI KEZ yayinlanirdi -- kalici bir
+    // gonderi, elle silmek gerekir.
+    tabloyuKur(reelKayit({ publish_ref:'cont_eski', publish_called_at: su() }));
+    metaKur();
+    ilerlet(dk(5));                     // taze pencere kapansin
+    META.medyalar = [{ id:'media_reel_cikti', timestamp: su() }];
+    await turAt();
+    bak('★ /media listesine bakıldı', cagrilar.igMediaListe === 1, String(cagrilar.igMediaListe));
+    bak('★ çıkmış reel bulundu, İKİNCİ KEZ yayınlanmadı',
+      satirlar[0].publish_state === 'published' && cagrilar.publish === 0,
+      satirlar[0].publish_state + ' publish=' + cagrilar.publish);
+    bak('dış kimlik kaydedildi', satirlar[0].external_id === 'media_reel_cikti', satirlar[0].external_id);
+  }
+  {
+    // Liste BOS ama cagri taze: "cikmadi" DEME. /media birkac saniye
+    // gecikebiliyor ve yanlis "cikmadi" cevabi cift reel demek.
+    tabloyuKur(reelKayit({ publish_ref:'cont_eski', publish_called_at: su() }));
+    metaKur();
+    META.medyalar = [];
+    await turAt();
+    bak('★ taze çağrıda boş liste "çıkmadı" sayılmıyor',
+      cagrilar.publish === 0 && satirlar[0].publish_state === 'pending',
+      'publish=' + cagrilar.publish + ' durum=' + satirlar[0].publish_state);
+    bak('deneme hakkı geri verildi', satirlar[0].attempt_count === 0, String(satirlar[0].attempt_count));
+  }
+
+  console.log('[reels · bildirim dili]');
+  {
+    tabloyuKur(reelKayit({ media_url:null })); metaKur();
+    await turAt();
+    // Resend govdesi: { from, to, subject, text }
+    const e = epostalar[0] || {};
+    bak('konu "Reel yayınlanamadı" diyor', /Reel yayınlanamadı/.test(e.subject || ''), e.subject);
+    bak('★ "24 saatlik" telaşı YOK (reel kalıcı)',
+      !/24 saatlik/.test(e.text || ''), (e.text || '').slice(0, 120));
+    bak('türü yazıyor', /Tür\s*:\s*Reels/.test(e.text || ''), (e.text || '').slice(0, 160));
+  }
+
+  {
+    // ⚠ GERILEME: story bildirimi eskisi gibi acele ettiriyor.
+    tabloyuKur({ media_url:null }); metaKur();
+    await turAt();
+    const e = epostalar[0] || {};
+    bak('story bildiriminde "Story yayınlanamadı"', /Story yayınlanamadı/.test(e.subject || ''), e.subject);
+    bak('story bildiriminde 24 saat uyarısı DURUYOR',
+      /24 saatlik/.test(e.text || ''), (e.text || '').slice(0, 160));
   }
 
   Date.now = gercekNow;
