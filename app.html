@@ -2948,7 +2948,17 @@ textarea.sc-ai-brief{min-height:64px;resize:vertical;line-height:1.5;}
 
 /* Filtre paneli basligi ve arka perdesi: masaustunde gorunmez (acilir
    menu dugmeye yaslanir), telefonda alt sayfanin parcasi. */
-.fbackdrop{display:none;position:fixed;inset:0;z-index:58;background:rgba(4,5,10,.45);}
+.fbackdrop{display:none;position:fixed;inset:0;z-index:58;background:rgba(4,5,10,.45);
+  /* ⚠ cursor:pointer iOS ICIN, fare icin degil. iOS Safari bir
+     ogeye click GONDERMEYEBILIYOR: baglanti, dugme, onclick
+     ozniteligi ya da cursor:pointer yoksa dokunus click'e
+     cevrilmiyor. Perde duz bir div ve olay yalnizca
+     addEventListener ile bagli -- yani tam o durumda. Perdenin
+     var olma sebebi zaten bu tuzagin bir baska yuzuydu
+     (filtreSeridiKur'daki not); ayni tuzagin ikinci yuzu
+     burada kapaniyor. Kapanmazsa panel acik kaliyor, govde
+     kilitli kaliyor ve ekran donmus gibi duruyor. */
+  cursor:pointer;}
 .fpanel-head{display:none;align-items:center;justify-content:space-between;gap:10px;
   position:sticky;top:0;z-index:2;background:var(--surface);
   margin:0 -12px 6px;padding:10px 12px 8px;border-bottom:1px solid var(--line-soft);}
