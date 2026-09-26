@@ -78,7 +78,13 @@ function tablolariKur(){
         media_url:null, media_name:'2026-12-06_story_kopru_k1.mp4' },
       { id:'st_b', user_id:UID_B, post_date:'2026-12-05', post_time:'12:00:00', type:'story', platform:'instagram',
         title:'BASKASININ STORYSI', uploaded:false, deleted_at:null, content:{},
-        auto_publish:false, publish_state:'pending', attempt_count:0 }
+        auto_publish:false, publish_state:'pending', attempt_count:0 },
+      // REELS kaydi. Yukleyici bunu da dosya adindan bulabilmeli:
+      // tur suzgeci 'story' iken hicbir reel bulunamiyordu.
+      { id:'rl_1', user_id:UID_A, post_date:'2026-12-07', post_time:'19:00:00', type:'reels', platform:'instagram',
+        title:'Balıklı reel', uploaded:false, deleted_at:null, content:{ timezone:'Europe/Istanbul' },
+        auto_publish:false, publish_state:'pending', attempt_count:0,
+        media_url:null, media_name:null, cover_url:null }
     ],
     scripts: [], ideas: [], ai_aktarimlar: []
   };
@@ -592,6 +598,46 @@ async function arac(anahtar, ad, args){
   bak('yanitta da uploaded sizmiyor',
       !('uploaded' in (yama.govde.entry || {})), JSON.stringify(Object.keys(yama.govde.entry||{})));
 
+  console.log('[REST: reels]');
+  // Tarihten bulma: tur suzgeci 'story' iken reels HIC bulunamiyordu ve
+  // yukleyici "o tarihte story yok" diyip duruyordu.
+  const bulReel = await rest('GET', '/api/entries/find?file=2026-12-07_reels_balikli.mp4');
+  bak('★ reels kaydı tarihten bulunuyor',
+      bulReel.govde.ok === true && bulReel.govde.entries.some(e=> e.id === 'rl_1'),
+      JSON.stringify(bulReel.govde).slice(0,160));
+  bak('dönen kayıt türünü söylüyor',
+      (bulReel.govde.entries[0] || {}).type === 'reels',
+      JSON.stringify((bulReel.govde.entries[0] || {}).type));
+
+  // Kapak yazilabilir ve geri okunabilir olmali.
+  const kapak = await rest('PATCH', '/api/entries/rl_1', {
+    mediaUrl: 'https://medya.test/2026-12-07_reels_balikli.mp4',
+    coverUrl: 'https://medya.test/2026-12-07_reels_balikli.jpg',
+    mediaMime: 'video/mp4' });
+  bak('★ coverUrl yazılıyor', kapak.durum === 200 && kapak.govde.ok === true,
+      JSON.stringify(kapak.govde).slice(0,140));
+  bak('★ coverUrl geri okunuyor',
+      kapak.govde.entry.coverUrl === 'https://medya.test/2026-12-07_reels_balikli.jpg',
+      String(kapak.govde.entry.coverUrl));
+  bak('coverUrl satıra yazıldı',
+      tablolar.calendar_events.find(r=> r.id === 'rl_1').cover_url
+        === 'https://medya.test/2026-12-07_reels_balikli.jpg');
+  // mediaUrl ile AYNI kural: Instagram kapagi da kendisi cekiyor.
+  const kapakKotu = await rest('PATCH', '/api/entries/rl_1', { coverUrl: 'http://guvensiz.ornek.com/a.jpg' });
+  bak('http:// kapak reddediliyor',
+      kapakKotu.durum === 422 && /https/.test(kapakKotu.govde.error),
+      String(kapakKotu.govde.error).slice(0,100));
+
+  // ⚠ ASIL OLCUM: boyut siniri TURE GORE. 100 MB story'nin siniri;
+  // sabit kalsaydi HER reel daha yuklenmeden reddedilirdi.
+  const reelBuyuk = await rest('PATCH', '/api/entries/rl_1', { mediaBytes: 250 * 1024 * 1024 });
+  bak('★ 250 MB reel KABUL ediliyor (story sınırı uygulanmıyor)',
+      reelBuyuk.durum === 200, JSON.stringify(reelBuyuk.govde).slice(0,120));
+  const reelDevasa = await rest('PATCH', '/api/entries/rl_1', { mediaBytes: 2 * 1024 * 1024 * 1024 });
+  bak('reels sınırı da var (2 GB reddediliyor)',
+      reelDevasa.durum === 422 && /reels/.test(reelDevasa.govde.error),
+      String(reelDevasa.govde.error).slice(0,120));
+
   console.log('[REST: reddedilenler]');
   const kotu = await rest('PATCH', '/api/entries/st_1', { mediaUrl: 'http://guvensiz.ornek.com/a.mp4' });
   bak('http:// reddediliyor, sebebi yaziyor',
@@ -599,6 +645,12 @@ async function arac(anahtar, ad, args){
   const buyuk = await rest('PATCH', '/api/entries/st_1', { mediaBytes: 250 * 1024 * 1024 });
   bak('100 MB ustu reddediliyor, kac MB oldugu yaziliyor',
       buyuk.durum === 422 && /MB/.test(buyuk.govde.error), String(buyuk.govde.error).slice(0,100));
+  // ⚠ GERILEME: story sinirinin KENDISI 100 MB kalmali. Ture gore
+  // tavan koyarken story tarafini da gevsetmek, 24 saatlik bir isi
+  // yayin aninda patlatmak olurdu.
+  bak('★ story sınırı hâlâ 100 MB ve mesaj öyle diyor',
+      /100 MB/.test(buyuk.govde.error) && /stories/.test(buyuk.govde.error),
+      String(buyuk.govde.error).slice(0,120));
   const baskasi2 = await rest('PATCH', '/api/entries/st_b', { mediaMime: 'video/mp4' });
   bak('BASKA HESABIN kaydi yamanamiyor', baskasi2.durum === 404, String(baskasi2.durum));
   bak('anahtarsiz REST reddediliyor',
