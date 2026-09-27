@@ -140,6 +140,61 @@ const bak = (ad, ko, ek)=>{ if(ko){ g++; console.log('  ok  '+ad); } else { k++;
             !/hiçbir şeyi kendisi yayınlamaz/i.test(k2)
             && !/never publishes anything itself/i.test(k2));
       }
+
+      // ---- Karsilama, kilavuzlar, hosgeldin e-postasi ----------------
+      // Ayni iddia ALTI yerde daha duruyordu. Kullanici "arada" dedi:
+      // ana cumle "planlama panosu" kaliyor, yayin kucuk bir madde
+      // olarak ekleniyor. Olculen sey KATEGORIK YANLIS cumlelerin
+      // olmamasi ve istisnanin anilmasi.
+      const yanlisIddialar = [
+        ['index.html',   /hiçbir yere gönderi atmaz|never posts anywhere on your behalf/i],
+        ['kilavuz.html', /Platformlara bağlanmaz|senin adına bir şey yayınlamaz/i],
+        ['guide.html',   /does not connect to the platforms|never publishes anything on your behalf/i],
+        ['supabase/functions/hosgeldin/sablonlar.js', /Yayınlamaz;|It does not publish;/i]
+      ];
+      for(const [dosya, desen] of yanlisIddialar){
+        bak('★ kategorik yanlış iddia yok: ' + dosya, !desen.test(oku(dosya)), 'iddia duruyor');
+      }
+      for(const dosya of ['index.html', 'kilavuz.html', 'guide.html']){
+        bak('istisna anılıyor: ' + dosya, /Instagram/.test(oku(dosya)), 'Instagram geçmiyor');
+      }
+
+      // ⚠ ONIZLEMELER SABLONLAR.JS ILE AYNI MI
+      // onizleme/ ELLE uretilmisti ve README "node ile uretilebilir"
+      // dedigi halde boyle bir betik YOKTU. Tanitim cumlesi degisince
+      // onizlemeler bayat kaldi. Artik betik var
+      // (hosgeldin/onizleme-uret.mjs) ve bu olcum onu kosmayi
+      // unutmayi yakaliyor.
+      const sab = oku('supabase/functions/hosgeldin/sablonlar.js');
+      const girisler = [...sab.matchAll(/giris: "((?:[^"\\]|\\.)*)"/g)].map(m=> m[1]);
+      bak('sablonlar.js içinden iki tanıtım cümlesi okunabiliyor',
+          girisler.length === 2, 'bulunan: ' + girisler.length);
+      const eslesme = [['tr', 'hosgeldin-tr.txt'], ['en', 'hosgeldin-en.txt']];
+      girisler.forEach((giris, i)=>{
+        const beklenen = giris.replace(/\\'/g, "'").replace(/\\"/g, '"');
+        const onizleme = oku('supabase/email/onizleme/' + eslesme[i][1]);
+        bak('★ önizleme güncel (' + eslesme[i][0] + ') — üretici koşulmuş',
+            onizleme.includes(beklenen),
+            'onizleme-uret.mjs yeniden koşturulmalı');
+      });
+    }
+
+    // SSS cevabi IKI YERDE: gorunen <dd> ve sayfa dibindeki JSON-LD.
+    // Google ikisinin BIREBIR AYNI olmasini istiyor; ayrisirsa zengin
+    // sonuc duser ve bunu hicbir yerde hata olarak gormezsin. Bu olcum
+    // yayin ozelligine bagli DEGIL, her zaman gecerli.
+    for(const [dosya, soru] of [['kilavuz.html', 'Shootboard benim adıma paylaşım yapar mı?'],
+                                ['guide.html', 'Does Shootboard post for me?']]){
+      const m2 = oku(dosya);
+      const kac = (s)=> s.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+      const ld = new RegExp('"name":"' + kac(soru) + '","acceptedAnswer":\\{"@type":"Answer","text":"(.*?)"\\}\\}').exec(m2);
+      const dd = new RegExp('<dt>' + kac(soru) + '</dt>\\s*<dd>([\\s\\S]*?)</dd>').exec(m2);
+      bak('SSS ve JSON-LD ikisi de bulunuyor: ' + dosya, !!ld && !!dd);
+      if(ld && dd){
+        bak('★ SSS cevabı JSON-LD ile BİREBİR aynı: ' + dosya,
+            ld[1].trim() === dd[1].replace(/\s+/g, ' ').trim(),
+            'ld: ' + ld[1].slice(0, 70) + ' || dd: ' + dd[1].replace(/\s+/g, ' ').trim().slice(0, 70));
+      }
     }
   }
 

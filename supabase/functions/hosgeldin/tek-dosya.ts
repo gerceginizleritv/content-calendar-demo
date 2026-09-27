@@ -32,7 +32,7 @@ const METIN = {
     konu: "Shootboard'a hoş geldin",
     onizleme: 'Bir çekim, her paylaşım. İlk üç adım içeride.',
     selam: ad => ad ? `Merhaba ${ad},` : 'Merhaba,',
-    giris: "Shootboard'a hoş geldin. Burası bir planlama panosu: bir çekimden çıkan bütün paylaşımları, her birinin kendi açıklaması, kapak yazısı ve saatiyle tek yerde tutar. Yayınlamaz; yayınlayan sensin, plan düz kalır.",
+    giris: "Shootboard'a hoş geldin. Burası bir planlama panosu: bir çekimden çıkan bütün paylaşımları, her birinin kendi açıklaması, kapak yazısı ve saatiyle tek yerde tutar. Yayınlayan çoğunlukla sensin; Instagram ve Facebook'u istersen Shootboard saatinde çıkarabilir.",
     adimBaslik: 'İlk üç adım',
     adimlar: [
       ['Bir fikir yaz.', 'Fikirler sayfasında bir kart aç; yarım cümle bile olur.'],
@@ -48,7 +48,7 @@ const METIN = {
     konu: 'Welcome to Shootboard',
     onizleme: 'One shoot, every post. Your first three steps are inside.',
     selam: ad => ad ? `Hi ${ad},` : 'Hi,',
-    giris: "Welcome to Shootboard. It is a planning board: every post that comes out of one shoot, each with its own caption, cover text and time slot, on one board. It does not publish; you do, and the plan stays straight.",
+    giris: "Welcome to Shootboard. It is a planning board: every post that comes out of one shoot, each with its own caption, cover text and time slot, on one board. Mostly you publish; Instagram and Facebook can go out on schedule if you want.",
     adimBaslik: 'Your first three steps',
     adimlar: [
       ['Write down an idea.', 'Open a card on the Ideas page; half a sentence is enough.'],
