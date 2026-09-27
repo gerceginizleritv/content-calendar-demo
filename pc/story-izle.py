@@ -153,6 +153,9 @@ def bir_tur(yukleyici, klasor, otomatik_ac, zorla):
     if not yeni:
         print(f"[{time.strftime('%H:%M:%S')}] yeni dosya yok")
 
+    # Yayinlanmis dosyalari R2'den kaldir. Story'de kapak yok, tek nesne.
+    yukleyici.temizlik_turu(klasor, defter, defter_yaz, lambda ad, kayit: [ad])
+
 
 def dosyayi_isle(y, yol, ad, otomatik_ac, zorla):
     boyut = os.path.getsize(yol)

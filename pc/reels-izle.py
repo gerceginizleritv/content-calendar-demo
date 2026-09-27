@@ -183,6 +183,13 @@ def bir_tur(ry, sy, klasor, otomatik_ac, zorla):
     if not yeni:
         print(f"[{time.strftime('%H:%M:%S')}] yeni dosya yok")
 
+    # Yayinlanmis dosyalari R2'den kaldir. Kapak da gidiyor: video
+    # yayinlandiysa kapagin da isi bitti (Instagram ikisini de cekti).
+    def nesneler(ad, kayit):
+        k = kayit.get('kapak')
+        return [ad] + ([k] if k else [])
+    sy.temizlik_turu(klasor, defter, defter_yaz, nesneler)
+
 
 def dosyayi_isle(ry, sy, yol, ad, kapak_yolu, kapak_mime, otomatik_ac, zorla):
     boyut = os.path.getsize(yol)

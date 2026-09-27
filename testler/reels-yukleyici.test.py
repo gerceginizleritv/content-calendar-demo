@@ -334,6 +334,119 @@ try:
     finally:
         sy.requests = eski
 
+    # ══════════════════════════════════════════════════════════════
+    print('[R2 temizligi: yayinlanan dosya siliniyor]')
+    # Instagram videoyu yayin aninda cekip kendi kopyasini aliyor; o
+    # saniyeden sonra R2'deki dosyanin isi bitiyor. Ama silen kimse
+    # yoktu: 206 MB'lik bir reel HERKESE ACIK adreste kaliyordu, hesap
+    # silinse bile (app.html'in R2 anahtari yok).
+    #
+    # ⚠ SILME GERI ALINAMAZ. Bu blogun her olcumu "ne zaman SILMEMELI"
+    # sorusuna bakiyor; "siliyor mu" yalnizca bir tanesi.
+
+    class SahteS3:
+        def __init__(self, patlat=None):
+            self.silinen = []
+            self.patlat = patlat or set()
+
+        def delete_object(self, Bucket=None, Key=None):
+            if Key in self.patlat:
+                raise RuntimeError('R2 reddetti')
+            self.silinen.append(Key)
+
+    def kur(bulgu, patlat=None):
+        """yayin_durumlari'nin cevabini ve R2'yi sahtele."""
+        s3 = SahteS3(patlat)
+        sy.r2_istemci = lambda: s3
+        sy.ayar = lambda ad, zorunlu=True: {'R2_BUCKET': 'kova',
+                                            'SHOOTBOARD_MCP_URL': 'https://x',
+                                            'SHOOTBOARD_KEY': 'k'}.get(ad, 'x')
+        sy.yayin_durumlari = lambda kok, anahtar, ad: bulgu.get(ad, None)
+        return s3
+
+    ayar_yedek, istemci_yedek, durum_yedek = sy.ayar, sy.r2_istemci, sy.yayin_durumlari
+    yazilan = []
+    def sahte_defter_yaz(klasor, defter):
+        yazilan.append(1)
+    nesneler = lambda ad, kayit: [ad] + ([kayit['kapak']] if kayit.get('kapak') else [])
+
+    try:
+        # 1. Hepsi published -> video VE kapak siliniyor.
+        defter = {'a.mp4': {'durum': 'baglandi', 'kapak': 'a.jpg'}}
+        s3 = kur({'a.mp4': ['published', 'published']})
+        n = sy.temizlik_turu(gecici, defter, sahte_defter_yaz, nesneler)
+        bak('★ yayınlanan dosya ve kapağı siliniyor',
+            n == 1 and sorted(s3.silinen) == ['a.jpg', 'a.mp4'], s3.silinen)
+        bak('defterde temiz işareti var', defter['a.mp4'].get('temiz') is True, defter)
+        # ⚠ EN SESSIZ TUZAK: durum degisirse izleyici dosyayi "yeni"
+        # sayar ve HER TURDA YENIDEN YUKLER -- sildigimizi geri koyariz.
+        bak('★ durum hâlâ "baglandi" (yoksa sonsuz yeniden yükleme)',
+            defter['a.mp4']['durum'] == 'baglandi', defter['a.mp4']['durum'])
+
+        # Ikinci tur ayni girdiye DOKUNMAMALI.
+        s3b = kur({'a.mp4': ['published', 'published']})
+        n2 = sy.temizlik_turu(gecici, defter, sahte_defter_yaz, nesneler)
+        bak('temizlenen girdi bir daha silinmiyor', n2 == 0 and s3b.silinen == [], s3b.silinen)
+
+        # 2. ★ BIR KAYIT BEKLIYOR -> DOKUNMA. Ayni dosya Instagram ve
+        # Facebook kayitlarina bagli; biri ciktı diye silersek oteki 404 alir.
+        defter2 = {'b.mp4': {'durum': 'baglandi'}}
+        s3c = kur({'b.mp4': ['published', 'pending']})
+        n3 = sy.temizlik_turu(gecici, defter2, sahte_defter_yaz, nesneler)
+        bak('★ bir kayıt bekliyorsa SİLİNMİYOR',
+            n3 == 0 and s3c.silinen == [] and not defter2['b.mp4'].get('temiz'), s3c.silinen)
+
+        # 3. ★ Durum BILINMIYOR (ag hatasi, tarih eslesmesi) -> DOKUNMA.
+        defter3 = {'c.mp4': {'durum': 'baglandi'}}
+        s3d = kur({})                      # None donuyor
+        n4 = sy.temizlik_turu(gecici, defter3, sahte_defter_yaz, nesneler)
+        bak('★ durum bilinmiyorsa SİLİNMİYOR', n4 == 0 and s3d.silinen == [], s3d.silinen)
+
+        # 4. Henuz baglanmamis girdi (kayit-yok) -> dokunma.
+        defter4 = {'d.mp4': {'durum': 'kayit-yok'}}
+        s3e = kur({'d.mp4': ['published']})
+        n5 = sy.temizlik_turu(gecici, defter4, sahte_defter_yaz, nesneler)
+        bak('bağlanmamış girdiye dokunulmuyor', n5 == 0 and s3e.silinen == [], s3e.silinen)
+
+        # 5. ★ R2 silme patlarsa temiz isareti KONMUYOR: sonraki tur dener.
+        defter5 = {'e.mp4': {'durum': 'baglandi'}}
+        s3f = kur({'e.mp4': ['published']}, patlat={'e.mp4'})
+        n6 = sy.temizlik_turu(gecici, defter5, sahte_defter_yaz, nesneler)
+        bak('★ silme başarısızsa temiz işareti KONMUYOR',
+            n6 == 0 and not defter5['e.mp4'].get('temiz'), defter5)
+    finally:
+        sy.ayar, sy.r2_istemci, sy.yayin_durumlari = ayar_yedek, istemci_yedek, durum_yedek
+
+    print('[R2 temizligi: tarih eslesmesine GUVENILMIYOR]')
+    # /api/entries/find tam ad bulamazsa dosya adindaki TARIHE dusuyor ve
+    # o gunun BASKA kayitlarini donduruyor. Silme karari ona dayansaydi:
+    # baska bir kayit yayinlandi diye bizim dosyamiz silinir, sonra bizimki
+    # yayinlanmaya calisir ve adres 404 doner.
+    class SahteR:
+        RequestException = Exception
+        def __init__(self, govde): self.govde = govde
+        def get(self, *a, **k):
+            g = self.govde
+            class Y:
+                content = b'{}'
+                def json(self_inner): return g
+            return Y()
+    r_yedek = sy.requests
+    try:
+        sy.requests = SahteR({'ok': True, 'matchedBy': 'tarih',
+                              'entries': [{'publishState': 'published'}]})
+        bak('★ tarih eşleşmesinde durum BİLİNMİYOR sayılıyor',
+            sy.yayin_durumlari('https://x', 'k', 'f.mp4') is None,
+            sy.yayin_durumlari('https://x', 'k', 'f.mp4'))
+        sy.requests = SahteR({'ok': True, 'matchedBy': 'mediaName',
+                              'entries': [{'publishState': 'published'}]})
+        bak('tam ad eşleşmesinde durum okunuyor',
+            sy.yayin_durumlari('https://x', 'k', 'f.mp4') == ['published'])
+        sy.requests = SahteR({'ok': False, 'error': 'yok'})
+        bak('ok:false ise BİLİNMİYOR', sy.yayin_durumlari('https://x', 'k', 'f.mp4') is None)
+    finally:
+        sy.requests = r_yedek
+
     print('[kayit arama: tur adi ekrana yansiyor]')
     kaynak = open(os.path.join(PC, 'story-yukle.py'), encoding='utf-8').read()
     bak('kaydi_bul tur adini disaridan aliyor',
