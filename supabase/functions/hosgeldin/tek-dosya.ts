@@ -138,7 +138,16 @@ function hosgeldinEposta({ lang = 'both', ad = '', appUrl = 'https://shootboard.
 //  yukarıdaki gizli anahtarla yapılır.)
 //
 // Dağıtımdan sonra DOĞRULAMA — tarayıcıdan GET:
-//   https://<proje>.supabase.co/functions/v1/hosgeldin
+//   https://<proje>.supabase.co/functions/v1/<KISA AD>
+//
+// ⚠ KISA AD KLASÖR ADI DEĞİL. Panelden (Deploy via Editor) kurulunca
+// görünen ad yazdığın şey olur, adresteki kısa ad RASTGELE üretilir ve
+// sonradan değiştirilemez. Bu kurulumda görünen ad "hosgeldin", kısa ad
+// "hyper-worker" -- yani doğrulama adresi:
+//   https://dyemvzmpnlpnzwebuciu.supabase.co/functions/v1/hyper-worker
+// Ayrıntısı ve 14 Eylül 2026'da bunun yol açtığı 404: sql/20'nin başı.
+// Bu not 27 Eylül 2026'da bir kez daha yanlış yazıldı (klasör adı slug
+// sanıldı) ve GET 'NOT_FOUND' döndü; doğru ad sql/20'de yazılıydı.
 // Dönen JSON'da `surum` ve hangi gizli ayarların TANIMLI OLDUĞU var (değerleri
 // DEĞİL). Bu uç 27 Eylül 2026'da eklendi: o güne kadar bu fonksiyonun sürüm
 // numarası yoktu ve "deploy tuttu mu" sorusunun dışarıdan cevabı da yoktu.
