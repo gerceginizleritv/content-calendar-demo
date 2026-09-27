@@ -83,6 +83,7 @@ if 'botocore.config' not in sys.modules:
 ry = modul_al('reels-yukle.py', 'reels_yukle')
 sy = modul_al('story-yukle.py', 'story_yukle')
 ri = modul_al('reels-izle.py', 'reels_izle')
+si = modul_al('story-izle.py', 'story_izle')
 
 
 def dosya_yaz(yol, icerik=b'x' * 64):
@@ -530,6 +531,65 @@ try:
         bak('ok:false ise BİLİNMİYOR', sy.yayin_durumlari('https://x', 'k', 'f.mp4') is None)
     finally:
         sy.requests = r_yedek
+
+    print('[story izleyicisi: ayni dayaniklilik]')
+    # 27 Eylul 2026: bu duzeltme once YALNIZCA reels-izle.py'ye yazildi
+    # ve story-izle.py'de ayni acik birakildi -- "ayni liste iki yerde"
+    # hatasinin bir baskasi. Story dosyalari kucuk oldugu icin yeniden
+    # yukleme maliyeti dusuk, ama KISMI BAGLANMA riski birebir ayni:
+    # Instagram baglanir, Facebook baglanmaz, defterde tek satir yazar.
+
+    class SahteSYs:
+        def __init__(self, patlat=()):
+            self.yuklenen = []
+            self.yazilan = []
+            self.patlat = set(patlat)
+        EN_BUYUK = 1024 * 1024 * 1024
+        def tur_bul(self, yol): return 'video/mp4'
+        def ayar(self, ad, zorunlu=True): return 'https://x' if 'URL' in ad else 'k'
+        def kaydi_bul(self, kok, anahtar, ad, kayit_id=None, tur_adi='story'):
+            return ['ig', 'fb']
+        def r2_yukle(self, yol, ad, mime):
+            self.yuklenen.append(ad)
+            return 'https://r2/' + ad
+        def adresi_dene(self, *a, **k): return []
+        def kayda_yaz(self, kok, anahtar, kayit_id, url, boyut, mime, ad, otomatik):
+            if kayit_id in self.patlat:
+                raise SystemExit('kayit yazilamadi: 409')
+            self.yazilan.append(kayit_id)
+            return {'id': kayit_id, 'platform': kayit_id,
+                    'publishAt': '2026-10-15T06:00:00Z', 'autoPublish': otomatik}
+
+    sv = os.path.join(gecici, '2026-10-15_story_konu_k1.mp4')
+    dosya_yaz(sv, b'x' * 1024)
+
+    sys1 = SahteSYs(patlat={'fb'})
+    patladi = False
+    try:
+        sdurum, snot, sek = si.dosyayi_isle(sys1, sv, os.path.basename(sv), True, False)
+    except SystemExit as e:
+        patladi, sdurum, snot, sek = True, 'cokti', str(e), {}
+    bak('★ story: tek kayıt hatası turu ÇÖKERTMİYOR', not patladi, snot)
+    bak('★ story: bir kayıt patlasa da öteki yazılıyor', sys1.yazilan == ['ig'], sys1.yazilan)
+    bak('story: durum "baglandi" DEĞİL', sdurum == 'eksik-baglanti', sdurum)
+    bak('story: kaç kaydın yazıldığı söyleniyor', '1/2' in snot, snot)
+    bak('★ story: adres deftere yazılmak üzere dönüyor', sek.get('url') == 'https://r2/' + os.path.basename(sv), sek)
+
+    sys2 = SahteSYs()
+    sdurum2, snot2, sek2 = si.dosyayi_isle(sys2, sv, os.path.basename(sv), True, False, sek)
+    bak('★ story: ikinci turda dosya YENİDEN YÜKLENMİYOR', sys2.yuklenen == [], sys2.yuklenen)
+    bak('story: ikinci turda kalan kayıtlar yazılıyor',
+        sdurum2 == 'baglandi' and sys2.yazilan == ['ig', 'fb'], (sdurum2, sys2.yazilan))
+
+    sys3 = SahteSYs()
+    si.dosyayi_isle(sys3, sv, os.path.basename(sv), True, False)
+    bak('story: ilk turda YÜKLENİYOR (ölçüm boş geçmiyor)',
+        sys3.yuklenen == [os.path.basename(sv)], sys3.yuklenen)
+
+    # ⚠ str(e) yerine e.code: sys.exit(1) loga yalnizca "1" yaziyordu.
+    kaynak_si = open(os.path.join(PC, 'story-izle.py'), encoding='utf-8').read()
+    bak('★ story: dış SystemExit yakalayıcısı str(e) kullanmıyor',
+        "sonuc = ('hata', str(e))" not in kaynak_si)
 
     print('[kayit arama: tur adi ekrana yansiyor]')
     kaynak = open(os.path.join(PC, 'story-yukle.py'), encoding='utf-8').read()
