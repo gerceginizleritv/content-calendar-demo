@@ -92,6 +92,57 @@ const bak = (ad, ko, ek)=>{ if(ko){ g++; console.log('  ok  '+ad); } else { k++;
     return document.getElementById('tabIdeas').classList.contains('active');
   }));
 
+  // ══════════════════════════════════════════════════════════════════
+  // ★ BELGELER GERCEGE BAGLI MI
+  //
+  // 27 Eylul 2026: sartlar.html "Hicbir sey yayinlamaz. Instagram,
+  // YouTube, TikTok ya da baska bir platformla baglantisi yoktur"
+  // diyordu -- ve o gun Shootboard gercekten Instagram ve Facebook'a
+  // bir reel yayinladi. Kullanim sartlarinda OLGUSAL OLARAK YANLIS bir
+  // cumle vardi. Gizlilik politikasinin taraflar tablosunda da ne Meta
+  // ne Cloudflare R2 geciyordu; R2 olani ayrica onemli, cunku medya
+  // dosyasi HERKESE ACIK bir adreste duruyor.
+  //
+  // Bu olcum metni ezberlemiyor, KODA BAGLIYOR: worker Meta'ya
+  // yayinlayabildigi surece belgeler bunu anlatmak ZORUNDA. Yayin
+  // ozelligi bir gun kaldirilirsa olcum kendiliginden gevsiyor.
+  console.log('[belgeler gerçeğe bağlı mı]');
+  {
+    const fs = require('fs'), yol = require('path');
+    const oku = (f)=> fs.readFileSync(yol.join(__dirname, '..', f), 'utf8');
+    const worker = oku('supabase/functions/story-yayin/index.ts');
+    const m = /YAYINLANABILIR\s*=\s*\[([^\]]*)\]/.exec(worker);
+    bak('worker yayınlanabilir platform listesi okunabiliyor', !!m, String(m));
+    const metaYayinliyor = !!m && /instagram/i.test(m[1]) && /facebook/i.test(m[1]);
+    bak('worker gerçekten Meta’ya yayınlıyor', metaYayinliyor, m && m[1]);
+
+    if(metaYayinliyor){
+      const sart = oku('sartlar.html'), gizli = oku('privacy.html');
+      bak('★ şartlar "hiçbir şey yayınlamaz" DEMİYOR',
+          !/hiçbir şey yayınlamaz/i.test(sart)
+          && !/does not publish anything/i.test(sart),
+          'yanlış iddia hâlâ duruyor');
+      bak('★ şartlar otomatik yayını anlatıyor (Instagram + Facebook)',
+          /Instagram/.test(sart) && /Facebook/.test(sart), 'platform adı geçmiyor');
+      bak('şartlar yayının isteğe bağlı olduğunu söylüyor',
+          /isteğe bağlı/i.test(sart) && /opt-in/i.test(sart));
+      bak('★ gizlilik politikası Meta’yı anıyor',
+          /Meta \(Instagram/.test(gizli), 'taraflar tablosunda Meta yok');
+      bak('★ gizlilik politikası Cloudflare R2’yi anıyor',
+          /Cloudflare R2/.test(gizli), 'taraflar tablosunda R2 yok');
+      bak('★ adresin herkese açık olduğu yazıyor',
+          /herkese açık bir adres/i.test(gizli) && /public address/i.test(gizli),
+          'kamuya açıklık belirtilmemiş');
+      // Asistan karti da isleve bagli: yanlis bilgi yanlis tavsiye uretir.
+      for(const kart of ['ai/asistan-karti.md', 'ai/assistant-card.md']){
+        const k2 = oku(kart);
+        bak('kart "hiç yayınlamaz" demiyor: ' + kart,
+            !/hiçbir şeyi kendisi yayınlamaz/i.test(k2)
+            && !/never publishes anything itself/i.test(k2));
+      }
+    }
+  }
+
   await t.close();
   console.log('\n' + g + ' gecti, ' + k + ' kaldi');
   process.exit(k ? 1 : 0);
