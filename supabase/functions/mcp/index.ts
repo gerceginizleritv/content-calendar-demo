@@ -79,7 +79,20 @@ const SERVIS_ANAHTARI = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY') ?? '';
 // Bu kural UC KEZ unutuldu ve ucuncusunde artik soze birakilmadi:
 // birlestir.py, kaynak degisip surum ayni kalirsa HATA VERIP duruyor
 // ve tek-dosya.ts'i uretmiyor. Yani unutuldugu an belli oluyor.
-const SURUM = '1.6.0';
+const SURUM = '1.7.0';
+
+// ---- Otomatik yayın hattı olan türler ------------------------------------
+// AYNI kümeyi taşıyan yerler: app.html'deki YAYIN_TURLERI, sql/50'deki
+// `type in ('story','reels')`, story-yayin worker'ı ve bu dosya. Liste
+// çoğalınca biri eksik kalıyor ve eksiklik SESSİZ oluyor.
+//
+// 27 Eylül 2026'da tam bu oldu: kuyruk, worker, yama ucu ve
+// /api/entries/find reels'ı biliyordu ama LİSTELEME bilmiyordu --
+// reels kaydı yayınlanıyor, publishState ve lastError veritabanında
+// yazılı, fakat asistan hiçbirini okuyamıyordu. Bir reel başarısız
+// olsa kimse göremezdi. Bu yüzden artık tek yerde.
+const YAYIN_TURLERI = ['story', 'reels'];
+const yayinlanabilirTur = (t: any) => YAYIN_TURLERI.includes(String(t || ''));
 
 const CORS: Record<string, string> = {
   'Access-Control-Allow-Origin': '*',
@@ -201,9 +214,9 @@ function kayitDisari(r: any, projeler: any[]) {
   const o: any = { id: r.id, date: r.post_date, time: (r.post_time || '').slice(0, 5), type: r.type, platform: r.platform,
            title: r.title || '', uploaded: !!r.uploaded, project: projeAdi(pid, projeler) || c.concept || '', projectId: pid,
            content: kayitIcerigi(c) };
-  // Otomatik yayin alanlari YALNIZCA story kayitlarinda. Oteki turlerde
-  // her kayda bes bos alan eklemek cevabi sisirir ve asistana "burada bir
-  // sey var" dedirtir -- yok.
+  // Otomatik yayin alanlari YALNIZCA yayin hatti olan turlerde
+  // (YAYIN_TURLERI). Oteki turlerde her kayda bes bos alan eklemek
+  // cevabi sisirir ve asistana "burada bir sey var" dedirtir -- yok.
   //
   // uploaded ve publishState AYRI SEYLER ve ikisi de burada:
   //   uploaded     = kullanicinin isareti ("portala yukledim")
@@ -214,11 +227,14 @@ function kayitDisari(r: any, projeler: any[]) {
   // gosterilseydi, baska bir ture yazan asistan yazdigini geri okuyamaz,
   // alan da yazilip okunamayan bir sey olurdu.
   if (r.media_name) o.mediaName = r.media_name;
-  if (r.type === 'story') {
+  if (yayinlanabilirTur(r.type)) {
     o.autoPublish  = r.auto_publish === true;
     o.publishState = r.publish_state || 'pending';
     o.mediaUrl     = r.media_url || '';
     o.mediaName    = r.media_name || '';
+    // Kapak YALNIZCA varsa: story'nin kapagi yok ve her story kaydina
+    // bos bir coverUrl eklemek yukaridaki gerekceyi cigner.
+    if (r.cover_url)    o.coverUrl    = r.cover_url;
     if (r.published_at) o.publishedAt = r.published_at;
     if (r.last_error)   o.lastError   = r.last_error;
     if (r.attempt_count) o.attemptCount = r.attempt_count;
@@ -607,9 +623,10 @@ const ARACLAR = [
       'Use this before proposing a plan: it is how you find which days are already ' +
       'taken and which are free. Dates and times are returned exactly as the user ' +
       'stored them, in their own local calendar \u2014 do not shift them into another time zone. ' +
-      'Story entries also carry their auto-publish state: autoPublish says whether the ' +
+      'Story and reels entries also carry their auto-publish state: autoPublish says whether the ' +
       'scheduler will post it, publishState is where it stands (pending / in_progress / ' +
-      'published / failed), and mediaUrl says whether a file is attached yet. Do not ' +
+      'published / failed), lastError says why a failed one failed, mediaUrl says whether a ' +
+      'file is attached yet, and coverUrl is the reel\u0027s cover image when it has one. Do not ' +
       'confuse publishState with uploaded \u2014 uploaded is the user\u0027s own mark, ' +
       'publishState belongs to the system.',
     inputSchema: {
@@ -879,7 +896,7 @@ async function apiKayitBul(uid: string, dosya: string) {
       error: `no entry carries the file name "${ad}", and no date could be read from it. Name files like 2026-10-05_story_topic.mp4, or set mediaName on the entry first.` } };
   }
   const { veri } = await rest(
-    `/calendar_events?user_id=eq.${uid}&deleted_at=is.null&type=in.(story,reels)&post_date=eq.${tarih}&select=*&order=post_time.asc.nullsfirst&limit=20`);
+    `/calendar_events?user_id=eq.${uid}&deleted_at=is.null&type=in.(${YAYIN_TURLERI.join(',')})&post_date=eq.${tarih}&select=*&order=post_time.asc.nullsfirst&limit=20`);
   const satirlar = Array.isArray(veri) ? veri : [];
   if (!satirlar.length) {
     return { durum: 404, govde: { ok: false,

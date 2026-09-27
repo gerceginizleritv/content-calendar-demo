@@ -84,7 +84,16 @@ function tablolariKur(){
       { id:'rl_1', user_id:UID_A, post_date:'2026-12-07', post_time:'19:00:00', type:'reels', platform:'instagram',
         title:'Balıklı reel', uploaded:false, deleted_at:null, content:{ timezone:'Europe/Istanbul' },
         auto_publish:false, publish_state:'pending', attempt_count:0,
-        media_url:null, media_name:null, cover_url:null }
+        media_url:null, media_name:null, cover_url:null },
+      // KAPAGI VE HATASI OLAN REELS. 27 Eylul 2026'da bulunan korluk tam
+      // burada olculuyor: bu kayit veritabaninda 'failed' ve last_error
+      // dolu, ama listeleme `type === 'story'` suzdugu icin asistan
+      // ikisini de GORMUYORDU -- basarisiz bir reel sessizce kayboluyordu.
+      { id:'rl_2', user_id:UID_A, post_date:'2026-12-08', post_time:'10:00:00', type:'reels', platform:'instagram',
+        title:'Kapakli reel', uploaded:false, deleted_at:null, content:{ timezone:'Europe/Istanbul' },
+        auto_publish:true, publish_state:'failed', attempt_count:2,
+        media_url:'https://r2.example/rl2.mp4', media_name:'2026-12-08_reels_kapakli.mp4',
+        cover_url:'https://r2.example/rl2.jpg', last_error:'Instagram konteyneri hazir olmadi' }
     ],
     scripts: [], ideas: [], ai_aktarimlar: []
   };
@@ -521,6 +530,33 @@ async function arac(anahtar, ad, args){
   bak('aciklama uploaded ile publishState farkini soyluyor',
       /uploaded is the user/i.test(listeAciklama) && /publishState belongs to the system/i.test(listeAciklama),
       listeAciklama.slice(-120));
+
+  // ---- REELS DE GORUNMELI (27 Eylul 2026) -----------------------------
+  // Kuyruk (sql/50), worker, yama ucu ve /api/entries/find reels'i
+  // biliyordu; LISTELEME bilmiyordu. Sonuc: reel yayinlaniyor, durumu
+  // veritabaninda yazili, ama asistan hicbirini okuyamiyor. Asil kayip
+  // lastError: bir reel basarisiz olsa kimse sebebini goremezdi.
+  const rl2 = stGiris.entries.find(e=> e.id === 'rl_2');
+  bak('reels kaydinda publishState var', rl2 && rl2.publishState === 'failed',
+      JSON.stringify(rl2 && Object.keys(rl2)));
+  bak('reels kaydinda autoPublish var', rl2 && rl2.autoPublish === true, String(rl2 && rl2.autoPublish));
+  bak('reels kaydinda mediaUrl var', rl2 && /rl2\.mp4$/.test(rl2.mediaUrl || ''), String(rl2 && rl2.mediaUrl));
+  bak('reels kaydinda attemptCount var', rl2 && rl2.attemptCount === 2, String(rl2 && rl2.attemptCount));
+  // ★ Korlugun en pahali yari: hata sebebi.
+  bak('reels kaydinda lastError GORUNUYOR',
+      rl2 && /konteyneri hazir olmadi/.test(rl2.lastError || ''), String(rl2 && rl2.lastError));
+  bak('reels kaydinda coverUrl var', rl2 && /rl2\.jpg$/.test(rl2.coverUrl || ''), String(rl2 && rl2.coverUrl));
+  // coverUrl BOS GECILMIYOR: kapaksiz reel'de ve story'de hic olmamali,
+  // yoksa yukaridaki "bes bos alan" gerekcesi cignenir.
+  const rl1 = stGiris.entries.find(e=> e.id === 'rl_1');
+  bak('kapaksiz reelde coverUrl HIC yok', rl1 && rl1.coverUrl === undefined,
+      JSON.stringify(rl1 && Object.keys(rl1)));
+  bak('story kaydinda coverUrl HIC yok', st2 && st2.coverUrl === undefined, String(st2 && st2.coverUrl));
+  // Aciklama da duzeltilmis olmali: "Story entries" derse asistan reels'in
+  // yayin alanlarini aramaz bile.
+  bak('aciklama reelsi de kapsiyor', /story and reels entries/i.test(listeAciklama),
+      listeAciklama.slice(200, 340));
+  bak('aciklama lastErrordan soz ediyor', /lastError/.test(listeAciklama));
 
   console.log('[REST: dosya adindan kayit bulma]');
   // Sartname Bolum 2, Secenek B. Shootboard'a upload arayuzu EKLENMIYOR;
