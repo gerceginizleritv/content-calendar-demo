@@ -1167,7 +1167,7 @@ const SERVIS_ANAHTARI = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY') ?? '';
 // Bu kural UC KEZ unutuldu ve ucuncusunde artik soze birakilmadi:
 // birlestir.py, kaynak degisip surum ayni kalirsa HATA VERIP duruyor
 // ve tek-dosya.ts'i uretmiyor. Yani unutuldugu an belli oluyor.
-const SURUM = '1.7.0';
+const SURUM = '1.8.0';
 
 // ---- Otomatik yayın hattı olan türler ------------------------------------
 // AYNI kümeyi taşıyan yerler: app.html'deki YAYIN_TURLERI, sql/50'deki
@@ -1972,8 +1972,26 @@ async function apiKayitBul(uid: string, dosya: string) {
   const ad = String(dosya || '').trim();
   if (!ad) return { durum: 400, govde: { ok: false, error: 'file: required, e.g. ?file=2026-10-05_story_konu_k1.mp4' } };
 
+  // ⚠ TUR SUZGECI BURADA DA VAR. Onceden YOKTU: tarih dalinda vardi,
+  // tam ad dalinda yoktu. Yani ayni mediaName'i tasiyan bir YouTube
+  // `shorts` kaydi da donuyordu.
+  //
+  // 27 Eylul 2026'da bunun bedeli goruldu: 114 MB'lik bir reel dosyasi
+  // dort kayitla eslesti (fb/ig/tt reels + yt shorts). Yukleyici hepsine
+  // yazmaya calisti, shorts kaydinda boyut tavani reels'in 1 GB'i degil
+  // story'nin 100 MB'i oldugu icin reddedildi ve betik oradan cikti.
+  // Sonuc: kayitlarin bir kismi yazilmis bir kismi yazilmamis (Instagram
+  // kaydinda coverUrl eksik kaldi), ve defterde 'baglandi' yazilmadigi
+  // icin izleyici HER BES DAKIKADA BIR 114 MB'i yeniden yukledi.
+  //
+  // Suzgec dogru yer: worker yalnizca story ve reels yayinliyor, bir
+  // shorts kaydina mediaUrl yazmanin hicbir anlami yok. mediaName o
+  // kayitta durmaya devam ediyor -- yalnizca yukleyici ona dokunmuyor.
+  //
+  // limit 5 -> 20: ayni dosya uc platformda reels olabiliyor; 5 dar
+  // kalirsa GERCEK bir kayit listeden dusebilirdi ve hic baglanmazdi.
   const { veri: tam } = await rest(
-    `/calendar_events?user_id=eq.${uid}&deleted_at=is.null&media_name=eq.${encodeURIComponent(ad)}&select=*&limit=5`);
+    `/calendar_events?user_id=eq.${uid}&deleted_at=is.null&type=in.(${YAYIN_TURLERI.join(',')})&media_name=eq.${encodeURIComponent(ad)}&select=*&limit=20`);
   if (Array.isArray(tam) && tam.length) {
     return { durum: 200, govde: { ok: true, matchedBy: 'mediaName', count: tam.length, entries: tam.map(yayinDisari) } };
   }

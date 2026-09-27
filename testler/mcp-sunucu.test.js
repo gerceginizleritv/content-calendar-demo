@@ -93,15 +93,34 @@ function tablolariKur(){
         title:'Kapakli reel', uploaded:false, deleted_at:null, content:{ timezone:'Europe/Istanbul' },
         auto_publish:true, publish_state:'failed', attempt_count:2,
         media_url:'https://r2.example/rl2.mp4', media_name:'2026-12-08_reels_kapakli.mp4',
-        cover_url:'https://r2.example/rl2.jpg', last_error:'Instagram konteyneri hazir olmadi' }
+        cover_url:'https://r2.example/rl2.jpg', last_error:'Instagram konteyneri hazir olmadi' },
+      // ⚠ AYNI mediaName'i TASIYAN BIR SHORTS KAYDI (27 Eylul 2026).
+      // Gercekte oldu: bir reel dosyasi fb/ig/tt reels kayitlarina VE
+      // bir YouTube shorts kaydina birden eslesti. Tam ad dalinda tur
+      // suzgeci olmadigi icin shorts da donuyordu; yukleyici ona da
+      // yazmaya calisti, boyut tavani reels'in 1 GB'i degil story'nin
+      // 100 MB'i oldugu icin 114 MB reddedildi ve betik oradan cikti --
+      // kayitlarin yarisi yazili yarisi yazisiz kaldi ve dosya her bes
+      // dakikada bir yeniden yuklendi.
+      { id:'sh_1', user_id:UID_A, post_date:'2026-12-06', post_time:'19:00:00', type:'shorts', platform:'youtube',
+        title:'Ayni dosyayi gosteren shorts', uploaded:false, deleted_at:null, content:{},
+        media_name:'2026-12-06_story_kopru_k1.mp4' }
     ],
     scripts: [], ideas: [], ai_aktarimlar: []
   };
 }
 
-// Sorgu dizgesini kaba biçimde uyguluyoruz: eq, gte, lte, is.null.
+// Sorgu dizgesini kaba biçimde uyguluyoruz: eq, gte, lte, in.(), is.null.
 // Amac tam bir PostgREST taklidi degil; SUZGECLERIN KURULDUGUNU
 // dogrulamak. user_id suzgeci dusmusse bu suzme onu yakalar.
+//
+// ⚠ BILINMEYEN OPERATOR ARTIK HATA VERIYOR, SESSIZCE GECMIYOR.
+// 27 Eylul 2026'a kadar `in.()` desteklenmiyordu ve desteklenmeyen
+// operator hicbir sey yapmadan geciyordu. Yani `type=in.(story,reels)`
+// suzgeci -- tarih dalinda AYLARDIR duran suzgec -- hic olculmemisti:
+// testte butun satirlar donuyordu ve olcumler yine de yesildi.
+// Sessizce gecmek, bu dosyanin kendi amacini ("suzgeclerin kuruldugunu
+// dogrulamak") gecersiz kiliyordu.
 function suz(satirlar, sorgu){
   const parcalar = sorgu.split('&').filter(x=> x.includes('='));
   let sonuc = satirlar;
@@ -114,6 +133,12 @@ function suz(satirlar, sorgu){
     else if(deger.startsWith('eq.'))  { const v = deger.slice(3); sonuc = sonuc.filter(r=> String(r[alan]) === v); }
     else if(deger.startsWith('gte.')) { const v = deger.slice(4); sonuc = sonuc.filter(r=> String(r[alan]) >= v); }
     else if(deger.startsWith('lte.')) { const v = deger.slice(4); sonuc = sonuc.filter(r=> String(r[alan]) <= v); }
+    else if(deger.startsWith('in.(') && deger.endsWith(')')){
+      const v = deger.slice(4, -1).split(',').map(s=> s.trim().replace(/^"|"$/g, ''));
+      sonuc = sonuc.filter(r=> v.includes(String(r[alan])));
+    }
+    else throw new Error('sahte PostgREST bu süzgeci bilmiyor: ' + alan + '=' + deger
+                         + '  (sessizce geçmek süzgeci ölçülemez kılar)');
   }
   return sonuc;
 }
@@ -576,6 +601,15 @@ async function arac(anahtar, ad, args){
   bak('tam dosya adiyla bulunuyor',
       bulAd.govde.ok === true && bulAd.govde.entries[0].id === 'st_2', JSON.stringify(bulAd.govde).slice(0,140));
   bak('eslesme yontemi bildiriliyor', bulAd.govde.matchedBy === 'mediaName', String(bulAd.govde.matchedBy));
+  // ★ AYNI ADI TASIYAN SHORTS KAYDI DONMEMELI. Worker yalnizca story ve
+  // reels yayinliyor; bir shorts kaydina mediaUrl yazmanin anlami yok ve
+  // yukleyici orada boyut tavanina takilip butun turu birakiyordu.
+  bak('★ ayni adi tasiyan SHORTS kaydi donmuyor',
+      bulAd.govde.entries.every(e=> e.id !== 'sh_1'),
+      JSON.stringify(bulAd.govde.entries.map(e=> e.id + ':' + e.type)));
+  bak('yayinlanabilir kayit yine de donuyor',
+      bulAd.govde.entries.some(e=> e.id === 'st_2'),
+      JSON.stringify(bulAd.govde.entries.map(e=> e.id)));
 
   const bulTarih = await rest('GET', '/api/entries/find?file=2026-12-05_story_balikli_k1.mp4');
   bak('ad bagli degilse tarihten bulunuyor',

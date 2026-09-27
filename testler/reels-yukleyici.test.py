@@ -335,6 +335,90 @@ try:
         sy.requests = eski
 
     # ══════════════════════════════════════════════════════════════
+    print('[tek kayit hatasi butun turu dusurmemeli]')
+    # 27 Eylul 2026: bir reel dosyasi DORT kayitla eslesti (fb/ig/tt
+    # reels + yt shorts). kayda_yaz shorts kaydinda boyut tavanina
+    # takilip sys.exit etti ve DONGU ORADA KESILDI: kayitlarin bir kismi
+    # yazili bir kismi yazisiz kaldi -- Instagram kaydinda coverUrl
+    # eksikti, o haliyle yayinlansa reel KAPAKSIZ cikardi.
+    #
+    # Ayrica defterde 'baglandi' yazilmadigi icin izleyici dosyayi her
+    # turda bastan isledi ve sira "kaydi bul, YUKLE, kayda yaz" oldugu
+    # icin 114 MB her bes dakikada bir R2'ye gitti.
+
+    class SahteRY:
+        EN_BUYUK = 1024 * 1024 * 1024
+        def __init__(self): self.kapak_sayisi = 0
+        def tur_bul(self, yol): return 'video/mp4'
+        def kapak_yukle(self, sy, yol, mime, zorla):
+            self.kapak_sayisi += 1
+            return 'https://r2/kapak.jpg', []
+
+    class SahteSY:
+        def __init__(self, patlat=()):
+            self.yuklenen = []
+            self.yazilan = []
+            self.patlat = set(patlat)
+        def ayar(self, ad, zorunlu=True): return 'https://x' if 'URL' in ad else 'k'
+        def kaydi_bul(self, kok, anahtar, ad, kayit_id=None, tur_adi='reels'):
+            return ['ig', 'fb', 'tt']
+        def r2_yukle(self, yol, ad, mime):
+            self.yuklenen.append(ad)
+            return 'https://r2/' + ad
+        def adresi_dene(self, *a, **k): return []
+        def kayda_yaz(self, kok, anahtar, kayit_id, url, boyut, mime, ad,
+                      otomatik, kapak_url=None):
+            if kayit_id in self.patlat:
+                raise SystemExit('mediaBytes: 114 MB is over the limit for stories')
+            self.yazilan.append((kayit_id, kapak_url))
+            return {'id': kayit_id, 'platform': kayit_id, 'publishAt': '2026-10-15T07:00:00Z',
+                    'coverUrl': kapak_url, 'autoPublish': otomatik}
+
+    v2 = os.path.join(gecici, '2026-10-15_reels_aizanoi.mp4')
+    dosya_yaz(v2, b'x' * 2048)
+    k2 = os.path.join(gecici, '2026-10-15_reels_aizanoi_kapak.jpg')
+    dosya_yaz(k2)
+
+    ry2, sy2 = SahteRY(), SahteSY(patlat={'fb'})
+    # ⚠ SystemExit'i BURADA YAKALIYORUZ ve ADLANDIRILMIS bir olcume
+    # ceviriyoruz. Yakalamasaydik dongu korumasi kaldirildiginda test
+    # CAKARDI -- ve coken bir test, "kor test" ile ayni goruntuyu verir:
+    # ne "YOK" satiri ne sonuc ozeti. 27 Eylul 2026'da bu iki kez
+    # birbirine karisti.
+    patladi = False
+    try:
+        durum, not_, ek = ri.dosyayi_isle(ry2, sy2, v2, os.path.basename(v2),
+                                          k2, 'image/jpeg', True, False)
+    except SystemExit as e:
+        patladi, durum, not_, ek = True, 'cokti', str(e), {}
+    bak('★ tek kayıt hatası turu ÇÖKERTMİYOR (SystemExit sızmıyor)',
+        not patladi, not_)
+    bak('★ bir kayıt patlasa da ötekiler yazılıyor',
+        sorted(a for a, _ in sy2.yazilan) == ['ig', 'tt'], sy2.yazilan)
+    bak('★ yazılanların hepsinde kapak var (yarım kalmıyor)',
+        all(kp for _, kp in sy2.yazilan), sy2.yazilan)
+    bak('durum "baglandi" DEĞİL', durum == 'eksik-baglanti', durum)
+    bak('kaç kaydın yazıldığı söyleniyor', '2/3' in not_, not_)
+
+    # ★ IKINCI TUR: ayni imza, adres defterde -> YENIDEN YUKLEME YOK.
+    ry3, sy3 = SahteRY(), SahteSY()
+    durum2, not2, ek2 = ri.dosyayi_isle(ry3, sy3, v2, os.path.basename(v2),
+                                        k2, 'image/jpeg', True, False, ek)
+    bak('★ ikinci turda dosya YENİDEN YÜKLENMİYOR', sy3.yuklenen == [], sy3.yuklenen)
+    bak('★ ikinci turda kapak da yeniden yüklenmiyor', ry3.kapak_sayisi == 0,
+        ry3.kapak_sayisi)
+    bak('ikinci turda kalan kayıtlar yazılıyor',
+        durum2 == 'baglandi' and len(sy3.yazilan) == 3, (durum2, sy3.yazilan))
+    bak('adres defterde saklanıyor', ek.get('url') and ek.get('kapak_url'), ek)
+
+    # Ilk turda (onceki YOK) gercekten yukleniyor -- yukaridaki olcum
+    # "hic yuklemiyor" diye bos gecmesin.
+    ry4, sy4 = SahteRY(), SahteSY()
+    ri.dosyayi_isle(ry4, sy4, v2, os.path.basename(v2), k2, 'image/jpeg', True, False)
+    bak('ilk turda YÜKLENİYOR (ölçüm boş geçmiyor)',
+        sy4.yuklenen == [os.path.basename(v2)] and ry4.kapak_sayisi == 1,
+        (sy4.yuklenen, ry4.kapak_sayisi))
+
     print('[R2 temizligi: yayinlanan dosya siliniyor]')
     # Instagram videoyu yayin aninda cekip kendi kopyasini aliyor; o
     # saniyeden sonra R2'deki dosyanin isi bitiyor. Ama silen kimse
