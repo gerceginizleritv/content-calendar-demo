@@ -190,8 +190,11 @@ footer{margin-top:26px;color:var(--text-dim);font-size:.85rem;}
   <strong>One exception, stated plainly.</strong> If you used scheduled publishing, the
   video and cover files were uploaded to separate object storage so that Meta could
   fetch them from a public address — that is the only way Meta will accept a file.
-  Deleting your account does not remove those files: the app holds no key to that
-  storage. Ask us from Feedback and we will delete them.
+  Published files are removed on their own: the tool that uploaded a video deletes it
+  — and its cover — from that storage once every entry using it has gone out. A file
+  that never gets published is dropped by a thirty-day cleanup rule on the storage
+  itself. Deleting your account does not trigger either one, because the app holds no
+  key to that storage; ask us from Feedback if you want something removed sooner.
 </p>
 
 <h2>10. Price</h2>
@@ -364,8 +367,11 @@ footer{margin-top:26px;color:var(--text-dim);font-size:.85rem;}
   <strong>Tek istisna, açıkça yazıyorum.</strong> Zamanlanmış yayını kullandıysanız,
   video ve kapak dosyaları Meta'nın çekebilmesi için ayrı bir nesne deposuna,
   herkese açık bir adrese yüklenmişti — Meta bir dosyayı yalnızca böyle kabul
-  ediyor. Hesabınızı silmek o dosyaları kaldırmıyor: uygulamanın o deponun
-  anahtarı yok. Geri Bildirim'den yazın, silelim.
+  ediyor. Yayınlanan dosyalar kendiliğinden siliniyor: videoyu yükleyen araç, o dosyayı
+  kullanan her kaydın yayını çıktığında videoyu ve kapağı depodan kaldırıyor. Hiç
+  yayınlanmayan bir dosyayı ise deponun kendi otuz günlük temizlik kuralı düşürüyor.
+  Hesabınızı silmek bu ikisini tetiklemiyor, çünkü uygulamanın o deponun anahtarı yok;
+  daha erken kaldırılmasını isterseniz Geri Bildirim'den yazın.
 </p>
 
 <h2>10. Ücret</h2>

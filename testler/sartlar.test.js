@@ -234,6 +234,49 @@ const bak = (ad, ko, ek)=>{ if(ko){ g++; console.log('  ok  '+ad); } else { k++;
     }
   }
 
+    // ── R2 SILME SOZU: BELGE KODUN ONUNE GECMESIN ──────────────────
+    // 27 Eylul 2026: privacy.html "paylasim ciktiktan sonra da nesne
+    // deposunda kaliyor" diyordu ve bu, temizlik kodu yazildiktan sonra
+    // YANLIS oldu. Tersi de oldu: onceki metin "Geri Bildirim'den
+    // yazin, silelim" diyordu, yani kod silerken belge elle silmeyi
+    // vaat ediyordu. Iki yon de sessizce yanlis.
+    //
+    // Bu olcum metni ezberlemiyor, KODA bagliyor: yayinlanmis dosyayi
+    // silen fonksiyonlar pc/story-yukle.py'de duruyorsa belge silmeyi
+    // anlatmak ZORUNDA; durmuyorsa anlatmamali.
+    {
+      // `oku` yukaridaki kapsamda kaldi; bu olcum yayin ozelligine
+      // bagli olmadigi icin kendi okuyucusunu kuruyor.
+      const fs2 = require('fs'), yol2 = require('path');
+      const oku = (f)=> fs2.readFileSync(yol2.join(__dirname, '..', f), 'utf8');
+      const yukleyici = oku('pc/story-yukle.py');
+      const temizlikVar = /def\s+temizlik_turu\s*\(/.test(yukleyici)
+                       && /def\s+r2_sil\s*\(/.test(yukleyici)
+                       && /def\s+temizlenecekler\s*\(/.test(yukleyici);
+      bak('temizlik kodu yerinde (pc/story-yukle.py)', temizlikVar);
+
+      for(const belge of ['sartlar.html', 'privacy.html']){
+        const m3 = oku(belge);
+        // Artik yanlis olan iddia: "yayindan sonra da depoda kaliyor".
+        const kalirIddiasi = /paylaşım çıktıktan sonra da nesne\s+deposunda kalıyor/.test(m3)
+                          || /they stay in object\s+storage after the post has gone out/.test(m3);
+        bak('★ "yayindan sonra depoda kalir" iddiasi yok: ' + belge, !kalirIddiasi);
+
+        // Kod siliyorsa belge kendiliginden silindigini SOYLEMELI.
+        if(temizlikVar){
+          const kendiliginden = /kendiliğinden siliniyor/.test(m3)
+                             || /removed on their own/.test(m3)
+                             || /deletes the video and its cover/.test(m3);
+          bak('★ kendiliğinden silme anlatılıyor: ' + belge, kendiliginden);
+
+          // Ve elle silme TEK cozum gibi sunulmamali.
+          const elleTekCozum = /Geri Bildirim'den yazın, silelim\./.test(m3)
+                            || /Ask us from Feedback and we will delete them\./.test(m3);
+          bak('★ elle silme tek çözüm gibi sunulmuyor: ' + belge, !elleTekCozum);
+        }
+      }
+    }
+
   await t.close();
   console.log('\n' + g + ' gecti, ' + k + ' kaldi');
   process.exit(k ? 1 : 0);

@@ -184,10 +184,12 @@ footer{margin-top:26px;color:var(--text-dim);font-size:.85rem;}
   still useful. Automatic backups hold the last seven days and roll over on their own.
 </p>
 <p>
-  Files uploaded for scheduled publishing are the exception: they stay in object
-  storage after the post has gone out, and <strong>deleting your account does not
-  remove them</strong> — the app holds no key to that storage. Ask us from Feedback
-  and we will delete them.
+  Files uploaded for scheduled publishing are the exception. Once every entry using a
+  file has gone out, the tool that uploaded it deletes the video and its cover from
+  object storage; a file that never gets published is dropped by a thirty-day cleanup
+  rule on the storage itself. <strong>Deleting your account does not trigger either
+  one</strong> — the app holds no key to that storage. Ask us from Feedback if you
+  want something removed sooner.
 </p>
 
 <h2>9. Your choices</h2>
@@ -341,9 +343,11 @@ footer{margin-top:26px;color:var(--text-dim);font-size:.85rem;}
   devreder.
 </p>
 <p>
-  Zamanlanmış yayın için yüklenen dosyalar istisna: paylaşım çıktıktan sonra da nesne
-  deposunda kalıyor ve <strong>hesabınızı silmek onları kaldırmıyor</strong> —
-  uygulamanın o deponun anahtarı yok. Geri Bildirim'den yazın, silelim.
+  Zamanlanmış yayın için yüklenen dosyalar istisna. O dosyayı kullanan her kaydın
+  yayını çıktığında, dosyayı yükleyen araç videoyu ve kapağı nesne deposundan siliyor;
+  hiç yayınlanmayan bir dosyayı da deponun kendi otuz günlük temizlik kuralı
+  düşürüyor. <strong>Hesabınızı silmek bu ikisini tetiklemiyor</strong> — uygulamanın
+  o deponun anahtarı yok. Daha erken kaldırılmasını isterseniz Geri Bildirim'den yazın.
 </p>
 
 <h2>9. Seçenekleriniz</h2>
