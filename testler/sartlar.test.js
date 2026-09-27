@@ -170,13 +170,49 @@ const bak = (ad, ko, ek)=>{ if(ko){ g++; console.log('  ok  '+ad); } else { k++;
       bak('sablonlar.js içinden iki tanıtım cümlesi okunabiliyor',
           girisler.length === 2, 'bulunan: ' + girisler.length);
       const eslesme = [['tr', 'hosgeldin-tr.txt'], ['en', 'hosgeldin-en.txt']];
+      const tekDosya = oku('supabase/functions/hosgeldin/tek-dosya.ts');
       girisler.forEach((giris, i)=>{
         const beklenen = giris.replace(/\\'/g, "'").replace(/\\"/g, '"');
         const onizleme = oku('supabase/email/onizleme/' + eslesme[i][1]);
         bak('★ önizleme güncel (' + eslesme[i][0] + ') — üretici koşulmuş',
             onizleme.includes(beklenen),
             'onizleme-uret.mjs yeniden koşturulmalı');
+        // ⚠ PANELE YAPISTIRILAN SURUM DE AYNI OLMALI. hosgeldin cok
+        // dosyali; Supabase panelinden kurulurken tek-dosya.ts
+        // yapistiriliyor. birlestir.py kosulmazsa CANLIDAKI metin eski
+        // kalir ve bunu hicbir yerde hata olarak gormezsin -- yalnizca
+        // yeni kayit olan biri eski cumleyi okur.
+        bak('★ tek-dosya.ts güncel (' + eslesme[i][0] + ') — birlestir.py koşulmuş',
+            tekDosya.includes(giris),
+            'birlestir.py yeniden koşturulmalı');
       });
+      // Surum sabiti: dagitimin dogrulanabilmesi buna bagli. GET ucu
+      // surumu donduruyor; sabit index.ts ile tek-dosya.ts'de AYNI
+      // olmali, yoksa panelden kuran kisi yanlis surumu dogrular.
+      const hIdx = oku('supabase/functions/hosgeldin/index.ts');
+      const sIdx = /const SURUM = '([^']+)'/.exec(hIdx);
+      const sTek = /const SURUM = '([^']+)'/.exec(tekDosya);
+      bak('hosgeldin SURUM sabiti var', !!sIdx && !!sTek, 'index: ' + sIdx + ' tek: ' + sTek);
+      if(sIdx && sTek){
+        bak('★ SURUM index.ts ve tek-dosya.ts arasında aynı',
+            sIdx[1] === sTek[1], sIdx[1] + ' vs ' + sTek[1]);
+      }
+      bak('hosgeldin GET bilgi ucu var (dağıtım doğrulanabilsin)',
+          /req\.method === 'GET'/.test(hIdx) && /shootboard-hosgeldin/.test(hIdx));
+      // ⚠ BU OLCUM BIR KEZ YANLIS YAZILDI. Ilk hali "govdede
+      // RESEND_API_KEY geciyor mu" diye bakiyordu ve GUVENLI hali
+      // (!!RESEND_API_KEY) de o desene uyuyordu -- yani dogru kodu
+      // yanlis sayiyordu. Olculmesi gereken sey degiskenin ADI degil,
+      // DEGERIN BOOLEAN'A CEVRILMESI: yapilandirma blogundaki her deger
+      // !! ile baslamali, yoksa gizli ayarin kendisi disariya doner.
+      const yp = /yapilandirma:\s*\{([\s\S]*?)\}/.exec(hIdx);
+      bak('yapılandırma bloğu bulunuyor', !!yp, 'blok yok');
+      if(yp){
+        const degerler = [...yp[1].matchAll(/(\w+)\s*:\s*([^,\n]+)/g)].map(m=> m[2].trim());
+        bak('★ GET ucu gizli ayarların DEĞERİNİ döndürmüyor',
+            degerler.length >= 4 && degerler.every(v=> v.startsWith('!!')),
+            degerler.join(' | '));
+      }
     }
 
     // SSS cevabi IKI YERDE: gorunen <dd> ve sayfa dibindeki JSON-LD.
