@@ -21517,9 +21517,30 @@ async function hesapDosyalariniSil(){
 // Kullanicinin KENDI satirlari. Bunlari silmek icin yonetici yetkisi
 // gerekmiyor: RLS zaten "kendi satirin" diyor. Sunucudaki islev
 // herhangi bir sebeple calismazsa devreye giren yedek yol bu.
+// ⚠ BU LISTE sql/ ile AYNI KUMEYI TASIMALI. SQL tarafi (hesabi_sil)
+// bilerek liste tutmuyor, information_schema'yi geziyor -- "yarin yeni
+// bir tablo eklendiginde unutulmasin" diye. Yedek yol o korumayi
+// tasiyamiyor (tarayici information_schema'yi gezemez), o yuzden liste
+// burada elle duruyor ve hesap-sil.test.js onu sql/ ile karsilastiriyor.
+//
+// 27 Eylul 2026'da iki tablo eksikti:
+//   api_keys  sql/35 yaratti, sql/36 DUSURDU (liste dogru sekilde
+//             cikardi), sql/39 GERI GETIRDI -- liste guncellenmedi.
+//             Ustune ai-erisimi.test.js "listede olmamali" diye
+//             kilitlemisti: yesil yanan bir test yanlis davranisi
+//             garanti ediyordu. En pahali kalinti bu: MCP anahtari
+//             CANLI BIR KIMLIK BILGISI ve yedek yolda auth.users da
+//             silinmiyor, yani anahtar calismaya devam ediyordu.
+//   accounts  sql/38 ekledi, listeye hic girmedi. Kisisel bilgi;
+//             KVKK'nin konusu tam olarak bu.
+//
+// project_scripts cascade ile de gidiyor (project_id -> projects), ama
+// listede acikca duruyor: bir okuyucunun yabanci anahtar arkeolojisi
+// yapmasi gerekmesin.
 const HESAP_TABLOLARI = ['calendar_events','projects','ideas','scripts',
                          'places','caption_templates','user_prefs',
-                         'ai_aktarimlar'];
+                         'ai_aktarimlar','accounts','api_keys',
+                         'project_scripts'];
 async function hesapVerisiniSil(){
   if(!sb || !session) return { takilan: [] };
   const kim = session.user.id;

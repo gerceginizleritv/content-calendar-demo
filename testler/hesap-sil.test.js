@@ -177,6 +177,101 @@ const SAHTE = (secenek)=>{
   bak('verisi yine de silindi', izler.indexOf('sil:calendar_events') !== -1, izler.join(' '));
 
   bak('sayfa hatası yok', hata.length === 0, hata.join(' | '));
+
+  // ══════════════════════════════════════════════════════════════════
+  // ★ BEKCI: HESAP_TABLOLARI ile sql/ AYNI KUMEYI TASIYOR MU
+  //
+  // SQL tarafi (hesabi_sil) liste tutMUYOR: information_schema'yi
+  // geziyor, cunku "yarin yeni bir tablo eklendiginde unutulmasin".
+  // Yedek yol o korumayi tasiyamiyor -- tarayici information_schema'yi
+  // gezemez -- ve liste elle duruyor. Elle tutulan her liste bu depoda
+  // bir kez bayatladi; bu olcum onu gerceye BAGLIYOR.
+  //
+  // 27 Eylul 2026'da iki tablo eksikti (api_keys, accounts). api_keys
+  // ozellikle pahaliydi: sql/36 tabloyu dusurmus, liste dogru sekilde
+  // cikarmis, sonra sql/39 GERI GETIRMISTI -- ve ai-erisimi.test.js
+  // "listede olmamali" diye kilitlemisti. Yani yesil yanan bir test
+  // yanlis davranisi garanti ediyordu.
+  console.log('[bekçi: liste sql/ ile uyumlu mu]');
+  {
+    const fs = require('fs'), yol = require('path');
+    const sqlDizin = yol.join(__dirname, '..', 'sql');
+
+    // Tarayici AYRI BIR ISLEV: boylece gercek sql/ ile DE sentetik bir
+    // girdiyle DE cagrilabiliyor. Ilk yazimda govdeye gomuluydu ve
+    // "yorumdaki drop aldatmiyor" olcumu KOR cikti -- depoda yorum
+    // icindeki tek drop'un (calendar_events_yedek) user_id'si yok, yani
+    // olcum bugunun dosya iceriğine bagli bir totolojiydi.
+    //
+    // ⚠ SON DURUM IZLENIYOR, ILK DURUM DEGIL. Ilk yazimda tablonun ILK
+    // yaratildigi dosya kaydediliyordu ve bekci yine KOR cikti: api_keys
+    // sql/35'te yaratilmis, sql/36'da dusurulmus, sql/39'da GERI
+    // GETIRILMISTI -- ilk kayda bakan kod 36'yi gorup elemis, 39'u hic
+    // gormemisti. Yani bekci, yakalamak icin yazildigi hatanin aynisina
+    // dustu. Ikisi de mutasyonla ortaya cikti.
+    const taraSql = (dosyalar)=>{
+      const durum = new Map();            // tablo -> { var, dosya }
+      for(const { ad, metin } of dosyalar){
+        // Yorumlar atiliyor: sql/09'da "istersen sil" diye bir NOT var
+        //     --   drop table public.calendar_events_yedek;
+        // ve desen ona da uyuyor. Yarin biri canli bir tablo icin boyle
+        // bir not yazsa bekci sessizce zayiflardi.
+        const m = String(metin).replace(/--[^\n]*/g, '');
+        const olaylar = [];
+        const cre = /create\s+table\s+(?:if\s+not\s+exists\s+)?(?:public\.)?([a-z_]+)\s*\(([\s\S]*?)\n\s*\)\s*;/gi;
+        let e;
+        while((e = cre.exec(m))){
+          if(/\buser_id\b/.test(e[2])) olaylar.push({ at: e.index, ad: e[1], vr: true });
+        }
+        const dro = /drop\s+table\s+(?:if\s+exists\s+)?(?:public\.)?([a-z_]+)/gi;
+        while((e = dro.exec(m))) olaylar.push({ at: e.index, ad: e[1], vr: false });
+        olaylar.sort((a, b)=> a.at - b.at);
+        for(const o of olaylar){
+          // Dusurme yalnizca daha once user_id'li gorulmus tabloyu eler.
+          if(!o.vr && !durum.has(o.ad)) continue;
+          durum.set(o.ad, { var: o.vr, dosya: ad });
+        }
+      }
+      const acik = new Map();
+      for(const [ad, s] of durum) if(s.var) acik.set(ad, s.dosya);
+      return acik;
+    };
+
+    const bulunan = taraSql(
+      fs.readdirSync(sqlDizin).filter(x=> x.endsWith('.sql')).sort()
+        .map(ad=> ({ ad, metin: fs.readFileSync(yol.join(sqlDizin, ad), 'utf8') })));
+
+    const liste = await p.evaluate(()=> HESAP_TABLOLARI);
+    const eksik = [...bulunan.keys()].filter(t=> !liste.includes(t));
+    bak('★ sql/ içindeki user_id tablolarının HEPSİ listede',
+        eksik.length === 0,
+        'eksik: ' + eksik.map(t=> t + ' (' + bulunan.get(t) + ')').join(', '));
+    bak('bekçi gerçekten tablo buluyor (boş tarama sessizce geçmesin)',
+        bulunan.size >= 9, 'bulunan: ' + bulunan.size);
+    // Tarayicinin kor noktasi: calendar_events ve projects sql/ icinde
+    // YARATILMIYOR (dosyalar 05'ten basliyor, o iki tablo daha eski).
+    // Yani bu olcum "liste eksiksiz" demiyor, "sql/'de yaratilan hicbir
+    // sey atlanmadi" diyor. Asil risk zaten yarin eklenecek tablolar.
+    bak('kör nokta biliniyor: elle eklenmiş ikisi listede',
+        liste.includes('calendar_events') && liste.includes('projects'), liste.join(','));
+
+    // ---- Tarayicinin KENDI olcumleri (sentetik girdi) ----------------
+    // Gercek sql/ ile olcmek yetmiyor: o dosyalarin bugunku icerigi
+    // bazi dallari hic gezdirmiyor.
+    bak('★ yorumdaki drop table aldatmıyor',
+        taraSql([{ ad: 'a.sql', metin: 'create table public.x (\n  user_id uuid\n);' },
+                 { ad: 'b.sql', metin: '--   drop table public.x;\n' }]).has('x'));
+    bak('★ düşürülüp GERİ GETİRİLEN tablo kümede (api_keys hikâyesi)',
+        taraSql([{ ad: 'a.sql', metin: 'create table public.y (\n  user_id uuid\n);' },
+                 { ad: 'b.sql', metin: 'drop table if exists public.y;' },
+                 { ad: 'c.sql', metin: 'create table public.y (\n  user_id uuid\n);' }]).has('y'));
+    bak('gerçekten düşürülmüş tablo kümede DEĞİL',
+        !taraSql([{ ad: 'a.sql', metin: 'create table public.z (\n  user_id uuid\n);' },
+                  { ad: 'b.sql', metin: 'drop table public.z;' }]).has('z'));
+    bak('user_id taşımayan tablo kümeye girmiyor',
+        !taraSql([{ ad: 'a.sql', metin: 'create table public.w (\n  id text\n);' }]).has('w'));
+  }
+
   await t.close();
   console.log('\n' + g + ' gecti, ' + k + ' kaldi');
   process.exit(k ? 1 : 0);
