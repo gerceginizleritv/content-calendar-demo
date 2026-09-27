@@ -11,9 +11,10 @@ STORY'DEN FARKI: KAPAK
       2026-10-12_reels_sokollu.mp4   -> mediaUrl
       2026-10-12_reels_sokollu.jpg   -> coverUrl
 
-  Eslesme DOSYA ADINDAN: ayni kok, gorsel uzantisi. Ayri bir liste ya
-  da adlandirma kurali yok -- kok ayni oldugu surece render ciktisi ne
-  ad alirsa alsin cifti bulunuyor.
+  Eslesme DOSYA ADINDAN: ayni kok, gorsel uzantisi. "_kapak" eki de
+  kabul ediliyor (2026-10-12_reels_sokollu_kapak.jpg), ama TAM AD her
+  zaman kazaniyor -- ikisi birden varsa ekli olan hic bakilmiyor.
+  Ayrintisi KAPAK_EKLERI'nin yanindaki notta.
 
   KAPAK ZORUNLU DEGIL. Yoksa Instagram videodan kendi karesini seciyor
   ve yayin DURMUYOR. Kapaksiz cikan bir reel, hic cikmayan bir
@@ -52,6 +53,16 @@ EN_BUYUK = 1024 * 1024 * 1024
 IZINLI_TUR = {".mp4": "video/mp4", ".mov": "video/quicktime"}
 # Kapak icin kabul edilen gorsel turleri, DENEME SIRASIYLA.
 KAPAK_TUR = [(".jpg", "image/jpeg"), (".jpeg", "image/jpeg"), (".png", "image/png")]
+# Kapak adinda kabul edilen EKLER, DENEME SIRASIYLA. Bos ek ("") once
+# geliyor: tam ad her zaman kazaniyor, ek yalnizca tam ad yoksa devreye
+# giriyor.
+#
+# "_kapak" 27 Eylul 2026'da eklendi. Reels'lari ureten sohbet kapagi bu
+# ekle basiyor ve ilk gercek testte dosya eslesMEDI -- reel kapaksiz
+# cikacakti, hicbir yerde hata gorunmeden. O gun dosya elle yeniden
+# adlandirildi; ama her seferinde elle adlandirmak bir gun unutulur ve
+# unutuldugunda sessiz. Bu yuzden ek burada taniniyor.
+KAPAK_EKLERI = ["", "_kapak"]
 
 
 def story_yukleyiciyi_al():
@@ -78,20 +89,23 @@ def tur_bul(yol):
 def kapagi_bul(video_yolu):
     """Videonun yanindaki kapak gorseli. Yoksa (None, None).
 
-    Kok = uzantisiz dosya adi. Ayni klasorde ayni koku tasiyan ilk
-    gorsel kapak sayiliyor; sira KAPAK_TUR'de sabit, yani ayni klasorde
-    hem .jpg hem .png varsa HER SEFERINDE aynisi seciliyor. Belirsiz
-    bir secim, ara sira yanlis kapak demek olurdu.
+    Kok = uzantisiz dosya adi. Aranan adlar: kok + EK + uzanti, ekler
+    KAPAK_EKLERI'nde, uzantilar KAPAK_TUR'de, ikisinin sirasi da SABIT.
+    Yani ayni klasorde birden fazla aday varsa HER SEFERINDE aynisi
+    seciliyor. Belirsiz bir secim, ara sira yanlis kapak demek olurdu.
+
+    EK SIRASI ONEMLI: bos ek once deneniyor, yani "video.jpg" varsa
+    "video_kapak.jpg" hic bakilmiyor. Tam ad belgelenmis kural; ek
+    yalnizca ondan sonra gelen bir tolerans.
     """
     kok = os.path.splitext(video_yolu)[0]
-    for uzanti, mime in KAPAK_TUR:
-        aday = kok + uzanti
-        if os.path.isfile(aday):
-            return aday, mime
-        # Windows disinda buyuk/kucuk harf ayri: .JPG da kabul.
-        aday = kok + uzanti.upper()
-        if os.path.isfile(aday):
-            return aday, mime
+    for ek in KAPAK_EKLERI:
+        for uzanti, mime in KAPAK_TUR:
+            # Windows disinda buyuk/kucuk harf ayri: .JPG da kabul.
+            for u in (uzanti, uzanti.upper()):
+                aday = kok + ek + u
+                if os.path.isfile(aday):
+                    return aday, mime
     return None, None
 
 

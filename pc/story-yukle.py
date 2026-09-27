@@ -56,6 +56,7 @@ KURULUM
 """
 import os
 import sys
+import threading
 import mimetypes
 import argparse
 
@@ -94,6 +95,57 @@ def tur_bul(yol):
              f"Story icin: .mp4 .mov .jpg .png")
 
 
+def ilerleme_yazici(toplam):
+    """Yukleme ilerlemesini basan geri cagirma uretir.
+
+    put_object'te ilerleme YOKTU: yukleme suresince ekran olu kaliyordu
+    ve 27 Eylul 2026'da ilk gercek reel yuklenirken "ekran dondu mu?"
+    diye soruldu. 60 MB'lik bir dosya bir dakika sessiz durdu.
+
+    IKI KIP, cunku bu betik iki yerde kosuyor:
+
+      terminalde  -> ayni satir tazeleniyor, akici bir yuzde
+      gunluge     -> her %25'te BIR SATIR dusuyor
+
+    Gunluge \r yazmak dosyayi tek satirlik bir curufa cevirirdi ve
+    Gorev Zamanlayici hep gunluge yaziyor. Ayrim isatty() ile.
+    """
+    ekranda = bool(getattr(sys.stdout, "isatty", None) and sys.stdout.isatty())
+    durum = {"gecen": 0, "esik": 25}
+    # ⚠ KILIT SART. upload_fileobj cok parcali yuklemede Callback'i
+    # BIRDEN FAZLA IS PARCACIGINDAN cagiriyor. `durum["gecen"] += bayt`
+    # atomik degil (oku/degistir/yaz), yani araya girilince sayim
+    # kayboluyor. Cokme olmuyor ama yuzde %100'e hic ulasmayabiliyor;
+    # o zaman terminal kipindeki satir sonu hic basilmiyor ve sonraki
+    # cikti ilerleme satirinin ustune biniyor.
+    kilit = threading.Lock()
+
+    def geri(bayt):
+        with kilit:
+            durum["gecen"] += bayt
+            gecen = durum["gecen"]
+        if not toplam:
+            return
+        yuzde = min(100, gecen * 100 // toplam)
+        if ekranda:
+            print(f"\r    %{yuzde:3d}  "
+                  f"({gecen / 1048576:.0f}/{toplam / 1048576:.0f} MB)",
+                  end="", flush=True)
+            if yuzde >= 100:
+                print()
+        else:
+            # Esik de kilidin altinda: iki is parcacigi ayni kilometre
+            # tasini iki kez basmasin.
+            with kilit:
+                basilacak = yuzde >= durum["esik"]
+                if basilacak:
+                    durum["esik"] += 25
+            if basilacak:
+                print(f"    %{yuzde}  ({gecen / 1048576:.0f} MB)")
+
+    return geri
+
+
 def r2_yukle(yol, ad, mime):
     s3 = boto3.client(
         "s3",
@@ -104,15 +156,24 @@ def r2_yukle(yol, ad, mime):
         config=Config(signature_version="s3v4", region_name="auto"),
     )
     kova = ayar("R2_BUCKET")
-    print(f"  yukleniyor -> r2://{kova}/{ad}")
+    boyut = os.path.getsize(yol)
+    print(f"  yukleniyor -> r2://{kova}/{ad}  ({boyut / 1048576:.0f} MB)")
+    # ⚠ upload_fileobj, put_object DEGIL. Tek sebep: put_object'in
+    # Callback'i yok, yani ilerleme basilamiyor. Islevsel fark
+    # upload_fileobj'in buyuk dosyayi cok parcali (multipart) gondermesi;
+    # R2 bunu destekliyor ve adresi_dene'nin baktigi seyleri
+    # (Content-Type, Content-Length) degistirmiyor.
     with open(yol, "rb") as f:
-        s3.put_object(
-            Bucket=kova, Key=ad, Body=f,
-            # Content-Type SART: Meta yanlis turu reddediyor.
-            ContentType=mime,
-            # Story 24 saatlik; dosya yayindan sonra 7 gun yetiyor.
-            # Kova tarafinda yasam dongusu kurali da koy, depo sismesin.
-            CacheControl="public, max-age=604800",
+        s3.upload_fileobj(
+            f, kova, ad,
+            ExtraArgs={
+                # Content-Type SART: Meta yanlis turu reddediyor.
+                "ContentType": mime,
+                # Story 24 saatlik; dosya yayindan sonra 7 gun yetiyor.
+                # Kova tarafinda yasam dongusu kurali da koy, depo sismesin.
+                "CacheControl": "public, max-age=604800",
+            },
+            Callback=ilerleme_yazici(boyut),
         )
     return ayar("R2_PUBLIC_BASE").rstrip("/") + "/" + ad
 
