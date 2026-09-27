@@ -133,32 +133,52 @@ def bir_tur(yukleyici, klasor, otomatik_ac, zorla):
         yeni += 1
         print(f"\n=== {ad}")
         try:
-            sonuc = dosyayi_isle(yukleyici, yol, ad, otomatik_ac, zorla)
+            sonuc = dosyayi_isle(yukleyici, yol, ad, otomatik_ac, zorla,
+                                 onceki if onceki.get('imza') == simdiki else {})
         except SystemExit as e:
             # story-yukle.py hatalarda sys.exit ediyor; izleyici olmemeli.
-            sonuc = ('hata', str(e))
+            # ⚠ str(e) DEGIL: sys.exit(1) icin ekrana "1" yazar ve
+            # hicbir sey anlatmaz. Metin varsa o, yoksa anlasilir cumle.
+            kod = e.code
+            sonuc = ('hata', kod if isinstance(kod, str) and kod.strip()
+                     else 'yukleyici durdu', {})
         except Exception as e:
-            sonuc = ('hata', f"{type(e).__name__}: {e}")
+            sonuc = ('hata', f"{type(e).__name__}: {e}", {})
 
-        durum, not_ = sonuc
+        durum, not_, sonuc_ek = sonuc
         print(f"  -> {durum}: {not_}")
         # BASARISIZ OLAN DEFTERE 'baglandi' DIYE YAZILMIYOR: en sik hata
         # "kayit henuz yok" ve bu gecici -- takvim kaydi acildigi anda
         # bir sonraki tur dosyayi bulur. Kalici saymak, kullanicinin
         # dosyayi silip yeniden koymasini gerektirirdi.
-        defter[ad] = {'imza': simdiki, 'durum': durum, 'not': not_,
-                      'zaman': time.strftime('%Y-%m-%d %H:%M:%S')}
+        girdi = {'imza': simdiki, 'durum': durum, 'not': not_,
+                 'zaman': time.strftime('%Y-%m-%d %H:%M:%S')}
+        # ⚠ YUKLENEN ADRES SAKLANIYOR, DURUM NE OLURSA OLSUN.
+        # Adres defterde durdugu surece imzasi ayni dosya ikinci kez
+        # yuklenmiyor; hata gecici oldugunda tur bedava tekrarlaniyor.
+        if sonuc_ek.get('url'):
+            girdi['url'] = sonuc_ek['url']
+        defter[ad] = girdi
         defter_yaz(klasor, defter)
 
     if not yeni:
         print(f"[{time.strftime('%H:%M:%S')}] yeni dosya yok")
 
+    # Yayinlanmis dosyalari R2'den kaldir. Story'de kapak yok, tek nesne.
+    yukleyici.temizlik_turu(klasor, defter, defter_yaz, lambda ad, kayit: [ad])
 
-def dosyayi_isle(y, yol, ad, otomatik_ac, zorla):
+
+def dosyayi_isle(y, yol, ad, otomatik_ac, zorla, onceki=None):
+    # ⚠ UCUNCU DONUS DEGERI `ek`: yuklenen adres. Cagiran onu deftere
+    # yaziyor, DURUM NE OLURSA OLSUN. 27 Eylul 2026'da reels hattinda
+    # bunun yoklugu her bes dakikada bir 114 MB'lik yeniden yuklemeye
+    # yol acti; story dosyalari kucuk ama mekanizma ayni.
+    onceki = onceki or {}
+    ek = {}
     boyut = os.path.getsize(yol)
     mime = y.tur_bul(yol)          # desteklenmeyen turde sys.exit eder
     if boyut > y.EN_BUYUK:
-        return ('hata', f"{boyut / 1048576:.0f} MB -- Instagram siniri 100 MB")
+        return ('hata', f"{boyut / 1048576:.0f} MB -- Instagram siniri 100 MB", ek)
 
     kok = y.ayar('SHOOTBOARD_MCP_URL').rstrip('/')
     anahtar = y.ayar('SHOOTBOARD_KEY')
@@ -177,29 +197,54 @@ def dosyayi_isle(y, yol, ad, otomatik_ac, zorla):
         kod = e.code
         return ('kayit-yok', kod if isinstance(kod, str) and kod.strip()
                 else 'o tarihte story kaydi yok, ya da birden cok aday var '
-                     '(yukaridaki listeye bak, --id ile elle bagla)')
+                     '(yukaridaki listeye bak, --id ile elle bagla)', ek)
 
-    url = y.r2_yukle(yol, ad, mime)
-    print(f"  adres: {url}")
+    # `onceki` yalnizca imza AYNI ise doluyor (cagiran oyle veriyor);
+    # dosya degismediyse R2'deki nesne de ayni, ikinci yukleme bos is.
+    if onceki.get('url'):
+        url = onceki['url']
+        print(f"  adres (gecen turdan): {url}")
+    else:
+        url = y.r2_yukle(yol, ad, mime)
+        print(f"  adres: {url}")
+    ek['url'] = url
     sorunlar = y.adresi_dene(url, mime, boyut)
     if sorunlar:
         print("  ADRES SORUNLU:")
         for s in sorunlar:
             print(f"    · {s}")
         if not zorla:
-            return ('adres-sorunlu', '; '.join(sorunlar))
+            return ('adres-sorunlu', '; '.join(sorunlar), ek)
         print("  (--zorla verildi, devam ediliyor)")
 
     # Birden cok kayit olabilir: Shootboard'da her sosyal medya ayri
     # kayit, ayni story IG'ye ve FB'ye gidiyorsa iki kayit ayni dosyayi
     # gosteriyor. Hepsine bagliyoruz.
-    notlar = []
+    #
+    # ⚠ BIR KAYIT DUSERSE DONGU DEVAM EDIYOR.
+    # Eskiden kayda_yaz'in sys.exit'i buradan disari kaciyor ve turu
+    # ortada birakiyordu: Instagram baglanmis, Facebook baglanmamis,
+    # defterde tek satir "hata" -- hangisinin baglandigi HICBIR YERDE
+    # yazmiyordu. 27 Eylul 2026'da reels hattinda tam olarak bu oldu.
+    notlar, basarisiz = [], []
     for kayit_id in kayit_idler:
-        kayit = y.kayda_yaz(kok, anahtar, kayit_id, url, boyut, mime, ad, otomatik_ac)
+        try:
+            kayit = y.kayda_yaz(kok, anahtar, kayit_id, url, boyut, mime, ad, otomatik_ac)
+        except SystemExit as e:
+            kod = e.code
+            basarisiz.append(f"{kayit_id} KAYDA YAZILAMADI: " +
+                             (kod if isinstance(kod, str) and kod.strip() else 'yukleyici durdu'))
+            continue
+        except Exception as e:
+            basarisiz.append(f"{kayit_id} KAYDA YAZILAMADI: {type(e).__name__}: {e}")
+            continue
         notlar.append(f"{kayit.get('platform') or '?'} {kayit['id']} · "
                       f"yayin {kayit.get('publishAt') or '?'} · "
                       f"otomatik {'ACIK' if kayit.get('autoPublish') else 'kapali'}")
-    return ('baglandi', ' | '.join(notlar))
+    if basarisiz:
+        return ('eksik-baglanti',
+                f"{len(notlar)}/{len(kayit_idler)} yazildi · " + ' | '.join(basarisiz), ek)
+    return ('baglandi', ' | '.join(notlar), ek)
 
 
 def main():

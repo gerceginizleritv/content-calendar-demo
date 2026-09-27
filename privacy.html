@@ -64,7 +64,7 @@ footer{margin-top:26px;color:var(--text-dim);font-size:.85rem;}
 <header>
   <div class="brand"><a href="./app.html">🎬 Shootboard</a></div>
   <h1>Privacy Policy</h1>
-  <p class="updated">Last updated: 3 September 2026</p>
+  <p class="updated">Last updated: 27 September 2026</p>
   <p class="langbar"><strong>English</strong> · <a href="#turkce">Türkçe için tıklayın</a></p>
 </header>
 
@@ -162,13 +162,34 @@ footer{margin-top:26px;color:var(--text-dim);font-size:.85rem;}
   <tr><td>GoatCounter</td><td>Visit counts</td><td>Aggregate visit data, no cookies</td></tr>
   <tr><td>Google Fonts, jsDelivr</td><td>Fonts and one code library</td><td>Your IP address, as with any file a browser loads</td></tr>
   <tr><td>Anthropic or Google AI</td><td>Captions, only with your own key</td><td>The text you ask them to work on</td></tr>
+  <tr><td>Cloudflare R2</td><td>Holding a video or cover file so that Meta can fetch it — only if you use scheduled publishing</td><td>The file itself. It sits at a <strong>public address</strong>: anyone with the link can open it</td></tr>
+  <tr><td>Meta (Instagram, Facebook)</td><td>Publishing a scheduled post — only for entries where you switched it on</td><td>The video or image, its caption, and that it came from your own connected account</td></tr>
 </table>
+<p>
+  The last two only come into play if you use scheduled publishing. That feature is
+  off unless you turn it on, entry by entry, and it needs your own Meta account
+  connected. If you never use it, no file of yours ever reaches either of them.
+</p>
+<p>
+  <strong>Why the address has to be public.</strong> Meta does not accept an upload from
+  us; it fetches the file itself from a URL. A private address would be refused. The
+  link is long and unguessable, but it is not a secret: treat anything you publish
+  this way as public from the moment it is uploaded.
+</p>
 
 <h2>8. How long we keep things</h2>
 <p>
   Account data is kept while your account exists. Local browser data lives until you
   clear it. Feedback messages sit in an email inbox and are kept while they are
-  still useful.
+  still useful. Automatic backups hold the last seven days and roll over on their own.
+</p>
+<p>
+  Files uploaded for scheduled publishing are the exception. Once every entry using a
+  file has gone out, the tool that uploaded it deletes the video and its cover from
+  object storage; a file that never gets published is dropped by a thirty-day cleanup
+  rule on the storage itself. <strong>Deleting your account does not trigger either
+  one</strong> — the app holds no key to that storage. Ask us from Feedback if you
+  want something removed sooner.
 </p>
 
 <h2>9. Your choices</h2>
@@ -200,7 +221,7 @@ footer{margin-top:26px;color:var(--text-dim);font-size:.85rem;}
 
 <header id="turkce" style="border:0;padding-top:44px;margin-bottom:24px;">
   <h1>Gizlilik Politikası</h1>
-  <p class="updated">Son güncelleme: 3 Eylül 2026</p>
+  <p class="updated">Son güncelleme: 27 Eylül 2026</p>
   <p class="langbar"><a href="#">English</a> · <strong>Türkçe</strong></p>
 </header>
 
@@ -298,13 +319,35 @@ footer{margin-top:26px;color:var(--text-dim);font-size:.85rem;}
   <tr><td>GoatCounter</td><td>Ziyaret sayımı</td><td>Toplam ziyaret verisi, çerez yok</td></tr>
   <tr><td>Google Fonts, jsDelivr</td><td>Yazı tipleri ve bir kod kütüphanesi</td><td>IP adresiniz — tarayıcının yüklediği her dosyada olduğu gibi</td></tr>
   <tr><td>Anthropic veya Google AI</td><td>Metin yazımı, yalnızca kendi anahtarınızla</td><td>Üzerinde çalışmasını istediğiniz metni</td></tr>
+  <tr><td>Cloudflare R2</td><td>Video ya da kapak dosyasını Meta çekebilsin diye tutma — yalnızca zamanlanmış yayını kullanırsanız</td><td>Dosyanın kendisi. <strong>Herkese açık bir adreste</strong> duruyor: bağlantıyı bilen açabilir</td></tr>
+  <tr><td>Meta (Instagram, Facebook)</td><td>Zamanlanmış paylaşımı yayınlama — yalnızca tikini açtığınız kayıtlar için</td><td>Video ya da görsel, altyazısı, ve kendi bağlı hesabınızdan geldiği</td></tr>
 </table>
+<p>
+  Son ikisi yalnızca zamanlanmış yayını kullanırsanız devreye giriyor. O özellik
+  açmadıkça kapalı, her kayıt için ayrı ayrı açılıyor ve kendi Meta hesabınızın
+  bağlı olmasını gerektiriyor. Hiç kullanmazsanız hiçbir dosyanız ikisine de
+  ulaşmıyor.
+</p>
+<p>
+  <strong>Adres neden herkese açık olmak zorunda.</strong> Meta dosyayı bizden
+  yüklemeyi kabul etmiyor; kendisi bir adresten çekiyor. Özel bir adres reddedilir.
+  Bağlantı uzun ve tahmin edilemez, ama sır değil: bu yolla yayınladığınız her şeyi
+  yüklendiği andan itibaren herkese açık sayın.
+</p>
 
 <h2>8. Ne kadar süre saklıyoruz</h2>
 <p>
   Hesap verileri hesabınız var olduğu sürece saklanır. Yerel tarayıcı verisi siz
   temizleyene kadar durur. Geri bildirim mesajları bir e-posta kutusunda, işe
-  yaradıkları sürece kalır.
+  yaradıkları sürece kalır. Otomatik yedekler son yedi günü tutar ve kendiliğinden
+  devreder.
+</p>
+<p>
+  Zamanlanmış yayın için yüklenen dosyalar istisna. O dosyayı kullanan her kaydın
+  yayını çıktığında, dosyayı yükleyen araç videoyu ve kapağı nesne deposundan siliyor;
+  hiç yayınlanmayan bir dosyayı da deponun kendi otuz günlük temizlik kuralı
+  düşürüyor. <strong>Hesabınızı silmek bu ikisini tetiklemiyor</strong> — uygulamanın
+  o deponun anahtarı yok. Daha erken kaldırılmasını isterseniz Geri Bildirim'den yazın.
 </p>
 
 <h2>9. Seçenekleriniz</h2>

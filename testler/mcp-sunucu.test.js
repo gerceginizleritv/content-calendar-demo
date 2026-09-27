@@ -84,15 +84,43 @@ function tablolariKur(){
       { id:'rl_1', user_id:UID_A, post_date:'2026-12-07', post_time:'19:00:00', type:'reels', platform:'instagram',
         title:'Balıklı reel', uploaded:false, deleted_at:null, content:{ timezone:'Europe/Istanbul' },
         auto_publish:false, publish_state:'pending', attempt_count:0,
-        media_url:null, media_name:null, cover_url:null }
+        media_url:null, media_name:null, cover_url:null },
+      // KAPAGI VE HATASI OLAN REELS. 27 Eylul 2026'da bulunan korluk tam
+      // burada olculuyor: bu kayit veritabaninda 'failed' ve last_error
+      // dolu, ama listeleme `type === 'story'` suzdugu icin asistan
+      // ikisini de GORMUYORDU -- basarisiz bir reel sessizce kayboluyordu.
+      { id:'rl_2', user_id:UID_A, post_date:'2026-12-08', post_time:'10:00:00', type:'reels', platform:'instagram',
+        title:'Kapakli reel', uploaded:false, deleted_at:null, content:{ timezone:'Europe/Istanbul' },
+        auto_publish:true, publish_state:'failed', attempt_count:2,
+        media_url:'https://r2.example/rl2.mp4', media_name:'2026-12-08_reels_kapakli.mp4',
+        cover_url:'https://r2.example/rl2.jpg', last_error:'Instagram konteyneri hazir olmadi' },
+      // ⚠ AYNI mediaName'i TASIYAN BIR SHORTS KAYDI (27 Eylul 2026).
+      // Gercekte oldu: bir reel dosyasi fb/ig/tt reels kayitlarina VE
+      // bir YouTube shorts kaydina birden eslesti. Tam ad dalinda tur
+      // suzgeci olmadigi icin shorts da donuyordu; yukleyici ona da
+      // yazmaya calisti, boyut tavani reels'in 1 GB'i degil story'nin
+      // 100 MB'i oldugu icin 114 MB reddedildi ve betik oradan cikti --
+      // kayitlarin yarisi yazili yarisi yazisiz kaldi ve dosya her bes
+      // dakikada bir yeniden yuklendi.
+      { id:'sh_1', user_id:UID_A, post_date:'2026-12-06', post_time:'19:00:00', type:'shorts', platform:'youtube',
+        title:'Ayni dosyayi gosteren shorts', uploaded:false, deleted_at:null, content:{},
+        media_name:'2026-12-06_story_kopru_k1.mp4' }
     ],
     scripts: [], ideas: [], ai_aktarimlar: []
   };
 }
 
-// Sorgu dizgesini kaba biçimde uyguluyoruz: eq, gte, lte, is.null.
+// Sorgu dizgesini kaba biçimde uyguluyoruz: eq, gte, lte, in.(), is.null.
 // Amac tam bir PostgREST taklidi degil; SUZGECLERIN KURULDUGUNU
 // dogrulamak. user_id suzgeci dusmusse bu suzme onu yakalar.
+//
+// ⚠ BILINMEYEN OPERATOR ARTIK HATA VERIYOR, SESSIZCE GECMIYOR.
+// 27 Eylul 2026'a kadar `in.()` desteklenmiyordu ve desteklenmeyen
+// operator hicbir sey yapmadan geciyordu. Yani `type=in.(story,reels)`
+// suzgeci -- tarih dalinda AYLARDIR duran suzgec -- hic olculmemisti:
+// testte butun satirlar donuyordu ve olcumler yine de yesildi.
+// Sessizce gecmek, bu dosyanin kendi amacini ("suzgeclerin kuruldugunu
+// dogrulamak") gecersiz kiliyordu.
 function suz(satirlar, sorgu){
   const parcalar = sorgu.split('&').filter(x=> x.includes('='));
   let sonuc = satirlar;
@@ -105,6 +133,12 @@ function suz(satirlar, sorgu){
     else if(deger.startsWith('eq.'))  { const v = deger.slice(3); sonuc = sonuc.filter(r=> String(r[alan]) === v); }
     else if(deger.startsWith('gte.')) { const v = deger.slice(4); sonuc = sonuc.filter(r=> String(r[alan]) >= v); }
     else if(deger.startsWith('lte.')) { const v = deger.slice(4); sonuc = sonuc.filter(r=> String(r[alan]) <= v); }
+    else if(deger.startsWith('in.(') && deger.endsWith(')')){
+      const v = deger.slice(4, -1).split(',').map(s=> s.trim().replace(/^"|"$/g, ''));
+      sonuc = sonuc.filter(r=> v.includes(String(r[alan])));
+    }
+    else throw new Error('sahte PostgREST bu süzgeci bilmiyor: ' + alan + '=' + deger
+                         + '  (sessizce geçmek süzgeci ölçülemez kılar)');
   }
   return sonuc;
 }
@@ -522,6 +556,33 @@ async function arac(anahtar, ad, args){
       /uploaded is the user/i.test(listeAciklama) && /publishState belongs to the system/i.test(listeAciklama),
       listeAciklama.slice(-120));
 
+  // ---- REELS DE GORUNMELI (27 Eylul 2026) -----------------------------
+  // Kuyruk (sql/50), worker, yama ucu ve /api/entries/find reels'i
+  // biliyordu; LISTELEME bilmiyordu. Sonuc: reel yayinlaniyor, durumu
+  // veritabaninda yazili, ama asistan hicbirini okuyamiyor. Asil kayip
+  // lastError: bir reel basarisiz olsa kimse sebebini goremezdi.
+  const rl2 = stGiris.entries.find(e=> e.id === 'rl_2');
+  bak('reels kaydinda publishState var', rl2 && rl2.publishState === 'failed',
+      JSON.stringify(rl2 && Object.keys(rl2)));
+  bak('reels kaydinda autoPublish var', rl2 && rl2.autoPublish === true, String(rl2 && rl2.autoPublish));
+  bak('reels kaydinda mediaUrl var', rl2 && /rl2\.mp4$/.test(rl2.mediaUrl || ''), String(rl2 && rl2.mediaUrl));
+  bak('reels kaydinda attemptCount var', rl2 && rl2.attemptCount === 2, String(rl2 && rl2.attemptCount));
+  // ★ Korlugun en pahali yari: hata sebebi.
+  bak('reels kaydinda lastError GORUNUYOR',
+      rl2 && /konteyneri hazir olmadi/.test(rl2.lastError || ''), String(rl2 && rl2.lastError));
+  bak('reels kaydinda coverUrl var', rl2 && /rl2\.jpg$/.test(rl2.coverUrl || ''), String(rl2 && rl2.coverUrl));
+  // coverUrl BOS GECILMIYOR: kapaksiz reel'de ve story'de hic olmamali,
+  // yoksa yukaridaki "bes bos alan" gerekcesi cignenir.
+  const rl1 = stGiris.entries.find(e=> e.id === 'rl_1');
+  bak('kapaksiz reelde coverUrl HIC yok', rl1 && rl1.coverUrl === undefined,
+      JSON.stringify(rl1 && Object.keys(rl1)));
+  bak('story kaydinda coverUrl HIC yok', st2 && st2.coverUrl === undefined, String(st2 && st2.coverUrl));
+  // Aciklama da duzeltilmis olmali: "Story entries" derse asistan reels'in
+  // yayin alanlarini aramaz bile.
+  bak('aciklama reelsi de kapsiyor', /story and reels entries/i.test(listeAciklama),
+      listeAciklama.slice(200, 340));
+  bak('aciklama lastErrordan soz ediyor', /lastError/.test(listeAciklama));
+
   console.log('[REST: dosya adindan kayit bulma]');
   // Sartname Bolum 2, Secenek B. Shootboard'a upload arayuzu EKLENMIYOR;
   // PC scripti dosyayi R2'ye koyup buraya mediaUrl yaziyor.
@@ -540,6 +601,15 @@ async function arac(anahtar, ad, args){
   bak('tam dosya adiyla bulunuyor',
       bulAd.govde.ok === true && bulAd.govde.entries[0].id === 'st_2', JSON.stringify(bulAd.govde).slice(0,140));
   bak('eslesme yontemi bildiriliyor', bulAd.govde.matchedBy === 'mediaName', String(bulAd.govde.matchedBy));
+  // ★ AYNI ADI TASIYAN SHORTS KAYDI DONMEMELI. Worker yalnizca story ve
+  // reels yayinliyor; bir shorts kaydina mediaUrl yazmanin anlami yok ve
+  // yukleyici orada boyut tavanina takilip butun turu birakiyordu.
+  bak('★ ayni adi tasiyan SHORTS kaydi donmuyor',
+      bulAd.govde.entries.every(e=> e.id !== 'sh_1'),
+      JSON.stringify(bulAd.govde.entries.map(e=> e.id + ':' + e.type)));
+  bak('yayinlanabilir kayit yine de donuyor',
+      bulAd.govde.entries.some(e=> e.id === 'st_2'),
+      JSON.stringify(bulAd.govde.entries.map(e=> e.id)));
 
   const bulTarih = await rest('GET', '/api/entries/find?file=2026-12-05_story_balikli_k1.mp4');
   bak('ad bagli degilse tarihten bulunuyor',

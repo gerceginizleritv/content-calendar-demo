@@ -56,6 +56,7 @@ KURULUM
 """
 import os
 import sys
+import threading
 import mimetypes
 import argparse
 
@@ -94,8 +95,61 @@ def tur_bul(yol):
              f"Story icin: .mp4 .mov .jpg .png")
 
 
-def r2_yukle(yol, ad, mime):
-    s3 = boto3.client(
+def ilerleme_yazici(toplam):
+    """Yukleme ilerlemesini basan geri cagirma uretir.
+
+    put_object'te ilerleme YOKTU: yukleme suresince ekran olu kaliyordu
+    ve 27 Eylul 2026'da ilk gercek reel yuklenirken "ekran dondu mu?"
+    diye soruldu. 60 MB'lik bir dosya bir dakika sessiz durdu.
+
+    IKI KIP, cunku bu betik iki yerde kosuyor:
+
+      terminalde  -> ayni satir tazeleniyor, akici bir yuzde
+      gunluge     -> her %25'te BIR SATIR dusuyor
+
+    Gunluge \r yazmak dosyayi tek satirlik bir curufa cevirirdi ve
+    Gorev Zamanlayici hep gunluge yaziyor. Ayrim isatty() ile.
+    """
+    ekranda = bool(getattr(sys.stdout, "isatty", None) and sys.stdout.isatty())
+    durum = {"gecen": 0, "esik": 25}
+    # ⚠ KILIT SART. upload_fileobj cok parcali yuklemede Callback'i
+    # BIRDEN FAZLA IS PARCACIGINDAN cagiriyor. `durum["gecen"] += bayt`
+    # atomik degil (oku/degistir/yaz), yani araya girilince sayim
+    # kayboluyor. Cokme olmuyor ama yuzde %100'e hic ulasmayabiliyor;
+    # o zaman terminal kipindeki satir sonu hic basilmiyor ve sonraki
+    # cikti ilerleme satirinin ustune biniyor.
+    kilit = threading.Lock()
+
+    def geri(bayt):
+        with kilit:
+            durum["gecen"] += bayt
+            gecen = durum["gecen"]
+        if not toplam:
+            return
+        yuzde = min(100, gecen * 100 // toplam)
+        if ekranda:
+            print(f"\r    %{yuzde:3d}  "
+                  f"({gecen / 1048576:.0f}/{toplam / 1048576:.0f} MB)",
+                  end="", flush=True)
+            if yuzde >= 100:
+                print()
+        else:
+            # Esik de kilidin altinda: iki is parcacigi ayni kilometre
+            # tasini iki kez basmasin.
+            with kilit:
+                basilacak = yuzde >= durum["esik"]
+                if basilacak:
+                    durum["esik"] += 25
+            if basilacak:
+                print(f"    %{yuzde}  ({gecen / 1048576:.0f} MB)")
+
+    return geri
+
+
+def r2_istemci():
+    """R2 baglantisi. Yukleme ve silme AYNI istemciyi kuruyor: ayarlardan
+    biri degisirse iki yerde degismesin."""
+    return boto3.client(
         "s3",
         endpoint_url=ayar("R2_ENDPOINT"),
         aws_access_key_id=ayar("R2_ACCESS_KEY_ID"),
@@ -103,16 +157,29 @@ def r2_yukle(yol, ad, mime):
         # R2 imza surumu v4; bolge adi onemsiz ama bos birakilamiyor.
         config=Config(signature_version="s3v4", region_name="auto"),
     )
+
+
+def r2_yukle(yol, ad, mime):
+    s3 = r2_istemci()
     kova = ayar("R2_BUCKET")
-    print(f"  yukleniyor -> r2://{kova}/{ad}")
+    boyut = os.path.getsize(yol)
+    print(f"  yukleniyor -> r2://{kova}/{ad}  ({boyut / 1048576:.0f} MB)")
+    # ⚠ upload_fileobj, put_object DEGIL. Tek sebep: put_object'in
+    # Callback'i yok, yani ilerleme basilamiyor. Islevsel fark
+    # upload_fileobj'in buyuk dosyayi cok parcali (multipart) gondermesi;
+    # R2 bunu destekliyor ve adresi_dene'nin baktigi seyleri
+    # (Content-Type, Content-Length) degistirmiyor.
     with open(yol, "rb") as f:
-        s3.put_object(
-            Bucket=kova, Key=ad, Body=f,
-            # Content-Type SART: Meta yanlis turu reddediyor.
-            ContentType=mime,
-            # Story 24 saatlik; dosya yayindan sonra 7 gun yetiyor.
-            # Kova tarafinda yasam dongusu kurali da koy, depo sismesin.
-            CacheControl="public, max-age=604800",
+        s3.upload_fileobj(
+            f, kova, ad,
+            ExtraArgs={
+                # Content-Type SART: Meta yanlis turu reddediyor.
+                "ContentType": mime,
+                # Story 24 saatlik; dosya yayindan sonra 7 gun yetiyor.
+                # Kova tarafinda yasam dongusu kurali da koy, depo sismesin.
+                "CacheControl": "public, max-age=604800",
+            },
+            Callback=ilerleme_yazici(boyut),
         )
     return ayar("R2_PUBLIC_BASE").rstrip("/") + "/" + ad
 
@@ -194,6 +261,115 @@ def kaydi_bul(kok, anahtar, dosya_adi, kayit_id=None, tur_adi="story"):
         print(f"  --id {k['id']}   {k['date']} {k['time']}  "
               f"{k.get('platform') or '?'}  {k.get('title') or '(basliksiz)'}")
     sys.exit(1)
+
+
+# ══════════════════════════════════════════════════════════════════
+# YAYINLANMIS DOSYALARIN TEMIZLIGI
+#
+# Instagram videoyu yayin aninda R2'den CEKIYOR ve kendi kopyasini
+# aliyor. O saniyeden sonra R2'deki dosyanin isi bitiyor: yeniden
+# denemeler saatler icinde tukeniyor, Meta yayinlanmis gonderiyi kendi
+# CDN'inden sunuyor, orijinal zaten kullanicinin diskinde.
+#
+# Buna ragmen dosya sonsuza kadar duruyordu -- 206 MB'lik bir reel,
+# HERKESE ACIK bir adreste. Hesap silinse bile kaliyordu (app.html'in
+# R2 anahtari yok; HESAP_KOVALARI yalnizca Supabase kovalari).
+#
+# Kullanicinin sorusu bunu ortaya cikardi: "video Instagram'a gittiyse
+# neden saklamaya devam ediyoruz?" Bir sebep YOK.
+
+
+def yayin_durumlari(kok, anahtar, dosya_adi):
+    """Bu dosyaya bagli kayitlarin publishState listesi. Bilinmiyorsa None.
+
+    ⚠ YALNIZCA TAM AD ESLESMESI KABUL EDILIYOR.
+    /api/entries/find tam ad bulamazsa dosya adindaki TARIHE dusuyor ve o
+    gunun baska kayitlarini donduruyor. Silme kararini ona dayandirmak
+    felaket olurdu: baska bir kayit yayinlandi diye BIZIM dosyamiz
+    silinir, sonra bizimki yayinlanmaya calisir ve adres 404 doner.
+    Bilinmiyorsa None donuyor ve cagiran DOKUNMUYOR.
+    """
+    try:
+        r = requests.get(f"{kok}/api/entries/find",
+                         params={"file": dosya_adi},
+                         headers={"Authorization": f"Bearer {anahtar}"}, timeout=30)
+        veri = r.json() if r.content else {}
+    except Exception as e:
+        print(f"  durum sorulamadi ({dosya_adi}): {e}")
+        return None
+    if not veri.get("ok") or veri.get("matchedBy") != "mediaName":
+        return None
+    kayitlar = veri.get("entries") or []
+    if not kayitlar:
+        return None
+    return [str(k.get("publishState") or "") for k in kayitlar]
+
+
+def r2_sil(adlar):
+    """R2'den nesne siler. Doner: (silinenler, sorunlular)."""
+    s3 = r2_istemci()
+    kova = ayar("R2_BUCKET")
+    silinen, sorun = [], []
+    for ad in adlar:
+        try:
+            s3.delete_object(Bucket=kova, Key=ad)
+            silinen.append(ad)
+        except Exception as e:
+            sorun.append(f"{ad}: {e}")
+    return silinen, sorun
+
+
+def temizlenecekler(kok, anahtar, defter):
+    """Defterde R2'den silinebilecek girdilerin adlari.
+
+    Uc sart birden:
+      · durum 'baglandi'        -- kayda gercekten baglanmis
+      · 'temiz' isareti YOK     -- daha once silinmemis
+      · TUM bagli kayitlar published
+
+    Ucuncusu onemli: ayni dosya Instagram ve Facebook kayitlarina birden
+    bagli. Biri cikmis oteki beklerken silersek bekleyen yayin 404 alir.
+    Tek bir kayit bile published degilse dosya DURUYOR.
+    """
+    cikti = []
+    for ad, kayit in defter.items():
+        if kayit.get('durum') != 'baglandi' or kayit.get('temiz'):
+            continue
+        durumlar = yayin_durumlari(kok, anahtar, ad)
+        if durumlar is None:
+            continue                       # bilinmiyor -> dokunma
+        if durumlar and all(d == 'published' for d in durumlar):
+            cikti.append(ad)
+    return cikti
+
+
+def temizlik_turu(klasor, defter, defter_yaz, nesneleri_bul):
+    """Yayinlanmislari R2'den siler, defteri gunceller. Doner: silinen sayisi.
+
+    ⚠ DEFTERDE `durum` DEGISMIYOR, AYRI BIR `temiz` ISARETI KONUYOR.
+    Izleyicinin atlama sarti `durum == 'baglandi'`; durumu 'temizlendi'
+    yapsaydik dosya "yeni" sayilip HER TURDA YENIDEN YUKLENIRDI -- yani
+    sildigimiz seyi geri koyardik. Sessiz ve sonsuz bir dongu.
+
+    `temiz` isareti dosya yeniden uretilirse KENDILIGINDEN dusuyor:
+    izleyici o girdiyi bastan yaziyor (imza degisti), yeni sozlukte
+    `temiz` yok.
+    """
+    kok = ayar('SHOOTBOARD_MCP_URL').rstrip('/')
+    anahtar = ayar('SHOOTBOARD_KEY')
+    sayi = 0
+    for ad in temizlenecekler(kok, anahtar, defter):
+        nesneler = nesneleri_bul(ad, defter[ad])
+        silinen, sorun = r2_sil(nesneler)
+        for s in sorun:
+            print(f"  R2 silinemedi -> {s}")
+        if sorun:
+            continue                       # yarim isaret koyma: sonraki tur dener
+        print(f"  temizlendi: {', '.join(silinen)}")
+        defter[ad]['temiz'] = True
+        defter_yaz(klasor, defter)
+        sayi += 1
+    return sayi
 
 
 def kayda_yaz(kok, anahtar, kayit_id, url, boyut, mime, ad, otomatik, kapak_url=None):

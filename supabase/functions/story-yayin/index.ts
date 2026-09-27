@@ -46,7 +46,7 @@
 //
 // Dağıtım:  supabase functions deploy story-yayin --no-verify-jwt
 
-const SURUM = '1.5.0';
+const SURUM = '1.7.0';
 const UCLAR = ['GET / (servis bilgisi)', 'POST / (bir tur)'];
 
 const SUPABASE_URL   = Deno.env.get('SUPABASE_URL') ?? '';
@@ -469,9 +469,57 @@ const turAdi = (k: any) => (reelMi(k) ? 'reel' : 'story');
 // zaten yazılmış olan metin. Instagram sınırı 2200 karakter; fazlası
 // konteyneri reddettiriyor, o yüzden BURADA kırpılıyor: yayın anında
 // öğrenmek, kayıt anında öğrenmekten pahalı.
+// Facebook reel'inin BASLIGI. Instagram'in boyle bir alani yok; orada
+// tek metin caption. Facebook'un `video_reels` ucu `title` kabul ediyor
+// ve Shootboard kaydinda `shortTitle` bu is icin zaten dolu duruyordu --
+// hicbir yere gonderilmiyordu (27 Eylul 2026'da farkedildi).
+//
+// Bos gecilirse alan HIC gonderilmiyor: bos bir title yazmak, hic
+// yazmamaktan farkli davraniyor olabilir ve Facebook'un varsayilanini
+// bozmak istemiyoruz.
+//
+// ⚠ 100 KARAKTER DOGRULANMIS BIR SINIR DEGIL, KASITLI OLARAK DUSUK.
+// Graph belgeleri `title` icin bir uzunluk siniri YAZMIYOR (27 Eylul
+// 2026'da arandi, bulunamadi). Alanin kabul edildigi kesin -- Meta'nin
+// kendi Postman koleksiyonu finish cagrisinda title gonderiyor -- ama
+// tavani bilinmiyor.
+//
+// Sinir asilirsa hata FINISH cagrisinda doner, yani dosya yuklendikten
+// SONRA: yayin basarisiz olur. Bu yuzden tahmini bir tavana guvenmek
+// yerine, pratikte HIC tetiklenmeyecek bir tavan konuyor -- kayittaki
+// shortTitle degerleri 40-50 karakter. Gercek sinir ogrenilirse
+// yukseltilebilir; dusuk kalmasinin bedeli yok.
+function kisaBaslik(k: any): string {
+  const c = (k?.content && typeof k.content === 'object') ? k.content : {};
+  return String(c.shortTitle ?? '').trim().slice(0, 100);
+}
 function altYazi(k: any): string {
   const c = (k?.content && typeof k.content === 'object') ? k.content : {};
-  return String(c.caption ?? '').slice(0, 2200);
+  const metin = String(c.caption ?? '').trim();
+  const etiketler = String(c.hashtags ?? '').trim();
+  if (!etiketler) return metin.slice(0, 2200);
+
+  // ⚠ ETİKETLER AYRI ALANDA DURUYOR ve 27 Eylül 2026'ya kadar hiçbir
+  // yayına girmiyordu: burası yalnızca `caption` okuyordu. İlk gerçek
+  // reel'de görüldü -- gönderi çıktı, etiketler yoktu, hiçbir yerde
+  // hata görünmedi. Kullanıcı o kaydı elle düzeltti; sonraki on iki
+  // kayıt aynı şekilde çıkacaktı.
+  const parcalar = etiketler.split(/[\s,]+/).filter(Boolean);
+
+  // Kullanıcı etiketleri alt yazının içine elle yazmışsa tekrar
+  // eklemiyoruz -- 27 Eylül'de tam olarak bunu yapmıştı.
+  if (parcalar[0] && metin.includes(parcalar[0])) return metin.slice(0, 2200);
+
+  // ⚠ SINIRI ETİKETİN ORTASINDAN KESMİYORUZ. Düz `slice(0, 2200)`
+  // "#arkeolo" gibi bir yarım etiket bırakır; Instagram onu geçerli
+  // bir etiket sayar ve gönderi alâkasız bir akışa düşer.
+  let cikti = metin;
+  for (const p of parcalar) {
+    const aday = cikti ? cikti + (cikti === metin ? '\n\n' : ' ') + p : p;
+    if (aday.length > 2200) break;
+    cikti = aday;
+  }
+  return cikti;
 }
 // Reel hem Reels sekmesinde hem profil akışında görünsün mü?
 // VARSAYILAN AÇIK: üreticilerin çoğu ikisini de istiyor ve kapalı bir
@@ -799,6 +847,8 @@ async function facebookYayinla(k: any): Promise<string> {
       bitisAlanlari.video_state = 'PUBLISHED';
       const yazi = altYazi(k);
       if (yazi) bitisAlanlari.description = yazi;
+      const baslik = kisaBaslik(k);
+      if (baslik) bitisAlanlari.title = baslik;
     }
     await rpc('story_iz_yayin_cagrisi', { p_id: k.id });
     const bit = await graf(uc, { method: 'POST', alan: bitisAlanlari });

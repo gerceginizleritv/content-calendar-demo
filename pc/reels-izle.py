@@ -162,34 +162,54 @@ def bir_tur(ry, sy, klasor, otomatik_ac, zorla):
         yeni += 1
         print(f"\n=== {ad}" + (f"  (+ {os.path.basename(kapak_yolu)})" if kapak_yolu else "  (kapaksiz)"))
         try:
-            sonuc = dosyayi_isle(ry, sy, yol, ad, kapak_yolu, kapak_mime, otomatik_ac, zorla)
+            sonuc = dosyayi_isle(ry, sy, yol, ad, kapak_yolu, kapak_mime, otomatik_ac, zorla,
+                                 onceki if onceki.get('imza') == simdiki else {})
         except SystemExit as e:
             # yukleyiciler hatalarda sys.exit ediyor; izleyici olmemeli.
             kod = e.code
-            sonuc = ('hata', kod if isinstance(kod, str) and kod.strip() else 'yukleyici durdu')
+            sonuc = ('hata', kod if isinstance(kod, str) and kod.strip() else 'yukleyici durdu', {})
         except Exception as e:
-            sonuc = ('hata', f"{type(e).__name__}: {e}")
+            sonuc = ('hata', f"{type(e).__name__}: {e}", {})
 
-        durum, not_ = sonuc
+        durum, not_, sonuc_ek = sonuc
         print(f"  -> {durum}: {not_}")
         # BASARISIZ OLAN DEFTERE 'baglandi' DIYE YAZILMIYOR: en sik hata
         # "kayit henuz yok" ve bu gecici -- takvim kaydi acildigi anda
         # bir sonraki tur dosyayi bulur.
-        defter[ad] = {'imza': simdiki, 'durum': durum, 'not': not_,
-                      'kapak': os.path.basename(kapak_yolu) if kapak_yolu else '',
-                      'zaman': time.strftime('%Y-%m-%d %H:%M:%S')}
+        girdi = {'imza': simdiki, 'durum': durum, 'not': not_,
+                 'kapak': os.path.basename(kapak_yolu) if kapak_yolu else '',
+                 'zaman': time.strftime('%Y-%m-%d %H:%M:%S')}
+        # ⚠ YUKLENEN ADRESLER SAKLANIYOR, DURUM NE OLURSA OLSUN.
+        # 27 Eylul 2026: bir kayit yazilamayinca tur 'hata' ile bitti,
+        # defterde 'baglandi' olmadigi icin izleyici dosyayi her turda
+        # yeniden isledi -- ve sira "kaydi bul, YUKLE, kayda yaz" oldugu
+        # icin her bes dakikada bir 114 MB R2'ye gitti. Adresi saklamak
+        # ikinci yuklemeyi gereksiz kiliyor: imza ayniysa dosya zaten
+        # orada.
+        for anahtar in ('url', 'kapak_url'):
+            if sonuc_ek.get(anahtar):
+                girdi[anahtar] = sonuc_ek[anahtar]
+        defter[ad] = girdi
         defter_yaz(klasor, defter)
 
     if not yeni:
         print(f"[{time.strftime('%H:%M:%S')}] yeni dosya yok")
 
+    # Yayinlanmis dosyalari R2'den kaldir. Kapak da gidiyor: video
+    # yayinlandiysa kapagin da isi bitti (Instagram ikisini de cekti).
+    def nesneler(ad, kayit):
+        k = kayit.get('kapak')
+        return [ad] + ([k] if k else [])
+    sy.temizlik_turu(klasor, defter, defter_yaz, nesneler)
 
-def dosyayi_isle(ry, sy, yol, ad, kapak_yolu, kapak_mime, otomatik_ac, zorla):
+
+def dosyayi_isle(ry, sy, yol, ad, kapak_yolu, kapak_mime, otomatik_ac, zorla, onceki=None):
     boyut = os.path.getsize(yol)
     mime = ry.tur_bul(yol)          # desteklenmeyen turde sys.exit eder
     if boyut > ry.EN_BUYUK:
         return ('hata', f"{boyut / 1048576:.0f} MB -- Instagram reels siniri "
-                        f"{ry.EN_BUYUK / 1048576:.0f} MB")
+                        f"{ry.EN_BUYUK / 1048576:.0f} MB", {})
+    onceki = onceki or {}
 
     kok = sy.ayar('SHOOTBOARD_MCP_URL').rstrip('/')
     anahtar = sy.ayar('SHOOTBOARD_KEY')
@@ -204,22 +224,36 @@ def dosyayi_isle(ry, sy, yol, ad, kapak_yolu, kapak_mime, otomatik_ac, zorla):
         kod = e.code
         return ('kayit-yok', kod if isinstance(kod, str) and kod.strip()
                 else 'o tarihte reels kaydi yok, ya da birden cok aday var '
-                     '(yukaridaki listeye bak, elle bagla)')
+                     '(yukaridaki listeye bak, elle bagla)', {})
 
-    url = sy.r2_yukle(yol, ad, mime)
-    print(f"  adres: {url}")
+    # ⚠ AYNI IMZAYLA IKINCI KEZ YUKLEME YOK.
+    # `onceki` yalnizca imza AYNI ise doluyor (cagiran oyle veriyor).
+    # Yani dosya degismediyse ve gecen tur R2'ye konduysa, bir daha
+    # konmuyor. 27 Eylul 2026'da bu yoktu: bir kayit yazilamayinca tur
+    # 'hata' ile bitti, izleyici her turda bastan isledi ve 114 MB her
+    # bes dakikada bir yeniden yuklendi.
+    ek = {}
+    if onceki.get('url'):
+        url = onceki['url']
+        print(f"  adres (gecen turdan): {url}")
+    else:
+        url = sy.r2_yukle(yol, ad, mime)
+        print(f"  adres: {url}")
+    ek['url'] = url
     sorunlar = sy.adresi_dene(url, mime, boyut)
     if sorunlar:
         print("  ADRES SORUNLU:")
         for s in sorunlar:
             print(f"    · {s}")
         if not zorla:
-            return ('adres-sorunlu', '; '.join(sorunlar))
+            return ('adres-sorunlu', '; '.join(sorunlar), ek)
         print("  (--zorla verildi, devam ediliyor)")
 
     # ---- Kapak: yayini DURDURMUYOR --------------------------------------
-    kapak_url = None
-    if kapak_yolu:
+    kapak_url = onceki.get('kapak_url')
+    if kapak_url:
+        print(f"  kapak adresi (gecen turdan): {kapak_url}")
+    elif kapak_yolu:
         kapak_url, kapak_sorun = ry.kapak_yukle(sy, kapak_yolu, kapak_mime, zorla)
         if kapak_sorun:
             print("  KAPAK ADRESI SORUNLU:")
@@ -227,18 +261,42 @@ def dosyayi_isle(ry, sy, yol, ad, kapak_yolu, kapak_mime, otomatik_ac, zorla):
                 print(f"    · {s}")
         if not kapak_url:
             print("  -> kapaksiz devam ediliyor")
+    if kapak_url:
+        ek['kapak_url'] = kapak_url
 
     # Birden cok kayit olabilir: her sosyal medya ayri kayit, ayni reel
     # IG'ye ve FB'ye gidiyorsa iki kayit ayni dosyayi gosteriyor.
-    notlar = []
+    #
+    # ⚠ BIR KAYDIN HATASI OTEKILERI DUSURMUYOR.
+    # Onceden kayda_yaz'in sys.exit'i butun donguyu kesiyordu ve YARIM
+    # durum birakiyordu: kayitlarin bir kismi yazili, bir kismi degil.
+    # 27 Eylul 2026'da Instagram kaydinda coverUrl eksik kaldi -- o
+    # haliyle yayinlansa reel KAPAKSIZ cikardi, hicbir yerde hata
+    # gorunmeden. Artik her kayit kendi basina deneniyor.
+    notlar, basarisiz = [], []
     for kayit_id in kayit_idler:
-        kayit = sy.kayda_yaz(kok, anahtar, kayit_id, url, boyut, mime, ad,
-                             otomatik_ac, kapak_url)
+        try:
+            kayit = sy.kayda_yaz(kok, anahtar, kayit_id, url, boyut, mime, ad,
+                                 otomatik_ac, kapak_url)
+        except SystemExit as e:
+            kod = e.code
+            basarisiz.append(f"{kayit_id}: {kod if isinstance(kod, str) else 'yazilamadi'}")
+            continue
+        except Exception as e:
+            basarisiz.append(f"{kayit_id}: {type(e).__name__}: {e}")
+            continue
         notlar.append(f"{kayit.get('platform') or '?'} {kayit['id']} · "
                       f"yayin {kayit.get('publishAt') or '?'} · "
                       f"kapak {'var' if kayit.get('coverUrl') else 'yok'} · "
                       f"otomatik {'ACIK' if kayit.get('autoPublish') else 'kapali'}")
-    return ('baglandi', ' | '.join(notlar))
+    for b in basarisiz:
+        print(f"  KAYDA YAZILAMADI -> {b}")
+    if basarisiz:
+        # Bir kayit bile eksikse 'baglandi' DENMIYOR: sonraki tur kalani
+        # dener. Dosya yeniden YUKLENMIYOR, adres defterde.
+        return ('eksik-baglanti',
+                f"{len(notlar)}/{len(kayit_idler)} yazildi · " + ' | '.join(basarisiz), ek)
+    return ('baglandi', ' | '.join(notlar), ek)
 
 
 def main():

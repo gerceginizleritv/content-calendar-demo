@@ -79,7 +79,20 @@ const SERVIS_ANAHTARI = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY') ?? '';
 // Bu kural UC KEZ unutuldu ve ucuncusunde artik soze birakilmadi:
 // birlestir.py, kaynak degisip surum ayni kalirsa HATA VERIP duruyor
 // ve tek-dosya.ts'i uretmiyor. Yani unutuldugu an belli oluyor.
-const SURUM = '1.6.0';
+const SURUM = '1.8.0';
+
+// ---- Otomatik yayın hattı olan türler ------------------------------------
+// AYNI kümeyi taşıyan yerler: app.html'deki YAYIN_TURLERI, sql/50'deki
+// `type in ('story','reels')`, story-yayin worker'ı ve bu dosya. Liste
+// çoğalınca biri eksik kalıyor ve eksiklik SESSİZ oluyor.
+//
+// 27 Eylül 2026'da tam bu oldu: kuyruk, worker, yama ucu ve
+// /api/entries/find reels'ı biliyordu ama LİSTELEME bilmiyordu --
+// reels kaydı yayınlanıyor, publishState ve lastError veritabanında
+// yazılı, fakat asistan hiçbirini okuyamıyordu. Bir reel başarısız
+// olsa kimse göremezdi. Bu yüzden artık tek yerde.
+const YAYIN_TURLERI = ['story', 'reels'];
+const yayinlanabilirTur = (t: any) => YAYIN_TURLERI.includes(String(t || ''));
 
 const CORS: Record<string, string> = {
   'Access-Control-Allow-Origin': '*',
@@ -201,9 +214,9 @@ function kayitDisari(r: any, projeler: any[]) {
   const o: any = { id: r.id, date: r.post_date, time: (r.post_time || '').slice(0, 5), type: r.type, platform: r.platform,
            title: r.title || '', uploaded: !!r.uploaded, project: projeAdi(pid, projeler) || c.concept || '', projectId: pid,
            content: kayitIcerigi(c) };
-  // Otomatik yayin alanlari YALNIZCA story kayitlarinda. Oteki turlerde
-  // her kayda bes bos alan eklemek cevabi sisirir ve asistana "burada bir
-  // sey var" dedirtir -- yok.
+  // Otomatik yayin alanlari YALNIZCA yayin hatti olan turlerde
+  // (YAYIN_TURLERI). Oteki turlerde her kayda bes bos alan eklemek
+  // cevabi sisirir ve asistana "burada bir sey var" dedirtir -- yok.
   //
   // uploaded ve publishState AYRI SEYLER ve ikisi de burada:
   //   uploaded     = kullanicinin isareti ("portala yukledim")
@@ -214,11 +227,14 @@ function kayitDisari(r: any, projeler: any[]) {
   // gosterilseydi, baska bir ture yazan asistan yazdigini geri okuyamaz,
   // alan da yazilip okunamayan bir sey olurdu.
   if (r.media_name) o.mediaName = r.media_name;
-  if (r.type === 'story') {
+  if (yayinlanabilirTur(r.type)) {
     o.autoPublish  = r.auto_publish === true;
     o.publishState = r.publish_state || 'pending';
     o.mediaUrl     = r.media_url || '';
     o.mediaName    = r.media_name || '';
+    // Kapak YALNIZCA varsa: story'nin kapagi yok ve her story kaydina
+    // bos bir coverUrl eklemek yukaridaki gerekceyi cigner.
+    if (r.cover_url)    o.coverUrl    = r.cover_url;
     if (r.published_at) o.publishedAt = r.published_at;
     if (r.last_error)   o.lastError   = r.last_error;
     if (r.attempt_count) o.attemptCount = r.attempt_count;
@@ -607,9 +623,10 @@ const ARACLAR = [
       'Use this before proposing a plan: it is how you find which days are already ' +
       'taken and which are free. Dates and times are returned exactly as the user ' +
       'stored them, in their own local calendar \u2014 do not shift them into another time zone. ' +
-      'Story entries also carry their auto-publish state: autoPublish says whether the ' +
+      'Story and reels entries also carry their auto-publish state: autoPublish says whether the ' +
       'scheduler will post it, publishState is where it stands (pending / in_progress / ' +
-      'published / failed), and mediaUrl says whether a file is attached yet. Do not ' +
+      'published / failed), lastError says why a failed one failed, mediaUrl says whether a ' +
+      'file is attached yet, and coverUrl is the reel\u0027s cover image when it has one. Do not ' +
       'confuse publishState with uploaded \u2014 uploaded is the user\u0027s own mark, ' +
       'publishState belongs to the system.',
     inputSchema: {
@@ -867,8 +884,26 @@ async function apiKayitBul(uid: string, dosya: string) {
   const ad = String(dosya || '').trim();
   if (!ad) return { durum: 400, govde: { ok: false, error: 'file: required, e.g. ?file=2026-10-05_story_konu_k1.mp4' } };
 
+  // ⚠ TUR SUZGECI BURADA DA VAR. Onceden YOKTU: tarih dalinda vardi,
+  // tam ad dalinda yoktu. Yani ayni mediaName'i tasiyan bir YouTube
+  // `shorts` kaydi da donuyordu.
+  //
+  // 27 Eylul 2026'da bunun bedeli goruldu: 114 MB'lik bir reel dosyasi
+  // dort kayitla eslesti (fb/ig/tt reels + yt shorts). Yukleyici hepsine
+  // yazmaya calisti, shorts kaydinda boyut tavani reels'in 1 GB'i degil
+  // story'nin 100 MB'i oldugu icin reddedildi ve betik oradan cikti.
+  // Sonuc: kayitlarin bir kismi yazilmis bir kismi yazilmamis (Instagram
+  // kaydinda coverUrl eksik kaldi), ve defterde 'baglandi' yazilmadigi
+  // icin izleyici HER BES DAKIKADA BIR 114 MB'i yeniden yukledi.
+  //
+  // Suzgec dogru yer: worker yalnizca story ve reels yayinliyor, bir
+  // shorts kaydina mediaUrl yazmanin hicbir anlami yok. mediaName o
+  // kayitta durmaya devam ediyor -- yalnizca yukleyici ona dokunmuyor.
+  //
+  // limit 5 -> 20: ayni dosya uc platformda reels olabiliyor; 5 dar
+  // kalirsa GERCEK bir kayit listeden dusebilirdi ve hic baglanmazdi.
   const { veri: tam } = await rest(
-    `/calendar_events?user_id=eq.${uid}&deleted_at=is.null&media_name=eq.${encodeURIComponent(ad)}&select=*&limit=5`);
+    `/calendar_events?user_id=eq.${uid}&deleted_at=is.null&type=in.(${YAYIN_TURLERI.join(',')})&media_name=eq.${encodeURIComponent(ad)}&select=*&limit=20`);
   if (Array.isArray(tam) && tam.length) {
     return { durum: 200, govde: { ok: true, matchedBy: 'mediaName', count: tam.length, entries: tam.map(yayinDisari) } };
   }
@@ -879,7 +914,7 @@ async function apiKayitBul(uid: string, dosya: string) {
       error: `no entry carries the file name "${ad}", and no date could be read from it. Name files like 2026-10-05_story_topic.mp4, or set mediaName on the entry first.` } };
   }
   const { veri } = await rest(
-    `/calendar_events?user_id=eq.${uid}&deleted_at=is.null&type=in.(story,reels)&post_date=eq.${tarih}&select=*&order=post_time.asc.nullsfirst&limit=20`);
+    `/calendar_events?user_id=eq.${uid}&deleted_at=is.null&type=in.(${YAYIN_TURLERI.join(',')})&post_date=eq.${tarih}&select=*&order=post_time.asc.nullsfirst&limit=20`);
   const satirlar = Array.isArray(veri) ? veri : [];
   if (!satirlar.length) {
     return { durum: 404, govde: { ok: false,

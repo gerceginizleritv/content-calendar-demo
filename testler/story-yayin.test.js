@@ -1200,6 +1200,64 @@ async function turAt(gizli){
     bak('yayınlandı', satirlar[0].publish_state === 'published', JSON.stringify(r.govde));
   }
   {
+    // ── ETIKETLER ────────────────────────────────────────────────
+    // Shootboard kaydinda etiketler AYRI alanda (content.hashtags) ve
+    // 27 Eylul 2026'ya kadar hicbir yayina girmiyordu. Gonderi cikiyor,
+    // etiketler yok, hicbir yerde hata gorunmuyor -- yalnizca erisim
+    // dusuyor. Bu yuzden olcum govdenin KENDISINE bakiyor.
+    tabloyuKur(reelKayit({ content:{ timezone:'Europe/Istanbul',
+      caption:'Balıklı Meryem Ana · kısa anlatım',
+      hashtags:'#tarih #belgesel #arkeoloji' } }));
+    metaKur();
+    await turAt();
+    const gv = cagrilar.mediaGovde[0] || {};
+    bak('★ etiketler alt yazıya giriyor',
+      gv.caption === 'Balıklı Meryem Ana · kısa anlatım\n\n#tarih #belgesel #arkeoloji',
+      JSON.stringify(gv.caption));
+  }
+  {
+    // Virgullu yazim da kabul: "#a, #b" -> "#a #b".
+    tabloyuKur(reelKayit({ content:{ timezone:'Europe/Istanbul',
+      caption:'metin', hashtags:'#tarih, #belgesel' } }));
+    metaKur();
+    await turAt();
+    bak('★ virgüller temizleniyor',
+      (cagrilar.mediaGovde[0] || {}).caption === 'metin\n\n#tarih #belgesel',
+      JSON.stringify((cagrilar.mediaGovde[0] || {}).caption));
+  }
+  {
+    // Kullanici etiketleri alt yaziya ELLE yazdiysa ikinci kez eklenmiyor.
+    tabloyuKur(reelKayit({ content:{ timezone:'Europe/Istanbul',
+      caption:'metin\n\n#tarih #belgesel', hashtags:'#tarih #belgesel' } }));
+    metaKur();
+    await turAt();
+    bak('★ elle yazılmış etiket tekrarlanmıyor',
+      (cagrilar.mediaGovde[0] || {}).caption === 'metin\n\n#tarih #belgesel',
+      JSON.stringify((cagrilar.mediaGovde[0] || {}).caption));
+  }
+  {
+    // ⚠ 2200 SINIRI ETIKETIN ORTASINDAN GECMEMELI.
+    const uzun = 'a'.repeat(2180);
+    tabloyuKur(reelKayit({ content:{ timezone:'Europe/Istanbul',
+      caption:uzun, hashtags:'#kisa #cokdahauzunbiretiket' } }));
+    metaKur();
+    await turAt();
+    const c2 = (cagrilar.mediaGovde[0] || {}).caption || '';
+    bak('★ sınırda yarım etiket bırakılmıyor',
+      c2.length <= 2200 && !/#[a-z]*$/.test(c2.replace(/#kisa$/, '')) && c2.endsWith('#kisa'),
+      JSON.stringify(c2.slice(-40)) + ' uzunluk=' + c2.length);
+  }
+  {
+    // Etiket alani bossa davranis degismiyor (gerileme korumasi).
+    tabloyuKur(reelKayit({ content:{ timezone:'Europe/Istanbul',
+      caption:'yalnız metin', hashtags:'' } }));
+    metaKur();
+    await turAt();
+    bak('etiketsiz kayıt aynı kalıyor',
+      (cagrilar.mediaGovde[0] || {}).caption === 'yalnız metin',
+      JSON.stringify((cagrilar.mediaGovde[0] || {}).caption));
+  }
+  {
     // Kapak isteğe bağlı: yoksa alan hiç gitmiyor ve yayın DURMUYOR.
     tabloyuKur(reelKayit()); metaKur();
     await turAt();
@@ -1249,6 +1307,48 @@ async function turAt(gizli){
       bt.video_state === 'PUBLISHED', JSON.stringify(bt));
     bak('açıklama gönderildi', bt.description === 'Balıklı Meryem Ana · kısa anlatım', bt.description);
     bak('yayınlandı', satirlar[0].publish_state === 'published', satirlar[0].publish_state);
+  }
+
+  console.log('[reels · facebook başlığı (27 Eylül 2026)]');
+  {
+    // shortTitle kayıtta doluydu ve HİÇBİR YERE gitmiyordu. video_reels
+    // ucu `title` kabul ediyor; alan boşa duruyordu.
+    tabloyuKur(reelKayit({ platform:'facebook',
+      content:{ timezone:'Europe/Istanbul', caption:'Balıklı Meryem Ana · kısa anlatım',
+                shortTitle:'Balıklı Meryem Ana — kısa' } }));
+    metaKur();
+    await turAt();
+    const bt = cagrilar.fbBitirGovde[0] || {};
+    bak('★ shortTitle title olarak gidiyor',
+      bt.title === 'Balıklı Meryem Ana — kısa', JSON.stringify(bt));
+    bak('açıklama da bozulmadı',
+      bt.description === 'Balıklı Meryem Ana · kısa anlatım', bt.description);
+  }
+  {
+    // ⚠ BOŞ BAŞLIK ALANI HİÇ GÖNDERİLMİYOR. Boş bir title yazmak,
+    // Facebook'un kendi varsayılanını bozabilir; yazmamaktan farklı.
+    tabloyuKur(reelKayit({ platform:'facebook' })); metaKur();
+    await turAt();
+    const bt = cagrilar.fbBitirGovde[0] || {};
+    bak('★ shortTitle yoksa title alanı HİÇ yok', bt.title === undefined, JSON.stringify(bt));
+  }
+  {
+    // Instagram'ın title alanı YOK: oraya sızmamalı.
+    tabloyuKur(reelKayit({ platform:'instagram',
+      content:{ timezone:'Europe/Istanbul', caption:'metin', shortTitle:'başlık' } }));
+    metaKur();
+    await turAt();
+    const gv = cagrilar.mediaGovde[0] || {};
+    bak('★ instagram konteynerine title GİRMİYOR', gv.title === undefined, JSON.stringify(gv));
+  }
+  {
+    // Facebook STORY'de de olmamalı: video_stories title kabul etmiyor.
+    tabloyuKur({ platform:'facebook',
+      content:{ timezone:'Europe/Istanbul', shortTitle:'başlık' } });
+    metaKur();
+    await turAt();
+    const bt = cagrilar.fbBitirGovde[0] || {};
+    bak('★ facebook story bitişinde title YOK', bt.title === undefined, JSON.stringify(bt));
   }
   {
     // ⚠ GERILEME KORUMASI: Facebook story hâlâ video_stories.

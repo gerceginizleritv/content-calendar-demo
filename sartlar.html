@@ -64,7 +64,7 @@ footer{margin-top:26px;color:var(--text-dim);font-size:.85rem;}
 <header>
   <div class="brand"><a href="./app.html">🎬 Shootboard</a></div>
   <h1>Terms of Use</h1>
-  <p class="updated">Last updated: 6 September 2026</p>
+  <p class="updated">Last updated: 27 September 2026</p>
   <p class="langbar"><strong>English</strong> · <a href="#turkce">Türkçe için tıklayın</a></p>
 </header>
 
@@ -93,9 +93,19 @@ footer{margin-top:26px;color:var(--text-dim);font-size:.85rem;}
   out of a shoot: what each one is, when it goes out, and how far along it is.
 </p>
 <p>
-  <strong>It does not publish anything.</strong> It has no connection to Instagram,
-  YouTube, TikTok or any other platform. Posting is something you do yourself, on
-  the platform, at the time you chose. Shootboard only remembers the plan.
+  <strong>Publishing is opt-in, and narrow.</strong> Shootboard can post to Instagram
+  and Facebook at a time you set — but only if you connect your own account, only for
+  the entries where you switch it on yourself, and only once the small uploader on
+  your computer has attached the video file. It is off unless you turn it on, entry
+  by entry. Everywhere else — YouTube, TikTok, anywhere else — posting is still
+  something you do yourself.
+</p>
+<p>
+  When a scheduled post does go out, the video or image and its caption leave
+  Shootboard and go to Meta. That is the point of the feature, but it is worth
+  saying plainly: what you scheduled is what gets published, at the time you set,
+  without asking you again. If it fails, the entry is marked failed and you get an
+  email — Shootboard does not quietly retry forever.
 </p>
 
 <h2>3. Your account</h2>
@@ -170,10 +180,21 @@ footer{margin-top:26px;color:var(--text-dim);font-size:.85rem;}
 <h2>9. Deleting your account</h2>
 <p>
   Open <strong>My account</strong> in the app and use <strong>Delete your account</strong>.
-  Your calendar, projects, ideas, scripts and settings are removed from the server at
-  once, together with your files: the calendar-subscription file, any share link and
-  your automatic backups. It cannot be undone, so export first if you want a copy.
-  Backups roll over within 30 days.
+  Your calendar, projects, ideas, scripts, places, saved accounts, any API keys and
+  your settings are removed from the server at once, together with your files: the
+  calendar-subscription file, any share link and your automatic backups. It cannot be
+  undone, so export first if you want a copy. The automatic backups are deleted with
+  everything else; they only ever held the last seven days.
+</p>
+<p>
+  <strong>One exception, stated plainly.</strong> If you used scheduled publishing, the
+  video and cover files were uploaded to separate object storage so that Meta could
+  fetch them from a public address — that is the only way Meta will accept a file.
+  Published files are removed on their own: the tool that uploaded a video deletes it
+  — and its cover — from that storage once every entry using it has gone out. A file
+  that never gets published is dropped by a thirty-day cleanup rule on the storage
+  itself. Deleting your account does not trigger either one, because the app holds no
+  key to that storage; ask us from Feedback if you want something removed sooner.
 </p>
 
 <h2>10. Price</h2>
@@ -217,7 +238,7 @@ footer{margin-top:26px;color:var(--text-dim);font-size:.85rem;}
 
 <header id="turkce" style="border:0;padding-top:44px;margin-bottom:24px;">
   <h1>Kullanım Şartları</h1>
-  <p class="updated">Son güncelleme: 6 Eylül 2026</p>
+  <p class="updated">Son güncelleme: 27 Eylül 2026</p>
   <p class="langbar"><a href="#">English</a> · <strong>Türkçe</strong></p>
 </header>
 
@@ -247,9 +268,19 @@ footer{margin-top:26px;color:var(--text-dim);font-size:.85rem;}
   olduğunu.
 </p>
 <p>
-  <strong>Hiçbir şey yayınlamaz.</strong> Instagram, YouTube, TikTok ya da başka bir
-  platformla bağlantısı yoktur. Paylaşımı siz yaparsınız — kendi hesabınızdan, kendi
-  seçtiğiniz saatte. Shootboard yalnızca planı hatırlar.
+  <strong>Otomatik yayın isteğe bağlı ve sınırlı.</strong> Shootboard, Instagram ve
+  Facebook'a belirlediğiniz saatte paylaşım yapabilir — ama yalnızca kendi hesabınızı
+  bağlarsanız, yalnızca tikini kendiniz açtığınız kayıtlar için, ve yalnızca
+  bilgisayarınızdaki küçük yükleyici video dosyasını bağladıktan sonra. Açmadıkça
+  kapalıdır; her kayıt için ayrı ayrı açılır. Bunun dışındaki her yere — YouTube,
+  TikTok, başka her yer — paylaşımı siz yaparsınız.
+</p>
+<p>
+  Zamanlanmış bir paylaşım çıktığında video ya da görsel, altyazısıyla birlikte
+  Shootboard'dan çıkıp Meta'ya gider. Özelliğin amacı bu, ama açıkça yazmakta fayda
+  var: ne zamanladıysanız o yayınlanır, belirlediğiniz saatte, size bir daha
+  sorulmadan. Yayın başarısız olursa kayıt "başarısız" işaretlenir ve e-posta
+  gelir — Shootboard sessizce sonsuza kadar denemez.
 </p>
 
 <h2>3. Hesabınız</h2>
@@ -325,10 +356,22 @@ footer{margin-top:26px;color:var(--text-dim);font-size:.85rem;}
 <h2>9. Hesabınızı silmek</h2>
 <p>
   Uygulamada <strong>Hesabım</strong> penceresini açıp <strong>Hesabını sil</strong>
-  bölümünü kullanın. Takviminiz, projeleriniz, fikirleriniz, scriptleriniz ve
-  ayarlarınız, dosyalarınızla birlikte sunucudan hemen silinir: takvim aboneliği
-  dosyası, varsa paylaşım bağlantınız ve otomatik yedekleriniz. Geri dönüşü yoktur;
-  kopya istiyorsanız önce dışa aktarın. Yedekler 30 gün içinde devreder.
+  bölümünü kullanın. Takviminiz, projeleriniz, fikirleriniz, scriptleriniz,
+  mekanlarınız, kayıtlı hesaplarınız, varsa API anahtarlarınız ve ayarlarınız,
+  dosyalarınızla birlikte sunucudan hemen silinir: takvim aboneliği dosyası, varsa
+  paylaşım bağlantınız ve otomatik yedekleriniz. Geri dönüşü yoktur; kopya
+  istiyorsanız önce dışa aktarın. Otomatik yedekler de her şeyle birlikte silinir;
+  onlar zaten yalnızca son yedi günü tutuyordu.
+</p>
+<p>
+  <strong>Tek istisna, açıkça yazıyorum.</strong> Zamanlanmış yayını kullandıysanız,
+  video ve kapak dosyaları Meta'nın çekebilmesi için ayrı bir nesne deposuna,
+  herkese açık bir adrese yüklenmişti — Meta bir dosyayı yalnızca böyle kabul
+  ediyor. Yayınlanan dosyalar kendiliğinden siliniyor: videoyu yükleyen araç, o dosyayı
+  kullanan her kaydın yayını çıktığında videoyu ve kapağı depodan kaldırıyor. Hiç
+  yayınlanmayan bir dosyayı ise deponun kendi otuz günlük temizlik kuralı düşürüyor.
+  Hesabınızı silmek bu ikisini tetiklemiyor, çünkü uygulamanın o deponun anahtarı yok;
+  daha erken kaldırılmasını isterseniz Geri Bildirim'den yazın.
 </p>
 
 <h2>10. Ücret</h2>

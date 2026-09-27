@@ -211,8 +211,18 @@ Google'dan gelen ada göre.
 - Giriş e-postaları: bu klasördeki iki HTML dosyasını düzenle, Supabase'e
   yeniden yapıştır.
 - Hoşgeldin e-postası: `supabase/functions/hosgeldin/sablonlar.js` içindeki
-  `METIN` nesnesi. Değiştirdikten sonra fonksiyonu yeniden dağıt. Önizlemeler
-  `onizleme/` klasöründe; `node` ile yeniden üretilebilir.
+  `METIN` nesnesi. Değiştirdikten sonra **iki şey** yapılır:
+
+      python3 supabase/functions/hosgeldin/birlestir.py        # tek-dosya.ts
+      node supabase/functions/hosgeldin/onizleme-uret.mjs      # onizleme/
+
+  Sonra fonksiyonu yeniden dağıt. Önizlemeler gönderilen e-posta değil,
+  yalnızca gözle bakmak için; tek kaynak `sablonlar.js`.
+
+  Bu iki betiği koşmayı unutmak sessiz bir hata: panele yapıştırılan sürüm
+  ve `onizleme/` eskide kalır. 27 Eylül 2026'da tam bu oldu, o yüzden
+  `testler/sartlar.test.js` artık önizlemelerin `sablonlar.js` ile aynı
+  olduğunu ölçüyor.
 
 ## 8. Hukuki not
 

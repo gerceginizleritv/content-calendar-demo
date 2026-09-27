@@ -222,10 +222,20 @@ async function sayfaAc(t, oncesi){
         !/key|anahtar/i.test(await p.$eval('#hesapAi', el=> el.textContent)),
         (await p.$eval('#hesapAi', el=> el.textContent)).slice(0, 120));
 
-    // api_keys tablosu sql/36 ile dusuruldu; defter (ai_aktarimlar) duruyor.
-    bak('hesap silme defteri kapsiyor, olmayan tabloyu aramiyor',
+    // ⚠ BU OLCUM TERS CEVRILDI (27 Eylul 2026).
+    // Eskiden "api_keys listede OLMAMALI" diyordu ve o gun dogruydu:
+    // sql/36 tabloyu DUSURMUSTU. Ama sql/39 MCP erisimi icin tabloyu
+    // GERI GETIRDI ve bu olcum guncellenmedi -- yesil yanan bir test
+    // yanlis davranisi garanti etti. HESAP_TABLOLARI'na api_keys
+    // eklemeye calisan biri testin dustugunu gorup kendi yanildigini
+    // sanardi.
+    //
+    // Kalintinin bedeli: MCP anahtari CANLI BIR KIMLIK BILGISI. Yedek
+    // yolda auth.users da silinmedigi icin anahtar calismaya devam
+    // ediyordu; kullanici hesabini sildigini saniyordu.
+    bak('★ hesap silme api_keys ve defteri KAPSIYOR',
         await p.evaluate(()=> HESAP_TABLOLARI.includes('ai_aktarimlar')
-                              && !HESAP_TABLOLARI.includes('api_keys')));
+                              && HESAP_TABLOLARI.includes('api_keys')));
     bak('sayfa hatasi yok', hatalar.length === 0, hatalar.join(' | ').slice(0, 300));
     await p.context().close();
   }

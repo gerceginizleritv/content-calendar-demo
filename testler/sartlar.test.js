@@ -92,6 +92,191 @@ const bak = (ad, ko, ek)=>{ if(ko){ g++; console.log('  ok  '+ad); } else { k++;
     return document.getElementById('tabIdeas').classList.contains('active');
   }));
 
+  // ══════════════════════════════════════════════════════════════════
+  // ★ BELGELER GERCEGE BAGLI MI
+  //
+  // 27 Eylul 2026: sartlar.html "Hicbir sey yayinlamaz. Instagram,
+  // YouTube, TikTok ya da baska bir platformla baglantisi yoktur"
+  // diyordu -- ve o gun Shootboard gercekten Instagram ve Facebook'a
+  // bir reel yayinladi. Kullanim sartlarinda OLGUSAL OLARAK YANLIS bir
+  // cumle vardi. Gizlilik politikasinin taraflar tablosunda da ne Meta
+  // ne Cloudflare R2 geciyordu; R2 olani ayrica onemli, cunku medya
+  // dosyasi HERKESE ACIK bir adreste duruyor.
+  //
+  // Bu olcum metni ezberlemiyor, KODA BAGLIYOR: worker Meta'ya
+  // yayinlayabildigi surece belgeler bunu anlatmak ZORUNDA. Yayin
+  // ozelligi bir gun kaldirilirsa olcum kendiliginden gevsiyor.
+  console.log('[belgeler gerçeğe bağlı mı]');
+  {
+    const fs = require('fs'), yol = require('path');
+    const oku = (f)=> fs.readFileSync(yol.join(__dirname, '..', f), 'utf8');
+    const worker = oku('supabase/functions/story-yayin/index.ts');
+    const m = /YAYINLANABILIR\s*=\s*\[([^\]]*)\]/.exec(worker);
+    bak('worker yayınlanabilir platform listesi okunabiliyor', !!m, String(m));
+    const metaYayinliyor = !!m && /instagram/i.test(m[1]) && /facebook/i.test(m[1]);
+    bak('worker gerçekten Meta’ya yayınlıyor', metaYayinliyor, m && m[1]);
+
+    if(metaYayinliyor){
+      const sart = oku('sartlar.html'), gizli = oku('privacy.html');
+      bak('★ şartlar "hiçbir şey yayınlamaz" DEMİYOR',
+          !/hiçbir şey yayınlamaz/i.test(sart)
+          && !/does not publish anything/i.test(sart),
+          'yanlış iddia hâlâ duruyor');
+      bak('★ şartlar otomatik yayını anlatıyor (Instagram + Facebook)',
+          /Instagram/.test(sart) && /Facebook/.test(sart), 'platform adı geçmiyor');
+      bak('şartlar yayının isteğe bağlı olduğunu söylüyor',
+          /isteğe bağlı/i.test(sart) && /opt-in/i.test(sart));
+      bak('★ gizlilik politikası Meta’yı anıyor',
+          /Meta \(Instagram/.test(gizli), 'taraflar tablosunda Meta yok');
+      bak('★ gizlilik politikası Cloudflare R2’yi anıyor',
+          /Cloudflare R2/.test(gizli), 'taraflar tablosunda R2 yok');
+      bak('★ adresin herkese açık olduğu yazıyor',
+          /herkese açık bir adres/i.test(gizli) && /public address/i.test(gizli),
+          'kamuya açıklık belirtilmemiş');
+      // Asistan karti da isleve bagli: yanlis bilgi yanlis tavsiye uretir.
+      for(const kart of ['ai/asistan-karti.md', 'ai/assistant-card.md']){
+        const k2 = oku(kart);
+        bak('kart "hiç yayınlamaz" demiyor: ' + kart,
+            !/hiçbir şeyi kendisi yayınlamaz/i.test(k2)
+            && !/never publishes anything itself/i.test(k2));
+      }
+
+      // ---- Karsilama, kilavuzlar, hosgeldin e-postasi ----------------
+      // Ayni iddia ALTI yerde daha duruyordu. Kullanici "arada" dedi:
+      // ana cumle "planlama panosu" kaliyor, yayin kucuk bir madde
+      // olarak ekleniyor. Olculen sey KATEGORIK YANLIS cumlelerin
+      // olmamasi ve istisnanin anilmasi.
+      const yanlisIddialar = [
+        ['index.html',   /hiçbir yere gönderi atmaz|never posts anywhere on your behalf/i],
+        ['kilavuz.html', /Platformlara bağlanmaz|senin adına bir şey yayınlamaz/i],
+        ['guide.html',   /does not connect to the platforms|never publishes anything on your behalf/i],
+        ['supabase/functions/hosgeldin/sablonlar.js', /Yayınlamaz;|It does not publish;/i]
+      ];
+      for(const [dosya, desen] of yanlisIddialar){
+        bak('★ kategorik yanlış iddia yok: ' + dosya, !desen.test(oku(dosya)), 'iddia duruyor');
+      }
+      for(const dosya of ['index.html', 'kilavuz.html', 'guide.html']){
+        bak('istisna anılıyor: ' + dosya, /Instagram/.test(oku(dosya)), 'Instagram geçmiyor');
+      }
+
+      // ⚠ ONIZLEMELER SABLONLAR.JS ILE AYNI MI
+      // onizleme/ ELLE uretilmisti ve README "node ile uretilebilir"
+      // dedigi halde boyle bir betik YOKTU. Tanitim cumlesi degisince
+      // onizlemeler bayat kaldi. Artik betik var
+      // (hosgeldin/onizleme-uret.mjs) ve bu olcum onu kosmayi
+      // unutmayi yakaliyor.
+      const sab = oku('supabase/functions/hosgeldin/sablonlar.js');
+      const girisler = [...sab.matchAll(/giris: "((?:[^"\\]|\\.)*)"/g)].map(m=> m[1]);
+      bak('sablonlar.js içinden iki tanıtım cümlesi okunabiliyor',
+          girisler.length === 2, 'bulunan: ' + girisler.length);
+      const eslesme = [['tr', 'hosgeldin-tr.txt'], ['en', 'hosgeldin-en.txt']];
+      const tekDosya = oku('supabase/functions/hosgeldin/tek-dosya.ts');
+      girisler.forEach((giris, i)=>{
+        const beklenen = giris.replace(/\\'/g, "'").replace(/\\"/g, '"');
+        const onizleme = oku('supabase/email/onizleme/' + eslesme[i][1]);
+        bak('★ önizleme güncel (' + eslesme[i][0] + ') — üretici koşulmuş',
+            onizleme.includes(beklenen),
+            'onizleme-uret.mjs yeniden koşturulmalı');
+        // ⚠ PANELE YAPISTIRILAN SURUM DE AYNI OLMALI. hosgeldin cok
+        // dosyali; Supabase panelinden kurulurken tek-dosya.ts
+        // yapistiriliyor. birlestir.py kosulmazsa CANLIDAKI metin eski
+        // kalir ve bunu hicbir yerde hata olarak gormezsin -- yalnizca
+        // yeni kayit olan biri eski cumleyi okur.
+        bak('★ tek-dosya.ts güncel (' + eslesme[i][0] + ') — birlestir.py koşulmuş',
+            tekDosya.includes(giris),
+            'birlestir.py yeniden koşturulmalı');
+      });
+      // Surum sabiti: dagitimin dogrulanabilmesi buna bagli. GET ucu
+      // surumu donduruyor; sabit index.ts ile tek-dosya.ts'de AYNI
+      // olmali, yoksa panelden kuran kisi yanlis surumu dogrular.
+      const hIdx = oku('supabase/functions/hosgeldin/index.ts');
+      const sIdx = /const SURUM = '([^']+)'/.exec(hIdx);
+      const sTek = /const SURUM = '([^']+)'/.exec(tekDosya);
+      bak('hosgeldin SURUM sabiti var', !!sIdx && !!sTek, 'index: ' + sIdx + ' tek: ' + sTek);
+      if(sIdx && sTek){
+        bak('★ SURUM index.ts ve tek-dosya.ts arasında aynı',
+            sIdx[1] === sTek[1], sIdx[1] + ' vs ' + sTek[1]);
+      }
+      bak('hosgeldin GET bilgi ucu var (dağıtım doğrulanabilsin)',
+          /req\.method === 'GET'/.test(hIdx) && /shootboard-hosgeldin/.test(hIdx));
+      // ⚠ BU OLCUM BIR KEZ YANLIS YAZILDI. Ilk hali "govdede
+      // RESEND_API_KEY geciyor mu" diye bakiyordu ve GUVENLI hali
+      // (!!RESEND_API_KEY) de o desene uyuyordu -- yani dogru kodu
+      // yanlis sayiyordu. Olculmesi gereken sey degiskenin ADI degil,
+      // DEGERIN BOOLEAN'A CEVRILMESI: yapilandirma blogundaki her deger
+      // !! ile baslamali, yoksa gizli ayarin kendisi disariya doner.
+      const yp = /yapilandirma:\s*\{([\s\S]*?)\}/.exec(hIdx);
+      bak('yapılandırma bloğu bulunuyor', !!yp, 'blok yok');
+      if(yp){
+        const degerler = [...yp[1].matchAll(/(\w+)\s*:\s*([^,\n]+)/g)].map(m=> m[2].trim());
+        bak('★ GET ucu gizli ayarların DEĞERİNİ döndürmüyor',
+            degerler.length >= 4 && degerler.every(v=> v.startsWith('!!')),
+            degerler.join(' | '));
+      }
+    }
+
+    // SSS cevabi IKI YERDE: gorunen <dd> ve sayfa dibindeki JSON-LD.
+    // Google ikisinin BIREBIR AYNI olmasini istiyor; ayrisirsa zengin
+    // sonuc duser ve bunu hicbir yerde hata olarak gormezsin. Bu olcum
+    // yayin ozelligine bagli DEGIL, her zaman gecerli.
+    for(const [dosya, soru] of [['kilavuz.html', 'Shootboard benim adıma paylaşım yapar mı?'],
+                                ['guide.html', 'Does Shootboard post for me?']]){
+      const m2 = oku(dosya);
+      const kac = (s)=> s.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+      const ld = new RegExp('"name":"' + kac(soru) + '","acceptedAnswer":\\{"@type":"Answer","text":"(.*?)"\\}\\}').exec(m2);
+      const dd = new RegExp('<dt>' + kac(soru) + '</dt>\\s*<dd>([\\s\\S]*?)</dd>').exec(m2);
+      bak('SSS ve JSON-LD ikisi de bulunuyor: ' + dosya, !!ld && !!dd);
+      if(ld && dd){
+        bak('★ SSS cevabı JSON-LD ile BİREBİR aynı: ' + dosya,
+            ld[1].trim() === dd[1].replace(/\s+/g, ' ').trim(),
+            'ld: ' + ld[1].slice(0, 70) + ' || dd: ' + dd[1].replace(/\s+/g, ' ').trim().slice(0, 70));
+      }
+    }
+  }
+
+    // ── R2 SILME SOZU: BELGE KODUN ONUNE GECMESIN ──────────────────
+    // 27 Eylul 2026: privacy.html "paylasim ciktiktan sonra da nesne
+    // deposunda kaliyor" diyordu ve bu, temizlik kodu yazildiktan sonra
+    // YANLIS oldu. Tersi de oldu: onceki metin "Geri Bildirim'den
+    // yazin, silelim" diyordu, yani kod silerken belge elle silmeyi
+    // vaat ediyordu. Iki yon de sessizce yanlis.
+    //
+    // Bu olcum metni ezberlemiyor, KODA bagliyor: yayinlanmis dosyayi
+    // silen fonksiyonlar pc/story-yukle.py'de duruyorsa belge silmeyi
+    // anlatmak ZORUNDA; durmuyorsa anlatmamali.
+    {
+      // `oku` yukaridaki kapsamda kaldi; bu olcum yayin ozelligine
+      // bagli olmadigi icin kendi okuyucusunu kuruyor.
+      const fs2 = require('fs'), yol2 = require('path');
+      const oku = (f)=> fs2.readFileSync(yol2.join(__dirname, '..', f), 'utf8');
+      const yukleyici = oku('pc/story-yukle.py');
+      const temizlikVar = /def\s+temizlik_turu\s*\(/.test(yukleyici)
+                       && /def\s+r2_sil\s*\(/.test(yukleyici)
+                       && /def\s+temizlenecekler\s*\(/.test(yukleyici);
+      bak('temizlik kodu yerinde (pc/story-yukle.py)', temizlikVar);
+
+      for(const belge of ['sartlar.html', 'privacy.html']){
+        const m3 = oku(belge);
+        // Artik yanlis olan iddia: "yayindan sonra da depoda kaliyor".
+        const kalirIddiasi = /paylaşım çıktıktan sonra da nesne\s+deposunda kalıyor/.test(m3)
+                          || /they stay in object\s+storage after the post has gone out/.test(m3);
+        bak('★ "yayindan sonra depoda kalir" iddiasi yok: ' + belge, !kalirIddiasi);
+
+        // Kod siliyorsa belge kendiliginden silindigini SOYLEMELI.
+        if(temizlikVar){
+          const kendiliginden = /kendiliğinden siliniyor/.test(m3)
+                             || /removed on their own/.test(m3)
+                             || /deletes the video and its cover/.test(m3);
+          bak('★ kendiliğinden silme anlatılıyor: ' + belge, kendiliginden);
+
+          // Ve elle silme TEK cozum gibi sunulmamali.
+          const elleTekCozum = /Geri Bildirim'den yazın, silelim\./.test(m3)
+                            || /Ask us from Feedback and we will delete them\./.test(m3);
+          bak('★ elle silme tek çözüm gibi sunulmuyor: ' + belge, !elleTekCozum);
+        }
+      }
+    }
+
   await t.close();
   console.log('\n' + g + ' gecti, ' + k + ' kaldi');
   process.exit(k ? 1 : 0);
