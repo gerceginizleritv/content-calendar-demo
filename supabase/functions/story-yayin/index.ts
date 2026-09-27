@@ -46,7 +46,7 @@
 //
 // Dağıtım:  supabase functions deploy story-yayin --no-verify-jwt
 
-const SURUM = '1.6.0';
+const SURUM = '1.7.0';
 const UCLAR = ['GET / (servis bilgisi)', 'POST / (bir tur)'];
 
 const SUPABASE_URL   = Deno.env.get('SUPABASE_URL') ?? '';
@@ -495,7 +495,31 @@ function kisaBaslik(k: any): string {
 }
 function altYazi(k: any): string {
   const c = (k?.content && typeof k.content === 'object') ? k.content : {};
-  return String(c.caption ?? '').slice(0, 2200);
+  const metin = String(c.caption ?? '').trim();
+  const etiketler = String(c.hashtags ?? '').trim();
+  if (!etiketler) return metin.slice(0, 2200);
+
+  // ⚠ ETİKETLER AYRI ALANDA DURUYOR ve 27 Eylül 2026'ya kadar hiçbir
+  // yayına girmiyordu: burası yalnızca `caption` okuyordu. İlk gerçek
+  // reel'de görüldü -- gönderi çıktı, etiketler yoktu, hiçbir yerde
+  // hata görünmedi. Kullanıcı o kaydı elle düzeltti; sonraki on iki
+  // kayıt aynı şekilde çıkacaktı.
+  const parcalar = etiketler.split(/[\s,]+/).filter(Boolean);
+
+  // Kullanıcı etiketleri alt yazının içine elle yazmışsa tekrar
+  // eklemiyoruz -- 27 Eylül'de tam olarak bunu yapmıştı.
+  if (parcalar[0] && metin.includes(parcalar[0])) return metin.slice(0, 2200);
+
+  // ⚠ SINIRI ETİKETİN ORTASINDAN KESMİYORUZ. Düz `slice(0, 2200)`
+  // "#arkeolo" gibi bir yarım etiket bırakır; Instagram onu geçerli
+  // bir etiket sayar ve gönderi alâkasız bir akışa düşer.
+  let cikti = metin;
+  for (const p of parcalar) {
+    const aday = cikti ? cikti + (cikti === metin ? '\n\n' : ' ') + p : p;
+    if (aday.length > 2200) break;
+    cikti = aday;
+  }
+  return cikti;
 }
 // Reel hem Reels sekmesinde hem profil akışında görünsün mü?
 // VARSAYILAN AÇIK: üreticilerin çoğu ikisini de istiyor ve kapalı bir
