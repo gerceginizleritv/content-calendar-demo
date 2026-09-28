@@ -69,6 +69,20 @@ const oku = (f)=> fs.readFileSync(yol.join(KOK_DIZIN, f), 'utf8');
     }
   }
 
+  console.log('[ortam degiskenleri kirpiliyor]');
+  {
+    // 28 Eylul 2026: TIKTOK_CLIENT_KEY bir satir sonuyla yapistirildi.
+    // Deger ekranda dogru gorunuyordu; GET ucu "\nsbaw7..." dondurunce
+    // anlasildi. Kirpma olmasa yetkilendirme adresine %0A gidecek ve
+    // TikTok'un "gecersiz client_key" hatasinin sebebi hicbir yerde
+    // yazmayacakti.
+    bak('★ ortam değişkenleri kırpılarak okunuyor',
+        /Deno\.env\.get\(ad\) \?\? ''\)\.trim\(\)/.test(islev));
+    const hamOkuma = islev.match(/Deno\.env\.get\([^)]*\)/g) || [];
+    bak('★ kırpılmadan okunan değişken kalmadı',
+        hamOkuma.length === 1, hamOkuma.join(' | '));
+  }
+
   console.log('[veritabani: jeton tarayiciya acilmiyor]');
   {
     bak('tablo RLS ile korunuyor',

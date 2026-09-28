@@ -26,13 +26,22 @@
 // düşmüştü ve bu bir kez 404 yedirmişti. Dağıttıktan sonra GET ucunu
 // açıp `surum` alanını gör.
 
-const SURUM = '1.1.0';
+const SURUM = '1.2.0';
 
-const SUPABASE_URL = Deno.env.get('SUPABASE_URL') ?? '';
-const SERVIS       = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY') ?? '';
-const ANON         = Deno.env.get('SUPABASE_ANON_KEY') ?? '';
-const CLIENT_KEY   = Deno.env.get('TIKTOK_CLIENT_KEY') ?? '';
-const CLIENT_SECRET= Deno.env.get('TIKTOK_CLIENT_SECRET') ?? '';
+// ⚠ ORTAM DEĞİŞKENLERİ KIRPILIYOR, VE BU SÜS DEĞİL.
+// 28 Eylül 2026: TIKTOK_CLIENT_KEY panoya bir satır sonuyla birlikte
+// yapıştırılmıştı. Değer ekranda doğru görünüyordu; GET ucu onu
+// "\nsbaw7..." diye döndürünce anlaşıldı. Kırpılmasaydı yetkilendirme
+// adresine %0A olarak gidecek, TikTok "geçersiz client_key" diyecek ve
+// sebebi HİÇBİR YERDE yazmayacaktı -- gözle bakan kişi değeri doğru
+// görüp başka yerde hata arardı.
+const ayar = (ad: string) => (Deno.env.get(ad) ?? '').trim();
+
+const SUPABASE_URL = ayar('SUPABASE_URL');
+const SERVIS       = ayar('SUPABASE_SERVICE_ROLE_KEY');
+const ANON         = ayar('SUPABASE_ANON_KEY');
+const CLIENT_KEY   = ayar('TIKTOK_CLIENT_KEY');
+const CLIENT_SECRET= ayar('TIKTOK_CLIENT_SECRET');
 
 // TikTok v2. Sonundaki eğik çizgi ŞART: TikTok çizgisiz adreste
 // yönlendirme yapıyor ve POST gövdesi yönlendirmede düşüyor.
