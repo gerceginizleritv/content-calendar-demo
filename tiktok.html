@@ -1,0 +1,164 @@
+<!doctype html>
+<html lang="tr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>TikTok bağlantısı — Shootboard</title>
+<meta name="robots" content="noindex">
+<!--
+  TIKTOK YETKILENDIRME DONUS SAYFASI
+
+  TikTok kullaniciyi buraya `?code=...&state=...` ile geri gonderiyor.
+  Bu sayfa `code`u JETONA CEVIRMIYOR: o is client_secret istiyor ve
+  secret statik bir sayfada duramaz. Sayfa yalnizca `code`u Edge
+  Function'a iletiyor, takas orada oluyor.
+
+  ⚠ ADRES SABIT OLMAK ZORUNDA. TikTok "Redirect URI must be static,
+  no parameters allowed" diyor ve kayitli adresle birebir ayni olani
+  bekliyor. Bu yuzden jeton takasinda gonderdigimiz redirect_uri de
+  sorgu dizgesi ATILARAK uretiliyor (origin + pathname).
+
+  ⚠ NEDEN app.html DEGIL DE AYRI SAYFA:
+  app.html buyuk ve acilisinda takvimi kuruyor. Donus adresini oraya
+  verseydik her yetkilendirme donusunde butun uygulama yeniden
+  yukleniyor, `code` da adres cubugunda oyalanıyordu. Ayri sayfa
+  code'u alip temizliyor ve uygulamaya geri gonderiyor.
+-->
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.45.4/dist/umd/supabase.js"></script>
+<style>
+  :root{
+    --zemin:#F4F7FA; --kart:#FFFFFF; --metin:#141C27; --soluk:#5B6676;
+    --cizgi:#DDE3EA; --vurgu:#2563C7; --iyi:#0F7B3E; --kotu:#B3261E;
+  }
+  @media (prefers-color-scheme: dark){
+    :root:not([data-theme="light"]){
+      --zemin:#0E131A; --kart:#161D26; --metin:#EAEFF5; --soluk:#9AA6B4;
+      --cizgi:#27313D; --vurgu:#6EA8FF; --iyi:#5FD08A; --kotu:#FF8A80;
+    }
+  }
+  :root[data-theme="dark"]{
+    --zemin:#0E131A; --kart:#161D26; --metin:#EAEFF5; --soluk:#9AA6B4;
+    --cizgi:#27313D; --vurgu:#6EA8FF; --iyi:#5FD08A; --kotu:#FF8A80;
+  }
+  *{box-sizing:border-box}
+  body{
+    margin:0; background:var(--zemin); color:var(--metin);
+    font:16px/1.55 -apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Helvetica,Arial,sans-serif;
+    display:flex; align-items:center; justify-content:center;
+    min-height:100vh; padding:16px;
+  }
+  .kart{
+    background:var(--kart); border:1px solid var(--cizgi); border-radius:14px;
+    padding:28px 24px; max-width:460px; width:100%;
+  }
+  h1{font-size:19px; margin:0 0 6px; text-wrap:balance}
+  p{margin:0 0 14px; color:var(--soluk)}
+  .durum{font-weight:600; color:var(--metin)}
+  .iyi{color:var(--iyi)} .kotu{color:var(--kotu)}
+  a.dugme{
+    display:inline-block; margin-top:8px; padding:10px 16px; border-radius:9px;
+    background:var(--vurgu); color:#fff; text-decoration:none; font-weight:600;
+  }
+  code{background:rgba(127,127,127,.14); padding:1px 5px; border-radius:5px; font-size:13px}
+</style>
+</head>
+<body>
+<main class="kart">
+  <h1>TikTok bağlantısı</h1>
+  <p id="durum" class="durum">Bağlantı tamamlanıyor…</p>
+  <p id="ayrinti"></p>
+  <a class="dugme" id="geri" href="/app.html">Shootboard'a dön</a>
+</main>
+
+<script>
+(function(){
+  'use strict';
+
+  var SUPABASE_URL = 'https://dyemvzmpnlpnzwebuciu.supabase.co';
+  var SUPABASE_KEY = 'sb_publishable_QpzqwOn4BX43GtX9ecaowQ_qIlaHJA-';
+  var UC = SUPABASE_URL + '/functions/v1/tiktok-baglan';
+  var DURUM_ANAHTARI = 'shootboard.tiktok.state';
+
+  var durumEl = document.getElementById('durum');
+  var ayrintiEl = document.getElementById('ayrinti');
+
+  function yaz(metin, sinif, ayrinti){
+    durumEl.textContent = metin;
+    durumEl.className = 'durum ' + (sinif || '');
+    ayrintiEl.textContent = ayrinti || '';
+  }
+
+  var q = new URLSearchParams(location.search);
+  var code  = q.get('code');
+  var state = q.get('state');
+  var hata  = q.get('error');
+
+  // TikTok "iptal" halinde de buraya donuyor, code yerine error ile.
+  if (hata) {
+    yaz('Bağlantı tamamlanmadı.', 'kotu',
+        q.get('error_description') || 'TikTok yetkilendirmeyi vermedi (' + hata + ').');
+    return;
+  }
+  if (!code) {
+    yaz('Bu sayfa doğrudan açılmaz.', 'kotu',
+        'TikTok bağlantısını Shootboard içindeki "TikTok\'u bağla" düğmesinden başlat.');
+    return;
+  }
+
+  // ⚠ STATE KONTROLU ATLANAMAZ.
+  // `state` olmadan, baska bir siteden gonderilen bir `code` ile
+  // kullanicinin hesabina yabanci bir TikTok hesabi baglanabilirdi.
+  // Degeri app.html yonlendirmeden ONCE yaziyor.
+  var beklenen = null;
+  try { beklenen = sessionStorage.getItem(DURUM_ANAHTARI); } catch (e) { beklenen = null; }
+  if (!beklenen) {
+    // Ayri sekmede acildiysa sessionStorage bos olabilir; localStorage
+    // yedegi bu yuzden var.
+    try { beklenen = localStorage.getItem(DURUM_ANAHTARI); } catch (e) { beklenen = null; }
+  }
+  if (!beklenen || !state || beklenen !== state) {
+    yaz('Güvenlik kontrolü geçilemedi.', 'kotu',
+        'Bağlantı isteği bu tarayıcıda başlatılmamış görünüyor. Shootboard\'a dönüp yeniden dene.');
+    return;
+  }
+  try { sessionStorage.removeItem(DURUM_ANAHTARI); localStorage.removeItem(DURUM_ANAHTARI); } catch (e) {}
+
+  // Kayitli adresle BIREBIR ayni olmali: sorgu dizgesi atiliyor.
+  var donusAdresi = location.origin + location.pathname;
+
+  var sb = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
+
+  sb.auth.getSession().then(function(r){
+    var oturum = r && r.data && r.data.session;
+    if (!oturum) {
+      yaz('Önce Shootboard\'a giriş yapmalısın.', 'kotu',
+          'Giriş yaptıktan sonra TikTok bağlantısını baştan başlat.');
+      return null;
+    }
+    return fetch(UC, {
+      method: 'POST',
+      headers: {
+        'content-type': 'application/json',
+        'authorization': 'Bearer ' + oturum.access_token
+      },
+      body: JSON.stringify({ code: code, redirect_uri: donusAdresi })
+    }).then(function(y){
+      return y.json().catch(function(){ return { ok:false, sebep:'Sunucu cevabı okunamadı (' + y.status + ')' }; });
+    });
+  }).then(function(v){
+    if (!v) return;
+    if (v.ok) {
+      yaz('TikTok bağlandı.' + (v.kullanici_adi ? ' (' + v.kullanici_adi + ')' : ''), 'iyi',
+          'Planladığın videolar yayın saatinde TikTok taslaklarına düşecek. Paylaşma adımını sen yapacaksın.');
+      // Adres cubugundaki `code`u temizliyoruz: gecmiste kalmasin.
+      try { history.replaceState(null, '', location.pathname); } catch (e) {}
+    } else {
+      yaz('Bağlantı kurulamadı.', 'kotu', v.sebep || 'Bilinmeyen hata.');
+    }
+  }).catch(function(e){
+    yaz('Bağlantı kurulamadı.', 'kotu', (e && e.message) || String(e));
+  });
+})();
+</script>
+</body>
+</html>
