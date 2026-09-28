@@ -26,7 +26,7 @@
 // düşmüştü ve bu bir kez 404 yedirmişti. Dağıttıktan sonra GET ucunu
 // açıp `surum` alanını gör.
 
-const SURUM = '1.0.0';
+const SURUM = '1.1.0';
 
 const SUPABASE_URL = Deno.env.get('SUPABASE_URL') ?? '';
 const SERVIS       = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY') ?? '';
@@ -137,6 +137,19 @@ Deno.serve(async (istek: Request) => {
     return json({
       ok: true, servis: 'shootboard-tiktok-baglan', surum: SURUM,
       uclar: ['GET / (servis bilgisi)', 'POST / (code -> jeton)', 'POST /?kes=1 (baglantiyi kes)'],
+      // ⚠ client_key AÇIKÇA DÖNÜYOR ve bu doğru: bu değer zaten
+      // yetkilendirme adresinin sorgu dizgesinde, kullanıcının adres
+      // çubuğunda görünüyor. OAuth'ta gizli olan client_SECRET.
+      //
+      // Sayfaya gömmek yerine buradan vermenin sebebi: sandbox'tan
+      // production'a geçerken yalnızca gizli değişken değişecek, kod
+      // değişmeyecek. Anahtarı sayfaya yazsaydık o geçişte
+      // "sandbox anahtarıyla production'a bağlanmaya çalışmak" gibi
+      // sessiz bir hata mümkün olurdu.
+      client_key: CLIENT_KEY,
+      // Hangi izinleri istiyoruz. Sayfa bunu adres kurarken kullanıyor;
+      // TEK YER olsun diye burada duruyor.
+      kapsamlar: 'user.info.basic,video.upload',
       // ⚠ Yalnızca "tanımlı mı" bilgisi. Değerin kendisi asla.
       yapilandirma: {
         supabase:      !!SUPABASE_URL,

@@ -88,6 +88,48 @@
     ayrintiEl.textContent = ayrinti || '';
   }
 
+  // Yetkilendirmeyi baslatan taraf.
+  function baslat(){
+    yaz('Hazırlanıyor…', '', '');
+    fetch(UC).then(function(y){ return y.json(); }).then(function(bilgi){
+      if (!bilgi || !bilgi.client_key) {
+        yaz('TikTok bağlantısı şu an kurulamıyor.', 'kotu',
+            'Sunucuda TikTok anahtarı tanımlı değil.');
+        return;
+      }
+      // ⚠ STATE: rastgele ve TARAYICIDA saklanan bir deger. Donuste
+      // birebir ayni degilse baglanti reddediliyor. Uretimi
+      // crypto.randomUUID ile; Math.random tahmin edilebilir.
+      var state = (window.crypto && window.crypto.randomUUID)
+        ? window.crypto.randomUUID()
+        : String(Date.now()) + Math.random().toString(36).slice(2);
+      try { sessionStorage.setItem(DURUM_ANAHTARI, state); } catch (e) {}
+      try { localStorage.setItem(DURUM_ANAHTARI, state); } catch (e) {}
+
+      var adres = 'https://www.tiktok.com/v2/auth/authorize/'
+        + '?client_key=' + encodeURIComponent(bilgi.client_key)
+        + '&scope=' + encodeURIComponent(bilgi.kapsamlar || 'user.info.basic,video.upload')
+        + '&response_type=code'
+        + '&redirect_uri=' + encodeURIComponent(location.origin + location.pathname)
+        + '&state=' + encodeURIComponent(state);
+
+      durumEl.textContent = 'TikTok hesabını bağla';
+      durumEl.className = 'durum';
+      ayrintiEl.innerHTML = '';
+      var a = document.createElement('a');
+      a.className = 'dugme';
+      a.href = adres;
+      a.textContent = 'TikTok ile devam et';
+      ayrintiEl.appendChild(a);
+      var not = document.createElement('p');
+      not.textContent = 'Shootboard videolarını TikTok TASLAKLARINA bırakacak. '
+        + 'Paylaşma adımını sen yapacaksın; senin yerine hiçbir şey yayınlanmıyor.';
+      ayrintiEl.appendChild(not);
+    }).catch(function(e){
+      yaz('TikTok bağlantısı şu an kurulamıyor.', 'kotu', (e && e.message) || String(e));
+    });
+  }
+
   var q = new URLSearchParams(location.search);
   var code  = q.get('code');
   var state = q.get('state');
@@ -99,9 +141,13 @@
         q.get('error_description') || 'TikTok yetkilendirmeyi vermedi (' + hata + ').');
     return;
   }
+  // ── CODE YOKSA: BAGLANTIYI BURADAN BASLATIYORUZ ────────────────
+  // Sayfa hem baslangic hem donus. Ayri bir baslangic sayfasi ya da
+  // app.html'e dugme koymak da olurdu; boylesi TEK YER birakiyor ve
+  // yetkilendirme adresi ile donus adresi ayni dosyada duruyor --
+  // ikisinin ayrismasi TikTok'ta "redirect_uri mismatch" demek.
   if (!code) {
-    yaz('Bu sayfa doğrudan açılmaz.', 'kotu',
-        'TikTok bağlantısını Shootboard içindeki "TikTok\'u bağla" düğmesinden başlat.');
+    baslat();
     return;
   }
 

@@ -118,24 +118,33 @@ const oku = (f)=> fs.readFileSync(yol.join(KOK_DIZIN, f), 'utf8');
       const baglam = await t.newContext({ viewport: { width: 500, height: 700 } });
       const p = await baglam.newPage();
 
-      // Ag istegi cikarsa olcum coker: sayfanin fonksiyonu HIC
-      // cagirmamasi gerekiyor. Sayici o yuzden burada.
-      let cagri = 0;
-      await p.route('**/functions/v1/tiktok-baglan*', (r)=>{ cagri++; r.abort(); });
+      // ⚠ OLCULEN SEY "hic istek atmasin" DEGIL.
+      // Sayfa baslangic tarafini da yapiyor: code yokken GET ile
+      // client_key'i soruyor, bu normal. Korunmasi gereken sey JETON
+      // TAKASI: state dogrulanmadan POST atilmamali. O yuzden sayici
+      // yontem basina ve her gezinmede sifirlaniyor.
+      let get = 0, post = 0;
+      await p.route('**/functions/v1/tiktok-baglan*', (r)=>{
+        if (r.request().method() === 'POST') post++; else get++;
+        r.abort();
+      });
 
-      // 1) code yok -> "dogrudan acilmaz"
+      // 1) code yok -> baslangic tarafi: GET var, POST YOK
+      get = post = 0;
       await p.goto(KOK + '/tiktok.html', { waitUntil: 'domcontentloaded' });
-      await p.waitForTimeout(300);
+      await p.waitForTimeout(400);
       let metin = await p.textContent('#durum');
-      bak('★ code olmadan açılınca bağlanmaya çalışmıyor',
-          /doğrudan açılmaz/i.test(metin || '') && cagri === 0, (metin || '') + ' | cagri=' + cagri);
+      bak('★ code olmadan açılınca JETON TAKASI yapmıyor', post === 0, 'post=' + post);
+      bak('code olmadan açılınca bağlantıyı başlatmayı deniyor (ölçüm boş değil)',
+          get > 0, 'get=' + get);
 
-      // 2) code var ama state yok -> guvenlik kontrolu
+      // 2) code var ama state yok -> guvenlik kontrolu, POST YOK
+      get = post = 0;
       await p.goto(KOK + '/tiktok.html?code=SAHTE&state=YABANCI', { waitUntil: 'domcontentloaded' });
-      await p.waitForTimeout(300);
+      await p.waitForTimeout(400);
       metin = await p.textContent('#durum');
-      bak('★ state eşleşmezse fonksiyon HİÇ çağrılmıyor',
-          /güvenlik/i.test(metin || '') && cagri === 0, (metin || '') + ' | cagri=' + cagri);
+      bak('★ state eşleşmezse jeton takası YAPILMIYOR',
+          /güvenlik/i.test(metin || '') && post === 0, (metin || '') + ' | post=' + post);
 
       // 3) TikTok "iptal" ile donerse anlasilir mesaj
       await p.goto(KOK + '/tiktok.html?error=access_denied&error_description=Kullanici+iptal+etti',
