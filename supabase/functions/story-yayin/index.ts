@@ -46,7 +46,7 @@
 //
 // Dağıtım:  supabase functions deploy story-yayin --no-verify-jwt
 
-const SURUM = '1.8.0';
+const SURUM = '1.8.1';
 const UCLAR = ['GET / (servis bilgisi)', 'POST / (bir tur)'];
 
 // ⚠ ORTAM DEĞİŞKENLERİ KIRPILIYOR.
@@ -1265,7 +1265,12 @@ Deno.serve(async (req: Request) => {
       yapilandirma: {
         // Değerler DEĞİL, yalnızca tanımlı olup olmadıkları.
         page_token: !!PAGE_TOKEN, ig_user_id: !!IG_USER_ID, page_id: !!pageId(),
-        app_kimlik: !!(APP_ID && APP_SECRET), resend: !!RESEND_KEY, secret: !!WORKER_SECRET
+        app_kimlik: !!(APP_ID && APP_SECRET), resend: !!RESEND_KEY, secret: !!WORKER_SECRET,
+        // TikTok anahtarları BAŞKA bir fonksiyonda (tiktok-baglan) da
+        // okunuyor; Supabase'de gizli değişkenler projeye bağlı, yani
+        // ikisi de aynı havuzdan okuyor. Ama "okuyor olmalı" ile
+        // "okuyor" farklı şeyler -- dağıtımdan sonra bakılabilsin.
+        tiktok_key: !!TIKTOK_KEY, tiktok_secret: !!TIKTOK_SECRET
       } });
   }
   if (req.method !== 'POST') return json({ ok: false, sebep: 'yalnızca POST' }, 405);
