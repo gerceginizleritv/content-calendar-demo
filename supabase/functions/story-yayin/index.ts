@@ -46,22 +46,43 @@
 //
 // Dağıtım:  supabase functions deploy story-yayin --no-verify-jwt
 
-const SURUM = '1.7.0';
+const SURUM = '1.8.0';
 const UCLAR = ['GET / (servis bilgisi)', 'POST / (bir tur)'];
 
-const SUPABASE_URL   = Deno.env.get('SUPABASE_URL') ?? '';
-const SERVIS         = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY') ?? '';
-const WORKER_SECRET  = Deno.env.get('STORY_WORKER_SECRET') ?? '';
-const PAGE_TOKEN     = Deno.env.get('META_PAGE_TOKEN') ?? '';
-const IG_USER_ID     = Deno.env.get('META_IG_USER_ID') ?? '';
-const pageId         = () => Deno.env.get('META_PAGE_ID') ?? '';
-const APP_ID         = Deno.env.get('META_APP_ID') ?? '';
-const APP_SECRET     = Deno.env.get('META_APP_SECRET') ?? '';
-const RESEND_KEY     = Deno.env.get('RESEND_API_KEY') ?? '';
-const MAIL_FROM      = Deno.env.get('MAIL_FROM') ?? 'Shootboard <hello@shootboard.app>';
-const APP_URL        = Deno.env.get('APP_URL') ?? 'https://shootboard.app/app.html';
-const BILDIRIM_EPOSTA = Deno.env.get('STORY_BILDIRIM_EPOSTA') ?? '';
-const GRAF_TABANI    = Deno.env.get('GRAF_TABANI') ?? 'https://graph.facebook.com/v21.0';
+// ⚠ ORTAM DEĞİŞKENLERİ KIRPILIYOR.
+// 28 Eylül 2026: TikTok anahtarı Supabase'e bir satır sonuyla birlikte
+// yapıştırılmıştı; değer ekranda doğru görünüyordu, istek "geçersiz
+// anahtar" ile dönüyordu ve sebebi hiçbir yerde yazmıyordu. Aynı kaza
+// META_* değerlerinde de olabilir, olmadığını bilmiyoruz -- yalnızca
+// bugün çalıştıklarını biliyoruz.
+const ayar = (ad: string) => (Deno.env.get(ad) ?? '').trim();
+
+const SUPABASE_URL   = ayar('SUPABASE_URL');
+const SERVIS         = ayar('SUPABASE_SERVICE_ROLE_KEY');
+const WORKER_SECRET  = ayar('STORY_WORKER_SECRET');
+const PAGE_TOKEN     = ayar('META_PAGE_TOKEN');
+const IG_USER_ID     = ayar('META_IG_USER_ID');
+const pageId         = () => ayar('META_PAGE_ID');
+const APP_ID         = ayar('META_APP_ID');
+const APP_SECRET     = ayar('META_APP_SECRET');
+const TIKTOK_KEY     = ayar('TIKTOK_CLIENT_KEY');
+const TIKTOK_SECRET  = ayar('TIKTOK_CLIENT_SECRET');
+// TikTok v2. Sondaki eğik çizgi ŞART: çizgisiz adreste yönlendirme
+// yapılıyor ve POST gövdesi yönlendirmede düşüyor.
+const TT_JETON  = 'https://open.tiktokapis.com/v2/oauth/token/';
+const TT_INBOX  = 'https://open.tiktokapis.com/v2/post/publish/inbox/video/init/';
+const TT_DURUM  = 'https://open.tiktokapis.com/v2/post/publish/status/fetch/';
+// Parça sınırları TikTok'un: en az 5 MB, en çok 64 MB; SON parça
+// artanı da alarak 128 MB'a kadar taşabiliyor. 10 MB seçtik: 150 MB'lık
+// bir reel 15 parça oluyor ve hiçbir an bellekte 10 MB'tan fazlası
+// durmuyor.
+const TT_PARCA  = 10 * 1024 * 1024;
+
+const RESEND_KEY     = ayar('RESEND_API_KEY');
+const MAIL_FROM      = (ayar('MAIL_FROM') || 'Shootboard <hello@shootboard.app>');
+const APP_URL        = (ayar('APP_URL') || 'https://shootboard.app/app.html');
+const BILDIRIM_EPOSTA = ayar('STORY_BILDIRIM_EPOSTA');
+const GRAF_TABANI    = (ayar('GRAF_TABANI') || 'https://graph.facebook.com/v21.0');
 
 const sayi = (ad: string, varsayilan: number) => {
   const n = Number(Deno.env.get(ad) ?? '');
@@ -380,6 +401,9 @@ async function kotaDolu(): Promise<{ dolu: boolean; not: string }> {
 // iyidir: çift story geri alınamaz, gecikmiş story alınabilir.
 async function cikmisMi(k: any, cagriAni: string): Promise<{ biliniyor: boolean; id: string }> {
   const pf = String(k.platform || 'instagram');
+  // TikTok'ta "son gönderiler" listesi yok; kendi publish_id'siyle
+  // sorulan ayrı bir durum ucu var.
+  if (pf === 'tiktok') return await tiktokCikmisMi(k);
   const reel = reelMi(k);
   // Her platformun VE her türün kendi listesi var. Yanlış listeye
   // bakmak "çıkmamış" cevabı üretir ve o cevap yeniden yayın demek:
@@ -565,7 +589,7 @@ function igKonteynerAlanlari(k: any): Record<string, string> {
 // şartname Bölüm 6 bunları ortaklaştırmamayı özellikle söylüyor:
 // Instagram dosyayı adresten ÇEKİYOR, Facebook dosyayı bize
 // YÜKLETİYOR. Ortak olan yalnızca ön kontroller ve çöküş izi.
-const YAYINLANABILIR = ['instagram', 'facebook'];
+const YAYINLANABILIR = ['instagram', 'facebook', 'tiktok'];
 
 async function kaydiYayinla(k: any, bitis: number): Promise<string> {
   // ⚠ PLATFORM, HER ŞEYDEN ÖNCE.
@@ -582,6 +606,11 @@ async function kaydiYayinla(k: any, bitis: number): Promise<string> {
     await rpc('story_ertele', { p_id: k.id, p_dakika: 180,
       p_sebep: `${pf} yayını henüz kurulmadı; kayıt bekliyor. Şimdilik elle yayınla.` });
     return 'platform-desteklenmiyor';
+  }
+  if (pf === 'tiktok' && (!TIKTOK_KEY || !TIKTOK_SECRET)) {
+    await rpc('story_ertele', { p_id: k.id, p_dakika: 180,
+      p_sebep: 'TIKTOK_CLIENT_KEY / TIKTOK_CLIENT_SECRET tanımlı değil; TikTok yüklemesi yapılamıyor.' });
+    return 'yapilandirma-eksik';
   }
   if (pf === 'facebook' && !pageId()) {
     await rpc('story_ertele', { p_id: k.id, p_dakika: 180,
@@ -638,6 +667,8 @@ async function kaydiYayinla(k: any, bitis: number): Promise<string> {
       p_sebep: `Önceki parça (${seri.parca}) henüz yayınlanmadı; sırası bekleniyor.` });
     return 'seri-bekliyor';
   }
+
+  if (pf === 'tiktok') return await tiktokYayinla(k);
 
   return pf === 'facebook'
     ? await facebookYayinla(k)
@@ -777,6 +808,169 @@ async function instagramYayinla(k: any, bitis: number): Promise<string> {
 // yayın üretemez. İz varken publish_called_at boşsa BAŞTAN başlıyoruz:
 // hiçbir şey çıkmış olamaz ve yeni bir video_id almak, yarım kalmış
 // bir yüklemeyi kurtarmaya çalışmaktan basit ve güvenli.
+// ══════════════════════════════════════════════════════════════════
+// TIKTOK — TASLAĞA BIRAKMA
+// ══════════════════════════════════════════════════════════════════
+// ⛔ BU YAYIN DEĞİL, TESLİMDİR.
+// Kullanılan uç `/v2/post/publish/inbox/video/init/`: video kullanıcının
+// TikTok GELEN KUTUSUNA taslak olarak düşüyor, paylaşmayı kullanıcı
+// yapıyor. Doğrudan yayın (`video.publish`) TikTok denetiminden geçmiş
+// uygulamalara açık; denetimsiz istemcinin gönderileri "yalnız ben"
+// görünürlüğüne kilitleniyor.
+//
+// ⚠ TASLAK METİN TAŞIMIYOR. Bu ucun gövdesinde alt yazı alanı YOK
+// (`post_info` yalnızca doğrudan yayın ucunda). Yani `content.caption`
+// ve etiketler TikTok'a GİTMİYOR; kullanıcı uygulamada yazıyor.
+// Instagram ve Facebook'ta gidiyor -- aradaki farkı bilmeyen biri
+// "TikTok'ta alt yazım nerede" diye kodda arar, o yüzden burada yazıyor.
+
+// Kullanıcının jetonu. Süresi dolmuşsa yenileyip saklıyor.
+async function tiktokJetonu(k: any): Promise<string | null> {
+  const satirlar = await rest(
+    `/tiktok_hesaplari?user_id=eq.${k.user_id}&select=*&limit=1`);
+  const h = Array.isArray(satirlar) ? satirlar[0] : null;
+  if (!h) return null;
+
+  // 60 saniyelik pay: yükleme uzun sürüyor, tam sınırda başlayan bir
+  // aktarım ortasında jeton ölürse parçalar yarıda kalır.
+  const bitis = Date.parse(String(h.erisim_bitis ?? '')) || 0;
+  if (bitis > Date.now() + 60_000) return String(h.erisim_jetonu || '');
+
+  if (!h.yenileme_jetonu) return null;
+  const govde = new URLSearchParams({
+    client_key: TIKTOK_KEY, client_secret: TIKTOK_SECRET,
+    grant_type: 'refresh_token', refresh_token: String(h.yenileme_jetonu)
+  });
+  const r = await fetch(TT_JETON, {
+    method: 'POST',
+    headers: { 'content-type': 'application/x-www-form-urlencoded' },
+    body: govde.toString()
+  });
+  const v = await r.json().catch(() => null);
+  if (!r.ok || !v?.access_token) return null;
+
+  const simdi = Date.now();
+  await rest(`/tiktok_hesaplari?user_id=eq.${k.user_id}`, {
+    method: 'PATCH',
+    govde: {
+      erisim_jetonu:   String(v.access_token),
+      erisim_bitis:    new Date(simdi + Number(v.expires_in ?? 86400) * 1000).toISOString(),
+      // Yenileme jetonu da dönüyor; dönmezse eskisi duruyor.
+      yenileme_jetonu: String(v.refresh_token ?? h.yenileme_jetonu),
+      guncelleme:      new Date(simdi).toISOString()
+    }
+  });
+  return String(v.access_token);
+}
+
+// Çöküş izi kurtarması. IG/FB'de "son gönderiler" listesine bakılıyor;
+// TikTok'ta öyle bir liste yok, ama başlatma bize bir publish_id veriyor
+// ve durumu sorulabiliyor.
+async function tiktokCikmisMi(k: any): Promise<{ biliniyor: boolean; id: string }> {
+  if (!k.publish_ref) return { biliniyor: true, id: '' };
+  const jeton = await tiktokJetonu(k);
+  if (!jeton) return { biliniyor: false, id: '' };
+  try {
+    const r = await fetch(TT_DURUM, {
+      method: 'POST',
+      headers: { authorization: `Bearer ${jeton}`, 'content-type': 'application/json' },
+      body: JSON.stringify({ publish_id: String(k.publish_ref) })
+    });
+    const v = await r.json().catch(() => null);
+    if (!r.ok) return { biliniyor: false, id: '' };
+    const durum = String(v?.data?.status ?? '');
+    // Taslağa düşmüş sayılan durumlar. FAILED ise çıkmamış demektir ve
+    // yeniden denenebilir; ötekiler "hâlâ işleniyor" -- o zaman BİLMİYORUZ
+    // ve beklemek, ikinci kez yüklemekten iyidir.
+    if (durum === 'SEND_TO_USER_INBOX' || durum === 'PUBLISH_COMPLETE') {
+      return { biliniyor: true, id: String(k.publish_ref) };
+    }
+    if (durum === 'FAILED') return { biliniyor: true, id: '' };
+    return { biliniyor: false, id: '' };
+  } catch {
+    return { biliniyor: false, id: '' };
+  }
+}
+
+async function tiktokYayinla(k: any): Promise<string> {
+  const jeton = await tiktokJetonu(k);
+  if (!jeton) {
+    // HATA DEĞİL ERTELEME: kullanıcı hesabını bağlamamış ya da yetkiyi
+    // geri almış olabilir. Bağladığı gün elle hiçbir şey yapmadan akar.
+    await rpc('story_ertele', { p_id: k.id, p_dakika: 180,
+      p_sebep: 'TikTok hesabı bağlı değil (ya da yetki yenilenemedi). '
+             + 'shootboard.app/tiktok.html adresinden bağla.' });
+    return 'tiktok-bagli-degil';
+  }
+
+  const boyut = Number(k.media_bytes) || 0;
+  if (!boyut) {
+    await kaliciHata(k, 'Dosya boyutu bilinmiyor; TikTok video_size istiyor.');
+    return 'boyut-yok';
+  }
+
+  // ⚠ PARÇA SAYISI TikTok'un FORMÜLÜYLE: floor(boyut / parça).
+  // Kendi hesabımızı yapıp yuvarlasaydık son parça ya eksik ya fazla
+  // olurdu; TikTok toplamı bu formülle doğruluyor.
+  const parca = boyut <= TT_PARCA ? boyut : TT_PARCA;
+  const adet  = boyut <= TT_PARCA ? 1 : Math.floor(boyut / TT_PARCA);
+
+  const bas = await fetch(TT_INBOX, {
+    method: 'POST',
+    headers: { authorization: `Bearer ${jeton}`, 'content-type': 'application/json; charset=UTF-8' },
+    body: JSON.stringify({
+      source_info: { source: 'FILE_UPLOAD', video_size: boyut,
+                     chunk_size: parca, total_chunk_count: adet }
+    })
+  });
+  const basV = await bas.json().catch(() => null);
+  const yuklemeAdresi = String(basV?.data?.upload_url ?? '');
+  const publishId     = String(basV?.data?.publish_id ?? '');
+  if (!bas.ok || !yuklemeAdresi || !publishId) {
+    throw new GrafHata(bas.status, null, null,
+      'TikTok yükleme başlatılamadı: ' + temizle(JSON.stringify(basV ?? {})).slice(0, 300));
+  }
+  await rpc('story_iz_konteyner', { p_id: k.id, p_ref: publishId });
+
+  // ---- Parçalar ------------------------------------------------------------
+  // ⚠ DOSYA BELLEĞE ALINMIYOR. R2'den Range ile okunup aynı anda
+  // TikTok'a veriliyor. 150 MB'lık bir reel'i belleğe almak Edge
+  // Function'ı öldürürdü.
+  for (let i = 0; i < adet; i++) {
+    const basBayt = i * parca;
+    const sonBayt = (i === adet - 1) ? boyut - 1 : (basBayt + parca - 1);
+    const medya = await fetch(String(k.media_url), {
+      headers: { range: `bytes=${basBayt}-${sonBayt}` }
+    });
+    if (!medya.ok || !medya.body) {
+      throw new GrafHata(medya.status, null, null,
+        `Medya parçası alınamadı (${basBayt}-${sonBayt}); adres ${medya.status} döndürdü.`);
+    }
+    const y = await fetch(yuklemeAdresi, {
+      method: 'PUT',
+      headers: {
+        'content-type': String(k.media_mime || 'video/mp4'),
+        'content-length': String(sonBayt - basBayt + 1),
+        'content-range': `bytes ${basBayt}-${sonBayt}/${boyut}`
+      },
+      body: medya.body,
+      ...({ duplex: 'half' } as any)
+    });
+    if (!y.ok) {
+      const metin = await y.text().catch(() => '');
+      throw new GrafHata(y.status, null, null,
+        `TikTok parça ${i + 1}/${adet} yüklenemedi: ` + temizle(metin).slice(0, 200));
+    }
+  }
+
+  // Yükleme bitti. Taslağın kullanıcının gelen kutusuna düşmesi TikTok
+  // tarafında birkaç saniye sürebiliyor; publish_id ile takip edilebilir
+  // ama beklemiyoruz -- tur uzarsa öteki kayıtlar gecikir.
+  await rpc('story_iz_yayin_cagrisi', { p_id: k.id });
+  await rpc('story_yayinlandi', { p_id: k.id, p_external_id: publishId });
+  return 'taslaga-birakildi';
+}
+
 async function facebookYayinla(k: any): Promise<string> {
   const video = String(k.media_mime ?? '').startsWith('video/');
   if (reelMi(k) && !video) {

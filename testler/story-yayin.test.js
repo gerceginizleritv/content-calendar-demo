@@ -342,6 +342,26 @@ const yanit = (govde, durum)=> Promise.resolve({
   json: ()=> Promise.resolve(govde)
 });
 
+// ── SAHTE TIKTOK ──────────────────────────────────────────────────
+// Uc ayri uc: jeton, yukleme baslatma, parca PUT'lari. Parcalarin
+// Content-Range basliklari toplaniyor -- olculmek istenen sey "yukledi
+// mi" degil, DOSYAYI DOGRU BOLDU MU.
+// ⚠ BASLANGICTA KURULU. Baska bir olcum yanlislikla tiktok_hesaplari
+// uctasini cagirirsa "null okunamadi" diye COKMESIN -- coken test, kor
+// testle ayni goruntuyu verir.
+let TT = null;
+function ttKur(ek){
+  TT = Object.assign({
+    hesap: { user_id:'u1', open_id:'oid', kullanici_adi:'Test',
+             erisim_jetonu:'tok_gecerli',
+             erisim_bitis: new Date(Date.now() + 3600e3).toISOString(),
+             yenileme_jetonu:'yen_1',
+             yenileme_bitis: new Date(Date.now() + 30*864e5).toISOString() },
+    baslatHatasi: 0, parcaHatasi: 0, durum: 'SEND_TO_USER_INBOX',
+    yenilemeCalisti: 0, init: null, parcalar: [], jetonlar: []
+  }, ek || {});
+}
+
 function sahteFetch(adres, secenek){
   const url = String(adres);
   const yontem = (secenek && secenek.method) || 'GET';
@@ -374,6 +394,38 @@ function sahteFetch(adres, secenek){
     return yanit(c, durum);
   }
 
+  // --- TikTok ---
+  if(url.indexOf('open.tiktokapis.com/v2/oauth/token') > -1){
+    TT.yenilemeCalisti++;
+    return yanit({ access_token:'tok_yeni', expires_in:86400,
+                   refresh_token:'yen_2' }, 200);
+  }
+  if(url.indexOf('open.tiktokapis.com/v2/post/publish/inbox/video/init') > -1){
+    TT.jetonlar.push(((secenek.headers||{}).authorization) || '');
+    if(TT.baslatHatasi) return yanit({ error:{ code:'x' } }, TT.baslatHatasi);
+    TT.init = JSON.parse(secenek.body || '{}');
+    return yanit({ data:{ upload_url:'https://tt-yukle.test/abc', publish_id:'pub_1' } }, 200);
+  }
+  if(url.indexOf('open.tiktokapis.com/v2/post/publish/status/fetch') > -1){
+    return yanit({ data:{ status: TT.durum } }, 200);
+  }
+  if(url.indexOf('https://tt-yukle.test') === 0){
+    TT.parcalar.push({
+      aralik: (secenek.headers||{})['content-range'] || '',
+      uzunluk: (secenek.headers||{})['content-length'] || '',
+      tur: (secenek.headers||{})['content-type'] || ''
+    });
+    if(TT.parcaHatasi) return yanit({}, TT.parcaHatasi);
+    return yanit({}, 200);
+  }
+  if(url.indexOf('/rest/v1/tiktok_hesaplari') > -1){
+    if(!TT) ttKur();
+    if(yontem === 'PATCH'){
+      Object.assign(TT.hesap, JSON.parse(secenek.body || '{}'));
+      return yanit([], 200);
+    }
+    return yanit(TT.hesap ? [TT.hesap] : [], 200);
+  }
   if(url.indexOf('/rest/v1/rpc/') > -1){
     const ad = url.split('/rest/v1/rpc/')[1];
     const args = JSON.parse(secenek.body || '{}');
@@ -412,6 +464,8 @@ const ORTAM = {
   META_PAGE_ID: SAYFA,
   META_APP_ID: '1234567890',
   META_APP_SECRET: 'app-gizli-dizgesi-uzun',
+  TIKTOK_CLIENT_KEY: 'ck_test',
+  TIKTOK_CLIENT_SECRET: 'cs_test',
   RESEND_API_KEY: 're_test',
   GRAF_TABANI: 'https://graf.test/v21.0',
   STORY_YOKLAMA_MS: '1',
@@ -618,7 +672,11 @@ async function turAt(gizli){
   }
   {
     // Desteklenmeyen platform: kayit bozuk degil, sira henuz gelmedi.
-    tabloyuKur({ platform:'tiktok' }); metaKur();
+    // ⚠ ORNEK PLATFORM 28 Eylul 2026'da DEGISTI: burada 'tiktok'
+    // yaziyordu ve TikTok desteklenince bu olcum sessizce anlamini
+    // yitirdi -- "desteklenmeyen platform" testi DESTEKLENEN bir
+    // platformu olcmeye baslamisti. Yeni platform eklerken buraya bak.
+    tabloyuKur({ platform:'threads' }); metaKur();
     await turAt();
     bak('desteklenmeyen platform hiçbir yere yayınlanmıyor',
       cagrilar.media === 0 && cagrilar.publish === 0 && cagrilar.fbBaslat === 0);
@@ -626,7 +684,7 @@ async function turAt(gizli){
     bak('deneme hakkı harcanmadı', satirlar[0].attempt_count === 0, String(satirlar[0].attempt_count));
     // Sessizce dusmemeli: kullanici neden yayinlanmadigini gorebilmeli.
     bak('sebebi kayda yazıldı',
-      /tiktok/i.test(String(satirlar[0].last_error)), satirlar[0].last_error);
+      /threads/i.test(String(satirlar[0].last_error)), satirlar[0].last_error);
     bak('bildirim üretmiyor (bu bir arıza değil)', epostalar.length === 0);
   }
   {
@@ -1427,6 +1485,85 @@ async function turAt(gizli){
       cagrilar.publish === 0 && satirlar[0].publish_state === 'pending',
       'publish=' + cagrilar.publish + ' durum=' + satirlar[0].publish_state);
     bak('deneme hakkı geri verildi', satirlar[0].attempt_count === 0, String(satirlar[0].attempt_count));
+  }
+
+  console.log('[tiktok · taslaga birakma]');
+  let ttKayit;
+  {
+    // 150 MB'lik bir reel. Olculen sey "yukledi mi" degil: dosyayi
+    // DOGRU boldu mu, ve alt yazi GITMEDI mi.
+    ttKayit = (ek)=> Object.assign({
+      type:'reels', platform:'tiktok', media_name:'2026-12-05_reels_konu.mp4',
+      media_url:'https://medya.test/2026-12-05_reels_konu.mp4',
+      // ⚠ BOYUT BILEREK TAM BOLUNMUYOR: 114 MB / 10 MB = 11 parca + artan.
+      // Ilk yazdigimda 150 MB secmistim ve 150 tam bolundugu icin
+      // "son parca artani alir" ile "esit bol", floor ile ceil AYNI
+      // sonucu veriyordu -- iki mutasyon da yakalanmadi. Kor olcum.
+      // 114 MB, 28 Eylul'de gercekten yuklenen aizanoi dosyasinin boyutu.
+      media_bytes: 114 * 1024 * 1024, media_mime:'video/mp4',
+      content:{ timezone:'Europe/Istanbul', caption:'metin', hashtags:'#a #b' }
+    }, ek || {});
+
+    tabloyuKur(ttKayit()); metaKur(); ttKur();
+    await turAt();
+    const init = TT.init || {};
+    const si = init.source_info || {};
+    bak('★ TikTok GELEN KUTUSU ucu kullanıldı (yayın değil, taslak)',
+        !!TT.init, JSON.stringify(TT.init));
+    bak('kaynak FILE_UPLOAD', si.source === 'FILE_UPLOAD', si.source);
+    bak('boyut olduğu gibi bildiriliyor', si.video_size === 114*1024*1024, si.video_size);
+    // floor: 114/10 = 11 (ceil olsaydi 12 olurdu)
+    bak('★ parça sayısı floor(boyut/parça)', si.total_chunk_count === 11,
+        si.chunk_size + ' x ' + si.total_chunk_count);
+    // ⛔ EN ONEMLI OLCUM: alt yazi bu uctan GITMIYOR. Gittigini sanmak,
+    // kullanicinin TikTok'ta bos bir taslak bulmasi demek.
+    bak('★ gövdede alt yazı/etiket alanı YOK (uç taşımıyor)',
+        !/caption|post_info|title|hashtag/i.test(JSON.stringify(TT.init)),
+        JSON.stringify(TT.init));
+
+    bak('★ 11 parça gönderildi', TT.parcalar.length === 11, TT.parcalar.length);
+    bak('ilk parça 0\'dan başlıyor',
+        TT.parcalar[0] && TT.parcalar[0].aralik === 'bytes 0-10485759/119537664',
+        TT.parcalar[0] && TT.parcalar[0].aralik);
+    // ⚠ SON PARCA ARTANI DA ALIYOR. Esit bolseydik son 10 MB hic
+    // gitmez, TikTok "eksik dosya" derdi.
+    const son = TT.parcalar[TT.parcalar.length - 1];
+    bak('★ son parça dosyanın sonuna kadar gidiyor',
+        son && son.aralik === 'bytes 104857600-119537663/119537664', son && son.aralik);
+    bak('parçalar bitişik ve boşluksuz', (()=>{
+      let bekle = 0;
+      for(const p of TT.parcalar){
+        const m = /^bytes (\d+)-(\d+)\//.exec(p.aralik || '');
+        if(!m || Number(m[1]) !== bekle) return false;
+        bekle = Number(m[2]) + 1;
+      }
+      return bekle === 119537664;
+    })());
+    bak('kayıt tamamlandı olarak işaretlendi',
+        satirlar[0].publish_state === 'published', satirlar[0].publish_state);
+    bak('publish_id kayda yazıldı', satirlar[0].external_id === 'pub_1', satirlar[0].external_id);
+  }
+  {
+    // Hesap bagli degilse: HATA DEGIL ERTELEME. Deneme hakki yanmamali.
+    tabloyuKur(ttKayit()); metaKur(); ttKur({ hesap: null });
+    await turAt();
+    bak('★ hesap bağlı değilse kayıt ERTELENİYOR (hata değil)',
+        satirlar[0].publish_state === 'pending', satirlar[0].publish_state);
+    bak('ertelemede TikTok bağlama adresi söyleniyor',
+        /tiktok\.html/.test(String(satirlar[0].last_error || '')), satirlar[0].last_error);
+    bak('hiç yükleme denenmedi', TT.parcalar.length === 0, TT.parcalar.length);
+  }
+  {
+    // Jetonun suresi dolmussa yenileniyor ve yukleme YINE yapiliyor.
+    tabloyuKur(ttKayit()); metaKur();
+    ttKur();
+    TT.hesap.erisim_bitis = new Date(Date.now() - 1000).toISOString();
+    await turAt();
+    bak('★ süresi dolmuş jeton yenileniyor', TT.yenilemeCalisti === 1, TT.yenilemeCalisti);
+    bak('yenilenen jetonla yükleme yapılıyor',
+        TT.jetonlar.some(j=> String(j).indexOf('tok_yeni') > -1), TT.jetonlar.join('|'));
+    bak('yenileme sonrası kayıt tamamlandı',
+        satirlar[0].publish_state === 'published', satirlar[0].publish_state);
   }
 
   console.log('[reels · bildirim dili]');
