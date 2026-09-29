@@ -45,13 +45,19 @@ const oku = (p)=> fs.readFileSync(yol.join(KOK, p), 'utf8');
 const sqlYorumsuz = (s)=> s.replace(/--[^\n]*/g, '');
 const jsYorumsuz  = (s)=> s.replace(/\/\*[\s\S]*?\*\//g, '').replace(/\/\/[^\n]*/g, '');
 
-// `type in ('a', 'b')` -> ['a','b']
-function sqlKume(metin, imza){
-  const i = metin.indexOf(imza);
-  if(i < 0) return null;
-  const m = /\btype\s+in\s*\(([^)]*)\)/.exec(metin.slice(i));
+// sql/54: kume ARTIK TEK ISLEVDE.
+// `select array['a', 'b']::text[]` -> ['a','b']
+function sqlDizi(metin){
+  const m = /select\s+array\[([^\]]*)\]::text\[\]/.exec(metin);
   if(!m) return null;
   return m[1].split(',').map(x=> x.trim().replace(/^'|'$/g, '')).filter(Boolean);
+}
+// `create ... function public.<ad>` govdesi
+function sqlGovde(metin, ad){
+  const i = metin.indexOf('function public.' + ad);
+  if(i < 0) return null;
+  const son = metin.indexOf('end $$;', i);
+  return metin.slice(i, son < 0 ? metin.length : son);
 }
 // `const YAYIN_TURLERI = ['a', 'b'];` -> ['a','b']
 function jsKume(metin, ad){
@@ -64,43 +70,49 @@ const ayni = (a, b)=> !!a && !!b
   && a.slice().sort().join('|') === b.slice().sort().join('|');
 
 // ── Kaynaklar ─────────────────────────────────────────────────────
-const SQL53 = sqlYorumsuz(oku('sql/53-shorts-kuyruk.sql'));
+const SQL54 = sqlYorumsuz(oku('sql/54-yayin-turleri-tek-yer.sql'));
 const APP   = jsYorumsuz(oku('app.html'));
 const MCP   = jsYorumsuz(oku('supabase/functions/mcp/index.ts'));
 const MCPTK = jsYorumsuz(oku('supabase/functions/mcp/tek-dosya.ts'));
 const WORKER= oku('supabase/functions/story-yayin/index.ts');
 
-console.log('[dort yer ayni kumeyi yaziyor mu]');
+console.log('[SQL tarafi: kume tek islevde]');
 
-// 1. Kuyruk. `create function public.story_kuyruk_al` GOVDESINDEKI
-//    sureci ariyoruz -- donuş tipindeki `type text` degil.
-const kuyruk = sqlKume(SQL53, 'from public.calendar_events e');
-bak('sql/53 kuyruk suzgeci okunabiliyor', Array.isArray(kuyruk) && kuyruk.length > 0,
-    JSON.stringify(kuyruk));
+// TEK KAYNAK.
+const kuyruk = sqlDizi(SQL54);
+bak('sql/54 story_yayin_turleri kumesi okunabiliyor',
+    Array.isArray(kuyruk) && kuyruk.length > 0, JSON.stringify(kuyruk));
 
-// 2. Tetikleyici.
-const tetik = sqlKume(SQL53, 'story_yayin_ani_tazele');
-bak('sql/53 tetikleyici suzgeci okunabiliyor', Array.isArray(tetik) && tetik.length > 0,
-    JSON.stringify(tetik));
+// ⚠ UC ISLEV DE O KAYNAGA SORMALI.
+// 29 Eylul 2026: story_asili_topla yalnizca 'story' suzuyordu ve iki
+// tur ekleme turunda da (sql/50, sql/53) unutulmustu. Coken bir
+// reels/shorts yayini kaydi sonsuza kadar 'in_progress' kaliyordu --
+// ne yayin, ne hata, ne kuyruk, hicbir yerde goruntu yok.
+for(const islev of ['story_asili_topla', 'story_kuyruk_al', 'story_yayin_ani_tazele']){
+  const govde = sqlGovde(SQL54, islev);
+  bak(islev + ' sql/54 icinde tanimli', !!govde);
+  bak('★ ' + islev + ' kumeyi ISLEVDEN okuyor (elle yazmiyor)',
+      !!govde && /story_yayin_turleri\(\)/.test(govde),
+      govde ? (/type[^\n]*/.exec(govde) || [''])[0] : 'govde yok');
+  // Ve elle yazilmis bir tur listesi KALMAMALI: biri isleve gecip
+  // otekini birakmak, ikisinin ayrismasi demek.
+  bak('★ ' + islev + " icinde elle yazilmis tur listesi yok",
+      !!govde && !/type\s+in\s*\(/.test(govde),
+      govde ? (/type\s+in\s*\([^)]*\)/.exec(govde) || [''])[0] : '');
+}
 
-// 3. app.html
-const app = jsKume(APP, 'YAYIN_TURLERI');
-bak('app.html YAYIN_TURLERI okunabiliyor', Array.isArray(app) && app.length > 0,
-    JSON.stringify(app));
-
-// 4. MCP -- iki dosya. index.ts, tek-dosya.ts'ten birlestir.py ile
-//    uretiliyor; ikisi ayrisirsa dagitilan surum tek-dosya'daki degil.
+// ── Veritabani disindaki uc kopya ─────────────────────────────────
+console.log('[VT disindaki kopyalar ayni kumeyi biliyor mu]');
+const app   = jsKume(APP,   'YAYIN_TURLERI');
 const mcp   = jsKume(MCP,   'YAYIN_TURLERI');
 const mcptk = jsKume(MCPTK, 'YAYIN_TURLERI');
+bak('app.html YAYIN_TURLERI okunabiliyor', Array.isArray(app) && app.length > 0,
+    JSON.stringify(app));
 bak('mcp/index.ts YAYIN_TURLERI okunabiliyor', Array.isArray(mcp) && mcp.length > 0,
     JSON.stringify(mcp));
-
-// ── ESITLIKLER ────────────────────────────────────────────────────
-bak('★ kuyruk ile tetikleyici AYNI kumeyi suzuyor', ayni(kuyruk, tetik),
-    JSON.stringify(kuyruk) + ' vs ' + JSON.stringify(tetik));
-bak('★ app.html kuyrukla AYNI kumeyi biliyor', ayni(app, kuyruk),
+bak('★ app.html SQL ile AYNI kumeyi biliyor', ayni(app, kuyruk),
     JSON.stringify(app) + ' vs ' + JSON.stringify(kuyruk));
-bak('★ MCP kuyrukla AYNI kumeyi biliyor', ayni(mcp, kuyruk),
+bak('★ MCP SQL ile AYNI kumeyi biliyor', ayni(mcp, kuyruk),
     JSON.stringify(mcp) + ' vs ' + JSON.stringify(kuyruk));
 bak('★ mcp/index.ts ile tek-dosya.ts ayrismamis', ayni(mcp, mcptk),
     JSON.stringify(mcp) + ' vs ' + JSON.stringify(mcptk));

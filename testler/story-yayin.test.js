@@ -81,6 +81,17 @@ const SERI_KALIP = /_k(\d+)\.[A-Za-z0-9]+$/;
 const seriKok  = (ad)=> SERI_KALIP.test(String(ad || '')) ? String(ad).replace(SERI_KALIP, '') : null;
 const seriSira = (ad)=> { const m = SERI_KALIP.exec(String(ad || '')); return m ? Number(m[1]) : null; };
 
+// ⚠ KUME SQL DOSYASINDAN OKUNUYOR, ELLE YAZILMIYOR.
+// Elle yazsaydik taklit ile gercek yine ayrisabilirdi -- ve bu
+// dosyanin butun derdi tam olarak o ayrisma.
+const YAYIN_TURLERI_SQL = (()=>{
+  const ham = require('fs').readFileSync(
+    yol.join(KOK_DIZIN, 'sql', '54-yayin-turleri-tek-yer.sql'), 'utf8');
+  const m = /select\s+array\[([^\]]*)\]::text\[\]/.exec(ham);
+  if(!m) throw new Error('sql/54 icindeki tur kumesi okunamadi');
+  return m[1].split(',').map(x=> x.trim().replace(/^'|'$/g, '')).filter(Boolean);
+})();
+
 const SQL = {
   story_seri_onceki({ p_id }){
     const k = bul(p_id); if(!k) return [];
@@ -104,7 +115,12 @@ const SQL = {
   story_asili_topla({ p_dakika }){
     let n = 0;
     for(const r of satirlar){
-      if(r.type === 'story' && r.publish_state === 'in_progress' && !r.deleted_at
+      // sql/54: tur kumesi TEK YERDE (public.story_yayin_turleri).
+      // 29 Eylul 2026'ya kadar burada da, SQL'de de yalnizca 'story'
+      // yaziyordu -- yani taklit sadikti ve hata ikisinde birden
+      // duruyordu. Cöken bir reels/shorts yayini kaydi sonsuza kadar
+      // 'in_progress' birakiyordu: ne yayin, ne hata, ne kuyruk.
+      if(YAYIN_TURLERI_SQL.includes(r.type) && r.publish_state === 'in_progress' && !r.deleted_at
          && Date.parse(r.updated_at) < SAAT - dk(Math.max(p_dakika, 1))){
         r.publish_state = 'pending'; r.updated_at = su(); n++;
       }
@@ -113,8 +129,8 @@ const SQL = {
   },
   story_kuyruk_al({ p_limit }){
     const aday = satirlar.filter(r=>
-      // sql/50: story VE reels · sql/53: shorts
-      (r.type === 'story' || r.type === 'reels' || r.type === 'shorts')
+      // sql/54: kume TEK YERDE
+      YAYIN_TURLERI_SQL.includes(r.type)
       && r.auto_publish === true && r.publish_state === 'pending'
       && !r.deleted_at && r.publish_at && Date.parse(r.publish_at) <= SAAT
       && (!r.retry_after || Date.parse(r.retry_after) <= SAAT)
@@ -1994,6 +2010,36 @@ async function turAt(gizli){
     bak('yayin cagrisi izi YAZILMADI (yanlis kurtarma olmasin)',
         !satirlar[0].publish_called_at, String(satirlar[0].publish_called_at));
     ORTAM.STORY_BUTCE_MS = onceki;
+  }
+  {
+    // ══════════════════════════════════════════════════════════════
+    // ASILI KALAN KAYIT: HER TUR ICIN
+    // ══════════════════════════════════════════════════════════════
+    // 29 Eylul 2026'da bulundu: story_asili_topla YALNIZCA
+    // type='story' suzuyordu. sql/50 reels'i ekledi, sql/53 shorts'u
+    // ekledi, ikisi de bu islevi unuttu.
+    //
+    // Sonucu: yayin ortasinda SERT bir cokuse denk gelen bir reels ya
+    // da shorts kaydi SONSUZA KADAR 'in_progress' kaliyordu. Ne yayin,
+    // ne hata, ne kuyruk, ne de bir yerde goruntu. Kullanici yalnizca
+    // "yayin cikmadi" diyebilirdi.
+    //
+    // ⚠ EN KOTU ANDA VURURDU: YouTube yuklemesi sistemdeki en uzun
+    // suren is, yani sert cokuse en acik olan o.
+    for(const durum of [{ tur:'story', kur:()=> ({}) },
+                        { tur:'reels', kur:()=> reelKayit({}) },
+                        { tur:'shorts', kur:()=> ytKayit({}) }]){
+      const ek = Object.assign(durum.kur(), {
+        publish_state:'in_progress', attempt_count:1,
+        // On bir dakika once dokunulmus: asili esigi (10 dk) asildi.
+        updated_at: new Date(SAAT - dk(11)).toISOString()
+      });
+      tabloyuKur(ek); metaKur(); ttKur(); ytKur();
+      await turAt();
+      bak('★ asili kalan ' + durum.tur + ' kaydi kuyruga GERI ALINIYOR',
+          satirlar[0].publish_state !== 'in_progress',
+          durum.tur + ' -> ' + satirlar[0].publish_state);
+    }
   }
   console.log('[youtube · hata triyaji]');
   {
