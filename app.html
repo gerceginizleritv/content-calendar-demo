@@ -21540,7 +21540,8 @@ async function hesapDosyalariniSil(){
 const HESAP_TABLOLARI = ['calendar_events','projects','ideas','scripts',
                          'places','caption_templates','user_prefs',
                          'ai_aktarimlar','accounts','api_keys',
-                         'project_scripts','tiktok_hesaplari'];
+                         'project_scripts','tiktok_hesaplari',
+                         'youtube_hesaplari'];
 async function hesapVerisiniSil(){
   if(!sb || !session) return { takilan: [] };
   const kim = session.user.id;

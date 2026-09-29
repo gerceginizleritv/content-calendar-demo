@@ -1,0 +1,226 @@
+// TIKTOK VE YOUTUBE BAGLANTILARI — sayfa, fonksiyon ve SQL
+//
+// ══════════════════════════════════════════════════════════════════
+// NEDEN TEK DOSYA VE NEDEN DONGU
+// ══════════════════════════════════════════════════════════════════
+// Iki baglayici AYNI degismezleri tasiyor. Ayri test dosyalari
+// yazilsaydi, birinde duzeltilen bir acik otekinde kalirdi -- bugun
+// tam bu sinifta bes hata yasandi (ayni liste iki yerde, ayni mantik
+// iki dosyada). Yeni bir baglayici eklenince asagidaki diziye bir
+// satir yaziliyor ve butun olcumler ona da uyguluyor.
+//
+// ══════════════════════════════════════════════════════════════════
+// BU DOSYANIN ASIL DERDI: JETON SIZINTISI
+// ══════════════════════════════════════════════════════════════════
+// Erisim jetonu, o hesaba video yukleyebilen bir sirdir. Uc ayri
+// yerden sizabilir ve ucu de SESSIZ sizar:
+//   1. Tarayiciya donen cevapta (fonksiyon jetonu geri yazarsa)
+//   2. Veritabanindan (RLS ilkesi "kendi satirini okusun" derse)
+//   3. Statik sayfada (client_secret sayfaya gomulurse)
+//
+// Ayrica `state` kontrolu: olmazsa baska bir sitenin gonderdigi bir
+// `code` ile kullanicinin hesabina YABANCI bir hesap baglanabilir.
+const { chromium } = require('./araclar');
+const fs = require('fs');
+const yol = require('path');
+const KOK = process.argv[2] || 'http://127.0.0.1:8098';
+const KOK_DIZIN = yol.join(__dirname, '..');
+let g = 0, k = 0;
+const bak = (ad, ko, ek)=>{ if(ko){ g++; console.log('  ok  '+ad); } else { k++; console.log('  YOK '+ad+(ek?' -> '+ek:'')); } };
+const oku = (f)=> fs.readFileSync(yol.join(KOK_DIZIN, f), 'utf8');
+
+const BAGLAYICILAR = [
+  {
+    ad: 'TikTok',
+    sayfa: 'tiktok.html',
+    islevYolu: 'supabase/functions/tiktok-baglan/index.ts',
+    sqlYolu: 'sql/51-tiktok.sql',
+    fonksiyon: 'tiktok-baglan',
+    tablo: 'tiktok_hesaplari',
+    durumIslevi: 'tiktok_durum',
+    kimlikAlani: 'client_id',          // GET ucunda donen ACIK alan
+    kimlikAlaniGercek: 'client_key',   // TikTok'ta adi boyle
+    saglayiciJetonUcu: 'open.tiktokapis.com'
+  },
+  {
+    ad: 'YouTube',
+    sayfa: 'youtube.html',
+    islevYolu: 'supabase/functions/youtube-baglan/index.ts',
+    sqlYolu: 'sql/52-youtube.sql',
+    fonksiyon: 'youtube-baglan',
+    tablo: 'youtube_hesaplari',
+    durumIslevi: 'youtube_durum',
+    kimlikAlani: 'client_id',
+    kimlikAlaniGercek: 'client_id',
+    saglayiciJetonUcu: 'oauth2.googleapis.com'
+  }
+];
+
+(async () => {
+  for (const b of BAGLAYICILAR) {
+    const sayfa = oku(b.sayfa);
+    const islev = oku(b.islevYolu);
+    const sql   = oku(b.sqlYolu);
+
+    console.log('[' + b.ad + ' · jeton sizmiyor]');
+    {
+      // ⚠ Kelimeyi aramak YETMIYOR: sayfanin yorumu "o is client_secret
+      // istiyor, o yuzden burada yapilmiyor" diye aciklıyor ve bu dogru
+      // bir cumle. Olculmek istenen sey KODDA sir olup olmadigi.
+      const sayfaKod = sayfa
+        .replace(/<!--[\s\S]*?-->/g, '')
+        .replace(/^\s*\/\/.*$/gm, '');
+      bak(b.ad + ': sayfa KODUNDA client_secret geçmiyor ★',
+          !/client_secret/i.test(sayfaKod));
+      bak(b.ad + ': yorum ayıklama sayfayı boşaltmıyor (ölçüm kör değil)',
+          sayfaKod.length > sayfa.length * 0.4, sayfaKod.length + '/' + sayfa.length);
+      bak(b.ad + ': sayfa jeton takası YAPMIYOR ★',
+          !(new RegExp(b.saglayiciJetonUcu.replace(/\./g, '\\.'))).test(sayfa));
+
+      const basarili = /return json\(\{ ok: true, bagli: true[^}]*\}\)/.exec(islev);
+      bak(b.ad + ': başarılı cevap satırı bulunuyor', !!basarili);
+      if (basarili) {
+        bak(b.ad + ': cevapta jeton YOK ★',
+            !/access_token|refresh_token|erisim_jetonu|yenileme_jetonu/.test(basarili[0]),
+            basarili[0]);
+      }
+
+      const blok = /yapilandirma:\s*\{([\s\S]*?)\}/.exec(islev);
+      bak(b.ad + ': GET ucunda yapılandırma bloğu var', !!blok);
+      if (blok) {
+        const degerler = blok[1].split(',').map(s => s.split(':')[1]).filter(Boolean).map(s => s.trim());
+        bak(b.ad + ': GET ucu gizli ayarların DEĞERİNİ döndürmüyor ★',
+            degerler.length > 0 && degerler.every(v => v.startsWith('!!')),
+            degerler.join(' | '));
+      }
+    }
+
+    console.log('[' + b.ad + ' · ortam degiskenleri kirpiliyor]');
+    {
+      // 28 Eylul 2026: TIKTOK_CLIENT_KEY bir satir sonuyla yapistirildi.
+      // Deger ekranda dogru gorunuyordu; GET ucu "\nsbaw7..." dondurunce
+      // anlasildi. Kirpma olmasa yetkilendirme adresine %0A gider ve
+      // "gecersiz anahtar" hatasinin sebebi hicbir yerde yazmazdi.
+      bak(b.ad + ': ortam değişkenleri kırpılarak okunuyor ★',
+          /Deno\.env\.get\(ad\) \?\? ''\)\.trim\(\)/.test(islev));
+      const hamOkuma = islev.match(/Deno\.env\.get\([^)]*\)/g) || [];
+      bak(b.ad + ': kırpılmadan okunan değişken kalmadı ★',
+          hamOkuma.length === 1, hamOkuma.join(' | '));
+    }
+
+    console.log('[' + b.ad + ' · veritabani: jeton tarayiciya acilmiyor]');
+    {
+      const t = (s)=> new RegExp(s.replace(/\{T\}/g, b.tablo));
+      bak(b.ad + ': tablo RLS ile korunuyor',
+          t('alter table public\\.{T} enable row level security').test(sql));
+      // ⚠ TERS YONDE OLCUM: burada ilke OLMAMASI dogru.
+      bak(b.ad + ': select ilkesi YOK (jeton sunucuda kalır) ★',
+          !t('create policy[^;]*on public\\.{T}').test(sql));
+      bak(b.ad + ': anon/authenticated yetkisi geri alınmış',
+          t('revoke all on public\\.{T} from anon, authenticated').test(sql));
+      bak(b.ad + ': service_role erişebiliyor (worker çalışsın)',
+          t('grant all\\s+on public\\.{T} to service_role').test(sql));
+
+      const durum = new RegExp('create or replace function public\\.' + b.durumIslevi + '\\(\\)[\\s\\S]*?\\$\\$;').exec(sql);
+      bak(b.ad + ': durum işlevi bulunuyor', !!durum);
+      if (durum) {
+        bak(b.ad + ': durum işlevi jeton sütunlarını seçmiyor ★',
+            !/erisim_jetonu|yenileme_jetonu/.test(durum[0]));
+      }
+    }
+
+    console.log('[' + b.ad + ' · oturum dogrulaniyor]');
+    {
+      bak(b.ad + ': kullanıcı JWT\'den çözülüyor, gövdeden değil ★',
+          /auth\/v1\/user/.test(islev) && !/govde\?\.user_id|govde\.user_id/.test(islev));
+      bak(b.ad + ': oturum yoksa 401 dönüyor',
+          /Oturum dogrulanamadi[\s\S]{0,40}401/.test(islev));
+    }
+
+    console.log('[' + b.ad + ' · donus adresi]');
+    {
+      // Saglayici, jeton takasindaki redirect_uri ile yetkilendirmedekini
+      // karsilastiriyor; sorgu dizgesi kalirsa "mismatch" ile duser.
+      bak(b.ad + ': redirect_uri sorgu dizgesi atılarak üretiliyor ★',
+          /location\.origin \+ location\.pathname/.test(sayfa));
+      bak(b.ad + ': sayfa dosyası var (' + b.sayfa + ')',
+          fs.existsSync(yol.join(KOK_DIZIN, b.sayfa)));
+    }
+
+    console.log('[' + b.ad + ' · tarayicida: state olmadan baglanti kurulmuyor]');
+    {
+      const t = await chromium.launch({});
+      try {
+        const baglam = await t.newContext({ viewport: { width: 500, height: 700 } });
+        const p = await baglam.newPage();
+
+        // ⚠ OLCULEN SEY "hic istek atmasin" DEGIL.
+        // Sayfa baslangic tarafini da yapiyor: code yokken GET ile
+        // istemci kimligini soruyor, bu normal. Korunmasi gereken sey
+        // JETON TAKASI: state dogrulanmadan POST atilmamali.
+        let get = 0, post = 0;
+        await p.route('**/functions/v1/' + b.fonksiyon + '*', (r)=>{
+          if (r.request().method() === 'POST') post++; else get++;
+          r.abort();
+        });
+
+        get = post = 0;
+        await p.goto(KOK + '/' + b.sayfa, { waitUntil: 'domcontentloaded' });
+        await p.waitForTimeout(400);
+        bak(b.ad + ': code olmadan açılınca JETON TAKASI yapmıyor ★', post === 0, 'post=' + post);
+        bak(b.ad + ': code olmadan bağlantıyı başlatmayı deniyor (ölçüm boş değil)',
+            get > 0, 'get=' + get);
+
+        get = post = 0;
+        await p.goto(KOK + '/' + b.sayfa + '?code=SAHTE&state=YABANCI', { waitUntil: 'domcontentloaded' });
+        await p.waitForTimeout(400);
+        let metin = await p.textContent('#durum');
+        bak(b.ad + ': state eşleşmezse jeton takası YAPILMIYOR ★',
+            /güvenlik/i.test(metin || '') && post === 0, (metin || '') + ' | post=' + post);
+
+        await p.goto(KOK + '/' + b.sayfa + '?error=access_denied&error_description=Kullanici+iptal+etti',
+                     { waitUntil: 'domcontentloaded' });
+        await p.waitForTimeout(300);
+        metin = await p.textContent('#durum');
+        bak(b.ad + ': iptal edilince anlaşılır mesaj', /tamamlanmadı/i.test(metin || ''), metin);
+
+        const yatay = await p.evaluate(()=> document.documentElement.scrollWidth - document.documentElement.clientWidth);
+        bak(b.ad + ': telefon genişliğinde yatay kayma yok', yatay <= 0, yatay);
+      } finally {
+        await t.close();
+      }
+    }
+  }
+
+  // ── SAGLAYICIYA OZEL: GOOGLE'IN YENILEME JETONU TUZAGI ───────────
+  console.log('[youtube · yenileme jetonu tuzagi]');
+  {
+    const sayfa = oku('youtube.html');
+    const islev = oku('supabase/functions/youtube-baglan/index.ts');
+    // ⚠ IKISI BIRLIKTE OLMAK ZORUNDA.
+    // access_type=offline yoksa Google yenileme jetonu VERMIYOR;
+    // prompt=consent yoksa, hesap daha once izin verdiyse BIR DAHA
+    // vermiyor. Ikisinden biri eksikse erisim jetonu bir saat sonra
+    // oluyor ve yukleme sessizce duruyor -- hata "yetkisiz" der,
+    // sebebi gorunmez.
+    // ⚠ YORUMLAR AYIKLANIYOR. Sayfanin kendi yorumu bu iki parametreyi
+    // ADIYLA anlatiyor ("access_type=offline VE prompt=consent birlikte
+    // olmak zorunda"). Ham metinde arasaydik, kod satiri silinse bile
+    // yorum olcumu tatmin ederdi -- ve mutasyon turunda tam bu oldu.
+    const sayfaKod = sayfa
+      .replace(/<!--[\s\S]*?-->/g, '')
+      .replace(/^\s*\/\/.*$/gm, '');
+    bak('yorum ayıklama sayfayı boşaltmıyor (ölçüm kör değil)',
+        sayfaKod.length > sayfa.length * 0.4, sayfaKod.length + '/' + sayfa.length);
+    bak('★ yetkilendirme adresinde access_type=offline var',
+        /access_type=offline/.test(sayfaKod));
+    bak('★ yetkilendirme adresinde prompt=consent var',
+        /prompt=consent/.test(sayfaKod));
+    // Jeton gelmezse BAGLANTI KURULMUS SAYILMAMALI.
+    bak('★ yenileme jetonu gelmezse bağlantı reddediliyor',
+        /!veri\.refresh_token/.test(islev));
+  }
+
+  console.log('\n' + g + ' gecti, ' + k + ' kaldi');
+  process.exit(k ? 1 : 0);
+})();
