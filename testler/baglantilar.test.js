@@ -251,6 +251,24 @@ const BAGLAYICILAR = [
         && !/auth\/youtube\.force-ssl/.test(islev)
         && !/auth\/youtube['"\s]/.test(islev),
         (/auth\/youtube[^']*/.exec(islev) || [''])[0]);
+    // ⛔ OKUMA UCU CAGRILMAMALI.
+    // 29 Eylul 2026: burada bir `channels.list?mine=true` cagrisi vardi
+    // ve HER ZAMAN 403 donuyordu -- okuma kapsami istiyor, bizde yok.
+    // "Bir gun okuma kapsami gerekirse kendiliginden calisir" diye
+    // birakilmisti; ayni gun bu dosyaya okuma kapsami eklenmesini
+    // YASAKLAYAN olcum kondu, yani o senaryo kendi elimizle kapandi.
+    // Geriye her seferinde yetki hatasi veren bir istek kalmisti.
+    //
+    // Kaldirildi ve geri gelmesin: denetim basvurusunda "kullandigimiz
+    // uclar" derken surekli hata veren bir uc saymak zorunda kaliyorduk.
+    bak('★ baglayici YouTube okuma ucu cagirmiyor',
+        !/youtube\/v3\/channels/.test(islev) && !/channels\?part/.test(islev),
+        (/[^\n]*youtube\/v3[^\n]*/.exec(islev) || [''])[0]);
+    // Tek YouTube ucu kalmali: jeton takasi. Yukleme worker'in isi.
+    bak('★ baglayici yalnizca jeton ucunu kullaniyor',
+        /oauth2\.googleapis\.com\/token/.test(islev)
+        && !/googleapis\.com\/youtube/.test(islev));
+
     // Belge ile kod ayni kapsami sayiyor mu?
     const gizlilik = oku('privacy.html');
     bak('★ gizlilik metni de youtube.upload diyor',

@@ -19,7 +19,7 @@
 //  3. Erişim jetonu bir saat yaşıyor (TikTok'ta 24 saat). Worker her
 //     yüklemede süreyi kontrol edip yeniliyor.
 
-const SURUM = '1.0.1';
+const SURUM = '1.0.2';
 
 const ayar = (ad: string) => (Deno.env.get(ad) ?? '').trim();
 
@@ -30,7 +30,6 @@ const CLIENT_ID     = ayar('YOUTUBE_CLIENT_ID');
 const CLIENT_SECRET = ayar('YOUTUBE_CLIENT_SECRET');
 
 const JETON_UCU  = 'https://oauth2.googleapis.com/token';
-const KANAL_UCU  = 'https://www.googleapis.com/youtube/v3/channels';
 const KAPSAM     = 'https://www.googleapis.com/auth/youtube.upload';
 
 function json(govde: unknown, durum = 200): Response {
@@ -112,38 +111,33 @@ async function jetonAl(code: string, redirectUri: string) {
   return veri;
 }
 
-// ⚠ BU ÇAĞRI BUGÜN HER ZAMAN BOŞ DÖNÜYOR -- VE BU DOĞRU DAVRANIŞ.
+// ══════════════════════════════════════════════════════════════════
+// ⛔ KANAL ADI OKUNMUYOR -- BİLEREK
+// ══════════════════════════════════════════════════════════════════
+// Burada bir `channels.list?mine=true` çağrısı vardı: kanal adını
+// alıp ekranda "şu kanala bağlısın" diyecekti.
 //
-// 29 Eylül 2026, ilk gerçek bağlantıda görüldü: kanal adı boş geldi.
-// Sebebi bir arıza değil, izin sınırı. `channels.list?mine=true` bir
-// OKUMA çağrısı ve okuma kapsamı istiyor (`youtube.readonly` ya da
-// `youtube`); bizim istediğimiz tek kapsam `youtube.upload` yalnızca
-// yüklemeye yetiyor, o yüzden çağrı 403 `insufficientPermissions`
-// dönüyor ve aşağıdaki catch adı boş bırakıyor.
+// 29 Eylül 2026, ilk gerçek bağlantıda görüldü ki O ÇAĞRI HİÇBİR ZAMAN
+// ÇALIŞMIYOR. `channels.list` bir OKUMA çağrısı ve okuma kapsamı
+// istiyor (`youtube.readonly` ya da `youtube`); bizim istediğimiz tek
+// kapsam `youtube.upload` yalnızca yüklemeye yetiyor, o yüzden çağrı
+// 403 `insufficientPermissions` dönüyordu ve ad hep boş kalıyordu.
 //
-// ⛔ ÇÖZÜM "OKUMA KAPSAMI EKLEMEK" DEĞİL. Kanal adı yalnızca ekranda
-// güzel dursun diye; onun için izin listesini genişletmek, kullanıcıdan
-// istatistiklerini ve kanalındaki her şeyi okuma izni istemek demek --
+// Önce "bir gün okuma kapsamı gerekirse kendiliğinden dolar" diye
+// bırakmıştım. O gerekçe YANLIŞTI: aynı gün testler/baglantilar.test.js'e
+// okuma kapsamı eklenmesini YASAKLAYAN bir ölçüm koyduk. Yani çağrının
+// bir gün çalışacağı senaryoyu kendi elimizle kapattık; geriye her
+// seferinde yetki hatası veren bir istek kaldı.
+//
+// ⛔ ÇÖZÜM OKUMA KAPSAMI EKLEMEK DEĞİL. Kanal adı yalnızca ekranda
+// güzel dursun diye; onun için kullanıcıdan istatistiklerini,
+// yorumlarını ve kanalındaki her şeyi okuma izni istemek gerekiyor.
 // privacy.html "yüklemeye yeten en dar izin" diye söz veriyor ve o söz
-// bu satırdan daha değerli.
+// bir etiketten değerli.
 //
-// Çağrı yine de duruyor: bir gün okuma kapsamı GEREKEN başka bir iş
-// çıkarsa (ör. kanal doğrulama), ad kendiliğinden dolmaya başlar.
-// Bağlantı adsız da tam çalışıyor; hangi kanala yüklendiğini videonun
-// kendisi söylüyor.
-async function kanalBilgisi(erisimJetonu: string): Promise<{ id: string; ad: string }> {
-  try {
-    const r = await fetch(`${KANAL_UCU}?part=snippet&mine=true`, {
-      headers: { authorization: `Bearer ${erisimJetonu}` }
-    });
-    if (!r.ok) return { id: '', ad: '' };
-    const v = await r.json().catch(() => null);
-    const k = v?.items?.[0];
-    return { id: String(k?.id ?? ''), ad: String(k?.snippet?.title ?? '') };
-  } catch {
-    return { id: '', ad: '' };
-  }
-}
+// Kanal alanları tabloda duruyor ama boş yazılıyor: sql/52'yi
+// değiştirmemek için (sütun silmek, geri dönüşü olan bir iş değil) ve
+// hangi kanala yüklendiğini videonun kendisi zaten söylüyor.
 
 Deno.serve(async (istek: Request) => {
   if (istek.method === 'OPTIONS') return json({ ok: true });
@@ -198,15 +192,16 @@ Deno.serve(async (istek: Request) => {
   }
 
   const simdi = Date.now();
-  const kanal = await kanalBilgisi(String(jeton.access_token));
 
   await rest('/youtube_hesaplari?on_conflict=user_id', {
     method: 'POST',
     prefer: 'resolution=merge-duplicates,return=minimal',
     govde: [{
       user_id:         kisi.id,
-      kanal_id:        kanal.id,
-      kanal_adi:       kanal.ad,
+      // Yukarıdaki gerekçeyle boş: okumak için istemediğimiz bir izin
+      // gerekiyor.
+      kanal_id:        '',
+      kanal_adi:       '',
       erisim_jetonu:   String(jeton.access_token),
       erisim_bitis:    new Date(simdi + Number(jeton.expires_in ?? 3600) * 1000).toISOString(),
       yenileme_jetonu: String(jeton.refresh_token),
@@ -218,5 +213,7 @@ Deno.serve(async (istek: Request) => {
   });
 
   // ⛔ Cevapta jeton YOK.
-  return json({ ok: true, bagli: true, kanal_adi: kanal.ad });
+  // kanal_adi hâlâ dönüyor ama hep boş: sayfa onu koşullu gösteriyor,
+  // alanı kaldırmak sayfayı da değiştirmek demekti.
+  return json({ ok: true, bagli: true, kanal_adi: '' });
 });
