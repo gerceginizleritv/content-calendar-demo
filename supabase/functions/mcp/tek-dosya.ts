@@ -1167,7 +1167,7 @@ const SERVIS_ANAHTARI = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY') ?? '';
 // Bu kural UC KEZ unutuldu ve ucuncusunde artik soze birakilmadi:
 // birlestir.py, kaynak degisip surum ayni kalirsa HATA VERIP duruyor
 // ve tek-dosya.ts'i uretmiyor. Yani unutuldugu an belli oluyor.
-const SURUM = '1.8.0';
+const SURUM = '1.9.0';
 
 // ---- Otomatik yayın hattı olan türler ------------------------------------
 // AYNI kümeyi taşıyan yerler: app.html'deki YAYIN_TURLERI, sql/50'deki
@@ -1179,7 +1179,16 @@ const SURUM = '1.8.0';
 // reels kaydı yayınlanıyor, publishState ve lastError veritabanında
 // yazılı, fakat asistan hiçbirini okuyamıyordu. Bir reel başarısız
 // olsa kimse göremezdi. Bu yüzden artık tek yerde.
-const YAYIN_TURLERI = ['story', 'reels'];
+// 29 Eylul 2026: `shorts` eklendi (YouTube). Eklerken boyut tavani da
+// ture gore acildi -- asagidaki TAVANLAR'a bak. Aksi halde her YouTube
+// yuklemesi story'nin 100 MB sinirinda reddedilirdi; 114 MB olayinin
+// aynadaki goruntusu.
+//
+// ⛔ `video` (uzun form) BILEREK EKLENMEDI. Eklenirse Facebook'un
+// `video` kayitlari da kuyruga girer ve worker onlari `reels` saymadigi
+// icin STORY olarak yayinlar -- uzun bir belgesel 24 saatte kaybolur.
+// Uzun form icin once worker'da ayri bir dal gerekiyor.
+const YAYIN_TURLERI = ['story', 'reels', 'shorts'];
 const yayinlanabilirTur = (t: any) => YAYIN_TURLERI.includes(String(t || ''));
 
 const CORS: Record<string, string> = {
@@ -2052,11 +2061,18 @@ async function apiKaydiYama(uid: string, id: string, govde: any) {
     //
     // Tür KAYITTAN okunuyor, gövdeden değil: yükleyici türü
     // göndermiyor ve göndermesi de gerekmemeli, kayıt zaten biliyor.
-    const reel = String(satir.type || '') === 'reels';
-    const tavan = reel ? 1024 * 1024 * 1024 : 100 * 1024 * 1024;
+    // ⚠ TEK TABLO. Tür başına tavan ve onu koyan platformun adı burada;
+    // iki ayrı yerde tutulsaydı biri güncellenir öteki kalırdı.
+    const TAVANLAR: Record<string, { tavan: number; nere: string }> = {
+      story:  { tavan:  100 * 1024 * 1024,              nere: "Instagram's 100 MB limit for stories" },
+      reels:  { tavan: 1024 * 1024 * 1024,              nere: "Instagram's 1 GB limit for reels" },
+      shorts: { tavan: 256 * 1024 * 1024 * 1024,        nere: "YouTube's 256 GB limit" }
+    };
+    const tur = String(satir.type || '');
+    const olcu = TAVANLAR[tur] ?? TAVANLAR.story;
     if (!Number.isFinite(n) || n < 0) hatalar.push('mediaBytes: must be a positive number');
     // Yayın anında öğrenmek, yükleme anında öğrenmekten çok daha pahalı.
-    else if (n > tavan) hatalar.push(`mediaBytes: ${Math.round(n / 1048576)} MB is over Instagram's ${Math.round(tavan / 1048576)} MB limit for ${reel ? 'reels' : 'stories'}`);
+    else if (n > olcu.tavan) hatalar.push(`mediaBytes: ${Math.round(n / 1048576)} MB is over ${olcu.nere}`);
     else yama.media_bytes = Math.round(n);
   }
   if (govde.autoPublish !== undefined) yama.auto_publish = govde.autoPublish === true;

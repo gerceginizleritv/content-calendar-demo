@@ -601,11 +601,21 @@ async function arac(anahtar, ad, args){
   bak('tam dosya adiyla bulunuyor',
       bulAd.govde.ok === true && bulAd.govde.entries[0].id === 'st_2', JSON.stringify(bulAd.govde).slice(0,140));
   bak('eslesme yontemi bildiriliyor', bulAd.govde.matchedBy === 'mediaName', String(bulAd.govde.matchedBy));
-  // ★ AYNI ADI TASIYAN SHORTS KAYDI DONMEMELI. Worker yalnizca story ve
-  // reels yayinliyor; bir shorts kaydina mediaUrl yazmanin anlami yok ve
-  // yukleyici orada boyut tavanina takilip butun turu birakiyordu.
-  bak('★ ayni adi tasiyan SHORTS kaydi donmuyor',
-      bulAd.govde.entries.every(e=> e.id !== 'sh_1'),
+  // ⚠ BU OLCUM 29 EYLUL 2026'DA TERSINE CEVRILDI.
+  //
+  // Eskiden "ayni adi tasiyan SHORTS kaydi DONMEMELI" diyordu. Sebebi
+  // 27 Eylul'deki olaydi: bir reels dosyasi shorts kaydiyla eslesti,
+  // yukleyici orada story'nin 100 MB tavanina takildi, sys.exit etti ve
+  // BUTUN turu birakti -- dosya her bes dakikada bir yeniden yuklendi.
+  //
+  // O zaman shorts'u listeden cikarmak dogru cozumdu, cunku YouTube'a
+  // yayin yoktu. Artik var: shorts kaydina mediaUrl yazilmasi GEREKIYOR.
+  // Olayi engelleyen asil sey de zaten shorts'un disarida kalmasi
+  // degildi; TAVANIN TURE GORE olmasi ve yukleyicinin bir kayitta
+  // dusunce oteki kayitlari birakmamasiydi. Ikisi de yerinde
+  // (asagidaki tavan olcumu ve testler/reels-yukleyici.test.py).
+  bak('★ ayni adi tasiyan SHORTS kaydi ARTIK donuyor (YouTube yayini var)',
+      bulAd.govde.entries.some(e=> e.id === 'sh_1'),
       JSON.stringify(bulAd.govde.entries.map(e=> e.id + ':' + e.type)));
   bak('yayinlanabilir kayit yine de donuyor',
       bulAd.govde.entries.some(e=> e.id === 'st_2'),
@@ -712,6 +722,15 @@ async function arac(anahtar, ad, args){
   const kotu = await rest('PATCH', '/api/entries/st_1', { mediaUrl: 'http://guvensiz.ornek.com/a.mp4' });
   bak('http:// reddediliyor, sebebi yaziyor',
       kotu.durum === 422 && /https/.test(kotu.govde.error), String(kotu.govde.error).slice(0,100));
+  // ⚠ SHORTS TAVANI STORY'NINKI DEGIL.
+  // 27 Eylul olayinda reddedilen dosya 114 MB'ti ve hata "Instagram's
+  // 100 MB limit for stories" diyordu -- oysa kayit YouTube shorts'uydu.
+  // Tavan ture gore acilmasaydi, YouTube yayini acildigi an HER
+  // yukleme ayni duvara carpardi.
+  const shortsBuyuk = await rest('PATCH', '/api/entries/sh_1', { mediaBytes: 114 * 1024 * 1024 });
+  bak('★ shorts kaydi 114 MB dosyayi KABUL ediyor (story tavanina takilmiyor)',
+      shortsBuyuk.durum === 200, shortsBuyuk.durum + ' ' + JSON.stringify(shortsBuyuk.govde).slice(0, 120));
+
   const buyuk = await rest('PATCH', '/api/entries/st_1', { mediaBytes: 250 * 1024 * 1024 });
   bak('100 MB ustu reddediliyor, kac MB oldugu yaziliyor',
       buyuk.durum === 422 && /MB/.test(buyuk.govde.error), String(buyuk.govde.error).slice(0,100));

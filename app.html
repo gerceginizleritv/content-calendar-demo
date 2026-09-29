@@ -5074,6 +5074,7 @@ const LANG = {
     oy_saatsiz: "No time set, so it will not publish. Give it a time.",
     oy_yeni: "Save the entry first, then you can switch automatic publishing on.",
     oy_not_reels: "Shootboard posts this reel to Instagram at the time above, cover and caption included. It is the only thing Shootboard posts by itself \u2014 everything else you post.",
+    oy_not_shorts: "Shootboard uploads this Short to YouTube at the time above, with its title, description and tags. Visibility is decided on the YouTube side and starts out private.",
     oy_kapak_var: "Cover attached.",
     oy_kapak_yok: "No cover file \u2014 Instagram will pick a frame from the video.",
     ornek_serit: (n)=> `${n} sample entries, two projects and a place are already here — so you can see how a full week looks. They are examples, not your work.`,
@@ -6099,6 +6100,7 @@ const LANG = {
     oy_saatsiz: "Saat girilmemiş, bu yüzden yayınlanmayacak. Bir saat ver.",
     oy_yeni: "Önce kaydı kaydet, sonra otomatik yayını açabilirsin.",
     oy_not_reels: "Shootboard bu reel'i yukarıdaki saatte Instagram'a kendi atıyor — kapağı ve alt yazısıyla. Shootboard'ın kendiliğinden yayınladığı tek şey bu — geri kalan her şeyi sen yayınlıyorsun.",
+    oy_not_shorts: "Shootboard bu Short'u yukarıdaki saatte YouTube'a yüklüyor — başlığı, açıklaması ve etiketleriyle. Görünürlüğü YouTube tarafındaki ayar belirliyor ve başlangıçta özel oluyor.",
     oy_kapak_var: "Kapak bağlı.",
     oy_kapak_yok: "Kapak dosyası yok — Instagram videodan kendi karesini seçecek.",
     ornek_serit: (n)=> `${n} örnek kayıt, iki proje ve bir mekân hazır duruyor — dolu bir hafta nasıl görünüyor göresin diye. Bunlar örnek, senin işin değil.`,
@@ -7668,8 +7670,11 @@ function fromRow(r){
 // buna bakıyor (satırdan okuma, kayıt penceresi, kapak alanı). Ayrı
 // ayrı yazılsalardı biri reels'i öğrenir, öteki öğrenmezdi -- ve
 // sonucu "kutucuk açık görünüyor ama hiçbir şey olmuyor" olurdu.
-// sql/50'deki `type in ('story','reels')` ile aynı küme.
-const YAYIN_TURLERI = ['story', 'reels'];
+// sql/50 + sql/53'teki `type in ('story','reels','shorts')` ile aynı
+// küme. ⚠ DÖRT YERDE yazılı ve dördü de birbirinden habersiz: burası,
+// sql/53'teki iki işlev ve mcp/index.ts'teki YAYIN_TURLERI. Listesi
+// sql/53'ün başında; testler/shorts-kuyruk.js dördünü bağlıyor.
+const YAYIN_TURLERI = ['story', 'reels', 'shorts'];
 const yayinlanabilirTur = (t)=> YAYIN_TURLERI.includes(String(t || ''));
 
 function yayinBilgisi(r){
@@ -16517,7 +16522,9 @@ function otoYayinTazele(){
   if(!document.getElementById('f_time').value) satirlar.push(escapeHtml(t('oy_saatsiz')));
 
   satirlar.push('<span class="hint" style="display:block;margin-top:6px">'
-    + escapeHtml(tur === 'reels' ? t('oy_not_reels') : t('oy_not')) + '</span>');
+    + escapeHtml(tur === 'shorts' ? t('oy_not_shorts')
+               : tur === 'reels'  ? t('oy_not_reels')
+               : t('oy_not')) + '</span>');
   if(y.hata) satirlar.push('<span class="oy-hata">' + escapeHtml(y.hata) + '</span>');
   d.innerHTML = satirlar.join('<br>');
 }

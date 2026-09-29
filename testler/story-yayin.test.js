@@ -113,8 +113,8 @@ const SQL = {
   },
   story_kuyruk_al({ p_limit }){
     const aday = satirlar.filter(r=>
-      // sql/50: story VE reels
-      (r.type === 'story' || r.type === 'reels')
+      // sql/50: story VE reels · sql/53: shorts
+      (r.type === 'story' || r.type === 'reels' || r.type === 'shorts')
       && r.auto_publish === true && r.publish_state === 'pending'
       && !r.deleted_at && r.publish_at && Date.parse(r.publish_at) <= SAAT
       && (!r.retry_after || Date.parse(r.retry_after) <= SAAT)
@@ -358,9 +358,54 @@ function ttKur(ek){
              yenileme_jetonu:'yen_1',
              yenileme_bitis: new Date(Date.now() + 30*864e5).toISOString() },
     baslatHatasi: 0, parcaHatasi: 0, durum: 'SEND_TO_USER_INBOX',
+    yenilemeSuskun: false,
     yenilemeCalisti: 0, init: null, parcalar: [], jetonlar: []
   }, ek || {});
 }
+
+// ── SAHTE YOUTUBE ─────────────────────────────────────────────────
+// Google'in surdurulebilir (resumable) yukleme protokolu: once oturum
+// (POST, cevabin Location basliginda adres), sonra parca parca PUT.
+// ARA parcalarin cevabi 308, SON parcanin cevabi 200 + video kimligi.
+//
+// ⚠ 308'i dogru taklit etmek testin butun degeri: worker ara parcada
+// 200 gorse "bitti" sanardi ve bu sahte sunucu her seye 200 dondurse
+// hicbir zaman fark edilmezdi.
+// ⚠ BASLANGICTA KURULU (TT ile ayni gerekce): baska bir olcum
+// youtube_hesaplari uctasini cagirirsa COKMESIN -- coken test, kor
+// testle ayni goruntuyu verir.
+let YT = null;
+function ytKur(ek){
+  YT = Object.assign({
+    hesap: { user_id:'u1', kanal_id:'UC_test', kanal_adi:'Gerçeğin İzleri',
+             erisim_jetonu:'ytok_gecerli',
+             erisim_bitis: new Date(Date.now() + 3600e3).toISOString(),
+             yenileme_jetonu:'ytyen_1' },
+    oturumHatasi: 0,        // oturum acmada donen HTTP kodu
+    hataSebebi: '',         // Google'in `error.errors[0].reason` degeri
+    // Her parca PUT'u saati BU KADAR ilerletiyor. Sahte fetch aninda
+    // donuyor ve saat donmus: gecikme olmadan "butce ortada doldu"
+    // yolu HIC calismiyor, yani olculemiyor.
+    parcaGecikmesiMs: 0,
+    oturumLocation: 'https://yt-oturum.test/sess-1',
+    parcaHatasi: 0,         // son parcada donen HTTP kodu
+    araParcaKodu: 308,      // ARA parcalarin donecegi kod
+    videoId: 'ytv_1',
+    sonParcaKimliksiz: false,
+    durumKodu: 200,         // youtubeCikmisMi sorgusunun donecegi kod
+    yenilemeCalisti: 0, yenilemeHatasi: 0,
+    ustveri: null, parcalar: [], jetonlar: [], durumSorgulari: [],
+    hesapYazmalari: []
+  }, ek || {});
+}
+
+// Google'in hata govdesi. `reason` HATA DIZISININ ILK ogesinde duruyor,
+// govdenin kokunde degil -- yanlis yerden okumak butun triyaji
+// "bilinmeyen sebep" dalina dusurur ve hicbir yerde gorunmez.
+const ytHataGovdesi = ()=> ({
+  error: { code: YT.oturumHatasi || YT.parcaHatasi, message:'reddedildi',
+           errors: YT.hataSebebi ? [{ reason: YT.hataSebebi, message:'reddedildi' }] : [] }
+});
 
 function sahteFetch(adres, secenek){
   const url = String(adres);
@@ -397,8 +442,12 @@ function sahteFetch(adres, secenek){
   // --- TikTok ---
   if(url.indexOf('open.tiktokapis.com/v2/oauth/token') > -1){
     TT.yenilemeCalisti++;
-    return yanit({ access_token:'tok_yeni', expires_in:86400,
-                   refresh_token:'yen_2' }, 200);
+    // TikTok normalde YENI bir yenileme jetonu donduruyor. `yenilemeSuskun`
+    // ise dondurmedigi hali kuruyor: o halde worker ESKI degeri korumak
+    // zorunda. Bu secenek olmadan `?? eski deger` dali hic calismiyordu
+    // -- silinse hicbir olcum bunu gormezdi.
+    return yanit(Object.assign({ access_token:'tok_yeni', expires_in:86400 },
+      TT.yenilemeSuskun ? {} : { refresh_token:'yen_2' }), 200);
   }
   if(url.indexOf('open.tiktokapis.com/v2/post/publish/inbox/video/init') > -1){
     TT.jetonlar.push(((secenek.headers||{}).authorization) || '');
@@ -417,6 +466,60 @@ function sahteFetch(adres, secenek){
     });
     if(TT.parcaHatasi) return yanit({}, TT.parcaHatasi);
     return yanit({}, 200);
+  }
+  // --- YouTube ---
+  if(url.indexOf('oauth2.googleapis.com/token') > -1){
+    YT.yenilemeCalisti++;
+    if(YT.yenilemeHatasi) return yanit({ error:'invalid_grant' }, YT.yenilemeHatasi);
+    // ⚠ GOOGLE YENILEMEDE refresh_token DONDURMUYOR. Sahtesi de
+    // dondurmuyor: dondurse, worker'in eksik alani dogru ele aldigi
+    // hic olculmezdi.
+    return yanit({ access_token:'ytok_yeni', expires_in:3600 }, 200);
+  }
+  if(url.indexOf('googleapis.com/upload/youtube/v3/videos') > -1){
+    YT.jetonlar.push(((secenek.headers||{}).authorization) || '');
+    if(YT.oturumHatasi) return yanit(ytHataGovdesi(), YT.oturumHatasi);
+    YT.ustveri = JSON.parse(secenek.body || '{}');
+    YT.oturumBasliklari = {
+      boyut: (secenek.headers||{})['x-upload-content-length'] || '',
+      tur:   (secenek.headers||{})['x-upload-content-type'] || ''
+    };
+    // ⚠ OTURUM ADRESI CEVABIN `Location` BASLIGINDA, govdesinde DEGIL.
+    // Sahtesinde govdeye de koysaydik, worker'in yanlis yerden okumasi
+    // gorunmez kalirdi. `yanit()` baslik tasimadigi icin cevap burada
+    // elle kuruluyor.
+    return Promise.resolve({
+      ok:true, status:200,
+      headers: new Map(YT.oturumLocation ? [['location', YT.oturumLocation]] : []),
+      text:()=>Promise.resolve('{}'), json:()=>Promise.resolve({})
+    });
+  }
+  if(url.indexOf('https://yt-oturum.test') === 0){
+    const bas = secenek.headers || {};
+    const aralik = bas['content-range'] || '';
+    // Govdesiz PUT + `bytes * /toplam` = DURUM SORGUSU (cokus kurtarmasi).
+    if(/^bytes \*\//.test(aralik)){
+      YT.durumSorgulari.push(aralik);
+      if(YT.durumKodu !== 200) return yanit({}, YT.durumKodu);
+      return yanit({ id: YT.videoId }, 200);
+    }
+    YT.parcalar.push({ aralik, uzunluk: bas['content-length'] || '', tur: bas['content-type'] || '' });
+    if(YT.parcaGecikmesiMs) ilerlet(YT.parcaGecikmesiMs);
+    const m = /^bytes (\d+)-(\d+)\/(\d+)$/.exec(aralik);
+    const sonParca = m && Number(m[2]) === Number(m[3]) - 1;
+    if(!sonParca) return yanit({}, YT.araParcaKodu);
+    if(YT.parcaHatasi) return yanit(ytHataGovdesi(), YT.parcaHatasi);
+    return yanit(YT.sonParcaKimliksiz ? {} : { id: YT.videoId }, 200);
+  }
+  if(url.indexOf('/rest/v1/youtube_hesaplari') > -1){
+    if(!YT) ytKur();
+    if(yontem === 'PATCH'){
+      const y = JSON.parse(secenek.body || '{}');
+      YT.hesapYazmalari.push(y);
+      Object.assign(YT.hesap, y);
+      return yanit([], 200);
+    }
+    return yanit(YT.hesap ? [YT.hesap] : [], 200);
   }
   if(url.indexOf('/rest/v1/tiktok_hesaplari') > -1){
     if(!TT) ttKur();
@@ -466,6 +569,12 @@ const ORTAM = {
   META_APP_SECRET: 'app-gizli-dizgesi-uzun',
   TIKTOK_CLIENT_KEY: 'ck_test',
   TIKTOK_CLIENT_SECRET: 'cs_test',
+  YOUTUBE_CLIENT_ID: 'yt_id_test',
+  YOUTUBE_CLIENT_SECRET: 'yt_secret_test',
+  // ⛔ DENETIM KAPISI ACIK. Gercekte 29 Eylul 2026'da KAPALI ve
+  // kapalilik ayri ayri olculuyor (asagida); testlerin cogu yukleme
+  // yolunu olctugu icin burada acik duruyor.
+  YOUTUBE_DENETIM_GECTI: '1',
   RESEND_API_KEY: 're_test',
   GRAF_TABANI: 'https://graf.test/v21.0',
   STORY_YOKLAMA_MS: '1',
@@ -1564,6 +1673,386 @@ async function turAt(gizli){
         TT.jetonlar.some(j=> String(j).indexOf('tok_yeni') > -1), TT.jetonlar.join('|'));
     bak('yenileme sonrası kayıt tamamlandı',
         satirlar[0].publish_state === 'published', satirlar[0].publish_state);
+    bak('dönen yeni yenileme jetonu saklandı', TT.hesap.yenileme_jetonu === 'yen_2',
+        TT.hesap.yenileme_jetonu);
+  }
+  {
+    // TikTok yenileme jetonu DONDURMEZSE eskisi korunmali. 29 Eylul
+    // 2026'da YouTube yolunu yazarken farkedildi: bu dal hic
+    // olculmuyordu ve silinse hicbir test dusmezdi.
+    tabloyuKur(ttKayit()); metaKur(); ttKur({ yenilemeSuskun: true });
+    TT.hesap.erisim_bitis = new Date(Date.now() - 1000).toISOString();
+    await turAt();
+    bak('★ TikTok yenileme jetonu dönmezse ESKİSİ korunuyor',
+        TT.hesap.yenileme_jetonu === 'yen_1', TT.hesap.yenileme_jetonu);
+    bak('susan yenilemede yükleme yine yapıldı',
+        satirlar[0].publish_state === 'published', satirlar[0].publish_state);
+  }
+
+  // ══════════════════════════════════════════════════════════════
+  // YOUTUBE SHORTS
+  // ══════════════════════════════════════════════════════════════
+  console.log('[youtube · surdurulebilir yukleme]');
+  let ytKayit;
+  {
+    ytKayit = (ek)=> Object.assign({
+      type:'shorts', platform:'youtube', title:'Aizanoi',
+      media_name:'2026-12-05_shorts_aizanoi.mp4',
+      media_url:'https://medya.test/2026-12-05_shorts_aizanoi.mp4',
+      // ⚠ BOYUT BILEREK 8 MB'IN TAM KATI DEGIL: 114 MB / 8 MB = 14
+      // parca + 2 MB artan. Tam kat secseydik ceil ile floor AYNI
+      // sonucu verirdi ve TikTok formulunun buraya kopyalanmasi
+      // yakalanmazdi -- TT testinde tam bu hata yapildi.
+      media_bytes: 114 * 1024 * 1024, media_mime:'video/mp4',
+      content:{ timezone:'Europe/Istanbul',
+                videoTitle:'Aizanoi: Zeus Tapınağının Altındaki Tünel',
+                caption:'Kütahya\'da bir tapınağın altında...', hashtags:'#arkeoloji, #aizanoi' }
+    }, ek || {});
+
+    tabloyuKur(ytKayit()); metaKur(); ytKur();
+    await turAt();
+
+    const TOPLAM = 114 * 1024 * 1024;              // 119537664
+    const PARCA  = 8 * 1024 * 1024;                // 8388608
+    bak('★ oturum acildi (uc /upload/ onekli)', !!YT.ustveri, JSON.stringify(YT.ustveri));
+    bak('oturum boyutu x-upload-content-length ile bildiriliyor',
+        (YT.oturumBasliklari||{}).boyut === String(TOPLAM), (YT.oturumBasliklari||{}).boyut);
+    bak('oturum dosya turunu bildiriyor',
+        (YT.oturumBasliklari||{}).tur === 'video/mp4', (YT.oturumBasliklari||{}).tur);
+
+    // ⚠ ceil, floor DEGIL. 114/8 = 14.25 -> 15 parca. floor olsaydi 14
+    // parca cikardi ve son 2 MB HIC gitmezdi.
+    bak('★ parca sayisi ceil(boyut/parca) = 15', YT.parcalar.length === 15, YT.parcalar.length);
+    bak('ilk parca 0\'dan basliyor',
+        YT.parcalar[0] && YT.parcalar[0].aralik === 'bytes 0-' + (PARCA-1) + '/' + TOPLAM,
+        YT.parcalar[0] && YT.parcalar[0].aralik);
+    const ytSon = YT.parcalar[YT.parcalar.length - 1];
+    bak('★ son parca dosyanin SONUNA kadar gidiyor',
+        ytSon && ytSon.aralik === 'bytes ' + (14*PARCA) + '-' + (TOPLAM-1) + '/' + TOPLAM,
+        ytSon && ytSon.aralik);
+    bak('★ ara parcalarin hepsi 256 KB\'in kati', (()=>{
+      for(let i = 0; i < YT.parcalar.length - 1; i++){
+        if(Number(YT.parcalar[i].uzunluk) % 262144 !== 0) return false;
+      }
+      return true;
+    })(), YT.parcalar.map(p=>p.uzunluk).join(','));
+    bak('parcalar bitisik ve bosluksuz', (()=>{
+      let bekle = 0;
+      for(const p of YT.parcalar){
+        const m = /^bytes (\d+)-(\d+)\//.exec(p.aralik || '');
+        if(!m || Number(m[1]) !== bekle) return false;
+        bekle = Number(m[2]) + 1;
+      }
+      return bekle === TOPLAM;
+    })(), YT.parcalar.length + ' parca');
+
+    // ---- ustveri ----
+    const sn = (YT.ustveri || {}).snippet || {};
+    const st = (YT.ustveri || {}).status || {};
+    bak('baslik content.videoTitle\'dan geliyor',
+        sn.title === 'Aizanoi: Zeus Tapınağının Altındaki Tünel', sn.title);
+    bak('aciklama alt yazi + etiketler', /arkeoloji/.test(sn.description || '')
+        && /tapınağın altında/.test(sn.description || ''), (sn.description||'').slice(0,80));
+    // ⚠ tags dizisinde '#' YOK -- YouTube onu etiketin parcasi sayiyor
+    // ve "#arkeoloji" diye bir etiket olusturuyor.
+    bak('★ tags dizisinde # YOK', Array.isArray(sn.tags)
+        && sn.tags.join(',') === 'arkeoloji,aizanoi', JSON.stringify(sn.tags));
+    // ...ama ACIKLAMADA var: Shorts'ta kesfi ilk uc etiket tasiyor.
+    bak('★ aciklamada # DURUYOR', /#arkeoloji/.test(sn.description || ''), sn.description);
+    bak('categoryId zorunlu alan dolduruldu', sn.categoryId === '22', sn.categoryId);
+    bak('★ gorunurluk private (varsayilan)', st.privacyStatus === 'private', st.privacyStatus);
+    bak('cocuklara yonelik beyani acikca false',
+        st.selfDeclaredMadeForKids === false, String(st.selfDeclaredMadeForKids));
+
+    bak('kayit tamamlandi', satirlar[0].publish_state === 'published',
+        satirlar[0].publish_state + ' / ' + satirlar[0].last_error);
+    bak('video kimligi kayda yazildi', satirlar[0].external_id === 'ytv_1', satirlar[0].external_id);
+    bak('basarida iz temizlendi',
+        satirlar[0].publish_ref === null && satirlar[0].publish_called_at === null);
+    bak('⛔ uploaded\'a DOKUNULMADI', satirlar[0].uploaded === false);
+  }
+  {
+    // ⛔ EN ONEMLI OLCUM: DENETIM KAPISI.
+    // Denetimden gecmemis projeden yuklenen video KALICI olarak ozel
+    // kaliyor. Yani kapi acik kalirsa kullanicinin gercek videolari
+    // geri alinamaz sekilde gomulur.
+    const onceki = ORTAM.YOUTUBE_DENETIM_GECTI;
+    ORTAM.YOUTUBE_DENETIM_GECTI = '';
+    tabloyuKur(ytKayit()); metaKur(); ytKur();
+    await turAt();
+    bak('★ denetim onaylanmadan GERCEK kayit YUKLENMIYOR',
+        YT.parcalar.length === 0 && !YT.ustveri, YT.parcalar.length);
+    bak('★ hata degil ERTELEME (kayit bekliyor)',
+        satirlar[0].publish_state === 'pending', satirlar[0].publish_state);
+    bak('deneme hakki geri verildi', satirlar[0].attempt_count === 0, String(satirlar[0].attempt_count));
+    bak('sebep "kalici ozel" tehlikesini yaziyor',
+        /özel/.test(String(satirlar[0].last_error || '')), satirlar[0].last_error);
+
+    // Deneme kaydi kapiyi geciyor: kullanici onu gozden cikarmis.
+    tabloyuKur(ytKayit({ content: Object.assign({}, ytKayit().content, { youtubeDeneme:true }) }));
+    metaKur(); ytKur();
+    await turAt();
+    bak('★ content.youtubeDeneme=true olan kayit YUKLENIYOR',
+        satirlar[0].publish_state === 'published' && YT.parcalar.length === 15,
+        satirlar[0].publish_state + ' / ' + YT.parcalar.length);
+    ORTAM.YOUTUBE_DENETIM_GECTI = onceki;
+  }
+  {
+    // ⛔ IKINCI EN ONEMLI OLCUM: TUR/PLATFORM UYUMU.
+    // shorts kaydi Instagram'a dusmusse, worker'in eski hali onu
+    // Instagram'a STORY olarak yayinlardi: 24 saatte kaybolan, hicbir
+    // yerde hata vermeyen bir yayin.
+    tabloyuKur(ytKayit({ platform:'instagram' })); metaKur(); ytKur();
+    await turAt();
+    bak('★ shorts kaydi Instagram\'a YAYINLANMIYOR',
+        cagrilar.media === 0 && cagrilar.publish === 0,
+        'media=' + cagrilar.media + ' publish=' + cagrilar.publish);
+    bak('★ hata degil ERTELEME', satirlar[0].publish_state === 'pending', satirlar[0].publish_state);
+    bak('sebep hangi platformlarin gecerli oldugunu soyluyor',
+        /youtube/.test(String(satirlar[0].last_error || '')), satirlar[0].last_error);
+    bak('deneme hakki geri verildi', satirlar[0].attempt_count === 0, String(satirlar[0].attempt_count));
+  }
+  {
+    // ⚠ GERILEME: reels kaydi YouTube'a da yayinlanmiyor. Ters yon de
+    // olculmeli, yoksa kontrol "yalnizca shorts'u durduruyor" olurdu.
+    tabloyuKur(reelKayit({ platform:'youtube' })); metaKur(); ytKur();
+    await turAt();
+    bak('★ reels kaydi YouTube\'a YUKLENMIYOR',
+        YT.parcalar.length === 0 && satirlar[0].publish_state === 'pending',
+        satirlar[0].publish_state + ' / ' + YT.parcalar.length);
+  }
+  {
+    // ⚠ GERILEME: story/reels yollari BOZULMADI. Tur tablosu eklendi;
+    // eklerken instagram'i kumeden dusurmek sessizce her seyi durdururdu.
+    tabloyuKur(); metaKur(); ytKur();
+    await turAt();
+    bak('★ story hala Instagram\'a yayinlaniyor (tur tablosu bozmadi)',
+        satirlar[0].publish_state === 'published', satirlar[0].publish_state);
+  }
+  {
+    // Hesap bagli degilse: HATA DEGIL ERTELEME.
+    tabloyuKur(ytKayit()); metaKur(); ytKur({ hesap: null });
+    await turAt();
+    bak('★ hesap bagli degilse kayit ERTELENIYOR (hata degil)',
+        satirlar[0].publish_state === 'pending', satirlar[0].publish_state);
+    bak('ertelemede youtube.html adresi soyleniyor',
+        /youtube\.html/.test(String(satirlar[0].last_error || '')), satirlar[0].last_error);
+    bak('hic yukleme denenmedi', YT.parcalar.length === 0, YT.parcalar.length);
+  }
+  {
+    // Jeton yenileme. Google'da erisim jetonu BIR SAAT yasiyor, yani
+    // bu yol neredeyse her yuklemede calisiyor.
+    tabloyuKur(ytKayit()); metaKur(); ytKur();
+    YT.hesap.erisim_bitis = new Date(Date.now() - 1000).toISOString();
+    await turAt();
+    bak('★ suresi dolmus jeton yenileniyor', YT.yenilemeCalisti === 1, YT.yenilemeCalisti);
+    bak('yenilenen jetonla yukleme yapiliyor',
+        YT.jetonlar.some(j=> String(j).indexOf('ytok_yeni') > -1), YT.jetonlar.join('|'));
+    bak('yeni erisim suresi bir saat', (()=>{
+      const y = YT.hesapYazmalari.find(x=> x.erisim_jetonu === 'ytok_yeni');
+      if(!y) return false;
+      const fark = Date.parse(y.erisim_bitis) - Date.now();
+      return fark > 3500e3 && fark <= 3600e3;
+    })(), JSON.stringify(YT.hesapYazmalari[0] || {}));
+    // ⚠ GOOGLE YENILEMEDE refresh_token DONDURMUYOR, sahtesi de
+    // dondurmuyor -- yani bu olcum `?? eski deger` dalini sinamis
+    // oluyor. Bu dal bozulursa alan 'undefined' dizgesi olur ve hesap
+    // BUGUN calisir, BIR SAAT SONRA olur: gorunmez bir kayip.
+    bak('★ yenileme jetonu SILINMEDI/bozulmadi',
+        YT.hesap.yenileme_jetonu === 'ytyen_1', YT.hesap.yenileme_jetonu);
+    bak('yenileme sonrasi kayit tamamlandi',
+        satirlar[0].publish_state === 'published', satirlar[0].publish_state);
+  }
+  {
+    // Yenileme reddedildi (invalid_grant): izin ekrani Testing'e
+    // alinmissa Google jetonlari yedi gunde iptal ediyor (sql/52).
+    tabloyuKur(ytKayit()); metaKur(); ytKur({ yenilemeHatasi: 400 });
+    YT.hesap.erisim_bitis = new Date(Date.now() - 1000).toISOString();
+    await turAt();
+    bak('★ jeton yenilenemezse ERTELEME', satirlar[0].publish_state === 'pending',
+        satirlar[0].publish_state);
+    bak('★ sebep HESAP SATIRINA da yaziliyor (kullanici ekranda gorsun)',
+        YT.hesapYazmalari.some(y=> /invalid_grant/.test(String(y.son_hata || ''))),
+        JSON.stringify(YT.hesapYazmalari));
+  }
+  {
+    // ARA parca 308 yerine 200 dondurse: bizim hesabimiz bozuk demektir.
+    // Sessiz gecmek, dosyanin yarisini yukleyip "yayinlandi" demek olurdu.
+    tabloyuKur(ytKayit()); metaKur(); ytKur({ araParcaKodu: 200 });
+    await turAt();
+    bak('★ ara parcada beklenmeyen 200 HATA sayiliyor',
+        satirlar[0].publish_state !== 'published', satirlar[0].publish_state);
+    bak('yalnizca ilk parca gonderildi, gerisi denenmedi',
+        YT.parcalar.length === 1, YT.parcalar.length);
+  }
+  {
+    // COKUS IZI: son parcadan ONCE isaretlenmis olmali, yoksa
+    // "cagri yapildi mi" sorusuna yanlis cevap verilir.
+    tabloyuKur(ytKayit()); metaKur(); ytKur({ parcaHatasi: 500 });
+    await turAt();
+    bak('★ son parca yukleme cagrisi ISARETLENDI (cokus izi)',
+        !!satirlar[0].publish_called_at, String(satirlar[0].publish_called_at));
+    bak('oturum adresi publish_ref\'te duruyor',
+        String(satirlar[0].publish_ref || '').indexOf('yt-oturum.test') > -1,
+        satirlar[0].publish_ref);
+  }
+  {
+    // COKUS KURTARMASI: iz + cagri var, sonuc bilinmiyor. Oturum
+    // adresine sorulup kimlik bulunuyor -- IKINCI YUKLEME YAPILMIYOR.
+    tabloyuKur(ytKayit({ publish_ref:'https://yt-oturum.test/sess-1',
+                         publish_ref_at: su(), publish_called_at: su() }));
+    metaKur(); ytKur({ videoId:'ytv_kurtarilan' });
+    await turAt();
+    bak('★ durum SORULDU (bytes */toplam)',
+        YT.durumSorgulari.length === 1 && /^bytes \*\/119537664$/.test(YT.durumSorgulari[0]),
+        YT.durumSorgulari.join('|'));
+    bak('★ CIFT YUKLEME YAPILMADI', YT.parcalar.length === 0, YT.parcalar.length);
+    bak('kurtarilan kimlik kayda yazildi',
+        satirlar[0].external_id === 'ytv_kurtarilan', satirlar[0].external_id);
+    bak('kayit yayinlandi sayildi', satirlar[0].publish_state === 'published',
+        satirlar[0].publish_state);
+  }
+  {
+    // Oturum 308 dediyse yukleme BITMEMIS: hicbir video olusmadi,
+    // bastan yuklenebilir.
+    tabloyuKur(ytKayit({ publish_ref:'https://yt-oturum.test/sess-1',
+                         publish_ref_at: su(), publish_called_at: su() }));
+    metaKur(); ytKur({ durumKodu: 308 });
+    await turAt();
+    bak('★ 308 (yarim) ise BASTAN yukleniyor', YT.parcalar.length === 15, YT.parcalar.length);
+    bak('bastan yuklemede kayit tamamlaniyor',
+        satirlar[0].publish_state === 'published', satirlar[0].publish_state);
+  }
+  {
+    // Oturum sorusu cevapsiz kaldi: BILMIYORUZ. Yuklemek cift video
+    // demek olabilir -- beklemek daha iyi.
+    tabloyuKur(ytKayit({ publish_ref:'https://yt-oturum.test/sess-1',
+                         publish_ref_at: su(), publish_called_at: su() }));
+    metaKur(); ytKur({ durumKodu: 500 });
+    await turAt();
+    bak('★ sonuc bilinmiyorsa YUKLENMIYOR, erteleniyor',
+        YT.parcalar.length === 0 && satirlar[0].publish_state === 'pending',
+        satirlar[0].publish_state + ' / ' + YT.parcalar.length);
+  }
+  {
+    // Baslik bos: YouTube zorunlu tutuyor ve reddi yukleme BITTIKTEN
+    // sonra donuyor. KALICI hata -- tekrar denemek ise yaramaz.
+    tabloyuKur(ytKayit({ title:'', content:{ timezone:'Europe/Istanbul' } }));
+    metaKur(); ytKur();
+    await turAt();
+    bak('★ basliksiz kayit yuklenmeden KALICI hata',
+        satirlar[0].publish_state === 'failed' && YT.parcalar.length === 0,
+        satirlar[0].publish_state + ' / ' + YT.parcalar.length);
+    bak('hata hangi alani doldurmasi gerektigini soyluyor',
+        /başlı[kğ]/i.test(String(satirlar[0].last_error || '')), satirlar[0].last_error);
+  }
+  {
+    // Baslikta '<' veya '>': YouTube reddediyor (invalidVideoMetadata).
+    tabloyuKur(ytKayit({ content:{ timezone:'Europe/Istanbul',
+                                   videoTitle:'Aizanoi <b>tapinak</b>' } }));
+    metaKur(); ytKur();
+    await turAt();
+    bak('★ baslikta < > atiliyor',
+        ((YT.ustveri||{}).snippet||{}).title === 'Aizanoi btapinak/b',
+        ((YT.ustveri||{}).snippet||{}).title);
+  }
+  {
+    // Fotograf: Shorts video olmak zorunda.
+    tabloyuKur(ytKayit({ media_mime:'image/jpeg' })); metaKur(); ytKur();
+    await turAt();
+    bak('★ fotograf kaydi KALICI hata, oturum bile acilmiyor',
+        satirlar[0].publish_state === 'failed' && !YT.ustveri, satirlar[0].publish_state);
+  }
+  {
+    // Gorunurluk elle acildiysa ustveriye o geciyor.
+    const onceki = ORTAM.YOUTUBE_GORUNURLUK;
+    ORTAM.YOUTUBE_GORUNURLUK = 'public';
+    tabloyuKur(ytKayit()); metaKur(); ytKur();
+    await turAt();
+    bak('YOUTUBE_GORUNURLUK ustveriye geciyor',
+        (((YT.ustveri||{}).status)||{}).privacyStatus === 'public',
+        (((YT.ustveri||{}).status)||{}).privacyStatus);
+    ORTAM.YOUTUBE_GORUNURLUK = onceki;
+  }
+  {
+    // Butce yuklemenin ORTASINDA doluyor. Olculen sey: kayit
+    // 'in_progress' ASILI KALMIYOR ve sebebi satirda yaziyor.
+    // (Butce cagri aninda okunuyor, o yuzden ORTAM'dan degistirilebiliyor.)
+    const onceki = ORTAM.STORY_BUTCE_MS;
+    // Tur dongusu kaydi ALMAYA yetecek kadar (bitis - 15sn gecilmemis),
+    // ama 15 parcayi bitirmeye yetmeyecek kadar butce.
+    ORTAM.STORY_BUTCE_MS = '20000';
+    tabloyuKur(ytKayit()); metaKur();
+    // Her parca 3 saniye: 10 saniyelik pay dorduncu parcada asiliyor.
+    ytKur({ parcaGecikmesiMs: 3000 });
+    await turAt();
+    bak('★ butce ortada dolunca kayit ASILI KALMIYOR',
+        satirlar[0].publish_state === 'pending', satirlar[0].publish_state);
+    bak('★ sebep hangi parcada kaldigini ve dosya boyutunu soyluyor',
+        /parçada doldu/.test(String(satirlar[0].last_error || ''))
+        && /114 MB/.test(String(satirlar[0].last_error || '')), satirlar[0].last_error);
+    bak('yayin cagrisi izi YAZILMADI (yanlis kurtarma olmasin)',
+        !satirlar[0].publish_called_at, String(satirlar[0].publish_called_at));
+    ORTAM.STORY_BUTCE_MS = onceki;
+  }
+  console.log('[youtube · hata triyaji]');
+  {
+    // ⛔ KOTA. YouTube gunde ~6 yukleme veriyor (videos.insert 1600
+    // birim, gunluk kota 10.000). Kotayi "gecici hata" saymak, yedinci
+    // kaydi uc denemede yakip BASARISIZ isaretlemek demek -- oysa
+    // yapilacak tek sey yarini beklemek.
+    tabloyuKur(ytKayit()); metaKur();
+    ytKur({ oturumHatasi: 403, hataSebebi:'quotaExceeded' });
+    await turAt();
+    bak('★ kota hatasi ERTELEME (failed DEGIL)',
+        satirlar[0].publish_state === 'pending', satirlar[0].publish_state);
+    bak('★ kota hatasinda deneme hakki geri verildi',
+        satirlar[0].attempt_count === 0, String(satirlar[0].attempt_count));
+    bak('sebep gunluk kotayi soyluyor',
+        /kota/i.test(String(satirlar[0].last_error || '')), satirlar[0].last_error);
+    bak('kotada hic parca gonderilmedi', YT.parcalar.length === 0, YT.parcalar.length);
+  }
+  {
+    // Ustveri reddi KALICI: tekrar denemek ayni sonucu verir ve her
+    // deneme 114 MB'i bosa gonderir.
+    tabloyuKur(ytKayit()); metaKur();
+    ytKur({ parcaHatasi: 400, hataSebebi:'invalidVideoMetadata' });
+    await turAt();
+    bak('★ ustveri reddi KALICI hata (uc kez denenmiyor)',
+        satirlar[0].publish_state === 'failed', satirlar[0].publish_state);
+    bak('hatada Google\'in sebebi yaziyor',
+        /invalidVideoMetadata/.test(String(satirlar[0].last_error || '')), satirlar[0].last_error);
+  }
+  {
+    // 5xx GECICI: Google'in kendi sunucusu. Tekrar denenmeli.
+    tabloyuKur(ytKayit()); metaKur();
+    ytKur({ oturumHatasi: 503, hataSebebi:'backendError' });
+    await turAt();
+    bak('★ 5xx GECICI hata (tekrar denenecek)',
+        satirlar[0].publish_state === 'pending' && satirlar[0].attempt_count === 1,
+        satirlar[0].publish_state + ' / ' + satirlar[0].attempt_count);
+  }
+  {
+    // Sebep dizgesi OLMASA da 4xx kalici sayiliyor: bilinmeyen bir
+    // 4xx'i uc kez denemek dosyayi uc kez bosa gondermek demek.
+    tabloyuKur(ytKayit()); metaKur();
+    ytKur({ oturumHatasi: 401, hataSebebi:'' });
+    await turAt();
+    bak('sebepsiz 4xx de KALICI', satirlar[0].publish_state === 'failed',
+        satirlar[0].publish_state);
+  }
+
+  {
+    // Bildirim dili: Short kalici, "24 saatlik" telasi olmamali.
+    tabloyuKur(ytKayit({ media_url:null })); metaKur(); ytKur();
+    await turAt();
+    const e = epostalar[0] || {};
+    bak('konu "Short yayınlanamadı" diyor', /Short yayınlanamadı/.test(e.subject || ''), e.subject);
+    bak('★ "24 saatlik" telası YOK (Short kalıcı)',
+        !/24 saatlik/.test(e.text || ''), (e.text || '').slice(0, 120));
+    bak('türü Shorts yazıyor', /Tür\s*:\s*Shorts/.test(e.text || ''), (e.text || '').slice(0, 200));
+    bak('★ platformu YouTube yazıyor (kod adı değil)',
+        /Platform\s*:\s*YouTube/.test(e.text || ''), (e.text || '').slice(0, 220));
   }
 
   console.log('[reels · bildirim dili]');

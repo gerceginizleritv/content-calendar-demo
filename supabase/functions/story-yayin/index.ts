@@ -46,7 +46,7 @@
 //
 // Dağıtım:  supabase functions deploy story-yayin --no-verify-jwt
 
-const SURUM = '1.8.1';
+const SURUM = '1.9.0';
 const UCLAR = ['GET / (servis bilgisi)', 'POST / (bir tur)'];
 
 // ⚠ ORTAM DEĞİŞKENLERİ KIRPILIYOR.
@@ -77,6 +77,39 @@ const TT_DURUM  = 'https://open.tiktokapis.com/v2/post/publish/status/fetch/';
 // bir reel 15 parça oluyor ve hiçbir an bellekte 10 MB'tan fazlası
 // durmuyor.
 const TT_PARCA  = 10 * 1024 * 1024;
+
+const YOUTUBE_ID     = ayar('YOUTUBE_CLIENT_ID');
+const YOUTUBE_SECRET = ayar('YOUTUBE_CLIENT_SECRET');
+// ⛔ DENETİM ANAHTARI. Boşken worker YouTube'a GERÇEK kayıt yüklemiyor.
+// Sebebi YOUTUBE bölümünün başında ve kısaca: denetimden geçmemiş bir
+// projeden yüklenen video kalıcı olarak "özel"e kilitleniyor. Bu
+// değişken bir ayar değil, bir ONAY: denetim onaylandığı gün elle
+// tanımlanıyor.
+//
+// ⚠ İKİSİ DE İŞLEV, SABİT DEĞİL -- pageId() gibi. Sebep: değerleri
+// yayının NE YAPACAĞINI belirliyor ve ikisinin de hem açık hem kapalı
+// hali ölçülmek zorunda. Sabit olsalardı modül yüklenirken bir kez
+// okunurdu ve testin ikinci hali hiç ölçülemezdi -- yani en tehlikeli
+// iki ayarın yalnızca bir yüzü sınanmış olurdu.
+const ytDenetim      = () => ayar('YOUTUBE_DENETIM_GECTI');
+// 'private' | 'unlisted' | 'public'. Varsayılanın neden 'private'
+// olduğu YOUTUBE bölümünün başında.
+const ytGorunurluk   = () => (ayar('YOUTUBE_GORUNURLUK') || 'private');
+const YT_JETON  = 'https://oauth2.googleapis.com/token';
+// ⚠ YÜKLEME ADRESİ ile VERİ ADRESİ AYRI. Yüklemede `/upload/` öneki
+// var; önek olmadan istek 400 dönüyor ve hata "eksik gövde" diyor --
+// sebebi hiçbir yerde yazmıyor.
+const YT_YUKLE  = 'https://www.googleapis.com/upload/youtube/v3/videos';
+// ⚠ PARÇA 256 KB'IN KATI OLMAK ZORUNDA (son parça hariç). Google
+// artanı kabul etmiyor, oturumu bozuyor. 8 MB = 32 x 256 KB.
+//
+// ⚠ TIKTOK'UN FORMÜLÜ BURAYA UYMUYOR. TikTok parça sayısını
+// floor(boyut/parça) ile istiyor ve son parça artanı yutuyor; Google
+// öyle bir toplam beklemiyor, parçalar sırayla akıyor ve SON parça
+// artan kadar oluyor -- yani ceil. İkisini karıştırmak, 8 MB'ın tam
+// katı olmayan her dosyada yüklemenin son parçasını bozuyor ve bu
+// yalnızca bazı dosyalarda görünüyor.
+const YT_PARCA  = 8 * 1024 * 1024;
 
 const RESEND_KEY     = ayar('RESEND_API_KEY');
 const MAIL_FROM      = (ayar('MAIL_FROM') || 'Shootboard <hello@shootboard.app>');
@@ -404,6 +437,9 @@ async function cikmisMi(k: any, cagriAni: string): Promise<{ biliniyor: boolean;
   // TikTok'ta "son gönderiler" listesi yok; kendi publish_id'siyle
   // sorulan ayrı bir durum ucu var.
   if (pf === 'tiktok') return await tiktokCikmisMi(k);
+  // YouTube'da da liste yok; sürdürülebilir yükleme oturumunun
+  // kendisine soruluyor (youtubeCikmisMi'nin başında).
+  if (pf === 'youtube') return await youtubeCikmisMi(k);
   const reel = reelMi(k);
   // Her platformun VE her türün kendi listesi var. Yanlış listeye
   // bakmak "çıkmamış" cevabı üretir ve o cevap yeniden yayın demek:
@@ -485,9 +521,51 @@ const izTemizle = (id: string) => rpc('story_iz_konteyner', { p_id: id, p_ref: n
 // olabilir, o zaman kuyruk `type` vermez ve gelen her kayıt zaten
 // story'dir. Yani eksik alan, yanlış davranış değil ESKİ davranış.
 const reelMi = (k: any) => String(k?.type ?? 'story') === 'reels';
-// Kullanıcıya gösterilecek kelime. Bildirim ve hata metinleri "story"
-// diyordu; bir reel için yanlış olurdu.
-const turAdi = (k: any) => (reelMi(k) ? 'reel' : 'story');
+// 29 Eylül 2026: `shorts` eklendi. reelMi'yi genişletmedim -- reelMi
+// Instagram/Facebook yollarında "konteynere REELS yaz" demek, shorts
+// oraya hiç girmiyor (aşağıdaki tür/platform kontrolü kesiyor).
+const shortMi = (k: any) => String(k?.type ?? 'story') === 'shorts';
+
+// ══════════════════════════════════════════════════════════════════
+// TÜR TABLOSU — TEK YER
+// ══════════════════════════════════════════════════════════════════
+// Üç şey burada duruyor ve üçü de daha önce koda dağılmıştı:
+//
+//   platformlar  Bu türün GİDEBİLECEĞİ platformlar. Kuyruk platformu
+//                süzmüyor (sql/50, sql/53): süzgeç burada.
+//   ad           Cümle içinde geçen kelime ("başlıksız reel").
+//   tekil        Bildirim konusundaki tek gönderi ("Reel yayınlanamadı").
+//   buyuk        Türün adı ("Tür: Reels").
+//                Üçü ayrı duruyor çünkü Türkçede biri ötekinin yerine
+//                geçmiyor: "Reels yayınlanamadı" bozuk, "Tür: Reel"
+//                eksik. Tek alan yapmak ikisinden birini bozardı.
+//   kalici       Gönderi kalıcı mı? Story 24 saatlik, reel ve Short
+//                kalıcı -- hata bildiriminin tonu buna bakıyor.
+//
+// ⚠ BURAYA BİR TÜR EKLEMEK YETMEZ: sql/53'ün başındaki dört yer
+// listesi geçerli. Ama buradan EKSİK kalan bir tür kuyruğa düşse
+// bile YAYINLANMIYOR, erteleniyor -- yani eksiklik sessiz değil.
+const TURLER: Record<string, { ad: string; tekil: string; buyuk: string; platformlar: string[]; kalici: boolean }> = {
+  // ⚠ story'nin tiktok'ta olması tuhaf görünüyor ama gerçek: TikTok'ta
+  // "story" diye bir biçim yok, kayıt taslağa video olarak düşüyor.
+  // Kümeden çıkarmak, bugün çalışan kayıtları durdurmak olurdu.
+  story:  { ad: 'story', tekil: 'Story', buyuk: 'Story',  platformlar: ['instagram', 'facebook', 'tiktok'], kalici: false },
+  reels:  { ad: 'reel',  tekil: 'Reel',  buyuk: 'Reels',  platformlar: ['instagram', 'facebook', 'tiktok'], kalici: true  },
+  // Shorts YALNIZCA YouTube. Instagram'a düşen bir shorts kaydı,
+  // reelMi false döndüğü için STORY olarak çıkardı -- 24 saatte
+  // kaybolan, kimsenin sebebini anlamadığı bir yayın.
+  shorts: { ad: 'Short', tekil: 'Short', buyuk: 'Shorts', platformlar: ['youtube'], kalici: true  }
+};
+// Metinler için: tanınmayan tür 'story' gibi ANLATILIYOR (yayın yolu
+// bu değil -- onu kaydiYayinla'daki kontrol kesiyor).
+const turBilgi = (k: any) => TURLER[String(k?.type ?? 'story')] ?? TURLER.story;
+const turAdi = (k: any) => turBilgi(k).ad;
+
+// Kullanıcının bilerek gözden çıkardığı deneme kaydı. YALNIZCA
+// YouTube denetim kapısını açıyor (aşağıda) -- başka hiçbir yerde
+// anlamı yok. Kayıtta elle işaretleniyor: content.youtubeDeneme = true
+const denemeKaydi = (k: any) =>
+  !!(k?.content && typeof k.content === 'object' && k.content.youtubeDeneme === true);
 
 // Reels alt yazısı kaydın kendi içeriğinden geliyor -- Shootboard'da
 // zaten yazılmış olan metin. Instagram sınırı 2200 karakter; fazlası
@@ -517,11 +595,15 @@ function kisaBaslik(k: any): string {
   const c = (k?.content && typeof k.content === 'object') ? k.content : {};
   return String(c.shortTitle ?? '').trim().slice(0, 100);
 }
-function altYazi(k: any): string {
+// ⚠ TAVAN PARAMETRE, SABİT DEĞİL. Instagram 2200 karakter kabul
+// ediyor, YouTube açıklaması 5000. İkinci bir kopya yazmak yerine
+// tavanı çağıran veriyor: kopya olsaydı biri etiket kırpma kuralını
+// öğrenir, öteki öğrenmezdi.
+function altYazi(k: any, tavan = 2200): string {
   const c = (k?.content && typeof k.content === 'object') ? k.content : {};
   const metin = String(c.caption ?? '').trim();
   const etiketler = String(c.hashtags ?? '').trim();
-  if (!etiketler) return metin.slice(0, 2200);
+  if (!etiketler) return metin.slice(0, tavan);
 
   // ⚠ ETİKETLER AYRI ALANDA DURUYOR ve 27 Eylül 2026'ya kadar hiçbir
   // yayına girmiyordu: burası yalnızca `caption` okuyordu. İlk gerçek
@@ -532,7 +614,7 @@ function altYazi(k: any): string {
 
   // Kullanıcı etiketleri alt yazının içine elle yazmışsa tekrar
   // eklemiyoruz -- 27 Eylül'de tam olarak bunu yapmıştı.
-  if (parcalar[0] && metin.includes(parcalar[0])) return metin.slice(0, 2200);
+  if (parcalar[0] && metin.includes(parcalar[0])) return metin.slice(0, tavan);
 
   // ⚠ SINIRI ETİKETİN ORTASINDAN KESMİYORUZ. Düz `slice(0, 2200)`
   // "#arkeolo" gibi bir yarım etiket bırakır; Instagram onu geçerli
@@ -540,7 +622,7 @@ function altYazi(k: any): string {
   let cikti = metin;
   for (const p of parcalar) {
     const aday = cikti ? cikti + (cikti === metin ? '\n\n' : ' ') + p : p;
-    if (aday.length > 2200) break;
+    if (aday.length > tavan) break;
     cikti = aday;
   }
   return cikti;
@@ -589,7 +671,7 @@ function igKonteynerAlanlari(k: any): Record<string, string> {
 // şartname Bölüm 6 bunları ortaklaştırmamayı özellikle söylüyor:
 // Instagram dosyayı adresten ÇEKİYOR, Facebook dosyayı bize
 // YÜKLETİYOR. Ortak olan yalnızca ön kontroller ve çöküş izi.
-const YAYINLANABILIR = ['instagram', 'facebook', 'tiktok'];
+const YAYINLANABILIR = ['instagram', 'facebook', 'tiktok', 'youtube'];
 
 async function kaydiYayinla(k: any, bitis: number): Promise<string> {
   // ⚠ PLATFORM, HER ŞEYDEN ÖNCE.
@@ -606,6 +688,49 @@ async function kaydiYayinla(k: any, bitis: number): Promise<string> {
     await rpc('story_ertele', { p_id: k.id, p_dakika: 180,
       p_sebep: `${pf} yayını henüz kurulmadı; kayıt bekliyor. Şimdilik elle yayınla.` });
     return 'platform-desteklenmiyor';
+  }
+  // ⚠ TÜR VE PLATFORM BİRBİRİNE UYMAK ZORUNDA.
+  // Kuyruk türü süzüyor, platformu süzmüyor; ikisinin UYUMUNU hiçbir
+  // yer süzmüyordu. Instagram'a düşen bir `shorts` kaydı aşağıdaki
+  // yolda Instagram'a giderdi ve `reelMi` false döndüğü için STORY
+  // olarak çıkardı: 24 saatte kaybolan, hiçbir yerde hata vermeyen
+  // bir yayın. En pahalı hata türü bu.
+  //
+  // ERTELEME, hata değil: kayıt bozuk değil, platformu yanlış -- ve
+  // kullanıcı düzelttiği an kendiliğinden akıyor. Deneme hakkı da
+  // harcanmıyor, yoksa kullanıcı düzeltmeyi yetiştirse bile kayıt üç
+  // hakkını tüketmiş olurdu.
+  const tb = TURLER[String(k.type ?? 'story')];
+  if (!tb) {
+    await rpc('story_ertele', { p_id: k.id, p_dakika: 180,
+      p_sebep: `'${String(k.type ?? '')}' türü worker'da tanımlı değil; kayıt bekliyor. `
+             + 'Şimdilik elle yayınla.' });
+    return 'tur-taninmiyor';
+  }
+  if (!tb.platformlar.includes(pf)) {
+    await rpc('story_ertele', { p_id: k.id, p_dakika: 180,
+      p_sebep: `${tb.buyuk} ${pf} platformuna yayınlanamıyor `
+             + `(${tb.buyuk} için: ${tb.platformlar.join(', ')}). `
+             + 'Kaydın platformunu düzelt ya da elle yayınla.' });
+    return 'tur-platform-uyusmuyor';
+  }
+  if (pf === 'youtube' && (!YOUTUBE_ID || !YOUTUBE_SECRET)) {
+    await rpc('story_ertele', { p_id: k.id, p_dakika: 180,
+      p_sebep: 'YOUTUBE_CLIENT_ID / YOUTUBE_CLIENT_SECRET tanımlı değil; YouTube yüklemesi yapılamıyor.' });
+    return 'yapilandirma-eksik';
+  }
+  // ⛔ DENETİM KAPISI — sebebi youtubeYayinla'nın başında.
+  // Denetimden geçmemiş bir projeden yüklenen video KALICI olarak
+  // "özel"e kilitleniyor. Yani denetim onaylanmadan yüklemek, videoyu
+  // yayınlamak değil GÖMMEK demek. Bu yüzden onay gelene kadar
+  // erteliyoruz; tek istisna, kullanıcının bilerek gözden çıkardığı
+  // deneme kaydı (content.youtubeDeneme === true).
+  if (pf === 'youtube' && !ytDenetim() && !denemeKaydi(k)) {
+    await rpc('story_ertele', { p_id: k.id, p_dakika: 720,
+      p_sebep: 'YouTube API denetimi henüz onaylanmadı. Şimdi yüklenen video KALICI olarak '
+             + '"özel" kalır (Studio\'dan bile herkese açık yapılamıyor), o yüzden kayıt '
+             + 'bekletiliyor. Onay geldiğinde YOUTUBE_DENETIM_GECTI tanımlanacak.' });
+    return 'youtube-denetim-bekliyor';
   }
   if (pf === 'tiktok' && (!TIKTOK_KEY || !TIKTOK_SECRET)) {
     await rpc('story_ertele', { p_id: k.id, p_dakika: 180,
@@ -668,7 +793,8 @@ async function kaydiYayinla(k: any, bitis: number): Promise<string> {
     return 'seri-bekliyor';
   }
 
-  if (pf === 'tiktok') return await tiktokYayinla(k);
+  if (pf === 'tiktok')  return await tiktokYayinla(k);
+  if (pf === 'youtube') return await youtubeYayinla(k, bitis);
 
   return pf === 'facebook'
     ? await facebookYayinla(k)
@@ -971,6 +1097,488 @@ async function tiktokYayinla(k: any): Promise<string> {
   return 'taslaga-birakildi';
 }
 
+// ══════════════════════════════════════════════════════════════════
+// YOUTUBE SHORTS — YÜKLEME
+// ══════════════════════════════════════════════════════════════════
+// ⛔ EN ÖNEMLİ ŞEY: DENETİMDEN ÖNCE YÜKLENEN VİDEO GÖMÜLÜYOR.
+//
+// YouTube, API denetiminden (YouTube API Services Compliance Audit)
+// geçmemiş bir Google Cloud projesinden `videos.insert` ile yüklenen
+// her videoyu "özel"e kilitliyor. İstekte `privacyStatus: 'public'`
+// yazsak da fark etmiyor ve kilit GERİ ALINAMIYOR: video Studio'dan
+// bile herkese açık yapılamıyor. Yani denetim onaylanmadan yüklemek,
+// videoyu yayınlamak değil ÇÖPE ATMAK.
+//
+// Bu yüzden kaydiYayinla'da bir kapı var: `YOUTUBE_DENETIM_GECTI`
+// tanımlı değilse gerçek kayıtlar ERTELENİYOR. Tek istisna
+// `content.youtubeDeneme === true` olan kayıt -- denetim başvurusu
+// için bir yüklemenin çalıştığını göstermek gerekiyor ve o video
+// gözden çıkarılmış oluyor.
+//
+// DOĞRU SIRA:
+//   1. Hesabı bağla (shootboard.app/youtube.html)
+//   2. content.youtubeDeneme = true olan TEK bir kayıt yayınla
+//      -> video kanalda "özel" görünür ve öyle KALIR
+//   3. Denetim başvurusunu yap, o yüklemeyi kanıt olarak göster
+//   4. Onay gelince YOUTUBE_DENETIM_GECTI=1 tanımla
+//   5. Gerçek kayıtlar akmaya başlar
+//
+// ══════════════════════════════════════════════════════════════════
+// GÖRÜNÜRLÜK: 'private' VARSAYILAN VE BU BİLİNÇLİ
+// ══════════════════════════════════════════════════════════════════
+// Denetim onaylandıktan sonra bile varsayılan 'private'. Değiştirmek
+// için `YOUTUBE_GORUNURLUK=public` tanımlanıyor. Sebep: bu hattaki
+// her şey (dosya, başlık, açıklama) otomatik geliyor ve bir kez
+// herkese açık çıkan video geri alınamıyor -- izlenmesi, bildirim
+// gitmesi, indirilmesi geri alınamıyor. Özel çıkan bir videoyu
+// herkese açık yapmak ise tek tık.
+//
+// ══════════════════════════════════════════════════════════════════
+// ══════════════════════════════════════════════════════════════════
+// ⚠ KAPAK (cover_url) YOUTUBE'A GİTMİYOR — BİLEREK
+// ══════════════════════════════════════════════════════════════════
+// Reels kaydının kapağı Instagram'a gidiyor; Shorts'ta GİTMİYOR ve
+// bunun iki sebebi var:
+//   1. YouTube'da kapak ayrı bir çağrı (thumbnails.set), yüklemenin
+//      parçası değil.
+//   2. Özel kapak yalnızca DOĞRULANMIŞ kanallarda çalışıyor; kanal
+//      doğrulanmamışsa çağrı hata veriyor.
+// Shorts akışı zaten videodan kare kullanıyor, yani kaybın pratik
+// bedeli yok. Burada yazıyor ki biri `cover_url` dolu bir Shorts
+// kaydına bakıp "kapağım neden çıkmadı" diye kodda aramasın.
+//
+// ⚠ ÇOCUKLARA YÖNELİK BEYANI
+// ══════════════════════════════════════════════════════════════════
+// `selfDeclaredMadeForKids` bir ayar değil, HUKUKİ BİR BEYAN (COPPA).
+// Varsayılan `false` -- kanal yetişkinlere yönelik tarih/arkeoloji
+// içeriği üretiyor. Bir kayıt için değiştirilmesi gerekirse
+// content.madeForKids = true.
+//
+// ══════════════════════════════════════════════════════════════════
+// SÜRDÜRÜLEBİLİR YÜKLEME (resumable) — ÇÖKÜŞ İZİ NASIL ÇALIŞIYOR
+// ══════════════════════════════════════════════════════════════════
+// Google iki adım istiyor: önce üstverilerle bir OTURUM açılıyor
+// (cevabın `Location` başlığında oturum adresi geliyor), sonra dosya
+// o adrese parça parça PUT ediliyor.
+//
+// publish_ref  = oturum adresi (video kimliği DEĞİL -- kimlik ancak
+//                son parçadan sonra geliyor)
+// publish_called_at = SON parçadan hemen önce
+//
+// Yani iz varken publish_called_at boşsa son parça hiç başlamamış ve
+// HİÇBİR video oluşmamış olabilir: baştan başlamak güvenli. Doluysa
+// sonuç bilinmiyor ve oturum adresine sorulabiliyor (youtubeCikmisMi).
+// TikTok'taki mantığın aynısı, farklı bir uçla.
+
+// Kullanıcının jetonu. Süresi dolmuşsa yenileyip saklıyor.
+//
+// ⚠ GOOGLE ERİŞİM JETONU BİR SAAT YAŞIYOR (TikTok'ta 24 saat), yani
+// bu yenileme neredeyse her yüklemede çalışacak. TikTok'ta ayda bir
+// çalışan bir yol burada günde yirmi kez çalışıyor: hatası da o
+// sıklıkta görünür, sessiz kalmaz.
+async function youtubeJetonu(k: any): Promise<string | null> {
+  const satirlar = await rest(
+    `/youtube_hesaplari?user_id=eq.${k.user_id}&select=*&limit=1`);
+  const h = Array.isArray(satirlar) ? satirlar[0] : null;
+  if (!h) return null;
+
+  // 60 saniyelik pay: yükleme uzun sürüyor, tam sınırda başlayan bir
+  // aktarım ortasında jeton ölürse parçalar yarıda kalır.
+  const bitis = Date.parse(String(h.erisim_bitis ?? '')) || 0;
+  if (bitis > Date.now() + 60_000) return String(h.erisim_jetonu || '');
+
+  if (!h.yenileme_jetonu) return null;
+  const govde = new URLSearchParams({
+    client_id: YOUTUBE_ID, client_secret: YOUTUBE_SECRET,
+    grant_type: 'refresh_token', refresh_token: String(h.yenileme_jetonu)
+  });
+  const r = await fetch(YT_JETON, {
+    method: 'POST',
+    headers: { 'content-type': 'application/x-www-form-urlencoded' },
+    body: govde.toString()
+  });
+  const v = await r.json().catch(() => null);
+  if (!r.ok || !v?.access_token) {
+    // ⚠ SEBEBİ SATIRA YAZIYORUZ. En olası sebep `invalid_grant` ve o
+    // tek bir şey demek: yenileme jetonu iptal edilmiş. İzin ekranı
+    // "Testing" durumuna alındıysa Google jetonları YEDİ GÜNDE iptal
+    // ediyor (sql/52'nin başında). Bu satır olmadan kullanıcı yalnızca
+    // "YouTube hesabı bağlı değil" görürdü -- oysa bağlıydı.
+    const sebep = String(v?.error ?? `HTTP ${r.status}`);
+    await rest(`/youtube_hesaplari?user_id=eq.${k.user_id}`, {
+      method: 'PATCH',
+      govde: {
+        son_hata: `Jeton yenilenemedi (${sebep}). Yeniden bağlanmak gerekiyor.`,
+        son_hata_zamani: new Date().toISOString()
+      }
+    }).catch(() => {});
+    return null;
+  }
+
+  const simdi = Date.now();
+  await rest(`/youtube_hesaplari?user_id=eq.${k.user_id}`, {
+    method: 'PATCH',
+    govde: {
+      erisim_jetonu:   String(v.access_token),
+      erisim_bitis:    new Date(simdi + Number(v.expires_in ?? 3600) * 1000).toISOString(),
+      // ⚠ BU SATIR TikTok'takiyle AYNI ve `??` dalı burada KURAL,
+      // orada istisna: Google yenileme cevabında yeni bir yenileme
+      // jetonu göndermiyor, yani her seferinde eski değer yazılıyor.
+      // TikTok gönderiyor ve oradaki satır çoğunlukla yeni değeri
+      // yazıyor. Aynı satır, iki farklı sebeple doğru -- ve ayrışmasın
+      // diye aynı bırakıldı.
+      yenileme_jetonu: String(v.refresh_token ?? h.yenileme_jetonu),
+      guncelleme:      new Date(simdi).toISOString(),
+      son_hata:        null,
+      son_hata_zamani: null
+    }
+  });
+  return String(v.access_token);
+}
+
+// YouTube başlığı. 100 karakter sınırı Google'ın.
+//
+// ⚠ `<` VE `>` BAŞLIĞI REDDETTİRİYOR (invalidVideoMetadata) ve hata
+// yükleme BİTTİKTEN sonra dönüyor -- yani dosya gitmiş, video yok.
+// O yüzden burada atılıyorlar.
+function youtubeBaslik(k: any): string {
+  const c = (k?.content && typeof k.content === 'object') ? k.content : {};
+  const ham = String(c.videoTitle ?? '').trim() || String(k?.title ?? '').trim();
+  return ham.replace(/[<>]/g, '').slice(0, 100).trim();
+}
+
+// Etiketler. Alanda `#arkeoloji` biçiminde duruyorlar; YouTube
+// `tags` dizisinde `#` İSTEMİYOR (etiketin parçası sayıyor).
+// Açıklamadaki `#` ise KALIYOR: ilk üçü başlığın üstünde görünüyor ve
+// Shorts'ta keşfi onlar taşıyor.
+//
+// Toplam 500 karakter sınırı var ve aşılırsa istek reddediliyor.
+function youtubeEtiketleri(k: any): string[] {
+  const c = (k?.content && typeof k.content === 'object') ? k.content : {};
+  const ham = String(c.hashtags ?? '').trim();
+  if (!ham) return [];
+  const cikti: string[] = [];
+  let toplam = 0;
+  for (const p of ham.split(/[\s,]+/)) {
+    const e = p.replace(/^#+/, '').trim();
+    if (!e) continue;
+    // Boşluk içeren etiket YouTube'da tırnaklanıyor ve iki karakter
+    // daha yer tutuyor; bizimkiler tek kelime ama hesap yine de
+    // gerçekçi kalsın.
+    const yer = e.length + 1;
+    if (toplam + yer > 500) break;
+    toplam += yer;
+    cikti.push(e);
+  }
+  return cikti;
+}
+
+function youtubeUstveri(k: any): Record<string, unknown> {
+  const c = (k?.content && typeof k.content === 'object') ? k.content : {};
+  return {
+    snippet: {
+      title: youtubeBaslik(k),
+      // YouTube açıklaması 5000 karakter. Etiketleri açıklamaya da
+      // ekleyen mantık altYazi'da ve TEK YER: Instagram ile aynı
+      // kurallar, yalnızca tavan farklı.
+      description: altYazi(k, 5000),
+      tags: youtubeEtiketleri(k),
+      // Zorunlu alan. 22 = People & Blogs: her bölgede geçerli ve
+      // içeriği daraltmayan tek güvenli varsayılan. Kayıt bazında
+      // content.youtubeCategory ile değiştirilebiliyor.
+      categoryId: String(c.youtubeCategory ?? '22')
+    },
+    status: {
+      // Ayrıntı bölümün başında: varsayılan 'private', denetim
+      // onaylanmadan zaten başka bir şey olamıyor.
+      privacyStatus: ytGorunurluk(),
+      selfDeclaredMadeForKids: c.madeForKids === true,
+      // Shootboard kaydında saat var ama ZAMANLAMA KULLANMIYORUZ:
+      // yayın anını kuyruk zaten tutuyor (publish_at) ve iki
+      // zamanlayıcı birbirini bekletirdi. Video yüklendiği an
+      // durumuna göre görünüyor.
+      embeddable: true
+    }
+  };
+}
+
+// Çöküş izi kurtarması. IG/FB'de "son gönderiler" listesine bakılıyor,
+// TikTok'ta publish_id sorulyor; burada OTURUMUN KENDİSİ soruluyor.
+//
+// ⚠ SORGU BİR PUT: gövdesi boş, `Content-Range: bytes */<boyut>`.
+// Google 308 dönerse yükleme yarım (Range başlığı nereye kadar
+// geldiğini söylüyor); 200/201 dönerse yükleme BİTMİŞ ve gövdede
+// videonun kimliği var.
+//
+// ⚠ 308 BİR YÖNLENDİRME DEĞİL (burada). fetch, Location başlığı
+// olmayan bir 308'i olduğu gibi döndürüyor; Google bu cevapta
+// Location göndermiyor, Range gönderiyor. `redirect: 'manual'`
+// gerekmiyor -- ve gerekseydi cevabın gövdesi okunamazdı.
+async function youtubeCikmisMi(k: any): Promise<{ biliniyor: boolean; id: string }> {
+  if (!k.publish_ref) return { biliniyor: true, id: '' };
+  const jeton = await youtubeJetonu(k);
+  if (!jeton) return { biliniyor: false, id: '' };
+  const boyut = Number(k.media_bytes) || 0;
+  if (!boyut) return { biliniyor: false, id: '' };
+  try {
+    const r = await fetch(String(k.publish_ref), {
+      method: 'PUT',
+      headers: {
+        authorization: `Bearer ${jeton}`,
+        'content-length': '0',
+        'content-range': `bytes */${boyut}`
+      }
+    });
+    if (r.status === 308) {
+      // Oturum yaşıyor ama yükleme bitmemiş: hiçbir video oluşmadı.
+      // ÇIKMADI demek güvenli, baştan yüklenebilir.
+      await r.body?.cancel();
+      return { biliniyor: true, id: '' };
+    }
+    if (r.ok || r.status === 201) {
+      const v = await r.json().catch(() => null);
+      const id = String(v?.id ?? '');
+      // Kimlik okunamadıysa BİLMİYORUZ. "Bitti ama kimliği yok"
+      // diyerek yayınlandı saymak, izlenemeyen bir kayıt bırakırdı.
+      return id ? { biliniyor: true, id } : { biliniyor: false, id: '' };
+    }
+    // 404/410: oturum düşmüş. Oturum düşmesi videonun oluşmadığını
+    // GÖSTERMİYOR (tamamlanmış bir oturum da bir gün sonra düşer),
+    // o yüzden bilmiyoruz.
+    await r.body?.cancel();
+    return { biliniyor: false, id: '' };
+  } catch {
+    return { biliniyor: false, id: '' };
+  }
+}
+
+// ══════════════════════════════════════════════════════════════════
+// GOOGLE HATALARININ TRİYAJI
+// ══════════════════════════════════════════════════════════════════
+// ⚠ NEDEN AYRI BİR İŞLEV: siniflandir() Meta'nın hata KODLARINA bakıyor
+// (#4, #190, #2207xxx). Google öyle kodlar vermiyor, `reason` adlı bir
+// dizge veriyor. YouTube hatalarını siniflandir()'a bırakmak hepsini
+// "geçici" kovasına atardı: kalıcı bir hata üç denemeyi yakar, kota
+// hatası ise kaydı büsbütün 'failed' yapar.
+//
+// ⛔ KOTA BURADA CİDDİ BİR ŞEY. YouTube'un günlük varsayılan kotası
+// 10.000 birim ve `videos.insert` TEK BAŞINA 1600 birim: yani GÜNDE
+// ALTI YÜKLEME. Kota hatasını "geçici hata" saymak, yedinci kaydı üç
+// denemede yakıp başarısız işaretlemek demekti -- oysa yapılacak tek
+// şey yarını beklemek. (Kota Pasifik saatiyle geceyarısı sıfırlanıyor.)
+const YT_KOTA = ['quotaExceeded', 'rateLimitExceeded', 'userRateLimitExceeded'];
+// Tekrar denemenin HİÇBİR ŞEY değiştirmediği sebepler: kaydı ya da
+// kanalı düzeltmek gerekiyor.
+const YT_KALICI = [
+  'invalidVideoMetadata', 'invalidTitle', 'invalidDescription', 'invalidTags',
+  'invalidCategoryId', 'invalidFilename', 'invalidRecordingDetails',
+  'mediaBodyRequired', 'youtubeSignupRequired', 'forbidden', 'unauthorized',
+  'failedPrecondition', 'uploadLimitExceeded'
+];
+
+function ytSebep(metin: string): string {
+  try {
+    const v = JSON.parse(metin);
+    return String(v?.error?.errors?.[0]?.reason ?? v?.error?.status ?? '');
+  } catch { return ''; }
+}
+
+// Dönen değer: 'kota' | 'kalici' | 'gecici'. Çağıran buna göre
+// erteliyor, kalıcı hata yazıyor ya da GrafHata fırlatıyor.
+async function youtubeHatasi(k: any, durum: number, metin: string, nere: string): Promise<string> {
+  const sebep = ytSebep(metin);
+  const ozet = `YouTube ${nere} (${durum}${sebep ? ' / ' + sebep : ''}): `
+             + temizle(metin).slice(0, 200);
+  if (YT_KOTA.includes(sebep) || durum === 429) {
+    // ERTELEME, hata değil: deneme hakkı geri veriliyor. Üç saat,
+    // çünkü kota gün içinde sıfırlanmıyor ama daha kısa bir aralık
+    // boşuna istek atmaktan öte bir şey yapmıyor.
+    await rpc('story_ertele', { p_id: k.id, p_dakika: 180,
+      p_sebep: 'YouTube günlük yükleme kotası doldu (günde ~6 yükleme). '
+             + 'Kota Pasifik saatiyle geceyarısı sıfırlanıyor; kayıt bekliyor.' });
+    return 'kota';
+  }
+  if (YT_KALICI.includes(sebep) || (durum >= 400 && durum < 500 && durum !== 408)) {
+    await kaliciHata(k, ozet);
+    return 'kalici';
+  }
+  // 5xx, ağ, bilinmeyen: tekrar denenebilir.
+  throw new GrafHata(durum, null, null, ozet);
+}
+
+async function youtubeYayinla(k: any, bitis: number): Promise<string> {
+  const jeton = await youtubeJetonu(k);
+  if (!jeton) {
+    // HATA DEĞİL ERTELEME: kullanıcı hesabını bağlamamış ya da yetkiyi
+    // geri almış olabilir. Bağladığı gün elle hiçbir şey yapmadan akar.
+    await rpc('story_ertele', { p_id: k.id, p_dakika: 180,
+      p_sebep: 'YouTube hesabı bağlı değil (ya da yetki yenilenemedi). '
+             + 'shootboard.app/youtube.html adresinden bağla.' });
+    return 'youtube-bagli-degil';
+  }
+
+  if (!String(k.media_mime ?? '').startsWith('video/')) {
+    await kaliciHata(k, `Shorts yalnızca video olabilir; bağlı dosya ${k.media_mime || 'bilinmeyen tür'}.`);
+    return 'shorts-video-degil';
+  }
+  const baslik = youtubeBaslik(k);
+  if (!baslik) {
+    // Başlık YouTube'da ZORUNLU ve boş başlıkla istek reddediliyor --
+    // ama reddi yükleme bittikten sonra öğrenirdik. Kalıcı hata:
+    // kullanıcı kayda başlık yazmadıkça tekrar denemek işe yaramaz.
+    await kaliciHata(k, 'YouTube başlığı boş: kayıttaki "Video başlığı" alanını doldur.');
+    return 'baslik-yok';
+  }
+  const boyut = Number(k.media_bytes) || 0;
+  if (!boyut) {
+    await kaliciHata(k, 'Dosya boyutu bilinmiyor; YouTube oturumu boyutla açılıyor.');
+    return 'boyut-yok';
+  }
+
+  // İz var ama yayın çağrısı yok: son parça hiç başlamamış, hiçbir
+  // video oluşmamış. Baştan başlamak güvenli ve yarım oturumu
+  // kurtarmaya çalışmaktan basit. (facebookYayinla'daki kararın aynısı.)
+  if (k.publish_ref && !k.publish_called_at) {
+    console.log('[story]', k.id, 'yarım kalmış YouTube oturumu — baştan');
+    await izTemizle(k.id);
+  }
+
+  // ---- 1. Oturumu aç -------------------------------------------------------
+  const ustveri = youtubeUstveri(k);
+  const bas = await fetch(`${YT_YUKLE}?uploadType=resumable&part=snippet,status`, {
+    method: 'POST',
+    headers: {
+      authorization: `Bearer ${jeton}`,
+      'content-type': 'application/json; charset=UTF-8',
+      // Bu iki başlık OLMADAN Google oturumu açıyor ama parça
+      // doğrulamasını yapamıyor ve son parçada 400 dönüyor.
+      'x-upload-content-length': String(boyut),
+      'x-upload-content-type': String(k.media_mime || 'video/mp4')
+    },
+    body: JSON.stringify(ustveri)
+  });
+  if (!bas.ok) {
+    const metin = await bas.text().catch(() => '');
+    // Triyaj: kota ise erteleme, 4xx ise kalıcı, gerisi fırlatılıyor.
+    return 'oturum-' + await youtubeHatasi(k, bas.status, metin, 'oturumu açılamadı');
+  }
+  await bas.body?.cancel();
+  const oturum = bas.headers.get('location') ?? '';
+  if (!oturum) {
+    throw new GrafHata(bas.status, null, null,
+      'YouTube oturum adresi (Location) gelmedi; yükleme başlatılamadı.');
+  }
+  await rpc('story_iz_konteyner', { p_id: k.id, p_ref: oturum });
+
+  // ---- 2. Parçalar ---------------------------------------------------------
+  // ⚠ DOSYA BELLEĞE ALINMIYOR. R2'den Range ile okunup aynı anda
+  // Google'a veriliyor -- TikTok yolundaki desenin aynısı.
+  //
+  // ⚠ PARÇA SAYISI ceil, floor DEĞİL. TT_PARCA'nın yanındaki not:
+  // TikTok floor istiyor ve son parçaya artanı yükletiyor, Google
+  // sıradaki parçayı bekliyor ve son parça artan kadar. Buraya
+  // TikTok'un formülünü kopyalamak, 8 MB'ın tam katı OLMAYAN her
+  // dosyanın son baytlarını hiç göndermemek demekti.
+  const adet = Math.ceil(boyut / YT_PARCA);
+  let videoId = '';
+  for (let i = 0; i < adet; i++) {
+    const basBayt = i * YT_PARCA;
+    const sonBayt = Math.min(basBayt + YT_PARCA, boyut) - 1;
+    const sonParca = (i === adet - 1);
+
+    // ⚠ BÜTÇE ORTADA DA KONTROL EDİLİYOR, YALNIZCA BAŞTA DEĞİL.
+    // Tur döngüsü kaydı almadan önce bütçeye bakıyor ama 15 parçalık
+    // bir yükleme başladıktan sonra bir daha bakan yoktu: bütçe
+    // dolduğunda Edge Function ÖLDÜRÜLÜYOR, kayıt 'in_progress'
+    // kalıyor ve story_asili_topla onu on dakika sonra kurtarıyor.
+    // Kendimiz bırakmak aynı işi görünüyor ama bir farkla: kullanıcı
+    // SEBEBİNİ görüyor.
+    //
+    // ⚠ BU KONTROL PARÇA ÇAĞRISINDAN ÖNCE: sonrasına konsaydı
+    // story_iz_yayin_cagrisi yazılmış olurdu ve bir sonraki tur
+    // "yayın çağrısı yapıldı, sonucu bilinmiyor" sanırdı.
+    //
+    // ⚠ BIRAKINCA YÜKLEME BAŞTAN BAŞLIYOR -- kaldığı yerden DEVAM
+    // ETMİYOR. Google'ın protokolü devam ettirmeye izin veriyor
+    // (oturuma sorulan 308 cevabı `Range` başlığında nereye kadar
+    // geldiğini söylüyor), ama o yol YAZILMADI: bugünkü dosyalar
+    // (30-120 MB) tek turda bitiyor ve hiç çalışmayan bir kurtarma
+    // yolu, sessizce bozulan bir yol demek. Bir dosya gerçekten
+    // buraya takılırsa doğru çözüm devam ettirmektir; mesaj o yüzden
+    // dosya boyutunu söylüyor.
+    if (Date.now() > bitis - 10_000) {
+      const mb = Math.round(boyut / 1048576);
+      await rpc('story_ertele', { p_id: k.id, p_dakika: 0,
+        p_sebep: `Tur bütçesi ${i + 1}/${adet}. parçada doldu; yükleme sıradaki turda `
+               + `BAŞTAN denenecek. Dosya ${mb} MB -- her turda aynı yere geliyorsa `
+               + 'dosyayı küçültmek gerekiyor.' });
+      return 'yukleme-butce-bitti';
+    }
+
+    const medya = await fetch(String(k.media_url), {
+      headers: { range: `bytes=${basBayt}-${sonBayt}` }
+    });
+    if (!medya.ok || !medya.body) {
+      throw new GrafHata(medya.status, null, null,
+        `Medya parçası alınamadı (${basBayt}-${sonBayt}); adres ${medya.status} döndürdü.`);
+    }
+
+    // ⚠ ÇÖKÜŞ İZİ: yayınlayan çağrı SON parça. Ondan önce işaretliyoruz,
+    // çünkü işaretlemeden sonra çöken worker "çağrı yapıldı mı"
+    // sorusuna yanlış cevap verirdi -- ve o cevap ikinci bir yükleme
+    // demekti.
+    if (sonParca) await rpc('story_iz_yayin_cagrisi', { p_id: k.id });
+
+    const y = await fetch(oturum, {
+      method: 'PUT',
+      headers: {
+        'content-type': String(k.media_mime || 'video/mp4'),
+        'content-length': String(sonBayt - basBayt + 1),
+        'content-range': `bytes ${basBayt}-${sonBayt}/${boyut}`
+      },
+      body: medya.body,
+      ...({ duplex: 'half' } as any)
+    });
+
+    if (!sonParca) {
+      // Ara parçaların BEKLENEN cevabı 308. 200 dönerse yükleme
+      // bitmiş sayılıyor ve bu bizim hesabımızın bozuk olduğunu
+      // söylüyor: sessiz geçmek yerine hata veriyoruz.
+      if (y.status !== 308) {
+        const metin = await y.text().catch(() => '');
+        throw new GrafHata(y.status, null, null,
+          `YouTube parça ${i + 1}/${adet} beklenmeyen cevap verdi (${y.status}): `
+          + temizle(metin).slice(0, 200));
+      }
+      await y.body?.cancel();
+      continue;
+    }
+
+    if (!y.ok && y.status !== 201) {
+      const metin = await y.text().catch(() => '');
+      // ⚠ BURADA DOSYA ZATEN GİTTİ. Yine de triyaj gerekli: kalıcı bir
+      // üstveri reddini geçici sayıp üç kez daha yüklemek, 114 MB'ı üç
+      // kez boşa göndermek demek.
+      return 'son-parca-' + await youtubeHatasi(k, y.status, metin, 'son parça yüklenemedi');
+    }
+    const v = await y.json().catch(() => null);
+    videoId = String(v?.id ?? '');
+  }
+
+  if (!videoId) {
+    // Yükleme bitti ama kimlik gelmedi. KALICI HATA DEĞİL: kayıt
+    // ertelenirse bir sonraki tur çöküş izinden (youtubeCikmisMi)
+    // kimliği sorup bulabiliyor. "Yayınlandı" demek ise izlenemeyen
+    // bir kayıt bırakırdı.
+    await rpc('story_ertele', { p_id: k.id, p_dakika: 2,
+      p_sebep: 'YouTube yükleme bitti ama video kimliği gelmedi; kimlik sorulacak.' });
+    return 'kimlik-gelmedi';
+  }
+
+  await rpc('story_yayinlandi', { p_id: k.id, p_external_id: videoId });
+  return 'yuklendi';
+}
+
 async function facebookYayinla(k: any): Promise<string> {
   const video = String(k.media_mime ?? '').startsWith('video/');
   if (reelMi(k) && !video) {
@@ -1111,18 +1719,23 @@ async function basarisizBildir(k: any, mesaj: string) {
   // yani hatayı okuyan kişi yanlış yerde arardı. Şartname Bölüm 9
   // bildirimde "hangi kayıt, hangi platform" istiyor; platformu
   // uydurmak bilgi vermemekten kötü.
-  const pfAd = ({ instagram: 'Instagram', facebook: 'Facebook' } as Record<string, string>)[
+  // ⚠ TikTok ve YouTube 28-29 Eylül 2026'da EKLENDİ ve bu tablo
+  // eksik kalmıştı: bildirim "Platform: tiktok" diyordu. Küçük bir
+  // çirkinlik ama aynı sınıftan bir hata -- tablo bir yerde, platform
+  // listesi başka yerde.
+  const pfAd = ({ instagram: 'Instagram', facebook: 'Facebook',
+                  tiktok: 'TikTok', youtube: 'YouTube' } as Record<string, string>)[
                  String(k.platform || '')] || String(k.platform || '?');
   // ⚠ ACELE AYNI DEĞİL. Story 24 saatlik: kaçan gün geri gelmiyor,
-  // o yüzden "bugün elle yayınla" demek doğru. Reel kalıcı: aynı
-  // cümle gereksiz bir telaş yaratır ve yarın yayınlamak da olur.
-  const reel = reelMi(k);
-  const kapanis = reel
-    ? 'Reel kalıcı bir gönderi; acelesi yok ama elle de yayınlayabilirsin.'
+  // o yüzden "bugün elle yayınla" demek doğru. Reel ve Short kalıcı:
+  // aynı cümle gereksiz bir telaş yaratır ve yarın yayınlamak da olur.
+  const tb = turBilgi(k);
+  const kapanis = tb.kalici
+    ? `${tb.tekil} kalıcı bir gönderi; acelesi yok ama elle de yayınlayabilirsin.`
     : 'Story 24 saatlik; bugünü kaçırmamak için elle yayınlamak isteyebilirsin.';
-  await epostaGonder(alici, `Shootboard · ${reel ? 'Reel' : 'Story'} yayınlanamadı`,
+  await epostaGonder(alici, `Shootboard · ${tb.tekil} yayınlanamadı`,
     `${ne} yayınlanamadı.\n\n`
-    + `Tür      : ${reel ? 'Reels' : 'Story'}\n`
+    + `Tür      : ${tb.buyuk}\n`
     + `Platform : ${pfAd}\n`
     + `Zaman    : ${k.publish_at ?? '-'}\n`
     + `Hata     : ${temizle(mesaj)}\n\n`
@@ -1270,7 +1883,15 @@ Deno.serve(async (req: Request) => {
         // okunuyor; Supabase'de gizli değişkenler projeye bağlı, yani
         // ikisi de aynı havuzdan okuyor. Ama "okuyor olmalı" ile
         // "okuyor" farklı şeyler -- dağıtımdan sonra bakılabilsin.
-        tiktok_key: !!TIKTOK_KEY, tiktok_secret: !!TIKTOK_SECRET
+        tiktok_key: !!TIKTOK_KEY, tiktok_secret: !!TIKTOK_SECRET,
+        youtube_id: !!YOUTUBE_ID, youtube_secret: !!YOUTUBE_SECRET,
+        // ⛔ BU İKİSİ DEĞER GÖSTERİYOR ve bilerek: ikisi de gizli
+        // değil, ikisi de yayının NE YAPACAĞINI belirliyor. Denetim
+        // kapısı kapalıyken YouTube kayıtları yüklenmiyor; görünürlük
+        // 'public' ise yayın geri alınamaz. Dağıtımdan sonra
+        // bakılabilmesi, yanlış bir yüklemeden ucuz.
+        youtube_denetim: !!ytDenetim(),
+        youtube_gorunurluk: ytGorunurluk()
       } });
   }
   if (req.method !== 'POST') return json({ ok: false, sebep: 'yalnızca POST' }, 405);
