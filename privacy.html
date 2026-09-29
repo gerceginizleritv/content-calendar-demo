@@ -208,9 +208,11 @@ footer{margin-top:26px;color:var(--text-dim);font-size:.85rem;}
     your analytics, your comments, your subscribers, or anything already on your channel.
   </li>
   <li>
-    <strong>What we store.</strong> An access token and a refresh token, your channel id
-    and channel name, and the time of the last error if one happened. Nothing else. The
-    tokens live in a server-side table that the browser cannot reach.
+    <strong>What we store.</strong> An access token, a refresh token, and the time of the
+    last error if one happened. Nothing else. The tokens live in a server-side table that
+    the browser cannot reach. There are also fields for your channel id and name, and in
+    practice they stay <strong>empty</strong>: reading them would need a wider permission
+    than uploading does, and we do not ask for one.
   </li>
   <li>
     <strong>What we send.</strong> Only the video file and the text you wrote in the
@@ -420,9 +422,11 @@ footer{margin-top:26px;color:var(--text-dim);font-size:.85rem;}
     zaten duran hiçbir şeyi okumaya yetmiyor.
   </li>
   <li>
-    <strong>Ne saklıyoruz.</strong> Bir erişim jetonu ve bir yenileme jetonu, kanal
-    kimliğiniz ve kanal adınız, bir hata olduysa son hatanın zamanı. Başka bir şey yok.
-    Jetonlar tarayıcının erişemediği bir sunucu tablosunda duruyor.
+    <strong>Ne saklıyoruz.</strong> Bir erişim jetonu, bir yenileme jetonu ve bir hata
+    olduysa son hatanın zamanı. Başka bir şey yok. Jetonlar tarayıcının erişemediği bir
+    sunucu tablosunda duruyor. Kanal kimliği ve kanal adı için de birer alan var ama
+    pratikte <strong>boş</strong> kalıyorlar: onları okumak, yüklemekten daha geniş bir
+    izin gerektiriyor ve o izni istemiyoruz.
   </li>
   <li>
     <strong>Ne gönderiyoruz.</strong> Yalnızca video dosyasını ve kayda sizin yazdığınız

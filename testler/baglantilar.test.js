@@ -219,6 +219,48 @@ const BAGLAYICILAR = [
     // Jeton gelmezse BAGLANTI KURULMUS SAYILMAMALI.
     bak('★ yenileme jetonu gelmezse bağlantı reddediliyor',
         /!veri\.refresh_token/.test(islev));
+
+    // ══════════════════════════════════════════════════════════════
+    // ⛔ ISTENEN KAPSAM: TEK SATIR, VE GENISLEMEMELI
+    // ══════════════════════════════════════════════════════════════
+    // 29 Eylul 2026, ilk gercek baglantida: kanal adi bos geldi. Sebep
+    // `channels.list?mine=true`in OKUMA kapsami istemesi; bizde yok, o
+    // yuzden 403 donuyor. Akla gelen ilk "cozum" `youtube.readonly`
+    // eklemek -- tek satir, hemen calisir, ve kullanicidan
+    // istatistiklerini ve kanalindaki her seyi okuma izni ISTER.
+    //
+    // privacy.html tam tersini soz veriyor: "yuklemeye yeten en dar
+    // izin" ve "istatistiklerinizi, yorumlarinizi, abonelerinizi
+    // cekmiyoruz". Kapsami genisletmek o sozu sessizce bozardi --
+    // kullaniciya gosterilen izin ekrani degisir ama belge aynen kalir.
+    //
+    // Bu olcum kapsami BELGEYE bagliyor: kapsam tam olarak
+    // youtube.upload olmak zorunda ve gizlilik metni de onu adiyla
+    // yazmak zorunda.
+    const kapsamM = /const KAPSAM\s*=\s*'([^']+)'/.exec(islev);
+    bak('YouTube kapsami koddan okunabiliyor', !!kapsamM, String(kapsamM && kapsamM[1]));
+    const kapsamlar = kapsamM ? kapsamM[1].split(/[\s,]+/).filter(Boolean) : [];
+    bak('★ TEK kapsam isteniyor', kapsamlar.length === 1, JSON.stringify(kapsamlar));
+    bak('★ istenen kapsam youtube.upload (okuma kapsami YOK)',
+        kapsamlar[0] === 'https://www.googleapis.com/auth/youtube.upload',
+        JSON.stringify(kapsamlar));
+    // Okuma kapsamlarinin ADI hicbir yerde gecmemeli: gecerse biri
+    // eklemis demektir.
+    bak('★ kodda okuma kapsami izi yok (readonly / force-ssl / tam youtube)',
+        !/auth\/youtube\.readonly/.test(islev)
+        && !/auth\/youtube\.force-ssl/.test(islev)
+        && !/auth\/youtube['"\s]/.test(islev),
+        (/auth\/youtube[^']*/.exec(islev) || [''])[0]);
+    // Belge ile kod ayni kapsami sayiyor mu?
+    const gizlilik = oku('privacy.html');
+    bak('★ gizlilik metni de youtube.upload diyor',
+        /youtube\.upload/.test(gizlilik));
+    // ⚠ VE BELGE "KANAL ADINI SAKLIYORUZ" DEMEMELI: o alan bu kapsamla
+    // her zaman bos kaliyor. Fazla soylemek de yanlis soylemektir.
+    bak('★ gizlilik metni kanal adinin BOS kaldigini soyluyor',
+        /stay <strong>empty<\/strong>/.test(gizlilik)
+        && /<strong>boş<\/strong>/.test(gizlilik),
+        'privacy.html');
   }
 
   console.log('\n' + g + ' gecti, ' + k + ' kaldi');

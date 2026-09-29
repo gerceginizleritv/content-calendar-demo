@@ -19,7 +19,7 @@
 //  3. Erişim jetonu bir saat yaşıyor (TikTok'ta 24 saat). Worker her
 //     yüklemede süreyi kontrol edip yeniliyor.
 
-const SURUM = '1.0.0';
+const SURUM = '1.0.1';
 
 const ayar = (ad: string) => (Deno.env.get(ad) ?? '').trim();
 
@@ -112,8 +112,25 @@ async function jetonAl(code: string, redirectUri: string) {
   return veri;
 }
 
-// Kanal adı SADECE ekranda göstermek için. Alınamazsa bağlantı
-// BOZULMUYOR: ad boş kalır, yükleme çalışır.
+// ⚠ BU ÇAĞRI BUGÜN HER ZAMAN BOŞ DÖNÜYOR -- VE BU DOĞRU DAVRANIŞ.
+//
+// 29 Eylül 2026, ilk gerçek bağlantıda görüldü: kanal adı boş geldi.
+// Sebebi bir arıza değil, izin sınırı. `channels.list?mine=true` bir
+// OKUMA çağrısı ve okuma kapsamı istiyor (`youtube.readonly` ya da
+// `youtube`); bizim istediğimiz tek kapsam `youtube.upload` yalnızca
+// yüklemeye yetiyor, o yüzden çağrı 403 `insufficientPermissions`
+// dönüyor ve aşağıdaki catch adı boş bırakıyor.
+//
+// ⛔ ÇÖZÜM "OKUMA KAPSAMI EKLEMEK" DEĞİL. Kanal adı yalnızca ekranda
+// güzel dursun diye; onun için izin listesini genişletmek, kullanıcıdan
+// istatistiklerini ve kanalındaki her şeyi okuma izni istemek demek --
+// privacy.html "yüklemeye yeten en dar izin" diye söz veriyor ve o söz
+// bu satırdan daha değerli.
+//
+// Çağrı yine de duruyor: bir gün okuma kapsamı GEREKEN başka bir iş
+// çıkarsa (ör. kanal doğrulama), ad kendiliğinden dolmaya başlar.
+// Bağlantı adsız da tam çalışıyor; hangi kanala yüklendiğini videonun
+// kendisi söylüyor.
 async function kanalBilgisi(erisimJetonu: string): Promise<{ id: string; ad: string }> {
   try {
     const r = await fetch(`${KANAL_UCU}?part=snippet&mine=true`, {
