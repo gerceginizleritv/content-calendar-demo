@@ -106,9 +106,32 @@ const bak = (ad, ko, ek)=>{ if(ko){ g++; console.log('  ok  '+ad); } else { k++;
   // gercek davranis ayrisirsa "kutucuk acik ama hicbir sey olmuyor"
   // hali doguyor.
   const liste = await page.evaluate(()=> YAYIN_TURLERI.slice());
-  bak('yayınlanabilir türler tek listede', Array.isArray(liste) && liste.length === 2, JSON.stringify(liste));
-  bak('liste sql/50 ile aynı küme',
-      liste.includes('story') && liste.includes('reels'), JSON.stringify(liste));
+  // ⚠ BURADA KUME SAYILMIYOR. Eskiden `length === 2` yazıyordu ve
+  // `shorts` eklenince düştü -- yanlış bir şey olduğu için değil,
+  // doğru bir şey olduğu için. Sayıyı 3 yapmak aynı tuzağı bir tür
+  // öteye taşırdı.
+  //
+  // Kümenin DOĞRU olup olmadığı burada ölçülemiyor: doğru küme
+  // sql/53, mcp ve worker'da yazıyor ve dördünü birbirine bağlayan
+  // yer testler/shorts-kuyruk.test.js. Burada ölçülebilen tek şey
+  // TARAYICIDAKİ değerin app.html'deki kaynakla aynı olması -- yani
+  // çalışma anında ikinci bir kopyanın üstüne yazmadığı.
+  const kaynak = require('fs')
+    .readFileSync(require('path').join(__dirname, '..', 'app.html'), 'utf8')
+    .replace(/\/\/[^\n]*/g, '');
+  const km = /const YAYIN_TURLERI\s*=\s*\[([^\]]*)\]/.exec(kaynak);
+  const kaynakListe = km
+    ? km[1].split(',').map(x=> x.trim().replace(/^'|'$/g, '')).filter(Boolean) : null;
+  bak('app.html kaynağında YAYIN_TURLERI bulunuyor',
+      Array.isArray(kaynakListe) && kaynakListe.length > 0, JSON.stringify(kaynakListe));
+  bak('★ tarayıcıdaki liste kaynaktakiyle AYNI (ikinci kopya yok)',
+      Array.isArray(liste) && !!kaynakListe && liste.join('|') === kaynakListe.join('|'),
+      JSON.stringify(liste) + ' vs ' + JSON.stringify(kaynakListe));
+  // yayinlanabilirTur listeden OKUMALI: ayrı yazılmış bir koşul
+  // listeyi genişletmenin hiçbir şeye yaramaması demek olurdu.
+  const uyum = await page.evaluate(()=>
+    YAYIN_TURLERI.every(t=> yayinlanabilirTur(t)) && !yayinlanabilirTur('kesinlikle-yok'));
+  bak('★ yayinlanabilirTur listeden okuyor', uyum === true, String(uyum));
 
   bak('js hatası yok', hata.length === 0, hata.slice(0,2).join(' | '));
 

@@ -277,6 +277,151 @@ const bak = (ad, ko, ek)=>{ if(ko){ g++; console.log('  ok  '+ad); } else { k++;
       }
     }
 
+    // ══════════════════════════════════════════════════════════════
+    // BELGE, YAYINLADIGIMIZ PLATFORMLARI SAYMAK ZORUNDA
+    // ══════════════════════════════════════════════════════════════
+    // 29 Eylul 2026: sartlar.html "YouTube, TikTok, baska her yer --
+    // paylasimi siz yaparsiniz" diyordu. TikTok 28 Eylul'den beri
+    // URETIMDE calisiyordu: belge, bir gundur yapilan seyi
+    // YAPMIYORUZ diye yaziyordu.
+    //
+    // Bu olcum metni ezberlemiyor, WORKER'A BAGLIYOR: worker hangi
+    // platforma yayinlayabiliyorsa (YAYINLANABILIR) iki belge de o
+    // platformu ADIYLA anlatmak zorunda. Yeni bir platform eklendiginde
+    // burasi duser ve hangi belgede eksik oldugunu soyler.
+    {
+      const fs2 = require('fs'), yol2 = require('path');
+      const oku = (f)=> fs2.readFileSync(yol2.join(__dirname, '..', f), 'utf8');
+      const worker = oku('supabase/functions/story-yayin/index.ts')
+        .replace(/\/\*[\s\S]*?\*\//g, '').replace(/\/\/[^\n]*/g, '');
+      const m = /const YAYINLANABILIR = \[([^\]]*)\]/.exec(worker);
+      bak('worker YAYINLANABILIR listesi okunabiliyor', !!m, String(m && m[1]));
+      const platformlar = m
+        ? m[1].split(',').map(x=> x.trim().replace(/^'|'$/g, '')).filter(Boolean) : [];
+
+      // ⚠ ARANAN SEY KELIME DEGIL, YAPIDAKI YER.
+      // Once "adi metinde geciyor mu" diye bakiyordum ve bu KORDU:
+      // gizlilikteki TikTok SATIRINI silmek olcumu dusurmuyordu, cunku
+      // "TikTok" kelimesi ayni satirin aciklama hucresinde ve baska
+      // paragraflarda da duruyor. Ayni sekilde sartlardaki
+      // `<strong>YouTube</strong>` basligini silmek de kacti:
+      // `<strong>YouTube API Servisleri</strong>` kelimeyi sagliyordu.
+      //
+      // Artik platformun DURMASI GEREKEN YER araniyor: gizlilikte
+      // servis tablosunun ilk hucresi, sartlarda yayin listesinin kalin
+      // basligi. Sayilar iki dil demek -- tek dilde guncelleyip otekini
+      // unutmak da dusuyor.
+      const META_SATIR = { gizlilik: [['<td>Meta (Instagram, Facebook)</td>', 2]],
+                           sartlar:  [['<strong>Instagram and Facebook</strong>', 1],
+                                      ['<strong>Instagram ve Facebook</strong>', 1]] };
+      const ANKA = {
+        instagram: META_SATIR,
+        facebook:  META_SATIR,
+        tiktok:  { gizlilik: [['<td>TikTok</td>', 2]],
+                   sartlar:  [['<strong>TikTok</strong>', 2]] },
+        youtube: { gizlilik: [['<td>YouTube (Google)</td>', 2]],
+                   sartlar:  [['<strong>YouTube</strong>', 2]] }
+      };
+      const gizlilik = oku('privacy.html');
+      const sartlar  = oku('sartlar.html');
+      const kacKez = (metin, parca)=> metin.split(parca).length - 1;
+
+      for(const pf of platformlar){
+        const a = ANKA[pf];
+        // ⚠ TABLO EKSIK KALIRSA OLCUM SESSIZCE GECMESIN. Yeni bir
+        // platform eklenip buraya yazilmazsa dongu hicbir sey olcmeden
+        // gecerdi -- ve "test geciyor" denirdi.
+        bak("'" + pf + "' icin belge cengeli tanimli", !!a, pf);
+        if(!a) continue;
+        for(const [parca, adet] of a.gizlilik){
+          bak('★ ' + pf + ' gizlilik servis tablosunda (' + adet + ' dil)',
+              kacKez(gizlilik, parca) >= adet,
+              parca + ' -> ' + kacKez(gizlilik, parca));
+        }
+        for(const [parca, adet] of a.sartlar){
+          bak('★ ' + pf + ' sartlar yayin listesinde: ' + parca,
+              kacKez(sartlar, parca) >= adet,
+              String(kacKez(sartlar, parca)));
+        }
+      }
+    }
+
+    // ══════════════════════════════════════════════════════════════
+    // R2 SAKLAMA SURESI: DORT YERDE AYNI SAYI
+    // ══════════════════════════════════════════════════════════════
+    // ⚠ GERCEK DEGER CLOUDFLARE PANELINDE, DEPODA DEGIL. Yani bu olcum
+    // "dogru mu" diye soramiyor; sorabildigi sey DORDUNUN AYNI OLUP
+    // OLMADIGI -- ve yasanan hata tam buydu: 29 Eylul 2026'da kural 30
+    // gunden 90 gune cekildi, dort belge satiri 30'da kaldi.
+    //
+    // Kurali panelde degistiren kisi asagidaki SAYIYI da degistirmek
+    // zorunda; degistirmezse test dusuyor ve dort satiri birlikte
+    // guncellemek gerekiyor. Tek satiri guncelleyip otekileri unutmak
+    // artik mumkun degil.
+    //
+    // Cloudflare > R2 > shootboard-medya > Settings > Object lifecycle
+    // rules. 29 Eylul 2026'da iki kural da 90 gun.
+    //   ⚠ IKI KURAL VAR ve kurallar TOPLAMSAL: en katisi kazaniyor.
+    //   Birini 90'a cekip otekini 30'da birakmak hicbir sey degistirmez.
+    {
+      const fs2 = require('fs'), yol2 = require('path');
+      const oku = (f)=> fs2.readFileSync(yol2.join(__dirname, '..', f), 'utf8');
+      const GUN = { sayi: 90, en: 'ninety', tr: 'doksan' };
+
+      for(const belge of ['sartlar.html', 'privacy.html']){
+        const metin = oku(belge);
+        const enOk = new RegExp(GUN.en + '-day cleanup').test(metin);
+        const trOk = new RegExp(GUN.tr + ' günlük temizlik').test(metin);
+        bak('★ ' + belge + ' (en) temizlik suresi ' + GUN.sayi + ' gun diyor', enOk,
+            (/[a-z]+-day cleanup/.exec(metin) || ['bulunamadi'])[0]);
+        bak('★ ' + belge + ' (tr) temizlik suresi ' + GUN.sayi + ' gun diyor', trOk,
+            (/\S+ günlük temizlik/.exec(metin) || ['bulunamadi'])[0]);
+        // Eski sayi HICBIR YERDE kalmamali: bir dilde guncelleyip
+        // otekini unutmak bu satirla yakaliniyor.
+        bak('★ ' + belge + " 'thirty-day cleanup' izi tasimiyor",
+            !/thirty-day cleanup/.test(metin));
+        bak('★ ' + belge + " 'otuz günlük temizlik' izi tasimiyor",
+            !/otuz günlük temizlik/.test(metin));
+      }
+    }
+
+    // ══════════════════════════════════════════════════════════════
+    // YOUTUBE DENETIMININ ZORUNLU KILDIGI BILDIRIMLER
+    // ══════════════════════════════════════════════════════════════
+    // YouTube API Servisleri, gizlilik metninde UC seyi sart kosuyor:
+    // YouTube API Servisleri kullanildiginin soylenmesi, Google
+    // Gizlilik Politikasi baglantisi, ve erisimin nasil geri alinacagi.
+    // Sartlar da YouTube Hizmet Sartlari'na atif yapmak zorunda.
+    // Eksigi denetim basvurusunu REDDETTIRIYOR -- ve reddi aylar sonra
+    // ogreniliyor.
+    //
+    // ⚠ KOSUL WORKER'A BAGLI: bu satirlar yalnizca worker YouTube'a
+    // yayinlayabiliyorken zorunlu. YouTube kaldirilirsa olcum de
+    // kendiliginden susuyor.
+    {
+      const fs2 = require('fs'), yol2 = require('path');
+      const oku = (f)=> fs2.readFileSync(yol2.join(__dirname, '..', f), 'utf8');
+      const worker = oku('supabase/functions/story-yayin/index.ts')
+        .replace(/\/\*[\s\S]*?\*\//g, '').replace(/\/\/[^\n]*/g, '');
+      const ytVar = /const YAYINLANABILIR = \[[^\]]*'youtube'/.test(worker);
+      if(ytVar){
+        const gizlilik = oku('privacy.html');
+        const sartlar  = oku('sartlar.html');
+        bak('★ gizlilik: YouTube API Servisleri kullanildigi yaziyor',
+            /YouTube API Service/i.test(gizlilik) || /YouTube API Servis/i.test(gizlilik));
+        bak('★ gizlilik: Google Gizlilik Politikasi baglantisi var',
+            /href="https:\/\/policies\.google\.com\/privacy"/.test(gizlilik));
+        bak('★ gizlilik: YouTube Hizmet Sartlari baglantisi var',
+            /href="https:\/\/www\.youtube\.com\/t\/terms"/.test(gizlilik));
+        bak('★ gizlilik: erisimin nasil geri alinacagi yaziyor',
+            /href="https:\/\/myaccount\.google\.com\/permissions"/.test(gizlilik));
+        bak('★ gizlilik: istenen kapsam adiyla yaziyor (youtube.upload)',
+            /youtube\.upload/.test(gizlilik));
+        bak('★ sartlar: YouTube Hizmet Sartlari\'na atif var',
+            /href="https:\/\/www\.youtube\.com\/t\/terms"/.test(sartlar));
+      }
+    }
+
   await t.close();
   console.log('\n' + g + ' gecti, ' + k + ' kaldi');
   process.exit(k ? 1 : 0);

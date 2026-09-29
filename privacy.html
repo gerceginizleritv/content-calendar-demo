@@ -162,20 +162,73 @@ footer{margin-top:26px;color:var(--text-dim);font-size:.85rem;}
   <tr><td>GoatCounter</td><td>Visit counts</td><td>Aggregate visit data, no cookies</td></tr>
   <tr><td>Google Fonts, jsDelivr</td><td>Fonts and one code library</td><td>Your IP address, as with any file a browser loads</td></tr>
   <tr><td>Anthropic or Google AI</td><td>Captions, only with your own key</td><td>The text you ask them to work on</td></tr>
-  <tr><td>Cloudflare R2</td><td>Holding a video or cover file so that Meta can fetch it — only if you use scheduled publishing</td><td>The file itself. It sits at a <strong>public address</strong>: anyone with the link can open it</td></tr>
+  <tr><td>Cloudflare R2</td><td>Holding a video or cover file so that the platform can fetch it — only if you use scheduled publishing</td><td>The file itself. It sits at a <strong>public address</strong>: anyone with the link can open it</td></tr>
   <tr><td>Meta (Instagram, Facebook)</td><td>Publishing a scheduled post — only for entries where you switched it on</td><td>The video or image, its caption, and that it came from your own connected account</td></tr>
+  <tr><td>TikTok</td><td>Dropping a scheduled video into your TikTok drafts — only for entries where you switched it on</td><td>The video file, its size, and that it came from your own connected account. Not the caption: that endpoint carries no text</td></tr>
+  <tr><td>YouTube (Google)</td><td>Uploading a scheduled Short — only for entries where you switched it on</td><td>The video file, its title, description, tags and your channel name</td></tr>
 </table>
 <p>
-  The last two only come into play if you use scheduled publishing. That feature is
-  off unless you turn it on, entry by entry, and it needs your own Meta account
-  connected. If you never use it, no file of yours ever reaches either of them.
+  The last four only come into play if you use scheduled publishing. That feature is
+  off unless you turn it on, entry by entry, and it needs your own account for that
+  platform connected. If you never use it, no file of yours ever reaches any of them.
+</p>
+<p>
+  <strong>Each platform is separate.</strong> Connecting Instagram does not connect
+  TikTok or YouTube, and disconnecting one leaves the others alone. We store an access
+  token for each platform you connect. Those tokens stay on the server: they are never
+  sent to your browser and no page of this app can read them.
+</p>
+<p>
+  <strong>Shootboard reads nothing back.</strong> We do not fetch your posts, views,
+  comments, subscribers or follower counts from any of these platforms. The connection
+  is one-way — out of Shootboard, into your account — and the permission we ask for is
+  the narrowest one that allows an upload.
 </p>
 <p>
   <strong>Why the address has to be public.</strong> Meta does not accept an upload from
   us; it fetches the file itself from a URL. A private address would be refused. The
   link is long and unguessable, but it is not a secret: treat anything you publish
-  this way as public from the moment it is uploaded.
+  this way as public from the moment it is uploaded. (TikTok and YouTube are different:
+  there we send the file ourselves, in pieces. They do not need a public address — the
+  same address is used because one file may go to several platforms.)
 </p>
+
+<h2>7b. YouTube in particular</h2>
+<p>
+  Shootboard's YouTube upload uses <strong>YouTube API Services</strong>. By connecting
+  a YouTube channel you also accept the
+  <a href="https://www.youtube.com/t/terms" target="_blank" rel="noopener">YouTube Terms of Service</a>,
+  and Google's handling of your data is covered by the
+  <a href="https://policies.google.com/privacy" target="_blank" rel="noopener">Google Privacy Policy</a>.
+</p>
+<ul>
+  <li>
+    <strong>What we ask for.</strong> One permission:
+    <code>youtube.upload</code>. It allows uploading a video. It does not allow reading
+    your analytics, your comments, your subscribers, or anything already on your channel.
+  </li>
+  <li>
+    <strong>What we store.</strong> An access token and a refresh token, your channel id
+    and channel name, and the time of the last error if one happened. Nothing else. The
+    tokens live in a server-side table that the browser cannot reach.
+  </li>
+  <li>
+    <strong>What we send.</strong> Only the video file and the text you wrote in the
+    entry: title, description and tags. Nothing is sent for an entry whose scheduled
+    publishing you did not switch on.
+  </li>
+  <li>
+    <strong>How to revoke it.</strong> Two ways, either is enough:
+    from Shootboard's YouTube page, or from Google directly at
+    <a href="https://myaccount.google.com/permissions" target="_blank" rel="noopener">myaccount.google.com/permissions</a>.
+    Revoking stops all future uploads; videos already uploaded stay on your channel and
+    are yours to delete.
+  </li>
+  <li>
+    <strong>What we delete.</strong> Disconnecting deletes the stored tokens immediately.
+    Deleting your Shootboard account deletes them too.
+  </li>
+</ul>
 
 <h2>8. How long we keep things</h2>
 <p>
@@ -186,7 +239,7 @@ footer{margin-top:26px;color:var(--text-dim);font-size:.85rem;}
 <p>
   Files uploaded for scheduled publishing are the exception. Once every entry using a
   file has gone out, the tool that uploaded it deletes the video and its cover from
-  object storage; a file that never gets published is dropped by a thirty-day cleanup
+  object storage; a file that never gets published is dropped by a ninety-day cleanup
   rule on the storage itself. <strong>Deleting your account does not trigger either
   one</strong> — the app holds no key to that storage. Ask us from Feedback if you
   want something removed sooner.
@@ -319,21 +372,75 @@ footer{margin-top:26px;color:var(--text-dim);font-size:.85rem;}
   <tr><td>GoatCounter</td><td>Ziyaret sayımı</td><td>Toplam ziyaret verisi, çerez yok</td></tr>
   <tr><td>Google Fonts, jsDelivr</td><td>Yazı tipleri ve bir kod kütüphanesi</td><td>IP adresiniz — tarayıcının yüklediği her dosyada olduğu gibi</td></tr>
   <tr><td>Anthropic veya Google AI</td><td>Metin yazımı, yalnızca kendi anahtarınızla</td><td>Üzerinde çalışmasını istediğiniz metni</td></tr>
-  <tr><td>Cloudflare R2</td><td>Video ya da kapak dosyasını Meta çekebilsin diye tutma — yalnızca zamanlanmış yayını kullanırsanız</td><td>Dosyanın kendisi. <strong>Herkese açık bir adreste</strong> duruyor: bağlantıyı bilen açabilir</td></tr>
+  <tr><td>Cloudflare R2</td><td>Video ya da kapak dosyasını platform çekebilsin diye tutma — yalnızca zamanlanmış yayını kullanırsanız</td><td>Dosyanın kendisi. <strong>Herkese açık bir adreste</strong> duruyor: bağlantıyı bilen açabilir</td></tr>
   <tr><td>Meta (Instagram, Facebook)</td><td>Zamanlanmış paylaşımı yayınlama — yalnızca tikini açtığınız kayıtlar için</td><td>Video ya da görsel, altyazısı, ve kendi bağlı hesabınızdan geldiği</td></tr>
+  <tr><td>TikTok</td><td>Zamanlanmış videoyu TikTok taslaklarınıza bırakma — yalnızca tikini açtığınız kayıtlar için</td><td>Video dosyası, boyutu ve kendi bağlı hesabınızdan geldiği. Altyazı değil: o uç metin taşımıyor</td></tr>
+  <tr><td>YouTube (Google)</td><td>Zamanlanmış Short'u yükleme — yalnızca tikini açtığınız kayıtlar için</td><td>Video dosyası, başlığı, açıklaması, etiketleri ve kanal adınız</td></tr>
 </table>
 <p>
-  Son ikisi yalnızca zamanlanmış yayını kullanırsanız devreye giriyor. O özellik
-  açmadıkça kapalı, her kayıt için ayrı ayrı açılıyor ve kendi Meta hesabınızın
-  bağlı olmasını gerektiriyor. Hiç kullanmazsanız hiçbir dosyanız ikisine de
-  ulaşmıyor.
+  Son dördü yalnızca zamanlanmış yayını kullanırsanız devreye giriyor. O özellik
+  açmadıkça kapalı, her kayıt için ayrı ayrı açılıyor ve o platformdaki kendi
+  hesabınızın bağlı olmasını gerektiriyor. Hiç kullanmazsanız hiçbir dosyanız
+  hiçbirine ulaşmıyor.
+</p>
+<p>
+  <strong>Her platform ayrı.</strong> Instagram'ı bağlamak TikTok'u ya da YouTube'u
+  bağlamıyor; birini kesmek ötekilere dokunmuyor. Bağladığınız her platform için bir
+  erişim jetonu saklıyoruz. O jetonlar sunucuda kalıyor: tarayıcınıza hiç gitmiyorlar
+  ve bu uygulamanın hiçbir sayfası onları okuyamıyor.
+</p>
+<p>
+  <strong>Shootboard geri hiçbir şey okumuyor.</strong> Bu platformlardan
+  gönderilerinizi, görüntülenmelerinizi, yorumlarınızı, abonelerinizi ya da takipçi
+  sayınızı çekmiyoruz. Bağlantı tek yönlü — Shootboard'dan çıkıp hesabınıza giriyor —
+  ve istediğimiz izin, yüklemeye yeten en dar izin.
 </p>
 <p>
   <strong>Adres neden herkese açık olmak zorunda.</strong> Meta dosyayı bizden
   yüklemeyi kabul etmiyor; kendisi bir adresten çekiyor. Özel bir adres reddedilir.
   Bağlantı uzun ve tahmin edilemez, ama sır değil: bu yolla yayınladığınız her şeyi
-  yüklendiği andan itibaren herkese açık sayın.
+  yüklendiği andan itibaren herkese açık sayın. (TikTok ve YouTube'da durum farklı:
+  orada dosyayı parça parça biz gönderiyoruz, herkese açık bir adrese ihtiyaç yok --
+  aynı adres kullanılıyor çünkü bir dosya birkaç platforma gidebiliyor.)
 </p>
+
+<h2>7b. Özel olarak YouTube</h2>
+<p>
+  Shootboard'un YouTube yüklemesi <strong>YouTube API Servisleri</strong>ni kullanıyor.
+  Bir YouTube kanalı bağladığınızda
+  <a href="https://www.youtube.com/t/terms" target="_blank" rel="noopener">YouTube Hizmet Şartları</a>'nı
+  da kabul etmiş oluyorsunuz; Google'ın verilerinizi nasıl işlediği
+  <a href="https://policies.google.com/privacy" target="_blank" rel="noopener">Google Gizlilik Politikası</a>
+  kapsamında.
+</p>
+<ul>
+  <li>
+    <strong>Ne istiyoruz.</strong> Tek bir izin: <code>youtube.upload</code>. Video
+    yüklemeye yetiyor. İstatistiklerinizi, yorumlarınızı, abonelerinizi ya da kanalınızda
+    zaten duran hiçbir şeyi okumaya yetmiyor.
+  </li>
+  <li>
+    <strong>Ne saklıyoruz.</strong> Bir erişim jetonu ve bir yenileme jetonu, kanal
+    kimliğiniz ve kanal adınız, bir hata olduysa son hatanın zamanı. Başka bir şey yok.
+    Jetonlar tarayıcının erişemediği bir sunucu tablosunda duruyor.
+  </li>
+  <li>
+    <strong>Ne gönderiyoruz.</strong> Yalnızca video dosyasını ve kayda sizin yazdığınız
+    metni: başlık, açıklama ve etiketler. Zamanlanmış yayınını açmadığınız bir kayıt için
+    hiçbir şey gönderilmiyor.
+  </li>
+  <li>
+    <strong>Nasıl geri alınır.</strong> İki yol var, biri yeter: Shootboard'un YouTube
+    sayfasından, ya da doğrudan Google'dan
+    <a href="https://myaccount.google.com/permissions" target="_blank" rel="noopener">myaccount.google.com/permissions</a>
+    adresinden. Geri almak bundan sonraki bütün yüklemeleri durduruyor; yüklenmiş
+    videolar kanalınızda kalıyor ve silmek sizin elinizde.
+  </li>
+  <li>
+    <strong>Ne siliyoruz.</strong> Bağlantıyı kesmek saklanan jetonları anında siliyor.
+    Shootboard hesabınızı silmek de siliyor.
+  </li>
+</ul>
 
 <h2>8. Ne kadar süre saklıyoruz</h2>
 <p>
@@ -345,7 +452,7 @@ footer{margin-top:26px;color:var(--text-dim);font-size:.85rem;}
 <p>
   Zamanlanmış yayın için yüklenen dosyalar istisna. O dosyayı kullanan her kaydın
   yayını çıktığında, dosyayı yükleyen araç videoyu ve kapağı nesne deposundan siliyor;
-  hiç yayınlanmayan bir dosyayı da deponun kendi otuz günlük temizlik kuralı
+  hiç yayınlanmayan bir dosyayı da deponun kendi doksan günlük temizlik kuralı
   düşürüyor. <strong>Hesabınızı silmek bu ikisini tetiklemiyor</strong> — uygulamanın
   o deponun anahtarı yok. Daha erken kaldırılmasını isterseniz Geri Bildirim'den yazın.
 </p>

@@ -106,12 +106,42 @@ except SystemExit as e:
 print('[boyut siniri MCP ile ayni]')
 # Iki yerde duran bir sayi: burada gecen dosya kayda yazilirken
 # reddedilirse kullanici sebebini anlayamaz.
+#
+# ⚠ KAYNAK METNI DEGIL, SAYIYI OLCUYORUZ. Eskiden MCP'deki
+# `reel ? 1024*1024*1024 : 100*1024*1024` uclugu metin olarak araniyordu.
+# 29 Eylul 2026'da `shorts` eklenince o uclu bir TAVANLAR tablosuna
+# donustu; sayilar ayni kaldi ama olcum dustu. Yanlis bir sey olmadan
+# dusen olcum, bir dahaki sefere bakilmayan olcum oluyor.
 mcp = open(os.path.join(KOK, 'supabase', 'functions', 'mcp', 'index.ts'), encoding='utf-8').read()
+
+def mcp_tavan(tur):
+    """MCP'deki TAVANLAR tablosundan bir turun tavanini bayt olarak okur."""
+    m = re.search(tur + r"\s*:\s*\{\s*tavan:\s*([0-9*\s]+?),", mcp)
+    if not m:
+        return None
+    # '1024 * 1024 * 1024' -> 1073741824. eval yerine elle carpiyoruz.
+    carpanlar = [int(x.strip()) for x in m.group(1).split('*')]
+    sonuc = 1
+    for c in carpanlar:
+        sonuc *= c
+    return sonuc
+
+bak('MCP TAVANLAR tablosu okunabiliyor',
+    mcp_tavan('reels') is not None and mcp_tavan('story') is not None,
+    'reels=%s story=%s' % (mcp_tavan('reels'), mcp_tavan('story')))
 bak('★ reels tavani MCP tarafinda da 1 GB',
-    'reel ? 1024 * 1024 * 1024 : 100 * 1024 * 1024' in mcp,
-    'mcp/index.ts icinde bulunamadi')
+    mcp_tavan('reels') == 1024 * 1024 * 1024, mcp_tavan('reels'))
+bak('★ story tavani MCP tarafinda da 100 MB',
+    mcp_tavan('story') == 100 * 1024 * 1024, mcp_tavan('story'))
 bak('yukleyici tavani 1 GB', ry.EN_BUYUK == 1024 * 1024 * 1024, ry.EN_BUYUK)
 bak('story tavani DEGISMEDI (100 MB)', sy.EN_BUYUK == 100 * 1024 * 1024, sy.EN_BUYUK)
+# ⛔ ASIL BAG: yukleyicinin tavani ile MCP'nin tavani AYNI OLMAK ZORUNDA.
+# Ayrisirlarsa yukleyici dosyayi kabul eder, MCP kayda yazmayi reddeder
+# ve kullanici sebebini hicbir yerde goremez.
+bak('★ yukleyici ve MCP reels tavani AYNI', ry.EN_BUYUK == mcp_tavan('reels'),
+    '%s vs %s' % (ry.EN_BUYUK, mcp_tavan('reels')))
+bak('★ yukleyici ve MCP story tavani AYNI', sy.EN_BUYUK == mcp_tavan('story'),
+    '%s vs %s' % (sy.EN_BUYUK, mcp_tavan('story')))
 
 # ══════════════════════════════════════════════════════════════════
 print('[yukleme ilerlemesi (27 Eylul 2026)]')
