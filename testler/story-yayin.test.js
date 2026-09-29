@@ -92,6 +92,24 @@ const YAYIN_TURLERI_SQL = (()=>{
   return m[1].split(',').map(x=> x.trim().replace(/^'|'$/g, '')).filter(Boolean);
 })();
 
+// ⚠ ONDEN YUKLEME PAYI DA SQL DOSYASINDAN OKUNUYOR.
+// sql/55: YouTube kayitlari yayin saatinden ONCE yukleniyor, gercek
+// yayin anini YouTube'un kendi zamanlayicisi (status.publishAt)
+// tutuyor. Oteki platformlarda zamanlama YOK -- orada erken yuklemek
+// erken YAYINLAMAK demek, o yuzden pay sifir.
+//
+// Degeri elle yazsaydik sahte kuyruk ile gercek kuyruk ayrisabilirdi
+// ve bu dosyanin butun derdi o ayrisma.
+const ONDEN = (()=>{
+  const ham = require('fs').readFileSync(
+    yol.join(KOK_DIZIN, 'sql', '55-onden-yukleme.sql'), 'utf8');
+  const m = /when p_type = '([^']+)' and p_platform = '([^']+)' then interval '(\d+) hours'/.exec(ham);
+  if(!m) throw new Error('sql/55 onden yukleme kurali okunamadi');
+  return { tur: m[1], platform: m[2], ms: Number(m[3]) * 3600e3 };
+})();
+const ondenPay = (tur, pf)=>
+  (String(tur) === ONDEN.tur && String(pf) === ONDEN.platform) ? ONDEN.ms : 0;
+
 const SQL = {
   story_seri_onceki({ p_id }){
     const k = bul(p_id); if(!k) return [];
@@ -132,7 +150,9 @@ const SQL = {
       // sql/54: kume TEK YERDE
       YAYIN_TURLERI_SQL.includes(r.type)
       && r.auto_publish === true && r.publish_state === 'pending'
-      && !r.deleted_at && r.publish_at && Date.parse(r.publish_at) <= SAAT
+      && !r.deleted_at && r.publish_at
+      // sql/55: yayin ani DEGIL, yukleme ani.
+      && (Date.parse(r.publish_at) - ondenPay(r.type, r.platform)) <= SAAT
       && (!r.retry_after || Date.parse(r.retry_after) <= SAAT)
       && r.attempt_count < 3
       // sql/49: sahip kontrolu
@@ -1775,8 +1795,12 @@ async function turAt(gizli){
         && sn.tags.join(',') === 'arkeoloji,aizanoi', JSON.stringify(sn.tags));
     // ...ama ACIKLAMADA var: Shorts'ta kesfi ilk uc etiket tasiyor.
     bak('★ aciklamada # DURUYOR', /#arkeoloji/.test(sn.description || ''), sn.description);
-    bak('categoryId zorunlu alan dolduruldu', sn.categoryId === '22', sn.categoryId);
+    bak('★ categoryId 27 (Egitim) -- kanalin bolumu', sn.categoryId === '27', sn.categoryId);
     bak('★ gorunurluk private (varsayilan)', st.privacyStatus === 'private', st.privacyStatus);
+    // ⛔ private iken publishAt YAZILMAMALI: zamanlama YouTube'da
+    // "herkese aciga cevir" demek ve private kalmasini istedigimiz bir
+    // videoda anlamsiz.
+    bak('★ private iken publishAt YOK', st.publishAt === undefined, String(st.publishAt));
     bak('cocuklara yonelik beyani acikca false',
         st.selfDeclaredMadeForKids === false, String(st.selfDeclaredMadeForKids));
 
@@ -2041,6 +2065,128 @@ async function turAt(gizli){
           durum.tur + ' -> ' + satirlar[0].publish_state);
     }
   }
+  console.log('[onden yukleme · yalnizca YouTube]');
+  {
+    // ⛔ BU OLCUM sql/55'IN HAYATI TARAFI.
+    // Instagram, Facebook ve TikTok'ta zamanlama YOK: yukledigin an
+    // yayinlaniyor. Onlari erken almak, story'yi ALTI SAAT ERKEN
+    // YAYINLAMAK demek -- 24 saatlik bir story icin gunun yanlis
+    // yarisinda yayin demek. Pay bu yuzden ture VE platforma bagli.
+    const ileri = ()=> new Date(Date.now() + 3 * 3600e3).toISOString();  // 3 saat sonra
+
+    tabloyuKur({ publish_at: ileri() }); metaKur(); ttKur(); ytKur();
+    await turAt();
+    bak('⛔ story 3 saat once ALINMIYOR (erken yayin olurdu)',
+        satirlar[0].publish_state === 'pending' && cagrilar.media === 0,
+        satirlar[0].publish_state + ' / media=' + cagrilar.media);
+
+    tabloyuKur(reelKayit({ publish_at: ileri() })); metaKur(); ttKur(); ytKur();
+    await turAt();
+    bak('⛔ reels 3 saat once ALINMIYOR',
+        satirlar[0].publish_state === 'pending' && cagrilar.media === 0,
+        satirlar[0].publish_state);
+
+    tabloyuKur(reelKayit({ platform:'tiktok', publish_at: ileri() }));
+    metaKur(); ttKur(); ytKur();
+    await turAt();
+    bak('⛔ tiktok 3 saat once ALINMIYOR (taslak erken duserdi)',
+        satirlar[0].publish_state === 'pending' && TT.parcalar.length === 0,
+        satirlar[0].publish_state);
+
+    // ...ve YouTube ALINIYOR: alti saatlik pencerenin icinde.
+    tabloyuKur(ytKayit({ publish_at: ileri() })); metaKur(); ttKur(); ytKur();
+    await turAt();
+    bak('★ YouTube 3 saat once ALINIYOR (onden yukleme penceresi)',
+        satirlar[0].publish_state === 'published' && YT.parcalar.length === 15,
+        satirlar[0].publish_state + ' / ' + YT.parcalar.length);
+
+    // Pencerenin DISINDA ise alinmamali: 9 saat sonrasi, pay 6 saat.
+    tabloyuKur(ytKayit({ publish_at: new Date(Date.now() + 9 * 3600e3).toISOString() }));
+    metaKur(); ttKur(); ytKur();
+    await turAt();
+    bak('★ YouTube 9 saat once ALINMIYOR (pencere 6 saat)',
+        satirlar[0].publish_state === 'pending' && YT.parcalar.length === 0,
+        satirlar[0].publish_state + ' / ' + YT.parcalar.length);
+  }
+
+  console.log('[youtube · gorunurluk ve zamanlama]');
+  {
+    // ⛔ EN SESSIZ TUZAK: publishAt, privacyStatus 'private' DEGILSE
+    // YOK SAYILIYOR -- ve YouTube HATA VERMIYOR. Yani "zamanladim"
+    // sanip public gonderirsen video zamanlanmaz, yuklendigi an
+    // herkese acik cikar. Hicbir yerde uyari yok.
+    //
+    // Bu yuzden asagidaki olcum ikisini BIRLIKTE sinuyor: publishAt
+    // yazan her cevapta privacyStatus 'private' olmak zorunda.
+    const onceki = ORTAM.YOUTUBE_GORUNURLUK;
+    ORTAM.YOUTUBE_GORUNURLUK = 'public';
+
+    // Yayin ani GELECEKTE: zamanlanmali.
+    const ileri = new Date(Date.now() + 6 * 3600e3).toISOString();
+    tabloyuKur(ytKayit({ publish_at: ileri })); metaKur(); ytKur();
+    await turAt();
+    const st1 = ((YT.ustveri || {}).status) || {};
+    bak('★ ileri tarihli kayit ZAMANLANIYOR (publishAt var)',
+        st1.publishAt === ileri, String(st1.publishAt) + ' / ' + ileri);
+    bak('⛔ publishAt varken privacyStatus PRIVATE (yoksa sessizce yok sayilir)',
+        st1.privacyStatus === 'private', st1.privacyStatus);
+
+    // Yayin ani GECMISTE: zamanlanacak bir sey yok, dogrudan yayin.
+    const geri = new Date(Date.now() - 3600e3).toISOString();
+    tabloyuKur(ytKayit({ publish_at: geri })); metaKur(); ytKur();
+    await turAt();
+    const st2 = ((YT.ustveri || {}).status) || {};
+    bak('★ gecmis tarihli kayitta publishAt YOK (gecmis publishAt reddedilir)',
+        st2.publishAt === undefined, String(st2.publishAt));
+    bak('gecmis tarihlide gorunurluk dogrudan public', st2.privacyStatus === 'public',
+        st2.privacyStatus);
+
+    // Yayin anina SANIYELER kala: bir dakikalik pay yuzunden
+    // zamanlanmamali -- istek Google'a vardiginda o an gecmis olabilir.
+    const nerdeyse = new Date(Date.now() + 20e3).toISOString();
+    tabloyuKur(ytKayit({ publish_at: nerdeyse })); metaKur(); ytKur();
+    await turAt();
+    const st3 = ((YT.ustveri || {}).status) || {};
+    bak('★ yayin anina saniyeler kala publishAt YAZILMIYOR (bir dakikalik pay)',
+        st3.publishAt === undefined, String(st3.publishAt));
+
+    ORTAM.YOUTUBE_GORUNURLUK = onceki;
+  }
+  {
+    // ⚠ GERILEME: gorunurluk 'unlisted' ise zamanlama YOK. YouTube'da
+    // zamanlama yalnizca "herkese aciga cevir" demek; unlisted bir
+    // videoyu zamanlamak diye bir sey yok ve publishAt gondermek
+    // videoyu beklenmedik sekilde HERKESE ACIK yapardi.
+    const onceki = ORTAM.YOUTUBE_GORUNURLUK;
+    ORTAM.YOUTUBE_GORUNURLUK = 'unlisted';
+    tabloyuKur(ytKayit({ publish_at: new Date(Date.now() + 6 * 3600e3).toISOString() }));
+    metaKur(); ytKur();
+    await turAt();
+    const st = ((YT.ustveri || {}).status) || {};
+    bak('★ unlisted iken publishAt YOK', st.publishAt === undefined, String(st.publishAt));
+    bak('unlisted oldugu gibi gidiyor', st.privacyStatus === 'unlisted', st.privacyStatus);
+    ORTAM.YOUTUBE_GORUNURLUK = onceki;
+  }
+  {
+    // Kategori ayardan okunuyor mu?
+    const onceki = ORTAM.YOUTUBE_KATEGORI;
+    ORTAM.YOUTUBE_KATEGORI = '24';
+    tabloyuKur(ytKayit()); metaKur(); ytKur();
+    await turAt();
+    bak('YOUTUBE_KATEGORI ayari ustveriye geciyor',
+        (((YT.ustveri||{}).snippet)||{}).categoryId === '24',
+        (((YT.ustveri||{}).snippet)||{}).categoryId);
+    ORTAM.YOUTUBE_KATEGORI = onceki;
+    // Kayit bazinda ezme ayardan da guclu olmali.
+    tabloyuKur(ytKayit({ content: Object.assign({}, ytKayit().content,
+                          { youtubeCategory: '10' }) }));
+    metaKur(); ytKur();
+    await turAt();
+    bak('★ kayit bazinda youtubeCategory ayari EZIYOR',
+        (((YT.ustveri||{}).snippet)||{}).categoryId === '10',
+        (((YT.ustveri||{}).snippet)||{}).categoryId);
+  }
+
   console.log('[youtube · hata triyaji]');
   {
     // ⛔ KOTA. YouTube gunde ~6 yukleme veriyor (videos.insert 1600

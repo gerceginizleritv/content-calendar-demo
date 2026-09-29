@@ -46,7 +46,7 @@
 //
 // Dağıtım:  supabase functions deploy story-yayin --no-verify-jwt
 
-const SURUM = '1.9.0';
+const SURUM = '1.10.0';
 const UCLAR = ['GET / (servis bilgisi)', 'POST / (bir tur)'];
 
 // ⚠ ORTAM DEĞİŞKENLERİ KIRPILIYOR.
@@ -95,6 +95,12 @@ const ytDenetim      = () => ayar('YOUTUBE_DENETIM_GECTI');
 // 'private' | 'unlisted' | 'public'. Varsayılanın neden 'private'
 // olduğu YOUTUBE bölümünün başında.
 const ytGorunurluk   = () => (ayar('YOUTUBE_GORUNURLUK') || 'private');
+// YouTube kategori kimliği. 27 = Education (Eğitim) -- kanalın yayında
+// kullandığı bölüm (29 Eylül 2026'da Studio'dan doğrulandı). Önce 22
+// (People & Blogs) yazıyordu ve bu benim koyduğum genel bir
+// varsayılandı, kanalın seçimi değil: yüklenen her video yanlış bölüme
+// düşerdi ve YouTube bunu hata saymaz, sessizce kabul eder.
+const ytKategori     = () => (ayar('YOUTUBE_KATEGORI') || '27');
 const YT_JETON  = 'https://oauth2.googleapis.com/token';
 // ⚠ YÜKLEME ADRESİ ile VERİ ADRESİ AYRI. Yüklemede `/upload/` öneki
 // var; önek olmadan istek 400 dönüyor ve hata "eksik gövde" diyor --
@@ -1283,23 +1289,53 @@ function youtubeUstveri(k: any): Record<string, unknown> {
       // kurallar, yalnızca tavan farklı.
       description: altYazi(k, 5000),
       tags: youtubeEtiketleri(k),
-      // Zorunlu alan. 22 = People & Blogs: her bölgede geçerli ve
-      // içeriği daraltmayan tek güvenli varsayılan. Kayıt bazında
+      // Zorunlu alan. Varsayılan 27 (Eğitim); kayıt bazında
       // content.youtubeCategory ile değiştirilebiliyor.
-      categoryId: String(c.youtubeCategory ?? '22')
+      categoryId: String(c.youtubeCategory ?? ytKategori())
     },
-    status: {
-      // Ayrıntı bölümün başında: varsayılan 'private', denetim
-      // onaylanmadan zaten başka bir şey olamıyor.
-      privacyStatus: ytGorunurluk(),
-      selfDeclaredMadeForKids: c.madeForKids === true,
-      // Shootboard kaydında saat var ama ZAMANLAMA KULLANMIYORUZ:
-      // yayın anını kuyruk zaten tutuyor (publish_at) ve iki
-      // zamanlayıcı birbirini bekletirdi. Video yüklendiği an
-      // durumuna göre görünüyor.
-      embeddable: true
-    }
+    status: ytDurum(k)
   };
+}
+
+// ══════════════════════════════════════════════════════════════════
+// GÖRÜNÜRLÜK VE ZAMANLAMA — AYRILAMAZ İKİLİ
+// ══════════════════════════════════════════════════════════════════
+// ⛔ EN SESSİZ TUZAK: `publishAt`, `privacyStatus` 'private' DEĞİLSE
+// YOK SAYILIYOR -- ve YouTube bunu HATA SAYMIYOR. Yani "zamanladım"
+// sanıp `privacyStatus: 'public'` ile gönderirsen video ZAMANLANMAZ,
+// yüklendiği an herkese açık çıkar. Hiçbir yerde uyarı yok.
+//
+// Bu yüzden ikisini ayrı ayrı hesaplayan iki satır YOK: tek işlev
+// ikisini birden döndürüyor ve `publishAt` yazan her dal aynı anda
+// `privacyStatus: 'private'` yazıyor.
+//
+// KARAR TABLOSU:
+//   görünürlük 'public' + yayın anı GELECEKTE
+//       -> private + publishAt   (YouTube o saatte herkese açıyor)
+//   görünürlük 'public' + yayın anı GEÇMİŞTE
+//       -> public                (zamanlanacak bir şey kalmamış;
+//                                 geçmiş bir publishAt istek hatası)
+//   görünürlük 'private' / 'unlisted'
+//       -> olduğu gibi           (zamanlama YouTube'da yalnızca
+//                                 "herkese açığa çevir" demek)
+function ytDurum(k: any): Record<string, unknown> {
+  const c = (k?.content && typeof k.content === 'object') ? k.content : {};
+  const ortak = {
+    // ⚠ HUKUKİ BEYAN, ayar değil (COPPA). Varsayılan false: kanal
+    // yetişkinlere yönelik tarih/arkeoloji içeriği üretiyor.
+    selfDeclaredMadeForKids: c.madeForKids === true,
+    embeddable: true
+  };
+  const gorunurluk = ytGorunurluk();
+  const an = Date.parse(String(k?.publish_at ?? '')) || 0;
+  // ⚠ BİR DAKİKALIK PAY. Yayın anına saniyeler kala yüklenen bir video
+  // için publishAt yazmak, isteğin Google'a vardığı anda o saatin
+  // GEÇMİŞTE kalması demek olabilir -- ve geçmiş bir publishAt isteği
+  // reddettiriyor (yükleme bittikten SONRA).
+  if (gorunurluk === 'public' && an > Date.now() + 60_000) {
+    return { ...ortak, privacyStatus: 'private', publishAt: new Date(an).toISOString() };
+  }
+  return { ...ortak, privacyStatus: gorunurluk };
 }
 
 // Çöküş izi kurtarması. IG/FB'de "son gönderiler" listesine bakılıyor,

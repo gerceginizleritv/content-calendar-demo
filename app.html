@@ -5074,7 +5074,8 @@ const LANG = {
     oy_saatsiz: "No time set, so it will not publish. Give it a time.",
     oy_yeni: "Save the entry first, then you can switch automatic publishing on.",
     oy_not_reels: "Shootboard posts this reel to Instagram at the time above, cover and caption included. It is the only thing Shootboard posts by itself \u2014 everything else you post.",
-    oy_not_shorts: "Shootboard uploads this Short to YouTube at the time above, with its title, description and tags. Visibility is decided on the YouTube side and starts out private.",
+    oy_not_shorts: "Shootboard uploads this Short to YouTube a few hours before the time above, and YouTube itself publishes it at that time. Title, description and tags go with it.",
+    oy_zamanlandi: "Uploaded \u2014 YouTube publishes it at",
     oy_kapak_var: "Cover attached.",
     oy_kapak_yok: "No cover file \u2014 Instagram will pick a frame from the video.",
     ornek_serit: (n)=> `${n} sample entries, two projects and a place are already here — so you can see how a full week looks. They are examples, not your work.`,
@@ -6100,7 +6101,8 @@ const LANG = {
     oy_saatsiz: "Saat girilmemiş, bu yüzden yayınlanmayacak. Bir saat ver.",
     oy_yeni: "Önce kaydı kaydet, sonra otomatik yayını açabilirsin.",
     oy_not_reels: "Shootboard bu reel'i yukarıdaki saatte Instagram'a kendi atıyor — kapağı ve alt yazısıyla. Shootboard'ın kendiliğinden yayınladığı tek şey bu — geri kalan her şeyi sen yayınlıyorsun.",
-    oy_not_shorts: "Shootboard bu Short'u yukarıdaki saatte YouTube'a yüklüyor — başlığı, açıklaması ve etiketleriyle. Görünürlüğü YouTube tarafındaki ayar belirliyor ve başlangıçta özel oluyor.",
+    oy_not_shorts: "Shootboard bu Short'u yukarıdaki saatten birkaç saat ÖNCE YouTube'a yüklüyor; yayına alma işini o saatte YouTube kendi yapıyor. Başlık, açıklama ve etiketler videoyla birlikte gidiyor.",
+    oy_zamanlandi: "Yüklendi — YouTube şu saatte yayınlayacak:",
     oy_kapak_var: "Kapak bağlı.",
     oy_kapak_yok: "Kapak dosyası yok — Instagram videodan kendi karesini seçecek.",
     ornek_serit: (n)=> `${n} örnek kayıt, iki proje ve bir mekân hazır duruyor — dolu bir hafta nasıl görünüyor göresin diye. Bunlar örnek, senin işin değil.`,
@@ -16490,14 +16492,29 @@ function otoYayinTazele(){
   const sinif = durum === 'published' ? 'yayinlandi'
               : durum === 'failed' ? 'hata'
               : durum === 'in_progress' ? 'suruyor' : '';
-  const etiket = durum === 'published' ? t('oy_yayinlandi')
+  // ⚠ YUKLENDI ILE YAYINLANDI ARTIK AYNI AN DEGIL.
+  // sql/55'ten beri YouTube kayitlari yayin saatinden ALTI SAAT once
+  // yukleniyor; gercek yayin anini YouTube'un kendi zamanlayicisi
+  // tutuyor. Yani kayit 'published' oldugunda video HENUZ YAYINDA
+  // OLMAYABILIR -- ve o aralikta ekranda "Yayinlandi" yazmasi duz
+  // yalan olurdu: kullanici kanala bakip videoyu bulamazdi.
+  //
+  // Ayrimi yapan sey yayin aninin GELECEKTE olmasi. Gecince satir
+  // kendiliginden "Yayinlandi"ya donuyor.
+  const zamanli = durum === 'published' && y && y.yayinAn
+               && new Date(y.yayinAn).getTime() > Date.now();
+  const etiket = zamanli ? t('oy_zamanlandi')
+               : durum === 'published' ? t('oy_yayinlandi')
                : durum === 'failed' ? t('oy_hata')
                : durum === 'in_progress' ? t('oy_suruyor') : t('oy_bekliyor');
 
   const satirlar = [];
   let bas = '<span class="oy-nokta ' + sinif + '"></span><b>' + escapeHtml(etiket) + '</b>';
-  if(durum === 'published' && y.yayinlandi){
-    const an = new Date(y.yayinlandi);
+  // Zamanlanmisda YAYIN ani gosteriliyor (yukleme ani degil): kullanici
+  // "ne zaman gorunecek" diye bakiyor.
+  const gosterilecek = zamanli ? y.yayinAn : (durum === 'published' ? y.yayinlandi : '');
+  if(gosterilecek){
+    const an = new Date(gosterilecek);
     if(!isNaN(an)) bas += ' · ' + an.toLocaleString(currentLang === 'tr' ? 'tr-TR' : 'en-GB',
                                 { day:'2-digit', month:'2-digit', hour:'2-digit', minute:'2-digit' });
   }
