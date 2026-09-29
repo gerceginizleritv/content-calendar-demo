@@ -46,7 +46,7 @@
 //
 // Dağıtım:  supabase functions deploy story-yayin --no-verify-jwt
 
-const SURUM = '1.10.0';
+const SURUM = '1.11.0';
 const UCLAR = ['GET / (servis bilgisi)', 'POST / (bir tur)'];
 
 // ⚠ ORTAM DEĞİŞKENLERİ KIRPILIYOR.
@@ -754,6 +754,25 @@ async function kaydiYayinla(k: any, bitis: number): Promise<string> {
     return 'zaten-yayinda';
   }
   if (!k.media_url) {
+    // ⚠ "DOSYA HENÜZ YOK" ARTIK NORMAL BİR DURUM OLABİLİYOR.
+    // sql/56'dan beri YouTube kayıtları dosya hazır olur olmaz
+    // yükleniyor; yani kaydı bugün girip dosyayı yarın atman mümkün.
+    // Eskisi gibi KALICI hata yazmak, o kaydı yakmak olurdu: dosyayı
+    // sonradan atsan bile bir daha denenmezdi.
+    //
+    // ⚠ YAYIN SAATİ GEÇTİYSE YİNE KALICI. O an son şans: dosyasız
+    // kalmış bir kayıt sessizce beklemeye devam etmemeli, hata verip
+    // e-posta göndermeli (Bölüm 9: sessiz başarısızlık yasak).
+    //
+    // sql/56'nın kuyruğu bu kayıtları zaten süzüyor -- bu satır SQL
+    // henüz çalıştırılmamışken (dağıtım sırası) tek koruma.
+    const an = Date.parse(String(k.publish_at ?? '')) || 0;
+    if (an > Date.now()) {
+      await rpc('story_ertele', { p_id: k.id, p_dakika: 60,
+        p_sebep: 'Dosya henüz yüklenmemiş; yayın saatine kadar bekleniyor. '
+               + 'Bilgisayarındaki yükleyiciyi çalıştırman yeterli.' });
+      return 'medya-bekleniyor';
+    }
     await kaliciHata(k, 'Medya bağlı değil: mediaUrl boş.');
     return 'medyasiz';
   }

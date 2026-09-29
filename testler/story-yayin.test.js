@@ -92,23 +92,34 @@ const YAYIN_TURLERI_SQL = (()=>{
   return m[1].split(',').map(x=> x.trim().replace(/^'|'$/g, '')).filter(Boolean);
 })();
 
-// ⚠ ONDEN YUKLEME PAYI DA SQL DOSYASINDAN OKUNUYOR.
-// sql/55: YouTube kayitlari yayin saatinden ONCE yukleniyor, gercek
-// yayin anini YouTube'un kendi zamanlayicisi (status.publishAt)
-// tutuyor. Oteki platformlarda zamanlama YOK -- orada erken yuklemek
-// erken YAYINLAMAK demek, o yuzden pay sifir.
+// ⚠ YUKLEME KURALI DA SQL DOSYASINDAN OKUNUYOR.
+// sql/56: YouTube kayitlari DOSYA HAZIR OLUR OLMAZ yukleniyor
+// ('-infinity' = beklenecek saat yok); gercek yayin anini YouTube'un
+// kendi zamanlayicisi tutuyor (status.publishAt). Oteki platformlarda
+// zamanlama YOK -- orada erken yuklemek erken YAYINLAMAK demek, o
+// yuzden onlar yayin saatini bekliyor.
 //
-// Degeri elle yazsaydik sahte kuyruk ile gercek kuyruk ayrisabilirdi
+// (sql/55 alti saatlik sabit bir pay koymustu; sql/56 onu da, ondan
+// once kullanilan story_onden_yukleme islevini de kaldirdi.)
+//
+// Kurali elle yazsaydik sahte kuyruk ile gercek kuyruk ayrisabilirdi
 // ve bu dosyanin butun derdi o ayrisma.
-const ONDEN = (()=>{
+const YUKLEME = (()=>{
   const ham = require('fs').readFileSync(
-    yol.join(KOK_DIZIN, 'sql', '55-onden-yukleme.sql'), 'utf8');
-  const m = /when p_type = '([^']+)' and p_platform = '([^']+)' then interval '(\d+) hours'/.exec(ham);
-  if(!m) throw new Error('sql/55 onden yukleme kurali okunamadi');
-  return { tur: m[1], platform: m[2], ms: Number(m[3]) * 3600e3 };
+    yol.join(KOK_DIZIN, 'sql', '56-hazir-olunca-yukle.sql'), 'utf8');
+  const m = /when p_type = '([^']+)' and p_platform = '([^']+)' then '-infinity'/.exec(ham);
+  if(!m) throw new Error('sql/56 yukleme ani kurali okunamadi');
+  return { tur: m[1], platform: m[2] };
 })();
-const ondenPay = (tur, pf)=>
-  (String(tur) === ONDEN.tur && String(pf) === ONDEN.platform) ? ONDEN.ms : 0;
+// Kaydin YUKLEME ani (yayin ani degil). YouTube icin -Infinity.
+const yuklemeAni = (tur, pf, yayinAni)=>
+  (String(tur) === YUKLEME.tur && String(pf) === YUKLEME.platform)
+    ? -Infinity : Date.parse(yayinAni);
+
+// sql/56'nin "dosyasiz kayit kuyruga girmiyor" suzgeci. Kapatilabiliyor
+// ki worker'daki AYNI korumanin kendisi de olculebilsin: dagitim sirasi
+// ters giderse (worker yeni, SQL eski) tek koruma o.
+let sql56Suzgeci = true;
 
 const SQL = {
   story_seri_onceki({ p_id }){
@@ -151,8 +162,13 @@ const SQL = {
       YAYIN_TURLERI_SQL.includes(r.type)
       && r.auto_publish === true && r.publish_state === 'pending'
       && !r.deleted_at && r.publish_at
-      // sql/55: yayin ani DEGIL, yukleme ani.
-      && (Date.parse(r.publish_at) - ondenPay(r.type, r.platform)) <= SAAT
+      // sql/56: yayin ani DEGIL, YUKLEME ani.
+      && yuklemeAni(r.type, r.platform, r.publish_at) <= SAAT
+      // sql/56: DOSYASIZ KAYIT KUYRUGA GIRMIYOR -- yayin saati gecene
+      // kadar. Aksi halde ileri tarihli ve henuz dosyasiz kayitlar
+      // kuyrugun tur basina aldigi bes kisilik yeri isgal ederdi.
+      // Vakti gecmisse GIRIYOR: kalici hata alip e-posta gondersin.
+      && (!sql56Suzgeci || !!r.media_url || Date.parse(r.publish_at) <= SAAT)
       && (!r.retry_after || Date.parse(r.retry_after) <= SAAT)
       && r.attempt_count < 3
       // sql/49: sahip kontrolu
@@ -2065,7 +2081,64 @@ async function turAt(gizli){
           durum.tur + ' -> ' + satirlar[0].publish_state);
     }
   }
-  console.log('[onden yukleme · yalnizca YouTube]');
+  console.log('[dosya henuz hazir degil]');
+  {
+    // sql/56'dan beri "dosya yok" ileri tarihli bir kayit icin NORMAL:
+    // kaydi bugun girip dosyayi yarin atabiliyorsun. Eskisi gibi kalici
+    // hata yazmak o kaydi YAKARDI -- dosya sonradan gelse bile bir daha
+    // denenmezdi.
+    tabloyuKur(ytKayit({ media_url:null,
+                         publish_at: new Date(Date.now() + 3 * 3600e3).toISOString() }));
+    metaKur(); ttKur(); ytKur();
+    await turAt();
+    // sql/56: kayit KUYRUGA HIC GIRMIYOR. Girseydi her turda bir yer
+    // isgal eder ve hazir olan kayitlari geciktirirdi.
+    bak('★ ileri tarihli + dosyasiz kayit KUYRUGA GIRMIYOR',
+        satirlar[0].publish_state === 'pending' && satirlar[0].attempt_count === 0,
+        satirlar[0].publish_state + ' / ' + satirlar[0].attempt_count);
+    bak('dokunulmadigi icin hata da yazilmiyor',
+        !satirlar[0].last_error, String(satirlar[0].last_error));
+    bak('hic yukleme denenmedi', YT.parcalar.length === 0, YT.parcalar.length);
+
+    // ⚠ WORKER'IN KENDI KORUMASI: SQL henuz calistirilmamissa (dagitim
+    // sirasi ters gittiyse) kayit worker'a ULASIR. O zaman da
+    // YAKILMAMALI -- eskisi gibi kalici hata yazsaydi, dosyayi sonradan
+    // atsan bile kayit bir daha denenmezdi.
+    sql56Suzgeci = false;
+    tabloyuKur(ytKayit({ media_url:null,
+                         publish_at: new Date(Date.now() + 3 * 3600e3).toISOString() }));
+    metaKur(); ttKur(); ytKur();
+    await turAt();
+    bak('★ SQL eskiyse bile worker kaydi YAKMIYOR (erteliyor)',
+        satirlar[0].publish_state === 'pending', satirlar[0].publish_state);
+    bak('deneme hakki geri verildi', satirlar[0].attempt_count === 0,
+        String(satirlar[0].attempt_count));
+    bak('sebep yukleyiciyi calistirmayi soyluyor',
+        /yükleyici/i.test(String(satirlar[0].last_error || '')), satirlar[0].last_error);
+    sql56Suzgeci = true;
+
+    // ...ama YAYIN SAATI GECTIYSE son sans: kalici hata + e-posta.
+    tabloyuKur(ytKayit({ media_url:null,
+                         publish_at: new Date(Date.now() - 3600e3).toISOString() }));
+    metaKur(); ttKur(); ytKur(); epostalar = [];
+    await turAt();
+    bak('★ vakti gecmis + dosyasiz kayit KALICI hata (sessiz kalmiyor)',
+        satirlar[0].publish_state === 'failed', satirlar[0].publish_state);
+    bak('kalici hatada e-posta gitti', epostalar.length === 1, String(epostalar.length));
+  }
+  {
+    // ⚠ GERILEME: story/reels de ayni sekilde korunuyor. Onlarda kuyruk
+    // zaten yayin saatinde veriyor, yani bu dal yalnizca dagitim sirasi
+    // ters gittiginde devreye girer -- ama girmeli.
+    tabloyuKur({ media_url:null,
+                 publish_at: new Date(Date.now() - 3600e3).toISOString() });
+    metaKur(); ttKur(); ytKur();
+    await turAt();
+    bak('story dosyasiz ve vakti gecmis -> KALICI hata (eskisi gibi)',
+        satirlar[0].publish_state === 'failed', satirlar[0].publish_state);
+  }
+
+  console.log('[yukleme ani · erken yukleme YALNIZCA YouTube]');
   {
     // ⛔ BU OLCUM sql/55'IN HAYATI TARAFI.
     // Instagram, Facebook ve TikTok'ta zamanlama YOK: yukledigin an
@@ -2100,12 +2173,15 @@ async function turAt(gizli){
         satirlar[0].publish_state === 'published' && YT.parcalar.length === 15,
         satirlar[0].publish_state + ' / ' + YT.parcalar.length);
 
-    // Pencerenin DISINDA ise alinmamali: 9 saat sonrasi, pay 6 saat.
-    tabloyuKur(ytKayit({ publish_at: new Date(Date.now() + 9 * 3600e3).toISOString() }));
+    // sql/56: YouTube icin PENCERE YOK -- dosya hazirsa ne kadar ileri
+    // tarihli olursa olsun yukleniyor. sql/55'te alti saatlik bir
+    // pencere vardi; kullanici videolari haftalar oncesinden
+    // hazirladigi icin o pencere ihtiyaci karsilamiyordu.
+    tabloyuKur(ytKayit({ publish_at: new Date(Date.now() + 30 * 864e5).toISOString() }));
     metaKur(); ttKur(); ytKur();
     await turAt();
-    bak('★ YouTube 9 saat once ALINMIYOR (pencere 6 saat)',
-        satirlar[0].publish_state === 'pending' && YT.parcalar.length === 0,
+    bak('★ YouTube 30 GUN once bile ALINIYOR (hazir olunca yukle)',
+        satirlar[0].publish_state === 'published' && YT.parcalar.length === 15,
         satirlar[0].publish_state + ' / ' + YT.parcalar.length);
   }
 
