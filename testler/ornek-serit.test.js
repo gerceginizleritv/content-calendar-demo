@@ -22,6 +22,8 @@ const durum = (p)=> p.evaluate(()=> ({
   dip:    !document.getElementById('ornekKaldirBtn').hidden,
   ornekCip: document.querySelectorAll('#calGrid .cal-chip.ornek').length,
   toplamCip: document.querySelectorAll('#calGrid .cal-chip').length,
+  // ⚠ VERIDEKI sayi, EKRANDAKI degil. Gerekcesi asagida.
+  veridekiOrnek: events.filter(e=> e && e.content && e.content.ornek === true).length,
   ornekVar: ornekVarMi()
 }));
 
@@ -50,9 +52,24 @@ async function ac(t, locale, oncesi){
     bak('kaç örnek olduğunu söylüyor', /8/.test(s.metin), s.metin);
     bak('"senin işin değil" diyor', /senin işin değil/i.test(s.metin), s.metin);
     bak('alttaki kalıcı düğme de açık', s.dip === true);
-    // Takvimde de ayırt ediliyor: kullanıcı kendi kayıtlarını girdikten
-    // sonra hangisinin örnek olduğunu görebilmeli.
-    bak('örnek çipler işaretli', s.ornekCip === 8 && s.ornekCip === s.toplamCip,
+    // ⚠ BU OLCUM 29 EYLUL 2026'DA DUSTU VE URUNDE BIR SEY BOZULMAMISTI.
+    // Eskiden `s.ornekCip === 8` diyordu: takvim IZGARASINDA sekiz ornek
+    // cipi sayiyordu. Ornekler bugun+1 ile bugun+6 arasina serpiliyor ve
+    // ayin son gunlerinde sonuncusu GORUNEN IZGARANIN DISINA dusuyor --
+    // 29 Eylul'de 5 Ekim'deki ornek cizilmedi, ekranda yedi cip kaldi.
+    //
+    // Yani olcum her ay birkac gun boyunca, hicbir sey bozulmadan
+    // duser. Boyle bir olcum bir sure sonra "zaten duser" diye
+    // bakilmayan bir olcume donusur ve GERCEK bir hatayi da gizler --
+    // nitekim CI bu yuzden gunlerce kirmizi kaldi ve yanlis alarm
+    // e-postasi gonderdi.
+    //
+    // Iki ayri iddia birbirine karismisti; artik ayri olculuyorlar:
+    //   · SEKIZ ornek VAR      -> veri gercegi, aydan bagimsiz
+    //   · ekrandaki her cip ORNEK -> asil degismez: kullanici kendi
+    //     kaydini girdiginde hangisinin ornek oldugunu gorebilmeli
+    bak('sekiz örnek kaydı var (veride)', s.veridekiOrnek === 8, String(s.veridekiOrnek));
+    bak('örnek çipler işaretli', s.ornekCip === s.toplamCip && s.ornekCip > 0,
         s.ornekCip + '/' + s.toplamCip);
     bak('çipin üstünde açıklama var',
         await p.evaluate(()=> document.querySelector('#calGrid .cal-chip.ornek').title.length > 3));
