@@ -1,0 +1,124 @@
+<!doctype html>
+<html><head><meta charset="utf-8">
+<!--
+  DENETIM KANITI — MIMARI DIYAGRAMI
+  YouTube API Services audit form, Section 6 "Architecture Diagram".
+  Kaynak burada duruyor ki bir sonraki denetimde yeniden uretilebilsin:
+  node denetim/uret.js  ->  denetim/mimari.png
+
+  ⚠ DIYAGRAMIN ISI TEK BIR SEYI GORUNUR KILMAK: icerik Shootboard'dan
+  CIKIP kullanicinin kendi kanalina giriyor, ve YouTube'dan geri
+  yalnizca yeni videonun kimligi donuyor. Denetimcinin sordugu asil
+  soru bu, ve bir paragraf yerine bir bakista cevaplaniyor.
+-->
+<style>
+  body{margin:0;background:#fff;font:14px/1.45 -apple-system,"Segoe UI",Roboto,Arial,sans-serif;color:#141C27}
+  svg{display:block}
+</style></head><body>
+<svg width="1600" height="980" viewBox="0 0 1600 980" xmlns="http://www.w3.org/2000/svg">
+  <defs>
+    <marker id="ok" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse">
+      <path d="M0,0 L10,5 L0,10 z" fill="#2563C7"/></marker>
+    <marker id="okGeri" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse">
+      <path d="M0,0 L10,5 L0,10 z" fill="#5B6676"/></marker>
+  </defs>
+  <rect width="1600" height="980" fill="#fff"/>
+
+  <text x="48" y="54" font-size="27" font-weight="700">Shootboard — YouTube Data API integration</text>
+  <text x="48" y="84" font-size="15" fill="#5B6676">Google Cloud project 505142582656 · scope: youtube.upload · method: videos.insert</text>
+
+  <g font-size="13" font-weight="700" fill="#5B6676" letter-spacing="1.2">
+    <text x="48" y="136">CREATOR'S OWN COMPUTER</text>
+    <text x="580" y="136">SHOOTBOARD — SERVER SIDE</text>
+    <text x="1136" y="136">GOOGLE / YOUTUBE</text>
+  </g>
+  <g stroke="#DDE3EA" stroke-width="1">
+    <line x1="548" y1="150" x2="548" y2="830"/><line x1="1104" y1="150" x2="1104" y2="830"/>
+  </g>
+
+  <g>
+    <rect x="48" y="164" width="452" height="96" rx="10" fill="#F4F7FA" stroke="#DDE3EA"/>
+    <text x="68" y="194" font-size="16" font-weight="700">Shootboard web app (browser)</text>
+    <text x="68" y="218" font-size="13.5" fill="#5B6676">The creator plans the post: date, time,</text>
+    <text x="68" y="238" font-size="13.5" fill="#5B6676">title, description, tags.</text>
+
+    <rect x="48" y="304" width="452" height="96" rx="10" fill="#F4F7FA" stroke="#DDE3EA"/>
+    <text x="68" y="334" font-size="16" font-weight="700">Uploader — the creator's own machine</text>
+    <text x="68" y="358" font-size="13.5" fill="#5B6676">Attaches the finished video file to the</text>
+    <text x="68" y="378" font-size="13.5" fill="#5B6676">planned entry.</text>
+
+    <!-- ⚠ BU IKI KUTU DAR: sagindaki serit, takvimden worker'a inen
+         okun gectigi yer. Genis birakinca ok kutunun ICINDEN geciyor
+         ve yaziyi kesiyordu. -->
+    <rect x="580" y="164" width="380" height="96" rx="10" fill="#fff" stroke="#DDE3EA"/>
+    <text x="600" y="194" font-size="16" font-weight="700">Calendar database</text>
+    <text x="600" y="218" font-size="13.5" fill="#5B6676">The planned entry and the time</text>
+    <text x="600" y="238" font-size="13.5" fill="#5B6676">it should be published.</text>
+
+    <rect x="580" y="304" width="380" height="96" rx="10" fill="#fff" stroke="#DDE3EA"/>
+    <text x="600" y="334" font-size="16" font-weight="700">Object storage</text>
+    <text x="600" y="358" font-size="13.5" fill="#5B6676">The creator's own video file</text>
+    <text x="600" y="378" font-size="13.5" fill="#5B6676">waits here until it is uploaded.</text>
+
+    <rect x="580" y="444" width="452" height="116" rx="10" fill="#EAF1FB" stroke="#2563C7"/>
+    <text x="600" y="476" font-size="16" font-weight="700">Publishing worker</text>
+    <text x="600" y="500" font-size="13.5" fill="#33414F">Reads the entry, streams the file in</text>
+    <text x="600" y="520" font-size="13.5" fill="#33414F">chunks, and calls videos.insert with the</text>
+    <text x="600" y="540" font-size="13.5" fill="#33414F">creator's own title, description and tags.</text>
+
+    <rect x="580" y="616" width="452" height="96" rx="10" fill="#fff" stroke="#DDE3EA"/>
+    <text x="600" y="646" font-size="16" font-weight="700">Token store — server side only</text>
+    <text x="600" y="670" font-size="13.5" fill="#5B6676">Access and refresh token. Never sent to</text>
+    <text x="600" y="690" font-size="13.5" fill="#5B6676">the browser. Deleted on disconnect.</text>
+
+    <rect x="1136" y="444" width="416" height="116" rx="10" fill="#FBEBEA" stroke="#B3261E"/>
+    <text x="1156" y="476" font-size="16" font-weight="700">YouTube Data API</text>
+    <text x="1156" y="500" font-size="14.5" font-weight="700" fill="#B3261E">videos.insert</text>
+    <text x="1156" y="522" font-size="13.5" fill="#33414F">resumable upload · snippet + status</text>
+    <text x="1156" y="542" font-size="13.5" fill="#33414F">(privacyStatus, publishAt)</text>
+
+    <rect x="1136" y="616" width="416" height="96" rx="10" fill="#fff" stroke="#DDE3EA"/>
+    <text x="1156" y="646" font-size="16" font-weight="700">Google OAuth token endpoint</text>
+    <text x="1156" y="670" font-size="13.5" fill="#5B6676">Where the authorisation is exchanged</text>
+    <text x="1156" y="690" font-size="13.5" fill="#5B6676">and later refreshed.</text>
+
+    <rect x="48" y="616" width="452" height="96" rx="10" fill="#F4F7FA" stroke="#DDE3EA"/>
+    <text x="68" y="646" font-size="16" font-weight="700">The creator authorises their own channel</text>
+    <text x="68" y="670" font-size="13.5" fill="#5B6676">One permission: "Upload YouTube videos".</text>
+    <text x="68" y="690" font-size="13.5" fill="#5B6676">Revocable at any time, from either side.</text>
+  </g>
+
+  <g stroke="#2563C7" stroke-width="2.2" fill="none" marker-end="url(#ok)">
+    <path d="M500,212 L572,212"/>
+    <path d="M500,352 L572,352"/>
+    <path d="M960,212 L996,212 L996,436"/>
+    <path d="M700,400 L700,436"/>
+    <path d="M1032,502 L1128,502"/>
+    <path d="M500,664 L572,664"/>
+  </g>
+  <!-- ⚠ DIKEY OKLARIN ETIKETI YOK: kutularin ustune dusuyorlardi ve
+       zaten gereksizlerdi -- hangi kutudan ciktiklari ne tasidiklarini
+       soyluyor. Fazla etiket, okunmayan etikettir. -->
+  <g font-size="12.5" fill="#2563C7" font-weight="600">
+    <text x="470" y="200" text-anchor="middle">plans the entry</text>
+    <text x="470" y="340" text-anchor="middle">uploads the file</text>
+    <text x="1080" y="484" text-anchor="middle">the only call</text>
+  </g>
+
+  <g stroke="#5B6676" stroke-width="2" fill="none" stroke-dasharray="7 5" marker-end="url(#okGeri)">
+    <path d="M1128,540 L1036,540"/>
+  </g>
+  <text x="1128" y="578" font-size="12.5" fill="#5B6676" text-anchor="end">the new video's id — the only thing that comes back</text>
+
+  <g stroke="#5B6676" stroke-width="2" fill="none" marker-end="url(#ok)" marker-start="url(#okGeri)">
+    <path d="M1032,664 L1128,664"/>
+  </g>
+  <text x="1080" y="652" font-size="12.5" fill="#5B6676" text-anchor="middle">refresh</text>
+
+  <rect x="48" y="854" width="1504" height="94" rx="10" fill="#FBEBEA" stroke="#B3261E"/>
+  <text x="72" y="886" font-size="16" font-weight="700" fill="#B3261E">No read calls.</text>
+  <text x="200" y="886" font-size="15">Shootboard never fetches videos, analytics, comments, subscriber data or search results from YouTube.</text>
+  <text x="72" y="912" font-size="15" fill="#33414F">The scope requested is youtube.upload only — no youtube.readonly, no full youtube scope. Content moves in one direction: out of</text>
+  <text x="72" y="934" font-size="15" fill="#33414F">Shootboard, into the creator's own channel.</text>
+</svg>
+</body></html>

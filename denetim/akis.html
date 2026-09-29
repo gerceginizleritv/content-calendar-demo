@@ -1,0 +1,116 @@
+<!doctype html>
+<html><head><meta charset="utf-8">
+<!--
+  DENETIM KANITI — KULLANICI AKISI
+  YouTube API Services audit form, Section 6 "User Flow Diagrams".
+
+  ⚠ DENETIMCININ ARADIGI UC SEY: kullanici izni NASIL veriyor, izin
+  verdikten sonra NE oluyor, ve izni NASIL geri aliyor. Ucu de burada,
+  ve ucuncusu ozellikle onemli: 29 Eylul 2026'ya kadar "bagi kes"
+  dugmesi YOKTU -- gizlilik metni soz veriyordu, sayfa tutmuyordu.
+-->
+<style>
+  body{margin:0;background:#fff;font:14px/1.45 -apple-system,"Segoe UI",Roboto,Arial,sans-serif;color:#141C27}
+  svg{display:block}
+</style></head><body>
+<svg width="1600" height="900" viewBox="0 0 1600 900" xmlns="http://www.w3.org/2000/svg">
+  <defs>
+    <marker id="a" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse">
+      <path d="M0,0 L10,5 L0,10 z" fill="#2563C7"/></marker>
+    <marker id="ak" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse">
+      <path d="M0,0 L10,5 L0,10 z" fill="#B3261E"/></marker>
+  </defs>
+  <rect width="1600" height="900" fill="#fff"/>
+
+  <text x="48" y="54" font-size="27" font-weight="700">Shootboard — user flow</text>
+  <text x="48" y="84" font-size="15" fill="#5B6676">How the creator grants access, what happens afterwards, and how they revoke it</text>
+
+  <!-- 1. BAGLAMA -->
+  <text x="48" y="140" font-size="13" font-weight="700" fill="#5B6676" letter-spacing="1.2">1 — CONNECTING</text>
+  <g>
+    <rect x="48" y="158" width="286" height="104" rx="10" fill="#F4F7FA" stroke="#DDE3EA"/>
+    <text x="68" y="188" font-size="15.5" font-weight="700">shootboard.app/youtube.html</text>
+    <text x="68" y="212" font-size="13" fill="#5B6676">The page says what will happen</text>
+    <text x="68" y="232" font-size="13" fill="#5B6676">before anything is requested.</text>
+
+    <rect x="392" y="158" width="286" height="104" rx="10" fill="#fff" stroke="#DDE3EA"/>
+    <text x="412" y="188" font-size="15.5" font-weight="700">Google consent screen</text>
+    <text x="412" y="212" font-size="13" fill="#5B6676">One permission shown:</text>
+    <text x="412" y="234" font-size="13" font-weight="700" fill="#141C27">Upload YouTube videos</text>
+
+    <rect x="736" y="158" width="286" height="104" rx="10" fill="#fff" stroke="#DDE3EA"/>
+    <text x="756" y="188" font-size="15.5" font-weight="700">Token exchange</text>
+    <text x="756" y="212" font-size="13" fill="#5B6676">Server side only. The browser</text>
+    <text x="756" y="232" font-size="13" fill="#5B6676">never receives a token.</text>
+
+    <rect x="1080" y="158" width="286" height="104" rx="10" fill="#EAF1FB" stroke="#2563C7"/>
+    <text x="1100" y="188" font-size="15.5" font-weight="700">Connected</text>
+    <text x="1100" y="212" font-size="13" fill="#33414F">The page now shows a</text>
+    <text x="1100" y="232" font-size="13" fill="#33414F">"Disconnect" button.</text>
+  </g>
+  <g stroke="#2563C7" stroke-width="2.2" fill="none" marker-end="url(#a)">
+    <path d="M334,210 L384,210"/><path d="M678,210 L728,210"/><path d="M1022,210 L1072,210"/>
+  </g>
+
+  <!-- 2. YAYIN -->
+  <text x="48" y="336" font-size="13" font-weight="700" fill="#5B6676" letter-spacing="1.2">2 — PUBLISHING</text>
+  <g>
+    <rect x="48" y="354" width="286" height="118" rx="10" fill="#F4F7FA" stroke="#DDE3EA"/>
+    <text x="68" y="384" font-size="15.5" font-weight="700">The creator plans a post</text>
+    <text x="68" y="408" font-size="13" fill="#5B6676">Date, time, title, description</text>
+    <text x="68" y="428" font-size="13" fill="#5B6676">and tags — all written by the</text>
+    <text x="68" y="448" font-size="13" fill="#5B6676">creator, in their own words.</text>
+
+    <rect x="392" y="354" width="286" height="118" rx="10" fill="#F4F7FA" stroke="#DDE3EA"/>
+    <text x="412" y="384" font-size="15.5" font-weight="700">The file is attached</text>
+    <text x="412" y="408" font-size="13" fill="#5B6676">The uploader on the creator's</text>
+    <text x="412" y="428" font-size="13" fill="#5B6676">own computer puts the video</text>
+    <text x="412" y="448" font-size="13" fill="#5B6676">into object storage.</text>
+
+    <rect x="736" y="354" width="286" height="118" rx="10" fill="#EAF1FB" stroke="#2563C7"/>
+    <text x="756" y="384" font-size="15.5" font-weight="700">videos.insert</text>
+    <text x="756" y="408" font-size="13" fill="#33414F">The video is uploaded to the</text>
+    <text x="756" y="428" font-size="13" fill="#33414F">creator's own channel, private,</text>
+    <text x="756" y="448" font-size="13" fill="#33414F">carrying status.publishAt.</text>
+
+    <rect x="1080" y="354" width="286" height="118" rx="10" fill="#fff" stroke="#DDE3EA"/>
+    <text x="1100" y="384" font-size="15.5" font-weight="700">YouTube publishes it</text>
+    <text x="1100" y="408" font-size="13" fill="#5B6676">At the time the creator</text>
+    <text x="1100" y="428" font-size="13" fill="#5B6676">planned. Shootboard does</text>
+    <text x="1100" y="448" font-size="13" fill="#5B6676">nothing further.</text>
+  </g>
+  <g stroke="#2563C7" stroke-width="2.2" fill="none" marker-end="url(#a)">
+    <path d="M334,412 L384,412"/><path d="M678,412 L728,412"/><path d="M1022,412 L1072,412"/>
+  </g>
+
+  <!-- 3. GERI ALMA -->
+  <text x="48" y="546" font-size="13" font-weight="700" fill="#5B6676" letter-spacing="1.2">3 — REVOKING ACCESS · EITHER WAY IS ENOUGH</text>
+  <g>
+    <!-- ⚠ YUKSEKLIK 118 DEGIL 140: sagdaki kutunun son satiri alt
+         kenarin disina tasiyordu. Ikisi ayni yukseklikte duruyor ki
+         satirlar hizalansin. -->
+    <rect x="48" y="564" width="630" height="140" rx="10" fill="#FBEBEA" stroke="#B3261E"/>
+    <text x="68" y="594" font-size="15.5" font-weight="700">In Shootboard</text>
+    <text x="68" y="618" font-size="13" fill="#33414F">shootboard.app/youtube.html → "Disconnect". The page asks for</text>
+    <text x="68" y="638" font-size="13" fill="#33414F">confirmation first, because disconnecting stops planned uploads.</text>
+    <text x="68" y="662" font-size="13" font-weight="700" fill="#B3261E">The stored access and refresh tokens are deleted immediately.</text>
+
+    <rect x="736" y="564" width="630" height="140" rx="10" fill="#FBEBEA" stroke="#B3261E"/>
+    <text x="756" y="594" font-size="15.5" font-weight="700">In the Google Account</text>
+    <text x="756" y="618" font-size="13" fill="#33414F">myaccount.google.com/permissions → remove Shootboard.</text>
+    <text x="756" y="638" font-size="13" fill="#33414F">Works independently of Shootboard.</text>
+    <text x="756" y="662" font-size="13" font-weight="700" fill="#B3261E">Uploads stop; videos already on the channel stay, and are the</text>
+    <text x="756" y="682" font-size="13" font-weight="700" fill="#B3261E">creator's to keep or delete.</text>
+  </g>
+  <g stroke="#B3261E" stroke-width="2.2" fill="none" marker-end="url(#ak)">
+    <path d="M678,623 L728,623"/>
+  </g>
+  <text x="703" y="612" font-size="12" fill="#B3261E" text-anchor="middle">or</text>
+
+  <rect x="48" y="736" width="1318" height="120" rx="10" fill="#F4F7FA" stroke="#DDE3EA"/>
+  <text x="72" y="768" font-size="15.5" font-weight="700">What is stored, and what is not</text>
+  <text x="72" y="794" font-size="14" fill="#33414F">Stored per connected creator: an access token, a refresh token, and the time of the last error. Nothing else.</text>
+  <text x="72" y="818" font-size="14" fill="#33414F">Not stored, not read, not displayed: videos, analytics, comments, subscriber data, search results — anything belonging to</text>
+  <text x="72" y="840" font-size="14" fill="#33414F">YouTube or to other channels. Disclosed in the privacy policy at shootboard.app/privacy.html, section 7b.</text>
+</svg>
+</body></html>
