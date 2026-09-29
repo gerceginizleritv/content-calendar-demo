@@ -281,6 +281,53 @@ const BAGLAYICILAR = [
         'privacy.html');
   }
 
+  // ══════════════════════════════════════════════════════════════════
+  // ⛔ BAGLANTIYI KESME: BELGE SOZ VERIYOR, SAYFA TUTMAK ZORUNDA
+  // ══════════════════════════════════════════════════════════════════
+  // 29 Eylul 2026, denetim basvurusunu doldururken bulundu: privacy.html
+  // "Shootboard'un YouTube sayfasindan baglantiyi kesebilirsin" diyordu
+  // ve OYLE BIR DUGME YOKTU. Sunucu ucu (`?kes=1`) ve SQL islevi bastan
+  // beri duruyordu; eksik olan yalnizca arayuzdu. Yani canli bir hukuki
+  // belge, var olmayan bir yolu tarif ediyordu.
+  //
+  // YouTube API denetimi de bunun ekran goruntusunu istiyor
+  // ("OAuth Flow Screenshots -- consent screen, scopes, revocation").
+  //
+  // Bu olcum sozu KODA bagliyor: belge kesmeyi anlatiyorsa sayfa onu
+  // yapabilmek zorunda.
+  console.log('[baglantiyi kesme]');
+  for (const b of BAGLAYICILAR) {
+    const sayfa = oku(b.sayfa)
+      .replace(/<!--[\s\S]*?-->/g, '')
+      .replace(/^\s*\/\/.*$/gm, '');
+    const islev = oku(b.islevYolu);
+
+    bak('★ ' + b.ad + ' sayfasinda kesme yolu var (?kes=1)',
+        /\?kes=1/.test(sayfa), b.sayfa);
+    bak('★ ' + b.ad + ' kesme dugmesi ekranda',
+        /Bağlantıyı kes/.test(sayfa), b.sayfa);
+    // ⚠ KAZA KORUMASI: kesmek, planlanan yayinlarin cikmamasi demek.
+    bak(b.ad + ' kesmeden once onay soruluyor',
+        /confirm\(/.test(sayfa), b.sayfa);
+    // Sunucu tarafi da duruyor mu? Dugme varken uc olmazsa 404 alirdi.
+    bak('★ ' + b.ad + ' fonksiyonu kes ucunu tasiyor',
+        /searchParams\.get\('kes'\)/.test(islev), b.islevYolu);
+    // ⚠ SAYFA ONCE "BAGLI MIYIM" DIYE SORMALI: sormadan dogrudan
+    // baglama dugmesi gosterirse, zaten bagli olan biri kesme yolunu
+    // HIC goremez -- yani dugme var ama ulasilamaz olur.
+    bak('★ ' + b.ad + ' sayfasi bagli durumunu soruyor (' + b.durumIslevi + ')',
+        new RegExp("rpc\\('" + b.durumIslevi + "'\\)").test(sayfa), b.sayfa);
+  }
+  {
+    // Ve belge bunu anlatiyor olmali -- iki dilde.
+    const gizlilik = oku('privacy.html');
+    bak('★ gizlilik metni kesme yolunu anlatiyor (en)',
+        /from Shootboard's YouTube page/.test(gizlilik));
+    bak('★ gizlilik metni kesme yolunu anlatiyor (tr)',
+        /Shootboard'un YouTube\s*\n?\s*sayfasından/.test(gizlilik),
+        (/Shootboard'un YouTube[^<]*/.exec(gizlilik) || [''])[0].slice(0, 60));
+  }
+
   console.log('\n' + g + ' gecti, ' + k + ' kaldi');
   process.exit(k ? 1 : 0);
 })();

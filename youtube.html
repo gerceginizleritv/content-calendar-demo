@@ -79,6 +79,19 @@
   var UC = SUPABASE_URL + '/functions/v1/youtube-baglan';
   var DURUM_ANAHTARI = 'shootboard.youtube.state';
 
+  // ⚠ ISTEMCI TEMBEL YARATILIYOR VE YOKLUGU OLUMCUL DEGIL.
+  // Ustte dogrudan `window.supabase.createClient(...)` cagirmak,
+  // kitaplik yuklenmediginde (CDN engeli, ag hatasi) BUTUN SAYFAYI
+  // olduruyor: betik o satirda patliyor, baglama dugmesi de hata
+  // mesaji da hic cikmiyor. Oysa baglamanin ilk adimi kitapliga hic
+  // ihtiyac duymuyor -- yalnizca jeton takasi ve durum sorgusu duyuyor.
+  var sbOnbellek = null;
+  function istemci(){
+    if (!window.supabase || !window.supabase.createClient) return null;
+    if (!sbOnbellek) sbOnbellek = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
+    return sbOnbellek;
+  }
+
   var durumEl = document.getElementById('durum');
   var ayrintiEl = document.getElementById('ayrinti');
 
@@ -88,8 +101,101 @@
     ayrintiEl.textContent = ayrinti || '';
   }
 
-  // Yetkilendirmeyi baslatan taraf.
+  // ══════════════════════════════════════════════════════════════
+  // BAGLANTIYI KESME
+  // ══════════════════════════════════════════════════════════════
+  // ⚠ BU DUGME 29 EYLUL 2026'YA KADAR HIC YOKTU -- ve privacy.html
+  // "Shootboard'un YouTube sayfasindan baglantiyi kesebilirsin" diye
+  // SOZ VERIYORDU. Sunucu ucu (youtube_kes) ve `?kes=1` bastan beri
+  // duruyordu; eksik olan yalnizca dugmeydi. Yani canli bir hukuki
+  // belge, var olmayan bir yolu tarif ediyordu.
+  //
+  // YouTube API denetimi de bunun ekran goruntusunu istiyor
+  // ("OAuth Flow Screenshots -- consent screen, scopes, revocation").
+  function kes(){
+    if (!window.confirm('YouTube baglantisi kesilecek. Planladigin yayinlar '
+        + 'yeniden baglanana kadar cikmayacak. Devam edilsin mi?')) return;
+    yaz('Bağlantı kesiliyor…', '', '');
+    var sb = istemci();
+    if (!sb) {
+      yaz('Bağlantı kesilemedi.', 'kotu',
+          'Sayfa tam yüklenemedi (ağ engeli olabilir). Sayfayı yenileyip yeniden dene.');
+      return;
+    }
+    sb.auth.getSession().then(function(r){
+      var oturum = r && r.data && r.data.session;
+      if (!oturum) {
+        yaz('Önce Shootboard\'a giriş yapmalısın.', 'kotu', '');
+        return null;
+      }
+      // ⚠ Uc govde OKUMUYOR: `?kes=1` govdeden once donuyor.
+      return fetch(UC + '?kes=1', {
+        method: 'POST',
+        headers: { 'authorization': 'Bearer ' + oturum.access_token }
+      }).then(function(y){
+        return y.json().catch(function(){ return { ok:false, sebep:'Sunucu cevabı okunamadı (' + y.status + ')' }; });
+      });
+    }).then(function(v){
+      if (!v) return;
+      if (v.ok) {
+        yaz('YouTube bağlantısı kesildi.', 'iyi',
+            'Saklanan jetonlar silindi. İstediğin zaman yeniden bağlayabilirsin.');
+        baslat();
+      } else {
+        yaz('Bağlantı kesilemedi.', 'kotu', v.sebep || 'Bilinmeyen hata.');
+      }
+    }).catch(function(e){
+      yaz('Bağlantı kesilemedi.', 'kotu', (e && e.message) || String(e));
+    });
+  }
+
+  // Zaten bagliysa: baglama dugmesi yerine KESME dugmesi.
+  function bagliGoster(ad){
+    durumEl.textContent = 'YouTube bağlı.' + (ad ? ' (' + ad + ')' : '');
+    durumEl.className = 'durum iyi';
+    ayrintiEl.innerHTML = '';
+    var d = document.createElement('a');
+    d.className = 'dugme';
+    d.href = '#';
+    d.textContent = 'Bağlantıyı kes';
+    d.addEventListener('click', function(e){ e.preventDefault(); kes(); });
+    ayrintiEl.appendChild(d);
+    var not = document.createElement('p');
+    not.textContent = 'Bağlantıyı Google Hesabı ayarlarından da kaldırabilirsin. '
+      + 'Kestiğinde saklanan jetonlar siliniyor.';
+    ayrintiEl.appendChild(not);
+  }
+
+  // ⚠ SAYFA ONCE "BAGLI MIYIM" DIYE SORUYOR.
+  // Sormadan dogrudan baglama dugmesi gosteriyordu: zaten bagli olan
+  // biri bu sayfaya geldiginde yine "bagla" goruyor, kesme yolunu HIC
+  // bulamiyordu. Kesme dugmesi eklenince o eksiklik asil sorun oldu.
+  //
+  // ⚠ DURUM SORGUSU JETON DONDURMUYOR. youtube_durum() yalnizca "bagli mi",
+  // ad ve son hatayi veriyor; jetonlarin durdugu tabloyu tarayici HIC
+  // goremiyor (sql/51 ve sql/52'de bilerek ilke yok).
   function baslat(){
+    yaz('Hazırlanıyor…', '', '');
+    var sb = istemci();
+    // Kitaplik yoksa "bagli miyim" sorulamaz -- ama baglamak yine de
+    // mumkun, cunku o adim yalnizca bir yonlendirme.
+    if (!sb) { baglamayiGoster(); return; }
+    sb.auth.getSession().then(function(r){
+      var oturum = r && r.data && r.data.session;
+      // Oturum yoksa durum sorulamaz; baglama akisi zaten girisi
+      // isteyecek. Sessizce baglama yoluna dusuyoruz.
+      if (!oturum) return null;
+      return sb.rpc('youtube_durum').then(function(d){
+        var satir = d && d.data && (Array.isArray(d.data) ? d.data[0] : d.data);
+        return (satir && satir.bagli) ? satir : null;
+      }).catch(function(){ return null; });
+    }).then(function(satir){
+      if (satir) { bagliGoster(satir.kanal_adi || ''); return; }
+      baglamayiGoster();
+    }).catch(function(){ baglamayiGoster(); });
+  }
+
+  function baglamayiGoster(){
     yaz('Hazırlanıyor…', '', '');
     fetch(UC).then(function(y){ return y.json(); }).then(function(bilgi){
       if (!bilgi || !bilgi.client_id) {
@@ -180,9 +286,13 @@
   // Kayitli adresle BIREBIR ayni olmali: sorgu dizgesi atiliyor.
   var donusAdresi = location.origin + location.pathname;
 
-  var sb = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
-
-  sb.auth.getSession().then(function(r){
+  var sbTakas = istemci();
+  if (!sbTakas) {
+    yaz('Bağlantı tamamlanamadı.', 'kotu',
+        'Sayfa tam yüklenemedi (ağ engeli olabilir). Sayfayı yenileyip yeniden dene.');
+    return;
+  }
+  sbTakas.auth.getSession().then(function(r){
     var oturum = r && r.data && r.data.session;
     if (!oturum) {
       yaz('Önce Shootboard\'a giriş yapmalısın.', 'kotu',
