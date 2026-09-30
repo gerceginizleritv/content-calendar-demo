@@ -1,0 +1,265 @@
+KUŞ EVLERİ — VİDEO METNİ (v2 — İZLEYİCİ TUTMA KURGUSU)
+
+Tarihi Dedektif — Gerçeğin İzleri
+
+Format notu: Dört mekân (Ayazma, Yeni Valide, Selimiye / Üsküdar; Seyyid Hasan Paşa Medresesi / Beyazıt), üç GEÇİŞ bölümü (yürüyüş ve vapurda seslendirme), İstanbul dışı örnekler [HARİTA + ARŞİV] ile.
+
+v2'de ne değişti: v1 bilgi sırasına göre yazılmıştı. v2 izleyiciyi tutma sırasına göre kuruldu:
+- 0–3 sn: tek görüntü, tek cümle. Kubbe yok, yüz yok; duvara yaslanmış minyatür saray ve "kimse görmüyor".
+- 3–25 sn: üç soru açılıyor, üçü de videonun içinde kapanıyor (neden? ne zaman? dünyada başka var mı?).
+- SONA SAKLANAN DENEY: Beyazıt'ta yarım saat sayım, "kaç kişi yukarı baktı". Hook'ta vaat ediliyor, sonuç yalnızca kapanışta veriliyor. Ekranda küçük bir sayaç kurguyla ara ara görünebilir.
+- Her bölüm bir cevap veriyor ve yeni bir soru açıyor. Hiçbir bölüm "bitti" hissiyle kapanmıyor.
+- Yaklaşık her 90 saniyede bir kalıp kırılıyor: sayaç, harita, "rivayet / kayıt" damgası, kamera yukarı tilt.
+- Giriş-çıkış selamı, kanal tanıtımı, "abone ol" yok. İlk cümleden itibaren içerik.
+
+Tahmini süre: ~11,5 dakika (seslendirme kelime sayısı dosya sonunda gerçek sayımla).
+
+═══════════════════════════════════════
+ÇEKİM KONTROL LİSTESİ — SAHADA KAÇIRMA
+═══════════════════════════════════════
+
+Genel: Kuş evleri yüksekte ve küçük. En az bir uzun odaklı objektif (70 mm ve üstü); mümkünse drone. Her mekânda önce geniş plan (yapı içinde kuş evinin YERİ), sonra yakın, sonra çok yakın (pencere, konsol, kubbe). Kuş giriş-çıkışı için sabit kamera bekle; bu karenin yeri hook'un ilk 3 saniyesi.
+
+AÇILIŞ İÇİN (0–3 sn): Yeni Valide'nin üç kubbeli, iki minareli kuş evi, çok yakın plan, hafif yukarı tilt. Bu görüntü video boyunca ikinci kez ancak Bölüm 2'de görünür (geri dönüş hissi).
+
+AYAZMA CAMİİ (Üsküdar) — 1760
+☐ Cephelerde, avlu kapısında ve hünkâr kasrında kuş evleri — geniş ve yakın (kaynak 20 diyor; sahada SAY)
+☐ Tek katlı ev / köşk / saray tiplerinden birer örnek
+☐ Caminin Tarihi Yarımada'ya bakan konumu — geniş plan
+☐ Kuş girişi-çıkışı için sabit kamera (en az 5 dk)
+
+YENİ VALİDE CAMİİ (Üsküdar) — 1708–1710
+☐ Sağ (güney) duvardaki 3 kubbeli, 2 minareli "kuş camisi" — açılış karesi ve kapak adayı
+☐ Üç cephedeki farklı teknikle yapılmış kuş evleri — her cepheden birer plan
+☐ Gülnuş Valide Sultan'ın açık türbesi — kısa plan
+
+SELİMİYE CAMİİ (Üsküdar) — 1801–1805
+☐ İki payanda üzerindeki iki katlı kuş konakları — ajurlu pencere çok yakın
+☐ Küfeki taşı dokusu
+☐ Kışla ile cami aynı karede
+
+SEYYİD HASAN PAŞA MEDRESESİ (Beyazıt) — 1745
+☐ Ordu Caddesi duvarının sol üst köşesindeki kuş evi — iki minare, cumba, merdiven
+☐ DENEY: Sabit kamera, 30 dakika, kalabalık ile kuş evi aynı karede. Yukarı bakan herkesi işaretle. Bu sayı kapanışın kancası.
+☐ Avrasya Enstitüsü tabelası
+
+GEÇİŞ GÖRÜNTÜLERİ
+☐ Üsküdar sahil yürüyüşü, Boğaz arkada; martılar
+☐ Üsküdar–Eminönü vapuru
+☐ [HARİTA + ARŞİV] Tokat, Nevşehir, Kayseri, Amasya, Doğubeyazıt, Bursa
+
+═══════════════════════════════════════
+0:00–0:03 — AÇILIŞ KARESİ
+═══════════════════════════════════════
+(Kamera: Yeni Valide'nin üç kubbeli kuş evi, çok yakın plan, sessizlik, tek cümle)
+
+Bu bir cami. Yüksekliği bir kol boyu. İçinde kuşlar yaşıyor.
+
+═══════════════════════════════════════
+0:03–0:25 — HOOK — AYAZMA CAMİİ ÖNÜ
+═══════════════════════════════════════
+(Kamera: kesme, konuşmacı Ayazma önünde; ikinci cümlede kamera yukarı, kuş evine tilt)
+
+Osmanlı, kuşlar için saray yaptı. Sütunlu, kemerli, cumbalı, minareli. Şu an arkamda duran caminin duvarlarında bunlardan yirmi tane var.
+
+Bugün üç soruya cevap arıyorum. Bir imparatorluk neden serçeye saray yapar? Bu iş ne zaman ve kiminle başladı? Ve gerçekten dünyada başka hiçbir yerde yok mu?
+
+Bir de deney yapacağız. İstanbul'un en kalabalık caddesinde, böyle bir sarayın altında yarım saat duracağız ve kaç kişinin yukarı baktığını sayacağız. Sayıyı en sonda söylüyorum. Tahmininizi şimdi yorumlara yazın.
+
+Rivayet değil, kayıt.
+
+[REELS KESİM 1 — 90–130 sn — Hook + Bölüm 1, kendi içinde tamamlanan anlatı]
+   (2026-09-11 kural değişikliği: kesit 25 sn değil, 90–130 sn. Gerekçe: nişte
+   ~116 sn medyan → 191.700 izlenme, ~42 sn → 1.681. Bkz. icerik/KURALLAR.md bölüm 1.)
+
+═══════════════════════════════════════
+BÖLÜM 1 — AYAZMA CAMİİ: YİRMİ SARAY (0:25–2:10)
+═══════════════════════════════════════
+(Kamera: avluda yürüyüş; kuş evi yakın planları; sayaç grafiği ilk kez belirir: "Yukarı bakan: ?")
+
+Üsküdar, Ayazma Camii. 1760, Sultan III. Mustafa dönemi, erken Osmanlı Barok'u. Karşıda Tarihi Yarımada, arkamda hünkâr kasrı. Ama bugün kubbeye bakmıyoruz. Duvara bakıyoruz.
+
+Şu küçük yapılar kuş evi. Osmanlı buna kuş köşkü, kuş sarayı, serçe sarayı ya da güvercinlik demiş. Kaynaklara göre cephelerde, avlu kapılarında ve hünkâr kasrında toplam yirmi tane var. Biz de saydık, sayı ekranda.
+
+Dikkat edin: rastgele oyuk değil bunlar. Konsol üstüne oturtulmuş, gerçek bir Türk konağının küçültülmüş hali. Kimi tek katlı ev, kiminin balkonu var, kimi birkaç katlı saray. Sanat tarihçileri Ayazma'yı bu türün en parlak örneği sayıyor; üzerine akademik makale yazılmış, tek tek belgelenmiş.
+
+Siz de bulabilirsiniz. Şimdi ekranda cephenin tamamı var; kuş evini görebilen ilk üç saniyede yazsın. İpucu: pencere hizasının üstüne, kemerlerin arasına bakın, duvardan hafifçe dışa çıkan küçük bir kütle arayın. Gördünüz mü? İşte o, üç yüz yıldır orada ve her gün binlerce kişi altından geçiyor.
+
+İçinde kim oturuyor? Serçe, kırlangıç, kumru, güvercin. Kentin sahipsiz kuşları. Ve işte ilk tuhaflık: bu evlerden yumurta alınmıyor, kuş satılmıyor, hiçbir gelir yok. Kayıtlarda tek bir ekonomik amaç bulamıyorsunuz. Yani biri, hiçbir karşılık beklemeden, taşı oyup serçeye saray yapmış.
+
+Neden? Cevabın yarısı merhamet. Öbür yarısı bir hesap ve o hesabı yolda anlatacağım. Çünkü bu evlerin hepsi aynı yöne bakıyor ve bu tesadüf değil.
+
+[REELS KESİM 2 — "Yirmi saray, sıfır gelir", Ayazma yakın planlar]
+
+═══════════════════════════════════════
+GEÇİŞ 1 — SAHİLDE YÜRÜYÜŞ: MERHAMET Mİ, HESAP MI? (2:10–3:40)
+═══════════════════════════════════════
+(Kamera: yürüyüş, Boğaz arkada, martılar; ekranda "RİVAYET / KAYIT" damgası ilk kez)
+
+Yeni Valide'ye on dakika. Yolda ilk soruyu kapatalım: neden?
+
+Merhamet kısmı kayıt. Osmanlı toplumunda canlıyı korumak sevap sayılıyordu ve bu bir duygu değil, kurumdu: vakıflar. Sokak köpeklerine yiyecek dağıtan, yük hayvanını koruyan, kuşlara yem bırakan vakıf kayıtları biliniyor. Kuş evi, o düzenin taşa yazılmış hali. Bazı yapılarda yanında küçük bir su yalağı da var: kuş sebili. Barınak var, su var. Kışın bu yalaklara su koymak da sevap sayılmış. Yani bir oyuk değil, kuşun bütün ihtiyacını düşünen küçük bir sistem.
+
+Şimdi hesap kısmı, yani az önce söz verdiğim şey. Kuş evleri hep yüksekte, kedinin ve insanın ulaşamayacağı yerde. Ve hep güneye ya da doğuya bakan, rüzgâra kapalı cephelerde. Kuş fırtınadan, yağmurdan, kızgın güneşten korunsun. Bazı araştırmacılar bir adım daha atıyor: kuş belirli bir yere yuva yaparsa cephenin geri kalanı kirlenmez, taş çürümez. Buna göre kuş evi hem merhamet hem bina bakımı.
+
+Bu ikinci yorum kayıt değil, yorum. Osmanlı belgelerinde "cepheyi korumak için" diye yazılı bir gerekçe yok. Ekrandaki damgayı görüyorsunuz: bazı araştırmacılara göre. Kayıt olan tek şey şu: bu evler bilinçli yerleştirilmiş.
+
+Peki bu bilinç ne zaman başladı? Cevap, birazdan gireceğimiz caminin duvarında iki farklı el yazısı gibi duruyor.
+
+═══════════════════════════════════════
+BÖLÜM 2 — YENİ VALİDE: KUŞLAR İÇİN CAMİ (3:40–5:30)
+═══════════════════════════════════════
+(Kamera: açılış karesindeki üç kubbeli kuş evine geri dönüş, bu kez geniş plandan yakına; sonra üç cephe)
+
+Açılıştaki görüntüyü hatırlıyor musunuz? İşte burası. Yeni Valide Camii, 1708 ile 1710 arası. Yaptıran, Sultan II. Mustafa ve III. Ahmed'in annesi Emetullah Rabia Gülnuş Valide Sultan. Mimar, Lale Devri'nin baş mimarı Kayserili Mehmed Ağa. Ayazma'dan yarım yüzyıl eski.
+
+Sağ duvarda üç kubbeli, iki minareli bir cami. Bir kuş camisi. Usta, kuşa ev yaparken ona bir cami maketi vermiş. İstanbul'daki kuş evlerinin en çok fotoğraflananı ve bence en şaşırtıcısı.
+
+Ama asıl mesele bu tek örnek değil. Bu caminin üç cephesinde, farklı tekniklerle yapılmış kuş evleri var ve kaynaklar bunları günümüze en iyi durumda gelmiş örnekler sayıyor. Farkı gözünüzle okuyabilirsiniz. Taşa doğrudan oyulmuş olan duvarla aynı renk, aynı doku; çizgileri sade, girişi sivri bir kemer. Ayrı parçalardan monte edilmiş olanda ekleme yerleri görünür, çıkmalar derin, süsleme cesur. İlki klasik dönemin dili, ikincisi gelen Barok'un. Aynı duvarda iki üslup aynı anda konuşuyor. Nuruosmaniye'de anlattığım dönüşüm, kuş evi ölçeğinde burada başlıyor.
+
+Bir şey daha. Yanımızdaki açık türbe Gülnuş Valide Sultan'ın. Üstü açık; anlatılan, vasiyeti öyleymiş: yağmur mezarına yağsın, kuşlar üzerine konsun. Damgaya bakın: rivayet. Vasiyetin metnini görmedik. Ama açık türbe ile duvardaki kuş evleri aynı avluda ve bu bana tesadüf gibi gelmiyor.
+
+Bu cami 1710. Peki ilk kuş evi ne zaman? Bir isim var ki herkes onu söylüyor: Mimar Sinan. Ve onunla ilgili anlatılan hikâyenin yarısı doğru, yarısı değil. Hangisi hangisi, yolda ayırıyoruz.
+
+[REELS KESİM 3 — "Kuşlar için yapılmış cami", Yeni Valide üç kubbeli kuş evi]
+
+═══════════════════════════════════════
+GEÇİŞ 2 — SELİMİYE'YE ÇIKIŞ: SİNAN'IN VASİYETİ (5:30–6:50)
+═══════════════════════════════════════
+(Kamera: yürüyüş; ekranda tarih şeridi: 13. yy – 16. yy – 18. yy)
+
+İkinci soru: ne zaman, kiminle?
+
+İstanbul'un bilinen en eski kuş evleri on altıncı yüzyıldan. Büyükçekmece Köprüsü'nde, Mimar Sinan'ın eserinde, bugün hâlâ ayakta bir örnek var. Fatih'teki Bali Paşa Camii de aynı yüzyıl. Bu kısım kayıt: Sinan'ın çağında kuş evi vardı.
+
+Şimdi hikâyenin öbür yarısı. Deniyor ki Sinan vasiyetinde, yaptığı kuş evlerindeki kuşların beslenmesi için gelir bırakmış. Güzel hikâye. Ama ben bu vasiyetin metnini gösteren birincil bir belge bulamadım. Kaynaklar birbirini tekrarlıyor, kimse belgeyi göstermiyor. Damga: rivayet. Sinan kuş evi yaptı, kayıt. Kuşlara para bıraktı, iddia.
+
+Ve iş daha da geriye gidiyor. Bazı kaynaklar Anadolu'daki ilk kuş evini Osmanlı'ya değil Selçuklu'ya bağlıyor: Tokat Ulu Camii, on üçüncü yüzyıl. Bu doğruysa kuş evi Osmanlı icadı değil; Osmanlı'nın devralıp zirveye taşıdığı bir gelenek. Zirve, on sekizinci yüzyıl. Barok'un İstanbul'a girdiği, Nuruosmaniye'nin yapıldığı çağ. En süslü kuş evleri tam o dönemden. Barok sadece camileri değil, serçe evlerini de değiştirdi.
+
+Şimdi gireceğimiz camide bu değişimin son halkası var. Ve orada bir detay göreceksiniz: kediye kapalı, kuşa açık bir pencere.
+
+═══════════════════════════════════════
+BÖLÜM 3 — SELİMİYE: KEDİYE KAPALI PENCERE (6:50–8:00)
+═══════════════════════════════════════
+(Kamera: payandalardaki iki katlı kuş evleri; ajurlu pencere çok yakın plan; sayaç grafiği kısa süre belirir: "Yukarı bakan: ?")
+
+Selimiye Camii. 1801 ile 1805 arası, Sultan III. Selim, yanındaki kışlayla birlikte. Bugünkü rotanın en geç tarihli yapısı.
+
+İki payandanın üzerinde, küfeki taşından, iki katlı iki kuş konağı. Pencereye bakın: ajurlu, yani delikli işlenmiş. Işık içeri, hava içeri, kuş içeri; kedi dışarıda. İşte söz verdiğim detay. Bu pencere bir süs değil, bir güvenlik tasarımı.
+
+Bir şeyi daha fark edin. Ayazma'da yirmi küçük ev vardı; burada iki büyük konak. Elli yılda tercih değişmiş: çok sayıda küçük yuvadan, az sayıda gösterişli yapıya. Aynı eğilimi o dönemde bütün Osmanlı mimarisinde görüyoruz ve kuş evleri birebir takip ediyor. Yani serçe evine bakarak imparatorluğun zevkinin nasıl değiştiğini okuyabiliyorsunuz.
+
+Üç soru vardı. Neden, cevaplandı. Ne zaman, cevaplandı. Kaldı en zoru: dünyada başka var mı? Bunun için İstanbul'dan çıkmamız lazım. Vapura biniyoruz.
+
+[REELS KESİM 4 — "Kediye kapalı, kuşa açık", Selimiye ajurlu pencere]
+
+═══════════════════════════════════════
+GEÇİŞ 3 — VAPURDA: İSTANBUL DIŞI VE DÜNYA [HARİTA + ARŞİV] (8:00–9:45)
+═══════════════════════════════════════
+(Kamera: vapur güvertesi; sonra ekranda Anadolu haritası, şehirler tek tek yanıyor, her biri için arşiv fotoğrafı)
+
+Beyazıt'a geçiyoruz. Deneye yaklaşıyoruz ama önce üçüncü soru.
+
+Bu gelenek İstanbul'la sınırlı değil ve biz her yere gidemedik. Gidebildiğimiz kadarını harita üzerinden anlatıyorum. Bursa ve Edirne, eski başkentler, kuş evi bakımından zengin. Ama en iyi korunmuş üç örnekten ikisi Anadolu'nun içinde: Nevşehir'de Damat İbrahim Paşa'nın Kurşunlu Camii kütüphanesi, Kayseri'de Şeyh İbrahim Tennuri Çeşmesi. Üçüncüsü, az önce gezdiğimiz Ayazma.
+
+Amasya'da Sultan II. Bayezid Camii. Doğubeyazıt'ta İshak Paşa Sarayı'nın camisi; yani imparatorluğun en doğu ucuna kadar gitmiş. Niğde'de Kığılı Camii, Antakya'da Ulu Cami, Merzifon'da Kara Mustafa Paşa Hanı, Zile'de bir çarşı hamamı. Kastamonu, Mardin, Şanlıurfa, Sivas, Safranbolu, Beypazarı, Aydın. Liste uzun ve tek bir şey söylüyor: bu bir İstanbul modası değil, bütün coğrafyaya yayılmış bir alışkanlık.
+
+Ve Bursa'da geleneğin bir adım ötesi. On dokuzuncu yüzyıl sonunda Haffaflar Çarşısı esnafı, göç edemeyen sakat leylekler için bir bakımevi kuruyor: Gurabahane-i Laklakan, kimsesiz leylekler evi. Bir yaşlıyı bakıcı olarak ücretle tutuyorlar, iş sonra vakfa dönüşüyor. Kuşa ev yapan toplum, iki yüzyıl sonra kuşa hastane yapıyor. Bina 2008'de restore edildi, bugün ayakta.
+
+Peki dünya? Bu konuda en kapsamlı araştırmayı yapan mimar Cengiz Bektaş'ın sözü şu: "Dünyanın önemli bölümünü dolaştım, Türkiye dışında bir örnek anımsamıyorum." Biz de Balkanlar'da, Kahire'de, başka bir eski Osmanlı toprağında belgelenmiş bir kuş evi bulamadık. Ama dikkat, damga: kayıtlı örnek yok. "Bulamadık" ile "yok" aynı şey değil. Eğer siz görmüşseniz, yorumlara yazın; bu videonun devamını birlikte yazarız.
+
+Üç soru kapandı. Şimdi deney. Ve deneyin sonucu, bugün gördüğümüz her şeyin neden yok olduğunu açıklıyor.
+
+═══════════════════════════════════════
+BÖLÜM 4 — BEYAZIT: DENEY (9:45–11:00)
+═══════════════════════════════════════
+(Kamera: Ordu Caddesi'nden yaklaşma; kalabalık ve kuş evi aynı karede; sabit kamera; sayaç grafiği bu kez sürekli ekranda)
+
+Beyazıt, Ordu Caddesi. İstanbul'un en kalabalık caddelerinden biri. Şu duvarın sol üst köşesi.
+
+Seyyid Hasan Paşa Medresesi, 1745, eski sadrazam Seyyid Hasan Paşa yaptırdı. Bina bugün İstanbul Üniversitesi Avrasya Enstitüsü. Duvarında İstanbul'un en tanınmış tekil kuş evi: iki minare, cumba, merdiven. Kaynaklar Türk mimarisinin en zarif örneklerinden biri diyor.
+
+Kamera sabit. Yarım saat. Dakikada yüzlerce kişi geçiyor. Kaç kişi yukarı bakıyor? Kural basit: telefondan başını kaldırıp bu köşeye bakan herkes sayılıyor. Turist, esnaf, öğrenci fark etmez. Ben de kenarda duruyorum, kimseye bir şey söylemiyorum.
+
+(Kurgu: hızlandırılmış 30 dakika, sayaç dönüyor; sonuç henüz gösterilmiyor)
+
+Sonucu söylemeden önce şunu söylemem lazım. Bu evler yok oluyor. Yıllar önce gazeteler İstanbul'daki kuş evlerinin restorasyonlarda sıvandığını, kırıldığını, bazılarının izinin bile kalmadığını yazdı. Sanat tarihçileri "son şans" diye makale yayımladı. Bugün elimizdeki liste, iki yüz yıl önceki listenin küçük bir parçası. Bu videoda gördüğünüz her kuş evi, hayatta kalanlardan.
+
+Ve işte deneyin sonucu. Yarım saatte yukarı bakan kişi sayısı: ekranda.
+
+(Sayı sahada belirlenip buraya yazılacak; tahmin yorumlarıyla karşılaştırma cümlesi eklenecek: "Yorumlardaki tahminlerin çoğu ... demişti.")
+
+Bir şey görülmüyorsa korunmuyor. Bu evlerin yok olmasının sebebi vandal değil, kayıtsızlık. Sıva sürerken kimse yukarı bakmadı.
+
+[REELS KESİM 5 — "Yarım saatte kaç kişi yukarı baktı", sayaç + kalabalık]
+
+═══════════════════════════════════════
+TOPLUM ÇAĞRISI (Standart segment, kısaltılmış) (11:00–11:25)
+═══════════════════════════════════════
+
+Bu yüzden sizden tek bir şey istiyorum. Bir sonraki sefer bir tarihi yapının önünden geçerken kubbeye değil, duvarın üst köşesine bakın. Kuş evi görürseniz fotoğraflayın, paylaşın. Kayıt altına alınan şey kaybolmaz. Ekrandan izlemekle kendi gözünüzle görmek arasında büyük fark var; bu topraklar hepimizin ortak mirası, korumak da hepimizin görevi.
+
+═══════════════════════════════════════
+KAPANIŞ (11:25–11:45)
+═══════════════════════════════════════
+(Kamera: kuş evi arkada, konuşmacı önde; son cümlede yukarı tilt, açılış karesiyle aynı çerçeve)
+
+Bir imparatorluk neden serçeye saray yapar? Kayıt, merhamet ve vakıf diyor. Bazı araştırmacılar hesap diyor. Bence ikisi birden. Ama kesin olan şu: bu evler tesadüf değil, tercih. Ve bugün ayakta kalmaları da bir tercih olacak: bizim tercihimiz.
+
+Siz ne dersiniz, merhamet mi, hesap mı? Ve Türkiye dışında bir kuş evi gördüyseniz, nerede? Yorumlarda buluşalım.
+
+Ben Mustafa Bostancıoğlu, bu da Tarihi Dedektif. Rivayet değil, kayıt. Bir sonraki gizemde görüşmek üzere.
+
+═══════════════════════════════════════
+TUTMA HARİTASI — KURGU İÇİN
+═══════════════════════════════════════
+0:00  Açılış karesi: minyatür cami, tek cümle (kalıp kırma: sessizlik)
+0:03  Üç soru + deney vaadi (açık döngüler: 4)
+0:25  Ayazma → soru 1 yarısı kapanır, "hepsi aynı yöne bakıyor" çengeli
+2:10  Geçiş 1 → soru 1 kapanır, "iki farklı el yazısı" çengeli; RİVAYET/KAYIT damgası ilk kez
+3:40  Yeni Valide → açılış karesine geri dönüş; "Sinan hikâyesinin yarısı doğru" çengeli
+5:30  Geçiş 2 → soru 2 kapanır; tarih şeridi; "kediye kapalı pencere" çengeli
+6:50  Selimiye → pencere ödülü; "kaldı en zoru" ve vapur
+8:00  Geçiş 3 → harita (kalıp kırma); soru 3 kapanır; "deney, yok oluşu açıklıyor" çengeli
+9:45  Beyazıt → deney, sonuç bilinçli olarak geciktirilir, "yok oluş" bilgisi araya girer, sonra sonuç
+11:00 Çağrı kısa, tek istek
+11:25 Kapanış, açılış çerçevesine dönüş
+
+Sayaç grafiği: 0:25'te belirir ("?"), 6:50'de kısa hatırlatma, 9:45'ten sonra sürekli, 10:45 civarı sonuç.
+
+═══════════════════════════════════════
+RİVAYET / KAYIT AYRIMI — EKRAN DAMGALARI
+═══════════════════════════════════════
+KAYIT: Ayazma 1760, III. Mustafa; kuş evleri cephe, avlu kapısı ve hünkâr kasrında (akademik makale)
+KAYIT: Yeni Valide 1708–1710, Gülnuş Valide Sultan, mimar Kayserili Mehmed Ağa; üç cephede farklı teknik
+KAYIT: Selimiye 1801–1805, III. Selim; iki payandada iki katlı küfeki kuş evleri
+KAYIT: Seyyid Hasan Paşa Medresesi 1745; Ordu Caddesi duvarı
+KAYIT: En eski İstanbul örnekleri 16. yüzyıl (Büyükçekmece Köprüsü, Bali Paşa Camii)
+KAYIT: Gurabahane-i Laklakan, Bursa, 19. yüzyıl sonu, 2008 restorasyonu
+BAZI ARAŞTIRMACILARA GÖRE: Kuş evinin cepheyi kirden koruma işlevi
+BAZI KAYNAKLARA GÖRE: Tokat Ulu Camii 13. yüzyıl Selçuklu kuş evi
+RİVAYET: Mimar Sinan'ın vasiyetinde kuşlara gelir bıraktığı
+RİVAYET: Gülnuş Valide Sultan türbesinin vasiyet gereği açık bırakıldığı
+KAYITLI ÖRNEK YOK: Türkiye dışında kuş evi (Bektaş + kendi taramamız)
+
+═══════════════════════════════════════
+KAYNAKLAR
+═══════════════════════════════════════
+- TDV İslâm Ansiklopedisi, "Kuşevi"; "Yeni Vâlide Külliyesi"; "Seyyid Hasan Paşa Külliyesi"
+- "Üsküdar Ayazma Camii Kuş Evleri", akademik makale (ResearchGate / AVESİS)
+- "İstanbul'daki Kuş Sarayları: Son Şans", akademik makale (ResearchGate)
+- Journal18, "Like Hearts of Birds: Ottoman Avian Microarchitecture in the Eighteenth Century"
+- Ekrem Buğra Ekinci, "Merhamet Medeniyetinin Zarif Hâtıraları: Kuş Evleri"
+- Anadolu Ajansı, "Osmanlı medeniyetinin 'merhamet hatıraları': Kuş evleri"; "Osmanlı'nın 'leylek hastanesi' şifa dağıtıyor"
+- Özhan Öztürk Makaleleri, "İstanbul'un Osmanlı Dönemi Kuş Sarayları" (2021)
+- Kültür Envanteri: "Yeni Valide Camii Kuş Evleri"; "Seyyid Hasan Paşa Medresesi Kuş Evi"
+- Tarihi Yarımada / Suriçi, "Seyyid Hasan Paşa Medresesi Kuş Evi"
+- TÜBİTAK Bilim Genç, "Türk Mimarisinin Minyatür Konakları: Kuş Evleri"
+- Sanat Tarihçileri Derneği, "Osmanlı'da Kuş Evleri"
+- Fikriyat, "Osmanlı'dan bugüne kuş evleri" (2017)
+- Hürriyet, "Osmanlı döneminin 'Kuş Evleri' yok oluyor"
+- HAYTAP, "Bir Zamanlar Kuş Sarayları"
+- Cengiz Bektaş, Kuş Evleri (kitap); alıntı ikincil kaynaklardan
+- Salt Research arşivi, Üsküdar Yeni Valide Camii duvarında kuş evi fotoğrafı
+
+Not: Sahada belirlenecekler: Ayazma'daki kuş evi sayısı, Beyazıt'ta 30 dakikada yukarı bakan kişi sayısı. Seslendirme kelime sayısı gerçek sayımla doğrulandı: 1502 kelime (~10.7 dakika, 140 kelime/dk). Açılış karesinden kapanışa kadar yalnızca okunan metin sayıldı; başlıklar, kamera notları ve Reels işaretleri hariç.

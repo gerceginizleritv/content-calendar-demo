@@ -1,0 +1,244 @@
+YERALTI CAMİİ (KURŞUNLU MAHZEN) — VİDEO METNİ (v1 — İZLEYİCİ TUTMA KURGUSU)
+
+Tarihi Dedektif — Gerçeğin İzleri
+
+Format notu: Tek mekân, Karaköy, Kemankeş Caddesi. Cami yer altında; ışık az, ses yankılı. Yaka mikrofonu şart. İçeride üç bölüm var: giriş koridoru, payeli ana mekân, türbe odaları. Dış plan için Karaköy iskelesi ve Haliç karşı kıyı (zincirin öbür ucu, Sirkeci tarafı). Zincir, kale ve 717 kuşatması için [HARİTA + ÇİZİM] bölümleri kurguda grafik.
+
+Tutma kurgusu (Kuş Evleri v2 ile aynı mantık):
+- 0–3 sn: tek görüntü, tek cümle. Yer altındaki payeler arasında uzun koridor, "Bunun üstünde bir kale vardı."
+- 3–25 sn: üç soru açılıyor (bu yapı ne? kime ait bu mezarlar? kapıya gerçekten kurşun döküldü mü?), üçü de videoda kapanıyor.
+- SONA SAKLANAN KAYIT: Türbedeki üç isimden birinin buraya hiç gelmediği, kaynaklarda başka yerde ve başka tarihte öldüğü. Hook'ta "bir isim sizi şaşırtacak" diye vaat ediliyor, sonuç yalnızca sonda.
+- Her bölüm bir cevap veriyor ve yeni bir soru açıyor.
+- Kalıp kırma: zincir çizimi, harita, tarih şeridi, "RİVAYET / KAYIT" damgası, paye sayacı.
+- Selam, kanal tanıtımı, "abone ol" yok.
+
+Tahmini süre: ~10.9 dakika (seslendirme 1527 kelime, gerçek sayım; 140 kelime/dk).
+
+═══════════════════════════════════════
+ÇEKİM KONTROL LİSTESİ — SAHADA KAÇIRMA
+═══════════════════════════════════════
+
+Genel: İçeride ışık düşük ve sarı. Osmo'da ISO'yu sabitle, otomatik pozlama payeler arasında dalgalanır. iPhone'da gece modu kapalı, 4K 30. Yankı için yaka mikrofonu; iç ses yoksa dış planları seslendirmeyle kurtar. Namaz vakitlerinde çekim yapma; öğle ile ikindi arası en sakin saat.
+
+DIŞ
+☐ Karaköy iskelesinden yürüyüşle yaklaşma; caminin caddeden görünmeyen girişi (kimse cami sanmaz)
+☐ Kemankeş Caddesi'nde tabelaya yakın plan
+☐ Karşı kıyı: Sirkeci tarafı, zincirin öbür ucu için geniş plan (Galata Köprüsü üstünden ya da iskeleden)
+☐ Galata Kulesi ile aynı karede: "asıl kale burası değildi" cümlesi için
+
+İÇ
+☐ AÇILIŞ KARESİ: payeler arasından bakan uzun koridor, alçak açı, sabit
+☐ Payeler: kalınlık için insan ölçeği (sen paye yanında), tonoz kesişmeleri yakın plan
+☐ Paye sayımı: kamerayla yürüyerek sıra sıra say, sayaç grafiği için
+☐ Duvarlardaki Bizans taş dokusu ile Osmanlı sıva / boya farkı yakın plan
+☐ Mihrap ve minber (18. yüzyıl ekleri)
+☐ Türbe odaları: üç sanduka, isim levhaları TEK TEK okunur yakın plan (kapanış kanıtı bu)
+☐ Türbe kapısı ve eşiği: "kurşun" iddiası için kapı çevresi
+☐ Tavan alçaklığı: el uzatıp tonoza değme planı
+
+GRAFİK [HARİTA + ÇİZİM]
+☐ Haliç haritası: Kastellion (Karaköy) – Eugenios Kulesi (Sirkeci) arası zincir
+☐ Tarih şeridi: 717–718 / 1453 / 1640 / 1752–57
+☐ Üç ismin yanında ölüm yeri ve tarihi (kapanış grafiği)
+
+═══════════════════════════════════════
+0:00–0:03 — AÇILIŞ KARESİ
+═══════════════════════════════════════
+(Kamera: yer altı, payeler arasında uzun koridor, alçak açı, ses yok, tek cümle)
+
+Bunun üstünde bir kale vardı. Kale gitti, altı kaldı.
+
+═══════════════════════════════════════
+0:03–0:25 — HOOK — KARAKÖY, CAMİ GİRİŞİ
+═══════════════════════════════════════
+(Kamera: kesme, konuşmacı caddede, arkada girişin sıradan kapısı)
+
+Karaköy'de, iskelenin iki adım ötesinde, her gün binlerce kişinin önünden geçtiği bir kapı. İçinde bir cami var. Ama cami yer altında, elli dört kalın payenin arasında ve o payeler bir camiden çok daha eski.
+
+Üç soru. Bu yapı aslında ne ve İstanbul'un en ünlü zinciriyle ne ilgisi var? İçindeki üç mezarda kim yatıyor? Ve adını aldığı iddia, kapıya gerçekten kurşun döküldü mü?
+
+Bir de şunu söyleyeyim: türbedeki üç isimden biri sizi şaşırtacak. Kayıtlar onun buraya hiç gelmediğini söylüyor. Hangisi, en sonda.
+
+Rivayet değil, kayıt.
+
+[REELS KESİM 1 — 90–130 sn — Hook + Bölüm 1, kendi içinde tamamlanan anlatı]
+   (2026-09-11 kural değişikliği: kesit 25 sn değil, 90–130 sn. Gerekçe: nişte
+   ~116 sn medyan → 191.700 izlenme, ~42 sn → 1.681. Bkz. icerik/KURALLAR.md bölüm 1.)
+
+═══════════════════════════════════════
+BÖLÜM 1 — İÇERİ İNİŞ: BU BİR CAMİ DEĞİL, BİR BODRUM (0:25–2:20)
+═══════════════════════════════════════
+(Kamera: merdivenden inme, koridor, payeler; paye sayacı ilk kez belirir)
+
+İçerideyiz. İlk hissettiğiniz şey tavan: alçak. Elimi uzatırsam tonoza değiyorum. Bir camide bunu beklemiyorsunuz. Çünkü bu mekân cami olarak yapılmadı.
+
+Etrafımdaki payelere bakın. Kare kesitli, kalın, sıra sıra. Aralarında çapraz tonozlar. Bu bir bodrum katı düzeni: üstteki ağır yapıyı taşımak için kurulmuş. Popüler kaynaklar elli dört paye diyor; biz de sayıyoruz, sayı ekranda. Kaç sıra, kaç sütun, birazdan söyleyeceğim çünkü sayı bize üstteki yapının boyutunu veriyor.
+
+Bu payelerin planı yakın zamanda yeniden çizildi. Koç Üniversitesi'nin İstanbul Surları projesi, caminin zeminini ölçüp yazılı ve görsel kaynaklarla karşılaştırdı. Sonuç: bu düzen bir kalenin alt katıyla örtüşüyor. Yani "cami aslında kale bodrumu" cümlesi bir efsane değil, ölçülmüş bir plan. Siz de yardım edin: ekranda payeleri sıra sıra geçiyorum, yorumlara kaç sıra saydığınızı yazın; sonda benim sayımla karşılaştıracağız.
+
+Şimdi duvara yaklaşın. Alt kısımda taş, üstte sıva ve boya. Taş Bizans, sıva Osmanlı. Aynı duvarda iki imparatorluk, iki katman. Bu videonun tamamı aslında bu iki katmanın hikâyesi.
+
+Peki üstte ne vardı? Cevap, Karaköy'ün adı bile konmamışken bu kıyıya verilen bir isimde gizli: Kastellion. Yani kale. Ve bu kalenin tek bir görevi vardı: bir zincirin ucunu tutmak.
+
+O zinciri anlatmak için dışarı çıkıp karşı kıyıya bakmamız lazım.
+
+[REELS KESİM 2 — "Camiye girdim, bodruma çıktım", tavana el uzatma planı]
+
+═══════════════════════════════════════
+GEÇİŞ 1 — KARAKÖY İSKELESİ: ZİNCİR [HARİTA + ÇİZİM] (2:20–4:00)
+═══════════════════════════════════════
+(Kamera: iskelede, arkada Haliç ve Sirkeci; ekranda Haliç haritası, iki nokta arasında zincir çizimi; tarih şeridi)
+
+Karşı kıyı Sirkeci. Orada Bizans surlarının Eugenios Kulesi duruyordu. Burada, tam altımızda, Kastellion. İkisinin arasına Bizanslılar bir zincir geriyordu. Ahşap şamandıralarla yüzdürülen dev bir zincir. Amaç basit: düşman donanması Haliç'e girmesin, şehrin en zayıf karnı olan Haliç surlarına ulaşmasın.
+
+Bu zinciri herkes 1453'ten bilir. Fatih'in gemileri karadan yürütmesinin sebebi tam da bu zincirdi; denizden geçilemiyordu. Ve 1453'te bir ayrıntı daha var: Galata o sırada Ceneviz kolonisiydi ve tarafsız kalmaya çalışıyordu. Zincirin bu ucu Ceneviz toprağına bağlıydı. Yani Bizans, kendi şehrini koruyan zincirin bir ucunu başkasının kalesine emanet etmişti. Fatih'in gemileri Kasımpaşa üzerinden Haliç'e indiğinde zincir anlamını yitirdi; kale de onunla birlikte. Ama zincirin hikâyesi çok daha eski. Bizanslı tarihçi Theophanes, 717–718 kuşatmasını anlatırken zincirin bir ucunun buradaki kaleye bağlandığını yazıyor. Yani bu yapı, İstanbul'a gelen Emevi ordusunu da gördü, Fatih'in donanmasını da. Yedi yüz yıl boyunca aynı iş.
+
+Damgaya bakın: kayıt. Zincir, kale ve yer, birincil kaynaklarda var.
+
+Peki kale nereye gitti? Yüzyıllar içinde el değiştirdi, yıkıldı, yerine Ceneviz Galatası kuruldu. Bugün herkesin "Galata Kulesi" diye bildiği kule, Cenevizlilerin. Asıl Bizans kalesi bu değil; asıl kale altımızda, cami olarak duruyor. Üst katlar gitti, taşıyıcı bodrum kaldı.
+
+Ve işte burada ikinci soru başlıyor. Çünkü bu bodrumu Osmanlı yüz yıllarca cami olarak değil, bambaşka bir şey olarak kullandı. İçinde ne saklıyorlardı?
+
+═══════════════════════════════════════
+BÖLÜM 2 — KURŞUNLU MAHZEN: DEPO YILLARI (4:00–5:30)
+═══════════════════════════════════════
+(Kamera: içeri dönüş, payeler arasında yürüyüş; ekranda tarih şeridi 1453 → 1640)
+
+Osmanlı 1453'te şehri aldı, kale bodrumunu depo yaptı. Adı da buradan: Kurşunlu Mahzen. Mahzen, yani depo. Kurşun ve barut burada saklanıyordu. Düşünün: dünyanın en kalabalık limanlarından birinin dibinde, kalın taş duvarların arkasında barut. Yer altı, serin, nemi kontrol edilebilir, üstü taş. Depo için mükemmel yer.
+
+Yani bu mekân iki yüz yıl boyunca kimsenin ibadet ettiği bir yer değildi. Kapıları kilitli, içi mühimmat. Kimse buraya kutsal demiyordu.
+
+Mekânın kendisi de bunu söylüyor. Bakın, pencere neredeyse yok. Işık birkaç küçük açıklıktan giriyor. Bir cami böyle tasarlanmaz; bir depo tam böyle tasarlanır: karanlık, serin, dışarıdan görünmez. Bugün içerideki loşluk, iki yüz yıllık depo hayatının mirası. Kurguda ışığı fazla düzeltmiyoruz; bu loşluk hikâyenin kendisi.
+
+Sonra 1640. Bir gece, bir rüya ve her şey değişiyor.
+
+Anlatılan şu: Nakşibendî şeyhi Murad Efendizade Şeyh Mehmed Efendi bir rüya görüyor. Rüyada bu mahzende sahabe kabirleri olduğu söyleniyor. Şeyh yeri buluyor, kazılıyor, kabirler "ortaya çıkıyor". Padişaha haber gidiyor, mahzen ziyaret yeri oluyor.
+
+Şimdi dikkat. Bu hikâyenin hangi kısmı kayıt, hangi kısmı rivayet? 1640'ta bir şeyhin bu yeri kabir olarak işaret ettiği ve sonrasında ziyaretin başladığı kayıt; tarih ve isim kaynaklarda var. Kabirlerin gerçekten kime ait olduğu ise rüyaya dayanıyor. Rüya bir kaynak değil, bir iddia. Damga: rivayet.
+
+Peki bu üç kişi kim deniyor ve iddia nereden geliyor? Bunun için 717'ye, Emevi kuşatmasına dönmemiz lazım.
+
+[REELS KESİM 3 — "Barut deposundan cami çıktı", tarih şeridi]
+
+═══════════════════════════════════════
+GEÇİŞ 2 — PAYELER ARASINDA: 717 KUŞATMASI [HARİTA] (5:30–7:00)
+═══════════════════════════════════════
+(Kamera: yürüyüş, payeler; ekranda harita: Emevi ordusu Haliç kıyısında)
+
+717 yılı. Emevi komutanı Mesleme bin Abdülmelik, büyük bir ordu ve donanmayla Konstantinopolis'i kuşatıyor. Bir yıl sürüyor, kış geliyor, açlık ve hastalık başlıyor, kuşatma başarısızlıkla bitiyor. Bu kayıt; hem Bizans hem İslam kaynakları anlatıyor.
+
+Bu kuşatmada Müslüman askerler Galata kıyısında, yani tam buralarda konuşlanmıştı. Ölenler oldu, gömülenler oldu. Bu da kayıt.
+
+İşte 1640'taki rüyanın dayandığı zemin bu: "Bu kıyıda o kuşatmadan kalan şehitler yatıyor." Zemin sağlam. Ama rüya bir adım daha atıyor ve isim veriyor. Türbede bugün üç isim yazılı: Vehb bin Hüşeyre, Süfyan bin Uyeyne ve Amr bin As. Üçü de Peygamber'in sahabesi ya da ilk nesil büyükleri olarak anılıyor.
+
+Bu isimlerin ikisini sona saklıyorum. Ama şunu şimdi söyleyeyim: kaynaklar bu üçünden en az ikisinin ölüm yerini ve tarihini kaydetmiş. Ve o kayıtlar Karaköy demiyor.
+
+Önce mahzenin camiye dönüşünü bitirelim, çünkü o da bir sadrazam hikâyesi.
+
+═══════════════════════════════════════
+BÖLÜM 3 — CAMİYE DÖNÜŞ: 1752–1757 (7:00–8:15)
+═══════════════════════════════════════
+(Kamera: mihrap, minber, 18. yüzyıl ekleri yakın plan)
+
+1640'tan sonra mahzen artık ziyaret yeri. Ama hâlâ depo. Yüz yıl daha böyle geçiyor.
+
+Sonra 1750'ler. Sadrazam Köse Bahir Mustafa Paşa, mahzeni camiye çevirtiyor. Kaynaklar tarih için 1752 ile 1757 arasını veriyor; kesin yıl kaynaktan kaynağa değişiyor, o yüzden aralık olarak söylüyorum. Mihrap, minber ve namaz alanı bu dönemde ekleniyor. Bugün gördüğünüz cami, işte o on sekizinci yüzyıl dönüşümü. Minare de sonradan geliyor.
+
+Tarihe dikkat edin: 1750'ler. Karşı kıyıda, Kapalıçarşı'nın girişinde Nuruosmaniye tam o yıllarda tamamlanıyor; İstanbul'un ilk Barok camisi. Aynı on yılda bir sadrazam da bu bodrumu camiye çeviriyor. Biri yeni bir çağı başlatan gösterişli bir külliye, öteki bir kale bodrumuna sığdırılmış sessiz bir mescit. İkisi aynı şehrin aynı on yılına ait. Nuruosmaniye videosunu izlediyseniz, bu cami onun gölgede kalan kardeşi.
+
+Şuna bakın: mihrap bir Bizans bodrumunun duvarına oyulmuş. Osmanlı mimarı, payelerin sırasını bozmadan, tonozlara dokunmadan bir cami yerleştirmiş. Yani bu yapı üç kimlik taşıyor: Bizans kalesi, Osmanlı deposu, Osmanlı camisi. Ve her katman bir öncekini silmemiş, üstüne yazmış.
+
+Bir de adı var. "Kurşunlu" ne demek? Halk arasında anlatılan: kabirler bulunduğunda kapılarına kurşun döküldü, kimse girmesin diye. Güzel hikâye. Ama mahzenin adı zaten kurşun deposu olmasından geliyor; 1640'tan önce de Kurşunlu Mahzen'di. Yani "kapıya kurşun döküldü" hikâyesi, var olan bir ada sonradan uydurulmuş bir açıklama gibi görünüyor. Damga: rivayet. Üçüncü soru kapandı.
+
+Kaldı ikinci soru, en zoru: bu mezarlarda kim yatıyor?
+
+[REELS KESİM 4 — "Kapıya kurşun döküldü mü?", kapı eşiği planı]
+
+═══════════════════════════════════════
+BÖLÜM 4 — TÜRBE: ÜÇ İSİM, ÜÇ KAYIT (8:15–10:30)
+═══════════════════════════════════════
+(Kamera: türbe odaları, sandukalar, isim levhaları tek tek yakın plan; ekranda her isim için ölüm yeri ve tarihi grafiği)
+
+Türbedeyiz. Üç sanduka, üç levha. Levhaları tek tek okuyorum ve her isim için kaynakların ne dediğine bakıyoruz.
+
+Birinci isim: Vehb bin Hüşeyre. Kuşatmaya katılan, burada şehit düşen bir sahabe olarak anılıyor. Klasik kaynaklarda ölüm yeri ve tarihine dair net bir kayıt bulamadım. Yani ne doğrulayabiliyorum ne çürütebiliyorum. Damga: doğrulanamıyor. Üç ismin en olası adayı bu.
+
+Bir ayrıntı daha: bu isimlerin yazımı bile kaynaktan kaynağa değişiyor. Bazı eski metinler türbede farklı isimler sayıyor; bugünkü levhalar başka bir liste veriyor. Yani üç yüz seksen yıl içinde yalnızca hikâye değil, isimler de yer değiştirmiş. Bu tek başına bir şey kanıtlamaz, ama kabirlerin kimliğinin hiçbir zaman sabit bir kayda dayanmadığını gösterir.
+
+İkinci isim: Süfyan bin Uyeyne. Bu isim İslam ilim tarihinde çok tanınmış: büyük hadis âlimi. Ve klasik kaynaklar ölümünü açık yazıyor: 814, Mekke. Karaköy'den binlerce kilometre uzakta, kuşatmadan neredeyse yüz yıl sonra. Bu yüzden İslam kaynaklarının kendisi bile buradaki kabri "makam" diye tanımlıyor: hatıra kabri, gerçek mezar değil. Damga: kayıt, ama başka yerde.
+
+Ve üçüncü isim. Hook'ta söz verdiğim isim. Amr bin As.
+
+Amr bin As, Mısır'ı fetheden komutan. İslam tarihinin en bilinen isimlerinden biri. Ve kaynaklar ölümünü tartışmasız kaydediyor: 664, Mısır, doksan yaşına yakın. 717 kuşatmasından elli üç yıl önce ölmüş. Yani bu kuşatmaya katılmış olması mümkün değil; buraya hiç gelmemiş.
+
+O zaman levhada adı neden yazıyor? Kaynaklar bunu da söylüyor: buradaki yer onun adına yapılmış bir makam, ziyaret çok olduğu için hatırasına ayrılmış bir köşe. Gerçek kabri Kahire'de.
+
+Bu arada, "rüyayla bulunan kabir" İstanbul'da tek örnek değil. En ünlüsü Eyüp Sultan: 1453 kuşatması sırasında Akşemseddin'in kabrin yerini keşfettiği anlatılır. Yani 1640'taki şeyh, iki yüz yıl önce kurulmuş bir geleneğin izinden gidiyordu. Bu, iddiayı doğrulamaz; ama neden bu şekilde ortaya çıktığını açıklar. İstanbul'da kutsal yer, çoğu zaman önce görülür, sonra kazılır.
+
+Şimdi bir şeyi netleştireyim. Bu, insanların yüzyıllarca boş yere dua ettiği anlamına gelmiyor. Makam geleneği İslam dünyasında bilinen ve kabul edilen bir şey: kişinin kendisi değil, hatırası için yapılan yer. Sorun makamda değil. Sorun, ziyaretçilerin çoğunun buranın gerçek mezar olduğunu sanmasında. Levha "makam" demiyor, isim yazıyor. Ve rivayet ile kayıt arasındaki fark, tam olarak o tek kelimede.
+
+[REELS KESİM 5 — "Bu mezarda yatan adam buraya hiç gelmedi", levha yakın plan + harita]
+
+═══════════════════════════════════════
+TOPLUM ÇAĞRISI (Standart segment, kısaltılmış) (10:30–10:55)
+═══════════════════════════════════════
+
+Sizden tek bir şey istiyorum. Bir türbeyi ziyaret ettiğinizde levhayı okuyun, sonra bir kaynağa bakın: bu kişi nerede, ne zaman ölmüş? Çoğu zaman cevap bir dakikada bulunuyor. Saygı, bilgiyle birlikte daha değerli. Ve bu mekân, hangi katmanına bakarsanız bakın, korunmaya değer: Bizans kalesi, Osmanlı deposu, yaşayan cami. Ekrandan izlemekle inip payelerin arasında durmak arasında büyük fark var. Gidin, görün, temiz bırakın.
+
+═══════════════════════════════════════
+KAPANIŞ (10:55–11:20)
+═══════════════════════════════════════
+(Kamera: dışarıda, cami girişi arkada; son cümlede açılış karesine kesme: payeler arasındaki koridor)
+
+Bu kapının arkasında elli dört paye, bir zincirin ucunu tutan kale, iki yüz yıl barut, bir rüya ve üç isim var. Bir kısmı kayıt, bir kısmı rivayet. İkisini ayırmak bizim işimiz.
+
+Peki siz ne düşünüyorsunuz? Bir makam, gerçek mezar gibi sunulmalı mı? Yoksa levhaya tek bir kelime eklemek yeterli mi? Yorumlarda buluşalım.
+
+Ben Mustafa Bostancıoğlu, bu da Tarihi Dedektif. Rivayet değil, kayıt. Bir sonraki gizemde görüşmek üzere.
+
+═══════════════════════════════════════
+TUTMA HARİTASI — KURGU İÇİN
+═══════════════════════════════════════
+0:00  Açılış karesi: koridor, tek cümle
+0:03  Üç soru + "bir isim sizi şaşırtacak" vaadi
+0:25  İçeri iniş → soru 1 yarısı: bodrum; "Kastellion" ve zincir çengeli; paye sayacı başlar
+2:20  Geçiş 1 → zincir, harita; soru 1 kapanır; "içinde ne saklıyorlardı" çengeli
+4:00  Depo yılları → 1640 rüyası; rivayet damgası; "üç kişi kim" çengeli
+5:30  Geçiş 2 → 717 kuşatması; isimler verilir, "ikisini sona saklıyorum" çengeli
+7:00  Camiye dönüş → soru 3 kapanır (kurşun rivayeti); "kim yatıyor" çengeli
+8:15  Türbe → üç isim sırayla, en şaşırtıcı en sonda; vaat ödenir
+10:30 Çağrı, tek istek
+10:55 Kapanış, açılış karesine dönüş
+
+Paye sayacı: 0:25'te başlar, 2:20'de sayı kesinleşir, kapanışta bir kez daha.
+
+═══════════════════════════════════════
+RİVAYET / KAYIT AYRIMI — EKRAN DAMGALARI
+═══════════════════════════════════════
+KAYIT: Yapı, Bizans Kastellion kalesinin alt katı; payeler ve çapraz tonozlar (Koç Üniversitesi İstanbul Surları projesi, yeniden çizilmiş plan)
+KAYIT: Haliç zincirinin kuzey ucu burada; Theophanes 717–718 kuşatmasında zinciri kaydediyor
+KAYIT: Osmanlı döneminde kurşun ve barut deposu (Kurşunlu Mahzen)
+KAYIT: 1640, Şeyh Mehmed Efendi'nin kabirleri işaret etmesi ve ziyaretin başlaması (olay ve tarih)
+KAYIT: 1752–1757 arası Köse Bahir Mustafa Paşa döneminde camiye çevrilme (kesin yıl kaynaklarda değişiyor)
+KAYIT: Amr bin As'ın ölümü 664, Mısır; Süfyan bin Uyeyne'nin ölümü 814, Mekke
+RİVAYET: Kabirlerin kimliği (rüyaya dayanıyor)
+RİVAYET: "Kapıya kurşun döküldü" adlandırma hikâyesi
+DOĞRULANAMIYOR: Vehb bin Hüşeyre'nin burada yattığı
+BAZI KAYNAKLARA GÖRE: Paye sayısı 54 (sahada sayılacak)
+
+═══════════════════════════════════════
+KAYNAKLAR
+═══════════════════════════════════════
+- Koç Üniversitesi, İstanbul Surları projesi: "The Castle of Galata in Written and Visual Sources (with a re-visited ground plan of the Yeraltı Camii)" (istanbulsurlari.ku.edu.tr)
+- The Byzantine Legacy, "Fort of Galata (Underground Mosque)"
+- Vikipedi, "Yeraltı Camii"
+- Fikriyat, "Sahabelere ev sahipliği yapan Yeraltı Camii hakkında 10 bilgi"
+- Sabah, "Yeraltı Camii bir zamanlar zindandı" (2014)
+- Islamicana, "The Sahaba of Istanbul: The Underground Mosque"
+- Hayalleme İstanbul, "Yeraltı Camii (Kurşunlu Mahzen)"
+- İstanbul'un Sırları, "Hikayesi çok olan bir cami: Karaköy Yeraltı Cami"
+- Atlas Obscura, "Yeralti Camii (Underground Mosque)"
+- Theophanes, Chronographia (717–718 kuşatması; ikincil kaynaklar üzerinden)
+- TDV İslâm Ansiklopedisi, "Amr b. Âs" ve "Süfyân b. Uyeyne" maddeleri (ölüm yeri ve tarihleri için; çekim öncesi doğrulanacak)
+
+Not: Sahada belirlenecekler: paye sayısı, levhalardaki isimlerin tam yazımı (kaynaklarda farklı yazımlar var; ekrana levhadaki hali alınacak). TDV maddeleri çekim öncesi bir kez daha kontrol edilecek. Seslendirme kelime sayısı gerçek sayımla doğrulandı: 1527 kelime (~10.9 dakika, 140 kelime/dk). Açılış karesinden kapanışa kadar yalnızca okunan metin sayıldı; başlıklar, kamera notları ve Reels işaretleri hariç.
