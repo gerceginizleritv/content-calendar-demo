@@ -244,6 +244,9 @@ function metaKur(ek){
                // Sayilar yetmiyor -- "REELS mi STORIES mi" ancak
                // govdeden okunuyor ve yanlisi hata vermiyor.
                fbReelsBaslat:0, fbReelsBitir:0,
+               // Reel kapagi: kac kere denendi, hangi video kimligi
+               // uzerinde, ve kapak dosyasi kac kere cekildi.
+               fbKapak:0, fbKapakVideoId:'', kapakCekildi:0,
                mediaGovde: [], fbBitirGovde: [], igMediaListe:0,
                // Sayilar "kac kere" diyor, sira "hangi sirayla" diyor.
                // Konteynerlerin yayinlardan ONCE yaratildigi ancak
@@ -260,6 +263,8 @@ function metaKur(ek){
     mediaHatasi: null,      // konteyner yaratmada hata
     fbBaslatHatasi: null,
     fbYuklemeHatasi: false,
+    fbKapakHatasi: false,   // /{video_id}/thumbnails patlasin mi
+    kapakAlinamaz: false,   // kapak dosyasi R2'den cekilemesin mi
     medyaHatasi: 0,         // R2'den medya cekilirken donen HTTP kodu
     yayinDavranisi: 'ok'    // 'ok' | 'kaybolan-yanit' | {kod, altKod, mesaj}
   }, ek || {});
@@ -313,6 +318,14 @@ function grafCevap(adres, yontem, gonderi){
     if(d && typeof d === 'object') return grafHata(d.kod, d.mesaj, d.altKod);
     META.storyler = META.storyler.concat([{ id:'fbpost_' + cagrilar.fbBitir, creation_time: su() }]);
     return { success:true, post_id:'fbpost_' + cagrilar.fbBitir };
+  }
+  // Reel kapagi: /{video_id}/thumbnails. Sayfa degil VIDEO kimligi
+  // uzerinde duruyor, o yuzden kalibi ayri.
+  if(/^\/fbr_\d+\/thumbnails$/.test(p) && yontem === 'POST'){
+    cagrilar.fbKapak++;
+    cagrilar.fbKapakVideoId = p.split('/')[1];
+    if(META.fbKapakHatasi) return grafHata(100, 'thumbnail reddedildi');
+    return { success:true };
   }
   if(p === `/${SAYFA}/photos` && yontem === 'POST'){
     cagrilar.fbFoto++;
@@ -463,6 +476,16 @@ function sahteFetch(adres, secenek){
   const url = String(adres);
   const yontem = (secenek && secenek.method) || 'GET';
 
+  // Kapak gorseli: fbReelKapagi arrayBuffer() istiyor, medya
+  // mock'undaki akan govde bunu karsilamiyor -- ayri dal.
+  if(url.indexOf('https://kapak.test') === 0){
+    cagrilar.kapakCekildi++;
+    if(META.kapakAlinamaz) return yanit({}, 404);
+    return Promise.resolve({ ok:true, status:200,
+      headers:new Map([['content-type','image/jpeg']]),
+      arrayBuffer:()=>Promise.resolve(new ArrayBuffer(2048)),
+      text:()=>Promise.resolve(''), json:()=>Promise.resolve({}) });
+  }
   // Medya dosyasi: worker onu R2'den cekip Facebook'a akitiyor.
   if(url.indexOf('https://medya.test') === 0){
     if(META.medyaHatasi) return yanit({}, META.medyaHatasi);
@@ -1528,6 +1551,58 @@ async function turAt(gizli){
     bak('yayınlandı', satirlar[0].publish_state === 'published', satirlar[0].publish_state);
   }
 
+  console.log('[reels · facebook KAPAGI (30 Eylul 2026)]');
+  {
+    // ⛔ NEDEN: video_reels finish cagrisi kapak ALMIYOR (Meta'nin kendi
+    // ornek koleksiyonu yalnizca video_state/description/title listeliyor).
+    // Instagram cover_url aliyor, Facebook almiyor -- o yuzden Facebook
+    // reels'lari kapaksiz cikiyordu, kapak dosyasi R2'de dururken.
+    tabloyuKur(reelKayit({ platform:'facebook',
+      cover_url:'https://kapak.test/2026-12-05_reels_konu.jpg' }));
+    metaKur();
+    await turAt();
+    bak('★ kapak icin ayri cagri yapildi', cagrilar.fbKapak === 1, String(cagrilar.fbKapak));
+    // SAYFA kimligi degil VIDEO kimligi: yanlis kimlige giden cagri
+    // sessizce baska bir seyin kapagini degistirir.
+    bak('★ kapak VIDEO kimligine gitti (sayfaya degil)',
+      cagrilar.fbKapakVideoId === 'fbr_1', cagrilar.fbKapakVideoId);
+    bak('kapak dosyasi gercekten cekildi', cagrilar.kapakCekildi === 1, String(cagrilar.kapakCekildi));
+    bak('yayin tamamlandi', satirlar[0].publish_state === 'published', satirlar[0].publish_state);
+  }
+  {
+    // Kapak yoksa cagri HIC yapilmamali: bos bir thumbnails cagrisi
+    // Facebook'un kendi sectigi kareyi bozabilir.
+    tabloyuKur(reelKayit({ platform:'facebook' })); metaKur();
+    await turAt();
+    bak('★ kapaksiz kayitta thumbnails cagrisi YOK', cagrilar.fbKapak === 0, String(cagrilar.fbKapak));
+    bak('kapaksiz reel yine yayinlandi', satirlar[0].publish_state === 'published', satirlar[0].publish_state);
+  }
+  {
+    // ⛔ EN ONEMLI OLCUM: KAPAK PATLASA DA YAYIN DEVAM EDER.
+    // Kapak kozmetik; yayin degil. Bu cagriyi hataya baglamak,
+    // yayinlanabilecek bir gonderiyi kozmetik bir eksik yuzunden
+    // cope atmak olurdu -- ve kullanici o gunu geri alamaz.
+    tabloyuKur(reelKayit({ platform:'facebook',
+      cover_url:'https://kapak.test/2026-12-05_reels_konu.jpg' }));
+    metaKur({ fbKapakHatasi:true });
+    await turAt();
+    bak('★ kapak cagrisi PATLADI ama reel YAYINLANDI',
+      satirlar[0].publish_state === 'published', satirlar[0].publish_state);
+    bak('kapak denendi', cagrilar.fbKapak === 1, String(cagrilar.fbKapak));
+    bak('finish cagrisi yine yapildi', cagrilar.fbReelsBitir === 1, String(cagrilar.fbReelsBitir));
+    bak('kalici hata yazilmadi', !satirlar[0].last_error, String(satirlar[0].last_error));
+  }
+  {
+    // Kapak dosyasinin KENDISI cekilemezse de ayni sey: yayin devam.
+    tabloyuKur(reelKayit({ platform:'facebook',
+      cover_url:'https://kapak.test/yok.jpg' }));
+    metaKur({ kapakAlinamaz:true });
+    await turAt();
+    bak('★ kapak dosyasi 404 olsa da reel YAYINLANDI',
+      satirlar[0].publish_state === 'published', satirlar[0].publish_state);
+    bak('kapak ucuna hic gidilmedi (dosya yok)', cagrilar.fbKapak === 0, String(cagrilar.fbKapak));
+  }
+
   console.log('[reels · facebook başlığı (27 Eylül 2026)]');
   {
     // shortTitle kayıtta doluydu ve HİÇBİR YERE gitmiyordu. video_reels
@@ -1844,11 +1919,26 @@ async function turAt(gizli){
     bak('sebep "kalici ozel" tehlikesini yaziyor',
         /özel/.test(String(satirlar[0].last_error || '')), satirlar[0].last_error);
 
-    // Deneme kaydi kapiyi geciyor: kullanici onu gozden cikarmis.
+    // ⛔ KACIS DELIGI KAPATILDI (30 Eylul 2026).
+    // Onceden content.youtubeDeneme=true olan kayit kapiyi GECIYORDU.
+    // Delik kapandi: artik o bayrak hicbir sey yapmiyor. Bu olcum
+    // deligin geri acilmasini engelliyor -- birisi kapiyi "kolaylik
+    // olsun" diye gevsetirse burada kirmizi yanar.
     tabloyuKur(ytKayit({ content: Object.assign({}, ytKayit().content, { youtubeDeneme:true }) }));
     metaKur(); ytKur();
     await turAt();
-    bak('★ content.youtubeDeneme=true olan kayit YUKLENIYOR',
+    bak('★ content.youtubeDeneme=true kapiyi ARTIK ACMIYOR: hic yuklenmedi',
+        YT.parcalar.length === 0 && !YT.ustveri, YT.parcalar.length);
+    bak('★ bayrakli kayit da ERTELENDI, yayinlanmadi',
+        satirlar[0].publish_state === 'pending', satirlar[0].publish_state);
+
+    // Kapinin TEK anahtari ortam degiskeni: tanimlandiginda aciliyor.
+    // Bu olcum olmasa "hicbir sey yuklenmiyor" olcumu, kapi kalici
+    // olarak bozulsa bile yesil kalirdi.
+    ORTAM.YOUTUBE_DENETIM_GECTI = '1';
+    tabloyuKur(ytKayit()); metaKur(); ytKur();
+    await turAt();
+    bak('★ YOUTUBE_DENETIM_GECTI tanimliyken YUKLENIYOR (kapi kalici bozuk degil)',
         satirlar[0].publish_state === 'published' && YT.parcalar.length === 15,
         satirlar[0].publish_state + ' / ' + YT.parcalar.length);
     ORTAM.YOUTUBE_DENETIM_GECTI = onceki;
