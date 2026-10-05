@@ -100,6 +100,32 @@ begin
       from public.calendar_events e
      where e.type = any(public.story_yayin_turleri())
        and e.auto_publish = true
+       -- ⛔ FACEBOOK + REELS KUYRUĞA GİRMİYOR (5 Ekim 2026).
+       --
+       -- Facebook bu sayfada API ile yayınlanan reels'i dağıtmıyor.
+       -- Ölçüm, aynı sayfada, aynı saatte, aynı dosyalarla:
+       --
+       --   elle atılan      4 Ekim 10:13 · 96 sn -> 127.672 görüntülenme
+       --   elle atılan      2 Ekim 21:00         ->   1.461
+       --   API ile (burası) 3 Ekim 10:01 · 100 sn ->     19  (1 tekil kişi)
+       --   API ile (burası) 2 Ekim 10:01 ·  86 sn ->      3  (1 tekil kişi)
+       --
+       -- 4 Ekim'deki dosya Instagram'da -- o da BU kuyruktan gitti --
+       -- 555.538 oynatma aldı. Yani sorun dosyada, kapakta, uzunlukta,
+       -- başlıkta ya da bit hızında değil: hepsi tek tek ölçülüp elendi.
+       -- Gönderi alanları da birebir aynı (privacy EVERYONE, status_type
+       -- added_video, is_eligible_for_promotion true). Tek fark yol.
+       --
+       -- ⚠ FACEBOOK HİKÂYELERİ ETKİLENMİYOR, kasıtlı olarak dışarıda:
+       -- onlar aynı worker'dan gidip 109-422 görüntülenme almaya devam
+       -- ediyor. Koşul o yüzden platform VE tür birlikte; yalnız
+       -- platforma bakan bir satır hikâyeleri de durdururdu.
+       --
+       -- GERİ ALMAK: Meta tarafı düzelirse bu üç satırı sil ve dosyayı
+       -- yeniden koştur (işlev drop/create, yeniden koşmak güvenli).
+       -- Kayıtların auto_publish'i açık kaldığı için başka bir şey
+       -- yapmak gerekmiyor -- yayın kendiliğinden kaldığı yerden sürer.
+       and not (e.platform = 'facebook' and e.type = 'reels')
        and e.publish_state = 'pending'
        and e.deleted_at is null
        and e.publish_at is not null

@@ -5073,6 +5073,7 @@ const LANG = {
     oy_hata: "Failed",
     oy_saatsiz: "No time set, so it will not publish. Give it a time.",
     oy_yeni: "Save the entry first, then you can switch automatic publishing on.",
+    oy_fb_reels: "Facebook does not distribute reels posted through the API on this page — measured side by side, by hand 127.672 views, through the API 19. So Shootboard no longer posts Facebook reels; post this one by hand. Facebook stories are unaffected and still go out automatically.",
     oy_not_reels: "Shootboard posts this reel to Instagram at the time above, cover and caption included. It is the only thing Shootboard posts by itself \u2014 everything else you post.",
     oy_not_shorts: "Shootboard uploads this Short to YouTube as soon as the file is ready \u2014 often days early \u2014 and YouTube itself publishes it at the time above. Title, description and tags go with it. After the upload, edits made here no longer reach the video; change it in YouTube Studio.",
     oy_zamanlandi: "Uploaded \u2014 YouTube publishes it at",
@@ -6100,6 +6101,7 @@ const LANG = {
     oy_hata: "Hata",
     oy_saatsiz: "Saat girilmemiş, bu yüzden yayınlanmayacak. Bir saat ver.",
     oy_yeni: "Önce kaydı kaydet, sonra otomatik yayını açabilirsin.",
+    oy_fb_reels: "Facebook bu sayfada API ile atılan reels'i dağıtmıyor — yan yana ölçüldü: elle 127.672 görüntülenme, API ile 19. Bu yüzden Shootboard artık Facebook'a reels atmıyor; bunu elle at. Facebook hikâyeleri etkilenmiyor, onlar kendiliğinden gitmeye devam ediyor.",
     oy_not_reels: "Shootboard bu reel'i yukarıdaki saatte Instagram'a kendi atıyor — kapağı ve alt yazısıyla. Shootboard'ın kendiliğinden yayınladığı tek şey bu — geri kalan her şeyi sen yayınlıyorsun.",
     oy_not_shorts: "Shootboard bu Short'u dosya hazır olur olmaz YouTube'a yüklüyor — çoğu zaman günler öncesinden. Yayına alma işini yukarıdaki saatte YouTube kendi yapıyor. Başlık, açıklama ve etiketler videoyla birlikte gidiyor. Yükleme olduktan sonra buradaki düzeltmeler videoya ULAŞMIYOR; onu YouTube Studio'dan değiştirmen gerekiyor.",
     oy_zamanlandi: "Yüklendi — YouTube şu saatte yayınlayacak:",
@@ -16486,6 +16488,27 @@ function otoYayinTazele(){
     d.innerHTML = '<span class="oy-nokta"></span>' + escapeHtml(t('oy_yeni'));
     return;
   }
+
+  // ⛔ FACEBOOK + REELS. Kuyruk bu birlesimi ARTIK ALMIYOR (sql/56):
+  // Facebook bu sayfada API ile atilan reels'i dagitmiyor -- 5 Ekim 2026
+  // olcumu, ayni sayfa ayni dosyalar: elle 127.672 goruntulenme, API ile
+  // 19 (1 tekil kisi). Ayrintisi ve elenen butun ihtimaller sql/56'da.
+  //
+  // Kayitlarin auto_publish'i ACIK kalabiliyor (kuyruk bakmiyor artik),
+  // o yuzden bu dal olmasa kutucuk ACIK gorunur ve durum "Bekliyor"
+  // yazardi -- ikisi de duz yalan: kullanici yayini bekler, hicbir sey
+  // gitmez. Sebebini soyleyen kapali bir kutucuk, sebebini soylemeyen
+  // acik bir kutucuktan iyi. Ustteki "hesapta acik degil" dalinin
+  // gerekcesi de ayni.
+  //
+  // ⚠ FACEBOOK HIKAYELERI DISARIDA: kosul platform VE tur birlikte.
+  // Yalniz platforma bakan bir satir, calisan hikayeleri de durdururdu.
+  if(String(currentEvent.platform || '') === 'facebook' && tur === 'reels'){
+    setOtoYayinToggle(false, true);
+    d.innerHTML = '<span class="oy-nokta"></span>' + escapeHtml(t('oy_fb_reels'));
+    return;
+  }
+
   setOtoYayinToggle(!!(y && y.otomatik), false);
 
   const durum = (y && y.durum) || 'pending';
