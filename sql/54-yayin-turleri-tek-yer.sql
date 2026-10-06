@@ -56,8 +56,17 @@ as $$
   select array['story', 'reels', 'shorts']::text[];
 $$;
 
-revoke all   on function public.story_yayin_turleri() from public, anon, authenticated;
-grant execute on function public.story_yayin_turleri() to service_role;
+-- ⚠ `authenticated` BU LİSTEDE YOK ve olmayacak. Aşağıdaki (3/3)
+-- `story_yayin_ani_tazele` tetikleyicisi calendar_events üzerinde BEFORE
+-- INSERT/UPDATE olarak duruyor, `security definer` DEĞİL ve gövdesinde bu
+-- işlevi çağırıyor -- yani tarayıcının `authenticated` rolüyle. Yetkiyi
+-- almak, uygulamanın HİÇBİR kaydı buluta yazamaması demek:
+-- "42501 permission denied for function story_yayin_turleri" (6 Ekim 2026,
+-- ayrıntısı sql/57'de). İşlev sabit bir dizi döndürüyor; korunacak bir
+-- şey yok. Gerçekten korunması gerekenler satır yazanlar:
+-- story_kuyruk_al ve story_asili_topla.
+revoke all   on function public.story_yayin_turleri() from public, anon;
+grant execute on function public.story_yayin_turleri() to service_role, authenticated;
 
 commit;
 
@@ -92,6 +101,15 @@ commit;
 
 -- ═══ 2/3 ═══ KUYRUK ═══════════════════════════════════════════════
 -- Davranış sql/53 ile AYNI; yalnızca kümeyi artık işlevden okuyor.
+--
+-- ⛔ BU DOSYAYI YENİDEN KOŞTURMA. Aşağıdaki drop/create, kuyruğun BU
+-- GÜNKÜ sürümünü yazıyor; sql/55 (hazır olunca yükle) ve sql/56
+-- (Facebook reels kuyruktan çıkarıldı) ondan SONRA geldi ve aynı işlevi
+-- yeniden tanımladı. Burayı tekrar koşturmak ikisini de geri alır --
+-- hiçbir hata vermeden: Facebook'a reels gitmeye yeniden başlar ve
+-- YouTube yüklemeleri "dosya hazır olunca" yerine yayın saatine döner.
+-- Kuyruğun güncel hali DAİMA en yüksek numaralı dosyada. Yalnızca yetki
+-- düzeltmesi gerekiyorsa sql/57'yi koştur.
 begin;
 
 drop function if exists public.story_kuyruk_al(integer);
