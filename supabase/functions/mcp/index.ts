@@ -67,6 +67,9 @@ const SERVIS_ANAHTARI = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY') ?? '';
 // yerde arandi. Surum ve uc listesi artik cevapta.
 // 1.5.1 — story alanlarinin sinirlari 6000'e cikti.
 // 1.5.0 — story alanlari: storyPrompt, storyKartlar, storyYonerge.
+// 1.9.1 — yalnizca YORUM: /api/entries/find suzgecinin gerekcesi
+//         eskimisti ("shorts'a mediaUrl yazmanin anlami yok").
+//         Davranis degismedi; dagitim aceleye gerek birakmiyor.
 // 1.4.0 — content.storyKart alani eklendi (1.5.0'da storyYonerge oldu).
 // 1.3.0 — publish_at hesabi sql/45'teki tetikleyiciye tasindi.
 // 1.2.0 — mediaName yazilabilir alan oldu.
@@ -79,7 +82,7 @@ const SERVIS_ANAHTARI = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY') ?? '';
 // Bu kural UC KEZ unutuldu ve ucuncusunde artik soze birakilmadi:
 // birlestir.py, kaynak degisip surum ayni kalirsa HATA VERIP duruyor
 // ve tek-dosya.ts'i uretmiyor. Yani unutuldugu an belli oluyor.
-const SURUM = '1.9.0';
+const SURUM = '1.9.1';
 
 // ---- Otomatik yayın hattı olan türler ------------------------------------
 // AYNI kümeyi taşıyan yerler: app.html'deki YAYIN_TURLERI, sql/50'deki
@@ -905,9 +908,19 @@ async function apiKayitBul(uid: string, dosya: string) {
   // kaydinda coverUrl eksik kaldi), ve defterde 'baglandi' yazilmadigi
   // icin izleyici HER BES DAKIKADA BIR 114 MB'i yeniden yukledi.
   //
-  // Suzgec dogru yer: worker yalnizca story ve reels yayinliyor, bir
-  // shorts kaydina mediaUrl yazmanin hicbir anlami yok. mediaName o
-  // kayitta durmaya devam ediyor -- yalnizca yukleyici ona dokunmuyor.
+  // O gun suzgec `story` ve `reels` ile sinirlandi: worker baska tur
+  // yayinlamiyordu, shorts kaydina mediaUrl yazmanin anlami yoktu.
+  //
+  // 29 Eylul 2026'da bu GECERSIZ OLDU -- worker artik Shorts da
+  // yukluyor ve suzgec YAYIN_TURLERI'ne baglandi, yani shorts da
+  // iceride. Bedeli 30 Eylul'de goruldu: eski suzgecle acilan iki
+  // Shorts kaydi (30 Eylul ve 1 Ekim) mediaUrl'siz kaldi, cunku
+  // yukleyici onlari hic gormedi. Ikisi de denetim kapisina bile
+  // gelemedi; "bekliyor" sanildi, oysa kurulmamislardi.
+  //
+  // ⚠ Boyut tavani da ture gore acildi (asagidaki TAVANLAR): shorts
+  // artik 100 MB story tavanina takilmiyor. Ustteki 114 MB vakasinin
+  // tekrarlamamasinin sebebi bu -- suzgec degil, tavan.
   //
   // limit 5 -> 20: ayni dosya uc platformda reels olabiliyor; 5 dar
   // kalirsa GERCEK bir kayit listeden dusebilirdi ve hic baglanmazdi.

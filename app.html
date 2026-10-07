@@ -5073,6 +5073,7 @@ const LANG = {
     oy_hata: "Failed",
     oy_saatsiz: "No time set, so it will not publish. Give it a time.",
     oy_yeni: "Save the entry first, then you can switch automatic publishing on.",
+    oy_fb_reels: "Facebook does not distribute reels posted through the API on this page — measured side by side, by hand 127.672 views, through the API 19. So Shootboard no longer posts Facebook reels; post this one by hand. Facebook stories are unaffected and still go out automatically.",
     oy_not_reels: "Shootboard posts this reel to Instagram at the time above, cover and caption included. It is the only thing Shootboard posts by itself \u2014 everything else you post.",
     oy_not_shorts: "Shootboard uploads this Short to YouTube as soon as the file is ready \u2014 often days early \u2014 and YouTube itself publishes it at the time above. Title, description and tags go with it. After the upload, edits made here no longer reach the video; change it in YouTube Studio.",
     oy_zamanlandi: "Uploaded \u2014 YouTube publishes it at",
@@ -5128,6 +5129,7 @@ const LANG = {
     auth_moved: (n)=> `${n} entries moved to your account.`,
     auth_signed_out: "Signed out. You are back to this browser only.",
     cloud_err_safe: "Nothing is lost: your entries are in your account, this device just could not read them.",
+    cloud_yazilamadi: "The change did not reach the cloud. It is saved on this device and will be retried on the next save.",
     cloud_err_net: "This device could not reach the cloud.",
     cloud_err_net_more: "There may be no connection, or something on this device is blocking supabase.co — a content blocker, a VPN, or a company network. Try another connection.",
     cloud_err_auth: "Your session had expired.",
@@ -6100,6 +6102,7 @@ const LANG = {
     oy_hata: "Hata",
     oy_saatsiz: "Saat girilmemiş, bu yüzden yayınlanmayacak. Bir saat ver.",
     oy_yeni: "Önce kaydı kaydet, sonra otomatik yayını açabilirsin.",
+    oy_fb_reels: "Facebook bu sayfada API ile atılan reels'i dağıtmıyor — yan yana ölçüldü: elle 127.672 görüntülenme, API ile 19. Bu yüzden Shootboard artık Facebook'a reels atmıyor; bunu elle at. Facebook hikâyeleri etkilenmiyor, onlar kendiliğinden gitmeye devam ediyor.",
     oy_not_reels: "Shootboard bu reel'i yukarıdaki saatte Instagram'a kendi atıyor — kapağı ve alt yazısıyla. Shootboard'ın kendiliğinden yayınladığı tek şey bu — geri kalan her şeyi sen yayınlıyorsun.",
     oy_not_shorts: "Shootboard bu Short'u dosya hazır olur olmaz YouTube'a yüklüyor — çoğu zaman günler öncesinden. Yayına alma işini yukarıdaki saatte YouTube kendi yapıyor. Başlık, açıklama ve etiketler videoyla birlikte gidiyor. Yükleme olduktan sonra buradaki düzeltmeler videoya ULAŞMIYOR; onu YouTube Studio'dan değiştirmen gerekiyor.",
     oy_zamanlandi: "Yüklendi — YouTube şu saatte yayınlayacak:",
@@ -6155,6 +6158,7 @@ const LANG = {
     auth_moved: (n)=> `${n} kayıt hesabına taşındı.`,
     auth_signed_out: "Çıkış yapıldı. Yalnızca bu tarayıcıya döndün.",
     cloud_err_safe: "Hiçbir şey kaybolmadı: kayıtlar hesabında duruyor, bu cihaz okuyamadı.",
+    cloud_yazilamadi: "Değişiklik buluta gitmedi. Bu cihazda duruyor, bir sonraki kaydetmede yeniden denenecek.",
     cloud_err_net: "Bu cihaz buluta ulaşamadı.",
     cloud_err_net_more: "Ya bağlantı yok ya da bu cihazdaki bir şey supabase.co adresini kesiyor — içerik engelleyici, VPN ya da kurum ağı. Başka bir bağlantıyla dene.",
     cloud_err_auth: "Oturumunun süresi dolmuştu.",
@@ -7891,7 +7895,9 @@ function save(){
   localStorage.setItem(storageKey(), JSON.stringify(events));
   if(session){
     clearTimeout(pushTimer);
-    pushTimer = setTimeout(pushChanges, 400);
+    // Sarmalanmis cagri: pushChanges artik bir parametre aliyor ve
+    // zamanlayicinin ona bir sey gecirmedigi kesin olsun.
+    pushTimer = setTimeout(()=> pushChanges(), 400);
   }
   // Paylasilan kopya da tazeleniyor: baglanti yoksa hicbir sey yapmiyor.
   paylasimGecikmeliYaz();
@@ -7905,7 +7911,9 @@ function save(){
   if(typeof bugunDegisti === 'function') bugunDegisti();
 }
 
-async function pushChanges(){
+// derinlik: yalnizca kendi ic cagrisi 1 gonderiyor. Oturum tazelemesinden
+// sonraki TEK yeniden denemeyi isaretliyor; ikinci bir tazeleme olmuyor.
+async function pushChanges(derinlik){
   if(!sb || !session) return;
   // Ikinci kapi: save() disindan cagrilan yollar da (otomatik kuyruk)
   // hesabin verisi gelmeden hicbir sey gondermesin.
@@ -7936,7 +7944,45 @@ async function pushChanges(){
   }catch(err){
     // Basarisiz turda kimlikler kuyrukta kaliyor: sonraki save() tekrar deniyor.
     console.error('[bulut] yazma hatasi', err);
-    setCloudStatus('error');
+
+    // ⚠ SURESI DOLMUS BELIRTEC BURADA DA TAZELENIYOR.
+    // Okuma yolu bunu bastan beri yapiyordu (afterSignIn), yazma yolu
+    // yapmiyordu. Sonucu: oturum zaman asimina ugrayinca kullanici HER
+    // kaydetmede hata aliyor, cikip girmekten baska yol kalmiyordu -- ve
+    // cikip girmek buluttaki surumu esas aldigi icin (afterSignIn'de
+    // `events = uzak`) gonderilememis degisikligi KAYBETTIRIYORDU.
+    // derinlik sonsuz donguyu kesiyor: tazeleme bir kez deneniyor.
+    if(!derinlik && bulutHataCinsi(err) === 'oturum' && sb && sb.auth
+       && typeof sb.auth.refreshSession === 'function'){
+      try{
+        const { error: tazeHata } = await sb.auth.refreshSession();
+        if(!tazeHata){ await pushChanges(1); return; }
+      }catch(e){ console.error('[bulut] oturum tazelenemedi (yazma)', e); }
+    }
+
+    // ⚠ SEBEBI BURADA SOYLEMEK ZORUNDA. Eskiden yalnizca
+    // setCloudStatus('error') cagriliyordu; o da "sebebi yukaridaki
+    // kirmizi seritte" diyen bir bildirim cikariyordu. Ama o serit
+    // YALNIZCA okuma yolunda ciziliyor (bulutHatasiUygula, yalnizca
+    // afterSignIn'den): acilis basariliysa serit hic gorunmuyor ve
+    // bildirim OLMAYAN bir seyi isaret ediyordu. 6 Ekim 2026'da kullanici
+    // sebebi bulmak icin tarayici konsolunu acmak zorunda kaldi (42501,
+    // bir tetikleyicinin cagirdigi isleve yetki yoktu -- sql/57).
+    //
+    // ⛔ bulutHatasiUygula(true) CAGRILMIYOR ve cagrilmayacak. O bayrak
+    // (bulutOkumaBasarisiz) save()'i ve ekleme dugmesini kapatiyor;
+    // hesabin verisi hic gelmediginde dogru, BURADA yanlis olurdu:
+    // kayitlar ekranda duruyor, yerel kopya yazildi, kuyruk da duruyor.
+    // Tek eksik bu turda buluta yazilamamis olmasi -- ve kullaniciyi
+    // kaydetmekten alikoymak, kaybi onlemek yerine buyuturdu.
+    const cins = bulutHataCinsi(err);
+    const nicin = cins === 'ag' ? t('cloud_err_net')
+                : cins === 'oturum' ? t('cloud_err_auth') : t('cloud_err_server');
+    // Sunucunun kendi cumlesi de giriyor: "42501 permission denied for
+    // function story_yayin_turleri" olmadan sebep bulunamiyordu.
+    const sunucu = String((err && err.message) || '').slice(0, 140);
+    setCloudStatus('error',
+      [t('cloud_yazilamadi'), nicin, sunucu].filter(Boolean).join('  ·  '));
   }
 }
 
@@ -16486,6 +16532,27 @@ function otoYayinTazele(){
     d.innerHTML = '<span class="oy-nokta"></span>' + escapeHtml(t('oy_yeni'));
     return;
   }
+
+  // ⛔ FACEBOOK + REELS. Kuyruk bu birlesimi ARTIK ALMIYOR (sql/56):
+  // Facebook bu sayfada API ile atilan reels'i dagitmiyor -- 5 Ekim 2026
+  // olcumu, ayni sayfa ayni dosyalar: elle 127.672 goruntulenme, API ile
+  // 19 (1 tekil kisi). Ayrintisi ve elenen butun ihtimaller sql/56'da.
+  //
+  // Kayitlarin auto_publish'i ACIK kalabiliyor (kuyruk bakmiyor artik),
+  // o yuzden bu dal olmasa kutucuk ACIK gorunur ve durum "Bekliyor"
+  // yazardi -- ikisi de duz yalan: kullanici yayini bekler, hicbir sey
+  // gitmez. Sebebini soyleyen kapali bir kutucuk, sebebini soylemeyen
+  // acik bir kutucuktan iyi. Ustteki "hesapta acik degil" dalinin
+  // gerekcesi de ayni.
+  //
+  // ⚠ FACEBOOK HIKAYELERI DISARIDA: kosul platform VE tur birlikte.
+  // Yalniz platforma bakan bir satir, calisan hikayeleri de durdururdu.
+  if(String(currentEvent.platform || '') === 'facebook' && tur === 'reels'){
+    setOtoYayinToggle(false, true);
+    d.innerHTML = '<span class="oy-nokta"></span>' + escapeHtml(t('oy_fb_reels'));
+    return;
+  }
+
   setOtoYayinToggle(!!(y && y.otomatik), false);
 
   const durum = (y && y.durum) || 'pending';
@@ -20672,7 +20739,10 @@ const PITCH_ACIK = false;
 // Kisa bildirim. Bulut akisinda cagriliyordu ama hic tanimlanmamisti; try
 // blogunun icinde patlayip hatayi "buluta ulasilamadi" gibi gostermisti.
 let toastTimer = null;
-function showToast(mesaj){
+// SURE PARAMETRESI: hata bildirimleri uzun yasiyor. 3,6 saniye "kaydedildi"
+// icin yeterli ama sebebini anlatan bir hata cumlesi icin degil -- okunmadan
+// kayboluyordu ve kullaniciya geri getirecek bir yol da yok.
+function showToast(mesaj, sure){
   if(!mesaj) return;
   let el = document.getElementById('toast');
   if(!el){
@@ -20685,16 +20755,20 @@ function showToast(mesaj){
   el.textContent = mesaj;
   el.classList.add('show');
   clearTimeout(toastTimer);
-  toastTimer = setTimeout(()=> el.classList.remove('show'), 3600);
+  toastTimer = setTimeout(()=> el.classList.remove('show'), sure || 3600);
 }
 
 // ===== Bulut hesabı (isteğe bağlı) =====
-function setCloudStatus(durum){
+// mesaj VERILEBILIR. Varsayilan metin "sebebi yukaridaki kirmizi seritte"
+// diyor ve bu YALNIZCA okuma yolunda dogru: seridi bulutHatasiUygula
+// ciziyor, onu da yalnizca afterSignIn cagiriyor. Yazma yolundan gelen
+// cagrilar sebebi kendileri yaziyor, cunku orada serit yok.
+function setCloudStatus(durum, mesaj){
   const b = document.getElementById('authBtn');
   if(!b) return;
   b.classList.toggle('cloud-ok', durum === 'ok');
   b.classList.toggle('cloud-error', durum === 'error');
-  if(durum === 'error') showToast(t('auth_sync_err'));
+  if(durum === 'error') showToast(mesaj || t('auth_sync_err'), mesaj ? 9000 : 0);
 }
 function refreshAuthUi(){
   const b = document.getElementById('authBtn');

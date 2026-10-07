@@ -46,7 +46,7 @@
 //
 // Dağıtım:  supabase functions deploy story-yayin --no-verify-jwt
 
-const SURUM = '1.11.0';
+const SURUM = '1.13.0';
 const UCLAR = ['GET / (servis bilgisi)', 'POST / (bir tur)'];
 
 // ⚠ ORTAM DEĞİŞKENLERİ KIRPILIYOR.
@@ -567,11 +567,16 @@ const TURLER: Record<string, { ad: string; tekil: string; buyuk: string; platfor
 const turBilgi = (k: any) => TURLER[String(k?.type ?? 'story')] ?? TURLER.story;
 const turAdi = (k: any) => turBilgi(k).ad;
 
-// Kullanıcının bilerek gözden çıkardığı deneme kaydı. YALNIZCA
-// YouTube denetim kapısını açıyor (aşağıda) -- başka hiçbir yerde
-// anlamı yok. Kayıtta elle işaretleniyor: content.youtubeDeneme = true
-const denemeKaydi = (k: any) =>
-  !!(k?.content && typeof k.content === 'object' && k.content.youtubeDeneme === true);
+// ⛔ `content.youtubeDeneme` KALDIRILDI (30 Eylül 2026).
+// Denetim kapısında bir kaçış deliğiydi: bayrağı taşıyan kayıt kapıyı
+// geçip yükleniyordu. Başvuru için gereken tek deneme yüklemesi
+// yapıldı, yani delik işini bitirmişti -- ama açık kaldığı sürece
+// takvimdeki BİR kayda yanlışlıkla yazılması gerçek bir videoyu
+// kalıcı olarak "özel"e gömmeye yetiyordu. Üstelik bayrak MCP'den
+// görünmüyor: açık olsaydı kimse fark edemezdi.
+//
+// Artık kapının tek anahtarı YOUTUBE_DENETIM_GECTI. Bayrağı taşıyan
+// eski kayıtlar da artık geçemiyor; alan sessizce yok sayılıyor.
 
 // Reels alt yazısı kaydın kendi içeriğinden geliyor -- Shootboard'da
 // zaten yazılmış olan metin. Instagram sınırı 2200 karakter; fazlası
@@ -728,10 +733,13 @@ async function kaydiYayinla(k: any, bitis: number): Promise<string> {
   // ⛔ DENETİM KAPISI — sebebi youtubeYayinla'nın başında.
   // Denetimden geçmemiş bir projeden yüklenen video KALICI olarak
   // "özel"e kilitleniyor. Yani denetim onaylanmadan yüklemek, videoyu
-  // yayınlamak değil GÖMMEK demek. Bu yüzden onay gelene kadar
-  // erteliyoruz; tek istisna, kullanıcının bilerek gözden çıkardığı
-  // deneme kaydı (content.youtubeDeneme === true).
-  if (pf === 'youtube' && !ytDenetim() && !denemeKaydi(k)) {
+  // yayınlamak değil GÖMMEK demek.
+  //
+  // ⚠ İSTİSNA YOK. 30 Eylül 2026'ya kadar `content.youtubeDeneme`
+  // bayrağı bu kapıyı açıyordu; kaldırıldı. Kapının tek anahtarı
+  // YOUTUBE_DENETIM_GECTI ve o da yalnızca Supabase gizli ayarından
+  // geliyor -- takvimdeki hiçbir kayıt kapıyı kendi başına açamaz.
+  if (pf === 'youtube' && !ytDenetim()) {
     await rpc('story_ertele', { p_id: k.id, p_dakika: 720,
       p_sebep: 'YouTube API denetimi henüz onaylanmadı. Şimdi yüklenen video KALICI olarak '
              + '"özel" kalır (Studio\'dan bile herkese açık yapılamıyor), o yüzden kayıt '
@@ -1135,18 +1143,24 @@ async function tiktokYayinla(k: any): Promise<string> {
 // videoyu yayınlamak değil ÇÖPE ATMAK.
 //
 // Bu yüzden kaydiYayinla'da bir kapı var: `YOUTUBE_DENETIM_GECTI`
-// tanımlı değilse gerçek kayıtlar ERTELENİYOR. Tek istisna
-// `content.youtubeDeneme === true` olan kayıt -- denetim başvurusu
-// için bir yüklemenin çalıştığını göstermek gerekiyor ve o video
-// gözden çıkarılmış oluyor.
+// tanımlı değilse YouTube kayıtları ERTELENİYOR. İSTİSNASIZ.
+//
+// 30 Eylül 2026'ya kadar bir istisna vardı: `content.youtubeDeneme`
+// bayrağını taşıyan kayıt kapıyı geçiyordu. Başvuru için gereken
+// deneme yüklemesi yapıldıktan sonra kullanıcı deliğin tamamen
+// kapanmasını istedi -- açık kalan bir kaçış yolu, er ya da geç
+// yanlış kayda yazılır ve o video geri alınamaz şekilde gömülür.
 //
 // DOĞRU SIRA:
 //   1. Hesabı bağla (shootboard.app/youtube.html)
-//   2. content.youtubeDeneme = true olan TEK bir kayıt yayınla
-//      -> video kanalda "özel" görünür ve öyle KALIR
-//   3. Denetim başvurusunu yap, o yüklemeyi kanıt olarak göster
-//   4. Onay gelince YOUTUBE_DENETIM_GECTI=1 tanımla
-//   5. Gerçek kayıtlar akmaya başlar
+//   2. Denetim başvurusunu yap
+//   3. Onay gelince YOUTUBE_DENETIM_GECTI=1 tanımla
+//   4. Kayıtlar akmaya başlar
+//
+// ⚠ Onay gelmeden bir yükleme denemek gerekirse YOUTUBE_DENETIM_GECTI
+// geçici olarak tanımlanır ve hemen geri alınır. Bu bilinçli: kapıyı
+// açmak Supabase paneline girmeyi gerektiriyor, bir takvim kaydına
+// alan yazmayı değil.
 //
 // ══════════════════════════════════════════════════════════════════
 // GÖRÜNÜRLÜK: 'private' VARSAYILAN VE BU BİLİNÇLİ
@@ -1634,6 +1648,59 @@ async function youtubeYayinla(k: any, bitis: number): Promise<string> {
   return 'yuklendi';
 }
 
+// ══════════════════════════════════════════════════════════════════
+// FACEBOOK REEL KAPAGI — EN İYİ ÇABA, YAYINI ASLA RİSKE ATMAZ
+// ══════════════════════════════════════════════════════════════════
+// ⛔ NEDEN AYRI BİR ÇAĞRI: `video_reels` finish çağrısı kapak ALMIYOR.
+// Meta'nın kendi örnek koleksiyonu (fbsamples/Facebook-Reels-Publishing-
+// API-Postman-Collection) finish aşamasında yalnızca şunları listeliyor:
+// access_token, video_id, upload_phase, video_state, description, title.
+// Kapak alanı yok. Instagram'da `cover_url` var, Facebook'ta yok --
+// aradaki fark bu, ve 30 Eylül 2026'ya kadar Facebook reels'ları
+// kapaksız çıkıyordu: kapak dosyası R2'de üretilmiş hâlde duruyor,
+// Facebook videodan rastgele bir kare seçiyordu.
+//
+// ⚠ DÖNMEYEN SÖZ: bu işlev HİÇ FIRLATMIYOR. Sebebi tek cümle:
+// KAPAKSIZ ÇIKAN REEL, ÇIKMAYAN REEL'DEN İYİDİR. Kapak çağrısı
+// başarısız olursa yayın devam ediyor; hata yalnızca günlüğe yazılıyor.
+// Bunu bir `kaliciHata`ya bağlamak, kozmetik bir eksik yüzünden
+// yayınlanabilecek bir gönderiyi çöpe atmak olurdu.
+//
+// ⚠ FINISH'TEN ÖNCE ÇAĞRILIYOR. Kapak yayın anında yerinde olsun ki
+// ilk gösterimden itibaren doğru kare görünsün; sonradan eklenen kapak
+// ilk dalga izlenmeyi kurtarmıyor.
+//
+// ⚠ DOĞRULANMADI: bu ucun reels için çalıştığını Meta belgelemiyor ve
+// bu ortamdan deneyemedim (graph.facebook.com'a erişim ve Sayfa jetonu
+// burada yok). Çalışmazsa davranış bugünküyle AYNI kalıyor -- kapaksız
+// yayın. O yüzden denemenin bedeli yok, kazancı var.
+async function fbReelKapagi(videoId: string, kapakAdresi: string): Promise<boolean> {
+  try {
+    const g = await fetch(kapakAdresi);
+    // ⚠ `g.body`'ye BAKMIYORUZ. Medya akıtma yolundan kopyalanan bir
+    // `!g.body` kontrolü buraya konmuştu ve yanlıştı: kapağı akıtmıyoruz,
+    // tamamını belleğe alıyoruz (bir JPEG, birkaç yüz KB). Response.body
+    // bazı yanıtlarda null olabiliyor, arrayBuffer() ise yine baytları
+    // veriyor -- yani o kontrol çalışan kapakları eliyordu.
+    if (!g.ok) { console.log('[story] kapak alinamadi', g.status, kapakAdresi); return false; }
+    const bayt = await g.arrayBuffer();
+    if (!bayt || bayt.byteLength === 0) { console.log('[story] kapak bos', kapakAdresi); return false; }
+    const govde = new FormData();
+    // `source`: ham görsel. `is_preferred`: Facebook'un kendi seçtiği
+    // kareyi DEĞİL bunu kullanmasını söylüyor -- yazılmazsa yüklenen
+    // görsel yalnızca aday listesine giriyor ve hiç seçilmeyebiliyor.
+    govde.append('source', new Blob([bayt], { type: g.headers.get('content-type') || 'image/jpeg' }), 'kapak.jpg');
+    govde.append('is_preferred', 'true');
+    govde.append('access_token', PAGE_TOKEN);
+    await grafFormla(`/${videoId}/thumbnails`, govde);
+    return true;
+  } catch (e) {
+    // Yutuluyor -- ama SESSİZ DEĞİL: günlükte sebebi duruyor.
+    console.log('[story] FB kapagi konulamadi (yayin devam ediyor):', (e as Error).message);
+    return false;
+  }
+}
+
 async function facebookYayinla(k: any): Promise<string> {
   const video = String(k.media_mime ?? '').startsWith('video/');
   if (reelMi(k) && !video) {
@@ -1706,6 +1773,9 @@ async function facebookYayinla(k: any): Promise<string> {
       if (yazi) bitisAlanlari.description = yazi;
       const baslik = kisaBaslik(k);
       if (baslik) bitisAlanlari.title = baslik;
+      // Kapak varsa finish'ten ÖNCE deniyoruz; basarisizligi yayini
+      // durdurmuyor (fbReelKapagi hic firlatmiyor).
+      if (k.cover_url) await fbReelKapagi(videoId, String(k.cover_url));
     }
     await rpc('story_iz_yayin_cagrisi', { p_id: k.id });
     const bit = await graf(uc, { method: 'POST', alan: bitisAlanlari });
