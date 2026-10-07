@@ -115,8 +115,8 @@ def durdu_mu(yol):
         return False
 
 
-def videolar(klasor, ry):
-    """Klasordeki VIDEO dosyalari. Kapaklar buraya girmiyor."""
+def videolar(klasor, ry, sy):
+    """Klasordeki VIDEO dosyalari. Kapaklar ve story dosyalari girmiyor."""
     try:
         adlar = sorted(os.listdir(klasor))
     except OSError as e:
@@ -131,13 +131,20 @@ def videolar(klasor, ry):
             continue
         if os.path.splitext(ad)[1].lower() not in ry.IZINLI_TUR:
             continue
+        # ⚠ KLASOR TEK BASINA TURU BELIRLEMIYOR -- simetrigi
+        # story-izle.py'de, gerekcesi story-yukle.py'deki ad_turu'nun
+        # basinda. Atlama sebebiyle yaziliyor, sessiz degil.
+        if sy.ad_turu(ad) == 'story':
+            print(f"{ad}: story dosyasi, reels klasorunde -- atlandi "
+                  f"(story-izle.py bunu kendi klasorunden isliyor)")
+            continue
         cikti.append((ad, yol))
     return cikti
 
 
 def bir_tur(ry, sy, klasor, otomatik_ac, zorla):
     defter = defter_oku(klasor)
-    liste = videolar(klasor, ry)
+    liste = videolar(klasor, ry, sy)
     if liste is None:
         return
 
