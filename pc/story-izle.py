@@ -118,6 +118,14 @@ def bir_tur(yukleyici, klasor, otomatik_ac, zorla):
             continue
         if os.path.splitext(ad)[1].lower() not in yukleyici.IZINLI_TUR:
             continue
+        # ⚠ KLASOR TEK BASINA TURU BELIRLEMIYOR. Gerekcesi
+        # story-yukle.py'deki ad_turu'nun basinda: 7 Ekim 2026'da bu
+        # klasore dusen dokuz reels dosyasi story sanilip 100 MB
+        # sinirina takildi. Atlama SESSIZ DEGIL, sebebiyle yaziliyor.
+        if yukleyici.ad_turu(ad) == 'reels':
+            print(f"{ad}: reels dosyasi, story klasorunde -- atlandi "
+                  f"(reels-izle.py bunu kendi klasorunden isliyor)")
+            continue
 
         simdiki = imza(yol)
         onceki = defter.get(ad, {})

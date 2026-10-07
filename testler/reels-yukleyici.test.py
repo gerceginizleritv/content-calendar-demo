@@ -287,7 +287,7 @@ try:
 
     print('[klasorde ne ise giriyor]')
     dosya_yaz(os.path.join(gecici, '.gizli.mp4'))
-    liste = ri.videolar(gecici, ry)
+    liste = ri.videolar(gecici, ry, sy)
     adlar = sorted(a for a, _ in liste)
     bak('★ kapaklar tek basina ise girmiyor',
         all(not a.endswith(('.jpg', '.png')) for a in adlar), adlar)
@@ -298,6 +298,63 @@ try:
     # bugun dokuz test dusurdu; sabit liste varsaymak kirilgan.
     bak('yazilan her video listede', set(adlar) >= {'2026-10-12_reels_sokollu.mp4',
                                                    '2026-10-13_reels_baska.mp4'}, adlar)
+
+    # ══════════════════════════════════════════════════════════════
+    print('[yanlis klasore dusen dosya: TURU AD SOYLUYOR]')
+    # 7 Ekim 2026, 16:20 -- story izleyicisi `story\\cikti` icindeki DOKUZ
+    # REELS dosyasina "Instagram sinirli 100 MB" hatasi verdi. Kod yanlis
+    # degildi: turu belirleyen tek sey DOSYANIN HANGI KLASORDE DURDUGU
+    # idi, izleyici klasordeki her videoyu kendi turu saniyordu. Reels
+    # tavani 1 GB, story'ninki 100 MB -- ayni dosya bir yerde gecerli,
+    # otekinde reddediliyor. Hata her turda tekrarlanip defteri kirletti.
+    bak('ad_turu story okuyor', sy.ad_turu('2026-10-20_story_konu_k1.mp4') == 'story')
+    bak('ad_turu reels okuyor', sy.ad_turu('2026-10-12_reels_sokollu.mp4') == 'reels')
+    # ⚠ ISARETSIZ AD ELENMIYOR: '' donuyor ve izleyiciler dokunmuyor.
+    # Aksi halde adlandirma kuralina uymayan bir dosya SESSIZCE gorunmez
+    # olurdu -- duzeltmeye calistigimiz hatanin aynisi, ters yonde.
+    bak('★ işaretsiz ad BİLİNMİYOR sayılıyor (sessizce elenmiyor)',
+        sy.ad_turu('rastgele.mp4') == '', sy.ad_turu('rastgele.mp4'))
+
+    # Reels klasorune dusen bir STORY dosyasi listeye girmiyor.
+    dosya_yaz(os.path.join(gecici, '2026-10-20_story_yabanci_k1.mp4'))
+    liste2 = ri.videolar(gecici, ry, sy)
+    adlar2 = sorted(a for a, _ in liste2)
+    bak('★ reels klasöründeki STORY dosyası işlenmiyor',
+        '2026-10-20_story_yabanci_k1.mp4' not in adlar2, adlar2)
+    bak('reels dosyaları hâlâ işleniyor',
+        '2026-10-12_reels_sokollu.mp4' in adlar2, adlar2)
+
+    # Simetrik olcum: story izleyicisine dusen bir REELS dosyasi
+    # yukleyiciye HIC gitmiyor -- 100 MB hatasinin ciktigi yer orasiydi.
+    st_gecici = tempfile.mkdtemp(prefix='story-test-')
+    try:
+        dosya_yaz(os.path.join(st_gecici, '2026-10-20_story_konu_k1.mp4'))
+        dosya_yaz(os.path.join(st_gecici, '2026-10-06_reels_derinkuyu.mp4'))
+
+        class SahteYukleyici:
+            IZINLI_TUR = sy.IZINLI_TUR
+            ad_turu = staticmethod(sy.ad_turu)
+            @staticmethod
+            def temizlik_turu(klasor, defter, defter_yaz, nesneleri_bul):
+                return 0
+
+        islenen = []
+        durdu_yedek, isle_yedek = si.durdu_mu, si.dosyayi_isle
+        try:
+            si.durdu_mu = lambda yol: True          # render bitti say
+            si.dosyayi_isle = (lambda y, yol, ad, oto, zorla, onceki=None:
+                               islenen.append(ad) or ('baglandi', 'tamam', {}))
+            with contextlib.redirect_stdout(io.StringIO()):
+                si.bir_tur(SahteYukleyici, st_gecici, False, False)
+        finally:
+            si.durdu_mu, si.dosyayi_isle = durdu_yedek, isle_yedek
+
+        bak('★ story klasöründeki REELS dosyası yükleyiciye GİTMİYOR',
+            '2026-10-06_reels_derinkuyu.mp4' not in islenen, islenen)
+        bak('story dosyası normal işleniyor',
+            '2026-10-20_story_konu_k1.mp4' in islenen, islenen)
+    finally:
+        shutil.rmtree(st_gecici, ignore_errors=True)
     bak('nokta ile baslayan dosya atlaniyor',
         not any(a.startswith('.') for a in adlar), adlar)
 
@@ -479,6 +536,10 @@ try:
         sy.yayin_durumlari = lambda kok, anahtar, ad: bulgu.get(ad, None)
         return s3
 
+    def K(*cift):
+        """(otomatikYayin, publishState) ciftlerinden kayit listesi."""
+        return [{'oto': o, 'durum': d} for o, d in cift]
+
     ayar_yedek, istemci_yedek, durum_yedek = sy.ayar, sy.r2_istemci, sy.yayin_durumlari
     yazilan = []
     def sahte_defter_yaz(klasor, defter):
@@ -488,7 +549,7 @@ try:
     try:
         # 1. Hepsi published -> video VE kapak siliniyor.
         defter = {'a.mp4': {'durum': 'baglandi', 'kapak': 'a.jpg'}}
-        s3 = kur({'a.mp4': ['published', 'published']})
+        s3 = kur({'a.mp4': K((True, 'published'), (True, 'published'))})
         n = sy.temizlik_turu(gecici, defter, sahte_defter_yaz, nesneler)
         bak('★ yayınlanan dosya ve kapağı siliniyor',
             n == 1 and sorted(s3.silinen) == ['a.jpg', 'a.mp4'], s3.silinen)
@@ -499,14 +560,14 @@ try:
             defter['a.mp4']['durum'] == 'baglandi', defter['a.mp4']['durum'])
 
         # Ikinci tur ayni girdiye DOKUNMAMALI.
-        s3b = kur({'a.mp4': ['published', 'published']})
+        s3b = kur({'a.mp4': K((True, 'published'), (True, 'published'))})
         n2 = sy.temizlik_turu(gecici, defter, sahte_defter_yaz, nesneler)
         bak('temizlenen girdi bir daha silinmiyor', n2 == 0 and s3b.silinen == [], s3b.silinen)
 
         # 2. ★ BIR KAYIT BEKLIYOR -> DOKUNMA. Ayni dosya Instagram ve
         # Facebook kayitlarina bagli; biri ciktı diye silersek oteki 404 alir.
         defter2 = {'b.mp4': {'durum': 'baglandi'}}
-        s3c = kur({'b.mp4': ['published', 'pending']})
+        s3c = kur({'b.mp4': K((True, 'published'), (True, 'pending'))})
         n3 = sy.temizlik_turu(gecici, defter2, sahte_defter_yaz, nesneler)
         bak('★ bir kayıt bekliyorsa SİLİNMİYOR',
             n3 == 0 and s3c.silinen == [] and not defter2['b.mp4'].get('temiz'), s3c.silinen)
@@ -519,16 +580,54 @@ try:
 
         # 4. Henuz baglanmamis girdi (kayit-yok) -> dokunma.
         defter4 = {'d.mp4': {'durum': 'kayit-yok'}}
-        s3e = kur({'d.mp4': ['published']})
+        s3e = kur({'d.mp4': K((True, 'published'))})
         n5 = sy.temizlik_turu(gecici, defter4, sahte_defter_yaz, nesneler)
         bak('bağlanmamış girdiye dokunulmuyor', n5 == 0 and s3e.silinen == [], s3e.silinen)
 
         # 5. ★ R2 silme patlarsa temiz isareti KONMUYOR: sonraki tur dener.
         defter5 = {'e.mp4': {'durum': 'baglandi'}}
-        s3f = kur({'e.mp4': ['published']}, patlat={'e.mp4'})
+        s3f = kur({'e.mp4': K((True, 'published'))}, patlat={'e.mp4'})
         n6 = sy.temizlik_turu(gecici, defter5, sahte_defter_yaz, nesneler)
         bak('★ silme başarısızsa temiz işareti KONMUYOR',
             n6 == 0 and not defter5['e.mp4'].get('temiz'), defter5)
+
+        # ── OTOMATIK YAYINI KAPALI KAYITLAR DOSYAYI REHIN TUTMUYOR ──
+        # 7 Ekim 2026: yayinlanan 10 reels'ten yalnizca 2'si temizlenmisti.
+        # Bir reels dosyasi DORT kayda bagli ve ucunun otomatik yayini
+        # kapali (TikTok onayi yok, YouTube denetim kapisi kapali, Facebook
+        # 5 Ekim'den beri elle). Ucu de sonsuza kadar 'pending' kaliyor;
+        # eski kosul "TUM kayitlar published" oldugu icin dosya hic
+        # silinmiyordu.
+        defter6 = {'f.mp4': {'durum': 'baglandi', 'kapak': 'f.jpg'}}
+        s3g = kur({'f.mp4': K((True,  'published'),   # instagram  — cikti
+                              (False, 'pending'),     # facebook   — elle
+                              (False, 'pending'),     # tiktok     — onay yok
+                              (False, 'pending'))})   # youtube    — kapi kapali
+        n7 = sy.temizlik_turu(gecici, defter6, sahte_defter_yaz, nesneler)
+        bak('★ GERÇEK REELS VAKASI: elle atılanlar dosyayı rehin tutmuyor',
+            n7 == 1 and sorted(s3g.silinen) == ['f.jpg', 'f.mp4'], s3g.silinen)
+
+        # ⚠ ESKI KORUMA AYNEN DURUYOR. Otomatik yayini ACIK ama henuz
+        # cikmamis bir kayit varsa dosya DURUYOR -- silseydik o yayin
+        # sirasi gelince 404 alirdi. Bu olcum kaldirilirsa yeni kural
+        # eskisinin korudugu seyi kaybeder.
+        defter7 = {'g.mp4': {'durum': 'baglandi'}}
+        s3h = kur({'g.mp4': K((True,  'published'),   # instagram — cikti
+                              (True,  'pending'),     # facebook  — SIRADA
+                              (False, 'pending'))})   # tiktok    — elle
+        n8 = sy.temizlik_turu(gecici, defter7, sahte_defter_yaz, nesneler)
+        bak('★ otomatik ama BEKLEYEN kayıt varsa hâlâ silinmiyor',
+            n8 == 0 and s3h.silinen == [] and not defter7['g.mp4'].get('temiz'),
+            s3h.silinen)
+
+        # Hicbir kayitta otomatik yayin yoksa dosyayi sistem hic
+        # kullanmadi; publishState'i de kimse 'published' yapmayacak.
+        # Silmemek bedava, yanlis silmek geri alinamaz.
+        defter8 = {'h.mp4': {'durum': 'baglandi'}}
+        s3i = kur({'h.mp4': K((False, 'pending'), (False, 'pending'))})
+        n9 = sy.temizlik_turu(gecici, defter8, sahte_defter_yaz, nesneler)
+        bak('★ hiç otomatik kayıt yoksa SİLİNMİYOR', n9 == 0 and s3i.silinen == [],
+            s3i.silinen)
     finally:
         sy.ayar, sy.r2_istemci, sy.yayin_durumlari = ayar_yedek, istemci_yedek, durum_yedek
 
@@ -554,9 +653,30 @@ try:
             sy.yayin_durumlari('https://x', 'k', 'f.mp4') is None,
             sy.yayin_durumlari('https://x', 'k', 'f.mp4'))
         sy.requests = SahteR({'ok': True, 'matchedBy': 'mediaName',
-                              'entries': [{'publishState': 'published'}]})
+                              'entries': [{'publishState': 'published',
+                                           'autoPublish': True}]})
         bak('tam ad eşleşmesinde durum okunuyor',
-            sy.yayin_durumlari('https://x', 'k', 'f.mp4') == ['published'])
+            sy.yayin_durumlari('https://x', 'k', 'f.mp4')
+            == [{'oto': True, 'durum': 'published'}],
+            sy.yayin_durumlari('https://x', 'k', 'f.mp4'))
+        # ★ autoPublish DE OKUNUYOR. Temizlik karari buna dayaniyor;
+        # alan dusurulurse her kayit "elle" sayilir ve hicbir dosya
+        # silinmez (ya da kosul ters kurulursa HEPSI silinir).
+        sy.requests = SahteR({'ok': True, 'matchedBy': 'mediaName',
+                              'entries': [{'publishState': 'pending',
+                                           'autoPublish': False}]})
+        bak('★ autoPublish alanı taşınıyor',
+            sy.yayin_durumlari('https://x', 'k', 'f.mp4')
+            == [{'oto': False, 'durum': 'pending'}],
+            sy.yayin_durumlari('https://x', 'k', 'f.mp4'))
+        # Alan hic gelmezse 'elle' sayiliyor -- yani eksik veri silmeye
+        # DEGIL, saklamaya yoneliyor.
+        sy.requests = SahteR({'ok': True, 'matchedBy': 'mediaName',
+                              'entries': [{'publishState': 'published'}]})
+        bak('alan yoksa elle sayılıyor (eksik veri silmeye yönelmiyor)',
+            sy.yayin_durumlari('https://x', 'k', 'f.mp4')
+            == [{'oto': False, 'durum': 'published'}],
+            sy.yayin_durumlari('https://x', 'k', 'f.mp4'))
         sy.requests = SahteR({'ok': False, 'error': 'yok'})
         bak('ok:false ise BİLİNMİYOR', sy.yayin_durumlari('https://x', 'k', 'f.mp4') is None)
     finally:

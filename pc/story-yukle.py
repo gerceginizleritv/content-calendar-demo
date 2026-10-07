@@ -85,6 +85,29 @@ def ayar(ad, zorunlu=True):
     return v
 
 
+# ADDAN TUR. Izleyiciler buna bakip BASKA turun dosyasini atliyor.
+#
+# 7 Ekim 2026, 16:20: story izleyicisi `story\cikti` icindeki dokuz REELS
+# dosyasina "Instagram sinirli 100 MB" hatasi verdi. Kod yanlis degildi --
+# turu belirleyen tek sey DOSYANIN HANGI KLASORDE DURDUGU idi; izleyici
+# klasordeki her videoyu kendi turu saniyordu. Reels tavani 1 GB
+# (reels-yukle.py), story'ninki 100 MB; ayni dosya bir yerde gecerli,
+# otekinde reddediliyor.
+#
+# ⚠ BILINMEYEN AD ELENMIYOR. Yalnizca "bu ad OTEKI turu soyluyor" durumunda
+# atlaniyor; isaretsiz bir ad eskisi gibi isleniyor. Aksi halde adlandirma
+# kuralina uymayan bir dosya SESSIZCE gorunmez olurdu -- duzeltmeye
+# calistigimiz hatanin aynisi, yalnizca ters yonde.
+def ad_turu(ad):
+    """Dosya adindan tur: 'story', 'reels' ya da '' (bilinmiyor)."""
+    a = str(ad or '').lower()
+    if '_story_' in a:
+        return 'story'
+    if '_reels_' in a:
+        return 'reels'
+    return ''
+
+
 def tur_bul(yol):
     uzanti = os.path.splitext(yol)[1].lower()
     if uzanti in IZINLI_TUR:
@@ -280,7 +303,11 @@ def kaydi_bul(kok, anahtar, dosya_adi, kayit_id=None, tur_adi="story"):
 
 
 def yayin_durumlari(kok, anahtar, dosya_adi):
-    """Bu dosyaya bagli kayitlarin publishState listesi. Bilinmiyorsa None.
+    """Bu dosyaya bagli kayitlar: [{'oto': bool, 'durum': str}]. Bilinmiyorsa None.
+
+    ⚠ `oto` DA DONUYOR, yalnizca durum degil. Sebebi temizlenecekler'de:
+    otomatik yayini KAPALI bir kayit asla 'published' olmuyor ve tek
+    basina butun dosyayi R2'de rehin tutuyordu.
 
     ⚠ YALNIZCA TAM AD ESLESMESI KABUL EDILIYOR.
     /api/entries/find tam ad bulamazsa dosya adindaki TARIHE dusuyor ve o
@@ -302,7 +329,8 @@ def yayin_durumlari(kok, anahtar, dosya_adi):
     kayitlar = veri.get("entries") or []
     if not kayitlar:
         return None
-    return [str(k.get("publishState") or "") for k in kayitlar]
+    return [{'oto': k.get("autoPublish") is True,
+             'durum': str(k.get("publishState") or "")} for k in kayitlar]
 
 
 def r2_sil(adlar):
@@ -325,20 +353,41 @@ def temizlenecekler(kok, anahtar, defter):
     Uc sart birden:
       · durum 'baglandi'        -- kayda gercekten baglanmis
       · 'temiz' isareti YOK     -- daha once silinmemis
-      · TUM bagli kayitlar published
+      · OTOMATIK YAYINI ACIK kayitlarin HEPSI published (ve en az bir tane
+        boyle kayit var)
 
-    Ucuncusu onemli: ayni dosya Instagram ve Facebook kayitlarina birden
-    bagli. Biri cikmis oteki beklerken silersek bekleyen yayin 404 alir.
-    Tek bir kayit bile published degilse dosya DURUYOR.
+    Ucuncusunun ilk hali "TUM bagli kayitlar published" idi. Gerekcesi
+    dogruydu -- ayni dosya Instagram ve Facebook kayitlarina birden bagli,
+    biri cikmis oteki beklerken silersek bekleyen yayin 404 alir -- ama
+    kosul fazla genisti ve reels'te hic tutmadi:
+
+      7 Ekim 2026, yayinlanan 10 reels'ten yalnizca 2'si temizlenmisti.
+      Bir reels dosyasi DORT kayda bagli (fb/ig/tt reels + yt shorts) ve
+      ucunun otomatik yayini kapali: TikTok video.publish onayi yok,
+      YouTube denetim kapisi kapali, Facebook reels 5 Ekim'den beri ELLE
+      atiliyor. Ucu de sonsuza kadar 'pending' kaliyor, yani all(published)
+      hicbir zaman dogru olmuyor ve dosya R2'de kaliyor. Story'de sorun
+      cikmamasinin sebebi iki kayda bagli olmasi ve ikisinin de
+      yayinlanmasi.
+
+    ⚠ KORUMA AYNEN DURUYOR: otomatik yayini acik ama henuz cikmamis bir
+    kayit varsa dosya yine DURUYOR. Degisen tek sey, hicbir zaman
+    yayinlanmayacak bir kaydin dosyayi rehin tutmamasi.
+
+    ⚠ HIC OTOMATIK KAYIT YOKSA SILINMIYOR. Her platformu elle atan bir
+    dosyada silmek icin bir sebep yok: o dosyayi sistem hic kullanmadi,
+    publishState'i de kimse 'published' yapmayacak. Silmemek pahali degil;
+    yanlis silmek geri alinamaz.
     """
     cikti = []
     for ad, kayit in defter.items():
         if kayit.get('durum') != 'baglandi' or kayit.get('temiz'):
             continue
-        durumlar = yayin_durumlari(kok, anahtar, ad)
-        if durumlar is None:
+        kayitlar = yayin_durumlari(kok, anahtar, ad)
+        if kayitlar is None:
             continue                       # bilinmiyor -> dokunma
-        if durumlar and all(d == 'published' for d in durumlar):
+        otomatikler = [k for k in kayitlar if k.get('oto')]
+        if otomatikler and all(k.get('durum') == 'published' for k in otomatikler):
             cikti.append(ad)
     return cikti
 
