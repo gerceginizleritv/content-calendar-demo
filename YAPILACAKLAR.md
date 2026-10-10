@@ -33,6 +33,41 @@ DOSYALAR
   pc/story-yukle.py   elle yükleme
   pc/story-izle.py    klasör izleyici
   pc/story-izle.bat   Görev Zamanlayıcı sarmalayıcısı
+  pc/r2-supurge.py    R2'de kalanları bulur (elle, Zamanlayıcıya BAĞLI DEĞİL)
+  pc/r2-supurge.bat   çift tıkla listele; silmek için --sil
+
+R2 TEMİZLİĞİ — İKİ AYRI MEKANİZMA (9–10 Ekim 2026)
+
+  1. İzleyicinin içindeki temizlik (story-yukle.py: temizlenecekler).
+     Her turda çalışıyor, DEFTERE bakıyor. Normal akışta yeterli.
+  2. pc/r2-supurge.py — KOVAYA bakıyor, deftere değil.
+
+  İkincisi şunun için var: birincisi R2'yi hiç listelemiyor, PC'deki
+  defteri geziyor. Defter girdisi yoksa nesne GÖRÜNMEZ ve sonsuza kadar
+  kalıyor. Girdi şu hallerde kayboluyor: klasör boşaltıldı, defter
+  silindi, PC değişti, dosya elle kondu, yüklendikten sonra adı değişti.
+
+  9 Ekim'de kovada iki örneği görüldü:
+    2026-10-05_story_deneme_k1.mp4    21 Eylül'den kalma bir deneme;
+                                      hiçbir kayıt bu adı taşımıyor.
+    2026-10-03_reels_tekfur_bes_hayat bağlı tek kaydın (yt shorts)
+      .mp4 + .jpg                     mediaName'i BOŞ, otomatiği kapalı.
+
+  İkincisinin bedeli iki yönlü ve ikisi de sessizdi: o kayıt dosyasını
+  bir daha bulamaz (yayınlanamaz), temizlik de dosyayı tam adla
+  eşleştiremez (R2'de kalır). Bu yüzden kayda_yaz artık dönen
+  mediaName'i gönderilenle karşılaştırıp UYARI basıyor.
+
+  SÜPÜRGENİN KURALLARI (testler/r2-supurge.test.py, 43 ölçüm)
+    · varsayılan HİÇBİR ŞEY SİLMEZ; yalnızca --sil silinebilir grubu siler
+    · matchedBy='date' eşleşme sayılmıyor — o günün BAŞKA kayıtlarına
+      bakıp silmek, bizim dosyamızı silmek olurdu
+    · kapak videosunun kararına bağlı; tek başına değerlendirilseydi her
+      kapak "öksüz" çıkardı
+    · öksüz bir nesne silinmeden önce 7 gün bekliyor (yükle→kayda-yaz
+      arasındaki yarış) ve tarihi geçmiş olmalı
+    · adında tarih olmayan hiçbir nesne kendiliğinden silinmiyor
+    · Görev Zamanlayıcıya BAĞLANMIYOR: silen bir iş gözetimsiz koşmamalı
 
 PAZARLIK KONUSU OLMAYAN KURALLAR
   ⛔ Hiçbir kod `uploaded` sütununa yazmıyor. Bu kullanıcının kendi

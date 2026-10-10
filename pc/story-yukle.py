@@ -435,7 +435,23 @@ def kayda_yaz(kok, anahtar, kayit_id, url, boyut, mime, ad, otomatik, kapak_url=
     veri = r.json() if r.content else {}
     if not veri.get("ok"):
         sys.exit("Kayda yazilamadi: " + str(veri.get("error") or veri.get("message") or r.status_code))
-    return veri["entry"]
+    kayit = veri["entry"]
+    # ⚠ mediaName GERCEKTEN YAZILDI MI. Gonderdik diye yazildigini
+    # varsaymak, 9 Ekim 2026'da ortaya cikan sessiz arizanin ta kendisi:
+    # 2026-10-03_reels_tekfur_bes_hayat.mp4 R2'de duruyordu, bagli tek
+    # kaydin mediaName'i ise BOSTU. Bedeli iki yonlu ve ikisi de sessiz --
+    # o kayit bir daha dosyasini bulamiyor (yayinlanamaz), temizlik de
+    # dosyayi tam adla eslestiremiyor (R2'de sonsuza kadar kaliyor).
+    #
+    # SYS.EXIT DEGIL, UYARI: yazma basarili dondu, dosya R2'de ve kayitta
+    # mediaUrl var. Burada durmak, geri kalan kayitlari da yazilmamis
+    # birakirdi -- yarim is, hicbir isten kotu.
+    if str(kayit.get("mediaName") or "") != ad:
+        print(f"  ⚠ mediaName yazilmadi: kayitta "
+              f"'{kayit.get('mediaName') or '(bos)'}' goruyor, '{ad}' olmaliydi.")
+        print(f"     Bu kayit dosyasini bulamaz ve R2 temizligi de onu "
+              f"eslestiremez. Shootboard'da kaydi acip dosya adini elle yaz.")
+    return kayit
 
 
 def main():
