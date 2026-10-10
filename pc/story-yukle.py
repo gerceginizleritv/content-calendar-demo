@@ -108,6 +108,60 @@ def ad_turu(ad):
     return ''
 
 
+# ══════════════════════════════════════════════════════════════════
+# OTOMATIK YAYIN POLITIKASI -- HANGI PLATFORM KENDILIGINDEN CIKAR
+#
+# Bu tablo olmadan yukleyici KORDU: `otomatik_ac` tek bir global
+# bayrakti ve eslesen HER kayda uygulaniyordu. Bir reels dosyasi dort
+# kayit buluyor (ig/fb/tt reels + yt shorts) ve dordunun de
+# autoPublish'ini aciyordu.
+#
+# 10 Ekim 2026'da bunun bedeli olculdu: 66 kayit (26 tiktok, 24
+# youtube, 16 facebook) otomatik yayinda duruyordu. Ikisi iki gun
+# sonraydi ve biri YouTube'du -- denetim kapisi kapaliyken oraya video
+# gidecekti. Kayitlar elle kapatildi, ama izleyici bir sonraki dosyada
+# hepsini YENIDEN ACACAKTI. Asil ariza buydu; tek seferlik duzeltme
+# ariza devam ettigi surece her hafta tekrarlanan bir is demek.
+#
+# ⚠ TABLODA OLMAYAN CIFT KAPALI SAYILIYOR. Yeni bir platform ya da tur
+# eklendiginde sessizce yayina baslamiyor; once buraya yazilmasi
+# gerekiyor. Ters varsayim (bilinmeyeni ac) tam olarak yukaridaki
+# arizanin genel hali olurdu.
+#
+# ⚠ ACIK OLANLAR "CALISTIGI OLCULDU" DEMEK, "mumkun" DEGIL:
+#   instagram/story  22 Eylul'den beri sorunsuz
+#   facebook/story   22 Eylul'den beri sorunsuz
+#   instagram/reels  2-3 Ekim'de 8.148 ve 3.819 oynatma
+# Kapali olanlarin sebebi de olculdu:
+#   facebook/reels   ayni dosya, ayni dakika, ayni hat: IG 8.148 /
+#                    FB 19 goruntulenme. 5 Ekim'den beri ELLE.
+#   tiktok/reels     video.publish onayi yok
+#   youtube/shorts   kullanicinin denetim kapisi kapali
+#
+# Bir cift acilacaksa DEGISECEK TEK YER BURASI.
+OTOMATIK_YAYIN = {
+    ('instagram', 'story'):  True,
+    ('facebook',  'story'):  True,
+    ('instagram', 'reels'):  True,
+    ('facebook',  'reels'):  False,
+    ('tiktok',    'reels'):  False,
+    ('youtube',   'shorts'): False,
+}
+
+
+def otomatik_mi(platform, tur, istenen=True):
+    """Bu kayitta autoPublish ACILACAK mi.
+
+    `istenen` cagiranin niyeti (--otomatik-acma verildiyse False). Politika
+    yalnizca KISITLIYOR: istenmeyen bir seyi acmiyor, izin verilmeyen bir
+    seyi de istense bile acmiyor.
+    """
+    if not istenen:
+        return False
+    return OTOMATIK_YAYIN.get(
+        (str(platform or '').lower(), str(tur or '').lower()), False)
+
+
 def tur_bul(yol):
     uzanti = os.path.splitext(yol)[1].lower()
     if uzanti in IZINLI_TUR:
@@ -234,7 +288,18 @@ def adresi_dene(url, beklenen_mime, beklenen_boyut):
 
 
 def kaydi_bul(kok, anahtar, dosya_adi, kayit_id=None, tur_adi="story"):
-    """Bu dosyanin baglanacagi kayit KIMLIKLERI. Her zaman liste doner.
+    """Bu dosyanin baglanacagi KAYITLAR. Her zaman liste doner.
+
+    ⚠ KIMLIK DEGIL KAYIT DONUYOR. Eskiden yalnizca id listesi donuyordu
+    ve cagiran kaydin PLATFORMUNU bilmiyordu; otomatik yayin karari da
+    bu yuzden tek bir global bayrakla, ayrim yapmadan veriliyordu
+    (OTOMATIK_YAYIN tablosunun basindaki 66 kayit olayi). Platform
+    kararin girdisi oldugu icin artik kararin verildigi yere kadar
+    tasiniyor.
+
+    --id ile cagrildiginda platform BILINMIYOR: elde yalnizca kimlik var
+    ve tek kayit getiren bir uc yok. O dal {'id': ...} donuyor; politikayi
+    kayda_yaz'daki YAZDIKTAN SONRAKI denetim uyguluyor.
 
     tur_adi YALNIZCA ekrana yazilan kelime. Eslestirme mantigi ortak ve
     OYLE KALMALI: reels yukleyicisi de bu islevi cagiriyor. Ayri bir
@@ -254,7 +319,7 @@ def kaydi_bul(kok, anahtar, dosya_adi, kayit_id=None, tur_adi="story"):
         kayda yazmak, yazmamaktan kotu.
     """
     if kayit_id:
-        return [kayit_id]
+        return [{"id": kayit_id}]
     r = requests.get(f"{kok}/api/entries/find",
                      params={"file": dosya_adi},
                      headers={"Authorization": f"Bearer {anahtar}"}, timeout=30)
@@ -270,12 +335,12 @@ def kaydi_bul(kok, anahtar, dosya_adi, kayit_id=None, tur_adi="story"):
                   f"{k.get('platform') or '?'}  {k.get('title') or '(basliksiz)'}")
         if len(kayitlar) > 1:
             print(f"  ({len(kayitlar)} kayit ayni dosyayi istiyor, hepsine baglanacak)")
-        return [k["id"] for k in kayitlar]
+        return kayitlar
 
     if len(kayitlar) == 1:
         k = kayitlar[0]
         print(f"  kayit: {k['id']}  {k['date']} {k['time']}  {k.get('title') or '(basliksiz)'}")
-        return [k["id"]]
+        return [k]
 
     print(f"\nO tarihte birden cok {tur_adi} var ve hangisi oldugu belli degil.")
     print("Kaliciysa: planlama tarafinda kayitlara mediaName yaz, bu is bir")
@@ -421,6 +486,17 @@ def temizlik_turu(klasor, defter, defter_yaz, nesneleri_bul):
     return sayi
 
 
+def _yama(kok, anahtar, kayit_id, govde):
+    """PATCH /api/entries/{id}. Basarisizsa sys.exit eder, yoksa kaydi doner."""
+    # ⛔ uploaded BURADA YOK ve olmayacak. Sartname Bolum 1.
+    r = requests.patch(f"{kok}/api/entries/{kayit_id}", json=govde,
+                       headers={"Authorization": f"Bearer {anahtar}"}, timeout=30)
+    veri = r.json() if r.content else {}
+    if not veri.get("ok"):
+        sys.exit("Kayda yazilamadi: " + str(veri.get("error") or veri.get("message") or r.status_code))
+    return veri["entry"]
+
+
 def kayda_yaz(kok, anahtar, kayit_id, url, boyut, mime, ad, otomatik, kapak_url=None):
     govde = {"mediaUrl": url, "mediaBytes": boyut, "mediaMime": mime,
              "mediaName": ad, "autoPublish": bool(otomatik)}
@@ -429,13 +505,22 @@ def kayda_yaz(kok, anahtar, kayit_id, url, boyut, mime, ad, otomatik, kapak_url=
     # bosaltirdi.
     if kapak_url:
         govde["coverUrl"] = kapak_url
-    # ⛔ uploaded BURADA YOK ve olmayacak. Sartname Bolum 1.
-    r = requests.patch(f"{kok}/api/entries/{kayit_id}", json=govde,
-                       headers={"Authorization": f"Bearer {anahtar}"}, timeout=30)
-    veri = r.json() if r.content else {}
-    if not veri.get("ok"):
-        sys.exit("Kayda yazilamadi: " + str(veri.get("error") or veri.get("message") or r.status_code))
-    kayit = veri["entry"]
+    kayit = _yama(kok, anahtar, kayit_id, govde)
+
+    # ⚠ POLITIKA YAZDIKTAN SONRA DA DENETLENIYOR.
+    # Cagiran kararini kayitlari_bul'un verdigi platformla veriyor, ama
+    # --id dalinda platform BILINMIYOR: orada otomatik=True gecilirse
+    # tiktok ya da youtube kaydi sessizce yayina girerdi. Donen kayit
+    # platformu tasiyor; politika ihlal edildiyse burada geri aliniyor.
+    #
+    # Normal yolda bu dal HIC CALISMIYOR (karar zaten dogru verildi),
+    # yani ikinci bir istek maliyeti yok. Yalnizca ihlalde devreye
+    # giriyor -- ve ihlalin sessiz kalmamasi, kapanmasindan once geliyor.
+    if kayit.get("autoPublish") is True and not otomatik_mi(kayit.get("platform"),
+                                                            kayit.get("type")):
+        print(f"  ⚠ {kayit.get('platform') or '?'}/{kayit.get('type') or '?'} "
+              f"otomatik yayinda DEGIL (politika) -- autoPublish geri kapatiliyor.")
+        kayit = _yama(kok, anahtar, kayit_id, {"autoPublish": False})
     # ⚠ mediaName GERCEKTEN YAZILDI MI. Gonderdik diye yazildigini
     # varsaymak, 9 Ekim 2026'da ortaya cikan sessiz arizanin ta kendisi:
     # 2026-10-03_reels_tekfur_bes_hayat.mp4 R2'de duruyordu, bagli tek
@@ -495,9 +580,11 @@ def main():
     else:
         print("  adres temiz: 200, dogru tur, yonlendirme yok")
 
-    kayit_idler = kaydi_bul(kok, anahtar, ad, a.id)
-    for kayit_id in kayit_idler:
-        kayit = kayda_yaz(kok, anahtar, kayit_id, url, boyut, mime, ad, not a.otomatik_acma)
+    kayitlar = kaydi_bul(kok, anahtar, ad, a.id)
+    for aday in kayitlar:
+        oto = otomatik_mi(aday.get("platform"), aday.get("type"),
+                          not a.otomatik_acma)
+        kayit = kayda_yaz(kok, anahtar, aday["id"], url, boyut, mime, ad, oto)
         print(f"\nBAGLANDI  {kayit['id']}  ({kayit.get('platform') or '?'})")
         print(f"  yayin    : {kayit.get('publishAt') or '(tarih/saat eksik)'}")
         print(f"  otomatik : {'ACIK' if kayit.get('autoPublish') else 'kapali'}")

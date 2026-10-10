@@ -196,10 +196,12 @@ def main():
         print("  kapak dosyasi yok -- Instagram videodan kare secer")
 
     # ---- Kayda bagla -----------------------------------------------------
-    kayit_idler = y.kaydi_bul(kok, anahtar, ad, a.id, "reels")
-    for kayit_id in kayit_idler:
-        kayit = y.kayda_yaz(kok, anahtar, kayit_id, url, boyut, mime, ad,
-                            not a.otomatik_acma, kapak_url)
+    kayitlar = y.kaydi_bul(kok, anahtar, ad, a.id, "reels")
+    for aday in kayitlar:
+        oto = y.otomatik_mi(aday.get("platform"), aday.get("type"),
+                            not a.otomatik_acma)
+        kayit = y.kayda_yaz(kok, anahtar, aday["id"], url, boyut, mime, ad,
+                            oto, kapak_url)
         print(f"\nBAGLANDI  {kayit['id']}  ({kayit.get('platform') or '?'})")
         print(f"  yayin    : {kayit.get('publishAt') or '(tarih/saat eksik)'}")
         print(f"  kapak    : {'ACIK' if kayit.get('coverUrl') else 'yok'}")

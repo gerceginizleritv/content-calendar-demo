@@ -226,7 +226,7 @@ def dosyayi_isle(ry, sy, yol, ad, kapak_yolu, kapak_mime, otomatik_ac, zorla, on
     # yukleseydik, kayit acilana kadar her turda R2'ye ayni dosyayi
     # bir daha koyardik. (story-izle.py'deki ayni gerekce.)
     try:
-        kayit_idler = sy.kaydi_bul(kok, anahtar, ad, None, 'reels')
+        kayitlar = sy.kaydi_bul(kok, anahtar, ad, None, 'reels')
     except SystemExit as e:
         kod = e.code
         return ('kayit-yok', kod if isinstance(kod, str) and kod.strip()
@@ -281,10 +281,16 @@ def dosyayi_isle(ry, sy, yol, ad, kapak_yolu, kapak_mime, otomatik_ac, zorla, on
     # haliyle yayinlansa reel KAPAKSIZ cikardi, hicbir yerde hata
     # gorunmeden. Artik her kayit kendi basina deneniyor.
     notlar, basarisiz = [], []
-    for kayit_id in kayit_idler:
+    for aday in kayitlar:
+        kayit_id = aday['id']
+        # ⚠ OTOMATIK YAYIN KARARI KAYIT BASINA. Eskiden `otomatik_ac`
+        # dogrudan geciliyordu ve ayni dosyanin dort kaydini (ig/fb/tt
+        # reels + yt shorts) birden aciyordu. Politika story-yukle.py'de,
+        # tek yerde.
+        oto = sy.otomatik_mi(aday.get('platform'), aday.get('type'), otomatik_ac)
         try:
             kayit = sy.kayda_yaz(kok, anahtar, kayit_id, url, boyut, mime, ad,
-                                 otomatik_ac, kapak_url)
+                                 oto, kapak_url)
         except SystemExit as e:
             kod = e.code
             basarisiz.append(f"{kayit_id}: {kod if isinstance(kod, str) else 'yazilamadi'}")
@@ -302,7 +308,7 @@ def dosyayi_isle(ry, sy, yol, ad, kapak_yolu, kapak_mime, otomatik_ac, zorla, on
         # Bir kayit bile eksikse 'baglandi' DENMIYOR: sonraki tur kalani
         # dener. Dosya yeniden YUKLENMIYOR, adres defterde.
         return ('eksik-baglanti',
-                f"{len(notlar)}/{len(kayit_idler)} yazildi · " + ' | '.join(basarisiz), ek)
+                f"{len(notlar)}/{len(kayitlar)} yazildi · " + ' | '.join(basarisiz), ek)
     return ('baglandi', ' | '.join(notlar), ek)
 
 
