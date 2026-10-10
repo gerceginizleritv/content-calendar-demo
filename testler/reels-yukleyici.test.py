@@ -448,8 +448,15 @@ try:
             self.yazilan = []
             self.patlat = set(patlat)
         def ayar(self, ad, zorunlu=True): return 'https://x' if 'URL' in ad else 'k'
+        # ⚠ KIMLIK DEGIL KAYIT DONUYOR (10 Ekim 2026). Cagiran otomatik
+        # yayin kararini platforma gore veriyor; sahte de ayni sekli
+        # dondurmezse test gercek yoldan sapar.
         def kaydi_bul(self, kok, anahtar, ad, kayit_id=None, tur_adi='reels'):
-            return ['ig', 'fb', 'tt']
+            return [{'id': 'ig', 'platform': 'instagram', 'type': 'reels'},
+                    {'id': 'fb', 'platform': 'facebook',  'type': 'reels'},
+                    {'id': 'tt', 'platform': 'tiktok',    'type': 'reels'}]
+        # Politika SAHTE DEGIL: gercek tablo olculsun.
+        otomatik_mi = staticmethod(sy.otomatik_mi)
         def r2_yukle(self, yol, ad, mime):
             self.yuklenen.append(ad)
             return 'https://r2/' + ad
@@ -698,7 +705,9 @@ try:
         def tur_bul(self, yol): return 'video/mp4'
         def ayar(self, ad, zorunlu=True): return 'https://x' if 'URL' in ad else 'k'
         def kaydi_bul(self, kok, anahtar, ad, kayit_id=None, tur_adi='story'):
-            return ['ig', 'fb']
+            return [{'id': 'ig', 'platform': 'instagram', 'type': 'story'},
+                    {'id': 'fb', 'platform': 'facebook',  'type': 'story'}]
+        otomatik_mi = staticmethod(sy.otomatik_mi)
         def r2_yukle(self, yol, ad, mime):
             self.yuklenen.append(ad)
             return 'https://r2/' + ad
@@ -745,6 +754,8 @@ try:
     kaynak = open(os.path.join(PC, 'story-yukle.py'), encoding='utf-8').read()
     bak('kaydi_bul tur adini disaridan aliyor',
         re.search(r'def kaydi_bul\(.*tur_adi="story"\)', kaynak) is not None)
+    bak('★ kaydi_bul KAYIT döndürüyor (platform karara kadar taşınsın)',
+        'return kayitlar' in kaynak and 'return [k["id"] for k in kayitlar]' not in kaynak)
     bak('★ eslestirme mantigi TEK KOPYA (reels kendi kopyasini cikarmiyor)',
         'def kaydi_bul' not in open(os.path.join(PC, 'reels-yukle.py'), encoding='utf-8').read())
 finally:

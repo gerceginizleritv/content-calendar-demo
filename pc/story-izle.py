@@ -197,7 +197,7 @@ def dosyayi_isle(y, yol, ad, otomatik_ac, zorla, onceki=None):
     # Once yukleseydik, kayit acilana kadar her turda R2'ye ayni dosyayi
     # bir daha koyardik.
     try:
-        kayit_idler = y.kaydi_bul(kok, anahtar, ad)
+        kayitlar = y.kaydi_bul(kok, anahtar, ad)
     except SystemExit as e:
         # sys.exit(1) SystemExit(1) uretiyor; str() alinirsa ekrana "1"
         # yaziliyor ve hicbir sey anlatmiyor. Metin varsa o, yoksa
@@ -235,9 +235,13 @@ def dosyayi_isle(y, yol, ad, otomatik_ac, zorla, onceki=None):
     # defterde tek satir "hata" -- hangisinin baglandigi HICBIR YERDE
     # yazmiyordu. 27 Eylul 2026'da reels hattinda tam olarak bu oldu.
     notlar, basarisiz = [], []
-    for kayit_id in kayit_idler:
+    for aday in kayitlar:
+        kayit_id = aday['id']
+        # Otomatik yayin karari KAYIT BASINA; politika story-yukle.py'de
+        # tek yerde (OTOMATIK_YAYIN).
+        oto = y.otomatik_mi(aday.get('platform'), aday.get('type'), otomatik_ac)
         try:
-            kayit = y.kayda_yaz(kok, anahtar, kayit_id, url, boyut, mime, ad, otomatik_ac)
+            kayit = y.kayda_yaz(kok, anahtar, kayit_id, url, boyut, mime, ad, oto)
         except SystemExit as e:
             kod = e.code
             basarisiz.append(f"{kayit_id} KAYDA YAZILAMADI: " +
@@ -251,7 +255,7 @@ def dosyayi_isle(y, yol, ad, otomatik_ac, zorla, onceki=None):
                       f"otomatik {'ACIK' if kayit.get('autoPublish') else 'kapali'}")
     if basarisiz:
         return ('eksik-baglanti',
-                f"{len(notlar)}/{len(kayit_idler)} yazildi · " + ' | '.join(basarisiz), ek)
+                f"{len(notlar)}/{len(kayitlar)} yazildi · " + ' | '.join(basarisiz), ek)
     return ('baglandi', ' | '.join(notlar), ek)
 
 

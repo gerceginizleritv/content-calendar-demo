@@ -69,6 +69,43 @@ R2 TEMİZLİĞİ — İKİ AYRI MEKANİZMA (9–10 Ekim 2026)
     · adında tarih olmayan hiçbir nesne kendiliğinden silinmiyor
     · Görev Zamanlayıcıya BAĞLANMIYOR: silen bir iş gözetimsiz koşmamalı
 
+OTOMATİK YAYIN POLİTİKASI — TEK TABLO (10 Ekim 2026)
+
+  pc/story-yukle.py: OTOMATIK_YAYIN
+
+    instagram/story   ✓    facebook/reels   ✗  sıfır dağıtım, 5 Ekim'den elle
+    facebook/story    ✓    tiktok/reels     ✗  video.publish onayı yok
+    instagram/reels   ✓    youtube/shorts   ✗  denetim kapısı kapalı
+
+  ⚠ TABLODA OLMAYAN ÇİFT KAPALI. Yeni bir platform/tür sessizce yayına
+  başlamıyor. Bir çift açılacaksa DEĞİŞECEK TEK YER burası.
+
+  Neden var: yükleyicide `otomatik_ac` TEK BİR GLOBAL BAYRAKTI ve eşleşen
+  her kayda uygulanıyordu. Bir reels dosyası dört kayıt buluyor (ig/fb/tt
+  reels + yt shorts) ve dördünün de autoPublish'ini açıyordu.
+
+  10 Ekim'de bedeli ölçüldü: 66 kayıt (26 tiktok, 24 youtube, 16
+  facebook) otomatik yayında duruyordu. İkisi iki gün sonraydı ve biri
+  YouTube'du — denetim kapısı kapalıyken oraya video gidecekti.
+  Kayıtlar SQL ile kapatıldı (64 satır; kullanıcı bir kısmını zaten
+  kendisi kapatmıştı), ama izleyici bir sonraki dosyada hepsini yeniden
+  açacaktı. Asıl arıza buydu.
+
+  İKİ YERDE UYGULANIYOR, ikisi de gerekli:
+   1. YAZMADAN ÖNCE — kaydi_bul artık kimlik değil KAYIT döndürüyor,
+      yani platform kararın verildiği yere kadar taşınıyor.
+   2. YAZDIKTAN SONRA — --id dalında platform bilinmiyor (tek kayıt
+      getiren uç yok). Dönen kayıt platformu taşıyor; politika ihlal
+      edildiyse autoPublish geri kapatılıyor ve sebebi ekrana yazılıyor.
+      Normal yolda bu dal hiç çalışmıyor, yani ikinci istek maliyeti yok.
+
+  Ölçüm: testler/oto-yayin-politikasi.test.py (36). Sekiz mutasyon
+  denendi; ilk turda biri HAYATTA KALDI — story testinde iki kayıt da
+  izinli olduğu için politikayı tamamen atlayan bir story-izle.py de aynı
+  sonucu veriyordu. Teste bir yt/shorts kaydı eklendi (find, mediaName'i
+  YAYIN_TURLERI boyunca eşleştiriyor; bu gerçek bir durum) ve mutasyon
+  yakalandı. Şimdi 8/8.
+
 PAZARLIK KONUSU OLMAYAN KURALLAR
   ⛔ Hiçbir kod `uploaded` sütununa yazmıyor. Bu kullanıcının kendi
      işareti; sistemin durumu `publish_state`. Kural söz değil YAPI:
