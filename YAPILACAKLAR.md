@@ -35,6 +35,8 @@ DOSYALAR
   pc/story-izle.bat   Görev Zamanlayıcı sarmalayıcısı
   pc/r2-supurge.py    R2'de kalanları bulur (elle, Zamanlayıcıya BAĞLI DEĞİL)
   pc/r2-supurge.bat   çift tıkla listele; silmek için --sil
+  pc/yedek-al.py      takvimi diske yedekler (SALT OKUR)
+  pc/yedek-al.bat     Görev Zamanlayıcı sarmalayıcısı, haftada bir
 
 R2 TEMİZLİĞİ — İKİ AYRI MEKANİZMA (9–10 Ekim 2026)
 
@@ -169,6 +171,39 @@ KAZANÇ / MALİYET — neden ertelendi
   Maliyet: yukarıdaki 7 madde + ilk turda sık reddedilen bir denetim.
   YouTube onayı (24 kayıt) ve Supabase yedeği (426 kayıt, yedek YOK)
   bundan yüksek getirili.
+
+YEDEK — Supabase ÜCRETSİZ planda, otomatik yedek YOK (12 Ekim 2026)
+────────────────────────────────────────────────────────────────────
+
+  Kullanıcı Pro'ya (25 $/ay, günlük yedek, 7 gün saklama) şimdilik
+  geçmedi. Yedek tamamen `pc/yedek-al.py`'ye kaldı.
+
+  ⚠ ASIL RİSK SUPABASE'İN ÇÖKMESİ DEĞİL, BİZİM HATAMIZ. Ekim 2026
+  boyunca canlı veritabanında elle UPDATE'ler koşuldu: 64 kayıt, 25
+  kayıt, tek kayıtlar. Hepsi tuttu çünkü her seferinde önce SELECT ile
+  bakıldı. Bir gün bir `where` satırı eksik kalırsa bugün geri dönüş YOK.
+
+  Pro'ya geçilse bile bu script gerekli kalır: Pro 7 gün saklıyor, üç
+  hafta sonra fark edilen bir bozulmaya yetmez.
+
+  NE YEDEKLER: bütün takvim kayıtları + projeler. Medya YOK (R2'de ve
+  asılları kullanıcının diskinde), kod YOK (GitHub'da).
+
+  ⛔ SALT OKUR: yalnızca shootboard_list_entries ve _list_projects.
+  PATCH yok, silme yok, `uploaded`a dokunmuyor.
+
+  Hesap durumu (12 Ekim): 8 hesap, 2'si tanınmayan gerçek kullanıcı.
+  Yani artık başkalarının verisi de tutuluyor; privacy.html'de onlara
+  taahhüt var. Pro kararı bu yüzden tekrar gündeme gelebilir.
+
+  Ölçüm: testler/yedek-al.test.py (31). Dokuz mutasyon denendi; ilk
+  turda İKİSİ HAYATTA KALDI ve ikisi de testin zayıflığıydı:
+    · pencere ölçümü KENDİ sabitine bakıyordu (sabit 180 olunca ölçüm
+      de 180'e bakıyor) -> ucun gerçek sınırı 90'a bağlandı
+    · geri okuma doğrulaması yalnızca kaynak metninde aranıyordu ->
+      davranışla ölçülüyor (json.load eksik döndürülüp çıkış bekleniyor)
+  Script'te bulunan GERÇEK hata: dosya damgası dakika hassasiyetindeydi,
+  aynı dakika içinde iki kez koşmak öncekinin üstüne yazıyordu.
 
 PAZARLIK KONUSU OLMAYAN KURALLAR
   ⛔ Hiçbir kod `uploaded` sütununa yazmıyor. Bu kullanıcının kendi
