@@ -25,8 +25,12 @@
 // `hosgeldin` fonksiyonu `/functions/v1/hyper-worker` adresine
 // düşmüştü ve bu bir kez 404 yedirmişti. Dağıttıktan sonra GET ucunu
 // açıp `surum` alanını gör.
+//
+// 1.3.0 — istenen kapsam listesi TIKTOK_KAPSAMLAR ortam değişkeninden
+//         genişletilebiliyor. Varsayılan değişmedi; video.publish
+//         ancak denetim onaylanınca eklenecek (gerekçesi aşağıda).
 
-const SURUM = '1.2.0';
+const SURUM = '1.3.0';
 
 // ⚠ ORTAM DEĞİŞKENLERİ KIRPILIYOR, VE BU SÜS DEĞİL.
 // 28 Eylül 2026: TIKTOK_CLIENT_KEY panoya bir satır sonuyla birlikte
