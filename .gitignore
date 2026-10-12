@@ -6,3 +6,13 @@ undefined/
 # aktardigi icin calistirildigi her makinede pc/__pycache__ olusuyor.
 __pycache__/
 *.pyc
+
+# Playwright'in kendisi ve npm artiklari. Testler Playwright istiyor ama
+# depoda bir paket manifesti YOK: CI her kosuda kendisi kuruyor
+# (.github/workflows/testler.yml -> "npm init -y; npm install playwright").
+# Yerelde testleri kosan herkeste de ayni ucu olusuyor. Depoya girerlerse
+# node_modules yuzlerce MB, package.json ise `npm init -y`in urettigi
+# bos bir taslak -- projenin gercek manifesti sanilir.
+node_modules/
+package.json
+package-lock.json
