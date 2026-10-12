@@ -44,9 +44,21 @@
 // SUPABASE_URL ve SUPABASE_SERVICE_ROLE_KEY Supabase tarafından
 // otomatik veriliyor, elle tanımlanmıyor.
 //
+//   TIKTOK_KAPSAMLAR      tiktok-baglan'da; onay gelince genişletilir
+//
 // Dağıtım:  supabase functions deploy story-yayin --no-verify-jwt
+//
+// ⚠ KAYNAK DEĞİŞTİYSE SURUM DA DEĞİŞMELİ. Alan "dağıtılan sürüm
+// gerçekten yerine geçti mi" sorusuna cevap vermek için var; bir kez
+// eski sürüm "doğrulandı" sanıldı çünkü eski ve yeni aynı cevabı
+// veriyordu, ve sorun günlerce yanlış yerde arandı.
+//
+// 1.14.0 — TikTok doğrudan yayın yolu. `video.publish` kapsamı varsa
+//          /v2/post/publish/video/init/ (post_info ile alt yazı ve
+//          etiketler), yoksa eski taslak yolu. Gizlilik seviyesi
+//          creator_info/query'nin verdiği listeden seçiliyor.
 
-const SURUM = '1.13.0';
+const SURUM = '1.14.0';
 const UCLAR = ['GET / (servis bilgisi)', 'POST / (bir tur)'];
 
 // ⚠ ORTAM DEĞİŞKENLERİ KIRPILIYOR.
@@ -71,6 +83,8 @@ const TIKTOK_SECRET  = ayar('TIKTOK_CLIENT_SECRET');
 // yapılıyor ve POST gövdesi yönlendirmede düşüyor.
 const TT_JETON  = 'https://open.tiktokapis.com/v2/oauth/token/';
 const TT_INBOX  = 'https://open.tiktokapis.com/v2/post/publish/inbox/video/init/';
+const TT_DIREKT = 'https://open.tiktokapis.com/v2/post/publish/video/init/';
+const TT_KISI   = 'https://open.tiktokapis.com/v2/post/publish/creator_info/query/';
 const TT_DURUM  = 'https://open.tiktokapis.com/v2/post/publish/status/fetch/';
 // Parça sınırları TikTok'un: en az 5 MB, en çok 64 MB; SON parça
 // artanı da alarak 128 MB'a kadar taşabiliyor. 10 MB seçtik: 150 MB'lık
@@ -968,9 +982,12 @@ async function instagramYayinla(k: any, bitis: number): Promise<string> {
 // hiçbir şey çıkmış olamaz ve yeni bir video_id almak, yarım kalmış
 // bir yüklemeyi kurtarmaya çalışmaktan basit ve güvenli.
 // ══════════════════════════════════════════════════════════════════
-// TIKTOK — TASLAĞA BIRAKMA
+// TIKTOK — İKİ YOL
 // ══════════════════════════════════════════════════════════════════
-// ⛔ BU YAYIN DEĞİL, TESLİMDİR.
+// Hesapta `video.publish` kapsamı varsa DOĞRUDAN YAYIN, yoksa taslak.
+// Karar tiktokYayinla içinde, kapsam listesine bakılarak veriliyor.
+//
+// ⛔ TASLAK YOLU YAYIN DEĞİL, TESLİMDİR.
 // Kullanılan uç `/v2/post/publish/inbox/video/init/`: video kullanıcının
 // TikTok GELEN KUTUSUNA taslak olarak düşüyor, paylaşmayı kullanıcı
 // yapıyor. Doğrudan yayın (`video.publish`) TikTok denetiminden geçmiş
@@ -984,16 +1001,22 @@ async function instagramYayinla(k: any, bitis: number): Promise<string> {
 // "TikTok'ta alt yazım nerede" diye kodda arar, o yüzden burada yazıyor.
 
 // Kullanıcının jetonu. Süresi dolmuşsa yenileyip saklıyor.
-async function tiktokJetonu(k: any): Promise<string | null> {
+// ⚠ JETONLA BIRLIKTE KAPSAMLAR DA DONUYOR. Dogrudan yayin karari
+// `video.publish` kapsaminin GERCEKTEN verilmis olmasina bagli ve bu
+// bilgi yalnizca burada okunan satirda var. Ayri bir sorgu yazmak,
+// ayni satiri iki kez cekmek olurdu.
+type TTHesap = { jeton: string; kapsamlar: string[] };
+async function tiktokJetonu(k: any): Promise<TTHesap | null> {
   const satirlar = await rest(
     `/tiktok_hesaplari?user_id=eq.${k.user_id}&select=*&limit=1`);
   const h = Array.isArray(satirlar) ? satirlar[0] : null;
   if (!h) return null;
+  const kapsamlar = Array.isArray(h.kapsamlar) ? h.kapsamlar.map(String) : [];
 
   // 60 saniyelik pay: yükleme uzun sürüyor, tam sınırda başlayan bir
   // aktarım ortasında jeton ölürse parçalar yarıda kalır.
   const bitis = Date.parse(String(h.erisim_bitis ?? '')) || 0;
-  if (bitis > Date.now() + 60_000) return String(h.erisim_jetonu || '');
+  if (bitis > Date.now() + 60_000) return { jeton: String(h.erisim_jetonu || ''), kapsamlar };
 
   if (!h.yenileme_jetonu) return null;
   const govde = new URLSearchParams({
@@ -1019,7 +1042,7 @@ async function tiktokJetonu(k: any): Promise<string | null> {
       guncelleme:      new Date(simdi).toISOString()
     }
   });
-  return String(v.access_token);
+  return { jeton: String(v.access_token), kapsamlar };
 }
 
 // Çöküş izi kurtarması. IG/FB'de "son gönderiler" listesine bakılıyor;
@@ -1027,12 +1050,12 @@ async function tiktokJetonu(k: any): Promise<string | null> {
 // ve durumu sorulabiliyor.
 async function tiktokCikmisMi(k: any): Promise<{ biliniyor: boolean; id: string }> {
   if (!k.publish_ref) return { biliniyor: true, id: '' };
-  const jeton = await tiktokJetonu(k);
-  if (!jeton) return { biliniyor: false, id: '' };
+  const hesap = await tiktokJetonu(k);
+  if (!hesap?.jeton) return { biliniyor: false, id: '' };
   try {
     const r = await fetch(TT_DURUM, {
       method: 'POST',
-      headers: { authorization: `Bearer ${jeton}`, 'content-type': 'application/json' },
+      headers: { authorization: `Bearer ${hesap.jeton}`, 'content-type': 'application/json' },
       body: JSON.stringify({ publish_id: String(k.publish_ref) })
     });
     const v = await r.json().catch(() => null);
@@ -1051,8 +1074,96 @@ async function tiktokCikmisMi(k: any): Promise<{ biliniyor: boolean; id: string 
   }
 }
 
+// ──────────────────────────────────────────────────────────────────
+// DOGRUDAN YAYIN: TikTok'un O HESAPTA neye izin verdigi.
+//
+// ⚠ BU SORGU ATLANAMAZ. `privacy_level`, creator_info'nun dondurdugu
+// `privacy_level_options` listesinden SECILMEK ZORUNDA; listede olmayan
+// bir deger gonderilirse init reddediliyor. Yani dogru gizlilik
+// seviyesini kod bilemez, TikTok soyler.
+//
+// Ayni cevap yorum/duet/dikis kisitlarini da tasiyor: kullanici hesap
+// ayarlarindan yorumu kapattiysa `disable_comment: false` gondermek
+// hata. Kendi varsayilanimizi dayatmak yerine hesabin dediğini
+// yansitiyoruz.
+async function tiktokKisiBilgisi(jeton: string): Promise<any | null> {
+  try {
+    const r = await fetch(TT_KISI, {
+      method: 'POST',
+      headers: { authorization: `Bearer ${jeton}`,
+                 'content-type': 'application/json; charset=UTF-8' }
+    });
+    const v = await r.json().catch(() => null);
+    if (!r.ok) return null;
+    return v?.data ?? null;
+  } catch {
+    return null;
+  }
+}
+
+// TikTok'un verdigi listeden gizlilik seviyesi. SIRA TERCIH SIRASI:
+// en genisten en dara. Denetim gecmemis bir istemcide liste yalnizca
+// SELF_ONLY iceriyor ve kod kendiliginden ona dusuyor -- yani denetim
+// onaylandiginda BURADA HICBIR SEY DEGISMIYOR, liste genisliyor ve
+// yayin herkese acik olmaya basliyor.
+const TT_GIZLILIK_SIRASI = ['PUBLIC_TO_EVERYONE', 'FOLLOWER_OF_CREATOR',
+                            'MUTUAL_FOLLOW_FRIENDS', 'SELF_ONLY'];
+function tiktokGizlilik(secenekler: unknown): string {
+  const liste = Array.isArray(secenekler) ? secenekler.map(String) : [];
+  for (const tercih of TT_GIZLILIK_SIRASI) {
+    if (liste.includes(tercih)) return tercih;
+  }
+  // Liste bos ya da taninmayan degerler: en dar olani. Genis bir
+  // varsayilan, kullanicinin gormedigi bir videoyu herkese acardi.
+  return 'SELF_ONLY';
+}
+
+// ⚠ ALT YAZI TAVANI DOGRULANMIS DEGIL. TikTok belgeleri `title` icin
+// "the video caption" diyor, uzunluk yazmiyor (12 Ekim 2026'da arandi).
+// Ucuncu taraf kilavuzlar 90 ile 4000 arasinda celisiyor. Uygulamanin
+// kendisi 2200 kabul ediyor, o yuzden tavan o: asilirsa hata init'te
+// doner (dosya yuklenmeden), yani bedeli ucuz ve mesaji gorunur.
+const TT_BASLIK = 2200;
+
+// Parcali yukleme. IKI YOL DA AYNI: taslak ucu da dogrudan yayin ucu da
+// ayni upload_url'i veriyor. Tek kopya duruyor ki biri duzelirse oteki
+// de duzelsin.
+async function tiktokParcalariYukle(k: any, adres: string, boyut: number,
+                                    parca: number, adet: number): Promise<void> {
+  // ⚠ DOSYA BELLEĞE ALINMIYOR. R2'den Range ile okunup ayni anda
+  // TikTok'a veriliyor. 150 MB'lik bir reel'i bellege almak Edge
+  // Function'i oldururdu.
+  for (let i = 0; i < adet; i++) {
+    const basBayt = i * parca;
+    const sonBayt = (i === adet - 1) ? boyut - 1 : (basBayt + parca - 1);
+    const medya = await fetch(String(k.media_url), {
+      headers: { range: `bytes=${basBayt}-${sonBayt}` }
+    });
+    if (!medya.ok || !medya.body) {
+      throw new GrafHata(medya.status, null, null,
+        `Medya parçası alınamadı (${basBayt}-${sonBayt}); adres ${medya.status} döndürdü.`);
+    }
+    const y = await fetch(adres, {
+      method: 'PUT',
+      headers: {
+        'content-type': String(k.media_mime || 'video/mp4'),
+        'content-length': String(sonBayt - basBayt + 1),
+        'content-range': `bytes ${basBayt}-${sonBayt}/${boyut}`
+      },
+      body: medya.body,
+      ...({ duplex: 'half' } as any)
+    });
+    if (!y.ok) {
+      const metin = await y.text().catch(() => '');
+      throw new GrafHata(y.status, null, null,
+        `TikTok parça ${i + 1}/${adet} yüklenemedi: ` + temizle(metin).slice(0, 200));
+    }
+  }
+}
+
 async function tiktokYayinla(k: any): Promise<string> {
-  const jeton = await tiktokJetonu(k);
+  const hesap = await tiktokJetonu(k);
+  const jeton = hesap?.jeton || '';
   if (!jeton) {
     // HATA DEĞİL ERTELEME: kullanıcı hesabını bağlamamış ya da yetkiyi
     // geri almış olabilir. Bağladığı gün elle hiçbir şey yapmadan akar.
@@ -1073,61 +1184,113 @@ async function tiktokYayinla(k: any): Promise<string> {
   // olurdu; TikTok toplamı bu formülle doğruluyor.
   const parca = boyut <= TT_PARCA ? boyut : TT_PARCA;
   const adet  = boyut <= TT_PARCA ? 1 : Math.floor(boyut / TT_PARCA);
+  const kaynak = { source: 'FILE_UPLOAD', video_size: boyut,
+                   chunk_size: parca, total_chunk_count: adet };
 
-  const bas = await fetch(TT_INBOX, {
+  // ══════════════════════════════════════════════════════════════
+  // HANGİ YOL: doğrudan yayın mı, taslak mı
+  //
+  // ⚠ KARAR HESABIN VERDİĞİ İZİNDEN, AYARDAN DEĞİL. `video.publish`
+  // kapsamı gerçekten verilmemişse doğrudan yayın ucu 401/403 döner ve
+  // yayın o gün kaçar. Kapsam listesi bağlanma anında saklanıyor
+  // (tiktok_hesaplari.kapsamlar), kontrol bedava.
+  //
+  // Yani TikTok denetimi onaylanıp kullanıcı hesabı yeniden
+  // bağladığında kod KENDİLİĞİNDEN doğrudan yayına geçiyor; burada
+  // değiştirilecek bir şey yok.
+  // ══════════════════════════════════════════════════════════════
+  const dogrudan = (hesap?.kapsamlar || []).includes('video.publish');
+
+  if (!dogrudan) {
+    // ── TASLAĞA BIRAKMA (bugünkü yol) ──────────────────────────────
+    // ⚠ TASLAK METİN TAŞIMIYOR: bu ucun gövdesinde `post_info` YOK.
+    // Alt yazı ve etiketler TikTok'a GİTMİYOR, kullanıcı uygulamada
+    // yazıyor. Doğrudan yayına geçince gidiyor.
+    const bas = await fetch(TT_INBOX, {
+      method: 'POST',
+      headers: { authorization: `Bearer ${jeton}`,
+                 'content-type': 'application/json; charset=UTF-8' },
+      body: JSON.stringify({ source_info: kaynak })
+    });
+    const basV = await bas.json().catch(() => null);
+    const adres     = String(basV?.data?.upload_url ?? '');
+    const publishId = String(basV?.data?.publish_id ?? '');
+    if (!bas.ok || !adres || !publishId) {
+      throw new GrafHata(bas.status, null, null,
+        'TikTok yükleme başlatılamadı: ' + temizle(JSON.stringify(basV ?? {})).slice(0, 300));
+    }
+    await rpc('story_iz_konteyner', { p_id: k.id, p_ref: publishId });
+    await tiktokParcalariYukle(k, adres, boyut, parca, adet);
+    await rpc('story_iz_yayin_cagrisi', { p_id: k.id });
+    await rpc('story_yayinlandi', { p_id: k.id, p_external_id: publishId });
+    return 'taslaga-birakildi';
+  }
+
+  // ── DOĞRUDAN YAYIN ───────────────────────────────────────────────
+  const bilgi = await tiktokKisiBilgisi(jeton);
+  if (!bilgi) {
+    // ERTELEME: creator_info geçici olarak da düşebiliyor. Bu sorgu
+    // olmadan gizlilik seviyesi seçilemez, tahmin etmek init'i
+    // reddettirir.
+    await rpc('story_ertele', { p_id: k.id, p_dakika: 30,
+      p_sebep: 'TikTok hesap bilgisi (creator_info) alınamadı; '
+             + 'gizlilik seviyesi onsuz seçilemiyor.' });
+    return 'tiktok-bilgi-yok';
+  }
+
+  // ⚠ SÜRE TAVANI BURADA DENETLENMİYOR, çünkü denetleyecek veri YOK:
+  // kayıtta videonun süresi tutulmuyor (media_bytes var, süre yok).
+  // creator_info `max_video_post_duration_sec` döndürüyor ama
+  // karşılaştıracak ikinci sayı olmadan o değer işe yaramaz.
+  // Tavan aşılırsa TikTok yükleme sonrası hata döndürür ve mesaj
+  // lastError'a düşer. Olmayan bir alana bakan bir `if` yazmak, hiç
+  // çalışmayan ama kontrol varmış izlenimi veren bir satır olurdu.
+
+  const govde = {
+    source_info: kaynak,
+    post_info: {
+      title: altYazi(k, TT_BASLIK),
+      privacy_level: tiktokGizlilik(bilgi.privacy_level_options),
+      // ⚠ HESABIN AYARI AYNEN YANSITILIYOR. Kullanıcı yorumu hesap
+      // ayarından kapattıysa `false` göndermek hata döndürüyor.
+      disable_comment: bilgi.comment_disabled === true,
+      disable_duet:    bilgi.duet_disabled    === true,
+      disable_stitch:  bilgi.stitch_disabled  === true
+    }
+  };
+
+  const bas = await fetch(TT_DIREKT, {
     method: 'POST',
-    headers: { authorization: `Bearer ${jeton}`, 'content-type': 'application/json; charset=UTF-8' },
-    body: JSON.stringify({
-      source_info: { source: 'FILE_UPLOAD', video_size: boyut,
-                     chunk_size: parca, total_chunk_count: adet }
-    })
+    headers: { authorization: `Bearer ${jeton}`,
+               'content-type': 'application/json; charset=UTF-8' },
+    body: JSON.stringify(govde)
   });
   const basV = await bas.json().catch(() => null);
-  const yuklemeAdresi = String(basV?.data?.upload_url ?? '');
-  const publishId     = String(basV?.data?.publish_id ?? '');
-  if (!bas.ok || !yuklemeAdresi || !publishId) {
+
+  // ⚠ DENETİM KAPISI, ANLAŞILIR MESAJLA.
+  // Denetimden geçmemiş bir istemci HERKESE AÇIK bir hesaba doğrudan
+  // yayın yapamıyor; TikTok 403 ve bu kodu döndürüyor. Ham JSON yerine
+  // ne yapılacağını yazıyoruz -- bu hata aylarca görülebilir.
+  const hataKodu = String(basV?.error?.code ?? '');
+  if (hataKodu === 'unaudited_client_can_only_post_to_private_accounts') {
+    await rpc('story_ertele', { p_id: k.id, p_dakika: 720,
+      p_sebep: 'TikTok uygulama denetimi henüz onaylanmadı. Denetimsiz '
+             + 'istemci, herkese açık bir hesaba doğrudan yayın yapamıyor. '
+             + 'Onay gelene kadar bu videoyu elle at.' });
+    return 'tiktok-denetim-yok';
+  }
+
+  const adres     = String(basV?.data?.upload_url ?? '');
+  const publishId = String(basV?.data?.publish_id ?? '');
+  if (!bas.ok || !adres || !publishId) {
     throw new GrafHata(bas.status, null, null,
-      'TikTok yükleme başlatılamadı: ' + temizle(JSON.stringify(basV ?? {})).slice(0, 300));
+      'TikTok doğrudan yayın başlatılamadı: ' + temizle(JSON.stringify(basV ?? {})).slice(0, 300));
   }
   await rpc('story_iz_konteyner', { p_id: k.id, p_ref: publishId });
-
-  // ---- Parçalar ------------------------------------------------------------
-  // ⚠ DOSYA BELLEĞE ALINMIYOR. R2'den Range ile okunup aynı anda
-  // TikTok'a veriliyor. 150 MB'lık bir reel'i belleğe almak Edge
-  // Function'ı öldürürdü.
-  for (let i = 0; i < adet; i++) {
-    const basBayt = i * parca;
-    const sonBayt = (i === adet - 1) ? boyut - 1 : (basBayt + parca - 1);
-    const medya = await fetch(String(k.media_url), {
-      headers: { range: `bytes=${basBayt}-${sonBayt}` }
-    });
-    if (!medya.ok || !medya.body) {
-      throw new GrafHata(medya.status, null, null,
-        `Medya parçası alınamadı (${basBayt}-${sonBayt}); adres ${medya.status} döndürdü.`);
-    }
-    const y = await fetch(yuklemeAdresi, {
-      method: 'PUT',
-      headers: {
-        'content-type': String(k.media_mime || 'video/mp4'),
-        'content-length': String(sonBayt - basBayt + 1),
-        'content-range': `bytes ${basBayt}-${sonBayt}/${boyut}`
-      },
-      body: medya.body,
-      ...({ duplex: 'half' } as any)
-    });
-    if (!y.ok) {
-      const metin = await y.text().catch(() => '');
-      throw new GrafHata(y.status, null, null,
-        `TikTok parça ${i + 1}/${adet} yüklenemedi: ` + temizle(metin).slice(0, 200));
-    }
-  }
-
-  // Yükleme bitti. Taslağın kullanıcının gelen kutusuna düşmesi TikTok
-  // tarafında birkaç saniye sürebiliyor; publish_id ile takip edilebilir
-  // ama beklemiyoruz -- tur uzarsa öteki kayıtlar gecikir.
+  await tiktokParcalariYukle(k, adres, boyut, parca, adet);
   await rpc('story_iz_yayin_cagrisi', { p_id: k.id });
   await rpc('story_yayinlandi', { p_id: k.id, p_external_id: publishId });
-  return 'taslaga-birakildi';
+  return 'dogrudan-yayinlandi';
 }
 
 // ══════════════════════════════════════════════════════════════════
