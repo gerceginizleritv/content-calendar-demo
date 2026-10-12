@@ -1,5 +1,15 @@
 -- 56 — YouTube videoları DOSYA HAZIR OLUR OLMAZ yükleniyor
 --
+-- ⚠ 12 Ekim 2026: BU DOSYA ARTIK EN GÜNCEL HÂLİ DEĞİL.
+--   sql/58 aynı işlevi (story_kuyruk_al) facebook+reels dışlaması
+--   OLMADAN yeniden tanımladı. Canlıda şu an sql/58 koşuyor.
+--
+--   Bu dosyayı yeniden koşturmak dışlamayı GERİ GETİRİR -- yani
+--   Facebook reels tekrar kuyruk dışına çıkar. Deney başarısız
+--   olduysa yapılacak şey tam olarak budur; değilse koşturma.
+--       deney AÇIK  = sql/58
+--       deney KAPALI = bu dosya
+--
 -- ══════════════════════════════════════════════════════════════════
 -- sql/55'İN DEVAMI VE DÜZELTMESİ
 -- ══════════════════════════════════════════════════════════════════
