@@ -106,6 +106,70 @@ OTOMATİK YAYIN POLİTİKASI — TEK TABLO (10 Ekim 2026)
   YAYIN_TURLERI boyunca eşleştiriyor; bu gerçek bir durum) ve mutasyon
   yakalandı. Şimdi 8/8.
 
+TIKTOK `video.publish` — DURDURULDU (12 Ekim 2026, kullanıcı kararı)
+────────────────────────────────────────────────────────────────────
+
+NEREDE KALDIK — altyapı HAZIR, eksik olan ARAYÜZ
+
+  Sahada doğrulandı (Sandbox `shootboard-test`, hedef `gerceginizleritv`):
+    ✓ Direct Post açıldı, `video.publish` kapsamı verildi
+    ✓ creator_info/query cevap veriyor
+    ✓ /v2/post/publish/video/init/ çağrılıyor
+    ✗ TikTok 403: `unaudited_client_can_only_post_to_private_accounts`
+
+  Yani zincirin tamamı TikTok'un kapısına kadar çalışıyor. Kod
+  (story-yayin 1.14.0) bu hatayı adıyla yakalayıp anlaşılır mesajla
+  erteliyor; `video.publish` yoksa eski taslak yoluna düşüyor. Bugün
+  hiçbir şeyi bozmuyor, olduğu yerde durabilir.
+
+⛔ NEDEN DURDURULDU — denetim bir form işi DEĞİL, ARAYÜZ İŞİ
+
+  TikTok "Content Sharing Guidelines" belgesi Direct Post kullanan
+  uygulamanın ARAYÜZÜNE şart koyuyor. Shootboard'da hiçbiri yok:
+
+    · bağlı TikTok hesabının takma adı görünmeli
+    · başlık alanı
+    · gizlilik seçici, creator_info'nun verdiği listeden
+    · ⚠ VARSAYILAN GİZLİLİK OLAMAZ -- kullanıcı elle seçmeli
+    · yorum/düet/dikiş anahtarları, creator_info'ya uygun
+    · ticari içerik bildirimi + "Your brand" / "Branded content"
+    · creator_info "şu an atamaz" diyorsa yayını durdurup uyarmalı
+
+  ⚠ Yazdığımız `tiktokGizlilik()` gizlilik seviyesini KENDİ seçiyor --
+  kuralın açıkça yasakladığı şey. Bu hâliyle denetimden döner.
+  Gerçek projelerin aynı gerekçeyle reddedilip arayüzlerini yeniden
+  yazdığı iki PR bulundu (postiz-app#1563, socialApp#120).
+
+  Ayrıca RESMÎ: denetimsiz istemcide hesap gönderi anında GİZLİ olmak
+  zorunda, ve 24 saatte 5 kullanıcı sınırı var. Yani demo videosu için
+  gizli bir test hesabı şart; kullanıcının herkese açık kanalı olmaz.
+
+DEVAM EDİLİRSE YAPILACAKLAR SIRASI
+  1. Takvim düzenleyicisine TikTok bölümü (yukarıdaki yedi madde)
+  2. Seçimlerin saklanması (yeni alanlar)
+  3. Worker otomatik seçmek yerine kullanıcının seçtiğini göndersin
+  4. Testler
+  5. Gizli test TikTok hesabı + Sandbox'a Target User olarak ekleme
+  6. Demo videosu -- shootboard.app üzerinde, bu arayüzü kullanarak
+  7. Production formu + Submit (metinler hazır, aşağıda)
+
+HAZIR BEKLEYENLER (yeniden yazmaya gerek yok)
+  Production formu `Draft`; Sandbox'ta zaten dolu olanlar oradan
+  kopyalanabilir: Login Kit + Content Posting API, Redirect URI
+  https://shootboard.app/tiktok.html, ToS/Privacy URL'leri, Web
+  platformu, https://shootboard.app.
+  Description (110/120) ve App review açıklaması (955/1000) 12 Ekim
+  sohbetinde yazıldı.
+
+KAZANÇ / MALİYET — neden ertelendi
+  Kazanç: TikTok alt yazısını elle yazmaktan kurtulmak. Video zaten
+  otomatik gidiyor (taslak olarak gelen kutuya), kullanıcı açıp alt
+  yazıyı yapıştırıp paylaşıyor. Yani kazanç gönderi başına bir
+  kopyala-yapıştır.
+  Maliyet: yukarıdaki 7 madde + ilk turda sık reddedilen bir denetim.
+  YouTube onayı (24 kayıt) ve Supabase yedeği (426 kayıt, yedek YOK)
+  bundan yüksek getirili.
+
 PAZARLIK KONUSU OLMAYAN KURALLAR
   ⛔ Hiçbir kod `uploaded` sütununa yazmıyor. Bu kullanıcının kendi
      işareti; sistemin durumu `publish_state`. Kural söz değil YAPI:
