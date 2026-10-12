@@ -158,7 +158,23 @@ Deno.serve(async (istek: Request) => {
       client_key: CLIENT_KEY,
       // Hangi izinleri istiyoruz. Sayfa bunu adres kurarken kullanıyor;
       // TEK YER olsun diye burada duruyor.
-      kapsamlar: 'user.info.basic,video.upload',
+      //
+      // ⚠ `video.publish` VARSAYILANDA YOK ve olmamalı. TikTok,
+      // uygulamada tanımlı OLMAYAN bir kapsam istenirse yetkilendirmeyi
+      // tamamen reddediyor -- yani denetim onaylanmadan eklemek, bugün
+      // çalışan bağlantıyı bozardı.
+      //
+      // Denetim onaylandığında kod DEĞİŞMİYOR: Supabase'de
+      // TIKTOK_KAPSAMLAR gizli değişkeni
+      //     user.info.basic,video.upload,video.publish
+      // yapılıyor, kullanıcı hesabı yeniden bağlıyor, worker kapsam
+      // listesinde video.publish'i görünce kendiliğinden doğrudan
+      // yayına geçiyor (story-yayin/index.ts: tiktokYayinla).
+      //
+      // Aynı gerekçe client_key'in buradan verilmesiyle aynı: ortam
+      // değişir, kod değişmez.
+      kapsamlar: (Deno.env.get('TIKTOK_KAPSAMLAR') || '').trim()
+                 || 'user.info.basic,video.upload',
       // ⚠ Yalnızca "tanımlı mı" bilgisi. Değerin kendisi asla.
       yapilandirma: {
         supabase:      !!SUPABASE_URL,
