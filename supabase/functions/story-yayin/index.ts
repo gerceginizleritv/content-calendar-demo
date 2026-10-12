@@ -44,9 +44,21 @@
 // SUPABASE_URL ve SUPABASE_SERVICE_ROLE_KEY Supabase tarafından
 // otomatik veriliyor, elle tanımlanmıyor.
 //
+//   TIKTOK_KAPSAMLAR      tiktok-baglan'da; onay gelince genişletilir
+//
 // Dağıtım:  supabase functions deploy story-yayin --no-verify-jwt
+//
+// ⚠ KAYNAK DEĞİŞTİYSE SURUM DA DEĞİŞMELİ. Alan "dağıtılan sürüm
+// gerçekten yerine geçti mi" sorusuna cevap vermek için var; bir kez
+// eski sürüm "doğrulandı" sanıldı çünkü eski ve yeni aynı cevabı
+// veriyordu, ve sorun günlerce yanlış yerde arandı.
+//
+// 1.14.0 — TikTok doğrudan yayın yolu. `video.publish` kapsamı varsa
+//          /v2/post/publish/video/init/ (post_info ile alt yazı ve
+//          etiketler), yoksa eski taslak yolu. Gizlilik seviyesi
+//          creator_info/query'nin verdiği listeden seçiliyor.
 
-const SURUM = '1.13.0';
+const SURUM = '1.14.0';
 const UCLAR = ['GET / (servis bilgisi)', 'POST / (bir tur)'];
 
 // ⚠ ORTAM DEĞİŞKENLERİ KIRPILIYOR.
