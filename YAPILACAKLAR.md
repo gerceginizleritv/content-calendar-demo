@@ -35,6 +35,8 @@ DOSYALAR
   pc/story-izle.bat   Görev Zamanlayıcı sarmalayıcısı
   pc/r2-supurge.py    R2'de kalanları bulur (elle, Zamanlayıcıya BAĞLI DEĞİL)
   pc/r2-supurge.bat   çift tıkla listele; silmek için --sil
+  pc/yedek-al.py      takvimi diske yedekler (SALT OKUR)
+  pc/yedek-al.bat     Görev Zamanlayıcı sarmalayıcısı, haftada bir
 
 R2 TEMİZLİĞİ — İKİ AYRI MEKANİZMA (9–10 Ekim 2026)
 
@@ -105,6 +107,103 @@ OTOMATİK YAYIN POLİTİKASI — TEK TABLO (10 Ekim 2026)
   sonucu veriyordu. Teste bir yt/shorts kaydı eklendi (find, mediaName'i
   YAYIN_TURLERI boyunca eşleştiriyor; bu gerçek bir durum) ve mutasyon
   yakalandı. Şimdi 8/8.
+
+TIKTOK `video.publish` — DURDURULDU (12 Ekim 2026, kullanıcı kararı)
+────────────────────────────────────────────────────────────────────
+
+NEREDE KALDIK — altyapı HAZIR, eksik olan ARAYÜZ
+
+  Sahada doğrulandı (Sandbox `shootboard-test`, hedef `gerceginizleritv`):
+    ✓ Direct Post açıldı, `video.publish` kapsamı verildi
+    ✓ creator_info/query cevap veriyor
+    ✓ /v2/post/publish/video/init/ çağrılıyor
+    ✗ TikTok 403: `unaudited_client_can_only_post_to_private_accounts`
+
+  Yani zincirin tamamı TikTok'un kapısına kadar çalışıyor. Kod
+  (story-yayin 1.14.0) bu hatayı adıyla yakalayıp anlaşılır mesajla
+  erteliyor; `video.publish` yoksa eski taslak yoluna düşüyor. Bugün
+  hiçbir şeyi bozmuyor, olduğu yerde durabilir.
+
+⛔ NEDEN DURDURULDU — denetim bir form işi DEĞİL, ARAYÜZ İŞİ
+
+  TikTok "Content Sharing Guidelines" belgesi Direct Post kullanan
+  uygulamanın ARAYÜZÜNE şart koyuyor. Shootboard'da hiçbiri yok:
+
+    · bağlı TikTok hesabının takma adı görünmeli
+    · başlık alanı
+    · gizlilik seçici, creator_info'nun verdiği listeden
+    · ⚠ VARSAYILAN GİZLİLİK OLAMAZ -- kullanıcı elle seçmeli
+    · yorum/düet/dikiş anahtarları, creator_info'ya uygun
+    · ticari içerik bildirimi + "Your brand" / "Branded content"
+    · creator_info "şu an atamaz" diyorsa yayını durdurup uyarmalı
+
+  ⚠ Yazdığımız `tiktokGizlilik()` gizlilik seviyesini KENDİ seçiyor --
+  kuralın açıkça yasakladığı şey. Bu hâliyle denetimden döner.
+  Gerçek projelerin aynı gerekçeyle reddedilip arayüzlerini yeniden
+  yazdığı iki PR bulundu (postiz-app#1563, socialApp#120).
+
+  Ayrıca RESMÎ: denetimsiz istemcide hesap gönderi anında GİZLİ olmak
+  zorunda, ve 24 saatte 5 kullanıcı sınırı var. Yani demo videosu için
+  gizli bir test hesabı şart; kullanıcının herkese açık kanalı olmaz.
+
+DEVAM EDİLİRSE YAPILACAKLAR SIRASI
+  1. Takvim düzenleyicisine TikTok bölümü (yukarıdaki yedi madde)
+  2. Seçimlerin saklanması (yeni alanlar)
+  3. Worker otomatik seçmek yerine kullanıcının seçtiğini göndersin
+  4. Testler
+  5. Gizli test TikTok hesabı + Sandbox'a Target User olarak ekleme
+  6. Demo videosu -- shootboard.app üzerinde, bu arayüzü kullanarak
+  7. Production formu + Submit (metinler hazır, aşağıda)
+
+HAZIR BEKLEYENLER (yeniden yazmaya gerek yok)
+  Production formu `Draft`; Sandbox'ta zaten dolu olanlar oradan
+  kopyalanabilir: Login Kit + Content Posting API, Redirect URI
+  https://shootboard.app/tiktok.html, ToS/Privacy URL'leri, Web
+  platformu, https://shootboard.app.
+  Description (110/120) ve App review açıklaması (955/1000) 12 Ekim
+  sohbetinde yazıldı.
+
+KAZANÇ / MALİYET — neden ertelendi
+  Kazanç: TikTok alt yazısını elle yazmaktan kurtulmak. Video zaten
+  otomatik gidiyor (taslak olarak gelen kutuya), kullanıcı açıp alt
+  yazıyı yapıştırıp paylaşıyor. Yani kazanç gönderi başına bir
+  kopyala-yapıştır.
+  Maliyet: yukarıdaki 7 madde + ilk turda sık reddedilen bir denetim.
+  YouTube onayı (24 kayıt) ve Supabase yedeği (426 kayıt, yedek YOK)
+  bundan yüksek getirili.
+
+YEDEK — Supabase ÜCRETSİZ planda, otomatik yedek YOK (12 Ekim 2026)
+────────────────────────────────────────────────────────────────────
+
+  Kullanıcı Pro'ya (25 $/ay, günlük yedek, 7 gün saklama) şimdilik
+  geçmedi. Yedek tamamen `pc/yedek-al.py`'ye kaldı.
+
+  ⚠ ASIL RİSK SUPABASE'İN ÇÖKMESİ DEĞİL, BİZİM HATAMIZ. Ekim 2026
+  boyunca canlı veritabanında elle UPDATE'ler koşuldu: 64 kayıt, 25
+  kayıt, tek kayıtlar. Hepsi tuttu çünkü her seferinde önce SELECT ile
+  bakıldı. Bir gün bir `where` satırı eksik kalırsa bugün geri dönüş YOK.
+
+  Pro'ya geçilse bile bu script gerekli kalır: Pro 7 gün saklıyor, üç
+  hafta sonra fark edilen bir bozulmaya yetmez.
+
+  NE YEDEKLER: bütün takvim kayıtları + projeler. Medya YOK (R2'de ve
+  asılları kullanıcının diskinde), kod YOK (GitHub'da).
+
+  ⛔ SALT OKUR: yalnızca shootboard_list_entries ve _list_projects.
+  PATCH yok, silme yok, `uploaded`a dokunmuyor.
+
+  Hesap durumu (12 Ekim): 8 hesap, 2'si tanınmayan gerçek kullanıcı.
+  Yani artık başkalarının verisi de tutuluyor; privacy.html'de onlara
+  taahhüt var. Pro kararı bu yüzden tekrar gündeme gelebilir.
+
+  Ölçüm: testler/yedek-al.test.py (31). Dokuz mutasyon denendi; ilk
+  turda İKİSİ HAYATTA KALDI ve ikisi de testin zayıflığıydı:
+    · pencere ölçümü KENDİ sabitine bakıyordu (sabit 180 olunca ölçüm
+      de 180'e bakıyor) -> ucun gerçek sınırı 90'a bağlandı
+    · geri okuma doğrulaması yalnızca kaynak metninde aranıyordu ->
+      davranışla ölçülüyor (json.load eksik döndürülüp çıkış bekleniyor)
+  Script'te bulunan GERÇEK hata: dosya damgası dakika hassasiyetindeydi,
+  aynı dakika içinde iki kez koşmak öncekinin üstüne yazıyordu.
 
 PAZARLIK KONUSU OLMAYAN KURALLAR
   ⛔ Hiçbir kod `uploaded` sütununa yazmıyor. Bu kullanıcının kendi
