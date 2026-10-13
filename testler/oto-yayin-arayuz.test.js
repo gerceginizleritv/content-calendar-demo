@@ -180,6 +180,83 @@ async function kaydet(page){
      gorunum.yeni.gizli === false && /kaydet|Save the entry/.test(gorunum.yeni.metin),
      gorunum.yeni.metin.slice(0,80));
 
+  // ---- 2b. Nottaki PLATFORM ADI -------------------------------------------
+  // 13 Ekim 2026'ya kadar bu not "Instagram'a atiyor" diye SABITTI.
+  // Facebook kayitlarinda duz yanlis yaziyordu; Facebook reels'te
+  // gorunmuyordu cunku o kombinasyon nota hic ulasmiyordu, ama Facebook
+  // HIKAYELERI haftalardir yanlis platform adiyla duruyordu.
+  //
+  // Olcum iki yonlu: dogru ad VAR ve yanlis ad YOK. Yalniz "Facebook
+  // geciyor mu" diye bakmak yetmezdi -- "Instagram'a atiyor ... Facebook"
+  // gibi bir metin de gecerdi.
+  console.log('[nottaki platform adı]');
+  const notlar = await page.evaluate(async (temel)=>{
+    const kur = (ek)=> sanitizeEvent(fromRow(Object.assign({}, temel, ek)));
+    // ⚠ events GERI KONUYOR. Bu blok kendi kayitlarini kuruyor ama
+    // sonraki bolumler onceki bolumun kayitlarini ariyor; temizlemeden
+    // birakmak onlari "Cannot read properties of undefined" ile
+    // dusururdu (13 Ekim 2026'da tam bu oldu).
+    const yedek = events.slice();
+    events.length = 0;
+    events.push(kur({ id:'ev_fb_reels', title:'FB REELS', platform:'facebook', type:'reels',
+                      publish_state:'pending', published_at:null }));
+    events.push(kur({ id:'ev_fb_story', title:'FB STORY', platform:'facebook', type:'story',
+                      publish_state:'pending', published_at:null }));
+    events.push(kur({ id:'ev_ig_story', title:'IG STORY', platform:'instagram', type:'story',
+                      publish_state:'pending', published_at:null }));
+    const oku = (id)=>{
+      openModal(events.find(e=> e.id === id));
+      const m = document.getElementById('otoYayinDurum').textContent;
+      closeModal();
+      return m;
+    };
+    // ⚠ IKI DILDE DE OLCULUYOR. 13 Ekim 2026: once yalniz Ingilizce
+    // okunuyordu ve Turkce metinleri geri bozan UC mutasyonun ucu de
+    // hayatta kaldi -- test gecerken urun yanlisti. Hata ikisinde de
+    // vardi, olcum de ikisinde olmak zorunda.
+    const onceki = currentLang;
+    const sonuc = { en: {}, tr: {} };
+    for(const dil of ['en', 'tr']){
+      setLanguage(dil);
+      sonuc[dil] = { fbReels: oku('ev_fb_reels'), fbStory: oku('ev_fb_story'),
+                     igStory: oku('ev_ig_story') };
+    }
+    setLanguage(onceki);
+    events.length = 0;
+    yedek.forEach(e=> events.push(e));
+    return sonuc;
+  }, {
+    id:'ev_not', user_id:'u', type:'story', platform:'instagram', title:'NOT',
+    post_date:'2026-09-20', post_time:'11:53:00', uploaded:false,
+    content:{ timezone:'Europe/Istanbul' }, auto_publish:true,
+    publish_state:'pending', published_at:null,
+    media_name:'2026-09-20_story_k1.mp4', media_bytes:12582912,
+    media_url:'https://medya.test/a.mp4', last_error:null, attempt_count:0,
+    publish_at:'2026-09-20T08:53:00Z', workspace_id:null, project_id:null
+  });
+
+  for(const dil of ['en', 'tr']){
+    const n = notlar[dil];
+    const yanlis = /Instagram'a kendi atıyor|to Instagram at the time/;
+    k(`★ [${dil}] Facebook reels notunda "Facebook" yazıyor`,
+       /Facebook/.test(n.fbReels), n.fbReels.slice(-150));
+    k(`★ [${dil}] Facebook reels notu Instagram'a atıyorum DEMİYOR`,
+       !yanlis.test(n.fbReels), n.fbReels.slice(-150));
+    k(`★ [${dil}] Facebook hikâyesinde de "Facebook" yazıyor`,
+       /Facebook/.test(n.fbStory), n.fbStory.slice(-150));
+    k(`★ [${dil}] Facebook hikâyesi Instagram'a atıyorum DEMİYOR`,
+       !yanlis.test(n.fbStory), n.fbStory.slice(-150));
+    // Instagram BOZULMAMIS olmali: duzeltme ters yonde calisirsa
+    // ig kayitlarinda Facebook yazardi ve kimse fark etmezdi.
+    k(`★ [${dil}] Instagram hikâyesi hâlâ Instagram'a atıyor`,
+       /Instagram'a kendi atıyor|to Instagram at the time/.test(n.igStory),
+       n.igStory.slice(-150));
+  }
+  // Turkce ek elle yazili bir tablodan geliyor: "Facebook'a" olmali,
+  // "Facebook'e" ya da eksiz "Facebook" degil.
+  k('★ Türkçe ek doğru ("Facebook\'a")',
+     /Facebook'a/.test(notlar.tr.fbStory), notlar.tr.fbStory.slice(-150));
+
   // ---- 3. Takvimdeki nokta ------------------------------------------------
   console.log('[takvim noktası]');
   k('yayınlanan yeşil', gorunum.noktalar.some(c=> /yayinlandi/.test(c)), gorunum.noktalar.join(' | '));

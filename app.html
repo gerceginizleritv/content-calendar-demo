@@ -4936,6 +4936,13 @@ const CAL_SM_PLATFORMS = ['youtube','instagram','tiktok','facebook','threads','x
 const CAL_TYPE_NAMES = {video:'Video', shorts:'Shorts', reels:'Reels', carousel:'Carousel', story:'Story', text_post:'Text Post', poll:'Poll'};
 const CAL_TYPE_LABELS = {video:'VID', shorts:'SHRT', reels:'REEL', carousel:'CAR', story:'STORY', text_post:'TXT', poll:'POLL'};
 const CAL_SM_NAMES = {youtube:'YouTube', instagram:'Instagram', tiktok:'TikTok', facebook:'Facebook', threads:'Threads', x:'X', pinterest:'Pinterest', linkedin:'LinkedIn'};
+// Turkce yonelme hali (-e/-a). "Instagram'a", "Threads'e". Ek sesli
+// uyumuna gore degisiyor ve platform adlari yabanci oldugu icin
+// kurallardan turetmek guvenilir degil: elle yazildi. Ekranda
+// "Threads'a" gibi bir sey cikmasin diye var.
+const PLATFORM_YONELME = {youtube:"YouTube'a", instagram:"Instagram'a", tiktok:"TikTok'a",
+  facebook:"Facebook'a", threads:"Threads'e", x:"X'e", pinterest:"Pinterest'e",
+  linkedin:"LinkedIn'e"};
 const CAL_SM_COLORS = {youtube:'var(--p-youtube)', instagram:'var(--p-instagram)', tiktok:'var(--p-tiktok)', facebook:'var(--p-facebook)', threads:'var(--p-threads)', x:'var(--p-x)', pinterest:'var(--p-pinterest)', linkedin:'var(--p-linkedin)'};
 const PLATFORM_ICONS = {
   youtube: '<svg viewBox="0 0 24 24" fill="currentColor"><rect x="1" y="5" width="22" height="14" rx="4"/><path d="M10 8.7v6.6l6-3.3z" fill="var(--surface)"/></svg>',
@@ -5064,7 +5071,7 @@ const LANG = {
     ai_uyari_proje: (ad)=> `Project “${ad}” not found — added without a project.`,
     ai_uyari_mekan: (ad)=> `Place “${ad}” not found — that stop was skipped.`,
     oy_label: "Publish automatically",
-    oy_not: "Shootboard posts this story to Instagram at the time above. It is the only thing Shootboard publishes by itself — everything else you post yourself.",
+    oy_not: (p)=> `Shootboard posts this story to ${CAL_SM_NAMES[p] || p} at the time above. Stories and reels on Instagram and Facebook are the only things Shootboard publishes by itself — everything else you post yourself.`,
     oy_dosya_yok: "No file linked yet. The uploader on your computer links it after the render.",
     oy_dosya: (ad, mb)=> `File: ${ad}${mb ? ' · ' + mb + ' MB' : ''}`,
     oy_bekliyor: "Waiting",
@@ -5073,7 +5080,7 @@ const LANG = {
     oy_hata: "Failed",
     oy_saatsiz: "No time set, so it will not publish. Give it a time.",
     oy_yeni: "Save the entry first, then you can switch automatic publishing on.",
-    oy_not_reels: "Shootboard posts this reel to Instagram at the time above, cover and caption included. It is the only thing Shootboard posts by itself \u2014 everything else you post.",
+    oy_not_reels: (p)=> `Shootboard posts this reel to ${CAL_SM_NAMES[p] || p} at the time above, cover and caption included. Stories and reels on Instagram and Facebook are the only things Shootboard posts by itself \u2014 everything else you post.`,
     oy_not_shorts: "Shootboard uploads this Short to YouTube as soon as the file is ready \u2014 often days early \u2014 and YouTube itself publishes it at the time above. Title, description and tags go with it. After the upload, edits made here no longer reach the video; change it in YouTube Studio.",
     oy_zamanlandi: "Uploaded \u2014 YouTube publishes it at",
     oy_kapak_var: "Cover attached.",
@@ -6092,7 +6099,7 @@ const LANG = {
     ai_uyari_proje: (ad)=> `“${ad}” projesi bulunamadı — projesiz eklendi.`,
     ai_uyari_mekan: (ad)=> `“${ad}” mekanı bulunamadı — o durak atlandı.`,
     oy_label: "Otomatik yayınla",
-    oy_not: "Shootboard bu story'yi yukarıdaki saatte Instagram'a kendi atıyor. Shootboard'ın kendiliğinden yayınladığı tek şey bu — geri kalan her şeyi sen yayınlıyorsun.",
+    oy_not: (p)=> `Shootboard bu story'yi yukarıdaki saatte ${PLATFORM_YONELME[p] || ((CAL_SM_NAMES[p] || p) + "'a")} kendi atıyor. Shootboard'ın kendiliğinden yayınladığı şeyler Instagram ve Facebook'taki story ve reels kayıtları — geri kalan her şeyi sen yayınlıyorsun.`,
     oy_dosya_yok: "Henüz dosya bağlı değil. Render bitince bilgisayarındaki yükleyici bağlıyor.",
     oy_dosya: (ad, mb)=> `Dosya: ${ad}${mb ? ' · ' + mb + ' MB' : ''}`,
     oy_bekliyor: "Bekliyor",
@@ -6101,7 +6108,7 @@ const LANG = {
     oy_hata: "Hata",
     oy_saatsiz: "Saat girilmemiş, bu yüzden yayınlanmayacak. Bir saat ver.",
     oy_yeni: "Önce kaydı kaydet, sonra otomatik yayını açabilirsin.",
-    oy_not_reels: "Shootboard bu reel'i yukarıdaki saatte Instagram'a kendi atıyor — kapağı ve alt yazısıyla. Shootboard'ın kendiliğinden yayınladığı tek şey bu — geri kalan her şeyi sen yayınlıyorsun.",
+    oy_not_reels: (p)=> `Shootboard bu reel'i yukarıdaki saatte ${PLATFORM_YONELME[p] || ((CAL_SM_NAMES[p] || p) + "'a")} kendi atıyor — kapağı ve alt yazısıyla. Shootboard'ın kendiliğinden yayınladığı şeyler Instagram ve Facebook'taki story ve reels kayıtları — geri kalan her şeyi sen yayınlıyorsun.`,
     oy_not_shorts: "Shootboard bu Short'u dosya hazır olur olmaz YouTube'a yüklüyor — çoğu zaman günler öncesinden. Yayına alma işini yukarıdaki saatte YouTube kendi yapıyor. Başlık, açıklama ve etiketler videoyla birlikte gidiyor. Yükleme olduktan sonra buradaki düzeltmeler videoya ULAŞMIYOR; onu YouTube Studio'dan değiştirmen gerekiyor.",
     oy_zamanlandi: "Yüklendi — YouTube şu saatte yayınlayacak:",
     oy_kapak_var: "Kapak bağlı.",
@@ -16594,10 +16601,22 @@ function otoYayinTazele(){
   // yaziyor, yoksa "otomatik acik ama hicbir sey olmuyor" olurdu.
   if(!document.getElementById('f_time').value) satirlar.push(escapeHtml(t('oy_saatsiz')));
 
+  // ⚠ PLATFORM ADI SABIT YAZILMAZ. 13 Ekim 2026'ya kadar bu metinler
+  // "Instagram'a atiyor" diye sabitti; Facebook kayitlarinda DUZ YANLIS
+  // yaziyordu. Facebook reels'te fark edilmemisti cunku o kombinasyon
+  // bu satira hic ulasmiyordu (ustteki sert kapatma dali once
+  // donuyordu) -- ama Facebook HIKAYELERI haftalardir yanlis platform
+  // adiyla gorunuyordu.
+  //
+  // Form alanindan okunuyor, currentEvent'ten degil: kullanici
+  // platformu degistirip HENUZ KAYDETMEMISSE bile not dogru olani
+  // soylesin.
+  const notPlatform = (document.getElementById('f_platform') || {}).value
+                   || (currentEvent && currentEvent.platform) || '';
   satirlar.push('<span class="hint" style="display:block;margin-top:6px">'
     + escapeHtml(tur === 'shorts' ? t('oy_not_shorts')
-               : tur === 'reels'  ? t('oy_not_reels')
-               : t('oy_not')) + '</span>');
+               : tur === 'reels'  ? t('oy_not_reels')(notPlatform)
+               : t('oy_not')(notPlatform)) + '</span>');
   if(y.hata) satirlar.push('<span class="oy-hata">' + escapeHtml(y.hata) + '</span>');
   d.innerHTML = satirlar.join('<br>');
 }
