@@ -1,6 +1,9 @@
 -- ══════════════════════════════════════════════════════════════════
 -- 59 — FACEBOOK HİKÂYESİ TEŞHİSİ  ⚠ SALT OKUNUR
 -- ══════════════════════════════════════════════════════════════════
+-- Sütun adları post_date / post_time (date / time DEĞİL -- 13 Ekim
+-- 2026: ilk sürümde yanlış yazıldı, 42703 verdi).
+--
 -- Bu dosya HİÇBİR ŞEYİ DEĞİŞTİRMEZ. Yalnızca select var; update,
 -- insert, delete, create, grant YOK. Hiçbir dosyanın işini geri
 -- almaz, hiçbir dosya da bunun işini geri alamaz.
@@ -30,8 +33,8 @@
 --   'yok (sadece video_id)' çıkıyorsa -> ihtimal (A) güçleniyor.
 --   'var' çıkıyorsa        -> hikâye gerçekten yayınlandı, (B).
 select
-  date                                as gun,
-  time                                as saat,
+  post_date                           as gun,
+  post_time                           as saat,
   title                               as baslik,
   publish_state                       as durum,
   case
@@ -44,14 +47,14 @@ select
 from public.calendar_events
 where platform = 'facebook'
   and type = 'story'
-  and date >= current_date - 10
-order by date desc, time desc;
+    and post_date >= current_date - 10
+order by post_date desc, post_time desc;
 
 -- ---- SORGU 2: Aynı soru reels için (karşılaştırma) ----------------
 -- Facebook reels görüntülenme ALDI. Onun external_id'si nasıl
 -- duruyor? İkisi farklıysa fark kodda değil Facebook'un cevabında.
 select
-  date                                as gun,
+  post_date                           as gun,
   type                                as tur,
   publish_state                       as durum,
   case
@@ -63,8 +66,8 @@ from public.calendar_events
 where platform = 'facebook'
   and type in ('reels', 'story')
   and publish_state = 'published'
-  and date >= current_date - 10
-order by date desc, type;
+    and post_date >= current_date - 10
+order by post_date desc, type;
 
 -- ---- SORGU 3: Tek satırlık özet -----------------------------------
 -- Hikâyelerin kaçında gerçek bir gönderi kimliği var?
@@ -77,4 +80,4 @@ from public.calendar_events
 where platform = 'facebook'
   and type = 'story'
   and publish_state = 'published'
-  and date >= current_date - 30;
+    and post_date >= current_date - 30;
