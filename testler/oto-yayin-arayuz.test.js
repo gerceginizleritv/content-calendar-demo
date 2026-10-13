@@ -64,11 +64,11 @@ async function kaydet(page){
   const boru = await page.evaluate(()=>{
     const satir = {
       id:'ev_oto', user_id:'u', type:'story', platform:'instagram', title:'Story',
-      post_date:'2026-12-20', post_time:'11:53:00', uploaded:false, content:{ timezone:'Europe/Istanbul' },
-      auto_publish:true, publish_state:'published', published_at:'2026-12-20T08:53:00Z',
-      media_name:'2026-12-20_story_sokollu_k1.mp4', media_bytes:12582912,
+      post_date:'2026-09-20', post_time:'11:53:00', uploaded:false, content:{ timezone:'Europe/Istanbul' },
+      auto_publish:true, publish_state:'published', published_at:'2026-09-20T08:53:00Z',
+      media_name:'2026-09-20_story_sokollu_k1.mp4', media_bytes:12582912,
       media_url:'https://medya.test/a.mp4', last_error:null, attempt_count:1,
-      publish_at:'2026-12-20T08:53:00Z', workspace_id:null, project_id:null
+      publish_at:'2026-09-20T08:53:00Z', workspace_id:null, project_id:null
     };
     const e = fromRow(satir);
     const temiz = sanitizeEvent(e);
@@ -78,14 +78,14 @@ async function kaydet(page){
       temizKaldi: temiz.yayin,
       geriAlanlar: Object.keys(geri),
       sifirdanTemiz: sanitizeEvent({ id:'x', type:'story', platform:'instagram',
-        date:'2026-12-20', time:'11:53', yayin:{ otomatik:true, durum:'failed', dosya:'a.mp4',
+        date:'2026-09-20', time:'11:53', yayin:{ otomatik:true, durum:'failed', dosya:'a.mp4',
         bayt:5, medyaVar:true, yayinAn:'', yayinlandi:'', hata:'#100 bozuk', deneme:3 } }).yayin
     };
   });
   k('satırdan okunuyor', !!boru.okundu && boru.okundu.otomatik === true
      && boru.okundu.durum === 'published', JSON.stringify(boru.okundu));
   k('dosya adı ve boyutu taşınıyor',
-     boru.okundu && boru.okundu.dosya === '2026-12-20_story_sokollu_k1.mp4' && boru.okundu.bayt === 12582912);
+     boru.okundu && boru.okundu.dosya === '2026-09-20_story_sokollu_k1.mp4' && boru.okundu.bayt === 12582912);
   k('★ sanitizeEvent DÜŞÜRMÜYOR', !!boru.temizKaldi && boru.temizKaldi.durum === 'published',
      JSON.stringify(boru.temizKaldi));
   k('★ sanitizeEvent yerel kopyadan gelen bilgiyi de koruyor',
@@ -142,12 +142,19 @@ async function kaydet(page){
     return { y, bek, ht, vd, yeni,
              noktalar: [...document.querySelectorAll('.ev-yayin')].map(n=> n.className) };
   }, {
+    // ⚠ TARIH GECMISTE OLMAK ZORUNDA. Kayit 'published' ama yayin ani
+    // GELECEKTEYSE ekranda "Yayinlandi" degil "Zamanlandi" yaziyor --
+    // kasitli: sql/55'ten beri YouTube kayitlari yayin saatinden alti
+    // saat once yukleniyor, o aralikta "Yayinlandi" demek duz yalan
+    // olurdu. Burasi eskiden 2026-12-20 idi; tarih gectikce gelecege
+    // dustu ve asagidaki iki olcum (13 Ekim 2026) kirildi. Urun
+    // dogruydu, kurgu eskimisti. Ileri bir tarihe tasima.
     id:'ev_oto', user_id:'u', type:'story', platform:'instagram', title:'OTO-YAYINLANAN',
-    post_date:'2026-12-20', post_time:'11:53:00', uploaded:false, content:{ timezone:'Europe/Istanbul' },
-    auto_publish:true, publish_state:'published', published_at:'2026-12-20T08:53:00Z',
-    media_name:'2026-12-20_story_sokollu_k1.mp4', media_bytes:12582912,
+    post_date:'2026-09-20', post_time:'11:53:00', uploaded:false, content:{ timezone:'Europe/Istanbul' },
+    auto_publish:true, publish_state:'published', published_at:'2026-09-20T08:53:00Z',
+    media_name:'2026-09-20_story_sokollu_k1.mp4', media_bytes:12582912,
     media_url:'https://medya.test/a.mp4', last_error:null, attempt_count:1,
-    publish_at:'2026-12-20T08:53:00Z', workspace_id:null, project_id:null
+    publish_at:'2026-09-20T08:53:00Z', workspace_id:null, project_id:null
   });
 
   k('story kaydında görünüyor', gorunum.y.gizli === false);
@@ -311,7 +318,7 @@ async function kaydet(page){
              kapakSonra: (sonra.content || {}).thumbPrompt || '',
              slaytSonra: ((sonra.content || {}).slidePrompts || []).length,
              temizden: (sanitizeEvent({ id:'x', type:'story', platform:'instagram',
-               date:'2026-12-20', time:'11:53',
+               date:'2026-09-20', time:'11:53',
                content:{ storyYonerge: 'damga: KAYIT' } }).content || {}).storyYonerge };
   });
   Object.assign(kart, kartSonuc);

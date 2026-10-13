@@ -71,13 +71,24 @@ R2 TEMİZLİĞİ — İKİ AYRI MEKANİZMA (9–10 Ekim 2026)
     · adında tarih olmayan hiçbir nesne kendiliğinden silinmiyor
     · Görev Zamanlayıcıya BAĞLANMIYOR: silen bir iş gözetimsiz koşmamalı
 
-OTOMATİK YAYIN POLİTİKASI — TEK TABLO (10 Ekim 2026)
+OTOMATİK YAYIN POLİTİKASI — TEK TABLO (13 Ekim 2026)
 
   pc/story-yukle.py: OTOMATIK_YAYIN
 
-    instagram/story   ✓    facebook/reels   ✗  sıfır dağıtım, 5 Ekim'den elle
+    instagram/story   ✓    facebook/reels   ✓  13 Ekim'de geri açıldı
     facebook/story    ✓    tiktok/reels     ✗  video.publish onayı yok
     instagram/reels   ✓    youtube/shorts   ✗  denetim kapısı kapalı
+
+  13 EKİM 2026 — FACEBOOK ÇÖZÜLDÜ. Kök sebep "Facebook API reels'i
+  dağıtmıyor" değilmiş: Meta uygulaması hiç yayınlanmamıştı (In
+  development) ve o durumda içerik yalnızca uygulamada rolü olan
+  kişilere gidiyor. Uygulama Live yapıldı; reels görüntülenme aldı,
+  hikâyeler 39 ve 14 aldı (önceki 28 gün düz 0'dı — hikâyeler de
+  etkilenmişti, "etkilenmiyor" diye yazılmış olması doğrulanmamış
+  bir iddiaydı).
+
+  Açmak iki kapı gerektirdi: tablo (burası) + story_kuyruk_al
+  (sql/58). sql/56 yeniden koşturulursa ikinci kapı kapanır.
 
   ⚠ TABLODA OLMAYAN ÇİFT KAPALI. Yeni bir platform/tür sessizce yayına
   başlamıyor. Bir çift açılacaksa DEĞİŞECEK TEK YER burası.

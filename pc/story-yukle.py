@@ -132,18 +132,46 @@ def ad_turu(ad):
 #   instagram/story  22 Eylul'den beri sorunsuz
 #   facebook/story   22 Eylul'den beri sorunsuz
 #   instagram/reels  2-3 Ekim'de 8.148 ve 3.819 oynatma
+#   facebook/reels   13 Ekim 2026'da ACILDI -- asagiya bak
+#   facebook/story   13 Ekim 2026'da DOGRULANDI -- asagiya bak
 # Kapali olanlarin sebebi de olculdu:
-#   facebook/reels   ayni dosya, ayni dakika, ayni hat: IG 8.148 /
-#                    FB 19 goruntulenme. 5 Ekim'den beri ELLE.
 #   tiktok/reels     video.publish onayi yok
 #   youtube/shorts   kullanicinin denetim kapisi kapali
+#
+# ══════════════════════════════════════════════════════════════════
+# 13 EKIM 2026 — FACEBOOK ACILDI, KOK SEBEP BULUNDU
+# ══════════════════════════════════════════════════════════════════
+# facebook/reels 5 Ekim'den beri kapaliydi. Gerekce: "Facebook bu
+# sayfada API ile atilan reels'i dagitmiyor" -- ayni dosya, ayni
+# dakika, ayni hat, IG 8.148 / FB 19 goruntulenme.
+#
+# OLCUM DOGRUYDU, TESHIS YANLISTI. Sorun Facebook'un reels'i
+# dagitmamasi degilmis: META UYGULAMASI HIC YAYINLANMAMISTI (In
+# development). O durumda Facebook icerigi yalnizca uygulamada rolu
+# olan kisilere gosteriyor -- "19 goruntuleme, 1 tekil kisi" tam
+# olarak bu demek. Uygulama Live yapildi, 13 Ekim'deki reels
+# goruntulenme aldi.
+#
+# ⛔ VE HIKAYELER DE ETKILENMISTI. Burada ve sql/56'da "facebook
+# hikayeleri etkilenmiyor" yaziyordu; yanlisti. Business Suite
+# 15 Eylul - 12 Ekim arasi hikayelerde DUZ 0 gosteriyor. Ayni
+# hikaye dosyalari Instagram'da izlenmisti (dosya saglam), sayfanin
+# 15 bin takipcisi var (kitle var). Uygulama Live olduktan sonraki
+# ilk olcum: 39 ve 14 goruntuleyen.
+#
+# ⚠ IKINCI KAPIYI UNUTMA. Bu tablo kaydin auto_publish sutununu
+# belirliyor; kuyrugun KENDI sarti ayri bir kapi (story_kuyruk_al).
+# facebook/reels icin o kapiyi sql/58 acti. sql/56 yeniden
+# kosturulursa kapi tekrar kapanir ve BURADAKI True hicbir ise
+# yaramaz -- 12 Ekim'de tam olarak bu atlandi.
+# ══════════════════════════════════════════════════════════════════
 #
 # Bir cift acilacaksa DEGISECEK TEK YER BURASI.
 OTOMATIK_YAYIN = {
     ('instagram', 'story'):  True,
     ('facebook',  'story'):  True,
     ('instagram', 'reels'):  True,
-    ('facebook',  'reels'):  False,
+    ('facebook',  'reels'):  True,
     ('tiktok',    'reels'):  False,
     ('youtube',   'shorts'): False,
 }

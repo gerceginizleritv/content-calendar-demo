@@ -126,12 +126,35 @@ begin
        -- Gönderi alanları da birebir aynı (privacy EVERYONE, status_type
        -- added_video, is_eligible_for_promotion true). Tek fark yol.
        --
-       -- ⚠ FACEBOOK HİKÂYELERİ ETKİLENMİYOR, kasıtlı olarak dışarıda:
-       -- onlar aynı worker'dan gidip 109-422 görüntülenme almaya devam
-       -- ediyor. Koşul o yüzden platform VE tür birlikte; yalnız
-       -- platforma bakan bir satır hikâyeleri de durdururdu.
+       -- ⚠ 13 EKİM 2026 — BU TEŞHİS YANLIŞTI, KÖK SEBEP BULUNDU.
        --
-       -- GERİ ALMAK: Meta tarafı düzelirse bu üç satırı sil ve dosyayı
+       -- Yukarıdaki ölçüm doğru, yorumu yanlıştı. Sorun "Facebook bu
+       -- sayfada API reels'i dağıtmıyor" değilmiş: Meta uygulaması
+       -- hiç YAYINLANMAMIŞTI (In development). O durumda Facebook
+       -- içeriği yalnızca uygulamada rolü olan kişilere gösteriyor --
+       -- 3 Ekim'deki reel'in Erişim 1 alması tam olarak bu.
+       -- Uygulama Live yapıldı, 13 Ekim'deki reels görüntülenme aldı.
+       --
+       -- ⛔ VE HİKÂYELER ETKİLENMİYOR DEĞİLDİ. Burada önceden
+       -- "hikâyeler 109-422 görüntülenme almaya devam ediyor" yazıyordu;
+       -- o sayı doğrulanmadan yazılmıştı ve yanlıştı. Business Suite
+       -- 15 Eylül - 12 Ekim arası hikâyelerde DÜZ 0 gösteriyor. Aynı
+       -- hikâye dosyaları Instagram'da izlenmişti, yani dosya sağlamdı;
+       -- sayfanın 15 bin takipçisi var, yani kitle de vardı. Hikâyeler
+       -- de aynı kök sebepten dağıtılmıyordu.
+       --
+       -- Uygulama Live olduktan sonra ilk ölçüm (13 Ekim, canlı
+       -- hikâyenin kendi görüntüleyen sayacından): 39 ve 14.
+       --
+       -- Koşul yine de platform VE tür birlikte: yalnız platforma
+       -- bakan bir satır hikâyeleri de durdururdu.
+       --
+       -- GERİ ALMAK: kök sebep düzeldi, sql/58 tam bunu yaptı --
+       -- bu dosyayı yeniden koşturmak sql/58'in işini GERİ ALIR ve
+       -- Facebook reels'i tekrar kuyruktan çıkarır. Dosyayı yeniden
+       -- koşturman gereken bir sebep varsa, hemen ardından sql/58'i de
+       -- koştur. (Aşağıdaki eski not 5 Ekim'den kalma:)
+       -- Meta tarafı düzelirse bu üç satırı sil ve dosyayı
        -- yeniden koştur (işlev drop/create, yeniden koşmak güvenli).
        -- Kayıtların auto_publish'i açık kaldığı için başka bir şey
        -- yapmak gerekmiyor -- yayın kendiliğinden kaldığı yerden sürer.
