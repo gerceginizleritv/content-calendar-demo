@@ -81,3 +81,22 @@ where platform = 'facebook'
   and type = 'story'
   and publish_state = 'published'
     and post_date >= current_date - 30;
+
+-- ══════════════════════════════════════════════════════════════════
+-- SONUÇ — 13 Ekim 2026 (sorgu canlıda çalıştırıldı)
+-- ══════════════════════════════════════════════════════════════════
+-- 3-13 Ekim arasındaki 29 kaydın HEPSİNDE gonderi_kimligi = 'var'.
+-- Yani Facebook bitiş çağrısında gerçek bir gönderi kimliği döndürdü
+-- ve hikâyeler gerçekten yayınlandı. İhtimal (A) ELENDİ: story yayın
+-- yolunda reels'teki video_state hatasının bir benzeri YOK.
+--
+-- ⚠ AMA BU SORGU DAĞITIMI ÖLÇMÜYOR. Aynı tabloda 3 Ekim'in reels'i
+-- de 'var' diyor -- o reel'in Erişim 1 aldığını ölçmüştük. Gönderi
+-- kimliği olmak, içeriğin kimseye gösterildiği anlamına gelmiyor.
+-- Dağıtım sorusu bu dosyadan cevaplanamaz, ölçümle cevaplanır.
+--
+-- Business Suite "Hikayeler" sekmesi 12 Ekim'de bitiyor (hem 28
+-- günlük hem 7 günlük pencerede) -- yani Meta uygulamasının Live
+-- olduğu günden sonrasını HENÜZ göstermiyor. Elde 0 olarak görünen
+-- bütün veri, uygulamanın "In development" olduğu döneme ait.
+-- ══════════════════════════════════════════════════════════════════
