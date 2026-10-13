@@ -81,9 +81,14 @@ si = modul_al('story-izle.py', 'story_izle')
 
 
 # ══════════════════════════════════════════════════════════════════
-print('[tablo: kullanıcının 10 Ekim 2026 kararı]')
-ACIK = [('instagram', 'story'), ('facebook', 'story'), ('instagram', 'reels')]
-KAPALI = [('facebook', 'reels'), ('tiktok', 'reels'), ('youtube', 'shorts')]
+# 13 Ekim 2026: facebook/reels AÇILDI. Meta uygulaması Live yapıldı,
+# reels de hikâyeler de görüntülenme almaya başladı -- 5 Ekim'deki
+# kapatmanın gerekçesi (ölçüm doğruydu, teşhis yanlıştı) ortadan
+# kalktı. TikTok ve YouTube'un kapalı olma sebepleri DURUYOR.
+print('[tablo: kullanıcının 13 Ekim 2026 kararı]')
+ACIK = [('instagram', 'story'), ('facebook', 'story'),
+        ('instagram', 'reels'), ('facebook', 'reels')]
+KAPALI = [('tiktok', 'reels'), ('youtube', 'shorts')]
 
 for p, t in ACIK:
     bak(f'{p}/{t} AÇIK', sy.otomatik_mi(p, t) is True)
@@ -91,7 +96,7 @@ for p, t in KAPALI:
     bak(f'★ {p}/{t} kapalı', sy.otomatik_mi(p, t) is False)
 
 # Tabloda fazlası olmasın: ileride biri "zaten açıktı" diye eklemesin.
-bak('★ tabloda açık olan TAM OLARAK bu üçü',
+bak('★ tabloda açık olan TAM OLARAK bu dördü',
     sorted(x for x, v in sy.OTOMATIK_YAYIN.items() if v) == sorted(ACIK),
     [x for x, v in sy.OTOMATIK_YAYIN.items() if v])
 
@@ -216,7 +221,8 @@ try:
         ri.dosyayi_isle(SahteRY(), rsy, v, os.path.basename(v), None, None, True, False)
 
     bak('★ instagram/reels AÇILDI', rsy.yazilan.get('instagram') is True, rsy.yazilan)
-    bak('★ facebook/reels açılmadı', rsy.yazilan.get('facebook') is False, rsy.yazilan)
+    bak('★ facebook/reels AÇILDI (13 Ekim 2026)',
+        rsy.yazilan.get('facebook') is True, rsy.yazilan)
     bak('★ tiktok/reels açılmadı', rsy.yazilan.get('tiktok') is False, rsy.yazilan)
     bak('★ youtube/shorts açılmadı (denetim kapısı kapalı)',
         rsy.yazilan.get('youtube') is False, rsy.yazilan)
@@ -256,7 +262,7 @@ try:
     with contextlib.redirect_stdout(io.StringIO()):
         si.dosyayi_isle(ssy, sv, os.path.basename(sv), True, False)
     bak('★ instagram/story AÇIK kalıyor', ssy.yazilan.get('instagram') is True, ssy.yazilan)
-    bak('★ facebook/story AÇIK kalıyor (reels kapanması story\'yi kapatmadı)',
+    bak('★ facebook/story AÇIK kalıyor',
         ssy.yazilan.get('facebook') is True, ssy.yazilan)
     bak('★ story yolunda da politika işliyor: yt/shorts kaydı açılmadı',
         ssy.yazilan.get('youtube') is False, ssy.yazilan)

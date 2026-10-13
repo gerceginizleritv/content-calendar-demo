@@ -90,7 +90,7 @@ Tek yer: `pc/story-yukle.py` → `OTOMATIK_YAYIN`.
 | instagram/story | açık |
 | facebook/story | açık |
 | instagram/reels | açık |
-| facebook/reels | kapalı (deney sürüyor, 12 Ekim 2026) |
+| facebook/reels | **açık** (13 Ekim 2026'da geri alındı) |
 | tiktok/reels | kapalı (`video.publish` onayı yok) |
 | youtube/shorts | kapalı (denetim kapısı) |
 
@@ -103,6 +103,23 @@ Tabloda olmayan çift kapalı sayılır. Ayrıntı: `YAPILACAKLAR.md`.
 12 Ekim 2026'da bu atlandı: kaydın tiki açıldı ama kuyruktaki
 `and not (e.platform = 'facebook' and e.type = 'reels')` satırı
 görülmedi, yayın gitmeyecekti.
+
+**13 Ekim 2026 — Facebook'un kök sebebi bulundu.** facebook/reels
+5 Ekim'de "Facebook API reels'i dağıtmıyor" diye kapatılmıştı (elle
+127.672 görüntülenme, API ile 19). Ölçüm doğruydu, **teşhis
+yanlıştı**: Meta uygulaması hiç yayınlanmamıştı (In development) ve
+o durumda Facebook içeriği yalnızca uygulamada rolü olan kişilere
+gösteriyor. Uygulama Live yapıldı, reels görüntülenme aldı.
+
+⛔ **Ve "Facebook hikâyeleri etkilenmiyor" iddiası yanlıştı.**
+`sql/56`'da, `app.html`'de ve bir test dosyasında "hikâyeler 109-422
+görüntülenme almaya devam ediyor" yazıyordu; o sayı doğrulanmadan
+yazılmıştı. Business Suite 15 Eylül – 12 Ekim arası hikâyelerde düz
+0 gösteriyor. Live'dan sonraki ilk ölçüm: 39 ve 14. Üç yer de
+düzeltildi.
+
+Ders (Bölüm 4'ün tekrarı): **doğrulamadan sayı yazma.** O uydurma
+sayı sekiz gün boyunca hikâyelerdeki aynı arızayı görünmez yaptı.
 
 ---
 
