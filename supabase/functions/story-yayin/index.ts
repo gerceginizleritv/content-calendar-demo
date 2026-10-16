@@ -58,7 +58,7 @@
 //          etiketler), yoksa eski taslak yolu. Gizlilik seviyesi
 //          creator_info/query'nin verdiği listeden seçiliyor.
 
-const SURUM = '1.18.0';
+const SURUM = '1.19.0';
 const UCLAR = ['GET / (servis bilgisi)', 'POST / (bir tur)'];
 
 // ⚠ ORTAM DEĞİŞKENLERİ KIRPILIYOR.
@@ -1305,6 +1305,161 @@ async function threadsYayinla(k: any): Promise<string> {
   const kimlik = String(y?.id ?? '');
   await rpc('story_yayinlandi', { p_id: k.id, p_external_id: kimlik || kapsayici });
   return 'yayinlandi';
+}
+
+// ══════════════════════════════════════════════════════════════════
+// ANKETİN CEVABI — 24 saat sonra, anketin ALTINA yanıt (16 Ekim 2026)
+// ══════════════════════════════════════════════════════════════════
+// NEDEN. Kanalın iddiası "rivayet değil, kayıt". Soruyu sorup cevabı
+// vermemek o iddianın tersi. Cevap, hiç oy gelmese de gidiyor.
+//
+// NASIL. Threads'te "dizi" diye bir şey yok; zincir YANIT üzerinden
+// kuruluyor: kapsayıcıya `reply_to_id` verildiğinde gönderi o
+// gönderinin altına düşüyor. Kendi gönderimize yanıt yazmak için ek
+// izin gerekmiyor.
+// https://developers.facebook.com/documentation/threads/retrieve-and-manage-replies/create-replies
+//
+// ⛔ CEVAP AYRI BİR TAKVİM KAYDI DEĞİL: anketin kendi içinde
+// (`content.anketCevap`). Tek tik, iki gönderi. Ayrı kayıt olsaydı her
+// anket için ikinci bir tik gerekirdi ve biri açılmazsa cevap sessizce
+// düşerdi.
+//
+// ⚠ KUYRUĞA YAZAN YER BURASI DEĞİL, sql/65'teki
+// `threads_yanit_kuyruga_al`. Worker yayın anında satır yazsaydı, bu
+// işten ÖNCE yayınlanmış anketlerin ve cevabı sonradan yazılan
+// anketlerin cevabı hiç gitmezdi.
+const YANIT_BASINA = 3;
+
+// Çöküş sonrası: yanıt çağrısı yapıldı, sonucu bilinmiyor. Burada ana
+// yayın yolundan DAHA İYİ bir kanıt var: kendi gönderimizin
+// yanıtlarını listeleyebiliyoruz, yani "çıktı mı" sorusunun kesin
+// cevabı alınabiliyor.
+async function yanitCikmisMi(y: any, jeton: string): Promise<{ biliniyor: boolean; id: string }> {
+  const an = Date.parse(String(y.cagri_ani ?? '')) || 0;
+  if (!an) return { biliniyor: false, id: '' };
+  let veri: any = null;
+  try {
+    const adres = `${THREADS_TABANI}/${encodeURIComponent(String(y.ana_gonderi_id))}/replies`
+      + `?fields=id,text,timestamp&limit=25&access_token=${encodeURIComponent(jeton)}`;
+    const r = await threadsFetch(adres);
+    if (!r.ok) {
+      console.warn('[story] threads yanitlar okunamadi:', r.status);
+      return { biliniyor: false, id: '' };
+    }
+    veri = await r.json();
+  } catch (e) {
+    console.warn('[story] threads yanitlar okunamadi:', temizle((e as Error).message));
+    return { biliniyor: false, id: '' };
+  }
+  // Saat farkı için iki dakikalık pay -- ana yoldaki eşiğin aynısı.
+  const esik = an - 120_000;
+  const bizim = String(y.metin ?? '').trim().slice(0, 40);
+  for (const m of (veri?.data ?? [])) {
+    const t = Date.parse(String(m?.timestamp ?? ''));
+    const metin = String(m?.text ?? '');
+    // İKİ TANIK: zaman damgası VE metnin kendisi. Yalnızca zamana
+    // bakmak, o anda gelen BAŞKA birinin yanıtını bizim sanmak olurdu
+    // -- ve cevabımız hiç gitmezdi.
+    if (t && t >= esik && (!bizim || metin.startsWith(bizim))) {
+      return { biliniyor: true, id: String(m.id ?? '') };
+    }
+  }
+  // ⚠ LİSTE OKUNDU VE BİZİM YANIT YOK: kesin çıkmadı. Ana yayın
+  // yolunda bu kesinlik yoktu (profil listesi gecikebiliyor) ve bir
+  // kayıt sonsuza kadar kilitlenmişti; burada gönderinin KENDİ
+  // yanıtlarına bakıyoruz, gecikme payı da bırakılmış durumda.
+  return { biliniyor: true, id: '' };
+}
+
+async function yanitiGonder(y: any): Promise<string> {
+  const hesap = await threadsJetonu({ user_id: y.user_id });
+  if (!hesap) {
+    await rpc('threads_yanit_ertele', { p_id: y.id, p_dakika: 180,
+      p_sebep: 'Threads jetonu yok ya da süresi dolmuş; cevap bekliyor.' });
+    return 'jeton-yok';
+  }
+  // Threads metin sınırı 500 -- yayın yolundaki tavanın aynısı.
+  const metin = String(y.metin ?? '').trim().slice(0, 500);
+  if (!metin) {
+    await rpc('threads_yanit_hata', { p_id: y.id, p_hata: 'Cevap metni boş.', p_kalici: true });
+    return 'bos-cevap';
+  }
+
+  // ---- Çöküş izi -----------------------------------------------------------
+  if (y.cagri_ani) {
+    const { biliniyor, id } = await yanitCikmisMi(y, hesap.jeton);
+    if (!biliniyor) {
+      await rpc('threads_yanit_ertele', { p_id: y.id, p_dakika: 5,
+        p_sebep: 'Yanıt çağrısının sonucu bilinmiyor; çift yanıt olmasın diye bekleniyor.' });
+      return 'kurtarma-belirsiz';
+    }
+    if (id) {
+      await rpc('threads_yanit_bitti', { p_id: y.id, p_gonderi_id: id });
+      return 'kurtarildi-yanitta';
+    }
+    console.log('[story] yanıt çağrısı sonuçsuz kalmış, çıkmamış — tekrar gönderiliyor', y.id);
+  }
+
+  try {
+    const c = await threadsCagir('/me/threads',
+      { media_type: 'TEXT', text: metin, reply_to_id: String(y.ana_gonderi_id) }, hesap.jeton);
+    const kapsayici = String(c?.id ?? '');
+    if (!kapsayici) throw new GrafHata(0, null, null, 'Threads kapsayıcı kimliği dönmedi');
+    // Metin yanıtında işlenme kısa; yine de hazır olmadan yayınlamak
+    // hata veriyor.
+    for (let i = 0; i < 3; i++) {
+      const d = await threadsDurum(kapsayici, hesap.jeton);
+      if (d === 'FINISHED') break;
+      if (d === 'ERROR') {
+        await rpc('threads_yanit_hata', { p_id: y.id,
+          p_hata: 'Threads kapsayıcıyı işleyemedi (yanıt).', p_kalici: true });
+        return 'kapsayici-hata';
+      }
+      await new Promise((r) => setTimeout(r, 3000));
+    }
+    // ⚠ İZ, YAYINLAYAN ÇAĞRIDAN HEMEN ÖNCE.
+    await rpc('threads_yanit_iz', { p_id: y.id });
+    const r = await threadsCagir('/me/threads_publish', { creation_id: kapsayici }, hesap.jeton);
+    await rpc('threads_yanit_bitti', { p_id: y.id, p_gonderi_id: String(r?.id ?? kapsayici) });
+    return 'yanitlandi';
+  } catch (e) {
+    const { kova, mesaj } = siniflandir(e);
+    // Loga da yazılıyor -- 16 Ekim dersi: veritabanındaki mesajın
+    // üstüne yazılabiliyor, logdaki kalıyor.
+    console.error('[story] yanıt hatası', y.id, String(y.kayit_id ?? '?'), kova, temizle(mesaj));
+    await rpc('threads_yanit_hata', { p_id: y.id, p_hata: mesaj, p_kalici: kova === 'kalici' });
+    return kova === 'kalici' ? 'yanit-kalici-hata' : 'yanit-gecici-hata';
+  }
+}
+
+async function yanitlariIsle(bitis: number): Promise<Record<string, number>> {
+  const sonuc: Record<string, number> = {};
+  let liste: any[] = [];
+  try {
+    const asili = Number(await rpc('threads_yanit_asili_topla', { p_dakika: 10 })) || 0;
+    if (asili) console.log('[story]', asili, 'asılı yanıt kuyruğa geri alındı');
+    const eklenen = Number(await rpc('threads_yanit_kuyruga_al', {})) || 0;
+    if (eklenen) console.log('[story]', eklenen, 'anket cevabı kuyruğa alındı');
+    const r = await rpc('threads_yanit_al', { p_limit: YANIT_BASINA });
+    liste = Array.isArray(r) ? r : [];
+  } catch (e) {
+    // sql/65 henüz çalıştırılmamış olabilir (dağıtım sırası): tur
+    // devam etsin, story yayını bundan etkilenmesin.
+    console.warn('[story] yanıt kuyruğu çağrılamadı (sql/65 çalıştırıldı mı?):',
+      temizle((e as Error).message));
+    return sonuc;
+  }
+  for (const y of liste) {
+    if (Date.now() > bitis - 15_000) {
+      await rpc('threads_yanit_ertele', { p_id: y.id, p_dakika: 0,
+        p_sebep: 'Tur bütçesi doldu, sıradaki turda.' });
+      sonuc['yanit-butce-bitti'] = (sonuc['yanit-butce-bitti'] ?? 0) + 1;
+      continue;
+    }
+    const s = await yanitiGonder(y);
+    sonuc[s] = (sonuc[s] ?? 0) + 1;
+  }
+  return sonuc;
 }
 
 // ══════════════════════════════════════════════════════════════════
@@ -2607,6 +2762,11 @@ async function tur(): Promise<Record<string, unknown>> {
     const s = await kaydiIsle(k, bitis);
     sonuc[s] = (sonuc[s] ?? 0) + 1;
   }
+  // ⚠ ANKET CEVAPLARI YAYINLARDAN SONRA. Yayın saatinde olmak zorunda
+  // olan iş yayın; bir cevabın beş dakika gecikmesi kimsenin
+  // umurunda değil, kaçan bir story ise geri gelmiyor.
+  const yanitSonuc = await yanitlariIsle(bitis);
+  for (const [a, v] of Object.entries(yanitSonuc)) sonuc[a] = (sonuc[a] ?? 0) + v;
   return { ok: true, asili, alinan: liste.length, sonuc };
 }
 

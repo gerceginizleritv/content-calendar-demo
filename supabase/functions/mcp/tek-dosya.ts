@@ -306,7 +306,18 @@ function kayitOku(ham, sira, hatalar) {
       // KOYULMUYOR, cunku tek secenekli bir taslak kaydedilebilmeli --
       // eksikse yayin aninda kalici hata veriliyor ve e-posta gidiyor.
       anketSecenekler: Array.isArray(c.anketSecenekler)
-        ? c.anketSecenekler.slice(0, 4).map(x => typeof x === 'string' ? x.slice(0, 25) : '') : undefined
+        ? c.anketSecenekler.slice(0, 4).map(x => typeof x === 'string' ? x.slice(0, 25) : '') : undefined,
+      // ANKETIN CEVABI (16 Ekim 2026). Anket cikinca 24 saat sonra
+      // anketin ALTINA yanit olarak gidiyor. Threads metin siniri 500;
+      // daha uzunu worker kirpardi ve kullanici kirpildigini yayin
+      // aninda ogrenirdi, o yuzden sinir burada da 500.
+      anketCevap: metin(c.anketCevap, 500),
+      // Kac saat sonra. Varsayilan 24; 1-168 arasina sikistiriliyor.
+      // ⚠ SAYI OLMAYAN DEGER DUSUYOR: 'yarin' gibi bir metin
+      // veritabaninda tip hatasi verirdi.
+      anketCevapGecikme: (Number.isFinite(Number(c.anketCevapGecikme))
+        && Number(c.anketCevapGecikme) > 0)
+        ? Math.min(Math.max(Math.round(Number(c.anketCevapGecikme)), 1), 168) : undefined
     });
   }
   const projectRef = basvurular(ham.project, undefined, 1);
@@ -642,6 +653,17 @@ const SEMA = {
         "maxLength": 25
        },
        "description": "Poll only (type \"poll\", platform \"threads\"): the poll options, in order. Threads requires 2 to 4 options and 1 to 25 characters each, and a poll can only be attached to a TEXT post — an entry with a poll must not carry an image. The post text itself goes in \"caption\"."
+      },
+      "anketCevap": {
+       "type": "string",
+       "maxLength": 500,
+       "description": "Poll only: the correct answer, with its record/source. Shootboard posts it as a reply UNDER the poll 24 hours after the poll goes out — whether or not anyone voted. Leave it empty and no reply is sent. Max 500 characters (Threads limit)."
+      },
+      "anketCevapGecikme": {
+       "type": "integer",
+       "minimum": 1,
+       "maximum": 168,
+       "description": "Poll only: how many hours after the poll to send the answer. Default 24."
       },
       "timezone": {
        "type": "string",
@@ -1190,7 +1212,7 @@ const SERVIS_ANAHTARI = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY') ?? '';
 // Bu kural UC KEZ unutuldu ve ucuncusunde artik soze birakilmadi:
 // birlestir.py, kaynak degisip surum ayni kalirsa HATA VERIP duruyor
 // ve tek-dosya.ts'i uretmiyor. Yani unutuldugu an belli oluyor.
-const SURUM = '1.11.0';
+const SURUM = '1.12.0';
 
 // ---- Otomatik yayın hattı olan türler ------------------------------------
 // AYNI kümeyi taşıyan yerler: app.html'deki YAYIN_TURLERI, sql/50'deki
@@ -1385,6 +1407,10 @@ function kayitIcerigi(c: any) {
   // "burada bir sey var" dedirtir.
   if (Array.isArray(c.anketSecenekler) && c.anketSecenekler.length)
     o.anketSecenekler = c.anketSecenekler;
+  // ANKETIN CEVABI. Bos gecilmiyor: anket olmayan kayda bos alan
+  // eklemek asistana "burada bir sey var" dedirtir.
+  if (c.anketCevap) o.anketCevap = c.anketCevap;
+  if (c.anketCevapGecikme) o.anketCevapGecikme = c.anketCevapGecikme;
   // Bos olanlar JSON'a HIC yazilmiyor: cevirisi olmayan kayit bos bir
   // "diller" tasimasin, asistan "burada bir sey var" sanmasin.
   if (c.diller && typeof c.diller === 'object' && !Array.isArray(c.diller)
