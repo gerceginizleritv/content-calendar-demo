@@ -6,6 +6,81 @@ duruyor, neden ertelendiği de yazıyor ki aynı tartışma baştan yapılmasın
 
 ---
 
+## THREADS YAYINI — çalışıyor (16 Ekim 2026)
+
+Threads artık Shootboard'dan yayınlanıyor. Kullanıcının elle yaptığı iş
+story'dekiyle aynı: kaydı gir, görseli klasöre bırak.
+
+ZİNCİR
+  planlama sohbeti --MCP--> takvim kaydı (tür text_post, platform threads)
+  görsel --> E:\CLAUDE VIDEOS\TESLIM\THREADS
+  Görev Zamanlayıcı (5 dk) --> pc/threads-izle.bat --> pc/threads-izle.py
+      --> R2'ye yükle, mediaName ile kaydı bul, bağla, autoPublish aç
+  pg_cron (1 dk) --> Edge Function story-yayin --> graph.threads.net
+      (kapsayıcı /me/threads, sonra /me/threads_publish)
+
+AYRI UYGULAMA, AYRI JETON
+  Threads'in kendi Meta uygulaması var ("Shootboard Threads").
+  Facebook/Instagram yayını META_PAGE_TOKEN ile graph.facebook.com'a
+  gidiyor; Threads THREADS_TOKEN ile graph.threads.net'e. Jeton
+  `threads_hesaplari` tablosunda duruyor (sql/63) ve süreye 10 gün kala
+  kendini yeniliyor. ⛔ 60 gün yenilenmezse jeton KALICI ölür; tek çare
+  panelden elle yeni jeton almak.
+
+ÜÇ İZLEYİCİ, ÜÇ AYRI KURAL (16 Ekim 2026 kararı)
+  Tek izleyiciyi üç klasöre yöneltmek teklif edildi; kullanıcı
+  "üç izleyici dosyasının birbirinden tamamen ayrı olmasını tercih
+  ediyorum" dedi.
+
+    story   | story\cikti          | 100 MB | video + fotoğraf
+    reels   | TESLIM\REELS_V2      | 1 GB   | video + kapak
+    threads | TESLIM\THREADS       | 8 MB   | yalnızca fotoğraf
+
+  8 MB ve 10:1 oran sınırı Meta'nın belgesinden
+  (developers.facebook.com/docs/threads/create-posts). Oran ölçülmüyor:
+  Pillow bağımlılığı yok, oranı aşan görseli Threads reddediyor ve
+  kapsayıcı ERROR dönüyor — worker bunu kalıcı hata yazıp e-posta
+  gönderiyor, sessiz kalmıyor.
+
+  ⚠ PAYLAŞILAN TEK ŞEY YÜKLEYİCİ (story-yukle.py) ve bu kasıtlı:
+  otomatik yayın politikası (OTOMATIK_YAYIN) tek yerde duruyor. Üç
+  kopya çıkarmak, 10 Ekim'de 66 kaydı otomatik yayında bırakan hatanın
+  aynı sınıfından olurdu.
+
+İLK GERÇEK YAYIN PATLADI — ÜÇ EKSİK ÇIKTI (16 Ekim 2026)
+  Worker kapsayıcıyı yarattı (görsel işlendi, durum FINISHED), yayın
+  çağrısını yaptı ve çağrı SESSİZCE sonuçsuz kaldı: ne gönderi, ne
+  e-posta, ne log satırı. Teşhis, kapsayıcı durumu Threads'e elle
+  sorularak yapılabildi. Üçü de düzeltildi (worker 1.17.0):
+
+  1. Yakalanan hata yalnızca `last_error`'a yazılıyordu; bir sonraki tur
+     üstüne yazdı ve asıl mesaj yok oldu. Artık loga da düşüyor.
+  2. "Sonucu bilinmiyor" hâli kendiliğinden çözülmüyordu — kayıt beş
+     dakikada bir sonsuza kadar erteleniyordu. Artık ikinci bir tanık
+     var: kapsayıcının durumu. PUBLISHED = çıktı, FINISHED/ERROR/EXPIRED
+     = kesin çıkmadı. ⛔ Sıra önemli: önce profildeki son gönderiler,
+     kapsayıcı durumu ancak liste OKUNDU ve boşsa karar veriyor. Tersi,
+     Meta durumu geç güncellerse çift gönderi demek.
+  3. Threads çağrılarında zaman aşımı yoktu; askıda kalan istek
+     isolate'ı öldürtüyor ve catch hiç çalışmıyor. Artık 20 saniye.
+
+DAĞITIM ÖLÇÜMÜ — AÇIK (16 Ekim 2026)
+  Threads'e geçmenin sebebi dağıtımı ölçmek. ⚠ Kullanıcının notu:
+  **elle gönderdiği Threads gönderileri de zaman zaman 0 görüntülenme
+  almış.** Yani "Shootboard'dan gidince 0 aldı" tek başına bir şey
+  kanıtlamıyor; taban gürültülü. Birkaç gün, hem sistemden hem elle
+  giden gönderilerle eşli ölçüm gerekiyor.
+
+  13 Ekim dersi burada da geçerli: ölçüm doğru olabilir, teşhis yanlış
+  olabilir. Facebook'ta "API reels'i dağıtmıyor" denmişti; gerçek sebep
+  uygulamanın hiç yayınlanmamış olmasıydı.
+
+  AÇIK TEKLİF: görüntülenmeleri elle okumak yerine Shootboard kendi
+  toplayabilir (her kaydın gönderi kimliği saklı, Threads insights ucu
+  var). Kullanıcı karar vermedi.
+
+---
+
 ## OTOMATİK STORY YAYINI — çalışıyor (22–23 Eylül 2026)
 
 Instagram ve Facebook sayfa story'leri artık kendiliğinden yayınlanıyor.
