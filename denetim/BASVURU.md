@@ -1,13 +1,35 @@
 # YouTube API denetim başvurusu — ne beyan ettik
 
-29 Eylül 2026'da gönderildi.
+**16 Ekim 2026'da gönderildi.** Kanıt: gönderim sonrası ekranda
+"Your email has been sent — Thank you for submitting the YouTube API
+Services Form." yazdı.
 Form: <https://support.google.com/youtube/contact/yt_api_form>
 
-Bu dosya bir özet değil, bir **kayıt**. İki işi var:
+Bu dosya bir özet değil, bir **kayıt**. Üç işi var:
 
 1. Denetim ekibi soru sorduğunda ne dediğimizi tam olarak bilmek.
 2. **Periyodik yeniden denetimde** aynı beyanları tekrar edebilmek --
    YouTube bunu bir kez değil, aralıklarla yapıyor.
+3. Başvurunun GERÇEKTEN gönderildiğini kanıtlamak. Aşağıya bak.
+
+---
+
+## ⚠ 29 EYLÜL BAŞVURUSU GİTMEMİŞ
+
+Bu dosya önceden "29 Eylül 2026'da gönderildi" diyordu. 16 Ekim'de
+anlaşıldı ki **o başvurunun hiçbir izi yok**: ne onay e-postası, ne
+Google'dan bir dönüş, ne de kullanıcının hatırladığı bir gönderim.
+Gmail'de `in:anywhere` ile (çöp ve spam dahil) 25 Eylül - 6 Ekim arası
+Google'dan gelen her şey tarandı, hiçbir şey çıkmadı.
+
+YouTube denetiminin **durum sayfası yok** -- takip edilebilecek bir
+panel yok, Google yalnızca e-posta ile dönüyor. Yani e-posta yoksa
+elde hiçbir şey yok. Bu dosyadaki "gönderildi" satırı bizim kendi
+yazdığımız bir cümleydi, kanıt değildi; üç hafta boyunca "cevap
+bekliyoruz" sanıldı.
+
+**Kural: bundan sonra gönderim tarihi yazılırken kanıtı da yazılacak.**
+Aynı hata ikinci kez yapılmasın diye bu bölüm duruyor.
 
 ---
 
@@ -82,6 +104,59 @@ zaman görünür olamıyor.
 Diyagramların kaynağı `denetim/mimari.html` ve `denetim/akis.html`;
 `node denetim/uret.js` ikisini de yeniden üretiyor. Yeniden denetimde güncel
 hâli istendiğinde sıfırdan çizmek gerekmesin diye duruyorlar.
+
+### 16 Ekim 2026'da yüklenen dosya
+
+Form "CONDITIONAL EVIDENCE for Project #1" alanında **tek bir dosya**
+istiyor (JPEG/PNG ya da PDF). Bizim kullanım senaryomuz iki şey
+gerektiriyor -- (a) OAuth akışı ve (b) yükleme arayüzü -- o yüzden
+hepsi tek PDF'te birleştirildi:
+
+`denetim/shootboard-oauth-and-upload-evidence.pdf` (6 sayfa)
+
+| Sayfa | Ne gösteriyor |
+|---|---|
+| 1 | Shootboard bağlantı sayfası, bağlanmadan önce |
+| 2 | Google izin ekranı (uygulama henüz doğrulanmamış) |
+| 3 | Google Hesabı → verilen kapsam ("Manage your YouTube videos") + "Tüm erişimi kaldır" |
+| 4 | Bağlandı onayı; denetimden önce videoların private kilitlendiğini söyleyen metin |
+| 5 | Uygulama içinden iptal: "Bağlantıyı kes" |
+| 6 | Yükleme arayüzü: Shorts kaydı, otomatik yayın tiki açık |
+
+⚠ Arayüz Türkçe. Her sayfanın üstündeki açıklama İngilizce ve Türkçe
+etiketlerin karşılığını veriyor -- denetim ekibi Türkçe bilmek zorunda
+kalmasın.
+
+Hesap seçme ekranı **bilerek konmadı**: formun istediği üç şeyden
+(consent / scopes / revocation) hiçbirini göstermiyor ve içinde
+kullanıcının ilgisiz e-posta adresleri görünüyor.
+
+PDF'i üreten betik: `denetim/kanit-pdf.py`. Yeniden denetimde ekran
+görüntülerini yenileyip betiği koşturmak yeter.
+
+### Kota alanı (16 Ekim 2026)
+
+Form iki zorunlu alan sordu:
+
+- **Total Per Day Quota:** `10000` -- varsayılan günlük kota. Artış
+  İSTENMEDİ; bu sayı "mevcut kota yetiyor" demek.
+- **Detailed Justification:** kota artışı istenmediği, tek uç
+  (`videos.insert`), tek kapsam (`youtube.upload`), günde ~1 yükleme,
+  hiçbir okuma yapılmadığı ve başvurunun sebebi (denetimsiz projede
+  videoların kalıcı private kilitlenmesi) yazıldı.
+
+### Uç seçimi (16 Ekim 2026)
+
+Formdaki uzun uç listesinden **yalnızca `youtube.videos.insert`**
+işaretlendi. Koddan doğrulandı: `supabase/functions/` altında çağrılan
+tek Google ucu `https://www.googleapis.com/upload/youtube/v3/videos`.
+
+⛔ `youtube.thumbnails.set` İŞARETLENMEDİ ve bu kasıtlı: kapak
+YouTube'a gönderilmiyor (gerekçesi `story-yayin/index.ts` içinde
+yazılı -- kapak ayrı bir çağrı ve yalnızca doğrulanmış kanallarda
+çalışıyor). `youtube.captions.*` da işaretlenmedi: YouTube'da
+"caption" altyazı DOSYASI demek; bizim gönderdiğimiz metin
+`videos.insert` gövdesindeki `description`.
 
 ## Onay geldiğinde yapılacak
 
