@@ -180,5 +180,54 @@ console.log('[threads-izle.bat]');
   bak('★ cikis kodu Zamanlayiciya donuyor', /exit \/b %KOD%/.test(BAT));
 }
 
+// ── 6. PLATFORM SUZGECI — YANLIS PLATFORMA BAGLANMAZ ─────────────
+//
+// ⚠ 16 EKIM 2026'DA OLCULDU, VARSAYILMADI. Izleyicinin ilk kosumunda
+// klasordeki bir gorselin kaydi henuz yoktu; kaydi_bul TARIHE dustu ve
+// 25 Ekim icin ON aday dondurdu: instagram, facebook, youtube, tiktok.
+// Hicbiri threads degildi.
+//
+// O gun zarar olmadi cunku aday BIRDEN COKKEN yukleyici durup soruyor.
+// Acik TEK aday halinde: izleyici "demek ki bu" deyip Threads
+// gorselini ornegin bir Instagram story kaydina baglar ve politika
+// geregi ONUN tikini acardi -- Threads icin hazirlanan gorsel
+// Instagram'a story olarak cikardi. Yayin geri alinamaz.
+console.log('[platform suzgeci]');
+{
+  const gd = pyGovde(IZLE, 'dosyayi_isle') || '';
+  // Suzgec GERCEKTEN platforma bakiyor -- ve ture de: worker Threads'te
+  // yalnizca text_post yayinliyor.
+  bak('★ yalnizca threads adaylari aliniyor',
+      /platform'\)\s*or\s*''\)\.lower\(\)\s*==\s*'threads'/.test(gd),
+      (/platform'\)[^\n]*/.exec(gd) || ['yok'])[0]);
+  bak('★ tur de denetleniyor (text_post)',
+      /type'\)\s*or\s*''\)\.lower\(\)\s*==\s*'text_post'/.test(gd),
+      (/type'\)[^\n]*/.exec(gd) || ['yok'])[0]);
+  // ⛔ SUZGECIN SONUCU KULLANILMALI. Listeyi hesaplayip kullanmamak,
+  // olcumu gecip arizayi yerinde birakmak olurdu.
+  bak('★ suzgecin sonucu kayit listesinin YERINE geciyor',
+      /kayitlar = uygun/.test(gd));
+  // Hic threads adayi yoksa: hicbir seye baglanmiyor.
+  bak('★ threads adayi yoksa bagla(n)miyor',
+      /if not uygun:[\s\S]{0,400}return \('kayit-yok'/.test(gd),
+      (/if not uygun:[^\n]*/.exec(gd) || ['yok'])[0]);
+  // Mesaj NE YAPILACAGINI soyluyor (Bolum 9: sessiz basarisizlik yasak,
+  // ama anlasilmaz mesaj da bilgi degil).
+  // ⚠ DEGISKENIN ADINI ARAMAK YETMIYOR. Ilk surum /gorulen/ ariyordu;
+  // atamayi silen mutasyon GECTI, cunku ad f-string icinde hala
+  // duruyordu -- oysa kod calisma aninda NameError veriyordu. Simdi
+  // ATAMANIN kendisi araniyor; davranisi threads-izleyici.test.py
+  // ayrica olcuyor.
+  bak('★ mesaj gorulen platformlari ve ne yapilacagini yaziyor',
+      /gorulen = sorted\(\{[\s\S]{0,80}platform/.test(gd)
+      && /join\(gorulen\)/.test(gd) && /dosya adini yaz/.test(gd),
+      (/gorulen[^\n]*/.exec(gd) || ['yok'])[0]);
+  // ⛔ SIRA: suzgec YUKLEMEDEN once. Yanlis gunde R2'ye bayt gitmiyor.
+  bak('★ suzgec r2 yuklemesinden ONCE',
+      gd.indexOf('uygun = [') > 0 &&
+      gd.indexOf('uygun = [') < gd.indexOf('r2_yukle'),
+      'suzgec=' + gd.indexOf('uygun = [') + ' r2_yukle=' + gd.indexOf('r2_yukle'));
+}
+
 console.log('\n' + g + ' gecti, ' + k + ' kaldi');
 process.exit(k ? 1 : 0);
