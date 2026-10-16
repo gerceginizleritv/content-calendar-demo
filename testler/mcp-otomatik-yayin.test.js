@@ -82,6 +82,40 @@ if(otoIzinli){
       JSON.stringify(liste));
 }
 
+// ── 1b. NİYET ÇÖZÜCÜ — ÇALIŞTIRILARAK ────────────────────────────
+//
+// ⛔ 16 EKIM 2026, KAPININ İLK GERÇEK KULLANIMI: `autoPublish: true`
+// gönderildi, araç `changed: ["autoPublish"]` döndü ve SÜTUN FALSE
+// KALDI. Sebep karşılaştırmaydı: değer "true" DİZGESİ olarak geliyor
+// ve `=== true` tutmuyordu. O zaman ikisi birden bozuluyor -- kapı
+// "açma isteği" görmüyor, yazma false yazıyor. Araç "oldu" diyor, iş
+// olmuyor; yalnızca veriden elle kontrol edildiği için yakalandı.
+//
+// Bu yüzden çözücü METİN OLARAK değil ÇALIŞTIRILARAK ölçülüyor.
+console.log('[niyet çözücü — çalıştırılarak]');
+let otoNiyet = null;
+{
+  const m = /function otoNiyet\(deger: unknown\): boolean \{([\s\S]*?)\n\}/.exec(MCP);
+  bak('niyet çözücü dosyada bulunabiliyor', !!m);
+  if(m){
+    otoNiyet = new Function('deger', m[1].replace(/:\s*\w+/g, '')) ;
+  }
+}
+if(otoNiyet){
+  bak('★ boolean true → açılıyor', otoNiyet(true) === true);
+  bak('★ "true" dizgesi → açılıyor (ASIL HATA BUYDU)', otoNiyet('true') === true);
+  bak('★ "TRUE" → açılıyor', otoNiyet('TRUE') === true);
+  bak('★ "1" → açılıyor', otoNiyet('1') === true);
+  bak('★ boolean false → açılmıyor', otoNiyet(false) === false);
+  bak('★ "false" → açılmıyor', otoNiyet('false') === false);
+  bak('★ boş dizge → açılmıyor', otoNiyet('') === false);
+  bak('★ undefined/null → açılmıyor',
+      otoNiyet(undefined) === false && otoNiyet(null) === false);
+  // ⚠ Rastgele bir metin ACMAMALI: "belki" diye bir şey yok.
+  bak('★ anlamsız metin → açılmıyor',
+      otoNiyet('belki') === false && otoNiyet('0') === false);
+}
+
 // ── 2. İSTEK YOLU ────────────────────────────────────────────────
 console.log('[istek yolu]');
 {
@@ -95,11 +129,15 @@ console.log('[istek yolu]');
       /'content', 'autoPublish'\]\.filter/.test(MCP),
       (/const degisti = [^\n]*/.exec(MCP) || ['yok'])[0].slice(0, 80));
   // Asıl yazma.
-  bak('★ sütuna yazılıyor', /yama\.auto_publish = a\.autoPublish === true/.test(MCP));
+  // ⚠ YAZILIŞ DEĞİŞTİ (16 Ekim 2026 akşamı): değer artık doğrudan
+  // `a.autoPublish === true` değil, çözülmüş niyet. Ölçüm davranışa
+  // bakacak şekilde güncellendi -- eski hâli kırmızıya dönüyordu,
+  // oysa düzeltme tam da buydu.
+  bak('★ sütuna yazılıyor', /yama\.auto_publish = acilsin;/.test(MCP));
   // ⛔ KAPI: yalnızca AÇMAK denetleniyor; kapatmak her zaman serbest.
   bak('★ açarken izin denetleniyor',
-      /if \(a\.autoPublish === true && !otoIzinli\(pf, tr\)\)/.test(MCP),
-      (/a\.autoPublish === true &&[^\n]*/.exec(MCP) || ['yok'])[0]);
+      /if \(acilsin && !otoIzinli\(pf, tr\)\)/.test(MCP),
+      (/if \(acilsin[^\n]*/.exec(MCP) || ['yok'])[0]);
   bak('★ reddetme sebebi yazılı (hangi çift, ne yapılacak)',
       /cannot be turned on for/.test(HAM) && /the user opens the toggle in the app/.test(HAM));
   // ⛔ EN SİNSİ KAÇAK: "platformu threads yap VE tiki aç" diyen tek
@@ -110,7 +148,25 @@ console.log('[istek yolu]');
       /const pf = a\.platform !== undefined \? temiz\.platform : satir\.platform/.test(MCP)
       && /const tr = a\.type !== undefined \? temiz\.type : satir\.type/.test(MCP),
       (/const pf = [^\n]*/.exec(MCP) || ['yok'])[0]);
-  bak('★ MCP sürümü kapıyı taşıyan sürümden geri değil', surumEnAz(MCP, [1,13,0]),
+  // ⛔ KAPI VE YAZMA AYNI DEĞERİ KULLANMALI. İkisi ayrı okusa, kapı
+  // "açılmak istenmiyor" sanıp geçer ve yazma açardı -- kapının hiç
+  // olmamasından kötü.
+  bak('★ niyet bir kez çözülüyor, kapı ve yazma aynı değeri kullanıyor',
+      /const acilsin = otoNiyet\(a\.autoPublish\);/.test(MCP)
+      && /if \(acilsin && !otoIzinli\(pf, tr\)\)/.test(MCP)
+      && /yama\.auto_publish = acilsin;/.test(MCP),
+      (/yama\.auto_publish[^\n]*/.exec(MCP) || ['yok'])[0]);
+  // ⛔ YAZDIKTAN SONRA GERİ OKU. "changed" demek "oldu" demek değil.
+  bak('★ yazılan değer geri okunup karşılaştırılıyor',
+      /const istenen = otoNiyet\(a\.autoPublish\);[\s\S]{0,160}const olan = yeni\.auto_publish === true;/.test(MCP));
+  bak('★ tutmazsa araç BAŞARILI demiyor',
+      /if \(istenen !== olan\)[\s\S]{0,400}return aracHata\(/.test(MCP),
+      (/if \(istenen !== olan\)[^\n]*/.exec(MCP) || ['yok'])[0]);
+  bak('★ tutmazsa loga da yazılıyor',
+      /console\.error\('\[mcp\] autoPublish yazilamadi'/.test(MCP));
+  bak('★ hata mesajı ne yapılacağını söylüyor',
+      /did not take effect/.test(HAM) && /open the toggle in the app/.test(HAM));
+  bak('★ MCP sürümü kapıyı taşıyan sürümden geri değil', surumEnAz(MCP, [1,15,0]),
       (/const SURUM = '[^']*'/.exec(MCP) || ['yok'])[0]);
   // Panele yapıştırılan sürüm eskiyse bu işin tamamı canlıda YOK.
   bak('★ tek-dosya.ts yeniden üretildi', /OTO_IZINLI/.test(TEK) && surumEnAz(TEK, [1,13,0]));

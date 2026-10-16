@@ -1230,7 +1230,7 @@ const SERVIS_ANAHTARI = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY') ?? '';
 // Bu kural UC KEZ unutuldu ve ucuncusunde artik soze birakilmadi:
 // birlestir.py, kaynak degisip surum ayni kalirsa HATA VERIP duruyor
 // ve tek-dosya.ts'i uretmiyor. Yani unutuldugu an belli oluyor.
-const SURUM = '1.14.0';
+const SURUM = '1.15.0';
 
 // ---- Otomatik yayın hattı olan türler ------------------------------------
 // AYNI kümeyi taşıyan yerler: app.html'deki YAYIN_TURLERI, sql/50'deki
@@ -1280,6 +1280,25 @@ const OTO_IZINLI: Array<[string, string]> = [
   ['threads', 'poll'],
   ['threads', 'text_post']
 ];
+// ⚠ DEGER DIZGE OLARAK GELEBILIYOR -- 16 EKIM 2026'DA OLCULDU.
+// Kapinin ilk gercek kullanimi: `autoPublish: true` gonderildi, arac
+// `changed: ["autoPublish"]` dondu ve SUTUN FALSE KALDI. Sebep deger
+// karsilastirmasi: istemci "true" DIZGESI yolluyor, `=== true`
+// tutmuyor. O zaman ikisi birden bozuluyor -- kapi "acma istegi"
+// gormuyor (sessizce atliyor) ve sutuna false yaziliyor. Arac "oldu"
+// diyor, is olmuyor: bu depoda en pahali hata sinifi, ve yalnizca
+// veriden ELLE kontrol edildigi icin yakalandi.
+//
+// ⛔ NIYET TEK YERDE COZULUYOR ve hem kapi hem yazma AYNI degeri
+// kullaniyor. Ikisi ayri okusa daha kotusu olurdu: kapi acilmak
+// istenmedigini sanip gecer, yazma acardi.
+function otoNiyet(deger: unknown): boolean {
+  if (deger === true) return true;
+  if (deger === false || deger === undefined || deger === null) return false;
+  const s = String(deger).trim().toLowerCase();
+  return s === 'true' || s === '1' || s === 'yes' || s === 'evet';
+}
+
 const otoIzinli = (platform: any, tur: any) =>
   OTO_IZINLI.some(([p, t]) => p === String(platform || '').toLowerCase()
                            && t === String(tur || '').toLowerCase());
@@ -2031,16 +2050,17 @@ async function aracUpdateEntry(kim: Kim, a: any) {
   // Eski hale bakmak, "platformu threads yap ve tiki ac" diyen tek bir
   // cagriyla kapinin etrafindan dolasmak demekti.
   if (a.autoPublish !== undefined) {
+    const acilsin = otoNiyet(a.autoPublish);
     const pf = a.platform !== undefined ? temiz.platform : satir.platform;
     const tr = a.type !== undefined ? temiz.type : satir.type;
     // Kapatmak HER ZAMAN serbest: yayini durdurmayi engellemek sacma
     // olurdu. Kapi yalnizca ACMAK icin.
-    if (a.autoPublish === true && !otoIzinli(pf, tr)) {
+    if (acilsin && !otoIzinli(pf, tr)) {
       return aracHata(`autoPublish: cannot be turned on for ${String(pf || '?')}/${String(tr || '?')}. `
         + `Only ${OTO_IZINLI.map(([p, t]) => p + '/' + t).join(' and ')} are allowed from here; `
         + `for anything else the user opens the toggle in the app.`);
     }
-    yama.auto_publish = a.autoPublish === true;
+    yama.auto_publish = acilsin;
   }
 
   await rest(`/calendar_events?id=eq.${encodeURIComponent(id)}&user_id=eq.${uid}`,
@@ -2049,6 +2069,28 @@ async function aracUpdateEntry(kim: Kim, a: any) {
   const projeler = await projeleriOku(uid);
   const { veri: sonra } = await rest(`/calendar_events?id=eq.${encodeURIComponent(id)}&user_id=eq.${uid}&select=*&limit=1`);
   const yeni = Array.isArray(sonra) && sonra[0];
+
+  // ⛔ "changed" DEMEK "OLDU" DEMEK DEGIL. 16 Ekim 2026'da arac
+  // autoPublish'i degistirdigini soyledi, sutun degismedi ve bu
+  // yalnizca veriden elle kontrol edildigi icin goruldu. Dort anket
+  // kaydi kapali kalacakti ve bunu yayin saati gecince ogrenecektik.
+  // Artik yazilan deger GERI OKUNUP karsilastiriliyor; tutmuyorsa arac
+  // basarili demiyor.
+  //
+  // ⚠ YALNIZCA autoPublish icin: sessizce bozulan alan buydu. Oteki
+  // alanlar icin ayni dogrulama gerekirse ayni kalip buraya eklenir;
+  // "her alani dogrula" demek, calisan bir yolu da gerekcesi olmadan
+  // yavaslatmak olurdu.
+  if (a.autoPublish !== undefined && yeni) {
+    const istenen = otoNiyet(a.autoPublish);
+    const olan = yeni.auto_publish === true;
+    if (istenen !== olan) {
+      console.error('[mcp] autoPublish yazilamadi', id, 'istenen', istenen, 'olan', olan);
+      return aracHata(`autoPublish: the write did not take effect \u2014 asked for ${istenen}, `
+        + `the entry still says ${olan}. Any other field in this call WAS saved. `
+        + `Tell the user to open the toggle in the app, and that this needs looking at.`);
+    }
+  }
   return { ok: true, changed: degisti, entry: yeni ? kayitDisari(yeni, projeler) : null,
            warnings: paket.hatalar.map((x: any) => ({ field: x.alan || '', reason: x.sebep })) };
 }
