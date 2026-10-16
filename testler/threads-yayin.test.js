@@ -186,9 +186,92 @@ console.log('[Facebook ile karışmıyor]');
       !/\bawait graf\(/.test(hepsi));
   // Jeton tanimli degilse ERTELENIYOR, hata degil: ayar gelince
   // kendiliginden akmali.
-  bak('★ jeton yoksa erteleniyor (kalıcı hata değil)',
-      /THREADS_TOKEN tanımlı değil/.test(HAMWORKER)
-      && /pf === 'threads' && !THREADS_TOKEN/.test(WORKER));
+  // ⚠ JETON YOKSA ERTELENIYOR, KALICI HATA DEGIL: ayar gelince
+  // kendiliginden akmali. Kontrol threadsYayinla'nin basinda --
+  // kaydiYayinla'da ortama bakmak, tabloda gecerli jeton dururken
+  // yayini durdurmak olurdu (sql/63).
+  {
+    const gy = jsGovde(WORKER, 'threadsYayinla') || '';
+    bak('★ jeton yoksa erteleniyor (kalıcı hata değil)',
+        /story_ertele/.test(gy) && /threadsJetonu\(k\)/.test(gy));
+    bak('★ kaydiYayinla ortamdaki jetona BAKMIYOR',
+        !/pf === 'threads' && !THREADS_TOKEN/.test(WORKER));
+  }
+}
+
+// ── 5b. JETON: TABLODA DURUR, KENDI KENDINE YENILENIR (sql/63) ───
+// ⛔ YENILEME PENCERESI KACIRILIRSA GERI DONUS YOK. Jeton 60 gun
+// yenilenmeden gecerse KALICI oluyor; tek care panelden elle yeni
+// jeton almak. O yuzden "son gune birakma" olcuyoruz.
+console.log('[jeton yenileme]');
+{
+  const SQL63 = sqlYorumsuz(oku('sql/63-threads-jeton.sql'));
+  bak('★ threads_hesaplari tablosu var', /create table[\s\S]*threads_hesaplari/.test(SQL63));
+  // ⛔ TABLODA DUZ METIN JETON VAR. RLS acik ve ILKE YOK: anon ve
+  // authenticated hicbir satir goremiyor. Bir ilke eklemek
+  // "tarayiciya jeton verelim" demek olurdu.
+  bak('★ RLS açık', /alter table public\.threads_hesaplari enable row level security/.test(SQL63));
+  bak('★ anon/authenticated yetkisi alınmış',
+      /revoke all on public\.threads_hesaplari from anon, authenticated/.test(SQL63));
+  bak('★ ilke TANIMLI DEĞİL (jeton tarayıcıya açılmıyor)',
+      !/create policy/i.test(SQL63));
+  // Ayri bir yenileme jetonu YOK: Threads erisim jetonunun kendisiyle
+  // yeniliyor. Sutun eklenirse bos durur ve "doldurmayi unuttuk"
+  // sanilir.
+  bak('★ ayrı yenileme jetonu sütunu YOK', !/yenileme_jetonu/.test(SQL63));
+
+  const gj = jsGovde(WORKER, 'threadsJetonu');
+  bak('threadsJetonu tanımlı', !!gj);
+  if(gj){
+    bak('★ jeton TABLODAN okunuyor', /threads_hesaplari\?user_id=eq/.test(gj));
+    // Tabloda satir yoksa ortamdaki tohumlaniyor: bugunku kurulum
+    // bozulmadan tabloya geciliyor.
+    bak('★ tabloda satır yoksa ortamdan tohumlanıyor',
+        /THREADS_TOKEN/.test(gj) && /method: 'POST'/.test(gj));
+    // ⚠ SON GUNE BIRAKILMIYOR.
+    bak('★ süreye kala yenileniyor (son güne bırakmıyor)',
+        /THREADS_YENILEME_GUN/.test(gj));
+    // Worker dakikada bir kosuyor; basarisiz yenilemeyi her turda
+    // tekrar denemek Meta'yi dovmek olurdu.
+    // ⚠ OLCUM SATIRIN KENDISINE BAKIYOR, kelimelerin varligina degil.
+    // Ilk surum /son_yenileme/ && /86400_000/ ariyordu; o iki kelime
+    // komsu satirlarda da geciyor ve guard silindiginde test GECIYORDU
+    // (mutasyon hayatta kaldi). Simdi erken donusun kendisi araniyor.
+    bak('★ günde bir deneniyor (başarısız yenileme Meta\'yı dövmüyor)',
+        /sonDeneme\s*&&\s*Date\.now\(\)\s*-\s*sonDeneme\s*<\s*86400_000[\s\S]{0,40}return/.test(gj),
+        (/sonDeneme[^\n]*/.exec(gj) || ['yok'])[0]);
+  }
+
+  const gt = jsGovde(WORKER, 'threadsJetonTazele');
+  bak('threadsJetonTazele tanımlı', !!gt);
+  if(gt){
+    bak('★ doğru uç çağrılıyor (th_refresh_token)',
+        /refresh_access_token/.test(gt) && /th_refresh_token/.test(gt));
+    // ⚠ YENILEME BASARISIZ ≠ YAYIN DURUR. Suresi dolmadiysa eldeki
+    // jetonla devam; yarin yine denenecek.
+    bak('★ yenileme başarısızsa eldeki jetonla devam ediliyor',
+        /bitis > Date\.now\(\)/.test(gt));
+    // Sessiz basarisizlik yasak (Bolum 9).
+    // ⚠ /son_hata/ ARAMAK YETMIYOR: basari dalinda da geciyor
+    // (son_hata: null). Ilk surum oyleydi ve "sebebi silme"
+    // mutasyonu HAYATTA KALDI. Simdi SEBEBIN KENDISI araniyor.
+    bak('★ başarısızlık sebebi satıra yazılıyor',
+        /son_hata:\s*`[^`]*\$\{sebep\}/.test(gt),
+        (/son_hata:[^\n]*/.exec(gt) || ['yok'])[0]);
+    bak('★ başarıda hata satırı temizleniyor', /son_hata:\s*null/.test(gt));
+    bak('★ başarılı yenileme tabloya yazılıyor',
+        /erisim_jetonu:/.test(gt) && /erisim_bitis:/.test(gt));
+  }
+
+  // Yenilenen jeton GERCEKTEN kullanilmali: cagrilar jetonu disaridan
+  // almali, yoksa sabit THREADS_TOKEN'a geri duserdi ve yenileme
+  // hicbir ise yaramazdi.
+  const gy = jsGovde(WORKER, 'threadsYayinla') || '';
+  bak('★ yayın yolu jetonu threadsJetonu\'dan alıyor', /threadsJetonu\(k\)/.test(gy));
+  bak('★ çağrılara jeton iletiliyor', /hesap\.jeton/.test(gy));
+  const gc = jsGovde(WORKER, 'threadsCikmisMi') || '';
+  bak('★ "çıktı mı" sorusu da tablodaki jetonu kullanıyor',
+      /threadsJetonu\(k\)/.test(gc));
 }
 
 // ── 6. ARAYUZ ────────────────────────────────────────────────────
