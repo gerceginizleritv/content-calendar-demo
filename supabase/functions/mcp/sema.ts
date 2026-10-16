@@ -236,6 +236,17 @@ export const SEMA = {
        },
        "description": "Poll only (type \"poll\", platform \"threads\"): the poll options, in order. Threads requires 2 to 4 options and 1 to 25 characters each, and a poll can only be attached to a TEXT post — an entry with a poll must not carry an image. The post text itself goes in \"caption\"."
       },
+      "anketCevap": {
+       "type": "string",
+       "maxLength": 500,
+       "description": "Poll only: the correct answer, with its record/source. Shootboard posts it as a reply UNDER the poll 24 hours after the poll goes out — whether or not anyone voted. Leave it empty and no reply is sent. Max 500 characters (Threads limit)."
+      },
+      "anketCevapGecikme": {
+       "type": "integer",
+       "minimum": 1,
+       "maximum": 168,
+       "description": "Poll only: how many hours after the poll to send the answer. Default 24."
+      },
       "timezone": {
        "type": "string",
        "maxLength": 64,

@@ -65,6 +65,22 @@ function jsGovde(metin, ad){
   return null;
 }
 
+// ⚠ SÜRÜM ÖLÇÜMÜ TAM EŞLEŞME DEĞİL, "EN AZ". İlk sürüm `1.18.x`
+// arıyordu ve aynı gün gelen bir sonraki iş (anket cevabı, 1.19.0)
+// testi KIRMIZI yaptı -- oysa davranış yerindeydi. Aynı sınıftan bir
+// hata TikTok testinde vardı ve günlerce kırmızı kalmıştı: ölçüm
+// davranışa değil, yazılışa bakıyordu.
+function surumEnAz(metin, enAz){
+  const m = /const SURUM = '(\d+)\.(\d+)\.(\d+)'/.exec(metin);
+  if(!m) return false;
+  const v = [Number(m[1]), Number(m[2]), Number(m[3])];
+  for(let i = 0; i < 3; i++){
+    if(v[i] > enAz[i]) return true;
+    if(v[i] < enAz[i]) return false;
+  }
+  return true;
+}
+
 const WORKER = jsYorumsuz(oku('supabase/functions/story-yayin/index.ts'));
 const HAMWORKER = oku('supabase/functions/story-yayin/index.ts');
 const APP    = jsYorumsuz(oku('app.html'));
@@ -168,7 +184,7 @@ console.log('[worker — yayın yolu]');
   bak('★ Meta belgesine atıf var (sayılar uydurulmadı)',
       /developers\.facebook\.com\/documentation\/threads\/create-posts\/polls/.test(HAMWORKER));
   // Sürüm artmalı: "dağıtılan sürüm yerine geçti mi" sorusu.
-  bak('★ worker sürümü arttı', /const SURUM = '1\.18\.\d+'/.test(WORKER),
+  bak('★ worker sürümü anketi taşıyan sürümden geri değil', surumEnAz(WORKER, [1,18,0]),
       (/const SURUM = '[^']*'/.exec(WORKER) || ['yok'])[0]);
 }
 
@@ -249,7 +265,7 @@ console.log('[MCP + ai/sema.json]');
   // sürüm eskiyse bütün bu iş canlıda YOK.
   bak('★ tek-dosya.ts yeniden üretildi (anketSecenekler içinde)',
       /anketSecenekler/.test(TEK));
-  bak('★ MCP sürümü arttı', /const SURUM = '1\.11\.\d+'/.test(MCP),
+  bak('★ MCP sürümü anketi taşıyan sürümden geri değil', surumEnAz(MCP, [1,11,0]),
       (/const SURUM = '[^']*'/.exec(MCP) || ['yok'])[0]);
 }
 

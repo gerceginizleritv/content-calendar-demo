@@ -289,7 +289,18 @@ function kayitOku(ham, sira, hatalar) {
       // KOYULMUYOR, cunku tek secenekli bir taslak kaydedilebilmeli --
       // eksikse yayin aninda kalici hata veriliyor ve e-posta gidiyor.
       anketSecenekler: Array.isArray(c.anketSecenekler)
-        ? c.anketSecenekler.slice(0, 4).map(x => typeof x === 'string' ? x.slice(0, 25) : '') : undefined
+        ? c.anketSecenekler.slice(0, 4).map(x => typeof x === 'string' ? x.slice(0, 25) : '') : undefined,
+      // ANKETIN CEVABI (16 Ekim 2026). Anket cikinca 24 saat sonra
+      // anketin ALTINA yanit olarak gidiyor. Threads metin siniri 500;
+      // daha uzunu worker kirpardi ve kullanici kirpildigini yayin
+      // aninda ogrenirdi, o yuzden sinir burada da 500.
+      anketCevap: metin(c.anketCevap, 500),
+      // Kac saat sonra. Varsayilan 24; 1-168 arasina sikistiriliyor.
+      // ⚠ SAYI OLMAYAN DEGER DUSUYOR: 'yarin' gibi bir metin
+      // veritabaninda tip hatasi verirdi.
+      anketCevapGecikme: (Number.isFinite(Number(c.anketCevapGecikme))
+        && Number(c.anketCevapGecikme) > 0)
+        ? Math.min(Math.max(Math.round(Number(c.anketCevapGecikme)), 1), 168) : undefined
     });
   }
   const projectRef = basvurular(ham.project, undefined, 1);
