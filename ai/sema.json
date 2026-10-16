@@ -226,6 +226,15 @@
        "maxLength": 6000,
        "description": "Story only: production directives for THIS card, one \"key: value\" per line, e.g. \"damga: KAYIT\", \"kaynak: 1622 · Yedikule\", \"cta: Tam bolum kanalda\", \"muzik: soru\", \"sure: 5\". A multi-card story is several entries (one per card, k1/k2 in mediaName), so this describes one card. Do NOT use slidePrompts for any of this: that field belongs to carousels and the app clears it on every other post type, so anything left there is lost the first time the user saves the entry."
       },
+      "dizi": {
+       "type": "array",
+       "maxItems": 10,
+       "items": {
+        "type": "string",
+        "maxLength": 500
+       },
+       "description": "Threads only: the continuation parts of a thread chain, in order. Part 1 is \"caption\"; these go out as replies under it, each replying to the one before, right after the post is published. At most 10 parts, 500 characters each. Empty strings are dropped."
+      },
       "anketSecenekler": {
        "type": "array",
        "maxItems": 4,

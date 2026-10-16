@@ -19,6 +19,59 @@ ZİNCİR
   pg_cron (1 dk) --> Edge Function story-yayin --> graph.threads.net
       (kapsayıcı /me/threads, sonra /me/threads_publish)
 
+ETİKET: BİR TANE ÇALIŞIYOR, GERİSİ SÜS (16 Ekim 2026, ölçüldü)
+  Threads gönderi başına TEK etiket kabul ediyor. İlk gönderide üç
+  etiket vardı (`#tarih #belgesel #sümela`); kullanıcı canlı gönderide
+  baktı: **yalnızca ilki** gerçek tag olmuş (gönderinin yanında
+  duruyor), diğer ikisi gövdenin altında düz yazı olarak kalmış.
+  → Planlama kuralı: en önemli etiketi BAŞA yaz, ikiden fazla yazma.
+  Kaynak ayrıca doğruluyor (TechCrunch, Social Media Today: "tek
+  konu etiketi, etiket spam'ini önlemek için") ama karar ÖLÇÜME
+  dayanıyor.
+
+ANKETİN SÜRESİ 24 SAAT (16 Ekim 2026, ölçüldü)
+  Meta'nın belgesinde yazmıyor; yalnızca `expiration_timestamp` alanı
+  var. Kullanıcı canlı gönderide anketin altında geri sayan sayacı
+  gördü: yayın anından 24 saat. Cevabın varsayılan gecikmesi (24 saat)
+  bu yüzden anketin KAPANDIĞI ana denk geliyor.
+
+ASİSTAN TİKİ AÇABİLİYOR — AMA KAPILI (16 Ekim 2026)
+  Ankette görsel yok, yani klasör izleyicisi hiç koşmuyor ve
+  `auto_publish` tikini açan yer odur. Kullanıcı "anketler otomatik
+  planlandığında gitsin" dedi ve iki seçenekten KAPILI olanı seçti:
+  MCP'nin `shootboard_update_entry` aracına `autoPublish` eklendi, ama
+  yalnızca `threads/poll` ve `threads/text_post` çiftlerinde açılabiliyor
+  (`OTO_IZINLI`). Başka her çiftte istek reddediliyor ve sebebi
+  yazılıyor. Kapatmak her zaman serbest.
+  ⚠ Bu liste `pc/story-yukle.py`'deki politika tablosunun KOPYASI
+  DEĞİL, alt kümesi: instagram/facebook çiftlerinin tikini zaten
+  izleyici açıyor, asistanın oraya uzanmasına gerek yok.
+
+DİZİ: ÇOK PARÇALI THREAD (16 Ekim 2026)
+  `content.dizi` = 2. parçadan itibaren parça metinleri (1. parça
+  caption). Yayından hemen sonra, her biri bir öncekinin ALTINA yanıt
+  olarak gidiyor. En çok 10 parça, her biri 500 karakter.
+  sql/66: `threads_yanitlari` tablosuna `tur` + `sira`, kısıt
+  (kayit, tur, sira). Sıra şartı: parça N, N-1 yayınlanmadan ALINMIYOR
+  (sql/48'deki story serisinin aynısı) -- ve N'nin hedefi N-1'in ÇIKAN
+  gönderi kimliği.
+  ⚠ Üçüncü parça patlarsa ilk ikisi YENİDEN GİTMİYOR: her parça kendi
+  satırı, kendi durumu.
+  ⛔ sql/65'i yeniden koşturursan sql/66'yı da koştur (iki işlev eski
+  haline döner ve kuyruk HATA VERİR).
+
+  GERÇEK POSTGRES'TE TEST EDİLDİ (testler/sql-yanit-kuyrugu.test.py) ve
+  bu, kaynağa bakan ölçümlerin GÖREMEYECEĞİ iki hatayı yakaladı:
+    1. `ana_gonderi_id` NOT NULL'du. 2. parçanın hedefi kuyruğa girerken
+       YOK (o kimlik 1. parça yayınlanınca doğuyor), yani kuyruğa alma
+       işlevi hata veriyordu -- ve anket cevapları da aynı işlevde
+       olduğu için onlar da duruyordu.
+    2. Boş parça atlanırken numarada BOŞLUK kalıyordu (1,3,4) ve sıra
+       şartı olmayan 2. parçayı beklediği için zincir SESSİZCE
+       kilitleniyordu. Numaralandırma artık boşlar atıldıktan sonra.
+    3. (üçüncüsü de çıktı) `create or replace` bir işlevin dönüş tipini
+       değiştiremiyor; `drop function` olmadan sql/66 hiç uygulanmıyor.
+
 AYRI UYGULAMA, AYRI JETON
   Threads'in kendi Meta uygulaması var ("Shootboard Threads").
   Facebook/Instagram yayını META_PAGE_TOKEN ile graph.facebook.com'a
