@@ -183,6 +183,85 @@ KAZANÇ / MALİYET — neden ertelendi
   YouTube onayı (24 kayıt) ve Supabase yedeği (426 kayıt, yedek YOK)
   bundan yüksek getirili.
 
+THREADS — ARAŞTIRILDI, KARAR KULLANICIDA (16 Ekim 2026)
+────────────────────────────────────────────────────────────────────
+
+  Soru: "Threads için Shootboard üzerinden gönderi yapabilir miyiz?"
+  Kısa cevap: TEKNİK OLARAK EVET, mimarimize TikTok'tan çok daha iyi
+  oturuyor. Ama CEVAPLANMAMIŞ BİR RİSK var ve o risk bizi Facebook'ta
+  sekiz gün yakan şeyin birebir aynısı.
+
+  ⚠ KAYNAK UYARISI
+  Meta'nın kendi belgelerine bu oturumdan ERİŞİLEMEDİ (ağ engeli:
+  developers.facebook.com çözülmüyor). Aşağıdakilerin çoğu üçüncü
+  taraf rehberlerden; hangisinin ne olduğu tek tek yazıldı. Koda
+  başlamadan önce resmi belgeden doğrulanmalı.
+
+  NE KESİN (birden çok bağımsız kaynak aynı şeyi söylüyor)
+    · Threads'in resmi yayın API'si var: metin, görsel, video, karusel
+    · Akış iki adımlı -- kapsayıcı oluştur, sonra yayınla. Instagram
+      yolumuzun aynısı, yani kod iskeleti elimizde
+    · Medyayı ADRESTEN ÇEKİYOR, dosya yüklemiyoruz. Dosyalarımız zaten
+      R2'de herkese açık adreste; bu kısım bizde HAZIR
+    · Kendi zamanlaması YOK -- yayın saatini biz tutacağız. Shootboard
+      zaten bunu yapıyor
+    · İzinler: `threads_basic` + `threads_content_publish`
+    · OAuth AYRI: threads.net/oauth/authorize üzerinden, uzun ömürlü
+      jeton 60 gün, yenileyince 90. Facebook/Instagram bağlantımızdan
+      KENDİLİĞİNDEN GELMİYOR
+    · Sınırlar: ~250 gönderi/24 saat, metin ~500 karakter
+
+  YENİ UYGULAMA GEREKMİYOR (Meta'nın kendi belgesinden alıntılanmış)
+    "Access the Threads API" kullanım senaryosu MEVCUT uygulamaya
+    eklenebiliyor ve Page-management senaryosuyla uyumlu olduğu
+    açıkça örnek veriliyor. Bizim uygulamamız tam olarak o -- yani
+    Live olan uygulamamıza eklenebilir.
+    ⛔ AMA: eklenen bir kullanım senaryosu GERİ ALINAMIYOR. Uygulama
+    13 Ekim'de Live yapıldı ve Facebook/Instagram yayını ona bağlı;
+    geri alınamayan bir değişikliği hafife almayalım.
+
+  ⛔ CEVAPLANMAYAN SORU -- ASIL RİSK BU
+    Geliştirme (Development) modundayken API ile atılan bir Threads
+    gönderisi HERKESE GÖRÜNÜYOR MU, yoksa Facebook'ta olduğu gibi
+    yalnızca uygulamada rolü olanlara mı?
+
+    Dört ayrı arama yapıldı, HİÇBİR kaynak bunu söylemiyor. Hepsi
+    "development modda yalnızca tester hesaplar BAĞLANABİLİR ve
+    PAYLAŞABİLİR" diyor -- yani kimin gönderebileceğini anlatıyor,
+    gönderinin kime GÖRÜNECEĞİNİ değil. İkisi farklı şey.
+
+    Bu ayrımı bilmemek Facebook'ta bize sekiz gün kaybettirdi:
+    yayınlama çalışıyordu, dağıtım yoktu, hiçbir yerde hata yoktu.
+    3 Ekim'deki reel "başarıyla yayınlandı" ve Erişim 1 aldı.
+
+    Threads'te aynı tuzak VAR MI bilmiyoruz. Bilmeden kod yazmak,
+    Ekim ayını tekrar yaşamak demek.
+
+  KAZANÇ / MALİYET
+    Kazanç: kullanıcı Threads'e ELLE atıyor. Otomatikleşirse gönderi
+    başına bir elle işlem kalkıyor.
+    ⚠ Ama kullanıcının kendi gözlemi: "bazı gönderiler 0 görüntülenme
+    aldı bazıları 1000 üzerinde, ne görüntülenecek belli değil."
+    Yani kanalın kendisi oynak; otomatikleştirmenin getirisi belirsiz.
+
+    Maliyet: App Review (her izin için ayrı başvuru + ekran kaydı),
+    kaynaklara göre 2-4 hafta; kimlik doğrulama bir hafta daha
+    ekleyebiliyor. Üstüne yeni bir OAuth yolu ve yeni bir yayın yolu.
+
+  ÖNERİLEN SIRA -- kod EN SONDA
+    1. Resmi belgeden doğrula: development modda dağıtım var mı?
+       (Bu oturumdan erişilemedi; kullanıcı açabilir ya da başka bir
+       oturumda bakılır.)
+    2. Cevap "dağıtım normal" ise: KÜÇÜK BİR DENEY. Uygulamayı Live
+       yapmadan, tester hesapla tek bir gönderi at, aynı gün elle bir
+       gönderi at, görüntülenmeleri karşılaştır. Threads'in oynaklığı
+       yüzünden TEK ÖLÇÜM YETMEZ -- birkaç gün üst üste eşli ölçüm.
+    3. Deney olumluysa App Review, sonra kod.
+    Cevap "yalnızca rolü olanlara görünür" ise: App Review'dan ÖNCE
+    kod yazmanın anlamı yok, Facebook'taki sırayı tekrarlamayalım.
+
+  DURUM: kullanıcının kararı bekleniyor. Kod YAZILMADI.
+
 YEDEK — Supabase ÜCRETSİZ planda, otomatik yedek YOK (12 Ekim 2026)
 ────────────────────────────────────────────────────────────────────
 
