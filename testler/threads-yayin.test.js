@@ -266,6 +266,11 @@ console.log('[jeton yenileme]');
   // Yenilenen jeton GERCEKTEN kullanilmali: cagrilar jetonu disaridan
   // almali, yoksa sabit THREADS_TOKEN'a geri duserdi ve yenileme
   // hicbir ise yaramazdi.
+  // Durum ucu her platformun ayarini bildiriyor; Threads'inki
+  // unutulmustu ve kullanici ayarini dogrulayamiyordu.
+  bak('★ durum ucu threads_token bildiriyor',
+      /threads_token:\s*!!THREADS_TOKEN/.test(WORKER));
+
   const gy = jsGovde(WORKER, 'threadsYayinla') || '';
   bak('★ yayın yolu jetonu threadsJetonu\'dan alıyor', /threadsJetonu\(k\)/.test(gy));
   bak('★ çağrılara jeton iletiliyor', /hesap\.jeton/.test(gy));

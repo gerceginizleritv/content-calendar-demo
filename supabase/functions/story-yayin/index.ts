@@ -58,7 +58,7 @@
 //          etiketler), yoksa eski taslak yolu. Gizlilik seviyesi
 //          creator_info/query'nin verdiği listeden seçiliyor.
 
-const SURUM = '1.16.0';
+const SURUM = '1.16.1';
 const UCLAR = ['GET / (servis bilgisi)', 'POST / (bir tur)'];
 
 // ⚠ ORTAM DEĞİŞKENLERİ KIRPILIYOR.
@@ -2487,6 +2487,12 @@ Deno.serve(async (req: Request) => {
         // "okuyor" farklı şeyler -- dağıtımdan sonra bakılabilsin.
         tiktok_key: !!TIKTOK_KEY, tiktok_secret: !!TIKTOK_SECRET,
         youtube_id: !!YOUTUBE_ID, youtube_secret: !!YOUTUBE_SECRET,
+        // ⚠ YALNIZCA TOHUMUN TANIMLI OLUP OLMADIGI. Calisan jeton
+        // tabloda (threads_hesaplari) ve oraya bakmak icin user_id
+        // gerekiyor -- GET'te kullanici yok. Yani `true` gormek
+        // "Threads calisiyor" demek DEGIL, "ilk tohum var" demek.
+        // Ilk yayindan sonra gercek jeton tablodan geliyor.
+        threads_token: !!THREADS_TOKEN,
         // ⛔ BU İKİSİ DEĞER GÖSTERİYOR ve bilerek: ikisi de gizli
         // değil, ikisi de yayının NE YAPACAĞINI belirliyor. Denetim
         // kapısı kapalıyken YouTube kayıtları yüklenmiyor; görünürlük
