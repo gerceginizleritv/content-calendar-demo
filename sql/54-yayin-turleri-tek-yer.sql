@@ -61,7 +61,10 @@ as $$
   -- ⚠ BURAYA DA EKLENDI ki bu dosyayi yeniden kosturmak sql/62'nin
   -- isini GERI ALMASIN. Canli veritabani icin uygulayan dosya
   -- sql/62; burasi fazlaligi degil, tuzagin kapatilmasi.
-  select array['story', 'reels', 'shorts', 'text_post']::text[];
+  -- 'poll' = Threads anketi (yalnizca metin + 2-4 secenek),
+  -- 16 Ekim 2026'da eklendi. Worker'da TURLER.poll.platformlar
+  -- = ['threads']. Canliya uygulayan dosya sql/64.
+  select array['story', 'reels', 'shorts', 'text_post', 'poll']::text[];
 $$;
 
 -- ⚠ `authenticated` BU LİSTEDE YOK ve olmayacak. Aşağıdaki (3/3)

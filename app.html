@@ -4400,6 +4400,29 @@ textarea.sc-ai-brief{min-height:64px;resize:vertical;line-height:1.5;}
       </div>
     </div>
 
+    <!-- ANKET SECENEKLERI. Yalnizca anket kayitlarinda gorunuyor.
+         ⛔ THREADS'IN SINIRLARI (Meta belgesinden, 16 Ekim 2026):
+         2-4 secenek, her biri 1-25 karakter, ve anket YALNIZCA metin
+         gonderisine takilabiliyor -- ankete gorsel baglanirsa Threads
+         kapsayiciyi reddediyor.
+         ⛔ Bu veri caption'a ya da slidePrompts'a KONULAMAZ: caption
+         anketin SORUSU, slidePrompts karuselin ve kaydetme yolu baska
+         her tipte onu bosaltiyor. Oraya yazilan secenek, kayit ilk kez
+         acilip kaydedildiginde sessizce kaybolurdu. -->
+    <div id="anketWrap" style="display:none;">
+      <div class="section-title" data-i18n="anket_bolum">Poll options</div>
+      <div class="field">
+        <div class="field-header">
+          <label data-i18n="f_anket_label">Options (2-4)</label>
+        </div>
+        <input id="f_anket1" maxlength="25" data-i18n-placeholder="f_anket_ph1" placeholder="Option 1">
+        <input id="f_anket2" maxlength="25" data-i18n-placeholder="f_anket_ph2" placeholder="Option 2" style="margin-top:6px">
+        <input id="f_anket3" maxlength="25" data-i18n-placeholder="f_anket_ph3" placeholder="Option 3 (optional)" style="margin-top:6px">
+        <input id="f_anket4" maxlength="25" data-i18n-placeholder="f_anket_ph4" placeholder="Option 4 (optional)" style="margin-top:6px">
+        <p class="hint" data-i18n="f_anket_not">Threads allows 2 to 4 options, 25 characters each. The question itself goes in the caption field. A poll cannot carry an image.</p>
+      </div>
+    </div>
+
     <div id="carouselWrap" style="display:none;">
       <div class="section-title" data-i18n="carousel_title">Carousel Slide Prompts (9)</div>
       <div id="carouselSlides"></div>
@@ -5082,6 +5105,16 @@ const LANG = {
     oy_yeni: "Save the entry first, then you can switch automatic publishing on.",
     oy_not_reels: (p)=> `Shootboard posts this reel to ${CAL_SM_NAMES[p] || p} at the time above, cover and caption included. Stories and reels on Instagram and Facebook are the only things Shootboard posts by itself \u2014 everything else you post.`,
     oy_not_metin: (p)=> `Shootboard posts this text post to ${CAL_SM_NAMES[p] || p} at the time above, with its image if one is attached. Stories, reels and text posts on the connected accounts are the only things Shootboard posts by itself \u2014 everything else you post.`,
+    oy_not_anket: (p)=> `Shootboard posts this poll to ${CAL_SM_NAMES[p] || p} at the time above, with the options below. A poll is text only \u2014 no image goes with it.`,
+    anket_bolum: "Poll options",
+    f_anket_label: "Options (2-4)",
+    f_anket_ph1: "Option 1",
+    f_anket_ph2: "Option 2",
+    f_anket_ph3: "Option 3 (optional)",
+    f_anket_ph4: "Option 4 (optional)",
+    f_anket_not: "Threads allows 2 to 4 options, 25 characters each. The question itself goes in the caption field. A poll cannot carry an image.",
+    anket_az: "A poll needs at least 2 options. Fill the first two, or turn auto-publish off to keep it as a draft.",
+    anket_gorselli: "A poll cannot carry an image (Threads rule). Clear the file name, or change the type to Text post.",
     oy_not_shorts: "Shootboard uploads this Short to YouTube as soon as the file is ready \u2014 often days early \u2014 and YouTube itself publishes it at the time above. Title, description and tags go with it. After the upload, edits made here no longer reach the video; change it in YouTube Studio.",
     oy_zamanlandi: "Uploaded \u2014 YouTube publishes it at",
     oy_kapak_var: "Cover attached.",
@@ -6111,6 +6144,16 @@ const LANG = {
     oy_yeni: "Önce kaydı kaydet, sonra otomatik yayını açabilirsin.",
     oy_not_reels: (p)=> `Shootboard bu reel'i yukarıdaki saatte ${PLATFORM_YONELME[p] || ((CAL_SM_NAMES[p] || p) + "'a")} kendi atıyor — kapağı ve alt yazısıyla. Shootboard'ın kendiliğinden yayınladığı şeyler Instagram ve Facebook'taki story ve reels kayıtları — geri kalan her şeyi sen yayınlıyorsun.`,
     oy_not_metin: (p)=> `Shootboard bu metin postunu yukarıdaki saatte ${PLATFORM_YONELME[p] || ((CAL_SM_NAMES[p] || p) + "'a")} kendi atıyor — görseli varsa onunla birlikte. Shootboard'ın kendiliğinden yayınladığı şeyler bağlı hesaplardaki story, reels ve metin postları — geri kalan her şeyi sen yayınlıyorsun.`,
+    oy_not_anket: (p)=> `Shootboard bu anketi yukarıdaki saatte ${PLATFORM_YONELME[p] || ((CAL_SM_NAMES[p] || p) + "'a")} kendi atıyor — aşağıdaki seçeneklerle. Anket yalnızca metin: yanında görsel gitmiyor.`,
+    anket_bolum: "Anket seçenekleri",
+    f_anket_label: "Seçenekler (2-4)",
+    f_anket_ph1: "1. seçenek",
+    f_anket_ph2: "2. seçenek",
+    f_anket_ph3: "3. seçenek (isteğe bağlı)",
+    f_anket_ph4: "4. seçenek (isteğe bağlı)",
+    f_anket_not: "Threads 2 ile 4 arası seçenek kabul ediyor, her biri en çok 25 karakter. Sorunun kendisi alt yazı alanına yazılıyor. Ankete görsel eklenemiyor.",
+    anket_az: "Anket için en az 2 seçenek gerekiyor. İlk ikisini doldur, ya da otomatik yayını kapatıp taslak olarak bırak.",
+    anket_gorselli: "Ankete görsel eklenemiyor (Threads kuralı). Dosya adını boşalt, ya da türü Metin postu yap.",
     oy_not_shorts: "Shootboard bu Short'u dosya hazır olur olmaz YouTube'a yüklüyor — çoğu zaman günler öncesinden. Yayına alma işini yukarıdaki saatte YouTube kendi yapıyor. Başlık, açıklama ve etiketler videoyla birlikte gidiyor. Yükleme olduktan sonra buradaki düzeltmeler videoya ULAŞMIYOR; onu YouTube Studio'dan değiştirmen gerekiyor.",
     oy_zamanlandi: "Yüklendi — YouTube şu saatte yayınlayacak:",
     oy_kapak_var: "Kapak bağlı.",
@@ -7687,7 +7730,7 @@ function fromRow(r){
 // küme. ⚠ DÖRT YERDE yazılı ve dördü de birbirinden habersiz: burası,
 // sql/53'teki iki işlev ve mcp/index.ts'teki YAYIN_TURLERI. Listesi
 // sql/53'ün başında; testler/shorts-kuyruk.js dördünü bağlıyor.
-const YAYIN_TURLERI = ['story', 'reels', 'shorts', 'text_post'];
+const YAYIN_TURLERI = ['story', 'reels', 'shorts', 'text_post', 'poll'];
 const yayinlanabilirTur = (t)=> YAYIN_TURLERI.includes(String(t || ''));
 
 function yayinBilgisi(r){
@@ -7822,6 +7865,12 @@ function sanitizeEvent(raw){
       // 9 x 5000 tek basina 45 KB ediyordu; bir gorsel prompt'u icin 2000
       // fazlasiyla yeterli ve arayuzdeki sinir zaten 1000.
       slidePrompts: Array.isArray(c.slidePrompts) ? c.slidePrompts.slice(0,9).map(x=>str(x,2000)) : [],
+      // ANKET SECENEKLERI -- Threads anketi (16 Ekim 2026). Beyaz
+      // listede olmasa her buluttan okumada sessizce duserdi; `diller`
+      // ve `anaDil` tam bunu yasadi. Tavanlar Threads'in sinirlari:
+      // en cok 4 secenek, her biri 25 karakter.
+      anketSecenekler: Array.isArray(c.anketSecenekler)
+        ? c.anketSecenekler.slice(0,4).map(x=>str(x,25)) : [],
       // Beyaz listede OLMAK ZORUNDA, yoksa her yuklemede sessizce duser.
       storyPrompt:  str(c.storyPrompt, 6000),
       storyKartlar: str(c.storyKartlar, 6000),
@@ -16378,6 +16427,50 @@ function dilRozeti(ev){
   return `<span class="cal-dil" title="${escapeHtml(t('dil_rozet_ipucu'))}">${escapeHtml(hepsi.join(' '))}</span>`;
 }
 
+// ══════════════════════════════════════════════════════════════════
+// ANKET SECENEKLERI — dort kutu, bir dizi
+// ══════════════════════════════════════════════════════════════════
+// Threads'in siniri 2-4 secenek, her biri 1-25 karakter; anket yalnizca
+// metin gonderisine takilabiliyor (Meta belgesi, 16 Ekim 2026).
+//
+// ⚠ BOSLAR ATILIYOR AMA SIRA KORUNUYOR: kullanici 1. ve 3. kutuyu
+// doldurursa gidenler ['...','...'] oluyor, arada bos bir secenek
+// kalmiyor -- Threads bos secenegi reddeder.
+const ANKET_KUTU = ['f_anket1','f_anket2','f_anket3','f_anket4'];
+
+function anketKutulariYaz(liste){
+  ANKET_KUTU.forEach((id,i)=>{
+    const el = document.getElementById(id);
+    if(el) el.value = (liste && liste[i]) ? String(liste[i]) : '';
+  });
+}
+
+// ⚠ DENETIM IKI YERDE: Kaydet dugmesinde VE otomatik yayin
+// anahtarinda. Biri yetmez, cunku sira degisebiliyor: kullanici kaydi
+// yazip sonra anahtari aciyor ya da anahtari acip sonra secenekleri
+// siliyor. Ucuncu denetim worker'da, yayin aninda -- ama oraya kalirsa
+// gonderi KACIYOR (kalici hata + e-posta), o yuzden burada erken
+// soyluyoruz.
+//
+// Taslaga karisilmiyor: otomatik yayin KAPALIYKEN yarim doldurulmus
+// bir anket kaydedilebiliyor. Engel yalnizca yayina gidecek kayitta.
+function anketEngeli(tur, kayit){
+  if(tur !== 'poll') return '';
+  if(anketKutulariOku().length < 2) return 'anket_az';
+  // Ankete gorsel baglanamiyor (Threads kurali). Dosya adi kayda
+  // yukleyici tarafindan yaziliyor, kullanici buradan silemiyor --
+  // o yuzden soyledigimiz sey "dosyayi bosalt ya da turu degistir".
+  if(kayit && kayit.yayin && kayit.yayin.dosya) return 'anket_gorselli';
+  return '';
+}
+
+function anketKutulariOku(){
+  return ANKET_KUTU
+    .map(id => ((document.getElementById(id)||{}).value || '').trim())
+    .filter(Boolean)
+    .slice(0,4);
+}
+
 function refreshTypeDependentFields(){
   const type = document.getElementById('f_type').value;
   // Story de kapak metni ve gorsel prompt'u tasiyor: kartin buyuk metni
@@ -16389,6 +16482,11 @@ function refreshTypeDependentFields(){
   document.getElementById('shortTitleWrap').style.display = (type==='video'||type==='shorts'||type==='reels'||type==='story') ? '' : 'none';
   document.getElementById('storyKartWrap').style.display = (type==='story') ? '' : 'none';
   document.getElementById('carouselWrap').style.display = (type==='carousel') ? '' : 'none';
+  // ⚠ GIZLEMEK SILMEK DEGIL: alan gizliyken de degeri DOM'da duruyor ve
+  // kaydetme yolu oradan okuyor (story alanlarindaki kalibin aynisi).
+  // Tipi yanlislikla degistirip geri alan kullanici secenekleri
+  // kaybetmiyor.
+  document.getElementById('anketWrap').style.display = (type==='poll') ? '' : 'none';
   dilSeridiTazele();
   if(type === 'carousel'){
     const container = document.getElementById('carouselSlides');
@@ -16441,6 +16539,8 @@ function openModal(ev, hazirTarih, hazirSaat, hazirProje){
     document.getElementById('f_storyprompt').value = c.storyPrompt||'';
     document.getElementById('f_storykartlar').value = c.storyKartlar||'';
     document.getElementById('f_storyyonerge').value = c.storyYonerge||'';
+    // ANKET SECENEKLERI: dort kutuya sirayla. Eksikler bos kaliyor.
+    anketKutulariYaz(Array.isArray(c.anketSecenekler) ? c.anketSecenekler : []);
     dilKurulumu(c, ev.type, ev.platform);
     document.getElementById('carouselSlides').innerHTML = '';
     refreshTypeDependentFields();
@@ -16471,6 +16571,7 @@ function openModal(ev, hazirTarih, hazirSaat, hazirProje){
     document.getElementById('f_storyprompt').value = '';
     document.getElementById('f_storykartlar').value = '';
     document.getElementById('f_storyyonerge').value = '';
+    anketKutulariYaz([]);
     dilKurulumu(null, 'video', '');
     document.getElementById('carouselSlides').innerHTML = '';
     refreshTypeDependentFields();
@@ -16622,6 +16723,10 @@ function otoYayinTazele(){
                // asagidaki oy_not'a duserdi ve ekranda "bu STORY'yi
                // atiyor" yazardi -- kayit story degil, metin postu.
                : tur === 'text_post' ? t('oy_not_metin')(notPlatform)
+               // ⚠ ANKET DE KENDI METNINI ISTIYOR: oy_not_metin
+               // "gorseli varsa onunla birlikte" diyor, oysa ankette
+               // gorsel OLAMIYOR. Yanlis bilgi, bilgi vermemekten kotu.
+               : tur === 'poll'      ? t('oy_not_anket')(notPlatform)
                : t('oy_not')(notPlatform)) + '</span>');
   if(y.hata) satirlar.push('<span class="oy-hata">' + escapeHtml(y.hata) + '</span>');
   d.innerHTML = satirlar.join('<br>');
@@ -16676,6 +16781,12 @@ document.getElementById('otoYayinToggle').addEventListener('click', async ()=>{
   const tg = document.getElementById('otoYayinToggle');
   if(tg.dataset.kapali === '1' || !currentEvent) return;
   const yeni = tg.dataset.val !== '1';
+  // Anahtari ACARKEN denetle. Kapatmak her zaman serbest: kapatmak
+  // yayini durdurmak demek ve onu engellemek sacma olurdu.
+  if(yeni){
+    const engel = anketEngeli(document.getElementById('f_type').value, currentEvent);
+    if(engel){ uyari(t(engel)); return; }
+  }
   setOtoYayinToggle(yeni, true);              // yazma bitene kadar kilitli
   const ok = await otomatikYayinYaz(currentEvent.id, yeni);
   if(ok){
@@ -16747,6 +16858,12 @@ document.getElementById('saveBtn').addEventListener('click', async ()=>{
   const type = currentEvent
     ? document.getElementById('f_type').value
     : (secilenTipler()[0] || 'video');
+  // Otomatik yayini ACIK bir anket eksik seceneklerle kaydedilemez:
+  // o kayit saatinde yayina gidecek ve hata yayin aninda cikacakti.
+  if(currentEvent && currentEvent.yayin && currentEvent.yayin.otomatik){
+    const engel = anketEngeli(type, currentEvent);
+    if(engel){ uyari(t(engel)); return; }
+  }
 
   // Acik olan dil sekmesi hangisiyse kutulardaki metin ONUN; ana dilin
   // metni kovada bekliyor olabilir. Once hepsi toplaniyor, sonra ana dil
@@ -16774,6 +16891,13 @@ document.getElementById('saveBtn').addEventListener('click', async ()=>{
     storyPrompt: document.getElementById('f_storyprompt').value,
     storyKartlar: document.getElementById('f_storykartlar').value,
     storyYonerge: document.getElementById('f_storyyonerge').value,
+    // ⚠ TIPE BAKIP BOSALTILMIYOR -- storyPrompt ile ayni gerekce:
+    // alan gizliyken de degeri DOM'da duruyor ve buradan geri
+    // yaziliyor. content bu nesneden BASTAN kuruluyor, yani bu satir
+    // olmasa anket secenekleri kaydi uygulamada bir kez acip
+    // kaydetmekle SESSIZCE silinirdi (hesapId ve diller ile birebir
+    // ayni tuzak).
+    anketSecenekler: anketKutulariOku(),
     slidePrompts: (currentEvent ? type==='carousel' : secilenTipler().includes('carousel'))
       ? Array.from({length:9},(_,i)=> (document.getElementById('slide'+(i+1))||{}).value || '') : []
   };

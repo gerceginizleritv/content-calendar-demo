@@ -295,7 +295,18 @@ function kayitOku(ham, sira, hatalar) {
       // kullanici kaydi ilk actigi an kayboluyor.
       storyPrompt: metin(c.storyPrompt, 6000),
       storyKartlar: metin(c.storyKartlar, 6000),
-      storyYonerge: metin(c.storyYonerge, 6000)
+      storyYonerge: metin(c.storyYonerge, 6000),
+      // ANKET SECENEKLERI (16 Ekim 2026) -- yalnizca Threads anketinde.
+      // ⚠ BEYAZ LISTEDE OLMAK ZORUNDA: olmayan bir content alani bu
+      // islevden sessizce DUSUYOR. `diller` ve `anaDil` tam bunu
+      // yasadi ve kayip haftalarca gorulmedi.
+      //
+      // Threads'in siniri 2-4 secenek, her biri 1-25 karakter. Burada
+      // yalnizca TAVAN uygulaniyor (4 ve 25); "en az iki" sarti
+      // KOYULMUYOR, cunku tek secenekli bir taslak kaydedilebilmeli --
+      // eksikse yayin aninda kalici hata veriliyor ve e-posta gidiyor.
+      anketSecenekler: Array.isArray(c.anketSecenekler)
+        ? c.anketSecenekler.slice(0, 4).map(x => typeof x === 'string' ? x.slice(0, 25) : '') : undefined
     });
   }
   const projectRef = basvurular(ham.project, undefined, 1);
@@ -622,6 +633,15 @@ const SEMA = {
        "type": "string",
        "maxLength": 6000,
        "description": "Story only: production directives for THIS card, one \"key: value\" per line, e.g. \"damga: KAYIT\", \"kaynak: 1622 · Yedikule\", \"cta: Tam bolum kanalda\", \"muzik: soru\", \"sure: 5\". A multi-card story is several entries (one per card, k1/k2 in mediaName), so this describes one card. Do NOT use slidePrompts for any of this: that field belongs to carousels and the app clears it on every other post type, so anything left there is lost the first time the user saves the entry."
+      },
+      "anketSecenekler": {
+       "type": "array",
+       "maxItems": 4,
+       "items": {
+        "type": "string",
+        "maxLength": 25
+       },
+       "description": "Poll only (type \"poll\", platform \"threads\"): the poll options, in order. Threads requires 2 to 4 options and 1 to 25 characters each, and a poll can only be attached to a TEXT post — an entry with a poll must not carry an image. The post text itself goes in \"caption\"."
       },
       "timezone": {
        "type": "string",
@@ -1170,7 +1190,7 @@ const SERVIS_ANAHTARI = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY') ?? '';
 // Bu kural UC KEZ unutuldu ve ucuncusunde artik soze birakilmadi:
 // birlestir.py, kaynak degisip surum ayni kalirsa HATA VERIP duruyor
 // ve tek-dosya.ts'i uretmiyor. Yani unutuldugu an belli oluyor.
-const SURUM = '1.10.0';
+const SURUM = '1.11.0';
 
 // ---- Otomatik yayın hattı olan türler ------------------------------------
 // AYNI kümeyi taşıyan yerler: app.html'deki YAYIN_TURLERI, sql/50'deki
@@ -1191,7 +1211,9 @@ const SURUM = '1.10.0';
 // `video` kayitlari da kuyruga girer ve worker onlari `reels` saymadigi
 // icin STORY olarak yayinlar -- uzun bir belgesel 24 saatte kaybolur.
 // Uzun form icin once worker'da ayri bir dal gerekiyor.
-const YAYIN_TURLERI = ['story', 'reels', 'shorts', 'text_post'];
+// 16 Ekim 2026: 'poll' eklendi -- Threads anketi. Yalnizca threads:
+// worker'da TURLER.poll.platformlar = ['threads'].
+const YAYIN_TURLERI = ['story', 'reels', 'shorts', 'text_post', 'poll'];
 const yayinlanabilirTur = (t: any) => YAYIN_TURLERI.includes(String(t || ''));
 
 const CORS: Record<string, string> = {
@@ -1358,6 +1380,11 @@ function kayitIcerigi(c: any) {
   if (c.storyPrompt)  o.storyPrompt  = c.storyPrompt;
   if (c.storyKartlar) o.storyKartlar = c.storyKartlar;
   if (c.storyYonerge) o.storyYonerge = c.storyYonerge;
+  // ANKET SECENEKLERI -- Threads anketi (16 Ekim 2026). Bos dizi
+  // YAZILMIYOR: anket olmayan her kayda bos bir alan eklemek asistana
+  // "burada bir sey var" dedirtir.
+  if (Array.isArray(c.anketSecenekler) && c.anketSecenekler.length)
+    o.anketSecenekler = c.anketSecenekler;
   // Bos olanlar JSON'a HIC yazilmiyor: cevirisi olmayan kayit bos bir
   // "diller" tasimasin, asistan "burada bir sey var" sanmasin.
   if (c.diller && typeof c.diller === 'object' && !Array.isArray(c.diller)

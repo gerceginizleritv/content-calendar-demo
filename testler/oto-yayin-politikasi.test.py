@@ -89,10 +89,16 @@ si = modul_al('story-izle.py', 'story_izle')
 # uygulamasindan gidiyor; Facebook/Instagram yayiniyla ortak hicbir
 # seyi yok. Dagitim olcumu SURUYOR -- sonucu kotuyse tablodan
 # kapatmak yeter.
+# 16 Ekim 2026 (aynı gün, ikinci iş): threads/poll eklendi -- Threads
+# anketi. ⚠ Bu çiftte tablo PRATİKTE çalışmıyor: ankette görsel yok,
+# yükleyici hiç koşmuyor, yani tiki açan yer devrede değil. Tik ya
+# planlama sohbetinden (MCP) ya uygulamadan açılıyor. Satır yine de
+# tabloda: "tabloda olmayan çift kapalı" kuralı gereği, bir gün bir
+# anket kaydı yükleyiciden geçerse politika kararını söylemiş olsun.
 print('[tablo: kullanıcının 16 Ekim 2026 kararı]')
 ACIK = [('instagram', 'story'), ('facebook', 'story'),
         ('instagram', 'reels'), ('facebook', 'reels'),
-        ('threads', 'text_post')]
+        ('threads', 'text_post'), ('threads', 'poll')]
 KAPALI = [('tiktok', 'reels'), ('youtube', 'shorts')]
 
 for p, t in ACIK:
@@ -101,7 +107,7 @@ for p, t in KAPALI:
     bak(f'★ {p}/{t} kapalı', sy.otomatik_mi(p, t) is False)
 
 # Tabloda fazlası olmasın: ileride biri "zaten açıktı" diye eklemesin.
-bak('★ tabloda açık olan TAM OLARAK bu beşi',
+bak('★ tabloda açık olan TAM OLARAK bu altısı',
     sorted(x for x, v in sy.OTOMATIK_YAYIN.items() if v) == sorted(ACIK),
     [x for x, v in sy.OTOMATIK_YAYIN.items() if v])
 
