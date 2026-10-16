@@ -105,8 +105,13 @@ console.log('\n[bağlanma: video.publish varsayılanda İSTENMİYOR]');
 bak('★ varsayılan kapsam listesinde video.publish YOK',
   /\|\| 'user\.info\.basic,video\.upload'/.test(baglan)
   && !/'user\.info\.basic,video\.upload,video\.publish'/.test(baglan));
+// ⚠ 16 Ekim 2026: ÖLÇÜM YAZILIŞA ÇAKILIYDI. Kod o gün `ayar()`
+// üzerinden okumaya geçti (Deno.env'i o işlev okuyor, böylece eksik
+// değişken tek yerden raporlanıyor) ve bu satır KIRMIZI kaldı -- oysa
+// davranış doğruydu. Aranan şey artık okumanın KENDİSİ: iki yazılıştan
+// biri yeterli, hiçbiri yoksa liste sabitlenmiş demektir.
 bak('★ liste ortam değişkeninden genişletilebiliyor',
-  /Deno\.env\.get\('TIKTOK_KAPSAMLAR'\)/.test(baglan));
+  /(ayar|Deno\.env\.get)\('TIKTOK_KAPSAMLAR'\)/.test(baglan));
 bak('neden varsayılanda olmadığı YAZILI',
   /tanımlı OLMAYAN bir kapsam istenirse yetkilendirmeyi/.test(baglan));
 

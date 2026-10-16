@@ -266,6 +266,11 @@ console.log('[jeton yenileme]');
   // Yenilenen jeton GERCEKTEN kullanilmali: cagrilar jetonu disaridan
   // almali, yoksa sabit THREADS_TOKEN'a geri duserdi ve yenileme
   // hicbir ise yaramazdi.
+  // Durum ucu her platformun ayarini bildiriyor; Threads'inki
+  // unutulmustu ve kullanici ayarini dogrulayamiyordu.
+  bak('★ durum ucu threads_token bildiriyor',
+      /threads_token:\s*!!THREADS_TOKEN/.test(WORKER));
+
   const gy = jsGovde(WORKER, 'threadsYayinla') || '';
   bak('★ yayın yolu jetonu threadsJetonu\'dan alıyor', /threadsJetonu\(k\)/.test(gy));
   bak('★ çağrılara jeton iletiliyor', /hesap\.jeton/.test(gy));
@@ -290,6 +295,96 @@ console.log('[app.html]');
   // Platform adi sabit yazilmamali -- 13 Ekim dersi.
   bak('★ notta platform adı sabit değil',
       !/oy_not_metin:\s*"/.test(ham));
+}
+
+// ── 7. 16 EKIM 2026 — ILK GERCEK YAYIN PATLADI, UC EKSIK CIKTI ───
+//
+// OLAN. Kayit saatinde worker kaydi aldi, Threads'te kapsayiciyi
+// yaratti (gorsel islendi, durum FINISHED), yayin cagrisini yapti ve
+// cagri SESSIZCE sonucsuz kaldi: ne gonderi, ne hata e-postasi, ne
+// log satiri. Teshis ancak Threads'e ELLE kapsayici durumu sorularak
+// yapilabildi.
+//
+// UC AYRI EKSIK vardi ve ucu de burada olculuyor:
+//   1. Yakalanan hata yalnizca last_error'a yaziliyordu; bir sonraki
+//      tur ustune yazdi ve ASIL MESAJ YOK OLDU.
+//   2. "Sonucu bilinmiyor" hali kendiliginden HIC cozulmuyordu: kayit
+//      bes dakikada bir sonsuza kadar erteleniyordu.
+//   3. Threads cagrilarinda zaman asimi yoktu; askida kalan istek
+//      isolate'i oldurtuyor ve catch hic calismiyor.
+console.log('[16 Ekim dersi — hata gorunur, kilit cozulur, cagri askida kalmaz]');
+{
+  // ---- 1. HATA LOGA DA YAZILIYOR --------------------------------
+  const gi = jsGovde(WORKER, 'kaydiIsle') || '';
+  bak('kaydiIsle tanımlı', !!gi);
+  // ⚠ OLCUM console.error'UN KENDISINE BAKIYOR. 'mesaj' kelimesini
+  // aramak yetmez: govdede zaten her dalda geciyor.
+  bak('★ yakalanan hata loga yazılıyor',
+      /console\.error\([\s\S]{0,200}?temizle\(mesaj\)/.test(gi),
+      (/console\.(error|warn|log)\([^\n]*/.exec(gi) || ['yok'])[0]);
+  // ⚠ KOTA DALINDAN ONCE. Log erken donuslerin ALTINA konursa kota
+  // ertelemeleri loga hic dusmez -- 10 Ekim'de kota yuzunden kacan
+  // bir yayinin izi yine kalmazdi.
+  bak('★ log, erken dönüşlerden ÖNCE',
+      gi.indexOf('console.error') > 0 &&
+      gi.indexOf('console.error') < gi.indexOf("kova === 'kota'"),
+      'log=' + gi.indexOf('console.error') + ' kota=' + gi.indexOf("kova === 'kota'"));
+
+  // ---- 2. KILIT COZULUYOR: IKI TANIK ----------------------------
+  const gc2 = jsGovde(WORKER, 'threadsCikmisMi') || '';
+  bak('★ kapsayıcının durumu da soruluyor',
+      /k\.publish_ref/.test(gc2) && /threadsDurum\(/.test(gc2));
+  // 'PUBLISHED' = cikti. Liste gec kalmis olabilir; kapsayici kimligi
+  // iz olarak yeterli.
+  bak('★ PUBLISHED → çıktı sayılıyor',
+      /durum === 'PUBLISHED'\s*\)?\s*return \{ biliniyor: true/.test(gc2),
+      (/durum === 'PUBLISHED'[^\n]*/.exec(gc2) || ['yok'])[0]);
+  // FINISHED/ERROR/EXPIRED = kesin cikmadi -> cagiran yeniden
+  // yayinlayabilir. Bu satir olmadan kilit geri gelir.
+  bak('★ FINISHED/ERROR/EXPIRED → kesin çıkmadı',
+      /durum === 'FINISHED' \|\| durum === 'ERROR' \|\| durum === 'EXPIRED'[\s\S]{0,80}biliniyor: true, id: ''/.test(gc2),
+      (/durum === 'FINISHED'[^\n]*/.exec(gc2) || ['yok'])[0]);
+  // ⛔ SIRA. Once liste, SONRA kapsayici -- ve kapsayiciya yalnizca
+  // liste OKUNDUYSA gidiliyor. Tersi, Meta durumu gec guncellerse
+  // CIKMIS bir gonderiyi "cikmadi" sayip IKINCI kez yayinlamak demek
+  // ve o gonderi profilde KALICI durur.
+  bak('★ liste okunmadıysa kapsayıcıya hiç gidilmiyor',
+      /!okundu\) return \{ biliniyor: false/.test(gc2) &&
+      gc2.indexOf('!okundu') < gc2.indexOf('threadsDurum('),
+      'okundu=' + gc2.indexOf('!okundu') + ' durum=' + gc2.indexOf('threadsDurum('));
+  bak('★ liste sorusu kapsayıcı sorusundan ÖNCE',
+      gc2.indexOf('/me/threads') > 0 &&
+      gc2.indexOf('/me/threads') < gc2.indexOf('threadsDurum('));
+  // "biliniyor: true" tam UC yerde: listede eslesme, PUBLISHED,
+  // FINISHED grubu. Dorduncusu eklenirse yeni bir kesin cevap
+  // uretilmis demektir ve bu test onu goruyor.
+  bak('★ kesin "biliniyor" yalnızca üç yerde',
+      (gc2.match(/biliniyor: true/g) || []).length === 3,
+      'bulunan=' + (gc2.match(/biliniyor: true/g) || []).length);
+  // IN_PROGRESS kesin cevap DEGIL: hala isleniyor demek.
+  bak('★ IN_PROGRESS kesin cevap sayılmıyor', !/IN_PROGRESS/.test(gc2));
+
+  // ---- 3. ZAMAN ASIMI -------------------------------------------
+  bak('★ zaman aşımı süresi tanımlı',
+      /const THREADS_ZAMAN_ASIMI_MS = [\d_]+;/.test(WORKER),
+      (/THREADS_ZAMAN_ASIMI_MS = [^\n]*/.exec(WORKER) || ['yok'])[0]);
+  const gf = jsGovde(WORKER, 'threadsFetch') || '';
+  bak('★ threadsFetch isteği kesiyor',
+      /AbortSignal\.timeout\(THREADS_ZAMAN_ASIMI_MS\)/.test(gf),
+      (/signal[^\n]*/.exec(gf) || ['yok'])[0]);
+  // ⛔ CIPLAK fetch KALMAMALI. Biri atlanirsa o cagri yine askida
+  // kalabilir ve 16 Ekim'deki sessizlik aynen tekrarlanir.
+  for(const ad of ['threadsCagir', 'threadsDurum', 'threadsJetonTazele', 'threadsCikmisMi']){
+    const gv = jsGovde(WORKER, ad) || '';
+    bak('★ ' + ad + ' zamanlı fetch kullanıyor',
+        !!gv && /threadsFetch\(/.test(gv) && !/[^s]fetch\(/.test(gv.replace(/threadsFetch\(/g, 'X(')),
+        (/\w*fetch\([^\n]*/.exec(gv) || ['yok'])[0]);
+  }
+  // Cevap gelmemesi GECICI hata: kalici isaretlenirse kayit yanar.
+  const gca = jsGovde(WORKER, 'threadsCagir') || '';
+  bak('★ cevap gelmemesi geçici hata (kayıt yanmıyor)',
+      /catch[\s\S]{0,200}new GrafHata\(0,/.test(gca),
+      (/new GrafHata\(0,[^\n]*/.exec(gca) || ['yok'])[0]);
 }
 
 console.log('\n' + g + ' gecti, ' + k + ' kaldi');

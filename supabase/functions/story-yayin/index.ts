@@ -58,7 +58,7 @@
 //          etiketler), yoksa eski taslak yolu. Gizlilik seviyesi
 //          creator_info/query'nin verdiği listeden seçiliyor.
 
-const SURUM = '1.16.0';
+const SURUM = '1.17.0';
 const UCLAR = ['GET / (servis bilgisi)', 'POST / (bir tur)'];
 
 // ⚠ ORTAM DEĞİŞKENLERİ KIRPILIYOR.
@@ -96,6 +96,14 @@ const THREADS_TOKEN  = ayar('THREADS_TOKEN');
 // panelden elle yeni jeton almak.
 const THREADS_YENILEME_GUN = 10;
 const THREADS_TABANI = (ayar('THREADS_TABANI') || 'https://graph.threads.net/v1.0');
+// ⚠ ZAMAN AŞIMI -- 16 EKIM 2026'DA EKLENDI, SEBEBI OLCULDU.
+// Ilk gercek Threads yayininda "yayinla" cagrisi SESSIZCE sonucsuz
+// kaldi: ne hata, ne log, ne kayit. Kapsayici Threads'te FINISHED
+// halinde duruyordu, yani gorsel islenmisti ve patlayan tek sey son
+// cagriydi. En olasi sebep askida kalan bir istek: fetch'in kendi
+// zaman asimi YOK, isolate suresi dolunca oldurulüyor ve catch hic
+// calismiyor -- yani hatanin izi de kalmiyor.
+const THREADS_ZAMAN_ASIMI_MS = 20_000;
 const APP_SECRET     = ayar('META_APP_SECRET');
 const TIKTOK_KEY     = ayar('TIKTOK_CLIENT_KEY');
 const TIKTOK_SECRET  = ayar('TIKTOK_CLIENT_SECRET');
@@ -946,6 +954,12 @@ async function seriOncekiParca(id: string): Promise<{ durum: string; parca: stri
 // olmaması eksiklik değil, Threads öyle çalışıyor.
 type ThHesap = { jeton: string; bitis: number };
 
+// Butun Threads cagrilari BURADAN geciyor. Askida kalan bir istek
+// 20 saniyede kesiliyor; cagiran hatayi gorup siniflandirabiliyor.
+async function threadsFetch(adres: string, secenek: RequestInit = {}): Promise<Response> {
+  return await fetch(adres, { ...secenek, signal: AbortSignal.timeout(THREADS_ZAMAN_ASIMI_MS) });
+}
+
 async function threadsJetonu(k: any): Promise<ThHesap | null> {
   let satirlar: any = null;
   try {
@@ -1004,7 +1018,7 @@ async function threadsJetonTazele(k: any, jeton: string, bitis: number): Promise
   try {
     const adres = `${THREADS_TABANI.replace(/\/v1\.0$/, '')}/refresh_access_token`
       + `?grant_type=th_refresh_token&access_token=${encodeURIComponent(jeton)}`;
-    const r = await fetch(adres);
+    const r = await threadsFetch(adres);
     v = await r.json().catch(() => null);
     if (!r.ok || !v?.access_token) {
       sebep = String(v?.error?.message ?? `HTTP ${r.status}`);
@@ -1047,7 +1061,7 @@ async function threadsDurum(kapsayici: string, jeton: string): Promise<string> {
   try {
     const adres = `${THREADS_TABANI}/${kapsayici}`
       + `?fields=status,error_message&access_token=${encodeURIComponent(jeton)}`;
-    const r = await fetch(adres);
+    const r = await threadsFetch(adres);
     const c = await r.json().catch(() => ({}));
     if (!r.ok) return '';
     if (c?.error_message) {
@@ -1063,11 +1077,21 @@ async function threadsDurum(kapsayici: string, jeton: string): Promise<string> {
 
 async function threadsCagir(yol: string, alan: Record<string, string>, jeton: string): Promise<any> {
   const govde = new URLSearchParams({ ...alan, access_token: jeton });
-  const r = await fetch(`${THREADS_TABANI}${yol}`, {
-    method: 'POST',
-    headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
-    body: govde.toString()
-  });
+  let r: Response;
+  try {
+    r = await threadsFetch(`${THREADS_TABANI}${yol}`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+      body: govde.toString()
+    });
+  } catch (e) {
+    // ⚠ CEVAP GELMEDI ≠ CAGRI YAPILMADI. Yayin cagrisinda bu ayrim
+    // hayati: ustteki kurtarma katmani "cikti mi" diye soracak, biz
+    // burada "bilmiyorum" diyoruz. Gecici hata (kod 0) olarak
+    // isaretleniyor, kalici degil.
+    throw new GrafHata(0, null, null,
+      'threads cevap vermedi: ' + temizle((e as Error).message));
+  }
   const metin = await r.text();
   let cevap: any = {};
   try { cevap = JSON.parse(metin); } catch { cevap = { ham: metin.slice(0, 300) }; }
@@ -1094,19 +1118,24 @@ async function threadsCikmisMi(k: any, cagriAni: string): Promise<{ biliniyor: b
   // cevabıysa ÇİFT GÖNDERİ.
   const hesap = await threadsJetonu(k);
   if (!hesap) return { biliniyor: false, id: '' };
-  let veri: any;
+
+  // ---- BİRİNCİ TANIK: profildeki son gönderiler --------------------
+  // Çağrı anından sonra çıkmış bir gönderi varsa yayın OLMUŞ demektir;
+  // bundan daha doğrudan kanıt yok.
+  let veri: any = null;
+  let okundu = false;
   try {
     const adres = `${THREADS_TABANI}/me/threads`
       + `?fields=id,timestamp&limit=10&access_token=${encodeURIComponent(hesap.jeton)}`;
-    const r = await fetch(adres);
+    const r = await threadsFetch(adres);
     if (!r.ok) {
       console.warn('[story] threads son gonderiler okunamadi:', r.status);
-      return { biliniyor: false, id: '' };
+    } else {
+      veri = await r.json();
+      okundu = true;
     }
-    veri = await r.json();
   } catch (e) {
     console.warn('[story] threads son gonderiler okunamadi:', temizle((e as Error).message));
-    return { biliniyor: false, id: '' };
   }
   // Saat farkı ve Meta'nın kendi damgası için iki dakikalık pay --
   // Instagram yolundaki eşiğin aynısı.
@@ -1115,10 +1144,41 @@ async function threadsCikmisMi(k: any, cagriAni: string): Promise<{ biliniyor: b
     const t = Date.parse(String(m?.timestamp ?? ''));
     if (t && t >= esik) return { biliniyor: true, id: String(m.id) };
   }
-  // ⚠ BOŞ LİSTE "ÇIKMADI" DEMEK DEĞİL. Yeni yayınlanan bir gönderi
-  // listeye birkaç saniye geç düşebiliyor; reels'teki asimetrinin
-  // aynısı. Yanlış "çıkmadı" cevabı çift gönderi demek ve o profilde
-  // kalıcı durur -- yanlış "bilmiyorum" cevabı yalnızca gecikme.
+  // Liste HİÇ okunamadıysa ikinci tanığa gitmenin anlamı yok: tek
+  // başına kalan bir tanıkla "çıkmadı" demek istemiyoruz.
+  if (!okundu) return { biliniyor: false, id: '' };
+
+  // ---- İKİNCİ TANIK: kapsayıcının durumu --------------------------
+  // ⚠ BU BÖLÜM 16 EKIM 2026'DA EKLENDİ, SEBEBİ BİR KİLİTTİ.
+  // O güne kadar burada "boş liste çıkmadı demek değil" diyip
+  // `bilinmiyor` dönülüyordu. Doğruydu, ama TEK BAŞINA yetersizdi:
+  // yayın çağrısı gerçekten patladığında bu soru hiçbir zaman kesin
+  // cevap vermiyor, kayıt beş dakikada bir sonsuza kadar erteleniyor
+  // ve ne yayın çıkıyor, ne hata e-postası gidiyor. İlk gerçek Threads
+  // yayınında tam bu oldu.
+  //
+  // Threads kapsayıcının durumunu söylüyor ve 'PUBLISHED' ile
+  // 'FINISHED' ayrımı tam bizim sorumuzun cevabı: biri çıktı, öbürü
+  // çıkmaya hazır ama çıkmadı demek.
+  //
+  // ⚠ SIRA ÖNEMLİ, TERSİ ÇİFT GÖNDERİ ÜRETİR. Önce liste soruluyor;
+  // kapsayıcı durumu yalnızca liste OKUNDU ve içinde yeni gönderi YOK
+  // iken karar veriyor. İki tanık birbirini doğruluyor. Tek başına
+  // 'FINISHED'e güvenmek, Meta durumu geç güncellerse çıkmış bir
+  // gönderiyi "çıkmadı" saymak olurdu -- ve o gönderi profilde KALICI.
+  const kapsayici = String(k.publish_ref ?? '');
+  if (!kapsayici) return { biliniyor: false, id: '' };
+  const durum = await threadsDurum(kapsayici, hesap.jeton);
+  // Kapsayıcı yayınlanmış ama liste henüz göstermiyor: gönderi var.
+  // Gerçek gönderi kimliğini bilmiyoruz, kapsayıcı kimliği iz olarak
+  // yeterli -- yayın yolundaki `kimlik || kapsayici` ile aynı seçim.
+  if (durum === 'PUBLISHED') return { biliniyor: true, id: kapsayici };
+  // Hazır/hatalı/süresi geçmiş: hiçbiri yayınlanmış değil. Liste de
+  // boş geldiğine göre KESİN çıkmadı; çağıran yeniden yayınlayabilir.
+  if (durum === 'FINISHED' || durum === 'ERROR' || durum === 'EXPIRED') {
+    return { biliniyor: true, id: '' };
+  }
+  // IN_PROGRESS ya da sorulamadı: cevap yok, beklemeye devam.
   return { biliniyor: false, id: '' };
 }
 
@@ -2300,6 +2360,16 @@ async function kaydiIsle(k: any, bitis: number): Promise<string> {
     return await kaydiYayinla(k, bitis);
   } catch (e) {
     const { kova, mesaj } = siniflandir(e);
+    // ⚠ LOGA DA YAZILIYOR -- 16 EKIM 2026.
+    // Hata o güne kadar YALNIZCA last_error'a yazılıyordu. Threads'in
+    // ilk gerçek yayını patladığında bir sonraki tur aynı satırın
+    // üstüne "sonucu bilinmiyor" yazdı ve ASIL HATA MESAJI YOK OLDU:
+    // logda tek bir iz bile kalmadığı için teşhis, Threads'e elle
+    // sorulan kapsayıcı durumuyla yapılmak zorunda kaldı.
+    // Veritabanı son durumu tutuyor, log ise OLAN BİTENİ -- ikisi
+    // birbirinin yerine geçmiyor.
+    console.error('[story] hata', k.id, String(k.platform ?? '?'),
+      String(k.type ?? '?'), kova, temizle(mesaj));
     if (kova === 'kota') {
       await rpc('story_ertele', { p_id: k.id, p_dakika: 60, p_sebep: mesaj });
       return 'kota-ertelendi';
@@ -2487,6 +2557,12 @@ Deno.serve(async (req: Request) => {
         // "okuyor" farklı şeyler -- dağıtımdan sonra bakılabilsin.
         tiktok_key: !!TIKTOK_KEY, tiktok_secret: !!TIKTOK_SECRET,
         youtube_id: !!YOUTUBE_ID, youtube_secret: !!YOUTUBE_SECRET,
+        // ⚠ YALNIZCA TOHUMUN TANIMLI OLUP OLMADIGI. Calisan jeton
+        // tabloda (threads_hesaplari) ve oraya bakmak icin user_id
+        // gerekiyor -- GET'te kullanici yok. Yani `true` gormek
+        // "Threads calisiyor" demek DEGIL, "ilk tohum var" demek.
+        // Ilk yayindan sonra gercek jeton tablodan geliyor.
+        threads_token: !!THREADS_TOKEN,
         // ⛔ BU İKİSİ DEĞER GÖSTERİYOR ve bilerek: ikisi de gizli
         // değil, ikisi de yayının NE YAPACAĞINI belirliyor. Denetim
         // kapısı kapalıyken YouTube kayıtları yüklenmiyor; görünürlük
