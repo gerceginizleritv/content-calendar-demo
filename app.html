@@ -4409,6 +4409,25 @@ textarea.sc-ai-brief{min-height:64px;resize:vertical;line-height:1.5;}
          anketin SORUSU, slidePrompts karuselin ve kaydetme yolu baska
          her tipte onu bosaltiyor. Oraya yazilan secenek, kayit ilk kez
          acilip kaydedildiginde sessizce kaybolurdu. -->
+    <!-- THREADS DIZISI. 1. parca alt yazinin kendisi; buradakiler onun
+         ALTINA sirayla yanit olarak gidiyor. Threads'te "dizi" diye bir
+         sey yok, zincir yanit uzerinden kuruluyor (reply_to_id).
+         ⛔ PARCALAR ---- SATIRIYLA AYRILIYOR, bos satirla DEGIL: alt
+         yazilarin kendi icinde bos satirlar var ve onlari ayirici
+         saymak her gonderiyi parcalara bolerdi. -->
+    <div id="diziWrap" style="display:none;">
+      <div class="section-title" data-i18n="dizi_bolum">Thread chain</div>
+      <div class="field">
+        <div class="field-header">
+          <label data-i18n="f_dizi_label">Further parts, separated by ---</label>
+          <button type="button" class="copy-btn" data-copy="f_dizi" data-i18n="btn_copy">Copy</button>
+        </div>
+        <textarea id="f_dizi" data-i18n-placeholder="f_dizi_ph"
+                  placeholder="2. parça&#10;---&#10;3. parça"></textarea>
+        <p class="hint" data-i18n="f_dizi_not">Part 1 is the caption above. Put each further part after a line with only ---. At most 10 parts, 500 characters each. They go out right after the post, each as a reply to the one before.</p>
+      </div>
+    </div>
+
     <div id="anketWrap" style="display:none;">
       <div class="section-title" data-i18n="anket_bolum">Poll options</div>
       <div class="field">
@@ -5139,6 +5158,10 @@ const LANG = {
     f_anketcevap_ph: "RECORD: ... Source: ...",
     f_anketcevap_not: "Leave it empty and no reply is sent. Max 500 characters.",
     f_anketgecikme_label: "Hours until the answer",
+    dizi_bolum: "Thread chain",
+    f_dizi_label: "Further parts, separated by ---",
+    f_dizi_ph: "part 2\n---\npart 3",
+    f_dizi_not: "Part 1 is the caption above. Put each further part after a line with only ---. At most 10 parts, 500 characters each. They go out right after the post, each as a reply to the one before.",
     oy_not_shorts: "Shootboard uploads this Short to YouTube as soon as the file is ready \u2014 often days early \u2014 and YouTube itself publishes it at the time above. Title, description and tags go with it. After the upload, edits made here no longer reach the video; change it in YouTube Studio.",
     oy_zamanlandi: "Uploaded \u2014 YouTube publishes it at",
     oy_kapak_var: "Cover attached.",
@@ -6182,6 +6205,10 @@ const LANG = {
     f_anketcevap_ph: "KAYIT: ... Kaynak: ...",
     f_anketcevap_not: "Boş bırakırsan yanıt gitmiyor. En çok 500 karakter.",
     f_anketgecikme_label: "Cevap kaç saat sonra",
+    dizi_bolum: "Threads dizisi",
+    f_dizi_label: "Sonraki parçalar, --- ile ayrılmış",
+    f_dizi_ph: "2. parça\n---\n3. parça",
+    f_dizi_not: "1. parça yukarıdaki alt yazı. Sonraki her parçayı yalnızca --- yazan bir satırdan sonra yaz. En çok 10 parça, her biri 500 karakter. Gönderiden hemen sonra, her biri bir öncekine yanıt olarak gidiyor.",
     oy_not_shorts: "Shootboard bu Short'u dosya hazır olur olmaz YouTube'a yüklüyor — çoğu zaman günler öncesinden. Yayına alma işini yukarıdaki saatte YouTube kendi yapıyor. Başlık, açıklama ve etiketler videoyla birlikte gidiyor. Yükleme olduktan sonra buradaki düzeltmeler videoya ULAŞMIYOR; onu YouTube Studio'dan değiştirmen gerekiyor.",
     oy_zamanlandi: "Yüklendi — YouTube şu saatte yayınlayacak:",
     oy_kapak_var: "Kapak bağlı.",
@@ -7901,6 +7928,9 @@ function sanitizeEvent(raw){
         ? c.anketSecenekler.slice(0,4).map(x=>str(x,25)) : [],
       // ANKETIN CEVABI. Beyaz listede olmasa her buluttan okumada
       // sessizce duserdi.
+      // DIZI PARCALARI. Beyaz listede olmasa her buluttan okumada
+      // sessizce duserdi.
+      dizi: Array.isArray(c.dizi) ? c.dizi.slice(0,10).map(x=>str(x,500)) : [],
       anketCevap: str(c.anketCevap, 500),
       anketCevapGecikme: (Number.isFinite(Number(c.anketCevapGecikme)) && Number(c.anketCevapGecikme) > 0)
         ? Math.min(Math.max(Math.round(Number(c.anketCevapGecikme)),1),168) : undefined,
@@ -16500,6 +16530,27 @@ function anketEngeli(tur, kayit){
 // Cevabin kac saat sonra gidecegi. Bos ya da anlamsizsa undefined:
 // veritabani tarafi o zaman 24 varsayiyor (sql/65). Sayi olmayan bir
 // deger yazilsa SQL tarafinda tip hatasi verirdi.
+// ⛔ AYIRICI: yalnizca --- yazan bir satir. Bos satir ayirici DEGIL --
+// alt yazilarin kendi icinde bos satirlar var (her Threads gonderisi
+// paragrafli) ve onlari ayirici saymak her gonderiyi parcalara
+// bolerdi.
+const DIZI_AYIRICI = /^[ \t]*-{3,}[ \t]*$/m;
+
+function diziKutusunuYaz(liste){
+  const el = document.getElementById('f_dizi');
+  if(el) el.value = (Array.isArray(liste) && liste.length) ? liste.join('\n---\n') : '';
+}
+
+function diziKutusunuOku(){
+  const ham = ((document.getElementById('f_dizi')||{}).value || '');
+  if(!ham.trim()) return [];
+  return ham.split(new RegExp(DIZI_AYIRICI.source, 'm'))
+            .map(x => x.trim())
+            .filter(Boolean)
+            .slice(0, 10)
+            .map(x => x.slice(0, 500));
+}
+
 function anketGecikmeOku(){
   const v = Number(((document.getElementById('f_anketgecikme')||{}).value || '').trim());
   if(!Number.isFinite(v) || v <= 0) return undefined;
@@ -16529,6 +16580,10 @@ function refreshTypeDependentFields(){
   // Tipi yanlislikla degistirip geri alan kullanici secenekleri
   // kaybetmiyor.
   document.getElementById('anketWrap').style.display = (type==='poll') ? '' : 'none';
+  // Dizi hem metin postunda hem ankette olabiliyor: ikisi de Threads
+  // gonderisi ve ikisinin de altina parca eklenebiliyor.
+  document.getElementById('diziWrap').style.display =
+    (type==='text_post' || type==='poll') ? '' : 'none';
   dilSeridiTazele();
   if(type === 'carousel'){
     const container = document.getElementById('carouselSlides');
@@ -16583,6 +16638,7 @@ function openModal(ev, hazirTarih, hazirSaat, hazirProje){
     document.getElementById('f_storyyonerge').value = c.storyYonerge||'';
     // ANKET SECENEKLERI: dort kutuya sirayla. Eksikler bos kaliyor.
     anketKutulariYaz(Array.isArray(c.anketSecenekler) ? c.anketSecenekler : []);
+    diziKutusunuYaz(Array.isArray(c.dizi) ? c.dizi : []);
     document.getElementById('f_anketcevap').value = c.anketCevap||'';
     document.getElementById('f_anketgecikme').value = c.anketCevapGecikme || '';
     dilKurulumu(c, ev.type, ev.platform);
@@ -16616,6 +16672,7 @@ function openModal(ev, hazirTarih, hazirSaat, hazirProje){
     document.getElementById('f_storykartlar').value = '';
     document.getElementById('f_storyyonerge').value = '';
     anketKutulariYaz([]);
+    diziKutusunuYaz([]);
     document.getElementById('f_anketcevap').value = '';
     document.getElementById('f_anketgecikme').value = '';
     dilKurulumu(null, 'video', '');
@@ -16945,6 +17002,10 @@ document.getElementById('saveBtn').addEventListener('click', async ()=>{
     // ayni tuzak).
     anketSecenekler: anketKutulariOku(),
     // ⚠ TIPE BAKIP BOSALTILMIYOR -- anketSecenekler ile ayni gerekce.
+    // ⚠ TIPE BAKIP BOSALTILMIYOR: gizli alanin degeri DOM'da duruyor
+    // ve content BASTAN kuruldugu icin bu satir olmasa dizi, kaydi bir
+    // kez acip kaydetmekle SESSIZCE silinirdi.
+    dizi: diziKutusunuOku(),
     anketCevap: document.getElementById('f_anketcevap').value.trim(),
     anketCevapGecikme: anketGecikmeOku(),
     slidePrompts: (currentEvent ? type==='carousel' : secilenTipler().includes('carousel'))

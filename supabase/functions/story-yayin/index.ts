@@ -58,7 +58,7 @@
 //          etiketler), yoksa eski taslak yolu. Gizlilik seviyesi
 //          creator_info/query'nin verdiği listeden seçiliyor.
 
-const SURUM = '1.19.0';
+const SURUM = '1.20.0';
 const UCLAR = ['GET / (servis bilgisi)', 'POST / (bir tur)'];
 
 // ⚠ ORTAM DEĞİŞKENLERİ KIRPILIYOR.
@@ -1384,6 +1384,18 @@ async function yanitiGonder(y: any): Promise<string> {
     await rpc('threads_yanit_hata', { p_id: y.id, p_hata: 'Cevap metni boş.', p_kalici: true });
     return 'bos-cevap';
   }
+  // ⛔ HEDEFİ OLMAYAN YANIT ATILMIYOR. `reply_to_id` olmadan atılan bir
+  // dizi parçası, profilde BAĞIMSIZ BİR GÖNDERİ olarak çıkar ve geri
+  // alınamaz -- zincirin ortasındaki cümle tek başına, bağlamsız
+  // durur. sql/66'da `ana_gonderi_id` NOT NULL'dan çıktı (dizinin 2.
+  // parçası kuyruğa girerken hedefi henüz yok); bu satır o güvenlik
+  // ağının yerine geçiyor.
+  const hedef = String(y.ana_gonderi_id ?? '').trim();
+  if (!hedef) {
+    await rpc('threads_yanit_hata', { p_id: y.id,
+      p_hata: 'Yanıtın altına yazılacağı gönderi bilinmiyor; zincir kurulamadı.', p_kalici: true });
+    return 'hedef-yok';
+  }
 
   // ---- Çöküş izi -----------------------------------------------------------
   if (y.cagri_ani) {
@@ -1402,7 +1414,7 @@ async function yanitiGonder(y: any): Promise<string> {
 
   try {
     const c = await threadsCagir('/me/threads',
-      { media_type: 'TEXT', text: metin, reply_to_id: String(y.ana_gonderi_id) }, hesap.jeton);
+      { media_type: 'TEXT', text: metin, reply_to_id: hedef }, hesap.jeton);
     const kapsayici = String(c?.id ?? '');
     if (!kapsayici) throw new GrafHata(0, null, null, 'Threads kapsayıcı kimliği dönmedi');
     // Metin yanıtında işlenme kısa; yine de hazır olmadan yayınlamak
@@ -1421,7 +1433,11 @@ async function yanitiGonder(y: any): Promise<string> {
     await rpc('threads_yanit_iz', { p_id: y.id });
     const r = await threadsCagir('/me/threads_publish', { creation_id: kapsayici }, hesap.jeton);
     await rpc('threads_yanit_bitti', { p_id: y.id, p_gonderi_id: String(r?.id ?? kapsayici) });
-    return 'yanitlandi';
+    // Hangi parça gitti: teşhis anında "bir yanıt gitti" hiçbir şey
+    // anlatmıyor. tur/sira sql/66'da dönüş sütunlarına eklendi.
+    console.log('[story] yanıt gitti', String(y.kayit_id ?? '?'),
+      String(y.tur ?? 'cevap'), String(y.sira ?? 0));
+    return String(y.tur ?? '') === 'dizi' ? 'dizi-parcasi' : 'yanitlandi';
   } catch (e) {
     const { kova, mesaj } = siniflandir(e);
     // Loga da yazılıyor -- 16 Ekim dersi: veritabanındaki mesajın
@@ -1449,15 +1465,27 @@ async function yanitlariIsle(bitis: number): Promise<Record<string, number>> {
       temizle((e as Error).message));
     return sonuc;
   }
-  for (const y of liste) {
-    if (Date.now() > bitis - 15_000) {
-      await rpc('threads_yanit_ertele', { p_id: y.id, p_dakika: 0,
-        p_sebep: 'Tur bütçesi doldu, sıradaki turda.' });
-      sonuc['yanit-butce-bitti'] = (sonuc['yanit-butce-bitti'] ?? 0) + 1;
-      continue;
+  // ⚠ ZİNCİR AYNI TURDA İLERLİYOR. Dizinin 2. parçası, 1. parça
+  // yayınlanmadan kuyruktan ALINMIYOR (sql/66'daki sıra şartı) -- yani
+  // tek geçişte yalnızca bir parça giderdi ve beş parçalı bir dizi beş
+  // dakikaya yayılırdı. Okuyan kişi için zincirin arası açılmış olur.
+  // O yüzden parça gittikçe kuyruk yeniden soruluyor.
+  for (let gecis = 0; gecis < 5 && liste.length; gecis++) {
+    for (const y of liste) {
+      if (Date.now() > bitis - 15_000) {
+        await rpc('threads_yanit_ertele', { p_id: y.id, p_dakika: 0,
+          p_sebep: 'Tur bütçesi doldu, sıradaki turda.' });
+        sonuc['yanit-butce-bitti'] = (sonuc['yanit-butce-bitti'] ?? 0) + 1;
+        continue;
+      }
+      const s = await yanitiGonder(y);
+      sonuc[s] = (sonuc[s] ?? 0) + 1;
     }
-    const s = await yanitiGonder(y);
-    sonuc[s] = (sonuc[s] ?? 0) + 1;
+    if (Date.now() > bitis - 20_000) break;
+    try {
+      const r = await rpc('threads_yanit_al', { p_limit: YANIT_BASINA });
+      liste = Array.isArray(r) ? r : [];
+    } catch { liste = []; }
   }
   return sonuc;
 }

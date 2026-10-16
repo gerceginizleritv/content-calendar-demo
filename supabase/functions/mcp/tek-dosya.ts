@@ -311,6 +311,15 @@ function kayitOku(ham, sira, hatalar) {
       // anketin ALTINA yanit olarak gidiyor. Threads metin siniri 500;
       // daha uzunu worker kirpardi ve kullanici kirpildigini yayin
       // aninda ogrenirdi, o yuzden sinir burada da 500.
+      // DIZI PARCALARI (16 Ekim 2026). 1. parca caption; buradakiler
+      // onun ALTINA sirayla yanit olarak gidiyor. Threads'te "dizi"
+      // diye bir sey yok, zincir yanit uzerinden kuruluyor.
+      // ⚠ TAVANLAR: en cok 10 parca, her biri 500 karakter (Threads
+      // metin siniri). Bos parcalar veritabani tarafinda atiliyor ve
+      // numaralandirma oradan sonra yapiliyor -- bosluk kalirsa zincir
+      // kilitlenir (sql/66).
+      dizi: Array.isArray(c.dizi)
+        ? c.dizi.slice(0, 10).map(x => typeof x === 'string' ? x.slice(0, 500) : '') : undefined,
       anketCevap: metin(c.anketCevap, 500),
       // Kac saat sonra. Varsayilan 24; 1-168 arasina sikistiriliyor.
       // ⚠ SAYI OLMAYAN DEGER DUSUYOR: 'yarin' gibi bir metin
@@ -644,6 +653,15 @@ const SEMA = {
        "type": "string",
        "maxLength": 6000,
        "description": "Story only: production directives for THIS card, one \"key: value\" per line, e.g. \"damga: KAYIT\", \"kaynak: 1622 · Yedikule\", \"cta: Tam bolum kanalda\", \"muzik: soru\", \"sure: 5\". A multi-card story is several entries (one per card, k1/k2 in mediaName), so this describes one card. Do NOT use slidePrompts for any of this: that field belongs to carousels and the app clears it on every other post type, so anything left there is lost the first time the user saves the entry."
+      },
+      "dizi": {
+       "type": "array",
+       "maxItems": 10,
+       "items": {
+        "type": "string",
+        "maxLength": 500
+       },
+       "description": "Threads only: the continuation parts of a thread chain, in order. Part 1 is \"caption\"; these go out as replies under it, each replying to the one before, right after the post is published. At most 10 parts, 500 characters each. Empty strings are dropped."
       },
       "anketSecenekler": {
        "type": "array",
@@ -1212,7 +1230,7 @@ const SERVIS_ANAHTARI = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY') ?? '';
 // Bu kural UC KEZ unutuldu ve ucuncusunde artik soze birakilmadi:
 // birlestir.py, kaynak degisip surum ayni kalirsa HATA VERIP duruyor
 // ve tek-dosya.ts'i uretmiyor. Yani unutuldugu an belli oluyor.
-const SURUM = '1.12.0';
+const SURUM = '1.14.0';
 
 // ---- Otomatik yayın hattı olan türler ------------------------------------
 // AYNI kümeyi taşıyan yerler: app.html'deki YAYIN_TURLERI, sql/50'deki
@@ -1236,6 +1254,35 @@ const SURUM = '1.12.0';
 // 16 Ekim 2026: 'poll' eklendi -- Threads anketi. Yalnizca threads:
 // worker'da TURLER.poll.platformlar = ['threads'].
 const YAYIN_TURLERI = ['story', 'reels', 'shorts', 'text_post', 'poll'];
+
+// ---- OTOMATIK YAYIN: ASISTANIN ACABILECEGI CIFTLER --------------------------
+// 16 Ekim 2026. Anket ve metin postunda GORSEL YOK, yani PC'deki klasor
+// izleyicisi hic kosmuyor -- oysa `auto_publish` tikini acan yer odur.
+// Sonuc: her anket icin kullanici uygulamadan elle tiklemek zorundaydi.
+// Kullanici "anketler otomatik planlandiginda gitsin" dedi.
+//
+// ⛔ KAPI BURADA. Asistan tiki YALNIZCA bu ciftlerde acabiliyor. Baska
+// bir sey isterse istek REDDEDILIYOR ve sebebi yaziliyor.
+//
+// Neden kapili: tik, "planlandi" ile "yayina gidecek" arasindaki SON
+// kapi. Asistanin her kaydin tikini acabilmesi, ornegin bir TikTok
+// reels kaydinin yayin denemesine girmesi demek olurdu (video.publish
+// onayi yok) ya da bir YouTube kaydinin denetim kapisina dayanmasi.
+// Ikisi de worker'da ayrica engelli, ama "ayrica engelli" bir seyi
+// denemek yine de gurultu uretir ve hata e-postasi gonderir.
+//
+// ⚠ BU LISTE pc/story-yukle.py'deki OTOMATIK_YAYIN TABLOSUNUN KOPYASI
+// DEGIL, ONUN ALT KUMESI: orada acik olan instagram/facebook ciftleri
+// burada YOK, cunku onlarin tikini zaten izleyici aciyor ve asistanin
+// oraya uzanmasina gerek yok. Yeni bir cift eklenecekse once orada
+// acik olmali.
+const OTO_IZINLI: Array<[string, string]> = [
+  ['threads', 'poll'],
+  ['threads', 'text_post']
+];
+const otoIzinli = (platform: any, tur: any) =>
+  OTO_IZINLI.some(([p, t]) => p === String(platform || '').toLowerCase()
+                           && t === String(tur || '').toLowerCase());
 const yayinlanabilirTur = (t: any) => YAYIN_TURLERI.includes(String(t || ''));
 
 const CORS: Record<string, string> = {
@@ -1405,6 +1452,8 @@ function kayitIcerigi(c: any) {
   // ANKET SECENEKLERI -- Threads anketi (16 Ekim 2026). Bos dizi
   // YAZILMIYOR: anket olmayan her kayda bos bir alan eklemek asistana
   // "burada bir sey var" dedirtir.
+  // DIZI PARCALARI. Bos dizi yazilmiyor.
+  if (Array.isArray(c.dizi) && c.dizi.length) o.dizi = c.dizi;
   if (Array.isArray(c.anketSecenekler) && c.anketSecenekler.length)
     o.anketSecenekler = c.anketSecenekler;
   // ANKETIN CEVABI. Bos gecilmiyor: anket olmayan kayda bos alan
@@ -1844,6 +1893,13 @@ const ARACLAR = [
         platform: alan('platform'),
         uploaded: alan('uploaded'),
         mediaName: alan('mediaName'),
+        // ⛔ YALNIZCA threads/poll ve threads/text_post. Baska bir
+        // platform/tur ciftinde istek reddediliyor (OTO_IZINLI).
+        autoPublish: { type: 'boolean', description:
+          'Turn automatic publishing on or off for this entry. Only allowed for Threads polls and '
+          + 'Threads text posts \u2014 those carry no file, so nothing else can turn the toggle on. '
+          + 'For every other platform and type the request is refused: the user opens the toggle in '
+          + 'the app. Setting it to true means Shootboard WILL post this entry at its time.' },
         content: { ...ICERIK, description: 'Text fields to change. Fields you leave out keep their current value.' }
       },
       required: ['id'],
@@ -1931,8 +1987,8 @@ async function aracUpdateEntry(kim: Kim, a: any) {
   const satir = Array.isArray(veri) && veri[0];
   if (!satir) return aracHata(`id: no entry "${id}" in this account. It may have been deleted, or it belongs to someone else.`);
 
-  const degisti = ['date', 'time', 'title', 'type', 'platform', 'uploaded', 'mediaName', 'content'].filter(k => a[k] !== undefined);
-  if (!degisti.length) return aracHata('nothing to change: pass at least one of date, time, title, type, platform, uploaded, mediaName, content.');
+  const degisti = ['date', 'time', 'title', 'type', 'platform', 'uploaded', 'mediaName', 'content', 'autoPublish'].filter(k => a[k] !== undefined);
+  if (!degisti.length) return aracHata('nothing to change: pass at least one of date, time, title, type, platform, uploaded, mediaName, content, autoPublish.');
 
   // DOGRULAMA YENIDEN YAZILMIYOR. Mevcut satirla gelen alanlar birlestirilip
   // TEK KAYITLIK bir paket kuruluyor ve paketiCoz'dan geciriliyor -- Ice
@@ -1969,6 +2025,23 @@ async function aracUpdateEntry(kim: Kim, a: any) {
   // Bos dizge "adi kaldir" demek: bagi koparmanin baska yolu olmasin.
   if (a.mediaName !== undefined) yama.media_name = temiz.mediaName || null;
   if (a.content !== undefined) yama.content = { ...eski, ...(temiz.content || {}) };
+  // ---- OTOMATIK YAYIN -- KAPILI ----
+  // ⚠ CIFT, DEGISIKLIKTEN SONRAKI HALDEN okunuyor: ayni cagri hem
+  // platformu hem tiki degistiriyorsa karar YENI cifte gore veriliyor.
+  // Eski hale bakmak, "platformu threads yap ve tiki ac" diyen tek bir
+  // cagriyla kapinin etrafindan dolasmak demekti.
+  if (a.autoPublish !== undefined) {
+    const pf = a.platform !== undefined ? temiz.platform : satir.platform;
+    const tr = a.type !== undefined ? temiz.type : satir.type;
+    // Kapatmak HER ZAMAN serbest: yayini durdurmayi engellemek sacma
+    // olurdu. Kapi yalnizca ACMAK icin.
+    if (a.autoPublish === true && !otoIzinli(pf, tr)) {
+      return aracHata(`autoPublish: cannot be turned on for ${String(pf || '?')}/${String(tr || '?')}. `
+        + `Only ${OTO_IZINLI.map(([p, t]) => p + '/' + t).join(' and ')} are allowed from here; `
+        + `for anything else the user opens the toggle in the app.`);
+    }
+    yama.auto_publish = a.autoPublish === true;
+  }
 
   await rest(`/calendar_events?id=eq.${encodeURIComponent(id)}&user_id=eq.${uid}`,
              { method: 'PATCH', govde: yama, prefer: 'return=minimal' });

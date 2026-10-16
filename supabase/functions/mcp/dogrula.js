@@ -298,6 +298,15 @@ function kayitOku(ham, sira, hatalar) {
       // anketin ALTINA yanit olarak gidiyor. Threads metin siniri 500;
       // daha uzunu worker kirpardi ve kullanici kirpildigini yayin
       // aninda ogrenirdi, o yuzden sinir burada da 500.
+      // DIZI PARCALARI (16 Ekim 2026). 1. parca caption; buradakiler
+      // onun ALTINA sirayla yanit olarak gidiyor. Threads'te "dizi"
+      // diye bir sey yok, zincir yanit uzerinden kuruluyor.
+      // ⚠ TAVANLAR: en cok 10 parca, her biri 500 karakter (Threads
+      // metin siniri). Bos parcalar veritabani tarafinda atiliyor ve
+      // numaralandirma oradan sonra yapiliyor -- bosluk kalirsa zincir
+      // kilitlenir (sql/66).
+      dizi: Array.isArray(c.dizi)
+        ? c.dizi.slice(0, 10).map(x => typeof x === 'string' ? x.slice(0, 500) : '') : undefined,
       anketCevap: metin(c.anketCevap, 500),
       // Kac saat sonra. Varsayilan 24; 1-168 arasina sikistiriliyor.
       // ⚠ SAYI OLMAYAN DEGER DUSUYOR: 'yarin' gibi bir metin

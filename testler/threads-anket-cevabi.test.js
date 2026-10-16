@@ -186,8 +186,13 @@ console.log('[worker — yanıt yolu]');
   const gy = jsGovde(WORKER, 'yanitiGonder') || '';
   bak('yanitiGonder tanımlı', !!gy);
   // Yanıt, kapsayıcıya reply_to_id verilerek kuruluyor.
+  // ⚠ ÖLÇÜM YAZILIŞA ÇAKILMIYOR: dizi işi gelince hedef, önce
+  // denetlenen bir değişkene (`hedef`) alındı ve `String(...)` yazılışı
+  // kalktı. Davranış aynı; aranan şey artık HEDEFİN SATIRDAN GELMESİ
+  // ve çağrıya geçmesi.
   bak('★ reply_to_id ile yanıt yaratılıyor',
-      /reply_to_id: String\(y\.ana_gonderi_id\)/.test(gy),
+      /const hedef = String\(y\.ana_gonderi_id \?\? ''\)\.trim\(\);/.test(gy)
+      && /reply_to_id: hedef/.test(gy),
       (/reply_to_id[^\n]*/.exec(gy) || ['yok'])[0]);
   bak('★ metin gönderisi olarak gidiyor', /media_type: 'TEXT'/.test(gy));
   bak('★ 500 karakterde kırpılıyor (Threads sınırı)', /slice\(0, 500\)/.test(gy));
