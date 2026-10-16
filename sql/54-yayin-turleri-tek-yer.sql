@@ -53,7 +53,15 @@ as $$
   -- kayıtları da kuyruğa girer ve worker onları `reels` saymadığı için
   -- STORY olarak yayınlar: uzun bir belgesel 24 saatte kaybolur.
   -- Uzun form için önce worker'da ayrı bir dal gerekiyor.
-  select array['story', 'reels', 'shorts']::text[];
+  -- 'text_post' = Threads gonderisi (metin + istege bagli gorsel),
+  -- 16 Ekim 2026'da eklendi. Worker'da TURLER.text_post.platformlar
+  -- = ['threads']; baska bir platforma dusen bir text_post kaydi
+  -- orada ERTELENIYOR, yanlis yere yayinlanmiyor.
+  --
+  -- ⚠ BURAYA DA EKLENDI ki bu dosyayi yeniden kosturmak sql/62'nin
+  -- isini GERI ALMASIN. Canli veritabani icin uygulayan dosya
+  -- sql/62; burasi fazlaligi degil, tuzagin kapatilmasi.
+  select array['story', 'reels', 'shorts', 'text_post']::text[];
 $$;
 
 -- ⚠ `authenticated` BU LİSTEDE YOK ve olmayacak. Aşağıdaki (3/3)

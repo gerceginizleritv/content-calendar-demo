@@ -85,9 +85,14 @@ si = modul_al('story-izle.py', 'story_izle')
 # reels de hikâyeler de görüntülenme almaya başladı -- 5 Ekim'deki
 # kapatmanın gerekçesi (ölçüm doğruydu, teşhis yanlıştı) ortadan
 # kalktı. TikTok ve YouTube'un kapalı olma sebepleri DURUYOR.
-print('[tablo: kullanıcının 13 Ekim 2026 kararı]')
+# 16 Ekim 2026: threads/text_post eklendi. AYRI bir Meta
+# uygulamasindan gidiyor; Facebook/Instagram yayiniyla ortak hicbir
+# seyi yok. Dagitim olcumu SURUYOR -- sonucu kotuyse tablodan
+# kapatmak yeter.
+print('[tablo: kullanıcının 16 Ekim 2026 kararı]')
 ACIK = [('instagram', 'story'), ('facebook', 'story'),
-        ('instagram', 'reels'), ('facebook', 'reels')]
+        ('instagram', 'reels'), ('facebook', 'reels'),
+        ('threads', 'text_post')]
 KAPALI = [('tiktok', 'reels'), ('youtube', 'shorts')]
 
 for p, t in ACIK:
@@ -96,7 +101,7 @@ for p, t in KAPALI:
     bak(f'★ {p}/{t} kapalı', sy.otomatik_mi(p, t) is False)
 
 # Tabloda fazlası olmasın: ileride biri "zaten açıktı" diye eklemesin.
-bak('★ tabloda açık olan TAM OLARAK bu dördü',
+bak('★ tabloda açık olan TAM OLARAK bu beşi',
     sorted(x for x, v in sy.OTOMATIK_YAYIN.items() if v) == sorted(ACIK),
     [x for x, v in sy.OTOMATIK_YAYIN.items() if v])
 

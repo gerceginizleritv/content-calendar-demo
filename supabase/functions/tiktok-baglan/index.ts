@@ -30,7 +30,7 @@
 //         genişletilebiliyor. Varsayılan değişmedi; video.publish
 //         ancak denetim onaylanınca eklenecek (gerekçesi aşağıda).
 
-const SURUM = '1.3.0';
+const SURUM = '1.3.1';
 
 // ⚠ ORTAM DEĞİŞKENLERİ KIRPILIYOR, VE BU SÜS DEĞİL.
 // 28 Eylül 2026: TIKTOK_CLIENT_KEY panoya bir satır sonuyla birlikte
@@ -177,8 +177,13 @@ Deno.serve(async (istek: Request) => {
       //
       // Aynı gerekçe client_key'in buradan verilmesiyle aynı: ortam
       // değişir, kod değişmez.
-      kapsamlar: (Deno.env.get('TIKTOK_KAPSAMLAR') || '').trim()
-                 || 'user.info.basic,video.upload',
+      // ⚠ ayar() ILE OKUNUYOR, DOGRUDAN DEGIL. 12 Ekim 2026'da burada
+      // Deno.env.get dogrudan cagriliyordu; kirpma vardi ama ayri bir
+      // yerde yaziliydi. testler/baglantilar bunu yakaladi: kirpmanin
+      // TEK YERDE olmasi, "birinde var otekinde yok" halini imkansiz
+      // kiliyor. 28 Eylul'de bir anahtar satir sonuyla yapistirildigi
+      // icin yetkilendirme sessizce bozulmustu.
+      kapsamlar: ayar('TIKTOK_KAPSAMLAR') || 'user.info.basic,video.upload',
       // ⚠ Yalnızca "tanımlı mı" bilgisi. Değerin kendisi asla.
       yapilandirma: {
         supabase:      !!SUPABASE_URL,

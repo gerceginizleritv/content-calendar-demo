@@ -1170,7 +1170,7 @@ const SERVIS_ANAHTARI = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY') ?? '';
 // Bu kural UC KEZ unutuldu ve ucuncusunde artik soze birakilmadi:
 // birlestir.py, kaynak degisip surum ayni kalirsa HATA VERIP duruyor
 // ve tek-dosya.ts'i uretmiyor. Yani unutuldugu an belli oluyor.
-const SURUM = '1.9.1';
+const SURUM = '1.10.0';
 
 // ---- Otomatik yayın hattı olan türler ------------------------------------
 // AYNI kümeyi taşıyan yerler: app.html'deki YAYIN_TURLERI, sql/50'deki
@@ -1191,7 +1191,7 @@ const SURUM = '1.9.1';
 // `video` kayitlari da kuyruga girer ve worker onlari `reels` saymadigi
 // icin STORY olarak yayinlar -- uzun bir belgesel 24 saatte kaybolur.
 // Uzun form icin once worker'da ayri bir dal gerekiyor.
-const YAYIN_TURLERI = ['story', 'reels', 'shorts'];
+const YAYIN_TURLERI = ['story', 'reels', 'shorts', 'text_post'];
 const yayinlanabilirTur = (t: any) => YAYIN_TURLERI.includes(String(t || ''));
 
 const CORS: Record<string, string> = {

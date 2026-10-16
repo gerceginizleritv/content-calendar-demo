@@ -58,7 +58,7 @@
 //          etiketler), yoksa eski taslak yolu. Gizlilik seviyesi
 //          creator_info/query'nin verdiği listeden seçiliyor.
 
-const SURUM = '1.14.0';
+const SURUM = '1.15.0';
 const UCLAR = ['GET / (servis bilgisi)', 'POST / (bir tur)'];
 
 // ⚠ ORTAM DEĞİŞKENLERİ KIRPILIYOR.
@@ -76,6 +76,16 @@ const PAGE_TOKEN     = ayar('META_PAGE_TOKEN');
 const IG_USER_ID     = ayar('META_IG_USER_ID');
 const pageId         = () => ayar('META_PAGE_ID');
 const APP_ID         = ayar('META_APP_ID');
+// ⚠ THREADS AYRI BIR UYGULAMADAN GELIYOR. Facebook/Instagram'in
+// META_PAGE_TOKEN'i ile ILGISI YOK: Threads'in kendi uygulamasi,
+// kendi jetonu var (16 Ekim 2026, "Shootboard Threads"). Ikisini
+// karistirmak, calisan Facebook yayinini bozmak demek.
+//
+// ⚠ JETON ~60 GUNDE OLUYOR. Uzun omurlu ama sonsuz degil; suresi
+// dolunca yayin durur ve kalici hata + e-posta uretir (sessiz
+// kalmaz). Yenileme yolu threadsJetonTazele'de.
+const THREADS_TOKEN  = ayar('THREADS_TOKEN');
+const THREADS_TABANI = (ayar('THREADS_TABANI') || 'https://graph.threads.net/v1.0');
 const APP_SECRET     = ayar('META_APP_SECRET');
 const TIKTOK_KEY     = ayar('TIKTOK_CLIENT_KEY');
 const TIKTOK_SECRET  = ayar('TIKTOK_CLIENT_SECRET');
@@ -457,6 +467,9 @@ async function cikmisMi(k: any, cagriAni: string): Promise<{ biliniyor: boolean;
   // TikTok'ta "son gönderiler" listesi yok; kendi publish_id'siyle
   // sorulan ayrı bir durum ucu var.
   if (pf === 'tiktok') return await tiktokCikmisMi(k);
+  // Threads'te de "son gönderiler" listesi var; kendi uçlarıyla
+  // sorulan ayrı bir yol gerekiyor (threadsCikmisMi).
+  if (pf === 'threads') return await threadsCikmisMi(k, cagriAni);
   // YouTube'da da liste yok; sürdürülebilir yükleme oturumunun
   // kendisine soruluyor (youtubeCikmisMi'nin başında).
   if (pf === 'youtube') return await youtubeCikmisMi(k);
@@ -574,7 +587,17 @@ const TURLER: Record<string, { ad: string; tekil: string; buyuk: string; platfor
   // Shorts YALNIZCA YouTube. Instagram'a düşen bir shorts kaydı,
   // reelMi false döndüğü için STORY olarak çıkardı -- 24 saatte
   // kaybolan, kimsenin sebebini anlamadığı bir yayın.
-  shorts: { ad: 'Short', tekil: 'Short', buyuk: 'Shorts', platformlar: ['youtube'], kalici: true  }
+  shorts: { ad: 'Short', tekil: 'Short', buyuk: 'Shorts', platformlar: ['youtube'], kalici: true  },
+  // ⚠ text_post YALNIZCA THREADS. Metin (+istege bagli gorsel)
+  // tasiyor; story/reels gibi video degil. Baska bir platforma dusen
+  // bir text_post kaydi asagidaki platform kontrolunde ERTELENIYOR --
+  // yoksa Instagram'a dusen bir metin postu story olarak cikardi.
+  //
+  // ⚠ TUR UYDURULMADI. Takvimde text_post ZATEN vardi (CAL_TYPES,
+  // "Metin Postu"). Yeni bir tur eklemek arayuze, cevirilere ve
+  // MCP'ye dokunmak demekti; mevcut turu kullanmak hepsini atladi.
+  text_post: { ad: 'metin postu', tekil: 'Metin postu', buyuk: 'Metin Postu',
+               platformlar: ['threads'], kalici: true }
 };
 // Metinler için: tanınmayan tür 'story' gibi ANLATILIYOR (yayın yolu
 // bu değil -- onu kaydiYayinla'daki kontrol kesiyor).
@@ -696,7 +719,7 @@ function igKonteynerAlanlari(k: any): Record<string, string> {
 // şartname Bölüm 6 bunları ortaklaştırmamayı özellikle söylüyor:
 // Instagram dosyayı adresten ÇEKİYOR, Facebook dosyayı bize
 // YÜKLETİYOR. Ortak olan yalnızca ön kontroller ve çöküş izi.
-const YAYINLANABILIR = ['instagram', 'facebook', 'tiktok', 'youtube'];
+const YAYINLANABILIR = ['instagram', 'facebook', 'tiktok', 'youtube', 'threads'];
 
 async function kaydiYayinla(k: any, bitis: number): Promise<string> {
   // ⚠ PLATFORM, HER ŞEYDEN ÖNCE.
@@ -765,6 +788,11 @@ async function kaydiYayinla(k: any, bitis: number): Promise<string> {
       p_sebep: 'TIKTOK_CLIENT_KEY / TIKTOK_CLIENT_SECRET tanımlı değil; TikTok yüklemesi yapılamıyor.' });
     return 'yapilandirma-eksik';
   }
+  if (pf === 'threads' && !THREADS_TOKEN) {
+    await rpc('story_ertele', { p_id: k.id, p_dakika: 180,
+      p_sebep: 'THREADS_TOKEN tanımlı değil; Threads yayını yapılamıyor.' });
+    return 'yapilandirma-eksik';
+  }
   if (pf === 'facebook' && !pageId()) {
     await rpc('story_ertele', { p_id: k.id, p_dakika: 180,
       p_sebep: 'META_PAGE_ID tanımlı değil; Facebook yayını yapılamıyor.' });
@@ -775,7 +803,14 @@ async function kaydiYayinla(k: any, bitis: number): Promise<string> {
     await rpc('story_yayinlandi', { p_id: k.id, p_external_id: k.external_id });
     return 'zaten-yayinda';
   }
-  if (!k.media_url) {
+  // ⚠ THREADS GÖNDERİSİ DOSYASIZ OLABİLİR — tek istisna budur.
+  // Story ve reels dosyasız anlamsız, o yüzden aşağıdaki dal onları
+  // kalıcı hataya götürüyor. Threads'te metin TEK BAŞINA bir gönderi;
+  // bu istisna olmasaydı her metin gönderisi "Medya bağlı değil"
+  // deyip e-posta gönderirdi. Metin de yoksa aşağıda ayrıca
+  // yakalanıyor (threadsYayinla).
+  const metinYeter = pf === 'threads';
+  if (!k.media_url && !metinYeter) {
     // ⚠ "DOSYA HENÜZ YOK" ARTIK NORMAL BİR DURUM OLABİLİYOR.
     // sql/56'dan beri YouTube kayıtları dosya hazır olur olmaz
     // yükleniyor; yani kaydı bugün girip dosyayı yarın atman mümkün.
@@ -842,6 +877,7 @@ async function kaydiYayinla(k: any, bitis: number): Promise<string> {
 
   if (pf === 'tiktok')  return await tiktokYayinla(k);
   if (pf === 'youtube') return await youtubeYayinla(k, bitis);
+  if (pf === 'threads') return await threadsYayinla(k);
 
   return pf === 'facebook'
     ? await facebookYayinla(k)
@@ -862,6 +898,146 @@ async function seriOncekiParca(id: string): Promise<{ durum: string; parca: stri
       temizle((e as Error).message));
     return null;
   }
+}
+
+// ══════════════════════════════════════════════════════════════════
+// THREADS — 16 Ekim 2026
+// ══════════════════════════════════════════════════════════════════
+// Akış Instagram'ınkiyle AYNI İSKELET: kapsayıcı yarat, sonra yayınla.
+// Dosyayı Threads KENDİSİ çekiyor, biz yalnızca adresi veriyoruz --
+// yani Facebook'taki gibi baytları taşımıyoruz, R2 adresi yetiyor.
+//
+// ⚠ AYRI UYGULAMA, AYRI JETON, AYRI TABAN ADRES.
+// Facebook/Instagram graph.facebook.com'a gidiyor ve META_PAGE_TOKEN
+// kullanıyor; Threads graph.threads.net'e gidiyor ve THREADS_TOKEN
+// kullanıyor. Uygulamalar da ayrı (16 Ekim 2026'da "Shootboard
+// Threads" diye yeni bir uygulama kuruldu). Bu ayrım KASITLI: Live
+// olan Facebook uygulamamıza dokunmadan Threads denenebilsin diye.
+//
+// ⚠ METİN TEK BAŞINA GÖNDERİ OLABİLİYOR. Story ve reels dosyasız
+// anlamsız; Threads'te değil. kaydiYayinla'daki medya kontrolünde
+// bunun istisnası var.
+//
+// ⛔ KAPSAYICI HAZIR OLMADAN YAYINLANMIYOR. Görselde işlenme birkaç
+// saniye sürüyor ve erken yapılan yayın çağrısı hata veriyor. Durum
+// soruluyor, hazır olmadan beklenip tekrar bakılıyor.
+async function threadsDurum(kapsayici: string): Promise<string> {
+  try {
+    const adres = `${THREADS_TABANI}/${kapsayici}`
+      + `?fields=status,error_message&access_token=${encodeURIComponent(THREADS_TOKEN)}`;
+    const r = await fetch(adres);
+    const c = await r.json().catch(() => ({}));
+    if (!r.ok) return '';
+    if (c?.error_message) {
+      console.warn('[story] threads kapsayici hatasi:', temizle(String(c.error_message)));
+    }
+    return String(c?.status ?? '');
+  } catch (e) {
+    // SORULAMADI ≠ HAZIR DEĞİL. Boş dönüyoruz; çağıran bekliyor.
+    console.warn('[story] threads durum sorulamadi:', temizle((e as Error).message));
+    return '';
+  }
+}
+
+async function threadsCagir(yol: string, alan: Record<string, string>): Promise<any> {
+  const govde = new URLSearchParams({ ...alan, access_token: THREADS_TOKEN });
+  const r = await fetch(`${THREADS_TABANI}${yol}`, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+    body: govde.toString()
+  });
+  const metin = await r.text();
+  let cevap: any = {};
+  try { cevap = JSON.parse(metin); } catch { cevap = { ham: metin.slice(0, 300) }; }
+  if (!r.ok) {
+    const h = cevap?.error ?? {};
+    throw new GrafHata(r.status, h.code ?? null, h.error_subcode ?? null,
+      String(h.message ?? temizle(metin).slice(0, 300)));
+  }
+  return cevap;
+}
+
+// Çöküş sonrası: yayın çağrısı yapıldı mı, sonucu ne? Instagram ve
+// Facebook'taki mantığın aynısı -- son gönderilere bakıp çağrı anından
+// SONRA çıkmış bir gönderi var mı diye soruyoruz.
+//
+// ⚠ SORULAMADI ≠ ÇIKMADI. Ayrımı korumak şart: "çıkmadı" sayarsak
+// tekrar yayınlarız ve Threads gönderisi profilde KALICI durur.
+async function threadsCikmisMi(k: any, cagriAni: string): Promise<{ biliniyor: boolean; id: string }> {
+  const an = Date.parse(cagriAni) || 0;
+  if (!an) return { biliniyor: false, id: '' };
+  let veri: any;
+  try {
+    const adres = `${THREADS_TABANI}/me/threads`
+      + `?fields=id,timestamp&limit=10&access_token=${encodeURIComponent(THREADS_TOKEN)}`;
+    const r = await fetch(adres);
+    if (!r.ok) {
+      console.warn('[story] threads son gonderiler okunamadi:', r.status);
+      return { biliniyor: false, id: '' };
+    }
+    veri = await r.json();
+  } catch (e) {
+    console.warn('[story] threads son gonderiler okunamadi:', temizle((e as Error).message));
+    return { biliniyor: false, id: '' };
+  }
+  // Saat farkı ve Meta'nın kendi damgası için iki dakikalık pay --
+  // Instagram yolundaki eşiğin aynısı.
+  const esik = an - 120_000;
+  for (const m of (veri?.data ?? [])) {
+    const t = Date.parse(String(m?.timestamp ?? ''));
+    if (t && t >= esik) return { biliniyor: true, id: String(m.id) };
+  }
+  // ⚠ BOŞ LİSTE "ÇIKMADI" DEMEK DEĞİL. Yeni yayınlanan bir gönderi
+  // listeye birkaç saniye geç düşebiliyor; reels'teki asimetrinin
+  // aynısı. Yanlış "çıkmadı" cevabı çift gönderi demek ve o profilde
+  // kalıcı durur -- yanlış "bilmiyorum" cevabı yalnızca gecikme.
+  return { biliniyor: false, id: '' };
+}
+
+async function threadsYayinla(k: any): Promise<string> {
+  // Threads metin sınırı 500. Instagram'da 2200'de kırpıyoruz; burada
+  // da kırpmak doğru, çünkü sınırı aşan gövde kapsayıcıyı reddettirir
+  // ve bunu YAYIN ANINDA öğrenmek, kayıt anında öğrenmekten pahalı.
+  const metin = altYazi(k, 500);
+  const gorsel = String(k.media_url ?? '');
+
+  if (!metin && !gorsel) {
+    // Ne metin ne görsel: gönderilecek bir şey yok. Kalıcı, çünkü
+    // kendiliğinden düzelmez -- kullanıcı kaydı doldurmalı.
+    await kaliciHata(k, 'Threads gönderisi boş: ne metin ne görsel var.');
+    return 'bos-gonderi';
+  }
+
+  const alan: Record<string, string> = gorsel
+    ? { media_type: 'IMAGE', image_url: gorsel }
+    : { media_type: 'TEXT' };
+  if (metin) alan.text = metin;
+
+  const c = await threadsCagir('/me/threads', alan);
+  const kapsayici = String(c?.id ?? '');
+  if (!kapsayici) throw new GrafHata(0, null, null, 'Threads kapsayıcı kimliği dönmedi');
+  await rpc('story_iz_konteyner', { p_id: k.id, p_ref: kapsayici });
+
+  // Görselde işlenme bekleniyor. Metin gönderisinde de kısa bir pay
+  // bırakılıyor: hazır olmadan yapılan yayın çağrısı hata veriyor.
+  const tur = gorsel ? 10 : 3;
+  for (let i = 0; i < tur; i++) {
+    const d = await threadsDurum(kapsayici);
+    if (d === 'FINISHED') break;
+    if (d === 'ERROR') {
+      await kaliciHata(k, 'Threads kapsayıcıyı işleyemedi (görsel adresine ulaşamamış olabilir).');
+      return 'kapsayici-hata';
+    }
+    await new Promise((r) => setTimeout(r, 3000));
+  }
+
+  // ⚠ İZ, YAYINLAYAN ÇAĞRIDAN HEMEN ÖNCE. Kapsayıcı yaratmak
+  // yayınlamıyor, o yüzden oradaki bir çöküş çift gönderi üretemez.
+  await rpc('story_iz_yayin_cagrisi', { p_id: k.id });
+  const y = await threadsCagir('/me/threads_publish', { creation_id: kapsayici });
+  const kimlik = String(y?.id ?? '');
+  await rpc('story_yayinlandi', { p_id: k.id, p_external_id: kimlik || kapsayici });
+  return 'yayinlandi';
 }
 
 // ══════════════════════════════════════════════════════════════════
