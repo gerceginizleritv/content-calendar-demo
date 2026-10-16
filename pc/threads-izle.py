@@ -243,6 +243,38 @@ def dosyayi_isle(y, yol, ad, otomatik_ac, zorla, onceki=None):
                 else 'o tarihte Threads kaydi yok, ya da birden cok aday var '
                      '(kayda dosya adini yaz, ya da --id ile elle bagla)', ek)
 
+    # ⚠ PLATFORM SUZGECI -- 16 EKIM 2026, OLCULEN BIR ACIK.
+    # kaydi_bul dosya adi tutmazsa TARIHE dusuyor ve tarih aramasi
+    # platforma BAKMIYOR: o gun hangi platformda kayit varsa hepsi aday.
+    # 25 Ekim icin on aday dondu (instagram, facebook, youtube, tiktok)
+    # ve hicbiri threads degildi.
+    #
+    # O gun zarar olmadi cunku aday BIRDEN COKKEN yukleyici durup
+    # soruyor. Tehlike TEK aday halinde: izleyici "demek ki bu" deyip
+    # Threads gorselini ornegin bir Instagram story kaydina baglar ve
+    # politika geregi ONUN tikini acar -- Threads icin hazirlanan gorsel
+    # Instagram'a story olarak cikardi. Geri alinamaz bir yanlis yayin.
+    #
+    # ⚠ SUZGEC YUKLEMEDEN ONCE: kaydi_bul yuklemeden once cagriliyor,
+    # yani yanlis gunde R2'ye tek bir bayt gitmiyor.
+    #
+    # Bu izleyici --id kabul etmiyor, yani her aday uctan geliyor ve
+    # platformu yazili. (Elle secimde platform bilinmez ve suzgec
+    # calismaz; orada secimi insan yapiyor, politika denetimi de
+    # kayda_yaz'in icinde duruyor.)
+    uygun = [a for a in kayitlar
+             if str(a.get('platform') or '').lower() == 'threads'
+             and str(a.get('type') or '').lower() == 'text_post']
+    if not uygun:
+        gorulen = sorted({str(a.get('platform') or '?') for a in kayitlar})
+        return ('kayit-yok',
+                f"{len(kayitlar)} aday var ama hicbiri Threads metin postu degil "
+                f"({', '.join(gorulen)}). Kayda dosya adini yaz ya da Threads "
+                f"kaydini olustur; bu gorsel baska platforma BAGLANMADI.", ek)
+    if len(uygun) < len(kayitlar):
+        print(f"  ({len(kayitlar)} adaydan {len(uygun)} tanesi Threads; otekiler atlandi)")
+    kayitlar = uygun
+
     # `onceki` yalnizca imza AYNI ise doluyor (cagiran oyle veriyor);
     # dosya degismediyse R2'deki nesne de ayni, ikinci yukleme bos is.
     if onceki.get('url'):
