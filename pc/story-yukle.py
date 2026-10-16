@@ -174,6 +174,12 @@ OTOMATIK_YAYIN = {
     ('facebook',  'reels'):  True,
     ('tiktok',    'reels'):  False,
     ('youtube',   'shorts'): False,
+    # 16 Ekim 2026: Threads gonderisi. AYRI bir Meta uygulamasindan
+    # gidiyor ("Shootboard Threads"), Facebook/Instagram yayinimizla
+    # ortak hicbir seyi yok. Development modda yayinladigi ayni gun
+    # olculdu; dagitim olcumu SURUYOR -- sonucu kotuyse buradan
+    # kapatmak yeter.
+    ('threads',   'text_post'): True,
 }
 
 

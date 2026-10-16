@@ -5081,6 +5081,7 @@ const LANG = {
     oy_saatsiz: "No time set, so it will not publish. Give it a time.",
     oy_yeni: "Save the entry first, then you can switch automatic publishing on.",
     oy_not_reels: (p)=> `Shootboard posts this reel to ${CAL_SM_NAMES[p] || p} at the time above, cover and caption included. Stories and reels on Instagram and Facebook are the only things Shootboard posts by itself \u2014 everything else you post.`,
+    oy_not_metin: (p)=> `Shootboard posts this text post to ${CAL_SM_NAMES[p] || p} at the time above, with its image if one is attached. Stories, reels and text posts on the connected accounts are the only things Shootboard posts by itself \u2014 everything else you post.`,
     oy_not_shorts: "Shootboard uploads this Short to YouTube as soon as the file is ready \u2014 often days early \u2014 and YouTube itself publishes it at the time above. Title, description and tags go with it. After the upload, edits made here no longer reach the video; change it in YouTube Studio.",
     oy_zamanlandi: "Uploaded \u2014 YouTube publishes it at",
     oy_kapak_var: "Cover attached.",
@@ -6109,6 +6110,7 @@ const LANG = {
     oy_saatsiz: "Saat girilmemiş, bu yüzden yayınlanmayacak. Bir saat ver.",
     oy_yeni: "Önce kaydı kaydet, sonra otomatik yayını açabilirsin.",
     oy_not_reels: (p)=> `Shootboard bu reel'i yukarıdaki saatte ${PLATFORM_YONELME[p] || ((CAL_SM_NAMES[p] || p) + "'a")} kendi atıyor — kapağı ve alt yazısıyla. Shootboard'ın kendiliğinden yayınladığı şeyler Instagram ve Facebook'taki story ve reels kayıtları — geri kalan her şeyi sen yayınlıyorsun.`,
+    oy_not_metin: (p)=> `Shootboard bu metin postunu yukarıdaki saatte ${PLATFORM_YONELME[p] || ((CAL_SM_NAMES[p] || p) + "'a")} kendi atıyor — görseli varsa onunla birlikte. Shootboard'ın kendiliğinden yayınladığı şeyler bağlı hesaplardaki story, reels ve metin postları — geri kalan her şeyi sen yayınlıyorsun.`,
     oy_not_shorts: "Shootboard bu Short'u dosya hazır olur olmaz YouTube'a yüklüyor — çoğu zaman günler öncesinden. Yayına alma işini yukarıdaki saatte YouTube kendi yapıyor. Başlık, açıklama ve etiketler videoyla birlikte gidiyor. Yükleme olduktan sonra buradaki düzeltmeler videoya ULAŞMIYOR; onu YouTube Studio'dan değiştirmen gerekiyor.",
     oy_zamanlandi: "Yüklendi — YouTube şu saatte yayınlayacak:",
     oy_kapak_var: "Kapak bağlı.",
@@ -7685,7 +7687,7 @@ function fromRow(r){
 // küme. ⚠ DÖRT YERDE yazılı ve dördü de birbirinden habersiz: burası,
 // sql/53'teki iki işlev ve mcp/index.ts'teki YAYIN_TURLERI. Listesi
 // sql/53'ün başında; testler/shorts-kuyruk.js dördünü bağlıyor.
-const YAYIN_TURLERI = ['story', 'reels', 'shorts'];
+const YAYIN_TURLERI = ['story', 'reels', 'shorts', 'text_post'];
 const yayinlanabilirTur = (t)=> YAYIN_TURLERI.includes(String(t || ''));
 
 function yayinBilgisi(r){
@@ -16614,8 +16616,12 @@ function otoYayinTazele(){
   const notPlatform = (document.getElementById('f_platform') || {}).value
                    || (currentEvent && currentEvent.platform) || '';
   satirlar.push('<span class="hint" style="display:block;margin-top:6px">'
-    + escapeHtml(tur === 'shorts' ? t('oy_not_shorts')
-               : tur === 'reels'  ? t('oy_not_reels')(notPlatform)
+    + escapeHtml(tur === 'shorts'    ? t('oy_not_shorts')
+               : tur === 'reels'     ? t('oy_not_reels')(notPlatform)
+               // ⚠ METIN POSTU KENDI METNINI ISTIYOR. Bu dal olmasa
+               // asagidaki oy_not'a duserdi ve ekranda "bu STORY'yi
+               // atiyor" yazardi -- kayit story degil, metin postu.
+               : tur === 'text_post' ? t('oy_not_metin')(notPlatform)
                : t('oy_not')(notPlatform)) + '</span>');
   if(y.hata) satirlar.push('<span class="oy-hata">' + escapeHtml(y.hata) + '</span>');
   d.innerHTML = satirlar.join('<br>');
