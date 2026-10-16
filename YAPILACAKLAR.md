@@ -260,7 +260,48 @@ THREADS — ARAŞTIRILDI, KARAR KULLANICIDA (16 Ekim 2026)
     Cevap "yalnızca rolü olanlara görünür" ise: App Review'dan ÖNCE
     kod yazmanın anlamı yok, Facebook'taki sırayı tekrarlamayalım.
 
-  DURUM: kullanıcının kararı bekleniyor. Kod YAZILMADI.
+  ──────────────────────────────────────────────────────────────────
+  16 EKİM 2026 AKŞAMI — İLK DENEME YAPILDI, YAYINLANDI
+  ──────────────────────────────────────────────────────────────────
+
+  ✓ CEVAPLANDI: `threads_content_publish` DEVELOPMENT MODDA ÇALIŞIYOR.
+    Tech Provider olmaya, App Review'a, geri alınamaz hiçbir karara
+    gerek YOK. Paneldeki "+ Add to App Review" düğmesine BASILMADI.
+
+    Kanıt: pc/threads-deneme.py ile atılan metin gönderisi.
+    kapsayıcı 18099895004330632 -> gönderi 18126058492786488
+
+  KURULUM — gerçekte ne gerekti
+    1. AYRI bir Meta uygulaması ("Shootboard Threads"). Mevcut Live
+       uygulamamıza DOKUNULMADI; Facebook/Instagram yayını etkilenmedi.
+    2. Kullanım senaryosu: "Access the Threads API".
+       `threads_basic` kendiliğinden "Ready for testing" geliyor.
+    3. İş portföyü BAĞLANMADI ("I don't want to connect yet"). Test
+       için gerekmiyor; gereksiz bir bağ kurmaktan kaçınıldı.
+    4. App roles > Threads Tester olarak kendi hesabı; davet PC'den
+       kabul edildi (telefondaki menü bulunamadı).
+    5. Use cases > Settings > User Token Generator ile uzun ömürlü
+       jeton. ⚠ Yalnızca HERKESE AÇIK Threads hesapları için.
+       Jeton: SHOOTBOARD_THREADS_TOKEN ortam değişkeni.
+
+    ⚠ OAuth AKIŞINA GEREK KALMADI. Yönlendirme sayfası (threads.html),
+    kod->jeton takası, uzun ömürlü jeton yenileme -- hiçbiri
+    yazılmadı. Jeton üreticisi hepsini atlatıyor. Gerçek entegrasyona
+    geçilirse OAuth yine gerekebilir (jeton ~60 gün), ama ÖLÇÜM için
+    gerekmedi.
+
+  ⛔ HÂLÂ CEVAPSIZ: DAĞITIM
+    Gönderi yayınlandı -- ama GÖRÜNÜYOR MU? Facebook'ta yayınlama
+    çalışıyordu, dağıtım yoktu, hiçbir yerde hata görünmüyordu ve bu
+    sekiz gün kaybettirdi. Asıl soru hâlâ bu.
+
+    Ölçüm planı: birkaç gün üst üste, aynı gün bir API gönderisi ve
+    bir elle gönderi, 24 saat sonra görüntülenmeler karşılaştırılacak.
+    ⚠ TEK ÖLÇÜM YETMEZ -- kullanıcının kendi gözlemi: "bazı gönderiler
+    0 aldı, bazıları 1000 üzerinde." Kanal oynak; tek bir çift
+    yanıltır. Facebook'ta tek ölçümle yanlış teşhis koymuştuk.
+
+  DURUM: ölçüm sürüyor. Shootboard entegrasyonu YAZILMADI.
 
 YEDEK — Supabase ÜCRETSİZ planda, otomatik yedek YOK (12 Ekim 2026)
 ────────────────────────────────────────────────────────────────────
