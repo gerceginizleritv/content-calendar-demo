@@ -278,7 +278,18 @@ function kayitOku(ham, sira, hatalar) {
       // kullanici kaydi ilk actigi an kayboluyor.
       storyPrompt: metin(c.storyPrompt, 6000),
       storyKartlar: metin(c.storyKartlar, 6000),
-      storyYonerge: metin(c.storyYonerge, 6000)
+      storyYonerge: metin(c.storyYonerge, 6000),
+      // ANKET SECENEKLERI (16 Ekim 2026) -- yalnizca Threads anketinde.
+      // ⚠ BEYAZ LISTEDE OLMAK ZORUNDA: olmayan bir content alani bu
+      // islevden sessizce DUSUYOR. `diller` ve `anaDil` tam bunu
+      // yasadi ve kayip haftalarca gorulmedi.
+      //
+      // Threads'in siniri 2-4 secenek, her biri 1-25 karakter. Burada
+      // yalnizca TAVAN uygulaniyor (4 ve 25); "en az iki" sarti
+      // KOYULMUYOR, cunku tek secenekli bir taslak kaydedilebilmeli --
+      // eksikse yayin aninda kalici hata veriliyor ve e-posta gidiyor.
+      anketSecenekler: Array.isArray(c.anketSecenekler)
+        ? c.anketSecenekler.slice(0, 4).map(x => typeof x === 'string' ? x.slice(0, 25) : '') : undefined
     });
   }
   const projectRef = basvurular(ham.project, undefined, 1);

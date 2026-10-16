@@ -180,6 +180,16 @@ OTOMATIK_YAYIN = {
     # olculdu; dagitim olcumu SURUYOR -- sonucu kotuyse buradan
     # kapatmak yeter.
     ('threads',   'text_post'): True,
+    # 16 Ekim 2026: Threads anketi. Ayni uygulama, ayni jeton; tek
+    # farki gonderinin yaninda 2-4 secenek gitmesi.
+    # ⚠ ANKETTE GORSEL YOK, YANI BU TABLO ANKETTE PRATIKTE
+    # CALISMIYOR: tiki acan yer yukleyici ve yukleyici yalnizca bir
+    # dosya geldiginde kosuyor. Anket kayitlarinda tiki ya planlama
+    # sohbeti MCP'den aciyor ya kullanici uygulamada. Satir yine de
+    # burada: biri ankete gorsel baglamaya kalkarsa (ki Threads
+    # reddediyor) ya da ileride bir anket dosyayla gelirse, politika
+    # "bu cift acik" demis olsun. Tabloda olmayan cift kapali sayilir.
+    ('threads',   'poll'): True,
 }
 
 

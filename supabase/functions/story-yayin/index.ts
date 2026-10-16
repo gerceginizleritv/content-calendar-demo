@@ -58,7 +58,7 @@
 //          etiketler), yoksa eski taslak yolu. Gizlilik seviyesi
 //          creator_info/query'nin verdiği listeden seçiliyor.
 
-const SURUM = '1.17.0';
+const SURUM = '1.18.0';
 const UCLAR = ['GET / (servis bilgisi)', 'POST / (bir tur)'];
 
 // ⚠ ORTAM DEĞİŞKENLERİ KIRPILIYOR.
@@ -615,7 +615,14 @@ const TURLER: Record<string, { ad: string; tekil: string; buyuk: string; platfor
   // "Metin Postu"). Yeni bir tur eklemek arayuze, cevirilere ve
   // MCP'ye dokunmak demekti; mevcut turu kullanmak hepsini atladi.
   text_post: { ad: 'metin postu', tekil: 'Metin postu', buyuk: 'Metin Postu',
-               platformlar: ['threads'], kalici: true }
+               platformlar: ['threads'], kalici: true },
+  // ⚠ ANKET YALNIZCA THREADS. Tur veri modelinde 2 Eylul'den beri var
+  // (eski Facebook anketlerinden kaldi) ama yayin hatti YOKTU. Yalnizca
+  // threads yaziliyor: Facebook'un anket ucu bu worker'da hic yok ve
+  // platformu buraya yazmak, olmayan bir yolu varmis gibi gostermek
+  // olurdu. 16 Ekim 2026'da kullanici da "sadece threads icin" dedi.
+  poll: { ad: 'anket', tekil: 'Anket', buyuk: 'Anket',
+          platformlar: ['threads'], kalici: true }
 };
 // Metinler için: tanınmayan tür 'story' gibi ANLATILIYOR (yayın yolu
 // bu değil -- onu kaydiYayinla'daki kontrol kesiyor).
@@ -1182,6 +1189,31 @@ async function threadsCikmisMi(k: any, cagriAni: string): Promise<{ biliniyor: b
   return { biliniyor: false, id: '' };
 }
 
+// ══════════════════════════════════════════════════════════════════
+// ANKET SECENEKLERI — 16 Ekim 2026
+// ══════════════════════════════════════════════════════════════════
+// Meta'nin sinirlari (belgeden okundu, uydurulmadi):
+//   · 2-4 secenek, her biri 1-25 karakter
+//   · YALNIZCA metin gonderisine takilabiliyor (gorselli ankete izin yok)
+//   https://developers.facebook.com/documentation/threads/create-posts/polls
+//
+// ⚠ SINIRLAR UC YERDE OLCULUYOR: burada (yayin ani), app.html'de (kayit
+// ani) ve MCP'de (asistan yazarken). Ucu de gerekli: arayuzden gecen
+// bir kayit MCP'den gelmemis olabilir, MCP'den gelen kayit arayuzden
+// gecmemis olabilir, ve ikisi de atlanirsa hata YAYIN ANINDA ciksin --
+// sessiz kalmasin.
+const ANKET_EN_AZ = 2;
+const ANKET_EN_COK = 4;
+const ANKET_SECENEK_TAVAN = 25;
+
+function anketSecenekleri(k: any): string[] {
+  const c = (k?.content && typeof k.content === 'object') ? k.content : {};
+  const ham = Array.isArray(c.anketSecenekler) ? c.anketSecenekler : [];
+  // Bos satirlar atiliyor: arayuzde dort kutu var, kullanici ikisini
+  // doldurup otekileri bos birakabiliyor.
+  return ham.map((x: any) => String(x ?? '').trim()).filter(Boolean);
+}
+
 async function threadsYayinla(k: any): Promise<string> {
   // ⚠ JETON TABLODAN, ORTAMDAN DEĞİL. Süreye az kalmışsa burada
   // yenileniyor; ortamdaki tohum ilk yayından sonra eskir.
@@ -1210,6 +1242,43 @@ async function threadsYayinla(k: any): Promise<string> {
     ? { media_type: 'IMAGE', image_url: gorsel }
     : { media_type: 'TEXT' };
   if (metin) alan.text = metin;
+
+  // ---- ANKET ---------------------------------------------------------------
+  const secenekler = anketSecenekleri(k);
+  if (String(k.type ?? '') === 'poll') {
+    // ⛔ GORSELLI ANKET OLMUYOR. Gorseli sessizce atmak da olmaz:
+    // kullanici onu oraya bilerek koymus ve hangisinden vazgectigini
+    // BIZ secemeyiz. Kalici hata + e-posta, karar kullanicinin.
+    if (gorsel) {
+      await kaliciHata(k, 'Anket yalnızca metin gönderisine eklenebiliyor (Threads kuralı), '
+        + 'bu kayda ise görsel bağlı. Görseli kaldır ya da türü Metin postu yap.');
+      return 'anket-gorselli';
+    }
+    if (secenekler.length < ANKET_EN_AZ || secenekler.length > ANKET_EN_COK) {
+      await kaliciHata(k, `Ankette ${ANKET_EN_AZ}-${ANKET_EN_COK} seçenek olmalı; `
+        + `bu kayıtta ${secenekler.length} var.`);
+      return 'anket-sayi';
+    }
+    // ⚠ UZUN SECENEK KISALTILMIYOR. 25 karakteri asani kirpmak anketin
+    // SORUSUNU degistirir ("Rivayet mi, kayit mi" -> "Rivayet mi, kay");
+    // kullanici neyi oyladigini bilmez. Kalici hata, kirpma yok.
+    const uzun = secenekler.find((x) => x.length > ANKET_SECENEK_TAVAN);
+    if (uzun) {
+      await kaliciHata(k, `Anket seçeneği ${ANKET_SECENEK_TAVAN} karakteri geçemiyor `
+        + `(Threads kuralı): "${temizle(uzun).slice(0, 40)}" ${uzun.length} karakter.`);
+      return 'anket-uzun';
+    }
+    const anahtarlar = ['option_a', 'option_b', 'option_c', 'option_d'];
+    const anket: Record<string, string> = {};
+    secenekler.forEach((x, i) => { anket[anahtarlar[i]] = x; });
+    alan.poll_attachment = JSON.stringify(anket);
+  } else if (secenekler.length) {
+    // Tur anket degil ama secenekler yazili: anket GITMIYOR. Sessiz
+    // kalmak, kullanicinin yazdigi seceneklerin nereye gittigini
+    // sormasina yol acardi.
+    console.warn('[story] anket secenekleri var ama tur anket degil, anket gonderilmiyor:',
+      k.id, String(k.type ?? '?'));
+  }
 
   const c = await threadsCagir('/me/threads', alan, hesap.jeton);
   const kapsayici = String(c?.id ?? '');

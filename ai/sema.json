@@ -226,6 +226,15 @@
        "maxLength": 6000,
        "description": "Story only: production directives for THIS card, one \"key: value\" per line, e.g. \"damga: KAYIT\", \"kaynak: 1622 · Yedikule\", \"cta: Tam bolum kanalda\", \"muzik: soru\", \"sure: 5\". A multi-card story is several entries (one per card, k1/k2 in mediaName), so this describes one card. Do NOT use slidePrompts for any of this: that field belongs to carousels and the app clears it on every other post type, so anything left there is lost the first time the user saves the entry."
       },
+      "anketSecenekler": {
+       "type": "array",
+       "maxItems": 4,
+       "items": {
+        "type": "string",
+        "maxLength": 25
+       },
+       "description": "Poll only (type \"poll\", platform \"threads\"): the poll options, in order. Threads requires 2 to 4 options and 1 to 25 characters each, and a poll can only be attached to a TEXT post — an entry with a poll must not carry an image. The post text itself goes in \"caption\"."
+      },
       "timezone": {
        "type": "string",
        "maxLength": 64,
