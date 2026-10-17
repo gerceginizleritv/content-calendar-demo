@@ -1,0 +1,199 @@
+KUŞ EVLERİ — KURGU REÇETESİ VE MATERYAL PAKETİ (Script v2'ye göre)
+
+Tarihi Dedektif — Gerçeğin İzleri
+Toplam süre: ~10:55 (1.502 kelime seslendirme, 140 kelime/dk). Zaman kodları Script v2 ile birebir.
+
+ÜÇ TEMEL KURAL (Zeyrek ve Nuruosmaniye reçetelerinden, bu videoya uyarlandı):
+1. Kanca 0:25'te bitiyor. Öncesinde yola çıkış, motor, selam YOK. İlk kare kuş evi.
+2. Ödül görüntüsü erken flaşlanıyor: Beyazıt'taki sabit kamera karesi (kalabalık + kuş evi) 0:20 civarında 1 saniye, sessiz. Deney sonucu ise en sonda.
+3. Hiçbir alt parça 80 saniyeden uzun tek görüntü olmayacak. Geçiş bölümleri (yürüyüş, vapur) 3–4 saniyelik parçalara bölünüp üstüne kart, harita, arşiv bindirilecek. Yerebatan'ı batıran yer bu tür bölümlerdi.
+
+Kanal kuralı: AI ile üretilen her görsel ve video ekranda "TEMSİLİ CANLANDIRMA" etiketiyle gösterilir. Gerçek yapı fotoğrafı yerine AI görüntü kullanılmaz; AI yalnızca sahne canlandırması ve şema için.
+
+═══════════════════════════════════════
+KLİP ADLANDIRMA (sahada ve kurguda ortak)
+═══════════════════════════════════════
+A = Ayazma, Y = Yeni Valide, S = Selimiye, B = Beyazıt, G = Geçiş
+Örnek: A01 geniş cephe, A02 kuş evi yakın, A03 kuş giriş-çıkış bekleme...
+Her tekrarın başında parmakla deneme numarası (kaba kurgu hattı kuralı).
+
+═══════════════════════════════════════
+ZAMAN KODLU KURGU PLANI (EDL)
+═══════════════════════════════════════
+
+0:00–0:03 — AÇILIŞ KARESİ
+Görüntü: Y01 (üç kubbeli kuş evi, çok yakın, hafif tilt). Tek plan, kesme yok.
+Ses: Hiç müzik yok. Ortam sesi bile kısık. Tek cümle.
+Kart: yok. Logo yok.
+
+0:03–0:25 — HOOK (Ayazma önü)
+Görüntü: A00 konuşmacı, arkada cephe. "yirmi tane var" derken A01'e sert kesme + kuş evlerine tilt. "Bir de deney yapacağız" derken 1 sn B05 flaş (Ordu Caddesi sabit kamera, kalabalık + kuş evi), sessiz. "Rivayet değil, kayıt" derken kanal damgası 0,5 sn.
+Kart: "Tahmininizi yorumlara yazın" alt yazı, 2 sn.
+Ses: Müzik ilk cümleden sonra alttan girer, düşük.
+
+0:25–2:10 — BÖLÜM 1 AYAZMA
+| Zaman | Konuşma | Görüntü | Kart / grafik |
+| 0:25–0:45 | Üsküdar, 1760, III. Mustafa | A01 geniş cephe, A02 hünkâr kasrı | Tarih kartı: "1760 · III. Mustafa" |
+| 0:45–1:05 | kuş köşkü, serçe sarayı, 20 tane | A03 avlu kapısı kuş evi, A04 cephe yakın | SAYAÇ başlar: "Yukarı bakan: ?" köşede; "20 KUŞ EVİ" kartı (sahada sayılan sayıyla düzeltilecek) |
+| 1:05–1:25 | konsol, konak modeli, üç tip | A05 tek katlı, A06 köşk, A07 saray yakın planlar art arda 3'er sn | Alt yazı: "ev · köşk · saray" |
+| 1:25–1:45 | Siz de bulabilirsiniz | A01 cephe tam kare, 3 sn DURAK, sonra kuş evi etrafına çember animasyonu | "Gördünüz mü?" kartı |
+| 1:45–2:05 | serçe, kırlangıç; gelir yok | A08 kuş giriş-çıkış (yoksa AI-V1 TEMSİLİ) | "GELİR: 0" kartı |
+| 2:05–2:10 | hepsi aynı yöne bakıyor | Cephe geniş, pusula grafiği G→D | Pusula |
+
+2:10–3:40 — GEÇİŞ 1 SAHİL (riskli bölüm, parçala)
+| 2:10–2:20 | Yeni Valide'ye yürüyoruz | G01 yürüyüş 4 sn + G02 martı 3 sn + G03 Boğaz 3 sn | |
+| 2:20–2:55 | merhamet, vakıflar, kuş sebili | G01 parçalar + ARŞİV-1 (vakfiye/Osmanlı belge görseli, Commons) + AI-G1 vakıf kâtibi TEMSİLİ + ARŞİV-2 kuş sebili fotoğrafı | DAMGA "KAYIT" ilk kez; "vakıf: kuşlara yem" kartı |
+| 2:55–3:25 | yüksekte, güneye bakıyor, cephe koruma | AI-G2 şema: kuş evi kesiti (yükseklik, kedi, yön, rüzgâr) | DAMGA "BAZI ARAŞTIRMACILARA GÖRE" |
+| 3:25–3:40 | iki farklı el yazısı çengeli | Y02 duvar geniş, henüz kuş evi gösterilmiyor | |
+
+3:40–5:30 — BÖLÜM 2 YENİ VALİDE
+| 3:40–3:55 | Açılıştaki görüntüyü hatırlıyor musunuz | Y01 açılış karesi tekrar, bu kez geniş plandan yakına zoom | "0:00" küçük geri dönüş etiketi |
+| 3:55–4:15 | 1708–1710, Gülnuş, Kayserili Mehmed Ağa | Y03 cami geniş, ARŞİV-3 Lale Devri gravürü (Melling, kamu malı) | Tarih kartı: "1708–1710" |
+| 4:15–4:35 | kuş camisi | Y01 çok yakın, kubbeleri ve minareleri çember | "KUŞ CAMİSİ" kartı |
+| 4:35–5:05 | üç cephe, iki teknik | Y04 oyma kuş evi / Y05 monte kuş evi SPLIT SCREEN | "OYMA | MONTE" alt yazılar |
+| 5:05–5:20 | açık türbe, rivayet | Y06 türbe şebeke yakın, yukarıdan gökyüzü | DAMGA "RİVAYET" |
+| 5:20–5:30 | Sinan çengeli | Y03 geniş, karartma | Tarih şeridi belirmeye başlar |
+
+5:30–6:50 — GEÇİŞ 2 TARİH ŞERİDİ (parçala)
+| 5:30–5:50 | 16. yüzyıl, Büyükçekmece, Bali Paşa | G04 yürüyüş 4 sn + ARŞİV-4 Büyükçekmece Köprüsü + ARŞİV-5 Bali Paşa Camii | ŞERİT: 16. yy noktası yanar; DAMGA "KAYIT" |
+| 5:50–6:15 | Sinan vasiyeti iddiası | ARŞİV-6 Sinan tasviri (kamu malı gravür) → belge yerine boş sayfa grafiği | DAMGA "RİVAYET"; kart "Sinan kuş evi yaptı: KAYIT / kuşlara para bıraktı: İDDİA" |
+| 6:15–6:40 | Tokat 13. yy, Osmanlı icadı değil, 18. yy zirve | ARŞİV-7 Tokat Ulu Camii; ŞERİT 13. yy → 18. yy; Nuruosmaniye videosundan 2 sn kesit (kendi arşivin) | ŞERİT tamamlanır |
+| 6:40–6:50 | kediye kapalı pencere çengeli | S01 payanda geniş, pencere henüz seçilmiyor | |
+
+6:50–8:00 — BÖLÜM 3 SELİMİYE
+| 6:50–7:05 | 1801–1805, III. Selim, kışla | S02 kışla + cami aynı kare | Tarih kartı "1801–1805" |
+| 7:05–7:30 | iki katlı konak, ajurlu pencere, kedi dışarıda | S03 çok yakın ajur; AI-G3 şema: ışık ve hava giriyor, kedi giremiyor (TEMSİLİ) | "KEDİYE KAPALI" kartı |
+| 7:30–7:50 | 20 küçük ev → 2 büyük konak | SPLIT: A04 / S01 yan yana | "1760: 20 küçük | 1805: 2 büyük" |
+| 7:50–8:00 | üç soru özeti, vapura | Soru kartları: ✔ ✔ ? | Sayaç kısa hatırlatma |
+
+8:00–9:45 — GEÇİŞ 3 VAPUR + HARİTA (en uzun geçiş, en çok materyal)
+| 8:00–8:15 | Beyazıt'a geçiyoruz | G05 vapur güverte, G06 Haliç | |
+| 8:15–8:45 | Bursa, Edirne, Nevşehir, Kayseri | HARİTA: Türkiye, şehirler sırayla yanıyor; her şehirde ARŞİV fotoğrafı 3 sn: ARŞİV-8 Nevşehir Kurşunlu kütüphane, ARŞİV-9 Kayseri Tennuri Çeşmesi | Şehir adı etiketleri |
+| 8:45–9:05 | Amasya, Doğubeyazıt, Niğde, Antakya... | HARİTA devam; ARŞİV-10 Amasya II. Bayezid, ARŞİV-11 İshak Paşa Sarayı; kalan şehirler yalnızca pin | |
+| 9:05–9:25 | Bursa leylek hastanesi | ARŞİV-12 Gurabahane-i Laklakan fotoğrafı; AI-G4 leylek bakımevi TEMSİLİ (yalnızca fotoğraf bulunamazsa) | Kart "1890'lar → 2008 restorasyon" |
+| 9:25–9:45 | Bektaş alıntısı, dünya | Dünya haritası, Türkiye dışı boş; alıntı kartı tam metin | DAMGA "KAYITLI ÖRNEK YOK" |
+
+9:45–11:00 — BÖLÜM 4 BEYAZIT DENEY
+| 9:45–10:00 | Ordu Caddesi, sol üst köşe | B01 caddeden yaklaşma, B02 kuş evi yakın | Tarih kartı "1745" |
+| 10:00–10:15 | kural basit | B05 sabit kamera başlar, SAYAÇ tam ekran köşede "00:00 / 0" | |
+| 10:15–10:35 | (Kurgu: hızlandırılmış 30 dk) | B05 timelapse 20 sn, sayaç artıyor ama sayı BULANIK | Zaman göstergesi 00:00→30:00 |
+| 10:35–10:50 | bu evler yok oluyor | ARŞİV-13 sıvanmış / yok olmuş kuş evi fotoğrafı (Hürriyet haberi görüntüsü yerine Commons alternatifi ya da kendi çekimin); "son şans" makale kapağı | DAMGA "KAYIT" |
+| 10:50–11:00 | deneyin sonucu | Sayaç netleşir, SAYI ekranda büyük; yorum tahminleriyle karşılaştırma kartı | "30 dakikada yukarı bakan: N" |
+
+11:00–11:25 — TOPLUM ÇAĞRISI
+Görüntü hâlâ akıyor: B02, Y01, S03 kısa kesitler. Konuşan kafa YOK. "fotoğraflayın, paylaşın" derken telefon ekranı grafiği.
+
+11:25–11:45 — KAPANIŞ
+Sabit konuşan kafa yalnızca son 8–10 sn. "Yorumlarda buluşalım" hâlâ görüntü üstüne. Son cümlede Y01 açılış karesine kesme, 2 sn sessizlik, bitiş. Toplam kapanış 20 sn'yi geçmesin.
+
+═══════════════════════════════════════
+MATERYAL LİSTESİ A — SAHA B-ROLL (senin çektiğin)
+═══════════════════════════════════════
+A00 Konuşmacı, Ayazma önü, hook · A01 cephe geniş · A02 hünkâr kasrı · A03 avlu kapısı kuş evi · A04 cephe yakın (birden fazla kuş evi karede) · A05/A06/A07 üç tip yakın · A08 kuş giriş-çıkış (5 dk bekleme) · A09 Tarihi Yarımada arka planlı geniş
+Y01 üç kubbeli kuş evi çok yakın (AÇILIŞ) · Y02 duvar geniş · Y03 cami geniş · Y04 oyma kuş evi yakın · Y05 monte kuş evi yakın · Y06 açık türbe, şebeke ve gökyüzü
+S01 payanda geniş · S02 kışla + cami · S03 ajurlu pencere çok yakın · S04 küfeki doku
+B01 Ordu Caddesi yaklaşma · B02 kuş evi yakın (minare, cumba, merdiven) · B03 Avrasya Enstitüsü tabelası · B04 sebil · B05 SABİT KAMERA 30 DK (deney) · B06 konuşmacı kapanış
+G01 sahil yürüyüş · G02 martılar · G03 Boğaz · G04 Selimiye'ye yokuş · G05 vapur güverte · G06 Haliç, Sirkeci kıyısı
+
+═══════════════════════════════════════
+MATERYAL LİSTESİ B — TELİFSİZ ARŞİV (Wikimedia Commons, CC BY / CC BY-SA / kamu malı)
+═══════════════════════════════════════
+Kural: Her görselin lisansı ve fotoğrafçısı YouTube açıklamasına "Görsel kaynakları" başlığı altında yazılacak. CC BY-SA görsel kullanılırsa atıf zorunlu. Kamu malı gravürlerde atıf iyi niyet.
+Arama: commons.wikimedia.org → aşağıdaki anahtar kelimeler. Bulunan dosya adları bu dosyaya işlenecek.
+
+ARŞİV-1 Osmanlı vakfiye belgesi (Category: Ottoman documents / waqfiya)
+ARŞİV-2 Kuş sebili fotoğrafı (arama: "kuş sebili", "bird fountain Ottoman")
+ARŞİV-3 Melling, Üsküdar gravürü, 1819 (kamu malı; arama: "Melling Scutari")
+ARŞİV-4 Büyükçekmece Köprüsü (Category: Büyükçekmece Bridge)
+ARŞİV-5 Bali Paşa Camii (Category: Bali Pasha Mosque)
+ARŞİV-6 Mimar Sinan tasviri, 16. yy minyatür ya da 19. yy gravür (kamu malı)
+ARŞİV-7 Tokat Ulu Camii (Category: Ulu Mosque, Tokat)
+ARŞİV-8 Nevşehir Damat İbrahim Paşa Külliyesi / Kurşunlu Camii kütüphane (Category: Damat İbrahim Paşa Complex)
+ARŞİV-9 Kayseri Şeyh İbrahim Tennuri Çeşmesi (arama: "Tennuri Kayseri")
+ARŞİV-10 Amasya II. Bayezid Camii (Category: Bayezid II Mosque, Amasya)
+ARŞİV-11 İshak Paşa Sarayı (Category: Ishak Pasha Palace)
+ARŞİV-12 Gurabahane-i Laklakan, Bursa (arama: "Gurabahane-i Laklakan")
+ARŞİV-13 Tahrip olmuş kuş evi (bulunamazsa: kendi çekiminden sıva izi olan cephe; haber ekran görüntüsü kullanma)
+Ek: Eyüp Sultan taç kapı kuş evleri, Taksim Maksemi kuş evi (isteğe bağlı, "İstanbul'da başka nerede" için 2 sn)
+
+Yedek: Bir mekânın Commons fotoğrafı yoksa haritada yalnızca pin ve şehir adı gösterilir; kaynaksız görsel kullanılmaz.
+
+═══════════════════════════════════════
+MATERYAL LİSTESİ C — GRAFİK VE METİN KARTLARI (CapCut / Canva)
+═══════════════════════════════════════
+Tasarım dili: mürekkep siyahı zemin, antika altın #C8A24A vurgu, beyaz metin. Damgalar kaşe görünümünde, hafif eğik.
+
+C1 SAYAÇ: sağ üst köşe, "Yukarı bakan: ?" (0:45'ten itibaren), 10:00'dan sonra "00:00 / 0" formatı, 10:50'de sonuç büyük.
+C2 DAMGALAR (kaşe): "KAYIT" (altın), "RİVAYET" (kırmızı), "BAZI ARAŞTIRMACILARA GÖRE" (gri), "BAZI KAYNAKLARA GÖRE" (gri), "KAYITLI ÖRNEK YOK" (gri kırmızı çerçeve). Her biri 1,5 sn, ses efekti: kısa kaşe vuruşu.
+C3 TARİH KARTLARI: "1760 · III. Mustafa" · "1708–1710 · Gülnuş Valide Sultan" · "1801–1805 · III. Selim" · "1745 · Seyyid Hasan Paşa"
+C4 TARİH ŞERİDİ: 13. yy (Tokat) — 16. yy (Sinan, Büyükçekmece) — 18. yy (Barok zirve) — 19. yy (Bursa leylek). Noktalar sırayla yanar.
+C5 "20 KUŞ EVİ" (sayı sahadan), "GELİR: 0", "KUŞ CAMİSİ", "KEDİYE KAPALI", "OYMA | MONTE", "1760: 20 küçük | 1805: 2 büyük"
+C6 PUSULA: G→D ok, "hep güney ve doğu"
+C7 SORU KARTLARI: "Neden? ✔" "Ne zaman? ✔" "Dünyada başka? ?" (7:50)
+C8 HARİTA: Türkiye haritası, pinler: İstanbul, Bursa, Edirne, Nevşehir, Kayseri, Amasya, Doğubeyazıt, Niğde, Antakya, Merzifon, Zile, Kastamonu, Mardin, Şanlıurfa, Sivas, Safranbolu, Beypazarı, Aydın. Sonra dünya haritası, Türkiye dışı boş.
+C9 ALINTI KARTI: "Dünyanın önemli bölümünü dolaştım. Türkiye dışında bir örnek anımsamıyorum." — Cengiz Bektaş, mimar
+C10 DENEY SONUCU: "30 dakika · yukarı bakan: N" + "Yorum tahminleri: en çok ... dendi"
+C11 CTA KARTI (11:25): "Merhamet mi, hesap mı?" + "Türkiye dışında kuş evi gördünüz mü?"
+C12 "TEMSİLİ CANLANDIRMA" etiketi: her AI görsel/videoda sol alt, küçük, sürekli.
+
+═══════════════════════════════════════
+MATERYAL LİSTESİ D — AI GÖRSELLER (Higgsfield, hepsi TEMSİLİ etiketli)
+═══════════════════════════════════════
+Kullanım kuralı: Gerçek yapıyı temsil etmez; sahne canlandırması ve şema. 16:9. Sinematik, sıcak altın ışık, belgesel tonu; metin yok (metin CapCut'ta eklenecek).
+
+AI-G1 (2:20) Vakıf kâtibi: 18. yüzyıl Osmanlı kâtibi, ahşap rahlede kamış kalemle deftere yazıyor, yanında bir kese buğday, pencereden serçeler görünüyor, loş oda, mum ışığı. Yüz belirsiz, arkadan / yandan.
+AI-G2 (2:55) Kesit şeması: Osmanlı taş kuş evinin teknik kesiti; içerideki yuva odacığı, konsol, giriş deliği; yanda ölçek olarak insan silueti ve aşağıda uzanamayan kedi silueti; güneş yönü ve rüzgâr okları. Mimari çizim stili, sepya zemin, altın çizgiler.
+AI-G3 (7:05) Ajur şeması: Delikli taş pencereden içeri giren ışık ve hava, içeride serçe, dışarıda pençe uzatan kedi silueti engelleniyor. Kesit, çizim stili.
+AI-G4 (9:05, yalnızca fotoğraf yoksa) 19. yüzyıl sonu Bursa: bir avluda sakat leyleklere bakan yaşlı bir adam, ahşap kafesler, taş avlu, sabah ışığı. Yüz belirsiz.
+AI-G5 (1:05 alternatif) Taş ustası: 18. yüzyıl Osmanlı taş ustası, iskelede küfeki taşına minyatür kubbe oyuyor, elinde keski ve çekiç, ellere yakın plan, toz ve altın ışık.
+AI-G6 (Thumbnail arka planı adayı) Alçak açıdan Osmanlı cami cephesi, konsol üstünde minyatür saray biçimli kuş evi, dramatik bulutlu gökyüzü, altın saat, yüksek kontrast. Not: Thumbnail kuralına göre ön planda senin GERÇEK fotoğrafın olacak (Gemini + Canva süreci); bu görsel yalnızca arka plan.
+
+═══════════════════════════════════════
+MATERYAL LİSTESİ E — AI VİDEO (Higgsfield, 5 sn, TEMSİLİ etiketli)
+═══════════════════════════════════════
+AI-V1 (1:45, yalnızca A08 çekilemezse) Serçe, taş kuş evinin giriş deliğine konuyor ve içeri giriyor; yakın plan, altın saat, hafif rüzgârda tüyler, arkada bulanık taş duvar. 5 sn, 16:9.
+AI-V2 (1:05 ya da 5:50) Taş ustasının elleri küfeki taşına minyatür kubbe oyuyor; keski vuruşlarıyla toz kalkıyor; yakın plan, yandan ışık. 5 sn, 16:9.
+AI-V3 (9:05, isteğe bağlı) Leylek, taş avluda tek ayak üstünde, yaşlı bir el ona su kabı uzatıyor; sabah ışığı. 5 sn.
+
+═══════════════════════════════════════
+MATERYAL LİSTESİ F — SES
+═══════════════════════════════════════
+0:00–0:03 tam sessizlik, ortam sesi kısık. Müzik hook'un ikinci cümlesinden sonra alttan.
+Ana müzik: yavaş, yaylı, gizemli ama korku değil (kanal kuralı: paranormal ton yok).
+SFX: kaşe vuruşu (damgalar), sayaç tik sesi (10:15–10:50), kuş cıvıltısı (A08 ve AI-V1), vapur düdüğü (8:00), kalabalık uğultusu (B05).
+Kuş evi yakın planlarında müziği kıs, ortam sesi öne.
+Ses kaydı: dış ses evde (Audacity rehberine göre), saha sesi yalnızca "işte burası" cümlelerinde.
+
+═══════════════════════════════════════
+MATERYAL LİSTESİ G — THUMBNAIL (anayasa süreci: Gemini + Canva)
+═══════════════════════════════════════
+Adım 1 (sen, Gemini): Kendi fotoğrafın; yüz korunur; ifade: yukarı bakıyor, şaşkın; kıyafet nötr koyu. Arka plan: cami duvarında minyatür saray biçimli kuş evi, altın saat. Gemini prompt: "Bu kişinin yüzünü değiştirmeden, aynı yüzle, tarihi bir Osmanlı camisinin taş duvarı önünde, yukarıya doğru bakan şaşkın bir ifadeyle, duvarda konsol üstünde minyatür saray biçiminde bir kuş evi; altın saat ışığı, sinematik, 16:9."
+Adım 2 (Canva): Gemini logosunu sil. Başlık seçenekleri (2–3 kelime, kırmızı-sarı vurgu): "KUŞLARA SARAY" · "KİMSE GÖRMÜYOR" · "SERÇEYE SARAY". Önerim: "KİMSE GÖRMÜYOR" + küçük "270 YIL". 1280×720.
+Alternatif arka plan: AI-G6.
+
+═══════════════════════════════════════
+REELS KESİM ÖZETİ (5 adet, script içinde işaretli)
+═══════════════════════════════════════
+1. Hook (0:00–0:25) — dikey kırpımda Y01 tam kare, sonra konuşmacı
+2. "Yirmi saray, sıfır gelir" (1:05–1:50)
+3. "Kuşlar için yapılmış cami" (4:15–4:50)
+4. "Kediye kapalı, kuşa açık" (7:05–7:35)
+5. "Yarım saatte kaç kişi yukarı baktı" (10:00–11:00, 45 sn'ye kısaltılmış)
+Her Reel'in ilk karesi kuş evi yakın planı; konuşan kafa ile başlamaz.
+
+═══════════════════════════════════════
+KABA KURGU HATTI (Otomatik Video Kaba Kurgu Hattı dokümanına göre)
+═══════════════════════════════════════
+1. Klipleri yukarıdaki kodlarla adlandırıp yükle (A01.mp4 ...). 4K'ları parça parça.
+2. Dış sesi Audacity'de kaydet, tek dosya, bölüm başlarında 2 sn sessizlik.
+3. Claude: bu EDL'ye göre ffmpeg concat + ses döşeme + auto-editor sessizlik temizliği + SRT üretimi.
+4. Sen: CapCut'ta kartlar, damgalar, sayaç, müzik, renk.
+
+═══════════════════════════════════════
+SAHADAN SONRA DOLDURULACAK BOŞLUKLAR
+═══════════════════════════════════════
+[ ] Ayazma kuş evi sayısı → C5 kartı ve script cümlesi
+[ ] Beyazıt 30 dk sayım → C1, C10, script kapanış cümlesi
+[ ] A08 kuş giriş-çıkış çekildi mi → çekilmediyse AI-V1 üret
+[ ] ARŞİV-12 Gurabahane fotoğrafı Commons'ta var mı → yoksa AI-G4
+[ ] Commons dosya adları ve lisansları → açıklama "Görsel kaynakları" bloğu

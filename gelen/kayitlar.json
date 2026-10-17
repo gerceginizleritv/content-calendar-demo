@@ -1,39 +1,554 @@
 {
-  "_aciklama": "Slate gelen kutusu. Sohbette hazırlanan kayıtlar buraya yazılır; Slate giriş yapılmış açılışta bu dosyayı okur, hesapta olmayan kayıtları hesaba yazar. Alınan kimlikler hesabın tercihlerinde (user_prefs.prefs.gelen_alinan) tutulur, o yüzden burada silinen bir kayıt bir daha gelmez. 'proje' alanı proje ADI: Slate bunu hesaptaki projeyle eşleştirir (tam ad, yoksa baş harfleri).",
-  "kayitlar": [
-    {
-      "id": "ev_nuruosmaniye_yt_20260918",
-      "platform": "youtube",
-      "type": "video",
-      "date": "2026-09-18",
-      "time": "20:00",
-      "proje": "Nuruosmaniye",
-      "title": "Nuruosmaniye — İki Padişahın Yatmadığı Türbe",
-      "content": {
-        "videoTitle": "İki Padişah Kendine Türbe Yaptırdı, İkisi de Yatmıyor | Nuruosmaniye'nin 270 Yıllık Sırrı",
-        "shortTitle": "İKİSİ DE YATMIYOR",
-        "caption": "Kapalıçarşı'ya girmeden önce yanından geçtiğiniz bu cami, iki padişahın hiç yatmadığı bir türbeyi saklıyor.\n\nI. Mahmud 1749'da Nuruosmaniye Külliyesi'ni yaptırmaya başladı, tamamlanmasını göremeden 1754'te öldü. Adını caminin üstüne yazdıran III. Osman da üç yıl sonra öldü. İkisi için hazırlanan türbe boş kaldı: ikisi de Eminönü'ndeki Turhan Sultan Türbesi'ne gömüldü. Bugün içinde yalnızca Şehsuvar Sultan ve birkaç şehzadenin sandukası var.\n\nBu videoda:\n• Bir Rum kalfanın, Simeon'un, günlük olarak yönettiği imparatorluk camisi (bina emini Ahmed Efendi'nin risalesi sayesinde yapım süreci en iyi belgelenen Osmanlı yapılarından biri)\n• Binlerce ahşap kazık üzerine kurulan, 1766 ve 1894 depremlerini neredeyse hasarsız atlatan temel\n• İstanbul'un ilk Osmanlı Barok camisi: dışarıdan Avrupa, içeriden klasik Osmanlı\n• Avlunun altında 270 yıldır asıl amacına uygun hiç kullanılmamış mahzen\n\nBu mahzen gerçekten bir çarşı olarak mı tasarlanmıştı, yoksa başka bir amacı mı vardı? Yorumlarda buluşalım.\n\nBu belgesel serimizde İstanbul'un tarihini kanıtla anlatıyoruz.\n\nRivayet değil, kayıt.\n\n📍 Kaynaklar:\nTDV İslâm Ansiklopedisi (\"Nuruosmaniye Külliyesi\"), Vikipedi, Özhan Öztürk Makaleleri (2019), İslam Düşünce Atlası (Ahmed Efendi risalesi), Anadolu Ajansı (2023), Türk Diyanet Vakıf-Sen — saha ziyaretinde doğrulanan bilgiler dahil edilmiştir.\n\n🔔 Abone ol, her hafta yeni bir gizem: youtube.com/@gerceginizleritv\n📸 Instagram: instagram.com/gerceginizleritv\n🎵 TikTok: @gerceginizleritv\n📱 Facebook: facebook.com/gerceginizleritv\n\n#belgesel #tarih #nuruosmaniyecamii #tarihidedektif #osmanlıtarihi #istanbultarihi #kapalıçarşı #rivayetdeğilkayıt",
-        "hashtags": "nuruosmaniyecamii, tarihidedektif, osmanlıtarihi, istanbultarihi, rivayetdeğilkayıt, belgesel, tarih, istanbul, kapalıçarşı, osmanlıbarok, I. Mahmud, III. Osman, simeon kalfa, boş türbe, mahzen",
-        "thumbPrompt": "YouTube kapak görseli, 16:9, yüksek kontrast. Nuruosmaniye Camii'nin yarım daire (elips) avlusu alçak açıdan, dramatik altın saat ışığıyla aydınlatılmış; Barok kemerler ve oymalar keskin. Ön planda, gölgede kalmış boş bir mermer sanduka silueti (türbenin içi, kimse yok). Üstte kalın, beyaz, büyük harf metin: \"İKİSİ DE YATMIYOR\". Sağ altta küçük \"270 YIL\" rozeti. Marka renkleri: mürekkep siyahı zemin, antika altın #C8A24A vurgu. Gizemli, sinematik belgesel atmosferi; yüz yok, kalabalık yok, metin dışında yazı yok.",
-        "slidePrompts": []
-      }
-    },
-    {
-      "id": "ev_nuruosmaniye_fb_20260918",
-      "platform": "facebook",
-      "type": "video",
-      "date": "2026-09-18",
-      "time": "21:00",
-      "proje": "Nuruosmaniye",
-      "title": "Nuruosmaniye — Facebook paylaşımı",
-      "content": {
-        "videoTitle": "İki Padişah Kendine Türbe Yaptırdı, İkisi de Yatmıyor",
-        "shortTitle": "İKİSİ DE YATMIYOR",
-        "caption": "Kapalıçarşı'ya girmeden önce yanından geçtiğiniz bu cami, iki padişahın hiç yatmadığı bir türbeyi saklıyor. 🕌\n\nI. Mahmud yaptırdı, göremedi. III. Osman adını verdi, o da yatmadı. İkisi için hazırlanan türbe 270 yıldır boş. Altındaki mahzen ise açıldığı günden beri bir kez bile amacına uygun kullanılmadı.\n\nBir Rum kalfanın günlük yönettiği inşaat, depremleri hasarsız atlatan kazıklı temel ve İstanbul'un ilk Barok camisi. Hepsi tek videoda.\n\n🎬 TAM BELGESELİ İZLEMEK İÇİN: [YouTube video linki] — hemen tıkla, kaçırma.\n\nRivayet değil, kayıt.\n\nSayfamda Abonelikler açık. 🙏\n\n#belgesel #tarih #nuruosmaniye #istanbul",
-        "hashtags": "belgesel, tarih, nuruosmaniye, istanbul, tarihidedektif",
-        "thumbPrompt": "YouTube kapağının aynısı, Facebook için 16:9 (gerekirse 4:5 dikey kırpım: avlu ve boş sanduka silueti ortada kalsın). Metin: \"İKİSİ DE YATMIYOR\".",
-        "slidePrompts": []
-      }
-    }
-  ]
+ "_aciklama": "Slate gelen kutusu. Sohbette hazırlanan kayıtlar buraya yazılır; Slate giriş yapılmış açılışta bu dosyayı okur, hesapta olmayan kayıtları hesaba yazar. Alınan kimlikler hesabın tercihlerinde (user_prefs.prefs.gelen_alinan) tutulur, o yüzden burada silinen bir kayıt bir daha gelmez. 'proje' alanı proje ADI: Slate bunu hesaptaki projeyle eşleştirir (tam ad, yoksa baş harfleri).",
+ "kayitlar": [
+  {
+   "id": "ev_nuruosmaniye_yt_20260918",
+   "platform": "youtube",
+   "type": "video",
+   "date": "2026-09-18",
+   "time": "20:00",
+   "proje": "Nuruosmaniye",
+   "title": "Nuruosmaniye — İki Padişahın Yatmadığı Türbe",
+   "content": {
+    "videoTitle": "İki Padişah Kendine Türbe Yaptırdı, İkisi de Yatmıyor | Nuruosmaniye'nin 270 Yıllık Sırrı",
+    "shortTitle": "İKİSİ DE YATMIYOR",
+    "caption": "Kapalıçarşı'ya girmeden önce yanından geçtiğiniz bu cami, iki padişahın hiç yatmadığı bir türbeyi saklıyor.\n\nI. Mahmud 1749'da Nuruosmaniye Külliyesi'ni yaptırmaya başladı, tamamlanmasını göremeden 1754'te öldü. Adını caminin üstüne yazdıran III. Osman da üç yıl sonra öldü. İkisi için hazırlanan türbe boş kaldı: ikisi de Eminönü'ndeki Turhan Sultan Türbesi'ne gömüldü. Bugün içinde yalnızca Şehsuvar Sultan ve birkaç şehzadenin sandukası var.\n\nBu videoda:\n• Bir Rum kalfanın, Simeon'un, günlük olarak yönettiği imparatorluk camisi (bina emini Ahmed Efendi'nin risalesi sayesinde yapım süreci en iyi belgelenen Osmanlı yapılarından biri)\n• Binlerce ahşap kazık üzerine kurulan, 1766 ve 1894 depremlerini neredeyse hasarsız atlatan temel\n• İstanbul'un ilk Osmanlı Barok camisi: dışarıdan Avrupa, içeriden klasik Osmanlı\n• Avlunun altında 270 yıldır asıl amacına uygun hiç kullanılmamış mahzen\n\nBu mahzen gerçekten bir çarşı olarak mı tasarlanmıştı, yoksa başka bir amacı mı vardı? Yorumlarda buluşalım.\n\nBu belgesel serimizde İstanbul'un tarihini kanıtla anlatıyoruz.\n\nRivayet değil, kayıt.\n\n📍 Kaynaklar:\nTDV İslâm Ansiklopedisi (\"Nuruosmaniye Külliyesi\"), Vikipedi, Özhan Öztürk Makaleleri (2019), İslam Düşünce Atlası (Ahmed Efendi risalesi), Anadolu Ajansı (2023), Türk Diyanet Vakıf-Sen — saha ziyaretinde doğrulanan bilgiler dahil edilmiştir.\n\n🔔 Abone ol, her hafta yeni bir gizem: youtube.com/@gerceginizleritv\n📸 Instagram: instagram.com/gerceginizleritv\n🎵 TikTok: @gerceginizleritv\n📱 Facebook: facebook.com/gerceginizleritv\n\n#belgesel #tarih #nuruosmaniyecamii #tarihidedektif #osmanlıtarihi #istanbultarihi #kapalıçarşı #rivayetdeğilkayıt",
+    "hashtags": "nuruosmaniyecamii, tarihidedektif, osmanlıtarihi, istanbultarihi, rivayetdeğilkayıt, belgesel, tarih, istanbul, kapalıçarşı, osmanlıbarok, I. Mahmud, III. Osman, simeon kalfa, boş türbe, mahzen",
+    "thumbPrompt": "YouTube kapak görseli, 16:9, yüksek kontrast. Nuruosmaniye Camii'nin yarım daire (elips) avlusu alçak açıdan, dramatik altın saat ışığıyla aydınlatılmış; Barok kemerler ve oymalar keskin. Ön planda, gölgede kalmış boş bir mermer sanduka silueti (türbenin içi, kimse yok). Üstte kalın, beyaz, büyük harf metin: \"İKİSİ DE YATMIYOR\". Sağ altta küçük \"270 YIL\" rozeti. Marka renkleri: mürekkep siyahı zemin, antika altın #C8A24A vurgu. Gizemli, sinematik belgesel atmosferi; yüz yok, kalabalık yok, metin dışında yazı yok.",
+    "slidePrompts": []
+   }
+  },
+  {
+   "id": "ev_nuruosmaniye_fb_20260918",
+   "platform": "facebook",
+   "type": "video",
+   "date": "2026-09-18",
+   "time": "21:00",
+   "proje": "Nuruosmaniye",
+   "title": "Nuruosmaniye — Facebook paylaşımı",
+   "content": {
+    "videoTitle": "İki Padişah Kendine Türbe Yaptırdı, İkisi de Yatmıyor",
+    "shortTitle": "İKİSİ DE YATMIYOR",
+    "caption": "Kapalıçarşı'ya girmeden önce yanından geçtiğiniz bu cami, iki padişahın hiç yatmadığı bir türbeyi saklıyor. 🕌\n\nI. Mahmud yaptırdı, göremedi. III. Osman adını verdi, o da yatmadı. İkisi için hazırlanan türbe 270 yıldır boş. Altındaki mahzen ise açıldığı günden beri bir kez bile amacına uygun kullanılmadı.\n\nBir Rum kalfanın günlük yönettiği inşaat, depremleri hasarsız atlatan kazıklı temel ve İstanbul'un ilk Barok camisi. Hepsi tek videoda.\n\nRivayet değil, kayıt.\n\nSayfamda Abonelikler açık. 🙏\n\n#belgesel #tarih #nuruosmaniye #istanbul",
+    "hashtags": "belgesel, tarih, nuruosmaniye, istanbul, tarihidedektif",
+    "thumbPrompt": "YouTube kapağının aynısı, Facebook için 16:9 (gerekirse 4:5 dikey kırpım: avlu ve boş sanduka silueti ortada kalsın). Metin: \"İKİSİ DE YATMIYOR\".",
+    "slidePrompts": []
+   }
+  },
+  {
+   "id": "ev_sokollu_yt_20261002",
+   "platform": "youtube",
+   "type": "video",
+   "date": "2026-10-02",
+   "time": "20:00",
+   "proje": "Sokollu",
+   "title": "Sokollu — Kabe Taşları ve Öldürülen Sadrazam (Sinan Dosyası 2)",
+   "content": {
+    "videoTitle": "Bu Caminin Duvarında Kabe'nin Taşları Var | Sokollu'nun Üç Yapısı ve Öldürülen Sadrazam",
+    "shortTitle": "KABE'NİN TAŞI BU CAMİDE",
+    "caption": "İstanbul'da bir cami var: duvarlarında Kabe'nin dört parçası duruyor. Kapısında bir adamın adı yazıyor, vakfiyesinde başka birinin. Ve adı yazan adam sekiz yıl sonra kendi sarayında, toplantı sırasında hançerlendi.\n\nSokollu Mehmed Paşa. Üç padişaha on dört yıl sadrazamlık yaptı ve Mimar Sinan onun için İstanbul'da üç ayrı yapı dikti. Bu videoda üçünü de geziyoruz: Kadırga'daki cami, Azapkapı'daki minaresi ayrı duran cami ve Eyüp'teki, ölümünden on yıl önce hazırlanan türbe.\n\nBu videoda:\n• Kadırga Sokollu Camii'ndeki dört Hacerü'l-Esved parçası: giriş kapısı, mihrap, minber kapısı ve minber külahı (nerede, nasıl bakılır)\n• Kitabede Sokollu, vakfiyede İsmihan Sultan: cami aslında kimin?\n• Sinan'ın 1570'lerdeki Mescid-i Haram projesi ile taşların İstanbul'a geliş rivayeti arasındaki fark\n• Azapkapı'da minarenin camiye kemerli bir geçitle bağlanması ve bugünkü minarenin 20. yüzyıl onarımı olduğu\n• 11 Ekim 1579: derviş kılığında bir arzuhalcinin divanda sadrazamı hançerlemesi; kayıt ile rivayetin sınırı\n• Eyüp'teki türbede kimin yattığı ve kimin yatmadığı\n\nSizce Kadırga'daki dört taştan hangisini bulmak en zor? Yorumlara yazın.\n\nSinan Dosyası'nın 2. bölümü. Serinin diğer bölümleri oynatma listesinde.\n\nRivayet değil, kayıt.\n\n📍 Kaynaklar:\nTDV İslâm Ansiklopedisi (\"Sokullu Mehmed Paşa\", \"Sokullu Mehmed Paşa Külliyesi\", \"İsmihan Sultan\", \"Hacerülesved\"); Sâî Mustafa Çelebi, Tezkiretü'l-Bünyan; Gülru Necipoğlu, The Age of Sinan; Aptullah Kuran, Mimar Sinan; Selânikî ve Peçevî tarihleri; İBB Kültür Envanteri. Saha ziyaretinde doğrulanan bilgiler dahil edilmiştir.\n\n🔔 Abone ol, her hafta yeni bir gizem: youtube.com/@gerceginizleritv\n📸 Instagram: instagram.com/gerceginizleritv\n🎵 TikTok: @gerceginizleritv\n📱 Facebook: facebook.com/gerceginizleritv\n\n#belgesel #tarih #mimarsinan #sokollumehmedpaşa #kabetaşı #tarihidedektif #osmanlıtarihi #istanbultarihi #rivayetdeğilkayıt",
+    "hashtags": "mimarsinan, sokollumehmedpaşa, kabetaşı, hacerülesved, kadırga camii, azapkapı, eyüp sultan, ismihan sultan, tarihidedektif, osmanlıtarihi, istanbultarihi, rivayetdeğilkayıt, belgesel, tarih, istanbul, sinan dosyası",
+    "thumbPrompt": "YATAY 16:9\n\nUse the attached photo as the exact face and identity reference: same man, same facial features, same salt-and-pepper beard and hair. Do not change his face or age.\n\nPhotorealistic YouTube thumbnail, 16:9, 1920x1080, in the style of a high-end documentary channel cover.\n\nLEFT THIRD: the man from the reference photo, tight head-and-shoulders portrait, cut at the chest, wearing only a plain black crew-neck t-shirt, no logo. His head is turned to the right, eyes looking sideways toward the object on the right, brow furrowed, serious and suspicious expression, lips closed. Warm golden rim light on the edge of his face and hair from the right, soft cool shadow on the left, skin texture sharp.\n\nBACKGROUND: the arcaded courtyard of a 16th-century Ottoman mosque in Istanbul, stone columns and arches, deep depth of field blur, warm dusk light.\n\nRIGHT HALF: a rough cut-stone wall in sharp focus. On it, a small black stone fragment set in a green-painted frame above a white marble minbar door, enclosed in a thick glowing yellow neon circle that lights the stone around it. This is the visual focus.\n\nTEXT, upper right, two stacked lines, bold condensed sans-serif, all caps:\nLine 1: \"KABE'NİN TAŞI\" in bright yellow with a thin dark outline.\nLine 2: \"BU CAMİDE\" in white letters on a solid red rectangular banner.\nTurkish characters exactly as written. The text must not overlap the face or the glowing circle.\n\nStyle: cinematic, very high contrast, saturated warm colors, crisp detail on the face, the stone and the text. No other text, no watermark, no logos, no extra people.\n\n────────\n\nDİKEY 9:16\n\nUse the attached photo as the exact face and identity reference: same man, same facial features, same salt-and-pepper beard and hair. Do not change his face or age.\n\nPhotorealistic vertical thumbnail, 9:16, 1080x1920, in the style of a high-end documentary channel cover.\n\nTOP 20%: two stacked text lines, centered, bold condensed sans-serif, all caps:\nLine 1: \"KABE'NİN TAŞI\" in bright yellow with a thin dark outline.\nLine 2: \"BU CAMİDE\" in white letters on a solid red rectangular banner.\nTurkish characters exactly as written.\n\nMIDDLE: a rough cut-stone wall in sharp focus. On it, a small black stone fragment set in a green-painted frame above a white marble minbar door, enclosed in a thick glowing yellow neon circle that lights the stone around it. This is the visual focus.\n\nBOTTOM 45%: the man from the reference photo, head-and-shoulders, cut at the chest, wearing only a plain black crew-neck t-shirt, no logo. Head tilted up, eyes looking up toward the glowing stone, brow furrowed, serious and suspicious expression, lips closed. Warm golden rim light on the edge of his face and hair from above, soft cool shadow below, skin texture sharp.\n\nBACKGROUND: the arcaded courtyard of a 16th-century Ottoman mosque in Istanbul, stone columns and arches, deep depth of field blur, warm dusk light.\n\nStyle: cinematic, very high contrast, saturated warm colors, crisp detail on the face, the stone and the text. No other text, no watermark, no logos, no extra people.",
+    "slidePrompts": []
+   }
+  },
+  {
+   "id": "ev_sokollu_fb_20261002",
+   "platform": "facebook",
+   "type": "video",
+   "date": "2026-10-02",
+   "time": "21:00",
+   "proje": "Sokollu",
+   "title": "Sokollu — Facebook paylaşımı",
+   "content": {
+    "videoTitle": "Bu Caminin Duvarında Kabe'nin Taşları Var",
+    "shortTitle": "KABE'NİN TAŞI BU CAMİDE",
+    "caption": "İstanbul'da bir cami var: duvarlarında Kabe'nin dört parçası duruyor. 🕌\n\nKapısında Sokollu Mehmed Paşa'nın adı, vakfiyesinde eşi İsmihan Sultan'ın. Ve Sokollu, cami bittikten sekiz yıl sonra kendi sarayında, divan toplantısında hançerlendi.\n\nMimar Sinan bu adam için İstanbul'da üç yapı dikti: Kadırga'daki Kabe taşlı cami, Azapkapı'daki minaresi ayrı duran cami ve Eyüp'te ölümünden on yıl önce hazırlanan türbe. Üçünü de bu videoda geziyoruz. Sizce Kadırga'daki dört taştan hangisini bulmak en zor? Yorumlara yazın.\n\nRivayet değil, kayıt.\n\nSayfamda Abonelikler açık. 🙏\n\n#belgesel #tarih #mimarsinan #sokollu #istanbul",
+    "hashtags": "belgesel, tarih, mimarsinan, sokollu, istanbul, tarihidedektif",
+    "thumbPrompt": "YouTube kapağının aynısı (yatay 16:9, başlık Gemini'de üretilmiş). Facebook feed için gerekirse 4:5 kırpım: yüz solda, sarı halkalı taş sağda, başlık kadrajda kalsın.",
+    "slidePrompts": []
+   }
+  },
+  {
+   "id": "ev_sokollu_teaser_facebook_20261007",
+   "platform": "facebook",
+   "type": "reels",
+   "date": "2026-10-07",
+   "time": "20:00",
+   "proje": "Sokollu Mehmed Paşa",
+   "title": "Sokollu — Reels #1 TEASER (Kabe taşlı cami) · 120 sn",
+   "content": {
+    "caption": "Bu caminin duvarında Kabe'nin dört parçası var.\n\nKapısında bir adamın adı yazıyor, vakfiyesinde başka birinin. Ve adı yazan adam sekiz yıl sonra kendi sarayında, dilekçe alırken hançerlendi.\n\nTaşlar buraya nasıl geldi? Tam bölüm Cuma 20:00'de.\n\nRivayet değil, kayıt.\n\nSayfamda Abonelikler açık. 🙏\n\n#belgesel #tarih #sokollu",
+    "hashtags": "sokollu mehmed paşa, kabe taşı, mimar sinan, sinan dosyası, istanbul tarihi, osmanlı tarihi, tarihi dedektif, kadırga, azapkapı, eyüp, ismihan sultan, rivayetdeğilkayıt",
+    "videoTitle": "",
+    "shortTitle": "KABE'NİN TAŞI BU CAMİDE",
+    "thumbPrompt": "Dikey 9:16. Minber kapısı üstündeki küçük siyah Kabe taşı, yeşil çerçevesi içinde, kalın parlayan SARI NEON HALKA içinde; arka planda 16. yy Osmanlı camisinin loş iç mekânı, sıcak alacakaranlık ışık. Alt %45'te motosiklet kıyafetli adam (referans fotoğraf birebir), başı yukarı, taşa bakıyor, kaşlar çatık. Üst %25'te üç satır büyük harf: SARI 'KADIRGA'DA BİR CAMİ' / SARI 'DUVARINDA KABE'NİN TAŞI' / KIRMIZI BANT üstüne BEYAZ 'PEKİ NASIL GELDİ?'. Sinematik, yüksek kontrast. Başka metin, logo, ikinci kişi yok.",
+    "timezone": "",
+    "concept": "Sokollu Mehmed Paşa — Sinan Dosyası 2",
+    "projectId": "mk_mtvbp5ns_x8s0",
+    "slidePrompts": []
+   }
+  },
+  {
+   "id": "ev_sokollu_teaser_instagram_20261007",
+   "platform": "instagram",
+   "type": "reels",
+   "date": "2026-10-07",
+   "time": "20:00",
+   "proje": "Sokollu Mehmed Paşa",
+   "title": "Sokollu — Reels #1 TEASER (Kabe taşlı cami) · 120 sn",
+   "content": {
+    "caption": "Bu caminin duvarında Kabe'nin dört parçası var.\n\nKapısında bir adamın adı yazıyor, vakfiyesinde başka birinin. Ve adı yazan adam sekiz yıl sonra kendi sarayında, dilekçe alırken hançerlendi.\n\nTaşlar buraya nasıl geldi? Tam bölüm Cuma 20:00'de.\n\nRivayet değil, kayıt.\n\n#belgesel #tarih #sokollu #istanbul",
+    "hashtags": "sokollu mehmed paşa, kabe taşı, mimar sinan, sinan dosyası, istanbul tarihi, osmanlı tarihi, tarihi dedektif, kadırga, azapkapı, eyüp, ismihan sultan, rivayetdeğilkayıt",
+    "videoTitle": "",
+    "shortTitle": "KABE'NİN TAŞI BU CAMİDE",
+    "thumbPrompt": "Dikey 9:16. Minber kapısı üstündeki küçük siyah Kabe taşı, yeşil çerçevesi içinde, kalın parlayan SARI NEON HALKA içinde; arka planda 16. yy Osmanlı camisinin loş iç mekânı, sıcak alacakaranlık ışık. Alt %45'te motosiklet kıyafetli adam (referans fotoğraf birebir), başı yukarı, taşa bakıyor, kaşlar çatık. Üst %25'te üç satır büyük harf: SARI 'KADIRGA'DA BİR CAMİ' / SARI 'DUVARINDA KABE'NİN TAŞI' / KIRMIZI BANT üstüne BEYAZ 'PEKİ NASIL GELDİ?'. Sinematik, yüksek kontrast. Başka metin, logo, ikinci kişi yok.",
+    "timezone": "",
+    "concept": "Sokollu Mehmed Paşa — Sinan Dosyası 2",
+    "projectId": "mk_mtvbp5ns_x8s0",
+    "slidePrompts": []
+   }
+  },
+  {
+   "id": "ev_sokollu_teaser_tiktok_20261007",
+   "platform": "tiktok",
+   "type": "reels",
+   "date": "2026-10-07",
+   "time": "20:00",
+   "proje": "Sokollu Mehmed Paşa",
+   "title": "Sokollu — Reels #1 TEASER (Kabe taşlı cami) · 120 sn",
+   "content": {
+    "caption": "Bu caminin duvarında Kabe'nin dört parçası var.\n\nKapısında bir adamın adı yazıyor, vakfiyesinde başka birinin. Ve adı yazan adam sekiz yıl sonra kendi sarayında, dilekçe alırken hançerlendi.\n\nTaşlar buraya nasıl geldi? Tam bölüm Cuma 20:00'de.\n\nRivayet değil, kayıt.\n\n#belgesel #tarih #sokollu #istanbul",
+    "hashtags": "sokollu mehmed paşa, kabe taşı, mimar sinan, sinan dosyası, istanbul tarihi, osmanlı tarihi, tarihi dedektif, kadırga, azapkapı, eyüp, ismihan sultan, rivayetdeğilkayıt",
+    "videoTitle": "",
+    "shortTitle": "KABE'NİN TAŞI BU CAMİDE",
+    "thumbPrompt": "Dikey 9:16. Minber kapısı üstündeki küçük siyah Kabe taşı, yeşil çerçevesi içinde, kalın parlayan SARI NEON HALKA içinde; arka planda 16. yy Osmanlı camisinin loş iç mekânı, sıcak alacakaranlık ışık. Alt %45'te motosiklet kıyafetli adam (referans fotoğraf birebir), başı yukarı, taşa bakıyor, kaşlar çatık. Üst %25'te üç satır büyük harf: SARI 'KADIRGA'DA BİR CAMİ' / SARI 'DUVARINDA KABE'NİN TAŞI' / KIRMIZI BANT üstüne BEYAZ 'PEKİ NASIL GELDİ?'. Sinematik, yüksek kontrast. Başka metin, logo, ikinci kişi yok.",
+    "timezone": "",
+    "concept": "Sokollu Mehmed Paşa — Sinan Dosyası 2",
+    "projectId": "mk_mtvbp5ns_x8s0",
+    "slidePrompts": []
+   }
+  },
+  {
+   "id": "ev_sokollu_teaser_youtube_20261007",
+   "platform": "youtube",
+   "type": "shorts",
+   "date": "2026-10-07",
+   "time": "20:00",
+   "proje": "Sokollu Mehmed Paşa",
+   "title": "Sokollu — Reels #1 TEASER (Kabe taşlı cami) · 120 sn",
+   "content": {
+    "caption": "Bu caminin duvarında Kabe'nin dört parçası var.\n\nKapısında bir adamın adı yazıyor, vakfiyesinde başka birinin. Ve adı yazan adam sekiz yıl sonra kendi sarayında, dilekçe alırken hançerlendi.\n\nTaşlar buraya nasıl geldi? Tam bölüm Cuma 20:00'de.\n\nRivayet değil, kayıt.\n\n#belgesel #tarih #sokollu #istanbul",
+    "hashtags": "sokollu mehmed paşa, kabe taşı, mimar sinan, sinan dosyası, istanbul tarihi, osmanlı tarihi, tarihi dedektif, kadırga, azapkapı, eyüp, ismihan sultan, rivayetdeğilkayıt",
+    "videoTitle": "",
+    "shortTitle": "KABE'NİN TAŞI BU CAMİDE",
+    "thumbPrompt": "Dikey 9:16. Minber kapısı üstündeki küçük siyah Kabe taşı, yeşil çerçevesi içinde, kalın parlayan SARI NEON HALKA içinde; arka planda 16. yy Osmanlı camisinin loş iç mekânı, sıcak alacakaranlık ışık. Alt %45'te motosiklet kıyafetli adam (referans fotoğraf birebir), başı yukarı, taşa bakıyor, kaşlar çatık. Üst %25'te üç satır büyük harf: SARI 'KADIRGA'DA BİR CAMİ' / SARI 'DUVARINDA KABE'NİN TAŞI' / KIRMIZI BANT üstüne BEYAZ 'PEKİ NASIL GELDİ?'. Sinematik, yüksek kontrast. Başka metin, logo, ikinci kişi yok.",
+    "timezone": "",
+    "concept": "Sokollu Mehmed Paşa — Sinan Dosyası 2",
+    "projectId": "mk_mtvbp5ns_x8s0",
+    "slidePrompts": []
+   }
+  },
+  {
+   "id": "ev_sokollu_story_facebook_20261008",
+   "platform": "facebook",
+   "type": "story",
+   "date": "2026-10-08",
+   "time": "10:00",
+   "proje": "Sokollu Mehmed Paşa",
+   "title": "Sokollu — Yarın 20:00 Story",
+   "content": {
+    "caption": "Yarın 20:00 — Sinan Dosyası'nın 2. bölümü.\n\nBir adam için üç Sinan yapısı. Duvarında Kabe'nin dört parçası olan bir cami. Ve Eyüp'teki türbesinde eksik olan biri.\n\nRivayet değil, kayıt.",
+    "hashtags": "sokollu mehmed paşa, kabe taşı, mimar sinan, sinan dosyası, istanbul tarihi, osmanlı tarihi, tarihi dedektif, kadırga, azapkapı, eyüp, ismihan sultan, rivayetdeğilkayıt",
+    "videoTitle": "",
+    "shortTitle": "YARIN 20:00",
+    "thumbPrompt": "Dikey 9:16 story. Kadırga Sokollu Camii'nin minber kapısı üstündeki Kabe taşı, çok yakın. Üstte küçük beyaz metin: 'YARIN 20:00'. Altta ince şerit: 'Sinan Dosyası — 2. Bölüm'. Sade, marka renkleri: mürekkep siyahı + antika altın.",
+    "timezone": "",
+    "concept": "Sokollu Mehmed Paşa — Sinan Dosyası 2",
+    "projectId": "mk_mtvbp5ns_x8s0",
+    "slidePrompts": []
+   }
+  },
+  {
+   "id": "ev_sokollu_story_instagram_20261008",
+   "platform": "instagram",
+   "type": "story",
+   "date": "2026-10-08",
+   "time": "10:00",
+   "proje": "Sokollu Mehmed Paşa",
+   "title": "Sokollu — Yarın 20:00 Story",
+   "content": {
+    "caption": "Yarın 20:00 — Sinan Dosyası'nın 2. bölümü.\n\nBir adam için üç Sinan yapısı. Duvarında Kabe'nin dört parçası olan bir cami. Ve Eyüp'teki türbesinde eksik olan biri.\n\nRivayet değil, kayıt.",
+    "hashtags": "sokollu mehmed paşa, kabe taşı, mimar sinan, sinan dosyası, istanbul tarihi, osmanlı tarihi, tarihi dedektif, kadırga, azapkapı, eyüp, ismihan sultan, rivayetdeğilkayıt",
+    "videoTitle": "",
+    "shortTitle": "YARIN 20:00",
+    "thumbPrompt": "Dikey 9:16 story. Kadırga Sokollu Camii'nin minber kapısı üstündeki Kabe taşı, çok yakın. Üstte küçük beyaz metin: 'YARIN 20:00'. Altta ince şerit: 'Sinan Dosyası — 2. Bölüm'. Sade, marka renkleri: mürekkep siyahı + antika altın.",
+    "timezone": "",
+    "concept": "Sokollu Mehmed Paşa — Sinan Dosyası 2",
+    "projectId": "mk_mtvbp5ns_x8s0",
+    "slidePrompts": []
+   }
+  },
+  {
+   "id": "ev_sokollu_yt_20261009",
+   "platform": "youtube",
+   "type": "video",
+   "date": "2026-10-09",
+   "time": "20:00",
+   "proje": "Sokollu Mehmed Paşa",
+   "title": "Sokollu — Duvardaki Kabe Taşları ve Öldürülen Sadrazam",
+   "content": {
+    "caption": "Kadırga'daki bu caminin duvarlarında Kabe'nin dört parçası var. Kapısında Sokollu Mehmed Paşa'nın adı yazıyor — ama vakfiyesi başka birinin adına.\n\nBugün bir adamın peşindeyim. Mimar Sinan onun için İstanbul'da üç yapı dikti: Kadırga'da bir cami (1571–72), Azapkapı'da bir cami (1577–78), Eyüp'te bir medrese ve türbe (1568–69). Üçünü de gezdim.\n\nBu videoda:\n• Kadırga'da minberin ve mihrabın üstündeki dört Hacerü'l-Esved parçası — ve kaydın gösterdiği tek bağlantı: Sinan'ın 1570'lerde Mekke'de yürüttüğü Mescid-i Haram şantiyesi\n• Kitabede Sokollu yazıyor, vakfiyede İsmihan Sultan — caminin gerçek sahibi kim?\n• İstanbul'da tek örnek: medresenin dershanesinin altından merdivenle çıkılan avlu\n• Azapkapı'da camiye değmeyen minare — Sinan'ın başka hiçbir büyük camisinde yok\n• 11 Ekim 1579: derviş kılığında bir adam, bir arzuhal ve bir hançer. Katil aynı gün, sorgulanmadan idam edildi\n• Eyüp'teki türbede eksik olan kişi\n\nSokollu'yu kim öldürdü? Kayıt cevabı vermiyor — cevabın neden hiç aranmadığını gösteriyor. Sizce arkasında kim vardı? Yorumlarda buluşalım.\n\nRivayet değil, kayıt.\n\n📍 Kaynaklar: TDV İslâm Ansiklopedisi (\"Sokullu Mehmed Paşa\", \"Sokullu Mehmed Paşa Külliyesi\"), Tezkiretü'l-Bünyan, vakfiye kayıtları, saha ziyaretinde doğrulanan bilgiler dahil edilmiştir.\n\n🔔 Abone ol, her hafta yeni bir gizem: youtube.com/@gerceginizleritv\n📸 Instagram: instagram.com/gerceginizleritv\n🎵 TikTok: @gerceginizleritv\n📱 Facebook: facebook.com/gerceginizleritv\n\n#belgesel #tarih #sokollumehmedpaşa #mimarsinan #tarihidedektif #osmanlıtarihi #istanbultarihi #rivayetdeğilkayıt",
+    "hashtags": "sokollu mehmed paşa, kabe taşı, mimar sinan, sinan dosyası, istanbul tarihi, osmanlı tarihi, tarihi dedektif, kadırga, azapkapı, eyüp, ismihan sultan, rivayetdeğilkayıt",
+    "videoTitle": "Bu Caminin Duvarında Kabe'nin Taşları Var | Sokollu'nun Üç Yapısı ve Öldürülen Sadrazam",
+    "shortTitle": "KABE'NİN TAŞI BU CAMİDE",
+    "thumbPrompt": "YouTube kapak 16:9, 1920x1080. Sol üçte bir: motosiklet kıyafetli adam (referans fotoğraf birebir, yüz ve yaş değişmez), baş omuz, düz siyah tişört, başı sağa dönük, taşa bakıyor, kaşlar çatık. Arka plan: 16. yy Osmanlı camisinin revaklı avlusu, flu, sıcak alacakaranlık. Sağ yarı: kaba kesme taş duvar, üstünde yeşil çerçeveli küçük siyah Kabe taşı, kalın parlayan SARI NEON HALKA içinde. Üst sağda üç satır büyük harf: SARI 'KADIRGA'DA BİR CAMİ' / SARI 'DUVARINDA KABE'NİN TAŞI' / KIRMIZI BANT üstüne BEYAZ 'PEKİ NASIL GELDİ?'. Metin yüzle ve halkayla çakışmaz. Sinematik, yüksek kontrast. Başka metin, watermark, logo, ikinci kişi yok.",
+    "timezone": "",
+    "concept": "Sokollu Mehmed Paşa — Sinan Dosyası 2",
+    "projectId": "mk_mtvbp5ns_x8s0",
+    "slidePrompts": []
+   }
+  },
+  {
+   "id": "ev_sokollu_fb_20261009",
+   "platform": "facebook",
+   "type": "video",
+   "date": "2026-10-09",
+   "time": "21:00",
+   "proje": "Sokollu Mehmed Paşa",
+   "title": "Sokollu — Facebook paylaşımı (native upload)",
+   "content": {
+    "caption": "Kadırga'daki bu caminin duvarlarında Kabe'nin dört parçası var. 🕋\n\nKapısında Sokollu Mehmed Paşa'nın adı yazıyor — ama vakfiyesi İsmihan Sultan adına. Mimar Sinan bu adam için İstanbul'da üç yapı dikti; üçünü de gezdim. Ve 11 Ekim 1579'da, derviş kılığında bir adam kendi sarayında onu hançerledi. Katil aynı gün, sorgulanmadan idam edildi.\n\nEyüp'teki türbesinde eksik olan biri var. Kim olduğunu videonun sonunda söylüyorum.\n\nSizce Sokollu'nun arkasında kim vardı? Yorumlara yazın.\n\nRivayet değil, kayıt.\n\nSayfamda Abonelikler açık. 🙏\n\n#belgesel #tarih #sokollumehmedpaşa #mimarsinan #istanbultarihi #osmanlıtarihi",
+    "hashtags": "sokollu mehmed paşa, kabe taşı, mimar sinan, istanbul tarihi, ismihan sultan, tarihi dedektif",
+    "videoTitle": "Bu Caminin Duvarında Kabe'nin Taşları Var",
+    "shortTitle": "KABE'NİN TAŞI BU CAMİDE",
+    "thumbPrompt": "YouTube kapağının aynısı; Facebook için 16:9 korunur, dikey paylaşımda 9:16 kırpımı kullanılır.",
+    "timezone": "",
+    "concept": "Sokollu Mehmed Paşa — Sinan Dosyası 2",
+    "projectId": "mk_mtvbp5ns_x8s0",
+    "slidePrompts": []
+   }
+  },
+  {
+   "id": "ev_sokollu_r2_facebook_20261011",
+   "platform": "facebook",
+   "type": "reels",
+   "date": "2026-10-11",
+   "time": "20:00",
+   "proje": "Sokollu Mehmed Paşa",
+   "title": "Sokollu — Reels #2 (Dört taş + Mekke şantiyesi bağlantısı) · 120 sn",
+   "content": {
+    "caption": "Bu camide Kabe'den geldiği kabul edilen dört taş var: giriş kapısının üstünde, mihrabın üstünde, minber kapısında ve minberin külahının altında.\n\nKayıt tek bir bağlantı gösteriyor: 1570'lerde Mekke'de Mescid-i Haram'ın revakları yeniden yapılıyordu ve projenin mimarı, bu camiyi yapan adamdı. Aynı yıllar, aynı mimar, iki şantiye.\n\nGerisi rivayet. Sizce nasıl geldiler? Yorumlara yazın.\n\nRivayet değil, kayıt.\n\nSayfamda Abonelikler açık. 🙏\n\n#belgesel #tarih #sokollu",
+    "hashtags": "sokollu mehmed paşa, kabe taşı, mimar sinan, sinan dosyası, istanbul tarihi, osmanlı tarihi, tarihi dedektif, kadırga, azapkapı, eyüp, ismihan sultan, rivayetdeğilkayıt",
+    "videoTitle": "",
+    "shortTitle": "DÖRT PARÇA, TEK BAĞLANTI",
+    "thumbPrompt": "Dikey 9:16. Yeşil çerçeveli siyah Kabe taşı çok yakın plan, sarı neon halka içinde; loş cami içi, İznik çinileri flu arka planda.",
+    "timezone": "",
+    "concept": "Sokollu Mehmed Paşa — Sinan Dosyası 2",
+    "projectId": "mk_mtvbp5ns_x8s0",
+    "slidePrompts": []
+   }
+  },
+  {
+   "id": "ev_sokollu_r2_instagram_20261011",
+   "platform": "instagram",
+   "type": "reels",
+   "date": "2026-10-11",
+   "time": "20:00",
+   "proje": "Sokollu Mehmed Paşa",
+   "title": "Sokollu — Reels #2 (Dört taş + Mekke şantiyesi bağlantısı) · 120 sn",
+   "content": {
+    "caption": "Bu camide Kabe'den geldiği kabul edilen dört taş var: giriş kapısının üstünde, mihrabın üstünde, minber kapısında ve minberin külahının altında.\n\nKayıt tek bir bağlantı gösteriyor: 1570'lerde Mekke'de Mescid-i Haram'ın revakları yeniden yapılıyordu ve projenin mimarı, bu camiyi yapan adamdı. Aynı yıllar, aynı mimar, iki şantiye.\n\nGerisi rivayet. Sizce nasıl geldiler? Yorumlara yazın.\n\nRivayet değil, kayıt.\n\n#belgesel #tarih #sokollu #istanbul #mimarsinan",
+    "hashtags": "sokollu mehmed paşa, kabe taşı, mimar sinan, sinan dosyası, istanbul tarihi, osmanlı tarihi, tarihi dedektif, kadırga, azapkapı, eyüp, ismihan sultan, rivayetdeğilkayıt",
+    "videoTitle": "",
+    "shortTitle": "DÖRT PARÇA, TEK BAĞLANTI",
+    "thumbPrompt": "Dikey 9:16. Yeşil çerçeveli siyah Kabe taşı çok yakın plan, sarı neon halka içinde; loş cami içi, İznik çinileri flu arka planda.",
+    "timezone": "",
+    "concept": "Sokollu Mehmed Paşa — Sinan Dosyası 2",
+    "projectId": "mk_mtvbp5ns_x8s0",
+    "slidePrompts": []
+   }
+  },
+  {
+   "id": "ev_sokollu_r2_tiktok_20261011",
+   "platform": "tiktok",
+   "type": "reels",
+   "date": "2026-10-11",
+   "time": "20:00",
+   "proje": "Sokollu Mehmed Paşa",
+   "title": "Sokollu — Reels #2 (Dört taş + Mekke şantiyesi bağlantısı) · 120 sn",
+   "content": {
+    "caption": "Bu camide Kabe'den geldiği kabul edilen dört taş var: giriş kapısının üstünde, mihrabın üstünde, minber kapısında ve minberin külahının altında.\n\nKayıt tek bir bağlantı gösteriyor: 1570'lerde Mekke'de Mescid-i Haram'ın revakları yeniden yapılıyordu ve projenin mimarı, bu camiyi yapan adamdı. Aynı yıllar, aynı mimar, iki şantiye.\n\nGerisi rivayet. Sizce nasıl geldiler? Yorumlara yazın.\n\nRivayet değil, kayıt.\n\n#belgesel #tarih #sokollu #istanbul #mimarsinan",
+    "hashtags": "sokollu mehmed paşa, kabe taşı, mimar sinan, sinan dosyası, istanbul tarihi, osmanlı tarihi, tarihi dedektif, kadırga, azapkapı, eyüp, ismihan sultan, rivayetdeğilkayıt",
+    "videoTitle": "",
+    "shortTitle": "DÖRT PARÇA, TEK BAĞLANTI",
+    "thumbPrompt": "Dikey 9:16. Yeşil çerçeveli siyah Kabe taşı çok yakın plan, sarı neon halka içinde; loş cami içi, İznik çinileri flu arka planda.",
+    "timezone": "",
+    "concept": "Sokollu Mehmed Paşa — Sinan Dosyası 2",
+    "projectId": "mk_mtvbp5ns_x8s0",
+    "slidePrompts": []
+   }
+  },
+  {
+   "id": "ev_sokollu_r2_youtube_20261011",
+   "platform": "youtube",
+   "type": "shorts",
+   "date": "2026-10-11",
+   "time": "20:00",
+   "proje": "Sokollu Mehmed Paşa",
+   "title": "Sokollu — Reels #2 (Dört taş + Mekke şantiyesi bağlantısı) · 120 sn",
+   "content": {
+    "caption": "Bu camide Kabe'den geldiği kabul edilen dört taş var: giriş kapısının üstünde, mihrabın üstünde, minber kapısında ve minberin külahının altında.\n\nKayıt tek bir bağlantı gösteriyor: 1570'lerde Mekke'de Mescid-i Haram'ın revakları yeniden yapılıyordu ve projenin mimarı, bu camiyi yapan adamdı. Aynı yıllar, aynı mimar, iki şantiye.\n\nGerisi rivayet. Sizce nasıl geldiler? Yorumlara yazın.\n\nRivayet değil, kayıt.\n\n#belgesel #tarih #sokollu #istanbul #mimarsinan",
+    "hashtags": "sokollu mehmed paşa, kabe taşı, mimar sinan, sinan dosyası, istanbul tarihi, osmanlı tarihi, tarihi dedektif, kadırga, azapkapı, eyüp, ismihan sultan, rivayetdeğilkayıt",
+    "videoTitle": "",
+    "shortTitle": "DÖRT PARÇA, TEK BAĞLANTI",
+    "thumbPrompt": "Dikey 9:16. Yeşil çerçeveli siyah Kabe taşı çok yakın plan, sarı neon halka içinde; loş cami içi, İznik çinileri flu arka planda.",
+    "timezone": "",
+    "concept": "Sokollu Mehmed Paşa — Sinan Dosyası 2",
+    "projectId": "mk_mtvbp5ns_x8s0",
+    "slidePrompts": []
+   }
+  },
+  {
+   "id": "ev_sokollu_r3_facebook_20261013",
+   "platform": "facebook",
+   "type": "reels",
+   "date": "2026-10-13",
+   "time": "20:00",
+   "proje": "Sokollu Mehmed Paşa",
+   "title": "Sokollu — Reels #3 (Caminin gerçek sahibi bir kadın) · 90 sn",
+   "content": {
+    "caption": "Herkes buna Sokollu Camii diyor. Kapıdaki kitabede onun adı yazıyor.\n\nAma caminin vakfiyesi — hukuki kuruluş belgesi — İsmihan Sultan adına. II. Selim'in kızı, Kanuni'nin torunu, Sokollu'nun eşi. Camiyi ayakta tutan gelir kaynağı onun.\n\nDört yüz elli yıldır kocasının adıyla anılıyor. Sizce neden? Yorumlara yazın.\n\nRivayet değil, kayıt.\n\nSayfamda Abonelikler açık. 🙏\n\n#belgesel #tarih #sokollu",
+    "hashtags": "sokollu mehmed paşa, kabe taşı, mimar sinan, sinan dosyası, istanbul tarihi, osmanlı tarihi, tarihi dedektif, kadırga, azapkapı, eyüp, ismihan sultan, rivayetdeğilkayıt",
+    "videoTitle": "",
+    "shortTitle": "KAPIDA BAŞKA, VAKFİYEDE BAŞKA",
+    "thumbPrompt": "Dikey 9:16. Cami kapısındaki kitabe çok yakın plan, sarı neon halka içinde; sıcak alacakaranlık ışık.",
+    "timezone": "",
+    "concept": "Sokollu Mehmed Paşa — Sinan Dosyası 2",
+    "projectId": "mk_mtvbp5ns_x8s0",
+    "slidePrompts": []
+   }
+  },
+  {
+   "id": "ev_sokollu_r3_instagram_20261013",
+   "platform": "instagram",
+   "type": "reels",
+   "date": "2026-10-13",
+   "time": "20:00",
+   "proje": "Sokollu Mehmed Paşa",
+   "title": "Sokollu — Reels #3 (Caminin gerçek sahibi bir kadın) · 90 sn",
+   "content": {
+    "caption": "Herkes buna Sokollu Camii diyor. Kapıdaki kitabede onun adı yazıyor.\n\nAma caminin vakfiyesi — hukuki kuruluş belgesi — İsmihan Sultan adına. II. Selim'in kızı, Kanuni'nin torunu, Sokollu'nun eşi. Camiyi ayakta tutan gelir kaynağı onun.\n\nDört yüz elli yıldır kocasının adıyla anılıyor. Sizce neden? Yorumlara yazın.\n\nRivayet değil, kayıt.\n\n#belgesel #tarih #sokollu #istanbul #mimarsinan",
+    "hashtags": "sokollu mehmed paşa, kabe taşı, mimar sinan, sinan dosyası, istanbul tarihi, osmanlı tarihi, tarihi dedektif, kadırga, azapkapı, eyüp, ismihan sultan, rivayetdeğilkayıt",
+    "videoTitle": "",
+    "shortTitle": "KAPIDA BAŞKA, VAKFİYEDE BAŞKA",
+    "thumbPrompt": "Dikey 9:16. Cami kapısındaki kitabe çok yakın plan, sarı neon halka içinde; sıcak alacakaranlık ışık.",
+    "timezone": "",
+    "concept": "Sokollu Mehmed Paşa — Sinan Dosyası 2",
+    "projectId": "mk_mtvbp5ns_x8s0",
+    "slidePrompts": []
+   }
+  },
+  {
+   "id": "ev_sokollu_r3_tiktok_20261013",
+   "platform": "tiktok",
+   "type": "reels",
+   "date": "2026-10-13",
+   "time": "20:00",
+   "proje": "Sokollu Mehmed Paşa",
+   "title": "Sokollu — Reels #3 (Caminin gerçek sahibi bir kadın) · 90 sn",
+   "content": {
+    "caption": "Herkes buna Sokollu Camii diyor. Kapıdaki kitabede onun adı yazıyor.\n\nAma caminin vakfiyesi — hukuki kuruluş belgesi — İsmihan Sultan adına. II. Selim'in kızı, Kanuni'nin torunu, Sokollu'nun eşi. Camiyi ayakta tutan gelir kaynağı onun.\n\nDört yüz elli yıldır kocasının adıyla anılıyor. Sizce neden? Yorumlara yazın.\n\nRivayet değil, kayıt.\n\n#belgesel #tarih #sokollu #istanbul #mimarsinan",
+    "hashtags": "sokollu mehmed paşa, kabe taşı, mimar sinan, sinan dosyası, istanbul tarihi, osmanlı tarihi, tarihi dedektif, kadırga, azapkapı, eyüp, ismihan sultan, rivayetdeğilkayıt",
+    "videoTitle": "",
+    "shortTitle": "KAPIDA BAŞKA, VAKFİYEDE BAŞKA",
+    "thumbPrompt": "Dikey 9:16. Cami kapısındaki kitabe çok yakın plan, sarı neon halka içinde; sıcak alacakaranlık ışık.",
+    "timezone": "",
+    "concept": "Sokollu Mehmed Paşa — Sinan Dosyası 2",
+    "projectId": "mk_mtvbp5ns_x8s0",
+    "slidePrompts": []
+   }
+  },
+  {
+   "id": "ev_sokollu_r3_youtube_20261013",
+   "platform": "youtube",
+   "type": "shorts",
+   "date": "2026-10-13",
+   "time": "20:00",
+   "proje": "Sokollu Mehmed Paşa",
+   "title": "Sokollu — Reels #3 (Caminin gerçek sahibi bir kadın) · 90 sn",
+   "content": {
+    "caption": "Herkes buna Sokollu Camii diyor. Kapıdaki kitabede onun adı yazıyor.\n\nAma caminin vakfiyesi — hukuki kuruluş belgesi — İsmihan Sultan adına. II. Selim'in kızı, Kanuni'nin torunu, Sokollu'nun eşi. Camiyi ayakta tutan gelir kaynağı onun.\n\nDört yüz elli yıldır kocasının adıyla anılıyor. Sizce neden? Yorumlara yazın.\n\nRivayet değil, kayıt.\n\n#belgesel #tarih #sokollu #istanbul #mimarsinan",
+    "hashtags": "sokollu mehmed paşa, kabe taşı, mimar sinan, sinan dosyası, istanbul tarihi, osmanlı tarihi, tarihi dedektif, kadırga, azapkapı, eyüp, ismihan sultan, rivayetdeğilkayıt",
+    "videoTitle": "",
+    "shortTitle": "KAPIDA BAŞKA, VAKFİYEDE BAŞKA",
+    "thumbPrompt": "Dikey 9:16. Cami kapısındaki kitabe çok yakın plan, sarı neon halka içinde; sıcak alacakaranlık ışık.",
+    "timezone": "",
+    "concept": "Sokollu Mehmed Paşa — Sinan Dosyası 2",
+    "projectId": "mk_mtvbp5ns_x8s0",
+    "slidePrompts": []
+   }
+  },
+  {
+   "id": "ev_sokollu_r4_facebook_20261015",
+   "platform": "facebook",
+   "type": "reels",
+   "date": "2026-10-15",
+   "time": "20:00",
+   "proje": "Sokollu Mehmed Paşa",
+   "title": "Sokollu — Reels #4 (Minaresi camiye değmeyen cami) · 100 sn",
+   "content": {
+    "caption": "Azapkapı'da Sinan'ın bir camisi var ve minaresi camiye bitişik değil. Ayrı bir kule gibi duruyor, kemerli bir geçitle bağlanıyor. Sinan'ın İstanbul'daki büyük camilerinin hiçbirinde bu yok.\n\nNeden? Kayıt yok. Sinan bir açıklama bırakmadı. Zemin dolgu ve yumuşak, yer dar — ama bu yorum, kayıt değil.\n\nSizce neden böyle yaptı? Yorumlara yazın.\n\nRivayet değil, kayıt.\n\nSayfamda Abonelikler açık. 🙏\n\n#belgesel #tarih #sokollu",
+    "hashtags": "sokollu mehmed paşa, kabe taşı, mimar sinan, sinan dosyası, istanbul tarihi, osmanlı tarihi, tarihi dedektif, kadırga, azapkapı, eyüp, ismihan sultan, rivayetdeğilkayıt",
+    "videoTitle": "",
+    "shortTitle": "MİNARE CAMİYE DEĞMİYOR",
+    "thumbPrompt": "Dikey 9:16. Galata Köprüsü ayağından Azapkapı Camii ve ondan ayrı duran minare aynı karede; minarenin kökü sarı neon halka içinde.",
+    "timezone": "",
+    "concept": "Sokollu Mehmed Paşa — Sinan Dosyası 2",
+    "projectId": "mk_mtvbp5ns_x8s0",
+    "slidePrompts": []
+   }
+  },
+  {
+   "id": "ev_sokollu_r4_instagram_20261015",
+   "platform": "instagram",
+   "type": "reels",
+   "date": "2026-10-15",
+   "time": "20:00",
+   "proje": "Sokollu Mehmed Paşa",
+   "title": "Sokollu — Reels #4 (Minaresi camiye değmeyen cami) · 100 sn",
+   "content": {
+    "caption": "Azapkapı'da Sinan'ın bir camisi var ve minaresi camiye bitişik değil. Ayrı bir kule gibi duruyor, kemerli bir geçitle bağlanıyor. Sinan'ın İstanbul'daki büyük camilerinin hiçbirinde bu yok.\n\nNeden? Kayıt yok. Sinan bir açıklama bırakmadı. Zemin dolgu ve yumuşak, yer dar — ama bu yorum, kayıt değil.\n\nSizce neden böyle yaptı? Yorumlara yazın.\n\nRivayet değil, kayıt.\n\n#belgesel #tarih #sokollu #istanbul #mimarsinan",
+    "hashtags": "sokollu mehmed paşa, kabe taşı, mimar sinan, sinan dosyası, istanbul tarihi, osmanlı tarihi, tarihi dedektif, kadırga, azapkapı, eyüp, ismihan sultan, rivayetdeğilkayıt",
+    "videoTitle": "",
+    "shortTitle": "MİNARE CAMİYE DEĞMİYOR",
+    "thumbPrompt": "Dikey 9:16. Galata Köprüsü ayağından Azapkapı Camii ve ondan ayrı duran minare aynı karede; minarenin kökü sarı neon halka içinde.",
+    "timezone": "",
+    "concept": "Sokollu Mehmed Paşa — Sinan Dosyası 2",
+    "projectId": "mk_mtvbp5ns_x8s0",
+    "slidePrompts": []
+   }
+  },
+  {
+   "id": "ev_sokollu_r4_tiktok_20261015",
+   "platform": "tiktok",
+   "type": "reels",
+   "date": "2026-10-15",
+   "time": "20:00",
+   "proje": "Sokollu Mehmed Paşa",
+   "title": "Sokollu — Reels #4 (Minaresi camiye değmeyen cami) · 100 sn",
+   "content": {
+    "caption": "Azapkapı'da Sinan'ın bir camisi var ve minaresi camiye bitişik değil. Ayrı bir kule gibi duruyor, kemerli bir geçitle bağlanıyor. Sinan'ın İstanbul'daki büyük camilerinin hiçbirinde bu yok.\n\nNeden? Kayıt yok. Sinan bir açıklama bırakmadı. Zemin dolgu ve yumuşak, yer dar — ama bu yorum, kayıt değil.\n\nSizce neden böyle yaptı? Yorumlara yazın.\n\nRivayet değil, kayıt.\n\n#belgesel #tarih #sokollu #istanbul #mimarsinan",
+    "hashtags": "sokollu mehmed paşa, kabe taşı, mimar sinan, sinan dosyası, istanbul tarihi, osmanlı tarihi, tarihi dedektif, kadırga, azapkapı, eyüp, ismihan sultan, rivayetdeğilkayıt",
+    "videoTitle": "",
+    "shortTitle": "MİNARE CAMİYE DEĞMİYOR",
+    "thumbPrompt": "Dikey 9:16. Galata Köprüsü ayağından Azapkapı Camii ve ondan ayrı duran minare aynı karede; minarenin kökü sarı neon halka içinde.",
+    "timezone": "",
+    "concept": "Sokollu Mehmed Paşa — Sinan Dosyası 2",
+    "projectId": "mk_mtvbp5ns_x8s0",
+    "slidePrompts": []
+   }
+  },
+  {
+   "id": "ev_sokollu_r4_youtube_20261015",
+   "platform": "youtube",
+   "type": "shorts",
+   "date": "2026-10-15",
+   "time": "20:00",
+   "proje": "Sokollu Mehmed Paşa",
+   "title": "Sokollu — Reels #4 (Minaresi camiye değmeyen cami) · 100 sn",
+   "content": {
+    "caption": "Azapkapı'da Sinan'ın bir camisi var ve minaresi camiye bitişik değil. Ayrı bir kule gibi duruyor, kemerli bir geçitle bağlanıyor. Sinan'ın İstanbul'daki büyük camilerinin hiçbirinde bu yok.\n\nNeden? Kayıt yok. Sinan bir açıklama bırakmadı. Zemin dolgu ve yumuşak, yer dar — ama bu yorum, kayıt değil.\n\nSizce neden böyle yaptı? Yorumlara yazın.\n\nRivayet değil, kayıt.\n\n#belgesel #tarih #sokollu #istanbul #mimarsinan",
+    "hashtags": "sokollu mehmed paşa, kabe taşı, mimar sinan, sinan dosyası, istanbul tarihi, osmanlı tarihi, tarihi dedektif, kadırga, azapkapı, eyüp, ismihan sultan, rivayetdeğilkayıt",
+    "videoTitle": "",
+    "shortTitle": "MİNARE CAMİYE DEĞMİYOR",
+    "thumbPrompt": "Dikey 9:16. Galata Köprüsü ayağından Azapkapı Camii ve ondan ayrı duran minare aynı karede; minarenin kökü sarı neon halka içinde.",
+    "timezone": "",
+    "concept": "Sokollu Mehmed Paşa — Sinan Dosyası 2",
+    "projectId": "mk_mtvbp5ns_x8s0",
+    "slidePrompts": []
+   }
+  },
+  {
+   "id": "ev_sokollu_r5_facebook_20261019",
+   "platform": "facebook",
+   "type": "reels",
+   "date": "2026-10-19",
+   "time": "20:00",
+   "proje": "Sokollu Mehmed Paşa",
+   "title": "Sokollu — Reels #5 (Sadrazamı öldüren adam sorgusuz idam edildi) · 90 sn",
+   "content": {
+    "caption": "11 Ekim 1579. Sokollu kendi sarayında dilekçe alıyor. Sıradaki adam derviş kılığında; kâğıdı uzatırken hançeri çıkarıyor.\n\nKatil oracıkta yakalanıyor — ve aynı gün idam ediliyor. Sorgulanmadan. Adı bile kaynaklarda düzgün geçmiyor.\n\nİmparatorluğun sadrazamı öldürülüyor, katil canlı yakalanıyor, arkasında kim var sorulmuyor. Kayıttaki boşluk bu.\n\nSizce arkasında kim vardı? Yorumlara yazın.\n\nRivayet değil, kayıt.\n\nSayfamda Abonelikler açık. 🙏\n\n#belgesel #tarih #sokollu",
+    "hashtags": "sokollu mehmed paşa, kabe taşı, mimar sinan, sinan dosyası, istanbul tarihi, osmanlı tarihi, tarihi dedektif, kadırga, azapkapı, eyüp, ismihan sultan, rivayetdeğilkayıt",
+    "videoTitle": "",
+    "shortTitle": "SORGUSUZ İDAM EDİLDİ",
+    "thumbPrompt": "Dikey 9:16. 16. yy Osmanlı gravürü dokusunda karanlık bir divan sahnesi, ön planda bir hançer silueti sarı neon halka içinde; koyu, sinematik.",
+    "timezone": "",
+    "concept": "Sokollu Mehmed Paşa — Sinan Dosyası 2",
+    "projectId": "mk_mtvbp5ns_x8s0",
+    "slidePrompts": []
+   }
+  },
+  {
+   "id": "ev_sokollu_r5_instagram_20261019",
+   "platform": "instagram",
+   "type": "reels",
+   "date": "2026-10-19",
+   "time": "20:00",
+   "proje": "Sokollu Mehmed Paşa",
+   "title": "Sokollu — Reels #5 (Sadrazamı öldüren adam sorgusuz idam edildi) · 90 sn",
+   "content": {
+    "caption": "11 Ekim 1579. Sokollu kendi sarayında dilekçe alıyor. Sıradaki adam derviş kılığında; kâğıdı uzatırken hançeri çıkarıyor.\n\nKatil oracıkta yakalanıyor — ve aynı gün idam ediliyor. Sorgulanmadan. Adı bile kaynaklarda düzgün geçmiyor.\n\nİmparatorluğun sadrazamı öldürülüyor, katil canlı yakalanıyor, arkasında kim var sorulmuyor. Kayıttaki boşluk bu.\n\nSizce arkasında kim vardı? Yorumlara yazın.\n\nRivayet değil, kayıt.\n\n#belgesel #tarih #sokollu #istanbul #mimarsinan",
+    "hashtags": "sokollu mehmed paşa, kabe taşı, mimar sinan, sinan dosyası, istanbul tarihi, osmanlı tarihi, tarihi dedektif, kadırga, azapkapı, eyüp, ismihan sultan, rivayetdeğilkayıt",
+    "videoTitle": "",
+    "shortTitle": "SORGUSUZ İDAM EDİLDİ",
+    "thumbPrompt": "Dikey 9:16. 16. yy Osmanlı gravürü dokusunda karanlık bir divan sahnesi, ön planda bir hançer silueti sarı neon halka içinde; koyu, sinematik.",
+    "timezone": "",
+    "concept": "Sokollu Mehmed Paşa — Sinan Dosyası 2",
+    "projectId": "mk_mtvbp5ns_x8s0",
+    "slidePrompts": []
+   }
+  },
+  {
+   "id": "ev_sokollu_r5_tiktok_20261019",
+   "platform": "tiktok",
+   "type": "reels",
+   "date": "2026-10-19",
+   "time": "20:00",
+   "proje": "Sokollu Mehmed Paşa",
+   "title": "Sokollu — Reels #5 (Sadrazamı öldüren adam sorgusuz idam edildi) · 90 sn",
+   "content": {
+    "caption": "11 Ekim 1579. Sokollu kendi sarayında dilekçe alıyor. Sıradaki adam derviş kılığında; kâğıdı uzatırken hançeri çıkarıyor.\n\nKatil oracıkta yakalanıyor — ve aynı gün idam ediliyor. Sorgulanmadan. Adı bile kaynaklarda düzgün geçmiyor.\n\nİmparatorluğun sadrazamı öldürülüyor, katil canlı yakalanıyor, arkasında kim var sorulmuyor. Kayıttaki boşluk bu.\n\nSizce arkasında kim vardı? Yorumlara yazın.\n\nRivayet değil, kayıt.\n\n#belgesel #tarih #sokollu #istanbul #mimarsinan",
+    "hashtags": "sokollu mehmed paşa, kabe taşı, mimar sinan, sinan dosyası, istanbul tarihi, osmanlı tarihi, tarihi dedektif, kadırga, azapkapı, eyüp, ismihan sultan, rivayetdeğilkayıt",
+    "videoTitle": "",
+    "shortTitle": "SORGUSUZ İDAM EDİLDİ",
+    "thumbPrompt": "Dikey 9:16. 16. yy Osmanlı gravürü dokusunda karanlık bir divan sahnesi, ön planda bir hançer silueti sarı neon halka içinde; koyu, sinematik.",
+    "timezone": "",
+    "concept": "Sokollu Mehmed Paşa — Sinan Dosyası 2",
+    "projectId": "mk_mtvbp5ns_x8s0",
+    "slidePrompts": []
+   }
+  },
+  {
+   "id": "ev_sokollu_r5_youtube_20261019",
+   "platform": "youtube",
+   "type": "shorts",
+   "date": "2026-10-19",
+   "time": "20:00",
+   "proje": "Sokollu Mehmed Paşa",
+   "title": "Sokollu — Reels #5 (Sadrazamı öldüren adam sorgusuz idam edildi) · 90 sn",
+   "content": {
+    "caption": "11 Ekim 1579. Sokollu kendi sarayında dilekçe alıyor. Sıradaki adam derviş kılığında; kâğıdı uzatırken hançeri çıkarıyor.\n\nKatil oracıkta yakalanıyor — ve aynı gün idam ediliyor. Sorgulanmadan. Adı bile kaynaklarda düzgün geçmiyor.\n\nİmparatorluğun sadrazamı öldürülüyor, katil canlı yakalanıyor, arkasında kim var sorulmuyor. Kayıttaki boşluk bu.\n\nSizce arkasında kim vardı? Yorumlara yazın.\n\nRivayet değil, kayıt.\n\n#belgesel #tarih #sokollu #istanbul #mimarsinan",
+    "hashtags": "sokollu mehmed paşa, kabe taşı, mimar sinan, sinan dosyası, istanbul tarihi, osmanlı tarihi, tarihi dedektif, kadırga, azapkapı, eyüp, ismihan sultan, rivayetdeğilkayıt",
+    "videoTitle": "",
+    "shortTitle": "SORGUSUZ İDAM EDİLDİ",
+    "thumbPrompt": "Dikey 9:16. 16. yy Osmanlı gravürü dokusunda karanlık bir divan sahnesi, ön planda bir hançer silueti sarı neon halka içinde; koyu, sinematik.",
+    "timezone": "",
+    "concept": "Sokollu Mehmed Paşa — Sinan Dosyası 2",
+    "projectId": "mk_mtvbp5ns_x8s0",
+    "slidePrompts": []
+   }
+  }
+ ],
+ "_not_projeler": "Gelen kutusu yalnizca TAKVIM kayitlarini tasiyor; proje olusturamiyor. Sokollu kayitlarinin 'proje' alani 'Sokollu Mehmed Pasa' — bu adda bir proje Shootboard'da YOK (11 Eyl 2026 yedegi). Kayitlar projesiz dusebilir. Birlestirmeden once uygulamada 'Sokollu Mehmed Pasa' adinda bir proje acilmali; mekanlar zaten kayitli: mk_mtvbp5ns_x8s0 (Azapkapi camisi), mk_mtvbq5qk_cddq (Eyup medrese ve turbe). Kadirga Sokollu Mehmed Pasa Camii mekan olarak YOK, eklenmeli."
 }
