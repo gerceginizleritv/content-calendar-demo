@@ -35,6 +35,19 @@ ANKETİN SÜRESİ 24 SAAT (16 Ekim 2026, ölçüldü)
   gördü: yayın anından 24 saat. Cevabın varsayılan gecikmesi (24 saat)
   bu yüzden anketin KAPANDIĞI ana denk geliyor.
 
+THREADS ZİNCİRİ UÇTAN UCA ÇALIŞTI (17 Ekim 2026, ölçüldü)
+  Üç şey aynı gün, elle hiçbir müdahale olmadan gerçekleşti:
+    · 12:00 — ilk tam otomatik Threads metin postu (Üsküdar kuş evi).
+      Veriden: publishedAt 12:00:11, attemptCount 1.
+    · 16 Ekim 16:45:12 — anket çıktı (attemptCount 1), 16 kişi oy verdi.
+    · 17 Ekim ~16:45 — anketin CEVABI anketin altına yanıt olarak
+      düştü. Kullanıcı Threads'te gördü ve "GELDİ" dedi.
+
+  Üçüncüsü 24 saatlik gecikmenin gerçekten tuttuğunun ilk kanıtı:
+  gecikme ölçülmüş bir sayıydı (yukarı bak), şimdi canlıda doğrulandı.
+  Soruyu soran da cevabı veren de sistem; "rivayet değil, kayıt"
+  iddiası ankette de karşılığını buluyor.
+
 ASİSTAN TİKİ AÇABİLİYOR — AMA KAPILI (16 Ekim 2026)
   Ankette görsel yok, yani klasör izleyicisi hiç koşmuyor ve
   `auto_publish` tikini açan yer odur. Kullanıcı "anketler otomatik
