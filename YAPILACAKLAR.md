@@ -165,6 +165,41 @@ DOSYALAR
   pc/r2-supurge.bat   çift tıkla listele; silmek için --sil
   pc/yedek-al.py      takvimi diske yedekler (SALT OKUR)
   pc/yedek-al.bat     Görev Zamanlayıcı sarmalayıcısı, haftada bir
+  pc/gizli-calistir.vbs  .bat'i pencere açmadan çalıştırır (17 Ekim 2026)
+
+GÖREV PENCERESİ GİZLENDİ — VE GÖRÜNÜRLÜK NEREYE GİTTİ (17 Ekim 2026)
+
+  Üç izleyici görevi beş dakikada bir koşuyor ve her koşuda bir
+  cmd.exe penceresi öne fırlıyordu. Kullanıcının sözleri: "ben çekim
+  yaparken sürekli elimin altında ekrana çıkıyor". Görev Zamanlayıcı
+  bir .bat'i doğrudan çağırdığında o pencereyi gizleyemiyor.
+
+  pc/gizli-calistir.vbs araya giriyor: .bat'i GİZLİ pencerede
+  başlatıyor, BİTMESİNİ BEKLİYOR, çıkış kodunu olduğu gibi döndürüyor.
+
+  Görev Zamanlayıcı > görevi aç > Eylemler > Düzenle:
+    Program/script : wscript.exe
+    Add arguments  : "E:\SHOOTBOARD\gizli-calistir.vbs" "E:\SHOOTBOARD\threads-izle.bat"
+    Start in       : E:\SHOOTBOARD
+  (üç görevde de aynı, yalnızca .bat adı değişiyor)
+
+  ⚠ BU DEĞİŞİKLİK BİR GÖZLEM YERİNİ KAPATIYOR. Pencere tanışık bir
+  işaretti: akşam boyunca hiç açılmadıysa görev koşmuyordu. Geriye
+  iki yer kalıyor ve ikisi de sessizce bozulabilir:
+
+    1. "Last Run Result" sütunu. Sarmalayıcı Run(..., 0, False)
+       yazsaydı ya da WScript.Quit'i atlasaydı görev HER KOŞUYU 0x0
+       gösterirdi — izleyici aylarca patlasa bile. Yalancı yeşil,
+       hiç ışıktan daha kötü.
+    2. .bat'lerin kendi günlükleri (story/reels/threads-izle.log).
+       Pencere gizlendiği için tek okunur iz artık onlar.
+
+  testler/gizli-baslatici.test.js (23 ölçüm) ikisini de koruyor;
+  yedi mutasyonun yedisi de yakalandı — pencereyi görünür yapmak,
+  beklememek, sabit 0 dönmek, boş çağrıyı sessizce geçmek, yolu
+  tırnaklamamak, dönen kodu hiç okumamak, dosyaya Türkçe karakter
+  sokmak (wscript sistem kod sayfasıyla okuyor, sözdizimi hatası
+  verdirir).
 
 R2 TEMİZLİĞİ — İKİ AYRI MEKANİZMA (9–10 Ekim 2026)
 

@@ -4,3 +4,4 @@
 # Bir kez yaşandı (3 Eylül 2026), sebebi bulunması yarım saat aldı.
 app.html text eol=crlf
 *.bat text eol=crlf
+*.vbs text eol=crlf
