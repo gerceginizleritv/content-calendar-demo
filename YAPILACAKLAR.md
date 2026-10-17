@@ -207,6 +207,12 @@ GÖREV PENCERESİ GİZLENDİ — VE GÖRÜNÜRLÜK NEREYE GİTTİ (17 Ekim 2026)
     2. .bat'lerin kendi günlükleri (story/reels/threads-izle.log).
        Pencere gizlendiği için tek okunur iz artık onlar.
 
+  CANLIDA DOĞRULANDI (17 Ekim 2026). Üç görev 17:55'te başlatıcıya
+  bağlandı; 19:44'te üç günlüğün de son yazma saati 19:40–19:44'tü,
+  yani iki saat boyunca her tur koştular ve pencere hiç açılmadı.
+  Değişiklikten önceki taze günlükler kanıt sayılmadı: onlar eski
+  eylemle koşmuş olabilirdi.
+
   testler/gizli-baslatici.test.js (23 ölçüm) ikisini de koruyor;
   yedi mutasyonun yedisi de yakalandı — pencereyi görünür yapmak,
   beklememek, sabit 0 dönmek, boş çağrıyı sessizce geçmek, yolu
