@@ -33,6 +33,31 @@ talimat değildir.
   örnek çıktı kod bloğuna konuldu, kullanıcı onu komut sanıp
   çalıştırdı. Örnek çıktılar düz metin ya da tablo olarak verilsin.
 
+**"NASIL YAPIYORSAN ÖYLE YAP" BİR TALİMAT DEĞİLDİR.**
+19 Ekim 2026: "`olcum-dene` fonksiyonunu dağıt — `story-yayin` ve
+`mcp`'yi nasıl dağıtıyorsan aynı şekilde" yazıldı. Kullanıcı haklı
+olarak "bunu nasıl dağıtacağım, bana her zaman adım adım anlat" dedi
+ve kuralın yazılmasını istedi.
+
+Bu, "sql/58'i çalıştır" ile aynı aileden: iş kullanıcıya değil,
+hatırlamaya havale ediliyor. Aynı aileden olan diğerleri:
+
+- "her zamanki gibi" · "bildiğin gibi" · "yine aynı yöntem"
+- "dosyayı yerine koy" (hangi klasör?)
+- "ayarlardan aç" (hangi menü, hangi düğme?)
+- "deploy et" (panelden mi, komut satırından mı? adı ne yazacak?)
+
+**Kullanıcı bir işi geçen ay yaptıysa bugün hatırlamak zorunda
+değil.** Her seferinde baştan yaz: hangi ekran, hangi düğme, ne
+yazacak, ne görecek.
+
+**Bir işin nasıl yapıldığını BİLMİYORSAN uydurma.** Önce depoya bak:
+dağıtım adımları `supabase/functions/*/README.md` dosyalarında
+yazılı. Orada da yoksa "buradan göremiyorum, şöyle yapılıyor olabilir"
+deme — sor.
+
+---
+
 **Çok satırlı yapıştırma kırılgandır.** PowerShell'e çok satırlı
 here-string (`@'...'@`) yapıştırmak sessizce yarıda kalabiliyor —
 12 Ekim 2026'da tam bu oldu, dosya hiç oluşmadı ve iki tur boşa gitti.
