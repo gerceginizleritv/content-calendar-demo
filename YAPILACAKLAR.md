@@ -45,11 +45,56 @@ GÖRÜNTÜLENMELERİ SHOOTBOARD TOPLASIN (19 Ekim 2026, başladı)
     · GÖSTERİM: Shootboard uygulamasında kartın üstünde.
 
   Aşamalar:
-    0. sql/67 + supabase/functions/olcum-dene — SONDA (bu adım).
-       Hangi izin var, hangi metrik adı gerçekten dönüyor: ölçülüyor.
-    1. Ölçüm tablosu (zaman serisi) + işlevler.
-    2. Toplayıcı Edge Function + cron.
-    3. app.html'de kartta gösterim.
+    0. sql/67 + supabase/functions/olcum-dene — SONDA. ✅ YAPILDI.
+    1. Ölçüm tablosu (zaman serisi) + işlevler.   ⏸ DURDURULDU
+    2. Toplayıcı Edge Function + cron.            ⏸ DURDURULDU
+    3. app.html'de kartta gösterim.               ⏸ DURDURULDU
+
+  ⏸ 19 EKİM 2026'DA DURDURULDU. Kullanıcı: "Claude bunları panelden
+  görebiliyorum. Hiç uğraşmayalım istersen!" Karar kendisinin ve
+  makul: sayıları zaten Meta/Threads panellerinden görüyor.
+
+  Kaybedilen tek şey bilerek kabul edildi: panel BUGÜNKÜ sayıyı
+  gösteriyor, zaman içindeki EĞRİYİ değil. "API ile giden, elle
+  gidenden az mı alıyor" sorusu ancak birkaç gün üst üste
+  kaydedilmiş sayılarla cevaplanır; o yük şimdilik kullanıcıda
+  (panelden bakıp not almak).
+
+  Sonda ve tablo KALDI (kullanıcının kararı: "dursun şimdilik").
+  Zararsız: salt okur, cron'a bağlı değil, yalnızca sql/67'deki
+  çağrı elle çalıştırılırsa koşuyor. İş yeniden açılırsa aşama 1'den
+  devam edilir, sıfırdan değil.
+
+  ══ SONDANIN ÖLÇTÜĞÜ (19 Ekim 2026, gerçek gönderilerden) ══
+  Bunlar ÖLÇÜM, tahmin değil. Aşama 1'e başlayan buradan devam etsin.
+
+  · THREADS — AÇIK. Hem text_post hem poll için 200 döndü:
+      views, likes, replies, reposts, quotes
+    Yani `threads_manage_insights` izni jetonda ZATEN VAR; korkulan
+    engel çıkmadı. Threads tek başına bugün toplanabilir durumda.
+
+  · INSTAGRAM — YARISI AÇIK.
+      çalışan : id, media_type, permalink, like_count, comments_count
+      kapalı  : insights (views VE plays) -> 400
+                "(#10) Application does not have permission"
+    Yani beğeni/yorum alınabiliyor, GÖRÜNTÜLENME alınamıyor. Bu bir
+    izin eksiği, kod hatası değil. İki aday: instagram_manage_insights
+    ve pages_read_engagement -- hata mesajı hangisini kastettiğini
+    YAZMIYOR, doğrulanmadı.
+
+  · FACEBOOK — ÜÇ YOLUN ÜÇÜ DE BAŞARISIZ.
+      /{id}?fields=views,post_views       -> 400
+      /{id}/video_insights                -> 400
+      /{id}/insights                      -> 400
+      hepsi: "(#12) singular statuses API is deprecated for versions
+      v2.4 and higher"
+    Bu "izin yok" demiyor: sakladığımız kimlik o biçimde sorulamıyor.
+    ⚠ KÖK SEBEP ADAYI (doğrulanmadı): Facebook yolunda external_id
+    olarak `post_id` saklanıyor (story-yayin, facebookYayinla:
+    `bit?.post_id ?? bit?.id ?? videoId`). Reels için doğru tutamak
+    muhtemelen VİDEO kimliği -- ama o, yayın bitince publish_ref ile
+    birlikte siliniyor (story_yayinlandi tasarımı). Devam edecek kişi
+    önce external_id'nin gerçek biçimine baksın.
 
   ⚠ NEDEN ÖNCE SONDA. Metrik adları sürüme göre değişiyor
   (Instagram'da `plays` -> `views`) ve Threads insights ayrı bir izin
