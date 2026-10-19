@@ -4,3 +4,9 @@
 # Bir kez yaşandı (3 Eylül 2026), sebebi bulunması yarım saat aldı.
 app.html text eol=crlf
 *.bat text eol=crlf
+# .vbs NORMALLESTIRILMIYOR (-text): dosya depoda CRLF olarak duruyor.
+# `text eol=crlf` olsaydi depoda LF saklanir, raw.githubusercontent'ten
+# indirilen kopya LF gelirdi; wscript'in LF'li dosyayi kabul ettigi
+# DOGRULANMADI ve kullanici dosyayi tam da boyle (curl ile) indiriyor.
+# Indirilen bayt, calisan bayt olsun.
+*.vbs -text

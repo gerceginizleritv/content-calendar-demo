@@ -35,6 +35,47 @@ ANKETİN SÜRESİ 24 SAAT (16 Ekim 2026, ölçüldü)
   gördü: yayın anından 24 saat. Cevabın varsayılan gecikmesi (24 saat)
   bu yüzden anketin KAPANDIĞI ana denk geliyor.
 
+GÖRÜNTÜLENMELERİ SHOOTBOARD TOPLASIN (19 Ekim 2026, başladı)
+
+  Kullanıcının kararları:
+    · KAPSAM: kalıcı içerikler — reels + Threads. Hikâyeler DIŞARIDA.
+      Sebep: hikâye insights'ı 24 saatte kayboluyor; toplayıcının
+      günde birkaç kez koşması şart olurdu ve bir günlük arıza o
+      günün sayısını KALICI olarak yok ederdi. Ayrı adım.
+    · GÖSTERİM: Shootboard uygulamasında kartın üstünde.
+
+  Aşamalar:
+    0. sql/67 + supabase/functions/olcum-dene — SONDA (bu adım).
+       Hangi izin var, hangi metrik adı gerçekten dönüyor: ölçülüyor.
+    1. Ölçüm tablosu (zaman serisi) + işlevler.
+    2. Toplayıcı Edge Function + cron.
+    3. app.html'de kartta gösterim.
+
+  ⚠ NEDEN ÖNCE SONDA. Metrik adları sürüme göre değişiyor
+  (Instagram'da `plays` -> `views`) ve Threads insights ayrı bir izin
+  istiyor (`threads_manage_insights`) — o izin mevcut jetonda
+  olmayabilir. Adları hafızadan yazıp kod üretmek, Bölüm 4'teki
+  "doğrulamadan sayı yazma" hatasının kod hali olurdu. Sonda gerçek
+  gönderilere soruyor, cevabı tabloya yazıyor.
+
+  ⛔ SONDA SALT OKUR ve jetonu hiçbir yere yazmıyor: sakladığı adres
+  access_token ayıklanmış hali, ham cevap ve hata metinleri
+  süzülüyor. testler/olcum-dene.test.js (43 ölçüm) bunu ve "0 ile
+  bilinmiyor ayrı" kuralını koruyor; 13 mutasyonun 13'ü yakalandı.
+
+THREADS ZİNCİRİ UÇTAN UCA ÇALIŞTI (17 Ekim 2026, ölçüldü)
+  Üç şey aynı gün, elle hiçbir müdahale olmadan gerçekleşti:
+    · 12:00 — ilk tam otomatik Threads metin postu (Üsküdar kuş evi).
+      Veriden: publishedAt 12:00:11, attemptCount 1.
+    · 16 Ekim 16:45:12 — anket çıktı (attemptCount 1), 16 kişi oy verdi.
+    · 17 Ekim ~16:45 — anketin CEVABI anketin altına yanıt olarak
+      düştü. Kullanıcı Threads'te gördü ve "GELDİ" dedi.
+
+  Üçüncüsü 24 saatlik gecikmenin gerçekten tuttuğunun ilk kanıtı:
+  gecikme ölçülmüş bir sayıydı (yukarı bak), şimdi canlıda doğrulandı.
+  Soruyu soran da cevabı veren de sistem; "rivayet değil, kayıt"
+  iddiası ankette de karşılığını buluyor.
+
 ASİSTAN TİKİ AÇABİLİYOR — AMA KAPILI (16 Ekim 2026)
   Ankette görsel yok, yani klasör izleyicisi hiç koşmuyor ve
   `auto_publish` tikini açan yer odur. Kullanıcı "anketler otomatik
@@ -165,6 +206,47 @@ DOSYALAR
   pc/r2-supurge.bat   çift tıkla listele; silmek için --sil
   pc/yedek-al.py      takvimi diske yedekler (SALT OKUR)
   pc/yedek-al.bat     Görev Zamanlayıcı sarmalayıcısı, haftada bir
+  pc/gizli-calistir.vbs  .bat'i pencere açmadan çalıştırır (17 Ekim 2026)
+
+GÖREV PENCERESİ GİZLENDİ — VE GÖRÜNÜRLÜK NEREYE GİTTİ (17 Ekim 2026)
+
+  Üç izleyici görevi beş dakikada bir koşuyor ve her koşuda bir
+  cmd.exe penceresi öne fırlıyordu. Kullanıcının sözleri: "ben çekim
+  yaparken sürekli elimin altında ekrana çıkıyor". Görev Zamanlayıcı
+  bir .bat'i doğrudan çağırdığında o pencereyi gizleyemiyor.
+
+  pc/gizli-calistir.vbs araya giriyor: .bat'i GİZLİ pencerede
+  başlatıyor, BİTMESİNİ BEKLİYOR, çıkış kodunu olduğu gibi döndürüyor.
+
+  Görev Zamanlayıcı > görevi aç > Eylemler > Düzenle:
+    Program/script : wscript.exe
+    Add arguments  : "E:\SHOOTBOARD\gizli-calistir.vbs" "E:\SHOOTBOARD\threads-izle.bat"
+    Start in       : E:\SHOOTBOARD
+  (üç görevde de aynı, yalnızca .bat adı değişiyor)
+
+  ⚠ BU DEĞİŞİKLİK BİR GÖZLEM YERİNİ KAPATIYOR. Pencere tanışık bir
+  işaretti: akşam boyunca hiç açılmadıysa görev koşmuyordu. Geriye
+  iki yer kalıyor ve ikisi de sessizce bozulabilir:
+
+    1. "Last Run Result" sütunu. Sarmalayıcı Run(..., 0, False)
+       yazsaydı ya da WScript.Quit'i atlasaydı görev HER KOŞUYU 0x0
+       gösterirdi — izleyici aylarca patlasa bile. Yalancı yeşil,
+       hiç ışıktan daha kötü.
+    2. .bat'lerin kendi günlükleri (story/reels/threads-izle.log).
+       Pencere gizlendiği için tek okunur iz artık onlar.
+
+  CANLIDA DOĞRULANDI (17 Ekim 2026). Üç görev 17:55'te başlatıcıya
+  bağlandı; 19:44'te üç günlüğün de son yazma saati 19:40–19:44'tü,
+  yani iki saat boyunca her tur koştular ve pencere hiç açılmadı.
+  Değişiklikten önceki taze günlükler kanıt sayılmadı: onlar eski
+  eylemle koşmuş olabilirdi.
+
+  testler/gizli-baslatici.test.js (23 ölçüm) ikisini de koruyor;
+  yedi mutasyonun yedisi de yakalandı — pencereyi görünür yapmak,
+  beklememek, sabit 0 dönmek, boş çağrıyı sessizce geçmek, yolu
+  tırnaklamamak, dönen kodu hiç okumamak, dosyaya Türkçe karakter
+  sokmak (wscript sistem kod sayfasıyla okuyor, sözdizimi hatası
+  verdirir).
 
 R2 TEMİZLİĞİ — İKİ AYRI MEKANİZMA (9–10 Ekim 2026)
 
