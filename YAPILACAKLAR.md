@@ -35,6 +35,34 @@ ANKETİN SÜRESİ 24 SAAT (16 Ekim 2026, ölçüldü)
   gördü: yayın anından 24 saat. Cevabın varsayılan gecikmesi (24 saat)
   bu yüzden anketin KAPANDIĞI ana denk geliyor.
 
+GÖRÜNTÜLENMELERİ SHOOTBOARD TOPLASIN (19 Ekim 2026, başladı)
+
+  Kullanıcının kararları:
+    · KAPSAM: kalıcı içerikler — reels + Threads. Hikâyeler DIŞARIDA.
+      Sebep: hikâye insights'ı 24 saatte kayboluyor; toplayıcının
+      günde birkaç kez koşması şart olurdu ve bir günlük arıza o
+      günün sayısını KALICI olarak yok ederdi. Ayrı adım.
+    · GÖSTERİM: Shootboard uygulamasında kartın üstünde.
+
+  Aşamalar:
+    0. sql/67 + supabase/functions/olcum-dene — SONDA (bu adım).
+       Hangi izin var, hangi metrik adı gerçekten dönüyor: ölçülüyor.
+    1. Ölçüm tablosu (zaman serisi) + işlevler.
+    2. Toplayıcı Edge Function + cron.
+    3. app.html'de kartta gösterim.
+
+  ⚠ NEDEN ÖNCE SONDA. Metrik adları sürüme göre değişiyor
+  (Instagram'da `plays` -> `views`) ve Threads insights ayrı bir izin
+  istiyor (`threads_manage_insights`) — o izin mevcut jetonda
+  olmayabilir. Adları hafızadan yazıp kod üretmek, Bölüm 4'teki
+  "doğrulamadan sayı yazma" hatasının kod hali olurdu. Sonda gerçek
+  gönderilere soruyor, cevabı tabloya yazıyor.
+
+  ⛔ SONDA SALT OKUR ve jetonu hiçbir yere yazmıyor: sakladığı adres
+  access_token ayıklanmış hali, ham cevap ve hata metinleri
+  süzülüyor. testler/olcum-dene.test.js (43 ölçüm) bunu ve "0 ile
+  bilinmiyor ayrı" kuralını koruyor; 13 mutasyonun 13'ü yakalandı.
+
 THREADS ZİNCİRİ UÇTAN UCA ÇALIŞTI (17 Ekim 2026, ölçüldü)
   Üç şey aynı gün, elle hiçbir müdahale olmadan gerçekleşti:
     · 12:00 — ilk tam otomatik Threads metin postu (Üsküdar kuş evi).
