@@ -1,0 +1,54 @@
+# ⚠️ 2026-09-11 KURAL DEĞİŞİKLİĞİ — BAŞLIK METNİ
+# Eski: 2-3 kelime etiket ("GİZLİ KÜPLER")
+# Yeni: 3-4 satır, YER + TUHAF GERÇEK + SORU; SON SATIR SORU OLMALI
+#   ✅ "ORDU CADDESİ'NDE / DUVARDA BİR SARAY / KİMSE YUKARI BAKMIYOR / PEKİ NEDEN?"
+# Gerekçe: @tarihin_kayitlari (192K medyan) 12 kapağın 11'i soruyla bitiyor;
+#          @gerceginizleritv 12 kapağın hiçbiri bitmiyor.
+# Dayanak: instragramgrowth deposu, reports/06-derin-rakip-analizi.md bölüm 4
+# Aşağıdaki promptlardaki TEXT bloğu bu yapıya göre güncellenmeli.
+
+KAPAK PROMPTLARI — SOKOLLU (Sinan Dosyası 2)
+Başlık: sarı "KABE'NİN TAŞI" + kırmızı bant "BU CAMİDE".
+Alternatif başlıklar: "KABE'DEN GELDİ / DÖRT TAŞ" · "SİNAN'IN SIRRI / KABE TAŞI" · "ÖLDÜRÜLEN SADRAZAM / KABE TAŞLI CAMİ"
+Alternatif konu nesnesi: Azapkapı'nın camiden ayrı duran minaresi, kemerli geçit; başlık "MİNARESİ AYRI / SİNAN'IN CAMİSİ"
+Aynı metinler gelen/kayitlar.json içindeki ev_sokollu_yt_20261002 kaydının thumbPrompt alanında.
+
+YATAY — 16:9
+
+Use the attached photo as the exact face and identity reference: same man, same facial features, same salt-and-pepper beard and hair. Do not change his face or age.
+
+Photorealistic YouTube thumbnail, 16:9, 1920x1080, in the style of a high-end documentary channel cover.
+
+LEFT THIRD: the man from the reference photo, tight head-and-shoulders portrait, cut at the chest, wearing only a plain black crew-neck t-shirt, no logo. His head is turned to the right, eyes looking sideways toward the object on the right, brow furrowed, serious and suspicious expression, lips closed. Warm golden rim light on the edge of his face and hair from the right, soft cool shadow on the left, skin texture sharp.
+
+BACKGROUND: the arcaded courtyard of a 16th-century Ottoman mosque in Istanbul, stone columns and arches, deep depth of field blur, warm dusk light.
+
+RIGHT HALF: a rough cut-stone wall in sharp focus. On it, a small black stone fragment set in a green-painted frame above a white marble minbar door, enclosed in a thick glowing yellow neon circle that lights the stone around it. This is the visual focus.
+
+TEXT, upper right, two stacked lines, bold condensed sans-serif, all caps:
+Line 1: "KABE'NİN TAŞI" in bright yellow with a thin dark outline.
+Line 2: "BU CAMİDE" in white letters on a solid red rectangular banner.
+Turkish characters exactly as written. The text must not overlap the face or the glowing circle.
+
+Style: cinematic, very high contrast, saturated warm colors, crisp detail on the face, the stone and the text. No other text, no watermark, no logos, no extra people.
+
+DİKEY — 9:16
+
+Use the attached photo as the exact face and identity reference: same man, same facial features, same salt-and-pepper beard and hair. Do not change his face or age.
+
+Photorealistic vertical thumbnail, 9:16, 1080x1920, in the style of a high-end documentary channel cover.
+
+TOP 20%: two stacked text lines, centered, bold condensed sans-serif, all caps:
+Line 1: "KABE'NİN TAŞI" in bright yellow with a thin dark outline.
+Line 2: "BU CAMİDE" in white letters on a solid red rectangular banner.
+Turkish characters exactly as written.
+
+MIDDLE: a rough cut-stone wall in sharp focus. On it, a small black stone fragment set in a green-painted frame above a white marble minbar door, enclosed in a thick glowing yellow neon circle that lights the stone around it. This is the visual focus.
+
+BOTTOM 45%: the man from the reference photo, head-and-shoulders, cut at the chest, wearing only a plain black crew-neck t-shirt, no logo. Head tilted up, eyes looking up toward the glowing stone, brow furrowed, serious and suspicious expression, lips closed. Warm golden rim light on the edge of his face and hair from above, soft cool shadow below, skin texture sharp.
+
+BACKGROUND: the arcaded courtyard of a 16th-century Ottoman mosque in Istanbul, stone columns and arches, deep depth of field blur, warm dusk light.
+
+Style: cinematic, very high contrast, saturated warm colors, crisp detail on the face, the stone and the text. No other text, no watermark, no logos, no extra people.
+
+FACEBOOK: YouTube kapağının aynısı (yatay). Gerekirse 4:5 kırpım: yüz solda, sarı halkalı taş sağda, başlık kadrajda kalsın.
