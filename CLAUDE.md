@@ -146,6 +146,14 @@ düzeltildi.
 Ders (Bölüm 4'ün tekrarı): **doğrulamadan sayı yazma.** O uydurma
 sayı sekiz gün boyunca hikâyelerdeki aynı arızayı görünmez yaptı.
 
+**20 Ekim 2026 — teşhis doğrulandı.** Kapı açıldıktan sonra API ile
+giden ilk Facebook reels (Bergama, 10:00) çıktı; kullanıcı
+*"FACEBOOK GÖRÜNTÜLENMESİNDE SORUN YOK"* dedi. Yani 13 Ekim'deki
+teşhis (uygulama In development olduğu için dağıtılmıyordu) doğruymuş
+ve facebook/reels'i açık tutmak doğru karardı.
+⚠ **Sayı alınmadı, buraya sayı yazılmadı.** "Sorun yok" bir gözlem;
+kaç görüntülenme olduğu doğrulanmadı. Yukarıdaki dersin gereği.
+
 ---
 
 ## 6. SQL DOSYALARI — YENİDEN KOŞTURMA TUZAKLARI
