@@ -83,6 +83,22 @@ SUPABASE KOTASI — TEMİZLİK SORGUSU FATURAYI PATLATIYORDU
   "tarihi gelmedi" ayrı şeyler; bilinmeyeni atlamak dosyayı sessizce
   sonsuza kadar R2'de bırakırdı.
 
+  CANLIDA DOĞRULANDI (20 Ekim 2026, 18:10). Kullanıcı yeni
+  `story-yukle.py`'yi indirdi, üç izleyici yeni kodla koştu:
+    · her turda sorulan dosya: 240 → 2
+    · damga konan dosyalar tam olarak o iki geçmiş tarihli dosya
+      (2026-10-03_reels_tekfur_bes_hayat.mp4,
+       2026-10-17_threads_sumela_bosaldi.jpg)
+    · damga saatleri günlüklerin yazma saatleriyle birebir aynı
+      (18:10:02 / 18:09:01) — yani damga gerçekten o turda kondu
+    · 238 gelecek tarihli dosya hiç sorulmadı
+  Aylık tahmin: ~45.000 çağrı (worker dahil), sınır 500.000.
+
+  ⚠ İLK ÖLÇÜMDE REELS "0" GÖRÜNDÜ ve bu bir arıza sanılabilirdi:
+  sebebi reels izleyicisinin henüz yeni kodla koşmamış olmasıydı.
+  Beş dakika sonra damga göründü. Ders: izleyici değişikliğinden
+  sonra ölçüm almadan önce ÜÇ GÜNLÜĞÜN DE tazelendiğini gör.
+
   testler/temizlik-seyreltme.test.py (30 ölçüm, davranış) — 11
   mutasyonun 11'i yakalandı. Bu arızanın GÖRÜNÜR BELİRTİSİ YOK:
   seyreltme bozulursa hiçbir yayın kaçmaz, yalnızca fatura geri gelir.
