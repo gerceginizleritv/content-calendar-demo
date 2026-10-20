@@ -35,6 +35,75 @@ ANKETİN SÜRESİ 24 SAAT (16 Ekim 2026, ölçüldü)
   gördü: yayın anından 24 saat. Cevabın varsayılan gecikmesi (24 saat)
   bu yüzden anketin KAPANDIĞI ana denk geliyor.
 
+SUPABASE KOTASI — TEMİZLİK SORGUSU FATURAYI PATLATIYORDU
+(20 Ekim 2026, ölçüldü ve düzeltildi)
+
+  Supabase "Fair Use" uyarısı geldi: 558.630 Edge Function çağrısı,
+  ücretsiz sınır 500.000. 19 Kasım 2026'da kısıtlama başlayacaktı.
+
+  SEBEP ÖLÇÜLDÜ, TAHMİN EDİLMEDİ. Depodan hesaplanabilen her şey
+  (story-yayin dakikada bir = 43.800/ay, üç izleyici 5 dakikada bir
+  = 26.000/ay) toplamda ~70.000 ediyordu. Aradaki 488.000 görünmüyordu.
+
+  Kök sebep: `story-yukle.py` → `temizlenecekler()` defterdeki her
+  temizlenmemiş dosya için HER TURDA bir istek atıyordu. Soru yükleme
+  değil, SİLME sorusu: "yayınlandı mı, R2'den kaldırabilir miyim?"
+
+  Kullanıcının defterinden ölçüldü (20 Ekim 2026):
+    story   112 dosya → tarihi geçmiş 0,  gelecek 112
+    threads  94 dosya → tarihi geçmiş 1,  gelecek 93
+    reels    34 dosya → tarihi geçmiş 1,  gelecek 33
+    240 dosya × 288 tur/gün = 69.120/gün = ayda 2.073.600
+
+  Yani sorulan 240 dosyanın 238'i HENÜZ TARİHİ GELMEMİŞ dosyaydı:
+  kullanıcı 16 Ocak'a kadar her şeyi önceden yüklüyor ve 31 Aralık'ta
+  çıkacak bir hikâyeye bugünden itibaren yirmi bin kez soruluyordu.
+
+  ⚠ VE BEDEL TERSİNE DÖNMÜŞTÜ. Bu sorgunun amacı R2'de yer açmak.
+  R2 ölçüldü (19 Ekim): 50 GB bile ayda 60 sent, kullanıcı 2,7 GB-ay
+  ile SIFIR ödüyor. Ayda birkaç sentlik depolamadan kaçınmak için
+  ayda iki milyon çağrı harcanıyordu. Süpürge yazıldığında depolama
+  darboğaz sanılmıştı; ölçüldü, değilmiş.
+
+  İKİ KAPI EKLENDİ (`story-yukle.py`):
+    1. Tarihi gelmemiş dosya hiç sorulmuyor (ad YYYY-MM-DD ile
+       başlıyor). Tek başına %99,2 kesiyor.
+    2. Kalanlar saatte bir soruluyor (`son_soru` damgası defterde).
+    Sonuç: günde 69.120 → günde ~48.
+
+  ⛔ SİLME KURALLARI DEĞİŞMEDİ. Otomatik tiki açık ama çıkmamış kayıt
+  varsa dosya yine duruyor; `matchedBy != mediaName` ise yine
+  dokunulmuyor. Değişen tek şey SORUNUN NE ZAMAN sorulduğu.
+
+  ⚠ DAMGA SORUDAN ÖNCE BASILIYOR. Sonra basılsaydı, sorgu her
+  patladığında damga hiç konmaz ve seyreltme tam da ağların kötü
+  olduğu anda çalışmayı bırakırdı.
+
+  ⚠ TARİHSİZ AD SORULMAYA DEVAM EDİYOR. "Tarihini bilmiyorum" ile
+  "tarihi gelmedi" ayrı şeyler; bilinmeyeni atlamak dosyayı sessizce
+  sonsuza kadar R2'de bırakırdı.
+
+  CANLIDA DOĞRULANDI (20 Ekim 2026, 18:10). Kullanıcı yeni
+  `story-yukle.py`'yi indirdi, üç izleyici yeni kodla koştu:
+    · her turda sorulan dosya: 240 → 2
+    · damga konan dosyalar tam olarak o iki geçmiş tarihli dosya
+      (2026-10-03_reels_tekfur_bes_hayat.mp4,
+       2026-10-17_threads_sumela_bosaldi.jpg)
+    · damga saatleri günlüklerin yazma saatleriyle birebir aynı
+      (18:10:02 / 18:09:01) — yani damga gerçekten o turda kondu
+    · 238 gelecek tarihli dosya hiç sorulmadı
+  Aylık tahmin: ~45.000 çağrı (worker dahil), sınır 500.000.
+
+  ⚠ İLK ÖLÇÜMDE REELS "0" GÖRÜNDÜ ve bu bir arıza sanılabilirdi:
+  sebebi reels izleyicisinin henüz yeni kodla koşmamış olmasıydı.
+  Beş dakika sonra damga göründü. Ders: izleyici değişikliğinden
+  sonra ölçüm almadan önce ÜÇ GÜNLÜĞÜN DE tazelendiğini gör.
+
+  testler/temizlik-seyreltme.test.py (30 ölçüm, davranış) — 11
+  mutasyonun 11'i yakalandı. Bu arızanın GÖRÜNÜR BELİRTİSİ YOK:
+  seyreltme bozulursa hiçbir yayın kaçmaz, yalnızca fatura geri gelir.
+  Ölçüm tek bekçi.
+
 GÖRÜNTÜLENMELERİ SHOOTBOARD TOPLASIN (19 Ekim 2026, başladı)
 
   Kullanıcının kararları:
@@ -45,11 +114,56 @@ GÖRÜNTÜLENMELERİ SHOOTBOARD TOPLASIN (19 Ekim 2026, başladı)
     · GÖSTERİM: Shootboard uygulamasında kartın üstünde.
 
   Aşamalar:
-    0. sql/67 + supabase/functions/olcum-dene — SONDA (bu adım).
-       Hangi izin var, hangi metrik adı gerçekten dönüyor: ölçülüyor.
-    1. Ölçüm tablosu (zaman serisi) + işlevler.
-    2. Toplayıcı Edge Function + cron.
-    3. app.html'de kartta gösterim.
+    0. sql/67 + supabase/functions/olcum-dene — SONDA. ✅ YAPILDI.
+    1. Ölçüm tablosu (zaman serisi) + işlevler.   ⏸ DURDURULDU
+    2. Toplayıcı Edge Function + cron.            ⏸ DURDURULDU
+    3. app.html'de kartta gösterim.               ⏸ DURDURULDU
+
+  ⏸ 19 EKİM 2026'DA DURDURULDU. Kullanıcı: "Claude bunları panelden
+  görebiliyorum. Hiç uğraşmayalım istersen!" Karar kendisinin ve
+  makul: sayıları zaten Meta/Threads panellerinden görüyor.
+
+  Kaybedilen tek şey bilerek kabul edildi: panel BUGÜNKÜ sayıyı
+  gösteriyor, zaman içindeki EĞRİYİ değil. "API ile giden, elle
+  gidenden az mı alıyor" sorusu ancak birkaç gün üst üste
+  kaydedilmiş sayılarla cevaplanır; o yük şimdilik kullanıcıda
+  (panelden bakıp not almak).
+
+  Sonda ve tablo KALDI (kullanıcının kararı: "dursun şimdilik").
+  Zararsız: salt okur, cron'a bağlı değil, yalnızca sql/67'deki
+  çağrı elle çalıştırılırsa koşuyor. İş yeniden açılırsa aşama 1'den
+  devam edilir, sıfırdan değil.
+
+  ══ SONDANIN ÖLÇTÜĞÜ (19 Ekim 2026, gerçek gönderilerden) ══
+  Bunlar ÖLÇÜM, tahmin değil. Aşama 1'e başlayan buradan devam etsin.
+
+  · THREADS — AÇIK. Hem text_post hem poll için 200 döndü:
+      views, likes, replies, reposts, quotes
+    Yani `threads_manage_insights` izni jetonda ZATEN VAR; korkulan
+    engel çıkmadı. Threads tek başına bugün toplanabilir durumda.
+
+  · INSTAGRAM — YARISI AÇIK.
+      çalışan : id, media_type, permalink, like_count, comments_count
+      kapalı  : insights (views VE plays) -> 400
+                "(#10) Application does not have permission"
+    Yani beğeni/yorum alınabiliyor, GÖRÜNTÜLENME alınamıyor. Bu bir
+    izin eksiği, kod hatası değil. İki aday: instagram_manage_insights
+    ve pages_read_engagement -- hata mesajı hangisini kastettiğini
+    YAZMIYOR, doğrulanmadı.
+
+  · FACEBOOK — ÜÇ YOLUN ÜÇÜ DE BAŞARISIZ.
+      /{id}?fields=views,post_views       -> 400
+      /{id}/video_insights                -> 400
+      /{id}/insights                      -> 400
+      hepsi: "(#12) singular statuses API is deprecated for versions
+      v2.4 and higher"
+    Bu "izin yok" demiyor: sakladığımız kimlik o biçimde sorulamıyor.
+    ⚠ KÖK SEBEP ADAYI (doğrulanmadı): Facebook yolunda external_id
+    olarak `post_id` saklanıyor (story-yayin, facebookYayinla:
+    `bit?.post_id ?? bit?.id ?? videoId`). Reels için doğru tutamak
+    muhtemelen VİDEO kimliği -- ama o, yayın bitince publish_ref ile
+    birlikte siliniyor (story_yayinlandi tasarımı). Devam edecek kişi
+    önce external_id'nin gerçek biçimine baksın.
 
   ⚠ NEDEN ÖNCE SONDA. Metrik adları sürüme göre değişiyor
   (Instagram'da `plays` -> `views`) ve Threads insights ayrı bir izin
