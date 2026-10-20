@@ -35,6 +35,59 @@ ANKETİN SÜRESİ 24 SAAT (16 Ekim 2026, ölçüldü)
   gördü: yayın anından 24 saat. Cevabın varsayılan gecikmesi (24 saat)
   bu yüzden anketin KAPANDIĞI ana denk geliyor.
 
+SUPABASE KOTASI — TEMİZLİK SORGUSU FATURAYI PATLATIYORDU
+(20 Ekim 2026, ölçüldü ve düzeltildi)
+
+  Supabase "Fair Use" uyarısı geldi: 558.630 Edge Function çağrısı,
+  ücretsiz sınır 500.000. 19 Kasım 2026'da kısıtlama başlayacaktı.
+
+  SEBEP ÖLÇÜLDÜ, TAHMİN EDİLMEDİ. Depodan hesaplanabilen her şey
+  (story-yayin dakikada bir = 43.800/ay, üç izleyici 5 dakikada bir
+  = 26.000/ay) toplamda ~70.000 ediyordu. Aradaki 488.000 görünmüyordu.
+
+  Kök sebep: `story-yukle.py` → `temizlenecekler()` defterdeki her
+  temizlenmemiş dosya için HER TURDA bir istek atıyordu. Soru yükleme
+  değil, SİLME sorusu: "yayınlandı mı, R2'den kaldırabilir miyim?"
+
+  Kullanıcının defterinden ölçüldü (20 Ekim 2026):
+    story   112 dosya → tarihi geçmiş 0,  gelecek 112
+    threads  94 dosya → tarihi geçmiş 1,  gelecek 93
+    reels    34 dosya → tarihi geçmiş 1,  gelecek 33
+    240 dosya × 288 tur/gün = 69.120/gün = ayda 2.073.600
+
+  Yani sorulan 240 dosyanın 238'i HENÜZ TARİHİ GELMEMİŞ dosyaydı:
+  kullanıcı 16 Ocak'a kadar her şeyi önceden yüklüyor ve 31 Aralık'ta
+  çıkacak bir hikâyeye bugünden itibaren yirmi bin kez soruluyordu.
+
+  ⚠ VE BEDEL TERSİNE DÖNMÜŞTÜ. Bu sorgunun amacı R2'de yer açmak.
+  R2 ölçüldü (19 Ekim): 50 GB bile ayda 60 sent, kullanıcı 2,7 GB-ay
+  ile SIFIR ödüyor. Ayda birkaç sentlik depolamadan kaçınmak için
+  ayda iki milyon çağrı harcanıyordu. Süpürge yazıldığında depolama
+  darboğaz sanılmıştı; ölçüldü, değilmiş.
+
+  İKİ KAPI EKLENDİ (`story-yukle.py`):
+    1. Tarihi gelmemiş dosya hiç sorulmuyor (ad YYYY-MM-DD ile
+       başlıyor). Tek başına %99,2 kesiyor.
+    2. Kalanlar saatte bir soruluyor (`son_soru` damgası defterde).
+    Sonuç: günde 69.120 → günde ~48.
+
+  ⛔ SİLME KURALLARI DEĞİŞMEDİ. Otomatik tiki açık ama çıkmamış kayıt
+  varsa dosya yine duruyor; `matchedBy != mediaName` ise yine
+  dokunulmuyor. Değişen tek şey SORUNUN NE ZAMAN sorulduğu.
+
+  ⚠ DAMGA SORUDAN ÖNCE BASILIYOR. Sonra basılsaydı, sorgu her
+  patladığında damga hiç konmaz ve seyreltme tam da ağların kötü
+  olduğu anda çalışmayı bırakırdı.
+
+  ⚠ TARİHSİZ AD SORULMAYA DEVAM EDİYOR. "Tarihini bilmiyorum" ile
+  "tarihi gelmedi" ayrı şeyler; bilinmeyeni atlamak dosyayı sessizce
+  sonsuza kadar R2'de bırakırdı.
+
+  testler/temizlik-seyreltme.test.py (30 ölçüm, davranış) — 11
+  mutasyonun 11'i yakalandı. Bu arızanın GÖRÜNÜR BELİRTİSİ YOK:
+  seyreltme bozulursa hiçbir yayın kaçmaz, yalnızca fatura geri gelir.
+  Ölçüm tek bekçi.
+
 GÖRÜNTÜLENMELERİ SHOOTBOARD TOPLASIN (19 Ekim 2026, başladı)
 
   Kullanıcının kararları:

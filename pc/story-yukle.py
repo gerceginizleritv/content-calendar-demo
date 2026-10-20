@@ -55,7 +55,10 @@ KURULUM
   ⚠ Anahtarlari bir sohbete, ekran goruntusune ya da depoya YAZMA.
 """
 import os
+import re
 import sys
+import time
+import datetime
 import threading
 import mimetypes
 import argparse
@@ -456,6 +459,61 @@ def r2_sil(adlar):
     return silinen, sorun
 
 
+# ══════════════════════════════════════════════════════════════════
+# TEMIZLIK SORGUSUNUN BEDELI (20 Ekim 2026)
+# ══════════════════════════════════════════════════════════════════
+# temizlenecekler() defterdeki her temizlenmemis dosya icin Shootboard'a
+# BIR istek atiyordu -- her turda, yani bes dakikada bir. Yukleme degil,
+# SILME sorusu: "yayinlandi mi, R2'den kaldirabilir miyim?"
+#
+# 20 Ekim 2026'da olculdu: uc defterde toplam 240 dosya soruluyordu.
+#   240 dosya x 288 tur/gun = 69.120 cagri/gun = ayda 2.073.600
+# Supabase ucretsiz plani ayda 500.000. Yani bu tek dongu siniri DORT
+# KATIYLA asiyordu; Supabase "Fair Use" uyarisi gonderdi.
+#
+# ⚠ VE BEDELI TERSINE CEVIRIYORDU. Bu sorgunun amaci R2'de yer acmak.
+# R2 olculdu: 50 GB bile ayda 60 sent, kullanici 2,7 GB-ay ile SIFIR
+# oduyor. Yani ayda sifir ile birkac sent arasindaki bir depolama
+# masrafindan kacinmak icin ayda iki milyon cagri harcaniyordu.
+#
+# IKI KAPI EKLENDI:
+#
+#   1. TARIHI GELMEMIS DOSYA HIC SORULMUYOR. Dosya adi YYYY-MM-DD ile
+#      basliyor; tarihi bugunden ileriyse o kayit yayinlanmis OLAMAZ,
+#      sormanin bilgi degeri sifir. 20 Ekim 2026'da olculdu: sorulan
+#      240 dosyanin 238'i tarihi gelmemis dosyaydi (kullanici 16 Ocak'a
+#      kadar her seyi onceden yukluyor). Tek basina %99,2 kesiyor.
+#
+#   2. KALANLAR SAATTE BIR SORULUYOR. Yayin ciktiktan bes dakika sonra
+#      silinmekle bir saat sonra silinmek arasinda hicbir fark yok.
+#
+# Ikisi birlikte: gunde 69.120 -> gunde ~48.
+#
+# ⛔ KORUMALAR AYNEN DURUYOR. Hangi dosyanin SILINECEGINE karar veren
+# kural degismedi: otomatik yayini acik ama henuz cikmamis bir kayit
+# varsa dosya yine duruyor, `matchedBy != mediaName` ise yine
+# dokunulmuyor. Degisen tek sey SORUNUN NE ZAMAN sorulacagi.
+#
+# ⚠ TARIHSIZ AD SORULMAYA DEVAM EDIYOR. Adinda tarih olmayan bir dosya
+# atlanmiyor: "tarihini bilmiyorum" ile "tarihi gelmedi" ayri seyler ve
+# bilinmeyeni atlamak, bir dosyayi sessizce sonsuza kadar R2'de
+# birakirdi.
+TEMIZLIK_SORU_ARALIGI_SN = 3600
+
+_AD_TARIHI = re.compile(r'^(\d{4})-(\d{2})-(\d{2})')
+
+
+def ad_tarihi(ad):
+    """Dosya adinin basindaki YYYY-MM-DD; yoksa ya da gecersizse None."""
+    m = _AD_TARIHI.match(ad or '')
+    if not m:
+        return None
+    try:
+        return datetime.date(int(m.group(1)), int(m.group(2)), int(m.group(3)))
+    except ValueError:
+        return None
+
+
 def temizlenecekler(kok, anahtar, defter):
     """Defterde R2'den silinebilecek girdilerin adlari.
 
@@ -489,9 +547,31 @@ def temizlenecekler(kok, anahtar, defter):
     yanlis silmek geri alinamaz.
     """
     cikti = []
+    bugun = datetime.date.today()
+    simdi = time.time()
     for ad, kayit in defter.items():
         if kayit.get('durum') != 'baglandi' or kayit.get('temiz'):
             continue
+
+        # KAPI 1 -- tarihi gelmemis dosya yayinlanmis olamaz.
+        tarih = ad_tarihi(ad)
+        if tarih is not None and tarih > bugun:
+            continue
+
+        # KAPI 2 -- ayni dosyaya saatte birden fazla sorulmuyor.
+        # ⚠ DAMGA SORUDAN ONCE BASILIYOR. Sonra basilsaydi, yayin
+        # durumlari sorgusu her patladiginda damga hic konmaz ve dosya
+        # her turda yeniden sorulurdu -- yani seyreltme tam da aglarin
+        # kotu oldugu anda calismayi birakirdi.
+        son = kayit.get('son_soru')
+        try:
+            son = float(son)
+        except (TypeError, ValueError):
+            son = 0.0
+        if simdi - son < TEMIZLIK_SORU_ARALIGI_SN:
+            continue
+        kayit['son_soru'] = simdi
+
         kayitlar = yayin_durumlari(kok, anahtar, ad)
         if kayitlar is None:
             continue                       # bilinmiyor -> dokunma
@@ -516,7 +596,13 @@ def temizlik_turu(klasor, defter, defter_yaz, nesneleri_bul):
     kok = ayar('SHOOTBOARD_MCP_URL').rstrip('/')
     anahtar = ayar('SHOOTBOARD_KEY')
     sayi = 0
-    for ad in temizlenecekler(kok, anahtar, defter):
+    adaylar = temizlenecekler(kok, anahtar, defter)
+    # ⚠ `son_soru` DAMGALARI DISKE YAZILMALI. temizlenecekler onlari
+    # defter sozlugune koyuyor; burada yazilmazsa damga sureci bitince
+    # kaybolur ve seyreltme HIC CALISMAZ -- her tur yine her dosyayi
+    # sorar. Silinen dosya olmasa bile yaziliyor, asil degisiklik bu.
+    defter_yaz(klasor, defter)
+    for ad in adaylar:
         nesneler = nesneleri_bul(ad, defter[ad])
         silinen, sorun = r2_sil(nesneler)
         for s in sorun:
