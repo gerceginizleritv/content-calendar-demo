@@ -6037,6 +6037,7 @@ const LANG = {
     alert_fill_required: "Please fill in title, date and time.",
     alert_fill_missing: (alanlar)=> `Still missing: ${alanlar}.`,
     count_label: (n, max)=> `${n} / ${max} entries`,
+    kayit_kesildi: (kesilen, sinir)=> `${kesilen} entries were not loaded: this page shows at most ${sinir}. Nothing was deleted \u2014 they are still in your account.`,
     count_note: "Demo limit — plenty for a full month of planning.",
     early_cta: "Get early access →",
     count_title: (max)=> `This demo holds up to ${max} entries per account.`,
@@ -7081,6 +7082,7 @@ const LANG = {
     alert_fill_required: "Lütfen başlık, tarih ve saati doldur.",
     alert_fill_missing: (alanlar)=> `Şu alan eksik: ${alanlar}.`,
     count_label: (n, max)=> `${n} / ${max} kayıt`,
+    kayit_kesildi: (kesilen, sinir)=> `${kesilen} kayıt yüklenmedi: bu sayfa en çok ${sinir} kayıt gösteriyor. Hiçbir şey silinmedi \u2014 kayıtlar hesabında duruyor.`,
     count_note: "Demo sınırı — bir ayı planlamaya fazlasıyla yeter.",
     early_cta: "Erken erişim iste →",
     count_title: (max)=> `Bu demo hesap başına ${max} kayıt tutar.`,
@@ -7692,10 +7694,16 @@ let currentEvent = null;
 // tarayicida duran eski veri de. Sebep: typeLabel() bilmedigi bir anahtari
 // oldugu gibi geri donuyor ve bu deger sablona ham giriyordu — yani ozenle
 // hazirlanmis bir "yedek dosyasi" sayfada script calistirabiliyordu.
-const MAX_EVENTS = 2000;
+// ⚠ 22 Ekim 2026'da 2000'den yukseltildi. Bu sinir disaridan gelen
+// bozuk/kotu niyetli bir yedek dosyasi tarayiciyi kilitlemesin diye var
+// -- gercek kullanicinin kayit sayisini sinirlamak icin DEGIL. 2000'de
+// dururken kullanicinin 1074 kaydi vardi ve gunde ~11 ekliyordu: uc ay
+// sonra bu sinira carpacakti ve kesme O GUNE KADAR SESSIZDI.
+// Hesap basina gercek sinir ayri: MAX_ENTRIES (user_prefs.entry_limit).
+const MAX_EVENTS = 50000;
 // Demo bir deneme alani; hesap basina kayit siniri. Sinirsiz birakildiginda
-// 2000'i gecen kayitlar sayfa yenilenince sessizce siliniyordu — gorunur bir
-// sinir hem bunu engelliyor hem de beklentiyi bastan kuruyor.
+// MAX_EVENTS'i gecen kayitlar sayfa yenilenince sessizce siliniyordu —
+// gorunur bir sinir hem bunu engelliyor hem de beklentiyi bastan kuruyor.
 // Sinir DEMO icin var: ziyaretciye "bu bir demo, bir aylik plana yeter"
 // demek icin. Giris yapmis kullanicinin sinirini hesabi belirliyor
 // (user_prefs.entry_limit); bos ise varsayilan gecerli.
@@ -7978,8 +7986,27 @@ function sanitizeEvent(raw){
     }
   };
 }
+// ⚠ KESME ARTIK SESSİZ DEĞİL. Eski hali listeyi MAX_EVENTS'te kesip
+// hiçbir şey söylemiyordu; kodun kendi yorumu da "2000'i geçen kayıtlar
+// sayfa yenilenince sessizce siliniyordu" diyordu. 22 Ekim 2026'da
+// sunucu tarafında TAM BÖYLE bir sessiz kesme bulundu (PostgREST 1000
+// satırda kesiyordu, 74 kayıt görünmüyordu) -- aynı tuzağın ikinci
+// kopyasını burada bırakmanın anlamı yok. Sınır duruyor (kötü niyetli
+// ya da bozuk bir yedek dosyası tarayıcıyı kilitlemesin diye) ama
+// aşılırsa GÖRÜNÜYOR.
+let kesilenKayitSayisi = 0;
+
 function sanitizeEvents(list){
   if(!Array.isArray(list)) return [];
+  kesilenKayitSayisi = Math.max(0, list.length - MAX_EVENTS);
+  if(kesilenKayitSayisi > 0){
+    console.error('[kayit] liste kesildi:', list.length, '->', MAX_EVENTS,
+                  '· kesilen:', kesilenKayitSayisi);
+    // Bildirim tanımlanmadan önce çağrılma ihtimaline karşı korumalı.
+    if(typeof uyari === 'function'){
+      try{ uyari(t('kayit_kesildi')(kesilenKayitSayisi, MAX_EVENTS)); }catch(e){}
+    }
+  }
   return list.slice(0, MAX_EVENTS).map(sanitizeEvent).filter(Boolean);
 }
 
@@ -8174,11 +8201,45 @@ function bulutHatasiUygula(acik){
   }
 }
 
+// ⚠ SAYFALAMA ŞART. 22 Ekim 2026'da ölçüldü: bu sorgu `limit`siz
+// yazılmıştı ve "hepsini ver" demek sanılıyordu. PostgREST'in kendi üst
+// sınırı 1000 satırda kesiyor ve HATA DÖNDÜRMÜYOR. Konsoldan ölçüm:
+//   GELEN: 1000   TOPLAM: 1074   HATA: null
+// Yani 74 kayıt uygulamada hiç görünmüyordu ve uygulama bunu fark
+// etmiyordu. Kullanıcı 1 Ocak 2027'de Facebook 18:00 hikâyesinin
+// kaybolduğunu bildirdi; aynı gün aynı saatteki Instagram hikâyesi
+// görünüyordu -- çünkü kesme rastgele bir yerden geçiyordu.
+//
+// ⛔ YAYINI ETKİLEMİYORDU. Yayın zinciri (pg_cron -> story-yayin ->
+// story_kuyruk_al) doğrudan calendar_events'ten okuyor; uygulamanın ne
+// gördüğü yayını hiç ilgilendirmiyor. Bu bir GÖRÜNÜRLÜK arızasıydı.
+//
+// ⚠ SIRALAMA DA ŞART, SAYFALAMA KADAR. `order` olmadan satır sırası
+// belirsiz: iki ayrı sayfa isteği arasında satır yer değiştirebilir ve
+// aynı kayıt iki kez gelirken başka biri HİÇ gelmez. Sayfalamayı
+// sıralamasız eklemek, arızayı daha sinsi bir haline çevirirdi.
+// `id` birincil anahtar: benzersiz ve değişmiyor.
+const SAYFA_BOYU = 1000;
+// Sonsuz döngüye karşı tavan. Sunucu beklenmedik bir şey döndürürse
+// tarayıcıyı kilitlemek yerine duruyoruz; eksik kalan sayı aşağıda
+// zaten görünür bir uyarı üretiyor.
+const EN_COK_SAYFA = 100;
+
 async function pullRemote(){
-  const { data, error } = await sb.from('calendar_events')
-    .select('*').is('deleted_at', null);
-  if(error) throw error;
-  return sanitizeEvents((data || []).map(fromRow));
+  const hepsi = [];
+  for(let sayfa = 0; sayfa < EN_COK_SAYFA; sayfa++){
+    const bas = sayfa * SAYFA_BOYU;
+    const { data, error } = await sb.from('calendar_events')
+      .select('*').is('deleted_at', null)
+      .order('id', { ascending: true })
+      .range(bas, bas + SAYFA_BOYU - 1);
+    if(error) throw error;
+    const parca = data || [];
+    hepsi.push(...parca);
+    // Sunucu istediğimizden az satır verdiyse son sayfadayız.
+    if(parca.length < SAYFA_BOYU) break;
+  }
+  return sanitizeEvents(hepsi.map(fromRow));
 }
 
 function getType(ev){ return ev.type; }
