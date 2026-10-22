@@ -98,6 +98,55 @@ UYGULAMA KAYITLARIN HEPSİNİ OKUMUYORDU — SESSİZ KESME
   yutmak, kesmeyi tekrar sessizleştirmek, MAX_EVENTS'i geri almak,
   sınır altında yanlış alarm vermek).
 
+SUPABASE'İN DİĞER İKİ METRESİ — LOG INGESTION VE LOG QUERY
+(22 Ekim 2026, ölçüldü)
+
+  Kota uyarısından sonra Usage sayfasındaki diğer işaretli satırlara
+  da bakıldı. İki metre, iki ayrı hikâye.
+
+  LOG INGESTION (ücretsiz hak: 1 GB/ay) — AYNI HASTALIK, İYİLEŞTİ.
+      19 Ekim   516 MB
+      20 Ekim   320 MB
+      21 Ekim  12,4 MB   (temizlik düzeltmesi 20 Ekim akşamı girdi)
+      22 Ekim   5,4 MB
+  %97,6 düşüş; Edge Function eğrisinin birebir aynısı. Sebep aynı:
+  günde 68.000 çağrının her biri günlüğe yazıyordu
+  (320 MB / 68.000 ≈ çağrı başına 5 KB). Yani tek düzeltme İKİ metreyi
+  birden iyileştirdi. Yapacak bir şey yok.
+
+  LOG QUERY (ücretsiz hak: 100 GB) — SEBEBİ SİSTEM DEĞİL, BİZDİK.
+      16 Ekim  39,9 GB
+      17 Ekim   4,4 GB
+      20 Ekim  77,4 GB
+  Bu metre günlükleri OKURKEN taranan veriyi ölçüyor (Studio arayüzü,
+  Logs sayfaları, API, CLI). Tarihler bunu söylüyor: 16 Ekim kullanıcı
+  Supabase log dosyasını sohbete yapıştırdığı, 20 Ekim kota sorununu
+  birlikte kovaladığımız gündü. Çalışan sistemin ürettiği bir şey
+  değil; araştırma bitince kendiliğinden duruyor.
+
+  ⚠ SQL EDITOR BU METREYE GİRMİYOR. `net._http_response` gibi normal
+  tablo sorguları veritabanı sorgusudur; sayan yer sol menüdeki Logs
+  sayfaları.
+
+  ⚠ TERS YAN ETKİ — BİLEREK KABUL EDİLDİ. Supabase'in kendi
+  açıklaması: "Logs Query usage isn't billed directly. Instead, your
+  organization gets a log query allowance that scales with how much
+  log data you ingest." Yani sorgu hakkı, ÜRETİLEN günlük miktarıyla
+  orantılı. Günlük üretimini 516 MB'tan 5 MB'a indirdiğimiz için
+  SORGU HAKKI DA KÜÇÜLECEK. Bundan sonra Logs sayfalarında zaman
+  aralığını dar tutmak gerekiyor ("son 7 gün" tek tıkla gigabaytlar
+  taratıyor).
+
+  ⚠ YAPTIRIM 2027 BAŞINA KADAR YOK: "Enforcement starts after the
+  grace period ends at the start of 2027." Ve bu metre doğrudan
+  faturalanmıyor. Gelen uyarı maili Log Query'den değil, EDGE
+  FUNCTION çağrılarından geliyordu — o çözüldü.
+
+  ⚠ BELGE İLE EKRAN UYUŞMUYOR: supabase.com belgelerinde ücretsiz hak
+  Log Query için 1.000 GB, Log Ingest için 5 GB görünüyor; kullanıcının
+  kendi ekranı 100 GB ve 1 GB diyor. ESAS OLAN EKRAN. Belgeden okunan
+  rakam bu hesaba uymuyor.
+
 SUPABASE KOTASI — TEMİZLİK SORGUSU FATURAYI PATLATIYORDU
 (20 Ekim 2026, ölçüldü ve düzeltildi)
 
