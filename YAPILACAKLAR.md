@@ -86,6 +86,10 @@ UYGULAMA KAYITLARIN HEPSİNİ OKUMUYORDU — SESSİZ KESME
   ⚠ BUILD_STAMP YANILTIYOR: sol alttaki tarih (2026-09-08) kodda
   sabit yazılı ve güncellenmiyor; dağıtımın eskiliğini göstermiyor.
 
+  CANLIDA DOĞRULANDI (22 Ekim 2026). Kullanıcı PR'ı birleştirdi,
+  sayfayı yeniledi: "evet merge ettim ve çalıştı". Eksik kayıtlar
+  geri geldi.
+
   testler/bulut-sayfalama.test.js (26 ölçüm) — pullRemote kaynaktan
   çıkarılıp sahte `sb` ile GERÇEKTEN koşturuluyor, tarayıcı
   gerekmiyor. 11 mutasyonun 11'i yakalandı (sayfalamayı kaldırmak,
@@ -152,6 +156,28 @@ SUPABASE KOTASI — TEMİZLİK SORGUSU FATURAYI PATLATIYORDU
       (18:10:02 / 18:09:01) — yani damga gerçekten o turda kondu
     · 238 gelecek tarihli dosya hiç sorulmadı
   Aylık tahmin: ~45.000 çağrı (worker dahil), sınır 500.000.
+
+  SUPABASE RAKAMLARIYLA DOĞRULANDI (22 Ekim 2026). Kullanıcı Usage
+  sayfasındaki günlük Edge Function çağrılarını okudu:
+
+      18 Ekim   39.000   (düzeltme öncesi)
+      20 Ekim   68.000   (düzeltme öncesi son tam gün)
+      21 Ekim    1.500   (düzeltme sonrası ilk tam gün)
+      22 Ekim      552   (gün bitmeden)
+
+  Düşüş %97,8. Tahminler tuttu: öncesi için "69.120/gün" denmişti,
+  gerçek 68.000; sonrası için "~1.500" denmişti (worker 1.440 +
+  izleyiciler 48), gerçek 1.500.
+
+  ⚠ VE MEKANİZMA BAĞIMSIZ OLARAK DOĞRULANDI. Günlük çağrıyı tur
+  sayısına (288) bölünce defterdeki dosya sayısı çıkıyor:
+      39.000 / 288 ≈ 135 dosya  (18 Ekim)
+      68.000 / 288 ≈ 236 dosya  (20 Ekim)
+  20 Ekim'de kullanıcının bilgisayarında SAYILAN sayı 240'tı. Yani
+  rakamlar yalnızca "düzeldi" demiyor, sebebin tam olarak bu olduğunu
+  da söylüyor: maliyet defter büyüklüğüyle doğru orantılıydı.
+
+  Aylık izdüşüm ~45.000, ücretsiz sınır 500.000 — %9.
 
   ⚠ İLK ÖLÇÜMDE REELS "0" GÖRÜNDÜ ve bu bir arıza sanılabilirdi:
   sebebi reels izleyicisinin henüz yeni kodla koşmamış olmasıydı.
