@@ -35,6 +35,65 @@ ANKETİN SÜRESİ 24 SAAT (16 Ekim 2026, ölçüldü)
   gördü: yayın anından 24 saat. Cevabın varsayılan gecikmesi (24 saat)
   bu yüzden anketin KAPANDIĞI ana denk geliyor.
 
+UYGULAMA KAYITLARIN HEPSİNİ OKUMUYORDU — SESSİZ KESME
+(22 Ekim 2026, ölçüldü ve düzeltildi)
+
+  Kullanıcı 1 Ocak 2027'de Facebook 18:00 hikâyesinin uygulamada
+  görünmediğini bildirdi. Aynı gün aynı saatteki Instagram hikâyesi
+  GÖRÜNÜYORDU — yani eksik olan şey bir filtre ya da tarih hatası
+  değildi.
+
+  SEBEP: `pullRemote` (app.html) `limit`siz yazılmıştı ve "hepsini
+  ver" demek sanılıyordu. PostgREST'in kendi üst sınırı 1000 satırda
+  kesiyor ve HATA DÖNDÜRMÜYOR. Tarayıcı konsolundan ölçüldü:
+
+      GELEN: 1000   TOPLAM: 1074   HATA: null
+
+  74 kayıt uygulamada hiç görünmüyordu ve uygulama bunu fark
+  etmiyordu. Ekrandaki "1000 / 100000" bir sınır değil, YÜKLENEN
+  kayıt sayısıydı (`renderEntryCount`: soldaki `events.length`,
+  sağdaki hesabın limiti) — tam 1000'de durması kesmenin imzasıydı.
+
+  ⚠ SIRA BELİRSİZ OLDUĞU İÇİN KÜME DE SABİT DEĞİLDİ. Sorguda
+  `order by` yoktu; hangi 74 kaydın düştüğü yenilemeden yenilemeye
+  değişebiliyordu. Aynı gün aynı saatteki iki hikâyeden birinin
+  görünüp ötekinin görünmemesinin sebebi buydu.
+
+  ⛔ YAYINI ETKİLEMİYORDU. Yayın zinciri (pg_cron → story-yayin →
+  story_kuyruk_al) doğrudan `calendar_events`'ten okuyor; uygulamanın
+  ne gördüğü yayını hiç ilgilendirmiyor. Görünmeyen kayıtların tiki
+  açıktı ve sıraları geldiğinde çıkacaklardı. Bu bir GÖRÜNÜRLÜK
+  arızasıydı.
+
+  VERİ GÜVENLİĞİ: yazma yolu incelendi, silme yalnızca kullanıcının
+  sildiği kimliklerle yapılıyor (`removedIds`) — "uzakta olmayanı sil"
+  gibi bir karşılaştırma yok. Yani eksik okuma veri kaybına yol
+  açmıyordu. TEK İSTİSNA: Ayarlar'daki "Sıfırla" düğmesi yüklü olan
+  her kaydı siliyor; kesme varken 1000'i siler, görünmeyen 74'ü
+  sunucuda bırakırdı. Sayfalama bu tehlikeyi de kapattı.
+
+  DÜZELTME (app.html):
+    1. `pullRemote` 1000'lik parçalarla sayfalanıyor, eksik sayfada
+       duruyor, sonsuz döngüye karşı tavanı var.
+    2. ⚠ `order('id')` EKLENDİ. Sayfalamayı sıralamasız eklemek
+       arızayı DAHA SİNSİ hale getirirdi: aynı kayıt iki kez gelirken
+       başkası hiç gelmeyebilirdi. `id` benzersiz ve değişmiyor.
+    3. `MAX_EVENTS` 2000 → 50000 ve kesme artık SESSİZ DEĞİL
+       (console.error + kullanıcıya uyarı, iki dilde). 2000'de
+       dururken kullanıcının 1074 kaydı vardı ve günde ~11 ekliyordu:
+       üç ay sonra aynı şikâyet sessizce geri gelecekti.
+
+  ⚠ BUILD_STAMP YANILTIYOR: sol alttaki tarih (2026-09-08) kodda
+  sabit yazılı ve güncellenmiyor; dağıtımın eskiliğini göstermiyor.
+
+  testler/bulut-sayfalama.test.js (26 ölçüm) — pullRemote kaynaktan
+  çıkarılıp sahte `sb` ile GERÇEKTEN koşturuluyor, tarayıcı
+  gerekmiyor. 11 mutasyonun 11'i yakalandı (sayfalamayı kaldırmak,
+  sıralamayı kaldırmak/değişken alana bağlamak, aralık aritmetiğini
+  kaydırmak, başlangıcı sabitlemek, dolu sayfada durmak, hatayı
+  yutmak, kesmeyi tekrar sessizleştirmek, MAX_EVENTS'i geri almak,
+  sınır altında yanlış alarm vermek).
+
 SUPABASE KOTASI — TEMİZLİK SORGUSU FATURAYI PATLATIYORDU
 (20 Ekim 2026, ölçüldü ve düzeltildi)
 
