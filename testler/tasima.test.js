@@ -8,20 +8,26 @@ const stub = (prefs, kayitlar) => {
     from(tablo){ const q = { _filtre:{},
       select(){ return q; },
       eq(){ return q; },
-      is(kolon, deger){ q._filtre[kolon] = deger; 
-        if(tablo === 'calendar_events'){
-          // Gercek davranisi taklit: deleted_at is null suzuyor
-          const veri = window.__satirlar.filter(r=> !r.deleted_at);
-          return Promise.resolve({ data: veri, error: null });
-        }
-        return q; },
+      // ⚠ 22 Ekim 2026: pullRemote sayfalaniyor; zincir artik
+      // .select().is().order().range() seklinde. is() ONCEDEN dogrudan
+      // Promise donduruyordu, yani zincir orada kesiliyor ve .order()
+      // "is not a function" ile patliyordu. Artik is() yalnizca suzguyu
+      // not edip zinciri donduruyor; veriyi range() veriyor.
+      is(kolon, deger){ q._filtre[kolon] = deger; return q; },
+      order(){ return q; },
+      range(){ return Promise.resolve({ data: q._veri(), error: null }); },
+      _veri(){
+        // Gercek davranisi taklit: deleted_at is null suzuyor
+        return tablo === 'calendar_events'
+          ? window.__satirlar.filter(r=> !r.deleted_at) : [];
+      },
       in(){ return q; },
       maybeSingle(){ return Promise.resolve({ data: tablo==='user_prefs' ? window.__prefs : null, error:null }); },
       upsert(rows){ window.__yazmalar.push({tablo, rows: JSON.parse(JSON.stringify(rows))});
                     return Promise.resolve({data:[],error:null}); },
       update(){ const p=Promise.resolve({data:[],error:null}); p.in=()=>Promise.resolve({data:[],error:null}); return p; },
       delete(){ const p=Promise.resolve({data:[],error:null}); p.in=()=>Promise.resolve({data:[],error:null}); return p; },
-      then(r){ return Promise.resolve({data:[],error:null}).then(r); } }; return q; } };}};
+      then(r){ return Promise.resolve({data:q._veri(),error:null}).then(r); } }; return q; } };}};
 };
 (async () => {
   const b = await chromium.launch({ });

@@ -62,6 +62,12 @@ window.supabase = { createClient(){ return {
   from(tablo){
     const z = {
       select(){ return z; }, is(){ return z; }, eq(){ return z; },
+      // ⚠ 22 Ekim 2026: pullRemote sayfalaniyor (bkz. app.html).
+      // Sahte istemci .order/.range tanimadigi icin okuma
+      // "s(...).order is not a function" ile patliyordu ve bu test
+      // YANLIS sebebi olcuyordu. Zincir ikisini de tasiyor; veri
+      // 1000'den az oldugu icin okuma ilk sayfada bitiyor.
+      order(){ return z; }, range(){ return z; },
       in(){ return Promise.resolve({ data:[], error:null }); },
       upsert(satirlar){
         const m = window.__yazmaModu;

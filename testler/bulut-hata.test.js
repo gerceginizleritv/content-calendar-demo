@@ -15,6 +15,12 @@ window.supabase = { createClient(){ return {
     const zincir = {
       select(){ return zincir; },
       is(){ return zincir; },
+      // ⚠ 22 Ekim 2026: pullRemote sayfalaniyor (bkz. app.html).
+      // Sahte istemci .order/.range tanimadigi icin okuma
+      // "s(...).order is not a function" ile patliyordu ve bu test
+      // YANLIS sebebi olcuyordu. Zincir ikisini de tasiyor; veri
+      // 1000'den az oldugu icin okuma ilk sayfada bitiyor.
+      order(){ return zincir; }, range(){ return zincir; },
       eq(){ return zincir; },
       in(){ return Promise.resolve({ data:[], error:null }); },
       upsert(satirlar){ window.__pushlar.push({tablo, satirlar}); return Promise.resolve({ data:null, error:null }); },

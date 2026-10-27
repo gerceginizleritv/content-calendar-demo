@@ -12,7 +12,13 @@ const SB = `window.supabase={createClient(){return {
          updateUser(){ return Promise.resolve({error:null}); } },
   from(t){ return {
     select(){ return { eq(){ return { maybeSingle:()=>Promise.resolve({data: window.__prefs||null, error:null}) }; },
-                       is(){ return Promise.resolve({data: [], error: null}); } }; },
+                       // ⚠ 22 Ekim 2026: pullRemote sayfalaniyor
+                       // (.order().range()); is() dogrudan Promise
+                       // dondurunce zincir kesiliyor ve okuma patliyordu.
+                       is(){ const z = { order(){ return z; },
+                                         range(){ return Promise.resolve({data: [], error: null}); },
+                                         then(r){ return Promise.resolve({data: [], error: null}).then(r); } };
+                             return z; } }; },
     upsert(r){ window.__upsert=(window.__upsert||[]).concat([{tablo:t, satir:r}]); return Promise.resolve({error:null}); },
     update(){ return { in(){ return Promise.resolve({error:null}); },
                        eq(){ return Promise.resolve({error:null}); } }; }
