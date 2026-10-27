@@ -57,8 +57,15 @@
 //          /v2/post/publish/video/init/ (post_info ile alt yazı ve
 //          etiketler), yoksa eski taslak yolu. Gizlilik seviyesi
 //          creator_info/query'nin verdiği listeden seçiliyor.
+//
+// 1.21.0 — Çift yayın kapısı kapatıldı (26 Ekim 2026'daki çift Facebook
+//          reel'i). Reels'te boş liste artık tek başına "çıkmadı"
+//          demiyor: ikinci tanık olarak kendi nesnemizin durumu
+//          soruluyor (kapsayiciCikmisMi). Ayrıca "sonucu bilinmiyor"
+//          hâli 30 dakikada bitiyor -- sonsuz erteleme yerine
+//          başarısız + bildirim, YENİDEN YAYIN YOK.
 
-const SURUM = '1.20.0';
+const SURUM = '1.21.0';
 const UCLAR = ['GET / (servis bilgisi)', 'POST / (bir tur)'];
 
 // ⚠ ORTAM DEĞİŞKENLERİ KIRPILIYOR.
