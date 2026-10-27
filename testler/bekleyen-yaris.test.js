@@ -23,6 +23,12 @@ const HEDEF = process.argv[2] || 'http://127.0.0.1:8098/app.html';
       const api = {
         _f: [],
         select(){ return api; }, eq(){ return api; }, is(){ return api; }, in(){ return api; },
+        // ⚠ 22 Ekim 2026: pullRemote sayfalaniyor (bkz. app.html).
+        // Sahte istemci .order/.range tanimadigi icin okuma
+        // "s(...).order is not a function" ile patliyordu ve bu test
+        // YANLIS sebebi olcuyordu. Zincir ikisini de tasiyor; veri
+        // 1000'den az oldugu icin okuma ilk sayfada bitiyor.
+        order(){ return api; }, range(){ return api; },
         update(){ return { in:()=>Promise.resolve({error:null}), eq:()=>Promise.resolve({error:null}) }; },
         upsert(){ return Promise.resolve({ error:null }); },
         maybeSingle(){ return gec({ data:null, error:null }); },

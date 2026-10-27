@@ -46,7 +46,14 @@ const KOK = yol.join(__dirname, '..');
 let g = 0, k = 0;
 const bak = (ad, ko, ek)=>{ if(ko){ g++; console.log('  ok  '+ad); } else { k++; console.log('  YOK '+ad+(ek?' -> '+ek:'')); } };
 
-const HTML = fs.readFileSync(yol.join(KOK, 'app.html'), 'utf8');
+// ⚠ SATIR SONLARI NORMALLESTIRILIYOR. app.html .gitattributes'ta
+// `text eol=crlf` ile sabit: depoda LF duruyor, checkout'ta CRLF
+// oluyor. Bu testin ilk hali kaynagi `\n` iceren bir metinle ariyordu;
+// yerelde (LF) geciyor, CI'da (CRLF) "bitis bulunamadi" ile
+// PATLIYORDU -- yani olcum ortama bagliydi ve yesil olmasi hicbir sey
+// kanitlamiyordu. 27 Ekim 2026'da gece kosusu yakaladi.
+const HTML = fs.readFileSync(yol.join(KOK, 'app.html'), 'utf8')
+                .replace(/\r\n/g, '\n');
 
 function parca(bas, son, ad){
   const i = HTML.indexOf(bas);
