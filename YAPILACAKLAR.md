@@ -760,6 +760,13 @@ GERİYE KALAN TEK OTOMASYON: TASLAK YOLU
   ⚠ ALT YAZI GİTMİYOR. `post_info` yalnızca Direct Post ucunda var.
   Kullanıcı alt yazıyı TikTok uygulamasında yazıyor.
 
+  ⛔ TASLAK YOLU DA AÇILMAYACAK — 27 Ekim 2026, kullanıcı kararı.
+  Seçenek açıkça soruldu ("aç" / "kapalı kalsın" / "hiç planlamayalım"),
+  cevap **"kapalı kalsın"**. Yani TikTok'a Shootboard'dan HİÇBİR ŞEY
+  gitmiyor; takvimdeki TikTok kayıtları yalnızca plan olarak duruyor,
+  dosya R2'ye bile çıkmıyor. Bu bir eksiklik değil, VERİLMİŞ KARAR --
+  "neden TikTok kapalı" diye tekrar araştırmaya gerek yok.
+
   ⛔ YANİ TIKTOK "REELS GİBİ" OLAMAZ. Kullanıcı 27 Ekim'de "tıpkı
   reels gibi post edebiliyor olmalıyım" dedi; teknik cevap HAYIR ve
   sebebi bizde değil, TikTok'un uygunluk kuralında. Bunu bir daha
