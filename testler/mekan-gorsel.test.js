@@ -12,6 +12,21 @@ const bak = (ad, ko, ek)=>{ if(ko){ g++; console.log('  ok  '+ad); } else { k++;
   const hata = []; p.on('pageerror', e => hata.push(String(e)));
   // Karo istekleri disariya cikmasin: testte ag yok.
   await p.route('**tile.openstreetmap.org**', r=> r.abort());
+  // ⚠ 27 Ekim 2026 — AG TAM KAPATILMAMISTI VE TEST BUNDAN KALIYORDU.
+  // Yorum "testte ag yok" diyordu ama yalnizca harita karolari
+  // engelleniyordu; supabase-js CDN'den GERCEKTEN cekiliyor,
+  // goatcounter GERCEKTEN cagriliyordu. Asagidaki uc reload
+  // `waitUntil:'networkidle'` bekliyor -- yani "500 ms boyunca hic ag
+  // trafigi yok". O iki istek CI'da asili kalinca bu kosul HIC
+  // gerceklesmiyor ve test zaman asimina dusuyor.
+  //
+  // ⛔ TAVANI BUYUTMEK COZMUYOR, OLCULDU: tavan 30 sn iken de 60 sn
+  // iken de ayni yerde kaldi. Beklemek asili bir istegi bitirmiyor.
+  // Depodaki oteki testlerin yaptigi sey yapiliyor: ikisi de sahte.
+  await p.route('**/supabase-js**', r=> r.fulfill({ status:200,
+    contentType:'application/javascript',
+    body:'window.supabase={createClient(){return {auth:{getSession:()=>Promise.resolve({data:{session:null}}),onAuthStateChange(){return {data:{subscription:{unsubscribe(){}}}}}}};}};' }));
+  await p.route('**/goatcounter**', r=> r.abort());
   await p.goto(KOK + '/app.html', { waitUntil:'networkidle' });
   await p.evaluate(() => { try{ localStorage.setItem('demo_tour_done','1'); }catch(e){} });
   await p.reload({ waitUntil:'networkidle' });

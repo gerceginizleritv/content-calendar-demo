@@ -712,6 +712,80 @@ OTOMATİK YAYIN POLİTİKASI — TEK TABLO (13 Ekim 2026)
   YAYIN_TURLERI boyunca eşleştiriyor; bu gerçek bir durum) ve mutasyon
   yakalandı. Şimdi 8/8.
 
+TIKTOK DIRECT POST — ⛔ UYGUN DEĞİL, KAPANDI (27 Ekim 2026)
+────────────────────────────────────────────────────────────────────
+
+⛔ **ARAYÜZ YAZMAYIN. DENETİME BAŞVURMAYIN.** Aşağıdaki 12 Ekim planı
+(7 maddelik arayüz + denetim) **geçersiz.** Sebep arayüz değil,
+UYGUNLUK.
+
+TikTok'un kendi App Review Guidelines belgesi:
+
+    "API Clients must not be limited to test applications and should
+     be intended for a wide audience, not limited to internal
+     groups/private use."
+
+Ve belge **kabul edilemez örnek** olarak şunu veriyor: *bir ekibin
+yönettiği hesaplara yükleme yapan araç.*
+
+Shootboard tam olarak bu: tek kullanıcılı, kendi hesaplarına yükleyen
+bir araç. Yani arayüz kusursuz olsa bile denetim uygunluktan reddedilir.
+12 Ekim'de tespit edilen "varsayılan gizlilik olamaz" kuralı doğruydu
+ama ALTINDA daha sert bir kural varmış ve o gün görülmemiş.
+
+BAĞIMSIZ DOĞRULAMA (üçüncü taraf, kanıt değil ama aynı yöne işaret)
+  Postiz'in GitHub kayıtları:
+    #2297 (21 Ekim 2026) — kendi sunucusunda Postiz kuran kullanıcı
+          tam bu "internal/own-account use" gerekçesiyle reddedilmiş
+    #1563, #1362 — daha eski redler, arayüz kurallarından
+          (özellikle varsayılan gizlilik)
+
+POSTIZ DENENDİ, KULLANILMAYACAK (27 Ekim 2026, kullanıcı kararı)
+  · Kendi sunucuna kurmak ÇÖZMÜYOR: kendi TikTok uygulamanı açman ve
+    aynı denetimden geçmen gerekiyor -- birebir aynı duvar.
+  · Postiz Cloud ($29/ay, 5 kanal) teorik olarak çözerdi: yayın
+    Postiz'in çok kullanıcılı, denetimli uygulamasından gider ve
+    uygunluk kuralı Postiz için sorun değil.
+    ⚠ Ama "Cloud'da TikTok kendi uygulamanı gerektirmez" iddiası
+    HİÇBİR KAYNAKTA açıkça yazmıyor; doğrulanmadı.
+  · Kullanıcı kararı: Postiz kullanılmayacak. Kodda hiçbir yere
+    bağlanmadı, silinecek bir şey yok.
+
+GERİYE KALAN TEK OTOMASYON: TASLAK YOLU
+  `/v2/post/publish/inbox/video/init/` -- video TikTok GELEN KUTUSUNA
+  taslak olarak düşüyor, paylaşmayı kullanıcı uygulamadan yapıyor.
+  Denetim GEREKMİYOR, uygunluk kuralından ETKİLENMİYOR, bugün çalışır.
+  İzin (`video.upload`) 12 Ekim'de verilmiş ve duruyor.
+
+  ⚠ ALT YAZI GİTMİYOR. `post_info` yalnızca Direct Post ucunda var.
+  Kullanıcı alt yazıyı TikTok uygulamasında yazıyor.
+
+  ⛔ TASLAK YOLU DA AÇILMAYACAK — 27 Ekim 2026, kullanıcı kararı.
+  Seçenek açıkça soruldu ("aç" / "kapalı kalsın" / "hiç planlamayalım"),
+  cevap **"kapalı kalsın"**. Yani TikTok'a Shootboard'dan HİÇBİR ŞEY
+  gitmiyor; takvimdeki TikTok kayıtları yalnızca plan olarak duruyor,
+  dosya R2'ye bile çıkmıyor. Bu bir eksiklik değil, VERİLMİŞ KARAR --
+  "neden TikTok kapalı" diye tekrar araştırmaya gerek yok.
+
+  ⛔ YANİ TIKTOK "REELS GİBİ" OLAMAZ. Kullanıcı 27 Ekim'de "tıpkı
+  reels gibi post edebiliyor olmalıyım" dedi; teknik cevap HAYIR ve
+  sebebi bizde değil, TikTok'un uygunluk kuralında. Bunu bir daha
+  araştırmaya gerek yok.
+
+HESAP DURUMU (27 Ekim 2026'da `tiktok_hesaplari`'ndan okundu)
+  kullanici_adi    Gerçeğin İzleri
+  kapsamlar        user.info.basic · video.publish · video.upload
+  erisim_bitis     13 Ekim 2026 (eskimiş -- kod yenileme jetonuyla
+                   kendiliğinden tazeliyor, iş değil)
+  yenileme_bitis   12 Ekim 2027
+  son_hata         boş
+  ⚠ Bu bağın Sandbox'ta mı Production'da mı kurulduğu bu satırdan
+  GÖRÜNMÜYOR. 12 Ekim'deki çalışma Sandbox'taydı.
+
+⬇ AŞAĞISI TARİHSEL KAYIT. Uygunluk kuralı yüzünden uygulanabilir
+değil; 12 Ekim'de ne düşünüldüğünü ve kodun nereye kadar gittiğini
+göstermek için duruyor.
+
 TIKTOK `video.publish` — DURDURULDU (12 Ekim 2026, kullanıcı kararı)
 ────────────────────────────────────────────────────────────────────
 
