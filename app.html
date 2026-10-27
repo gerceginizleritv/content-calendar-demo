@@ -17261,7 +17261,48 @@ document.getElementById('viewMonthBtn').addEventListener('click', ()=> setView('
 document.getElementById('viewWeekBtn').addEventListener('click', ()=> setView('week'));
 document.getElementById('viewDayBtn').addEventListener('click', ()=> setView('day'));
 document.getElementById('viewTableBtn').addEventListener('click', ()=> setView('table'));
-document.getElementById('todayBtn').addEventListener('click', ()=>{ weekOffset = 0; gunKaymasi = 0; ayKaymasi = 0; haftaGunKaymasi = 0; renderCal(); });
+// "Bugün" düğmesi 27 Ekim 2026'ya kadar YALNIZCA hangi ay/haftanın
+// çizileceğini sıfırlıyordu, SAYFAYI KAYDIRMIYORDU. Zaten içinde
+// bulunduğun aydayken ve sayfanın üstündeyken basınca hiçbir şey
+// olmuyormuş gibi görünüyordu: ekranda 28 Eylül - 11 Ekim duruyor,
+// bugün (27 Ekim) çok aşağıda. Düğme bozuk sanılıyordu, oysa işini
+// yapıyordu -- eksik yapıyordu.
+//
+// ⚠ KAYDIRMA renderCal()'A DEĞİL, YALNIZCA BU DÜĞMEYE BAĞLI.
+// renderCal her kayıt değişiminde çağrılıyor; kaydırmayı oraya
+// koysaydık kullanıcı takvimin başka bir yerine bakarken sayfa
+// habire bugüne zıplardı. Gerileme testi bunu ölçüyor.
+//
+// ⚠ GÖRÜNÜM DEĞİŞTİRMİYOR. Ay görünümündeysen ay görünümünde
+// kalıyorsun; düğmenin işi "bugüne git", "günlüğe geç" değil.
+function buguneKaydir(){
+  // Her görünümün bugün işareti AYRI. Yanlış seçici sessizce hiçbir şey
+  // bulmaz ve düğme yine ölü görünür, o yüzden dördü de yazılı.
+  const secici = viewMode === 'table' ? '#calTableWrap tr.ct-today'
+               : (viewMode === 'week' || viewMode === 'day') ? '.hg-dayhead.today'
+               : '#calGrid .cal-day.today';
+  const el = document.querySelector(secici);
+  // Bugün çizilmemiş olabilir: süzgeç satırı gizlemiş ya da pencere
+  // bugünü kapsamıyor. Sessizce çıkıyoruz -- bu bir hata değil.
+  if(!el || typeof el.scrollIntoView !== 'function') return false;
+  // ⚠ block:'nearest' KASITLI. Bugün zaten ekrandaysa sayfa yerinden
+  // OYNAMIYOR. 'center' olsaydı görünür bir hücre için bile kaydırır,
+  // kullanıcının okuduğu yeri altından çekerdi.
+  let yumusak = true;
+  try{
+    yumusak = !(window.matchMedia
+      && window.matchMedia('(prefers-reduced-motion: reduce)').matches);
+  }catch(e){}
+  try{
+    el.scrollIntoView({ block:'nearest', inline:'nearest',
+                        behavior: yumusak ? 'smooth' : 'auto' });
+  }catch(e){
+    // Seçenekli biçimi tanımayan eski tarayıcı: seçeneksiz hâli yine kaydırır.
+    el.scrollIntoView();
+  }
+  return true;
+}
+document.getElementById('todayBtn').addEventListener('click', ()=>{ weekOffset = 0; gunKaymasi = 0; ayKaymasi = 0; haftaGunKaymasi = 0; renderCal(); buguneKaydir(); });
 
 // ---- Yedek -----------------------------------------------------------
 // Yedek eskiden YALNIZCA takvim kayitlarini aliyordu: projeler, fikirler,
