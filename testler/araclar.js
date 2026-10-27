@@ -49,18 +49,63 @@ function kromYolu(){
 const gercek = playwrightYukle();
 const krom = kromYolu();
 
+// GEZINME ZAMAN ASIMI -- NEDEN TEK YERDEN YUKSELTILDI.
+// 27 Ekim 2026: ayni commit'in (988fbb8) iki CI kosusunda IKI AYRI test
+// kaldi -- mobil-alt-menu "page.goto: Timeout 30000ms", mekan-gorsel
+// "page.reload: Timeout 30000ms". Ayni agac push kosusunda yesildi, iki
+// test de yerelde ve ayni sabahin gece kosusunda geciyordu. Yani kod
+// dogruydu, olcum kaldi.
+//
+// Sebep olculdu, tahmin degil: CI kosucusu bu testleri ~4 kat yavas
+// kosuyor.
+//     mekan-gorsel      yerel  5sn   CI 28sn
+//     mobil-alt-menu    yerel 19sn   CI 44sn
+// Playwright'in varsayilan gezinme tavani 30 saniye; 1,1 MB'lik app.html
+// yuklu bir kosucuda bu sinira dayaniyor.
+//
+// ⛔ BU BIR TESTI ATLAMAK DEGIL. Gercekten acilmayan bir sayfa yine
+// kaliyor, yalnizca daha gec. Hicbir test devre disi birakilmadi.
+// Tavani kucultmek testi hizlandirmaz, yalnizca kirilgan yapar.
+const GEZINME_TAVANI_MS = Number(process.env.GEZINME_TAVANI_MS) || 60000;
+exports.GEZINME_TAVANI_MS = GEZINME_TAVANI_MS;
+
+// Tavan sayfaya ya da baglama konuluyor: baglama konuldugunda ondan
+// dogan sayfalar da devraliyor.
+function tavanKoy(nesne){
+  try{ nesne.setDefaultNavigationTimeout(GEZINME_TAVANI_MS); }catch(e){}
+  return nesne;
+}
+
+// Tarayici nesnesinin newContext'i sarmalaniyor: testlerin icinde tek
+// satir degismiyor, acilan her sayfa tavani aliyor.
+//
+// newPage AYRICA sarilmiyor, cunku Playwright'in browser.newPage()'i
+// iceride kendi newContext()'ini cagiriyor -- yani bu sarmaldan geciyor
+// ve ayrica sarmak OLU KOD olur. Mutasyon testi bunu boyle buldu:
+// newPage sarmalini kaldiran mutasyon yakalanamadi, cunku davranis
+// gercekten degismiyordu.
+//
+// ⚠ Bu bir Playwright IC AYRINTISINA yaslaniyor. Varsayimi testin
+// [newPage] bolumu civiliyor: Playwright bir gun devretmeyi birakirsa o
+// bolum "metinde 1500 yaziyor" diye kalir ve haber verir.
+function tarayiciyiSar(t){
+  const baglam = t.newContext.bind(t);
+  t.newContext = async function(secenek){ return tavanKoy(await baglam(secenek)); };
+  return t;
+}
+
 // Testler `chromium.launch({...})` diye cagiriyor; yol burada ekleniyor,
 // testlerin icinde yazmiyor.
 exports.chromium = {
-  launch(secenek){
+  async launch(secenek){
     const s = Object.assign({}, secenek || {});
     if(krom && !s.executablePath) s.executablePath = krom;
-    return gercek.chromium.launch(s);
+    return tarayiciyiSar(await gercek.chromium.launch(s));
   },
-  launchPersistentContext(dizin, secenek){
+  async launchPersistentContext(dizin, secenek){
     const s = Object.assign({}, secenek || {});
     if(krom && !s.executablePath) s.executablePath = krom;
-    return gercek.chromium.launchPersistentContext(dizin, s);
+    return tavanKoy(await gercek.chromium.launchPersistentContext(dizin, s));
   }
 };
 exports.devices = gercek.devices;

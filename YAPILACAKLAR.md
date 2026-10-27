@@ -6,6 +6,141 @@ duruyor, neden ertelendiği de yazıyor ki aynı tartışma baştan yapılmasın
 
 ---
 
+## ÇİFT FACEBOOK REEL'İ — kök sebep ve onarım (26-27 Ekim 2026)
+
+**OLAN.** 26 Ekim'de aynı Facebook reel'i iki kez yayınlandı: 10:01
+(80 görüntülenme) ve 10:12 (153 görüntülenme). Kullanıcı birini elle
+sildi. Kaydın `attempt_count` değeri 2 idi.
+
+**TEŞHİS KANITLANMADI, ÇIKARIM.** Satırın iz alanları (`publish_ref`,
+`publish_ref_at`, `publish_called_at`, `last_error`) `story_yayinlandi`
+tarafından temizleniyor (sql/42) ve Edge Function günlükleri bir gün
+sonra siliniyor — yani olayın kendi kanıtı yoktu. Teşhis koddan
+okunarak kuruldu, ölçümle değil. **Bu satır böyle kalsın:** "kanıtlandı"
+yazmak, 13 Ekim'de uydurulan görüntülenme sayısının yaptığı hatanın
+aynısı olur.
+
+**KODDAN OKUNAN AKIŞ.** Bölüm 8, üçüncü katman:
+
+    publish_ref VE publish_called_at doluysa -> cikmisMi() sor
+      biliniyor=false            -> 5 dk ertele (sonsuza kadar)
+      biliniyor=true,  id dolu   -> yayınlanmış say
+      biliniyor=true,  id boş    -> YENİDEN YAYINLA   <-- kapı burada
+
+`cikmisMi` Facebook reels için `/{pageId}/video_reels` listesine
+bakıyordu. Liste okunup içinde bizim yayın bulunamazsa cevap "çıkmadı"
+oluyordu — ve o cevap yeniden yayın demek. Yalnızca **iki dakikalık**
+bir "taze" penceresi vardı: çağrının üstünden iki dakika geçmediyse boş
+liste "bilmiyorum" sayılıyordu. Dünkü olayda arada **onbir dakika**
+vardı, yani pencere çoktan kapanmıştı.
+
+**PENCEREYİ BÜYÜTMEK ÇÖZÜM DEĞİL.** Belirsizlik yaşlandıkça azalmıyor:
+listede neden görünmediğini bilmiyoruz ve beklemek bunu öğretmiyor.
+Pencere ne kadar olsa bir gün onun da dışına düşen bir vaka çıkar —
+26 Ekim'de olan tam buydu.
+
+### Onarım (27 Ekim 2026) — iki parça
+
+**1. İKİNCİ TANIK.** Reels'te boş liste artık tek başına karar
+vermiyor; kendi nesnemizin durumu soruluyor. Desen yeni değil:
+Threads'te 16 Ekim'den beri çalışıyor (`threadsCikmisMi`), aynısı
+Facebook ve Instagram'a taşındı (`kapsayiciCikmisMi`).
+
+| | sorulan | "çıkmış" cevabı |
+|---|---|---|
+| Instagram | `GET /{konteyner}?fields=status_code` | `PUBLISHED` |
+| Facebook | `GET /{video_id}?fields=status` | `status.publishing_phase.publish_status = published` |
+
+⚠ **SIRA ÖNEMLİ, TERSİ ÇİFT YAYIN ÜRETİR.** Önce liste soruluyor;
+nesnenin durumu yalnızca liste OKUNDU ve BOŞ iken karar veriyor. Tek
+başına nesneye güvenmek, Meta durumu geç güncellerse çıkmış bir reel'i
+"çıkmadı" saymak olurdu.
+
+⚠ **FACEBOOK ALANI GARANTİ DEĞİL, BİLEREK BÖYLE YAZILDI.** O alanlar
+Meta'nın Video API belgesinde duruyor ama `video_reels` ucunun kendi
+referansında geçmiyor — yani gerçekte boş dönebilir. Dönerse zararsız:
+tanınmayan her cevap "bilmiyorum" sayılıyor, **asla "çıkmadı"**. Yani
+bu tanık kesinliği yalnızca artırabilir, çift yayın üretemez. Canlıda
+hangi cevabın geldiği **henüz ölçülmedi**; ilk kurtarma turunda
+günlükten okunacak.
+
+`FINISHED` / `ERROR` / `EXPIRED` (IG) ve `not_published` (FB) **kesin**
+cevaplar: "yayınlanmadım" diyorlar, orada yeniden yayın güvenli ve
+kurtarma kendiliğinden tamamlanıyor.
+
+**2. BELİRSİZLİK TAVANI — 30 dakika.** "Sonucu bilinmiyor" hâli beş
+dakikada bir sonsuza kadar erteleniyordu: ne yayın çıkıyor, ne e-posta
+gidiyor. Bölüm 9'un yasakladığı sessiz başarısızlığın tam kendisi ve
+16 Ekim'de Threads'te zaten yaşanmıştı. Artık 30 dakika sonra kayıt
+`failed` yazılıyor ve bildirim gidiyor.
+
+⛔ **KENDİLİĞİNDEN YENİDEN YAYINLANMIYOR.** Belirsizken ikinci kez
+yayınlamak, 26 Ekim'de olanın aynısıdır. Kararı kullanıcı veriyor;
+e-posta ne yapacağını söylüyor: platformu aç ve bak, gönderi oradaysa
+kaydı elle "yayınlandı" işaretle, orada değilse elle yayınla.
+
+**STORY'DE HİÇBİR ŞEY DEĞİŞMEDİ** ve bu bilinçli: `/stories` 24
+saatlik ve anında güncelleniyor, orada boş liste kesin "çıkmadı"
+demek. Reels için getirilen ihtiyat story'yi yavaşlatmamalı. Gerileme
+testi bunu ölçüyor.
+
+**ÖLÇÜM.** `testler/story-yayin.test.js` 328 → 364 ölçüm. Yeni 36
+ölçümün içinde 26 Ekim olayının birebir canlandırması var (Facebook,
+liste boş, onbir dakika geçmiş → ikinci yayın ÇIKMIYOR). Mutasyon
+testi: 10 kasıtlı bozma, 10'u yakalandı.
+
+⚠ **TEK BİLİNEN BOŞLUK:** `kapsayiciCikmisMi` içindeki `if (!ref)`
+koruması bugün erişilemiyor (tek çağıran Bölüm 8 ve orası `publish_ref`
+kapısının arkasında), yani mutasyon testi o satırı öldürmüyor. Bilerek
+duruyor; `threadsCikmisMi`'de de aynı koruma var.
+
+---
+
+## CI KIRILGANLIĞI — gezinme tavanı (27 Ekim 2026)
+
+**OLAN.** PR #36'nın CI koşusu iki denemede de kırmızı geldi ama **her
+denemede farklı bir test** kaldı: `mobil-alt-menu` (`page.goto: Timeout
+30000ms`), sonra `mekan-gorsel` (`page.reload: Timeout 30000ms`).
+
+**KOD DEĞİL, ORTAM — kanıtlandı.** `git merge-tree origin/main HEAD`
+ağacı dal ucuyla birebir aynı çıktı (`98ba8b5`): aynı commit'in `push`
+koşusu (#393) yeşil, `pull_request` koşusu (#394) iki kez kırmızı. İki
+test de yerelde ve aynı sabahın gece koşusunda geçiyordu. Aynı desen
+22 Ekim'de ters yönde de görülmüş (`2761a57`: push kırmızı, PR yeşil).
+
+**ÖLÇÜM.** CI koşucusu bu testleri ~4 kat yavaş koşuyor:
+
+| test | yerel | CI |
+|---|---|---|
+| `mekan-gorsel` | 5 sn | 28 sn |
+| `mobil-alt-menu` | 19 sn | 44 sn |
+
+Playwright'ın varsayılan gezinme tavanı 30 saniye; 1,14 MB'lık
+`app.html` + üç yerel sunucu + Chromium yüklü bir koşucuda bu sınıra
+dayanıyor.
+
+**ONARIM.** `testler/araclar.js` tek merkezinde açılan her sayfaya 60
+saniyelik tavan konuyor (`GEZINME_TAVANI_MS`, çevre değişkeniyle
+geçersiz kılınabiliyor). ⛔ **Hiçbir test atlanmadı, devre dışı
+bırakılmadı:** gerçekten açılmayan bir sayfa yine kalıyor, yalnızca
+daha geç.
+
+Tavan `newContext`'e konuyor, `newPage`'e **konmuyor** — çünkü
+Playwright'ın `browser.newPage()`'i içeride kendi `newContext()`'ini
+çağırıyor, yani ikisini de sarmak ölü kod olurdu. Mutasyon testi bunu
+böyle buldu: `newPage` sarmalını kaldıran mutasyon yakalanamadı, çünkü
+davranış gerçekten değişmiyordu. Varsayım bir Playwright iç ayrıntısına
+yaslanıyor ve testin `[newPage]` bölümü onu çiviliyor.
+
+`testler/gezinme-tavani.test.js`: 11 ölçüm, mutasyon testi 7/7.
+
+⚠ **YEREL TAM TAKIM KOŞUSU BU KUTUDA TAMAMLANAMIYOR.** `hatirlatma`
+testine gelindiğinde (59. sıra, en ağır test) koşucu ortam sınırına
+çarpıp 144 ile ölüyor — iki kez, aynı yerde. Test kendi başına 63/0
+geçiyor, yani test sağlam. Takım bu yüzden ikiye bölünerek koşuluyor.
+
+---
+
 ## THREADS YAYINI — çalışıyor (16 Ekim 2026)
 
 Threads artık Shootboard'dan yayınlanıyor. Kullanıcının elle yaptığı iş

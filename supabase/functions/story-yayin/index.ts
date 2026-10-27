@@ -57,8 +57,15 @@
 //          /v2/post/publish/video/init/ (post_info ile alt yazı ve
 //          etiketler), yoksa eski taslak yolu. Gizlilik seviyesi
 //          creator_info/query'nin verdiği listeden seçiliyor.
+//
+// 1.21.0 — Çift yayın kapısı kapatıldı (26 Ekim 2026'daki çift Facebook
+//          reel'i). Reels'te boş liste artık tek başına "çıkmadı"
+//          demiyor: ikinci tanık olarak kendi nesnemizin durumu
+//          soruluyor (kapsayiciCikmisMi). Ayrıca "sonucu bilinmiyor"
+//          hâli 30 dakikada bitiyor -- sonsuz erteleme yerine
+//          başarısız + bildirim, YENİDEN YAYIN YOK.
 
-const SURUM = '1.20.0';
+const SURUM = '1.21.0';
 const UCLAR = ['GET / (servis bilgisi)', 'POST / (bir tur)'];
 
 // ⚠ ORTAM DEĞİŞKENLERİ KIRPILIYOR.
@@ -186,6 +193,17 @@ const KONTEYNER_TAVANI_MS = 120_000;
 // 'butce-bitti'). Yani on dakika beklemek on dakika meşgul olmak
 // değil; yalnızca konteyneri düşürmeden önce tanınan süre.
 const REELS_KONTEYNER_TAVANI_MS = 10 * 60 * 1000;
+// BELİRSİZLİK TAVANI — Bölüm 8, üçüncü katman.
+// "Yayın çağrısı yapıldı, sonucu bilinmiyor" hâli beş dakikada bir
+// erteleniyor. 16 Ekim 2026'da Threads'te görüldü ki bu hâl SONSUZA
+// KADAR sürebiliyor: ne yayın çıkıyor, ne hata e-postası gidiyor --
+// yani Bölüm 9'un yasakladığı sessiz başarısızlığın tam kendisi.
+//
+// Bu süreden sonra kayıt BAŞARISIZ yazılıyor ve e-posta gidiyor.
+// ⛔ KENDİLİĞİNDEN YENİDEN YAYINLANMIYOR: belirsizken ikinci kez
+// yayınlamak, 26 Ekim'de Facebook'ta olanın aynısıdır -- kalıcı bir
+// çift reel ve elle silme. Kararı kullanıcı veriyor.
+const BELIRSIZ_TAVANI_MS = 30 * 60 * 1000;
 // Bir turda en fazla kaç kayıt. Bölüm 4'teki LIMIT 10 kuyruk sorgusu
 // için; burada süre bütçesi zaten sınırlıyor, düşük tutmak gecikmeyi
 // azaltıyor.
@@ -518,23 +536,98 @@ async function cikmisMi(k: any, cagriAni: string): Promise<{ biliniyor: boolean;
     const t = typeof ham === 'number' ? ham * 1000 : Date.parse(String(ham));
     if (t && t >= esik) return { biliniyor: true, id: String(m.id) };
   }
-  // ⚠ REELS'TE BOŞ LİSTE "ÇIKMADI" DEMEK DEĞİL — HENÜZ.
-  // Story 24 saatlik ve /stories anında güncelleniyor; yeni çıkmış bir
-  // story listede olmak zorunda. /media için aynı kesinlik yok: yeni
-  // yayınlanan bir reel listeye birkaç saniye geç düşebiliyor.
+  // ⚠ REELS'TE BOŞ LİSTE "ÇIKMADI" DEMEK DEĞİL — 27 EKİM 2026'DAN BERİ
+  // HİÇBİR SÜREDE DEĞİL.
   //
-  // Asimetri burada karar veriyor. Yanlış "çıkmadı" cevabı YENİDEN
-  // YAYIN demek ve bir reel profilde KALICI duruyor -- elle silmek
-  // gerekir. Yanlış "bilmiyorum" cevabı ise yalnızca beş dakika
-  // gecikme. O yüzden çağrının üstünden iki dakika geçmediyse boş
-  // liste "bilmiyorum" sayılıyor; sonraki denemede /media çoktan
-  // güncellenmiş olur.
-  if (reel && Date.now() - an < 120_000) {
-    console.warn('[story]', uc, 'boş döndü ama çağrı henüz taze — emin değiliz');
+  // Story 24 saatlik ve /stories anında güncelleniyor; yeni çıkmış bir
+  // story listede olmak zorunda. /media ve /video_reels için aynı
+  // kesinlik YOK.
+  //
+  // 26 Ekim 2026: aynı Facebook reel'i 10:01'de ve 10:12'de iki kez
+  // yayınlandı. İlki çıkmıştı. Onbir dakika sonra kurtarma turu
+  // /video_reels'e sordu, listede BULAMADI ve o günkü iki dakikalık
+  // "taze" penceresi çoktan geçtiği için "çıkmadı" dedi -- yeniden
+  // yayınladı. Kalıcı bir reel elle silinmek zorunda kaldı.
+  //
+  // ⛔ O PENCEREYİ BÜYÜTMEK ÇÖZÜM DEĞİL. Belirsizlik yaşlandıkça
+  // azalmıyor: listede neden görünmediğini bilmiyoruz ve beklemek
+  // bunu öğretmiyor. Pencere ne kadar olsa, bir gün onun da dışına
+  // düşen bir vaka çıkar -- 26 Ekim'de olan tam buydu.
+  //
+  // Artık İKİNCİ BİR TANIK soruluyor: kendi nesnemizin durumu. Desen
+  // Threads'te 16 Ekim'den beri çalışıyor, aynısı buraya taşındı.
+  // ⚠ SIRA ÖNEMLİ, TERSİ ÇİFT YAYIN ÜRETİR: önce liste, yalnızca
+  // liste OKUNDU ve BOŞ iken nesnenin durumu karar veriyor.
+  //
+  // Asimetri hâlâ aynı: yanlış "çıkmadı" KALICI bir çift reel demek,
+  // yanlış "bilmiyorum" ise yalnızca gecikme -- ve o gecikme artık
+  // sonsuz değil, BELIRSIZ_TAVANI_MS dolunca e-posta gidiyor.
+  if (reel) return await kapsayiciCikmisMi(k, pf);
+  // Story'de liste YETKİLİ: /stories 24 saatliktir ve anında
+  // güncellenir, yeni çıkmış bir story orada olmak zorunda.
+  return { biliniyor: true, id: '' };
+}
+
+// ══════════════════════════════════════════════════════════════════
+// İKİNCİ TANIK: KENDİ NESNEMİZİN DURUMU — Bölüm 8, reels
+// ══════════════════════════════════════════════════════════════════
+// Liste taraması "profilde yeni bir şey var mı" diye soruyor; bu ise
+// "BİZİM yüklediğimiz şey yayınlandı mı" diye soruyor. İkincisi çok
+// daha dar ve çok daha güvenilir: publish_ref elimizde.
+//
+//   Instagram  publish_ref = konteyner kimliği
+//              GET /{konteyner}?fields=status_code
+//              PUBLISHED = "kapsayıcının medya nesnesi yayınlandı"
+//              (belgelenmiş beş değerden biri; ötekiler FINISHED,
+//               IN_PROGRESS, ERROR, EXPIRED)
+//
+//   Facebook   publish_ref = video_id (upload_phase=start döndürüyor)
+//              GET /{video_id}?fields=status
+//              status.publishing_phase.publish_status = published |
+//              not_published
+//
+// ⚠ FACEBOOK ALANI GARANTİ DEĞİL, BİLEREK BÖYLE YAZILDI. Bu alanlar
+// Meta'nın Video API belgesinde duruyor ama video_reels ucunun kendi
+// referansında geçmiyor. Yani boş dönebilir -- ve dönerse zararsız:
+// tanınmayan her cevap "bilmiyorum" sayılıyor, ASLA "çıkmadı". Yani
+// bu fonksiyon kesinliği yalnızca ARTIRABİLİR, çift yayın üretemez.
+async function kapsayiciCikmisMi(k: any, pf: string): Promise<{ biliniyor: boolean; id: string }> {
+  const ref = String(k.publish_ref ?? '');
+  // İz yoksa sorulacak nesne de yok.
+  // ⚠ BU SATIRA BUGÜN ERİŞİLMİYOR ve bilerek duruyor: tek çağıran
+  // Bölüm 8 ve orası `k.publish_ref && k.publish_called_at` kapısının
+  // arkasında. Yani mutasyon testi bu satırı öldürmez -- gap burada
+  // yazılı olsun diye not edildi. threadsCikmisMi'de de aynı koruma
+  // var; ikinci bir çağıran eklenirse hazır olması gerekiyor.
+  if (!ref) return { biliniyor: false, id: '' };
+  const alan = pf === 'facebook' ? 'status' : 'status_code';
+  let veri: any;
+  try {
+    veri = await graf(`/${ref}`, { alan: { fields: alan } });
+  } catch (e) {
+    // SORULAMADI ≠ ÇIKMADI.
+    console.warn('[story] kapsayıcı durumu sorulamadı:', siniflandir(e).mesaj);
     return { biliniyor: false, id: '' };
   }
-  // Liste geldi ve o pencerede hiçbir şey yok: çıkmamış.
-  return { biliniyor: true, id: '' };
+  if (pf === 'facebook') {
+    const y = String(veri?.status?.publishing_phase?.publish_status ?? '');
+    // Gerçek gönderi kimliğini bilmiyoruz; video kimliği iz olarak
+    // yeterli -- yayın yolundaki seçimin aynısı.
+    if (y === 'published') return { biliniyor: true, id: ref };
+    if (y === 'not_published') return { biliniyor: true, id: '' };
+    console.warn('[story] FB video durumu okunamadı (publish_status yok) — emin değiliz');
+    return { biliniyor: false, id: '' };
+  }
+  const kod = String(veri?.status_code ?? '');
+  if (kod === 'PUBLISHED') return { biliniyor: true, id: ref };
+  // FINISHED = "yayınlanmaya hazır", yani YAYINLANMADI. ERROR ve
+  // EXPIRED de yayınlanmış değil. Üçü de KESİN cevap: yeniden yayın
+  // güvenli.
+  if (kod === 'FINISHED' || kod === 'ERROR' || kod === 'EXPIRED') {
+    return { biliniyor: true, id: '' };
+  }
+  // IN_PROGRESS ya da tanınmayan: cevap yok.
+  return { biliniyor: false, id: '' };
 }
 
 // Graph'a FormData ile POST. Fotoğraf yüklemede alanlar arasında url
@@ -865,6 +958,21 @@ async function kaydiYayinla(k: any, bitis: number): Promise<string> {
   if (k.publish_ref && k.publish_called_at) {
     const { biliniyor, id } = await cikmisMi(k, k.publish_called_at);
     if (!biliniyor) {
+      // ⚠ BELİRSİZLİK SONSUZA KADAR SÜRMEZ — 27 EKİM 2026.
+      // Burası o güne kadar koşulsuz beş dakika erteliyordu. Cevap hiç
+      // gelmezse kayıt sonsuza kadar ertelenirdi: ne yayın, ne
+      // e-posta. 16 Ekim'de Threads'te tam bu yaşandı.
+      const cagri = Date.parse(String(k.publish_called_at ?? '')) || 0;
+      if (cagri && Date.now() - cagri >= BELIRSIZ_TAVANI_MS) {
+        const dk = Math.round(BELIRSIZ_TAVANI_MS / 60000);
+        // ⛔ KENDİLİĞİNDEN YENİDEN YAYINLANMIYOR. Mesaj kullanıcıya ne
+        // yapacağını söylüyor, çünkü kararı o veriyor.
+        await kaliciHata(k, `Yayın çağrısı ${pf}'a gönderildi ama sonucu `
+          + `${dk} dakikadır doğrulanamadı. Çift yayın olmasın diye kendiliğinden `
+          + `tekrar denenmedi. ${pf} hesabını aç ve bak: gönderi ORADAYSA bu kaydı `
+          + `elle "yayınlandı" işaretle; ORADA DEĞİLSE elle yayınla.`);
+        return 'kurtarma-belirsiz-tavan';
+      }
       await rpc('story_ertele', { p_id: k.id, p_dakika: 5,
         p_sebep: `Yayın çağrısının sonucu bilinmiyor; ${pf} sorulamadı. Çift yayın olmasın diye bekleniyor.` });
       return 'kurtarma-belirsiz';

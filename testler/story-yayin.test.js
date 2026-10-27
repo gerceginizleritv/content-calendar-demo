@@ -247,6 +247,9 @@ function metaKur(ek){
                // Reel kapagi: kac kere denendi, hangi video kimligi
                // uzerinde, ve kapak dosyasi kac kere cekildi.
                fbKapak:0, fbKapakVideoId:'', kapakCekildi:0,
+               // IKINCI TANIK (27 Ekim 2026): kendi nesnemize kac kere
+               // soruldu. Sira onemli -- liste ONCE sorulmali.
+               fbVideoDurum:0,
                mediaGovde: [], fbBitirGovde: [], igMediaListe:0,
                // Sayilar "kac kere" diyor, sira "hangi sirayla" diyor.
                // Konteynerlerin yayinlardan ONCE yaratildigi ancak
@@ -266,7 +269,12 @@ function metaKur(ek){
     fbKapakHatasi: false,   // /{video_id}/thumbnails patlasin mi
     kapakAlinamaz: false,   // kapak dosyasi R2'den cekilemesin mi
     medyaHatasi: 0,         // R2'den medya cekilirken donen HTTP kodu
-    yayinDavranisi: 'ok'    // 'ok' | 'kaybolan-yanit' | {kod, altKod, mesaj}
+    yayinDavranisi: 'ok',   // 'ok' | 'kaybolan-yanit' | {kod, altKod, mesaj}
+    // GET /{video_id}?fields=status -- Facebook'un ikinci taniği.
+    // VARSAYILAN BILEREK "BILINMEZ": publishing_phase yok. Meta bu
+    // alanlari video_reels referansinda belgelemiyor, yani gercekte de
+    // gelmeyebilir; varsayilanin guvenli tarafta durmasi gerekiyor.
+    fbVideoDurumu: { status: { video_status: 'ready' } }
   }, ek || {});
 }
 // urlencoded govdeyi nesneye cevirir. Konteynere ne yazildigini
@@ -370,6 +378,14 @@ function grafCevap(adres, yontem, gonderi){
     if(d && typeof d === 'object') return grafHata(d.kod, d.mesaj, d.altKod);
     META.fbReeller = META.fbReeller.concat([{ id:'fbreel_' + cagrilar.fbReelsBitir, creation_time: su() }]);
     return { success:true, post_id:'fbreel_' + cagrilar.fbReelsBitir };
+  }
+  // /{video_id}?fields=status -- IKINCI TANIK, Facebook.
+  // publish_ref Facebook'ta video kimligi; listeye degil KENDI
+  // nesnemize soruyoruz.
+  if(/^\/fbr_\w+$/.test(p) && yontem === 'GET'){
+    cagrilar.fbVideoDurum++;
+    if(META.fbVideoDurumHatasi) return grafHata(100, 'video okunamadi');
+    return META.fbVideoDurumu;
   }
   if(p === `/${IG}/media_publish` && yontem === 'POST'){
     cagrilar.publish++;
@@ -1721,6 +1737,191 @@ async function turAt(gizli){
       cagrilar.publish === 0 && satirlar[0].publish_state === 'pending',
       'publish=' + cagrilar.publish + ' durum=' + satirlar[0].publish_state);
     bak('deneme hakkı geri verildi', satirlar[0].attempt_count === 0, String(satirlar[0].attempt_count));
+  }
+
+  // ══════════════════════════════════════════════════════════════
+  // 26 EKIM 2026 — CIFT FACEBOOK REEL'I. KOK SEBEP VE ONARIM.
+  // ══════════════════════════════════════════════════════════════
+  // Ayni reel 10:01'de ve 10:12'de iki kez yayinlandi. Ilki cikmisti;
+  // onbir dakika sonra kurtarma turu /video_reels'e sordu, listede
+  // bulamadi ve o gunku IKI DAKIKALIK "taze" penceresi gectigi icin
+  // "cikmadi" dedi -- yeniden yayinladi. Kalici bir reel elle silindi.
+  //
+  // Olcum su: 11 DAKIKA GECMIS ve liste BOS iken bile ikinci yayin
+  // CIKMAMALI. Pencereyi buyutmek bunu saglamaz; ikinci bir tanik
+  // saglar -- kendi nesnemizin durumu.
+  console.log('[reels · ikinci tanık (27 Ekim 2026)]');
+  {
+    // ⭐ DUNKU OLAYIN BIREBIR CANLANDIRMASI. Facebook, liste bos,
+    // onbir dakika gecmis. Eski kodda burada fbReelsBitir 1 olurdu.
+    tabloyuKur(reelKayit({ platform:'facebook', publish_ref:'fbr_1',
+                           publish_called_at: su() }));
+    metaKur({ fbVideoDurumu: { status: {
+      video_status:'ready',
+      publishing_phase: { publish_status:'published', publish_time: su() } } } });
+    ilerlet(dk(11));                    // eski iki dakikalik pencerenin COK otesi
+    META.fbReeller = [];                // liste BOS -- dunku arizanin tam hali
+    await turAt();
+    bak('★ 11 DAKIKA SONRA BILE IKINCI KEZ YAYINLANMADI',
+      cagrilar.fbReelsBitir === 0, 'fbReelsBitir=' + cagrilar.fbReelsBitir);
+    bak('★ kendi nesnemize soruldu', cagrilar.fbVideoDurum === 1, String(cagrilar.fbVideoDurum));
+    bak('yayınlanmış sayıldı', satirlar[0].publish_state === 'published', satirlar[0].publish_state);
+    bak('iz olarak video kimliği kaydedildi', satirlar[0].external_id === 'fbr_1', satirlar[0].external_id);
+    bak('bildirim gitmedi (arıza değil)', epostalar.length === 0, String(epostalar.length));
+  }
+  {
+    // ⚠ SIRA: once liste, sonra nesne. Tersi cift yayin uretir --
+    // Meta durumu gec guncellerse cikmis bir gonderiyi "cikmadi"
+    // sayardik. Liste CEVAP VERDIYSE nesneye hic sorulmuyor.
+    tabloyuKur(reelKayit({ platform:'facebook', publish_ref:'fbr_1',
+                           publish_called_at: su() }));
+    metaKur();
+    ilerlet(dk(11));
+    META.fbReeller = [{ id:'fbreel_cikti', creation_time: su() }];
+    await turAt();
+    bak('★ liste cevap verince nesneye SORULMUYOR',
+      cagrilar.fbVideoDurum === 0, String(cagrilar.fbVideoDurum));
+    bak('listeden gelen kimlik kullanıldı', satirlar[0].external_id === 'fbreel_cikti',
+      satirlar[0].external_id);
+  }
+  {
+    // publishing_phase HIC GELMEZSE: Meta bu alani video_reels
+    // referansinda belgelemiyor, gelmemesi mumkun. Gelmezse cevap
+    // "bilmiyorum" -- ASLA "cikmadi". Yani bu tanik kesinligi yalnizca
+    // ARTIRABILIR, cift yayin uretemez.
+    tabloyuKur(reelKayit({ platform:'facebook', publish_ref:'fbr_1',
+                           publish_called_at: su() }));
+    metaKur();                          // varsayilan: publishing_phase yok
+    ilerlet(dk(11));
+    META.fbReeller = [];
+    await turAt();
+    bak('★ alan gelmezse "çıkmadı" SAYILMIYOR',
+      cagrilar.fbReelsBitir === 0, 'fbReelsBitir=' + cagrilar.fbReelsBitir);
+    bak('kayıt bekliyor', satirlar[0].publish_state === 'pending', satirlar[0].publish_state);
+    bak('deneme hakkı geri verildi', satirlar[0].attempt_count === 0, String(satirlar[0].attempt_count));
+    bak('henüz bildirim yok', epostalar.length === 0, String(epostalar.length));
+  }
+  {
+    // Nesne SORULAMADI (ag/izin): yine "bilmiyorum".
+    tabloyuKur(reelKayit({ platform:'facebook', publish_ref:'fbr_1',
+                           publish_called_at: su() }));
+    metaKur({ fbVideoDurumHatasi: true });
+    ilerlet(dk(11));
+    META.fbReeller = [];
+    await turAt();
+    bak('★ sorulamadı da "çıkmadı" sayılmıyor',
+      cagrilar.fbReelsBitir === 0 && satirlar[0].publish_state === 'pending',
+      'fbReelsBitir=' + cagrilar.fbReelsBitir + ' ' + satirlar[0].publish_state);
+  }
+  {
+    // not_published = KESIN cikmadi. Burada yeniden yayin DOGRU ve
+    // guvenli: nesnenin kendisi "yayinlanmadim" diyor.
+    tabloyuKur(reelKayit({ platform:'facebook', publish_ref:'fbr_1',
+                           publish_called_at: su() }));
+    metaKur({ fbVideoDurumu: { status: {
+      video_status:'ready', publishing_phase: { publish_status:'not_published' } } } });
+    ilerlet(dk(11));
+    META.fbReeller = [];
+    await turAt();
+    bak('★ not_published kesin cevap: yeniden yayınlandı',
+      cagrilar.fbReelsBitir === 1, 'fbReelsBitir=' + cagrilar.fbReelsBitir);
+    bak('yayınlandı', satirlar[0].publish_state === 'published', satirlar[0].publish_state);
+  }
+  {
+    // INSTAGRAM tarafi: konteyner PUBLISHED diyorsa cikmis.
+    tabloyuKur(reelKayit({ publish_ref:'cont_1', publish_called_at: su() }));
+    metaKur({ durumSirasi: ['PUBLISHED'] });
+    ilerlet(dk(11));
+    META.medyalar = [];
+    await turAt();
+    bak('★ IG konteyneri PUBLISHED: ikinci kez yayınlanmadı',
+      cagrilar.publish === 0, 'publish=' + cagrilar.publish);
+    bak('★ liste ÖNCE soruldu', cagrilar.igMediaListe === 1, String(cagrilar.igMediaListe));
+    bak('konteynere soruldu', cagrilar.durum === 1, String(cagrilar.durum));
+    bak('yayınlanmış sayıldı', satirlar[0].publish_state === 'published', satirlar[0].publish_state);
+    bak('iz olarak konteyner kimliği', satirlar[0].external_id === 'cont_1', satirlar[0].external_id);
+  }
+  {
+    // FINISHED = "yayinlanmaya hazir", yani YAYINLANMADI. Kesin cevap:
+    // yeniden yayin guvenli ve kurtarma kendiliginden tamamlaniyor.
+    tabloyuKur(reelKayit({ publish_ref:'cont_1', publish_called_at: su() }));
+    metaKur({ durumSirasi: ['FINISHED'] });
+    ilerlet(dk(11));
+    META.medyalar = [];
+    await turAt();
+    bak('★ FINISHED kesin cevap: yeniden yayınlandı',
+      cagrilar.publish === 1, 'publish=' + cagrilar.publish);
+    bak('yayınlandı', satirlar[0].publish_state === 'published', satirlar[0].publish_state);
+  }
+  {
+    // ⚠ GERILEME — STORY'DE DAVRANIS DEGISMEDI.
+    // /stories 24 saatlik ve aninda guncelleniyor; orada bos liste
+    // KESIN "cikmadi" demek ve yeniden yayin dogru. Reels icin
+    // getirilen ihtiyat story'yi yavaslatmamali.
+    tabloyuKur({ publish_ref:'cont_1', publish_called_at: su() });
+    metaKur({ durumSirasi: ['FINISHED'] });
+    ilerlet(dk(11));
+    META.storyler = [];
+    await turAt();
+    bak('★ story: boş liste hâlâ kesin "çıkmadı"',
+      cagrilar.publish === 1, 'publish=' + cagrilar.publish);
+    bak('story konteynere SORMUYOR (liste yetkili)',
+      cagrilar.durum === 1, 'durum=' + cagrilar.durum);
+    bak('story yayınlandı', satirlar[0].publish_state === 'published', satirlar[0].publish_state);
+  }
+
+  // ══════════════════════════════════════════════════════════════
+  // BELIRSIZLIK TAVANI — sessiz basarisizlik yasak (Bolum 9)
+  // ══════════════════════════════════════════════════════════════
+  // "Sonucu bilinmiyor" hali bes dakikada bir erteleniyordu ve bu
+  // SONSUZA KADAR surebiliyordu: ne yayin, ne e-posta. 16 Ekim'de
+  // Threads'te tam bu yasandi.
+  console.log('[belirsizlik tavanı (27 Ekim 2026)]');
+  {
+    // Tavan DOLMADAN: hala bekliyor, bildirim yok, yayin yok.
+    tabloyuKur(reelKayit({ publish_ref:'cont_bilinmez', publish_called_at: su() }));
+    metaKur();
+    ilerlet(dk(29));
+    META.medyalar = [];
+    await turAt();
+    bak('29. dakikada hâlâ bekliyor', satirlar[0].publish_state === 'pending',
+      satirlar[0].publish_state);
+    bak('29. dakikada yayın YOK', cagrilar.publish === 0, 'publish=' + cagrilar.publish);
+    bak('29. dakikada bildirim YOK', epostalar.length === 0, String(epostalar.length));
+  }
+  {
+    // Tavan DOLDU: basarisiz + e-posta. ⛔ YENIDEN YAYIN YOK.
+    tabloyuKur(reelKayit({ publish_ref:'cont_bilinmez', publish_called_at: su() }));
+    metaKur();
+    ilerlet(dk(31));
+    META.medyalar = [];
+    await turAt();
+    bak('★ 31. dakikada BAŞARISIZ yazıldı', satirlar[0].publish_state === 'failed',
+      satirlar[0].publish_state);
+    bak('★ belirsizken YENİDEN YAYINLANMADI', cagrilar.publish === 0,
+      'publish=' + cagrilar.publish);
+    bak('★ bildirim gitti (sessiz kalmadı)', epostalar.length === 1, String(epostalar.length));
+    const e = epostalar[0] || {};
+    bak('mesaj doğrulanamadığını söylüyor',
+      /doğrulanamadı/.test(satirlar[0].last_error || ''), satirlar[0].last_error);
+    bak('mesaj NE YAPACAĞINI söylüyor (bak / elle)',
+      /elle/.test(satirlar[0].last_error || '') && /aç ve bak/.test(satirlar[0].last_error || ''),
+      satirlar[0].last_error);
+    bak('mesaj çift yayından korunduğunu söylüyor',
+      /[Çç]ift yayın/.test(satirlar[0].last_error || ''), satirlar[0].last_error);
+    bak('bildirimde reel dili', /Reel yayınlanamadı/.test(e.subject || ''), e.subject);
+  }
+  {
+    // ⚠ TAVAN YALNIZCA BELIRSIZLIGE BAKIYOR. Cevap KESIN gelirse
+    // (cikmis) tavan dolmus olsa bile basarisiz yazilmamali.
+    tabloyuKur(reelKayit({ publish_ref:'cont_1', publish_called_at: su() }));
+    metaKur({ durumSirasi: ['PUBLISHED'] });
+    ilerlet(dk(45));
+    META.medyalar = [];
+    await turAt();
+    bak('★ tavan dolsa da KESİN cevap kazanıyor',
+      satirlar[0].publish_state === 'published', satirlar[0].publish_state);
+    bak('bildirim gitmedi', epostalar.length === 0, String(epostalar.length));
   }
 
   console.log('[tiktok · taslaga birakma]');
