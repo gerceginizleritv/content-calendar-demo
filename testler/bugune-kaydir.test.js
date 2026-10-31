@@ -16,8 +16,13 @@ const { chromium } = require('./araclar');
   let hata = 0;
   const k = (a,s,e)=>{ console.log((s?'  ✔ ':'  ✖ ')+a+(e!==undefined?' → '+JSON.stringify(e):'')); if(!s) hata++; };
 
-  async function ac(){
-    const p = await b.newPage({ viewport:{ width:1280, height:700 } });
+  // Pencere YUKSEKLIGI parametre: tablo bolumu kisa bir pencere
+  // istiyor. 31 Ekim 2026'da gorudluk ki ayin son gunu tabloda SON
+  // satir oluyor ve 700 piksellik pencerede o satiri ekrandan
+  // cikaracak kadar kaydirma payi kalmiyor -- olcum yapilamiyordu.
+  // Kisa pencerede pay her zaman var ve olcum tarihten bagimsiz.
+  async function ac(yukseklik){
+    const p = await b.newPage({ viewport:{ width:1280, height: yukseklik || 700 } });
     // ⚠ SAYFA HATALARI AYRI SAYILIYOR. Bir kez genel `hata` sayacina
     // bakildi ve "sayfa hatasi yok" olcumu, ILGISIZ bir olcum dustugu
     // icin kirmizi oldu -- yani yanlis seyi olcuyordu.
@@ -40,6 +45,33 @@ const { chromium } = require('./araclar');
   // Kaydirma 'smooth': olcmeden once oturmasini bekliyoruz. Testin
   // "bazen geciyor" olmasi, olcmemesinden beterdir.
   const dur = (p)=> p.waitForTimeout(700);
+  // ⚠ 31 EKIM 2026 — BU TEST TARIHE BAGLIYDI VE DUSTU.
+  // Hazirlik "bugunu asagi kaydirarak ekrandan cikar" diyordu. 31 Ekim
+  // ayin SON gunu, yani tabloda SON satir: asagi kaydiracak yer yok,
+  // bugun ekranda kaliyor ve olcum anlamsizlasiyor. 27 Ekim'de gecmesi
+  // ayin ortasinda olmasindandi -- yani yesil olmasi tesadufttu.
+  //
+  // Artik yon DURUMA GORE seciliyor: yukarida yer varsa satiri ekranin
+  // ALTINDA birakiyoruz, yoksa asagi kaydirip USTUNDE birakiyoruz.
+  // Ikisi de olmuyorsa (sayfa ekrandan kisa) bunu SOYLUYOR -- sessizce
+  // yanlis sey olcmek yerine.
+  const ekrandanCikar = (p, secici)=> p.evaluate((s)=>{
+    const el = document.querySelector(s);
+    if(!el) return { oldu:false, sebep:'eleman yok' };
+    const r = el.getBoundingClientRect();
+    const ustMutlak = r.top + scrollY, altMutlak = r.bottom + scrollY;
+    const enCok = Math.max(0, document.documentElement.scrollHeight - innerHeight);
+    const a = ustMutlak - innerHeight - 20;   // satir ekranin ALTINDA kalir
+    const b = altMutlak + 20;                 // satir ekranin USTUNDE kalir
+    let hedef = null;
+    if(a >= 0 && a <= enCok) hedef = a;
+    else if(b >= 0 && b <= enCok) hedef = b;
+    if(hedef === null) return { oldu:false, sebep:'kaydiracak yer yok' };
+    scrollTo(0, hedef);
+    const r2 = el.getBoundingClientRect();
+    return { oldu: r2.bottom <= 0 || r2.top >= innerHeight, y: scrollY };
+  }, secici);
+
   const bugunGorunur = (p, secici)=> p.evaluate((s)=>{
     const el = document.querySelector(s);
     if(!el) return null;
@@ -52,6 +84,9 @@ const { chromium } = require('./araclar');
     const p = await ac();
     await p.evaluate(()=>{ setView('month'); scrollTo(0,0); });
     await p.waitForTimeout(300);
+    const hazir = await ekrandanCikar(p, '#calGrid .cal-day.today');
+    k('hazırlık: bugün ekran dışına çıkarıldı', hazir.oldu === true, hazir);
+    await p.waitForTimeout(200);
     const oncekiY = await p.evaluate(()=> scrollY);
     const oncekiGorunur = await bugunGorunur(p, '#calGrid .cal-day.today');
     k('başlangıçta bugün ekran dışında', oncekiGorunur === false, oncekiGorunur);
@@ -59,7 +94,7 @@ const { chromium } = require('./araclar');
     await p.click('#todayBtn');
     await dur(p);
     const sonrakiY = await p.evaluate(()=> scrollY);
-    k('★ SAYFA KAYDI', sonrakiY > oncekiY, oncekiY + ' → ' + sonrakiY);
+    k('★ SAYFA KAYDI', sonrakiY !== oncekiY, oncekiY + ' → ' + sonrakiY);
     k('★ BUGÜN ARTIK GÖRÜNÜYOR', (await bugunGorunur(p, '#calGrid .cal-day.today')) === true);
     k('görünüm DEĞİŞMEDİ (ay görünümünde kaldı)',
       (await p.evaluate(()=> viewMode)) === 'month', await p.evaluate(()=> viewMode));
@@ -141,14 +176,11 @@ const { chromium } = require('./araclar');
     // bugunun satiri zaten 0'da gorunur oldugu icin olcum, secici
     // tamamen yanlis olsa bile geciyordu ("437 -> 0" kaydirma degil,
     // kirpmaydi). Simdi kirpma araya girmiyor.
-    const p = await ac();
+    const p = await ac(300);
     await p.evaluate(()=>{ setView('table'); scrollTo(0, 0); });
     await p.waitForTimeout(400);
-    await p.evaluate(()=>{
-      const el = document.querySelector('#calTableWrap tr.ct-today');
-      const r = el.getBoundingClientRect();
-      scrollTo(0, scrollY + r.bottom + 120);   // bugunu ekranin USTUNDEN cikar
-    });
+    const hazirT = await ekrandanCikar(p, '#calTableWrap tr.ct-today');
+    k('hazırlık: bugün satırı ekran dışına çıkarıldı', hazirT.oldu === true, hazirT);
     await p.waitForTimeout(300);
     const once = await p.evaluate(()=> scrollY);
     k('hazırlıkta bugün satırı ekran dışında',
