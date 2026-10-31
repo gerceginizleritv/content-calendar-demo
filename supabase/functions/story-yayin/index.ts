@@ -65,7 +65,13 @@
 //          hâli 30 dakikada bitiyor -- sonsuz erteleme yerine
 //          başarısız + bildirim, YENİDEN YAYIN YOK.
 
-const SURUM = '1.21.0';
+// 1.22.0 — Anket seçeneği sınırı KARAKTERLE değil BAYTLA ölçülüyor.
+//          27 Ekim 2026: "İstanbul Arkeoloji Müzesi" 25 karakter ama
+//          27 bayt; Threads `#100/4279063 Invalid parameter` döndürdü
+//          ve kayıt failed oldu. Seçenek kısaltılınca aynı anket dört
+//          seçeneğiyle yayınlandı.
+
+const SURUM = '1.22.0';
 const UCLAR = ['GET / (servis bilgisi)', 'POST / (bir tur)'];
 
 // ⚠ ORTAM DEĞİŞKENLERİ KIRPILIYOR.
@@ -1314,6 +1320,21 @@ const ANKET_EN_AZ = 2;
 const ANKET_EN_COK = 4;
 const ANKET_SECENEK_TAVAN = 25;
 
+// ⚠ SINIR KARAKTERLE DEGIL BAYTLA OLCULUYOR — 27 EKIM 2026.
+// O gun bir anket `#100/4279063 Invalid parameter` ile reddedildi.
+// Suclu seçenek: "İstanbul Arkeoloji Müzesi" -- 25 KARAKTER (yani
+// belgedeki sınırın tam üstünde, asmiyor) ama 27 BAYT, cunku Turkce
+// `İ` ve `ü` ikiser bayt tutuyor. Tek degisken degistirildi (secenek
+// kisaltildi), anket ayni gun dort secenegiyle yayinlandi.
+//
+// Yani Meta'nin 25'i baytla sayiyor. Bayt olcusu karakter olcusunu
+// zaten kapsiyor (bayt >= karakter), o yuzden TEK kontrol yetiyor.
+//
+// ⚠ Bu TEK DENEYE dayaniyor. Alt kod 4279063'un ne demek oldugu
+// Meta'nin belgesinde de ucuncu taraflarda da YOK. Baska bir sebep
+// cikarsa bu yorum duzeltilsin.
+const anketBayt = (s: string) => new TextEncoder().encode(s).length;
+
 function anketSecenekleri(k: any): string[] {
   const c = (k?.content && typeof k.content === 'object') ? k.content : {};
   const ham = Array.isArray(c.anketSecenekler) ? c.anketSecenekler : [];
@@ -1367,13 +1388,18 @@ async function threadsYayinla(k: any): Promise<string> {
         + `bu kayıtta ${secenekler.length} var.`);
       return 'anket-sayi';
     }
-    // ⚠ UZUN SECENEK KISALTILMIYOR. 25 karakteri asani kirpmak anketin
+    // ⚠ UZUN SECENEK KISALTILMIYOR. Sınırı asani kirpmak anketin
     // SORUSUNU degistirir ("Rivayet mi, kayit mi" -> "Rivayet mi, kay");
     // kullanici neyi oyladigini bilmez. Kalici hata, kirpma yok.
-    const uzun = secenekler.find((x) => x.length > ANKET_SECENEK_TAVAN);
+    const uzun = secenekler.find((x) => anketBayt(x) > ANKET_SECENEK_TAVAN);
     if (uzun) {
-      await kaliciHata(k, `Anket seçeneği ${ANKET_SECENEK_TAVAN} karakteri geçemiyor `
-        + `(Threads kuralı): "${temizle(uzun).slice(0, 40)}" ${uzun.length} karakter.`);
+      // Mesaj BAYT demiyor: kullanici yazilimci degil. Soyledigi sey
+      // "kac harf fazla" ve "neden" -- Turkce harfler iki yer tutuyor.
+      const bayt = anketBayt(uzun);
+      await kaliciHata(k, `Anket seçeneği çok uzun (Threads kuralı): `
+        + `"${temizle(uzun).slice(0, 40)}". Bu seçenek ${bayt - ANKET_SECENEK_TAVAN} birim fazla — `
+        + `Threads ${ANKET_SECENEK_TAVAN} birim kabul ediyor ve Türkçe harfler (ç ğ ı İ ö ş ü) `
+        + `iki birim sayılıyor. Seçeneği kısalt.`);
       return 'anket-uzun';
     }
     const anahtarlar = ['option_a', 'option_b', 'option_c', 'option_d'];

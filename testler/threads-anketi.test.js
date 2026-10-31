@@ -162,11 +162,21 @@ console.log('[worker — yayın yolu]');
   bak('★ seçenek sayısı denetleniyor',
       /secenekler\.length < ANKET_EN_AZ \|\| secenekler\.length > ANKET_EN_COK/.test(gy),
       (/secenekler\.length[^\n]*/.exec(gy) || ['yok'])[0]);
-  // ⛔ UZUN SEÇENEK KIRPILMIYOR: 25 karakteri aşanı kırpmak anketin
+  // ⛔ UZUN SEÇENEK KIRPILMIYOR: sınırı aşanı kırpmak anketin
   // sorusunu değiştirir ve kullanıcı neyi oyladığını bilmez.
   bak('★ uzun seçenek kırpılmıyor, kalıcı hata veriyor',
-      /x\.length > ANKET_SECENEK_TAVAN[\s\S]{0,200}kaliciHata/.test(gy),
+      /anketBayt\(x\) > ANKET_SECENEK_TAVAN[\s\S]{0,260}kaliciHata/.test(gy),
       (/ANKET_SECENEK_TAVAN[^\n]*/.exec(gy) || ['yok'])[0]);
+  // ⚠ SINIR BAYTLA ÖLÇÜLÜYOR — 27 Ekim 2026. O gün bir anket
+  // `#100/4279063 Invalid parameter` ile reddedildi; suçlu seçenek
+  // "İstanbul Arkeoloji Müzesi" idi: 25 KARAKTER (sınırı aşmıyor) ama
+  // 27 BAYT. Seçenek kısaltılınca aynı anket dört seçeneğiyle çıktı.
+  // Ölçüm `x.length`e geri dönülmesini yakalamak için var.
+  bak('★ ÖLÇÜ BAYT, karakter DEĞİL',
+      /const anketBayt = \(s: string\) => new TextEncoder\(\)\.encode\(s\)\.length/.test(WORKER),
+      (/anketBayt[^\n]*/.exec(WORKER) || ['yok'])[0]);
+  bak('★ seçenek uzunluğu x.length ile ölçülmüyor',
+      !/x\.length > ANKET_SECENEK_TAVAN/.test(gy));
   bak('★ sınırlar sabit olarak yazılı (2, 4, 25)',
       /ANKET_EN_AZ = 2/.test(WORKER) && /ANKET_EN_COK = 4/.test(WORKER)
       && /ANKET_SECENEK_TAVAN = 25/.test(WORKER),

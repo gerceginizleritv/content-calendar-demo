@@ -6038,6 +6038,7 @@ const LANG = {
     alert_fill_missing: (alanlar)=> `Still missing: ${alanlar}.`,
     count_label: (n, max)=> `${n} / ${max} entries`,
     kayit_kesildi: (kesilen, sinir)=> `${kesilen} entries were not loaded: this page shows at most ${sinir}. Nothing was deleted \u2014 they are still in your account.`,
+    anket_uzun: (x)=> `The option "${x.secenek}" is ${x.fazla} unit(s) too long. Threads allows 25 units per option, and accented or non-Latin letters count as two. Shorten that option.`,
     count_note: "Demo limit — plenty for a full month of planning.",
     early_cta: "Get early access →",
     count_title: (max)=> `This demo holds up to ${max} entries per account.`,
@@ -7083,6 +7084,7 @@ const LANG = {
     alert_fill_missing: (alanlar)=> `Şu alan eksik: ${alanlar}.`,
     count_label: (n, max)=> `${n} / ${max} kayıt`,
     kayit_kesildi: (kesilen, sinir)=> `${kesilen} kayıt yüklenmedi: bu sayfa en çok ${sinir} kayıt gösteriyor. Hiçbir şey silinmedi \u2014 kayıtlar hesabında duruyor.`,
+    anket_uzun: (x)=> `"${x.secenek}" seçeneği ${x.fazla} birim fazla. Threads seçenek başına 25 birim kabul ediyor ve Türkçe harfler (ç ğ ı İ ö ş ü) iki birim sayılıyor. Bu seçeneği kısalt.`,
     count_note: "Demo sınırı — bir ayı planlamaya fazlasıyla yeter.",
     early_cta: "Erken erişim iste →",
     count_title: (max)=> `Bu demo hesap başına ${max} kayıt tutar.`,
@@ -16578,9 +16580,37 @@ function anketKutulariYaz(liste){
 //
 // Taslaga karisilmiyor: otomatik yayin KAPALIYKEN yarim doldurulmus
 // bir anket kaydedilebiliyor. Engel yalnizca yayina gidecek kayitta.
+// ⚠ SINIR KARAKTERLE DEGIL BAYTLA — 27 Ekim 2026. O gun bir anket
+// Threads tarafindan `#100/4279063 Invalid parameter` ile reddedildi.
+// Suclu secenek "Istanbul Arkeoloji Muzesi" degil, TURKCE yazilmis
+// hali: 25 KARAKTER (kutunun maxlength'ini bile asmiyor) ama 27 BAYT,
+// cunku `I` ve `u` harflerinin Turkcesi ikiser bayt tutuyor. Secenek
+// kisaltilinca ayni anket dort secenegiyle yayinlandi.
+//
+// Bayt olcusu karakter olcusunu zaten kapsiyor (bayt >= karakter),
+// o yuzden TEK kontrol yetiyor. Kutulardaki maxlength="25" ilk
+// siperde duruyor ama Turkce metinde YETMIYOR -- asil kapi burasi.
+// Engel ya duz bir anahtar ya da {anahtar, ek}. Ikisini de mesaja
+// cevirmek TEK yerde yapiliyor: iki cagri yeri var ve biri unutulursa
+// kullanici "[object Object]" gorur.
+function anketEngelMesaji(engel){
+  if(!engel) return '';
+  if(typeof engel === 'string') return t(engel);
+  const m = t(engel.anahtar);
+  return typeof m === 'function' ? m(engel.ek) : m;
+}
+
+const ANKET_SECENEK_BAYT = 25;
+const anketBayt = (s)=> new TextEncoder().encode(String(s||'')).length;
+
 function anketEngeli(tur, kayit){
   if(tur !== 'poll') return '';
   if(anketKutulariOku().length < 2) return 'anket_az';
+  // ⛔ KIRPILMIYOR. Uzun secenegi kirpmak anketin SORUSUNU degistirir
+  // ve kullanici neyi oyladigini bilmez. Engel, karar kullanicinin.
+  const uzun = anketKutulariOku().find(x => anketBayt(x) > ANKET_SECENEK_BAYT);
+  if(uzun) return { anahtar:'anket_uzun',
+                    ek:{ secenek: uzun, fazla: anketBayt(uzun) - ANKET_SECENEK_BAYT } };
   // Ankete gorsel baglanamiyor (Threads kurali). Dosya adi kayda
   // yukleyici tarafindan yaziliyor, kullanici buradan silemiyor --
   // o yuzden soyledigimiz sey "dosyayi bosalt ya da turu degistir".
@@ -16949,7 +16979,8 @@ document.getElementById('otoYayinToggle').addEventListener('click', async ()=>{
   // yayini durdurmak demek ve onu engellemek sacma olurdu.
   if(yeni){
     const engel = anketEngeli(document.getElementById('f_type').value, currentEvent);
-    if(engel){ uyari(t(engel)); return; }
+    // Engel artik anahtar DEGIL, {anahtar, ek} de donebiliyor.
+    if(engel){ uyari(anketEngelMesaji(engel)); return; }
   }
   setOtoYayinToggle(yeni, true);              // yazma bitene kadar kilitli
   const ok = await otomatikYayinYaz(currentEvent.id, yeni);
@@ -17026,7 +17057,7 @@ document.getElementById('saveBtn').addEventListener('click', async ()=>{
   // o kayit saatinde yayina gidecek ve hata yayin aninda cikacakti.
   if(currentEvent && currentEvent.yayin && currentEvent.yayin.otomatik){
     const engel = anketEngeli(type, currentEvent);
-    if(engel){ uyari(t(engel)); return; }
+    if(engel){ uyari(anketEngelMesaji(engel)); return; }
   }
 
   // Acik olan dil sekmesi hangisiyse kutulardaki metin ONUN; ana dilin
