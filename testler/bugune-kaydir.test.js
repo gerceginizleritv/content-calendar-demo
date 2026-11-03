@@ -81,7 +81,14 @@ const { chromium } = require('./araclar');
 
   console.log('[ay görünümü · bugün ekran dışındayken]');
   {
-    const p = await ac();
+    // ⚠ PENCERE 500, 700 DEGIL — 3 Kasim 2026'da olculdu.
+    // Ay hucresi 253 piksel, sayfa 1222. 700 piksellik pencerede
+    // kaydirma payi 522 kaliyor ve bugunu ekrandan cikarmaya YETMIYOR:
+    // yukari itmek icin -292 gerekiyor (negatif), asagi itmek icin 701
+    // gerekiyor (pay 522). Yardimci bunu dogru tespit edip "kaydiracak
+    // yer yok" dedi -- sessizce yanlis sey olcmedi. 500'de pay 722
+    // oluyor ve olcum tarihten bagimsiz calisiyor.
+    const p = await ac(500);
     await p.evaluate(()=>{ setView('month'); scrollTo(0,0); });
     await p.waitForTimeout(300);
     const hazir = await ekrandanCikar(p, '#calGrid .cal-day.today');

@@ -5180,6 +5180,12 @@ const LANG = {
     oy_sart_3: "A publish time on the entry",
     oy_kapali_nasil: "Setup is still done one account at a time. Write to us from Feedback and we'll switch it on.",
     oy_deneme: (n)=> `${n} attempt${n===1?'':'s'}`,
+    oy_tekrar: "Try publishing again",
+    oy_tekrar_suruyor: "Queueing…",
+    oy_tekrar_oldu: "Back in the queue. It will be picked up within a minute.",
+    oy_tekrar_degismis: "This entry is no longer marked failed — it may already have been retried or published. Close and reopen the entry to see its current state.",
+    oy_tekrar_olmadi: "Could not queue it again. Check your connection and try once more.",
+    oy_tekrar_sql: "The retry function is not installed yet. Run sql/68-yayin-tekrar-dene.sql in the Supabase SQL Editor, then try again.",
     oy_yazilamadi: "Could not save that. Check your connection and try again.",
     oy_sistem_isaret: "Shootboard published this one, so it counts as done. Your own tick is still yours to make.",
     ai_uyari_medya_adi: (n)=> `${n} entr${n===1?'y':'ies'} carried a file name — ignored here. File names are set through the connector.`,
@@ -6229,6 +6235,12 @@ const LANG = {
     oy_sart_3: "Kayıtta bir yayın saati olması",
     oy_kapali_nasil: "Kurulum şimdilik hesap hesap yapılıyor. Geri bildirimden yaz, açalım.",
     oy_deneme: (n)=> `${n} deneme`,
+    oy_tekrar: "Yayını tekrar dene",
+    oy_tekrar_suruyor: "Kuyruğa alınıyor…",
+    oy_tekrar_oldu: "Kuyruğa geri alındı. Bir dakika içinde denenecek.",
+    oy_tekrar_degismis: "Bu kayıt artık başarısız görünmüyor — bu arada tekrar denenmiş ya da yayınlanmış olabilir. Kaydı kapatıp açınca güncel durumu görürsün.",
+    oy_tekrar_olmadi: "Kuyruğa alınamadı. Bağlantını kontrol edip bir daha dene.",
+    oy_tekrar_sql: "Tekrar deneme işlevi henüz kurulmamış. Supabase → SQL Editor'de sql/68-yayin-tekrar-dene.sql dosyasını çalıştır, sonra tekrar dene.",
     oy_yazilamadi: "Kaydedilemedi. Bağlantını kontrol edip tekrar dene.",
     oy_sistem_isaret: "Bunu Shootboard yayınladı, yapılmış sayılıyor. Kendi işaretin yine senin bileğine kalıyor.",
     ai_uyari_medya_adi: (n)=> `${n} kayıtta dosya adı vardı — burada uygulanmadı. Dosya adı bağlantı üzerinden yazılıyor.`,
@@ -16923,7 +16935,67 @@ function otoYayinTazele(){
                : tur === 'poll'      ? t('oy_not_anket')(notPlatform)
                : t('oy_not')(notPlatform)) + '</span>');
   if(y.hata) satirlar.push('<span class="oy-hata">' + escapeHtml(y.hata) + '</span>');
+  // ⚠ BASARISIZ KAYDIN GERI DONUS YOLU — 3 Kasim 2026.
+  // 27 Ekim'de bir anket basarisiz oldu, kullanici icerigi duzeltti ve
+  // orada TIKANDI: kuyruk yalnizca 'pending' aliyor, uygulama
+  // publish_state'e bilerek dokunmuyor, story_ertele yalnizca
+  // 'in_progress' kayitlara calisiyor. Kullanici Supabase panelinden
+  // ELLE update calistirmak zorunda kaldi. Dugme o yolu kapatiyor.
+  if(durum === 'failed'){
+    satirlar.push('<button type="button" class="btn btn-sm" id="oyTekrarBtn" '
+      + 'style="margin-top:8px">' + escapeHtml(t('oy_tekrar')) + '</button>');
+  }
   d.innerHTML = satirlar.join('<br>');
+  // innerHTML her cizimde degistigi icin olay BURADA baglaniyor; disarida
+  // tek sefer baglanan bir dinleyici ilk cizimden sonra olu kalirdi.
+  const tekrarDug = document.getElementById('oyTekrarBtn');
+  if(tekrarDug) tekrarDug.addEventListener('click',
+    ()=> yayinTekrarDene(currentEvent && currentEvent.id));
+}
+
+// Basarisiz kaydi yeniden kuyruga sokar (sql/68).
+//
+// ⛔ IZ TEMIZLENMIYOR ve temizlenmemeli: publish_ref / publish_called_at
+// cokus kurtarmasinin okudugu tek sey. SQL tarafi da onlara dokunmuyor.
+// Temizlenseydi yayin cagrisi gercekten gitmis bir kayit IKINCI KEZ
+// yayinlanabilirdi -- 26 Ekim'deki cift Facebook reel'i o kapidan cikti.
+async function yayinTekrarDene(id){
+  if(!id || !sb || !session) return false;
+  const dug = document.getElementById('oyTekrarBtn');
+  if(dug){ dug.disabled = true; dug.textContent = t('oy_tekrar_suruyor'); }
+  let veri = null, hata = null;
+  try {
+    const y = await sb.rpc('story_tekrar_dene', { p_id: id });
+    veri = y.data; hata = y.error;
+  } catch(e){ hata = e; }
+
+  if(hata){
+    console.error('[tekrar-dene]', hata);
+    // 42883 = "function does not exist": sql/68 henuz calistirilmamis.
+    // Genel bir "olmadi" mesaji kullaniciyi saatlerce yanlis yerde
+    // arattirirdi; sebep neyse o yaziliyor.
+    const kod = String(hata.code || '');
+    uyari(kod === '42883' ? t('oy_tekrar_sql') : t('oy_tekrar_olmadi'));
+    otoYayinTazele();
+    return false;
+  }
+  if(veri !== true){
+    // 0 satir: kayit artik 'failed' degil. Baska bir sekmeden tekrar
+    // denenmis ya da bu arada yayinlanmis olabilir.
+    uyari(t('oy_tekrar_degismis'));
+    otoYayinTazele();
+    return false;
+  }
+  // Yerel kopya da guncelleniyor: ekran hemen dogruyu gostersin, bir
+  // sonraki bulut okumasini beklemesin.
+  if(currentEvent && currentEvent.yayin){
+    currentEvent.yayin.durum  = 'pending';
+    currentEvent.yayin.hata   = null;
+    currentEvent.yayin.deneme = 0;
+  }
+  otoYayinTazele();
+  uyari(t('oy_tekrar_oldu'));
+  return true;
 }
 function setOtoYayinToggle(val, kapali){
   const tg = document.getElementById('otoYayinToggle');
