@@ -251,6 +251,9 @@ function metaKur(ek){
                // soruldu. Sira onemli -- liste ONCE sorulmali.
                fbVideoDurum:0,
                mediaGovde: [], fbBitirGovde: [], igMediaListe:0,
+               // Threads dosyayi KENDISI cekiyor: baytlar bizden
+               // gecmiyor. Sayac olmadan bu olculemez.
+               medyaCekildi:0,
                // Sayilar "kac kere" diyor, sira "hangi sirayla" diyor.
                // Konteynerlerin yayinlardan ONCE yaratildigi ancak
                // siradan okunabiliyor.
@@ -480,6 +483,52 @@ function ytKur(ek){
   }, ek || {});
 }
 
+// ── SAHTE THREADS ────────────────────────────────────
+// AYRI UYGULAMA, AYRI JETON, AYRI TABAN ADRES: graph.threads.net.
+// Burada taban `https://threads.test` -- Facebook/Instagram'in
+// `graf.test`inden BILEREK ayri bir makine. Ikisi ayni sahte sunucuda
+// olsaydi "yanlis uygulamaya gitti" hatasi GORUNMEZDI, ve o hata
+// bugun calisan Facebook yayinini bozmak demek.
+//
+// ⚠ IKI UC AYNI YOLDA, YALNIZCA YONTEM FARKLI:
+//   POST /me/threads  -> kapsayici YARATIR
+//   GET  /me/threads  -> profildeki son gonderiler (cokus kurtarmasi)
+// Ikisini ayirmayan bir sahte sunucu, kurtarmayi olcer gibi yapip
+// hicbir sey olcmezdi.
+//
+// ⚠ BASLANGICTA KURULU DEGIL, TEMBEL (TT/YT ile ayni kalip): baska
+// bir olcum threads ucuna dokunursa "null okunamadi" diye COKMESIN --
+// coken test, kor testle ayni goruntuyu verir.
+let TH = null;
+function thKur(ek){
+  TH = Object.assign({
+    // sql/63'teki satir. Jeton TABLODAN okunuyor; ortamdaki THREADS_TOKEN
+    // yalnizca bir tohum ve ilk yayindan sonra eskiyor.
+    hesap: { user_id:UID, erisim_jetonu:'thtok_tablo',
+             erisim_bitis: new Date(Date.now() + 40*864e5).toISOString(),
+             son_yenileme: null },
+    tabloYok: false,       // sql/63 hic calistirilmamis hali
+    gonderiler: [],        // GET /me/threads -> profildeki son gonderiler
+    listeKodu: 200,        // liste SORULAMADI halini kurmak icin
+    durum: 'FINISHED',     // kapsayici durumu (IKINCI TANIK)
+    durumKodu: 200,
+    yaratHatasi: null,     // POST /me/threads -> { http, kod, mesaj }
+    yayinDavranisi: 'ok',  // 'ok' | 'kaybolan-yanit' | { http, kod, mesaj }
+    yenilemeHatasi: 0,     // refresh_access_token'in donecegi HTTP kodu
+    yenilemeSuresi: 60*86400,
+    yanitlar: [],          // GET /{id}/replies
+    // ── olcumler ──
+    yarat:0, yayin:0, listeSoruldu:0, durumSoruldu:0,
+    yenilemeCalisti:0, yanitSoruldu:0,
+    yaratGovde: [], yayinGovde: [], jetonlar: [],
+    hesapYazmalari: [], hesapEklemeleri: [],
+    // Sayilar "kac kere" diyor, SIRA "hangi sirayla" diyor. Kurtarmada
+    // listenin kapsayici durumundan ONCE soruldugu ancak siradan
+    // okunabiliyor -- ve tersi CIFT GONDERI uretir.
+    sira: []
+  }, ek || {});
+}
+
 // Google'in hata govdesi. `reason` HATA DIZISININ ILK ogesinde duruyor,
 // govdenin kokunde degil -- yanlis yerden okumak butun triyaji
 // "bilinmeyen sebep" dalina dusurur ve hicbir yerde gorunmez.
@@ -504,6 +553,7 @@ function sahteFetch(adres, secenek){
   }
   // Medya dosyasi: worker onu R2'den cekip Facebook'a akitiyor.
   if(url.indexOf('https://medya.test') === 0){
+    cagrilar.medyaCekildi++;
     if(META.medyaHatasi) return yanit({}, META.medyaHatasi);
     return Promise.resolve({ ok:true, status:200,
       headers:new Map([['content-length','12345678']]),
@@ -528,6 +578,77 @@ function sahteFetch(adres, secenek){
     catch(e){ return Promise.reject(e); }           // ag kopmasi
     const durum = c && c.__http ? c.__http : 200;
     return yanit(c, durum);
+  }
+
+  // --- Threads (graph.threads.net'in yerine) ---
+  if(url.indexOf('https://threads.test') === 0){
+    if(!TH) thKur();
+    const tu = new URL(url);
+    const tp = tu.pathname.replace('/v1.0', '');
+    // Jeton ya adres satirinda ya govdede. Hangi jetonla soruldugu
+    // olculmek zorunda: ortamdaki tohumla sorulan "cikti mi" sorusu
+    // yetki hatasi doner -- yani "bilinmiyor" -- ve kayit kilitlenir.
+    const tj = tu.searchParams.get('access_token')
+               || alanlar(secenek && secenek.body).access_token || '';
+    if(tj) TH.jetonlar.push(tj);
+
+    // Jeton yenileme. ⚠ TABANIN /v1.0'SIZ HALINDE: worker adresi
+    // `THREADS_TABANI.replace(/\/v1\.0$/, '')` ile kuruyor. Sahtesi de
+    // oyle bekliyor -- /v1.0 ile de kabul etsek, yanlis adres
+    // gorunmez kalirdi.
+    if(tp === '/refresh_access_token'){
+      TH.yenilemeCalisti++; TH.sira.push('yenile');
+      if(TH.yenilemeHatasi)
+        return yanit({ error:{ message:'jeton yenilenemedi' } }, TH.yenilemeHatasi);
+      return yanit({ access_token:'thtok_yeni', expires_in: TH.yenilemeSuresi }, 200);
+    }
+    if(tp === '/me/threads' && yontem === 'POST'){
+      TH.yarat++; TH.sira.push('yarat');
+      // GOVDE SAKLANIYOR: media_type, text, image_url, poll_attachment
+      // ancak buradan okunabiliyor ve yanlisi Threads'te hata vermiyor
+      // -- baska bir sey yayinliyor.
+      TH.yaratGovde.push(alanlar(secenek && secenek.body));
+      const h = TH.yaratHatasi;
+      if(h) return yanit({ error:{ message:h.mesaj, code:h.kod } }, h.http || 400);
+      return yanit({ id:'thc_' + TH.yarat }, 200);
+    }
+    // AYNI YOL, GET: BIRINCI TANIK.
+    if(tp === '/me/threads'){
+      TH.listeSoruldu++; TH.sira.push('liste');
+      if(TH.listeKodu !== 200) return yanit({ error:{ message:'okunamadi' } }, TH.listeKodu);
+      return yanit({ data: TH.gonderiler }, 200);
+    }
+    if(tp === '/me/threads_publish' && yontem === 'POST'){
+      TH.yayin++;
+      const gy = alanlar(secenek && secenek.body);
+      TH.yayinGovde.push(gy);
+      TH.sira.push('yayin:' + (gy.creation_id || '?'));
+      const d = TH.yayinDavranisi;
+      if(d === 'kaybolan-yanit'){
+        // ⚠ COKUS ANI. Cagri Threads'e ULASTI, gonderi profile
+        // DUSTU -- ama yanit Shootboard'a donmedi. Sistemin en
+        // tehlikeli hali: kayit "yayinlanmadi" gorunuyor, gonderi
+        // Threads'te KALICI duruyor.
+        TH.gonderiler = TH.gonderiler.concat([{ id:'th_cokme', timestamp: su() }]);
+        return Promise.reject(new Error('baglanti koptu'));
+      }
+      if(d && typeof d === 'object')
+        return yanit({ error:{ message:d.mesaj, code:d.kod } }, d.http || 400);
+      TH.gonderiler = TH.gonderiler.concat([{ id:'thp_' + TH.yayin, timestamp: su() }]);
+      return yanit({ id:'thp_' + TH.yayin }, 200);
+    }
+    // GET /{kapsayici}?fields=status,error_message -- IKINCI TANIK.
+    if(/^\/thc_\w+$/.test(tp)){
+      TH.durumSoruldu++; TH.sira.push('durum');
+      if(TH.durumKodu !== 200) return yanit({}, TH.durumKodu);
+      return yanit({ status: TH.durum,
+        error_message: TH.durum === 'ERROR' ? 'medya adresine ulasilamadi' : undefined }, 200);
+    }
+    if(/\/replies$/.test(tp)){
+      TH.yanitSoruldu++;
+      return yanit({ data: TH.yanitlar }, 200);
+    }
+    return yanit({ error:{ message:'bilinmeyen threads ucu: ' + tp } }, 404);
   }
 
   // --- TikTok ---
@@ -620,6 +741,27 @@ function sahteFetch(adres, secenek){
     }
     return yanit(TT.hesap ? [TT.hesap] : [], 200);
   }
+  // sql/63'teki tablo. Threads'in CALISAN jetonu burada durur.
+  if(url.indexOf('/rest/v1/threads_hesaplari') > -1){
+    if(!TH) thKur();
+    if(yontem === 'PATCH'){
+      const yz = JSON.parse(secenek.body || '{}');
+      TH.hesapYazmalari.push(yz);
+      if(TH.hesap) Object.assign(TH.hesap, yz);
+      return yanit([], 200);
+    }
+    if(yontem === 'POST'){
+      // Tohumlama: ortamdaki jeton BIR KEZ tabloya yaziliyor.
+      const yz = JSON.parse(secenek.body || '{}');
+      TH.hesapEklemeleri.push(yz);
+      TH.hesap = Object.assign({}, yz);
+      return yanit([], 201);
+    }
+    // sql/63 hic calistirilmamis olabilir (dagitim sirasi): tablo YOK.
+    if(TH.tabloYok)
+      return yanit({ message:'relation "public.threads_hesaplari" does not exist' }, 404);
+    return yanit(TH.hesap ? [TH.hesap] : [], 200);
+  }
   if(url.indexOf('/rest/v1/rpc/') > -1){
     const ad = url.split('/rest/v1/rpc/')[1];
     const args = JSON.parse(secenek.body || '{}');
@@ -668,6 +810,13 @@ const ORTAM = {
   YOUTUBE_DENETIM_GECTI: '1',
   RESEND_API_KEY: 're_test',
   GRAF_TABANI: 'https://graf.test/v21.0',
+  // ⚠ THREADS AYRI MAKINEDE. Facebook/Instagram graf.test'e,
+  // Threads buraya gidiyor; karismalari bugun calisan Facebook
+  // yayinini bozmak demek ve o karisma ancak boyle gorunur.
+  THREADS_TABANI: 'https://threads.test/v1.0',
+  // Yalnizca TOHUM. Gercek jeton tabloda (sql/63); bu deger tablo bos
+  // oldugunda bir kez yaziliyor.
+  THREADS_TOKEN: 'thtok_tohum',
   STORY_YOKLAMA_MS: '1',
   // Butce cagri aninda okunuyor; testler bunu degistirerek hem tavan
   // hem butce yolunu ayri ayri olcebiliyor.
@@ -2634,6 +2783,506 @@ async function turAt(gizli){
     bak('story bildiriminde "Story yayınlanamadı"', /Story yayınlanamadı/.test(e.subject || ''), e.subject);
     bak('story bildiriminde 24 saat uyarısı DURUYOR',
       /24 saatlik/.test(e.text || ''), (e.text || '').slice(0, 160));
+  }
+
+  // ══════════════════════════════════════════════════════════════
+  // THREADS — UÇTAN UCA (3 Kasım 2026)
+  // ══════════════════════════════════════════════════════════════
+  // NEDEN VAR. `threads-yayin.test.js` Threads kararının BEŞ YERDE
+  // yazılı olduğunu ölçüyor -- ama kaynak METNİNE bakarak. Yani
+  // "doğru yazılmış mı" sorusunu cevaplıyor, "doğru DAVRANIYOR mu"
+  // sorusunu cevaplamıyor. Aşağıdaki ölçümler worker'ı gerçekten
+  // koşturup Threads'in uçlarına NE GİTTİĞİNİ okuyor.
+  //
+  // ⚠ 16 EKİM 2026'DA OLAN ŞEY TAM OLARAK BURADA ÖLÇÜLÜYOR: ilk
+  // gerçek Threads yayını patladı, kurtarma turu kesin cevap
+  // bulamadı ve kayıt beş dakikada bir SONSUZA KADAR ertelendi --
+  // ne yayın çıktı, ne hata e-postası gitti. İkinci tanık
+  // (kapsayıcı durumu) o gün eklendi; aşağıdaki "sıra" ölçümleri
+  // onun tersine çevrilmesini yakalıyor.
+  const thKayit = (ek)=> Object.assign({
+    type:'text_post', platform:'threads',
+    media_url:null, media_mime:null, media_bytes:null,
+    media_name:'2026-12-05_metin.txt',
+    content:{ timezone:'Europe/Istanbul', caption:'Balıklı Meryem Ana · kısa not' }
+  }, ek || {});
+  const anketKayit = (secenekler, ek)=> thKayit(Object.assign({
+    type:'poll',
+    content:{ timezone:'Europe/Istanbul', caption:'Rivayet mi, kayıt mı?',
+              anketSecenekler: secenekler }
+  }, ek || {}));
+
+  console.log('[threads · metin postu]');
+  {
+    tabloyuKur(thKayit()); metaKur(); thKur();
+    const r = await turAt();
+    bak('★ metin postu yayınlandı', r.govde.sonuc['yayinlandi'] === 1, JSON.stringify(r.govde.sonuc));
+    bak('kapsayıcı BİR KERE yaratıldı', TH.yarat === 1, String(TH.yarat));
+    bak('yayın çağrısı BİR KERE yapıldı', TH.yayin === 1, String(TH.yayin));
+    const gv = TH.yaratGovde[0] || {};
+    // ⚠ DOSYASIZ GONDERI, TEK ISTISNA. Story ve reels dosyasiz
+    // anlamsiz; Threads'te metin TEK BASINA bir gonderi.
+    bak('★ kapsayıcı TEXT diyor', gv.media_type === 'TEXT', JSON.stringify(gv));
+    bak('metin gövdeye yazıldı', gv.text === 'Balıklı Meryem Ana · kısa not', gv.text);
+    bak('★ görsel yok, image_url DA yok', gv.image_url === undefined, String(gv.image_url));
+    bak('★ yayın çağrısı kapsayıcının KENDİ kimliğiyle',
+      (TH.yayinGovde[0]||{}).creation_id === 'thc_1', JSON.stringify(TH.yayinGovde[0]));
+    // ⚠ SIRA: kapsayici yaratmak yayinlamiyor. Tersi cift gonderi
+    // degil ama yayin HIC cikmaz -- ve hicbir yerde hata gorunmez.
+    bak('★ önce kapsayıcı, SONRA yayın',
+      TH.sira.indexOf('yarat') === 0 && /^yayin:thc_1$/.test(TH.sira[TH.sira.length-1]),
+      TH.sira.join(' > '));
+    const kayit = bul('st_1');
+    bak('kayıt published', kayit.publish_state === 'published', kayit.publish_state);
+    bak('★ external_id YAYIN cevabından (kapsayıcı kimliği değil)',
+      kayit.external_id === 'thp_1', String(kayit.external_id));
+    bak('çöküş izi temizlendi',
+      !kayit.publish_ref && !kayit.publish_ref_at && !kayit.publish_called_at,
+      JSON.stringify([kayit.publish_ref, kayit.publish_ref_at, kayit.publish_called_at]));
+    // ⛔ AYRI UYGULAMA, AYRI JETON. Bir Threads kaydi Facebook/
+    // Instagram ucuna DOKUNMAMALI: dokunursa bugun calisan Facebook
+    // yayinini bozmanin yolu acilmis olur.
+    bak('★ Instagram/Facebook uçlarına HİÇ gidilmedi',
+      cagrilar.media === 0 && cagrilar.publish === 0 && cagrilar.stories === 0
+      && cagrilar.fbBaslat === 0 && cagrilar.fbReelsBaslat === 0 && cagrilar.fbFoto === 0,
+      JSON.stringify(cagrilar));
+    // ⚠ JETON TABLODAN, ORTAMDAN DEGIL. Ortamdaki tohum ilk yayindan
+    // sonra eskiyor; onunla devam etmek bir sure sonra butun Threads
+    // yayinini durdurur.
+    bak('★ jeton TABLODAN geldi (ortamdaki tohum değil)',
+      TH.jetonlar.length > 0 && TH.jetonlar.every(x=> x === 'thtok_tablo'),
+      JSON.stringify(TH.jetonlar));
+    bak('tabloya yazı yapılmadı (süre dolmuyor)', TH.hesapYazmalari.length === 0,
+      JSON.stringify(TH.hesapYazmalari));
+  }
+  {
+    tabloyuKur(thKayit({ media_url:'https://medya.test/2026-12-05_kapak.jpg',
+                         media_mime:'image/jpeg', media_name:'2026-12-05_kapak.jpg' }));
+    metaKur(); thKur();
+    const r = await turAt();
+    bak('görselli metin postu yayınlandı', r.govde.sonuc['yayinlandi'] === 1,
+      JSON.stringify(r.govde.sonuc));
+    const gv = TH.yaratGovde[0] || {};
+    bak('★ görselli gönderi IMAGE diyor', gv.media_type === 'IMAGE', JSON.stringify(gv));
+    bak('image_url medya adresi', gv.image_url === 'https://medya.test/2026-12-05_kapak.jpg',
+      gv.image_url);
+    bak('metin de gidiyor', gv.text === 'Balıklı Meryem Ana · kısa not', gv.text);
+    // ⚠ DOSYAYI THREADS KENDISI CEKIYOR -- Facebook'ta baytlari BIZ
+    // tasiyoruz. Burada R2'den dosya cekmek, bosa giden bir indirme
+    // ve Edge Function butcesinden yenen bir sure demek.
+    bak('★ dosya bize indirilmedi (adres yetti)',
+      cagrilar.medyaCekildi === 0 && cagrilar.fbYukle === 0,
+      'medya=' + cagrilar.medyaCekildi + ' yukleme=' + cagrilar.fbYukle);
+  }
+
+  console.log('[threads · anket]');
+  {
+    tabloyuKur(anketKayit(['Rivayet', 'Kayıt', 'İkisi', 'Bilmiyorum'])); metaKur(); thKur();
+    const r = await turAt();
+    bak('★ anket yayınlandı', r.govde.sonuc['yayinlandi'] === 1, JSON.stringify(r.govde.sonuc));
+    const gv = TH.yaratGovde[0] || {};
+    // ⛔ GORSELLI ANKET OLMUYOR -- anket her zaman TEXT gonderisi.
+    bak('★ anket TEXT gönderisi', gv.media_type === 'TEXT', gv.media_type);
+    let anket = null;
+    try { anket = JSON.parse(gv.poll_attachment || 'null'); } catch(e){}
+    bak('poll_attachment JSON olarak gidiyor', !!anket, String(gv.poll_attachment));
+    // Alan adlari YANLIS olsa Meta hata vermez, yalnizca anketsiz bir
+    // gonderi yayinlar. Sira da onemli: option_a ilk secenek.
+    bak('★ seçenekler option_a..option_d olarak ve SIRAYLA',
+      anket && JSON.stringify(anket) === JSON.stringify({ option_a:'Rivayet',
+        option_b:'Kayıt', option_c:'İkisi', option_d:'Bilmiyorum' }), JSON.stringify(anket));
+  }
+  {
+    // Arayuzde dort kutu var; kullanici ikisini doldurup otekileri bos
+    // birakabiliyor. Bos kutular ATILIYOR -- gitseler Threads'in
+    // "her secenek 1-25" kuralini bos dizgeyle ihlal ederlerdi.
+    tabloyuKur(anketKayit(['Evet', '', 'Hayır', '   '])); metaKur(); thKur();
+    const r = await turAt();
+    const anket = JSON.parse((TH.yaratGovde[0]||{}).poll_attachment || 'null');
+    bak('★ boş kutular atıldı, iki seçenek gitti',
+      anket && JSON.stringify(anket) === JSON.stringify({ option_a:'Evet', option_b:'Hayır' }),
+      JSON.stringify(anket));
+    bak('iki seçenekli anket yayınlandı', r.govde.sonuc['yayinlandi'] === 1,
+      JSON.stringify(r.govde.sonuc));
+  }
+  {
+    // Tur anket DEGIL ama secenekler yazili: anket GITMIYOR, gonderi
+    // normal cikiyor. Sessizce anket eklemek, kullanicinin istemedigi
+    // bir anketi yayinlamak olurdu.
+    tabloyuKur(thKayit({ content:{ timezone:'Europe/Istanbul', caption:'Düz not',
+      anketSecenekler:['Evet','Hayır'] } })); metaKur(); thKur();
+    const r = await turAt();
+    bak('★ tür anket değilse poll_attachment GİTMİYOR',
+      (TH.yaratGovde[0]||{}).poll_attachment === undefined, JSON.stringify(TH.yaratGovde[0]));
+    bak('gönderi yine de yayınlandı', r.govde.sonuc['yayinlandi'] === 1,
+      JSON.stringify(r.govde.sonuc));
+  }
+
+  console.log('[threads · anket kuralları]');
+  // Ortak kalip: kural yayin aninda isliyor ve KAPSAYICI HIC
+  // YARATILMIYOR -- yaratilan bir kapsayici Threads'te yer tutar ve
+  // bosa gider.
+  const anketReddi = async (secenekler, ad, beklenen, ek)=>{
+    tabloyuKur(anketKayit(secenekler, ek)); metaKur(); thKur();
+    const r = await turAt();
+    const kayit = bul('st_1');
+    bak(ad + ' → ' + beklenen, r.govde.sonuc[beklenen] === 1, JSON.stringify(r.govde.sonuc));
+    bak(ad + ' → kayıt failed', kayit.publish_state === 'failed', kayit.publish_state);
+    bak('★ ' + ad + " → Threads'e HİÇ gidilmedi", TH.yarat === 0 && TH.yayin === 0,
+      TH.yarat + '/' + TH.yayin);
+    // Bolum 9: sessiz basarisizlik yasak.
+    bak(ad + ' → e-posta gitti', epostalar.length === 1, String(epostalar.length));
+    return { kayit, eposta: epostalar[0] || {} };
+  };
+  await anketReddi(['Bir'], 'tek seçenek', 'anket-sayi');
+  await anketReddi(['A','B','C','D','E'], 'beş seçenek', 'anket-sayi');
+  {
+    const { kayit } = await anketReddi(['Evet','Hayır'], 'görselli anket', 'anket-gorselli',
+      { media_url:'https://medya.test/2026-12-05_kapak.jpg', media_mime:'image/jpeg' });
+    // ⛔ GORSELI SESSIZCE ATMAK DA OLMAZ: kullanici onu bilerek
+    // koymus ve hangisinden vazgectigini BIZ secemeyiz. Mesaj iki
+    // secenegi de soyluyor.
+    bak('★ mesaj iki çıkış yolunu da söylüyor',
+      /[Gg]örseli kaldır/.test(kayit.last_error||'')
+      && /Metin postu/.test(kayit.last_error||''), kayit.last_error);
+  }
+
+  console.log('[threads · anket seçeneği BAYTLA ölçülüyor (27 Ekim 2026)]');
+  {
+    // ⚠ 27 EKIM 2026'NIN GERCEK VAKASI. "İstanbul Arkeoloji Müzesi"
+    // 25 KARAKTER -- yani belgedeki sinira tam oturuyor, ASMIYOR --
+    // ama 27 BAYT, cunku `İ` ve `ü` ikiser bayt tutuyor. Meta
+    // `#100/4279063 Invalid parameter` dedi. Karakterle olcen bir
+    // kontrol bu seceneği GECIRIR ve hata YAYIN ANINDA cikar.
+    const vaka = 'İstanbul Arkeoloji Müzesi';
+    bak('vaka gerçekten 25 karakter / 27 bayt',
+      vaka.length === 25 && Buffer.byteLength(vaka, 'utf8') === 27,
+      vaka.length + ' karakter / ' + Buffer.byteLength(vaka, 'utf8') + ' bayt');
+    const { kayit, eposta } = await anketReddi(['Rivayet', vaka], '25 karakter / 27 bayt',
+      'anket-uzun');
+    bak('★ mesaj KAÇ fazla olduğunu söylüyor', /2 birim fazla/.test(kayit.last_error||''),
+      kayit.last_error);
+    bak('★ mesaj Türkçe harflerin iki saydığını söylüyor',
+      /iki birim/.test(kayit.last_error||''), kayit.last_error);
+    // Kullanici yazilimci degil: "bayt" bir sey anlatmiyor.
+    bak('mesaj "bayt" demiyor', !/bayt/i.test(kayit.last_error||''), kayit.last_error);
+    bak('e-posta suçlu seçeneği gösteriyor', (eposta.text||'').indexOf(vaka) > -1,
+      (eposta.text||'').slice(0, 220));
+  }
+  {
+    // ⚠ SINIR DAHIL: tam 25 birim GECIYOR. `>` yerine `>=` yazilsa
+    // gecerli bir anket reddedilirdi ve bunu hicbir sey soylemezdi.
+    tabloyuKur(anketKayit(['A'.repeat(25), 'B'])); metaKur(); thKur();
+    const r = await turAt();
+    bak('★ tam 25 birim GEÇİYOR', r.govde.sonuc['yayinlandi'] === 1,
+      JSON.stringify(r.govde.sonuc));
+  }
+  {
+    tabloyuKur(anketKayit(['A'.repeat(26), 'B'])); metaKur(); thKur();
+    const r = await turAt();
+    bak('★ 26 birim REDDEDİLİYOR', r.govde.sonuc['anket-uzun'] === 1,
+      JSON.stringify(r.govde.sonuc));
+    bak('26 birim → "1 birim fazla"', /1 birim fazla/.test(bul('st_1').last_error||''),
+      bul('st_1').last_error);
+  }
+  {
+    // ⛔ KIRPMA YOK. Sinirdan uzun bir secenegi kirpmak anketin
+    // SORUSUNU degistirir ("Rivayet mi, kayıt mı" -> "Rivayet mi, kay")
+    // ve kullanici neyi oyladigini bilmez. 27 Ekim'e kadar MCP
+    // suzgeci tam bunu yapiyordu.
+    const uzun = 'Rivayet mi, kayıt mı, yoksa ikisi birden mi';
+    tabloyuKur(anketKayit([uzun, 'Bilmiyorum'])); metaKur(); thKur();
+    await turAt();
+    bak('★ uzun seçenek KIRPILIP yayınlanmadı', TH.yarat === 0, String(TH.yarat));
+    bak('hata mesajında seçeneğin kendisi var',
+      (bul('st_1').last_error||'').indexOf('Rivayet mi, kayıt mı') > -1,
+      bul('st_1').last_error);
+  }
+
+  console.log('[threads · kapsayıcı hazır olmadan yayınlanmıyor]');
+  {
+    // ⛔ ERKEN YAPILAN YAYIN CAGRISI HATA VERIYOR. Gorselde islenme
+    // birkac saniye suruyor; durum soruluyor.
+    tabloyuKur(thKayit({ media_url:'https://medya.test/2026-12-05_kapak.jpg',
+                         media_mime:'image/jpeg' }));
+    metaKur(); thKur({ durum:'ERROR' });
+    const r = await turAt();
+    bak('★ kapsayıcı ERROR → kalıcı hata', r.govde.sonuc['kapsayici-hata'] === 1,
+      JSON.stringify(r.govde.sonuc));
+    bak('★ yayın çağrısı YAPILMADI', TH.yayin === 0, String(TH.yayin));
+    bak('kayıt failed', bul('st_1').publish_state === 'failed', bul('st_1').publish_state);
+    bak('e-posta gitti', epostalar.length === 1, String(epostalar.length));
+    bak('mesaj görsel adresinden şüpheleniyor',
+      /görsel adresine/.test(bul('st_1').last_error||''), bul('st_1').last_error);
+  }
+
+  console.log('[threads · çöküş kurtarması — İKİ TANIK]');
+  {
+    // Cagri gitti, yanit donmedi, gonderi CIKTI. Liste onu goruyor:
+    // ikinci kez yayinlanmamali -- Threads gonderisi KALICI.
+    tabloyuKur(thKayit({ publish_ref:'thc_eski', publish_called_at: su() }));
+    metaKur(); thKur();
+    ilerlet(dk(5));
+    TH.gonderiler = [{ id:'th_cikti', timestamp: su() }];
+    const r = await turAt();
+    bak('★ çıkmış gönderi bulundu, İKİNCİ KEZ yayınlanmadı',
+      r.govde.sonuc['kurtarildi-yayinda'] === 1 && TH.yayin === 0,
+      JSON.stringify(r.govde.sonuc) + ' yayin=' + TH.yayin);
+    bak('listedeki kimlik kaydedildi', bul('st_1').external_id === 'th_cikti',
+      String(bul('st_1').external_id));
+    // ⚠ SIRA: liste CEVAP VERDIYSE kapsayiciya hic sorulmuyor.
+    bak('★ liste cevap verince kapsayıcıya SORULMUYOR', TH.durumSoruldu === 0,
+      String(TH.durumSoruldu));
+    bak('bildirim gitmedi (arıza değil)', epostalar.length === 0, String(epostalar.length));
+  }
+  {
+    // Liste OKUNDU ve BOS, kapsayici PUBLISHED: gonderi var, liste
+    // henuz gostermiyor. 16 Ekim'de bu tanik olmadigi icin kayit
+    // sonsuza kadar ertelenmisti.
+    tabloyuKur(thKayit({ publish_ref:'thc_1', publish_called_at: su() }));
+    metaKur(); thKur({ durum:'PUBLISHED' });
+    ilerlet(dk(5));
+    const r = await turAt();
+    bak('★ kapsayıcı PUBLISHED → yayınlanmış sayıldı',
+      r.govde.sonuc['kurtarildi-yayinda'] === 1, JSON.stringify(r.govde.sonuc));
+    bak('★ ikinci yayın çağrısı YAPILMADI', TH.yayin === 0, String(TH.yayin));
+    bak('iz olarak kapsayıcı kimliği kaydedildi', bul('st_1').external_id === 'thc_1',
+      String(bul('st_1').external_id));
+    // ⚠ SIRA, TERSI CIFT GONDERI URETIR: once liste, sonra kapsayici.
+    bak('★ ÖNCE liste, SONRA kapsayıcı durumu',
+      TH.sira.indexOf('liste') > -1 && TH.sira.indexOf('durum') > -1
+      && TH.sira.indexOf('liste') < TH.sira.indexOf('durum'), TH.sira.join(' > '));
+  }
+  {
+    // Liste OKUNDU ve BOS, kapsayici FINISHED = "yayinlanmaya hazir",
+    // yani YAYINLANMADI. Iki tanik birbirini dogruluyor: yeniden
+    // yayin GUVENLI.
+    tabloyuKur(thKayit({ publish_ref:'thc_1', publish_called_at: su() }));
+    metaKur(); thKur({ durum:'FINISHED' });
+    ilerlet(dk(5));
+    const r = await turAt();
+    bak('★ FINISHED → kesin çıkmadı, yeniden yayınlandı',
+      r.govde.sonuc['yayinlandi'] === 1 && TH.yayin === 1,
+      JSON.stringify(r.govde.sonuc) + ' yayin=' + TH.yayin);
+    bak('kayıt published', bul('st_1').publish_state === 'published',
+      bul('st_1').publish_state);
+  }
+  {
+    // ⛔ LISTE HIC OKUNAMADIYSA IKINCI TANIGA GITMENIN ANLAMI YOK.
+    // Tek basina kalan bir tanikla "cikmadi" demek istemiyoruz:
+    // yanlis "cikmadi" KALICI bir cift gonderi demek, yanlis
+    // "bilmiyorum" yalnizca gecikme.
+    tabloyuKur(thKayit({ publish_ref:'thc_1', publish_called_at: su() }));
+    metaKur(); thKur({ listeKodu:500, durum:'FINISHED' });
+    ilerlet(dk(5));
+    const r = await turAt();
+    bak('★ liste okunamayınca kapsayıcıya HİÇ SORULMUYOR', TH.durumSoruldu === 0,
+      String(TH.durumSoruldu));
+    bak('★ yayın çağrısı yapılmadı, kayıt bekliyor',
+      r.govde.sonuc['kurtarma-belirsiz'] === 1 && TH.yayin === 0,
+      JSON.stringify(r.govde.sonuc) + ' yayin=' + TH.yayin);
+    bak('deneme hakkı geri verildi', bul('st_1').attempt_count === 0,
+      String(bul('st_1').attempt_count));
+    bak('sebep kayda yazıldı (sessiz kalmıyor)',
+      /sonucu bilinmiyor/.test(bul('st_1').last_error||''), bul('st_1').last_error);
+  }
+  {
+    // IN_PROGRESS: kapsayici henuz islenmekte. Cevap yok -- "cikmadi"
+    // DEGIL. Tanimadigimiz her cevap da boyle.
+    tabloyuKur(thKayit({ publish_ref:'thc_1', publish_called_at: su() }));
+    metaKur(); thKur({ durum:'IN_PROGRESS' });
+    ilerlet(dk(5));
+    const r = await turAt();
+    bak('★ IN_PROGRESS "çıkmadı" SAYILMIYOR',
+      r.govde.sonuc['kurtarma-belirsiz'] === 1 && TH.yayin === 0,
+      JSON.stringify(r.govde.sonuc) + ' yayin=' + TH.yayin);
+  }
+  {
+    // ⚠ BELIRSIZLIK SONSUZA KADAR SURMEZ (27 Ekim 2026). 16 Ekim'de
+    // tam bu yasandi: kayit bes dakikada bir ertelendi, ne yayin ne
+    // e-posta. Tavan 30 dakika.
+    tabloyuKur(thKayit({ publish_ref:'thc_1', publish_called_at: su() }));
+    metaKur(); thKur({ listeKodu:500 });
+    ilerlet(dk(31));
+    const r = await turAt();
+    bak('★ 31 dakika sonra belirsizlik KALICI hataya dönüyor',
+      r.govde.sonuc['kurtarma-belirsiz-tavan'] === 1, JSON.stringify(r.govde.sonuc));
+    bak('★ kendiliğinden yeniden YAYINLANMADI', TH.yayin === 0, String(TH.yayin));
+    bak('e-posta gitti', epostalar.length === 1, String(epostalar.length));
+    // ⛔ KARARI KULLANICI VERIYOR: mesaj ne yapacagini soyluyor.
+    bak('mesaj hesaba bakmayı söylüyor',
+      /hesabını aç/.test(bul('st_1').last_error||''), bul('st_1').last_error);
+  }
+  {
+    // ⭐ UCTAN UCA COKUS: yayin cagrisi Threads'e ULASTI, gonderi
+    // profile DUSTU, yanit donmedi. Bir sonraki tur onu bulmali ve
+    // TOPLAMDA TEK yayin cagrisi yapilmis olmali.
+    tabloyuKur(thKayit()); metaKur(); thKur({ yayinDavranisi:'kaybolan-yanit' });
+    const r1 = await turAt();
+    bak('çöküş turunda kayıt yayınlanmadı', bul('st_1').publish_state !== 'published',
+      bul('st_1').publish_state);
+    bak('çöküş izi duruyor', !!bul('st_1').publish_ref && !!bul('st_1').publish_called_at,
+      JSON.stringify([bul('st_1').publish_ref, bul('st_1').publish_called_at]));
+    TH.yayinDavranisi = 'ok';
+    ilerlet(dk(2));
+    const r2 = await turAt();
+    bak('★ kurtarma turu çıkmış gönderiyi buldu',
+      r2.govde.sonuc['kurtarildi-yayinda'] === 1, JSON.stringify(r2.govde.sonuc));
+    bak('★★ TOPLAMDA TEK yayın çağrısı (çift gönderi YOK)', TH.yayin === 1,
+      String(TH.yayin));
+    bak('çöküşte düşen gönderinin kimliği kaydedildi',
+      bul('st_1').external_id === 'th_cokme', String(bul('st_1').external_id));
+    bak('r1 hata kovasına düştü (sessiz kalmadı)',
+      JSON.stringify(r1.govde.sonuc).indexOf('gecici') > -1
+      || !!bul('st_1').external_id, JSON.stringify(r1.govde.sonuc));
+  }
+
+  console.log('[threads · jeton tabloda yaşıyor (sql/63)]');
+  {
+    // Sureye THREADS_YENILEME_GUN (10) kalmadan DOKUNULMUYOR.
+    tabloyuKur(thKayit()); metaKur(); thKur();
+    await turAt();
+    bak('★ süre varsa yenileme DENENMİYOR', TH.yenilemeCalisti === 0,
+      String(TH.yenilemeCalisti));
+  }
+  {
+    // ⛔ YENILEME PENCERESI KACIRILIRSA GERI DONUS YOK: 60 gun
+    // yenilenmeyen jeton KALICI oluyor. O yuzden 10 gun kala
+    // yenileniyor.
+    tabloyuKur(thKayit()); metaKur();
+    thKur({ hesap:{ user_id:UID, erisim_jetonu:'thtok_eski',
+      erisim_bitis: new Date(SAAT + 5*864e5).toISOString(), son_yenileme:null } });
+    const r = await turAt();
+    bak('★ süreye 5 gün kalmışsa yenilendi', TH.yenilemeCalisti === 1,
+      String(TH.yenilemeCalisti));
+    bak('★ yayın YENİ jetonla yapıldı (eskisiyle değil)',
+      TH.jetonlar.filter(x=> x === 'thtok_yeni').length > 0
+      && TH.jetonlar.indexOf('thtok_eski') === TH.jetonlar.lastIndexOf('thtok_eski'),
+      JSON.stringify(TH.jetonlar));
+    const yz = TH.hesapYazmalari[0] || {};
+    bak('yeni jeton tabloya yazıldı', yz.erisim_jetonu === 'thtok_yeni', JSON.stringify(yz));
+    bak('yeni bitiş tarihi yazıldı',
+      Date.parse(yz.erisim_bitis||'') > SAAT + 50*864e5, String(yz.erisim_bitis));
+    bak('eski hata satırı temizlendi', yz.son_hata === null, JSON.stringify(yz.son_hata));
+    bak('gönderi yine çıktı', r.govde.sonuc['yayinlandi'] === 1, JSON.stringify(r.govde.sonuc));
+  }
+  {
+    // ⚠ YENILEME BASARISIZ ≠ YAYIN DURUR. Jetonun suresi henuz
+    // dolmadiysa ELDEKI jetonla devam ediliyor; yarin yine denenecek.
+    tabloyuKur(thKayit()); metaKur();
+    thKur({ yenilemeHatasi:400, hesap:{ user_id:UID, erisim_jetonu:'thtok_eski',
+      erisim_bitis: new Date(SAAT + 5*864e5).toISOString(), son_yenileme:null } });
+    const r = await turAt();
+    bak('★ yenileme patlasa da yayın DURMUYOR', r.govde.sonuc['yayinlandi'] === 1,
+      JSON.stringify(r.govde.sonuc));
+    bak('eldeki jetonla gidildi', TH.jetonlar.filter(x=> x === 'thtok_eski').length > 0,
+      JSON.stringify(TH.jetonlar));
+    const yz = TH.hesapYazmalari[0] || {};
+    // Bolum 9: sessiz basarisizlik yasak. Yayin gercekten durdugunda
+    // sebebi burada yaziyor olmali.
+    bak('★ sebep satıra yazıldı', /yenilenemedi/.test(yz.son_hata||''), JSON.stringify(yz));
+    bak('deneme tarihi yazıldı (günde bir deneme)', !!yz.son_yenileme,
+      String(yz.son_yenileme));
+  }
+  {
+    // ⚠ GUNDE BIR DENEME. Worker dakikada bir kosuyor; yenileme
+    // basarisizsa her turda tekrar denemek Meta'yi dovmek olurdu.
+    tabloyuKur(thKayit()); metaKur();
+    thKur({ hesap:{ user_id:UID, erisim_jetonu:'thtok_eski',
+      erisim_bitis: new Date(SAAT + 5*864e5).toISOString(),
+      son_yenileme: new Date(SAAT - 3600e3).toISOString() } });
+    const r = await turAt();
+    bak('★ bir saat önce denenmişse TEKRAR DENENMİYOR', TH.yenilemeCalisti === 0,
+      String(TH.yenilemeCalisti));
+    bak('yayın yine de yapıldı', r.govde.sonuc['yayinlandi'] === 1,
+      JSON.stringify(r.govde.sonuc));
+  }
+  {
+    // Tohumlama: tabloda satir YOK. Ortamdaki jeton BIR KEZ tabloya
+    // yaziliyor ve bitis temkinli (30 gun) varsayiliyor.
+    tabloyuKur(thKayit()); metaKur(); thKur({ hesap:null });
+    const r = await turAt();
+    bak('★ tablo boşsa ortamdaki tohum tabloya yazıldı',
+      TH.hesapEklemeleri.length === 1, JSON.stringify(TH.hesapEklemeleri));
+    const ek = TH.hesapEklemeleri[0] || {};
+    bak('tohum jetonu yazıldı', ek.erisim_jetonu === 'thtok_tohum', String(ek.erisim_jetonu));
+    bak('bitiş TEMKİNLİ 30 gün varsayıldı',
+      Math.abs(Date.parse(ek.erisim_bitis||'') - (SAAT + 30*864e5)) < dk(2),
+      String(ek.erisim_bitis));
+    bak('yayın tohumla yapıldı', r.govde.sonuc['yayinlandi'] === 1,
+      JSON.stringify(r.govde.sonuc));
+  }
+  {
+    // sql/63 hic calistirilmamis (dagitim sirasi): tablo YOK. Yayin
+    // DURMUYOR, yalnizca yenileme yapilmiyor.
+    tabloyuKur(thKayit()); metaKur(); thKur({ tabloYok:true });
+    const r = await turAt();
+    bak('★ sql/63 yoksa yayın DURMUYOR', r.govde.sonuc['yayinlandi'] === 1,
+      JSON.stringify(r.govde.sonuc));
+    bak('ortamdaki tohumla gidildi', TH.jetonlar.every(x=> x === 'thtok_tohum'),
+      JSON.stringify(TH.jetonlar));
+  }
+
+  console.log('[threads · tür ve platform kapıları]');
+  {
+    // ⛔ text_post YALNIZCA threads. Instagram'a dusen bir metin
+    // postu, reelMi false donduğu icin STORY olarak cikardi -- 24
+    // saatte kaybolan, hicbir yerde hata vermeyen bir yayin.
+    tabloyuKur(thKayit({ platform:'instagram' })); metaKur(); thKur();
+    const r = await turAt();
+    bak('★ instagram/text_post ERTELENİYOR (yayınlanmıyor)',
+      r.govde.sonuc['tur-platform-uyusmuyor'] === 1, JSON.stringify(r.govde.sonuc));
+    bak('Threads uçlarına gidilmedi', TH.yarat === 0, String(TH.yarat));
+    bak('Instagram uçlarına da gidilmedi', cagrilar.media === 0, String(cagrilar.media));
+    // Hata DEGIL erteleme: deneme hakki harcanmiyor, kullanici
+    // duzelttigi an kendiliginden akiyor.
+    bak('deneme hakkı harcanmadı', bul('st_1').attempt_count === 0,
+      String(bul('st_1').attempt_count));
+  }
+  {
+    tabloyuKur(anketKayit(['Evet','Hayır'], { platform:'facebook' })); metaKur(); thKur();
+    const r = await turAt();
+    bak('★ facebook/poll ERTELENİYOR', r.govde.sonuc['tur-platform-uyusmuyor'] === 1,
+      JSON.stringify(r.govde.sonuc));
+  }
+  {
+    // Ne metin ne gorsel: gonderilecek bir sey yok. Kalici, cunku
+    // kendiliginden duzelmez.
+    tabloyuKur(thKayit({ content:{ timezone:'Europe/Istanbul' } })); metaKur(); thKur();
+    const r = await turAt();
+    bak('★ boş Threads gönderisi kalıcı hata', r.govde.sonuc['bos-gonderi'] === 1,
+      JSON.stringify(r.govde.sonuc));
+    bak('★ "Medya bağlı değil" DEMİYOR (metin yeterdi)',
+      !/Medya bağlı değil/.test(bul('st_1').last_error||''), bul('st_1').last_error);
+    bak('e-posta gitti', epostalar.length === 1, String(epostalar.length));
+  }
+
+  console.log('[threads · bildirim dili]');
+  {
+    tabloyuKur(anketKayit(['Bir'])); metaKur(); thKur();
+    await turAt();
+    const e = epostalar[0] || {};
+    bak('konu "Anket yayınlanamadı" diyor', /Anket yayınlanamadı/.test(e.subject||''),
+      e.subject);
+    // Anket kalici bir gonderi: story'nin 24 saat telasi burada
+    // gereksiz bir acele yaratirdi.
+    bak('★ "24 saatlik" telaşı YOK (anket kalıcı)', !/24 saatlik/.test(e.text||''),
+      (e.text||'').slice(0, 160));
+    bak('türü Anket yazıyor', /Tür\s*:\s*Anket/.test(e.text||''), (e.text||'').slice(0, 200));
+    // ⚠ PLATFORM TABLOSU: TikTok ve YouTube 28-29 Eylul'de eklenirken
+    // bu tablo eksik kalmis ve bildirim "Platform: tiktok" demisti.
+    // Threads 16 Ekim'de eklendi; AYNI tablo.
+    bak('★ platformu Threads yazıyor (kod adı değil)',
+      /Platform\s*:\s*Threads/.test(e.text||''), (e.text||'').slice(0, 200));
+  }
+  {
+    tabloyuKur(thKayit({ content:{ timezone:'Europe/Istanbul' } })); metaKur(); thKur();
+    await turAt();
+    const e = epostalar[0] || {};
+    bak('metin postu bildirimi "Metin postu yayınlanamadı"',
+      /Metin postu yayınlanamadı/.test(e.subject||''), e.subject);
+    bak('türü Metin Postu yazıyor', /Tür\s*:\s*Metin Postu/.test(e.text||''),
+      (e.text||'').slice(0, 200));
   }
 
   Date.now = gercekNow;
