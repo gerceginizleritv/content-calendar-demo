@@ -86,6 +86,24 @@ function kimlikUret(liste) {
 
 // ---- alan okuyucular ---------------------------------------------------
 // Verilmeyen alan undefined döner (çıktıda yer almaz); verilen alan kırpılır.
+// THREADS ANKET SECENEGI SINIRI -- OLCU BAYT, KARAKTER DEGIL.
+//
+// 27 Ekim 2026: bir anket `#100/4279063 Invalid parameter` ile reddedildi,
+// kayit `failed` oldu ve kullaniciya "yayinlanamadi" maili gitti. Suclu
+// secenek Turkce yazilmis "Istanbul Arkeoloji Muzesi" idi:
+//     25 KARAKTER -> belgedeki sinirin tam ustunde, ASMIYOR
+//     27 BAYT     -> sinirdan 2 fazla   (`I` ve `u` ikiser bayt)
+// Secenek kisaltilinca ayni anket DORT secenegiyle yayinlandi.
+//
+// Bayt olcusu karakter olcusunu zaten kapsiyor (bayt >= karakter), o
+// yuzden tek kontrol yetiyor. TextEncoder hem tarayicida hem Deno'da var.
+//
+// ⚠ TEK DENEYE DAYANIYOR. Alt kod 4279063'un ne demek oldugu Meta'nin
+// belgesinde de ucuncu taraflarda da YOK. Baska bir sebep cikarsa bu
+// karar gozden gecirilsin.
+const ANKET_SECENEK_BAYT = 25;
+const baytUzunluk = (s) => new TextEncoder().encode(String(s ?? '')).length;
+
 function metin(v, n) {
   if (v === undefined || v === null) return undefined;
   if (typeof v === 'number' || typeof v === 'boolean') v = String(v);
@@ -301,12 +319,35 @@ function kayitOku(ham, sira, hatalar) {
       // islevden sessizce DUSUYOR. `diller` ve `anaDil` tam bunu
       // yasadi ve kayip haftalarca gorulmedi.
       //
-      // Threads'in siniri 2-4 secenek, her biri 1-25 karakter. Burada
-      // yalnizca TAVAN uygulaniyor (4 ve 25); "en az iki" sarti
-      // KOYULMUYOR, cunku tek secenekli bir taslak kaydedilebilmeli --
-      // eksikse yayin aninda kalici hata veriliyor ve e-posta gidiyor.
+      // Threads'in siniri 2-4 secenek, her biri 25 BIRIM (bkz.
+      // ANKET_SECENEK_BAYT). "En az iki" sarti KOYULMUYOR, cunku tek
+      // secenekli bir taslak kaydedilebilmeli -- eksikse yayin aninda
+      // kalici hata veriliyor ve e-posta gidiyor.
+      //
+      // ⛔ UZUN SECENEK ARTIK KIRPILMIYOR -- 27 Ekim 2026.
+      // Eskiden sessizce 25 KARAKTERE kirpiliyordu ve bu iki ayri
+      // sekilde yanlisti: (1) olcu karakterdi, Turkce metin siniri
+      // asarak geciyordu; (2) kirpmak anketin SORUSUNU degistirir
+      // ("Rivayet mi, kayit mi" -> "Rivayet mi, kay") ve kullanici
+      // neyi oyladigini bilmez. Worker da app.html de ayni sebeple
+      // kirpmiyor; burasi da onlara uyuyor.
+      //
+      // Metin OLDUGU GIBI birakiliyor ve hata listesine yaziliyor:
+      // MCP cagrisinin cevabinda `warnings` olarak doniyor, yani
+      // asistan HEMEN goruyor ve duzeltebiliyor.
       anketSecenekler: Array.isArray(c.anketSecenekler)
-        ? c.anketSecenekler.slice(0, 4).map(x => typeof x === 'string' ? x.slice(0, 25) : '') : undefined,
+        ? c.anketSecenekler.slice(0, 4).map((x, i) => {
+            const sec = typeof x === 'string' ? x : '';
+            const b = baytUzunluk(sec);
+            if (b > ANKET_SECENEK_BAYT)
+              hatalar.push({ liste: 'entries', sira,
+                alan: `content.anketSecenekler[${i}]`,
+                sebep: `${b - ANKET_SECENEK_BAYT} unit(s) over the Threads limit of `
+                     + `${ANKET_SECENEK_BAYT}: accented and non-Latin letters count as two. `
+                     + `Shorten it — the text was kept as written and will fail at publish time.` });
+            return sec;
+          })
+        : undefined,
       // ANKETIN CEVABI (16 Ekim 2026). Anket cikinca 24 saat sonra
       // anketin ALTINA yanit olarak gidiyor. Threads metin siniri 500;
       // daha uzunu worker kirpardi ve kullanici kirpildigini yayin
@@ -670,7 +711,7 @@ const SEMA = {
         "type": "string",
         "maxLength": 25
        },
-       "description": "Poll only (type \"poll\", platform \"threads\"): the poll options, in order. Threads requires 2 to 4 options and 1 to 25 characters each, and a poll can only be attached to a TEXT post — an entry with a poll must not carry an image. The post text itself goes in \"caption\"."
+       "description": "Poll only (type \"poll\", platform \"threads\"): the poll options, in order. Threads requires 2 to 4 options and at most 25 UNITS each. A unit is a byte, not a character: accented and non-Latin letters (ç ğ ı İ ö ş ü, Cyrillic, Greek, emoji) count as two or more. \"İstanbul Arkeoloji Müzesi\" is 25 characters but 27 units and Threads rejects it — that really happened on 27 Oct 2026 and the post failed at publish time. Count units, not letters. A poll can only be attached to a TEXT post — an entry with a poll must not carry an image. The post text itself goes in \"caption\"."
       },
       "anketCevap": {
        "type": "string",
@@ -1215,6 +1256,11 @@ const SERVIS_ANAHTARI = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY') ?? '';
 // yerde arandi. Surum ve uc listesi artik cevapta.
 // 1.5.1 — story alanlarinin sinirlari 6000'e cikti.
 // 1.5.0 — story alanlari: storyPrompt, storyKartlar, storyYonerge.
+// 1.16.0 — Anket secenegi siniri KARAKTERLE degil BAYTLA olculuyor.
+//         27 Ekim 2026: "Istanbul Arkeoloji Muzesi" (Turkce yazimi)
+//         25 KARAKTER ama 27 BAYT; Threads reddetti, kayit failed oldu.
+//         Dogrulayici artik sessizce kirpmiyor -- metni oldugu gibi
+//         birakip `warnings`'e yaziyor, yani asistan hemen goruyor.
 // 1.9.1 — yalnizca YORUM: /api/entries/find suzgecinin gerekcesi
 //         eskimisti ("shorts'a mediaUrl yazmanin anlami yok").
 //         Davranis degismedi; dagitim aceleye gerek birakmiyor.
@@ -1230,7 +1276,7 @@ const SERVIS_ANAHTARI = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY') ?? '';
 // Bu kural UC KEZ unutuldu ve ucuncusunde artik soze birakilmadi:
 // birlestir.py, kaynak degisip surum ayni kalirsa HATA VERIP duruyor
 // ve tek-dosya.ts'i uretmiyor. Yani unutuldugu an belli oluyor.
-const SURUM = '1.15.0';
+const SURUM = '1.16.0';
 
 // ---- Otomatik yayın hattı olan türler ------------------------------------
 // AYNI kümeyi taşıyan yerler: app.html'deki YAYIN_TURLERI, sql/50'deki

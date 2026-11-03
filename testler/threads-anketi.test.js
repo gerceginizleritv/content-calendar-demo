@@ -162,11 +162,21 @@ console.log('[worker — yayın yolu]');
   bak('★ seçenek sayısı denetleniyor',
       /secenekler\.length < ANKET_EN_AZ \|\| secenekler\.length > ANKET_EN_COK/.test(gy),
       (/secenekler\.length[^\n]*/.exec(gy) || ['yok'])[0]);
-  // ⛔ UZUN SEÇENEK KIRPILMIYOR: 25 karakteri aşanı kırpmak anketin
+  // ⛔ UZUN SEÇENEK KIRPILMIYOR: sınırı aşanı kırpmak anketin
   // sorusunu değiştirir ve kullanıcı neyi oyladığını bilmez.
   bak('★ uzun seçenek kırpılmıyor, kalıcı hata veriyor',
-      /x\.length > ANKET_SECENEK_TAVAN[\s\S]{0,200}kaliciHata/.test(gy),
+      /anketBayt\(x\) > ANKET_SECENEK_TAVAN[\s\S]{0,260}kaliciHata/.test(gy),
       (/ANKET_SECENEK_TAVAN[^\n]*/.exec(gy) || ['yok'])[0]);
+  // ⚠ SINIR BAYTLA ÖLÇÜLÜYOR — 27 Ekim 2026. O gün bir anket
+  // `#100/4279063 Invalid parameter` ile reddedildi; suçlu seçenek
+  // "İstanbul Arkeoloji Müzesi" idi: 25 KARAKTER (sınırı aşmıyor) ama
+  // 27 BAYT. Seçenek kısaltılınca aynı anket dört seçeneğiyle çıktı.
+  // Ölçüm `x.length`e geri dönülmesini yakalamak için var.
+  bak('★ ÖLÇÜ BAYT, karakter DEĞİL',
+      /const anketBayt = \(s: string\) => new TextEncoder\(\)\.encode\(s\)\.length/.test(WORKER),
+      (/anketBayt[^\n]*/.exec(WORKER) || ['yok'])[0]);
+  bak('★ seçenek uzunluğu x.length ile ölçülmüyor',
+      !/x\.length > ANKET_SECENEK_TAVAN/.test(gy));
   bak('★ sınırlar sabit olarak yazılı (2, 4, 25)',
       /ANKET_EN_AZ = 2/.test(WORKER) && /ANKET_EN_COK = 4/.test(WORKER)
       && /ANKET_SECENEK_TAVAN = 25/.test(WORKER),
@@ -242,9 +252,23 @@ console.log('[MCP + ai/sema.json]');
       /Array\.isArray\(c\.anketSecenekler\) && c\.anketSecenekler\.length/.test(gi));
   // ⛔ SÜZGEÇTE OLMAZSA İÇE AKTARMADA DÜŞER.
   bak('★ ai/dogrula.js süzgecinde', /anketSecenekler: Array\.isArray\(c\.anketSecenekler\)/.test(DOGRULA));
-  bak('★ süzgeçte tavanlar (4 seçenek, 25 karakter)',
-      /slice\(0, 4\)[\s\S]{0,80}slice\(0, 25\)/.test(DOGRULA),
-      (/anketSecenekler[\s\S]{0,160}/.exec(DOGRULA) || ['yok'])[0].replace(/\s+/g,' ').slice(0,100));
+  bak('★ süzgeçte seçenek sayısı tavanı (4)', /slice\(0, 4\)/.test(DOGRULA));
+  // ⚠ ÖLÇÜ BAYT, KARAKTER DEĞİL — 27 Ekim 2026. O gün bir anket
+  // `#100/4279063 Invalid parameter` ile reddedildi; suçlu seçenek
+  // "İstanbul Arkeoloji Müzesi": 25 KARAKTER (sınırı aşmıyor) ama
+  // 27 BAYT. Seçenek kısaltılınca aynı anket dört seçeneğiyle çıktı.
+  bak('★ süzgecin ölçüsü BAYT',
+      /const baytUzunluk = \(s\) => new TextEncoder\(\)\.encode\(String\(s \?\? ''\)\)\.length/.test(DOGRULA),
+      (/baytUzunluk[^\n]*/.exec(DOGRULA) || ['yok'])[0]);
+  bak('★ sınır sabiti 25 olarak yazılı', /const ANKET_SECENEK_BAYT = 25;/.test(DOGRULA));
+  // ⛔ KIRPMA YOK: kırpmak anketin SORUSUNU değiştirir ve kullanıcı neyi
+  // oyladığını bilmez. Worker ve app.html de kırpmıyor; süzgeç onlara uyuyor.
+  bak('★ uzun seçenek SESSİZCE KIRPILMIYOR', !/slice\(0, 25\)/.test(DOGRULA));
+  // Sessiz kalmak da olmaz (Bölüm 9): hata listesine yazılıyor, MCP
+  // cevabında `warnings` olarak dönüyor, asistan hemen görüyor.
+  bak('★ sınırı aşan seçenek hata listesine yazılıyor',
+      /baytUzunluk\(sec\)[\s\S]{0,200}hatalar\.push\(\{[\s\S]{0,120}anketSecenekler/.test(DOGRULA),
+      (/if \(b > ANKET_SECENEK_BAYT\)[\s\S]{0,80}/.exec(DOGRULA) || ['yok'])[0].replace(/\s+/g,' ').slice(0,90));
   // Şema: hem asistanın gördüğü belge hem MCP'nin girdi şeması buradan.
   const c = SEMA.$defs.Entry.properties.content.properties;
   bak('★ ai/sema.json anketSecenekler tanımlı', !!c.anketSecenekler);
