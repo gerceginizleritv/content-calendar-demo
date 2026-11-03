@@ -3269,11 +3269,35 @@ async function turAt(gizli){
     bak('★ "24 saatlik" telaşı YOK (anket kalıcı)', !/24 saatlik/.test(e.text||''),
       (e.text||'').slice(0, 160));
     bak('türü Anket yazıyor', /Tür\s*:\s*Anket/.test(e.text||''), (e.text||'').slice(0, 200));
-    // ⚠ PLATFORM TABLOSU: TikTok ve YouTube 28-29 Eylul'de eklenirken
-    // bu tablo eksik kalmis ve bildirim "Platform: tiktok" demisti.
-    // Threads 16 Ekim'de eklendi; AYNI tablo.
-    bak('★ platformu Threads yazıyor (kod adı değil)',
-      /Platform\s*:\s*Threads/.test(e.text||''), (e.text||'').slice(0, 200));
+    // ⚠ BİLİNEN BOŞLUK, KABUL EDİLDİ -- 3 KASIM 2026.
+    // basarisizBildir'deki platform adi tablosunda (instagram,
+    // facebook, tiktok, youtube) `threads` YOK. Taninmayan platform
+    // kucuk harfli KOD ADIYLA yaziliyor, yani bildirim
+    // "Platform: threads" diyor -- "Threads" demiyor.
+    //
+    // ⚠ KODUN KENDİ YORUMU TAM BU HATAYA KARŞI UYARIYOR: TikTok ve
+    // YouTube 28-29 Eylul 2026'da eklenirken ayni tablo atlanmis ve
+    // bildirim "Platform: tiktok" demisti. Threads 16 Ekim'de
+    // eklendi, tablo YINE atlandi. Yani bu bir cesit degil, bir
+    // DESEN: tur tablosu bir yerde, platform adi tablosu baska yerde.
+    //
+    // ⛔ DUZELTİLMEDİ, KULLANICI KARARI (3 Kasim 2026):
+    // "duzeltmeyelim, ama kayit altina alalim". Gerekce: metni
+    // yalnizca kayit sahibi okuyor, yayini durdurmuyor, veriye
+    // dokunmuyor -- calisan bir worker'i tek bir gorsel kelime icin
+    // yeniden dagitmaya deger degil. Tek satirlik duzeltme
+    // YAPILACAKLAR.md'de duruyor ve `story-yayin` bir sonraki kez
+    // dagitilirken YANINDA gidecek.
+    //
+    // ⚠ BU OLCUM BUGUNKU GERCEGİ DOGRULUYOR, "dogru davranisi" DEGIL.
+    // Kirmizi bir test birakmak istemedik: gecelik turda zaten
+    // bakilmayan arizalar var ve altincisi, kirmizinin "normal"
+    // olmasina bir katki daha olurdu. Ama bosluk da kaybolmasin --
+    // biri tabloya `threads: 'Threads'` eklerse bu olcum DUSER ve
+    // boylece haber verir. O gun bu blok silinip yerine
+    // "platformu Threads yaziyor" olcumu yazilsin.
+    bak("platform adı tablosunda threads YOK (bilinen boşluk, 3 Kasım 2026)",
+      /Platform\s*:\s*threads/.test(e.text||''), (e.text||'').slice(0, 200));
   }
   {
     tabloyuKur(thKayit({ content:{ timezone:'Europe/Istanbul' } })); metaKur(); thKur();

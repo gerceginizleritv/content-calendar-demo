@@ -6,6 +6,80 @@ duruyor, neden ertelendiği de yazıyor ki aynı tartışma baştan yapılmasın
 
 ---
 
+## THREADS UÇTAN UCA TESTİ — ve bir kabul edilmiş boşluk (3 Kasım 2026)
+
+### Ne yapıldı
+
+Threads yayın yolunun **davranışsal** testi yoktu. `threads-yayin.test.js`
+kararın beş yerde yazılı olduğunu ölçüyor ama kaynak **metnine** bakarak;
+yani "doğru yazılmış mı" sorusunu cevaplıyor, "doğru **DAVRANIYOR** mu"
+sorusunu cevaplamıyordu.
+
+`testler/story-yayin.test.js`'e 116 ölçüm eklendi (364 → 480). Worker
+gerçekten koşuyor; sahte Threads sunucusu `graf.test`ten **ayrı bir
+makinede** (`threads.test`) — bilerek: ikisi aynı sahte sunucuda olsaydı
+"yanlış uygulamaya gitti" hatası GÖRÜNMEZDİ, ve o hata bugün çalışan
+Facebook yayınını bozmak demek.
+
+Ölçülenler: metin postu (TEXT kapsayıcı → yayın sırası), görselli gönderi
+(IMAGE, dosya **bize indirilmiyor** — Threads kendisi çekiyor), anket
+(`option_a..option_d` SIRAYLA, boş kutular atılıyor, tür anket değilse
+anket gitmiyor), anket kuralları (1 ve 5 seçenek, görselli anket → kalıcı
+hata ve kapsayıcı **hiç** yaratılmıyor), 27 Ekim'in bayt vakası (tam 25
+birim geçiyor, 26 reddediliyor, kırpma yok), çöküş kurtarması (iki tanık
+ve **sırası**: liste okunamadıysa kapsayıcıya hiç sorulmuyor), uçtan uca
+çöküş (toplamda TEK yayın çağrısı), jeton yaşam döngüsü (sql/63),
+tür/platform kapıları.
+
+Mutasyon testi: **24 mutasyonun 24'ü yakalandı.**
+
+⚠ Hiçbir üretim dosyasına dokunulmadı. Değişen tek dosya
+`testler/story-yayin.test.js` — `supabase/functions/`, `sql/`, `app.html`
+ve `pc/` altında **tek satır** değişmedi, dağıtım gerekmedi.
+
+### Bulunan gerçek hata — DÜZELTİLMEDİ, kullanıcı kararı
+
+**Threads yayını başarısız olunca giden e-posta "Platform: threads"
+diyor, "Threads" demiyor.**
+
+`index.ts` → `basarisizBildir` içindeki platform adı tablosunda
+(`instagram`, `facebook`, `tiktok`, `youtube`) **`threads` satırı yok**;
+tanınmayan platform küçük harfli kod adıyla yazılıyor.
+
+⚠ **Kodun kendi yorumu tam bu hataya karşı uyarıyor.** TikTok ve YouTube
+28-29 Eylül 2026'da eklenirken aynı tablo atlanmış ve bildirim
+"Platform: tiktok" demişti. Threads 16 Ekim'de eklendi, tablo YİNE
+atlandı. Bu bir çeşit değil, bir **desen**: tür tablosu bir yerde,
+platform adı tablosu başka yerde.
+
+**KARAR (3 Kasım 2026, kullanıcı):** *"Düzeltmeyelim, ama kayıt altına
+alalım."* Gerekçe: metni yalnızca kayıt sahibi okuyor, yayını
+durdurmuyor, veriye dokunmuyor — **çalışan bir worker'ı tek bir görsel
+kelime için yeniden dağıtmaya değmez.**
+
+→ **Bir sonraki `story-yayin` dağıtımında yanında gidecek tek satır:**
+`basarisizBildir`'deki platform adı tablosuna `threads: 'Threads'`
+eklenir, `SURUM` arttırılır. Kendi başına dağıtım YOK.
+
+⚠ **Kırmızı test bırakılmadı — bilerek.** Gecelik turda zaten bakılmayan
+beş arıza var; altıncısını eklemek, kırmızılığın "normal" olmasına bir
+katkı daha olurdu ve asıl tehlike o: bir gün gerçek bir arıza o listede
+kaybolur. Ölçüm **bugünkü gerçeği** doğrulayacak şekilde yazıldı
+(`Platform: threads` bekliyor) ve yanına kararın gerekçesi not edildi.
+Biri tabloya `threads` eklerse **ölçüm düşer ve haber verir**; o gün blok
+silinip yerine "platformu Threads yazıyor" ölçümü yazılacak.
+
+### Açık kalanlar (bu işte kapatılmadı)
+
+- Anket cevabının (`threads_yanitlari`, sql/65-66) davranışsal testi hâlâ
+  yok: sahte sunucuda `/replies` ucu hazır ama yanıt kuyruğunun RPC'leri
+  (`threads_yanit_al` vb.) test taklidinde yazılmadı. Zincir sırası —
+  dizinin 2. parçası 1. parça çıkmadan gitmesin — bu yüzden ölçülmüyor.
+- `hesap-sil`'de `threads_hesaplari` / `threads_yanitlari`'nın atlanıyor
+  olabileceği şüphesi duruyor (ayrı iş, doğrulanmadı).
+
+---
+
 ## ÇİFT FACEBOOK REEL'İ — kök sebep ve onarım (26-27 Ekim 2026)
 
 **OLAN.** 26 Ekim'de aynı Facebook reel'i iki kez yayınlandı: 10:01
