@@ -243,7 +243,7 @@ export const SEMA = {
         "type": "string",
         "maxLength": 25
        },
-       "description": "Poll only (type \"poll\", platform \"threads\"): the poll options, in order. Threads requires 2 to 4 options and 1 to 25 characters each, and a poll can only be attached to a TEXT post — an entry with a poll must not carry an image. The post text itself goes in \"caption\"."
+       "description": "Poll only (type \"poll\", platform \"threads\"): the poll options, in order. Threads requires 2 to 4 options and at most 25 UNITS each. A unit is a byte, not a character: accented and non-Latin letters (ç ğ ı İ ö ş ü, Cyrillic, Greek, emoji) count as two or more. \"İstanbul Arkeoloji Müzesi\" is 25 characters but 27 units and Threads rejects it — that really happened on 27 Oct 2026 and the post failed at publish time. Count units, not letters. A poll can only be attached to a TEXT post — an entry with a poll must not carry an image. The post text itself goes in \"caption\"."
       },
       "anketCevap": {
        "type": "string",

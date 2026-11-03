@@ -67,6 +67,11 @@ const SERVIS_ANAHTARI = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY') ?? '';
 // yerde arandi. Surum ve uc listesi artik cevapta.
 // 1.5.1 — story alanlarinin sinirlari 6000'e cikti.
 // 1.5.0 — story alanlari: storyPrompt, storyKartlar, storyYonerge.
+// 1.16.0 — Anket secenegi siniri KARAKTERLE degil BAYTLA olculuyor.
+//         27 Ekim 2026: "Istanbul Arkeoloji Muzesi" (Turkce yazimi)
+//         25 KARAKTER ama 27 BAYT; Threads reddetti, kayit failed oldu.
+//         Dogrulayici artik sessizce kirpmiyor -- metni oldugu gibi
+//         birakip `warnings`'e yaziyor, yani asistan hemen goruyor.
 // 1.9.1 — yalnizca YORUM: /api/entries/find suzgecinin gerekcesi
 //         eskimisti ("shorts'a mediaUrl yazmanin anlami yok").
 //         Davranis degismedi; dagitim aceleye gerek birakmiyor.
@@ -82,7 +87,7 @@ const SERVIS_ANAHTARI = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY') ?? '';
 // Bu kural UC KEZ unutuldu ve ucuncusunde artik soze birakilmadi:
 // birlestir.py, kaynak degisip surum ayni kalirsa HATA VERIP duruyor
 // ve tek-dosya.ts'i uretmiyor. Yani unutuldugu an belli oluyor.
-const SURUM = '1.15.0';
+const SURUM = '1.16.0';
 
 // ---- Otomatik yayın hattı olan türler ------------------------------------
 // AYNI kümeyi taşıyan yerler: app.html'deki YAYIN_TURLERI, sql/50'deki

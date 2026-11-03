@@ -252,9 +252,23 @@ console.log('[MCP + ai/sema.json]');
       /Array\.isArray\(c\.anketSecenekler\) && c\.anketSecenekler\.length/.test(gi));
   // ⛔ SÜZGEÇTE OLMAZSA İÇE AKTARMADA DÜŞER.
   bak('★ ai/dogrula.js süzgecinde', /anketSecenekler: Array\.isArray\(c\.anketSecenekler\)/.test(DOGRULA));
-  bak('★ süzgeçte tavanlar (4 seçenek, 25 karakter)',
-      /slice\(0, 4\)[\s\S]{0,80}slice\(0, 25\)/.test(DOGRULA),
-      (/anketSecenekler[\s\S]{0,160}/.exec(DOGRULA) || ['yok'])[0].replace(/\s+/g,' ').slice(0,100));
+  bak('★ süzgeçte seçenek sayısı tavanı (4)', /slice\(0, 4\)/.test(DOGRULA));
+  // ⚠ ÖLÇÜ BAYT, KARAKTER DEĞİL — 27 Ekim 2026. O gün bir anket
+  // `#100/4279063 Invalid parameter` ile reddedildi; suçlu seçenek
+  // "İstanbul Arkeoloji Müzesi": 25 KARAKTER (sınırı aşmıyor) ama
+  // 27 BAYT. Seçenek kısaltılınca aynı anket dört seçeneğiyle çıktı.
+  bak('★ süzgecin ölçüsü BAYT',
+      /const baytUzunluk = \(s\) => new TextEncoder\(\)\.encode\(String\(s \?\? ''\)\)\.length/.test(DOGRULA),
+      (/baytUzunluk[^\n]*/.exec(DOGRULA) || ['yok'])[0]);
+  bak('★ sınır sabiti 25 olarak yazılı', /const ANKET_SECENEK_BAYT = 25;/.test(DOGRULA));
+  // ⛔ KIRPMA YOK: kırpmak anketin SORUSUNU değiştirir ve kullanıcı neyi
+  // oyladığını bilmez. Worker ve app.html de kırpmıyor; süzgeç onlara uyuyor.
+  bak('★ uzun seçenek SESSİZCE KIRPILMIYOR', !/slice\(0, 25\)/.test(DOGRULA));
+  // Sessiz kalmak da olmaz (Bölüm 9): hata listesine yazılıyor, MCP
+  // cevabında `warnings` olarak dönüyor, asistan hemen görüyor.
+  bak('★ sınırı aşan seçenek hata listesine yazılıyor',
+      /baytUzunluk\(sec\)[\s\S]{0,200}hatalar\.push\(\{[\s\S]{0,120}anketSecenekler/.test(DOGRULA),
+      (/if \(b > ANKET_SECENEK_BAYT\)[\s\S]{0,80}/.exec(DOGRULA) || ['yok'])[0].replace(/\s+/g,' ').slice(0,90));
   // Şema: hem asistanın gördüğü belge hem MCP'nin girdi şeması buradan.
   const c = SEMA.$defs.Entry.properties.content.properties;
   bak('★ ai/sema.json anketSecenekler tanımlı', !!c.anketSecenekler);
