@@ -71,10 +71,36 @@ silinip yerine "platformu Threads yazıyor" ölçümü yazılacak.
 
 ### Açık kalanlar (bu işte kapatılmadı)
 
-- Anket cevabının (`threads_yanitlari`, sql/65-66) davranışsal testi hâlâ
-  yok: sahte sunucuda `/replies` ucu hazır ama yanıt kuyruğunun RPC'leri
-  (`threads_yanit_al` vb.) test taklidinde yazılmadı. Zincir sırası —
-  dizinin 2. parçası 1. parça çıkmadan gitmesin — bu yüzden ölçülmüyor.
+- **DÜZELTME (aynı gün):** İlk yazdığımda "anket cevabının zinciri
+  ölçülmüyor" demiştim — **yanlıştı, doğrulamadan yazdım** (§4'ün
+  ihlali). Zincir **ölçülüyor**: `testler/sql-yanit-kuyrugu.test.py`
+  sql/65-66'yı **gerçek bir PostgreSQL'e** kuruyor ve sıra şartını,
+  zincirin bağlanmasını, "üçüncü parça patlarsa ilk ikisi yeniden
+  gitmez"i ve çift yanıt korumasını koşturuyor.
+
+- **AMA O TEST CI'DA HİÇ KOŞMUYOR — ve yeşil görünüyor (3 Kasım 2026,
+  ölçüldü).** Postgres bağlantısını `SHOOTBOARD_TEST_PG` ortam
+  değişkeninden alıyor; yoksa kendini atlıyor ve **0 döndürüyor**.
+  O değişken **hiçbir yerde tanımlı değil**: ne `testler/kosu.sh`'de, ne
+  `.github/workflows/testler.yml`'de. Yerelde ölçtüm, çıktı şu:
+
+      [  1/1] ok  sql-yanit-kuyrugu.test.py             0sn
+      === BITTI — 1 gecti, 0 kaldi ===
+
+  Yani kuyruğun en kritik mantığı (zincir sırası, çift yanıt) her gece
+  **ölçülmeden "geçti" yazıyor** — sessiz atlama, geçmiş gibi görünüyor.
+  Dosyanın kendi yorumu bunu bilerek böyle yapmış ("bir geliştiricinin
+  makinesinde Postgres olmaması arızanın kendisi değil") ve o gerekçe
+  yerelde doğru; **CI için değil.** CI'da Postgres servisi açılabilir
+  (`services: postgres` + değişkeni vermek) ya da hiç olmazsa atlamanın
+  çıktıda **"ATLANDI" olarak görünmesi** gerekiyor. Ayrı iş, kullanıcı
+  kararı bekliyor.
+
+- Worker'ın **yanıt gönderme** yolunun (`yanitiGonder`, `yanitCikmisMi`)
+  davranışsal testi yok: `reply_to_id` ile ne gittiği ve yanıtın iki
+  tanığı (zaman damgası **ve** metnin kendisi) ölçülmüyor. Bu işte kurulan
+  sahte Threads sunucusunda `/replies` ucu hazır; kapatmak için yalnızca
+  yanıt kuyruğunun RPC'lerini test taklİdine yazmak kaldı.
 - `hesap-sil`'de `threads_hesaplari` / `threads_yanitlari`'nın atlanıyor
   olabileceği şüphesi duruyor (ayrı iş, doğrulanmadı).
 
