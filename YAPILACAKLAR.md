@@ -2719,6 +2719,78 @@ yok. Kimsenin kullanmadığı bir yetki sistemini test etmek yerine, gerçek
 bir ikinci kullanıcı çıktığında neye ihtiyacı olduğunu görerek yapmak
 daha doğru.
 
+### Salt okunur MCP anahtarı (Gemini için) — öncelik DEĞİL (8 Kasım 2026)
+
+⚠ **Yukarıdaki maddeyle KARIŞTIRILMASIN.** O madde *ikinci bir insan
+kullanıcı* (workspaces, davet, roller) hakkında. Bu madde tek bir
+hesabın ürettiği MCP **anahtarının kapsamı** hakkında — başka bir user
+tanımlanmıyor, yeni kullanıcı yok.
+
+Kullanıcı sordu: *"Gemini'ye Shootboard için sadece okuma yetkisi
+verebilir miyim?"* Cevap: evet, ve sürpriz şu — **sunucu tarafı zaten
+hazır ve canlıda.**
+
+**1. MCP sunucusu: HAZIR (1.16.0, canlı).** `api_keys.scopes` sütunu var
+ve sunucu onu gerçekten kontrol ediyor, yazıp bırakmamış:
+
+    shootboard_list_entries   -> 'read'  gerekiyor
+    shootboard_list_projects  -> 'read'  gerekiyor
+    shootboard_import         -> 'write' gerekiyor
+    shootboard_update_entry   -> 'write' gerekiyor
+    (REST /import ucu da 'write' istiyor)
+
+Yetkisi olmayan araç `this key cannot write` deyip dönüyor. `sql/35`'in
+yorumu niyeti de söylüyor: *"read / write. İkisi de varsayılan; ileride
+salt okunur anahtar için."* Yani **sunucuya hiç dokunmak gerekmiyor.**
+
+**2. Uygulama: EKSİK.** `app.html`'de anahtar üretme kodu kapsamı sabit
+yazıyor (`scopes: ['read', 'write']`). Yani Hesabım ekranından üretilen
+her anahtar yazabiliyor. Salt okunur anahtar için oraya bir onay kutusu
+gerekiyor.
+
+**3. Gemini tarafı: DOĞRULANMADI.** Gemini CLI uzak MCP'yi destekliyor
+(`~/.gemini/settings.json` → `mcpServers` → `httpUrl` + `headers`), bizim
+sunucu Streamable HTTP olduğu için uyumlu. Gemini **uygulaması** için
+kaynaklar çelişiyor: özel bağlayıcının Gemini Spark aboneliği
+gerektirdiğini yazanlar var, Business'ta "Pre-GA" diyenler var, hepsi
+üçüncü taraf blog. ⚠ **Google'ın kendi yardım sayfası görülmedi — buraya
+"çalışıyor" yazılmadı** (Bölüm 4: doğrulamadan yazma). Kullanıcının
+Gemini → Ayarlar → Connected Apps'te özel sunucu kutusu olup olmadığına
+bakması gerekiyor.
+
+**CLAUDE.md kuralı ihlal EDİLMİYOR.** *"MCP erişimi yalnızca
+bostancioglum@gmail.com hesabına"* kuralı **Shootboard kullanıcı hesabı**
+hakkında ve `sql/40`'taki kilit onu uyguluyor (`user_prefs.prefs.mcp`
+bayrağı olmayan hesap anahtar üretemiyor). Kendi hesabının anahtarını
+başka bir programa vermek yeni bir user tanımlamak değil.
+
+**ÜÇ RİSK (karar verilirken okunsun)**
+1. Salt okunur bile olsa **takvimin tamamı Google'ın sistemine gidiyor.**
+   Yazmayı kapatmak veri sızmasını değil veri BOZULMASINI engelliyor.
+2. **`mediaUrl` cevapta dönüyor ve o adresler imzasız.**
+   `pc/story-yukle.py` adresi `R2_PUBLIC_BASE` üzerinden kuruyor, yani
+   dosyalar adresi bilen herkese açık. Anahtar dosyaya erişim VERMİYOR
+   ama **adreslerini açıklıyor.**
+3. **Anahtar yola değil BAŞLIĞA konsun.** `/mcp/shb_...` biçimi yalnızca
+   claude.ai mecbur olduğu için var; yolda duran anahtar günlüklere
+   düşer. Gemini CLI `headers` destekliyor.
+
+→ **Gemini için AYRI anahtar üretilsin**, Claude'unki verilmesin: her
+anahtarın kendi `revoked_at`'i var, yani Gemini tek başına iptal
+edilebilir.
+
+**Neden bekliyor (8 Kasım 2026, kullanıcı kararı):** *"Şimdilik hiçbir
+şey yapmıyoruz"*, sonra *"yaz orada dursun ama öncelik değil."* Mantıklı
+sıra: **önce** Gemini uygulamasının özel MCP sunucusu kabul ettiği
+doğrulanır, **sonra** onay kutusu yazılır — kabul etmiyorsa iş boşa gider.
+
+**Yapılınca ne gerekir:** `app.html`'e onay kutusu + ölçüm. Dağıtım
+GitHub Pages, yani birleştirme yeterli — Edge Function dağıtımı YOK.
+Tek seferlik kaçamak (SQL ile bir anahtarın kapsamını `{read}` yapmak)
+mümkün ama her yeni anahtarda tekrar gerekir ve bir gün atlanır —
+deponun kendi dersinin ("ekranı gizlemek kapıyı kilitlemez", `sql/40`)
+ters yönden hâli.
+
 ### Adres otomatik tamamlama (Google Places)
 Adres alanına yazarken gerçek mekan/adres önerileri düşsün, seçilince
 tam adres ve koordinat gelsin. Harita bağlantısı tahmini değil gerçek
