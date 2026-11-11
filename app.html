@@ -1714,7 +1714,13 @@ textarea.sc-ai-brief{min-height:64px;resize:vertical;line-height:1.5;}
 .cal-nav-btn{background:var(--surface);border:1px solid var(--line);color:var(--text);padding:8px 16px;min-height:44px;display:inline-flex;align-items:center;justify-content:center;cursor:pointer;border-radius:2px;font-size:13px;font-family:'IBM Plex Sans',sans-serif;white-space:nowrap;}
 .cal-nav-btn:hover{border-color:var(--accent-dim);}
 .cal-range{font-family:'IBM Plex Mono',monospace;font-size:13px;color:var(--text-dim);justify-self:center;white-space:nowrap;}
-.cal-nav-left{justify-self:start;display:flex;gap:8px;align-items:center;}
+/* BESINCI GORUNUM DUGMESI 701-710px ARASINDA CUBUGU TASIRIYORDU
+   (olculdu: 707 > 701, 11 Kasim 2026). Izgara hucresi 1fr ama
+   icindeki esnek grup min-width:auto yuzunden kuculmuyordu; sihirli
+   bir genislik yazmak yerine grup sarmaliyor -- boylece etiketler
+   uzadiginda (baska dil, altinci gorunum) da tasmiyor. */
+.cal-nav-left{justify-self:start;display:flex;gap:8px;align-items:center;
+  flex-wrap:wrap;min-width:0;}
 .view-toggle{display:inline-flex;border:1px solid var(--line);border-radius:2px;overflow:hidden;}
 .view-btn{
   background:var(--surface);border:0;color:var(--text-dim);cursor:pointer;
@@ -3297,6 +3303,96 @@ textarea.sc-ai-brief{min-height:64px;resize:vertical;line-height:1.5;}
   /* Noktalar: yukarıdaki gerekce. */
   .tour-dot::after{width:12px;}
 }
+
+/* =====================================================================
+   CEKIM FOYU GORUNUMU   (11 Kasim 2026, Asama 3)
+   Cizim: project/Main.dc.html -- sutun genislikleri oradan birebir.
+   Besinci gorunum; oteki dorde dokunulmadi.
+   ===================================================================== */
+.cal-foy-wrap{min-width:0;}
+.fy-ozet{
+  font-family:'IBM Plex Mono',monospace;font-size:12px;letter-spacing:.08em;
+  color:var(--text-dim);padding:0 8px 8px;
+}
+/* Yatay kaydirma SAYFADA degil tablonun KENDI icinde: dar ekranda
+   butun sayfanin yana kaymasi .shell yorumunda anlatilan eski bir
+   arizaydi, tekrarlamasin. */
+.fy-tablo{overflow-x:auto;min-width:0;}
+.fy-baslik-satir,.fy-satir{
+  display:grid;
+  grid-template-columns:92px 58px 86px 52px minmax(0,1fr) 150px 112px;
+  gap:0 12px;align-items:center;padding:6px 8px;min-width:760px;
+}
+.fy-baslik-satir{
+  font-family:'IBM Plex Mono',monospace;font-size:11px;letter-spacing:.1em;
+  color:var(--text-dim);padding-bottom:8px;border-bottom:1px solid var(--text);
+  align-items:end;
+}
+.fy-satir{
+  min-height:56px;box-sizing:border-box;border-bottom:1px solid var(--line);
+  cursor:pointer;background:none;font-size:15px;
+}
+.fy-satir:hover{background:var(--surface);}
+.fy-satir:focus-visible{outline:2px solid var(--accent);outline-offset:-2px;}
+/* BUGUN. Cizim gun etiketini vurgu rengine boyuyor; OLCULDU: acik
+   temada vurgu rengi vurgu zemininde 4,42 -- 4,5'in altinda. Kirmizi
+   gecerdi (6,41) ama bu uygulamada kirmizi "hata" demek. Bu yuzden
+   yazi normal renginde kaliyor, vurguyu METIN OLMAYAN bir isaret
+   tasiyor: sol kenar cubugu. Olculen deger boylece 15,07 / 12,85. */
+.fy-satir.bugun{background:var(--accent-soft);box-shadow:inset 3px 0 0 var(--accent);}
+.fy-satir.bugun .fy-gun{font-weight:700;}
+/* Gecmis gun: SOLDURMA YOK. Asama 1'deki kontrast dersi (bulgu 12):
+   anlam zeminle anlatiliyor, yaziyi silikleştirerek degil. */
+.fy-satir.gecmis{background:var(--surface-2);}
+.fy-satir.gecmis.bugun{background:var(--accent-soft);}
+
+.fy-gun{font-family:'IBM Plex Mono',monospace;font-size:13px;font-weight:600;}
+.fy-dow,.fy-ay{font-size:11px;color:var(--text-dim);font-weight:400;}
+.fy-dow{margin-right:4px;}
+.fy-ay{margin-left:4px;}
+.fy-saat{font-family:'IBM Plex Mono',monospace;font-size:14px;}
+.fy-tur{font-size:13px;font-weight:600;}
+/* Cizimde "YER" ince cerceveli bir kutu: platform rengi degil, yazi. */
+.fy-yer{
+  font-family:'IBM Plex Mono',monospace;font-size:12px;text-align:center;
+  border:1px solid var(--text);padding:2px 0;border-radius:2px;
+}
+.fy-baslik{min-width:0;}
+.fy-ad{font-size:15px;font-weight:500;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+.fy-proje{font-size:12px;color:var(--text-dim);margin-top:1px;
+  white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+/* Uretim seridi: yedi kucuk kutu. Dolu = bitti, bos = bekliyor.
+   Kutular ARIA'dan gizli; sayiyi yanindaki "6/7" soyluyor. */
+.fy-serit{display:flex;gap:3px;}
+.fy-adim{display:block;width:16px;height:9px;box-sizing:border-box;
+  border:1px solid var(--text);background:none;}
+.fy-adim.dolu{background:var(--text);}
+.fy-adim-not{font-family:'IBM Plex Mono',monospace;font-size:11px;
+  color:var(--text-dim);margin-top:4px;}
+/* ⛔ ROZET, DUGME DEGIL: yalnizca durumu soyluyor. Isaretlemek kayit
+   penceresinden yapiliyor (kullanici karari, 11 Kasim 2026). */
+.fy-rozet{
+  display:inline-block;font-family:'IBM Plex Mono',monospace;font-size:11px;
+  letter-spacing:.04em;padding:4px 8px;border:1px solid var(--line);
+  border-radius:2px;color:var(--text-dim);
+}
+.fy-rozet.var{border-color:var(--text);background:var(--text);color:var(--bg);}
+.fy-not{font-size:12px;color:var(--text-dim);margin:12px 8px 0;max-width:62ch;}
+.fy-bos{font-size:14px;color:var(--text-dim);padding:18px 8px;}
+
+/* Telefon: yedi sutun sigmaz. Satir iki satira acilıyor --
+   ust satir gun/saat/tur/yer, alt satir baslik ve durum. */
+@media(max-width:700px){
+  .fy-baslik-satir{display:none;}
+  .fy-satir{
+    grid-template-columns:auto auto auto 1fr auto;
+    grid-template-areas:"gun saat tur yer isaret" "bas bas bas bas uretim";
+    gap:4px 10px;min-width:0;padding:10px 8px;
+  }
+  .fy-gun{grid-area:gun;} .fy-saat{grid-area:saat;} .fy-tur{grid-area:tur;}
+  .fy-yer{grid-area:yer;padding:2px 6px;} .fy-baslik{grid-area:bas;}
+  .fy-uretim{grid-area:uretim;} .fy-isaret{grid-area:isaret;}
+}
 </style>
 <script>
 // Kayitli tema tercihini ilk boyamadan once uygula — aksi halde acik temayi
@@ -3671,6 +3767,10 @@ textarea.sc-ai-brief{min-height:64px;resize:vertical;line-height:1.5;}
         <button type="button" class="view-btn" id="viewWeekBtn" data-i18n="view_week">Week</button>
         <button type="button" class="view-btn" id="viewDayBtn" data-i18n="view_day">Day</button>
         <button type="button" class="view-btn" id="viewTableBtn" data-i18n="view_table">Table</button>
+        <!-- CEKIM FOYU gorunumu: kayit basina BIR SATIR. Oteki dordunun
+             hicbiri bunu yapmiyor -- ay gun hucresi, hafta/gun saat
+             izgarasi, tablo ise gun x platform matrisi. -->
+        <button type="button" class="view-btn" id="viewFoyBtn" data-i18n="view_foy">Sheet</button>
       </div>
       <button class="cal-nav-btn" id="prevBtn" data-i18n="nav_prev">◀ Previous</button>
     </div>
@@ -3741,6 +3841,7 @@ textarea.sc-ai-brief{min-height:64px;resize:vertical;line-height:1.5;}
        izgara KENDI icinde yana kayiyor. Sayfanin kaymasi degil. -->
   <div class="cal-grid-wrap" id="calGridWrap"><div class="cal-grid" id="calGrid"></div></div>
   <div class="cal-table-wrap" id="calTableWrap" hidden></div>
+  <div class="cal-foy-wrap" id="calFoyWrap" hidden></div>
   </div>
 
     </main>
@@ -5236,6 +5337,12 @@ const CAL_SM_PLATFORMS = ['youtube','instagram','tiktok','facebook','threads','x
 const CAL_TYPE_NAMES = {video:'Video', shorts:'Shorts', reels:'Reels', carousel:'Carousel', story:'Story', text_post:'Text Post', poll:'Poll'};
 const CAL_TYPE_LABELS = {video:'VID', shorts:'SHRT', reels:'REEL', carousel:'CAR', story:'STORY', text_post:'TXT', poll:'POLL'};
 const CAL_SM_NAMES = {youtube:'YouTube', instagram:'Instagram', tiktok:'TikTok', facebook:'Facebook', threads:'Threads', x:'X', pinterest:'Pinterest', linkedin:'LinkedIn'};
+/* Foy gorunumundeki dar "YER" sutunu icin iki harf.
+   ⚠ DORDU CIZIMDEN (FB, IG, YT, TT -- project/Main.dc.html), dordu
+   ayni kalibin uzantisi. Uydurma degil ama cizilmis de degil; baska
+   bir kisaltma istenirse burasi tek yer. */
+const CAL_SM_KISA = {youtube:'YT', instagram:'IG', tiktok:'TT', facebook:'FB',
+                     threads:'TH', x:'X', pinterest:'PI', linkedin:'LI'};
 // Turkce yonelme hali (-e/-a). "Instagram'a", "Threads'e". Ek sesli
 // uyumuna gore degisiyor ve platform adlari yabanci oldugu icin
 // kurallardan turetmek guvenilir degil: elle yazildi. Ekranda
@@ -5566,6 +5673,13 @@ const LANG = {
     view_week: "Week",
     view_day: "Day",
     view_table: "Table",
+    view_foy: "Sheet",
+    foy_gun: "DAY", foy_saat: "TIME", foy_tur: "TYPE", foy_yer: "WHERE",
+    foy_baslik: "TITLE", foy_uretim: "PRODUCTION", foy_isaret: "MARK",
+    foy_isaretli: "Marked", foy_bekliyor: "Not marked",
+    foy_ozet: (n,m)=> `${n} ${n===1?'entry':'entries'} this week \u00b7 ${m} marked`,
+    foy_not: "You mark a post as published yourself. Shootboard does not watch the platforms.",
+    foy_bos: "No entries this week.",
     hg_early: "Before 09:00 / no time",
     table_date: "Date",
     state_posted: "Posted",
@@ -6622,6 +6736,13 @@ const LANG = {
     view_week: "Hafta",
     view_day: "Gün",
     view_table: "Tablo",
+    view_foy: "F\u00f6y",
+    foy_gun: "G\u00dcN", foy_saat: "SAAT", foy_tur: "T\u00dcR", foy_yer: "YER",
+    foy_baslik: "BA\u015eLIK", foy_uretim: "\u00dcRET\u0130M", foy_isaret: "\u0130\u015eARET",
+    foy_isaretli: "\u0130\u015faretli", foy_bekliyor: "\u0130\u015faretlenmedi",
+    foy_ozet: (n,m)=> `Bu hafta ${n} kay\u0131t \u00b7 ${m} i\u015faretli`,
+    foy_not: "Yay\u0131nlad\u0131ktan sonra i\u015fareti sen koyars\u0131n. Shootboard platformlar\u0131 dinlemez.",
+    foy_bos: "Bu hafta kay\u0131t yok.",
     hg_early: "09:00 öncesi / saatsiz",
     table_date: "Tarih",
     state_posted: "Yayınlandı",
@@ -7941,7 +8062,7 @@ let ayKaymasi = 0;
 // 'month' = CAL_WEEKS haftalik pencere, 'week' = tek hafta. Tek haftada hucre
 // uzun oldugu icin kayitlar katlanmadan gorunuyor.
 let viewMode = 'month';
-try{ const v = localStorage.getItem('demo_view'); if(v==='week'||v==='month'||v==='table'||v==='day') viewMode = v; }catch(e){}
+try{ const v = localStorage.getItem('demo_view'); if(v==='week'||v==='month'||v==='table'||v==='day'||v==='foy') viewMode = v; }catch(e){}
 let currentEvent = null;
 
 // Disaridan gelen her kayit buradan geciyor: ice aktarilan yedek dosyasi da,
@@ -8544,6 +8665,10 @@ function calCellCount(){
   if(viewMode === 'day') return 1;
   if(viewMode === 'week') return 7;
   if(viewMode === 'table') return 14;
+  /* Foy BIR HAFTA: cizimin basligi "HAFTA 46 - 9-15 Kasim". Iki hafta
+     gosterilseydi ust ozet satirindaki "BU HAFTA" sayisi neyi saydigini
+     soyleyemezdi. */
+  if(viewMode === 'foy') return 7;
   return ayPenceresi().gun;
 }
 // Son gun (dahil), aralik etiketi icin.
@@ -15877,6 +16002,108 @@ function tabloPlatformlari(){
   return CAL_SM_PLATFORMS.slice();
 }
 
+// ══════════════════════════════════════════════════════════════════
+// CEKIM FOYU GORUNUMU — kayit basina BIR SATIR (11 Kasim 2026)
+// ══════════════════════════════════════════════════════════════════
+// Cizim: project/Main.dc.html. Besinci gorunum olarak EKLENDI, hicbir
+// gorunumun yerine gecmedi (kullanici karari).
+//
+// NEDEN AYRI BIR GORUNUM. Oteki dordunun hicbiri bunu yapmiyor:
+//   ay          gun hucresi, icinde cipler
+//   hafta/gun   saat izgarasi -- kaydi SAATINE gore yerlestiriyor
+//   tablo       gun x platform matrisi
+//   foy         haftanin kayitlari duz bir liste, satir satir
+// Sette elde tutulan cekim foyunun karsiligi: sirayla okunur.
+//
+// ⛔ ISARET SUTUNU TIKLANMIYOR, yalnizca durumu gosteriyor. Kullanici
+// karari (11 Kasim 2026): bugun `uploaded` yalnizca kayit penceresinden
+// isaretleniyor ve satirdan isaretlemek YENI bir yetenek olurdu; bu
+// asamanin kurali "davranis ayni kalacak".
+// ⛔ Ayrica `uploaded` KULLANICININ kendi isareti (CLAUDE.md Bolum 3).
+// Bu fonksiyon onu OKUYOR; hicbir yerde yazmiyor.
+//
+// ⚠ CIZIMDEKI UST OZET SERIDI UYGULANMADI, bilerek. Cizim bir haftaya
+// tek bir PROJE ve tek bir MEKAN yaziyor; ama ayni cizimin kendi
+// verisinde o haftada UC proje var (Bergama, Rumeli Hisari, Kariye).
+// "Haftanin projesi" diye bir sey yok. Uydurmak yerine birakildi;
+// cizimi yapan tarafin gozden gecirmesi gerekiyor.
+function renderCalFoy(){
+  const kap = document.getElementById('calFoyWrap');
+  const start = calWindowStart();
+  const bugun = new Date(); bugun.setHours(0,0,0,0);
+  const gunSayisi = calCellCount();
+
+  let satirlar = '';
+  let toplam = 0, isaretli = 0;
+  for(let i=0;i<gunSayisi;i++){
+    const d = new Date(start); d.setDate(start.getDate()+i);
+    const key = fmtKey(d);
+    const bugunMu = d.toDateString() === bugun.toDateString();
+    const gecmis = d < bugun;
+    const gun = events.filter(e=> e.date===key && gecerliKayit(e))
+                      .sort((a,b)=> (a.time||'').localeCompare(b.time||''));
+    if(!gun.length) continue;
+    const par = takvimGunParcalari(d, i === 0 || d.getDate() === 1);
+    gun.forEach((ev, sira)=>{
+      toplam++;
+      if(ev.uploaded) isaretli++;
+      const c = (ev.content && typeof ev.content === 'object') ? ev.content : {};
+      const proje = c.projectId ? projectById(c.projectId) : null;
+      // Uretim seridi PROJENIN durumu: adimlar projede tutuluyor
+      // (PROJ_STEPS), kayitta degil. Projesi olmayan kayitta serit yok.
+      let serit = '', adimNot = '';
+      if(proje){
+        const bitti = PROJ_STEPS.filter(k=> proje[k] === true).length;
+        serit = PROJ_STEPS.map(k=>
+          '<span class="fy-adim' + (proje[k] === true ? ' dolu' : '') + '" aria-hidden="true"></span>').join('');
+        adimNot = bitti + '/' + PROJ_STEPS.length;
+      }
+      // Gun etiketi yalnizca o gunun ILK satirinda: cizimde de oyle,
+      // ve tekrar eden gun adi satirlari okumayi zorlastiriyor.
+      const gunEtiket = sira === 0
+        ? '<span class="fy-dow">' + escapeHtml(par.dow) + '</span>'
+          + escapeHtml(par.gun) + '<span class="fy-ay">' + escapeHtml(par.ay) + '</span>'
+        : '';
+      satirlar += '<div class="fy-satir' + (bugunMu ? ' bugun' : '') + (gecmis ? ' gecmis' : '') + '"'
+        + ' data-id="' + escapeHtml(ev.id) + '" role="button" tabindex="0">'
+        + '<div class="fy-gun">' + gunEtiket + '</div>'
+        + '<div class="fy-saat">' + escapeHtml((ev.time||'').slice(0,5)) + '</div>'
+        + '<div class="fy-tur">' + escapeHtml(typeName(ev.type)) + '</div>'
+        // Harita bugun sekiz platformun sekizini de karsiliyor (olculdu:
+        // CAL_SM_KISA anahtarlari == CAL_SM_PLATFORMS). Dokuzuncusu
+        // eklenirse hucre SESSIZCE BOS kalmasin diye adin ilk iki harfi.
+        + '<div class="fy-yer">' + escapeHtml(CAL_SM_KISA[ev.platform]
+            || String(ev.platform || '').slice(0,2).toUpperCase()) + '</div>'
+        + '<div class="fy-baslik"><div class="fy-ad">' + escapeHtml(ev.title || '') + '</div>'
+        + '<div class="fy-proje">' + escapeHtml(proje ? proje.name : '') + '</div></div>'
+        + '<div class="fy-uretim">' + (serit ? '<div class="fy-serit">' + serit + '</div>'
+            + '<div class="fy-adim-not">' + escapeHtml(adimNot) + '</div>' : '') + '</div>'
+        + '<div class="fy-isaret"><span class="fy-rozet' + (ev.uploaded ? ' var' : '') + '">'
+        + escapeHtml(t(ev.uploaded ? 'foy_isaretli' : 'foy_bekliyor')) + '</span></div>'
+        + '</div>';
+    });
+  }
+
+  const basliklar = ['foy_gun','foy_saat','foy_tur','foy_yer','foy_baslik','foy_uretim','foy_isaret']
+    .map((k,ix)=> '<div class="fy-h fy-h' + ix + '">' + escapeHtml(t(k)) + '</div>').join('');
+
+  kap.innerHTML = toplam
+    ? '<div class="fy-ozet">' + escapeHtml(t('foy_ozet')(toplam, isaretli)) + '</div>'
+      + '<div class="fy-tablo"><div class="fy-baslik-satir">' + basliklar + '</div>' + satirlar + '</div>'
+      + '<p class="fy-not">' + escapeHtml(t('foy_not')) + '</p>'
+    : '<p class="fy-bos">' + escapeHtml(t('foy_bos')) + '</p>';
+
+  // Satira tiklayinca kayit penceresi: oteki gorunumlerdeki davranisin
+  // aynisi. Klavye icin Enter/Space de ayni isi yapiyor.
+  kap.querySelectorAll('.fy-satir').forEach(el=>{
+    const ac = ()=>{ const ev = events.find(x=> x.id === el.dataset.id); if(ev) openModal(ev); };
+    el.addEventListener('click', ac);
+    el.addEventListener('keydown', e=>{
+      if(e.key === 'Enter' || e.key === ' '){ e.preventDefault(); ac(); }
+    });
+  });
+}
+
 function renderCalTable(){
   const kap = document.getElementById('calTableWrap');
   const start = calWindowStart();
@@ -16292,11 +16519,20 @@ function renderCal(){
   const haftaModu = viewMode === 'week';
   const gunModu = viewMode === 'day';
   const tabloModu = viewMode === 'table';
+  const foyModu = viewMode === 'foy';
   const grid = document.getElementById('calGrid');
   const tabloKap = document.getElementById('calTableWrap');
-  grid.hidden = tabloModu;
+  const foyKap = document.getElementById('calFoyWrap');
+  grid.hidden = tabloModu || foyModu;
   tabloKap.hidden = !tabloModu;
+  foyKap.hidden = !foyModu;
   document.getElementById('viewTableBtn').classList.toggle('active', tabloModu);
+  document.getElementById('viewFoyBtn').classList.toggle('active', foyModu);
+  if(foyModu){
+    araligiYaz();
+    renderCalFoy();
+    return;
+  }
   document.getElementById('viewMonthBtn').classList.toggle('active', viewMode === 'month');
   document.getElementById('viewWeekBtn').classList.toggle('active', haftaModu);
   document.getElementById('viewDayBtn').classList.toggle('active', gunModu);
@@ -17599,7 +17835,7 @@ function birGunKaydir(yon){
 })();
 
 function setView(mod){
-  if(mod !== 'week' && mod !== 'month' && mod !== 'table' && mod !== 'day') return;
+  if(mod !== 'week' && mod !== 'month' && mod !== 'table' && mod !== 'day' && mod !== 'foy') return;
   if(viewMode === mod) return;
   viewMode = mod;
   try{ localStorage.setItem('demo_view', mod); }catch(e){}
@@ -17610,6 +17846,7 @@ document.getElementById('viewMonthBtn').addEventListener('click', ()=> setView('
 document.getElementById('viewWeekBtn').addEventListener('click', ()=> setView('week'));
 document.getElementById('viewDayBtn').addEventListener('click', ()=> setView('day'));
 document.getElementById('viewTableBtn').addEventListener('click', ()=> setView('table'));
+document.getElementById('viewFoyBtn').addEventListener('click', ()=> setView('foy'));
 // "Bugün" düğmesi 27 Ekim 2026'ya kadar YALNIZCA hangi ay/haftanın
 // çizileceğini sıfırlıyordu, SAYFAYI KAYDIRMIYORDU. Zaten içinde
 // bulunduğun aydayken ve sayfanın üstündeyken basınca hiçbir şey
