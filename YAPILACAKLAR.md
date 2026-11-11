@@ -6,6 +6,99 @@ duruyor, neden ertelendiği de yazıyor ki aynı tartışma baştan yapılmasın
 
 ---
 
+## GECELİK TURDA KIRMIZI KALAN DOKUZ TEST (11 Kasım 2026)
+
+Tam tur: 190 koşuldu, 177 geçti, **13 düştü**. Dördü o anki bir
+değişiklikten geliyordu ve geri alındı; **dokuzu önceden kırıktı.**
+
+Atıf tahmin edilmedi: aynı 13 test önce değişiklikle, sonra
+`git stash` ile değişiklik kaldırılıp koşuldu, iki liste
+karşılaştırıldı.
+
+Dokuzu tanılandı. **Üç gruba ayrılıyorlar ve ikisi GERÇEK ÜRÜN
+EKSİĞİ — çürümüş test değil.**
+
+---
+
+### A. GERÇEK ÜRÜN EKSİĞİ — ikisi de Threads'ten
+
+⛔ **`hesap-sil.test.js` — hesap silinince Threads verisi SİLİNMİYOR.**
+
+Testin "bekçi" bölümü şunu kontrol ediyor: `sql/` içinde `user_id`
+sütunu olan her tablo, hesap silme listesinde olmalı. İki tablo
+eksik çıktı:
+
+    threads_hesaplari   (sql/63-threads-jeton.sql)
+    threads_yanitlari   (sql/65-threads-anket-cevabi.sql)
+
+Liste `app.html` içinde `HESAP_TABLOLARI` (satır ~22717). İçinde
+`tiktok_hesaplari` ve `youtube_hesaplari` var, Threads yok.
+
+Anlamı: kullanıcı hesabını sildiğinde **Threads erişim jetonu ve
+Threads anket cevapları veritabanında kalıyor.** Bu bir mahremiyet
+sorunu, kozmetik değil.
+
+Test tam da işini yapıyor — biri tablo ekleyip listeyi güncellemeyi
+unuttuğunda ötüyor. Testin kendi yorumunda bu bekçinin neden
+konulduğu da yazılı (sql/36 olayı).
+
+Düzeltmesi iki dize eklemek. ⚠ Ama **veri silme davranışı**: önce
+onay alınmalı, ve eklemeden önce iki tablonun gerçekten kullanıcıya
+ait olduğu doğrulanmalı.
+
+⛔ **`sartlar.test.js` — Threads için belge çengeli tanımlı değil.**
+
+Düşen iddia: `'threads' icin belge cengeli tanimli`. Uygulama
+Threads'i destekliyor ama şartlar/belgeler tarafında karşılığı yok.
+Yukarıdakiyle aynı aileden: Threads eklendi, evrakı eklenmedi.
+
+---
+
+### B. ESKİ SÜRÜME GÖRE YAZILMIŞ BEŞ TEST (lokasyon uygulaması)
+
+    arama.test.js · duzeltme.test.js · tz.test.js
+    lok-klon.test.js · lok-surukle.test.js
+
+Beşi de `app.html`'i DEĞİL, **lokasyon uygulamasını** (8099 portu,
+`lokasyon.html`) test ediyor. Hepsi aynı şeye takılıyor: takvimde
+kayıt kutusu yok (0).
+
+Ölçüldü: lokasyon.html tarayıcıda açıldı. Sayfa hatasız yükleniyor,
+takvim çiziliyor (21 gün hücresi), ama `calendarEvents` **0 kayıt**.
+Sayfanın kendi başlığı sebebi söylüyor: *"DENEME KOPYASI — Supabase
+sürümü · Eski sistem: lokasyon-takip"*. Veri artık buluttan geliyor;
+test ortamında bağlantı yok, dolayısıyla veri de yok.
+
+Yani uygulama bozuk değil, **testler yerel veriyle çalışan eski
+sürüme göre yazılmış.** Düzeltme yolu: `story-yayin.test.js`'teki
+gibi sahte bir sunucu kurmak.
+
+⚠ Bu, "uygulama çalışıyor" demek DEĞİL — buradan giriş yapılamadığı
+için gerçek kullanıcı akışı doğrulanamadı. Yalnızca "bu başarısızlık
+veri yokluğundan" denebilir.
+
+---
+
+### C. ÇÜRÜMÜŞ İKİ TEST (ürün sağlam)
+
+**`push.test.js`** — `app.html`'den `async function pushChanges()`
+kalıbını **parametresiz** arıyor; fonksiyon `pushChanges(derinlik)`
+olmuş (app.html satır 8481). Kodun kendisi satır 8463'te bu
+değişikliği not etmiş, test güncellenmemiş. Düzeltmesi testteki
+düzenli ifade.
+
+**`paylas.test.js`** — ayrı bölümde yazılı (takvimle çürüyor).
+
+---
+
+### SIRA ÖNERİSİ
+
+1. `hesap-sil` — mahremiyet, en acili. Onay gerekir.
+2. `sartlar` — Threads belgesi, aynı aile.
+3. `push` ve `paylas` — tek satırlık test düzeltmeleri, ürüne
+   dokunmaz.
+4. Lokasyon beşlisi — sahte sunucu kurmak gerekiyor, en pahalısı.
+
 ## paylas.test.js TAKVIMLE CURUYOR (11 Kasım 2026)
 
 **Ürün arızası YOK.** Paylaşım bağlantısıyla açılan salt okunur sayfa
