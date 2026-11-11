@@ -91,6 +91,21 @@ düzenli ifade.
 
 ---
 
+### DURUM — 11 Kasım 2026 akşamı
+
+Dördü **çözüldü**, beşi duruyor.
+
+| Test | Durum |
+|---|---|
+| `hesap-sil` | ✅ çözüldü — Threads tabloları silme listesine eklendi |
+| `sartlar` | ✅ çözüldü — belgeler Threads'i anlatıyor, bekçi Threads'i de kilitliyor |
+| `push` | ✅ çözüldü — kalıp düzeltildi, oturum tazeleme yolu artık ölçülüyor |
+| `paylas` | ✅ çözüldü — tarihler bugüne göreli üretiliyor |
+| `arama`, `duzeltme`, `tz`, `lok-klon`, `lok-surukle` | ⏳ duruyor — lokasyon uygulaması için sahte sunucu gerekiyor |
+
+Kalan beşi tek bir iş: beşi de aynı sebepten düşüyor (lokasyon
+uygulaması verisini buluttan alıyor, test ortamında bağlantı yok).
+
 ### SIRA ÖNERİSİ
 
 1. `hesap-sil` — mahremiyet, en acili. Onay gerekir.
@@ -99,7 +114,7 @@ düzenli ifade.
    dokunmaz.
 4. Lokasyon beşlisi — sahte sunucu kurmak gerekiyor, en pahalısı.
 
-## paylas.test.js TAKVIMLE CURUYOR (11 Kasım 2026)
+## ✅ ÇÖZÜLDÜ — paylas.test.js takvimle çürüyordu (11 Kasım 2026)
 
 **Ürün arızası YOK.** Paylaşım bağlantısıyla açılan salt okunur sayfa
 kayıtları doğru gösteriyor — ölçüldü: Kasım tarihli kayıt açılışta

@@ -7,6 +7,18 @@ let g = 0, k = 0;
 const bak = (ad, ko, ek)=>{ if(ko){ g++; console.log('  ok  '+ad); } else { k++; console.log('  YOK '+ad+(ek?' -> '+ek:'')); } };
 const UID = '11111111-2222-4333-8444-555555555555';
 
+// ⚠ TARIHLER BUGUNE GORELI. Once '2026-09-10' ve '2026-09-12' diye
+// cakiliydi; goruntuleyici (paylas.html) ICINDE BULUNULAN AYI aciyor
+// (var ay = new Date()), dolayisiyla Eylul 2026 gecince
+// "takvimde kayit goruniyor" olcumu HER ZAMAN dusuyordu ve
+// kendiliginden duzelmiyordu -- gecelik tur aylarca kirmizi kaldi.
+// Ayin 10'u ve 12'si her ayda var, o yuzden gun sabit kalabiliyor.
+const _b = new Date();
+const _iki = (n)=> String(n).padStart(2,'0');
+const _AY = _b.getFullYear() + '-' + _iki(_b.getMonth()+1);
+const TARIH1 = _AY + '-10';
+const TARIH2 = _AY + '-12';
+
 (async () => {
   const t = await chromium.launch({ });
   const c = await t.newContext({ viewport:{width:1280,height:1000} });
@@ -19,7 +31,7 @@ const UID = '11111111-2222-4333-8444-555555555555';
   // Sahte oturum + depolama taklidi: yuklenen govde yakalaniyor.
   const yuklenen = [];
   await p.exposeFunction('__yuklendi', (yol, govde) => yuklenen.push({ yol, govde }));
-  await p.evaluate((uid) => {
+  await p.evaluate(([uid, tarih1]) => {
     document.querySelectorAll('.overlay.open').forEach(o=>o.classList.remove('open'));
     session = { user: { id: uid, email:'a@b.c', app_metadata:{provider:'email'} } };
     sb = { storage: { from: () => ({
@@ -27,14 +39,14 @@ const UID = '11111111-2222-4333-8444-555555555555';
       remove: async (yollar) => { window.__yuklendi('SILINDI:' + yollar[0], ''); return { error: null }; }
     }) } };
     // Icinde her sey olan bir kayit: disariya ne gittigi olculecek.
-    events = [{ id:'ev1', type:'reels', platform:'instagram', date:'2026-09-10', time:'09:00',
+    events = [{ id:'ev1', type:'reels', platform:'instagram', date:tarih1, time:'09:00',
                 uploaded:false, title:'Mozaikler', projectId:'',
                 content:{ caption:'GIZLI ACIKLAMA', hashtags:'gizlietiket',
                           videoTitle:'gizli video basligi', shortTitle:'GIZLI KAPAK',
                           thumbPrompt:'gizli kapak tarifi', slidePrompts:[] } }];
     save();
     setPage('calendar');
-  }, UID);
+  }, [UID, TARIH1]);
 
   console.log('[baglanti uretme]');
   await p.click('#paylasBtn');
@@ -53,7 +65,7 @@ const UID = '11111111-2222-4333-8444-555555555555';
   const govde = JSON.parse(yuklenen[0].govde);
   bak('kayit disariya gitti', govde.kayitlar.length === 1);
   bak('tarih, saat, tur, platform, baslik var',
-      govde.kayitlar[0].tarih === '2026-09-10' && govde.kayitlar[0].saat === '09:00' &&
+      govde.kayitlar[0].tarih === TARIH1 && govde.kayitlar[0].saat === '09:00' &&
       govde.kayitlar[0].tur === 'reels' && govde.kayitlar[0].platform === 'instagram' &&
       govde.kayitlar[0].baslik === 'Mozaikler', JSON.stringify(govde.kayitlar[0]));
   const ham = yuklenen[0].govde;
@@ -64,8 +76,8 @@ const UID = '11111111-2222-4333-8444-555555555555';
 
   console.log('[degisiklikte tazeleme]');
   const oncekiSayi = yuklenen.length;
-  await p.evaluate(() => { events.push({ id:'ev2', type:'video', platform:'youtube', date:'2026-09-12',
-                                         time:'', uploaded:true, title:'Ikinci', projectId:'', content:{} }); save(); });
+  await p.evaluate((tarih2) => { events.push({ id:'ev2', type:'video', platform:'youtube', date:tarih2,
+                                         time:'', uploaded:true, title:'Ikinci', projectId:'', content:{} }); save(); }, TARIH2);
   await p.waitForTimeout(3200);
   bak('kayıt değişince kopya kendiliğinden tazeleniyor', yuklenen.length > oncekiSayi, yuklenen.length + ' yükleme');
   const son = JSON.parse(yuklenen[yuklenen.length-1].govde);
