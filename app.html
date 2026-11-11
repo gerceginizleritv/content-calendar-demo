@@ -22714,11 +22714,25 @@ async function hesapDosyalariniSil(){
 // project_scripts cascade ile de gidiyor (project_id -> projects), ama
 // listede acikca duruyor: bir okuyucunun yabanci anahtar arkeolojisi
 // yapmasi gerekmesin.
+// ⛔ BU LISTE ELLE TUTULUYOR ve hesap silmenin tek dayanagi.
+// sql/ icinde user_id sutunu olan her tablo burada olmali;
+// hesap-sil.test.js'in "bekci" bolumu bunu kilitliyor.
+// 11 Kasim 2026: bekci otmustu, iki Threads tablosu EKSIKTI --
+// threads_hesaplari (sql/63) ve threads_yanitlari (sql/65). Yani
+// kullanici hesabini sildiginde Threads erisim jetonu ve anket
+// cevaplari veritabaninda kaliyordu.
+// "Ama sql'de on delete cascade var" yeterli DEGIL: cascade yalnizca
+// AUTH KULLANICISI silinince calisir. Sunucu tarafi hesap silme
+// islevi calismazsa uygulama yine de kullanicinin verisini bu
+// listeyle siliyor (asagidaki hesapVerisiniSil) -- tiktok_hesaplari
+// ve youtube_hesaplari'nin hem cascade'i hem de bu listede yeri
+// olmasinin sebebi bu.
 const HESAP_TABLOLARI = ['calendar_events','projects','ideas','scripts',
                          'places','caption_templates','user_prefs',
                          'ai_aktarimlar','accounts','api_keys',
                          'project_scripts','tiktok_hesaplari',
-                         'youtube_hesaplari'];
+                         'youtube_hesaplari','threads_hesaplari',
+                         'threads_yanitlari'];
 async function hesapVerisiniSil(){
   if(!sb || !session) return { takilan: [] };
   const kim = session.user.id;
