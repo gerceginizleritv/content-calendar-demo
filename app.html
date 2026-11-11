@@ -3297,6 +3297,115 @@ textarea.sc-ai-brief{min-height:64px;resize:vertical;line-height:1.5;}
   /* Noktalar: yukarıdaki gerekce. */
   .tour-dot::after{width:12px;}
 }
+
+/* =====================================================================
+   CEKIM FOYU -- ASAMA 2a: TELEFONDA GEZINME USTE   (11 Kasim 2026)
+   =====================================================================
+   Cizim: project/FoyTelTakvim.dc.html, FoyTelBugun.dc.html
+   Kullanici karari: "cizimdeki gibi ustte" (4+4 hucreli tablo).
+
+   NEDEN USTE. Bugun serit ALT sabit cubuk ve sekme adlari oraya
+   sigsin diye 9,5 piksele dusuruluyordu (.tab-ad-k) -- 11 Kasim
+   kullanici testinin 11. bulgusu tam buydu. Ustte iki satira
+   yayilinca ad kisaltmasina gerek kalmiyor: TAM AD, 14 piksel.
+
+   ⚠ BU BLOK VAR OLAN KURALLARI SILMIYOR, UZERINE YAZIYOR. Alt cubuk
+   kurallari yerinde duruyor; burasi yalnizca konumu ve olcekleri
+   degistiriyor. Boylece geri almak tek blogu silmek demek.
+
+   ⚠ .bugun-btn'e DOKUNULMUYOR -- kullanicinin acik talimati.
+   Ust satirda, marka ile menu dugmesinin arasinda kaliyor.
+   ===================================================================== */
+@media(max-width:700px){
+  /* --- serit: alttan uste --- */
+  /* ⚠ SABIT DEGIL, AKISTA. Once position:fixed denendi ve govdeye
+     106 piksel ust bosluk verildi; OLCUMDE ICERIK USTTEN KIRPILDI.
+     Sebep: seridin boyu DEGISKEN -- hava kutusu acilip kapaniyor,
+     hesap satiri oturum durumuna gore buyuyor. Sabit bir sayi o
+     degiskenligi tutamaz ve her tutmadiginda icerigin ustunu yer.
+     Akista birakmak bu sinifi tamamen ortadan kaldiriyor: serit ne
+     kadar buyurse buyusun icerik onun ALTINDAN basliyor.
+     ⚠ Bedeli: sekmeler sayfayla birlikte yukari kayiyor, cizimdeki
+     gibi ekrana cakili DEGIL. Sabitlemek, serit kisaldiktan sonra
+     (2b hesap menusu + 5. asamada hava kutusunun tasinmasi) tekrar
+     denenebilir -- o zaman boyu oynamayacak. */
+  .rail{
+    position:static;
+    flex-wrap:wrap;align-items:center;gap:0;
+    padding:0;border-top:0;border-bottom:2px solid var(--text);
+    background:var(--bg);margin-bottom:14px;
+  }
+  /* Ust satir: marka solda, Bugun ve menu sagda. Cizimdeki
+     "SHOOTBOARD ........ Giris yap" satirinin karsiligi. */
+  .rail-brand{display:flex;align-items:center;min-height:44px;padding:0 12px;flex:1 1 auto;}
+  .rail-brand .rail-tagline{display:none;}
+  .rail-brand .wordmark{font-family:'IBM Plex Mono',monospace;font-weight:600;
+    font-size:17px;letter-spacing:.14em;}
+
+  /* --- 4+4 tablo ---
+     ⚠ IZGARAYI TUTAN .alt-serit, .rail-nav DEGIL. Telefonda .alt-serit
+     sabit ALT cubuga donusuyor ve icinde IKI sey var: .bugun-btn ve
+     .rail-nav (yedi sekme). Cizimdeki sekiz hucre tam olarak bunlar --
+     "Bugun" bizde ayri bir dugme, SAYFALAR listesinde yok.
+     O yuzden izgara .alt-serit'e kuruluyor ve .rail-nav display:contents
+     ile araya girmiyor; boylece dugme + yedi sekme = sekiz hucre.
+     ⚠ .bugun-btn'in DAVRANISI degismiyor (kullanicinin acik talimati):
+     yalnizca kendi hucresini dolduruyor. Rozeti de yerinde. */
+  .alt-serit{
+    position:static;flex:1 0 100%;
+    display:grid;grid-template-columns:repeat(4,minmax(0,1fr));
+    gap:0;margin:0;padding:0;background:none;
+    border-top:2px solid var(--text);border-bottom:0;box-shadow:none;
+  }
+  .rail-nav{display:contents;}
+  /* .bugun-btn hucresini doldursun -- 44 piksellik sabit genisligi
+     izgarada bir sutun birakmaz. */
+  .bugun-btn{
+    width:auto;min-height:44px;flex-direction:row;gap:6px;
+    margin:0;padding:0 4px;border:0;
+    border-right:1px solid var(--text);border-bottom:1px solid var(--text);
+    border-radius:0;font-size:14px;
+  }
+  .rail-nav .tab{
+    display:flex;align-items:center;justify-content:center;
+    min-height:44px;padding:0 4px;gap:0;flex-direction:row;
+    border:0;border-right:1px solid var(--text);border-bottom:1px solid var(--text);
+    border-radius:0;background:none;
+    font-size:14px;font-weight:500;line-height:1.1;
+  }
+  /* Satir sonlari ve son satir. Sekmeler izgarada 2.-8. sirada
+     (1. sirada .bugun-btn var), o yuzden kaydirma: 3n ve n+4. */
+  .rail-nav .tab:nth-child(3n){border-right:0;}
+  .rail-nav .tab:nth-child(n+4){border-bottom:0;}
+  /* ⚠ TAM AD GERI GELDI. Kisaltma (.tab-ad-k) 9,5 pikseldi ve
+     11. bulgunun kaynagiydi; iki satirlik tabloda yere gerek yok. */
+  .rail-nav .tab .tab-ad{display:inline;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;}
+  .rail-nav .tab .tab-ad-k{display:none;}
+  /* Cizimde gezinmede ikon yok -- yazi yetiyor. */
+  .rail-nav .tab .tab-ico{display:none;}
+  .rail-nav .tab.active{
+    background:var(--text);color:var(--bg);font-weight:700;
+    border-bottom-color:var(--text);
+  }
+
+  /* Ust bosluk YOK: serit akista, kendi yerini kendi aciyor.
+     Yalnizca klaket seridinin 8 pikseli duruyor (yukarida). */
+
+  /* --- Yeni kayit: yuvarlak yuzen dugme DEGIL, altta tam genislik ---
+     Cizimde sayfanin en altinda, kenardan kenara bir serit.
+     ⚠ Bu ayni zamanda 11 Kasim testinin 9b bulgusu: yuzen yuvarlak
+     dugme altindaki kaydin uzerine biniyordu. Tam genislikte bir
+     serit hicbir seyin USTUNE binmiyor, kendi yerini aciyor. */
+  .btn.btn-new{
+    position:fixed;left:0;right:0;bottom:0;z-index:39;
+    width:auto;height:auto;min-height:50px;border-radius:0;
+    padding:0 16px;font-size:16px;line-height:1.2;
+    margin:0;border-top:2px solid var(--text);
+  }
+  .btn.btn-new::before{content:none;}
+  /* Serit kadar alt bosluk: liste onun altinda kalmasin. */
+  .rail-main{padding-bottom:62px;}
+}
 </style>
 <script>
 // Kayitli tema tercihini ilk boyamadan once uygula — aksi halde acik temayi
