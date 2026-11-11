@@ -3060,6 +3060,47 @@ textarea.sc-ai-brief{min-height:64px;resize:vertical;line-height:1.5;}
   .pn-svg{width:15px;height:15px;}
   .pn-meta{white-space:normal;}
 }
+
+/* ---------------------------------------------------------------------
+   DOKUNMA HEDEFLERI -- 11 Kasim 2026 kullanici testi.
+   OLCULDU (380x700, dokunmatik kurallar acikken):
+     #importBtn 36x15 · #exportBtn 75x15 · #restoreBtn 81x15
+     #resetBtn 63x15 · #havaKapatBtn 20x20 · #ornekSeritX 22x25
+     #authBtn 74x34 · #railMoreBtn 34x34 · #todayBtn 47x34
+     .tour-dot 7x7
+   Apple'in alt siniri 44x44. Parmakla 15 piksele isabet ettirmek zor ve
+   ISKALAYINCA HICBIR SEY OLMUYOR -- kullanici "basiyorum bir sey olmuyor"
+   diyor, haklı.
+
+   ⚠ GORUNEN BOY DEGISMIYOR. Hedefi buyuten sey gorunmez bir ::after;
+   position:absolute oldugu icin yer kaplamiyor, yani duzen aynen
+   kaliyor. Dolgu (padding) ile buyutmek satirlari kaydirirdi.
+
+   ⚠ SATIRDAKILERDE YALNIZCA YUKSEKLIK buyuyor. Genisligi de buyutmek
+   yan yana duran baglantilarin hedeflerini UST USTE bindirir ve
+   kullanici yanlis baglantiya basar -- kucuk hedeften kotu.
+
+   ⚠ .tour-dot 44'e CIKARILMADI, bilerek: noktalar 7 piksel ve aralari
+   5 piksel. 44 genislik her noktanin komsusunu ortmesi demek. Yukseklik
+   44'e cikti, genislik 12'ye -- tam cozum degil, ama ucu de ayni yere
+   gidiyor olsaydi zaten fark etmezdi; burada gitmiyor.
+   --------------------------------------------------------------------- */
+@media (hover:none), (pointer:coarse){
+  #importBtn, #exportBtn, #restoreBtn, #resetBtn,
+  #havaKapatBtn, #ornekSeritX, #authBtn, #railMoreBtn, #todayBtn,
+  .tour-dot, #tourFull{position:relative;}
+
+  #importBtn::after, #exportBtn::after, #restoreBtn::after, #resetBtn::after,
+  #authBtn::after, #railMoreBtn::after, #todayBtn::after, #tourFull::after,
+  #havaKapatBtn::after, #ornekSeritX::after, .tour-dot::after{
+    content:"";position:absolute;left:50%;top:50%;
+    transform:translate(-50%,-50%);height:44px;width:100%;
+  }
+  /* Tek basina duran ikon dugmeleri: genislik de 44. Komsusu yok. */
+  #havaKapatBtn::after, #ornekSeritX::after{width:44px;}
+  /* Noktalar: yukarıdaki gerekce. */
+  .tour-dot::after{width:12px;}
+}
 </style>
 <script>
 // Kayitli tema tercihini ilk boyamadan once uygula — aksi halde acik temayi
@@ -3105,7 +3146,8 @@ textarea.sc-ai-brief{min-height:64px;resize:vertical;line-height:1.5;}
            hiç görmüyordu. Artık aynı bağlantılar bu düğmenin açtığı alt
            sayfada, tam adlarıyla ve alt alta. Şerit de tek satıra indi. -->
       <button type="button" class="rail-more" id="railMoreBtn" aria-expanded="false"
-              aria-controls="railFoot" aria-label="More" title="More">
+              aria-controls="railFoot" data-i18n-aria="rail_more"
+              data-i18n-title="rail_more" aria-label="More" title="More">
         <span aria-hidden="true">⋯</span>
       </button>
 
@@ -5456,6 +5498,7 @@ const LANG = {
     tab_scripts_k: "Script", tab_calendar_k: "Calendar", tab_kit_k: "Kit",
     tab_templates_k: "Template",
     bugun_tab: "Today",
+    rail_more: "More",
     bugun_intro: "One screen for today: what is coming up, what slipped, what is still missing.",
     bugun_h: (tarih)=> `TODAY — ${tarih}`,
     bugun_yeni: "Nothing here yet. Create a project, or put your first entry on the calendar.",
@@ -6509,6 +6552,7 @@ const LANG = {
     tab_scripts_k: "Script", tab_calendar_k: "Takvim", tab_kit_k: "Malzeme",
     tab_templates_k: "Şablon",
     bugun_tab: "Bugün",
+    rail_more: "Daha fazla",
     bugun_intro: "Bugünün tek ekranı: ne yaklaşıyor, ne kaçtı, ne eksik kaldı.",
     bugun_h: (tarih)=> `BUGÜN — ${tarih}`,
     bugun_yeni: "Burada henüz bir şey yok. Bir proje oluştur ya da takvime ilk kaydını koy.",
@@ -12955,7 +12999,13 @@ function setPage(ad){
   if(!SAYFALAR.some(x=>x[0] === ad)) ad = 'projects';
   SAYFALAR.forEach(([anahtar, sayfa, sekme])=>{
     document.getElementById(sayfa).hidden = anahtar !== ad;
-    document.getElementById(sekme).classList.toggle('active', anahtar === ad);
+    const sekmeDug = document.getElementById(sekme);
+    sekmeDug.classList.toggle('active', anahtar === ad);
+    // ⚠ role="tab" ARIA'da aria-selected'i ZORUNLU tutuyor ve o yoktu:
+    // ekran okuyucu hangi sekmenin acik oldugunu SOYLEYEMIYORDU. Gorsel
+    // olarak .active sinifi soyluyor, erisilebilirlik agacinda karsiligi
+    // yoktu. 11 Kasim 2026 kullanici testi.
+    sekmeDug.setAttribute('aria-selected', anahtar === ad ? 'true' : 'false');
   });
   // Acik sayfa OTURUMLUK hatirlaniyor, kalici degil. Sebep: Bugun artik
   // acilis sayfasi ve butun meselesi "uygulamayi actiginda bugunu gormek".
