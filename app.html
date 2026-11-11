@@ -2345,7 +2345,22 @@ textarea.sc-ai-brief{min-height:64px;resize:vertical;line-height:1.5;}
 .tour-icerik{flex:1 1 auto;min-height:0;overflow-y:auto;padding-right:4px;
   /* Kisa adimlarda icerik dikeyde ortaliyor; "safe" olmadan uzun bir
      adimda ust taraf kirpiliyordu. */
-  display:flex;flex-direction:column;justify-content:safe center;}
+  display:flex;flex-direction:column;justify-content:safe center;
+  /* ⚠ DEVAMI OLDUGU BELLI OLSUN -- 11 Kasim 2026 kullanici testi.
+     Icerik KAYBOLMUYOR (overflow-y:auto) ama kaydigina dair hicbir
+     isaret yoktu: kullanici son maddeyi hic gormeden "Ileri"ye
+     basiyordu. OLCULDU, 380 piksel genislikte ilk adim:
+         640 -> 169 piksel devami var    780 -> 43    844 -> 34
+     Alt kenarda bir solma belirince "burada daha var" goruluyor.
+     ⚠ JAVASCRIPT YOK: iki katman "local" (kaydirmayla birlikte kayar,
+     yani ucta solmayi KAPATIR), iki katman "scroll" (sabit durur,
+     yani ortada solmayi GOSTERIR). Ucta kendiliginden kayboluyor.
+     ⚠ Golge rengi ne siyah ne beyaz: gri, iki temada da gorunsun. */
+  background:
+    linear-gradient(var(--surface) 30%, rgba(255,255,255,0)) top    / 100% 22px no-repeat local,
+    linear-gradient(rgba(255,255,255,0), var(--surface) 70%) bottom / 100% 22px no-repeat local,
+    radial-gradient(farthest-side at 50% 0,   rgba(128,128,128,.33), rgba(128,128,128,0)) top    / 100% 11px no-repeat scroll,
+    radial-gradient(farthest-side at 50% 100%, rgba(128,128,128,.33), rgba(128,128,128,0)) bottom / 100% 11px no-repeat scroll;}
 /* Govde yazisi --text: onceki halde --text-dim idi ve koyu zeminde
    okunmuyordu. Kullanicinin okumasini bekledigimiz metin gri olmamali. */
 .tour-text{color:var(--text);font-size:14.5px;line-height:1.7;margin:0 0 14px;}
@@ -2373,7 +2388,17 @@ textarea.sc-ai-brief{min-height:64px;resize:vertical;line-height:1.5;}
 .tour-visual svg{max-height:34vh;}
 /* Cok alcak ekranda gorsel daha da kisaliyor ve bosluklar daraliyor:
    son madde kesik kalmasin. */
-@media(max-height:720px){
+/* ⚠ ESIKLER BIRKAC PIKSEL DUSUK KALIYORDU -- 11 Kasim 2026 kullanici
+   testi, 1440 genislikte olculdu (kac piksel tasiyor):
+       720 sigiyor   722 -> 27    740 -> 16    760 -> 2
+       780 sigiyor   782 -> 32    800 -> 20    844 sigiyor
+   Yani tam kuralin bittigi yerde icerik tasiyor: 721-780 ve 781-820
+   araligi "olu bolge"ydi. Esikler 820 ve 900'e cikarildi; 844 ve 900
+   zaten sigiyordu, onlara sikistirma gelmesi zararsiz.
+   ⚠ "KESIK" degil KAYAN: .tour-icerik overflow-y:auto, yani icerik
+   kaybolmuyor. Ama kaydigina dair bir isaret YOK ve kullanici son
+   maddeyi hic gormuyor -- asagidaki solma o yuzden eklendi. */
+@media(max-height:820px){
   .tour-visual{max-height:26vh;margin-bottom:10px;}
   .tour-visual svg{max-height:26vh;}
   .tour-text{font-size:14px;line-height:1.6;margin-bottom:10px;}
@@ -2381,10 +2406,18 @@ textarea.sc-ai-brief{min-height:64px;resize:vertical;line-height:1.5;}
   .tour-dots{margin-top:10px;}
   .tour-modal h2{font-size:18px;}
 }
-@media(max-height:780px){
+@media(max-height:900px){
   .modal.tour-modal{padding:16px;}
   .tour-visual{margin-bottom:12px;}
   .tour-points li{padding:8px 11px;font-size:13px;}
+}
+/* ⚠ DAR EKRAN AYRI BIR DERT, YUKSEKLIK KURALLARI YETMIYOR. 380'de
+   metin cok daha fazla satira sariyor: OLCULDU, 900 disinda HER
+   yukseklikte tasiyordu (844'te bile 47 piksel, 640'ta 183).
+   Gorsel once kisaliyor -- turun isi anlatmak, resim gostermek degil. */
+@media(max-width:560px){
+  .tour-visual{max-height:20vh;}
+  .tour-visual svg{max-height:20vh;}
 }
 
 .lang-select{
