@@ -2044,7 +2044,11 @@ textarea.sc-ai-brief{min-height:64px;resize:vertical;line-height:1.5;}
 }
 /* Kapatma seridi seridin ALTINA tutunuyor: ikisi de yapiskan, ayni
    noktaya tutunsalar ust uste binerlerdi (xbar'in zemini opak). */
-#editOverlay .modal-xbar{top:-16px;margin-top:-16px;}
+#editOverlay .modal-xbar{top:-16px;margin-top:-16px;justify-content:space-between;align-items:center;gap:12px;}
+/* Kunye: cizimdeki mono, seyreltilmis, kucuk satir. Tek satir ve
+   kesilerek bitiyor -- uzun tarihlerde x dugmesini itmesin. */
+.modal-kunye{font-family:'IBM Plex Mono',monospace;font-size:12px;letter-spacing:.08em;
+  color:var(--text-dim);min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;}
 .modal h2{font-family:'IBM Plex Sans',sans-serif;font-size:16px;font-weight:800;letter-spacing:-0.2px;margin:0 0 18px;}
 /* Modalin kendisi kayiyor (max-height + overflow-y). Baslik serit halinde
    yapisiyor ki uzun listede kapatma dugmesi hep gorunur kalsin. Negatif
@@ -5709,6 +5713,7 @@ const LANG = {
     view_day: "Day",
     view_table: "Table",
     view_foy: "Sheet",
+    kunye_kayit: "ENTRY",
     foy_gun: "DAY", foy_saat: "TIME", foy_tur: "TYPE", foy_yer: "WHERE",
     foy_baslik: "TITLE", foy_uretim: "PRODUCTION", foy_isaret: "MARK",
     foy_isaretli: "Marked", foy_bekliyor: "Not marked",
@@ -6772,6 +6777,7 @@ const LANG = {
     view_day: "Gün",
     view_table: "Tablo",
     view_foy: "F\u00f6y",
+    kunye_kayit: "KAYIT",
     foy_gun: "G\u00dcN", foy_saat: "SAAT", foy_tur: "T\u00dcR", foy_yer: "YER",
     foy_baslik: "BA\u015eLIK", foy_uretim: "\u00dcRET\u0130M", foy_isaret: "\u0130\u015eARET",
     foy_isaretli: "\u0130\u015faretli", foy_bekliyor: "\u0130\u015faretlenmedi",
@@ -7698,6 +7704,9 @@ function setLanguage(lang, buluttanGeldi){
   // Bugun sayfasinin metnini de kod uretiyor: bolum basliklari, "yarin",
   // eksik adlari. data-i18n ile degismiyorlar.
   if(typeof bugunDegisti === 'function') bugunDegisti();
+  // Kunye de kod icinde uretiliyor: gun/ay adlari ve KAYIT/ENTRY
+  // etiketi dile bagli, data-i18n ile degismiyor.
+  if(typeof kunyeTazele === 'function') kunyeTazele();
 }
 
 // Language-aware labels for content type / status (platform brand names like
@@ -15985,6 +15994,16 @@ function sor(mesaj, varsayilan){ return dlgAc(String(mesaj), { iptalli:true, gir
       if(oncesi && ov.classList.contains('open')) ov.classList.remove('open');
     });
     serit.appendChild(x);
+    // KUNYE yalnizca kayit penceresinde (cizim: project/FoyKayit.dc.html).
+    // Serit YAPISKAN: uzun formda asagi inerken "hangi kaydin icindeyim"
+    // ustte kaliyor. Bu yuzden kunye formdaki tarih/saati CANLI okuyor,
+    // acilistaki degeri dondurmuyor.
+    if(ov.id === 'editOverlay'){
+      const kunye = document.createElement('span');
+      kunye.className = 'modal-kunye';
+      kunye.id = 'modalKunye';
+      serit.insertBefore(kunye, x);
+    }
     modal.prepend(serit);
   });
   // Bir pencere acikken govde kaymasin (telefonda alt sayfa hissi; CSS
@@ -17313,7 +17332,40 @@ function openModal(ev, hazirTarih, hazirSaat, hazirProje){
   modalAcanOge = document.activeElement;
   const bas = document.getElementById('modalTitle');
   if(bas){ bas.setAttribute('tabindex','-1'); bas.focus({preventScroll:true}); }
+  kunyeTazele();
 }
+// KUNYE: cizimdeki "KAYIT · CAR 11 KAS 2026 · 10:00" satiri.
+// Tarih/saat formdan okunuyor, kayittan DEGIL: kullanici alani
+// degistirdiginde kunye de degisiyor, yoksa yapiskan seritte eski
+// tarih durur ve yanlis bilgi verir.
+// Saat bossa yazilmiyor -- "·" koyup arkasini bos birakmak bir
+// deger varmis gibi gorunurdu.
+function kunyeTazele(){
+  const el = document.getElementById('modalKunye');
+  if(!el) return;
+  const tarih = (document.getElementById('f_date')||{}).value || '';
+  const saat  = ((document.getElementById('f_time')||{}).value || '').slice(0,5);
+  const parcalar = [t('kunye_kayit')];
+  if(tarih){
+    // Tarih dizesi yerel saat diliminde cozulsun: new Date('2026-11-11')
+    // UTC gece yarisi demek ve negatif ofsette BIR GUN GERI gider.
+    const [y,a,g] = tarih.split('-').map(Number);
+    const dt = new Date(y, a-1, g);
+    if(!isNaN(dt)){
+      const dil = currentLang === 'tr' ? 'tr-TR' : 'en-US';
+      parcalar.push(dt.toLocaleDateString(dil,
+        { weekday:'short', day:'numeric', month:'short', year:'numeric' }));
+    }
+  }
+  if(saat) parcalar.push(saat);
+  // Turkcede 'i' buyugu 'I' degil 'İ': dile gore cevriliyor.
+  el.textContent = parcalar.join(' · ')
+    .toLocaleUpperCase(currentLang === 'tr' ? 'tr' : 'en');
+}
+['f_date','f_time'].forEach(id=>{
+  const el = document.getElementById(id);
+  if(el) el.addEventListener('change', kunyeTazele);
+});
 // Pencereyi acan oge: kapanista odak buraya doner.
 let modalAcanOge = null;
 function closeModal(){
