@@ -6,6 +6,30 @@ duruyor, neden ertelendiği de yazıyor ki aynı tartışma baştan yapılmasın
 
 ---
 
+## paylas.test.js TAKVIMLE CURUYOR (11 Kasım 2026)
+
+**Ürün arızası YOK.** Paylaşım bağlantısıyla açılan salt okunur sayfa
+kayıtları doğru gösteriyor — ölçüldü: Kasım tarihli kayıt açılışta
+göründü, Eylül tarihli kayıt iki ay geri gidince göründü.
+
+Düşen iddia: `takvimde kayıt görünüyor`.
+Sebebi: testin örnek kayıtları **2026-09-10** ve **2026-09-12**
+tarihlerine çakılı (`testler/paylas.test.js` satır 30, 56, 67),
+görüntüleyici ise `var ay = new Date()` ile **içinde bulunulan ayı**
+açıyor (`paylas.html` satır 134). Eylül 2026 geçtiği için test
+bugünden sonra **her zaman** düşecek; kendiliğinden düzelmez.
+
+⚠ Gecelik tam tur `main` üzerinde bunu her gece kırmızı gösterir.
+Push/PR turunda yok (o tur yalnızca
+`mobil takvim proje mekan fikir izgara serit ai-erisimi` koşuyor).
+
+**Önerilen düzeltme** (test zayıflatılmıyor, çürümesi durduruluyor):
+üç tarihi bugüne göreli üret — örneğin ayın 10'u ve 12'si, içinde
+bulunulan aydan. Böylece iddia aynı kalır ama takvim ilerledikçe
+geçerliliğini korur.
+
+Karar kullanıcıda; onay gelmeden teste dokunulmadı (Bölüm 2 kuralı).
+
 ## TELEFON GEZİNMESİ: ÇİZİM 134 PİKSEL İSTİYOR, BÜTÇE 120 (11 Kasım 2026)
 
 **Uygulandı, ölçüldü, GERİ ALINDI.** Commit `856e861`, geri alma `20b20a3`.
