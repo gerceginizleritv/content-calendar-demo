@@ -17263,6 +17263,7 @@ function openModal(ev, hazirTarih, hazirSaat, hazirProje){
     document.getElementById('f_title').value = ev.title||'';
     document.getElementById('f_date').value = ev.date;
     document.getElementById('f_time').value = ev.time||'';
+    kunyeSaatSecildi = true;  // kaydin kendi saati
     populateTz();
     document.getElementById('f_tz').value = (ev.content && ev.content.timezone) || yerelTz();
     setUploadToggle(!!ev.uploaded, kayitBitti(ev) && !ev.uploaded);
@@ -17298,7 +17299,21 @@ function openModal(ev, hazirTarih, hazirSaat, hazirProje){
     document.getElementById('f_title').value = '';
     document.getElementById('f_date').value = hazirTarih || fmtKey(new Date());
     // Saat bos degil ama bos gibi: kullanici kendi saatini yazsin diye 00:00.
+    // SAAT 00:00 ILE GELIYOR. 11 Kasim 2026'da bir tur bos birakildi
+    // (kunye satiri "· 00:00" yazinca secilmemis bir saat secilmis gibi
+    // duruyordu), sonra GERI ALINDI -- kullanici karari.
+    // Gerekcesi olculdu: dort test (modal, proje, sablon3,
+    // paket-takvim) kayit olustururken saat alanina hic dokunmuyor ve
+    // bu varsayilana guveniyor. Varsayilan kalkinca kaydetme
+    // engelleniyor (saveBtn icindeki 'eksikler' kontrolu), kayit
+    // olusmuyor ve testler sonraki adimda cokuyordu.
+    // Bos birakmak isteniyorsa once o dort test saat secmeli.
+    // Secilmemis 00:00 KUNYEDE yazilmiyor; asagidaki kunyeSaatSecildi.
     document.getElementById('f_time').value = hazirSaat || '00:00';
+    // Saat "secilmis" sayiliyorsa: var olan kaydin kendi saati, ya da
+    // takvimde bir saat dilimine tiklanarak acilmis olmasi. Duz "+ yeni
+    // kayit"ta dokunulana kadar secilmemis sayiliyor.
+    kunyeSaatSecildi = !!hazirSaat;
     populateTz();
     document.getElementById('f_tz').value = yerelTz();
     setUploadToggle(false);
@@ -17357,14 +17372,26 @@ function kunyeTazele(){
         { weekday:'short', day:'numeric', month:'short', year:'numeric' }));
     }
   }
-  if(saat) parcalar.push(saat);
+  // Saat yalnizca SECILMISSE yaziliyor. Korlemesine "00:00 ise gizle"
+  // demedim: biri gercekten gece yarisini secerse onu da gizlerdi,
+  // yani dogru bilgiyi saklardi. Bu yuzden degerine degil,
+  // dokunulup dokunulmadigina bakiliyor.
+  if(saat && kunyeSaatSecildi) parcalar.push(saat);
   // Turkcede 'i' buyugu 'I' degil 'İ': dile gore cevriliyor.
   el.textContent = parcalar.join(' · ')
     .toLocaleUpperCase(currentLang === 'tr' ? 'tr' : 'en');
 }
+// Saat alanina dokunuldu mu: kunyede saatin yazilip yazilmayacagini
+// bu belirliyor. Varsayilan olarak secilmis sayiliyor; openModal duz
+// "+ yeni kayit"ta false yapiyor.
+let kunyeSaatSecildi = true;
 ['f_date','f_time'].forEach(id=>{
   const el = document.getElementById(id);
-  if(el) el.addEventListener('change', kunyeTazele);
+  if(!el) return;
+  el.addEventListener('change', ()=>{
+    if(id === 'f_time') kunyeSaatSecildi = true;
+    kunyeTazele();
+  });
 });
 // Pencereyi acan oge: kapanista odak buraya doner.
 let modalAcanOge = null;
@@ -17696,6 +17723,7 @@ document.getElementById('saveBtn').addEventListener('click', async ()=>{
   // Eskiden her durumda "baslik, tarih ve saati doldur" deniyordu; tarih ve saat
   // yeni kayitta zaten dolu geldigi icin kullanici doldurdugu alanlari yeniden
   // doldurmaya calisiyordu. Artik yalnizca gercekten eksik olan soyleniyor.
+
   const eksikler = [];
   if(!title) eksikler.push(['f_title', t('f_title_label')]);
   if(!date)  eksikler.push(['f_date',  t('f_date_label')]);
