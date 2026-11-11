@@ -703,6 +703,12 @@ body{
 @media(max-width:700px){
   .acc-new{grid-template-columns:1fr 1fr;}
   .acc-new #acc_add{grid-column:1 / -1;}
+  /* ⚠ Iki sutunlu izgarada kutuya satirin YARISI kaliyordu ve yer
+     tutucu sigmiyordu -- OLCULDU 380'de: metin 235 piksel, kutu 136;
+     560'ta da hala kirpik (235 > 226). Kutu satirin tamamini aliyor.
+     Acilir liste (platform) yarim satirda kaliyor, ona bir sey olmuyor:
+     icinde uzun metin yok. */
+  .acc-new #acc_url{grid-column:1 / -1;}
 }
 /* Surukle-birak */
 .cal-chip,.ct-chip{touch-action:manipulation;}
@@ -1564,6 +1570,18 @@ textarea.sc-ai-brief{min-height:64px;resize:vertical;line-height:1.5;}
 :root:not([data-theme="light"]) .proj-tools input{color-scheme:dark;}
 .proj-tools{display:flex;align-items:center;gap:12px;margin-bottom:14px;}
 .proj-tools .btn{flex-shrink:0;}
+/* ⚠ 701 PIKSELIN HEMEN USTUNDE SIKISIYOR -- 11 Kasim 2026.
+   Telefonda (<=700) arama kutusu kendi satirini aliyor; 701'de o kural
+   biter ve kutu dugmelerle ayni satiri paylasir. OLCULDU 702'de:
+   yer tutucu 231 piksel, kutu 184 -- kirpik. 1024'te sorun yok.
+   Sabit bir kirilma noktasi yazmak yerine kutuya ALT SINIR veriliyor:
+   sigmadigi her genislikte kendiliginden alt satira iniyor, sigdiginda
+   da yan yana kaliyor. Boylece arada baska bir genislikte ayni arizanin
+   cikmasi mumkun degil.
+   ⚠ Ayni kap IKI sayfada: Mekanlar (#mk_search) ve Projeler
+   (#p_search). Ikisinin de yer tutucusu uzun. */
+.proj-tools{flex-wrap:wrap;}
+.proj-tools > input[type="search"]{min-width:260px;}
 /* Sira dugmesi: SECENEK LISTESI DEGIL, tiklandikca donen tek dugme.
    Uzerinde her zaman ICINDE BULUNULAN sira yaziyor. */
 .btn-sira{font-variant-numeric:tabular-nums;white-space:nowrap;}
@@ -1914,6 +1932,27 @@ textarea.sc-ai-brief{min-height:64px;resize:vertical;line-height:1.5;}
   background:var(--bg);color:var(--text);font:inherit;font-size:13.5px;}
 #ih_yeniAd{flex:3;min-width:150px;}
 #ih_yeniGrup{flex:2;min-width:110px;}
+/* ⚠ SAYFADAKI IKIZ UNUTULMUS -- 11 Kasim 2026 kullanici testi.
+   Ustteki iki kural PENCEREDEKI kutulara ait (#ih_yeniAd /
+   #ih_yeniGrup). Malzeme SAYFASINDAKI ayni islevli kutularin kimligi
+   bir harf farkli (#ihs_yeniAd / #ihs_yeniGrup) ve onlarin hicbir
+   boyut kurali YOKTU; varsayilan flex ile 190 pikselde kaliyorlardi.
+   OLCULDU: yer tutucu metni 291 piksel, kutu 190 -- ucte birinden
+   fazlasi gorunmuyordu ve bu HER genislikte boyleydi.
+   ⚠ Sayfa CALISIYOR: kutuya yazip Ekle'ye basildi, kalem listeye
+   dustu, kutu bosaldi, sayfa hatasi yok. Sorun yalnizca genislik. */
+#ihs_yeniAd{flex:3;min-width:150px;}
+#ihs_yeniGrup{flex:2;min-width:110px;}
+/* ⚠ DAR EKRANDA flex:3 KOTULESTIRIYOR, OLCULDU. Ustteki oran 701 ve
+   uzerinde dogru (380 piksel kutu, metin 245 -- rahat siğiyor) ama
+   380'de kutuyu min-width'e kadar KUCULTUYOR: 190'dan 128'e dustu,
+   yani duzeltmeden once daha genisti. Sebep flex-basis'in sifira
+   inmesi. Dar ekranda kutu kendi satirini aliyor; kap zaten
+   flex-wrap:wrap. 560'ta da yetmiyordu (236 < 291), o yuzden sinir
+   700. */
+@media(max-width:700px){
+  #ihs_yeniAd{flex:1 0 100%;}
+}
 .ih-toplu{margin-top:12px;font-size:13px;}
 .ih-toplu summary{cursor:pointer;color:var(--text-dim);}
 .ih-toplu textarea{width:100%;margin-top:8px;padding:9px 11px;border:1px solid var(--line);
