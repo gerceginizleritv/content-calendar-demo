@@ -2211,6 +2211,32 @@ textarea.sc-ai-brief{min-height:64px;resize:vertical;line-height:1.5;}
   font-family:'IBM Plex Sans',sans-serif;font-size:14px;}
 .dlg-input:focus{outline:none;border-color:var(--accent);}
 #dlgOverlay .modal-actions{margin-top:16px;}
+
+/* KAYDET SERIDI MASAUSTUNDE DE ALTA YAPISIK -- 11 Kasim 2026 kullanici
+   testi. OLCULDU (1440x900): kayit penceresinin icerigi 1541 piksel,
+   gorunen alan 788. Yani Kaydet'e ulasmak icin 753 piksel kaydirmak
+   gerekiyordu ve kullanici "kaydet nerede" diye arandi.
+
+   ⚠ TERS DURUYORDU: telefonda serit ZATEN yapisikti (asagidaki mobil
+   blok, 2905 civari), masaustunde degildi. Dar ekranda cozulen sey
+   genis ekranda duruyordu.
+
+   ⚠ YALNIZCA KAYIT PENCERESI. Diyaloglar (#dlgOverlay) kisa; onlarda
+   yapisik serit gereksiz bir cizgi ve govdesiz bir golge demek --
+   mobil blok da onlari ayrica disarida birakiyor.
+
+   ⚠ min-width:701 SART. Kural #editOverlay ile yazildigi icin
+   ozgullugu mobil bloktaki `.modal .modal-actions`tan YUKSEK; medya
+   sorgusu olmasaydi telefondaki yapisik seridi (safe-area payiyla
+   birlikte) ezerdi. */
+@media(min-width:701px){
+  #editOverlay .modal{padding-bottom:0;}
+  #editOverlay .modal-actions{
+    position:sticky;bottom:0;z-index:2;
+    margin:20px -26px 0;padding:14px 26px;
+    background:var(--surface);border-top:1px solid var(--line-soft);
+  }
+}
 #dlgOverlay .btn{min-height:44px;}
 /* Google dugmesi tam genislikte ve email alanindan once duruyor: tek tikla
    biten yol once gelsin, link isteyen asagi baksin. */
@@ -2493,6 +2519,30 @@ textarea.sc-ai-brief{min-height:64px;resize:vertical;line-height:1.5;}
 /* Izgara gorunumunde hucre ~150px: isaret + tip + saat yan yana girince
    basliga yer kalmiyordu. Baslik kendi satirina aliniyor. */
 @media(min-width:701px){
+  .cal-chip{flex-wrap:wrap;row-gap:3px;}
+  .cal-chip-title{flex-basis:100%;order:5;}
+  .cal-state{order:4;}
+}
+
+/* AYNI KURAL DAR EKRANDA DA GEREKIYOR -- 11 Kasim 2026 kullanici testi.
+   Ustteki blok 701 pikselin USTUNDE basligi kendi satirina aliyor
+   (izgara hucresi dar diye). Dar ekranda bu kural YOKTU -- oysa orada
+   daha cok gerekiyor: baslik, isaret, saat, tip ve durum rozeti ayni
+   satirda yarisiyor.
+
+   OLCULDU (ornek veriyle, 8 baslik):
+     380 px   7 baslik kirpik, en kotusunde 59 piksel eksik
+     400 px   3 kirpik
+     420 px   2 kirpik
+     460 px   kirpik YOK
+   Esik 460; kural onun altinda calisiyor.
+
+   ⚠ Bu ayni zamanda yuzen "+" dugmesiyle rozetin binmesini de
+   azaltiyor (380'de olculdu: dugme x308-364/y556-612, rozet
+   x270-338/y561-577 -- hem yatayda hem dikeyde kesisiyordu).
+   BITIRMIYOR ama: sabit konumlu bir dugme altinda ne varsa onu
+   ortuyor, bu dogasi geregi boyle. */
+@media(max-width:459px){
   .cal-chip{flex-wrap:wrap;row-gap:3px;}
   .cal-chip-title{flex-basis:100%;order:5;}
   .cal-state{order:4;}
