@@ -6,6 +6,75 @@ duruyor, neden ertelendiği de yazıyor ki aynı tartışma baştan yapılmasın
 
 ---
 
+## TELEFON GEZİNMESİ: ÇİZİM 134 PİKSEL İSTİYOR, BÜTÇE 120 (11 Kasım 2026)
+
+**Uygulandı, ölçüldü, GERİ ALINDI.** Commit `856e861`, geri alma `20b20a3`.
+`git revert` kullanıldı, `reset` değil — commit duruyor, fikir değişirse tek
+komutla geri getirilebilir.
+
+### Ne yapıldı
+
+Çekim Föyü tasarımının telefon gezinmesi: sekmeler alt sabit çubuktan **üste**,
+**4+4 hücreli tabloya** taşındı (kullanıcı kararı: *"çizimdeki gibi üstte"*).
+İki eski bulguyu da kapatıyordu:
+
+- **bulgu 11 (telefon yarısı):** sekme adları `.tab-ad-k` kısaltmasıyla **9,5
+  piksele** düşürülüyordu; iki satıra yayılınca **tam ad, 14 piksel** oldu.
+- **bulgu 9b:** yüzen yuvarlak "+" düğmesi altındaki kaydın üstüne biniyordu;
+  tam genişlikte alt şerit hiçbir şeyin üstüne binmiyor.
+
+### ⬛ NEDEN GERİ ALINDI — İKİ İSTEK BİRBİRİNİ KESİYOR
+
+Dört test düştü: `mobil-serit`, `mobil-alt-menu`, `mobil-menu`, `serit`.
+Üçü eski tasarımı (alt çubuk, tek satırlık şerit) ölçüyordu — ama biri
+**gerçek bir şeyi** koruyordu:
+
+    mobil-serit:  "şerit 120px altında"  →  ölçülen 206px  (ekranın %24'ü)
+
+O 120 piksellik bütçe, kabuğun ekranı yemesini engelliyor — yani kullanıcı
+testinin **2. bulgusuyla** (*"takvim ilk ekranda çok aşağıda"*) aynı şeyi
+savunuyor.
+
+**206'nın 116'si henüz yapılmamış işlerin kalıntısıydı** (ölçüldü):
+
+| Parça | Boy | Nereye gidecekti |
+|---|---|---|
+| `rail-brand` | 44px | kalıyor |
+| `rail-me` (avatar, Giriş yap, dil) | 44px | 2b — hesap menüsü |
+| `rail-more` (⋯) | 34px | 2b — marka satırına |
+| `rail-hava` | 26px | 5. aşama — "Bugün sette" kutusuna |
+| **4+4 ızgara** | **90px** | **çizimin kendisi** |
+
+→ 2b ve 5. aşama bitse bile: 44 + 90 = **~134 piksel.**
+
+⚠ **ÇİZİMİN KENDİ ÖLÇÜSÜ BU.** `FoyTelTakvim.dc.html`: başlık 44 + gezinme
+88 + çizgiler ≈ 134. Yani fark **uygulamadan değil tasarımdan** geliyor;
+daha iyi kodlayarak kapanmaz.
+
+### Karar verilmeden önce bilinmesi gereken
+
+Telefonda "üstte 4+4 tablo", kabuğun **14 piksel daha fazla** yer kaplamasını
+kabul etmek demek — ve aynı kullanıcı testi "takvim çok aşağıda" demişti.
+İki istek aynı anda sağlanamıyor. Seçenekler:
+
+1. **Bütçeyi yükselt** (120 → 140) ve testleri bir kez güncelle. Tasarım
+   uygulanır, kabuk 14 piksel büyür.
+2. **Gezinmeyi tek satıra sığdır** (8 hücre yerine 4 + "⋯"), 44 piksel.
+   Bütçe korunur ama çizimden sapılır.
+3. **Alt çubukta bırak** (bugünkü hal). O zaman **bulgu 11'in telefon yarısı
+   açık kalır**: sekme adları 9,5 pikselde durur.
+
+⛔ Hangisi seçilirse seçilsin, **ölçmeden karar verilmesin**: bu satırların
+tamamı tahmin değil, 390x844'te alınmış ölçüm.
+
+### Ders
+
+Bu geri alma boşa gitmedi. İki istek (çizime uy / kabuk küçük kalsın)
+**çeliştiği ancak uygulanıp ölçülünce görüldü.** Testler bunu yakaladı;
+yakalamasaydı kabuk sessizce %24'e çıkmış olacaktı.
+
+---
+
 ## THREADS UÇTAN UCA TESTİ — ve bir kabul edilmiş boşluk (3 Kasım 2026)
 
 ### Ne yapıldı
