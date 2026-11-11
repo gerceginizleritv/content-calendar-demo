@@ -2015,11 +2015,36 @@ textarea.sc-ai-brief{min-height:64px;resize:vertical;line-height:1.5;}
 .ih-toplu .btn{margin-top:8px;}
 .overlay{display:none;position:fixed;inset:0;background:rgba(4,5,10,0.8);z-index:50;align-items:center;justify-content:center;padding:20px;overscroll-behavior:none;}
 .overlay.open{display:flex;}
+/* PENCERE. Cizim (project/FoyKayit.dc.html) 2px duz kenarlik ve ustte
+   klaket seridi gosteriyor; onceki hal 1px cerceve + 3px duz vurgu
+   cizgisiydi. Serit govdenin ustundekiyle ayni desen (Asama 1), boylece
+   pencere sayfanin devami degil AYRI BIR KAGIT gibi duruyor.
+   Serit sticky: pencere kendi icinde kayiyor (max-height + overflow-y),
+   position:absolute olsaydi asagi inince yukarida kalirdi. */
 .modal{
-  background:var(--surface);border:1px solid var(--line);border-top:3px solid var(--accent);
+  background:var(--surface);border:2px solid var(--text);
   padding:26px;width:100%;max-width:600px;max-height:88vh;overflow-y:auto;border-radius:2px;
   overscroll-behavior:none;
 }
+/* KLAKET SERIDI YALNIZCA KAYIT PENCERESINDE. Once .modal tabanina
+   konmustu; OLCULDU ve iki sey kirilmisti:
+     · Pencere kaydirilinca kapatma dugmesi -10px'e kaciyor, yani ust
+       kenarin disinda kalip KIRPILIYORDU. Sebep: .modal-xbar'in
+       sticky top:-26px degeri pencerenin 26px'lik ust dolgusunu
+       dengelemek icin yazilmis; dolguyu kaldirinca dayanagi kayboldu.
+     · Telefonda pencerenin dolgusu 16px (satir ~3111); -26px yatay
+       kenar bosluguyla serit pencereden tasardi.
+   Cizim de zaten kayit penceresinin cizimi. Oteki pencerelere
+   dokunmadan burada duruyor; yayilacaksa her kirilma noktasi ayri
+   olculerek yayilir. */
+#editOverlay .modal::before{
+  content:"";display:block;position:sticky;top:-26px;z-index:3;
+  height:10px;margin:-26px -26px 16px;
+  background:repeating-linear-gradient(135deg, var(--text) 0 14px, var(--surface) 14px 28px);
+}
+/* Kapatma seridi seridin ALTINA tutunuyor: ikisi de yapiskan, ayni
+   noktaya tutunsalar ust uste binerlerdi (xbar'in zemini opak). */
+#editOverlay .modal-xbar{top:-16px;margin-top:-16px;}
 .modal h2{font-family:'IBM Plex Sans',sans-serif;font-size:16px;font-weight:800;letter-spacing:-0.2px;margin:0 0 18px;}
 /* Modalin kendisi kayiyor (max-height + overflow-y). Baslik serit halinde
    yapisiyor ki uzun listede kapatma dugmesi hep gorunur kalsin. Negatif
@@ -2033,8 +2058,10 @@ textarea.sc-ai-brief{min-height:64px;resize:vertical;line-height:1.5;}
   margin:-26px -26px 18px;padding:26px 26px 12px;
 }
 .modal-head h2{margin:0;}
+/* OLCULDU: 32x32 idi, dokunma hedefi esigi 44. Cizimde de 44x44.
+   Telefon blogundaki 40px kurali da bu yuzden kaldirildi (asagida). */
 .modal-x{
-  flex:none;width:32px;height:32px;border-radius:2px;cursor:pointer;
+  flex:none;width:44px;height:44px;border-radius:2px;cursor:pointer;
   background:transparent;border:1px solid var(--line);color:var(--text-dim);
   font-size:18px;line-height:1;display:inline-flex;align-items:center;justify-content:center;
 }
@@ -3098,7 +3125,11 @@ textarea.sc-ai-brief{min-height:64px;resize:vertical;line-height:1.5;}
     padding:16px 16px calc(18px + env(safe-area-inset-bottom));}
   .modal-head{top:-16px;margin:-16px -16px 14px;padding:16px 16px 10px;}
   .modal .modal-xbar{top:-16px;margin:-16px -16px 6px;padding:10px 12px 4px;}
-  .modal-x{width:40px;height:40px;font-size:22px;}
+  /* Telefonda pencerenin dolgusu 16px: serit ve kapatma seridi de ona
+     gore. Masaustundeki -26 degerleri burada pencereden tasardi. */
+  #editOverlay .modal::before{top:-16px;margin:-16px -16px 10px;}
+  #editOverlay .modal-xbar{top:-6px;margin-top:-6px;}
+  .modal-x{font-size:22px;}
   /* Kaydet / Vazgec seridi alta yapisik: uzun formda dugmeye inmek icin
      kaydirmak gerekmiyor. Pencere kendi icinde kaydigi icin sticky
      pencerenin alt kenarina tutunuyor; alt bosluk seride tasindi ki
@@ -4515,7 +4546,11 @@ textarea.sc-ai-brief{min-height:64px;resize:vertical;line-height:1.5;}
 </div>
 
 <div class="overlay" id="editOverlay">
-  <div class="modal">
+  <!-- role/aria-modal/aria-labelledby: cizimdeki role="dialog" burada.
+       OLCULDU (11 Kasim 2026): uculu de YOKTU, acilista odak pencereye
+       GIRMIYORDU ve Esc kapatmiyordu. Ekran okuyucu pencereyi bir
+       pencere olarak degil, sayfanin devami olarak okuyordu. -->
+  <div class="modal" role="dialog" aria-modal="true" aria-labelledby="modalTitle">
     <h2 id="modalTitle" data-i18n="modal_new_title">New Entry</h2>
 
     <!-- Proje en ustte: kayit once bir ise ait, sonra bir tur ve platforma.
@@ -17270,7 +17305,17 @@ function openModal(ev, hazirTarih, hazirSaat, hazirProje){
   // biri, sonraki acilista pencereyi biraktigi yerden goruyordu.
   const kutu = document.querySelector('#editOverlay .modal');
   if(kutu) kutu.scrollTop = 0;
+  // ODAK. Pencereyi ACAN ogeyi sakliyoruz ki kapaninca odak oraya donsun;
+  // aksi halde klavyeyle calisan kisi her kapanista sayfanin basina
+  // firliyor. Odak BASLIGA gidiyor, ilk alana degil: baslik once "neyin
+  // penceresi" oldugunu okutuyor, ve bir metin alanina dusmek ekran
+  // okuyucuyu dogrudan yazma kipine atiyor.
+  modalAcanOge = document.activeElement;
+  const bas = document.getElementById('modalTitle');
+  if(bas){ bas.setAttribute('tabindex','-1'); bas.focus({preventScroll:true}); }
 }
+// Pencereyi acan oge: kapanista odak buraya doner.
+let modalAcanOge = null;
 function closeModal(){
   document.getElementById('editOverlay').classList.remove('open');
   currentEvent = null;
@@ -17278,6 +17323,13 @@ function closeModal(){
   // (× perdeye tiklanmis gibi davraniyor) ve kaydetme. Kaydetmede kayit
   // zaten olustugu icin asagidaki kontrol sessizce geciyor.
   paketTeklifSonu();
+  // Odak, pencereyi acan ogeye geri. Oge artik yoksa (silinen kaydin
+  // satiri gibi) sessizce birakiyoruz; gorunmeyen bir ogeye odak
+  // vermek daha kotu.
+  if(modalAcanOge && document.contains(modalAcanOge)){
+    try{ modalAcanOge.focus({preventScroll:true}); }catch(e){}
+  }
+  modalAcanOge = null;
 }
 // ══════════════════════════════════════════════════════════════════
 // OTOMATIK YAYIN (story + reels) — kaydin icindeki gorunum
@@ -17563,6 +17615,17 @@ document.getElementById('f_platform').addEventListener('change', ()=>{
 document.getElementById('addBtn').addEventListener('click', ()=> openModal(null));
 document.getElementById('cancelBtn').addEventListener('click', closeModal);
 document.getElementById('editOverlay').addEventListener('click', (e)=>{ if(e.target.id==='editOverlay') closeModal(); });
+// Esc = Vazgec. YENI BIR KAYIP YOLU DEGIL: perdeye tiklamak zaten ayni
+// anda ve ayni sekilde uyarisiz kapatiyor (bir ust satir). Esc onun
+// klavye karsiligi. Baska bir pencere acikken karismasin diye yalnizca
+// bu pencere acikken ve olay baska bir pencere tarafindan durdurulmamisken
+// calisiyor.
+document.addEventListener('keydown', (e)=>{
+  if(e.key !== 'Escape') return;
+  const o = document.getElementById('editOverlay');
+  if(!o.classList.contains('open')) return;
+  closeModal();
+});
 document.getElementById('uploadToggle').addEventListener('click', ()=> setUploadToggle(document.getElementById('uploadToggle').dataset.val !== '1'));
 
 document.getElementById('deleteBtn').addEventListener('click', async ()=>{
