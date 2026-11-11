@@ -17,7 +17,7 @@
 <meta name="apple-mobile-web-app-title" content="Shootboard">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=Archivo:wght@500;600;700;800&family=IBM+Plex+Sans:wght@400;500;600&family=IBM+Plex+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:wght@400;500;600;700&family=IBM+Plex+Mono:wght@400;500;600&display=swap" rel="stylesheet">
 <style>
 /* Shootboard — temel palet acik tema. Token adlari korundu, sadece degerler
    degisti; boylece butun bilesen kurallari tek noktadan yeniden renklendi. */
@@ -26,13 +26,23 @@
    ciziliyor, koyu temada siyah ustune siyah kaliyordu. */
 :root{
   color-scheme: light;
-  --bg:#F1EDE3; --surface:#FBF9F3; --surface-2:#E7E2D5; --line:#D7D1C2; --line-soft:#E3DED1;
-  --accent:#C4350A; --accent-dim:#9A9384; --accent-glow:rgba(196,53,10,0.26); --accent-soft:#FAE6DC;
+  /* ⚠ CEKIM FOYU PALETI -- 11 Kasim 2026. Dort deger cizimdekiyle
+     birkac basamak farkliydi; cizim esas alindi:
+       --surface   #FBF9F3 -> #FBF8F1
+       --line      #D7D1C2 -> #CFC8B8   (daha koyu, cizgi gorunsun)
+       --text-dim  #585349 -> #5A5347
+       --accent-soft #FAE6DC -> #FBE3D6 (bugun zemini)
+       --red       #9E1B32 -> #A3121F   (hata)
+     --bg, --accent ve --text zaten ayniydi. */
+  --bg:#F1EDE3; --surface:#FBF8F1; --surface-2:#E7E2D5; --line:#CFC8B8; --line-soft:#E3DED1;
+  /* Cizimde olup bizde karsiligi olmayan iki deger: */
+  --bekleyen:#8C8472;        /* bekleyen uretim kutusunun kenari */
+  --pencere-arka:#D9D3C4;    /* acik pencerenin arkasindaki zemin */  --accent:#C4350A; --accent-dim:#9A9384; --accent-glow:rgba(196,53,10,0.26); --accent-soft:#FBE3D6;
   --accent-hover:#A22B06;
-  --text:#15130F; --text-dim:#585349;
+  --text:#15130F; --text-dim:#5A5347;
   --amber:#8A5F0B; --amber-soft:#F8EDD8;
   --green:#25654A;
-  --red:#9E1B32;
+  --red:#A3121F;
   --on-accent:#FFFFFF;
   --p-youtube:#DA4B42; --p-instagram:#C0478E; --p-tiktok:#14868F; --p-facebook:#3B6FC4;
   --p-threads:#616B78; --p-x:#232B36; --p-pinterest:#A8322C; --p-linkedin:#1C6C9C;
@@ -45,6 +55,11 @@
     --accent:#FF7A45; --accent-dim:#8B8476; --accent-glow:rgba(255,122,69,0.30); --accent-soft:#3A1E12;
     --accent-hover:#FF9569;
     --text:#F0EBE0; --text-dim:#ABA496;
+  /* Acik temadaki iki yeni degiskenin koyu karsiligi. Cizilmedi;
+     ayni ise yarayan mevcut koyu degerlerden turetildi, kontrasti
+     asagida olculuyor. */
+  --bekleyen:#8B8476;
+  --pencere-arka:#0D0B08;
     --amber:#E8A94A; --amber-soft:#33280F;
     --green:#66C295;
     --red:#F2808F;
@@ -60,6 +75,11 @@
   --accent:#FF7A45; --accent-dim:#8B8476; --accent-glow:rgba(255,122,69,0.30); --accent-soft:#3A1E12;
   --accent-hover:#FF9569;
   --text:#F0EBE0; --text-dim:#ABA496;
+  /* Acik temadaki iki yeni degiskenin koyu karsiligi. Cizilmedi;
+     ayni ise yarayan mevcut koyu degerlerden turetildi, kontrasti
+     asagida olculuyor. */
+  --bekleyen:#8B8476;
+  --pencere-arka:#0D0B08;
   --amber:#E8A94A; --amber-soft:#33280F;
   --green:#66C295;
   --red:#F2808F;
@@ -87,8 +107,30 @@ html{overscroll-behavior-x:none;}
 body{
   margin:0; background:var(--bg); color:var(--text);
   font-family:'IBM Plex Sans',-apple-system,sans-serif;
-  padding:24px;
+  /* Ust dolgu 24 degil 34: ilk 10 piksel klaket seridinin (asagida). */
+  padding:34px 24px 24px;
   overscroll-behavior-x:none;
+}
+/* ---------------------------------------------------------------------
+   KLAKET SERIDI -- cekim foyu kimliginin ilk isareti.
+   Sayfanin en ustunde, kenardan kenara. body'nin yan dolgusu var, serit
+   onun DISINA tasmali; o yuzden sabit konumlu bir ::before.
+   ⚠ z-index 1: pencereler, acilir menuler ve yuzen dugme seridin
+   USTUNDE kalmali -- hicbiri 1'in altinda degil.
+   ⚠ pointer-events:none: serit bir sus, tiklamayi yutmamali.
+   ⚠ Renkler degiskenden: koyu temada da kendiliginden dogru.
+   --------------------------------------------------------------------- */
+body::before{
+  content:"";position:fixed;top:0;left:0;right:0;height:10px;z-index:1;
+  pointer-events:none;
+  background:repeating-linear-gradient(135deg, var(--text) 0 14px, var(--bg) 14px 28px);
+}
+@media(max-width:700px){
+  /* Telefonda 8 piksel ve adimi kisa -- dar ekranda 14 piksellik adim
+     kabalasiyordu. */
+  body{padding-top:32px;}
+  body::before{height:8px;
+    background:repeating-linear-gradient(135deg, var(--text) 0 12px, var(--bg) 12px 24px);}
 }
 .mono{font-family:'IBM Plex Mono',monospace;}
 /* Sol serit yer kapladigi icin sayfa genisledi: icerik alani eskisinden
@@ -102,7 +144,7 @@ body{
 .rail{
   width:208px;flex:none;display:flex;flex-direction:column;gap:16px;
   padding:16px 12px;background:var(--surface);
-  border:1px solid var(--line);border-radius:12px;
+  border:1px solid var(--line);border-radius:2px;
 }
 /* min-width:0 sart: olmadan genis takvim tablosu seridi ezip sayfayi
    yatay kaydiriyor. */
@@ -115,7 +157,7 @@ body{
   width:54px;height:54px;border-radius:50%;overflow:hidden;flex:none;
   background:var(--surface-2);border:1px solid var(--line);
   display:flex;align-items:center;justify-content:center;
-  font:700 18px/1 'Archivo',sans-serif;color:var(--text-dim);
+  font:700 18px/1 'IBM Plex Sans',sans-serif;color:var(--text-dim);
 }
 .avatar img{width:100%;height:100%;object-fit:cover;display:block;}
 /* Giris yapilmamisken dairede Shootboard isareti duruyor: bos bir daire
@@ -142,7 +184,7 @@ body{
   overflow:hidden;text-overflow:ellipsis;white-space:nowrap;}
 .hv-simdi{display:flex;align-items:baseline;gap:6px;color:var(--text);}
 .hv-ikon{font-size:16px;line-height:1;}
-.hv-derece{font:700 17px/1 'Archivo',sans-serif;font-variant-numeric:tabular-nums;}
+.hv-derece{font:700 17px/1 'IBM Plex Sans',sans-serif;font-variant-numeric:tabular-nums;}
 .hv-durum{font-size:12px;color:var(--text-dim);
   overflow:hidden;text-overflow:ellipsis;white-space:nowrap;}
 .hv-satir{display:flex;flex-wrap:wrap;gap:4px 10px;font-variant-numeric:tabular-nums;}
@@ -163,14 +205,14 @@ body{
 .hv-sehir{display:flex;gap:5px;}
 .hv-sehir input{flex:1;min-width:0;padding:5px 8px;font:inherit;font-size:12px;
   background:var(--surface);color:var(--text);
-  border:1px solid var(--line);border-radius:7px;}
+  border:1px solid var(--line);border-radius:2px;}
 .hv-sehir .btn{flex:none;padding:5px 9px;font-size:12px;}
 
 /* Mekan penceresindeki ayni bilgi. Burada konum iznine hic gerek yok:
    koordinat mekanin kendi harita baglantisindan ya da adindan geliyor. */
 .mk-hava{
   display:flex;flex-direction:column;gap:6px;margin:0 0 14px;
-  padding:11px 12px;border:1px solid var(--line);border-radius:10px;
+  padding:11px 12px;border:1px solid var(--line);border-radius:2px;
   background:var(--surface-2);font-size:13px;color:var(--text-dim);
 }
 .mk-hava[hidden]{display:none;}
@@ -191,7 +233,7 @@ body{
 .bugun-btn{
   display:flex;align-items:center;gap:8px;width:100%;
   font:inherit;font-size:13px;font-weight:600;text-align:left;
-  padding:10px 11px;border-radius:9px;cursor:pointer;
+  padding:10px 11px;border-radius:2px;cursor:pointer;
   border:1px solid var(--line);background:var(--surface-2);color:var(--text);
 }
 .bugun-btn:hover{border-color:var(--accent-dim);}
@@ -202,7 +244,7 @@ body{
 .bugun-ico{width:17px;height:17px;flex:none;}
 .bugun-sayi{
   margin-left:auto;flex:none;min-width:19px;padding:1px 6px;
-  border-radius:999px;background:var(--accent);color:#fff;
+  border-radius:2px;background:var(--accent);color:#fff;
   font-size:11px;font-weight:700;text-align:center;
   font-variant-numeric:tabular-nums;
 }
@@ -231,7 +273,7 @@ body{
   color:var(--text-dim);
 }
 .bg-n{
-  flex:none;min-width:18px;padding:0 5px;border-radius:999px;
+  flex:none;min-width:18px;padding:0 5px;border-radius:2px;
   background:var(--surface-2);color:var(--text-dim);
   font-size:10.5px;font-weight:700;text-align:center;
   font-variant-numeric:tabular-nums;letter-spacing:0;
@@ -244,7 +286,7 @@ body{
 .bg-satir{
   display:flex;align-items:center;gap:10px;width:100%;
   font:inherit;font-size:13.5px;text-align:left;cursor:pointer;
-  padding:10px 12px;border-radius:10px;
+  padding:10px 12px;border-radius:2px;
   border:1px solid var(--line);background:var(--surface);color:var(--text);
   /* Sol serit durumu tasiyor: gecikmis olan kirmizi, otekiler notr.
      Rengin TEK basina anlam tasimamasi icin metinde de yaziyor. */
@@ -272,13 +314,13 @@ body{
    script sayfasi, "adresi yok"a basinca proje penceresi aciliyor.
    Tek dugme olsaydi kullanici hangi eksige gittigini bilemezdi. */
 .bg-eksik{display:flex;flex-wrap:wrap;align-items:center;gap:6px;
-  padding:9px 12px;border-radius:10px;
+  padding:9px 12px;border-radius:2px;
   border:1px solid var(--line);border-left:3px solid var(--amber);
   background:var(--surface);}
 .bg-eksik-ad{font-size:13.5px;font-weight:600;margin-right:2px;}
 .bg-eksik-ne{font-size:12px;color:var(--text-dim);margin-right:4px;}
 .bg-cip{
-  font:inherit;font-size:11.5px;padding:3px 9px;border-radius:999px;cursor:pointer;
+  font:inherit;font-size:11.5px;padding:3px 9px;border-radius:2px;cursor:pointer;
   border:1px solid var(--amber);background:var(--amber-soft);color:var(--amber);
 }
 .bg-cip:hover{background:var(--amber);color:var(--on-accent);}
@@ -288,7 +330,7 @@ body{
    uygulamayi bos yere bitmis gosterir. */
 .bg-bos{
   display:flex;flex-direction:column;align-items:center;gap:14px;
-  margin:0;padding:26px 18px;border:1px dashed var(--line);border-radius:12px;
+  margin:0;padding:26px 18px;border:1px dashed var(--line);border-radius:2px;
   background:var(--surface-2);color:var(--text-dim);font-size:14px;text-align:center;
 }
 .bg-bos p{margin:0;max-width:44ch;line-height:1.6;}
@@ -298,7 +340,7 @@ body{
 .hs-liste{list-style:none;margin:0 0 16px;padding:0;display:flex;
   flex-direction:column;gap:6px;}
 .hs-liste li{display:flex;align-items:center;gap:10px;
-  border:1px solid var(--line-soft);border-radius:9px;padding:8px 10px;}
+  border:1px solid var(--line-soft);border-radius:2px;padding:8px 10px;}
 .hs-liste .hs-pf{flex:none;display:inline-flex;width:18px;height:18px;}
 .hs-liste .hs-ad{font-weight:600;font-size:13.5px;}
 .hs-liste .hs-yan{flex:1 1 auto;min-width:0;font-size:12px;color:var(--text-dim);
@@ -310,7 +352,7 @@ body{
 .hs-liste li.hs-eksik{border-color:var(--amber);}
 .hs-liste .hs-uyari{flex:none;font-size:11px;color:var(--amber);}
 .hs-bos{margin:0 0 16px;padding:16px;border:1px dashed var(--line);
-  border-radius:10px;color:var(--text-dim);font-size:13px;text-align:center;}
+  border-radius:2px;color:var(--text-dim);font-size:13px;text-align:center;}
 .hs-form{border-top:1px solid var(--line);padding-top:14px;}
 @media(max-width:560px){
   /* Telefonda tarih ve ad tek satira sigmiyor; yan bilgi alta iniyor. */
@@ -331,7 +373,7 @@ body{
 .rail-nav{display:flex;flex-direction:column;gap:2px;}
 /* Serit icindeki sekme: alt cizgi yerine sol vurgu, ve tam genislik. */
 .rail-nav .tab{
-  width:100%;justify-content:flex-start;padding:9px 10px;border-radius:8px;
+  width:100%;justify-content:flex-start;padding:9px 10px;border-radius:2px;
   border-bottom:0;margin-bottom:0;border-left:3px solid transparent;
 }
 .rail-nav .tab:hover{background:var(--surface-2);}
@@ -343,7 +385,7 @@ body{
   padding-top:12px;border-top:1px solid var(--line-soft);}
 .rail-link{
   font:inherit;font-size:12.5px;font-weight:500;text-align:left;
-  background:none;border:0;border-radius:7px;padding:7px 10px;cursor:pointer;
+  background:none;border:0;border-radius:2px;padding:7px 10px;cursor:pointer;
   color:var(--text-dim);
 }
 .rail-link:hover{background:var(--surface-2);color:var(--text);}
@@ -436,18 +478,18 @@ body{
 
 .banner{
   background:var(--surface); border:1px solid var(--line); border-left:3px solid var(--accent);
-  border-radius:6px; padding:14px 18px; margin-bottom:22px; font-size:13.5px; line-height:1.6; color:var(--text-dim);
+  border-radius:2px; padding:14px 18px; margin-bottom:22px; font-size:13.5px; line-height:1.6; color:var(--text-dim);
 }
 .banner b{color:var(--text);}
 .banner .tally{
   display:inline-block; width:7px; height:7px; border-radius:50%;
-  background:var(--accent); box-shadow:0 0 8px var(--accent-glow);
+  background:var(--accent); box-shadow:none;
   animation:pulse 1.8s ease-in-out infinite; margin-right:8px; vertical-align:middle;
 }
 @keyframes pulse{0%,100%{opacity:1;}50%{opacity:.35;}}
 
 .header{
-  background:var(--surface); border:1px solid var(--line); border-radius:8px;
+  background:var(--surface); border:1px solid var(--line); border-radius:2px;
   padding:32px; margin-bottom:22px; position:relative; overflow:hidden;
 }
 .header::before{
@@ -459,9 +501,9 @@ body{
   font-family:'IBM Plex Mono',monospace; font-size:11px; letter-spacing:2.5px; text-transform:uppercase;
   color:var(--accent); display:flex; align-items:center; gap:8px; margin-bottom:10px;
 }
-.eyebrow .tally{display:inline-block;width:6px;height:6px;border-radius:50%;background:var(--accent);box-shadow:0 0 6px var(--accent-glow);animation:pulse 1.8s ease-in-out infinite;}
+.eyebrow .tally{display:inline-block;width:6px;height:6px;border-radius:50%;background:var(--accent);box-shadow:none;animation:pulse 1.8s ease-in-out infinite;}
 .header h1{
-  font-family:'Archivo',sans-serif; font-weight:800; font-size:32px; line-height:1.15;
+  font-family:'IBM Plex Sans',sans-serif; font-weight:800; font-size:32px; line-height:1.15;
   margin:0 0 10px; letter-spacing:-0.5px;
   /* max-width yoktu -> 640px'e sikismis ve iki satira bolunmustu */
 }
@@ -477,7 +519,7 @@ body{
 .head-top{display:flex;align-items:flex-start;justify-content:space-between;gap:16px;flex-wrap:wrap;}
 .head-side{display:flex;gap:8px;align-items:center;flex-wrap:wrap;}
 .promise-tag{
-  display:inline-block;margin:14px 0 0;padding:5px 11px;border-radius:20px;
+  display:inline-block;margin:14px 0 0;padding:5px 11px;border-radius:2px;
   border:1px solid var(--line);background:var(--surface-2);
   font-family:'IBM Plex Mono',monospace;font-size:11px;color:var(--text-dim);
 }
@@ -514,7 +556,7 @@ body{
   color:var(--accent);text-decoration:underline;text-underline-offset:2px;
 }
 .early-link:hover{color:var(--accent-hover);}
-.early-link:focus-visible{outline:2px solid var(--accent);outline-offset:2px;border-radius:3px;}
+.early-link:focus-visible{outline:2px solid var(--accent);outline-offset:2px;border-radius:2px;}
 /* ---- Filtre seridi ---------------------------------------------------
    Takvimin hemen ustunde tek satir. Her filtre bir acilir panel; secim
    coklu ve panel acik kaliyor, cunku insanlar filtreleri tek tek degil
@@ -525,7 +567,7 @@ body{
 .fbtn{
   display:inline-flex;align-items:center;gap:7px;
   background:var(--surface);border:1px solid var(--line);color:var(--text);
-  border-radius:8px;padding:0 12px;min-height:36px;cursor:pointer;
+  border-radius:2px;padding:0 12px;min-height:36px;cursor:pointer;
   font-family:'IBM Plex Sans',sans-serif;font-size:12.5px;font-weight:600;
 }
 .fbtn:hover{border-color:var(--accent-dim);}
@@ -536,7 +578,7 @@ body{
 .fbtn.on{border-color:var(--accent);background:var(--accent-soft);}
 .fbadge{
   display:inline-flex;align-items:center;justify-content:center;
-  min-width:18px;height:18px;padding:0 5px;border-radius:9px;
+  min-width:18px;height:18px;padding:0 5px;border-radius:2px;
   background:var(--accent);color:var(--on-accent);
   font-family:'JetBrains Mono',monospace;font-size:10.5px;font-weight:700;
 }
@@ -546,8 +588,8 @@ body{
 .fpanel{
   position:absolute;z-index:60;top:calc(100% + 6px);left:0;
   min-width:224px;max-width:min(330px,92vw);
-  background:var(--surface);border:1px solid var(--line);border-radius:10px;
-  box-shadow:0 12px 32px rgba(0,0,0,0.18);padding:8px;
+  background:var(--surface);border:1px solid var(--line);border-radius:2px;
+  box-shadow:none;padding:8px;
 }
 /* Panel icinde liste dikey: acilir menude yan yana rozet okumak zor. */
 /* flex-wrap:nowrap SART: .legend'in tabani "wrap". Yuksekligi sinirli bir
@@ -568,7 +610,7 @@ body{
 .fsearch{
   width:100%;box-sizing:border-box;margin:0 0 8px;padding:8px 10px;
   background:var(--bg);color:var(--text);
-  border:1px solid var(--line);border-radius:8px;
+  border:1px solid var(--line);border-radius:2px;
   font-family:'IBM Plex Sans',sans-serif;font-size:13px;
 }
 .fsearch:focus{outline:none;border-color:var(--accent);}
@@ -591,7 +633,7 @@ body{
   .fpanel{
     position:fixed;left:8px;right:8px;bottom:8px;top:auto;
     max-width:none;width:auto;max-height:62vh;overflow-y:auto;
-    box-shadow:0 -8px 34px rgba(0,0,0,0.28);
+    box-shadow:none;
   }
   .fpanel .legend{max-height:none;}
   .btn-new{width:100%;}
@@ -601,7 +643,7 @@ body{
    rengi degisiyor ki surpriz olmasin. */
 .entry-count{
   font-family:'IBM Plex Mono',monospace;font-size:11.5px;color:var(--text-dim);
-  border:1px solid var(--line);border-radius:6px;padding:0 10px;min-height:36px;
+  border:1px solid var(--line);border-radius:2px;padding:0 10px;min-height:36px;
   display:inline-flex;align-items:center;white-space:nowrap;
 }
 .entry-count.warn{color:var(--amber);border-color:var(--amber);}
@@ -609,7 +651,7 @@ body{
 .btn{
   background:transparent; border:1px solid var(--line); color:var(--text);
   padding:7px 12px; min-height:36px; display:inline-flex; align-items:center; justify-content:center;
-  font-size:12.5px; font-weight:500; cursor:pointer; border-radius:6px;
+  font-size:12.5px; font-weight:500; cursor:pointer; border-radius:2px;
   font-family:'IBM Plex Sans',sans-serif; transition:border-color .15s, background .15s;
 }
 .btn:hover{border-color:var(--accent-dim); background:var(--surface-2);}
@@ -625,7 +667,7 @@ body{
 .btn.btn-pending:hover{border-color:var(--accent);color:var(--accent);}
 .legend-item{
   display:flex;align-items:center;justify-content:center;gap:6px;font-size:12px;font-weight:500;
-  padding:9px 12px 9px 10px; min-height:38px; border:1px solid var(--line); border-radius:4px 4px 4px 0; cursor:pointer;
+  padding:9px 12px 9px 10px; min-height:38px; border:1px solid var(--line); border-radius:2px; cursor:pointer;
   transition:all .15s; color:var(--text-dim); position:relative; min-width:96px;
   clip-path:polygon(0 0, 100% 0, 100% 100%, 8px 100%, 0 calc(100% - 8px));
 }
@@ -639,19 +681,19 @@ body{
 .legend-reset:hover{color:var(--accent);}
 .hint{font-size:12.5px;color:var(--text-dim);margin:8px 0 20px;}
 /* Sablon taslagi: hesap eklenince acilan buyuk metin kutusu */
-.tpl-draft{border:1px solid var(--accent);border-radius:11px;background:var(--surface);
+.tpl-draft{border:1px solid var(--accent);border-radius:2px;background:var(--surface);
   padding:16px 18px;margin-bottom:16px;}
 .tpl-draft-head{display:flex;align-items:center;gap:9px;margin-bottom:10px;font-size:14px;}
-.tpl-draft textarea{width:100%;padding:12px 13px;border:1px solid var(--line);border-radius:9px;
+.tpl-draft textarea{width:100%;padding:12px 13px;border:1px solid var(--line);border-radius:2px;
   background:var(--bg);color:var(--text);font:inherit;font-size:14px;line-height:1.55;resize:vertical;}
 .tpl-draft-actions{display:flex;justify-content:flex-end;gap:8px;margin-top:10px;}
 /* Kaydedilmis sablonlar */
-.tpl-card{border:1px solid var(--line);border-radius:11px;background:var(--surface);
+.tpl-card{border:1px solid var(--line);border-radius:2px;background:var(--surface);
   padding:13px 15px;margin-bottom:10px;}
 .tpl-card.pasif{opacity:.6;}
 .tpl-card-head{display:flex;align-items:center;gap:9px;margin-bottom:9px;flex-wrap:wrap;}
 .tpl-hedef{font-size:11px;color:var(--text-dim);margin-left:auto;white-space:nowrap;}
-.tpl-body{width:100%;padding:9px 11px;border:1px solid var(--line);border-radius:8px;
+.tpl-body{width:100%;padding:9px 11px;border:1px solid var(--line);border-radius:2px;
   background:var(--bg);color:var(--text);font:inherit;font-size:13px;line-height:1.5;resize:vertical;}
 .tpl-note{font-size:11.5px;color:var(--amber);margin-top:6px;}
 .tpl-step{display:inline-flex;align-items:center;justify-content:center;width:20px;height:20px;
@@ -665,12 +707,12 @@ body{
   margin:22px 0 10px;font-weight:600;}
 .acc-new{display:grid;grid-template-columns:auto 1fr auto;gap:8px;margin-bottom:12px;}
 .acc-new select,.acc-new input{min-width:0;padding:10px 12px;border:1px solid var(--line);
-  border-radius:8px;background:var(--surface);color:var(--text);font:inherit;font-size:14px;}
+  border-radius:2px;background:var(--surface);color:var(--text);font:inherit;font-size:14px;}
 /* Hesaplar yan yana kutucuklar: her biri tam genislikte satir olunca
    dort hesap sayfayi bir ekran boyu uzatiyordu. */
 .hesap-cipler{display:flex;flex-wrap:wrap;gap:8px;margin-bottom:6px;}
 .hesap-cip{display:inline-flex;align-items:center;gap:7px;padding:6px 8px 6px 10px;
-  border:1px solid var(--line);border-radius:99px;background:var(--surface);font-size:13px;}
+  border:1px solid var(--line);border-radius:2px;background:var(--surface);font-size:13px;}
 .hesap-cip-ad{font-weight:600;}
 .hesap-sil{display:inline-flex;align-items:center;justify-content:center;width:22px;height:22px;
   padding:0;border:0;border-radius:50%;background:transparent;color:var(--text-dim);cursor:pointer;}
@@ -681,7 +723,7 @@ body{
 .hesap-ad{font-weight:600;font-size:13.5px;}
 .hesap-url{flex:1;min-width:0;font-size:12.5px;color:var(--text-dim);overflow:hidden;
   text-overflow:ellipsis;white-space:nowrap;}
-.tpl-wrap{overflow-x:auto;border:1px solid var(--line);border-radius:11px;background:var(--surface);}
+.tpl-wrap{overflow-x:auto;border:1px solid var(--line);border-radius:2px;background:var(--surface);}
 .tpl-table{border-collapse:collapse;width:max-content;min-width:100%;font-size:12.5px;}
 .tpl-table th,.tpl-table td{border-bottom:1px solid var(--line-soft);
   border-right:1px solid var(--line-soft);padding:9px 9px;vertical-align:top;text-align:left;}
@@ -695,7 +737,7 @@ body{
   display:table-cell;}
 .tpl-table thead th.tpl-row-head{z-index:4;}
 .tpl-text{width:100%;min-width:150px;padding:7px 8px;border:1px solid var(--line);
-  border-radius:7px;background:var(--bg);color:var(--text);font:inherit;font-size:12px;
+  border-radius:2px;background:var(--bg);color:var(--text);font:inherit;font-size:12px;
   resize:vertical;}
 .tpl-cell{text-align:center;}
 .tpl-prev-row td,.tpl-prev-row th{background:var(--surface-2);}
@@ -718,8 +760,8 @@ body.suruklenirken{user-select:none;}
 body.suruklenirken *{cursor:grabbing !important;}
 .surukle-hayalet{position:fixed;z-index:10000;pointer-events:none;
   background:var(--accent);color:var(--on-accent);font:600 12px/1.3 inherit;
-  padding:6px 10px;border-radius:7px;max-width:240px;overflow:hidden;
-  text-overflow:ellipsis;white-space:nowrap;box-shadow:0 6px 18px rgba(0,0,0,.28);}
+  padding:6px 10px;border-radius:2px;max-width:240px;overflow:hidden;
+  text-overflow:ellipsis;white-space:nowrap;box-shadow:none;}
 .surukle-hedef{outline:2px solid var(--accent);outline-offset:-2px;
   background:var(--accent-soft) !important;}
 /* --- Saat izgarasi (hafta ve gun) ------------------------------------- */
@@ -731,7 +773,7 @@ body.suruklenirken *{cursor:grabbing !important;}
      JS'ten yaziliyor, etiket genisligi degiskenle ayarlaniyor. */
   --hg-etiket:58px; --hg-sutun:0px; --hg-sutun-max:1fr;
   grid-template-columns:var(--hg-etiket) repeat(7, minmax(var(--hg-sutun),var(--hg-sutun-max)));
-  border:1px solid var(--line);border-radius:10px;overflow:hidden;
+  border:1px solid var(--line);border-radius:2px;overflow:hidden;
   background:var(--surface);
 }
 .hg-corner{background:var(--surface-2);border-bottom:1px solid var(--line);}
@@ -770,7 +812,7 @@ body.suruklenirken *{cursor:grabbing !important;}
 /* Izgara icindeki rozet tek satir: saat sutunu zaten saati soyluyor,
    kutu icinde ikinci kez yer kaplamasin. */
 .hg-chip{
-  display:flex;align-items:center;gap:5px;padding:3px 6px;border-radius:6px;
+  display:flex;align-items:center;gap:5px;padding:3px 6px;border-radius:2px;
   font-size:11.5px;line-height:1.3;min-width:0;
 }
 .hg-chip .cal-chip-title{overflow:hidden;text-overflow:ellipsis;white-space:nowrap;min-width:0;}
@@ -782,7 +824,7 @@ body.suruklenirken *{cursor:grabbing !important;}
      sutun oldugu icin tam genislikte kaliyor. */
   .cal-grid-wrap:has(.hour-grid){
     overflow-x:auto;overscroll-behavior-x:contain;
-    border:1px solid var(--line);border-radius:10px;background:var(--surface);
+    border:1px solid var(--line);border-radius:2px;background:var(--surface);
   }
   /* Cerceve ve kose yuvarlamasi SARMALAYICIYA tasindi; izgaranin
      kendisi kirpmiyor. Sart: izgarada overflow:hidden kalirsa o kendi
@@ -827,7 +869,7 @@ body.suruklenirken *{cursor:grabbing !important;}
    kendiliginden kayiyordu. Simdi proje sutunu 200px, kalan genislik yedi
    adim sutununa ESIT bolunuyor — tablo bosluk birakmadan yayiliyor.
    Dar ekranda min-width devreye giriyor ve tablo kendi icinde kayiyor. */
-.proj-table-wrap{overflow-x:auto;border:1px solid var(--line);border-radius:11px;
+.proj-table-wrap{overflow-x:auto;border:1px solid var(--line);border-radius:2px;
   background:var(--surface);}
 .proj-table{border-collapse:collapse;table-layout:fixed;width:100%;
   min-width:calc(var(--pname-w,268px) + 7 * 92px);font-size:13px;}
@@ -862,7 +904,7 @@ body.suruklenirken *{cursor:grabbing !important;}
   width:16px;height:16px;border-radius:50%;background:var(--green);color:#fff;
   font-size:10px;font-weight:700;line-height:1;}
 .pbadge.iptal{text-transform:uppercase;letter-spacing:.06em;color:var(--red);
-  border:1px solid var(--red);border-radius:99px;padding:1px 7px;font-weight:600;}
+  border:1px solid var(--red);border-radius:2px;padding:1px 7px;font-weight:600;}
 /* Biten ve iptal olan satirlar geri cekiliyor ama KAYBOLMUYOR.
    Onceden butun satira opacity:.55 veriliyordu; koyu temada proje adi
    okunmaz hale geliyordu ve arama sonucunda cikan bitmis proje "yok"
@@ -879,7 +921,7 @@ body.suruklenirken *{cursor:grabbing !important;}
 .proj-table tr.prow-iptal .pname{text-decoration:line-through;}
 /* Filtre satiri: arama kutusunun hemen altinda, yatayda kayabilir. */
 .proj-filtre{display:flex;flex-wrap:wrap;gap:7px;margin:-4px 0 16px;}
-.pfilt{font:inherit;font-size:12px;padding:5px 11px;border-radius:99px;cursor:pointer;
+.pfilt{font:inherit;font-size:12px;padding:5px 11px;border-radius:2px;cursor:pointer;
   border:1px solid var(--line);background:var(--surface);color:var(--text-dim);
   display:inline-flex;align-items:center;gap:6px;transition:border-color .12s,color .12s;}
 .pfilt:hover:not(:disabled){border-color:var(--accent);color:var(--text);}
@@ -930,7 +972,7 @@ body.suruklenirken *{cursor:grabbing !important;}
   line-height:1.5;opacity:.9;overflow:hidden;text-overflow:ellipsis;min-width:0;}
 /* Tarih kutulari daraltildi: yedi adim + proje sutunu bilgisayarda tek
    ekrana sigsin, tablo yana kaydirilmadan okunabilsin. */
-.pdl{padding:4px 4px;border:1px solid var(--line);border-radius:6px;
+.pdl{padding:4px 4px;border:1px solid var(--line);border-radius:2px;
   background:var(--bg);color:var(--text);font:inherit;font-size:11px;
   color-scheme:light;width:100%;min-width:0;}
 :root:not([data-theme="light"]) .pdl,
@@ -952,7 +994,7 @@ body.suruklenirken *{cursor:grabbing !important;}
 /* Adim hucresi: kutucuk + tarih METNI. Tarih girisi ayri pencerede;
    yedi tarih kutusu satiri okunmaz hale getiriyordu. */
 .pdate{font:inherit;font-size:10.5px;padding:2px 5px;border:1px solid transparent;
-  border-radius:6px;background:transparent;color:var(--text-dim);cursor:pointer;
+  border-radius:2px;background:transparent;color:var(--text-dim);cursor:pointer;
   font-variant-numeric:tabular-nums;white-space:nowrap;
   /* Kutucukla AYNI satirda: alt satira alindiginda her hucre iki satir
      yer kapliyor ve tablo iki katina cikiyordu. */
@@ -975,7 +1017,7 @@ body.suruklenirken *{cursor:grabbing !important;}
 .dl-name{font-size:14px;font-weight:600;}
 .dl-start{display:inline-flex;align-items:center;gap:7px;font-size:12.5px;
   color:var(--text-dim);white-space:nowrap;}
-.dl-start input{padding:6px 9px;border:1px solid var(--line);border-radius:7px;
+.dl-start input{padding:6px 9px;border:1px solid var(--line);border-radius:2px;
   background:var(--bg);color:var(--text);font:inherit;font-size:12.5px;color-scheme:light;}
 :root:not([data-theme="light"]) .dl-start input{color-scheme:dark;}
 /* Pencere genisliginde, kendi satirinda duran ikincil dugme. */
@@ -1035,13 +1077,13 @@ body.suruklenirken *{cursor:grabbing !important;}
 .sc-count{font-size:11.5px;color:var(--text-dim);white-space:nowrap;
   font-variant-numeric:tabular-nums;padding-top:6px;}
 .sc-text{width:100%;min-height:min(58vh,460px);resize:vertical;box-sizing:border-box;
-  padding:14px 15px;border:1px solid var(--line);border-radius:10px;
+  padding:14px 15px;border:1px solid var(--line);border-radius:2px;
   background:var(--bg);color:var(--text);font:inherit;font-size:14.5px;line-height:1.7;}
 .sc-text:focus{outline:2px solid var(--accent);outline-offset:-2px;}
 .sc-kayit-not{display:flex;align-items:center;flex-wrap:wrap;gap:10px;
   margin:12px 0 0;padding:10px 12px;font-size:13px;
   color:var(--text);background:var(--accent-soft);
-  border:1px solid var(--accent-dim);border-radius:9px;}
+  border:1px solid var(--accent-dim);border-radius:2px;}
 .sc-kayit-not[hidden]{display:none;}
 .sc-kayit-not .btn{flex:none;}
 .sc-note{font-size:11.5px;color:var(--text-dim);margin:8px 0 2px;}
@@ -1058,7 +1100,7 @@ body.suruklenirken *{cursor:grabbing !important;}
 .sc-ai-satir{display:flex;gap:8px;align-items:flex-start;flex-wrap:wrap;margin:0 0 6px;}
 .sc-ai-brief{
   flex:1;min-width:220px;background:var(--bg);color:var(--text);
-  border:1px dashed var(--accent-dim);border-radius:7px;padding:9px 11px;
+  border:1px dashed var(--accent-dim);border-radius:2px;padding:9px 11px;
   font-family:'IBM Plex Sans',sans-serif;font-size:13px;
 }
 .sc-ai-brief:focus{outline:none;border-style:solid;border-color:var(--accent);}
@@ -1070,14 +1112,14 @@ body.suruklenirken *{cursor:grabbing !important;}
 .ai-steps{margin:10px 14px 0;padding-left:20px;font-size:13px;line-height:1.6;}
 .ai-steps li{margin-bottom:7px;}
 .ai-step-link{display:inline-block;margin-left:6px;color:var(--accent);font-size:12.5px;}
-.ai-warn{margin:10px 14px 12px;padding:9px 11px;border-radius:8px;
+.ai-warn{margin:10px 14px 12px;padding:9px 11px;border-radius:2px;
   background:var(--wait-soft);color:var(--wait);font-size:12px;line-height:1.55;}
 .ai-key-hint{margin:6px 0 0;font-size:12px;color:var(--text-dim);line-height:1.5;}
 .ai-key-hint.error{color:var(--red);}
 /* Yazma penceresindeki iki secenek. Kutunun tamami tiklanabilir:
    kucuk radyo dugmesini nisan almak zorunda kalmasin. */
 .dw-secim{display:flex;gap:10px;align-items:flex-start;margin-bottom:10px;
-  padding:11px 13px;border:1px solid var(--line);border-radius:9px;
+  padding:11px 13px;border:1px solid var(--line);border-radius:2px;
   background:var(--surface-2);cursor:pointer;font-size:13.5px;}
 .dw-secim input{margin-top:3px;flex-shrink:0;}
 .dw-secim small{display:block;margin-top:4px;font-size:11.5px;color:var(--text-dim);}
@@ -1108,13 +1150,13 @@ body.suruklenirken *{cursor:grabbing !important;}
 /* Ice aktarma: eslesme satirlari iki sutun (etiket + secim). */
 /* Bicimlendirme araclari: kucuk, yan yana, metnin ustunde. */
 .sc-arac{display:flex;gap:3px;margin-left:auto;}
-.sc-arac-dug{background:none;border:1px solid var(--line);border-radius:5px;
+.sc-arac-dug{background:none;border:1px solid var(--line);border-radius:2px;
   color:var(--text-dim);font:inherit;font-size:12px;line-height:1;min-width:26px;
   padding:5px 6px;cursor:pointer;}
 .sc-arac-dug:hover{border-color:var(--accent);color:var(--accent);}
 /* Onizleme metnin YERINE geciyor: ikisi yan yana durunca dar ekranda
    ikisi de okunmaz oluyordu. */
-.sc-onizleme{border:1px solid var(--line);border-radius:7px;background:var(--bg);
+.sc-onizleme{border:1px solid var(--line);border-radius:2px;background:var(--bg);
   padding:14px 16px;min-height:220px;max-height:52vh;overflow-y:auto;line-height:1.65;}
 .sc-onizleme h2{font-size:16px;margin:16px 0 6px;}
 .sc-onizleme h3{font-size:14.5px;margin:14px 0 5px;}
@@ -1128,23 +1170,23 @@ body.suruklenirken *{cursor:grabbing !important;}
 .imp-satir{display:flex;align-items:center;gap:10px;font-size:13px;}
 .imp-satir > span{flex:0 0 84px;color:var(--text-dim);}
 .imp-satir select{flex:1;min-width:0;background:var(--bg);border:1px solid var(--line);
-  color:var(--text);padding:6px 8px;border-radius:5px;font:inherit;font-size:12.5px;}
+  color:var(--text);padding:6px 8px;border-radius:2px;font:inherit;font-size:12.5px;}
 /* Onizleme: ilk bes satir, gelecegi haliyle. */
 .imp-onizleme{display:grid;gap:5px;}
 .imp-sat{display:flex;gap:10px;flex-wrap:wrap;align-items:baseline;font-size:12.5px;
-  border:1px solid var(--line);border-radius:7px;padding:6px 9px;}
+  border:1px solid var(--line);border-radius:2px;padding:6px 9px;}
 .imp-t{font-family:'IBM Plex Mono',monospace;color:var(--text);}
 .imp-p{color:var(--text-dim);}
 .imp-b{flex:1;min-width:120px;overflow-wrap:anywhere;}
 .imp-pr,.imp-y{font-size:11px;color:var(--text-dim);border:1px solid var(--line);
-  border-radius:20px;padding:1px 8px;}
+  border-radius:2px;padding:1px 8px;}
 .imp-y{color:var(--green);border-color:var(--green);}
 /* Mekan kartlari. Tek sutunlu duz bir liste yerine izgara: bir yeri
    adindan once GORUNTUSUNDEN taniyorsun. Ust seritte sirasiyla su var —
    varsa fotograf, yoksa harita baglantisindan cikarilan harita karesi,
    o da yoksa adin bas harfleri. Yani serit hicbir zaman bos degil. */
 #mk_list{display:grid;grid-template-columns:repeat(auto-fill,minmax(230px,1fr));gap:14px;}
-.mk-kart{border:1px solid var(--line);border-radius:10px;overflow:hidden;
+.mk-kart{border:1px solid var(--line);border-radius:2px;overflow:hidden;
   cursor:pointer;background:var(--surface);display:flex;flex-direction:column;}
 .mk-kart:hover{border-color:var(--accent-dim);}
 .mk-gorsel{position:relative;height:118px;overflow:hidden;background:var(--surface-2);
@@ -1157,12 +1199,12 @@ body.suruklenirken *{cursor:grabbing !important;}
 .mk-harita img{position:absolute;width:256px;height:256px;max-width:none;}
 .mk-nokta{position:absolute;left:50%;top:50%;width:11px;height:11px;margin:-6px 0 0 -6px;
   border-radius:50%;background:var(--accent);border:2px solid #fff;
-  box-shadow:0 1px 3px rgba(0,0,0,.45);}
+  box-shadow:none;}
 /* OpenStreetMap karolari icin kaynak belirtmek lisans geregi. */
 .mk-osm{position:absolute;right:3px;bottom:2px;font-size:9px;font-style:normal;
   background:rgba(255,255,255,.74);color:#2A3340;padding:0 3px;border-radius:2px;}
 .mk-harf{position:absolute;inset:0;display:flex;align-items:center;justify-content:center;
-  font-family:'Archivo',sans-serif;font-size:32px;font-weight:800;letter-spacing:1px;
+  font-family:'IBM Plex Sans',sans-serif;font-size:32px;font-weight:800;letter-spacing:1px;
   color:hsl(var(--mk-h) 45% 50%);background:var(--surface-2);}
 /* Renk yuzeyle karistiriliyor: ayni kural hem acik hem koyu temada tutuyor. */
 @supports (background:color-mix(in srgb,red 10%,white)){
@@ -1172,12 +1214,12 @@ body.suruklenirken *{cursor:grabbing !important;}
 .mk-foto-satir{display:flex;gap:8px;align-items:center;}
 .mk-onizleme{margin-top:8px;}
 .mk-onizleme img{max-width:100%;max-height:170px;border:1px solid var(--line);
-  border-radius:8px;display:block;}
+  border-radius:2px;display:block;}
 .mk-onizleme-yok{font-size:12.5px;color:var(--amber);}
 .mk-foto-satir input{flex:1;min-width:0;}
 .mk-bul-satir{display:flex;gap:8px;align-items:center;}
 .mk-bul-satir input{flex:1;min-width:0;}
-.mk-bul-liste{margin-top:6px;border:1px solid var(--line);border-radius:8px;overflow:hidden;}
+.mk-bul-liste{margin-top:6px;border:1px solid var(--line);border-radius:2px;overflow:hidden;}
 .mk-bul-liste button{display:block;width:100%;text-align:left;padding:8px 10px;background:var(--surface);
   border:0;border-bottom:1px solid var(--line-soft);color:var(--text);font:inherit;cursor:pointer;}
 .mk-bul-liste button:last-of-type{border-bottom:0;}
@@ -1186,12 +1228,12 @@ body.suruklenirken *{cursor:grabbing !important;}
 .mk-bul-liste .mk-bul-yer{display:block;font-size:12px;color:var(--text-dim);margin-top:2px;}
 .mk-bul-kaynak{font-size:11px;color:var(--text-dim);padding:5px 10px;background:var(--surface-2);}
 .mk-harita-kontrol{margin:2px 0 14px;}
-.mk-harita-kontrol .mk-gorsel{height:150px;border:1px solid var(--line);border-radius:8px;}
+.mk-harita-kontrol .mk-gorsel{height:150px;border:1px solid var(--line);border-radius:2px;}
 /* Projenin duraklari: secim kutusundan her secim bir cip ekliyor; sira
    oklarla, cikarma carpiyla. Tek mekanli projede tek cip. */
 .mekan-cipler{display:flex;flex-wrap:wrap;gap:6px;margin-top:8px;}
 .mekan-cip{display:inline-flex;align-items:center;gap:3px;padding:4px 5px 4px 10px;
-  border:1px solid var(--line);border-radius:999px;background:var(--surface-2);font-size:12.5px;}
+  border:1px solid var(--line);border-radius:2px;background:var(--surface-2);font-size:12.5px;}
 .mekan-cip b{font-weight:600;color:var(--text-dim);margin-right:3px;}
 .mekan-cip button{border:0;background:transparent;color:var(--text-dim);cursor:pointer;
   padding:0 4px;font:inherit;line-height:1;min-height:0;}
@@ -1210,7 +1252,7 @@ body.suruklenirken *{cursor:grabbing !important;}
   font-variant-numeric:tabular-nums;}
 .mk-rozetler{display:flex;gap:6px;flex-wrap:wrap;margin-top:auto;padding-top:9px;}
 .mk-rozet{font-size:11px;color:var(--text-dim);border:1px solid var(--line);
-  border-radius:20px;padding:2px 8px;text-decoration:none;}
+  border-radius:2px;padding:2px 8px;text-decoration:none;}
 a.mk-rozet:hover{border-color:var(--accent);color:var(--accent);}
 .mk-dikkat{color:var(--amber);border-color:var(--amber);}
 /* Bekleyen cekim rozeti vurgulu: sayfayi acan kisi nerede is oldugunu
@@ -1222,7 +1264,7 @@ a.mk-rozet:hover{border-color:var(--accent);color:var(--accent);}
 /* Sehir/ilce ve iki baglanti yan yana: pencere gereksiz uzamasin. */
 .mk-ikili{display:grid;grid-template-columns:1fr 1fr;gap:12px;}
 @media (max-width:560px){ .mk-ikili{grid-template-columns:1fr;} }
-.sc-blok{border:1px solid var(--line);border-radius:10px;padding:12px 14px;margin-bottom:14px;}
+.sc-blok{border:1px solid var(--line);border-radius:2px;padding:12px 14px;margin-bottom:14px;}
 .sc-blok-duz{border:0;padding:0;}
 .sc-blok-bas{display:flex;align-items:center;gap:10px;flex-wrap:wrap;margin-bottom:10px;
   font-size:12px;font-weight:700;letter-spacing:.03em;color:var(--text-dim);text-transform:uppercase;}
@@ -1230,12 +1272,12 @@ a.mk-rozet:hover{border-color:var(--accent);color:var(--accent);}
 /* Arama kutusu basligin sagina yapisiyor, kalan yeri aliyor. */
 .sc-blok-ara{flex:1;min-width:120px;max-width:260px;margin-left:auto;
   background:var(--bg);border:1px solid var(--line);color:var(--text);
-  padding:5px 8px;font-size:12.5px;font-family:inherit;border-radius:5px;}
+  padding:5px 8px;font-size:12.5px;font-family:inherit;border-radius:2px;}
 .sc-blok-ara:focus{outline:none;border-color:var(--accent-dim);}
 /* Listeler kayiyor: yuzlerce fikri olan birinde pencere uzayip gitmesin. */
 .sc-idea-list,.sc-proj-list{max-height:190px;overflow-y:auto;margin:0;padding:0;list-style:none;}
 .sc-idea-proje{flex:none;font-size:11px;color:var(--text-dim);border:1px solid var(--line);
-  border-radius:20px;padding:1px 7px;white-space:nowrap;}
+  border-radius:2px;padding:1px 7px;white-space:nowrap;}
 .sc-bos{color:var(--text-dim);font-size:12.5px;padding:6px 2px;}
 .sc-iskele{margin-top:8px;}
 .sc-baslik-satir{display:flex;gap:8px;align-items:flex-start;}
@@ -1286,7 +1328,7 @@ textarea.sc-ai-brief{min-height:64px;resize:vertical;line-height:1.5;}
 .sc-idea-ekle{display:flex;gap:8px;margin:8px 0 2px;}
 .sc-idea-ekle input{
   flex:1;min-width:0;background:var(--bg);color:var(--text);
-  border:1px solid var(--line);border-radius:7px;padding:7px 10px;
+  border:1px solid var(--line);border-radius:2px;padding:7px 10px;
   font-family:'IBM Plex Sans',sans-serif;font-size:13px;
 }
 .sc-idea-ekle input:focus{outline:none;border-color:var(--accent);}
@@ -1300,12 +1342,12 @@ textarea.sc-ai-brief{min-height:64px;resize:vertical;line-height:1.5;}
 .fk-no{font-size:11px;color:var(--accent-dim);font-variant-numeric:tabular-nums;
   padding-top:9px;min-width:16px;text-align:right;}
 .fk-text{width:100%;resize:none;overflow:hidden;padding:7px 10px;
-  border:1px solid transparent;border-radius:8px;background:transparent;
+  border:1px solid transparent;border-radius:2px;background:transparent;
   color:var(--text);font:inherit;font-size:14px;line-height:1.55;}
 .fk-text:hover{border-color:var(--line);}
 .fk-text:focus{outline:0;border-color:var(--accent);background:var(--bg);}
 .fk-new{display:grid;grid-template-columns:1fr auto;gap:8px;}
-.fk-new input{min-width:0;padding:11px 12px;border:1px solid var(--line);border-radius:9px;
+.fk-new input{min-width:0;padding:11px 12px;border:1px solid var(--line);border-radius:2px;
   background:var(--bg);color:var(--text);font:inherit;font-size:14px;}
 .fk-new input:focus{outline:2px solid var(--accent);outline-offset:-2px;}
 #fk_toScript{margin-top:12px;}
@@ -1330,24 +1372,24 @@ textarea.sc-ai-brief{min-height:64px;resize:vertical;line-height:1.5;}
 .fk-secili{display:flex;flex-wrap:wrap;gap:6px;margin:-6px 0 14px;}
 .fk-secili .fk-cip{display:inline-flex;align-items:center;gap:6px;font-size:12px;
   border:1px solid var(--accent);color:var(--accent);background:var(--accent-soft);
-  border-radius:20px;padding:4px 6px 4px 11px;}
+  border-radius:2px;padding:4px 6px 4px 11px;}
 .fk-secili .fk-cip button{border:0;background:none;color:inherit;font:inherit;
   cursor:pointer;line-height:1;padding:2px 4px;border-radius:50%;}
 .fk-secili .fk-cip button:hover{background:var(--surface);}
-.fk-secili .fk-temizle{font-size:12px;border:1px solid var(--line);border-radius:20px;
+.fk-secili .fk-temizle{font-size:12px;border:1px solid var(--line);border-radius:2px;
   padding:4px 11px;background:none;color:var(--text-dim);cursor:pointer;}
 .fk-tools input[type="search"]{flex:2 1 220px;min-width:0;padding:9px 12px;
-  border:1px solid var(--line);border-radius:8px;background:var(--surface);
+  border:1px solid var(--line);border-radius:2px;background:var(--surface);
   color:var(--text);font:inherit;font-size:13.5px;}
 .fk-filter{flex:1 1 170px;min-width:0;padding:9px 12px;border:1px solid var(--line);
-  border-radius:8px;background:var(--surface);color:var(--text);font:inherit;font-size:13.5px;}
+  border-radius:2px;background:var(--surface);color:var(--text);font:inherit;font-size:13.5px;}
 .fk-proj-sel{min-width:0;max-width:100%;padding:6px 8px;border:1px solid var(--line);
-  border-radius:7px;background:var(--surface);color:var(--text);font:inherit;font-size:12px;}
+  border-radius:2px;background:var(--surface);color:var(--text);font:inherit;font-size:12px;}
 .fk-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(228px,1fr));
   gap:14px;align-items:start;}
 .fk-empty{grid-column:1/-1;}
 .fk-card{position:relative;display:flex;flex-direction:column;gap:8px;
-  border:1px solid var(--line);border-radius:12px;background:var(--surface);
+  border:1px solid var(--line);border-radius:2px;background:var(--surface);
   padding:12px;min-height:150px;color:var(--text);font:inherit;text-align:left;}
 .fk-card[draggable="true"]{cursor:grab;}
 .fk-card.surukleniyor{opacity:.4;}
@@ -1358,7 +1400,7 @@ textarea.sc-ai-brief{min-height:64px;resize:vertical;line-height:1.5;}
 .fk-card.sonra{box-shadow:4px 0 0 var(--accent);}
 .fk-card-top{display:flex;align-items:center;gap:6px;}
 .fk-proj-chip{flex:1;min-width:0;font:inherit;font-size:10.5px;text-transform:uppercase;
-  letter-spacing:.05em;font-weight:700;border:0;border-radius:6px;padding:4px 9px;
+  letter-spacing:.05em;font-weight:700;border:0;border-radius:2px;padding:4px 9px;
   background:var(--fk-tag);color:var(--fk-tag-text);cursor:pointer;text-align:left;
   overflow:hidden;text-overflow:ellipsis;white-space:nowrap;}
 .fk-proj-chip{background:var(--surface-2);color:var(--text-dim);}
@@ -1368,7 +1410,7 @@ textarea.sc-ai-brief{min-height:64px;resize:vertical;line-height:1.5;}
 /* Silme dugmesi cop kutusu: × "kapat" gibi okunuyordu, oysa kartin
    kendisi siliniyor. */
 .fk-x{border:0;background:none;color:var(--text-dim);line-height:0;
-  padding:4px;cursor:pointer;border-radius:6px;flex-shrink:0;}
+  padding:4px;cursor:pointer;border-radius:2px;flex-shrink:0;}
 .fk-x svg{width:15px;height:15px;display:block;}
 .fk-x:hover{color:var(--red);background:var(--surface-2);}
 .fk-card-body{flex:1;font-size:13.5px;line-height:1.55;cursor:text;
@@ -1380,7 +1422,7 @@ textarea.sc-ai-brief{min-height:64px;resize:vertical;line-height:1.5;}
 /* Birlesik kartta her parca kendi satiri: ayri ayri suruklenebiliyor ve
    aralarindaki cizgi kacinin birlestigini bakisla anlatiyor. */
 .fk-part{position:relative;display:flex;align-items:flex-start;gap:6px;
-  border-radius:8px;padding:4px 4px 4px 6px;margin:0 -4px;cursor:grab;}
+  border-radius:2px;padding:4px 4px 4px 6px;margin:0 -4px;cursor:grab;}
 .fk-part + .fk-part{border-top:1px solid var(--line);margin-top:6px;padding-top:10px;}
 .fk-part:hover{background:var(--surface-2);}
 .fk-part.surukleniyor{opacity:.4;}
@@ -1388,17 +1430,17 @@ textarea.sc-ai-brief{min-height:64px;resize:vertical;line-height:1.5;}
 /* Cikar dugmesi yalnizca fare ustune gelince: dokunmatikte hep gorunuyor,
    cunku orada "ustune gelme" diye bir sey yok. */
 .fk-part-out{border:0;background:none;color:var(--text-dim);font-size:13px;
-  line-height:1;padding:3px 5px;cursor:pointer;border-radius:6px;flex-shrink:0;
+  line-height:1;padding:3px 5px;cursor:pointer;border-radius:2px;flex-shrink:0;
   opacity:0;transition:opacity .12s;}
 .fk-part:hover .fk-part-out{opacity:1;}
 .fk-part-out:hover{color:var(--accent);background:var(--surface);}
 @media(hover:none){ .fk-part-out{opacity:.7;} }
 /* Parca suruklenirken duvarin bos alani birakma hedefi oluyor. */
 .fk-grid.birakmaya-hazir{outline:2px dashed var(--accent-dim);outline-offset:8px;
-  border-radius:12px;}
+  border-radius:2px;}
 .fk-card-foot{display:flex;flex-wrap:wrap;gap:6px;align-items:center;}
 .fk-mini{font:inherit;font-size:10.5px;text-transform:uppercase;letter-spacing:.05em;
-  border:1px solid var(--line);border-radius:99px;padding:4px 10px;cursor:pointer;
+  border:1px solid var(--line);border-radius:2px;padding:4px 10px;cursor:pointer;
   background:none;color:var(--text-dim);}
 .fk-mini:hover{border-color:var(--accent);color:var(--accent);}
 /* Teslim tarihi ISTEGE BAGLI. Tarihi olmayan kart bugunku sade fikir:
@@ -1419,11 +1461,11 @@ textarea.sc-ai-brief{min-height:64px;resize:vertical;line-height:1.5;}
 .fk-card.bitti .fk-card-body{text-decoration:line-through;
   text-decoration-color:var(--text-dim);text-decoration-thickness:1px;}
 /* Tarih yerinde giriliyor: ayri bir pencere bir satirlik is icin fazla. */
-.fk-tarih-in{font:inherit;font-size:12px;padding:3px 7px;border-radius:99px;
+.fk-tarih-in{font:inherit;font-size:12px;padding:3px 7px;border-radius:2px;
   border:1px solid var(--accent);background:var(--surface);color:var(--text);
   min-width:0;max-width:100%;box-sizing:border-box;}
 .fk-add-text{width:100%;flex:1;resize:vertical;min-height:96px;padding:8px 9px;
-  border:1px solid var(--line);border-radius:8px;background:var(--surface);
+  border:1px solid var(--line);border-radius:2px;background:var(--surface);
   color:var(--text);font:inherit;font-size:13.5px;line-height:1.55;}
 .fk-add-text:focus{outline:2px solid var(--accent);outline-offset:-2px;}
 /* Ekleme karti duvarin ilk kutusu: "buraya fikir eklenir" yazmaya gerek
@@ -1465,16 +1507,16 @@ textarea.sc-ai-brief{min-height:64px;resize:vertical;line-height:1.5;}
 .sc-tools{display:flex;align-items:center;gap:12px;margin-bottom:14px;}
 .sc-card{display:flex;flex-direction:column;gap:6px;width:100%;text-align:left;
   font:inherit;padding:14px;margin-bottom:8px;border:1px solid var(--line);
-  border-radius:10px;background:var(--surface);color:var(--text);cursor:pointer;}
+  border-radius:2px;background:var(--surface);color:var(--text);cursor:pointer;}
 .sc-card:hover{border-color:var(--accent);}
 .sc-card-name{font-size:15px;font-weight:700;}
 .sc-card-meta{display:flex;flex-wrap:wrap;gap:10px;align-items:center;
   font-size:11.5px;color:var(--text-dim);font-variant-numeric:tabular-nums;}
 .sc-card-proj{border:1px solid var(--accent);color:var(--accent);background:var(--accent-soft);
-  border-radius:99px;padding:1px 9px;font-size:10.5px;text-transform:uppercase;letter-spacing:.05em;}
+  border-radius:2px;padding:1px 9px;font-size:10.5px;text-transform:uppercase;letter-spacing:.05em;}
 .sc-card-proj.bos{border-color:var(--line);color:var(--text-dim);background:none;}
 /* Script penceresinde baslik ve proje secimi. */
-.sc-title{width:100%;padding:11px 13px;border:1px solid var(--line);border-radius:9px;
+.sc-title{width:100%;padding:11px 13px;border:1px solid var(--line);border-radius:2px;
   background:var(--bg);color:var(--text);font:inherit;font-size:15px;font-weight:600;
   margin-bottom:10px;}
 .sc-title:focus{outline:2px solid var(--accent);outline-offset:-2px;}
@@ -1482,7 +1524,7 @@ textarea.sc-ai-brief{min-height:64px;resize:vertical;line-height:1.5;}
 .sc-proj label{font-family:'IBM Plex Mono',monospace;font-size:10.5px;text-transform:uppercase;
   letter-spacing:1.2px;color:var(--accent-dim);}
 .sc-proj select{flex:1;min-width:0;padding:9px 11px;border:1px solid var(--line);
-  border-radius:8px;background:var(--surface);color:var(--text);font:inherit;font-size:13.5px;}
+  border-radius:2px;background:var(--surface);color:var(--text);font:inherit;font-size:13.5px;}
 @media(max-width:640px){
   .fk-grid{grid-template-columns:repeat(auto-fill,minmax(150px,1fr));gap:10px;}
   .fk-card{min-height:130px;padding:10px;}
@@ -1501,27 +1543,27 @@ textarea.sc-ai-brief{min-height:64px;resize:vertical;line-height:1.5;}
   padding:9px 0;border-bottom:1px solid var(--line-soft);}
 .dl-row:last-child{border-bottom:0;}
 .dl-step{font-size:13.5px;font-weight:600;}
-.dl-row input{padding:8px 10px;border:1px solid var(--line);border-radius:7px;
+.dl-row input{padding:8px 10px;border:1px solid var(--line);border-radius:2px;
   background:var(--bg);color:var(--text);font:inherit;font-size:13px;color-scheme:light;}
 :root:not([data-theme="light"]) .dl-row input{color-scheme:dark;}
-.pflag{border:1px solid var(--line);background:var(--bg);border-radius:7px;padding:5px 9px;
+.pflag{border:1px solid var(--line);background:var(--bg);border-radius:2px;padding:5px 9px;
   cursor:pointer;margin-bottom:5px;display:inline-flex;}
 .pflag.on{background:var(--accent);border-color:var(--accent);color:var(--on-accent);}
 /* Iptal kutusu: tehlikeli olmadigi icin kirmizi degil, ama silme
    dugmesiyle karismasin diye kendi cercevesinde. */
 .pe-cancel{display:flex;gap:10px;align-items:flex-start;margin:6px 0 2px;
-  padding:10px 12px;border:1px solid var(--line);border-radius:9px;
+  padding:10px 12px;border:1px solid var(--line);border-radius:2px;
   background:var(--surface-2);cursor:pointer;font-size:13px;}
 .pe-cancel input{margin-top:2px;flex-shrink:0;}
 .pe-cancel small{display:block;margin-top:3px;font-size:11.5px;color:var(--text-dim);
   font-weight:400;}
 .proj-addr{margin-bottom:14px;}
-.proj-addr input{width:100%;padding:11px 12px;border:1px solid var(--line);border-radius:8px;
+.proj-addr input{width:100%;padding:11px 12px;border:1px solid var(--line);border-radius:2px;
   background:var(--surface);color:var(--text);font:inherit;font-size:14px;}
-.proj-new select{min-width:0;padding:11px 12px;border:1px solid var(--line);border-radius:8px;
+.proj-new select{min-width:0;padding:11px 12px;border:1px solid var(--line);border-radius:2px;
   background:var(--surface);color:var(--text);font:inherit;font-size:14px;}
 .proj-overdue{background:rgba(196,69,60,0.12);border:1px solid var(--red);color:var(--red);
-  border-radius:9px;padding:10px 14px;margin-bottom:14px;font-size:13px;font-weight:600;}
+  border-radius:2px;padding:10px 14px;margin-bottom:14px;font-size:13px;font-weight:600;}
 /* Ozet seridi. Kucuk kalmasi bilerek: sayfanin isi tablo, serit yalnizca
    bir bakis.
    Once saran bir satirdi ve kutular esit degildi: son satirda iki kutu
@@ -1529,7 +1571,7 @@ textarea.sc-ai-brief{min-height:64px;resize:vertical;line-height:1.5;}
    kutular ayni genislikte ve hizali. Sayi ile etiket alt alta degil YAN
    YANA: serit yari yariya kisaliyor. */
 .proj-stats{display:grid;grid-template-columns:repeat(auto-fit, minmax(132px, 1fr));
-  margin-bottom:14px;border:1px solid var(--line);border-radius:11px;
+  margin-bottom:14px;border:1px solid var(--line);border-radius:2px;
   background:var(--surface);overflow:hidden;}
 .pstat{display:flex;align-items:baseline;justify-content:center;gap:7px;
   padding:8px 10px;border-left:1px solid var(--line-soft);min-width:0;}
@@ -1563,10 +1605,10 @@ textarea.sc-ai-brief{min-height:64px;resize:vertical;line-height:1.5;}
 /* --- Proje sayfasi --- */
 .proj-new{display:grid;grid-template-columns:2fr 2fr auto auto;gap:8px;margin-bottom:14px;
   align-items:end;}
-.pnew-date input{width:100%;padding:11px 12px;border:1px solid var(--line);border-radius:8px;
+.pnew-date input{width:100%;padding:11px 12px;border:1px solid var(--line);border-radius:2px;
   background:var(--surface);color:var(--text);font:inherit;font-size:14px;color-scheme:light;}
 :root:not([data-theme="light"]) .pnew-date input{color-scheme:dark;}
-.proj-new input{min-width:0;padding:11px 12px;border:1px solid var(--line);border-radius:8px;
+.proj-new input{min-width:0;padding:11px 12px;border:1px solid var(--line);border-radius:2px;
   background:var(--surface);color:var(--text);font:inherit;font-size:14px;color-scheme:light;}
 :root:not([data-theme="light"]) .proj-new input,
 :root:not([data-theme="light"]) .proj-tools input{color-scheme:dark;}
@@ -1590,7 +1632,7 @@ textarea.sc-ai-brief{min-height:64px;resize:vertical;line-height:1.5;}
 /* Mekan secici: arama + kutucuklu liste. Liste KENDI icinde kayiyor,
    pencere uzamiyor: yuz mekani olan biri her actiginda sayfayi
    kaydirmak zorunda kalmasin. */
-.mk-sec{border:1px solid var(--line);border-radius:9px;background:var(--bg);overflow:hidden;}
+.mk-sec{border:1px solid var(--line);border-radius:2px;background:var(--bg);overflow:hidden;}
 .mk-sec input[type="search"]{width:100%;padding:9px 12px;border:none;
   border-bottom:1px solid var(--line);background:transparent;color:var(--text);
   font:inherit;font-size:13.5px;}
@@ -1602,7 +1644,7 @@ textarea.sc-ai-brief{min-height:64px;resize:vertical;line-height:1.5;}
 .mk-sec-sat:last-child{border-bottom:none;}
 .mk-sec-sat:hover{background:var(--surface);}
 .mk-sec-sat.secili{background:var(--accent-soft);}
-.mk-sec-kutu{flex:none;width:20px;height:20px;border-radius:5px;border:1.6px solid var(--line);
+.mk-sec-kutu{flex:none;width:20px;height:20px;border-radius:2px;border:1.6px solid var(--line);
   display:flex;align-items:center;justify-content:center;font-size:12px;color:var(--accent);
   background:var(--surface);}
 .mk-sec-sat.secili .mk-sec-kutu{border-color:var(--accent);}
@@ -1616,25 +1658,25 @@ textarea.sc-ai-brief{min-height:64px;resize:vertical;line-height:1.5;}
 .btn-sira.acik{border-color:var(--accent);color:var(--accent);}
 /* Hic proje yokken: aciklama ve tek bir dugme, ortada. */
 .proj-empty{display:flex;flex-direction:column;align-items:center;gap:12px;
-  padding:34px 20px;border:1px dashed var(--line);border-radius:12px;
+  padding:34px 20px;border:1px dashed var(--line);border-radius:2px;
   background:var(--surface);text-align:center;}
 .proj-empty .hint{max-width:46ch;margin:0;}
-.proj-tools input{flex:1;min-width:0;padding:9px 12px;border:1px solid var(--line);border-radius:8px;
+.proj-tools input{flex:1;min-width:0;padding:9px 12px;border:1px solid var(--line);border-radius:2px;
   background:var(--surface);color:var(--text);font:inherit;font-size:13.5px;color-scheme:light;}
 .proj-count{font-size:12px;color:var(--text-dim);white-space:nowrap;
   font-variant-numeric:tabular-nums;}
 .proj-shoot{font-size:11px;text-transform:uppercase;letter-spacing:.06em;color:var(--text-dim);
   display:flex;align-items:center;gap:6px;}
-.proj-shoot input{padding:6px 8px;border:1px solid var(--line);border-radius:6px;
+.proj-shoot input{padding:6px 8px;border:1px solid var(--line);border-radius:2px;
   background:var(--bg);color:var(--text);font:inherit;font-size:12.5px;color-scheme:light;}
 :root:not([data-theme="light"]) .proj-shoot input{color-scheme:dark;}
 /* Adimlar: her biri tiklanan bir damga. Sirasi isin akisi. */
 .pstep{display:inline-flex;align-items:center;gap:7px;font:inherit;font-size:12.5px;
-  padding:7px 12px;border:1px solid var(--line);border-radius:99px;background:var(--bg);
+  padding:7px 12px;border:1px solid var(--line);border-radius:2px;background:var(--bg);
   color:var(--text-dim);cursor:pointer;}
 .pstep:hover{border-color:var(--accent-dim);}
 .pstep.on{background:var(--accent-soft);border-color:var(--accent);color:var(--accent);font-weight:600;}
-.pbox{width:14px;height:14px;border:1px solid currentColor;border-radius:4px;
+.pbox{width:14px;height:14px;border:1px solid currentColor;border-radius:2px;
   display:inline-flex;align-items:center;justify-content:center;font-size:10px;line-height:1;}
 /* --- Modaldeki proje secimi --- */
 .proj-pick{display:grid;grid-template-columns:1fr;gap:6px;}
@@ -1649,19 +1691,19 @@ textarea.sc-ai-brief{min-height:64px;resize:vertical;line-height:1.5;}
 .clone-row{display:grid;grid-template-columns:1fr 1fr auto auto auto;gap:8px;
   align-items:center;margin-bottom:8px;}
 .clone-row select,.clone-row input{min-width:0;padding:8px 9px;border:1px solid var(--line);
-  border-radius:7px;background:var(--surface);color:var(--text);font:inherit;font-size:13px;
+  border-radius:2px;background:var(--surface);color:var(--text);font:inherit;font-size:13px;
   color-scheme:light;}
 :root:not([data-theme="light"]) .clone-row select,
 :root:not([data-theme="light"]) .clone-row input{color-scheme:dark;}
 .clone-row .k-del{border:1px solid var(--line);background:var(--surface);color:var(--text-dim);
-  border-radius:7px;padding:8px 11px;cursor:pointer;font:inherit;line-height:1;}
+  border-radius:2px;padding:8px 11px;cursor:pointer;font:inherit;line-height:1;}
 .clone-row .k-del:hover{border-color:var(--red);color:var(--red);}
 @media(max-width:640px){
   /* Dar ekranda alanlar alt alta duser ve uc kopya tek bir liste gibi
      gorunurdu; her kopya kendi cercevesine aliniyor ki nerede bitip
      nerede basladigi belli olsun. */
   .clone-row{grid-template-columns:1fr 1fr;gap:8px;border:1px solid var(--line);
-    border-radius:9px;padding:10px;background:var(--surface-2);margin-bottom:12px;}
+    border-radius:2px;padding:10px;background:var(--surface-2);margin-bottom:12px;}
   .clone-row .k-del{grid-column:2;justify-self:end;}
 }
 /* Filtrelerin ustunde duran ipucu: once ne yapilacagini soyluyor, sonra
@@ -1669,11 +1711,11 @@ textarea.sc-ai-brief{min-height:64px;resize:vertical;line-height:1.5;}
 .hint-top{margin:2px 0 10px;}
 
 .cal-nav{display:grid;grid-template-columns:1fr auto 1fr;align-items:center;margin-bottom:14px;gap:10px;}
-.cal-nav-btn{background:var(--surface);border:1px solid var(--line);color:var(--text);padding:8px 16px;min-height:44px;display:inline-flex;align-items:center;justify-content:center;cursor:pointer;border-radius:6px;font-size:13px;font-family:'IBM Plex Sans',sans-serif;white-space:nowrap;}
+.cal-nav-btn{background:var(--surface);border:1px solid var(--line);color:var(--text);padding:8px 16px;min-height:44px;display:inline-flex;align-items:center;justify-content:center;cursor:pointer;border-radius:2px;font-size:13px;font-family:'IBM Plex Sans',sans-serif;white-space:nowrap;}
 .cal-nav-btn:hover{border-color:var(--accent-dim);}
 .cal-range{font-family:'IBM Plex Mono',monospace;font-size:13px;color:var(--text-dim);justify-self:center;white-space:nowrap;}
 .cal-nav-left{justify-self:start;display:flex;gap:8px;align-items:center;}
-.view-toggle{display:inline-flex;border:1px solid var(--line);border-radius:6px;overflow:hidden;}
+.view-toggle{display:inline-flex;border:1px solid var(--line);border-radius:2px;overflow:hidden;}
 .view-btn{
   background:var(--surface);border:0;color:var(--text-dim);cursor:pointer;
   padding:0 14px;min-height:44px;font-family:'IBM Plex Sans',sans-serif;font-size:12.5px;font-weight:500;
@@ -1687,7 +1729,7 @@ textarea.sc-ai-brief{min-height:64px;resize:vertical;line-height:1.5;}
 .cal-grid.cal-week .cal-day.cal-empty{display:block;}
 .cal-nav-right{justify-self:end;display:flex;gap:8px;}
 
-.cal-grid{display:grid;grid-template-columns:repeat(7,1fr);border:1px solid var(--line);background:var(--line);gap:1px;border-radius:8px;overflow:hidden;}
+.cal-grid{display:grid;grid-template-columns:repeat(7,1fr);border:1px solid var(--line);background:var(--line);gap:1px;border-radius:2px;overflow:hidden;}
 /* ⚠ RENK --accent-dim'DEN --text-dim'E -- 11 Kasim 2026. OLCULDU:
    accent-dim ile kontrast acik temada 2.90 (esik 4.5); 10 piksellik
    buyuk harf yazi icin bu okunmaz. Koyu temada zaten 4.63'tu, yani
@@ -1697,7 +1739,7 @@ textarea.sc-ai-brief{min-height:64px;resize:vertical;line-height:1.5;}
    Gunler satir, platformlar sutun. Genis olabildigi icin sayfayi degil
    kendi kabini kaydiriyor; govde asla yana kaymiyor. */
 .cal-table-wrap{overflow-x:auto;overscroll-behavior:none;
-  border:1px solid var(--line);border-radius:8px;background:var(--surface);}
+  border:1px solid var(--line);border-radius:2px;background:var(--surface);}
 .cal-table{border-collapse:collapse;width:max-content;min-width:100%;font-size:12px;}
 .cal-table th,.cal-table td{border-bottom:1px solid var(--line-soft);border-right:1px solid var(--line-soft);
   padding:0;vertical-align:top;}
@@ -1730,7 +1772,7 @@ textarea.sc-ai-brief{min-height:64px;resize:vertical;line-height:1.5;}
 .ct-empty{text-align:center;color:transparent;font-size:15px;line-height:26px;}
 .ct-empty:hover{color:var(--accent-dim);}
 .ct-chip{display:block;width:100%;text-align:left;border:1px solid var(--line);
-  border-left-width:3px;border-radius:5px;background:var(--surface);color:var(--text);
+  border-left-width:3px;border-radius:2px;background:var(--surface);color:var(--text);
   padding:5px 7px;margin-bottom:4px;cursor:pointer;font:inherit;}
 .ct-chip:last-child{margin-bottom:0;}
 .ct-chip:hover{border-color:var(--accent);}
@@ -1740,7 +1782,7 @@ textarea.sc-ai-brief{min-height:64px;resize:vertical;line-height:1.5;}
 .ct-type{font-size:9px;letter-spacing:.06em;color:var(--text-dim);}
 .ct-title{display:block;font-size:11.5px;line-height:1.35;margin-top:2px;
   overflow:hidden;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;}
-.ct-tz{display:inline-block;margin-top:3px;font-size:9px;padding:1px 5px;border-radius:99px;
+.ct-tz{display:inline-block;margin-top:3px;font-size:9px;padding:1px 5px;border-radius:2px;
   background:var(--surface-2);color:var(--text-dim);}
 @media(max-width:700px){
   .ct-date-col,.ct-date{width:62px;min-width:62px;}
@@ -1760,7 +1802,7 @@ textarea.sc-ai-brief{min-height:64px;resize:vertical;line-height:1.5;}
 .ornek-serit{
   display:flex;align-items:center;gap:10px;flex-wrap:wrap;
   margin:0 0 10px;padding:9px 12px;
-  border:1px dashed var(--line);border-radius:8px;background:var(--surface-2);
+  border:1px dashed var(--line);border-radius:2px;background:var(--surface-2);
   font-size:12.5px;color:var(--text-dim);
 }
 .ornek-serit[hidden]{display:none;}
@@ -1777,14 +1819,14 @@ textarea.sc-ai-brief{min-height:64px;resize:vertical;line-height:1.5;}
 .cal-chip{
   flex:1;display:flex;align-items:center;gap:7px;background:var(--surface);
   border-left:2px solid var(--line);padding:7px 9px;cursor:pointer;
-  font-size:11.5px;overflow:hidden;transition:background .12s,border-color .12s;border-radius:0 5px 5px 0;
+  font-size:11.5px;overflow:hidden;transition:background .12s,border-color .12s;border-radius:2px;
   min-height:44px;  /* parmak ucu hedefi — eskiden 24px idi */
 }
-.dil-serit-wrap{border:1px solid var(--line);border-radius:10px;padding:10px 11px 11px;background:var(--surface-2);}
+.dil-serit-wrap{border:1px solid var(--line);border-radius:2px;padding:10px 11px 11px;background:var(--surface-2);}
 .dil-serit{display:flex;flex-wrap:wrap;gap:6px;align-items:center;}
 .dil-sek{
   display:inline-flex;align-items:center;gap:6px;padding:7px 11px;min-height:36px;
-  border:1px solid var(--line);border-radius:8px;background:var(--surface);
+  border:1px solid var(--line);border-radius:2px;background:var(--surface);
   color:var(--text-dim);font-size:12.5px;font-weight:600;cursor:pointer;
   font-family:inherit;line-height:1;
 }
@@ -1801,14 +1843,14 @@ textarea.sc-ai-brief{min-height:64px;resize:vertical;line-height:1.5;}
 .dil-not{margin:9px 0 0;font-size:11.5px;color:var(--text-dim);line-height:1.5;}
 .dil-secici{display:flex;flex-wrap:wrap;gap:6px;margin-top:10px;}
 .dil-secici button{
-  padding:7px 10px;min-height:34px;border:1px solid var(--line);border-radius:8px;
+  padding:7px 10px;min-height:34px;border:1px solid var(--line);border-radius:2px;
   background:var(--surface);color:var(--text);font-size:12.5px;cursor:pointer;font-family:inherit;
 }
 .dil-secici button:hover{border-color:var(--accent);}
 /* Takvim cipinde: bu kaydin kac dili hazir. Kayit acmadan gorunsun. */
 .cal-dil{
   font-family:'IBM Plex Mono',monospace;font-size:9px;letter-spacing:.5px;
-  padding:2px 4px;border-radius:3px;background:var(--accent-soft);color:var(--accent);
+  padding:2px 4px;border-radius:2px;background:var(--accent-soft);color:var(--accent);
   flex:none;white-space:nowrap;
 }
 .cal-pico{width:15px;height:15px;flex:none;display:block;}
@@ -1819,14 +1861,14 @@ textarea.sc-ai-brief{min-height:64px;resize:vertical;line-height:1.5;}
 }
 .tcode{
   font-family:'IBM Plex Mono',monospace;font-size:8.5px;font-weight:600;letter-spacing:.06em;
-  border:1px solid var(--line);border-radius:3px;padding:1px 4px;color:var(--text-dim);
+  border:1px solid var(--line);border-radius:2px;padding:1px 4px;color:var(--text-dim);
 }
 .cal-chip:hover{background:var(--surface-2);}
 .cal-chip.live{border-left-color:var(--green);}
 .cal-badge{
   font-family:'IBM Plex Mono',monospace;font-size:8.5px;font-weight:600;letter-spacing:.05em;
   color:var(--text-dim);background:transparent;border:1px solid var(--line);
-  padding:2px 5px;border-radius:3px;flex-shrink:0;text-align:center;
+  padding:2px 5px;border-radius:2px;flex-shrink:0;text-align:center;
 }
 .cal-chip-title{overflow:hidden;text-overflow:ellipsis;white-space:nowrap;color:var(--text-dim);}
 /* Pazar gruplari: bir gunde birden cok saat dilimi varsa kayitlar tek tek
@@ -1834,7 +1876,7 @@ textarea.sc-ai-brief{min-height:64px;resize:vertical;line-height:1.5;}
 .cal-group{margin-bottom:3px;}
 .cal-group-head{
   width:100%;display:flex;align-items:center;gap:6px;cursor:pointer;
-  background:var(--surface-2);border:1px solid var(--line);border-radius:4px;
+  background:var(--surface-2);border:1px solid var(--line);border-radius:2px;
   padding:3px 6px;min-height:24px;color:var(--text);
   font-family:'IBM Plex Mono',monospace;font-size:10px;text-align:left;
 }
@@ -1844,7 +1886,7 @@ textarea.sc-ai-brief{min-height:64px;resize:vertical;line-height:1.5;}
 .cal-group-name{overflow:hidden;text-overflow:ellipsis;white-space:nowrap;}
 .cal-group-count{
   margin-left:auto;flex:none;background:var(--accent-soft);color:var(--accent);
-  border-radius:3px;padding:0 5px;font-weight:600;
+  border-radius:2px;padding:0 5px;font-weight:600;
 }
 .cal-group.collapsed .cal-chip-row{display:none;}
 .cal-group .cal-chip-row{margin-top:3px;}
@@ -1852,7 +1894,7 @@ textarea.sc-ai-brief{min-height:64px;resize:vertical;line-height:1.5;}
    soylemiyordu; amber "hala borclu", yesil "yayinlandi" demek. */
 .cal-state{
   margin-left:auto;flex:none;font-family:'IBM Plex Mono',monospace;font-size:9px;
-  letter-spacing:.04em;text-transform:uppercase;padding:0 4px;border-radius:3px;
+  letter-spacing:.04em;text-transform:uppercase;padding:0 4px;border-radius:2px;
   border:1px solid var(--amber);color:var(--amber);line-height:1.6;white-space:nowrap;
 }
 .cal-state.on-air{border-color:var(--green);color:var(--green);}
@@ -1870,7 +1912,7 @@ textarea.sc-ai-brief{min-height:64px;resize:vertical;line-height:1.5;}
 .cl-sayac b{color:var(--text);}
 .cl-ekle{display:flex;gap:8px;margin-bottom:14px;}
 .cl-ekle input{flex:1;min-width:0;padding:10px 12px;border:1px solid var(--line);
-  border-radius:8px;background:var(--bg);color:var(--text);font:inherit;font-size:13.5px;}
+  border-radius:2px;background:var(--bg);color:var(--text);font:inherit;font-size:13.5px;}
 .cl-bos{font-size:13px;line-height:1.55;color:var(--text-dim);}
 .cl-bos p{margin:0 0 8px;}
 .cl-bos ul{margin:0;padding-left:18px;}
@@ -1880,12 +1922,12 @@ textarea.sc-ai-brief{min-height:64px;resize:vertical;line-height:1.5;}
   color:var(--text-dim);margin:16px 0 6px;}
 .cl-grup:first-child{margin-top:0;}
 .cl-satir{display:flex;align-items:flex-start;gap:10px;padding:9px 10px;
-  border:1px solid var(--line);border-radius:9px;margin-bottom:7px;background:var(--bg);}
+  border:1px solid var(--line);border-radius:2px;margin-bottom:7px;background:var(--bg);}
 .cl-satir.bitti{opacity:.55;}
 .cl-satir.bitti .cl-metin{text-decoration:line-through;}
 /* 24px kutu: parmak hedefi. Kutunun kendisi degil, cevresindeki dugme
    tiklaniyor — kucuk bir kutuya nisan almak sahada zor. */
-.cl-kutu{flex:none;width:26px;height:26px;border-radius:7px;border:1.6px solid var(--line);
+.cl-kutu{flex:none;width:26px;height:26px;border-radius:2px;border:1.6px solid var(--line);
   background:var(--surface);color:var(--accent);font-size:15px;line-height:1;
   display:flex;align-items:center;justify-content:center;cursor:pointer;padding:0;}
 .cl-kutu.on{border-color:var(--accent);background:var(--accent-soft);}
@@ -1900,21 +1942,21 @@ textarea.sc-ai-brief{min-height:64px;resize:vertical;line-height:1.5;}
 .cl-notac{align-self:flex-start;background:none;border:none;padding:0;
   color:var(--text-dim);font:inherit;font-size:11.5px;cursor:pointer;}
 .cl-notac:hover{color:var(--accent);}
-.cl-not{width:100%;padding:5px 8px;border:1px dashed var(--line);border-radius:6px;
+.cl-not{width:100%;padding:5px 8px;border:1px dashed var(--line);border-radius:2px;
   background:transparent;color:var(--text);font:inherit;font-size:12px;}
 .cl-not:focus{border-style:solid;border-color:var(--accent);outline:none;}
 .cl-sil{flex:none;background:none;border:none;color:var(--text-dim);font-size:15px;
   cursor:pointer;padding:2px 4px;line-height:1;}
 .cl-sil:hover{color:var(--red);}
 .cl-dikkat{margin-top:16px;padding:12px 14px;border:1px solid var(--line);
-  border-left:3px solid var(--accent);border-radius:8px;background:var(--bg);
+  border-left:3px solid var(--accent);border-radius:2px;background:var(--bg);
   font-size:13px;line-height:1.5;white-space:pre-wrap;overflow-wrap:anywhere;}
 .cl-dikkat h4{margin:0 0 6px;font-size:11px;text-transform:uppercase;
   letter-spacing:.07em;color:var(--text-dim);font-weight:700;}
 /* --- Ihtiyac kutuphanesi --- */
 .ih-setler{display:flex;flex-wrap:wrap;gap:7px;margin-bottom:12px;}
 .ih-set{display:inline-flex;align-items:center;gap:6px;padding:5px 10px;font-size:12.5px;
-  border:1px solid var(--line);border-radius:20px;background:var(--bg);color:var(--text);
+  border:1px solid var(--line);border-radius:2px;background:var(--bg);color:var(--text);
   font-family:inherit;cursor:pointer;}
 .ih-set:hover{border-color:var(--accent);color:var(--accent);}
 .ih-set b{font-weight:600;color:var(--text-dim);font-variant-numeric:tabular-nums;}
@@ -1923,9 +1965,9 @@ textarea.sc-ai-brief{min-height:64px;resize:vertical;line-height:1.5;}
 .ih-set-sil:hover{color:var(--red);}
 .ih-set-yeni{border-style:dashed;}
 .ih-setler .hint{width:100%;margin:0 0 2px;}
-.ih-ara{width:100%;padding:9px 12px;border:1px solid var(--line);border-radius:8px;
+.ih-ara{width:100%;padding:9px 12px;border:1px solid var(--line);border-radius:2px;
   background:var(--bg);color:var(--text);font:inherit;font-size:13.5px;margin-bottom:12px;}
-.ih-satir{display:flex;align-items:center;gap:10px;padding:7px 9px;border-radius:8px;
+.ih-satir{display:flex;align-items:center;gap:10px;padding:7px 9px;border-radius:2px;
   cursor:pointer;}
 .ih-satir:hover{background:var(--bg);}
 .ih-satir .cl-metin{flex:1;min-width:0;}
@@ -1934,7 +1976,7 @@ textarea.sc-ai-brief{min-height:64px;resize:vertical;line-height:1.5;}
 .ih-sil:hover{color:var(--red);}
 .ih-yeni{display:flex;gap:8px;flex-wrap:wrap;margin-top:14px;padding-top:14px;
   border-top:1px solid var(--line);}
-.ih-yeni input{padding:9px 11px;border:1px solid var(--line);border-radius:8px;
+.ih-yeni input{padding:9px 11px;border:1px solid var(--line);border-radius:2px;
   background:var(--bg);color:var(--text);font:inherit;font-size:13.5px;}
 #ih_yeniAd{flex:3;min-width:150px;}
 #ih_yeniGrup{flex:2;min-width:110px;}
@@ -1962,17 +2004,17 @@ textarea.sc-ai-brief{min-height:64px;resize:vertical;line-height:1.5;}
 .ih-toplu{margin-top:12px;font-size:13px;}
 .ih-toplu summary{cursor:pointer;color:var(--text-dim);}
 .ih-toplu textarea{width:100%;margin-top:8px;padding:9px 11px;border:1px solid var(--line);
-  border-radius:8px;background:var(--bg);color:var(--text);font:inherit;font-size:13px;
+  border-radius:2px;background:var(--bg);color:var(--text);font:inherit;font-size:13px;
   resize:vertical;}
 .ih-toplu .btn{margin-top:8px;}
 .overlay{display:none;position:fixed;inset:0;background:rgba(4,5,10,0.8);z-index:50;align-items:center;justify-content:center;padding:20px;overscroll-behavior:none;}
 .overlay.open{display:flex;}
 .modal{
   background:var(--surface);border:1px solid var(--line);border-top:3px solid var(--accent);
-  padding:26px;width:100%;max-width:600px;max-height:88vh;overflow-y:auto;border-radius:8px;
+  padding:26px;width:100%;max-width:600px;max-height:88vh;overflow-y:auto;border-radius:2px;
   overscroll-behavior:none;
 }
-.modal h2{font-family:'Archivo',sans-serif;font-size:16px;font-weight:800;letter-spacing:-0.2px;margin:0 0 18px;}
+.modal h2{font-family:'IBM Plex Sans',sans-serif;font-size:16px;font-weight:800;letter-spacing:-0.2px;margin:0 0 18px;}
 /* Modalin kendisi kayiyor (max-height + overflow-y). Baslik serit halinde
    yapisiyor ki uzun listede kapatma dugmesi hep gorunur kalsin. Negatif
    kenar boslugu modalin 26px ic boslugunu tersine ceviriyor, serit
@@ -1986,7 +2028,7 @@ textarea.sc-ai-brief{min-height:64px;resize:vertical;line-height:1.5;}
 }
 .modal-head h2{margin:0;}
 .modal-x{
-  flex:none;width:32px;height:32px;border-radius:6px;cursor:pointer;
+  flex:none;width:32px;height:32px;border-radius:2px;cursor:pointer;
   background:transparent;border:1px solid var(--line);color:var(--text-dim);
   font-size:18px;line-height:1;display:inline-flex;align-items:center;justify-content:center;
 }
@@ -2001,13 +2043,13 @@ textarea.sc-ai-brief{min-height:64px;resize:vertical;line-height:1.5;}
 .field input,.field select,.field textarea{
   width:100%;min-width:0;max-width:100%;box-sizing:border-box;
   background:var(--bg);border:1px solid var(--line);color:var(--text);
-  padding:9px 10px;font-size:13px;font-family:'IBM Plex Sans',sans-serif;border-radius:5px;
+  padding:9px 10px;font-size:13px;font-family:'IBM Plex Sans',sans-serif;border-radius:2px;
 }
 .field input:focus,.field select:focus,.field textarea:focus{outline:none;border-color:var(--accent-dim);}
 .field textarea{min-height:80px;resize:vertical;font-family:'IBM Plex Mono',monospace;font-size:12px;line-height:1.5;}
 .field-header{display:flex;justify-content:space-between;align-items:center;margin-bottom:6px;}
 .field-header label{margin:0;}
-.copy-btn{background:transparent;border:1px solid var(--line);color:var(--text-dim);padding:6px 10px;min-height:30px;display:inline-flex;align-items:center;font-size:10px;cursor:pointer;border-radius:4px;font-family:'IBM Plex Mono',monospace;}
+.copy-btn{background:transparent;border:1px solid var(--line);color:var(--text-dim);padding:6px 10px;min-height:30px;display:inline-flex;align-items:center;font-size:10px;cursor:pointer;border-radius:2px;font-family:'IBM Plex Mono',monospace;}
 .copy-btn:hover{border-color:var(--accent-dim);color:var(--accent);}
 .copy-btn.copied{color:var(--accent);border-color:var(--accent);}
 .row2{display:grid;grid-template-columns:1fr 1fr;gap:12px;}
@@ -2019,17 +2061,17 @@ textarea.sc-ai-brief{min-height:64px;resize:vertical;line-height:1.5;}
 /* Kendi saat diliminden farkli bir kayit takvimde isaretleniyor */
 .cal-tz{
   font-family:'IBM Plex Mono',monospace;font-size:9.5px;color:var(--amber);
-  border:1px solid var(--amber);border-radius:3px;padding:0 3px;flex:none;
+  border:1px solid var(--amber);border-radius:2px;padding:0 3px;flex:none;
   line-height:1.5;
 }
 /* Deneme geri bildirimi: her bolum bir satir, oylar ayni genislikte. */
 .dfb-liste{display:flex;flex-direction:column;gap:6px;}
-.dfb-satir{border:1px solid var(--line);border-radius:9px;padding:8px 10px;}
+.dfb-satir{border:1px solid var(--line);border-radius:2px;padding:8px 10px;}
 .dfb-ust{display:flex;align-items:center;gap:8px;flex-wrap:wrap;}
 .dfb-ad{flex:1;min-width:110px;font-size:13.5px;font-weight:600;}
 .dfb-oylar{display:grid;grid-template-columns:repeat(3, 1fr);gap:4px;flex:0 0 282px;}
 .dfb-oy{font:inherit;font-size:11px;border:1px solid var(--line);background:var(--bg);
-  color:var(--text-dim);border-radius:7px;padding:6px 4px;cursor:pointer;min-height:34px;
+  color:var(--text-dim);border-radius:2px;padding:6px 4px;cursor:pointer;min-height:34px;
   white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
 .dfb-oy:hover{border-color:var(--accent-dim);}
 .dfb-oy.secili{border-color:var(--accent);background:var(--accent-soft);color:var(--accent);font-weight:600;}
@@ -2042,7 +2084,7 @@ textarea.sc-ai-brief{min-height:64px;resize:vertical;line-height:1.5;}
 .dfb-not[hidden]{display:none;}
 .dfb-nps{display:grid;grid-template-columns:repeat(11, 1fr);gap:4px;}
 .dfb-nps button{font:inherit;font-size:12px;border:1px solid var(--line);background:var(--bg);
-  color:var(--text-dim);border-radius:6px;padding:7px 0;cursor:pointer;min-height:36px;}
+  color:var(--text-dim);border-radius:2px;padding:7px 0;cursor:pointer;min-height:36px;}
 .dfb-nps button.secili{border-color:var(--accent);background:var(--accent-soft);
   color:var(--accent);font-weight:700;}
 @media(max-width:560px){
@@ -2065,7 +2107,7 @@ textarea.sc-ai-brief{min-height:64px;resize:vertical;line-height:1.5;}
 .pcheck,
 .field .pcheck{
   display:flex;align-items:center;gap:7px;border:1px solid var(--line);
-  padding:9px 12px;min-height:40px;border-radius:5px;cursor:pointer;
+  padding:9px 12px;min-height:40px;border-radius:2px;cursor:pointer;
   font-family:'IBM Plex Sans',sans-serif;font-size:12.5px;font-weight:500;
   text-transform:none;letter-spacing:normal;color:var(--text);margin-bottom:0;
 }
@@ -2089,10 +2131,10 @@ textarea.sc-ai-brief{min-height:64px;resize:vertical;line-height:1.5;}
 .hs-grup-ad{display:flex;align-items:center;gap:6px;margin-bottom:6px;
   font-size:11px;letter-spacing:.06em;text-transform:uppercase;color:var(--text-dim);}
 .hs-grup-ad svg{width:14px;height:14px;}
-.upload-toggle{display:flex;align-items:center;gap:9px;border:1px solid var(--line);padding:11px 13px;min-height:44px;margin:15px 0;cursor:pointer;border-radius:6px;}
+.upload-toggle{display:flex;align-items:center;gap:9px;border:1px solid var(--line);padding:11px 13px;min-height:44px;margin:15px 0;cursor:pointer;border-radius:2px;}
 /* Bos kutu da gorunmeli: arka plani ve kenari acikca boyaniyor, yoksa koyu
    temada zeminle ayni tona dusuyordu. */
-.upload-toggle .box{width:17px;height:17px;border:1.5px solid var(--accent-dim);background:var(--surface);display:flex;align-items:center;justify-content:center;font-size:11px;border-radius:3px;flex:none;}
+.upload-toggle .box{width:17px;height:17px;border:1.5px solid var(--accent-dim);background:var(--surface);display:flex;align-items:center;justify-content:center;font-size:11px;border-radius:2px;flex:none;}
 .upload-toggle.checked .box{background:var(--green);color:#fff;border-color:var(--green);}
 .posted-hint{font-size:11.5px;color:var(--text-dim);margin:-9px 0 15px;line-height:1.5;}
 /* Otomatik story yayini. Kutucuk kullanicinin, alttaki satirlar sistemin:
@@ -2101,7 +2143,7 @@ textarea.sc-ai-brief{min-height:64px;resize:vertical;line-height:1.5;}
    ayni gorunselligi verseydik "ben mi isaretledim?" sorusu kalirdi. */
 .upload-toggle.sistem{border-style:dashed;}
 .upload-toggle.sistem .box{color:var(--green);}
-.oy-durum{border:1px solid var(--line);border-radius:6px;padding:10px 12px;margin:-9px 0 15px;
+.oy-durum{border:1px solid var(--line);border-radius:2px;padding:10px 12px;margin:-9px 0 15px;
   font-size:12px;line-height:1.7;color:var(--text-dim);}
 .oy-durum b{color:var(--text);font-weight:600;}
 .oy-durum .oy-hata{color:var(--red);display:block;margin-top:5px;word-break:break-word;}
@@ -2119,14 +2161,14 @@ textarea.sc-ai-brief{min-height:64px;resize:vertical;line-height:1.5;}
 .ev-yayin.yayinlandi{background:var(--green);}
 .ev-yayin.hata{background:var(--red);}
 .ev-yayin.suruyor{background:var(--amber);}
-.section-title{font-family:'Archivo',sans-serif;color:var(--accent);font-weight:700;font-size:12px;text-transform:uppercase;letter-spacing:1px;margin:20px 0 12px;border-top:1px solid var(--line);padding-top:16px;}
+.section-title{font-family:'IBM Plex Sans',sans-serif;color:var(--accent);font-weight:700;font-size:12px;text-transform:uppercase;letter-spacing:1px;margin:20px 0 12px;border-top:1px solid var(--line);padding-top:16px;}
 .modal-actions{display:flex;justify-content:flex-end;gap:9px;margin-top:20px;}
 /* Sifre kutusu ile yanindaki dugme tek satirda; kutu kalan yeri aliyor. */
 /* Kayit / Giris sekmeleri: iki isin ayri oldugu bir bakista gorulsun. */
 .sekmeler{display:flex;gap:4px;background:none;border:1px solid var(--line);
-  border-radius:10px;padding:4px;margin:0 0 18px;}
+  border-radius:2px;padding:4px;margin:0 0 18px;}
 .sekme{flex:1;border:0;background:none;font:inherit;font-size:13.5px;font-weight:600;
-  color:var(--text-dim);padding:8px;border-radius:7px;cursor:pointer;}
+  color:var(--text-dim);padding:8px;border-radius:2px;cursor:pointer;}
 .sekme.secili{background:var(--accent-soft);color:var(--accent);}
 .sekme:hover:not(.secili){color:var(--text);}
 /* Sifre gucu: ince cubuk, altinda tek satir. Renk tek basina yeterli degil;
@@ -2174,7 +2216,7 @@ textarea.sc-ai-brief{min-height:64px;resize:vertical;line-height:1.5;}
 .hesap-satir-dikey .yedek-liste li{
   display:flex;align-items:center;justify-content:space-between;gap:8px;
   font-size:12.5px;color:var(--text-dim);
-  border:1px solid var(--line-soft);border-radius:8px;padding:5px 6px 5px 9px;
+  border:1px solid var(--line-soft);border-radius:2px;padding:5px 6px 5px 9px;
 }
 /* Dugme satirin icinde: once genel .btn olcusuyle geliyordu ve hucreyi
    sisiriyordu. */
@@ -2192,21 +2234,21 @@ textarea.sc-ai-brief{min-height:64px;resize:vertical;line-height:1.5;}
 #imp_aiListe{display:flex;flex-direction:column;gap:6px;}
 #imp_aiListe li{display:flex;align-items:center;justify-content:space-between;gap:10px;
   font-size:13px;color:var(--text-dim);border:1px solid var(--line-soft);
-  border-radius:8px;padding:7px 10px;}
+  border-radius:2px;padding:7px 10px;}
 
 /* AI erisimi: kartlardaki "AI" rozeti ve hesap penceresindeki bolum. */
-.ai-rozet{display:inline-block;margin-left:5px;padding:1px 4px;border-radius:4px;
+.ai-rozet{display:inline-block;margin-left:5px;padding:1px 4px;border-radius:2px;
   font:600 9px/1.4 'IBM Plex Mono',monospace;letter-spacing:.04em;
   color:var(--accent);background:var(--accent-soft);vertical-align:middle;flex:none;}
 .cal-chip .ai-rozet{margin-left:0;padding:0 3px;}
 #hesapAi{display:block;}
 .ai-er-dugmeler{display:flex;gap:8px;flex-wrap:wrap;margin-top:10px;}
 .ai-er-dugmeler .btn{flex:none;}
-.ai-er-kutu{margin-top:10px;padding:10px;border:1px solid var(--accent);border-radius:8px;
+.ai-er-kutu{margin-top:10px;padding:10px;border:1px solid var(--accent);border-radius:2px;
   background:var(--accent-soft);}
 .ai-er-kutu .hint{margin:0 0 8px;}
 .ai-er-kutu input{width:100%;box-sizing:border-box;background:var(--bg);border:1px solid var(--line);
-  color:var(--text);padding:9px 10px;font:500 13px 'IBM Plex Mono',monospace;border-radius:5px;}
+  color:var(--text);padding:9px 10px;font:500 13px 'IBM Plex Mono',monospace;border-radius:2px;}
 .ai-er-alt{margin-top:14px;}
 .yedek-liste .ai-er-sol{display:flex;flex-direction:column;gap:2px;min-width:0;}
 .yedek-liste .ai-er-sol .yedek-gun{overflow:hidden;text-overflow:ellipsis;white-space:nowrap;}
@@ -2215,11 +2257,11 @@ textarea.sc-ai-brief{min-height:64px;resize:vertical;line-height:1.5;}
 .imp-paket-ipucu{margin:-4px 0 10px;}
 /* Silme bolumu gorsel olarak da ayri: yanlislikla basilan bir dugme degil. */
 .hesap-tehlike{margin-top:16px;padding:14px;border:1px solid var(--red);
-  border-radius:10px;background:color-mix(in srgb, var(--red) 7%, transparent);}
+  border-radius:2px;background:color-mix(in srgb, var(--red) 7%, transparent);}
 .hesap-onay-et{display:block;font-size:12.5px;color:var(--text-dim);margin:12px 0 6px;}
 #hesapSilKutu{width:100%;box-sizing:border-box;margin-bottom:12px;
   background:var(--bg);border:1px solid var(--line);color:var(--text);
-  padding:9px 10px;font-size:13px;font-family:'IBM Plex Sans',sans-serif;border-radius:5px;}
+  padding:9px 10px;font-size:13px;font-family:'IBM Plex Sans',sans-serif;border-radius:2px;}
 #hesapSilKutu:focus{outline:none;border-color:var(--red);}
 .sifre-satir{display:flex;gap:8px;align-items:stretch;}
 .sifre-satir input{flex:1;min-width:0;}
@@ -2245,14 +2287,14 @@ textarea.sc-ai-brief{min-height:64px;resize:vertical;line-height:1.5;}
 /* Uygulama ici diyalog: oteki pencerelerin USTUNE cikiyor (kayit
    penceresinden silme onayi gibi), o yuzden z-index daha yuksek. */
 #dlgOverlay{z-index:80;align-items:center;padding:20px;}
-#dlgOverlay .modal-dlg{max-width:420px;border-radius:12px;padding:22px 22px 18px;}
+#dlgOverlay .modal-dlg{max-width:420px;border-radius:2px;padding:22px 22px 18px;}
 /* Kapatma seridinin negatif kenar boslugu .modal'in 26 piksellik ic
    bosluguna gore ayarli; bu pencere 22 kullaniyor. Fark duzeltilmezse serit
    pencereden dort piksel tasip yatay kaydirma cubugu cikariyor. */
 #dlgOverlay .modal-dlg .modal-xbar{top:-22px;margin:-22px -22px 8px;}
 .dlg-msg{margin:0 0 6px;font-size:14.5px;line-height:1.55;white-space:pre-line;}
 .dlg-input{width:100%;box-sizing:border-box;margin-top:10px;padding:10px 12px;
-  background:var(--bg);color:var(--text);border:1px solid var(--line);border-radius:6px;
+  background:var(--bg);color:var(--text);border:1px solid var(--line);border-radius:2px;
   font-family:'IBM Plex Sans',sans-serif;font-size:14px;}
 .dlg-input:focus{outline:none;border-color:var(--accent);}
 #dlgOverlay .modal-actions{margin-top:16px;}
@@ -2298,7 +2340,7 @@ textarea.sc-ai-brief{min-height:64px;resize:vertical;line-height:1.5;}
 .auth-hint{font-size:11.5px;color:var(--text-dim);margin:10px 0 0;line-height:1.5;}
 .ai-durum{
   display:flex;align-items:center;gap:8px;margin:0 0 14px;padding:9px 11px;
-  border-radius:8px;font-size:12.5px;line-height:1.45;
+  border-radius:2px;font-size:12.5px;line-height:1.45;
   background:var(--surface-2);border:1px solid var(--line);color:var(--text-dim);
 }
 .ai-durum.var{border-color:var(--green);color:var(--text);}
@@ -2309,7 +2351,7 @@ textarea.sc-ai-brief{min-height:64px;resize:vertical;line-height:1.5;}
    duzendeyken Google'in uzun hata cumlesi sikismiyor, yerine model
    adini eziyordu — ad harf harf alt alta dusuyordu. */
 .ai-test-liste li{display:flex;flex-direction:column;gap:2px;min-width:0;
-  padding:7px 9px;border:1px solid var(--line);border-radius:7px;}
+  padding:7px 9px;border:1px solid var(--line);border-radius:2px;}
 .ai-test-liste .tm-ad{font-family:'JetBrains Mono',monospace;font-size:11px;
   color:var(--text-dim);overflow-wrap:anywhere;}
 .ai-test-liste .tm-sonuc{font-size:12.5px;line-height:1.45;color:var(--text-dim);
@@ -2369,17 +2411,17 @@ textarea.sc-ai-brief{min-height:64px;resize:vertical;line-height:1.5;}
   display:flex;gap:10px;align-items:flex-start;
   font-size:13.5px;line-height:1.55;color:var(--text);
   background:var(--surface-2);border:1px solid var(--line);border-left:3px solid var(--accent);
-  border-radius:0 9px 9px 0;padding:10px 12px;
+  border-radius:2px;padding:10px 12px;
 }
 .tour-points li::before{content:'';flex:none;width:6px;height:6px;margin-top:6px;border-radius:50%;background:var(--accent);}
 #tourSkip{font-size:12px;color:var(--text-dim);cursor:pointer;text-decoration:underline;text-underline-offset:2px;}
 #tourSkip:hover{color:var(--text);}
 .tour-visual{margin:2px 0 16px;display:flex;justify-content:center;background:var(--surface);
-  border:1px solid var(--line);border-radius:10px;padding:12px 10px;
+  border:1px solid var(--line);border-radius:2px;padding:12px 10px;
   /* Sahne sayfayla ayni renkte degil: cizim duz bir zeminde degil, kendi
      karti uzerinde duruyor. Onceki halde --bg idi ve cizim sayfaya
      yapisiyordu. */
-  box-shadow:0 1px 2px rgba(0,0,0,0.04);}
+  box-shadow:none;}
 .tour-visual svg{width:100%;height:auto;display:block;max-width:720px;}
 /* Alcak ekranda (dizustunde tarayici cubuklariyla birlikte 650px kaliyor)
    gorsel butun yeri kapiyor, metnin son maddesi asagida kesik kaliyordu.
@@ -2422,7 +2464,7 @@ textarea.sc-ai-brief{min-height:64px;resize:vertical;line-height:1.5;}
 
 .lang-select{
   background:var(--surface); border:1px solid var(--line); color:var(--text);
-  padding:7px 10px; min-height:36px; font-size:12.5px; font-weight:500; cursor:pointer; border-radius:6px;
+  padding:7px 10px; min-height:36px; font-size:12.5px; font-weight:500; cursor:pointer; border-radius:2px;
   font-family:'IBM Plex Sans',sans-serif;
 }
 .lang-select:hover{border-color:var(--accent-dim);}
@@ -2435,7 +2477,7 @@ textarea.sc-ai-brief{min-height:64px;resize:vertical;line-height:1.5;}
 .pending-row:hover{background:var(--surface-2);}
 .pending-overdue td:first-child{color:var(--red);font-weight:600;}
 .pending-empty{padding:16px 0;color:#5FD9A0;font-weight:600;}
-.storage-bar-track{background:var(--surface-2);border-radius:6px;height:10px;overflow:hidden;}
+.storage-bar-track{background:var(--surface-2);border-radius:2px;height:10px;overflow:hidden;}
 .storage-bar-fill{height:100%;transition:width .3s;}
 .storage-top-item{display:flex;justify-content:space-between;padding:2px 0;font-size:13px;}
 @media(max-width:700px){
@@ -2458,7 +2500,7 @@ textarea.sc-ai-brief{min-height:64px;resize:vertical;line-height:1.5;}
 .lockup .mark{width:30px;height:30px;flex:none;display:block;}
 .lockup .mark svg{width:100%;height:100%;display:block;}
 .wordmark{
-  font-family:'Archivo',sans-serif;font-weight:800;font-size:25px;
+  font-family:'IBM Plex Sans',sans-serif;font-weight:800;font-size:25px;
   letter-spacing:-.035em;color:var(--text);line-height:1;
 }
 /* Markanin altinda tek satir: ekran goruntusunde urunun ne oldugu okunsun.
@@ -2468,8 +2510,8 @@ textarea.sc-ai-brief{min-height:64px;resize:vertical;line-height:1.5;}
 /* ===== Kisa bildirim ===== */
 .toast{
   position:fixed;left:50%;bottom:24px;transform:translate(-50%,14px);
-  background:var(--text);color:var(--bg);padding:11px 18px;border-radius:8px;
-  font-size:13px;font-weight:500;box-shadow:0 8px 24px -10px rgba(0,0,0,.5);
+  background:var(--text);color:var(--bg);padding:11px 18px;border-radius:2px;
+  font-size:13px;font-weight:500;box-shadow:none;
   opacity:0;pointer-events:none;transition:opacity .18s ease, transform .18s ease;
   z-index:100;max-width:calc(100vw - 32px);text-align:center;
 }
@@ -2480,7 +2522,7 @@ textarea.sc-ai-brief{min-height:64px;resize:vertical;line-height:1.5;}
 .nudge{
   display:flex;align-items:center;gap:10px;flex-wrap:wrap;
   background:var(--surface);border:1px solid var(--line);border-left:3px solid var(--accent);
-  border-radius:0 8px 8px 0;padding:11px 14px;margin-bottom:12px;font-size:13px;color:var(--text-dim);
+  border-radius:2px;padding:11px 14px;margin-bottom:12px;font-size:13px;color:var(--text-dim);
 }
 .nudge-dot{width:7px;height:7px;border-radius:50%;background:var(--accent);flex:none;}
 .nudge-error{border-left-color:var(--red);color:var(--text);}
@@ -2493,7 +2535,7 @@ textarea.sc-ai-brief{min-height:64px;resize:vertical;line-height:1.5;}
 .cloud-error{color:var(--red);}
 
 /* ===== Katlanabilir bloklar (filtreler / ikincil butonlar) ===== */
-.fold{border:1px solid var(--line);border-radius:8px;background:var(--surface);margin-bottom:12px;}
+.fold{border:1px solid var(--line);border-radius:2px;background:var(--surface);margin-bottom:12px;}
 /* Katlanmis bolumun basliginda kac alanin dolu oldugu yaziyor: acmadan
    once icinde bir sey olup olmadigi belli olsun. */
 .fold-count{
@@ -2518,7 +2560,7 @@ textarea.sc-ai-brief{min-height:64px;resize:vertical;line-height:1.5;}
 .fold .legend,.fold .hint{margin-left:14px;margin-right:14px;}
 .fold .hint{padding-bottom:12px;}
 .fold-inline{margin-bottom:0;background:transparent;border-color:transparent;}
-.fold-inline > summary{padding:0 12px;border:1px solid var(--line);border-radius:6px;background:var(--surface);}
+.fold-inline > summary{padding:0 12px;border:1px solid var(--line);border-radius:2px;background:var(--surface);}
 .fold-row{display:flex;flex-wrap:wrap;gap:8px;padding:10px 0 0;}
 
 /* Katlama yalnizca telefonda anlamli — masaustunde bloklar eskisi gibi acik
@@ -2532,7 +2574,7 @@ textarea.sc-ai-brief{min-height:64px;resize:vertical;line-height:1.5;}
   /* Filtre paneli istisna: masaustunde de basligiyla birlikte duruyor.
      Basliksiz halde bu alanin ne ise yaradigi anlasilmiyordu — ziyaretciler
      buradan bir sey secip kayit olusturacaklarini saniyordu. */
-  .filter-fold{border:1px solid var(--line);background:var(--surface);border-radius:8px;}
+  .filter-fold{border:1px solid var(--line);background:var(--surface);border-radius:2px;}
   .filter-fold > summary{display:flex;}
   /* Pencere icindeki katlar da istisna. .fold aslinda FILTRE PANELI icin
      yazilmisti: telefonda katlaniyor, masaustunde acik duruyor. Pencere
@@ -2557,7 +2599,7 @@ textarea.sc-ai-brief{min-height:64px;resize:vertical;line-height:1.5;}
   padding:4px 2px;min-height:28px;width:100%;text-align:left;
 }
 .cal-more:hover{text-decoration:underline;}
-.cal-more:focus-visible{outline:2px solid var(--accent);outline-offset:2px;border-radius:3px;}
+.cal-more:focus-visible{outline:2px solid var(--accent);outline-offset:2px;border-radius:2px;}
 
 /* Gecmis gunleri geri plana atiyoruz ama icerigi okunur birakiyoruz —
    "gecen hafta ne yayinlamistim" bu takvimin sik sorulan sorusu. */
@@ -2797,9 +2839,9 @@ textarea.sc-ai-brief{min-height:64px;resize:vertical;line-height:1.5;}
     flex-direction:column;align-items:stretch;gap:2px;
     width:auto;max-height:80vh;max-height:80dvh;overflow-y:auto;
     background:var(--surface);border-top:1px solid var(--line);
-    border-radius:14px 14px 0 0;
+    border-radius:2px;
     padding:8px 12px calc(14px + env(safe-area-inset-bottom));
-    box-shadow:0 -10px 40px -12px rgba(0,0,0,.55);
+    box-shadow:none;
     transform:translateY(102%);visibility:hidden;
     /* visibility gecikmeli kapaniyor: kayma bitmeden gizlenirse sayfa
        birden yok oluyordu. Kapali haldeyken gizli olmasi SART, yoksa
@@ -2813,7 +2855,7 @@ textarea.sc-ai-brief{min-height:64px;resize:vertical;line-height:1.5;}
     background:var(--line);margin:2px auto 8px;flex:none;}
   /* Alt sayfada bağlantılar tam adıyla ve parmak boyunda. */
   .rail-link{white-space:normal;flex:none;font-size:14.5px;padding:12px 10px;
-    border-radius:9px;}
+    border-radius:2px;}
   /* margin-left:0 SART: dar ekran kuralindan gelen auto, sutun icinde
      dil ve tema dugmesini saga sikistiriyordu. */
   .rail-prefs{flex:none;gap:8px;margin-left:0;margin-top:10px;padding-top:10px;
@@ -2834,7 +2876,7 @@ textarea.sc-ai-brief{min-height:64px;resize:vertical;line-height:1.5;}
     position:fixed;left:0;right:0;bottom:0;z-index:40;
     background:var(--surface);border-top:1px solid var(--line);
     padding:6px 6px calc(6px + env(safe-area-inset-bottom));
-    box-shadow:0 -6px 24px -12px rgba(0,0,0,.35);
+    box-shadow:none;
   }
   .rail-nav{
     flex:1 1 auto;min-width:0;
@@ -2853,7 +2895,7 @@ textarea.sc-ai-brief{min-height:64px;resize:vertical;line-height:1.5;}
     background:none;font-size:10.5px;
   }
   .bugun-btn:hover{border-color:var(--line);}
-  .bugun-btn.active{background:var(--accent-soft);border-radius:8px 0 0 8px;}
+  .bugun-btn.active{background:var(--accent-soft);border-radius:2px;}
   .bugun-btn .bugun-ad{display:none;}
   .bugun-ico{width:22px;height:22px;}
   /* Rozet ikonun ustune biniyor: yaninda yer yok. */
@@ -2862,7 +2904,7 @@ textarea.sc-ai-brief{min-height:64px;resize:vertical;line-height:1.5;}
     min-width:16px;padding:0 4px;font-size:10px;line-height:16px;
   }
   .rail-nav .tab{flex-direction:column;gap:3px;padding:6px 2px;font-size:10.5px;
-    border-bottom:0;border-radius:8px;min-height:52px;}
+    border-bottom:0;border-radius:2px;min-height:52px;}
   .rail-nav .tab .tab-ico{width:22px;height:22px;}
   .rail-nav .tab.active{background:var(--accent-soft);border-bottom-color:transparent;}
   /* Alt seridin arkasinda icerik kalmasin. */
@@ -2892,7 +2934,7 @@ textarea.sc-ai-brief{min-height:64px;resize:vertical;line-height:1.5;}
   .btn.btn-new{
     position:fixed;right:16px;bottom:calc(88px + env(safe-area-inset-bottom));z-index:39;
     width:56px;height:56px;min-height:56px;border-radius:50%;padding:0;font-size:0;line-height:0;
-    box-shadow:0 10px 26px -8px rgba(0,0,0,.55);
+    box-shadow:none;
   }
   .btn.btn-new::before{content:'+';font-size:32px;line-height:1;font-weight:400;}
   /* Demo notu ve erken erisim baglantisi telefonda gurultu; sayac kucuk. */
@@ -2915,7 +2957,7 @@ textarea.sc-ai-brief{min-height:64px;resize:vertical;line-height:1.5;}
   #prevBtn::before,#nextBtn::before{font-size:28px;line-height:1;color:var(--text);
     font-family:'IBM Plex Sans',sans-serif;position:relative;top:-2px;}
   #prevBtn::before{content:'\2039';} #nextBtn::before{content:'\203A';}
-  #todayBtn{padding:0 12px;min-height:34px;font-size:12px;border-radius:17px;}
+  #todayBtn{padding:0 12px;min-height:34px;font-size:12px;border-radius:2px;}
   /* min-width:0 SART. Izgara gozunun kendiligindeki en kucuk genisligi
      ICERIGE gore hesaplaniyor; baslik tek satir oldugu icin (nowrap) bu
      "butun metnin genisligi" demek. Gun gorunumunde baslik uzun
@@ -2931,13 +2973,13 @@ textarea.sc-ai-brief{min-height:64px;resize:vertical;line-height:1.5;}
      min-width:0 da gerekli: izgara gozunun kendiliginden en kucuk
      genisligi icerige gore hesaplaniyor. */
   .cal-range{
-    font-family:'Archivo',sans-serif;font-size:19px;font-weight:800;letter-spacing:-.01em;
+    font-family:'IBM Plex Sans',sans-serif;font-size:19px;font-weight:800;letter-spacing:-.01em;
     color:var(--text);font-size:clamp(15px, 4.6vw, 19px);
     text-align:left;order:0;width:auto;min-width:0;margin:0;padding-left:4px;
     justify-self:stretch;overflow:hidden;text-overflow:ellipsis;
   }
-  .view-toggle{display:flex;background:var(--surface-2);border:0;border-radius:11px;padding:3px;overflow:visible;}
-  .view-btn{flex:1 1 0;min-height:38px;border-radius:8px;background:transparent;padding:0 4px;font-size:13px;}
+  .view-toggle{display:flex;background:var(--surface-2);border:0;border-radius:2px;padding:3px;overflow:visible;}
+  .view-btn{flex:1 1 0;min-height:38px;border-radius:2px;background:transparent;padding:0 4px;font-size:13px;}
   .view-btn + .view-btn{border-left:0;}
   .view-btn.active{background:var(--accent);color:var(--on-accent);}
 
@@ -2968,7 +3010,7 @@ textarea.sc-ai-brief{min-height:64px;resize:vertical;line-height:1.5;}
      ve yan yana hizali. */
   .proj-table tr{display:grid;grid-template-columns:repeat(2, minmax(0, 1fr));
     gap:6px;align-items:stretch;
-    border:1px solid var(--line);border-radius:12px;
+    border:1px solid var(--line);border-radius:2px;
     background:var(--surface);padding:12px;margin-bottom:10px;}
   .proj-table tr.prow-bitti,.proj-table tr.prow-iptal{background:var(--surface);}
   .proj-table th.pname-col,.proj-table td{display:block;border:0;padding:0;}
@@ -2979,7 +3021,7 @@ textarea.sc-ai-brief{min-height:64px;resize:vertical;line-height:1.5;}
   .pname-col > *{max-width:none;}
   /* Cipler: ad + kutu + tarih tek parca, dokunma hedefi 44px'e yakin. */
   .proj-table td.pcell{display:flex;align-items:center;gap:6px;width:auto;min-width:0;
-    border:1px solid var(--line);border-radius:10px;padding:6px 8px 6px 10px;
+    border:1px solid var(--line);border-radius:2px;padding:6px 8px 6px 10px;
     margin:0;text-align:left;background:var(--bg);}
   /* Ad soldaki boslugu doldurup isaret kutusuyla termini saga itiyor;
      ikisi yan yana kaliyor. Uzun ad ("Yayin Paketi") cipi sismiyor,
@@ -3028,14 +3070,14 @@ textarea.sc-ai-brief{min-height:64px;resize:vertical;line-height:1.5;}
   .filter-bar{flex-wrap:wrap;overflow:visible;gap:6px;margin-bottom:8px;}
   .filter-sep,.fsummary{display:none;}
   .fbtn,.fclear,.btn-pending{white-space:nowrap;flex:none;}
-  .fbtn,.btn-pending{border-radius:18px;min-height:36px;padding:0 12px;}
+  .fbtn,.btn-pending{border-radius:2px;min-height:36px;padding:0 12px;}
   .fdrop{position:static;}   /* panel viewport'a gore, alttan acilan sayfa */
 
   /* Filtre paneli: arkasi karartilmis alt sayfa, basligi ve Kapat dugmesi
      var. Disariya dokunmak paneli kapatir ve ALTTAKI takvime gecmez —
      eskiden dokunus gune isabet edip yeni kayit penceresi aciyordu. */
   .fbackdrop.open{display:block;}
-  .fpanel{z-index:61;bottom:0;left:0;right:0;border-radius:14px 14px 0 0;
+  .fpanel{z-index:61;bottom:0;left:0;right:0;border-radius:2px;
     padding:0 12px calc(12px + env(safe-area-inset-bottom));max-height:70vh;max-height:70dvh;}
   /* .fpanel on eki SART: genel kural (.fpanel-head{display:none}) bu
      bloktan sonra geliyor; ayni ozgullukte olsaydi telefonda basligi
@@ -3045,7 +3087,7 @@ textarea.sc-ai-brief{min-height:64px;resize:vertical;line-height:1.5;}
   /* Pencereler alttan acilan sayfalar: tam genislik, ustte tutamac,
      her zaman gorunur kapatma dugmesi. */
   .overlay{align-items:flex-end;padding:0;}
-  .modal{max-width:none;max-height:92vh;max-height:92dvh;border-radius:14px 14px 0 0;
+  .modal{max-width:none;max-height:92vh;max-height:92dvh;border-radius:2px;
     border-left:0;border-right:0;border-bottom:0;
     padding:16px 16px calc(18px + env(safe-area-inset-bottom));}
   .modal-head{top:-16px;margin:-16px -16px 14px;padding:16px 16px 10px;}
@@ -3128,7 +3170,7 @@ textarea.sc-ai-brief{min-height:64px;resize:vertical;line-height:1.5;}
 
 /* ===== Termin hatirlatmalari ===== */
 .rm-lead{color:var(--text-dim);font-size:13.5px;line-height:1.6;margin:0 0 16px;}
-.rm-bolum{border:1px solid var(--line);border-radius:10px;padding:14px;margin-bottom:14px;}
+.rm-bolum{border:1px solid var(--line);border-radius:2px;padding:14px;margin-bottom:14px;}
 .rm-bas{display:flex;align-items:center;gap:10px;margin-bottom:8px;}
 .rm-bas h3{margin:0;font-size:14.5px;font-weight:600;flex:1;}
 .rm-not{color:var(--text-dim);font-size:12.5px;line-height:1.55;margin:8px 0 0;}
@@ -3139,7 +3181,7 @@ textarea.sc-ai-brief{min-height:64px;resize:vertical;line-height:1.5;}
 .rm-kapali{opacity:.45;pointer-events:none;}
 .rm-uyari{
   background:var(--amber-soft);color:var(--amber);border:1px solid var(--amber);
-  border-radius:8px;padding:10px 12px;font-size:12.5px;line-height:1.6;margin:0 0 10px;
+  border-radius:2px;padding:10px 12px;font-size:12.5px;line-height:1.6;margin:0 0 10px;
 }
 .rm-durum{font-size:12.5px;line-height:1.55;margin:8px 0 0;}
 .rm-durum.ok{color:var(--green);}
@@ -3148,7 +3190,7 @@ textarea.sc-ai-brief{min-height:64px;resize:vertical;line-height:1.5;}
   border-left:3px solid var(--accent);padding-left:14px;}
 .rm-saat{display:flex;align-items:center;gap:10px;flex-wrap:wrap;margin:12px 0 4px;}
 .rm-saat label{font-size:13.5px;color:var(--text);}
-.rm-saat input{padding:6px 9px;border-radius:8px;border:1px solid var(--line);
+.rm-saat input{padding:6px 9px;border-radius:2px;border:1px solid var(--line);
   background:var(--bg);color:var(--text);font-family:inherit;font-size:14px;}
 .rm-saat .rm-not{margin:0;}
 .rm-adres-et{margin:14px 0 6px;font-size:12.5px;color:var(--text-dim);}
@@ -3160,7 +3202,7 @@ textarea.sc-ai-brief{min-height:64px;resize:vertical;line-height:1.5;}
   text-transform:uppercase;color:var(--text-dim);}
 .rm-adres input{
   flex:1;min-width:0;font-family:'IBM Plex Mono',monospace;font-size:11.5px;
-  padding:8px 10px;border:1px solid var(--line);border-radius:8px;
+  padding:8px 10px;border:1px solid var(--line);border-radius:2px;
   background:var(--surface-2);color:var(--text);
 }
 .rm-dugmeler{display:flex;gap:8px;flex-wrap:wrap;margin-top:10px;}
@@ -3208,7 +3250,7 @@ textarea.sc-ai-brief{min-height:64px;resize:vertical;line-height:1.5;}
 @media (hover:none){
   .pn-alt{flex-wrap:wrap;white-space:normal;overflow:visible;gap:8px;margin-top:6px;}
   .pn-ico{padding:7px 10px;min-height:36px;border:1px solid var(--line);
-    border-radius:9px;background:var(--bg);font-size:12px;}
+    border-radius:2px;background:var(--bg);font-size:12px;}
   .pn-ico.dolu{border-color:var(--accent-dim);}
   .pn-ico b{font-size:11px;}
   .pn-svg{width:15px;height:15px;}
@@ -18049,7 +18091,7 @@ const TV = {
       ? `<rect x="${x-7}" y="${y-7}" width="${w+14}" height="${h+14}" rx="24" fill="var(--accent)" opacity="0.09"/>
          <rect x="${x}" y="${y}" width="${w}" height="${h}" rx="18" fill="url(#kg${n})" stroke="var(--accent)" stroke-width="2"/>`
       : `<rect x="${x}" y="${y}" width="${w}" height="${h}" rx="18" fill="url(#kg${n})" stroke="var(--line)"/>`),
-  baslik: (x,y,m,ek='') => `<text x="${x}" y="${y}" font-family="Archivo, sans-serif" font-size="15" font-weight="600" fill="var(--text)" ${ek}>${m}</text>`,
+  baslik: (x,y,m,ek='') => `<text x="${x}" y="${y}" font-family="IBM Plex Sans, sans-serif" font-size="15" font-weight="600" fill="var(--text)" ${ek}>${m}</text>`,
   mono:   (x,y,m,ek='') => `<text x="${x}" y="${y}" font-family="JetBrains Mono, monospace" font-size="10.5" letter-spacing="1.5" fill="var(--accent)" ${ek}>${m}</text>`,
   yazi:   (x,y,m,ek='') => `<text x="${x}" y="${y}" font-family="IBM Plex Sans, sans-serif" font-size="13" fill="var(--text)" ${ek}>${m}</text>`,
   // Metin yerine gecen cubuk: okunmayacak sahte yazi yazmaktansa cizgi.
@@ -18208,7 +18250,7 @@ const TOUR_VISUALS = [
       ${[[0,'12',0],[132,'5',1],[264,'3',2],[396,'2',3]].map(([x,n,i])=>`
         <g transform="translate(${44+x},32)">
           ${TV.kart(5,0,0,116,72)}
-          <text x="58" y="38" text-anchor="middle" font-family="Archivo, sans-serif" font-size="24" font-weight="800" fill="var(--text)">${n}</text>
+          <text x="58" y="38" text-anchor="middle" font-family="IBM Plex Sans, sans-serif" font-size="24" font-weight="800" fill="var(--text)">${n}</text>
           ${TV.mono(58,58,t('tour_v_stat_'+i),'text-anchor="middle"')}
         </g>`).join('')}
       <g transform="translate(44,134)">
