@@ -151,7 +151,9 @@ body{
   font-weight:600;font-variant-numeric:tabular-nums;}
 .hv-kisa,
 .hv-sor-kisa{display:none;}
-.hv-not{font-size:11px;color:var(--text-dim);opacity:.75;}
+/* ⚠ opacity:.75 KALDIRILDI. --text-dim zaten "ikincil" demek; ustune
+   soldurma koymak kontrasti 3.92'ye dusuruyordu (olculdu, esik 4.5). */
+.hv-not{font-size:11px;color:var(--text-dim);}
 .hv-kapat{position:absolute;top:5px;right:4px;width:20px;height:20px;padding:0;
   display:flex;align-items:center;justify-content:center;
   font:inherit;font-size:15px;line-height:1;border:0;border-radius:50%;
@@ -1686,7 +1688,11 @@ textarea.sc-ai-brief{min-height:64px;resize:vertical;line-height:1.5;}
 .cal-nav-right{justify-self:end;display:flex;gap:8px;}
 
 .cal-grid{display:grid;grid-template-columns:repeat(7,1fr);border:1px solid var(--line);background:var(--line);gap:1px;border-radius:8px;overflow:hidden;}
-.cal-dow{background:var(--surface);padding:9px;text-align:center;font-family:'IBM Plex Mono',monospace;font-size:10px;letter-spacing:1.5px;color:var(--accent-dim);text-transform:uppercase;}
+/* ⚠ RENK --accent-dim'DEN --text-dim'E -- 11 Kasim 2026. OLCULDU:
+   accent-dim ile kontrast acik temada 2.90 (esik 4.5); 10 piksellik
+   buyuk harf yazi icin bu okunmaz. Koyu temada zaten 4.63'tu, yani
+   sorun yalnizca acik temadaydi. */
+.cal-dow{background:var(--surface);padding:9px;text-align:center;font-family:'IBM Plex Mono',monospace;font-size:10px;letter-spacing:1.5px;color:var(--text-dim);text-transform:uppercase;}
 /* ---- Tablo gorunumu ----
    Gunler satir, platformlar sutun. Genis olabildigi icin sayfayi degil
    kendi kabini kaydiriyor; govde asla yana kaymiyor. */
@@ -2523,10 +2529,36 @@ textarea.sc-ai-brief{min-height:64px;resize:vertical;line-height:1.5;}
 /* Gecmis gunleri geri plana atiyoruz ama icerigi okunur birakiyoruz —
    "gecen hafta ne yayinlamistim" bu takvimin sik sorulan sorusu. */
 /* Komsu ayin gunleri: gorunur ama geri planda. */
-.cal-out{opacity:.5;}
+/* ---------------------------------------------------------------------
+   GECMIS VE AY DISI GUNLER -- 11 Kasim 2026 kullanici testi.
+
+   ⛔ IKI SOLDURMA CARPILIYORDU. .cal-out .5 diyordu ("baska ay"),
+   .cal-past .cal-day-num .55 diyordu ("gecmis"); onceki ayin gunleri
+   IKISI BIRDEN oldugu icin 0.5 x 0.55 = 0.275 aliyordu. Hicbir kural
+   bunu istememisti. OLCULDU (WCAG, esik 4.5):
+       onceki ayin gunleri   1.49 acik / 1.68 koyu
+       bu ayin gecmis gunu   2.36 acik / 2.92 koyu
+   Yani sayi neredeyse gorunmuyordu.
+
+   ⚠ SAYIYI YUKSELTMEK TEK BASINA COZUM DEGIL. Olculdu: 4.5'e ulasmak
+   icin acik temada 0.88 opaklik gerekiyor ve o degerde "soluk" diye bir
+   sey kalmiyor -- yani anlam kayboluyor. O yuzden anlam SOLDURMAYLA
+   degil ZEMINLE anlatiliyor:
+     · gecmis gun zaten --surface-2 zeminli (asagida); sayinin ayrica
+       soldurulmasina gerek yok, kaldirildi.
+     · ay disi gun sayfa zeminine (--bg) cekildi, yani karttan geri
+       cekiliyor; opaklik .5'ten .85'e alindi.
+   --------------------------------------------------------------------- */
+.cal-out{opacity:.92;background:var(--bg);}
 .cal-out .cal-day-num{font-weight:400;}
+/* ⚠ CARPIMI KESEN SATIR: ay disi bir gun ayni zamanda gecmis olabilir;
+   asagidaki .cal-past kurali ustune binmesin. */
+.cal-out.cal-past .cal-day-num{opacity:1;}
 .cal-past{background:var(--surface-2);}
-.cal-past .cal-day-num{opacity:.55;font-weight:400;}
+/* ⚠ OPAKLIK KALDIRILDI. "Gecmis" bilgisini ustteki zemin
+   (--surface-2) zaten veriyor; sayiyi ayrica soldurmak okunurlugu
+   2.36'ya dusuruyordu (olculdu). Kalin olmamasi farki korumaya yetiyor. */
+.cal-past .cal-day-num{font-weight:400;}
 .cal-past .cal-chip{opacity:.8;}
 /* Ayin ilk gunu: pencere ay sinirini umursamadigi icin gecisi hucre gosterir */
 /* Ay adi artik HER hucrede. Once yalnizca gecis gunlerinde vardi ve
