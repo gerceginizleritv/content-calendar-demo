@@ -262,10 +262,16 @@ body::before{
    metinden yarim ekran uzakta kaliyordu ve satirin tiklanabilir
    oldugu okunmuyordu. */
 .bg-bloklar{display:flex;flex-direction:column;gap:18px;max-width:820px;}
+/* TARIH BASLIGI. Cizimde (FoyTelBugun.dc.html) kunye kucuk ve vurgulu,
+   tarih ise BUYUK, KOYU, KALIN. Onceki halde tarih de kucuk mono vurgu
+   rengindeydi; ustune "BUGUN SETTE" kunyesi eklenince ikisi alt alta
+   AYNI gorunuyordu -- cift baslik gibi okunuyordu. Ekran goruntusunde
+   gorulup duzeltildi (12 Kasim 2026). */
 .bg-gun{
-  margin:0;font-family:ui-monospace,SFMono-Regular,Menlo,monospace;
-  font-size:12px;font-weight:600;letter-spacing:.08em;color:var(--accent);
+  margin:0 0 12px;font-family:'IBM Plex Sans',sans-serif;
+  font-size:24px;font-weight:700;letter-spacing:-0.2px;color:var(--text);
 }
+@media(max-width:420px){ .bg-gun{font-size:21px;} }
 .bg-blok{display:flex;flex-direction:column;gap:7px;}
 .bg-baslik{
   display:flex;align-items:center;gap:8px;margin:0;
@@ -3428,6 +3434,36 @@ textarea.sc-ai-brief{min-height:64px;resize:vertical;line-height:1.5;}
   .fy-yer{grid-area:yer;padding:2px 6px;} .fy-baslik{grid-area:bas;}
   .fy-uretim{grid-area:uretim;} .fy-isaret{grid-area:isaret;}
 }
+
+/* =====================================================================
+   BUGUN SETTE + MEKAN   (12 Kasim 2026, Asama 5a)
+   Cizim: project/FoyTelBugun.dc.html
+   ===================================================================== */
+.bg-sette{
+  font-family:'IBM Plex Mono',monospace;font-size:12px;letter-spacing:.1em;
+  font-weight:600;color:var(--accent);margin-bottom:2px;
+}
+.bg-mekan{
+  border:1px solid var(--text);border-radius:2px;background:var(--surface);
+  padding:12px 14px;margin:0 0 14px;
+}
+.bg-mekan-et{
+  font-family:'IBM Plex Mono',monospace;font-size:12px;letter-spacing:.08em;
+  color:var(--text-dim);
+}
+.bg-mekan-ad{font-size:17px;font-weight:700;margin-top:2px;}
+.bg-mekan-dl{
+  margin:8px 0 0;font-size:14px;display:grid;
+  grid-template-columns:72px minmax(0,1fr);gap:5px 10px;
+}
+.bg-mekan-dl dt{color:var(--text-dim);}
+.bg-mekan-dl dd{margin:0;min-width:0;overflow-wrap:anywhere;}
+/* "Dikkat" kalin: cizimde de oyle, ve sette okunan tek satir bu olabilir. */
+.bg-mekan-dl dd.bg-dikkat{font-weight:600;}
+@media(max-width:420px){
+  .bg-mekan-dl{grid-template-columns:1fr;gap:2px;}
+  .bg-mekan-dl dt{margin-top:6px;}
+}
 </style>
 <script>
 // Kayitli tema tercihini ilk boyamadan once uygula — aksi halde acik temayi
@@ -5714,6 +5750,10 @@ const LANG = {
     view_table: "Table",
     view_foy: "Sheet",
     kunye_kayit: "ENTRY",
+    bg_sette: "ON SET TODAY",
+    bg_mekan: "PLACE",
+    bg_izin: "Permit",
+    bg_dikkat: "Caution",
     foy_gun: "DAY", foy_saat: "TIME", foy_tur: "TYPE", foy_yer: "WHERE",
     foy_baslik: "TITLE", foy_uretim: "PRODUCTION", foy_isaret: "MARK",
     foy_isaretli: "Marked", foy_bekliyor: "Not marked",
@@ -6778,6 +6818,10 @@ const LANG = {
     view_table: "Tablo",
     view_foy: "F\u00f6y",
     kunye_kayit: "KAYIT",
+    bg_sette: "BUG\u00dcN SETTE",
+    bg_mekan: "MEKAN",
+    bg_izin: "\u0130zin",
+    bg_dikkat: "Dikkat",
     foy_gun: "G\u00dcN", foy_saat: "SAAT", foy_tur: "T\u00dcR", foy_yer: "YER",
     foy_baslik: "BA\u015eLIK", foy_uretim: "\u00dcRET\u0130M", foy_isaret: "\u0130\u015eARET",
     foy_isaretli: "\u0130\u015faretli", foy_bekliyor: "\u0130\u015faretlenmedi",
@@ -13532,7 +13576,55 @@ function bugunCiz(){
       + '</ul></section>');
   }
 
-  govde.innerHTML = gun + bloklar.join('');
+  // ═════════════════════════════════════════════════════════════
+  // BUGUN SETTE + MEKAN  (cizim: project/FoyTelBugun.dc.html)
+  // ═════════════════════════════════════════════════════════════
+  // Cizim bugunku cekimin mekanini, iznini ve dikkat notlarini en
+  // uste koyuyor -- sette telefona bakan kisinin aradigi sey bu.
+  //
+  // ⚠ KUNYE KOSULLU. Cizimde "BUGUN SETTE" her zaman yaziyor; burada
+  // YALNIZCA bugun cekimi olan bir proje varsa yaziyor. Cekim yokken
+  // "bugun sette" demek dogru olmazdi -- ekranin basinda duran ve
+  // yanlis olan bir cumle, ekranin tamamina olan guveni goturur.
+  //
+  // ⚠ VERI UYDURULMADI: ad, izin ve dikkat mekan kartinin kendi
+  // alanlarindan (mekanAdi / permission / cautions). Bos olan satir
+  // HIC YAZILMIYOR; bos bir "Izin:" etiketi, izin gerekmedigi
+  // izlenimi verirdi.
+  // Isik satiri burada YOK: o bir ag cagrisi gerektiriyor ve
+  // mekanin KENDI koordinatindan hesaplanmali (mekanHavaYenile).
+  // Ayri bir adimda ele alinacak.
+  let setBlok = '', kunye = '';
+  const bugunCekim = (o.cekim || []).filter(x=> x.kacGun === 0);
+  if(bugunCekim.length){
+    kunye = '<div class="bg-sette">' + E(t('bg_sette')) + '</div>';
+    const kartlar = [];
+    bugunCekim.forEach(x=>{
+      projeMekanlari(x.p).forEach(mid=>{
+        const m = mekanById(mid);
+        if(!m) return;
+        const satirlar = [];
+        if(String(m.permission || '').trim()){
+          satirlar.push('<dt>' + E(t('bg_izin')) + '</dt><dd>'
+            + E(String(m.permission).trim()) + '</dd>');
+        }
+        const dikkat = String(m.cautions || '').split(/\r?\n/)
+          .map(z=>z.trim()).filter(Boolean);
+        if(dikkat.length){
+          satirlar.push('<dt>' + E(t('bg_dikkat')) + '</dt><dd class="bg-dikkat">'
+            + dikkat.map(z=> E(z)).join('<br>') + '</dd>');
+        }
+        kartlar.push('<section class="bg-mekan">'
+          + '<div class="bg-mekan-et">' + E(t('bg_mekan')) + '</div>'
+          + '<div class="bg-mekan-ad">' + E(mekanAdi(m)) + '</div>'
+          + (satirlar.length ? '<dl class="bg-mekan-dl">' + satirlar.join('') + '</dl>' : '')
+          + '</section>');
+      });
+    });
+    setBlok = kartlar.join('');
+  }
+
+  govde.innerHTML = kunye + gun + setBlok + bloklar.join('');
   govde.querySelectorAll('[data-bg]').forEach(el=>{
     const f = yollar[el.dataset.bg];
     if(f) el.addEventListener('click', f);
