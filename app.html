@@ -991,6 +991,39 @@ body.suruklenirken *{cursor:grabbing !important;}
 .proj-table td.pcell{white-space:nowrap;}
 .pcell .pflag,.pcell .pdate{vertical-align:middle;}
 /* Adim adi yalnizca telefonda gorunuyor; masaustunde tablo basligi var. */
+/* HER ADIMDA SOR — adim adinin yanindaki kucuk "?" (12 Kasim 2026).
+   Metin DEGIL, isaret: kontrast kurali yazi icin 4,5; bu dugme
+   yine de yaziyla ayni kontrasti tutuyor cunku icinde "?" yaziyor.
+   Masaustunde tablo basliginda, telefonda hucredeki adim adinin
+   yaninda duruyor (tablo basliklari telefonda gizli). */
+.adim-soru{position:relative;flex:0 0 auto;width:24px;height:24px;margin-left:4px;padding:0;
+  border:1px solid var(--line);border-radius:50%;background:var(--bg);
+  color:var(--text-dim);font:inherit;font-size:12px;font-weight:600;
+  line-height:1;cursor:pointer;vertical-align:middle;}
+.adim-soru:hover{border-color:var(--accent);color:var(--accent);}
+/* Fikirler sayfasinda dugme yalniz basina duruyor: yanindaki adim adi
+   yok, o yuzden adi yazili. */
+.fk-soru-satir{display:flex;align-items:center;gap:7px;margin:0 0 12px;}
+.fk-soru-et{font-size:12px;color:var(--text-dim);}
+.adim-soru:focus-visible{outline:2px solid var(--accent);outline-offset:2px;}
+/* ⚠ BASLIKTA DUGME ADIN YANINA DEGIL ALTINA GIRIYOR. Ilk denemede
+   yanina konuldu ve CLIPLENDI: tablo table-layout:fixed, sutun ici
+   genislik 1024 pikselde 74, 1250'de 83 piksel; baslik yazisi
+   white-space:nowrap. Olculen tasmalar (yazi + 5 + 24 piksel dugme):
+
+     Turkce   "YAYIN PAKETI"  74 piksellik sutunda 39 piksel tasiyordu
+     Ingilizce "PUBLISHED"    24, "APPROVED" 19, "PACKAGE" 11 piksel
+
+   yani Ingilizcede YEDI SUTUNUN UCU birden kirpiliyordu. Belge
+   seviyesinde yatay kaydirma CIKMIYOR, o yuzden ilk olcumum
+   (scrollWidth - clientWidth = 0) bunu goremedi; kirpilma hucrenin
+   KENDI icinde oluyordu. Ders yine Bolum 4: dogru yeri olc.
+
+   Dugme kendi satirinda, ortada: en uzun TEK KELIME zaten sutuna
+   sigiyor ("PUBLISHED" 69 piksel), iki kelimeli ad ("YAYIN PAKETI")
+   kendi arasinda satir atliyor. Yedi baslik da ayni bicimde duruyor. */
+.proj-table thead th:not(.pname-col){white-space:normal;}
+.proj-table thead th .adim-soru{display:block;margin:4px auto 0;}
 .pcell-et{display:none;}
 /* Secici tabloya baglandi: .pcell (0,1,0) ile .proj-table td (0,1,1)
    yarisiyordu, td kazaniyordu ve ortalama hic uygulanmiyordu. */
@@ -3093,13 +3126,43 @@ textarea.sc-ai-brief{min-height:64px;resize:vertical;line-height:1.5;}
   /* Ad soldaki boslugu doldurup isaret kutusuyla termini saga itiyor;
      ikisi yan yana kaliyor. Uzun ad ("Yayin Paketi") cipi sismiyor,
      gerekirse kisaliyor. */
-  .pcell-et{flex:1;min-width:0;overflow:hidden;text-overflow:ellipsis;}
+  /* Ad = dugme. Metin gibi duruyor, altindaki noktali cizgi
+     "burada bir sey var" diyor.
+
+     ⚠ DOKUNMA ALANI ONCE BIR ::after ILE BUYUTULDU VE ISE YARAMADI.
+     Dugmenin kendisinde overflow:hidden vardi (adi kisaltan kural),
+     o yuzden kendi ::after'ini kendi icinde KIRPIYORDU. Olcum "47 px"
+     diyordu cunku ::after'in KUTUSUNU okuyordu; gercekte basilabilen
+     yer 25 pikseldi. Testteki olcu artik elementFromPoint ile gercek
+     noktalari deniyor, kutu okumuyor. (Bolum 4: dogru seyi olc.)
+
+     Simdi dugmenin KENDISI 44 piksel: cipin dikey dolgusu sifirlandi,
+     yukseklik dugmeden geliyor. Cip 39 -> 44 piksel, kart 248 -> 268.
+     Kisaltma ic span'da; dugme flex oldugu icin orada duramazdi. */
+  .pcell-et{display:flex;align-items:center;flex:1;min-width:0;
+    align-self:stretch;min-height:44px;text-align:left;}
+  .pcell-et > .ad-yazi{min-width:0;overflow:hidden;text-overflow:ellipsis;}
+  /* Dikey dolgu dugmeye devredildi: ikisi birden olsaydi cip 56 piksel
+     olur, yedi cipli kart 100 piksel uzardi. */
+  .proj-table td.pcell{padding-top:0;padding-bottom:0;}
+  .adim-soru-ad{border:0;background:none;padding:0;
+    font:inherit;color:inherit;cursor:pointer;}
+  /* ⚠ NOKTALI CIZGI IC SPAN'DA, DUGMEDE DEGIL. Dugmede yazilmisti ve
+     EKRANDA HIC CIKMADI: dugme flex kabi, yazi ise bir flex ogesinin
+     icinde; tarayici ust ogenin text-decoration'ini flex ogesinin
+     uzerine cizmiyor. Cizgi olmayinca adin tiklanabildigini anlatan
+     tek isaret de yok oluyordu. */
+  .adim-soru-ad .ad-yazi{text-decoration:underline dotted;
+    text-underline-offset:3px;text-decoration-color:var(--text-dim);}
+  .adim-soru-ad:hover{color:var(--accent);}
+  .adim-soru-ad:hover .ad-yazi{text-decoration-color:var(--accent);}
+  .adim-soru-ad:focus-visible{outline:2px solid var(--accent);outline-offset:2px;}
   /* Genis telefonda uc sutun sigiyor; kart kisaliyor. */
   @media(min-width:460px){
     .proj-table tr{grid-template-columns:repeat(3, minmax(0, 1fr));}
   }
   .proj-table td.pcell.done{border-color:var(--accent);background:var(--accent-soft);}
-  .pcell-et{display:inline;font-size:12px;color:var(--text-dim);white-space:nowrap;}
+  .pcell-et{font-size:12px;color:var(--text-dim);white-space:nowrap;}
   .proj-table td.pcell.done .pcell-et{color:var(--accent);font-weight:600;}
   .proj-table .pflag{padding:0;min-height:0;}
   .proj-table .pbox{width:18px;height:18px;}
@@ -3699,6 +3762,13 @@ textarea.sc-ai-brief{min-height:64px;resize:vertical;line-height:1.5;}
        yoktu. -->
   <div id="ideasPage" hidden>
     <p class="hint hint-top" data-i18n="fk_intro">What could this video be about? One card per idea — an angle, a question, a scene, a person to talk to. A project is optional; attach one later, or create one from here. Drop one card on another to merge them.</p>
+    <!-- Fikir sorulari proje adimlarindan AYRI: fikir bir adim degil,
+         projeden once geliyor. Dugme ayni sinifi ve ayni pencereyi
+         kullaniyor; data-soru="fikir" govdeki tek dinleyiciye yetiyor. -->
+    <p class="fk-soru-satir"><button type="button" class="adim-soru" data-soru="fikir"
+       data-i18n-title="soru_fikir_etiket" data-i18n-aria="soru_fikir_etiket"
+       title="Questions for an idea" aria-label="Questions for an idea">?</button><span
+       class="fk-soru-et" data-i18n="soru_fikir_etiket">Questions for an idea</span></p>
     <!-- Iki ayri filtre: biri fikirlerin METNINDE arar, oteki projeye
          gore suzer. Onceden tek acilir liste vardi ve "Butun fikirler"
          yaziyor ama icinde projeler cikiyordu. -->
@@ -5784,6 +5854,46 @@ const LANG = {
     bg_izin: "Permit",
     bg_dikkat: "Caution",
     bg_isik: "Light",
+    soru_ac: "Questions for this step",
+    soru_fikir_baslik: "Idea",
+    soru_fikir_etiket: "Questions for an idea",
+    soru_not: "These are suggestions, not a checklist — they have not been tested with real users. Nothing here changes the step.",
+    soru_fikir: ["Who is looking for this?",
+      "Is it very useful or very interesting? Which one?",
+      "Has something like it been made? What am I adding?",
+      "Can I say it in one sentence?"],
+    soru_script: ["Do the first two sentences hold the viewer?",
+      "Is the answer up front, or saved for the end?",
+      "Have I written what will be on screen in each section?",
+      "Is there a section that loses nothing if I cut it?"],
+    soru_filmed: ["Have all the must-have shots been filmed?",
+      "Do I have wide, medium and close at every place?",
+      "Did I take the cover photo?",
+      "If a vertical version is needed, did I film it?"],
+    soru_audio: ["Did I listen all the way through on headphones?",
+      "Do I have a room-tone recording?",
+      "Do I have the right to use the music?",
+      "Is the voice-over the final version of the script?"],
+    soru_edited: ["Does what the title promises show up in the first ten seconds?",
+      "Is there dead air left?",
+      "Am I showing everything I am telling?",
+      "Will someone watching with the sound off follow it?"],
+    soru_approved: ["Are the names, dates and numbers right?",
+      "Do I have permission from the people shown and from the place?",
+      "If there is a sponsor, has it been approved?",
+      "Has someone else watched it all the way through?"],
+    soru_package: ["Do the title and the cover make the same promise, and does the video keep it?",
+      "Is the text on the cover different from the title?",
+      "Do the first two lines of the description stand on their own?",
+      "Does each platform have its own text?"],
+    // ⚠ UCUNCU SORU: kaynakta dordunculuk bir soru daha var --
+    // "Platformun yayin gunu listesi tamam mi?" O liste ASAMA 2'de
+    // yapilacak. Var olmayan bir seye isaret etmesin diye SIMDILIK
+    // CIKARILDI; Asama 2 ile birlikte eklenecek (kullanici karari,
+    // 12 Kasim 2026).
+    soru_published: ["Is it really live \u2014 did I check?",
+      "Did I answer the first comments?",
+      "Did I tick the box?"],
     p_leg_bitti: "Done",
     p_leg_sirada: "Next up",
     p_leg_bekliyor: "Waiting",
@@ -6857,6 +6967,41 @@ const LANG = {
     bg_izin: "\u0130zin",
     bg_dikkat: "Dikkat",
     bg_isik: "I\u015f\u0131k",
+    soru_ac: "Bu ad\u0131mda sorulacaklar",
+    soru_fikir_baslik: "Fikir",
+    soru_fikir_etiket: "Fikir i\u00e7in sorulacaklar",
+    soru_not: "Bunlar \u00f6neri, kontrol listesi de\u011fil \u2014 ger\u00e7ek kullan\u0131c\u0131yla s\u0131nanmad\u0131. Hi\u00e7biri ad\u0131m\u0131n durumunu de\u011fi\u015ftirmez.",
+    soru_fikir: ["Bunu kim ar\u0131yor?",
+      "\u00c7ok faydal\u0131 m\u0131, \u00e7ok ilgin\u00e7 mi? Hangisi?",
+      "Benzeri yap\u0131ld\u0131 m\u0131; ben ne ekliyorum?",
+      "Tek c\u00fcmleyle anlatabiliyor muyum?"],
+    soru_script: ["\u0130lk iki c\u00fcmle izleyiciyi tutuyor mu?",
+      "Cevap ba\u015fta m\u0131, sona m\u0131 saklanm\u0131\u015f?",
+      "Her b\u00f6l\u00fcmde ekranda ne g\u00f6r\u00fcnecek, yazd\u0131m m\u0131?",
+      "\u00c7\u0131kar\u0131nca eksilmeyen b\u00f6l\u00fcm var m\u0131?"],
+    soru_filmed: ["Olmazsa olmaz planlar\u0131n hepsi \u00e7ekildi mi?",
+      "Her mekanda geni\u015f, orta, yak\u0131n var m\u0131?",
+      "Kapak foto\u011fraf\u0131n\u0131 \u00e7ektim mi?",
+      "Dikey s\u00fcr\u00fcm gerekiyorsa \u00e7ektim mi?"],
+    soru_audio: ["Ba\u015ftan sona kulakl\u0131kla dinledim mi?",
+      "Ortam sesi kayd\u0131m var m\u0131?",
+      "M\u00fczi\u011fi kullanma hakk\u0131m var m\u0131?",
+      "Seslendirme script'in son h\u00e2li mi?"],
+    soru_edited: ["Ba\u015fl\u0131kta vaat edilen ilk on saniyede g\u00f6r\u00fcn\u00fcyor mu?",
+      "\u00d6l\u00fc bo\u015fluk kald\u0131 m\u0131?",
+      "Anlatt\u0131\u011f\u0131m her \u015feyi g\u00f6steriyor muyum?",
+      "Sesi kapal\u0131 izleyen anlar m\u0131?"],
+    soru_approved: ["\u0130simler, tarihler, rakamlar do\u011fru mu?",
+      "G\u00f6r\u00fcnen ki\u015filerin ve mekan\u0131n izni var m\u0131?",
+      "Sponsor varsa onay\u0131 al\u0131nd\u0131 m\u0131?",
+      "Ba\u015fka biri ba\u015ftan sona izledi mi?"],
+    soru_package: ["Ba\u015fl\u0131k ve kapak ayn\u0131 s\u00f6z\u00fc m\u00fc veriyor, video o s\u00f6z\u00fc tutuyor mu?",
+      "Kapaktaki yaz\u0131 ba\u015fl\u0131ktan farkl\u0131 m\u0131?",
+      "A\u00e7\u0131klaman\u0131n ilk iki sat\u0131r\u0131 tek ba\u015f\u0131na anlaml\u0131 m\u0131?",
+      "Her platformun metni ayr\u0131 m\u0131?"],
+    soru_published: ["Ger\u00e7ekten yay\u0131nda m\u0131, bakt\u0131m m\u0131?",
+      "\u0130lk yorumlar\u0131 yan\u0131tlad\u0131m m\u0131?",
+      "Kutuyu i\u015faretledim mi?"],
     p_leg_bitti: "Bitti",
     p_leg_sirada: "S\u0131rada",
     p_leg_bekliyor: "Bekliyor",
@@ -9905,7 +10050,7 @@ function renderProjects(){
 
   const bugun = bugunKey();
   const basliklar = PROJ_STEPS.map(k=>
-    `<th${langIsareti(t('step_'+k))}>${escapeHtml(t('step_'+k))}</th>`).join('');
+    `<th${langIsareti(t('step_'+k))}>${escapeHtml(t('step_'+k))}${adimSoruDugmesi(k)}</th>`).join('');
   const satirlar = liste.map(p=>{
     const kayitlar = projeIcinKayitlar(p.id);
     const yayinlanan = kayitlar.filter(kayitBitti).length;
@@ -9926,7 +10071,7 @@ function renderProjects(){
       // bos ise kucuk bir takvim isareti — kesik cizgili "+" neyin
       // dugmesi oldugunu soylemiyordu.
       return `<td class="pcell ${p[k]?'done':''} ${k===siradaki?'sirada':''}">
-        <span class="pcell-et"${langIsareti(t('step_'+k))}>${escapeHtml(t('step_'+k))}</span>
+        ${adimAdiDugmesi(k)}
         <button type="button" class="pflag ${p[k]?'on':''}" data-proj="${escapeHtml(p.id)}" data-step="${k}"
                 title="${escapeHtml(t('step_'+k))}"
                 aria-label="${escapeHtml(t('step_'+k))}"><span class="pbox">${p[k]?'✓':''}</span></button>
@@ -13553,6 +13698,69 @@ const BUGUN_EKSIK_YOL = {
   kayit:  ()=> setPage('calendar')
 };
 
+// ═══════════════════════════════════════════════════════════════════
+// HER ADIMDA SOR  (12 Kasim 2026, Asama 4)
+// ═══════════════════════════════════════════════════════════════════
+// Adimin yanindaki kucuk "?" dort soru aciyor. ⛔ BUNLAR SORU, KUTU
+// DEGIL: adimin durumunu DEGISTIRMEZ, hicbir sey tetiklemez,
+// uploaded'a yazmaz. Veri yapisi da degismiyor -- yalnizca metin.
+//
+// Sorular ADIMA ait, projeye degil: "Script"in dort sorusu her
+// projede ayni. Bu yuzden dugme masaustunde SUTUN BASLIGINDA duruyor
+// (yedi dugme), her hucrede degil (7 x proje sayisi dugme olurdu).
+// Telefonda sutun basliklari gizli (olculdu: 0x0) ve adim adi
+// hucrenin icinde yaziyor; orada dugme adin yanina giriyor.
+//
+// Pencere yeni bir bilesen DEGIL: dlgAc zaten var ve sinanmis.
+function adimSorulariAc(anahtar){
+  const sorular = t('soru_' + anahtar);
+  if(!Array.isArray(sorular) || !sorular.length) return;
+  const baslik = anahtar === 'fikir' ? t('soru_fikir_baslik') : t('step_' + anahtar);
+  // Tire ile liste: dlg-msg white-space:pre-line, satirlar oldugu gibi
+  // duruyor. Numara KULLANILMIYOR -- sira degil, hepsi ayni agirlikta.
+  dlgAc(sorular.map(x=> '— ' + x).join('\n'),
+        { iptalli:false, girisli:false, iptal:undefined,
+          baslik: baslik, not: t('soru_not') });
+}
+// Dugmenin HTML'i tek yerden: baslikta da hucrede de ayni.
+function adimSoruDugmesi(anahtar){
+  // Adin kendisi etikete giriyor: yedi dugme ayni "Bu adimda
+  // sorulacaklar" adini tasirsa ekran okuyucu ikisini ayirt edemez.
+  // escapeHtml cift tirnagi KACIRMIYOR (textContent + innerHTML); bu
+  // metin bir oznitelige giriyor, o yuzden tirnak ayrica cevriliyor.
+  const et = escapeHtml(t('soru_ac') + ': ' + t('step_' + anahtar)).replace(/"/g, '&quot;');
+  return '<button type="button" class="adim-soru" data-soru="' + escapeHtml(anahtar)
+    + '" title="' + et + '" aria-label="' + et + '">?</button>';
+}
+// TELEFONDA ADIN KENDISI DUGME. Once adin YANINA ayri bir "?" konuldu
+// ve olculdu: 360 pikselde yedi adim adi da 23 piksele, 460 pikselde
+// 8 piksele dusuyordu -- "Script" yerine "Sc…". Cip 125-155 piksel
+// genis; 32 piksellik daire + 4 bosluk, isaret kutusu ve tarih
+// dugmesinin yaninda adi bitiriyordu.
+//
+// Ucuncu bir sey eklemek yerine VAR OLAN SEY dugme yapildi: genislik
+// maliyeti sifir, adlar eskisi gibi tam. Olculdu: ada dokunmak bugun
+// hicbir sey yapmiyor (cipin bosuna da), yani ezilen bir davranis yok.
+// ⛔ TIK YINE YALNIZCA ISARET KUTUSUNDA. Bu dugme adimin durumuna
+// dokunmuyor; testte iki ayri olcu bunu tutuyor.
+//
+// Masaustunde .pcell-et gizli, orada "?" sutun basliginda duruyor.
+function adimAdiDugmesi(anahtar){
+  const ad = t('step_' + anahtar);
+  const et = escapeHtml(t('soru_ac') + ': ' + ad).replace(/"/g, '&quot;');
+  return '<button type="button" class="pcell-et adim-soru-ad" data-soru="'
+    + escapeHtml(anahtar) + '"' + langIsareti(ad) + ' title="' + et
+    + '" aria-label="' + et + '"><span class="ad-yazi">' + escapeHtml(ad)
+    + '</span></button>';
+}
+// Tek dinleyici, govdeye: tablo her cizimde yeniden uretiliyor, her
+// dugmeye ayri dinleyici baglamak her cizimde yenisini eklerdi.
+document.addEventListener('click', (e)=>{
+  const d = e.target.closest && e.target.closest('[data-soru]');
+  if(!d) return;
+  e.preventDefault(); e.stopPropagation();
+  adimSorulariAc(d.dataset.soru);
+});
 let bugunIsikJeton = 0;
 function bugunCiz(){
   const govde = document.getElementById('bugunGovde');
