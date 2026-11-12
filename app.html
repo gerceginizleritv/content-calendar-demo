@@ -3460,6 +3460,11 @@ textarea.sc-ai-brief{min-height:64px;resize:vertical;line-height:1.5;}
 .bg-mekan-dl dd{margin:0;min-width:0;overflow-wrap:anywhere;}
 /* "Dikkat" kalin: cizimde de oyle, ve sette okunan tek satir bu olabilir. */
 .bg-mekan-dl dd.bg-dikkat{font-weight:600;}
+/* Isik satiri kenar cubugundakiyle AYNI parcalari kullaniyor
+   (isikHtml); burada yalnizca kutu icine oturtuluyor. */
+.bg-mekan-dl dd.bg-isik .hv-satir{display:flex;gap:14px;flex-wrap:wrap;}
+.bg-mekan-dl dd.bg-isik .hv-altin{display:flex;gap:6px;align-items:baseline;
+  flex-wrap:wrap;margin-top:3px;}
 @media(max-width:420px){
   .bg-mekan-dl{grid-template-columns:1fr;gap:2px;}
   .bg-mekan-dl dt{margin-top:6px;}
@@ -5754,6 +5759,8 @@ const LANG = {
     bg_mekan: "PLACE",
     bg_izin: "Permit",
     bg_dikkat: "Caution",
+    bg_isik: "Light",
+    bg_isik_yok: "Light needs the network \u2014 the place's own time zone comes from there.",
     foy_gun: "DAY", foy_saat: "TIME", foy_tur: "TYPE", foy_yer: "WHERE",
     foy_baslik: "TITLE", foy_uretim: "PRODUCTION", foy_isaret: "MARK",
     foy_isaretli: "Marked", foy_bekliyor: "Not marked",
@@ -6822,6 +6829,8 @@ const LANG = {
     bg_mekan: "MEKAN",
     bg_izin: "\u0130zin",
     bg_dikkat: "Dikkat",
+    bg_isik: "I\u015f\u0131k",
+    bg_isik_yok: "I\u015f\u0131k i\u00e7in a\u011f gerekiyor \u2014 mekan\u0131n kendi saat dilimi oradan geliyor.",
     foy_gun: "G\u00dcN", foy_saat: "SAAT", foy_tur: "T\u00dcR", foy_yer: "YER",
     foy_baslik: "BA\u015eLIK", foy_uretim: "\u00dcRET\u0130M", foy_isaret: "\u0130\u015eARET",
     foy_isaretli: "\u0130\u015faretli", foy_bekliyor: "\u0130\u015faretlenmedi",
@@ -13462,6 +13471,7 @@ const BUGUN_EKSIK_YOL = {
   kayit:  ()=> setPage('calendar')
 };
 
+let bugunIsikJeton = 0;
 function bugunCiz(){
   const govde = document.getElementById('bugunGovde');
   if(!govde) return;
@@ -13614,6 +13624,39 @@ function bugunCiz(){
           satirlar.push('<dt>' + E(t('bg_dikkat')) + '</dt><dd class="bg-dikkat">'
             + dikkat.map(z=> E(z)).join('<br>') + '</dd>');
         }
+        // ISIK (5b). Cizimde bu blogun son satiri.
+        // ⛔ KENAR CUBUGUNDAKI KUTUDAN TASINMADI. O kutu KULLANICININ
+        // BULUNDUGU YERIN gun batimini veriyor; buraya oldugu gibi
+        // konsaydi Istanbul'un gun batimi "Bergama Akropolu" basliginin
+        // altinda, o mekanin bilgisi gibi gorunurdu.
+        // Burada MEKANIN KENDI koordinati kullaniliyor.
+        //
+        // AG CAGRISI YOK. gunIsigi/isikHtml yerel hesap -- kodun kendi
+        // yorumu da soyluyor: "Isik once ve hemen: hesaplaniyor, agi
+        // beklemesine gerek yok." Hava durumu agi gerektiriyor ve
+        // BURAYA KONMADI: sette lazim olan sey isik, ve her Bugun
+        // acilisinda mekan basina bir istek atmaya degmez.
+        //
+        // Koordinat YOKSA satir hic yazilmiyor. Mekan adindan koordinat
+        // TAHMIN ETTIRILMIYOR (mekanKoordinati): o yol ag istiyor ve
+        // kendi yorumuna gore adi benzeyen bambaska bir yeri
+        // dondurebiliyor -- yanlis saat, hic saat olmamasindan kotu.
+        const konum = mekanKonumu(m);
+        if(konum){
+          // ⛔ SAAT HENUZ YAZILMIYOR. Gun dogumu/batimi yerel olarak
+          // hesaplanabiliyor ama HANGI SAAT DILIMINDE yazilacagi
+          // bilinmiyor: tarayicinin dilimini kullanmak, baska ulkedeki
+          // bir mekan icin yanlis saat demek (olculdu: ayni mekan UTC
+          // tarayicida 15:00, Istanbul tarayicisinda 18:00).
+          // Dilim mekanin KENDI koordinatindan, hava servisinden
+          // geliyor; havaAl onbellekli, tazelik suresi icinde yeni
+          // istek atmiyor. Dolana kadar yer tutucu duruyor -- once
+          // yanlis saati gosterip sonra duzeltmek, bir an icin yanlis
+          // bilgi vermek olurdu.
+          satirlar.push('<dt>' + E(t('bg_isik')) + '</dt>'
+            + '<dd class="bg-isik" data-isik="' + konum.en + ',' + konum.boy + '">'
+            + '<span class="bg-isik-bekle">' + E(t('hv_looking')) + '</span></dd>');
+        }
         kartlar.push('<section class="bg-mekan">'
           + '<div class="bg-mekan-et">' + E(t('bg_mekan')) + '</div>'
           + '<div class="bg-mekan-ad">' + E(mekanAdi(m)) + '</div>'
@@ -13625,6 +13668,25 @@ function bugunCiz(){
   }
 
   govde.innerHTML = kunye + gun + setBlok + bloklar.join('');
+  // Isik satirlari: mekanin dilimi gelince doluyor. Jeton, pesi sira
+  // iki cizim olursa eskisinin yeniyi ezmesini engelliyor.
+  const isikJeton = ++bugunIsikJeton;
+  govde.querySelectorAll('[data-isik]').forEach(async (hucre)=>{
+    const [la, lo] = String(hucre.dataset.isik).split(',').map(Number);
+    if(!Number.isFinite(la) || !Number.isFinite(lo)) return;
+    let tz = '';
+    try{
+      const hava = await havaAl(la, lo);
+      tz = (hava && hava.veri && hava.veri.tz) || '';
+    }catch(e){ tz = ''; }
+    if(isikJeton !== bugunIsikJeton || !document.contains(hucre)) return;
+    // Dilim gelmediyse SAAT YAZILMIYOR. Tarayicinin dilimine dusmek,
+    // yurt disindaki bir mekan icin sessizce yanlis saat gostermek
+    // olurdu -- hic saat olmamasindan kotu.
+    hucre.innerHTML = tz
+      ? isikHtml(la, lo, tz, false)
+      : '<span class="hv-not">' + escapeHtml(t('bg_isik_yok')) + '</span>';
+  });
   govde.querySelectorAll('[data-bg]').forEach(el=>{
     const f = yollar[el.dataset.bg];
     if(f) el.addEventListener('click', f);
