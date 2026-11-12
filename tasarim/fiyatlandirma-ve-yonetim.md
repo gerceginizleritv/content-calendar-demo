@@ -398,7 +398,17 @@ reddedilir. **Doğrulama:** eşik üstü istek → reddedilir.
 
 ### 12 · Yönetim sayfası arama motorlarına kapalı
 
-**Nasıl:** `noindex` + `robots.txt`; ana uygulamadan bağlantı yok.
+**Nasıl:** sayfada `noindex, nofollow, noarchive`; ana uygulamadan
+bağlantı yok (ölçüldü: `app.html` ve `index.html` içinde `yonetim.html`
+geçmiyor, 0 sonuç).
+
+⚠ **`robots.txt`'ye YAZILMADI ve yazılmayacak.** Oraya
+`Disallow: /yonetim.html` koymak, dosyayı herkese açık bir metinde
+**ilan etmek** olurdu — `robots.txt` herkesin okuyabildiği bir dosya.
+Gizlemeye çalışırken adresi duyurmak, amacın tam tersi. Sayfanın
+kendi `noindex` etiketi aynı işi yapıyor ve adresi hiçbir yerde
+yazmıyor.
+
 ⚠ **Bu güvenlik değil, gürültü azaltma** — asıl koruma madde 2.
 
 ### 13 · Her tablo için kim okur, kim yazar

@@ -1,0 +1,443 @@
+<!doctype html>
+<html lang="tr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<!-- ⛔ Arama motorlarına kapalı ve ana uygulamadan bağlantı verilmiyor.
+     ⚠ Bu GÜVENLİK DEĞİL, gürültü azaltma. Asıl koruma sunucuda:
+     yonetim Edge Function'ı her isteği "bu istek sahibinden mi"
+     diye denetliyor. Bu sayfanın kaynağında gizli hiçbir şey yok. -->
+<meta name="robots" content="noindex, nofollow, noarchive">
+<title>Shootboard — Yönetim</title>
+<link rel="icon" href="favicon.svg" type="image/svg+xml">
+<style>
+:root{
+  --bg:#F1EDE3; --surface:#FBF9F3; --surface-2:#E7E2D5; --line:#D7D1C2;
+  --text:#15130F; --text-dim:#585349; --accent:#C4350A; --on-accent:#fff;
+  --uyari:#8A5A00;
+}
+@media (prefers-color-scheme: dark){
+  :root{
+    --bg:#15130F; --surface:#1E1B16; --surface-2:#272219; --line:#37312A;
+    --text:#F0EBE0; --text-dim:#ABA496; --accent:#FF7A45; --on-accent:#15130F;
+    --uyari:#E0B050;
+  }
+}
+*{box-sizing:border-box;}
+body{
+  margin:0; background:var(--bg); color:var(--text);
+  font-family:'IBM Plex Sans','Segoe UI',system-ui,-apple-system,sans-serif;
+  font-size:15px; line-height:1.6; -webkit-font-smoothing:antialiased;
+}
+.sar{max-width:1100px; margin:0 auto; padding:20px 16px 60px;}
+header{display:flex; align-items:baseline; gap:12px; flex-wrap:wrap;
+  padding-bottom:14px; border-bottom:1px solid var(--line); margin-bottom:18px;}
+.brand{font-weight:700; font-size:1.05rem; letter-spacing:-.01em;}
+.etiket{font-size:11px; text-transform:uppercase; letter-spacing:.08em;
+  color:var(--text-dim); border:1px solid var(--line); border-radius:2px; padding:2px 7px;}
+h1{font-size:1.5rem; line-height:1.2; letter-spacing:-.02em; margin:0;}
+h2{font-size:1.05rem; margin:28px 0 10px; letter-spacing:-.01em;}
+.hint{color:var(--text-dim); font-size:13px; margin:0 0 12px;}
+.btn{font:inherit; font-size:14px; padding:9px 14px; border:1px solid var(--line);
+  border-radius:2px; background:var(--surface); color:var(--text); cursor:pointer;
+  min-height:44px;}
+.btn:hover{border-color:var(--accent); color:var(--accent);}
+.btn-ana{background:var(--accent); border-color:var(--accent); color:var(--on-accent);}
+.btn-ana:hover{color:var(--on-accent); opacity:.92;}
+.btn-sm{min-height:36px; padding:6px 10px; font-size:13px;}
+input,select{font:inherit; font-size:14px; padding:8px 10px; min-height:40px;
+  border:1px solid var(--line); border-radius:2px;
+  background:var(--surface); color:var(--text);}
+table{border-collapse:collapse; width:100%; font-size:13.5px;}
+th,td{text-align:left; padding:8px 10px; border-bottom:1px solid var(--line);
+  vertical-align:top;}
+th{font-size:11px; text-transform:uppercase; letter-spacing:.08em;
+  color:var(--text-dim); font-weight:600;}
+td.sayi,th.sayi{text-align:right; font-variant-numeric:tabular-nums;}
+.sar-kaydir{overflow-x:auto;}
+.kutular{display:flex; flex-wrap:wrap; gap:10px;}
+.kutu{flex:1 1 150px; border:1px solid var(--line); border-radius:2px;
+  background:var(--surface); padding:12px 14px;}
+.kutu b{display:block; font-size:1.6rem; font-variant-numeric:tabular-nums;
+  letter-spacing:-.02em;}
+.kutu span{font-size:12px; color:var(--text-dim);}
+.uyari{border-left:2px solid var(--uyari); background:var(--surface-2);
+  padding:10px 14px; border-radius:2px; margin:14px 0; font-size:13.5px;}
+.uyari b{color:var(--uyari);}
+.giris{max-width:380px; margin:60px auto; text-align:center;}
+.giris .btn{width:100%; margin-top:10px;}
+.gizle{display:none;}
+.durum{font-size:13px; color:var(--text-dim); min-height:20px; margin:8px 0 0;}
+.durum.hata{color:var(--accent);}
+nav.sekme{display:flex; flex-wrap:wrap; gap:6px; margin-bottom:6px;}
+nav.sekme button{font:inherit; font-size:13.5px; padding:8px 12px; min-height:44px;
+  border:1px solid transparent; border-bottom:2px solid transparent;
+  background:none; color:var(--text-dim); cursor:pointer;}
+nav.sekme button[aria-selected="true"]{color:var(--text);
+  border-bottom-color:var(--accent); font-weight:600;}
+.sayfa{display:none;} .sayfa.acik{display:block;}
+</style>
+</head>
+<body>
+<div class="sar">
+
+<!-- ───────── GİRİŞ ───────── -->
+<div id="girisEkrani" class="giris">
+  <p class="brand">Shootboard</p>
+  <h1>Yönetim</h1>
+  <p class="hint">Bu alan yalnızca sahibin hesabına açık.</p>
+  <button type="button" class="btn btn-ana" id="googleGiris">Google ile gir</button>
+  <button type="button" class="btn" id="postaGiris">E-posta bağlantısıyla gir</button>
+  <p class="durum" id="girisDurum"></p>
+</div>
+
+<!-- ───────── PANEL ───────── -->
+<div id="panel" class="gizle">
+  <header>
+    <span class="brand">Shootboard</span>
+    <span class="etiket">Yönetim</span>
+    <span class="hint" id="kimSatiri" style="margin:0 0 0 auto"></span>
+    <button type="button" class="btn btn-sm" id="cikis">Çık</button>
+  </header>
+
+  <nav class="sekme" role="tablist">
+    <button role="tab" data-sayfa="ozet"     aria-selected="true">Özet</button>
+    <button role="tab" data-sayfa="hesaplar" aria-selected="false">Hesaplar</button>
+    <button role="tab" data-sayfa="odemeler" aria-selected="false">Ödemeler</button>
+    <button role="tab" data-sayfa="fiyatlar" aria-selected="false">Fiyatlar</button>
+    <button role="tab" data-sayfa="vergi"    aria-selected="false">Vergi</button>
+    <button role="tab" data-sayfa="denetim"  aria-selected="false">Denetim kaydı</button>
+  </nav>
+  <p class="durum" id="durum"></p>
+
+  <!-- ÖZET -->
+  <section class="sayfa acik" id="s-ozet">
+    <h2>Özet</h2>
+    <p class="hint">Yalnızca sayılar. Kullanıcıların kayıt içeriği burada gösterilmiyor.</p>
+    <div class="kutular" id="ozetKutular"></div>
+  </section>
+
+  <!-- HESAPLAR -->
+  <section class="sayfa" id="s-hesaplar">
+    <h2>Hesaplar</h2>
+    <div class="uyari">
+      <b>Kişisel veri.</b> Bu liste e-posta ve son giriş zamanı
+      içeriyor. Canlıya çıkmadan önce gizlilik metnine yazılmalı.
+    </div>
+    <div class="sar-kaydir"><table id="hesapTablo"></table></div>
+  </section>
+
+  <!-- ÖDEMELER -->
+  <section class="sayfa" id="s-odemeler">
+    <h2>Ödemeler</h2>
+    <p class="hint">Yurt içi / yurt dışı ayrımı, sağlayıcının verdiği fatura
+      ülkesinden gelir — tarayıcı dilinden ya da IP'den tahmin edilmez.</p>
+    <div class="sar-kaydir"><table id="odemeTablo"></table></div>
+  </section>
+
+  <!-- FİYATLAR -->
+  <section class="sayfa" id="s-fiyatlar">
+    <h2>Fiyatlar</h2>
+    <p class="hint">Tutarlar kuruş/cent cinsinden girilir: 9 USD → 900,
+      320 TRY → 32000. TRY, USD'den kurla hesaplanmaz.</p>
+    <div class="uyari">
+      <b>Salt okunur varsayılan.</b> Bir fiyatı değiştirmek için
+      satırdaki kutuyu doldurup <b>Kaydet</b>'e bas; önce özet ve onay
+      çıkar. Çok büyük değişimde ikinci onay istenir.
+    </div>
+    <div class="sar-kaydir"><table id="fiyatTablo"></table></div>
+    <h2>Planlar ve limitler</h2>
+    <div class="sar-kaydir"><table id="limitTablo"></table></div>
+  </section>
+
+  <!-- VERGİ -->
+  <section class="sayfa" id="s-vergi">
+    <h2>Vergi</h2>
+    <div class="uyari">
+      <b>Oranı sen giriyorsun.</b> Buraya yazılacak sayı mali
+      müşavirinin işi — uygulama hiçbir oran varsaymıyor ve başlangıç
+      değeri koymuyor.
+    </div>
+    <p class="hint">Oran <b>baz puan</b> olarak girilir: %20 → 2000, %10 → 1000.
+      Eski oran silinmez; yeni yürürlük tarihiyle yeni satır olur.</p>
+    <div style="display:flex;flex-wrap:wrap;gap:8px;align-items:flex-end;margin-bottom:14px">
+      <label>Bölge<br><input id="v_region" maxlength="8" placeholder="TR" style="width:90px"></label>
+      <label>Oran (baz puan)<br><input id="v_rate" type="number" min="0" max="10000" style="width:130px"></label>
+      <label>Yürürlük<br><input id="v_from" type="date"></label>
+      <label style="min-height:44px;display:flex;align-items:center;gap:6px">
+        <input type="checkbox" id="v_dahil" checked> Fiyat KDV dahil gösterilsin</label>
+      <label style="min-height:44px;display:flex;align-items:center;gap:6px">
+        <input type="checkbox" id="v_vkn"> Vergi kimliği istensin</label>
+      <button type="button" class="btn btn-ana" id="vergiKaydet">Kaydet</button>
+    </div>
+    <div class="sar-kaydir"><table id="vergiTablo"></table></div>
+  </section>
+
+  <!-- DENETİM -->
+  <section class="sayfa" id="s-denetim">
+    <h2>Denetim kaydı</h2>
+    <p class="hint">Yönetimde yapılan her iş buraya yazılır. Silinemez.</p>
+    <div class="sar-kaydir"><table id="denetimTablo"></table></div>
+  </section>
+</div>
+
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.45.4/dist/umd/supabase.js"></script>
+<script>
+// ⛔ BU DOSYADA GİZLİ HİÇBİR ŞEY YOK. Aşağıdaki anahtar app.html'dekiyle
+// aynı: "publishable" (anon) anahtar, istemci kodunda durmak üzere
+// tasarlanmış. Güvenliği sağlayan şey anahtar değil, veritabanındaki
+// RLS politikaları ve yonetim fonksiyonundaki sunucu denetimi.
+const SUPABASE_URL = 'https://dyemvzmpnlpnzwebuciu.supabase.co';
+const SUPABASE_KEY = 'sb_publishable_QpzqwOn4BX43GtX9ecaowQ_qIlaHJA-';
+const UC = SUPABASE_URL + '/functions/v1/yonetim';
+
+const sb = window.supabase
+  ? window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY)
+  : null;
+const $ = (id)=> document.getElementById(id);
+const esc = (s)=>{ const d = document.createElement('div');
+  d.textContent = (s === undefined || s === null) ? '' : s; return d.innerHTML; };
+
+function durum(metin, hataMi){
+  const el = $('durum'); if(!el) return;
+  el.textContent = metin || '';
+  el.classList.toggle('hata', !!hataMi);
+}
+
+// Her çağrı oturum jetonunu taşıyor. ⛔ "Ben yöneticiyim" diye bir
+// bilgi GÖNDERİLMİYOR: kimliği sunucu, jetondan kendisi çözüyor.
+async function cagir(govde){
+  const { data } = await sb.auth.getSession();
+  const jeton = data && data.session && data.session.access_token;
+  if(!jeton) throw new Error('oturum yok');
+  const r = await fetch(UC, {
+    method: 'POST',
+    headers: { 'Content-Type':'application/json', Authorization: 'Bearer ' + jeton },
+    body: JSON.stringify(govde)
+  });
+  const c = await r.json().catch(()=> ({}));
+  if(!r.ok){ const e = new Error(c.hata || ('http ' + r.status)); e.kod = r.status; e.govde = c; throw e; }
+  return c;
+}
+
+// ⚠ Kütüphane yüklenemediyse (ağ kesik, CDN engelli) sayfa SESSİZCE
+// bir JS hatası veriyordu: kullanıcı giriş düğmesine basıyor, hiçbir
+// şey olmuyor ve sebebini göremiyordu. app.html bu hâli zaten
+// gözetiyor; burada atlanmıştı.
+if(!sb){
+  $('girisDurum').textContent =
+    'Giriş kütüphanesi yüklenemedi. Ağ bağlantını kontrol edip sayfayı yenile.';
+  $('googleGiris').disabled = true;
+  $('postaGiris').disabled = true;
+}
+
+// ---- Giriş ----------------------------------------------------------
+$('googleGiris').addEventListener('click', async ()=>{
+  $('girisDurum').textContent = 'Yönlendiriliyor…';
+  await sb.auth.signInWithOAuth({ provider:'google',
+    options:{ redirectTo: location.origin + location.pathname } });
+});
+$('postaGiris').addEventListener('click', async ()=>{
+  const posta = prompt('E-posta adresin:');
+  if(!posta) return;
+  $('girisDurum').textContent = 'Gönderiliyor…';
+  const { error } = await sb.auth.signInWithOtp({ email: posta.trim(),
+    options:{ emailRedirectTo: location.origin + location.pathname } });
+  $('girisDurum').textContent = error ? ('Olmadı: ' + error.message)
+    : 'Bağlantı gönderildi, e-postana bak.';
+});
+$('cikis').addEventListener('click', async ()=>{ await sb.auth.signOut(); location.reload(); });
+
+// ---- Sekmeler -------------------------------------------------------
+document.querySelectorAll('nav.sekme button').forEach(d=>{
+  d.addEventListener('click', ()=>{
+    document.querySelectorAll('nav.sekme button').forEach(x=>
+      x.setAttribute('aria-selected', String(x === d)));
+    document.querySelectorAll('.sayfa').forEach(x=> x.classList.remove('acik'));
+    $('s-' + d.dataset.sayfa).classList.add('acik');
+    yukle(d.dataset.sayfa);
+  });
+});
+
+// ---- Çizim ----------------------------------------------------------
+function tabloCiz(el, basliklar, satirlar){
+  el.innerHTML = '<thead><tr>'
+    + basliklar.map(b=> '<th' + (b.sayi ? ' class="sayi"' : '') + '>' + esc(b.ad) + '</th>').join('')
+    + '</tr></thead><tbody>'
+    + (satirlar.length
+        ? satirlar.map(s=> '<tr>' + s.map((h,i)=>
+            '<td' + (basliklar[i] && basliklar[i].sayi ? ' class="sayi"' : '') + '>' + h + '</td>').join('') + '</tr>').join('')
+        : '<tr><td colspan="' + basliklar.length + '" class="hint">Kayıt yok.</td></tr>')
+    + '</tbody>';
+}
+const tarih = (t)=> t ? new Date(t).toLocaleString('tr-TR') : '—';
+// Kuruş/cent → okunur. Tutarı ondalık olarak TUTMUYORUZ, yalnızca
+// gösterirken bölüyoruz.
+const para = (minor, birim)=> (Number(minor)/100).toLocaleString('tr-TR',
+  { minimumFractionDigits:2, maximumFractionDigits:2 }) + ' ' + esc(birim);
+
+const yuklendi = {};
+async function yukle(ad, zorla){
+  if(yuklendi[ad] && !zorla) return;
+  durum('Yükleniyor…');
+  try{
+    if(ad === 'ozet'){
+      const d = await cagir({ islem:'ozet' });
+      const k = d.kontenjan || {};
+      $('ozetKutular').innerHTML = [
+        ['Abonelik', d.abonelik_toplam], ['Aktif abonelik', d.abonelik_aktif],
+        ['Ödeme', d.odeme_toplam], ['Başarılı ödeme', d.odeme_basarili],
+        ['Kurucu Üye satılan', (k.sold ?? 0) + ' / ' + (k.quota ?? 0)]
+      ].map(([a,b])=> '<div class="kutu"><b>' + esc(b) + '</b><span>' + esc(a) + '</span></div>').join('');
+    }
+    if(ad === 'hesaplar'){
+      const d = await cagir({ islem:'hesaplar' });
+      tabloCiz($('hesapTablo'),
+        [{ad:'E-posta'},{ad:'Kayıt'},{ad:'Son giriş'},{ad:'Plan'},{ad:'Durum'}],
+        d.map(x=> [esc(x.eposta), tarih(x.kayit), tarih(x.son_giris),
+                   esc(x.plan), esc(x.durum || '—')]));
+    }
+    if(ad === 'odemeler'){
+      const d = await cagir({ islem:'odemeler' });
+      tabloCiz($('odemeTablo'),
+        [{ad:'Tarih'},{ad:'Plan'},{ad:'Tutar',sayi:true},{ad:'Ülke'},
+         {ad:'Yurt içi'},{ad:'Durum'},{ad:'İşlem no'}],
+        d.map(x=> [tarih(x.created_at), esc(x.plan_key),
+                   para(x.amount_minor, x.currency), esc(x.billing_country || '—'),
+                   x.yurt_ici === null ? '—' : (x.yurt_ici ? 'evet' : 'hayır'),
+                   esc(x.status), esc(x.provider_ref || '—')]));
+    }
+    if(ad === 'fiyatlar' || ad === 'vergi'){
+      const d = await cagir({ islem:'fiyatlar' });
+      const gorunur = new Map(d.planlar.map(p=> [p.key, p]));
+      tabloCiz($('fiyatTablo'),
+        [{ad:'Plan'},{ad:'Para'},{ad:'Dönem'},{ad:'Şu an',sayi:true},{ad:'Yeni (kuruş)'},{ad:''}],
+        d.fiyatlar.map(x=> [
+          esc(x.plan_key) + (gorunur.get(x.plan_key) && !gorunur.get(x.plan_key).visible
+            ? ' <span class="etiket">gizli</span>' : ''),
+          esc(x.currency), esc(x.period),
+          '<span style="font-variant-numeric:tabular-nums">' + esc(x.amount_minor) + '</span>',
+          '<input type="number" min="0" style="width:130px" data-f="'
+            + esc(x.plan_key) + '|' + esc(x.currency) + '|' + esc(x.period)
+            + '" value="' + esc(x.amount_minor) + '">',
+          '<button type="button" class="btn btn-sm" data-kaydet="'
+            + esc(x.plan_key) + '|' + esc(x.currency) + '|' + esc(x.period) + '">Kaydet</button>'
+        ]));
+      tabloCiz($('limitTablo'),
+        [{ad:'Plan'},{ad:'Görünür'},{ad:'Etiket'},{ad:'Limit'},{ad:'Değer',sayi:true}],
+        d.limitler.map(x=> {
+          const p = gorunur.get(x.plan_key) || {};
+          return [esc(x.plan_key), p.visible ? 'evet' : 'hayır',
+                  esc(p.badge || '—'), esc(x.limit_key),
+                  x.limit_value === null ? 'sınırsız' : esc(x.limit_value)];
+        }));
+      tabloCiz($('vergiTablo'),
+        [{ad:'Bölge'},{ad:'Oran',sayi:true},{ad:'KDV dahil'},{ad:'Vergi kimliği'},{ad:'Yürürlük'}],
+        (d.vergi || []).map(x=> [esc(x.region),
+          (x.rate_bp/100).toLocaleString('tr-TR') + '%',
+          x.price_includes_tax ? 'evet' : 'hayır',
+          x.tax_id_required ? 'isteniyor' : 'hayır', esc(x.valid_from)]));
+      yuklendi.fiyatlar = true; yuklendi.vergi = true;
+    }
+    if(ad === 'denetim'){
+      const d = await cagir({ islem:'denetim' });
+      tabloCiz($('denetimTablo'),
+        [{ad:'Tarih'},{ad:'İşlem'},{ad:'Hedef'},{ad:'Eski'},{ad:'Yeni'}],
+        d.map(x=> [tarih(x.created_at), esc(x.action), esc(x.target || '—'),
+                   esc(JSON.stringify(x.old_value)), esc(JSON.stringify(x.new_value))]));
+    }
+    yuklendi[ad] = true;
+    durum('');
+  }catch(e){
+    durum(e.kod === 403 ? 'Bu hesap yönetici değil.' : ('Olmadı: ' + e.message), true);
+  }
+}
+
+// ---- Fiyat kaydetme: onay şart --------------------------------------
+document.addEventListener('click', async (e)=>{
+  const d = e.target.closest && e.target.closest('[data-kaydet]');
+  if(!d) return;
+  const [plan, para_, donem] = d.dataset.kaydet.split('|');
+  const kutu = document.querySelector('[data-f="' + CSS.escape(d.dataset.kaydet) + '"]');
+  const yeni = Number(kutu && kutu.value);
+  if(!Number.isInteger(yeni) || yeni < 0){ durum('Tutar tam sayı olmalı (kuruş/cent).', true); return; }
+
+  // ⛔ Kaydetmeden önce ÖZET VE ONAY. Promptun şartı.
+  const eski = kutu.defaultValue;
+  if(String(eski) === String(yeni)){ durum('Değer aynı, bir şey yapılmadı.'); return; }
+  const ozetMetin = plan + ' · ' + para_ + ' · ' + donem + ': '
+    + eski + ' → ' + yeni + ' (kuruş/cent)\n\nYalnızca yeni alımlar için.\nOnaylıyor musun?';
+  if(!confirm(ozetMetin)) return;
+
+  try{
+    await cagir({ islem:'fiyat-degistir', onay:true,
+                  plan_key:plan, currency:para_, period:donem, amount_minor:yeni });
+    durum('Kaydedildi.'); yukle('fiyatlar', true);
+  }catch(err){
+    // Sunucu çok büyük değişimde İKİNCİ ONAY istiyor.
+    if(err.kod === 409 && err.govde && err.govde.hata === 'buyuk_degisim'){
+      if(confirm('Fiyat çok büyük oranda değişiyor:\n'
+          + err.govde.eski_minor + ' → ' + err.govde.yeni_minor
+          + '\n\nYanlışlıkla bir sıfır fazla yazmış olabilir misin?\nYine de kaydedilsin mi?')){
+        try{
+          await cagir({ islem:'fiyat-degistir', onay:true, buyuk_degisim_onay:true,
+                        plan_key:plan, currency:para_, period:donem, amount_minor:yeni });
+          durum('Kaydedildi.'); yukle('fiyatlar', true);
+        }catch(e2){ durum('Olmadı: ' + e2.message, true); }
+      }
+      return;
+    }
+    const aciklama = {
+      eksi_fiyat: 'Fiyat eksi olamaz.',
+      ucretli_planda_sifir: 'Ücretli planda fiyat sıfır olamaz.',
+      yillik_aylikatan_pahali: 'Yıllık toplam, 12 × aylıktan pahalı olamaz.'
+    }[err.message] || err.message;
+    durum('Olmadı: ' + aciklama, true);
+  }
+});
+
+// ---- Vergi kaydetme: onay şart --------------------------------------
+$('vergiKaydet').addEventListener('click', async ()=>{
+  const region = $('v_region').value.trim().toUpperCase();
+  const rate = Number($('v_rate').value);
+  if(!region){ durum('Bölge gerekli.', true); return; }
+  if(!Number.isInteger(rate) || rate < 0 || rate > 10000){
+    durum('Oran 0 ile 10000 arasında tam sayı olmalı (baz puan).', true); return; }
+  if(!confirm(region + ' için oran: %' + (rate/100) + '\n'
+      + ($('v_dahil').checked ? 'Fiyatlar KDV dahil gösterilecek.' : 'Fiyatlar KDV hariç gösterilecek.')
+      + '\n\nOnaylıyor musun?')) return;
+  try{
+    await cagir({ islem:'vergi-kaydet', onay:true, region, rate_bp:rate,
+      price_includes_tax: $('v_dahil').checked,
+      tax_id_required: $('v_vkn').checked,
+      valid_from: $('v_from').value || undefined });
+    durum('Kaydedildi.'); yukle('fiyatlar', true);
+  }catch(e){ durum('Olmadı: ' + e.message, true); }
+});
+
+// ---- Açılış ---------------------------------------------------------
+async function acilis(){
+  if(!sb) return;
+  const { data } = await sb.auth.getSession();
+  if(!data || !data.session){ return; }
+  // Oturum var ama YÖNETİCİ OLDUĞU BURADA VARSAYILMIYOR: ilk çağrı
+  // sunucuda denetleniyor; 403 dönerse panel açılmıyor.
+  try{
+    await cagir({ islem:'ozet' });
+  }catch(e){
+    $('girisDurum').textContent = e.kod === 403
+      ? 'Bu hesap yönetici değil.' : ('Olmadı: ' + e.message);
+    return;
+  }
+  $('girisEkrani').classList.add('gizle');
+  $('panel').classList.remove('gizle');
+  $('kimSatiri').textContent = data.session.user.email || '';
+  yukle('ozet', true);
+}
+if(sb) sb.auth.onAuthStateChange(()=> acilis());
+acilis();
+</script>
+</body>
+</html>
