@@ -6,6 +6,110 @@ duruyor, neden ertelendiği de yazıyor ki aynı tartışma baştan yapılmasın
 
 ---
 
+## BASİTLEŞME ve YEDİ ADIM — SIRADAKİ İŞ, HENÜZ BAŞLANMADI
+## 12 Kasım 2026
+
+⛔ **Bilerek başlanmadı.** Kullanıcı promptu verirken kendi sözleriyle
+şunu dedi:
+
+> *"Bunu başladığın geliştirmeler bittikten sonra üzerine konuşacağız.
+> Yapılacaklar gibi düşünebilirsin."*
+
+Yani bu iş, altı geliştirme (Aşama 0-5) bitmeden açılmayacak. Promptun
+kendisi de ilk cevapta hiçbir dosyanın değiştirilmemesini istiyor:
+**önce plan, sonra kod**, her aşama ayrı onay.
+
+### ⚠ BAŞLAMADAN ÖNCE OKUNAMAYAN BİR DOSYA VAR
+
+Prompt şunu okumamı istiyor:
+
+    E:\SLATE\shootboard-video\urun-plani-v1.md  (Bölüm 4 ve 5)
+
+Bu dosya **depo dışında** ve bu oturum bulutta koşuyor; o diske
+erişimim yok. Promptun kendi kuralı: *"okuyamazsan TAHMİN ETME, DUR ve
+kullanıcıya yaz."* Yazıldı. İş başlayınca kullanıcının o dosyanın
+içeriğini sohbete yapıştırması ya da depoya koyması gerekiyor —
+öneriler (Bölüm 4) ve yedi adım seçenekleri (Bölüm 5) oradan geliyor.
+
+### İş ne
+
+**A — Basitleşme.** Yeni gelenin ilk dakikası ve günlük kullanımın
+yükü azalacak. ⛔ **Özellik SİLİNMEYECEK**: sıralanacak, katlanacak,
+ihtiyaç anında görünecek. Ayar ekleyerek ("basit mod / gelişmiş mod")
+basitleştirmek de yasak — karmaşıklığı kullanıcıya geri verir.
+
+Öneriler: (1) ilk ekran Bugün + tek düğme, kendiliğinden açılan pencere
+yok; (2) yeni kayıtta üç alan görünür, gerisi katlı, Kaydet hep
+görünür; (3) gezinme sekizden dörde (Bugün / Planla / Çek / Yayınla);
+(4) boş ekran yok; (5) ihtiyaç anında görünen özellikler (çok dilli
+başlık yalnızca YouTube seçilince, AI düğmeleri yalnızca anahtar
+girilince).
+
+**B — Yedi adım.** Sabit yedi adım esnetilecek. Üç seçenek:
+A·ATLA (adım "bu projede yok" denebilir, gecikmiş sayılmaz),
+B·HAZIR AKIŞLAR (proje türüne göre hazır adım dizileri),
+C·TAM ÖZEL (kullanıcı adım ekler/siler/adlandırır/sıralar).
+Araştırmanın önerisi A ve B; C, Notion'da şikâyet edilen "kendin kur"
+yükünü getiriyor ve basitleşme kararıyla çelişiyor. **Karar
+kullanıcının** ve etki raporu görülmeden verilmeyecek.
+
+### Gerekçe (promptun verdiği kanıt)
+
+· 11 Kasım 2026 kullanıcı testi: ilk dakikada **5 kesinti** (tur,
+  bekleyenler penceresi, örnekleri kaldırma sorusu, anket, giriş
+  şeridi); telefonda takvim ilk ekranın **%67'sinden** sonra
+  başlıyordu; yeni kayıt formu **1.549 piksel**, Kaydet en altta;
+  **sekiz sekme**.
+· Üreticilerin kendi sözleri (10 Reddit başlığı): Notion şablonları
+  fazla karmaşık; *"kanalım ikinci bir iş gibi olmasın"*; çoğu "tek
+  dosya yeter" diyor.
+· Kullanıcı kararı (12 Kasım 2026): *"basitleşmeliyiz"*.
+
+### ⚠ BİLİNEN ÇELİŞKİ — karar bekliyor
+
+Çekim Föyü'nün telefon çizimi **sekiz sekmeyi 4+4 tabloda** gösteriyor.
+Basitleşme önerisi sekmeleri **dörde** indiriyor. İkisi birden olmaz.
+Kullanıcıya sorulacak (promptun 2. sorusu). Çekim Föyü **main'de,
+canlıda** (b300d65) — yani bu, yapılmış bir işin üstüne gidiyor.
+
+### İlk aşama kod değil
+
+    1. Çakışma haritası + yedi adım etki raporu   (kod yok)
+    2. İlk ekran ve kesintiler
+    3. Yeni kayıt
+    4. Gezinme
+    5. Boş ekranlar ve ihtiyaç anında görünen özellikler
+    6. Yedi adım (seçilen seçenek); önce tasarım belgesi
+    7. Kılavuz ve MARKA.md metinleri (önce göster)
+
+Çakışma haritası şunu çıkaracak: her öneri için **ZATEN YAPILDI /
+BAŞKA İŞTE PLANLI / YENİ**. Üç iş aynı yere dokunuyor: 11 Kasım
+testinin 15 bulgusu, Çekim Föyü tasarımı, altı geliştirme.
+
+### Başlarken hatırlanacak kurallar
+
+· Testler zayıflatılmayacak. Bazı testler **kaynak metnine** bakıyor;
+  sekme adları ve öğe kimlikleri değişirse düşerler. Önce Grep ile
+  kullanıldığı her yer bulunacak.
+· Öğe id'leri ve JS'in tutunduğu sınıf adları korunacak; değişmesi
+  gerekiyorsa önce listelenecek.
+· Bir özelliğin yeri değişirse **eski kullanıcı onu nerede bulacak**:
+  her değişiklik için yazılacak.
+· `kilavuz.html` ve `guide.html` ekran adlarına göre yazılı; değişen
+  her ad için kılavuz metni önce gösterilecek.
+
+### Ölçüm ölçütleri (promptun verdiği, her aşamadan sonra)
+
+Demo modu, tarayıcı kaydı temizlenmiş, hesaba girmeden:
+ilk dakikada kendiliğinden açılan pencere **0**; ilk ekranda
+kaydırmadan bugünün işi görünür (380x700, 390x844, 768x1024,
+1440x900); Kaydet kaydırmadan görünür; her sayfaya **en çok iki
+dokunuş**; ilk çekim listesi 30 saniyede dolu; 11 genişlikte yatay
+taşma yok; dokunma hedefi ≥44 px, en küçük yazı ≥11 px, kontrast ≥4,5.
+Sonuçlar **11 Kasım değeri / bugünkü değer** diye yan yana verilecek.
+
+---
+
 ## BÖLÜM 2 (fiyat / ödeme duvarı / yönetim) — KULLANICI KARARLARI
 ## 12 Kasım 2026
 
