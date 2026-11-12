@@ -6,6 +6,133 @@ duruyor, neden ertelendiği de yazıyor ki aynı tartışma baştan yapılmasın
 
 ---
 
+## AŞAMA 5 — PLAN LİSTESİ: ALINAN KARARLAR
+## 12 Kasım 2026 — kod yazılmadan önce
+
+Henüz **tasarım belgesi** aşamasında; kod yok. Üç soru soruldu, üçü
+de cevaplandı.
+
+### 1. İngilizce ad çakışması — ÇÖZÜLDÜ
+
+Uygulamada zaten "Çekim listesi" var: çekime **götürülecekler**
+(malzeme, izin). MARKA.md sözlüğünde İngilizcesi **"shot checklist"**.
+Yeni gelen "plan listesi" ise **çekilecek planlar** — İngilizcede tam
+karşılığı "shot list". İkisi İngilizce arayüzde ayırt edilemeyecek
+kadar benziyordu. Türkçede sorun yok.
+
+**Karar:** yeni liste İngilizcede **"Shot list"**, eskisi
+**"Kit & prep"** olur. Türkçe hiçbir ad değişmiyor.
+
+Dokunulacak yerler (Grep ile çıkarıldı, kullanıcıya listelendi):
+
+| Dosya | Ne |
+|---|---|
+| `app.html` | `cl_title`, o anahtarın HTML yedek metni, `bugun_eksik_liste` |
+| `guide.html` | içindekiler bağlantısı + bölüm başlığı |
+| `MARKA.md` | sözlük satırı + yeni "shot list" satırı |
+
+⛔ **Değişmeyecekler:** Türkçe metinlerin hiçbiri · bölüm kimliği
+`cekim-listesi` (iki kılavuzda da; `kilavuz.test.js` "bölüm
+kimlikleri birebir aynı" diye ölçüyor) · öğe kimlikleri · testler.
+
+**Hiçbir test İngilizce adı okumuyor** — arandı ve doğrulandı.
+`proje-tek-pencere` ve `proje-rozet` "Çekim listesi" geçiriyor ama
+yorumda ya da Türkçe tarafta, ikisi de öğe kimliğiyle çalışıyor.
+
+**Eski kullanıcı nereye bakacak:** ad değişiyor, **yer ve düğme
+değişmiyor** — aynı proje penceresi, aynı düğme. Türkçe kullanan
+hiçbir şey fark etmeyecek.
+
+### 2. Script bölümü bağlantısı — İŞARET
+
+Belge "bağlantı; numara değil" diyor ama script bugün düz metin,
+bölüm diye bir şey yok. Üç seçenek soruldu.
+
+**Karar: script'in İÇİNE kullanıcının koyduğu işaret** (örnek satır
+başında `## Giriş`). Plan o işarete bağlanır; script düzenlenince bağ
+kopmaz çünkü işaret metnin içinde taşınır.
+
+⛔ **Paragraf sırası ELENDİ:** araya bir paragraf eklenince bütün
+bağlar kayardı ve bu **sessiz** olurdu — plan yanlış bölümü
+gösterir, hiçbir yerde hata çıkmaz.
+
+### 3. AI taslak üretme — SONA
+
+Belge "Gemini anahtarı olanlara script'ten taslak plan listesi"
+diyor. **Karar: Aşama 5'e girmiyor.** ChatGPT/Claude bağlama işiyle
+aynı turda ele alınacak ki üç sağlayıcı için tek seferde tasarlansın
+ve Gemini'ye özel bir yol açılmasın.
+
+### Belgeden gelen, henüz tasarlanmamış parçalar
+
+· İki görünüm, tek liste: **yazarken** script sırasına göre,
+  **sette** mekana göre ve çekilmeyenler üstte.
+· Tek dokunuşla eklenen hatırlatmalar (mekan başına): geniş plan ·
+  orta plan · yakın plan · geliş/ayrılış · kameraya konuşma ·
+  30 saniye ortam sesi · kapak fotoğrafı · dikey sürüm.
+· Bugün sayfası: "çekimden önce eksik" bölümüne "plan listesi yok".
+· Mekandan ayrılırken: çekilmeyen **olmazsa olmaz** varsa uyarı.
+· Alanlar: açıklama, tür (konuşma/ek görüntü/ekran kaydı/fotoğraf),
+  mekan, script bölümü, çekildi işareti — zorunlu; olmazsa olmaz,
+  not, dikey de çek — isteğe bağlı.
+· ⛔ **Bilerek YOK:** lens, kare hızı, açı, kamera hareketi, sahne
+  numarası, süre tahmini. Bunlar ekip için; tek kişilik üreticiye yük.
+
+⚠ Ayrıca Aşama 3'te yapılamayan bir şey buraya bağlı: ışık bilgisinin
+"plan listesinin sette görünümü"nde gösterilmesi. O liste bu aşamada
+doğacak.
+
+---
+
+## AŞAMA 0 — PLATFORM BAŞINA ETİKET: YAPILMAYACAK
+## 12 Kasım 2026 — kullanıcı kararı
+
+⛔ **Bu iş iptal edildi.** Kullanıcının kendi sözleriyle:
+
+> *"aşama 0'ı atla burada değişiklik yapmama kararı verdim. Çünkü
+> zaten konu ile ilgili konulacak etiketler genel olarak aynı post
+> için birbirine benziyor."*
+
+### ⚠ Bu, AYNI GÜN verilmiş bir kararı geri alıyor
+
+Aynı gün daha önce kullanıcı "Platform başına ayrı üret" demiş ve
+tasarımını da anlatmıştı:
+
+> *"Kullanıcı Instagram için kayıt açıyorsa ona karşısına Instagram
+> etiketleri alanı çıkacak, başka SM kaydı açıyorsa o alan çıkacak.
+> Copy yaparsam kaydı zaten copy yaptığı kayıttan başka bir SM kanalı
+> seçecek o kanalı seçtiğinde de ilgili alan değişir ve seçtiği alan
+> gelir."*
+
+O tasarım **veri yapısına dokunuyordu**: etiketler tek bir alanda
+duruyor, platform başına ayrılması kaydın şeklini değiştiriyordu — ve
+o alanın `sanitizeEvent`, `toRow`, bulut eşitleme, yedek, dışa
+aktarma, paylaşım bağlantısı ve MCP yollarından ayrı ayrı geçmesi
+gerekiyordu. (12 Kasım'da Aşama 2'de ölçüldü: `sanitizeEvent`
+tanımadığı alanı **sessizce düşürüyor**.)
+
+Kullanıcının gerekçesi bunu gereksiz kılıyor: aynı paylaşımın
+etiketleri platformdan platforma zaten büyük ölçüde aynı.
+
+### Bugün ne var
+
+Tek bir etiket alanı, bütün platformlar için ortak. Değişmiyor.
+
+### Geri dönülürse ne lazım
+
+Karar değişirse iş küçük değil: veri yapısı + yedi geçiş yolu + göç
+(mevcut kayıtların tek alanı platform başına nasıl dağılacak, kayıp
+olmadan). Önce tasarım belgesi yazılmalı.
+
+⚠ Instagram'ın "en çok beş etiket" kuralı HÂLÂ DOĞRULANMADI. Aşama
+2'de yayın günü listesine yazıldı çünkü kullanıcının verdiği
+belgeden geliyor; birinci elden doğrulanmadı. Instagram yardım
+sayfası JS ile çiziliyor ve bot kapısı var; tarayıcı kimliği taklidi
+denendi ve DOĞRU OLARAK reddedildi. YouTube'un 60 etiket kuralı
+doğrulandı.
+
+---
+
 ## BASİTLEŞME ve YEDİ ADIM — SIRADAKİ İŞ, HENÜZ BAŞLANMADI
 ## 12 Kasım 2026
 
