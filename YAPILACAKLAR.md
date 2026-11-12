@@ -6,6 +6,30 @@ duruyor, neden ertelendiği de yazıyor ki aynı tartışma baştan yapılmasın
 
 ---
 
+## AŞAMA 2b KAPATILDI (12 Kasım 2026)
+
+2b iki parçaydı; **ölçüm ikisinin de gerekçesini değiştirdi.**
+
+**1. Hesap menüsü kalabalığı — artık yok.** Gerekçe 2a'nın telefon
+düzeninden geliyordu (avatar + Giriş yap + dil + "⋯" tek satırda).
+2a geri alındı, sorun da gitti. Ölçüldü: masaüstünde `.rail-me`
+182×163 bir sütun — avatar, Giriş yap, dil alt alta; `railMoreBtn`
+masaüstünde 0×0 (o telefonun düğmesi). Düzeltilecek bir şey yok.
+
+**2. Masaüstü üst şerit — yapılmadı, kullanıcı kararı.**
+Çizimler (FoyProjeler / FoyMekan) masaüstünde yatay bir üst şerit
+gösteriyor. Ölçülen boyut: kenar çubuğu 208×1047, dört bölüm
+(marka, hesap+dil, hava kutusu, yardım bağlantıları), **24
+tıklanabilir öğe**, ve `rail` geçen **14 test dosyası**.
+
+Bu, telefonda yapılıp **geri alınan** değişikliğin masaüstü ikizi.
+Telefonda gerekçe bütçeydi (120 px şerit / 134 px çizim);
+masaüstünde yer sorunu yok, yani teknik olarak yapılabilir — ama
+24 öğeyi dört bölümden tek bir yatay şeride dağıtmak demek.
+
+Karar: **yapılmadı.** Kenar çubuğu olduğu gibi kalıyor.
+İleride istenirse aşamalara bölünerek ele alınabilir.
+
 ## BAŞKA BİR AI SAĞLAYICI (ChatGPT / Claude) — 12 Kasım 2026
 
 Kullanıcı sordu: Gemini dışında ChatGPT ya da Claude bağlanabilir mi?
