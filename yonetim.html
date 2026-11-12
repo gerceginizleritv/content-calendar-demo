@@ -138,8 +138,9 @@ nav.sekme button[aria-selected="true"]{color:var(--text);
   <!-- FİYATLAR -->
   <section class="sayfa" id="s-fiyatlar">
     <h2>Fiyatlar</h2>
-    <p class="hint">Tutarlar kuruş/cent cinsinden girilir: 9 USD → 900,
-      320 TRY → 32000. TRY, USD'den kurla hesaplanmaz.</p>
+    <p class="hint">Fiyatı normal yaz: <b>320</b> ya da <b>9,90</b>.
+      Kuruş/cent yazmana gerek yok. TRY, USD'den kurla hesaplanmaz —
+      iki fiyatı ayrı ayrı sen giriyorsun.</p>
     <div class="uyari">
       <b>Salt okunur varsayılan.</b> Bir fiyatı değiştirmek için
       satırdaki kutuyu doldurup <b>Kaydet</b>'e bas; önce özet ve onay
@@ -158,11 +159,12 @@ nav.sekme button[aria-selected="true"]{color:var(--text);
       müşavirinin işi — uygulama hiçbir oran varsaymıyor ve başlangıç
       değeri koymuyor.
     </div>
-    <p class="hint">Oran <b>baz puan</b> olarak girilir: %20 → 2000, %10 → 1000.
-      Eski oran silinmez; yeni yürürlük tarihiyle yeni satır olur.</p>
+    <p class="hint">Oranı nasıl istersen yaz: <b>20</b>, <b>20%</b>, <b>%20</b>
+      ya da <b>18,5</b>. Eski oran silinmez; yeni yürürlük tarihiyle yeni
+      satır olur.</p>
     <div style="display:flex;flex-wrap:wrap;gap:8px;align-items:flex-end;margin-bottom:14px">
       <label>Bölge<br><input id="v_region" maxlength="8" placeholder="TR" style="width:90px"></label>
-      <label>Oran (baz puan)<br><input id="v_rate" type="number" min="0" max="10000" style="width:130px"></label>
+      <label>Oran<br><input id="v_rate" type="text" inputmode="decimal" style="width:130px" placeholder="20%"></label>
       <label>Yürürlük<br><input id="v_from" type="date"></label>
       <label style="min-height:44px;display:flex;align-items:center;gap:6px">
         <input type="checkbox" id="v_dahil" checked> Fiyat KDV dahil gösterilsin</label>
@@ -248,7 +250,42 @@ $('postaGiris').addEventListener('click', async ()=>{
   $('girisDurum').textContent = error ? ('Olmadı: ' + error.message)
     : 'Bağlantı gönderildi, e-postana bak.';
 });
-$('cikis').addEventListener('click', async ()=>{ await sb.auth.signOut(); location.reload(); });
+// ⚠ SESSIZ KUSUR DUZELTILDI (kullanici bildirdi, 12 Kasim 2026:
+// "cik butonuna basiyorum ama cikamiyorum").
+// Eski hali `await sb.auth.signOut(); location.reload();` idi.
+// signOut() sunucuya /auth/v1/logout cagiriyor; jetonun suresi gectiyse
+// ya da ag koptuysa HATA FIRLATIYOR. try/catch olmadigi icin reload HIC
+// calismiyordu: dugme olu gorunuyordu ve sebebi hicbir yerde yazmiyordu.
+//
+// Simdi uc kademe, ve HER HALDE sayfa yenileniyor:
+//   1. sunucu tarafli cikis (butun cihazlar)
+//   2. olmazsa yalnizca bu tarayici
+//   3. o da olmazsa oturum anahtari elle siliniyor
+// Ucu de basarisiz olsa bile `finally` yeniliyor; yenilemeden sonra
+// oturum hala duruyorsa panel yine acilir, ama kullanici en azindan
+// dugmenin bir sey YAPTIGINI gorur.
+$('cikis').addEventListener('click', async ()=>{
+  const d = $('cikis');
+  d.disabled = true; d.textContent = 'Çıkılıyor…';
+  try{
+    await sb.auth.signOut();
+  }catch(e){
+    console.warn('[yonetim] sunucu tarafli cikis olmadi, yerel deneniyor', e);
+    try{ await sb.auth.signOut({ scope:'local' }); }
+    catch(e2){
+      console.warn('[yonetim] yerel cikis da olmadi, anahtar siliniyor', e2);
+      // Son care: supabase-js oturumu `sb-<proje>-auth-token` anahtarinda
+      // tutuyor. Kutuphane temizleyemediyse biz temizliyoruz.
+      try{
+        Object.keys(localStorage)
+          .filter(k=> /^sb-.*-auth-token$/.test(k))
+          .forEach(k=> localStorage.removeItem(k));
+      }catch(e3){ /* onemsiz */ }
+    }
+  }finally{
+    location.reload();
+  }
+});
 
 // ---- Sekmeler -------------------------------------------------------
 document.querySelectorAll('nav.sekme button').forEach(d=>{
@@ -273,10 +310,29 @@ function tabloCiz(el, basliklar, satirlar){
     + '</tbody>';
 }
 const tarih = (t)=> t ? new Date(t).toLocaleString('tr-TR') : '—';
-// Kuruş/cent → okunur. Tutarı ondalık olarak TUTMUYORUZ, yalnızca
-// gösterirken bölüyoruz.
-const para = (minor, birim)=> (Number(minor)/100).toLocaleString('tr-TR',
-  { minimumFractionDigits:2, maximumFractionDigits:2 }) + ' ' + esc(birim);
+
+// ---- Para: EKRANDA normal, ARKADA tam sayi ---------------------------
+// Veritabani kurus/cent tutuyor ve oyle kalmali: ondalik sayiyla para
+// tutmak klasik bir hata (0,1 + 0,2 ≠ 0,3). Ama kullaniciya kurus
+// yazdirmanin bir sebebi yok -- ilk surumde oyleydi, kullanici hakli
+// olarak "kuruslarla ugrastirma" dedi (12 Kasim 2026).
+//
+// ⚠ CEVIRIM FLOAT ILE YAPILMIYOR. `parseFloat('9.90') * 100` bazi
+// degerlerde 989.99999... veriyor ve yuvarlama hatasi para hatasidir.
+// Metin ikiye bolunup tam sayi olarak birlestiriliyor.
+function minoraCevir(metin){
+  const t = String(metin ?? '').trim().replace(/\s/g, '').replace(',', '.');
+  if(!/^\d+(\.\d{0,2})?$/.test(t)) return null;
+  const [tam, kesir] = t.split('.');
+  return Number(tam) * 100 + Number(((kesir || '') + '00').slice(0, 2));
+}
+// Kurus -> "320,00". Bolme YOK: bolum ve kalan ayri alinip birlestiriliyor.
+function minordanMetin(minor){
+  const n = Math.max(0, Math.trunc(Number(minor) || 0));
+  return String(Math.floor(n / 100)) + ',' + String(n % 100).padStart(2, '0');
+}
+const paraYaz = (minor, birim)=> minordanMetin(minor) + ' ' + birim;
+const para = (minor, birim)=> esc(paraYaz(minor, birim));
 
 const yuklendi = {};
 async function yukle(ad, zorla){
@@ -313,15 +369,19 @@ async function yukle(ad, zorla){
       const d = await cagir({ islem:'fiyatlar' });
       const gorunur = new Map(d.planlar.map(p=> [p.key, p]));
       tabloCiz($('fiyatTablo'),
-        [{ad:'Plan'},{ad:'Para'},{ad:'Dönem'},{ad:'Şu an',sayi:true},{ad:'Yeni (kuruş)'},{ad:''}],
+        [{ad:'Plan'},{ad:'Para'},{ad:'Dönem'},{ad:'Şu an',sayi:true},{ad:'Yeni fiyat'},{ad:''}],
         d.fiyatlar.map(x=> [
           esc(x.plan_key) + (gorunur.get(x.plan_key) && !gorunur.get(x.plan_key).visible
             ? ' <span class="etiket">gizli</span>' : ''),
           esc(x.currency), esc(x.period),
-          '<span style="font-variant-numeric:tabular-nums">' + esc(x.amount_minor) + '</span>',
-          '<input type="number" min="0" style="width:130px" data-f="'
+          '<span style="font-variant-numeric:tabular-nums">'
+            + esc(paraYaz(x.amount_minor, x.currency)) + '</span>',
+          // type="text": sayi kutusu virgulu bazi dillerde yiyor.
+          // inputmode="decimal" telefonda sayi tusunu aciyor.
+          '<input type="text" inputmode="decimal" style="width:130px" data-f="'
             + esc(x.plan_key) + '|' + esc(x.currency) + '|' + esc(x.period)
-            + '" value="' + esc(x.amount_minor) + '">',
+            + '" data-minor="' + esc(x.amount_minor) + '"'
+            + ' value="' + esc(minordanMetin(x.amount_minor)) + '">',
           '<button type="button" class="btn btn-sm" data-kaydet="'
             + esc(x.plan_key) + '|' + esc(x.currency) + '|' + esc(x.period) + '">Kaydet</button>'
         ]));
@@ -361,14 +421,16 @@ document.addEventListener('click', async (e)=>{
   if(!d) return;
   const [plan, para_, donem] = d.dataset.kaydet.split('|');
   const kutu = document.querySelector('[data-f="' + CSS.escape(d.dataset.kaydet) + '"]');
-  const yeni = Number(kutu && kutu.value);
-  if(!Number.isInteger(yeni) || yeni < 0){ durum('Tutar tam sayı olmalı (kuruş/cent).', true); return; }
+  const yeni = minoraCevir(kutu && kutu.value);
+  if(yeni === null){
+    durum('Fiyatı böyle yaz: 320 ya da 9,90. En çok iki basamak.', true); return; }
 
   // ⛔ Kaydetmeden önce ÖZET VE ONAY. Promptun şartı.
-  const eski = kutu.defaultValue;
-  if(String(eski) === String(yeni)){ durum('Değer aynı, bir şey yapılmadı.'); return; }
-  const ozetMetin = plan + ' · ' + para_ + ' · ' + donem + ': '
-    + eski + ' → ' + yeni + ' (kuruş/cent)\n\nYalnızca yeni alımlar için.\nOnaylıyor musun?';
+  const eski = Number(kutu.dataset.minor);
+  if(eski === yeni){ durum('Değer aynı, bir şey yapılmadı.'); return; }
+  const ozetMetin = plan + ' · ' + para_ + ' · ' + donem + ':\n'
+    + paraYaz(eski, para_) + '  →  ' + paraYaz(yeni, para_)
+    + '\n\nYalnızca yeni alımlar için.\nOnaylıyor musun?';
   if(!confirm(ozetMetin)) return;
 
   try{
@@ -379,7 +441,7 @@ document.addEventListener('click', async (e)=>{
     // Sunucu çok büyük değişimde İKİNCİ ONAY istiyor.
     if(err.kod === 409 && err.govde && err.govde.hata === 'buyuk_degisim'){
       if(confirm('Fiyat çok büyük oranda değişiyor:\n'
-          + err.govde.eski_minor + ' → ' + err.govde.yeni_minor
+          + paraYaz(err.govde.eski_minor, para_) + '  →  ' + paraYaz(err.govde.yeni_minor, para_)
           + '\n\nYanlışlıkla bir sıfır fazla yazmış olabilir misin?\nYine de kaydedilsin mi?')){
         try{
           await cagir({ islem:'fiyat-degistir', onay:true, buyuk_degisim_onay:true,
@@ -401,11 +463,16 @@ document.addEventListener('click', async (e)=>{
 // ---- Vergi kaydetme: onay şart --------------------------------------
 $('vergiKaydet').addEventListener('click', async ()=>{
   const region = $('v_region').value.trim().toUpperCase();
-  const rate = Number($('v_rate').value);
+  // Yuzde -> baz puan. Ayni float tuzagi: 18,5 * 100 = 1849.999...
+  // olabiliyor. minoraCevir metinden tam sayi uretiyor, burada da o
+  // kullaniliyor: "20" -> 2000, "18,5" -> 1850.
+  // Kullanici "20", "20%", "%20" ya da "18,5" yazabilir; hepsi kabul.
+  // Yuzde isaretini ve bosluklari atip sayiya bakiyoruz.
+  const rate = minoraCevir(String($('v_rate').value || '').replace(/%/g, ''));
   if(!region){ durum('Bölge gerekli.', true); return; }
-  if(!Number.isInteger(rate) || rate < 0 || rate > 10000){
-    durum('Oran 0 ile 10000 arasında tam sayı olmalı (baz puan).', true); return; }
-  if(!confirm(region + ' için oran: %' + (rate/100) + '\n'
+  if(rate === null || rate > 10000){
+    durum('Oranı böyle yaz: 20 ya da 18,5. En çok %100.', true); return; }
+  if(!confirm(region + ' için oran: %' + minordanMetin(rate) + '\n'
       + ($('v_dahil').checked ? 'Fiyatlar KDV dahil gösterilecek.' : 'Fiyatlar KDV hariç gösterilecek.')
       + '\n\nOnaylıyor musun?')) return;
   try{
@@ -421,7 +488,13 @@ $('vergiKaydet').addEventListener('click', async ()=>{
 async function acilis(){
   if(!sb) return;
   const { data } = await sb.auth.getSession();
-  if(!data || !data.session){ return; }
+  if(!data || !data.session){
+    // Oturum yoksa panel KAPANIYOR. Eskiden yalnizca `return` vardi:
+    // cikis sirasinda panel bir an acik kaliyordu.
+    $('panel').classList.add('gizle');
+    $('girisEkrani').classList.remove('gizle');
+    return;
+  }
   // Oturum var ama YÖNETİCİ OLDUĞU BURADA VARSAYILMIYOR: ilk çağrı
   // sunucuda denetleniyor; 403 dönerse panel açılmıyor.
   try{
