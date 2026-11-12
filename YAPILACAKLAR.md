@@ -6,6 +6,61 @@ duruyor, neden ertelendiği de yazıyor ki aynı tartışma baştan yapılmasın
 
 ---
 
+## BÖLÜM 2 (fiyat / ödeme duvarı / yönetim) — KULLANICI KARARLARI
+## 12 Kasım 2026
+
+⛔ **Henüz başlanmadı** ve bilerek başlanmadı: promptun kendi kapısı
+*"Bölüm 1 bitip kullanıcı ONAYLAMADAN başlama"* diyor. Bölüm 1 bitti,
+onay yok (kullanıcı önce uygulamada görecek). Başlanınca da ilk iş
+kod değil **tasarım belgesi**.
+
+Aşağıdakiler kullanıcının bugün verdiği cevaplar. Yazılıyor çünkü iş
+beklemede ve bu kararlar unutulur.
+
+### 1. Yönetim paneli — KAPSAM DARALDI ⚠
+
+Promptun ilk hâli *"kim girdi, ne kullandı, ne satın aldı"* diyordu.
+Kullanıcı bugün daralttı, kendi sözleriyle:
+
+> *"benim derdim kişi bilgilerini saklamak değil ama kaç kişinin
+> kullanıma başladığını kaç kişinin hangi paketi aldığını göreceğim
+> bir panel olmalı"*
+
+Yani panel **sayı** gösterecek, kişi başına davranış kaydı değil:
+  · kaç kişi kullanmaya başladı
+  · kaç kişi hangi paketi aldı
+  · (promptta ayrıca) yurt içi / yurt dışı ayrı
+
+⚠ Bunu "hiç kişisel veri yok" diye okumamak gerek: bir abonelik
+zaten **kimin hangi planı aldığını** tutmak zorunda (fatura, erişim
+hakkı, iade). Daralan şey **davranış izleme** — "şu kişi şunu
+kullandı" kaydı. Tasarım belgesinde bu ayrım tek tek yazılacak:
+hangi tablo kişiye bağlı, hangisi yalnızca sayaç.
+
+### 2. Ücretsiz katman — kota ile tanımlanacak
+
+> *"ücretsiz bölümü belirli bir kota ile tanımlayacağız ileride ve
+> bunları değiştireceğiz"*
+
+Promptun "yönetimden değiştirilebilir limitler" şartıyla uyumlu:
+kota koda gömülmeyecek, veritabanından okunacak.
+MARKA.md satır 111 (*"Ücretsiz. Şu an para alınmıyor, fiyat sayfası
+yok."*) o zaman güncellenecek.
+
+### 3. Koyu tema — KORUNACAK ✅ (karar verildi)
+
+Bölüm 1'in cevapsız sorularındandı. Karar: korunsun.
+Zaten öyle yapıldı: Aşama 1–7 boyunca her ölçüm **iki temada** da
+alındı (kontrast, taşma). Ek iş gerekmiyor, karar kayda geçti.
+
+### 4. MARKA.md "Görsel kimlik" — BEKLİYOR
+
+> *"her şey bittiğinde bakacağız buna beklesin"*
+
+Yeni görsel kurallar (2px köşe, klaket şeridi, 11px yazı tabanı,
+mono künyeler) MARKA.md'ye yazılmadı. Yazılacağı zaman metin önce
+kullanıcıya gösterilecek.
+
 ## AŞAMA 2b KAPATILDI (12 Kasım 2026)
 
 2b iki parçaydı; **ölçüm ikisinin de gerekçesini değiştirdi.**
