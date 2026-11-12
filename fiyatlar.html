@@ -1,0 +1,372 @@
+<!doctype html>
+<html lang="tr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Shootboard — Fiyatlar</title>
+<meta name="description" content="Shootboard planları: ücretsiz Starter ve Creator Pro. Fiyatlar USD ve TRY olarak ayrı ayrı yazılı.">
+<link rel="icon" href="favicon.svg" type="image/svg+xml">
+<link rel="icon" href="favicon.ico" sizes="any">
+<style>
+:root{
+  --bg:#F1EDE3; --surface:#FBF9F3; --surface-2:#E7E2D5; --line:#D7D1C2;
+  --text:#15130F; --text-dim:#585349; --accent:#C4350A; --on-accent:#fff;
+}
+@media (prefers-color-scheme: dark){
+  :root{
+    --bg:#15130F; --surface:#1E1B16; --surface-2:#272219; --line:#37312A;
+    --text:#F0EBE0; --text-dim:#ABA496; --accent:#FF7A45; --on-accent:#15130F;
+  }
+}
+*{box-sizing:border-box;}
+body{
+  margin:0; background:var(--bg); color:var(--text);
+  font-family:'IBM Plex Sans','Segoe UI',system-ui,-apple-system,sans-serif;
+  font-size:15px; line-height:1.6; -webkit-font-smoothing:antialiased;
+}
+.sar{max-width:1040px; margin:0 auto; padding:20px 16px 70px;}
+header{display:flex; align-items:center; gap:12px; flex-wrap:wrap;
+  padding-bottom:16px; border-bottom:1px solid var(--line); margin-bottom:26px;}
+.brand{font-weight:700; font-size:1.05rem; letter-spacing:-.01em;
+  color:var(--text); text-decoration:none;}
+.ust-sag{margin-left:auto; display:flex; gap:8px; align-items:center;}
+h1{font-size:1.9rem; line-height:1.2; letter-spacing:-.02em; margin:0 0 8px;}
+.alt{color:var(--text-dim); margin:0 0 24px; max-width:60ch;}
+.secici{display:flex; flex-wrap:wrap; gap:10px; margin-bottom:8px;}
+.grup{display:inline-flex; border:1px solid var(--line); border-radius:2px;
+  overflow:hidden; background:var(--surface);}
+.grup button{font:inherit; font-size:14px; padding:9px 16px; min-height:44px;
+  border:0; background:none; color:var(--text-dim); cursor:pointer;}
+.grup button[aria-pressed="true"]{background:var(--accent); color:var(--on-accent); font-weight:600;}
+.indirim{font-size:13px; color:var(--text-dim); margin:0 0 24px; min-height:20px;}
+.kartlar{display:grid; gap:14px; grid-template-columns:repeat(auto-fit,minmax(248px,1fr));}
+.kart{border:1px solid var(--line); border-radius:2px; background:var(--surface);
+  padding:20px 18px; display:flex; flex-direction:column;}
+.kart.onerilen{border-color:var(--accent); border-width:2px;}
+.rozet{display:inline-block; font-size:11px; text-transform:uppercase;
+  letter-spacing:.08em; color:var(--on-accent); background:var(--accent);
+  padding:2px 8px; border-radius:2px; margin-bottom:10px; align-self:flex-start;}
+.kart h2{font-size:1.1rem; margin:0 0 4px; letter-spacing:-.01em;}
+.kart .tanim{font-size:13px; color:var(--text-dim); margin:0 0 14px; min-height:36px;}
+.fiyat{font-size:2rem; font-weight:700; letter-spacing:-.03em;
+  font-variant-numeric:tabular-nums; margin:0;}
+.fiyat small{font-size:.95rem; font-weight:400; color:var(--text-dim); letter-spacing:0;}
+.fiyat-alt{font-size:12.5px; color:var(--text-dim); margin:2px 0 16px; min-height:19px;}
+.kart ul{list-style:none; margin:0 0 18px; padding:0; font-size:14px; flex:1;}
+.kart li{padding:5px 0 5px 22px; position:relative;}
+.kart li::before{content:'·'; position:absolute; left:8px; font-weight:700; color:var(--accent);}
+.btn{font:inherit; font-size:14.5px; padding:11px 16px; min-height:44px;
+  border:1px solid var(--line); border-radius:2px; background:var(--surface);
+  color:var(--text); cursor:pointer; text-align:center; text-decoration:none;
+  display:block;}
+.btn:hover{border-color:var(--accent); color:var(--accent);}
+.btn-ana{background:var(--accent); border-color:var(--accent); color:var(--on-accent);}
+.btn-ana:hover{color:var(--on-accent); opacity:.92;}
+.btn-sm{min-height:44px; padding:9px 12px; font-size:13.5px;
+  display:flex; align-items:center;}
+.kalan{font-size:12.5px; color:var(--text-dim); margin:0 0 14px;
+  font-variant-numeric:tabular-nums;}
+.not{margin:34px 0 0; padding:16px 18px; border-left:2px solid var(--line);
+  background:var(--surface-2); border-radius:2px; font-size:14px;}
+.not h3{margin:0 0 6px; font-size:1rem;}
+.not p{margin:0 0 8px;} .not p:last-child{margin:0;}
+.durum{color:var(--text-dim); font-size:14px; padding:30px 0;}
+.gizle{display:none;}
+footer{margin-top:40px; padding-top:16px; border-top:1px solid var(--line);
+  font-size:13px; color:var(--text-dim);}
+footer a{color:var(--text-dim);}
+</style>
+</head>
+<body>
+<div class="sar">
+<header>
+  <a class="brand" href="/">Shootboard</a>
+  <div class="ust-sag">
+    <div class="grup" role="group">
+      <button type="button" data-dil="tr" aria-pressed="true">Türkçe</button>
+      <button type="button" data-dil="en" aria-pressed="false">English</button>
+    </div>
+    <a class="btn btn-sm" href="app.html" data-m="uygulama">Uygulamayı aç</a>
+  </div>
+</header>
+
+<h1 data-m="baslik">Fiyatlar</h1>
+<p class="alt" data-m="alt"></p>
+
+<div class="secici">
+  <div class="grup" role="group" id="paraSecici">
+    <button type="button" data-para="TRY" aria-pressed="true">TRY</button>
+    <button type="button" data-para="USD" aria-pressed="false">USD</button>
+  </div>
+  <div class="grup" role="group" id="donemSecici">
+    <button type="button" data-donem="monthly" aria-pressed="true" data-m="aylik">Aylık</button>
+    <button type="button" data-donem="yearly" aria-pressed="false" data-m="yillik">Yıllık</button>
+  </div>
+</div>
+<p class="indirim" id="indirim"></p>
+
+<div id="durum" class="durum"></div>
+<div class="kartlar" id="kartlar"></div>
+
+<div class="not">
+  <h3 data-m="ucretsiz_bas">Ücretsiz olan ne?</h3>
+  <p data-m="ucretsiz_1"></p>
+  <p data-m="ucretsiz_2"></p>
+</div>
+
+<div class="not">
+  <h3 data-m="ai_bas">AI kendi anahtarınla</h3>
+  <p data-m="ai_1"></p>
+</div>
+
+<footer>
+  <a href="sartlar.html" data-m="sartlar">Kullanım şartları</a> ·
+  <a href="privacy.html" data-m="gizlilik">Gizlilik</a> ·
+  <a href="kilavuz.html" data-m="kilavuz">Kılavuz</a>
+</footer>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.45.4/dist/umd/supabase.js"></script>
+<script>
+// Bu anahtar app.html'dekiyle ayni: "publishable" (anon) anahtar,
+// istemci kodunda durmak uzere tasarlanmis. Guvenligi saglayan sey
+// anahtar degil, veritabanindaki RLS politikalari. Bu sayfa YALNIZCA
+// okuyor: planlar, fiyatlar, limitler ve kalan kontenjan herkese acik
+// (sql/69), baska hicbir tabloya erisimi yok.
+const SUPABASE_URL = 'https://dyemvzmpnlpnzwebuciu.supabase.co';
+const SUPABASE_KEY = 'sb_publishable_QpzqwOn4BX43GtX9ecaowQ_qIlaHJA-';
+const sb = window.supabase
+  ? window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY)
+  : null;
+
+const $ = (id)=> document.getElementById(id);
+const esc = (s)=>{ const d=document.createElement('div');
+  d.textContent = (s===undefined||s===null)?'':s; return d.innerHTML; };
+
+// ⛔ METINLERDE YASAK SOZLER YOK: "sorunsuz", "zahmetsizce", "tek
+// tikla", "devrim" (MARKA.md ses tonu). Uydurma kullanici sayisi,
+// yorum, "binlerce kisi" de yok.
+// ⛔ OTOMATIK YAYIN HICBIR YERDE GECMIYOR: sahibin kendi ozel
+// kurulumu, satilmiyor.
+const M = {
+  tr: {
+    uygulama:'Uygulamayı aç', baslik:'Fiyatlar', aylik:'Aylık', yillik:'Yıllık',
+    alt:'Bir çekimden çıkan on paylaşımı tek yerden yönetmek için. Hesap açmadan denemeye başlayabilirsin.',
+    ucretsiz_bas:'Ücretsiz olan ne?',
+    ucretsiz_1:'Starter planı para istemiyor ve hesap da istemiyor. Takvim o tarayıcıda kalır, hiçbir sunucuya gitmez.',
+    ucretsiz_2:'Ücretli planlar bulut eşitleme ve sınırların kalkması için: masaüstünde planla, sahada telefondan aç.',
+    ai_bas:'AI kendi anahtarınla',
+    ai_1:'AI özelliği için Gemini’nin ücretsiz sürümü kullanılıyor. Anahtarı sen alıyorsun ve giriyorsun. Shootboard AI için ayrıca para almıyor, kendi anahtarını da vermiyor.',
+    sartlar:'Kullanım şartları', gizlilik:'Gizlilik', kilavuz:'Kılavuz',
+    onerilen:'Önerilen', ayda:'/ay', yilda:'yıllık ödemede',
+    sec:'Başla', ucretsizSec:'Ücretsiz başla',
+    yillikYok:'Bu planın yıllık fiyatı yok.',
+    yuzde:(n)=> '%' + n,
+    indirimMetin:(y)=> 'Yıllık ödemede ' + y + ' kadar daha ucuz.',
+    kalan:(k,t)=> t + ' kişilikten ' + k + ' yer kaldı.',
+    doldu:'Kontenjan doldu.',
+    yukleniyor:'Fiyatlar yükleniyor…',
+    olmadi:'Fiyatlar yüklenemedi. Ağ bağlantını kontrol edip sayfayı yenile.',
+    kutuphaneYok:'Sayfa yüklenemedi. Ağ bağlantını kontrol edip sayfayı yenile.',
+    tanim:{ starter:'Denemeye başlamak için.',
+            creator_pro:'Tek başına çalışan üretici için.',
+            studio:'Ekipler ve küçük ajanslar için.',
+            founding:'Lansmana özel, tek seferlik ödeme.' },
+    ozellik:{
+      // ⛔ YALNIZCA VAR OLAN OZELLIKLER. PDF/CSV disa aktarma ve ekip
+      // ozellikleri burada YOK: ozellik denetiminde YOK ciktilar
+      // (tasarim/ozellik-denetimi.md). Yapildiklarinda eklenecek.
+      starter:['Hesapsız, tarayıcıda çalışır','Takvim ve "tek çekim, çok paylaşım" görünümü',
+               'Fikirler, scriptler, mekanlar','Çekim listesi ve hazır setler'],
+      creator_pro:['Starter’daki her şey','Bulut: masaüstünde planla, sahada telefondan aç',
+                   'Sınırsız proje, script ve fikir','Sınırsız malzeme kütüphanesi',
+                   'Mekana bağlı izin ve dikkat notları'],
+      studio:['Creator Pro’daki her şey'],
+      founding:['Creator Pro’nun tamamı','Ömür boyu erişim','Tek seferlik ödeme']
+    }
+  },
+  en: {
+    uygulama:'Open the app', baslik:'Pricing', aylik:'Monthly', yillik:'Yearly',
+    alt:'For running the ten posts that come out of one shoot from a single place. You can start without an account.',
+    ucretsiz_bas:'What stays free?',
+    ucretsiz_1:'Starter asks for no money and no account. The calendar stays in that browser and reaches no server.',
+    ucretsiz_2:'Paid plans are for cloud sync and for lifting the limits: plan at the desk, open it on your phone on location.',
+    ai_bas:'AI with your own key',
+    ai_1:'The AI feature uses Gemini’s free tier. You get the key and you enter it. Shootboard charges nothing extra for AI and does not hand out its own key.',
+    sartlar:'Terms', gizlilik:'Privacy', kilavuz:'Guide',
+    onerilen:'Recommended', ayda:'/mo', yilda:'billed yearly',
+    sec:'Start', ucretsizSec:'Start free',
+    yillikYok:'This plan has no yearly price.',
+    // ⚠ Yuzde isareti Ingilizcede ARKADA: "22%", "%22" degil.
+    yuzde:(n)=> n + '%',
+    indirimMetin:(y)=> 'Paying yearly is ' + y + ' cheaper.',
+    kalan:(k,t)=> k + ' of ' + t + ' places left.',
+    doldu:'All places taken.',
+    yukleniyor:'Loading prices…',
+    olmadi:'Prices could not be loaded. Check your connection and reload.',
+    kutuphaneYok:'The page could not load. Check your connection and reload.',
+    tanim:{ starter:'To start trying it out.',
+            creator_pro:'For a creator working alone.',
+            studio:'For teams and small agencies.',
+            founding:'Launch offer, one-off payment.' },
+    ozellik:{
+      starter:['Works in the browser, no account','Calendar and the "one shoot, many posts" view',
+               'Ideas, scripts, places','Shot checklist and ready-made kits'],
+      creator_pro:['Everything in Starter','Cloud: plan at the desk, open it on your phone on location',
+                   'Unlimited projects, scripts and ideas','Unlimited kit list',
+                   'Permission and watch-out notes tied to a place'],
+      studio:['Everything in Creator Pro'],
+      founding:['All of Creator Pro','Lifetime access','One-off payment']
+    }
+  }
+};
+
+// ⚠ PARA BIRIMI TARAYICININ DILINDEN SECILIYOR, UCUNCU BIR SERVISTEN
+// DEGIL. Promptun uyarisi: "Konum tahmini icin kullanicinin adresini
+// ucuncu bir servise gondereceksen once kullaniciya soyle ve gizlilik
+// metnine yaz." Buradan hicbir yere bir sey gonderilmiyor:
+// navigator.language tarayicinin kendi ayari. Kullanici dugmeyle
+// degistirebiliyor.
+const trMi = /^tr\b/i.test(navigator.language || '');
+let dil = trMi ? 'tr' : 'en';
+let para = trMi ? 'TRY' : 'USD';
+let donem = 'monthly';
+let veri = null;
+
+function metinleriYaz(){
+  const m = M[dil];
+  document.documentElement.lang = dil;
+  document.querySelectorAll('[data-m]').forEach(el=>{
+    const d = m[el.dataset.m];
+    if(typeof d === 'string') el.textContent = d;
+  });
+  document.querySelectorAll('[data-dil]').forEach(b=>
+    b.setAttribute('aria-pressed', String(b.dataset.dil === dil)));
+  document.title = 'Shootboard — ' + m.baslik;
+}
+
+// Kurus/cent -> okunur. ⚠ Bolme kullanilmiyor: bolum ve kalan ayri
+// alinip birlestiriliyor (ondalik aritmetigi para hatasi uretir).
+function paraYaz(minor, birim){
+  const n = Math.max(0, Math.trunc(Number(minor) || 0));
+  const tam = Math.floor(n / 100), kus = n % 100;
+  const tamMetin = tam.toLocaleString(dil === 'tr' ? 'tr-TR' : 'en-US');
+  const sayi = kus === 0 ? tamMetin
+    : tamMetin + (dil === 'tr' ? ',' : '.') + String(kus).padStart(2, '0');
+  return birim === 'TRY' ? sayi + ' TL' : '$' + sayi;
+}
+
+function fiyatBul(plan, birim, d){
+  return (veri.fiyatlar || []).find(x=>
+    x.plan_key === plan && x.currency === birim && x.period === d && x.active !== false);
+}
+
+function ciz(){
+  const m = M[dil];
+  metinleriYaz();
+  if(!veri) return;
+
+  // ⚠ INDIRIM YUZDESI SABIT YAZILMIYOR, FIYATLARDAN HESAPLANIYOR.
+  // Promptun sarti. Kullanicinin soyledigi "%22" yalnizca Creator
+  // Pro'da tutuyor; Studio'da baska cikiyor. Sayfa her planin kendi
+  // oranini degil, GORUNEN planlar arasindaki EN KUCUK indirimi
+  // yaziyor -- boylece hicbir plan icin abartilmis olmuyor.
+  const oranlar = [];
+  (veri.planlar || []).forEach(p=>{
+    const a = fiyatBul(p.key, para, 'monthly'), y = fiyatBul(p.key, para, 'yearly');
+    if(a && y && a.amount_minor > 0){
+      const aylikYillik = y.amount_minor / 12;
+      if(aylikYillik < a.amount_minor) oranlar.push(1 - aylikYillik / a.amount_minor);
+    }
+  });
+  $('indirim').textContent = oranlar.length
+    ? m.indirimMetin(m.yuzde(Math.round(Math.min(...oranlar) * 100)))
+    : '';
+
+  $('kartlar').innerHTML = (veri.planlar || []).map(p=>{
+    const f = fiyatBul(p.key, para, donem)
+      || fiyatBul(p.key, para, 'once')
+      || fiyatBul(p.key, para, 'monthly');
+    if(!f) return '';
+    const tekSeferlik = f.period === 'once';
+    const aylikEs = donem === 'yearly' && f.period === 'yearly'
+      ? Math.round(f.amount_minor / 12) : null;
+    const ucretsiz = f.amount_minor === 0;
+    const kontenjan = p.key === 'founding' ? veri.kontenjan : null;
+    const kalanAdet = kontenjan ? Math.max(0, kontenjan.quota - kontenjan.sold) : null;
+
+    return '<div class="kart' + (p.badge === 'recommended' ? ' onerilen' : '') + '">'
+      + (p.badge === 'recommended' ? '<span class="rozet">' + esc(m.onerilen) + '</span>' : '')
+      + '<h2>' + esc(({starter:'Starter', creator_pro:'Creator Pro',
+                       studio:'Studio', founding:dil==='tr'?'Kurucu Üye':'Founding Member'})[p.key] || p.key) + '</h2>'
+      + '<p class="tanim">' + esc(m.tanim[p.key] || '') + '</p>'
+      + '<p class="fiyat">' + esc(paraYaz(aylikEs !== null ? aylikEs : f.amount_minor, para))
+      + (ucretsiz || tekSeferlik ? '' : '<small>' + esc(m.ayda) + '</small>') + '</p>'
+      + '<p class="fiyat-alt">'
+      + (aylikEs !== null ? esc(m.yilda) + ' · ' + esc(paraYaz(f.amount_minor, para)) : '')
+      + '</p>'
+      + (kalanAdet !== null
+          ? '<p class="kalan">' + esc(kalanAdet > 0 ? m.kalan(kalanAdet, kontenjan.quota) : m.doldu) + '</p>'
+          : '')
+      + '<ul>' + (m.ozellik[p.key] || []).map(x=> '<li>' + esc(x) + '</li>').join('') + '</ul>'
+      // ⛔ ODEME HENUZ YOK. Dugme uygulamaya goturuyor; "satin al"
+      // yazmiyor ve olmayan bir akis vaat etmiyor. Odeme kurulunca
+      // buraya baglanacak.
+      + '<a class="btn' + (p.badge === 'recommended' ? ' btn-ana' : '') + '" href="app.html">'
+      + esc(ucretsiz ? m.ucretsizSec : m.sec) + '</a>'
+      + '</div>';
+  }).join('');
+}
+
+async function yukle(){
+  if(!sb){ $('durum').textContent = M[dil].kutuphaneYok; metinleriYaz(); return; }
+  $('durum').textContent = M[dil].yukleniyor;
+  try{
+    const [pl, fi, ko] = await Promise.all([
+      sb.from('plans').select('key,visible,badge,sort').eq('visible', true).order('sort'),
+      sb.from('plan_prices').select('plan_key,currency,period,amount_minor,active'),
+      sb.from('founding_seats').select('quota,sold,open').eq('id', true).maybeSingle()
+    ]);
+    if(pl.error || fi.error) throw (pl.error || fi.error);
+    veri = {
+      // ⛔ YALNIZCA GORUNUR PLANLAR. Studio ve Kurucu Uye bugun
+      // visible=false: ozellik denetiminde maddelerinin cogu YOK
+      // cikti. "Olmayan ozellik satilmaz" -- gorunur yapmak yonetim
+      // ekranindan, kod dagitimi gerekmeden.
+      planlar: pl.data || [],
+      fiyatlar: fi.data || [],
+      kontenjan: (ko && ko.data && ko.data.open) ? ko.data : null
+    };
+    $('durum').textContent = '';
+    ciz();
+  }catch(e){
+    console.error('[fiyatlar]', e);
+    $('durum').textContent = M[dil].olmadi;
+    metinleriYaz();
+  }
+}
+
+document.querySelectorAll('[data-dil]').forEach(b=>
+  b.addEventListener('click', ()=>{ dil = b.dataset.dil; ciz(); }));
+$('paraSecici').addEventListener('click', e=>{
+  const b = e.target.closest('[data-para]'); if(!b) return;
+  para = b.dataset.para;
+  $('paraSecici').querySelectorAll('button').forEach(x=>
+    x.setAttribute('aria-pressed', String(x === b)));
+  ciz();
+});
+$('donemSecici').addEventListener('click', e=>{
+  const b = e.target.closest('[data-donem]'); if(!b) return;
+  donem = b.dataset.donem;
+  $('donemSecici').querySelectorAll('button').forEach(x=>
+    x.setAttribute('aria-pressed', String(x === b)));
+  ciz();
+});
+// Acilista secili para birimi tarayici diline gore.
+$('paraSecici').querySelectorAll('button').forEach(x=>
+  x.setAttribute('aria-pressed', String(x.dataset.para === para)));
+metinleriYaz();
+yukle();
+</script>
+</body>
+</html>
