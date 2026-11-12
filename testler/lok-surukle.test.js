@@ -1,10 +1,14 @@
-const { chromium } = require('./araclar');
+const { chromium, satirlariBugunecek, fiksturKaydirmasi, tarihKaydir } = require('./araclar');
 const fs = require('fs');
 (async () => {
   const D = process.argv[2], PORT = process.argv[3] || '8097';
   const satirlar = JSON.parse(fs.readFileSync(D + '/satirlar.json', 'utf8'));
+  // Fikstur tarihleri bugune tasiniyor: takvim icinde bulunulan ayi
+  // aciyor, cakili tarihler o ay gecince ekranda kaybolur (araclar.js).
+  const KAYDIRMA = fiksturKaydirmasi();
+  const _tasinmis = satirlariBugunecek(satirlar, KAYDIRMA);
   const veri = { workspaces:[{id:'00000000-0000-0000-0000-000000000001',name:'Test'}],
-                 locations: satirlar.L, calendar_events: satirlar.E };
+                 locations: satirlar.L, calendar_events: _tasinmis.E };
   const stub = fs.readFileSync(D + '/sahte-supabase.js', 'utf8');
   const b = await chromium.launch({ });
   let hata=0; const k=(a,s,e)=>{ console.log((s?'  ✔ ':'  ✖ ')+a+(e!==undefined?' → '+e:'')); if(!s) hata++; };
@@ -167,13 +171,24 @@ const fs = require('fs');
 
   // 5) TELEFON: basili tutunca surukleniyor, hemen kaydirinca sayfa kayiyor
   page = await ac(null, true);
+  // ⚠ KUTU ONCE GORUNUR ALANA GETIRILIYOR. Test kutunun kaydirmadan
+  // ekranda oldugunu varsayiyordu; OLCULDU: 390x844 telefonda ilk kutu
+  // y=905'te, yani ekranin ALTINDA kaliyor ve dokunus bosluga gidiyor.
+  // Bu, hangi gune denk geldigine bagli -- yani veri her degistiginde
+  // sessizce kirilabilecek bir varsayim. Iddia ayni kaldi: basili
+  // tutunca surukleme basliyor mu. Yalnizca parmagin gercekten kutunun
+  // uzerine denk gelmesi saglaniyor.
   const dokun = await page.evaluate(()=>{
     const chip = document.querySelector('.cal-chip');
     if(!chip) return { yok:true };
+    chip.scrollIntoView({ block:'center', inline:'center' });
     const r = chip.getBoundingClientRect();
-    return { x:Math.round(r.left+8), y:Math.round(r.top+8) };
+    return { x:Math.round(r.left+8), y:Math.round(r.top+8),
+             ekranda: r.top >= 0 && r.bottom <= innerHeight };
   });
   if(dokun.yok){ k('telefonda kayıt kutusu var', false); }
+  else if(!dokun.ekranda){ k('telefonda kayıt kutusu görünür alanda', false,
+    'y='+dokun.y+' ekran='+844); }
   else {
     const cdp = await page.context().newCDPSession(page);
     const nokta = (x,y)=>[{x,y,radiusX:6,radiusY:6,force:1,id:1}];

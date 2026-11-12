@@ -1,10 +1,14 @@
-const { chromium } = require('./araclar');
+const { chromium, satirlariBugunecek, fiksturKaydirmasi, tarihKaydir } = require('./araclar');
 const fs = require('fs');
 (async () => {
   const D = process.argv[2];
   const satirlar = JSON.parse(fs.readFileSync(D+'/satirlar.json','utf8'));
+  // Fikstur tarihleri bugune tasiniyor: takvim icinde bulunulan ayi
+  // aciyor, cakili tarihler o ay gecince ekranda kaybolur (araclar.js).
+  const KAYDIRMA = fiksturKaydirmasi();
+  const _tasinmis = satirlariBugunecek(satirlar, KAYDIRMA);
   const veri = { workspaces:[{id:'00000000-0000-0000-0000-000000000001',name:'T'}],
-                 locations: satirlar.L, calendar_events: satirlar.E };
+                 locations: satirlar.L, calendar_events: _tasinmis.E };
   const stub = fs.readFileSync(D+'/sahte-supabase.js','utf8');
   const b = await chromium.launch({ });
   const page = await b.newPage({ viewport:{width:1250,height:900} });

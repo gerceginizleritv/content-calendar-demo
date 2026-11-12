@@ -1,10 +1,14 @@
-const { chromium } = require('./araclar');
+const { chromium, satirlariBugunecek, fiksturKaydirmasi, tarihKaydir } = require('./araclar');
 const fs = require('fs');
 (async () => {
   const D = process.argv[2];
   const satirlar = JSON.parse(fs.readFileSync(D+'/satirlar.json','utf8'));
+  // Fikstur tarihleri bugune tasiniyor: takvim icinde bulunulan ayi
+  // aciyor, cakili tarihler o ay gecince ekranda kaybolur (araclar.js).
+  const KAYDIRMA = fiksturKaydirmasi();
+  const _tasinmis = satirlariBugunecek(satirlar, KAYDIRMA);
   const veri = { workspaces:[{id:'00000000-0000-0000-0000-000000000001',name:'T'}],
-                 locations: satirlar.L, calendar_events: satirlar.E };
+                 locations: satirlar.L, calendar_events: _tasinmis.E };
   const stub = fs.readFileSync(D+'/sahte-supabase.js','utf8');
   const b = await chromium.launch({ });
   const page = await b.newPage({ viewport:{width:1250,height:900}, timezoneId:'Europe/Istanbul' });
@@ -54,11 +58,11 @@ const fs = require('fs');
   k('hiçbir etikette "undefined" yok', cok.undef === 0);
 
   // Kaydetme: secilen dilim content icine yaziliyor mu
-  const kaydet = await page.evaluate(async ()=>{
+  const kaydet = await page.evaluate(async (T1)=>{
     window.__yazmalar.length = 0;
     document.getElementById('calAddBtn').click();
     document.getElementById('cal_title').value = 'Dilim testi';
-    document.getElementById('cal_date').value = '2026-10-01';
+    document.getElementById('cal_date').value = T1;
     document.getElementById('cal_time').value = '09:00';
     document.getElementById('cal_tz').value = 'America/New_York';
     document.querySelector('#calPlatformMultiWrap input[type=checkbox]').checked = true;
@@ -67,7 +71,7 @@ const fs = require('fs');
     const y = calendarEvents.find(e=>e.title==='Dilim testi');
     const gonderilen = window.__yazmalar.filter(w=>w.tablo==='calendar_events');
     return { kayitli: y ? y.content.timezone : null, yazildi: gonderilen.length };
-  });
+  }, tarihKaydir('2026-10-01', KAYDIRMA));
   k('seçilen dilim kayda yazıldı', kaydet.kayitli === 'America/New_York', kaydet.kayitli);
   k('veritabanına gönderildi', kaydet.yazildi > 0, kaydet.yazildi);
 
