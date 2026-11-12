@@ -267,20 +267,19 @@ yorumu sebebini yazıyor: her projenin eksiğini saymak listeyi hiç
 bitmeyen bir iş listesine çevirir ve o liste okunmaz. Yeni satır da
 aynı kurala uyacak.
 
-### Mekandan ayrılırken uyarı
+### Mekandan ayrılırken uyarı — ⛔ YAPILMAYACAK
 
-⚠ **Böyle bir an yok.** Uygulamada "mekandan ayrıldım" diye bir
-olay, bir düğme ya da konum takibi yok — arandı, bulunamadı.
+Uygulamada "mekandan ayrıldım" diye bir an yok: olay, düğme ya da
+konum takibi arandı, bulunamadı.
 
-İki seçenek var ve **karar kullanıcının**:
+**Karar (kullanıcı, 12 Kasım 2026): hiç yapılmasın.** Kendi
+sözleriyle: *"liste zaten çekilmeyenleri üstte gösteriyor."*
 
-- **(a)** Sette görünümünde, o mekanın bütün planları için bir
-  *"Bu mekanda işim bitti"* düğmesi. Basınca çekilmemiş **olmazsa
-  olmaz** varsa uyarı çıkar.
-- **(b)** Hiç yapılmaz. Liste zaten çekilmeyenleri üstte gösteriyor.
+Yani uyarının işini listenin kendi sırası yapıyor; ayrı bir düğme ve
+ayrı bir uyarı penceresi eklemeye gerek yok.
 
-Konum takibi **önerilmiyor**: izin ister, pil yer, ve kullanıcının
-nerede olduğunu saklamak bu uygulamanın işi değil.
+Konum takibi zaten **önerilmemişti**: izin ister, pil yer, ve
+kullanıcının nerede olduğunu saklamak bu uygulamanın işi değil.
 
 ### Ne ölçülecek
 
@@ -288,6 +287,8 @@ nerede olduğunu saklamak bu uygulamanın işi değil.
 - Satır plan listesini açıyor
 - Plan listesi doluyken satır yok
 - Uzak bir çekimin eksiği listeye girmiyor
+- ⛔ "Bu mekanda işim bitti" diye bir düğme **yok** (karar: yapılmayacak)
+- Sette görünümünde çekilmeyenler üstte — uyarının işini bu yapıyor
 
 ---
 
@@ -355,9 +356,12 @@ sayfa hatası 0 · **tam tur yeşil**.
 
 ---
 
-## 11. Cevap bekleyen tek soru
+## 11. Cevapsız soru kalmadı
 
-**Bölüm 7:** "mekandan ayrılırken uyarı" — (a) *"Bu mekanda işim
-bitti"* düğmesi mi, (b) hiç yapılmasın mı?
+"Mekandan ayrılırken uyarı" sorusu 12 Kasım 2026'da cevaplandı:
+**yapılmayacak** (Bölüm 7). Belgedeki her şey karara bağlı.
 
-Geri kalan her şey karara bağlanmış durumda.
+Kalan tek kapı **kullanıcının onayı**: kullanıcı önce bitmiş dört
+aşamayı (4, 1, 3, 2) uygulamada tek tek görecek, sonra bu belgeye
+karar verecek. Kendi sözleriyle: *"tüm güncellemeleri ben kontrol
+edeceğim tek tek gerekirse orada karar vereceğim."*
