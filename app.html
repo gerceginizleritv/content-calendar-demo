@@ -2035,6 +2035,18 @@ textarea.sc-ai-brief{min-height:64px;resize:vertical;line-height:1.5;}
 .pe-isik .hv-satir{display:flex;gap:14px;flex-wrap:wrap;font-size:13px;}
 .pe-isik .hv-altin{display:flex;gap:6px;align-items:baseline;font-size:13px;margin-top:4px;}
 .pe-isik .hv-kisa{display:none;}
+/* YAYIN GUNU LISTESI. Uc asama uc blok: once / yukleme ekraninda /
+   hemen sonra. Numara YOK -- asama icinde sira serbest. */
+.yl-govde{padding:0 14px 12px;}
+.yl-asama + .yl-asama{margin-top:12px;}
+.yl-asama h4{margin:0 0 5px;font-size:11px;text-transform:uppercase;
+  letter-spacing:.08em;color:var(--text-dim);font-weight:600;}
+.yl-asama ul{margin:0;padding-left:18px;}
+.yl-asama li{margin:3px 0;font-size:13px;line-height:1.45;}
+/* Hesaba bagli madde: herkeste olmayan bir sey oldugu yaninda yaziyor. */
+.yl-hesap{margin-left:7px;font-size:11px;color:var(--text-dim);
+  border:1px solid var(--line);border-radius:2px;padding:1px 5px;white-space:nowrap;}
+@media(min-width:701px){ .yl-govde{padding:10px 0 0;} }
 /* HAZIR SETLER. Kullanicinin kendi setlerinden AYRI dursunlar diye
    kesik cizgili kenar: "bu benim yazdigim sey degil" demenin en
    sessiz yolu. Dolu kenarlik kullanicinin kendi setinin isareti. */
@@ -4803,6 +4815,17 @@ textarea.sc-ai-brief{min-height:64px;resize:vertical;line-height:1.5;}
       <select id="f_hesap"></select>
     </div>
 
+    <!-- YAYIN GUNU LISTESI (Asama 2). ⛔ OKUNACAK SEY, FORM ALANI
+         DEGIL: tik yok, kaydedilmiyor, kaydin verisi degismiyor.
+         `fold-modal` SART -- `.fold > summary` 701 pikselin ustunde
+         display:none; pencere icindeki katlar icin bu istisna var ve
+         onsuz bolum masaustunde tamamen kayboluyor. -->
+    <details class="fold fold-modal" id="f_yayinFold" hidden>
+      <summary data-i18n="yl_fold">Publish-day list</summary>
+      <p class="hint" data-i18n="yl_hint">What this platform asks for on the day. Reading only — nothing here is ticked or saved.</p>
+      <div class="yl-govde" id="f_yayinListe"></div>
+    </details>
+
     <div class="field">
       <label data-i18n="f_title_label">Title / Note</label>
       <input type="text" id="f_title" maxlength="200" data-i18n-placeholder="f_title_ph" placeholder="e.g. Product Launch Teaser">
@@ -5934,7 +5957,11 @@ const LANG = {
     // 12 Kasim 2026).
     soru_published: ["Is it really live \u2014 did I check?",
       "Did I answer the first comments?",
-      "Did I tick the box?"],
+      "Did I tick the box?",
+      // Asama 4'te ERTELENMISTI: o gun bu liste henuz yoktu.
+      // Asama 2 ile geldi, soru da geri kondu. (Kullanicinin karari,
+      // 12 Kasim 2026: "ASAMA 2 YE EKLE".)
+      "Have you been through the platform's publish-day list?"],
     p_leg_bitti: "Done",
     p_leg_sirada: "Next up",
     p_leg_bekliyor: "Waiting",
@@ -6467,6 +6494,93 @@ const LANG = {
     //
     // YOK: drone (kurallar ulkeye ozel), dusuk isik, masa ustu urun
     // cekimi -- birinci elden kanit bulunamadi.
+    // ═══════════════════════════════════════════════════════════════
+    // YAYIN GUNU LISTESI (Asama 2, 12 Kasim 2026)
+    // ═══════════════════════════════════════════════════════════════
+    // Kaydin platformuna ve turune gore kisa liste. Her madde
+    // ['once'|'icinde'|'sonra', metin, hesapMi]:
+    //   once   = yukleme ekranina GIRMEDEN hazirlanacak sey
+    //   icinde = yukleme ekranindayken yapilacak sey
+    //   sonra  = yayinladiktan hemen sonra
+    // ucuncu alan true ise madde HESABA BAGLI: herkeste yok.
+    //
+    // ⛔ BUNLAR OKUNACAK SEY, KUTU DEGIL. Tik atilmiyor, hicbir yere
+    // kaydedilmiyor, kaydin verisi degismiyor. (Kullanicinin karari,
+    // 12 Kasim 2026: tik atilabilir hali kayda yeni bir alan ekler ve
+    // o alanin sanitizeEvent / toRow / bulut / yedek / paylasim / MCP
+    // yollarindan gecmesi gerekirdi -- CLAUDE.md'de yazili uc ayri
+    // sessiz kayip tam bu aileden.)
+    //
+    // Anahtar once "platform/tur", bulunamazsa "platform".
+    //
+    // ⚠ LISTEYE GIRMEYENLER (dogrulanamadi): Instagram hikaye baglanti
+    // cikartmasi, TikTok aciklama uzunlugu / kapak secimi / duet
+    // ayarlari, Facebook hikayeleri, Threads ve X karakter sinirlari.
+    yl_fold: "Publish-day list",
+    yl_hint: "What this platform asks for on the day. Reading only — nothing here is ticked or saved.",
+    yl_once: "Before",
+    yl_icinde: "On the upload screen",
+    yl_sonra: "Right after",
+    yl_hesap: "depends on your account",
+    yl: {
+      "youtube/video": [
+        ['once', "Is the thumbnail ready (16:9)"],
+        ['once', "Are the chapters written (they start at 00:00, at least three)"],
+        ['icinde', "Paste the title and description; are the chapters in the description"],
+        ['icinde', "Upload the thumbnail, pick the playlist"],
+        ['icinde', "Answer the \"made for kids\" question"],
+        ['icinde', "If it is sponsored, the paid promotion box; the AI question"],
+        ['icinde', "Language, subtitles, end screen, cards"],
+        ['icinde', "Public, scheduled or premiere"],
+        ['sonra', "Check it is live; pin a comment", true] ],
+      "youtube/shorts": [
+        ['once', "Is it vertical and under three minutes"],
+        ['icinde', "Title; hashtags in the title or the description"],
+        ['icinde', "The made-for-kids question and visibility"],
+        ['icinde', "The AI and paid promotion questions"],
+        ['sonra', "From a computer: custom thumbnail and related video", true],
+        ['sonra', "Check it is live"] ],
+      "instagram/reels": [
+        ['once', "Is the cover ready: it cannot be changed later"],
+        ['icinde', "Edit the cover, upload"],
+        ['icinde', "Paste the caption; at most five hashtags"],
+        ['icinde', "Location, people tags, collab invite"],
+        ['icinde', "Should it also go to Facebook"],
+        ['icinde', "Turn captions on; if sponsored, the paid partnership label", true],
+        ['sonra', "Check it is live and sits right in the profile grid"],
+        ['sonra', "Reply to the first comments"] ],
+      "instagram/carousel": [
+        ['once', "Is the slide order final (at most 20)"],
+        ['icinde', "Caption; at most five hashtags; alt text"],
+        ['sonra', "Check it is live"] ],
+      "tiktok": [
+        ['icinde', "Paste the caption and hashtags; location"],
+        ['icinde', "Who can see it: it carries over from your last post, check it"],
+        ['icinde', "If it carries promotion, the \"commercial content\" switch: it cannot be changed later"],
+        ['icinde', "If there is realistic AI content, turn the label on"],
+        ['sonra', "Check it shows on your profile"] ],
+      "facebook/reels": [
+        ['icinde', "Caption, hashtags, cover image"],
+        ['icinde', "Audience: is it public"],
+        ['sonra', "Check it is live"] ],
+      "threads": [
+        ['icinde', "One topic tag"],
+        ['icinde', "The AI label if it is needed"],
+        ['sonra', "Check it is live"] ],
+      "x": [
+        ['icinde', "Image description"],
+        ['icinde', "Video length limit", true],
+        ['sonra', "Check it is live"] ],
+      "linkedin": [
+        ['once', "Is the subtitle file ready"],
+        ['icinde', "Alt text on the images"],
+        ['sonra', "Check the processing has finished"] ],
+      "pinterest": [
+        ['once', "Cover"],
+        ['icinde', "Title, description, link"],
+        ['icinde', "Board and topics"],
+        ['sonra', "Check it is live"] ]
+    },
     p_isik_title: "Light on the shoot day",
     hset_fold: "Ready-made kits",
     hset_hint: "These come with the app. Once added, the items are yours — change them or delete them.",
@@ -7135,7 +7249,8 @@ const LANG = {
       "Her platformun metni ayr\u0131 m\u0131?"],
     soru_published: ["Ger\u00e7ekten yay\u0131nda m\u0131, bakt\u0131m m\u0131?",
       "\u0130lk yorumlar\u0131 yan\u0131tlad\u0131m m\u0131?",
-      "Kutuyu i\u015faretledim mi?"],
+      "Kutuyu i\u015faretledim mi?",
+      "Platformun yay\u0131n g\u00fcn\u00fc listesi tamam m\u0131?"],
     p_leg_bitti: "Bitti",
     p_leg_sirada: "S\u0131rada",
     p_leg_bekliyor: "Bekliyor",
@@ -7654,6 +7769,73 @@ const LANG = {
     ih_group_other: "Di\u011fer",
     // Ayrintili aciklama Ingilizce blokta. Sira ve madde sayisi iki
     // dilde BIREBIR ayni olmak zorunda; test bunu olcuyor.
+    // Ayrintili aciklama Ingilizce blokta. Madde sayilari, asamalari ve
+    // hesap isaretleri iki dilde BIREBIR ayni olmak zorunda; test olcuyor.
+    yl_fold: "Yay\u0131n g\u00fcn\u00fc listesi",
+    yl_hint: "Bu platformun o g\u00fcn istedikleri. Yaln\u0131zca okunur \u2014 burada hi\u00e7bir \u015fey i\u015faretlenmiyor, kaydedilmiyor.",
+    yl_once: "\u00d6nce",
+    yl_icinde: "Y\u00fckleme ekran\u0131nda",
+    yl_sonra: "Hemen sonra",
+    yl_hesap: "hesab\u0131na ba\u011fl\u0131",
+    yl: {
+      "youtube/video": [
+        ['once', "Kapak haz\u0131r m\u0131 (16:9)"],
+        ['once', "B\u00f6l\u00fcmler yaz\u0131ld\u0131 m\u0131 (00:00'dan ba\u015flar, en az \u00fc\u00e7)"],
+        ['icinde', "Ba\u015fl\u0131k ve a\u00e7\u0131klamay\u0131 yap\u0131\u015ft\u0131r; b\u00f6l\u00fcmler a\u00e7\u0131klamada m\u0131"],
+        ['icinde', "Kapa\u011f\u0131 y\u00fckle, oynatma listesini se\u00e7"],
+        ['icinde', "\"\u00c7ocuklara \u00f6zel mi\" sorusunu yan\u0131tla"],
+        ['icinde', "Sponsorluysa \u00fccretli tan\u0131t\u0131m kutusu; yapay zek\u00e2 sorusu"],
+        ['icinde', "Dil, altyaz\u0131, son ekran, kartlar"],
+        ['icinde', "Herkese a\u00e7\u0131k, zamanla ya da pr\u00f6miyer"],
+        ['sonra', "Yay\u0131nda m\u0131 bak; yorumu sabitle", true] ],
+      "youtube/shorts": [
+        ['once', "Dikey ve \u00fc\u00e7 dakikadan k\u0131sa m\u0131"],
+        ['icinde', "Ba\u015fl\u0131k; etiketler ba\u015fl\u0131kta ya da a\u00e7\u0131klamada"],
+        ['icinde', "\u00c7ocuklara \u00f6zel sorusu ve g\u00f6r\u00fcn\u00fcrl\u00fck"],
+        ['icinde', "Yapay zek\u00e2 ve \u00fccretli tan\u0131t\u0131m sorular\u0131"],
+        ['sonra', "Bilgisayardan: \u00f6zel kapak ve ilgili video", true],
+        ['sonra', "Yay\u0131nda m\u0131 bak"] ],
+      "instagram/reels": [
+        ['once', "Kapak haz\u0131r m\u0131: sonradan de\u011fi\u015ftirilemez"],
+        ['icinde', "Kapa\u011f\u0131 d\u00fczenle, y\u00fckle"],
+        ['icinde', "A\u00e7\u0131klamay\u0131 yap\u0131\u015ft\u0131r; en \u00e7ok be\u015f etiket"],
+        ['icinde', "Konum, ki\u015fi etiketi, ortak davet"],
+        ['icinde', "Facebook'ta da payla\u015f\u0131ls\u0131n m\u0131"],
+        ['icinde', "Altyaz\u0131y\u0131 a\u00e7; sponsorluysa \u00fccretli ortakl\u0131k etiketi", true],
+        ['sonra', "Yay\u0131nda m\u0131, profil \u0131zgaras\u0131nda d\u00fczg\u00fcn m\u00fc bak"],
+        ['sonra', "\u0130lk yorumlar\u0131 yan\u0131tla"] ],
+      "instagram/carousel": [
+        ['once', "Kare s\u0131ras\u0131 kesin mi (en \u00e7ok 20)"],
+        ['icinde', "A\u00e7\u0131klama; en \u00e7ok be\u015f etiket; alternatif metin"],
+        ['sonra', "Yay\u0131nda m\u0131 bak"] ],
+      "tiktok": [
+        ['icinde', "A\u00e7\u0131klama ve etiketleri yap\u0131\u015ft\u0131r; konum"],
+        ['icinde', "Kim g\u00f6rebilir: \u00f6nceki payla\u015f\u0131mdan kal\u0131r, kontrol et"],
+        ['icinde', "Tan\u0131t\u0131m i\u00e7eriyorsa \"ticari i\u00e7erik\" se\u00e7ene\u011fi: sonradan de\u011fi\u015fmez"],
+        ['icinde', "Ger\u00e7ek\u00e7i yapay zek\u00e2 i\u00e7eri\u011fi varsa etiketi a\u00e7"],
+        ['sonra', "Profilde g\u00f6r\u00fcn\u00fcyor mu bak"] ],
+      "facebook/reels": [
+        ['icinde', "A\u00e7\u0131klama, etiketler, kapak g\u00f6rseli"],
+        ['icinde', "Kitle: herkese a\u00e7\u0131k m\u0131"],
+        ['sonra', "Yay\u0131nda m\u0131 bak"] ],
+      "threads": [
+        ['icinde', "Bir konu etiketi"],
+        ['icinde', "Gerekiyorsa yapay zek\u00e2 etiketi"],
+        ['sonra', "Yay\u0131nda m\u0131 bak"] ],
+      "x": [
+        ['icinde', "G\u00f6rsel a\u00e7\u0131klamas\u0131"],
+        ['icinde', "Video s\u00fcre s\u0131n\u0131r\u0131", true],
+        ['sonra', "Yay\u0131nda m\u0131 bak"] ],
+      "linkedin": [
+        ['once', "Altyaz\u0131 dosyas\u0131 haz\u0131r m\u0131"],
+        ['icinde', "G\u00f6rsellerde alternatif metin"],
+        ['sonra', "\u0130\u015fleme bitti mi bak"] ],
+      "pinterest": [
+        ['once', "Kapak"],
+        ['icinde', "Ba\u015fl\u0131k, a\u00e7\u0131klama, ba\u011flant\u0131"],
+        ['icinde', "Pano ve konular"],
+        ['sonra', "Yay\u0131nda m\u0131 bak"] ]
+    },
     p_isik_title: "\u00c7ekim g\u00fcn\u00fcnde \u0131\u015f\u0131k",
     hset_fold: "Haz\u0131r setler",
     hset_hint: "Kutudan \u00e7\u0131kan listeler. Ekledi\u011fin madde senin olur \u2014 de\u011fi\u015ftirebilir, silebilirsin.",
@@ -17843,7 +18025,58 @@ function dilSeridiTazele(){
 // Son sart onemli: iki YouTube hesabindan biri sonradan silinirse
 // hesapSeritGerekir artik false doner. Alan gizlenirse kullanici kaydin
 // hala bir hesaba bagli oldugunu goremez ve degistiremezdi.
+// ═══════════════════════════════════════════════════════════════════
+// YAYIN GUNU LISTESI  (Asama 2, 12 Kasim 2026)
+// ═══════════════════════════════════════════════════════════════════
+// ⛔ YALNIZCA VAR OLAN BIR KAYITTA. Yeni kayit penceresinde platform ve
+// tur COKLU secilebiliyor; orada dort ayri liste birden acilirdi ve
+// zaten yanlis an: bu liste YAYIN GUNU icin. O gun kullanici kaydi
+// takvimden aciyor, yani currentEvent dolu oluyor.
+//
+// ⛔ TIK YOK. Liste okunacak sey; kaydin verisine hicbir sey
+// eklenmiyor. Kullanicinin karari (12 Kasim 2026): tik atilabilir hali
+// kayda yeni bir alan ekler ve o alanin sanitizeEvent, toRow, bulut
+// esitleme, yedek, disa aktarma, paylasim baglantisi ve MCP yollarindan
+// ayri ayri gecmesi gerekirdi. CLAUDE.md Bolum 5'te yazili uc ayri
+// hata tam bu aileden ve ucu de SESSIZ kayipti.
+function yayinListesi(platform, tur){
+  const d = t('yl');
+  if(!d || typeof d !== 'object') return null;
+  // Once "platform/tur", sonra yalniz "platform": TikTok, Threads, X,
+  // LinkedIn ve Pinterest'te liste ture gore degismiyor.
+  return d[platform + '/' + tur] || d[platform] || null;
+}
+function yayinListesiHtml(liste){
+  const asama = [['once','yl_once'], ['icinde','yl_icinde'], ['sonra','yl_sonra']];
+  return asama.map(([anahtar, baslik])=>{
+    const maddeler = liste.filter(x=> x[0] === anahtar);
+    if(!maddeler.length) return '';
+    return '<div class="yl-asama"><h4>' + escapeHtml(t(baslik)) + '</h4><ul>'
+      + maddeler.map(x=> '<li>' + escapeHtml(x[1])
+          // Hesaba bagli madde: herkeste yok. Silinmiyor cunku bilgi
+          // kayboluyor; isaretsiz birakilsaydi olmayan bir dugme
+          // aranirdi. (Kullanicinin karari, 12 Kasim 2026.)
+          + (x[2] ? '<span class="yl-hesap">' + escapeHtml(t('yl_hesap')) + '</span>' : '')
+          + '</li>').join('')
+      + '</ul></div>';
+  }).join('');
+}
+function yayinListesiTazele(){
+  const kat = document.getElementById('f_yayinFold');
+  if(!kat) return;
+  if(!currentEvent){ kat.hidden = true; return; }
+  const pf = (document.getElementById('f_platform') || {}).value || '';
+  const tur = (document.getElementById('f_type') || {}).value || '';
+  const liste = yayinListesi(pf, tur);
+  kat.hidden = !liste;
+  if(!liste) return;
+  document.getElementById('f_yayinListe').innerHTML = yayinListesiHtml(liste);
+}
 function modalHesapTazele(){
+  // Yayin gunu listesi de ayni anlarda tazeleniyor: pencere acilirken
+  // ve platform/tur degisince. Ayri bir cagri noktasi aramak yerine
+  // zaten her iki yolda da cagrilan bu islev kullaniliyor.
+  yayinListesiTazele();
   const tek = document.getElementById('hesapSingleWrap');
   const cok = document.getElementById('hesapMultiWrap');
   if(!tek || !cok) return;
@@ -18472,7 +18705,8 @@ function setUploadToggle(val, sistem){
   if(not) not.hidden = !(sistem && !val);
 }
 
-document.getElementById('f_type').addEventListener('change', ()=>{ refreshTypeDependentFields(); otoYayinTazele(); });
+document.getElementById('f_type').addEventListener('change', ()=>{
+  refreshTypeDependentFields(); otoYayinTazele(); yayinListesiTazele(); });
 document.getElementById('f_time').addEventListener('change', otoYayinTazele);
 // Anahtar acilinca satirlar ciziliyor, kapaninca kayboluyor. Saatler
 // kutuda duruyor; kapatip acan biri yazdiklarini kaybediyor -- bilerek:
@@ -18509,7 +18743,7 @@ document.getElementById('otoYayinToggle').addEventListener('click', async ()=>{
 // de tazeleniyor. Yeni kayittaki coklu kutular icin de ayni sey: isaret
 // degistikce serit acilip kapaniyor.
 document.getElementById('f_platform').addEventListener('change', ()=>{
-  dilSeridiTazele(); modalHesapTazele();
+  dilSeridiTazele(); modalHesapTazele(); yayinListesiTazele();
 });
 ['platformChecks','typeChecks'].forEach(id=>{
   const kap = document.getElementById(id);
