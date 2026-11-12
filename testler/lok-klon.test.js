@@ -1,11 +1,15 @@
-const { chromium } = require('./araclar');
+const { chromium, satirlariBugunecek, fiksturKaydirmasi, tarihKaydir } = require('./araclar');
 const fs = require('fs');
 (async () => {
   const D = process.argv[2];
   const PORT = process.argv[3] || '8097';
   const satirlar = JSON.parse(fs.readFileSync(D + '/satirlar.json', 'utf8'));
+  // Fikstur tarihleri bugune tasiniyor: takvim icinde bulunulan ayi
+  // aciyor, cakili tarihler o ay gecince ekranda kaybolur (araclar.js).
+  const KAYDIRMA = fiksturKaydirmasi();
+  const _tasinmis = satirlariBugunecek(satirlar, KAYDIRMA);
   const veri = { workspaces:[{id:'00000000-0000-0000-0000-000000000001',name:'Test'}],
-                 locations: satirlar.L, calendar_events: satirlar.E };
+                 locations: satirlar.L, calendar_events: _tasinmis.E };
   const stub = fs.readFileSync(D + '/sahte-supabase.js', 'utf8');
   const b = await chromium.launch({ });
   const page = await b.newPage({ viewport:{width:1300,height:950} });
@@ -28,12 +32,12 @@ const fs = require('fs');
   await page.waitForTimeout(400);
 
   // 1) Yeni kayitta cogalt dugmesi GORUNMEMELI
-  const yeni = await page.evaluate(async ()=>{
-    openCalDetail(null, '2026-09-20');
+  const yeni = await page.evaluate(async (T0)=>{
+    openCalDetail(null, T0);
     await new Promise(r=>setTimeout(r,200));
     const d = document.getElementById('calCloneBtn');
     return { gorunur: getComputedStyle(d).display !== 'none' };
-  });
+  }, tarihKaydir('2026-09-20', KAYDIRMA));
   k('yeni kayıtta “Çoğalt” gizli', yeni.gorunur === false);
 
   // 2) Kayitli giriste gorunmeli ve pencereyi acmali
@@ -96,15 +100,15 @@ const fs = require('fs');
   k('pencere açık kalıyor (veri kaybolmasın)', bosTarih.acik === true);
 
   // 5) Gercek cogaltma
-  const olustur = await page.evaluate(async ()=>{
+  const olustur = await page.evaluate(async ([T1, T2])=>{
     const kaynak = calendarEvents.find(e=>e.title && e.content && e.content.caption);
     const once = calendarEvents.length;
     const sr = [...document.querySelectorAll('#cloneRows .clone-row')];
-    sr[0].querySelector('.k-date').value = '2026-10-01';
+    sr[0].querySelector('.k-date').value = T1;
     sr[0].querySelector('.k-type').value = 'reels';
     sr[0].querySelector('.k-platform').value = 'instagram';
     sr[0].querySelector('.k-time').value = '19:30';
-    sr[1].querySelector('.k-date').value = '2026-10-02';
+    sr[1].querySelector('.k-date').value = T2;
     sr[1].querySelector('.k-type').value = 'shorts';
     sr[1].querySelector('.k-platform').value = 'youtube';
     window.__yazmalar.length = 0;
@@ -120,12 +124,12 @@ const fs = require('fs');
                                         cap:(e.content.caption||'').slice(0,40) })),
              kimlikTekil: new Set(calendarEvents.map(e=>e.id)).size === calendarEvents.length,
              yazma: window.__yazmalar.filter(w=>w.tablo==='calendar_events') };
-  });
+  }, [tarihKaydir('2026-10-01', KAYDIRMA), tarihKaydir('2026-10-02', KAYDIRMA)]);
   k('İKİ KOPYA OLUŞTU', olustur.adet === 2, olustur.adet);
   k('pencere kapandı', olustur.kapandi === true);
   k('tür/hesap/tarih/saat girildiği gibi',
      olustur.yeniler[0].t==='reels' && olustur.yeniler[0].p==='instagram' &&
-     olustur.yeniler[0].d==='2026-10-01' && olustur.yeniler[0].s==='19:30' &&
+     olustur.yeniler[0].d===tarihKaydir('2026-10-01', KAYDIRMA) && olustur.yeniler[0].s==='19:30' &&
      olustur.yeniler[1].t==='shorts' && olustur.yeniler[1].p==='youtube',
      JSON.stringify(olustur.yeniler.map(x=>x.t+'/'+x.p+' '+x.d+' '+x.s)));
   k('İÇERİK KOPYALANDI', olustur.yeniler.every(e=>e.cap === olustur.kaynakCaption && e.bas === olustur.kaynakBaslik),

@@ -139,3 +139,52 @@ exports.KOK = path.resolve(__dirname, '..');
 //
 //   await p.addInitScript(ORNEKSIZ);   // goto'dan ONCE
 exports.ORNEKSIZ = `try{ localStorage.setItem('demo_ornek_kaldirildi','1'); }catch(e){}`;
+
+
+// ═══════════════════════════════════════════════════════════════════
+// FIKSTUR TARIHLERINI BUGUNE TASIMA  (12 Kasim 2026)
+// ═══════════════════════════════════════════════════════════════════
+// satirlar.json gercek bir veri kumesinin kopyasi; kayitlari Agustos–
+// Ekim 2026 tarihli. Lokasyon takvimi ICINDE BULUNULAN AYI aciyor,
+// dolayisiyla o aylar gecince ekranda HIC kayit kutusu kalmadi ve
+// bes test birden dustu: arama, duzeltme, tz, lok-klon, lok-surukle.
+// Hepsi ayni yerde takildi -- querySelector('.cal-chip') null donuyor.
+//
+// ⚠ SAHTE SUNUCU ZATEN VARDI (sahte-supabase.js). Sorun baglanti
+// yoklugu DEGIL, verinin takvimle birlikte ilerlememesiydi -- aynisi
+// paylas.test.js'te de yasandi.
+//
+// KAYDIRMA 7'NIN KATI: haftanin gunu korunuyor. Takvim haftalik bir
+// izgara; carsamba olan bir kayit carsamba kalmazsa surukleme ve
+// sutun olcumleri sessizce baska bir seyi olcmeye baslardi.
+//
+// Fikstur kumesinin agirlik merkezi 2026-09 (99 kaydin 61'i). O ay
+// icinde bulunulan ayin ortasina tasiniyor.
+const _FIKSTUR_ANKA = Date.UTC(2026, 8, 15);   // 15 Eylul 2026
+function fiksturKaydirmasi(bugun){
+  const b = bugun || new Date();
+  const hedef = Date.UTC(b.getFullYear(), b.getMonth(), 15);
+  const gun = Math.round((hedef - _FIKSTUR_ANKA) / 86400000 / 7) * 7;
+  return gun;
+}
+// 'YYYY-MM-DD' -> kaydirilmis 'YYYY-MM-DD'. Saat dilimi tuzagi:
+// new Date('2026-09-15') UTC gece yarisi demek, negatif ofsette bir
+// gun geri gider. Bu yuzden her sey UTC'de hesaplaniyor.
+function tarihKaydir(tarih, gun){
+  const m = /^(\d{4})-(\d{2})-(\d{2})$/.exec(String(tarih || ''));
+  if(!m) return tarih;                       // bos ya da baska bicim: dokunma
+  const d = new Date(Date.UTC(+m[1], +m[2] - 1, +m[3]) + gun * 86400000);
+  const iki = (n)=> String(n).padStart(2, '0');
+  return d.getUTCFullYear() + '-' + iki(d.getUTCMonth() + 1) + '-' + iki(d.getUTCDate());
+}
+// satirlar.json'un E dizisini kaydirip DONDURUYOR (dosyayi degistirmiyor).
+function satirlariBugunecek(satirlar, gun){
+  const k = (gun === undefined) ? fiksturKaydirmasi() : gun;
+  return {
+    L: satirlar.L,
+    E: (satirlar.E || []).map(e => Object.assign({}, e, { post_date: tarihKaydir(e.post_date, k) }))
+  };
+}
+exports.fiksturKaydirmasi = fiksturKaydirmasi;
+exports.tarihKaydir = tarihKaydir;
+exports.satirlariBugunecek = satirlariBugunecek;

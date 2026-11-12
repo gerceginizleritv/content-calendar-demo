@@ -320,7 +320,13 @@ const bak = (ad, ko, ek)=>{ if(ko){ g++; console.log('  ok  '+ad); } else { k++;
         tiktok:  { gizlilik: [['<td>TikTok</td>', 2]],
                    sartlar:  [['<strong>TikTok</strong>', 2]] },
         youtube: { gizlilik: [['<td>YouTube (Google)</td>', 2]],
-                   sartlar:  [['<strong>YouTube</strong>', 2]] }
+                   sartlar:  [['<strong>YouTube</strong>', 2]] },
+        // 11 Kasim 2026: Threads eklendi. Bekci tam da bunun icin
+        // otmustu -- otomatik yayin 16 Ekim'den beri acikti ama
+        // privacy.html Threads'ten hic soz etmiyordu ve sartlar.html
+        // Threads'i "paylasimi siz yaparsiniz" kumesine koyuyordu.
+        threads: { gizlilik: [['<td>Threads (Meta)</td>', 2]],
+                   sartlar:  [['<strong>Threads</strong>', 2]] }
       };
       const gizlilik = oku('privacy.html');
       const sartlar  = oku('sartlar.html');

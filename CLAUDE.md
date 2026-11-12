@@ -118,8 +118,23 @@ Tek yer: `pc/story-yukle.py` → `OTOMATIK_YAYIN`.
 | facebook/reels | **açık** (13 Ekim 2026'da geri alındı) |
 | tiktok/reels | kapalı (`video.publish` onayı yok) |
 | youtube/shorts | kapalı (denetim kapısı) |
+| threads/text_post | **açık** (16 Ekim 2026) |
+| threads/poll | **açık** (16 Ekim 2026) — aşağıdaki nota bak |
 
 Tabloda olmayan çift kapalı sayılır. Ayrıntı: `YAPILACAKLAR.md`.
+
+**12 Kasım 2026 — iki Threads satırı bu tabloya EKSİK yazılmıştı.**
+`pc/story-yukle.py` 16 Ekim'den beri `('threads','text_post')` ve
+`('threads','poll')` çiftlerini **açık** tutuyor, ama bu tablo onları
+hiç içermiyordu. Yani kural ("tabloda olmayan çift kapalı sayılır")
+okuyana **Threads kapalı** dedirtiyordu, oysa açıktı. Tablonun tek
+kaynağı `pc/story-yukle.py`; ikisi ayrıştığında doğru olan o dosya.
+
+⚠ **threads/poll pratikte çalışmıyor.** Tiki açan yer yükleyici ve
+yükleyici yalnızca bir dosya geldiğinde koşuyor; ankette görsel yok.
+Anket kayıtlarında tiki ya planlama sohbeti MCP'den açıyor ya da
+kullanıcı uygulamanın içinden. Satır yine de açık: politika "bu çift
+açık" demiş olsun diye.
 
 **İki ayrı kapı var, ikisini birden kontrol et:**
 1. Kaydın `auto_publish` sütunu

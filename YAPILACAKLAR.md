@@ -6,6 +6,438 @@ duruyor, neden ertelendiği de yazıyor ki aynı tartışma baştan yapılmasın
 
 ---
 
+## BÖLÜM 2 (fiyat / ödeme duvarı / yönetim) — KULLANICI KARARLARI
+## 12 Kasım 2026
+
+⛔ **Henüz başlanmadı** ve bilerek başlanmadı: promptun kendi kapısı
+*"Bölüm 1 bitip kullanıcı ONAYLAMADAN başlama"* diyor. Bölüm 1 bitti,
+onay yok (kullanıcı önce uygulamada görecek). Başlanınca da ilk iş
+kod değil **tasarım belgesi**.
+
+Aşağıdakiler kullanıcının bugün verdiği cevaplar. Yazılıyor çünkü iş
+beklemede ve bu kararlar unutulur.
+
+### 1. Yönetim paneli — KAPSAM DARALDI ⚠
+
+Promptun ilk hâli *"kim girdi, ne kullandı, ne satın aldı"* diyordu.
+Kullanıcı bugün daralttı, kendi sözleriyle:
+
+> *"benim derdim kişi bilgilerini saklamak değil ama kaç kişinin
+> kullanıma başladığını kaç kişinin hangi paketi aldığını göreceğim
+> bir panel olmalı"*
+
+Yani panel **sayı** gösterecek, kişi başına davranış kaydı değil:
+  · kaç kişi kullanmaya başladı
+  · kaç kişi hangi paketi aldı
+  · (promptta ayrıca) yurt içi / yurt dışı ayrı
+
+⚠ Bunu "hiç kişisel veri yok" diye okumamak gerek: bir abonelik
+zaten **kimin hangi planı aldığını** tutmak zorunda (fatura, erişim
+hakkı, iade). Daralan şey **davranış izleme** — "şu kişi şunu
+kullandı" kaydı. Tasarım belgesinde bu ayrım tek tek yazılacak:
+hangi tablo kişiye bağlı, hangisi yalnızca sayaç.
+
+### 2. Ücretsiz katman — kota ile tanımlanacak
+
+> *"ücretsiz bölümü belirli bir kota ile tanımlayacağız ileride ve
+> bunları değiştireceğiz"*
+
+Promptun "yönetimden değiştirilebilir limitler" şartıyla uyumlu:
+kota koda gömülmeyecek, veritabanından okunacak.
+MARKA.md satır 111 (*"Ücretsiz. Şu an para alınmıyor, fiyat sayfası
+yok."*) o zaman güncellenecek.
+
+### 3. Koyu tema — KORUNACAK ✅ (karar verildi)
+
+Bölüm 1'in cevapsız sorularındandı. Karar: korunsun.
+Zaten öyle yapıldı: Aşama 1–7 boyunca her ölçüm **iki temada** da
+alındı (kontrast, taşma). Ek iş gerekmiyor, karar kayda geçti.
+
+### 4. MARKA.md "Görsel kimlik" — BEKLİYOR
+
+> *"her şey bittiğinde bakacağız buna beklesin"*
+
+Yeni görsel kurallar (2px köşe, klaket şeridi, 11px yazı tabanı,
+mono künyeler) MARKA.md'ye yazılmadı. Yazılacağı zaman metin önce
+kullanıcıya gösterilecek.
+
+## AŞAMA 2b KAPATILDI (12 Kasım 2026)
+
+2b iki parçaydı; **ölçüm ikisinin de gerekçesini değiştirdi.**
+
+**1. Hesap menüsü kalabalığı — artık yok.** Gerekçe 2a'nın telefon
+düzeninden geliyordu (avatar + Giriş yap + dil + "⋯" tek satırda).
+2a geri alındı, sorun da gitti. Ölçüldü: masaüstünde `.rail-me`
+182×163 bir sütun — avatar, Giriş yap, dil alt alta; `railMoreBtn`
+masaüstünde 0×0 (o telefonun düğmesi). Düzeltilecek bir şey yok.
+
+**2. Masaüstü üst şerit — yapılmadı, kullanıcı kararı.**
+Çizimler (FoyProjeler / FoyMekan) masaüstünde yatay bir üst şerit
+gösteriyor. Ölçülen boyut: kenar çubuğu 208×1047, dört bölüm
+(marka, hesap+dil, hava kutusu, yardım bağlantıları), **24
+tıklanabilir öğe**, ve `rail` geçen **14 test dosyası**.
+
+Bu, telefonda yapılıp **geri alınan** değişikliğin masaüstü ikizi.
+Telefonda gerekçe bütçeydi (120 px şerit / 134 px çizim);
+masaüstünde yer sorunu yok, yani teknik olarak yapılabilir — ama
+24 öğeyi dört bölümden tek bir yatay şeride dağıtmak demek.
+
+Karar: **yapılmadı.** Kenar çubuğu olduğu gibi kalıyor.
+İleride istenirse aşamalara bölünerek ele alınabilir.
+
+## BAŞKA BİR AI SAĞLAYICI (ChatGPT / Claude) — 12 Kasım 2026
+
+Kullanıcı sordu: Gemini dışında ChatGPT ya da Claude bağlanabilir mi?
+
+**Üç ayrı şey var, ikisi zaten çalışıyor.**
+
+1. **Uygulama içinden yazdırma (✨ düğmeleri) — yalnızca Gemini.**
+   Çağrı sekiz yerde sabit: adres `generativelanguage.googleapis.com`,
+   yol `/v1beta/models/<ad>:generateContent`, başlık `x-goog-api-key`,
+   istek/yanıt gövdesi, ve iki dildeki hata metinleri de o adresi
+   adıyla yazıyor. 19 `ai-*` test dosyası Gemini'yi varsayıyor.
+
+2. **ChatGPT/Claude ile planlama — zaten var.** `ai_er_not`:
+   "ChatGPT, Claude ya da Gemini ile planla, sonucu buraya getir."
+   Asistan kartı kopyalanıp sonuç yapıştırılıyor.
+
+3. **Claude için MCP** — doğrudan okuma/yazma var, yalnızca
+   `bostancioglum@gmail.com` hesabına tanımlı (CLAUDE.md kuralı).
+
+**Neden tek sağlayıcı — kodun kendi gerekçesi (satır ~19032):**
+Google AI Studio ücretsiz anahtar veriyor, kart istemiyor; OpenAI
+ayrı hesap ve kart şart koşuyor. Ve Gemini **tarayıcıdan doğrudan**
+çağrılabiliyor — Shootboard'un sunucusu yok, sunucu gerektiren bir
+sağlayıcı anahtarın bizden geçmesi demek olurdu ve *"anahtarını
+görmeyiz"* sözü bozulurdu.
+
+**Engel:** OpenAI ve Anthropic tarayıcıdan anahtar kullanmayı
+önermiyor. Düzgün yolu Edge Function üzerinden geçmek — teknik olarak
+mümkün (Edge Function'lar zaten var) ama yukarıdaki sözü yeniden
+değerlendirmeyi gerektirir.
+
+⚠ Fiyat/kota karşılaştırması YAZILMADI: buradan doğrulanamıyor.
+
+**Kullanıcının gerekçesi (12 Kasım 2026, kendi sözleriyle):**
+*"dünyada insanlar sadece gemini kullanmıyor ve pazarda ChatGPT ve
+Claude kullanım oranları da yüksek, buna bakmamız lazım."*
+
+Yani bu bir teknik merak değil **erişilebilirlik kararı**: kendi
+anahtarını getiren kullanıcının elindeki anahtar büyük ihtimalle
+Gemini'nin değil. Kodun "tek sağlayıcı" gerekçesi de zaten
+erişilebilirlikti (ücretsiz anahtar, tarayıcıdan çağrı) — yani iki
+gerekçe aynı soruya iki cevap veriyor ve yeniden tartılması gerekiyor.
+
+Karar: Çekim Föyü tasarımı bitene kadar başlanmadı; **bitince ilk iş
+bu.**
+
+## GECELİK TURDA KIRMIZI KALAN DOKUZ TEST (11 Kasım 2026)
+
+Tam tur: 190 koşuldu, 177 geçti, **13 düştü**. Dördü o anki bir
+değişiklikten geliyordu ve geri alındı; **dokuzu önceden kırıktı.**
+
+Atıf tahmin edilmedi: aynı 13 test önce değişiklikle, sonra
+`git stash` ile değişiklik kaldırılıp koşuldu, iki liste
+karşılaştırıldı.
+
+Dokuzu tanılandı. **Üç gruba ayrılıyorlar ve ikisi GERÇEK ÜRÜN
+EKSİĞİ — çürümüş test değil.**
+
+---
+
+### A. GERÇEK ÜRÜN EKSİĞİ — ikisi de Threads'ten
+
+⛔ **`hesap-sil.test.js` — hesap silinince Threads verisi SİLİNMİYOR.**
+
+Testin "bekçi" bölümü şunu kontrol ediyor: `sql/` içinde `user_id`
+sütunu olan her tablo, hesap silme listesinde olmalı. İki tablo
+eksik çıktı:
+
+    threads_hesaplari   (sql/63-threads-jeton.sql)
+    threads_yanitlari   (sql/65-threads-anket-cevabi.sql)
+
+Liste `app.html` içinde `HESAP_TABLOLARI` (satır ~22717). İçinde
+`tiktok_hesaplari` ve `youtube_hesaplari` var, Threads yok.
+
+Anlamı: kullanıcı hesabını sildiğinde **Threads erişim jetonu ve
+Threads anket cevapları veritabanında kalıyor.** Bu bir mahremiyet
+sorunu, kozmetik değil.
+
+Test tam da işini yapıyor — biri tablo ekleyip listeyi güncellemeyi
+unuttuğunda ötüyor. Testin kendi yorumunda bu bekçinin neden
+konulduğu da yazılı (sql/36 olayı).
+
+Düzeltmesi iki dize eklemek. ⚠ Ama **veri silme davranışı**: önce
+onay alınmalı, ve eklemeden önce iki tablonun gerçekten kullanıcıya
+ait olduğu doğrulanmalı.
+
+⛔ **`sartlar.test.js` — Threads için belge çengeli tanımlı değil.**
+
+Düşen iddia: `'threads' icin belge cengeli tanimli`. Uygulama
+Threads'i destekliyor ama şartlar/belgeler tarafında karşılığı yok.
+Yukarıdakiyle aynı aileden: Threads eklendi, evrakı eklenmedi.
+
+---
+
+### B. ESKİ SÜRÜME GÖRE YAZILMIŞ BEŞ TEST (lokasyon uygulaması)
+
+    arama.test.js · duzeltme.test.js · tz.test.js
+    lok-klon.test.js · lok-surukle.test.js
+
+Beşi de `app.html`'i DEĞİL, **lokasyon uygulamasını** (8099 portu,
+`lokasyon.html`) test ediyor. Hepsi aynı şeye takılıyor: takvimde
+kayıt kutusu yok (0).
+
+Ölçüldü: lokasyon.html tarayıcıda açıldı. Sayfa hatasız yükleniyor,
+takvim çiziliyor (21 gün hücresi), ama `calendarEvents` **0 kayıt**.
+Sayfanın kendi başlığı sebebi söylüyor: *"DENEME KOPYASI — Supabase
+sürümü · Eski sistem: lokasyon-takip"*. Veri artık buluttan geliyor;
+test ortamında bağlantı yok, dolayısıyla veri de yok.
+
+Yani uygulama bozuk değil, **testler yerel veriyle çalışan eski
+sürüme göre yazılmış.** Düzeltme yolu: `story-yayin.test.js`'teki
+gibi sahte bir sunucu kurmak.
+
+⚠ Bu, "uygulama çalışıyor" demek DEĞİL — buradan giriş yapılamadığı
+için gerçek kullanıcı akışı doğrulanamadı. Yalnızca "bu başarısızlık
+veri yokluğundan" denebilir.
+
+---
+
+### C. ÇÜRÜMÜŞ İKİ TEST (ürün sağlam)
+
+**`push.test.js`** — `app.html`'den `async function pushChanges()`
+kalıbını **parametresiz** arıyor; fonksiyon `pushChanges(derinlik)`
+olmuş (app.html satır 8481). Kodun kendisi satır 8463'te bu
+değişikliği not etmiş, test güncellenmemiş. Düzeltmesi testteki
+düzenli ifade.
+
+**`paylas.test.js`** — ayrı bölümde yazılı (takvimle çürüyor).
+
+---
+
+### DURUM — 11 Kasım 2026 akşamı
+
+Dördü **çözüldü**, beşi duruyor.
+
+| Test | Durum |
+|---|---|
+| `hesap-sil` | ✅ çözüldü — Threads tabloları silme listesine eklendi |
+| `sartlar` | ✅ çözüldü — belgeler Threads'i anlatıyor, bekçi Threads'i de kilitliyor |
+| `push` | ✅ çözüldü — kalıp düzeltildi, oturum tazeleme yolu artık ölçülüyor |
+| `paylas` | ✅ çözüldü — tarihler bugüne göreli üretiliyor |
+| `arama`, `duzeltme`, `tz`, `lok-klon`, `lok-surukle` | ✅ çözüldü — fikstür tarihleri bugüne taşınıyor |
+
+**Dokuzunun dokuzu da kapandı. Tam tur: 190 koşuldu, 190 geçti.**
+(Oturumun başında aynı tur 177/13 idi.)
+
+⚠ **Teşhisim bir kez yanlış çıktı, kayda geçsin:** kalan beş için
+"sahte sunucu kurmak gerekiyor" denmişti. Sahte sunucu zaten vardı
+(`testler/sahte-supabase.js`); gerçek sebep `paylas` ile aynıydı —
+fikstür tarihleri takvimle ilerlemiyordu. "Bağlantı yok" teşhisi,
+ölçülmeden söylenmiş bir cümleydi.
+
+### SIRA ÖNERİSİ
+
+1. `hesap-sil` — mahremiyet, en acili. Onay gerekir.
+2. `sartlar` — Threads belgesi, aynı aile.
+3. `push` ve `paylas` — tek satırlık test düzeltmeleri, ürüne
+   dokunmaz.
+4. Lokasyon beşlisi — sahte sunucu kurmak gerekiyor, en pahalısı.
+
+## ✅ ÇÖZÜLDÜ — paylas.test.js takvimle çürüyordu (11 Kasım 2026)
+
+**Ürün arızası YOK.** Paylaşım bağlantısıyla açılan salt okunur sayfa
+kayıtları doğru gösteriyor — ölçüldü: Kasım tarihli kayıt açılışta
+göründü, Eylül tarihli kayıt iki ay geri gidince göründü.
+
+Düşen iddia: `takvimde kayıt görünüyor`.
+Sebebi: testin örnek kayıtları **2026-09-10** ve **2026-09-12**
+tarihlerine çakılı (`testler/paylas.test.js` satır 30, 56, 67),
+görüntüleyici ise `var ay = new Date()` ile **içinde bulunulan ayı**
+açıyor (`paylas.html` satır 134). Eylül 2026 geçtiği için test
+bugünden sonra **her zaman** düşecek; kendiliğinden düzelmez.
+
+⚠ Gecelik tam tur `main` üzerinde bunu her gece kırmızı gösterir.
+Push/PR turunda yok (o tur yalnızca
+`mobil takvim proje mekan fikir izgara serit ai-erisimi` koşuyor).
+
+**Önerilen düzeltme** (test zayıflatılmıyor, çürümesi durduruluyor):
+üç tarihi bugüne göreli üret — örneğin ayın 10'u ve 12'si, içinde
+bulunulan aydan. Böylece iddia aynı kalır ama takvim ilerledikçe
+geçerliliğini korur.
+
+Karar kullanıcıda; onay gelmeden teste dokunulmadı (Bölüm 2 kuralı).
+
+## TELEFON GEZİNMESİ: ÇİZİM 134 PİKSEL İSTİYOR, BÜTÇE 120 (11 Kasım 2026)
+
+**Uygulandı, ölçüldü, GERİ ALINDI.** Commit `856e861`, geri alma `20b20a3`.
+`git revert` kullanıldı, `reset` değil — commit duruyor, fikir değişirse tek
+komutla geri getirilebilir.
+
+### Ne yapıldı
+
+Çekim Föyü tasarımının telefon gezinmesi: sekmeler alt sabit çubuktan **üste**,
+**4+4 hücreli tabloya** taşındı (kullanıcı kararı: *"çizimdeki gibi üstte"*).
+İki eski bulguyu da kapatıyordu:
+
+- **bulgu 11 (telefon yarısı):** sekme adları `.tab-ad-k` kısaltmasıyla **9,5
+  piksele** düşürülüyordu; iki satıra yayılınca **tam ad, 14 piksel** oldu.
+- **bulgu 9b:** yüzen yuvarlak "+" düğmesi altındaki kaydın üstüne biniyordu;
+  tam genişlikte alt şerit hiçbir şeyin üstüne binmiyor.
+
+### ⬛ NEDEN GERİ ALINDI — İKİ İSTEK BİRBİRİNİ KESİYOR
+
+Dört test düştü: `mobil-serit`, `mobil-alt-menu`, `mobil-menu`, `serit`.
+Üçü eski tasarımı (alt çubuk, tek satırlık şerit) ölçüyordu — ama biri
+**gerçek bir şeyi** koruyordu:
+
+    mobil-serit:  "şerit 120px altında"  →  ölçülen 206px  (ekranın %24'ü)
+
+O 120 piksellik bütçe, kabuğun ekranı yemesini engelliyor — yani kullanıcı
+testinin **2. bulgusuyla** (*"takvim ilk ekranda çok aşağıda"*) aynı şeyi
+savunuyor.
+
+**206'nın 116'si henüz yapılmamış işlerin kalıntısıydı** (ölçüldü):
+
+| Parça | Boy | Nereye gidecekti |
+|---|---|---|
+| `rail-brand` | 44px | kalıyor |
+| `rail-me` (avatar, Giriş yap, dil) | 44px | 2b — hesap menüsü |
+| `rail-more` (⋯) | 34px | 2b — marka satırına |
+| `rail-hava` | 26px | 5. aşama — "Bugün sette" kutusuna |
+| **4+4 ızgara** | **90px** | **çizimin kendisi** |
+
+→ 2b ve 5. aşama bitse bile: 44 + 90 = **~134 piksel.**
+
+⚠ **ÇİZİMİN KENDİ ÖLÇÜSÜ BU.** `FoyTelTakvim.dc.html`: başlık 44 + gezinme
+88 + çizgiler ≈ 134. Yani fark **uygulamadan değil tasarımdan** geliyor;
+daha iyi kodlayarak kapanmaz.
+
+### Karar verilmeden önce bilinmesi gereken
+
+Telefonda "üstte 4+4 tablo", kabuğun **14 piksel daha fazla** yer kaplamasını
+kabul etmek demek — ve aynı kullanıcı testi "takvim çok aşağıda" demişti.
+İki istek aynı anda sağlanamıyor. Seçenekler:
+
+1. **Bütçeyi yükselt** (120 → 140) ve testleri bir kez güncelle. Tasarım
+   uygulanır, kabuk 14 piksel büyür.
+2. **Gezinmeyi tek satıra sığdır** (8 hücre yerine 4 + "⋯"), 44 piksel.
+   Bütçe korunur ama çizimden sapılır.
+3. **Alt çubukta bırak** (bugünkü hal). O zaman **bulgu 11'in telefon yarısı
+   açık kalır**: sekme adları 9,5 pikselde durur.
+
+⛔ Hangisi seçilirse seçilsin, **ölçmeden karar verilmesin**: bu satırların
+tamamı tahmin değil, 390x844'te alınmış ölçüm.
+
+### Ders
+
+Bu geri alma boşa gitmedi. İki istek (çizime uy / kabuk küçük kalsın)
+**çeliştiği ancak uygulanıp ölçülünce görüldü.** Testler bunu yakaladı;
+yakalamasaydı kabuk sessizce %24'e çıkmış olacaktı.
+
+---
+
+## THREADS UÇTAN UCA TESTİ — ve bir kabul edilmiş boşluk (3 Kasım 2026)
+
+### Ne yapıldı
+
+Threads yayın yolunun **davranışsal** testi yoktu. `threads-yayin.test.js`
+kararın beş yerde yazılı olduğunu ölçüyor ama kaynak **metnine** bakarak;
+yani "doğru yazılmış mı" sorusunu cevaplıyor, "doğru **DAVRANIYOR** mu"
+sorusunu cevaplamıyordu.
+
+`testler/story-yayin.test.js`'e 116 ölçüm eklendi (364 → 480). Worker
+gerçekten koşuyor; sahte Threads sunucusu `graf.test`ten **ayrı bir
+makinede** (`threads.test`) — bilerek: ikisi aynı sahte sunucuda olsaydı
+"yanlış uygulamaya gitti" hatası GÖRÜNMEZDİ, ve o hata bugün çalışan
+Facebook yayınını bozmak demek.
+
+Ölçülenler: metin postu (TEXT kapsayıcı → yayın sırası), görselli gönderi
+(IMAGE, dosya **bize indirilmiyor** — Threads kendisi çekiyor), anket
+(`option_a..option_d` SIRAYLA, boş kutular atılıyor, tür anket değilse
+anket gitmiyor), anket kuralları (1 ve 5 seçenek, görselli anket → kalıcı
+hata ve kapsayıcı **hiç** yaratılmıyor), 27 Ekim'in bayt vakası (tam 25
+birim geçiyor, 26 reddediliyor, kırpma yok), çöküş kurtarması (iki tanık
+ve **sırası**: liste okunamadıysa kapsayıcıya hiç sorulmuyor), uçtan uca
+çöküş (toplamda TEK yayın çağrısı), jeton yaşam döngüsü (sql/63),
+tür/platform kapıları.
+
+Mutasyon testi: **24 mutasyonun 24'ü yakalandı.**
+
+⚠ Hiçbir üretim dosyasına dokunulmadı. Değişen tek dosya
+`testler/story-yayin.test.js` — `supabase/functions/`, `sql/`, `app.html`
+ve `pc/` altında **tek satır** değişmedi, dağıtım gerekmedi.
+
+### Bulunan gerçek hata — DÜZELTİLMEDİ, kullanıcı kararı
+
+**Threads yayını başarısız olunca giden e-posta "Platform: threads"
+diyor, "Threads" demiyor.**
+
+`index.ts` → `basarisizBildir` içindeki platform adı tablosunda
+(`instagram`, `facebook`, `tiktok`, `youtube`) **`threads` satırı yok**;
+tanınmayan platform küçük harfli kod adıyla yazılıyor.
+
+⚠ **Kodun kendi yorumu tam bu hataya karşı uyarıyor.** TikTok ve YouTube
+28-29 Eylül 2026'da eklenirken aynı tablo atlanmış ve bildirim
+"Platform: tiktok" demişti. Threads 16 Ekim'de eklendi, tablo YİNE
+atlandı. Bu bir çeşit değil, bir **desen**: tür tablosu bir yerde,
+platform adı tablosu başka yerde.
+
+**KARAR (3 Kasım 2026, kullanıcı):** *"Düzeltmeyelim, ama kayıt altına
+alalım."* Gerekçe: metni yalnızca kayıt sahibi okuyor, yayını
+durdurmuyor, veriye dokunmuyor — **çalışan bir worker'ı tek bir görsel
+kelime için yeniden dağıtmaya değmez.**
+
+→ **Bir sonraki `story-yayin` dağıtımında yanında gidecek tek satır:**
+`basarisizBildir`'deki platform adı tablosuna `threads: 'Threads'`
+eklenir, `SURUM` arttırılır. Kendi başına dağıtım YOK.
+
+⚠ **Kırmızı test bırakılmadı — bilerek.** Gecelik turda zaten bakılmayan
+beş arıza var; altıncısını eklemek, kırmızılığın "normal" olmasına bir
+katkı daha olurdu ve asıl tehlike o: bir gün gerçek bir arıza o listede
+kaybolur. Ölçüm **bugünkü gerçeği** doğrulayacak şekilde yazıldı
+(`Platform: threads` bekliyor) ve yanına kararın gerekçesi not edildi.
+Biri tabloya `threads` eklerse **ölçüm düşer ve haber verir**; o gün blok
+silinip yerine "platformu Threads yazıyor" ölçümü yazılacak.
+
+### Açık kalanlar (bu işte kapatılmadı)
+
+- **DÜZELTME (aynı gün):** İlk yazdığımda "anket cevabının zinciri
+  ölçülmüyor" demiştim — **yanlıştı, doğrulamadan yazdım** (§4'ün
+  ihlali). Zincir **ölçülüyor**: `testler/sql-yanit-kuyrugu.test.py`
+  sql/65-66'yı **gerçek bir PostgreSQL'e** kuruyor ve sıra şartını,
+  zincirin bağlanmasını, "üçüncü parça patlarsa ilk ikisi yeniden
+  gitmez"i ve çift yanıt korumasını koşturuyor.
+
+- **AMA O TEST CI'DA HİÇ KOŞMUYOR — ve yeşil görünüyor (3 Kasım 2026,
+  ölçüldü).** Postgres bağlantısını `SHOOTBOARD_TEST_PG` ortam
+  değişkeninden alıyor; yoksa kendini atlıyor ve **0 döndürüyor**.
+  O değişken **hiçbir yerde tanımlı değil**: ne `testler/kosu.sh`'de, ne
+  `.github/workflows/testler.yml`'de. Yerelde ölçtüm, çıktı şu:
+
+      [  1/1] ok  sql-yanit-kuyrugu.test.py             0sn
+      === BITTI — 1 gecti, 0 kaldi ===
+
+  Yani kuyruğun en kritik mantığı (zincir sırası, çift yanıt) her gece
+  **ölçülmeden "geçti" yazıyor** — sessiz atlama, geçmiş gibi görünüyor.
+  Dosyanın kendi yorumu bunu bilerek böyle yapmış ("bir geliştiricinin
+  makinesinde Postgres olmaması arızanın kendisi değil") ve o gerekçe
+  yerelde doğru; **CI için değil.** CI'da Postgres servisi açılabilir
+  (`services: postgres` + değişkeni vermek) ya da hiç olmazsa atlamanın
+  çıktıda **"ATLANDI" olarak görünmesi** gerekiyor. Ayrı iş, kullanıcı
+  kararı bekliyor.
+
+- Worker'ın **yanıt gönderme** yolunun (`yanitiGonder`, `yanitCikmisMi`)
+  davranışsal testi yok: `reply_to_id` ile ne gittiği ve yanıtın iki
+  tanığı (zaman damgası **ve** metnin kendisi) ölçülmüyor. Bu işte kurulan
+  sahte Threads sunucusunda `/replies` ucu hazır; kapatmak için yalnızca
+  yanıt kuyruğunun RPC'lerini test taklİdine yazmak kaldı.
+- `hesap-sil`'de `threads_hesaplari` / `threads_yanitlari`'nın atlanıyor
+  olabileceği şüphesi duruyor (ayrı iş, doğrulanmadı).
+
+---
+
 ## ÇİFT FACEBOOK REEL'İ — kök sebep ve onarım (26-27 Ekim 2026)
 
 **OLAN.** 26 Ekim'de aynı Facebook reel'i iki kez yayınlandı: 10:01
@@ -2618,6 +3050,78 @@ kurulu, sadece kullanılmıyor. Yani hiçbir şey engellenmiş değil.
 yok. Kimsenin kullanmadığı bir yetki sistemini test etmek yerine, gerçek
 bir ikinci kullanıcı çıktığında neye ihtiyacı olduğunu görerek yapmak
 daha doğru.
+
+### Salt okunur MCP anahtarı (Gemini için) — öncelik DEĞİL (8 Kasım 2026)
+
+⚠ **Yukarıdaki maddeyle KARIŞTIRILMASIN.** O madde *ikinci bir insan
+kullanıcı* (workspaces, davet, roller) hakkında. Bu madde tek bir
+hesabın ürettiği MCP **anahtarının kapsamı** hakkında — başka bir user
+tanımlanmıyor, yeni kullanıcı yok.
+
+Kullanıcı sordu: *"Gemini'ye Shootboard için sadece okuma yetkisi
+verebilir miyim?"* Cevap: evet, ve sürpriz şu — **sunucu tarafı zaten
+hazır ve canlıda.**
+
+**1. MCP sunucusu: HAZIR (1.16.0, canlı).** `api_keys.scopes` sütunu var
+ve sunucu onu gerçekten kontrol ediyor, yazıp bırakmamış:
+
+    shootboard_list_entries   -> 'read'  gerekiyor
+    shootboard_list_projects  -> 'read'  gerekiyor
+    shootboard_import         -> 'write' gerekiyor
+    shootboard_update_entry   -> 'write' gerekiyor
+    (REST /import ucu da 'write' istiyor)
+
+Yetkisi olmayan araç `this key cannot write` deyip dönüyor. `sql/35`'in
+yorumu niyeti de söylüyor: *"read / write. İkisi de varsayılan; ileride
+salt okunur anahtar için."* Yani **sunucuya hiç dokunmak gerekmiyor.**
+
+**2. Uygulama: EKSİK.** `app.html`'de anahtar üretme kodu kapsamı sabit
+yazıyor (`scopes: ['read', 'write']`). Yani Hesabım ekranından üretilen
+her anahtar yazabiliyor. Salt okunur anahtar için oraya bir onay kutusu
+gerekiyor.
+
+**3. Gemini tarafı: DOĞRULANMADI.** Gemini CLI uzak MCP'yi destekliyor
+(`~/.gemini/settings.json` → `mcpServers` → `httpUrl` + `headers`), bizim
+sunucu Streamable HTTP olduğu için uyumlu. Gemini **uygulaması** için
+kaynaklar çelişiyor: özel bağlayıcının Gemini Spark aboneliği
+gerektirdiğini yazanlar var, Business'ta "Pre-GA" diyenler var, hepsi
+üçüncü taraf blog. ⚠ **Google'ın kendi yardım sayfası görülmedi — buraya
+"çalışıyor" yazılmadı** (Bölüm 4: doğrulamadan yazma). Kullanıcının
+Gemini → Ayarlar → Connected Apps'te özel sunucu kutusu olup olmadığına
+bakması gerekiyor.
+
+**CLAUDE.md kuralı ihlal EDİLMİYOR.** *"MCP erişimi yalnızca
+bostancioglum@gmail.com hesabına"* kuralı **Shootboard kullanıcı hesabı**
+hakkında ve `sql/40`'taki kilit onu uyguluyor (`user_prefs.prefs.mcp`
+bayrağı olmayan hesap anahtar üretemiyor). Kendi hesabının anahtarını
+başka bir programa vermek yeni bir user tanımlamak değil.
+
+**ÜÇ RİSK (karar verilirken okunsun)**
+1. Salt okunur bile olsa **takvimin tamamı Google'ın sistemine gidiyor.**
+   Yazmayı kapatmak veri sızmasını değil veri BOZULMASINI engelliyor.
+2. **`mediaUrl` cevapta dönüyor ve o adresler imzasız.**
+   `pc/story-yukle.py` adresi `R2_PUBLIC_BASE` üzerinden kuruyor, yani
+   dosyalar adresi bilen herkese açık. Anahtar dosyaya erişim VERMİYOR
+   ama **adreslerini açıklıyor.**
+3. **Anahtar yola değil BAŞLIĞA konsun.** `/mcp/shb_...` biçimi yalnızca
+   claude.ai mecbur olduğu için var; yolda duran anahtar günlüklere
+   düşer. Gemini CLI `headers` destekliyor.
+
+→ **Gemini için AYRI anahtar üretilsin**, Claude'unki verilmesin: her
+anahtarın kendi `revoked_at`'i var, yani Gemini tek başına iptal
+edilebilir.
+
+**Neden bekliyor (8 Kasım 2026, kullanıcı kararı):** *"Şimdilik hiçbir
+şey yapmıyoruz"*, sonra *"yaz orada dursun ama öncelik değil."* Mantıklı
+sıra: **önce** Gemini uygulamasının özel MCP sunucusu kabul ettiği
+doğrulanır, **sonra** onay kutusu yazılır — kabul etmiyorsa iş boşa gider.
+
+**Yapılınca ne gerekir:** `app.html`'e onay kutusu + ölçüm. Dağıtım
+GitHub Pages, yani birleştirme yeterli — Edge Function dağıtımı YOK.
+Tek seferlik kaçamak (SQL ile bir anahtarın kapsamını `{read}` yapmak)
+mümkün ama her yeni anahtarda tekrar gerekir ve bir gün atlanır —
+deponun kendi dersinin ("ekranı gizlemek kapıyı kilitlemez", `sql/40`)
+ters yönden hâli.
 
 ### Adres otomatik tamamlama (Google Places)
 Adres alanına yazarken gerçek mekan/adres önerileri düşsün, seçilince
