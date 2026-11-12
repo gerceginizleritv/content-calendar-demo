@@ -1009,6 +1009,9 @@ body.suruklenirken *{cursor:grabbing !important;}
 .pl-bitti{background:var(--accent);}
 .pl-sirada{border:2px solid var(--accent);}
 .pl-bekleyen{border:1px solid var(--bekleyen);}
+/* Mekan kartindaki foy: Bugun sayfasindaki dl ile AYNI izgara
+   (bg-mekan-dl), ustunde ince bir ayirici. */
+.mk-foy{margin-top:10px;padding-top:10px;border-top:1px solid var(--line);}
 /* Tarihi gecmis ve bitmemis adim: hem hucre hem tarih kutusu kirmizi. */
 /* Adim hucresi: kutucuk + tarih METNI. Tarih girisi ayri pencerede;
    yedi tarih kutusu satiri okunmaz hale getiriyordu. */
@@ -11122,6 +11125,46 @@ function mekanGorseli(m){
   if(k) return haritaKaroHtml(k.en, k.boy);
   return `<span class="mk-harf" style="--mk-h:${mekanRengi(m.id)}">${escapeHtml(mekanBasHarf(mekanAdi(m)))}</span>`;
 }
+// MEKAN FOYU — kartin alt bolumu  (cizim: project/FoyMekan.dc.html)
+// ROZETIN YANINA METIN. Onceden kart yalnizca "Izin var" / "Dikkat
+// var" diye rozet gosteriyordu; sette lazim olan sey rozetin kendisi
+// degil IZNIN NE OLDUGU ve neye dikkat edilecegi. Cizimin bu sayfada
+// getirdigi asil kazanc bu, yerlesim degil.
+//
+// Ilk yazimda rozetler KALDIRILMISTI (ayni bilgi iki kez yazmasin
+// diye) ve mekan.test.js dustu: iddia '.mk-dikkat' ogesinin varligina
+// bakiyor. Secici tutsun diye sinif adini degistirmek, iddiayi
+// karsilamak degil KANDIRMAK olurdu. Kullaniciya soruldu, karar:
+// rozetler de kalsin (12 Kasim 2026). Yani rozet "var mi" sorusunu,
+// metin "ne" sorusunu cevapliyor.
+//
+// Cizimdeki SAATLER (acilis-kapanis) ve coklu fotograf satirlari YOK:
+// uygulamada o alanlar da yok (cizimde zaten koseli parantezli yer
+// tutucu). Olmayan alan icin bos etiket yazmak, bilginin eksik degil
+// YOK oldugu izlenimi verirdi. Kullanici karari (12 Kasim 2026):
+// "var olan alanlarla yap".
+function mekanFoyu(m){
+  const E = escapeHtml;
+  const satirlar = [];
+  if(String(m.permission || '').trim()){
+    satirlar.push('<dt>' + E(t('bg_izin')) + '</dt><dd>' + E(String(m.permission).trim()) + '</dd>');
+  }
+  const dikkat = String(m.cautions || '').split(/\r?\n/).map(z=>z.trim()).filter(Boolean);
+  if(dikkat.length){
+    satirlar.push('<dt>' + E(t('bg_dikkat')) + '</dt><dd class="bg-dikkat">'
+      + dikkat.map(z=> E(z)).join('<br>') + '</dd>');
+  }
+  // Isik: Bugun sayfasindaki yolun AYNISI. Mekanin kayitli dilimi
+  // varsa agsiz ve aninda; yoksa satir hic yazilmiyor -- bu sayfada
+  // onlarca kart olabilir, her biri icin ag istegi atmak dogru olmaz.
+  // (Bugun sayfasinda tek mekan var, orada ag yolu makul.)
+  const konum = mekanKonumu(m);
+  if(konum && gecerliTz(m.timezone)){
+    satirlar.push('<dt>' + E(t('bg_isik')) + '</dt><dd class="bg-isik">'
+      + isikHtml(konum.en, konum.boy, String(m.timezone), false) + '</dd>');
+  }
+  return satirlar.length ? '<dl class="mk-foy bg-mekan-dl">' + satirlar.join('') + '</dl>' : '';
+}
 function renderMekanlar(){
   const kutu = document.getElementById('mk_list');
   if(!kutu) return;
@@ -11168,6 +11211,7 @@ function renderMekanlar(){
           ${m.cautions ? `<span class="mk-rozet mk-dikkat">${escapeHtml(t('mk_has_cautions'))}</span>` : ''}
           ${harita ? `<a class="mk-rozet" href="${escapeHtml(harita)}" target="_blank" rel="noopener" data-dis>${escapeHtml(t('mk_map'))}</a>` : ''}
         </div>
+        ${mekanFoyu(m)}
       </div>
     </div>`;
   }).join('');

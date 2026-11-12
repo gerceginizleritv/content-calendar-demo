@@ -6,6 +6,52 @@ duruyor, neden ertelendiği de yazıyor ki aynı tartışma baştan yapılmasın
 
 ---
 
+## BAŞKA BİR AI SAĞLAYICI (ChatGPT / Claude) — 12 Kasım 2026
+
+Kullanıcı sordu: Gemini dışında ChatGPT ya da Claude bağlanabilir mi?
+
+**Üç ayrı şey var, ikisi zaten çalışıyor.**
+
+1. **Uygulama içinden yazdırma (✨ düğmeleri) — yalnızca Gemini.**
+   Çağrı sekiz yerde sabit: adres `generativelanguage.googleapis.com`,
+   yol `/v1beta/models/<ad>:generateContent`, başlık `x-goog-api-key`,
+   istek/yanıt gövdesi, ve iki dildeki hata metinleri de o adresi
+   adıyla yazıyor. 19 `ai-*` test dosyası Gemini'yi varsayıyor.
+
+2. **ChatGPT/Claude ile planlama — zaten var.** `ai_er_not`:
+   "ChatGPT, Claude ya da Gemini ile planla, sonucu buraya getir."
+   Asistan kartı kopyalanıp sonuç yapıştırılıyor.
+
+3. **Claude için MCP** — doğrudan okuma/yazma var, yalnızca
+   `bostancioglum@gmail.com` hesabına tanımlı (CLAUDE.md kuralı).
+
+**Neden tek sağlayıcı — kodun kendi gerekçesi (satır ~19032):**
+Google AI Studio ücretsiz anahtar veriyor, kart istemiyor; OpenAI
+ayrı hesap ve kart şart koşuyor. Ve Gemini **tarayıcıdan doğrudan**
+çağrılabiliyor — Shootboard'un sunucusu yok, sunucu gerektiren bir
+sağlayıcı anahtarın bizden geçmesi demek olurdu ve *"anahtarını
+görmeyiz"* sözü bozulurdu.
+
+**Engel:** OpenAI ve Anthropic tarayıcıdan anahtar kullanmayı
+önermiyor. Düzgün yolu Edge Function üzerinden geçmek — teknik olarak
+mümkün (Edge Function'lar zaten var) ama yukarıdaki sözü yeniden
+değerlendirmeyi gerektirir.
+
+⚠ Fiyat/kota karşılaştırması YAZILMADI: buradan doğrulanamıyor.
+
+**Kullanıcının gerekçesi (12 Kasım 2026, kendi sözleriyle):**
+*"dünyada insanlar sadece gemini kullanmıyor ve pazarda ChatGPT ve
+Claude kullanım oranları da yüksek, buna bakmamız lazım."*
+
+Yani bu bir teknik merak değil **erişilebilirlik kararı**: kendi
+anahtarını getiren kullanıcının elindeki anahtar büyük ihtimalle
+Gemini'nin değil. Kodun "tek sağlayıcı" gerekçesi de zaten
+erişilebilirlikti (ücretsiz anahtar, tarayıcıdan çağrı) — yani iki
+gerekçe aynı soruya iki cevap veriyor ve yeniden tartılması gerekiyor.
+
+Karar: Çekim Föyü tasarımı bitene kadar başlanmadı; **bitince ilk iş
+bu.**
+
 ## GECELİK TURDA KIRMIZI KALAN DOKUZ TEST (11 Kasım 2026)
 
 Tam tur: 190 koşuldu, 177 geçti, **13 düştü**. Dördü o anki bir
