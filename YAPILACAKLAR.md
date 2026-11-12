@@ -101,10 +101,16 @@ Dördü **çözüldü**, beşi duruyor.
 | `sartlar` | ✅ çözüldü — belgeler Threads'i anlatıyor, bekçi Threads'i de kilitliyor |
 | `push` | ✅ çözüldü — kalıp düzeltildi, oturum tazeleme yolu artık ölçülüyor |
 | `paylas` | ✅ çözüldü — tarihler bugüne göreli üretiliyor |
-| `arama`, `duzeltme`, `tz`, `lok-klon`, `lok-surukle` | ⏳ duruyor — lokasyon uygulaması için sahte sunucu gerekiyor |
+| `arama`, `duzeltme`, `tz`, `lok-klon`, `lok-surukle` | ✅ çözüldü — fikstür tarihleri bugüne taşınıyor |
 
-Kalan beşi tek bir iş: beşi de aynı sebepten düşüyor (lokasyon
-uygulaması verisini buluttan alıyor, test ortamında bağlantı yok).
+**Dokuzunun dokuzu da kapandı. Tam tur: 190 koşuldu, 190 geçti.**
+(Oturumun başında aynı tur 177/13 idi.)
+
+⚠ **Teşhisim bir kez yanlış çıktı, kayda geçsin:** kalan beş için
+"sahte sunucu kurmak gerekiyor" denmişti. Sahte sunucu zaten vardı
+(`testler/sahte-supabase.js`); gerçek sebep `paylas` ile aynıydı —
+fikstür tarihleri takvimle ilerlemiyordu. "Bağlantı yok" teşhisi,
+ölçülmeden söylenmiş bir cümleydi.
 
 ### SIRA ÖNERİSİ
 
