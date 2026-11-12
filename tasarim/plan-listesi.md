@@ -128,7 +128,8 @@ Plan yalnızca kullanıcı, uygulamanın içinden siler.
 
 ### SQL
 
-`sql/69-plan-listesi.sql` — bir sonraki numara (son dosya `sql/68`).
+`sql/70-plan-listesi.sql`. ⚠ **Numara 69'dan 70'e kaydı:** fiyat ve
+yönetim işi 12 Kasım 2026'da `sql/69-fiyat-ve-yonetim.sql`'i aldı.
 Başına, dosyanın kendi kuralı gereği, hangi dosyanın neyi geri
 aldığı yazılacak.
 

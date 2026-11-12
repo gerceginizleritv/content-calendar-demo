@@ -15,10 +15,15 @@ yok, kanıtıyla.
 
 ### ⛔ "%100 güvenli, hack edilemez" yoktur
 
-Böyle bir sistem yok. Hiçbir metne yazılmayacak. Yapılabilecek olan
-katmanları kurmak ve her katmanın **hangi riske karşı** olduğunu
-yazmaktır. Bölüm 6 tam olarak bunu yapıyor: her madde için saldırı,
-önlem ve ölçüm.
+Böyle bir sistem yok. Hiçbir metne yazılmayacak.
+
+**Kullanıcının cevabı (12 Kasım 2026):** *"senden maksimum güvenlik
+sağlamanı istiyorum."* — Anlaşıldı ve yapılacak olan bu: Bölüm 6'daki
+**13 katmanın hepsi** kurulacak ve her biri **ölçülecek**. Fark şurada:
+"maksimum" yapılabilir ve ölçülebilir bir şeydir; "%100" ölçülemez bir
+iddiadır ve satış metnine yazılırsa yalan olur.
+
+Bölüm 6 her madde için saldırıyı, önlemi ve ölçümü yazıyor.
 
 ### MARKA.md bugün yalan olacak
 
@@ -38,8 +43,31 @@ gösterilmeli.**
 ### Vergi ve fatura
 
 Fatura, KDV ve yurt dışı satış vergisi konusunda **kesin
-konuşmuyorum**. KDV dahil mi gösterileceği (soru 7) benim
-cevaplayabileceğim bir soru değil — **mali müşavire sorulmalı.**
+konuşmuyorum**. KDV dahil mi gösterileceği benim cevaplayabileceğim
+bir soru değil — **mali müşavire sorulmalı.**
+
+**Kullanıcının cevabı (12 Kasım 2026):** *"bu alanlarda benim
+içeriden veri girişi yapabileceğim şekilde gerekli hazırlıkları
+yaparsın."*
+
+⛔ **Yeni tasarım şartı: vergi ayarları koda gömülmez.** Yönetim
+alanında bir **"Vergi"** ekranı olacak ve şunlar oradan girilecek:
+
+| Alan | Ne |
+|---|---|
+| KDV oranı | ülke/bölge başına ayrı satır |
+| Fiyat gösterimi | *KDV dahil* ya da *KDV hariç* — seçimli |
+| Vergi kimliği alanı | kurumsal alıcıdan istensin mi |
+| Muafiyet kuralı | hangi durumda vergi uygulanmaz |
+| Yürürlük tarihi | oran değişirse eskisi **silinmez**, tarihle saklanır |
+
+Fiyat tablosunda olduğu gibi: **herkes okur, kimse tarayıcıdan
+yazamaz, yalnızca sunucu üzerinden yönetici değiştirir.** Her ödeme,
+alındığı andaki vergi oranının bir **kopyasını** taşır — sonradan
+oran değişse de eski faturalar değişmez.
+
+⚠ **Hangi oranın gireceği yine mali müşavirin işi.** Ben kutuyu
+hazırlıyorum, içine yazılacak sayıyı değil.
 
 ---
 
@@ -178,7 +206,23 @@ Yönetimde yapılan **her iş**: kim, ne zaman, ne yaptı, eski ve yeni
 değer. ⛔ **Silinemez** — `delete` ve `update` yetkisi hiç kimsede
 yok (RLS + `revoke`).
 
-### 2.9 `usage_counters` — kullanım sayıları
+### 2.9 `tax_settings` — vergi ayarları
+
+Kullanıcının kararı: vergi bilgisi **yönetimden girilir**, koda
+gömülmez.
+
+| Sütun | Ne |
+|---|---|
+| `region` | ülke/bölge kodu |
+| `rate_bp` | oran, **baz puan** olarak tam sayı (%20 → 2000) |
+| `price_includes_tax` | fiyat KDV dahil mi gösterilsin |
+| `tax_id_required` | kurumsal alıcıdan vergi kimliği istensin mi |
+| `valid_from` | yürürlük tarihi — eski oran **silinmez** |
+
+Yetki: herkes okur (fiyat sayfası göstermek için), **yalnızca sunucu
+yazar**. Her ödeme, alındığı andaki oranın kopyasını taşır.
+
+### 2.10 `usage_counters` — kullanım sayıları
 
 ⛔ **Yalnızca SAYI.** Kullanıcıların kayıt içeriği (başlıklar,
 açıklamalar, scriptler) yönetim alanında **gösterilmez** —
@@ -378,10 +422,9 @@ GÖREMİYOR / DEĞİŞTİREMİYOR"***.
 
 ## 7. SQL ve dağıtım
 
-- Yeni dosyalar `sql/` altında **sıradaki numarayla**. Son dosya
-  `sql/68`. ⚠ Aşama 5 (plan listesi) belgesi de `sql/69`'u işaret
-  ediyor — **hangisi önce yapılırsa o alır**, ötekinin belgesi
-  güncellenir.
+- Yeni dosyalar `sql/` altında **sıradaki numarayla**.
+  ✅ **Bu iş `sql/69-fiyat-ve-yonetim.sql`'i aldı.** Aşama 5 (plan
+  listesi) belgesi `sql/70`'e kaydırıldı.
 - Her dosyanın başına **hangi dosyanın neyi geri aldığı** yazılır
   (CLAUDE.md Bölüm 6).
 - Veri değiştiren SQL **her zaman iki adım**: önce aynı `where` ile
@@ -432,7 +475,7 @@ bugünkü bir eksik; ödemeden bağımsız yapılabilir ve yapılmalı.
 | Fiyatlandırma sayfasının içeriği | Studio'nun beşte dördü yok — ne yazılacağı kararın | 1 |
 | Kullanım kaydı | Ne tutulacağı ve ne kadar saklanacağı | 10 |
 | Fatura bağlantısı | Hangi program | 9 |
-| KDV gösterimi | Mali müşavir sorusu | 7 |
+| ~~KDV gösterimi~~ | ✅ çözüldü: yönetimden girilecek | ~~7~~ |
 
 ---
 
@@ -450,7 +493,7 @@ yapılamıyor — uydurmak gerekirdi.
 | 4 | TRY fiyatını kim alabilir | Aşama 8 |
 | 5 | Fiyat değişince mevcut aboneler eski fiyatta mı kalsın | Aşama 6 (varsayılan: kalır) |
 | 6 | Kurucu Üye: 200 dolunca ne görünsün, iade kuralı, "ömür boyu" neyi kapsıyor | Aşama 7 |
-| 7 | Fiyatlar KDV dahil mi | ⛔ mali müşavir |
+| 7 | Fiyatlar KDV dahil mi | ✅ **çözüldü** — yönetimde "Vergi" ekranı, oranı kullanıcı girer |
 | 8 | Ödeme sağlayıcısı (yurt içi + yurt dışı). Şirket durumu başvuruyu etkiliyor | Aşama 7 |
 | 9 | Fatura/muhasebe programı | Aşama 11 |
 | 10 | Kullanım kaydında ne tutulsun, ne kadar saklansın | Aşama 10 |
