@@ -996,6 +996,19 @@ body.suruklenirken *{cursor:grabbing !important;}
    yarisiyordu, td kazaniyordu ve ortalama hic uygulanmiyordu. */
 .proj-table thead th:not(.pname-col){text-align:center;}
 .pcell.done{background:var(--accent-soft);}
+/* SIRADAKI ADIM. Cizimde 2px vurgu cercevesi. Cerceve degil INSET
+   GOLGE: gercek kenarlik hucrenin genisligini degistirip butun
+   sutunlari oynatirdi. Renk tasiyici METIN DEGIL, o yuzden 4.5
+   kontrast kurali bunu baglamiyor -- yazilar olduklari gibi duruyor. */
+.pcell.sirada{box-shadow:inset 0 0 0 2px var(--accent);}
+/* Aciklama satiri: uc halin ne demek oldugu. Cizimde tablonun altinda. */
+.proj-lejant{display:flex;flex-wrap:wrap;gap:8px 22px;margin:12px 2px 0;
+  font-size:13px;color:var(--text-dim);}
+.proj-lejant > span{display:flex;align-items:center;gap:8px;}
+.pl-ornek{display:block;width:18px;height:12px;box-sizing:border-box;border-radius:2px;}
+.pl-bitti{background:var(--accent);}
+.pl-sirada{border:2px solid var(--accent);}
+.pl-bekleyen{border:1px solid var(--bekleyen);}
 /* Tarihi gecmis ve bitmemis adim: hem hucre hem tarih kutusu kirmizi. */
 /* Adim hucresi: kutucuk + tarih METNI. Tarih girisi ayri pencerede;
    yedi tarih kutusu satiri okunmaz hale getiriyordu. */
@@ -5760,6 +5773,9 @@ const LANG = {
     bg_izin: "Permit",
     bg_dikkat: "Caution",
     bg_isik: "Light",
+    p_leg_bitti: "Done",
+    p_leg_sirada: "Next up",
+    p_leg_bekliyor: "Waiting",
     bg_isik_yok: "Light needs the network \u2014 the place's own time zone comes from there.",
     foy_gun: "DAY", foy_saat: "TIME", foy_tur: "TYPE", foy_yer: "WHERE",
     foy_baslik: "TITLE", foy_uretim: "PRODUCTION", foy_isaret: "MARK",
@@ -6830,6 +6846,9 @@ const LANG = {
     bg_izin: "\u0130zin",
     bg_dikkat: "Dikkat",
     bg_isik: "I\u015f\u0131k",
+    p_leg_bitti: "Bitti",
+    p_leg_sirada: "S\u0131rada",
+    p_leg_bekliyor: "Bekliyor",
     bg_isik_yok: "I\u015f\u0131k i\u00e7in a\u011f gerekiyor \u2014 mekan\u0131n kendi saat dilimi oradan geliyor.",
     foy_gun: "G\u00dcN", foy_saat: "SAAT", foy_tur: "T\u00dcR", foy_yer: "YER",
     foy_baslik: "BA\u015eLIK", foy_uretim: "\u00dcRET\u0130M", foy_isaret: "\u0130\u015eARET",
@@ -9882,6 +9901,12 @@ function renderProjects(){
     const yer = projeYeri(p);
     // Duraklar: ilkinin adi, fazlasi "+2"; hepsi ipucunda.
     const yerAdlari = projeMekanlari(p).map(id=> mekanById(id)).filter(Boolean).map(mekanAdi);
+    // SIRADAKI ADIM: bitmemis ILK adim. Cizimde (FoyProjeler.dc.html)
+    // bu hucrenin 2px vurgu cercevesi var ve ucuncu bir hal olarak
+    // "bitti" ile "bekliyor"dan ayriliyor. Uygulamada bu bilgi HIC
+    // yoktu: yedi hucreye bakip "simdi hangisi" diye aramak
+    // gerekiyordu. Iptal edilen projede sira yok.
+    const siradaki = p.cancelled ? null : PROJ_STEPS.find(k=> !p[k]);
     const hucreler = PROJ_STEPS.map(k=>{
       const gecti = adimGecikti(p,k);
       const tarih = adimTarihi(p,k);
@@ -9889,7 +9914,7 @@ function renderProjects(){
       // hucre iki satir yer kapliyor, tablo gereksiz uzuyordu. Termin
       // bos ise kucuk bir takvim isareti — kesik cizgili "+" neyin
       // dugmesi oldugunu soylemiyordu.
-      return `<td class="pcell ${p[k]?'done':''}">
+      return `<td class="pcell ${p[k]?'done':''} ${k===siradaki?'sirada':''}">
         <span class="pcell-et"${langIsareti(t('step_'+k))}>${escapeHtml(t('step_'+k))}</span>
         <button type="button" class="pflag ${p[k]?'on':''}" data-proj="${escapeHtml(p.id)}" data-step="${k}"
                 title="${escapeHtml(t('step_'+k))}"
@@ -9973,7 +9998,12 @@ function renderProjects(){
       ${basliklar}
     </tr></thead>
     <tbody>${satirlar}</tbody>
-  </table></div>`;
+  </table></div>
+  <p class="proj-lejant">
+    <span><span class="pl-ornek pl-bitti" aria-hidden="true"></span>${escapeHtml(t('p_leg_bitti'))}</span>
+    <span><span class="pl-ornek pl-sirada" aria-hidden="true"></span>${escapeHtml(t('p_leg_sirada'))}</span>
+    <span><span class="pl-ornek pl-bekleyen" aria-hidden="true"></span>${escapeHtml(t('p_leg_bekliyor'))}</span>
+  </p>`;
 
   kap.querySelectorAll('[data-proj-list]').forEach(el=>{
     el.addEventListener('click', ()=> cekimListesiAc(el.dataset.projList));
@@ -13653,9 +13683,17 @@ function bugunCiz(){
           // istek atmiyor. Dolana kadar yer tutucu duruyor -- once
           // yanlis saati gosterip sonra duzeltmek, bir an icin yanlis
           // bilgi vermek olurdu.
+          // MEKANIN KAYITLI DILIMI VARSA AG HIC BEKLENMIYOR.
+          // m.timezone gercek bir alan (mekan penceresinde saklaniyor,
+          // gecerliTz ile dogrulaniyor). Ilk yazimda bu atlanmisti ve
+          // dilim her seferinde agdan isteniyordu -- kayitli bilgi
+          // dururken ag beklemek hem yavas hem gereksiz.
+          const kayitliTz = gecerliTz(m.timezone) ? String(m.timezone) : '';
           satirlar.push('<dt>' + E(t('bg_isik')) + '</dt>'
-            + '<dd class="bg-isik" data-isik="' + konum.en + ',' + konum.boy + '">'
-            + '<span class="bg-isik-bekle">' + E(t('hv_looking')) + '</span></dd>');
+            + (kayitliTz
+                ? '<dd class="bg-isik">' + isikHtml(konum.en, konum.boy, kayitliTz, false) + '</dd>'
+                : '<dd class="bg-isik" data-isik="' + konum.en + ',' + konum.boy + '">'
+                  + '<span class="bg-isik-bekle">' + E(t('hv_looking')) + '</span></dd>'));
         }
         kartlar.push('<section class="bg-mekan">'
           + '<div class="bg-mekan-et">' + E(t('bg_mekan')) + '</div>'
