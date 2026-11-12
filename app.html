@@ -2026,6 +2026,15 @@ textarea.sc-ai-brief{min-height:64px;resize:vertical;line-height:1.5;}
 .ih-set-sil:hover{color:var(--red);}
 .ih-set-yeni{border-style:dashed;}
 .ih-setler .hint{width:100%;margin:0 0 2px;}
+/* CEKIM GUNUNDE ISIK. Form alani gibi gorunmemeli: kutusu yok,
+   kenarligi yok -- okunacak bir sey oldugu bicimden anlasiliyor. */
+.pe-isik{margin:10px 0 2px;padding:10px 12px;border-left:2px solid var(--accent-dim);
+  background:var(--surface-2);border-radius:2px;}
+.pe-isik-bas{font-size:11px;text-transform:uppercase;letter-spacing:.08em;
+  color:var(--text-dim);margin-bottom:6px;}
+.pe-isik .hv-satir{display:flex;gap:14px;flex-wrap:wrap;font-size:13px;}
+.pe-isik .hv-altin{display:flex;gap:6px;align-items:baseline;font-size:13px;margin-top:4px;}
+.pe-isik .hv-kisa{display:none;}
 /* HAZIR SETLER. Kullanicinin kendi setlerinden AYRI dursunlar diye
    kesik cizgili kenar: "bu benim yazdigim sey degil" demenin en
    sessiz yolu. Dolu kenarlik kullanicinin kendi setinin isareti. */
@@ -4116,6 +4125,13 @@ textarea.sc-ai-brief{min-height:64px;resize:vertical;line-height:1.5;}
       </div>
       <div class="mekan-cipler" id="pe_placeList" hidden></div>
       <p class="hint" id="pe_placeBilgi"></p>
+      <!-- CEKIM GUNUNDE ISIK (Asama 3). Form alani DEGIL, okunacak
+           sey: kaydedilmiyor, hicbir yere yazilmiyor. Cekim tarihi
+           ve duragin koordinati varsa beliriyor, yoksa hic yok. -->
+      <div class="pe-isik" id="pe_isikWrap" hidden>
+        <div class="pe-isik-bas" id="pe_isikBas"></div>
+        <div id="pe_isik"></div>
+      </div>
       <button type="button" class="btn btn-sm" id="pe_placeYeni" data-i18n="p_place_new">+ New place…</button>
     </div>
     <!-- Adres YALNIZCA mekan secilmediginde duruyor: mekan secildiyse
@@ -6451,6 +6467,7 @@ const LANG = {
     //
     // YOK: drone (kurallar ulkeye ozel), dusuk isik, masa ustu urun
     // cekimi -- birinci elden kanit bulunamadi.
+    p_isik_title: "Light on the shoot day",
     hset_fold: "Ready-made kits",
     hset_hint: "These come with the app. Once added, the items are yours — change them or delete them.",
     hset_bos_head: "Start with a ready-made kit",
@@ -7637,6 +7654,7 @@ const LANG = {
     ih_group_other: "Di\u011fer",
     // Ayrintili aciklama Ingilizce blokta. Sira ve madde sayisi iki
     // dilde BIREBIR ayni olmak zorunda; test bunu olcuyor.
+    p_isik_title: "\u00c7ekim g\u00fcn\u00fcnde \u0131\u015f\u0131k",
     hset_fold: "Haz\u0131r setler",
     hset_hint: "Kutudan \u00e7\u0131kan listeler. Ekledi\u011fin madde senin olur \u2014 de\u011fi\u015ftirebilir, silebilirsin.",
     hset_bos_head: "Haz\u0131r setle ba\u015fla",
@@ -11201,6 +11219,12 @@ function mekanCipleriCiz(onek){
       + `<button type="button" data-cip-sil title="${escapeHtml(t('p_stop_remove'))}" aria-label="${escapeHtml(t('p_stop_remove'))}">×</button></span>`;
   }).join('');
 }
+// Cekim tarihi degisince isik da degisiyor.
+(function peIsikBagla(){
+  const g = document.getElementById('pe_shoot');
+  if(g){ g.addEventListener('change', peIsikTazele);
+         g.addEventListener('input', peIsikTazele); }
+})();
 ['pe'].forEach(onek=>{
   const kutu = document.getElementById(onek + '_placeList');
   if(!kutu) return;
@@ -11245,6 +11269,46 @@ function mekanBilgisiYaz(onek){
   const parca = [m.address, m.permission, m.cautions].filter(Boolean);
   el.textContent = parca.join(' · ');
   el.classList.toggle('mk-uyari', !!m.cautions);
+  if(ek === 'pe') peIsikTazele();
+}
+
+// ═══════════════════════════════════════════════════════════════════
+// CEKIM GUNUNDE ISIK  (Asama 3, 12 Kasim 2026)
+// ═══════════════════════════════════════════════════════════════════
+// Gunes hesabi zaten her tarih icin calisiyordu ve AG ISTEMIYOR; tek
+// engel ekrana yazan parcanin tarihi "bugun" diye sabit almasiydi.
+//
+// ⛔ AG CAGRISI YOK, TAHMIN YOK. Saat dilimi mekanin KAYITLI alanindan
+// geliyor. Dilim yoksa satir HIC YAZILMIYOR -- tarayicinin dilimine
+// dusmek baska ulkedeki bir mekan icin sessizce yanlis saat gostermek
+// olurdu (olculdu: ayni mekan UTC tarayicida 15:00, Istanbul
+// tarayicisinda 18:00). Mekanlar sayfasindaki kural ne ise o.
+//
+// ⛔ GECMIS TARIHTE DE YAZILIYOR. Gecmis bir cekimin isigini gizlemek
+// icin bir sebep yok: kullanici "o gun batis kacta idi" diye bakabilir.
+// Yayin kurali (gecmis tarihli yayin yok) bambaska bir sey.
+function peIsikKonumu(){
+  // Birden cok durak varsa KOORDINATI VE DILIMI OLAN ILKI. Adi da
+  // yaziliyor: hangi duragin isigi oldugu belirsiz kalmasin.
+  for(const id of projeMekanSecimiOku('pe')){
+    const m = mekanById(id);
+    if(!m) continue;
+    const k = mekanKonumu(m);
+    if(k && gecerliTz(m.timezone)) return { k, tz: String(m.timezone), ad: mekanAdi(m) };
+  }
+  return null;
+}
+function peIsikTazele(){
+  const sar = document.getElementById('pe_isikWrap');
+  if(!sar) return;
+  const gun = (document.getElementById('pe_shoot') || {}).value || '';
+  const yer = /^\d{4}-\d{2}-\d{2}$/.test(gun) ? peIsikKonumu() : null;
+  sar.hidden = !yer;
+  if(!yer) return;
+  document.getElementById('pe_isikBas').textContent =
+    t('p_isik_title') + ' \u00b7 ' + yer.ad;
+  document.getElementById('pe_isik').innerHTML =
+    isikHtml(yer.k.en, yer.k.boy, yer.tz, true, gun);
 }
 
 // --- Mekanlar sayfasi -------------------------------------------------
@@ -12696,6 +12760,7 @@ function projeFormunuDoldur(p, yeniAd){
   const tur = document.getElementById('pe_type');
   projTypeSelectDoldur(tur, yeni ? 'outdoor' : (p.type || 'other'));
   adresAlaniniTazele(tur, document.getElementById('pe_addressWrap'));
+  peIsikTazele();
 }
 function openProjectEdit(id){
   const p = projectById(id);
@@ -13952,6 +14017,22 @@ document.getElementById('bugunBtn').addEventListener('click', ()=>{
 //   takvim kaydi     -> kayit penceresi
 //   eksik            -> her eksik KENDI yerine (script sayfasi, proje
 //                       penceresi, cekim listesi, takvim)
+// Yaklasan cekim satirinda gorunen kisa altin saat. Koordinati VE
+// kayitli dilimi olan ilk durak; yoksa bos dondurup satiri eskisi
+// gibi birakiyor.
+function cekimAltinSaati(pr, ymd){
+  if(!/^\d{4}-\d{2}-\d{2}$/.test(String(ymd || ''))) return '';
+  for(const id of projeMekanlari(pr)){
+    const m = mekanById(id);
+    if(!m) continue;
+    const k = mekanKonumu(m);
+    if(!k || !gecerliTz(m.timezone)) continue;
+    const i = gunIsigi(k.en, k.boy, ymd);
+    if(!i.altinAksamBas) return '';
+    return ' \u00b7 \u{1F305} ' + havaSaat(i.altinAksamBas, String(m.timezone));
+  }
+  return '';
+}
 function bugunGunMetni(n){
   return n === 0 ? t('bugun_gun0') : n === 1 ? t('bugun_gun1') : t('bugun_gunN')(n);
 }
@@ -14120,9 +14201,15 @@ function bugunCiz(){
          + (kayitBitti(e) ? ' · ' + t('bugun_isaretli') : ''),
     git: ()=> openModal(e) })));
 
+  // YAKLASAN cekimde o GUNUN altin saati (Asama 3). Bugunku satirda
+  // yazilmiyor: bugunun isigi zaten asagidaki "sette" kartinda tam
+  // halleyle duruyor, satirda ikinci kez yazmak tekrar olurdu.
+  // ⛔ AG YOK: dilimi kayitli olmayan mekan icin saat hic yazilmiyor.
   ekle(t('bugun_cekim'), o.cekim.map(c=> ({
     sinif: c.kacGun === 0 ? 'bugun' : '', ne: bugunGunMetni(c.kacGun),
-    ad: c.p.name, yan: tarihMetni(c.tarih),
+    ad: c.p.name,
+    yan: tarihMetni(c.tarih)
+      + (c.kacGun > 0 ? (cekimAltinSaati(c.p, c.tarih) || '') : ''),
     git: ()=> cekimListesiAc(c.p.id) })));
 
   // Eksikler satir DEGIL: her eksigin kendi dugmesi var, cunku her biri
@@ -16011,8 +16098,20 @@ function havaYasMetni(ms){
 }
 // Isik satirlari: hesaplanan degerler, aga bagli degil. "genis" mekan
 // penceresi icin — orada sabah altin saati ve mavi saat de yaziliyor.
-function isikHtml(lat, lon, tz, genis){
-  const i = gunIsigi(lat, lon, bugunYmd());
+// ⚠ `ymd` SONRADAN EKLENDI (Asama 3). Once bugun SABITTI: gunes
+// hesabi her tarih icin calisiyor ama ekrana yazan parca tarihi
+// `bugunYmd()` diye sabit aliyordu. Verilmezse yine bugun -- mevcut
+// uc cagiran yer degismeden calismaya devam ediyor.
+//
+// "simdi" kiyaslamasi da tarihe bagli: BUGUN icin "siradaki altin
+// saat" mantikli (sabah dokuzda aksamin altin saatini yazmak gurultu),
+// ama GELECEK bir tarih icin "gecmis" diye bir sey yok -- o gunun
+// IKI altin saati de yazilmali, yoksa plan yapan kisi sabahinkini hic
+// gormez.
+function isikHtml(lat, lon, tz, genis, ymd){
+  const gun = ymd || bugunYmd();
+  const bugunMu = gun === bugunYmd();
+  const i = gunIsigi(lat, lon, gun);
   if(!i.dogus || !i.batis){
     return '<div class="hv-not">' + escapeHtml(t('hv_polar')) + '</div>';
   }
@@ -16029,16 +16128,22 @@ function isikHtml(lat, lon, tz, genis){
   const sabahMi = i.altinSabahBitis && simdi < +i.altinSabahBitis;
   const bas = sabahMi ? i.dogus : i.altinAksamBas;
   const bit = sabahMi ? i.altinSabahBitis : i.batis;
+  // Gelecek bir gun icin "siradaki" diye bir sey yok: ikisi de yazilir.
+  const ikisi = genis || !bugunMu;
   html += '<div class="hv-altin"><span aria-hidden="true">\u{1F305}</span>'
     + '<span class="hv-uzun">' + escapeHtml(t('hv_golden')) + ' '
-    + (genis
+    + (ikisi
         ? (i.altinSabahBitis ? ara(i.dogus, i.altinSabahBitis) + ' · ' : '')
           + (i.altinAksamBas ? ara(i.altinAksamBas, i.batis) : '')
         : (bas && bit ? ara(bas, bit) : ''))
     + '</span>'
-    + '<span class="hv-kisa">' + (bas ? s(bas) : '') + '</span>'
+    // Kisa hal (telefon): BUGUN icin siradaki, baska gun icin aksam.
+    // `ikisi`ye baglanmiyor -- o genis halde de true ve bagli olsaydi
+    // mekan penceresinin telefon satiri sessizce degisirdi.
+    + '<span class="hv-kisa">' + ((bugunMu ? bas : i.altinAksamBas)
+        ? s(bugunMu ? bas : i.altinAksamBas) : '') + '</span>'
     + '</div>';
-  if(genis && i.maviAksamBitis){
+  if(ikisi && i.maviAksamBitis){
     html += '<div class="hv-satir"><span>' + escapeHtml(t('hv_blue')) + ' '
          + ara(i.batis, i.maviAksamBitis) + '</span></div>';
   }
