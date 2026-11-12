@@ -735,7 +735,7 @@ body::before{
   border-right:1px solid var(--line-soft);padding:9px 9px;vertical-align:top;text-align:left;}
 .tpl-table th:last-child,.tpl-table td:last-child{border-right:0;}
 .tpl-table thead th{position:sticky;top:0;z-index:2;background:var(--surface-2);
-  font-size:10px;text-transform:uppercase;letter-spacing:.07em;color:var(--text-dim);
+  font-size:11px;text-transform:uppercase;letter-spacing:.07em;color:var(--text-dim);
   font-weight:600;white-space:nowrap;}
 .tpl-phead{display:inline-flex;align-items:center;gap:6px;}
 .tpl-row-head{position:sticky;left:0;z-index:3;background:var(--surface-2);
@@ -790,7 +790,7 @@ body.suruklenirken *{cursor:grabbing !important;}
   font-size:12px;color:var(--text-dim);
 }
 .hg-dayhead.today{background:var(--accent-soft);color:var(--text);}
-.hg-dow{font-family:'IBM Plex Mono',monospace;font-size:10px;letter-spacing:1px;text-transform:uppercase;}
+.hg-dow{font-family:'IBM Plex Mono',monospace;font-size:11px;letter-spacing:1px;text-transform:uppercase;}
 .hg-daynum{font-weight:700;font-size:14px;color:var(--text);}
 .hg-mon{font-size:10.5px;}
 /* Saat etiketi: satirin USTUNE hizali, cunku 14:00 etiketi o satirin
@@ -822,7 +822,7 @@ body.suruklenirken *{cursor:grabbing !important;}
   font-size:11.5px;line-height:1.3;min-width:0;
 }
 .hg-chip .cal-chip-title{overflow:hidden;text-overflow:ellipsis;white-space:nowrap;min-width:0;}
-.hg-chip .cal-time{font-size:10px;}
+.hg-chip .cal-time{font-size:11px;}
 @media(max-width:700px){
   .hour-grid{--hg-etiket:44px;}
   /* Yedi sutun 390 piksele sigmiyor: sutunlara okunabilir bir alt sinir
@@ -884,7 +884,7 @@ body.suruklenirken *{cursor:grabbing !important;}
 .proj-table tr:last-child th,.proj-table tr:last-child td{border-bottom:0;}
 .proj-table th:last-child,.proj-table td:last-child{border-right:0;}
 .proj-table thead th{position:sticky;top:0;z-index:2;background:var(--surface-2);
-  font-size:10px;text-transform:uppercase;letter-spacing:.08em;color:var(--text-dim);
+  font-size:11px;text-transform:uppercase;letter-spacing:.08em;color:var(--text-dim);
   font-weight:600;white-space:nowrap;}
 /* Proje sutunu SABIT genislikte. Tablo width:max-content oldugu icin
    sutunlar icerigin en genis haline gore buyuyordu: dil degisince rozet
@@ -966,7 +966,7 @@ body.suruklenirken *{cursor:grabbing !important;}
   color:var(--text-dim);text-decoration:none;display:inline-flex;align-items:center;
   gap:3px;flex:none;line-height:1.5;}
 .pn-ico:hover{color:var(--accent);}
-.pn-ico b{font-family:'IBM Plex Mono',monospace;font-size:10px;font-weight:600;}
+.pn-ico b{font-family:'IBM Plex Mono',monospace;font-size:11px;font-weight:600;}
 .pn-svg{width:13px;height:13px;flex:none;}
 .pdate .pn-svg{width:14px;height:14px;}
 .pn-ico.dolu{color:var(--accent);}
@@ -974,7 +974,7 @@ body.suruklenirken *{cursor:grabbing !important;}
 .pn-harita > span,.pn-eksik > span{font-size:10.5px;}
 .pn-eksik{color:var(--amber);cursor:default;}
 /* 3 — KUNYE: en kucuk, en sessiz; yer kalmazsa ilk o kirpiliyor. */
-.pn-meta{font-size:10.5px;color:var(--text-dim);font-variant-numeric:tabular-nums;
+.pn-meta{font-size:11px;color:var(--text-dim);font-variant-numeric:tabular-nums;
   line-height:1.5;opacity:.9;overflow:hidden;text-overflow:ellipsis;min-width:0;}
 /* Tarih kutulari daraltildi: yedi adim + proje sutunu bilgisayarda tek
    ekrana sigsin, tablo yana kaydirilmadan okunabilsin. */
@@ -1762,7 +1762,7 @@ textarea.sc-ai-brief{min-height:64px;resize:vertical;line-height:1.5;}
    accent-dim ile kontrast acik temada 2.90 (esik 4.5); 10 piksellik
    buyuk harf yazi icin bu okunmaz. Koyu temada zaten 4.63'tu, yani
    sorun yalnizca acik temadaydi. */
-.cal-dow{background:var(--surface);padding:9px;text-align:center;font-family:'IBM Plex Mono',monospace;font-size:10px;letter-spacing:1.5px;color:var(--text-dim);text-transform:uppercase;}
+.cal-dow{background:var(--surface);padding:9px;text-align:center;font-family:'IBM Plex Mono',monospace;font-size:11px;letter-spacing:1.5px;color:var(--text-dim);text-transform:uppercase;}
 /* ---- Tablo gorunumu ----
    Gunler satir, platformlar sutun. Genis olabildigi icin sayfayi degil
    kendi kabini kaydiriyor; govde asla yana kaymiyor. */
@@ -1884,7 +1884,7 @@ textarea.sc-ai-brief{min-height:64px;resize:vertical;line-height:1.5;}
 .cal-pico{width:15px;height:15px;flex:none;display:block;}
 .cal-pico svg{width:100%;height:100%;display:block;}
 .cal-time{
-  font-family:'IBM Plex Mono',monospace;font-size:10.5px;color:var(--text-dim);
+  font-family:'IBM Plex Mono',monospace;font-size:11px;color:var(--text-dim);
   font-variant-numeric:tabular-nums;flex:none;
 }
 .tcode{
@@ -1894,7 +1894,7 @@ textarea.sc-ai-brief{min-height:64px;resize:vertical;line-height:1.5;}
 .cal-chip:hover{background:var(--surface-2);}
 .cal-chip.live{border-left-color:var(--green);}
 .cal-badge{
-  font-family:'IBM Plex Mono',monospace;font-size:8.5px;font-weight:600;letter-spacing:.05em;
+  font-family:'IBM Plex Mono',monospace;font-size:11px;font-weight:600;letter-spacing:.05em;
   color:var(--text-dim);background:transparent;border:1px solid var(--line);
   padding:2px 5px;border-radius:2px;flex-shrink:0;text-align:center;
 }
@@ -1921,7 +1921,7 @@ textarea.sc-ai-brief{min-height:64px;resize:vertical;line-height:1.5;}
 /* Durum artik renkli bir nokta degil, okunur bir rozet. Nokta neyin ne oldugunu
    soylemiyordu; amber "hala borclu", yesil "yayinlandi" demek. */
 .cal-state{
-  margin-left:auto;flex:none;font-family:'IBM Plex Mono',monospace;font-size:9px;
+  margin-left:auto;flex:none;font-family:'IBM Plex Mono',monospace;font-size:11px;
   letter-spacing:.04em;text-transform:uppercase;padding:0 4px;border-radius:2px;
   border:1px solid var(--amber);color:var(--amber);line-height:1.6;white-space:nowrap;
 }
@@ -2699,8 +2699,16 @@ textarea.sc-ai-brief{min-height:64px;resize:vertical;line-height:1.5;}
    vurgulu (accent, kalin) duruyordu; her hucrede o vurgu gurultu olurdu.
    Kucuk ve soluk: gun sayisi okunakli kaliyor, ay adi yaninda sessizce
    duruyor. */
+/* ═══ 11 PIKSEL TABANI (12 Kasim 2026, Asama 7) ═══
+   Butun sayfalar tarandi: okunacak en kucuk yazi 8,5 piksele kadar
+   iniyordu (.cal-badge). Tabanin 11 olmasi baska her yerde zaten
+   tutuluyordu; takvim ve projeler tablosu disarida kalmisti.
+   TASMA OLCULDU, SONRA DEGISTIRILDI: iki sayfa x alti genislik
+   (380-1440), once ve sonra, hicbirinde tasma yok.
+   Suslu glifler (.fcaret ▾) ve yapim damgasi (.build-id) disarida:
+   onlar okunacak metin degil. */
 .cal-day-month{margin-left:3px;text-transform:uppercase;letter-spacing:.03em;
-  font-size:9px;color:var(--text-dim);font-weight:600;}
+  font-size:11px;color:var(--text-dim);font-weight:600;}
 .cal-day.today .cal-day-month{color:var(--accent);}
 /* Gun damgasi ay adiyla ayni agirlikta: gun SAYISI one cikmaya devam
    etsin, damga ve ay yaninda sessizce dursun.
