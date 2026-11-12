@@ -23790,7 +23790,19 @@ const HESAP_TABLOLARI = ['calendar_events','projects','ideas','scripts',
                          'ai_aktarimlar','accounts','api_keys',
                          'project_scripts','tiktok_hesaplari',
                          'youtube_hesaplari','threads_hesaplari',
-                         'threads_yanitlari'];
+                         'threads_yanitlari',
+                         // sql/69 ile gelen uc tablo. hesap-sil testindeki
+                         // BEKCI bunlari yakaladi: sql/ icinde user_id
+                         // tasiyan her tablo bu listede olmak zorunda.
+                         // Testi degil LISTEYI duzeltmek dogru olan.
+                         //
+                         // payments: kullanicinin karari (12 Kasim 2026)
+                         // "silinsin -- asil kayit saglayicida". Bizim
+                         // tablomuz bir KOPYA; muhasebe kaydi ve fatura
+                         // odeme saglayicisinin kendi sisteminde duruyor.
+                         // ⚠ Ilk gercek odemeden once mali musavire
+                         // sorulacak: saglayicidaki kayit yeterli mi?
+                         'yonetici','subscriptions','payments'];
 async function hesapVerisiniSil(){
   if(!sb || !session) return { takilan: [] };
   const kim = session.user.id;
