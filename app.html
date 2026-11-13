@@ -26,23 +26,24 @@
    ciziliyor, koyu temada siyah ustune siyah kaliyordu. */
 :root{
   color-scheme: light;
-  /* ⚠ CEKIM FOYU PALETI -- 11 Kasim 2026. Dort deger cizimdekiyle
-     birkac basamak farkliydi; cizim esas alindi:
-       --surface   #FBF9F3 -> #FBF8F1
-       --line      #D7D1C2 -> #CFC8B8   (daha koyu, cizgi gorunsun)
-       --text-dim  #585349 -> #5A5347
-       --accent-soft #FAE6DC -> #FBE3D6 (bugun zemini)
-       --red       #9E1B32 -> #A3121F   (hata)
-     --bg, --accent ve --text zaten ayniydi. */
-  --bg:#F1EDE3; --surface:#FBF8F1; --surface-2:#E7E2D5; --line:#CFC8B8; --line-soft:#E3DED1;
+  /* ⚠ "KOMUR VE TURUNCU" PALETI -- 13 Kasim 2026, kullanici secti.
+     Onceki palet (Cekim Foyu, 11 Kasim) kahverengiye calan bir siyah
+     ailesiydi: zemin, yuzey ve cizgilerin hepsi ayni sicak tondaydi ve
+     turuncu one cikamiyordu. Kullanicinin teshisi: "sorun turuncuda
+     degil, zeminde". Zemin NOTR gri oldu, turuncu kaldi.
+     Olculen kontrast (metin/zemin, soluk/zemin, vurgu/zemin, dugme
+     yazisi): 17,02 · 5,95 · 4,80 · 5,01
+     ⚠ Platform renklerine dokunulmadi: sekizi de yeni zeminde en az
+     3,97 veriyor ve taninir kalmalari istendi. */
+  --bg:#FAFAFA; --surface:#FFFFFF; --surface-2:#EFEFF1; --line:#E2E3E6; --line-soft:#EEEFF1;
   /* Cizimde olup bizde karsiligi olmayan iki deger: */
-  --bekleyen:#8C8472;        /* bekleyen uretim kutusunun kenari */
-  --pencere-arka:#D9D3C4;    /* acik pencerenin arkasindaki zemin */  --accent:#C4350A; --accent-dim:#9A9384; --accent-glow:rgba(196,53,10,0.26); --accent-soft:#FBE3D6;
-  --accent-hover:#A22B06;
-  --text:#15130F; --text-dim:#5A5347;
-  --amber:#8A5F0B; --amber-soft:#F8EDD8;
-  --green:#25654A;
-  --red:#A3121F;
+  --bekleyen:#8D9199;        /* bekleyen uretim kutusunun kenari */
+  --pencere-arka:#F2F2F3;    /* acik pencerenin arkasindaki zemin */  --accent:#C8400B; --accent-dim:#64686F; --accent-glow:rgba(200,64,11,0.26); --accent-soft:#FDF1EB;
+  --accent-hover:#A8340A;
+  --text:#17181A; --text-dim:#5E6167;
+  --amber:#8A5A00; --amber-soft:#FBF1DC;
+  --green:#1E7A4E;
+  --red:#B3261E;
   --on-accent:#FFFFFF;
   --p-youtube:#DA4B42; --p-instagram:#C0478E; --p-tiktok:#14868F; --p-facebook:#3B6FC4;
   --p-threads:#616B78; --p-x:#232B36; --p-pinterest:#A8322C; --p-linkedin:#1C6C9C;
@@ -51,19 +52,19 @@
 @media (prefers-color-scheme: dark){
   :root:not([data-theme="light"]){
     color-scheme: dark;
-    --bg:#15130F; --surface:#1E1B16; --surface-2:#272219; --line:#37312A; --line-soft:#2C271F;
-    --accent:#FF7A45; --accent-dim:#8B8476; --accent-glow:rgba(255,122,69,0.30); --accent-soft:#3A1E12;
-    --accent-hover:#FF9569;
-    --text:#F0EBE0; --text-dim:#ABA496;
+    --bg:#0F1011; --surface:#17181A; --surface-2:#1F2124; --line:#2A2C30; --line-soft:#212429;
+    --accent:#FF6B35; --accent-dim:#9196A0; --accent-glow:rgba(255,107,53,0.30); --accent-soft:#32190D;
+    --accent-hover:#FF8A5C;
+    --text:#EDEEF0; --text-dim:#9A9DA3;
   /* Acik temadaki iki yeni degiskenin koyu karsiligi. Cizilmedi;
      ayni ise yarayan mevcut koyu degerlerden turetildi, kontrasti
      asagida olculuyor. */
-  --bekleyen:#8B8476;
-  --pencere-arka:#0D0B08;
-    --amber:#E8A94A; --amber-soft:#33280F;
-    --green:#66C295;
-    --red:#F2808F;
-    --on-accent:#15130F;
+  --bekleyen:#70757D;
+  --pencere-arka:#0B0C0D;
+    --amber:#F5B544; --amber-soft:#352A12;
+    --green:#4CC38A;
+    --red:#FF6B6B;
+    --on-accent:#0F1011;
     --p-youtube:#F2808F; --p-instagram:#D96BA6; --p-tiktok:#3CA9B2; --p-facebook:#6B9AE0;
     --p-threads:#8A94A2; --p-x:#9AA4B2; --p-pinterest:#D4685F; --p-linkedin:#4E9AC8;
   }
@@ -71,19 +72,19 @@
 /* acik secim diger yonde de kazanir */
 :root[data-theme="dark"]{
   color-scheme: dark;
-  --bg:#15130F; --surface:#1E1B16; --surface-2:#272219; --line:#37312A; --line-soft:#2C271F;
-  --accent:#FF7A45; --accent-dim:#8B8476; --accent-glow:rgba(255,122,69,0.30); --accent-soft:#3A1E12;
-  --accent-hover:#FF9569;
-  --text:#F0EBE0; --text-dim:#ABA496;
+  --bg:#0F1011; --surface:#17181A; --surface-2:#1F2124; --line:#2A2C30; --line-soft:#212429;
+  --accent:#FF6B35; --accent-dim:#9196A0; --accent-glow:rgba(255,107,53,0.30); --accent-soft:#32190D;
+  --accent-hover:#FF8A5C;
+  --text:#EDEEF0; --text-dim:#9A9DA3;
   /* Acik temadaki iki yeni degiskenin koyu karsiligi. Cizilmedi;
      ayni ise yarayan mevcut koyu degerlerden turetildi, kontrasti
      asagida olculuyor. */
-  --bekleyen:#8B8476;
-  --pencere-arka:#0D0B08;
-  --amber:#E8A94A; --amber-soft:#33280F;
-  --green:#66C295;
-  --red:#F2808F;
-  --on-accent:#15130F;
+  --bekleyen:#70757D;
+  --pencere-arka:#0B0C0D;
+  --amber:#F5B544; --amber-soft:#352A12;
+  --green:#4CC38A;
+  --red:#FF6B6B;
+  --on-accent:#0F1011;
   --p-youtube:#F2808F; --p-instagram:#D96BA6; --p-tiktok:#3CA9B2; --p-facebook:#6B9AE0;
   --p-threads:#8A94A2; --p-x:#9AA4B2; --p-pinterest:#D4685F; --p-linkedin:#4E9AC8;
 }
@@ -416,8 +417,11 @@ body::before{
      oysa yalnizca tablonun kendi icinde kaymasi gerekiyor. */
   .shell{flex-direction:column;gap:14px;align-items:stretch;}
   .rail-main{width:100%;min-width:0;}
+  /* ⚠ gap 10 -> 8: Turkce arayuzde 390 pikselde marka adi 5 piksel
+     eksikle kirpiliyordu ("Giris yap" dugmesi "Sign in"den genis).
+     Olculdu: 8'e inince tam sigiyor. */
   .rail{width:100%;flex-direction:row;flex-wrap:wrap;align-items:center;
-    gap:10px;padding:10px 12px;}
+    gap:8px;padding:10px 12px;}
   /* Serit yataya donunce markanin alti bosluk birakmasi anlamsiz:
      dikey duzende bir sonraki blogu ayiran o bosluk, yatayda yalnizca
      seridi yukseltiyordu. */
@@ -425,11 +429,20 @@ body::before{
   .rail-brand .lockup{margin-bottom:0;min-width:0;}
   .rail-tagline{display:none;}
   .wordmark{overflow:hidden;text-overflow:ellipsis;white-space:nowrap;}
-  .rail-me{flex:0 0 auto;flex-direction:row;align-items:center;gap:8px;padding:0;
+  .rail-me{flex:0 0 auto;flex-direction:row;align-items:center;gap:6px;padding:0;
     border-bottom:0;margin-left:auto;}
   .avatar{width:34px;height:34px;font-size:13px;}
   /* Girisilmemisken bos daire dar ekranda yalnizca gurultu. */
-  .avatar.bos{display:none;}
+  /* ⚠ `:empty` SART, `.bos` tek basina YETMIYOR. kimlikGoster()
+     acilista `bos` sinifini ekliyor, ama serit sonradan yeniden
+     ciziliyor ve sinifsiz YENI bir daire konuyor; sinif bir daha
+     verilmiyor. Sonuc: girisi olmayan ziyaretcide bos daire 28
+     piksel yer kapliyor ve marka adi "Shoot..." diye kirpiliyordu
+     (kullanici 13 Kasim 2026'da canli ekranda gordu).
+     `:empty` JS'in calisma sirasindan bagimsiz: girisliyken dairede
+     bas harf yaziyor, girissizken bos. */
+  .avatar.bos,
+  .avatar:empty{display:none;}
   .btn.rail-auth{width:auto;white-space:nowrap;}
   /* Dil anahtari ust cubukta: tam ad ("Türkçe") yerine dar bir kutu.
      Genis birakildiginda marka adi "S."ye dusuyor ve "Giriş yap" iki
@@ -459,6 +472,19 @@ body::before{
 /* En dar telefonlar: marka yazisi gidiyor, isaret kaliyor. Kirpilmis
    bir "Shootboa..." markayi tasimiyor; isaret tasiyor. Boylece hesap
    dugmesi ve "..." her zaman ayni satirda kaliyor. */
+/* ⚠ 381-409 PIKSEL ARASI: Turkce arayuzde marka adi 5 piksel eksikle
+   kirpiliyor ("Giris yap" dugmesi "Sign in"den genis). Yaziyi 1,5
+   piksel kucultmek tam adin sigmasina yetiyor -- kirpilmis bir
+   "Shoot..." markayi tasimiyor. Kullanici 13 Kasim 2026'da bildirdi. */
+@media(min-width:381px) and (max-width:409px){
+  /* ⚠ `.lockup .wordmark` (0,2,0) YAZILDI, duz `.wordmark` DEGIL:
+     asagida 2906. satirda `@media(max-width:700px){ .wordmark{
+     font-size:18px } }` var ve o SONRA geldigi icin esit ozgullukte
+     kazaniyordu -- kural yazildi ama hicbir sey degismedi. */
+  /* Sabit 16,5 piksel 390'da siğiyor ama 381'de siğmiyordu:
+     boyut genisliğe göre ölçekleniyor. */
+  .lockup .wordmark{font-size:clamp(14.5px,3.9vw,17.5px);}
+}
 @media(max-width:380px){
   .wordmark{display:none;}
   .lockup .mark{width:24px;height:24px;}
