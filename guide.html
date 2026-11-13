@@ -40,13 +40,15 @@ body{margin:0;background:var(--bg);color:var(--text);
   font-family:'IBM Plex Sans','Segoe UI',system-ui,-apple-system,sans-serif;
   font-size:15px;line-height:1.7;-webkit-font-smoothing:antialiased;}
 a{color:var(--accent);text-underline-offset:2px;}
-.ust{position:sticky;top:0;z-index:20;background:var(--bg);
-  border-bottom:1px solid var(--line);}
-.ust-ic{max-width:1140px;margin:0 auto;padding:12px 22px;
-  display:flex;align-items:center;gap:14px;flex-wrap:wrap;}
-.marka{font-weight:700;letter-spacing:-.01em;}
-.marka a{color:var(--text);text-decoration:none;}
-.ust-sag{margin-left:auto;display:flex;gap:14px;align-items:center;font-size:.86rem;}
+/* ⛔ KENDI UST CUBUK KURALLARI KALDIRILDI -- marka.css'ten geliyor.
+   Birakilsalardi SESSIZ BIR CAKISMA olurdu ve oldu da:
+   marka.css koyu zemin + KREM yazi veriyor; buradaki
+   `.ust{background:var(--bg)}` zemini ACIGA geri ceviriyor ama yazi
+   rengine dokunmuyordu. Sonuc: krem yazi krem zeminde, kontrast 1.00,
+   yani menu tamamen GORUNMEZ. Olcum yakaladi, goz yakalamazdi --
+   menunun orada oldugunu bilmeyen kimse eksikligini fark etmezdi.
+   `.marka a{color:var(--text)}` da ayni sebeple kalkti: koyu cubukta
+   koyu baglanti demekti. */
 .duzen{max-width:1140px;margin:0 auto;padding:0 22px 80px;
   display:grid;grid-template-columns:236px minmax(0,1fr);gap:40px;align-items:start;}
 /* Sol menu: adimlar arasinda atlamak icin. Yapiskan, okurken kayboluyor. */
@@ -173,6 +175,11 @@ footer{border-top:1px solid var(--line);margin-top:56px;padding-top:22px;
 <div class="ust">
   <div class="ust-ic">
     <span class="marka"><a href="index.html">Shootboard</a></span>
+    <nav class="ust-nav">
+      <a href="./">Home</a>
+      <a href="fiyatlar.html?lang=en">Pricing</a>
+      <a href="guide.html" aria-current="page">Guide</a>
+    </nav>
     <span class="ust-sag">
       <a href="kilavuz.html" hreflang="tr">Türkçe</a>
       <a href="app.html">Open the app →</a>
