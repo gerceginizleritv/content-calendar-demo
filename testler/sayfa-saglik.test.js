@@ -80,6 +80,12 @@ async function olc(p){
     const gorsel = [...document.querySelectorAll('img')].map(im=>{
       const en = im.offsetWidth, boy = im.offsetHeight;
       if(!en || !boy || !im.naturalWidth) return null;
+      // ⚠ object-fit:cover/contain ASLA GERMEZ: kutu orani farkliysa
+      // tarayici KIRPAR. Telefonda bantlar 4:3'e dusuyor ama gorseller
+      // 21:9 -- bu kirpma, bozulma degil. Gerilme yalnizca object-fit
+      // verilmemis (fill) gorsellerde olur ve asil hata da oydu.
+      const uyum = getComputedStyle(im).objectFit;
+      if(uyum === 'cover' || uyum === 'contain') return null;
       const sapma = Math.abs((en/boy) - (im.naturalWidth/im.naturalHeight))
                     / (im.naturalWidth/im.naturalHeight) * 100;
       return { src:(im.getAttribute('src')||'').split('/').pop(),

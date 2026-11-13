@@ -307,42 +307,23 @@ img{max-width:100%;height:auto;display:block;}
 }
 .adim span{font-weight:600;font-size:14.5px;}
 
-/* ══ FOTOĞRAF YUVALARI ══════════════════════════════════════════
-   ⚠ BURAYA STOK FOTOĞRAF GELECEK. Kullanıcı 13 Kasım 2026'da stok
-   fotoğraf alacağını söyledi. Dosya gelene kadar yuva KENDİ BAŞINA
-   duruyor ve ne istendiğini yazıyor -- boş gri kutu bırakmak, neyin
-   eksik olduğunu kimseye söylemezdi.
+/* ══ FOTOĞRAF BANTLARI ══════════════════════════════════════════
+   ⛔ BU FOTOĞRAFLAR MÜŞTERİ YA DA KULLANICI DEĞİLDİR ve öyle
+   sunulmuyor: hiçbirinin altında isim, alıntı ya da "kullanıcımız"
+   yazmıyor. Ücretli kullanıcımız yok; olmayan müşteriyi varmış gibi
+   göstermek olurdu.
 
-   Fotoğraf geldiğinde: dosyayı gorseller/ içine koy, <img>'i aç,
-   .foto-yuva-bos div'ini sil. Oranlar ve konular aşağıda yazılı.
-   ⛔ Bu fotoğraflar MÜŞTERİ ya da KULLANICI değildir; öyle
-   sunulmayacak. Hiçbirinin altına isim, alıntı ya da "kullanıcımız"
-   yazılmayacak -- olmayan müşteriyi varmış gibi göstermek olur. */
+   Kaynak ve fotoğrafçı adları: gorseller/KUNYE.md
+   Unsplash ve Pexels lisansları ticari kullanıma izin veriyor ve
+   kaynak göstermeyi zorunlu tutmuyor; künye yine de tutuluyor.
+
+   ⚠ Bantların ALT-SOL köşesine beyaz bir başlık biniyor. Fotoğraflar
+   o köşesi sakin olacak şekilde seçildi ve kırpıldı; değiştirilirse
+   aynı şeye bakılmalı, yoksa yazı okunmaz olur. */
 .foto-bant{position:relative;overflow:hidden;background:var(--gece);}
 .foto-bant img{width:100%;height:100%;object-fit:cover;display:block;}
 .foto-oran{aspect-ratio:21/9;}
 @media(max-width:700px){ .foto-oran{aspect-ratio:4/3;} }
-.foto-yuva-bos{
-  position:absolute;inset:0;display:grid;place-items:center;text-align:center;
-  padding:24px;color:var(--kagit);
-  /* ⚠ Alt kosedeki baslikla cakismasin: bantlarda yazi yukari aliniyor. */
-  background:
-    repeating-linear-gradient(135deg, rgba(255,249,240,.05) 0 14px, transparent 14px 28px),
-    linear-gradient(135deg,var(--jel-mor),var(--gece) 70%);
-}
-.foto-yuva-bos .ry{
-  font-family:'IBM Plex Mono',monospace;font-size:11px;letter-spacing:1.2px;
-  text-transform:uppercase;opacity:.72;margin-bottom:10px;
-}
-.foto-yuva-bos b{font-family:'Archivo',sans-serif;font-size:clamp(17px,2.4vw,24px);
-  font-weight:700;display:block;}
-.foto-yuva-bos small{display:block;margin-top:9px;font-size:13.5px;opacity:.72;
-  max-width:34em;margin-left:auto;margin-right:auto;}
-.foto-bant.foto-oran > .foto-yuva-bos{
-  align-items:start;
-  padding-top:clamp(26px,5vw,56px);
-  padding-bottom:clamp(140px,22vw,260px);
-}
 .foto-yazi{
   position:absolute;left:0;right:0;bottom:0;padding:clamp(20px,4vw,44px) 0;
   background:linear-gradient(transparent, rgba(23,18,42,.82));
@@ -425,7 +406,7 @@ img{max-width:100%;height:auto;display:block;}
 
     <div class="kahraman-telefon">
       <div class="cihaz cihaz-telefon">
-        <img src="gorseller/uygulama-telefon.png" width="1170" height="2532"
+        <img src="gorseller/uygulama-telefon.webp" width="1170" height="2532"
              alt="Shootboard'un telefon ekranında gün gün liste görünümü" loading="eager">
       </div>
     </div>
@@ -433,7 +414,7 @@ img{max-width:100%;height:auto;display:block;}
 
     <div class="cihazlar">
       <div class="cihaz cihaz-tablet">
-        <img src="gorseller/uygulama-tablet.png" width="2048" height="1536"
+        <img src="gorseller/uygulama-tablet.webp" width="2048" height="1536"
              alt="Shootboard'un tablet ekranında aylık takvim görünümü" loading="eager">
       </div>
     </div>
@@ -486,13 +467,8 @@ img{max-width:100%;height:auto;display:block;}
        Konu: sahada çekim. Kamera/tripod ve çeken kişi. Yüz görünmek
        zorunda değil; eller, omuz, gün ışığı yeter. Gün batımına yakın
        sıcak ışık tercih -- yandaki "altın saat" bölümüyle konuşuyor. -->
-  <div class="foto-yuva-bos">
-    <div>
-      <p class="ry">Fotoğraf 1 · yatay 21:9</p>
-      <b data-m="foto1_b">Sahada çekim — kamera, tripod, gün ışığı</b>
-      <small data-m="foto1_s">Dosya adı: gorseller/saha.jpg · En az 2400 piksel genişlik. Yüz görünmek zorunda değil: eller, omuz ve ışık yeter.</small>
-    </div>
-  </div>
+  <img src="gorseller/saha.webp" width="2400" height="1029" loading="lazy"
+       alt="Telefonunu gimbal üstünde tutarak dışarıda çekim yapan bir içerik üreticisi">
   <div class="foto-yazi">
     <div class="sar">
       <h2 data-m="foto1_h">Çekim sahada olur. Plan cebinde durur.</h2>
@@ -566,13 +542,8 @@ img{max-width:100%;height:auto;display:block;}
       <!-- FOTOĞRAF 2 · gorseller/altin-saat.jpg · yatay 4:3 (en az 1600px)
            Konu: gün batımına yakın saatte dışarıda çekim. Sıcak turuncu
            ışık. İnsan silueti ya da kamera olabilir. -->
-      <div class="foto-yuva-bos">
-        <div>
-          <p class="ry">Fotoğraf 2 · yatay 4:3</p>
-          <b data-m="foto2_b">Altın saat — gün batımına yakın çekim</b>
-          <small data-m="foto2_s">Dosya adı: gorseller/altin-saat.jpg · En az 1600 piksel genişlik.</small>
-        </div>
-      </div>
+      <img src="gorseller/altin-saat.webp" width="1600" height="1200" loading="lazy"
+           alt="Altın saatin ışığında, tripod üstünde çekim yapan bir telefon">
     </div>
     <div>
       <p class="onbas" data-m="s4_on">Hava ve ışık</p>
@@ -595,7 +566,7 @@ img{max-width:100%;height:auto;display:block;}
     </div>
     <div class="kahraman-telefon">
       <div class="cihaz cihaz-telefon">
-        <img src="gorseller/uygulama-telefon.png" width="1170" height="2532"
+        <img src="gorseller/uygulama-telefon.webp" width="1170" height="2532"
              alt="Shootboard telefonda: gün gün bekleyen paylaşımlar" loading="lazy">
       </div>
     </div>
@@ -608,13 +579,8 @@ img{max-width:100%;height:auto;display:block;}
        Konu: masa başında planlama. Dizüstü/tablet, not defteri, kahve,
        eller. İçerik üreticisinin çalışma masası. Steril ofis değil --
        MARKA.md "kurumsal SaaS değil" diyor. -->
-  <div class="foto-yuva-bos">
-    <div>
-      <p class="ry">Fotoğraf 3 · yatay 21:9</p>
-      <b data-m="foto3_b">Masa başında planlama — dizüstü, defter, kahve</b>
-      <small data-m="foto3_s">Dosya adı: gorseller/masa.jpg · En az 2400 piksel genişlik. Steril ofis değil, çalışan bir masa.</small>
-    </div>
-  </div>
+  <img src="gorseller/masa.webp" width="2400" height="1029" loading="lazy"
+       alt="Masada tripod üstündeki telefonunu ayarlayan, yanında dizüstü duran bir kişi">
   <div class="foto-yazi">
     <div class="sar">
       <h2 data-m="foto3_h">Hafta başında on dakika. Gerisi akıyor.</h2>
@@ -710,8 +676,6 @@ var EN = {
   s1_cekim:"shoot",
   s1_d1:"YouTube — long video", s1_d2:"YouTube — Short", s1_d3:"Instagram — Reel",
   s1_d4:"Instagram — carousel", s1_d5:"Story — two platforms", s1_d6:"Threads — text post",
-  foto1_b:"On location — camera, tripod, daylight",
-  foto1_s:"File name: gorseller/saha.jpg · At least 2400px wide. No face needed: hands, a shoulder and the light are enough.",
   foto1_h:"The shoot happens in the field. The plan stays in your pocket.",
   foto1_p:"Address, permission note, what to watch out for, and that day's golden hour — all on the same record.",
   s2_on:"Twelve parts, one board", s2_h:"The things that gather the mess",
@@ -724,15 +688,11 @@ var EN = {
   s3_on:"Production flow", s3_h:"Seven steps. No setup.",
   s3_p:"Not heavy project management software. Which step a record is on is visible at a glance.",
   a1:"Idea", a2:"Script", a3:"Shoot", a4:"Edit", a5:"Cover", a6:"Schedule", a7:"Publish",
-  foto2_b:"Golden hour — shooting near sunset",
-  foto2_s:"File name: gorseller/altin-saat.jpg · At least 1600px wide.",
   s4_on:"Weather and light", s4_h:"That spot's golden hour is written on the record.",
   s4_p:"A place's sunrise, sunset and golden hour are worked out, so you can set the shoot day around them. Which day, which hour — inside the record.",
   s5_on:"At the desk and in the field", s5_h:"Plan at the desk. Open it on your phone on location.",
   s5_p:"Sign in and the plan is the same on both. Use it without an account and your calendar stays in that browser — none of it is required.",
   s5_cta:"Open the demo",
-  foto3_b:"Planning at the desk — laptop, notebook, coffee",
-  foto3_s:"File name: gorseller/masa.jpg · At least 2400px wide. Not a sterile office — a desk someone works at.",
   foto3_h:"Ten minutes at the start of the week. The rest follows.",
   foto3_p:"You put a shoot on the board and line the posts that come out of it underneath.",
   s6_on:"Let's draw the line up front", s6_h:"What Shootboard is not",
@@ -787,25 +747,10 @@ document.querySelectorAll('[data-dil]').forEach(function(b){
 });
 dilUygula(dil);
 
-/* Fotoğraf yuvası: dosya GELMİŞSE yuva yazısı kalksın, gelmemişse
-   dursun. Böylece fotoğrafı koymak tek iş: dosyayı gorseller/ içine
-   atmak. HTML'e dokunmak gerekmiyor. */
-[['saha.jpg','.foto-bant'],['altin-saat.jpg',null],['masa.jpg',null]];
-document.querySelectorAll('.foto-yuva-bos').forEach(function(yuva){
-  var kucuk = yuva.querySelector('small');
-  var m = kucuk && kucuk.textContent.match(/gorseller\/([A-Za-z0-9._-]+)/);
-  if(!m) return;
-  var im = new Image();
-  im.onload = function(){
-    var kap = yuva.parentElement;
-    var etiket = kap.querySelector('.foto-yazi h2');
-    im.alt = etiket ? etiket.textContent : '';
-    im.loading = 'lazy';
-    kap.insertBefore(im, kap.firstChild);
-    yuva.remove();
-  };
-  im.src = 'gorseller/' + m[1];
-});
+/* ⛔ YER TUTUCU DÜZENEĞİ KALDIRILDI.
+   Fotoğraflar geldi ve doğrudan <img> olarak duruyorlar; dosya adını
+   altyazıdan okuyup resmi sonradan yerleştiren betiğe artık gerek yok.
+   Çalışmayan ama duran kod, okuyana "burada bir şey oluyor" dedirtir. */
 </script>
 </body>
 </html>

@@ -77,13 +77,19 @@ const bak=(a,ko,ek)=>{ if(ko){g++;console.log('  ok  '+a);} else {k++;console.lo
       // etkilenmiyor.
       const en = im.offsetWidth, boy = im.offsetHeight;
       const ic = im.parentElement.clientWidth;
+      // ⚠ object-fit:cover/contain ASLA GERMEZ: kutu orani farkliysa
+      // tarayici KIRPAR. Telefonda bantlar 4:3'e dusuyor ama gorseller
+      // 21:9 -- bu kirpma, bozulma degil. Gerilme yalnizca object-fit
+      // verilmemis (fill) gorsellerde olur ve asil hata da oydu.
+      const uyum = getComputedStyle(im).objectFit;
+      if(uyum === 'cover' || uyum === 'contain') return null;
       const dogalOran = im.naturalWidth / im.naturalHeight;
       const cizilenOran = en / boy;
       return { src: im.getAttribute('src').split('/').pop(),
                en: Math.round(en), boy: Math.round(boy), kutu: Math.round(ic),
                asim: Math.round(en - ic),
                sapma: +(Math.abs(cizilenOran - dogalOran) / dogalOran * 100).toFixed(1) };
-    }).filter(x=> x.en > 0));
+    }).filter(x=> x && x.en > 0));
     bak('hicbir gorsel kutusunu tasirmiyor',
         gorselDurumu.filter(x=> x.asim > 1).length === 0,
         JSON.stringify(gorselDurumu.filter(x=> x.asim > 1)));

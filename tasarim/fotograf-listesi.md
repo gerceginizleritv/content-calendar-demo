@@ -1,5 +1,38 @@
 # Ana sayfa için fotoğraf listesi
 
+> **DURUM: TAMAMLANDI — 13 Kasım 2026.**
+> Üç fotoğraf da Unsplash/Pexels API'leri üzerinden bulundu, indirildi
+> ve yerine kondu. Künye: `gorseller/KUNYE.md`.
+> Bu belge, **nasıl seçildiklerini ve neyin yanlış gittiğini** kayda
+> geçirmek için duruyor.
+
+---
+
+## ⛔ İLK SEÇİM YANLIŞTI — hedef kitleyi kaçırdım
+
+İlk aramayı `filmmaker`, `videographer`, `cinema camera` terimleriyle
+yaptım ve omuz rigi taşıyan **profesyonel sinemacılar** geldi.
+Kullanıcı düzeltti, kendi sözleriyle:
+
+> *"Bizim hedefimizdekiler profesyonel çekim yapan kameramanlar değil.
+> Video içerik üreticileri. Cep telefonu, aksiyon kamera vs gibi
+> portable ürünler ile içerik üreten kişiler."*
+
+**Haklıydı ve bilgi zaten elimdeydi.** `MARKA.md` şöyle diyor:
+*"Tek başına çalışan içerik üreticisi. Çekimi de kurguyu da paylaşımı
+da kendisi yapan kişi. **Ana kullanıcı bu.**"*
+"Video" kelimesi beni profesyonel sete götürdü; arama yapmadan önce
+marka belgesini yeniden okumadım.
+
+**Aranacak terimler:** `smartphone gimbal`, `content creator filming
+with phone`, `vlogger smartphone tripod`, `action camera`,
+`phone tripod sunset`.
+
+⛔ **Aranmayacak:** `filmmaker`, `cinematographer`, `film crew`,
+`professional video camera`, `shoulder rig`.
+
+---
+
 **13 Kasım 2026.** Kullanıcı kararı: *"Stok fotoğraf alacağım"* + *"Baştan tasarla"*.
 
 Yeni ana sayfa `index-yeni.html` olarak hazır. İçinde **üç fotoğraf yuvası**
