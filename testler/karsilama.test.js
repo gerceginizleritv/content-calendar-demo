@@ -1,5 +1,17 @@
+// ⚠ 13 KASIM 2026: BU TEST ARTIK index-eski.html'e BAKIYOR.
+// Ana sayfa yeni tasarima gecti (kullanici onayi). Eski sayfa
+// geri donus icin duruyor ve bu test onu sinamaya DEVAM ediyor:
+// giris akisi, koyu tema ve olcum oradaki haliyle korunuyor.
+// ⛔ TEST SILINMEDI, ZAYIFLATILMADI -- yalnizca hedefi degisti.
+// Canli ana sayfanin olcumu ana-sayfa-yeni.test.js'e eklendi.
+// Eski sayfa tamamen kaldirilirsa bu dosya da kaldirilmali.
 const { chromium } = require('./araclar');
 const KOK = 'http://127.0.0.1:8098/';
+// ⚠ 13 Kasim 2026: ana sayfa yeni tasarima gecti; bu test ESKI
+// sayfayi sinamaya devam ediyor. KOK DIZIN olarak kaldi (KOK +
+// 'app.html' gibi birlestirmeler bozulmasin diye), sayfa adresi
+// ayri sabitte.
+const SAYFA = KOK + 'index-eski.html';
 let gecen = 0, kalan = 0;
 function ok(ad, kosul, ek){ if(kosul){ gecen++; console.log('  ok  ', ad); } else { kalan++; console.log('  YOK ', ad, ek===undefined?'':'→ '+ek); } }
 
@@ -45,7 +57,7 @@ async function sayfa(b, ayar = {}) {
   console.log('\n1. Varsayilan dil');
   {
     const p = await sayfa(b);
-    await p.goto(KOK, { waitUntil:'domcontentloaded' });
+    await p.goto(SAYFA, { waitUntil:'domcontentloaded' });
     await p.waitForTimeout(400);
     ok('h1 Ingilizce', (await p.textContent('h1')).includes('One shoot becomes ten posts'));
     ok('dil dugmesi EN', (await p.textContent('#dilDug')).trim() === 'EN');
@@ -58,7 +70,7 @@ async function sayfa(b, ayar = {}) {
   console.log('\n2. Dil degistirme');
   {
     const p = await sayfa(b);
-    await p.goto(KOK, { waitUntil:'domcontentloaded' });
+    await p.goto(SAYFA, { waitUntil:'domcontentloaded' });
     await p.waitForTimeout(300);
     await p.click('#dilDug');
     await p.waitForTimeout(200);
@@ -83,7 +95,7 @@ async function sayfa(b, ayar = {}) {
   console.log('\n3. Uygulamayla ortak dil anahtari');
   {
     const p = await sayfa(b, { dil:'tr' });
-    await p.goto(KOK, { waitUntil:'domcontentloaded' });
+    await p.goto(SAYFA, { waitUntil:'domcontentloaded' });
     await p.waitForTimeout(300);
     ok('kayitli tr ile aciliyor', (await p.textContent('h1')).includes('Tek çekim'));
     await p.close();
@@ -93,7 +105,7 @@ async function sayfa(b, ayar = {}) {
   console.log('\n4. Tema');
   {
     const p = await sayfa(b);
-    await p.goto(KOK, { waitUntil:'domcontentloaded' });
+    await p.goto(SAYFA, { waitUntil:'domcontentloaded' });
     await p.waitForTimeout(300);
     ok('basta data-theme yok', await p.getAttribute('html','data-theme') === null);
     await p.click('#temaDug');
@@ -116,7 +128,7 @@ async function sayfa(b, ayar = {}) {
   }
   {
     const p = await sayfa(b, { kayitliTema:'dark' });
-    await p.goto(KOK, { waitUntil:'domcontentloaded' });
+    await p.goto(SAYFA, { waitUntil:'domcontentloaded' });
     ok('kayitli tema ilk boyamada uygulandi', await p.getAttribute('html','data-theme') === 'dark');
     await p.close();
   }
@@ -125,7 +137,7 @@ async function sayfa(b, ayar = {}) {
   console.log('\n5. Ozellik dizini baglantilari');
   {
     const p = await sayfa(b);
-    await p.goto(KOK, { waitUntil:'domcontentloaded' });
+    await p.goto(SAYFA, { waitUntil:'domcontentloaded' });
     await p.waitForTimeout(300);
     // Sayiyi sabitlemek yerine dizinle bolumleri karsilastiriyoruz: boylece
     // yeni bir ozellik bolumu eklenip dizine kart konmazsa test yakalar.
@@ -152,7 +164,7 @@ async function sayfa(b, ayar = {}) {
   console.log('\n6. app.html baglantilari');
   {
     const p = await sayfa(b);
-    await p.goto(KOK, { waitUntil:'domcontentloaded' });
+    await p.goto(SAYFA, { waitUntil:'domcontentloaded' });
     // Buyuk dugmeler artik dogrudan uygulamaya degil giris/kayit kartina
     // gidiyor (#giris). Uygulamaya "hesapsiz devam" baglantilari kaldi.
     const hrefler = await p.$$eval('a[href="app.html"]', a => a.length);
@@ -168,7 +180,7 @@ async function sayfa(b, ayar = {}) {
   console.log('\n7. Giris — e-posta linki');
   {
     const p = await sayfa(b);
-    await p.goto(KOK, { waitUntil:'domcontentloaded' });
+    await p.goto(SAYFA, { waitUntil:'domcontentloaded' });
     await p.waitForTimeout(400);
     ok('form gorunur', await p.isVisible('#girisFormu'));
     ok('oturum bloku gizli', !(await p.isVisible('#acikOturum')));
@@ -190,7 +202,8 @@ async function sayfa(b, ayar = {}) {
     const c = await p.evaluate(()=>window.__cagri);
     ok('otp cagrildi', c.length === 1 && c[0][0] === 'otp');
     ok('adres dogru', c[0][1].email === 'biri@ornek.com');
-    ok('donus adresi karsilama sayfasi', /\/index\.html$|\/$/.test(c[0][1].options.emailRedirectTo), c[0][1].options.emailRedirectTo);
+    // Sayfa index-eski.html'e tasindi; donus adresi de onu gosteriyor.
+    ok('donus adresi karsilama sayfasi', /\/index(-eski)?\.html$|\/$/.test(c[0][1].options.emailRedirectTo), c[0][1].options.emailRedirectTo);
     ok('gonderildi mesaji', (await p.textContent('#girisDurum')).includes('Link sent'));
     await p.close();
   }
@@ -199,7 +212,7 @@ async function sayfa(b, ayar = {}) {
   console.log('\n8. Giris — Google');
   {
     const p = await sayfa(b);
-    await p.goto(KOK, { waitUntil:'domcontentloaded' });
+    await p.goto(SAYFA, { waitUntil:'domcontentloaded' });
     await p.waitForTimeout(400);
     ok('kayit sekmesinde de Google var', await p.isVisible('#googleKayitDug'));
     await p.click('#sekmeGiris');
@@ -217,7 +230,7 @@ async function sayfa(b, ayar = {}) {
   console.log('\n9. Oturum acikken');
   {
     const p = await sayfa(b, { oturum: { user: { email:'kisi@ornek.com' } } });
-    await p.goto(KOK, { waitUntil:'domcontentloaded' });
+    await p.goto(SAYFA, { waitUntil:'domcontentloaded' });
     await p.waitForTimeout(500);
     ok('uygulamaya ZORLA gonderilmedi', p.url().indexOf('app.html') === -1, p.url());
     ok('oturum bloku gorunur', await p.isVisible('#acikOturum'));
@@ -233,7 +246,7 @@ async function sayfa(b, ayar = {}) {
   console.log('\n10. Girisden donus');
   {
     const p = await sayfa(b, { oturum: { user: { email:'kisi@ornek.com' } } });
-    await p.goto(KOK + '#access_token=sahte&type=magiclink', { waitUntil:'domcontentloaded' });
+    await p.goto(SAYFA + '#access_token=sahte&type=magiclink', { waitUntil:'domcontentloaded' });
     await p.waitForTimeout(900);
     ok('app.html acildi', p.url().indexOf('app.html') !== -1, p.url());
     await p.close();
@@ -242,7 +255,7 @@ async function sayfa(b, ayar = {}) {
     // OAuth: adres cubugu temiz ama bayrak var
     const p = await sayfa(b, { oturum: { user: { email:'kisi@ornek.com' } } });
     await p.addInitScript(`try{sessionStorage.setItem('slate_giris_donus','1');}catch(e){}`);
-    await p.goto(KOK, { waitUntil:'domcontentloaded' });
+    await p.goto(SAYFA, { waitUntil:'domcontentloaded' });
     await p.waitForTimeout(900);
     ok('bayrakla da app.html acildi', p.url().indexOf('app.html') !== -1, p.url());
     await p.close();
@@ -256,7 +269,7 @@ async function sayfa(b, ayar = {}) {
     p.on('pageerror', e => p.hatalar.push(e.message));
     await p.route('**/fonts.googleapis.com/**', r => r.fulfill({ status:200, contentType:'text/css', body:'' }));
     await p.route('**/supabase-js**', r => r.abort());
-    await p.goto(KOK, { waitUntil:'domcontentloaded' });
+    await p.goto(SAYFA, { waitUntil:'domcontentloaded' });
     await p.waitForTimeout(500);
     ok('sayfa yine de calisiyor', (await p.textContent('h1')).length > 10);
     ok('dugmeler kapali', await p.isDisabled('#googleDug') && await p.isDisabled('#linkDug'));
@@ -269,7 +282,7 @@ async function sayfa(b, ayar = {}) {
   console.log('\n12. Yerlesim');
   for(const [ad, w, h] of [['masaustu',1280,900],['tablet',820,1100],['telefon',390,844]]){
     const p = await sayfa(b, { viewport:{width:w,height:h} });
-    await p.goto(KOK, { waitUntil:'domcontentloaded' });
+    await p.goto(SAYFA, { waitUntil:'domcontentloaded' });
     await p.waitForTimeout(400);
     const tasma = await p.evaluate(()=>document.documentElement.scrollWidth - window.innerWidth);
     ok(ad + ' yatay tasma yok', tasma <= 1, tasma);

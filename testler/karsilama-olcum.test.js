@@ -1,3 +1,10 @@
+// ⚠ 13 KASIM 2026: BU TEST ARTIK index-eski.html'e BAKIYOR.
+// Ana sayfa yeni tasarima gecti (kullanici onayi). Eski sayfa
+// geri donus icin duruyor ve bu test onu sinamaya DEVAM ediyor:
+// giris akisi, koyu tema ve olcum oradaki haliyle korunuyor.
+// ⛔ TEST SILINMEDI, ZAYIFLATILMADI -- yalnizca hedefi degisti.
+// Canli ana sayfanin olcumu ana-sayfa-yeni.test.js'e eklendi.
+// Eski sayfa tamamen kaldirilirsa bu dosya da kaldirilmali.
 // Karsilama sayfasinda olcum. "Kac kisi geldi, kaci uygulamaya gecti"
 // sorusunun cevabi burasi olmadan yoktu: sayac yalnizca app.html'e
 // bagliydi. Test gercek GoatCounter'a gitmiyor — count.js'i sahte bir
@@ -18,7 +25,7 @@ async function sayfaAc(t, genislik){
     window.__olaylar = [];
     window.goatcounter = { count: function(o){ window.__olaylar.push(o && o.path); } };
   });
-  await p.goto(KOK + '/index.html', { waitUntil:'domcontentloaded' });
+  await p.goto(KOK + '/index-eski.html', { waitUntil:'domcontentloaded' });
   await p.waitForTimeout(900);
   return p;
 }
@@ -28,7 +35,7 @@ const olaylar = p => p.evaluate(()=> window.__olaylar.slice());
   const t = await chromium.launch();
 
   console.log('[sayac sayfaya bagli]');
-  const ham = await (await fetch(KOK + '/index.html')).text();
+  const ham = await (await fetch(KOK + '/index-eski.html')).text();
   bak('GoatCounter betigi index.html icinde',
       /data-goatcounter="https:\/\/slate-demo\.goatcounter\.com\/count"/.test(ham));
   bak('count.js cagriliyor', /gc\.zgo\.at\/count\.js/.test(ham));
@@ -44,7 +51,7 @@ const olaylar = p => p.evaluate(()=> window.__olaylar.slice());
   bak('misafir girisi ayrica sayiliyor', o.includes('funnel/landing-guest'), o.join(','));
   bak('uygulamaya gecis sayiliyor', o.includes('funnel/landing-to-app'), o.join(','));
   bak('gidis hemen olmadi (olay yolda kalmasin)',
-      p.url().indexOf('/index.html') !== -1, p.url());
+      p.url().indexOf('/index-eski.html') !== -1, p.url());
   await p.waitForTimeout(400);
   bak('sonra uygulamaya gidildi', p.url().indexOf('/app.html') !== -1, p.url());
   await p.close();
@@ -55,7 +62,7 @@ const olaylar = p => p.evaluate(()=> window.__olaylar.slice());
   await p.waitForTimeout(150);
   o = await olaylar(p);
   bak('giris bolumu acildi olayi', o.includes('funnel/landing-signin-opened'), o.join(','));
-  bak('sayfa degismedi', p.url().indexOf('/index.html') !== -1, p.url());
+  bak('sayfa degismedi', p.url().indexOf('/index-eski.html') !== -1, p.url());
 
   console.log('[okundu mu]');
   await p.evaluate(()=> window.scrollTo(0, window.innerHeight * 2));

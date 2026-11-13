@@ -1,4 +1,6 @@
-// YENI ANA SAYFA (index-yeni.html) -- 13 Kasim 2026
+// ANA SAYFA (index.html) -- 13 Kasim 2026
+// 13 Kasim 2026: kullanici onayiyla yayina alindi; eski tasarim
+// index-eski.html olarak duruyor (noindex).
 //
 // NEDEN BU TEST VAR
 // Kullanici mevcut ana sayfa icin "cok fazla AI gorunuyor ... hic insan
@@ -30,8 +32,10 @@ const bak=(a,ko,ek)=>{ if(ko){g++;console.log('  ok  '+a);} else {k++;console.lo
   for(const [w,h,ad] of [[1440,900,'masaustu'],[390,844,'telefon'],[834,1112,'tablet']]){
     const p=await (await t.newContext({viewport:{width:w,height:h},deviceScaleFactor:2})).newPage();
     const hata=[]; p.on('pageerror',e=>hata.push(String(e)));
-    const istek=[]; p.on('requestfailed',r=>istek.push(r.url().split('/').pop()+' :: '+(r.failure()||{}).errorText));
-    await p.goto(KOK+'/index-yeni.html',{waitUntil:'networkidle'});
+    const istek=[]; // ⚠ TAM ADRES saklaniyor, yalnizca dosya adi degil: konak adi
+    // olmadan "hangi CDN engelli" filtresi calismiyordu.
+    p.on('requestfailed',r=>istek.push(r.url()+' :: '+(r.failure()||{}).errorText));
+    await p.goto(KOK+'/index.html',{waitUntil:'networkidle'});
     // Tembel (lazy) resimler yalnizca gorunur olunca yuklenir: once
     // sayfayi sonuna kadar kaydirmadan 'yuklenmedi' demek yanlis olur.
     for(let i=0;i<24;i++){ await p.mouse.wheel(0,900); await p.waitForTimeout(120); }
@@ -40,7 +44,11 @@ const bak=(a,ko,ek)=>{ if(ko){g++;console.log('  ok  '+a);} else {k++;console.lo
     console.log('['+ad+' '+w+'x'+h+']');
     bak('js hatasi yok', hata.length===0, hata.join(' | '));
     // Google Fonts sandbox'ta engelli olabilir; onu ayirt et
-    const kritik = istek.filter(x=> !/fonts\.(googleapis|gstatic)/.test(x));
+    // ⚠ Google Fonts ve GoatCounter (gc.zgo.at) bu kum havuzunda
+    // ENGELLI. Onlari "sayfa hatasi" saymak her kosuda yanlis alarm
+    // uretir ve zamanla gercek hatalari gorunmez yapar. Canlida
+    // ikisi de calisiyor.
+    const kritik = istek.filter(x=> !/fonts\.(googleapis|gstatic)|gc\.zgo\.at/.test(x));
     bak('kritik kaynak yuklendi', kritik.length===0, kritik.join(' | '));
     bak('yatay kayma yok',
         await p.evaluate(()=> document.documentElement.scrollWidth <= window.innerWidth+1),

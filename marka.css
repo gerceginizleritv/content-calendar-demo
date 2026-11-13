@@ -265,6 +265,15 @@ img{max-width:100%;height:auto;display:block;}
 @media(min-width:760px){ .ust-ic{padding:0 32px;} }
 .ust-sag{display:flex;align-items:center;gap:8px;margin-left:auto;}
 .ust a{color:inherit;}
+/* ⛔ AMA DUGMELER HARIC. `.ust a{color:inherit}` ozgullugu (0,1,1)
+   `.dug-birincil{color:var(--gece)}` kuralindan (0,1,0) yuksek ve
+   onu eziyordu: ust cubuktaki turuncu dugme, koyu zeminden KREM
+   rengi miras aliyordu. Kontrast 2.98, esik 4.5 -- yani cubuktaki
+   tek cagri dugmesi okunmuyordu. Sayfadaki diger dugmeler
+   etkilenmemisti, cunku onlar `.ust` icinde degil; bu yuzden goz
+   kolay kolay yakalamazdi.
+   Ozgullugu iki sinifa cikararak geri aliniyor. */
+.ust a.dug-birincil, .ust a.btn-ana, .ust a.btn-sm{color:var(--gece);}
 
 .dil-dug{background:transparent;border:1px solid var(--cizgi-acik);color:inherit;
   font-family:'IBM Plex Mono',monospace;font-size:12px;font-weight:600;
