@@ -74,8 +74,13 @@ okunduğuna BAKILMALI — renk kontrastı testi yazıyı fotoğrafa karşı
 üzerinden GPT Image 2.6 ile üretildi. Sayfada bu kişiye isim, alıntı
 ya da "kullanıcımız" denmiyor ve denmeyecek.
 
-⚠ **Sitede bu görselin üretilmiş olduğu YAZMIYOR.** Bunu bilerek
-böyle bıraktım; yazılması gerekip gerekmediği kullanıcının kararı.
+**Sitede bu görselin üretilmiş olduğu yazmıyor — KULLANICI BÖYLE
+KARAR VERDİ** (13 Kasım 2026, kendi sözleriyle: *"yazmaya gerek
+yok"*). Soruldu, cevaplandı; tekrar açmaya gerek yok.
+
+⛔ Karar şunu DEĞİŞTİRMİYOR: bu kişiye sayfada isim, alıntı ya da
+"kullanıcımız" denmez. Üretilmiş olduğunu yazmamak başka şey, var
+olmayan bir müşteriyi varmış gibi göstermek başka şey.
 
 **Telefonun ekranındaki görüntü ÜRETİLMEDİ.** Yapay zekâya ekran boş
 olarak ürettirildi (düz gri dikdörtgen), uygulamanın **gerçek** ekran
