@@ -175,10 +175,14 @@ a{color:inherit;}
 <header class="ust">
   <div class="sar ust-ic">
     <a class="marka" href="./">Shootboard</a>
+    <!-- ⚠ data-m OLMADAN eklenmisti: yazilar sabit Turkce kaliyordu ve
+         Ingilizce sayfada "Ana sayfa | Fiyatlar | Kilavuz" goruluyordu
+         (kullanici 13 Kasim 2026'da canlida gordu). Kilavuz baglantisi
+         da dile gore degisiyor: kilavuz.html / guide.html. -->
     <nav class="ust-nav">
-      <a href="./">Ana sayfa</a>
-      <a href="fiyatlar.html" aria-current="page">Fiyatlar</a>
-      <a href="kilavuz.html">Kılavuz</a>
+      <a href="./" data-m="nav_ev">Ana sayfa</a>
+      <a href="fiyatlar.html" aria-current="page" data-m="nav_fiyat">Fiyatlar</a>
+      <a href="kilavuz.html" id="navKilavuz" data-m="nav_kilavuz">Kılavuz</a>
     </nav>
     <div class="ust-sag">
       <button class="dil-dug" type="button" data-dil="tr" aria-pressed="true">TR</button>
@@ -266,6 +270,7 @@ const esc = (s)=>{ const d=document.createElement('div');
 // kurulumu, satilmiyor.
 const M = {
   tr: {
+    nav_ev:'Ana sayfa', nav_fiyat:'Fiyatlar', nav_kilavuz:'Kılavuz',
     uygulama_kisa:"Aç",
     tepe_rozet:"Hesapsız başla — kart istemiyoruz",
     uygulama:'Uygulamayı aç', baslik:'Fiyatlar', aylik:'Aylık', yillik:'Yıllık',
@@ -304,6 +309,7 @@ const M = {
     }
   },
   en: {
+    nav_ev:'Home', nav_fiyat:'Pricing', nav_kilavuz:'Guide',
     uygulama_kisa:"Open",
     tepe_rozet:"Start without an account — no card needed",
     uygulama:'Open the app', baslik:'Pricing', aylik:'Monthly', yillik:'Yearly',
@@ -374,6 +380,13 @@ function metinleriYaz(){
   });
   document.querySelectorAll('[data-dil]').forEach(b=>
     b.setAttribute('aria-pressed', String(b.dataset.dil === dil)));
+  // Kılavuzun iki ayrı sayfası var (arama motorları için ayrı adres).
+  const kil = document.getElementById('navKilavuz');
+  if(kil) kil.setAttribute('href', dil === 'tr' ? 'kilavuz.html' : 'guide.html');
+  // Bu sayfanın kendi bağlantısı da dili taşısın: dilsiz bırakılırsa
+  // ona basan kişi tarayıcı diline geri düşüyor.
+  document.querySelectorAll('.ust-nav a[href^="fiyatlar.html"]').forEach(a=>
+    a.setAttribute('href', 'fiyatlar.html?lang=' + dil));
   document.title = 'Shootboard — ' + m.baslik;
 }
 
