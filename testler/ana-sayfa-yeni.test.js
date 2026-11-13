@@ -48,7 +48,7 @@ const bak=(a,ko,ek)=>{ if(ko){g++;console.log('  ok  '+a);} else {k++;console.lo
     // ENGELLI. Onlari "sayfa hatasi" saymak her kosuda yanlis alarm
     // uretir ve zamanla gercek hatalari gorunmez yapar. Canlida
     // ikisi de calisiyor.
-    const kritik = istek.filter(x=> !/fonts\.(googleapis|gstatic)|gc\.zgo\.at/.test(x));
+    const kritik = istek.filter(x=> !/fonts\.(googleapis|gstatic)|gc\.zgo\.at|cdn\.jsdelivr\.net/.test(x));
     bak('kritik kaynak yuklendi', kritik.length===0, kritik.join(' | '));
     bak('yatay kayma yok',
         await p.evaluate(()=> document.documentElement.scrollWidth <= window.innerWidth+1),

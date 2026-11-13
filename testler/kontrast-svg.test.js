@@ -1,3 +1,11 @@
+// ⚠ 13 KASIM 2026: BU TEST ARTIK index-eski.html'e BAKIYOR.
+// Ana sayfa yeni tasarima gecti (kullanici onayi) ve olculen
+// ogeler (.ozellik-gorsel, .pano, animasyonlu zaman cizgisi)
+// yeni sayfada YOK; yerlerine gercek cihaz ekran goruntuleri ve
+// fotograf geldi. Eski sayfa geri donus icin duruyor ve bu test
+// onu olcmeye DEVAM ediyor.
+// ⛔ TEST SILINMEDI, ZAYIFLATILMADI -- yalnizca hedefi degisti.
+// Eski sayfa tamamen kaldirilirsa bu dosya da kaldirilmali.
 const { chromium } = require('./araclar');
 const KOK = 'http://127.0.0.1:8098/';
 
@@ -52,7 +60,7 @@ const OLC = `(() => {
     await p.route('**/fonts.googleapis.com/**', r => r.fulfill({status:200,contentType:'text/css',body:''}));
     await p.route('**/supabase-js**', r => r.abort());
     if(dil) await p.addInitScript(`try{localStorage.setItem('demo_ui_language','${dil}');}catch(e){}`);
-    await p.goto(KOK, { waitUntil:'domcontentloaded' });
+    await p.goto(KOK + 'index-eski.html', { waitUntil:'domcontentloaded' });
     await p.waitForTimeout(500);
     const z = await p.evaluate(OLC);
     console.log('\n== ' + ad + ' == zayif SVG metni: ' + z.length);

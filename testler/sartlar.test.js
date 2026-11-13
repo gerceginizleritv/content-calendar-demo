@@ -92,7 +92,12 @@ const bak = (ad, ko, ek)=>{ if(ko){ g++; console.log('  ok  '+ad); } else { k++;
     if (yol.endsWith('app.html')) { await p.evaluate(() => openAuth()); await p.waitForSelector('#authOverlay.open'); }
     console.log('[kabul cumlesi · ' + ad + ']');
     const c = await p.evaluate((k) => {
-      const el = document.querySelector(k + ' [data-i18n-html="signup_legal"]');
+      // ⚠ 13 Kasim 2026: ana sayfa yeni tasarima gecerken ceviri
+      // oznitelikleri data-i18n* -> data-m* olarak yeniden adlandirildi.
+      // Uygulama (app.html) hala data-i18n-html kullaniyor. Olculen sey
+      // ayni kaldi: cumle kayit panelinin ICINDE mi, iki baglanti var mi.
+      const el = document.querySelector(k + ' [data-i18n-html="signup_legal"]')
+              || document.querySelector(k + ' [data-m-html="signup_legal"]');
       if (!el) return null;
       return { yazi: el.innerText, baglar: [...el.querySelectorAll('a')].map(a => a.getAttribute('href')) };
     }, kutu);

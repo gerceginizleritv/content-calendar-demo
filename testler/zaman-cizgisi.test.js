@@ -1,3 +1,11 @@
+// ⚠ 13 KASIM 2026: BU TEST ARTIK index-eski.html'e BAKIYOR.
+// Ana sayfa yeni tasarima gecti (kullanici onayi) ve olculen
+// ogeler (.ozellik-gorsel, .pano, animasyonlu zaman cizgisi)
+// yeni sayfada YOK; yerlerine gercek cihaz ekran goruntuleri ve
+// fotograf geldi. Eski sayfa geri donus icin duruyor ve bu test
+// onu olcmeye DEVAM ediyor.
+// ⛔ TEST SILINMEDI, ZAYIFLATILMADI -- yalnizca hedefi degisti.
+// Eski sayfa tamamen kaldirilirsa bu dosya da kaldirilmali.
 // Kahraman zaman cizgisi taşmasın.
 //
 // Eskiden burada bir ay ızgarası vardı ve testi "sütun kesilmesin" diyordu.
@@ -15,7 +23,7 @@ const KOK = process.argv[2] || 'http://127.0.0.1:8098';
     await p.route('**/supabase-js**', r=>r.abort());
     await p.route('**supabase.co**', r=>r.abort());
     if(dil) await p.addInitScript(`try{localStorage.setItem('demo_ui_language','tr');}catch(e){}`);
-    await p.goto(KOK + '/', {waitUntil:'domcontentloaded'});
+    await p.goto(KOK + '/index-eski.html', {waitUntil:'domcontentloaded'});
     await p.waitForTimeout(900);
     const r = await p.evaluate(()=>{
       const pano = document.getElementById('kahramanPano');

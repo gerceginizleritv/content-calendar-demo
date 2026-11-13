@@ -15,16 +15,22 @@ let g=0,k=0; const ok=(a,c,e)=>{ if(c){g++;console.log('  ok  ',a);} else {k++;c
 
 const SAYFALAR = [
   ['uygulama (app.html)', 'http://127.0.0.1:8098/app.html', '#langSelect'],
-  ['karsilama (/)',       'http://127.0.0.1:8098/',          '#dilDug']
+  // ⚠ 13 Kasim 2026: ana sayfa yeni tasarima gecti. Eski sayfadaki
+  // #dilDug yerine, SECILI dil dugmesi okunuyor -- metni yine
+  // 'TR'/'EN'. Olculen sey ayni: varsayilan dil tarayiciya gore mi.
+  ['karsilama (/)',       'http://127.0.0.1:8098/',          '[data-dil][aria-pressed="true"]']
 ];
 const BEKLENEN = { 'tr-TR':'tr', 'en-US':'en', 'de-DE':'en' };   // de: tanimadigimiz dil → en
 
 (async()=>{
   const b = await chromium.launch({ });
 
+  // ⚠ 13 Kasim 2026: burada `sec` parametresi KULLANILMIYORDU; secici
+  // tabloda degistirilmisti ama okuyucu hala '#dilDug' ariyordu ve yeni
+  // ana sayfada o dugme yok -> TimeoutError. Olculen sey degismedi.
   const dilOku = async (p, sec)=> sec === '#langSelect'
     ? await p.inputValue('#langSelect')
-    : (await p.textContent('#dilDug')).trim().toLowerCase();
+    : (await p.textContent(sec)).trim().toLowerCase();
 
   const sayfaAc = async (locale, url, onceki)=>{
     const c = await b.newContext({ locale });                  // TEMIZ profil
