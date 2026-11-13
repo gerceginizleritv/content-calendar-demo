@@ -13,6 +13,9 @@
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Archivo:wght@500;600;700;800;900&family=IBM+Plex+Mono:wght@400;500;600&family=IBM+Plex+Sans:wght@400;500;600&display=swap">
+<!-- Ortak marka paleti. Renk ve dugme kurallari TEK yerde duruyor;
+     bes sayfa da bunu kullaniyor. -->
+<link rel="stylesheet" href="marka.css">
 
 <style>
 /* ══════════════════════════════════════════════════════════════════
@@ -137,7 +140,10 @@ img{max-width:100%;height:auto;display:block;}
   transition:transform .14s ease, box-shadow .14s ease, background .14s;
 }
 .dug:hover{transform:translateY(-2px);}
-.dug-birincil{background:var(--sinyal);color:#fff;box-shadow:0 6px 0 var(--sinyal-koyu);}
+/* ⛔ YAZI KOYU, BEYAZ DEGIL. Beyaz yazi bu turuncuda 3.12 ediyordu
+   ve govde yazisi esigi 4.5. Turuncuyu karartmak rengin nesesini
+   alirdi; yazi koyulastirildi: #17122A ile 5.82. Olculdu. */
+.dug-birincil{background:var(--sinyal);color:var(--gece);box-shadow:0 6px 0 var(--sinyal-koyu);}
 .dug-birincil:hover{box-shadow:0 8px 0 var(--sinyal-koyu);}
 .dug-birincil:active{transform:translateY(3px);box-shadow:0 3px 0 var(--sinyal-koyu);}
 .dug-hayalet{background:transparent;border-color:currentColor;}
@@ -238,7 +244,8 @@ img{max-width:100%;height:auto;display:block;}
 .blok-lime{background:var(--jel-lime);}
 .blok-cam{background:var(--jel-cam);}
 .blok-amber{background:var(--jel-amber);}
-.blok-magenta{background:var(--jel-magenta);color:var(--kagit);}
+/* ⛔ KOYU yazi. Krem yazi bu magentada 3.22 ediyordu; koyu ile 5.38. */
+.blok-magenta{background:var(--jel-magenta);color:var(--gece);}
 .blok-gece{background:var(--gece);color:var(--kagit);}
 .blok-kagit{background:var(--kagit);}
 .blok .onbas{

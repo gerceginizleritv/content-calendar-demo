@@ -7,18 +7,25 @@
 <meta name="description" content="Shootboard planları: ücretsiz Starter ve Creator Pro. Fiyatlar USD ve TRY olarak ayrı ayrı yazılı.">
 <link rel="icon" href="favicon.svg" type="image/svg+xml">
 <link rel="icon" href="favicon.ico" sizes="any">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Archivo:wght@600;700;800;900&family=IBM+Plex+Mono:wght@400;500;600&family=IBM+Plex+Sans:wght@400;500;600&display=swap">
+<!-- Ortak marka paleti: renk, dugme ve kontrast kurallari TEK yerde. -->
+<link rel="stylesheet" href="marka.css">
 <style>
-:root{
-  --bg:#F1EDE3; --surface:#FBF9F3; --surface-2:#E7E2D5; --line:#D7D1C2;
-  --text:#15130F; --text-dim:#585349; --accent:#C4350A; --on-accent:#fff;
-}
-@media (prefers-color-scheme: dark){
-  :root{
-    --bg:#15130F; --surface:#1E1B16; --surface-2:#272219; --line:#37312A;
-    --text:#F0EBE0; --text-dim:#ABA496; --accent:#FF7A45; --on-accent:#15130F;
-  }
-}
+/* ⛔ KENDI RENK TANIMLARI KALDIRILDI -- marka.css'ten geliyor.
+   Ayni degiskenleri bes sayfada ayri ayri tutmak, rengi
+   degistirirken birini unutmak demekti; 13 Kasim 2026'da oyle oldu.
+   Degisken ADLARI aynen duruyor (--bg, --accent, --text ...), bu
+   sayfanin geri kalanina hic dokunulmadi.
+
+   ⚠ KOYU TEMA BU SAYFADAN KALKTI ve bu bilerek. Yeni marka tek
+   gorsel dunyaya baglandi: renk bloklari sayfanin YAPISI, dekoru
+   degil. Ikinci bir tema, bloklarin anlamini bozuyordu. Zemin
+   acikca veriliyor, yani sayfa hangi zemine dusse kendi zeminini
+   tasiyor. */
 *{box-sizing:border-box;}
+h1,h2,h3{font-family:'Archivo',Impact,sans-serif;letter-spacing:-.02em;text-wrap:balance;}
 body{
   margin:0; background:var(--bg); color:var(--text);
   font-family:'IBM Plex Sans','Segoe UI',system-ui,-apple-system,sans-serif;

@@ -109,6 +109,71 @@ const bak=(a,ko,ek)=>{ if(ko){g++;console.log('  ok  '+a);} else {k++;console.lo
       return d;
     });
     bak('ust cubuktan tasan oge yok', cubuk.length===0, JSON.stringify(cubuk.slice(0,3)));
+    // ⛔ KONTRAST. 13 Kasim 2026'da IKI hata buradaydi ve hicbir
+    // olcum gormuyordu: turuncu dugmede beyaz yazi 3.12, magenta
+    // blokta krem yazi 3.22 -- ikisi de govde esigi 4.5'in altinda.
+    // Goz "renkli ve neseli" diyor, sayi "okunmuyor" diyor. Sayi
+    // haklidir; bu yuzden olculuyor.
+    // Esik: govde 4.5; buyuk yazi (24px+ ya da 18.66px kalin) 3.0.
+    const kontrast = await p.evaluate(()=>{
+      const ol = c=>{ const m = c.match(/\d+(\.\d+)?/g); return m ? m.slice(0,3).map(Number) : null; };
+      const L = rgb=>{ const f = v=>{ v/=255; return v<=0.03928 ? v/12.92 : Math.pow((v+0.055)/1.055,2.4); };
+        return 0.2126*f(rgb[0]) + 0.7152*f(rgb[1]) + 0.0722*f(rgb[2]); };
+      const K = (a,b)=>{ const l1=L(a), l2=L(b), [h,d]=l1>l2?[l1,l2]:[l2,l1]; return (h+0.05)/(d+0.05); };
+      // Yazinin ARKASINDAKI GERCEK zemin.
+      // ⚠ YARI SAYDAM ZEMIN DUZ RENK DEGILDIR. Ilk yazimda rgba(...,.07)
+      // olan bir zemin duz renk sanildi ve oran 1.00 cikti -- yazi ile
+      // zemin ayni renk gorundu, oysa ekranda %7'lik bir tul vardi.
+      // Katmanlar alttan uste dogru HARMANLANIYOR.
+      const kat = c=>{
+        const m = c.match(/[\d.]+/g);
+        if(!m) return null;
+        const a = m.length > 3 ? parseFloat(m[3]) : 1;
+        return { rgb: m.slice(0,3).map(Number), a };
+      };
+      const zemin = el=>{
+        const yigin = [];
+        for(let e = el; e && e !== document.documentElement; e = e.parentElement){
+          const k = kat(getComputedStyle(e).backgroundColor);
+          if(!k || k.a === 0) continue;
+          yigin.push(k);
+          if(k.a === 1) break;            // buradan asagisi gorunmuyor
+        }
+        // En alttan baslayip yukari dogru harmanla
+        let alt = yigin.length && yigin[yigin.length-1].a === 1
+          ? yigin.pop().rgb : [255,255,255];
+        for(let i = yigin.length-1; i >= 0; i--){
+          const k = yigin[i];
+          alt = alt.map((v, j)=> Math.round(k.rgb[j]*k.a + v*(1-k.a)));
+        }
+        return alt;
+      };
+      const kotu = [];
+      document.querySelectorAll('h1,h2,h3,p,a,span,b,small,div').forEach(el=>{
+        // Yalnizca KENDI dogrudan yazisi olan ogeler
+        const yazi = [...el.childNodes].filter(n=> n.nodeType===3 && n.textContent.trim().length>2);
+        if(!yazi.length) return;
+        const r = el.getBoundingClientRect();
+        if(r.width < 2 || r.height < 2) return;
+        const st = getComputedStyle(el);
+        if(st.visibility === 'hidden' || st.opacity === '0') return;
+        const yk = kat(st.color), z = zemin(el);
+        if(!yk) return;
+        // ⚠ YAZI DA YARI SAYDAM OLABILIR -- bkz. sayfa-saglik.test.js.
+        const y = yk.rgb.map((v,i)=> Math.round(v*yk.a + z[i]*(1-yk.a)));
+        const px = parseFloat(st.fontSize), kalin = parseInt(st.fontWeight,10) >= 700;
+        const buyuk = px >= 24 || (px >= 18.66 && kalin);
+        const esik = buyuk ? 3.0 : 4.5;
+        const k = K(y, z);
+        if(k < esik) kotu.push({ yazi: yazi[0].textContent.trim().slice(0,26),
+                                 renk: st.color, zemin: 'rgb('+z.join(',')+')',
+                                 px: Math.round(px), oran: +k.toFixed(2), esik });
+      });
+      return kotu;
+    });
+    bak('tum yazilar kontrast esigini geciyor', kontrast.length===0,
+        JSON.stringify(kontrast.slice(0,4)));
+
     // Dil degistir
     await p.click('[data-dil="en"]'); await p.waitForTimeout(400);
     const en = await p.evaluate(()=>({ lang:document.documentElement.lang,

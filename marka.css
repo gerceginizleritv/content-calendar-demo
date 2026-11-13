@@ -1,0 +1,189 @@
+/* ══════════════════════════════════════════════════════════════════
+   SHOOTBOARD — ORTAK MARKA PALETİ
+   13 Kasım 2026
+   ──────────────────────────────────────────────────────────────────
+   NEDEN TEK DOSYA
+   Beş sayfanın (index, fiyatlar, kilavuz, guide, sartlar, privacy)
+   her biri kendi gömülü CSS'ini ve kendi renk değişkenlerini
+   taşıyordu. Rengi değiştirmek beş ayrı yerde aynı işi yapmak
+   demekti ve biri mutlaka unutuluyordu. Artık tek kaynak burası.
+
+   IŞIK JELLERİ
+   Renkler sette lambaya takılan jel filtrelerinden geliyor: CTO
+   turuncusu, CTB mavisi, magenta, lime. Gerekçesi MARKA.md:
+   "Dünyası set ekipmanı ve saha çekimi; kurumsal SaaS değil."
+   Sinyal turuncusu markanın eski #C4350A'sından türedi -- marka soyu
+   kopmasın diye değiştirilmedi, açıldı.
+
+   ⛔ KONTRAST SAYILARI ÖLÇÜLDÜ, TAHMİN EDİLMEDİ.
+   Aşağıdaki her oran WCAG göreli parlaklık formülüyle hesaplandı.
+   Gövde yazısı için eşik 4.5, büyük yazı (24px+ ya da 18.66px kalın)
+   için 3.0.
+
+   ⚠ İKİ HATA BURADA YAKALANDI (13 Kasım 2026):
+   · Turuncu düğmede BEYAZ yazı 3.12 idi -- eşiğin altında. Turuncuyu
+     karartmak yerine yazı KOYULAŞTIRILDI: #17122A ile 5.82. Rengin
+     neşesi kaybolmadı.
+   · Magenta blokta KREM yazı 3.22 idi. Aynı çözüm: koyu yazı, 5.38.
+   Beyaz yazı yalnızca KOYU zeminlerde kullanılıyor.
+   ══════════════════════════════════════════════════════════════════ */
+
+:root{
+  /* ── Zeminler ────────────────────────────────────────────────── */
+  --gece:#17122A;          /* mürekkep -- lacivert değil patlıcan */
+  --gece-2:#241C3F;
+  --kagit:#FFF9F0;
+  --yuzey:#FFFDF8;
+  --duman:#F3EADB;
+  --cizgi:#E6DCCB;
+  --cizgi-acik:rgba(255,255,255,.18);
+
+  /* ── Yazı ────────────────────────────────────────────────────── */
+  --metin:#17122A;         /* kâğıtta 17.35 */
+  --metin-soluk:#5B5468;   /* kâğıtta  6.89 */
+  --metin-ters:#FFF9F0;    /* gecede  17.35 */
+  --metin-ters-soluk:rgba(255,249,240,.72);  /* gecede 9.2 */
+
+  /* ── Sinyal (marka turuncusu) ────────────────────────────────── */
+  /* ⚠ İKİ AYRI TON, İKİ AYRI İŞ. Karıştırılırsa yazı okunmaz olur. */
+  --sinyal:#FF5A1F;        /* DOLGU: düğme/blok zemini. Üstüne KOYU yazı (5.82) */
+  --sinyal-koyu:#D93F0C;   /* düğme gölgesi ve basılı hâli */
+  /* ⚠ UC ZEMINDE DE GECMELI. #C23F08 kâğıtta 5.00 ile geçiyordu ama
+     --surface-2 (duman #F3EADB) üstünde 4.39'a düşüyor ve kılavuz
+     sayfalarında eşiğin altında kaldı. #B83A06 üçünde de geçiyor:
+     kâğıt 5.50 · duman 4.83 · yüzey 5.67. Ölçüldü. */
+  --sinyal-metin:#B83A06;
+  --sinyal-acik:#FF7A45;   /* KOYU zeminde yazı/bağlantı (gecede 5.9) */
+  --sinyal-soft:#FFE9DF;
+
+  /* ── Jeller ──────────────────────────────────────────────────── */
+  /* Hepsinin üstüne KOYU yazı gelir; ölçülen oranlar yanlarında. */
+  --jel-mor:#6B3CF0;       /* üstüne KREM yazı: 5.68 */
+  --jel-magenta:#FF3D7F;   /* üstüne KOYU yazı: 5.38 */
+  --jel-lime:#C8F24B;      /* üstüne KOYU yazı: 14.06 */
+  --jel-cam:#28CEE8;       /* üstüne KOYU yazı:  9.59 */
+  --jel-amber:#FFBE3D;     /* üstüne KOYU yazı: 10.97 */
+
+  /* ── Durum renkleri (vurgu renginden AYRI) ───────────────────── */
+  --iyi:#1E6B4A;
+  --uyari:#8A5A06;
+  --hata:#B3261E;
+
+  /* ── Ölçüler ─────────────────────────────────────────────────── */
+  --yuvarlak:18px;
+  --olcu:1180px;
+  --golge:0 2px 6px rgba(23,18,42,.08), 0 24px 60px -28px rgba(23,18,42,.4);
+  --golge-guclu:0 4px 10px rgba(23,18,42,.12), 0 48px 90px -36px rgba(23,18,42,.55);
+}
+
+/* ⚠ ESKI AD -> YENI AD köprüsü.
+   fiyatlar.html, sartlar.html, privacy.html, kilavuz.html kendi
+   adlarını (--bg, --surface, --text, --accent ...) onlarca yerde
+   kullanıyor. Hepsini tek tek yeniden adlandırmak, tek bir yerin
+   atlanması hâlinde sessizce eski rengi bırakırdı. Köprü, o riski
+   ortadan kaldırıyor: sayfalar kendi adlarını kullanmaya devam
+   ediyor, değerler buradan geliyor.
+   ⛔ --accent BAĞLANTI RENGİ olarak kullanılıyor, dolgu olarak değil:
+   bu yüzden --sinyal'e değil --sinyal-metin'e bağlandı. Dolguya
+   bağlansaydı açık zeminde 2.98 ile okunmaz olurdu. */
+:root{
+  --bg:var(--kagit);
+  --surface:var(--yuzey);
+  --surface-2:var(--duman);
+  --line:var(--cizgi);
+  --text:var(--metin);
+  --text-dim:var(--metin-soluk);
+  --accent:var(--sinyal-metin);
+  --accent-dolgu:var(--sinyal);
+  /* ⛔ KREM, GECE DEGIL. --accent koyu turuncu (#C23F08) ve bazi
+     sayfalar onu DOLGU olarak da kullaniyor (secili dugme zemini).
+     Gece'ye baglayinca koyu uzerine koyu geldi: 3.47, esik 4.5.
+     Krem ile 5.00. Olculdu. */
+  --on-accent:var(--kagit);
+  /* kilavuz/guide bu uc adi kullaniyor */
+  --accent-soft:var(--sinyal-soft);
+  --amber:var(--uyari);
+  --green:var(--iyi);
+}
+
+/* ── Yazı tipleri ───────────────────────────────────────────────── */
+/* Archivo başlıklarda (vurucu), IBM Plex Sans gövdede, IBM Plex Mono
+   veri ve etiketlerde. MARKA.md'den. */
+.m-baslik{font-family:'Archivo',Impact,sans-serif;font-weight:800;letter-spacing:-.02em;}
+.m-mono{font-family:'IBM Plex Mono',monospace;}
+
+/* ── Klaket şeridi: markanın imzası ─────────────────────────────── */
+.klaket{
+  height:14px;width:100%;
+  background:repeating-linear-gradient(115deg,
+    var(--gece) 0 18px, var(--kagit) 18px 36px);
+}
+.klaket.ince{height:9px;}
+
+/* ── Düğme ──────────────────────────────────────────────────────── */
+/* ⛔ Birincil düğmede yazı KOYU, beyaz değil. Sebep yukarıda. */
+.dug{
+  display:inline-flex;align-items:center;justify-content:center;gap:9px;
+  min-height:52px;padding:14px 26px;border-radius:12px;
+  font-family:'IBM Plex Sans',sans-serif;font-size:16px;font-weight:600;
+  white-space:nowrap;text-decoration:none;border:2px solid transparent;
+  cursor:pointer;
+  transition:transform .14s ease, box-shadow .14s ease, background .14s;
+}
+.dug:hover{transform:translateY(-2px);}
+.dug-birincil{background:var(--sinyal);color:var(--gece);box-shadow:0 6px 0 var(--sinyal-koyu);}
+.dug-birincil:hover{box-shadow:0 8px 0 var(--sinyal-koyu);}
+.dug-birincil:active{transform:translateY(3px);box-shadow:0 3px 0 var(--sinyal-koyu);}
+.dug-hayalet{background:transparent;border-color:currentColor;}
+.dug-hayalet:hover{background:rgba(255,255,255,.1);}
+.dug-koyu{background:var(--gece);color:var(--kagit);box-shadow:0 6px 0 rgba(0,0,0,.32);}
+.dug-koyu:active{transform:translateY(3px);box-shadow:0 3px 0 rgba(0,0,0,.32);}
+.dug-sm{min-height:42px;padding:10px 18px;font-size:14.5px;border-radius:10px;}
+@media (prefers-reduced-motion:reduce){ .dug:hover,.dug:active{transform:none;} }
+
+/* ── Marka kilidi ───────────────────────────────────────────────── */
+.marka{display:inline-flex;align-items:center;gap:10px;text-decoration:none;
+  font-family:'Archivo',sans-serif;font-weight:800;font-size:19px;letter-spacing:-.4px;}
+.marka-ikon{
+  width:30px;height:30px;border-radius:7px;flex:none;
+  background:linear-gradient(135deg,var(--sinyal),var(--jel-magenta));
+  display:grid;place-items:center;box-shadow:0 0 0 1px rgba(255,255,255,.16);
+}
+.marka-ikon span{
+  display:block;width:17px;height:11px;border-radius:2px;background:var(--kagit);
+  box-shadow:0 -6px 0 -1px var(--kagit);
+}
+
+/* ⚠ GÖRSEL EMNİYET KURALI -- boş bir süslü değil.
+   <img> etiketindeki height özniteliği (örn. height="2532") CSS
+   yükseklik verilmediğinde KULLANILIYOR: max-width genişliği kısıyor
+   ama yükseklik öznitelikten geliyor ve görsel dikey geriliyor.
+   13 Kasım 2026'da tam bu oldu: telefon görseli 230x2532 çizildi,
+   kullanıcı "görsel dağılmış" diye bildirdi. */
+img{max-width:100%;height:auto;display:block;}
+
+:focus-visible{outline:3px solid var(--sinyal);outline-offset:3px;border-radius:4px;}
+
+/* ── Dokunma hedefleri (13 Kasım 2026) ──────────────────────────
+   Telefonda marka kilidi, dil anahtarı ve "uygulamayı aç" düğmeleri
+   23-32px arasındaydı; parmakla basılan şeyler için bu az. Cümle
+   içindeki bağlantılar bunun DIŞINDA: onların yüksekliği satır
+   yüksekliğidir ve erişilebilirlik kuralı da onları muaf tutuyor. */
+/* ⚠ SECICI ONCELIGI BILEREK YUKSEK (a.marka, a.brand).
+   marka.css sayfalarin kendi <style>'indan ONCE yukleniyor -- bu
+   kasitli, sayfa gerektiginde uzerine yazabilsin diye. Ama o yuzden
+   sade `.marka` kurali sayfanin kendi `.marka` kuralina yeniliyordu
+   ve yukseklik 32px'te kaliyordu. Etiket adi eklenince (a.marka)
+   oncelik artiyor ve kural tutuyor. */
+@media (max-width:700px){
+  /* Bazi sayfalarda marka kilidi <a class="marka">, bazilarinda
+     <span class="marka"><a>...</a></span>. Ikisi de yakalanmali. */
+  a.marka, a.brand, header a.brand, header a.marka,
+  .marka > a, .brand > a,
+  .ust-sag a, .ust-sag button,
+  .ust-ic > a, .ust-ic > button{
+    min-height:44px;
+    display:inline-flex;
+    align-items:center;
+  }
+}
