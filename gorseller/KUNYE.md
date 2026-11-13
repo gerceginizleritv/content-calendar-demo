@@ -63,3 +63,68 @@ bilgi yoğun bölge seçildi, sonra `webp`'e çevrildi.
 koyu bir geçiş katmanı var ama fotoğraf değiştirilirse başlığın hâlâ
 okunduğuna BAKILMALI — renk kontrastı testi yazıyı fotoğrafa karşı
 ölçmüyor, yalnızca düz zeminlere karşı ölçüyor.
+
+---
+
+## Kahraman görseli — ÜRETİLMİŞTİR (13 Kasım 2026)
+
+`kahraman-tr.webp` · `kahraman-en.webp` — 2400×1343, ~124 KB
+
+⛔ **Bu bir fotoğraf değildir, gerçek bir kişi değildir.** Higgsfield
+üzerinden GPT Image 2.6 ile üretildi. Sayfada bu kişiye isim, alıntı
+ya da "kullanıcımız" denmiyor ve denmeyecek.
+
+⚠ **Sitede bu görselin üretilmiş olduğu YAZMIYOR.** Bunu bilerek
+böyle bıraktım; yazılması gerekip gerekmediği kullanıcının kararı.
+
+**Telefonun ekranındaki görüntü ÜRETİLMEDİ.** Yapay zekâya ekran boş
+olarak ürettirildi (düz gri dikdörtgen), uygulamanın **gerçek** ekran
+görüntüsü sonradan perspektifiyle yerleştirildi. Sebebi: yapay zekâya
+"ekranda Shootboard görünsün" denseydi sahte bir arayüz çizerdi —
+olmayan bir ürünü göstermek olurdu.
+
+**Üretim istemi (özet):** sonbahar sokağında duran içerik üreticisi,
+bir elinde avuç içi gimbal kamera, diğerinde ekranı BOŞ telefon,
+arkasında turuncu/mor/yeşil/camgöbeği boyalı duvar, 16:9. Yasaklananlar:
+omuz rigi, sinema kamerası, çekim ekibi, stüdyo ışığı, marka logosu,
+ekranda yazı/arayüz.
+
+**Eleme ölçütleri** (dört kare üretildi, biri seçildi): eller doğru mu,
+telefon ekranı düz ve boş mu, kamera avuç içi kalmış mı, yüz "yapay
+zekâ yüzü" olmuş mu.
+
+**Montaj:** ekranın dört köşesi ölçülerek bulundu (göz kararıyla değil:
+parlak gri bölge tespit edilip köşeleri çıkarıldı), ekran görüntüsü
+hedef dörtgenin oranına kırpıldı (ezilmesin diye), ImageMagick
+`-distort Perspective` ile yerleştirildi, sonra sahneye uyduruldu
+(0,4 bulanıklık · %4 karartma).
+
+---
+
+## Uygulama ekran görüntüleri — TARİF
+
+`uygulama-tablet-tr/en.webp` · `uygulama-telefon-tr/en.webp`
+
+⚠ **13 Kasım 2026'dan önce bu görüntülerin nasıl alındığı hiçbir yerde
+yazmıyordu.** Yenisini almak gerektiğinde tarif yoktu. Artık burada:
+
+1. Yerel sunucu: depo kökünde `python3 -m http.server 8098`
+2. Playwright ile `app.html` açılır. Ölçüler:
+   - tablet : 1024×768, deviceScaleFactor 2 → 2048×1536
+   - telefon: 440×950, deviceScaleFactor 3 → 1320×2850
+3. `localStorage.demo_ui_language` açılıştan ÖNCE `tr` ya da `en`
+   yazılır (`addInitScript`).
+4. Tur ekranı `#tourSkip` ile atlanır, sonra birkaç kez `Escape`
+   (açılan pencereler kapansın).
+5. `#tabCalendar`'a basılır, `#ornekSeritX` ile örnek şeridi kapatılır.
+6. Ekran görüntüsü alınır, `-quality 82` ile webp'e çevrilir.
+
+⚠ **TELEFON GENİŞLİĞİ 440 PİKSELDEN AZ OLMASIN.** 390'da üst
+çubuktaki "Shootboard" yazısı "Shoot..." diye kırpılıyor; Türkçe
+arayüzde "Giriş yap" düğmesi daha geniş olduğu için 420 de yetmiyor.
+Kullanıcı bunu canlı görselde fark etti. Ölçülen eşikler: İngilizce
+420, Türkçe 440.
+
+⚠ **DÖRT GÖRSEL DE DİLİ İZLİYOR.** `index.html` içindeki `dilUygula`
+üçünün de kaynağını değiştiriyor (kahraman, tablet, telefon).
+İngilizce siteye giren kişi Türkçe uygulama görmemeli.

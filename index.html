@@ -186,7 +186,12 @@ img{max-width:100%;height:auto;display:block;}
     radial-gradient(700px 480px at 4% 108%, rgba(255,61,127,.34), transparent 60%),
     var(--gece);
   color:var(--kagit);
-  padding:clamp(48px,8vw,92px) 0 0;
+  /* ⚠ ÜST BOŞLUK YOK. Fotoğraf üst çubuğun hemen altından başlasın:
+     burada clamp(48px,8vw,92px) duruyordu ve menü ile fotoğraf
+     arasında koyu bir şerit bırakıyordu. Kullanıcı bildirdi.
+     ⚠ `padding-top:0` yazmak YETMİYOR: bu kısayol ondan SONRA
+     geldiği için onu eziyordu -- tam olarak bu oldu. */
+  padding:0;
   overflow:hidden;
 }
 .kahraman-ic{display:grid;gap:clamp(28px,5vw,48px);align-items:center;}
@@ -224,6 +229,84 @@ img{max-width:100%;height:auto;display:block;}
 @media (prefers-reduced-motion:reduce){ .cihaz-telefon,.cihaz-tablet{transform:none;} }
 .cihaz-telefon img{width:100%;height:auto;display:block;}
 .kahraman-dip{height:clamp(40px,7vw,78px);}
+
+/* ── KAHRAMAN FOTOĞRAFI ─────────────────────────────────────────
+   Kullanıcı: "yatay büyük bir görsel üretip yazıları da o fotoğrafın
+   üzerinde ekranı kapatmayacak şekilde kullansak".
+
+   İKİ AYRI DÜZEN var ve sebebi ölçüme dayanıyor:
+
+   • GENİŞ EKRAN (≥960px): fotoğraf bölümü kaplıyor, yazı solundaki
+     TURUNCU alanın üzerinde duruyor. Fotoğraf sağ üçte birde
+     duran kişiyi ve telefonu gösteriyor; yazı oraya girmiyor.
+     ⚠ Yazı KOYU MÜREKKEP. Beyaz yazı bu turuncunun üzerinde 3,1
+     veriyor (gereken 4,5) -- bu projede bir kez ölçülüp öğrenildi.
+     Koyu mürekkep 5,8 veriyor. Düğmeler de aynı sebeple koyu.
+
+   • DAR EKRAN (<960px): 16:9 bir fotoğrafın üzerine yazı sığmıyor
+     (390px genişlikte fotoğraf 219px yüksek). Fotoğraf yazının
+     ÜSTÜNE, kendi bloğu olarak geçiyor; 4:3'e kırpılıyor ve
+     odak sağda kalıyor ki kişi ve telefon kadrajda kalsın. */
+.kahraman-ust{position:relative;}
+.kahraman-foto{
+  display:block;width:100%;height:auto;
+  aspect-ratio:4/3;object-fit:cover;object-position:78% 50%;
+}
+.kahraman-ust .sar{padding-top:clamp(34px,6vw,54px);}
+
+@media(min-width:960px){
+  .kahraman-ust{display:flex;align-items:center;min-height:clamp(500px,44vw,640px);}
+  /* ⚠ YAZININ ZEMİNİ KESİN OLSUN DİYE. Fotoğrafın turuncusu
+     genişliğin %44'ünde bitiyor; yazı oraya taşınca mor sütunun
+     üzerine düşüyordu ve kontrast 2,26'ya iniyordu (ölçüldü).
+     Bu katman fotoğrafın KENDİ turuncusuyla aynı renk — solda
+     görünmez, sağda yumuşak kayboluyor. Böylece yazının altındaki
+     renk, ekran ne kadar kırpılırsa kırpılsın hep aynı. */
+  .kahraman-ust::before{
+    content:'';position:absolute;inset:0;pointer-events:none;z-index:1;
+    background:linear-gradient(to right,
+      rgb(249,116,26) 0 40%, rgba(249,116,26,0) 46%);
+  }
+  .kahraman-foto{
+    position:absolute;inset:0;width:100%;height:100%;
+    aspect-ratio:auto;object-position:center;
+    /* ⚠ z-index ŞART. ::before kutunun ilk çocuğu sayılıyor, fotoğraf
+       ise ondan sonra boyanıyor: sıra verilmezse turuncu katman
+       fotoğrafın ALTINDA kalıyor ve hiçbir işe yaramıyor. Bu tam
+       olarak başıma geldi -- katmanı ekledim, kontrast hiç
+       değişmedi. */
+    z-index:0;
+  }
+  /* ⚠ Yazı .sar'ın ortalanmış kutusuna bağlı kalsaydı geniş
+     ekranda sağa kayıp turuncunun dışına taşardı. Bu düzende
+     sola yaslı: sol boşluk + sütun genişliği toplamı en fazla
+     %38 -- turuncunun bittiği yerin (%41-44) ve telefonun
+     başladığı yerin (%55) ikisinin de solunda. */
+  .kahraman-ust .sar{position:relative;z-index:2;width:100%;max-width:none;
+    padding-top:0;padding-left:clamp(24px,6vw,96px);padding-right:24px;}
+  /* ⚠ Tek sütun. Eskiden burada iki sütun vardı (yazı + telefon
+     maketi); maket kalkınca kural kalsaydı başlık 1280px ekranda
+     267 piksellik bir şeride sıkışırdı -- ölçtüm, sıkışıyordu. */
+  .kahraman-ic{grid-template-columns:1fr;max-width:32vw;}
+  /* Sütun daraldı: başlık da ona göre. */
+  .kahraman-ust h1{font-size:clamp(34px,4.4vw,60px);}
+  /* Turuncunun üzerinde koyu mürekkep. */
+  .kahraman-ust h1,
+  .kahraman-ust .kahraman-alt,
+  .kahraman-ust .not,
+  .kahraman-ust .rozet{color:var(--gece);}
+  .kahraman-ust .rozet{border-color:rgba(23,18,42,.34);}
+  .kahraman-ust .rozet i{background:var(--gece);}
+  /* ⚠ Saydamlık kontrastı düşürüyor: .84 ölçümde 4,43'e indi. */
+  .kahraman-ust .kahraman-alt{color:rgba(23,18,42,.92);}
+  /* ⚠ .66 saydamlıkta oran 3,69 -- kalıyordu. En az .76 gerekiyor. */
+  .kahraman-ust .not{color:rgba(23,18,42,.90);}
+  /* ⚠ Turuncu düğme turuncu zeminde kaybolurdu: koyu düğme. */
+  .kahraman-ust .dug-birincil{background:var(--gece);color:var(--kagit);}
+  .kahraman-ust .dug-birincil:hover{background:#241C3E;}
+  .kahraman-ust .dug-hayalet{border-color:rgba(23,18,42,.46);color:var(--gece);}
+  .kahraman-ust .dug-hayalet:hover{background:rgba(23,18,42,.08);}
+}
 
 /* ══ PLATFORM ŞERİDİ ════════════════════════════════════════════ */
 /* ⛔ "Bize güvenen markalar" DEĞİL -- müşterimiz yok, olmayan şeyi
@@ -467,6 +550,30 @@ img{max-width:100%;height:auto;display:block;}
 .guc-2 .guc-dolgu{width:66%;background:var(--jel-amber);}
 .guc-3 .guc-dolgu{width:100%;background:var(--jel-lime);}
 .guc-yazi{font-size:12.5px;color:rgba(255,249,240,.66);margin-top:6px;}
+
+/* ── KISA EKRAN: birincil düğme kıvrımın üstünde kalsın ─────────
+   ⚠ iPhone SE (375×667) gibi KISA ekranlarda "Hesap oluştur"
+   düğmesi 722 pikselde kalıyordu, yani ekranın 55 piksel altında:
+   kişi kaydolmak için önce aşağı kaydırmak zorundaydı.
+   `giris-mobil.test.js` bunu yakaladı.
+
+   Burada HİÇBİR İÇERİK gizlenmiyor — yalnızca dikey boşluklar
+   sıkıştırılıyor. Uzun telefonlarda (844, 915) ritim aynı kalsın
+   diye kural yüksekliğe bağlı, genişliğe değil.
+
+   ⚠ Dokunma hedefleri korunuyor: alanlar 48px, "Göster" 44px —
+   ikisi de 40px eşiğinin üstünde. */
+@media (max-height:720px){
+  .giris-alt{margin-bottom:6px;font-size:13.5px;}
+  .google-dug{min-height:46px;}   /* 40px dokunma eşiğinin üstünde */
+  .ayirac{margin:10px 0;}
+  .alan{margin-bottom:8px;}
+  .alan-et{margin-top:2px;}
+  .guc{margin-top:6px;}
+  .giris input[type="text"],.giris input[type="email"],.giris input[type="password"]{
+    min-height:48px;padding:11px 14px;
+  }
+}
 /* ⚠ Renk TEK BAŞINA yeterli değil: yazı da hangi durumda olduğunu
    söylüyor (guc_1/2/3 metinleri). */
 .guc-1 .guc-yazi{color:#FFB3B3;}
@@ -524,6 +631,17 @@ img{max-width:100%;height:auto;display:block;}
 
 <!-- ══ KAHRAMAN ═══════════════════════════════════════════════ -->
 <section class="kahraman">
+ <div class="kahraman-ust">
+  <!-- ⚠ FOTOĞRAF ÜRETİLMİŞTİR, gerçek bir kişinin fotoğrafı DEĞİLDİR.
+       Telefonun ekranındaki görüntü ise GERÇEK: uygulamanın kendi
+       ekran görüntüsü perspektifiyle yerleştirildi. Ayrıntı ve
+       üretim tarifi: gorseller/KUNYE.md
+       Dil değişince kaynak da değişiyor (dilUygula) -- İngilizce
+       siteye giren kişi telefonda Türkçe uygulama görmesin diye. -->
+  <img class="kahraman-foto" id="kahramanGorsel"
+       src="gorseller/kahraman-tr.webp" width="2400" height="1343"
+       alt="Bir elinde cep kamerası, diğer elinde telefon tutan içerik üreticisi; telefonda Shootboard'un takvim ekranı açık."
+       loading="eager" fetchpriority="high">
   <div class="sar">
    <div class="kahraman-ic">
     <div>
@@ -536,18 +654,14 @@ img{max-width:100%;height:auto;display:block;}
     </div>
     <p class="not" data-m="hero_not">Hesap açmadan da çalışır — takvimin o tarayıcıda kalır. Giriş yaparsan aynı plan telefonuna da gelir.</p>
     </div>
-
-    <div class="kahraman-telefon">
-      <div class="cihaz cihaz-telefon">
-        <img src="gorseller/uygulama-telefon.webp" width="1170" height="2532"
-             alt="Shootboard'un telefon ekranında gün gün liste görünümü" loading="eager">
-      </div>
-    </div>
    </div>
+  </div>
+ </div>
 
+  <div class="sar">
     <div class="cihazlar">
       <div class="cihaz cihaz-tablet">
-        <img src="gorseller/uygulama-tablet.webp" width="2048" height="1536"
+        <img id="uygTablet" src="gorseller/uygulama-tablet-tr.webp" width="2048" height="1536"
              alt="Shootboard'un tablet ekranında aylık takvim görünümü" loading="eager">
       </div>
     </div>
@@ -699,7 +813,7 @@ img{max-width:100%;height:auto;display:block;}
     </div>
     <div class="kahraman-telefon">
       <div class="cihaz cihaz-telefon">
-        <img src="gorseller/uygulama-telefon.webp" width="1170" height="2532"
+        <img id="uygTelefon" src="gorseller/uygulama-telefon-tr.webp" width="1320" height="2850"
              alt="Shootboard telefonda: gün gün bekleyen paylaşımlar" loading="lazy">
       </div>
     </div>
@@ -1098,6 +1212,22 @@ function dilUygula(yeni, kalici){
      hafızası ayrı düşmüştü. */
   if(kalici !== false){
     try{ localStorage.setItem('demo_ui_language', dil); }catch(e){}
+  }
+  /* Telefondaki uygulama ekranı da dili izlesin: İngilizce siteye
+     giren kişi kızın elindeki telefonda Türkçe uygulama görmesin. */
+  /* ⚠ SAYFADAKİ BÜTÜN UYGULAMA EKRANLARI dili izliyor. Yalnızca
+     kahramanı çevirseydik İngilizce sayfada alttaki tablet Türkçe
+     kalırdı -- ki ilk denemede tam olarak öyle oldu. */
+  [['uygTablet','uygulama-tablet'],['uygTelefon','uygulama-telefon']].forEach(function(c){
+    var e = document.getElementById(c[0]);
+    if(e) e.setAttribute('src', 'gorseller/' + c[1] + '-' + dil + '.webp');
+  });
+  var kg = document.getElementById('kahramanGorsel');
+  if(kg){
+    kg.setAttribute('src', 'gorseller/kahraman-' + dil + '.webp');
+    kg.setAttribute('alt', dil === 'en'
+      ? "A content creator holding a pocket camera in one hand and a phone in the other; Shootboard's calendar is open on the phone."
+      : "Bir elinde cep kamerası, diğer elinde telefon tutan içerik üreticisi; telefonda Shootboard'un takvim ekranı açık.");
   }
   // Kılavuzun iki ayrı sayfası var (arama motorları için ayrı adres):
   // bağlantılar okunan dile gitsin.
