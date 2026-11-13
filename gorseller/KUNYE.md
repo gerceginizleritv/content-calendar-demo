@@ -98,11 +98,29 @@ ekranda yazı/arayüz.
 telefon ekranı düz ve boş mu, kamera avuç içi kalmış mı, yüz "yapay
 zekâ yüzü" olmuş mu.
 
-**Montaj:** ekranın dört köşesi ölçülerek bulundu (göz kararıyla değil:
-parlak gri bölge tespit edilip köşeleri çıkarıldı), ekran görüntüsü
-hedef dörtgenin oranına kırpıldı (ezilmesin diye), ImageMagick
-`-distort Perspective` ile yerleştirildi, sonra sahneye uyduruldu
-(0,4 bulanıklık · %4 karartma).
+**Montaj:** ekran görüntüsü hedef dörtgenin oranına kırpıldı (ezilmesin
+diye), ImageMagick `-distort Perspective` ile yerleştirildi, sonra
+sahneye uyduruldu (0,4 bulanıklık · %4 karartma).
+
+⚠ **KÖŞELER YUVARLAK OLMALI ve dörtgen CAMIN GERÇEK KENARINA oturmalı.**
+İlk montajda ikisi de yanlıştı: köşeler keskindi ve dörtgen camın
+içinde kalıyordu (üstte 17, solda 8 piksel). Sonuç: telefonun koyu
+çerçevesi kayboluyor, kenar çizgisi silinince ekran telefonun İÇİNDE
+değil elin ÜSTÜNDE duruyormuş gibi görünüyordu — kullanıcı
+*"kızın parmakları app'in arkasında kalmış gibi"* diye bildirdi.
+
+Ölçülen değerler (2 kat ölçekte, 2688×1504 tuvalde):
+- camın kenarları: x 1482–1728, y 449–966
+- köşe yarıçapı: ~30 piksel → kaynak ekran görüntüsünde **160 piksel**
+
+Yöntem: kaynak görüntüye önce `roundrectangle 0,0 1319,2849 160,160`
+maskesi alfa olarak uygulanıyor, sonra perspektif dönüşümü yapılıyor.
+Köşeler böylece perspektifle birlikte dönüyor.
+
+⚠ Köşeleri gözle değil ÖLÇEREK bulmak gerekiyor: parlak gri maskesi
+çerçevedeki yansımayı da sayıyor, o yüzden ilk ölçümüm camı olduğundan
+geniş gösterdi. Doğru yol, orta satırdaki piksel değerlerini tek tek
+okuyup koyu çerçeve ile gri ekranın sınırını bulmak.
 
 ---
 
