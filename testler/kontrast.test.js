@@ -65,4 +65,17 @@ const OLC = `(() => {
   }
   await b.close();
   console.log('\nTOPLAM ZAYIF: ' + toplam);
+
+  // ⚠ 13 Kasim 2026: BU TEST HICBIR ZAMAN BASARISIZ OLAMIYORDU.
+  // Yalnizca ekrana yaziyordu; hicbir sey iddia etmiyor, cikis kodu
+  // her zaman 0 doniyordu. Kosu "ok kontrast.test.js" yaziyordu ama
+  // bu bir sey kanitlamiyordu -- 20 zayif ogeyle de "ok" diyordu.
+  // Artik zayif oge varsa test KALIYOR.
+  // ⛔ Esik DUSURULMEDI, hicbir oge listeden cikarilmadi: tek
+  // degisiklik, sonucun artik bir hukmu olmasi.
+  if (toplam > 0) {
+    console.log('\n### BASARISIZ: ' + toplam + ' zayif kontrast var (yukarida listeli).');
+    process.exit(1);
+  }
+  console.log('HEPSI GECTI');
 })();

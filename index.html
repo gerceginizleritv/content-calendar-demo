@@ -255,7 +255,19 @@ img{max-width:100%;height:auto;display:block;}
 .kahraman-ust .sar{padding-top:clamp(34px,6vw,54px);}
 
 @media(min-width:960px){
-  .kahraman-ust{display:flex;align-items:center;min-height:clamp(500px,44vw,640px);}
+  .kahraman-ust{display:flex;align-items:center;min-height:clamp(500px,44vw,640px);
+    /* ⚠ Yazının ARKASINDAKİ GERÇEK RENK bu. Fotoğraf ve turuncu
+       katman bunun üstünü tamamen kapattığı için görünmüyor; ama
+       burada yazılı olması şart: kontrast denetimi DOM'da zemin
+       rengi arıyor, boyayı göremiyor. Yazılı olmadığında denetim
+       bölümün koyu zeminini buluyor, koyu yazıyı onun üstünde
+       sanıyor ve 1.00 diyordu -- elle ölçümde 6,52 olan yerde.
+       Sürekli bağıran bir uyarı, ileride GERÇEK bir bozulmayı
+       gürültüye gömer.
+       ⚠ Yalnızca geniş ekranda: dar ekranda yazı koyu zeminde
+       krem renkle duruyor, burası turuncu olsaydı orada gerçek
+       bir kontrast hatası doğardı. */
+    background-color:rgb(249,116,26);}
   /* ⚠ YAZININ ZEMİNİ KESİN OLSUN DİYE. Fotoğrafın turuncusu
      genişliğin %44'ünde bitiyor; yazı oraya taşınca mor sütunun
      üzerine düşüyordu ve kontrast 2,26'ya iniyordu (ölçüldü).
