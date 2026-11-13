@@ -31,7 +31,7 @@ const SAYFALAR = ['fiyatlar.html','sartlar.html','privacy.html','kilavuz.html','
 const EKRANLAR = [[1280,900],[390,844]];
 
 async function olc(p){
-  return await p.evaluate(()=>{
+  return await p.evaluate(async ()=>{
     const kat = c=>{ const m = c.match(/[\d.]+/g); if(!m) return null;
       return { rgb: m.slice(0,3).map(Number), a: m.length>3 ? parseFloat(m[3]) : 1 }; };
     const zemin = el=>{
@@ -109,8 +109,27 @@ async function olc(p){
                  g: Math.round(e.getBoundingClientRect().width) }))
       .filter(x=> x.g > 0 && x.y > 0 && x.y < 40);
 
+    // ⛔ Gecersiz SVG sessizce cizilmez: DOMParser onu parsererror ile
+    // bildiriyor, tarayici ise hic ses cikarmiyor.
+    const svgHata = [];
+    for(const dosya of ['logo.svg','logo-koyu.svg','favicon.svg']){
+      try{
+        const r = await fetch(dosya);
+        if(!r.ok){ svgHata.push(dosya + ' HTTP ' + r.status); continue; }
+        const metin = await r.text();
+        const belge = new DOMParser().parseFromString(metin, 'image/svg+xml');
+        if(belge.querySelector('parsererror')) svgHata.push(dosya + ' GECERSIZ XML');
+        else if(belge.documentElement.tagName.toLowerCase() !== 'svg')
+          svgHata.push(dosya + ' kok oge svg degil');
+      }catch(e){ svgHata.push(dosya + ' ' + e.message); }
+    }
+    const marka = document.querySelector('.marka, .brand');
+    const markaOnce = marka ? getComputedStyle(marka, '::before').backgroundImage : 'none';
+
     return {
-      kontrast, gorsel, kucukHedef,
+      kontrast, gorsel, kucukHedef, svgHata,
+      markaLogo: /logo(-koyu)?\.svg/.test(markaOnce),
+      markaLogoAdres: markaOnce.slice(0, 80),
       kayma: document.documentElement.scrollWidth - window.innerWidth,
       zeminAcik: getComputedStyle(document.body).backgroundColor !== 'rgba(0, 0, 0, 0)',
       markaCss: !!document.querySelector('link[href="marka.css"]'),
@@ -147,6 +166,17 @@ async function olc(p){
       bak(et + ': ortak paleti kullaniyor', o.markaCss && o.sinyal === '#FF5A1F',
           'marka.css=' + o.markaCss + ' sinyal=' + o.sinyal);
       bak(et + ': body zemini acikca verilmis', o.zeminAcik);
+      // ⛔ SVG SESSIZCE CIZILMEYEBILIR.
+      // 13 Kasim 2026: logo-koyu.svg'nin YORUM satirinda "--" geciyordu.
+      // XML yorumlarinin icinde "--" YASAK; dosya gecersiz XML oluyor
+      // ve tarayici onu CSS arka plani olarak cizmiyor. Hicbir hata,
+      // hicbir konsol mesaji, hicbir basarisiz istek yok -- yalnizca
+      // bos bir kutu. Dosya 200 donuyor, CSS dogru, olculer dogru.
+      // Gozle bakmasam fark edilmezdi. Bu yuzden olculuyor.
+      bak(et + ': logo dosyalari gecerli SVG', o.svgHata.length===0,
+          JSON.stringify(o.svgHata));
+      bak(et + ': marka kilidinde logo var', o.markaLogo,
+          'arka plan: ' + o.markaLogoAdres);
       bak(et + ': yatay kayma yok', o.kayma <= 1, o.kayma + 'px');
       bak(et + ': kontrast esigi geciliyor', o.kontrast.length===0,
           JSON.stringify(o.kontrast.slice(0,3)));

@@ -141,18 +141,46 @@
 .dug-sm{min-height:42px;padding:10px 18px;font-size:14.5px;border-radius:10px;}
 @media (prefers-reduced-motion:reduce){ .dug:hover,.dug:active{transform:none;} }
 
-/* ── Marka kilidi ───────────────────────────────────────────────── */
-.marka{display:inline-flex;align-items:center;gap:10px;text-decoration:none;
-  font-family:'Archivo',sans-serif;font-weight:800;font-size:19px;letter-spacing:-.4px;}
-.marka-ikon{
-  width:30px;height:30px;border-radius:7px;flex:none;
-  background:linear-gradient(135deg,var(--sinyal),var(--jel-magenta));
-  display:grid;place-items:center;box-shadow:0 0 0 1px rgba(255,255,255,.16);
+/* ── MARKA KİLİDİ — tek logo, her yerde aynı ─────────────────────
+   ⛔ ÖNCEDEN HER SAYFADA BAŞKA BİR ŞEY VARDI:
+   · app.html  : gerçek klaket logosu (ASIL olan buydu)
+   · index-yeni: CSS ile çizilmiş turuncu-magenta kare (uydurma)
+   · kilavuz/sartlar/privacy : yalnızca yazı, logo yok
+   · favicon.svg : MAVİ bir klaket (#2563C7) -- turuncu kimlikten
+     önceki markadan kalmış, kimse fark etmemiş
+   Kullanıcı bildirdi: "ana sayfada yer alan logo ile diğer
+   sayfalardaki ve fav icondaki aynı değil. Hepsini aynı yap!"
+
+   Artık tek kaynak: logo.svg (+ koyu zemin için logo-koyu.svg).
+   Geometri app.html'deki klaketten alındı.
+
+   ⚠ LOGO ::before İLE ÇİZİLİYOR, markup'tan DEĞİL. Sebebi: beş
+   sayfada marka kilidi üç ayrı biçimde yazılmış
+   (<a class="marka">, <span class="marka"><a>, <a class="brand">).
+   Her birine ayrı ayrı <svg> eklemek, birini unutmaya açık bir iş
+   olurdu -- bu dosyanın var olma sebebi zaten o hata. */
+.marka, .brand{
+  display:inline-flex;align-items:center;gap:10px;text-decoration:none;
+  font-family:'Archivo',sans-serif;font-weight:800;font-size:19px;letter-spacing:-.4px;
 }
-.marka-ikon span{
-  display:block;width:17px;height:11px;border-radius:2px;background:var(--kagit);
-  box-shadow:0 -6px 0 -1px var(--kagit);
+.marka::before, .brand::before{
+  content:'';flex:none;width:1.55em;height:1.55em;
+  background:url(logo.svg) center/contain no-repeat;
 }
+/* ⛔ KOYU ZEMİNDE KOYU LOGO OLMAZ. logo.svg'nin gövdesi #17122A ve
+   koyu başlık çubuğunun zemini de #17122A: aynı renk, gövde tamamen
+   kaybolur ve geriye yalnızca turuncu çubuk kalırdı. Kullanıcının
+   şartı buydu: "koyu alan üzerinde koyu renkli logo kullanacaksan
+   buna uygun renkler ile logoyu tekrar üret." */
+.ust .marka::before, .ust .brand::before,
+.alt .marka::before, .alt .brand::before,
+.tepe .marka::before, .kahraman .marka::before,
+.blok-gece .marka::before{
+  background-image:url(logo-koyu.svg);
+}
+/* Eski CSS kare: artık kullanılmıyor, kalanları görünmez kalsın
+   diye değil, HİÇ ÇİZİLMESİN diye kapatıldı. */
+.marka-ikon{display:none;}
 
 /* ⚠ GÖRSEL EMNİYET KURALI -- boş bir süslü değil.
    <img> etiketindeki height özniteliği (örn. height="2532") CSS

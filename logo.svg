@@ -1,0 +1,32 @@
+<!--
+  SHOOTBOARD LOGOSU — tek kaynak
+  13 Kasım 2026
+
+  Geometri app.html'deki marka kilidinden alındı: ASIL logo oydu,
+  diğer sayfalar ona uymuyordu. Kullanıcı bildirdi:
+  "ana sayfada yer alan logo ile diğer sayfalardaki ve fav icondaki
+   aynı değil. Hepsini aynı yap!"
+
+  ⚠ Eski favicon.svg MAVİYDİ (#2563C7) — turuncu kimlikten önceki
+  markadan kalmıştı ve kimse fark etmemişti.
+
+  Bu dosya AÇIK zemin içindir (gövde koyu). Koyu zemin için
+  logo-koyu.svg var: kullanıcının şartı buydu —
+  "Eğer koyu alan üzerinde koyu renkli logo kullanacaksan buna uygun
+   renkler ile logoyu tekrar üret."
+-->
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64" role="img"
+     aria-label="Shootboard">
+  <!-- klaketin gövdesi -->
+  <rect x="6" y="24" width="52" height="34" rx="7" fill="#17122A"/>
+  <!-- çırpma çubuğu: markanın sinyal turuncusu -->
+  <g transform="rotate(-9 32 17)">
+    <rect x="6" y="7" width="52" height="15" rx="3.5" fill="#FF5A1F"/>
+    <path d="M17 7 L22.5 7 L14.5 22 L9 22 Z" fill="#FFF9F0"/>
+    <path d="M33 7 L38.5 7 L30.5 22 L25 22 Z" fill="#FFF9F0"/>
+    <path d="M49 7 L54.5 7 L46.5 22 L41 22 Z" fill="#FFF9F0"/>
+  </g>
+  <!-- gövdedeki iki satır: "pano" fikri -->
+  <rect x="15" y="34" width="26" height="3.4" rx="1.7" fill="#8E8799"/>
+  <rect x="15" y="43" width="17" height="3.4" rx="1.7" fill="#FFBE3D"/>
+</svg>

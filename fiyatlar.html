@@ -13,125 +13,229 @@
 <!-- Ortak marka paleti: renk, dugme ve kontrast kurallari TEK yerde. -->
 <link rel="stylesheet" href="marka.css">
 <style>
-/* ⛔ KENDI RENK TANIMLARI KALDIRILDI -- marka.css'ten geliyor.
-   Ayni degiskenleri bes sayfada ayri ayri tutmak, rengi
-   degistirirken birini unutmak demekti; 13 Kasim 2026'da oyle oldu.
-   Degisken ADLARI aynen duruyor (--bg, --accent, --text ...), bu
-   sayfanin geri kalanina hic dokunulmadi.
+/* ⛔ KENDI RENK TANIMLARI YOK -- marka.css'ten geliyor.
+   Degisken ADLARI (--bg, --accent, --text ...) aynen duruyor. */
 
-   ⚠ KOYU TEMA BU SAYFADAN KALKTI ve bu bilerek. Yeni marka tek
-   gorsel dunyaya baglandi: renk bloklari sayfanin YAPISI, dekoru
-   degil. Ikinci bir tema, bloklarin anlamini bozuyordu. Zemin
-   acikca veriliyor, yani sayfa hangi zemine dusse kendi zeminini
-   tasiyor. */
 *{box-sizing:border-box;}
-h1,h2,h3{font-family:'Archivo',Impact,sans-serif;letter-spacing:-.02em;text-wrap:balance;}
+html{-webkit-text-size-adjust:100%;}
 body{
-  margin:0; background:var(--bg); color:var(--text);
+  margin:0; background:var(--kagit); color:var(--metin);
   font-family:'IBM Plex Sans','Segoe UI',system-ui,-apple-system,sans-serif;
-  font-size:15px; line-height:1.6; -webkit-font-smoothing:antialiased;
+  font-size:16px; line-height:1.6; -webkit-font-smoothing:antialiased;
+  overflow-x:hidden;
 }
-.sar{max-width:1040px; margin:0 auto; padding:20px 16px 70px;}
-header{display:flex; align-items:center; gap:12px; flex-wrap:wrap;
-  padding-bottom:16px; border-bottom:1px solid var(--line); margin-bottom:26px;}
-.brand{font-weight:700; font-size:1.05rem; letter-spacing:-.01em;
-  color:var(--text); text-decoration:none;}
-.ust-sag{margin-left:auto; display:flex; gap:8px; align-items:center;}
-h1{font-size:1.9rem; line-height:1.2; letter-spacing:-.02em; margin:0 0 8px;}
-.alt{color:var(--text-dim); margin:0 0 24px; max-width:60ch;}
-.secici{display:flex; flex-wrap:wrap; gap:10px; margin-bottom:8px;}
-.grup{display:inline-flex; border:1px solid var(--line); border-radius:2px;
-  overflow:hidden; background:var(--surface);}
-.grup button{font:inherit; font-size:14px; padding:9px 16px; min-height:44px;
-  border:0; background:none; color:var(--text-dim); cursor:pointer;}
-.grup button[aria-pressed="true"]{background:var(--accent); color:var(--on-accent); font-weight:600;}
-.indirim{font-size:13px; color:var(--text-dim); margin:0 0 24px; min-height:20px;}
-.kartlar{display:grid; gap:14px; grid-template-columns:repeat(auto-fit,minmax(248px,1fr));}
-.kart{border:1px solid var(--line); border-radius:2px; background:var(--surface);
-  padding:20px 18px; display:flex; flex-direction:column;}
-.kart.onerilen{border-color:var(--accent); border-width:2px;}
-.rozet{display:inline-block; font-size:11px; text-transform:uppercase;
-  letter-spacing:.08em; color:var(--on-accent); background:var(--accent);
-  padding:2px 8px; border-radius:2px; margin-bottom:10px; align-self:flex-start;}
-.kart h2{font-size:1.1rem; margin:0 0 4px; letter-spacing:-.01em;}
-.kart .tanim{font-size:13px; color:var(--text-dim); margin:0 0 14px; min-height:36px;}
-.fiyat{font-size:2rem; font-weight:700; letter-spacing:-.03em;
-  font-variant-numeric:tabular-nums; margin:0;}
-.fiyat small{font-size:.95rem; font-weight:400; color:var(--text-dim); letter-spacing:0;}
-.fiyat-alt{font-size:12.5px; color:var(--text-dim); margin:2px 0 16px; min-height:19px;}
-.kart ul{list-style:none; margin:0 0 18px; padding:0; font-size:14px; flex:1;}
-.kart li{padding:5px 0 5px 22px; position:relative;}
-.kart li::before{content:'·'; position:absolute; left:8px; font-weight:700; color:var(--accent);}
-.btn{font:inherit; font-size:14.5px; padding:11px 16px; min-height:44px;
-  border:1px solid var(--line); border-radius:2px; background:var(--surface);
-  color:var(--text); cursor:pointer; text-align:center; text-decoration:none;
-  display:block;}
-.btn:hover{border-color:var(--accent); color:var(--accent);}
-.btn-ana{background:var(--accent); border-color:var(--accent); color:var(--on-accent);}
-.btn-ana:hover{color:var(--on-accent); opacity:.92;}
-.btn-sm{min-height:44px; padding:9px 12px; font-size:13.5px;
-  display:flex; align-items:center;}
-.kalan{font-size:12.5px; color:var(--text-dim); margin:0 0 14px;
-  font-variant-numeric:tabular-nums;}
-.not{margin:34px 0 0; padding:16px 18px; border-left:2px solid var(--line);
-  background:var(--surface-2); border-radius:2px; font-size:14px;}
-.not h3{margin:0 0 6px; font-size:1rem;}
-.not p{margin:0 0 8px;} .not p:last-child{margin:0;}
-.durum{color:var(--text-dim); font-size:14px; padding:30px 0;}
-.gizle{display:none;}
-footer{margin-top:40px; padding-top:16px; border-top:1px solid var(--line);
-  font-size:13px; color:var(--text-dim);}
-footer a{color:var(--text-dim);}
+h1,h2,h3{font-family:'Archivo',Impact,sans-serif;margin:0;
+  letter-spacing:-.02em;text-wrap:balance;}
+h1{font-weight:900;font-size:clamp(34px,6vw,60px);line-height:1.03;}
+h2{font-weight:800;font-size:clamp(20px,2.2vw,24px);}
+h3{font-weight:700;font-size:19px;}
+p{margin:0;}
+a{color:inherit;}
+.sar{width:100%;max-width:1180px;margin:0 auto;padding:0 16px;}
+@media(min-width:760px){ .sar{padding:0 32px;} }
+
+/* ── Ust cubuk: ana sayfayla AYNI ────────────────────────────── */
+.ust{position:sticky;top:0;z-index:50;background:rgba(23,18,42,.92);
+  backdrop-filter:saturate(140%) blur(10px);color:var(--kagit);
+  border-bottom:1px solid var(--cizgi-acik);}
+.ust-ic{display:flex;align-items:center;gap:12px;height:62px;}
+.ust-sag{display:flex;align-items:center;gap:8px;margin-left:auto;}
+.dil-dug{background:transparent;border:1px solid var(--cizgi-acik);color:inherit;
+  font-family:'IBM Plex Mono',monospace;font-size:12px;font-weight:600;
+  padding:9px 12px;border-radius:9px;cursor:pointer;min-height:44px;}
+.dil-dug[aria-pressed="true"]{background:var(--kagit);color:var(--gece);border-color:var(--kagit);}
+
+/* ── Tepe blogu ──────────────────────────────────────────────── */
+.tepe{
+  background:
+    radial-gradient(760px 420px at 86% -16%, rgba(107,60,240,.5), transparent 62%),
+    radial-gradient(620px 420px at 2% 112%, rgba(255,61,127,.3), transparent 60%),
+    var(--gece);
+  color:var(--kagit);padding:clamp(40px,6vw,76px) 0 clamp(34px,5vw,56px);
+}
+.tepe .rozet{
+  display:inline-flex;align-items:center;gap:8px;
+  font-family:'IBM Plex Mono',monospace;font-size:11.5px;font-weight:600;
+  letter-spacing:1.1px;text-transform:uppercase;color:var(--jel-lime);
+  padding:7px 13px;border-radius:999px;border:1px solid currentColor;
+  background:transparent;margin-bottom:16px;
+}
+/* ⚠ Adi .alt DEGIL: sayfanin alt bilgisi de .alt ve onun padding'i
+   buraya siziyordu. Ana sayfada ayni hata yakalanmisti. */
+.tepe-alt{margin-top:16px;font-size:clamp(16px,1.8vw,18.5px);
+  color:rgba(255,249,240,.82);max-width:36em;}
+
+/* ── Secici dugmeler ─────────────────────────────────────────── */
+.secici{display:flex;flex-wrap:wrap;gap:10px;margin-top:26px;}
+.grup{display:inline-flex;background:rgba(255,249,240,.1);
+  border:1px solid var(--cizgi-acik);border-radius:12px;padding:4px;gap:4px;}
+.grup button{
+  font:inherit;font-size:14.5px;font-weight:600;min-height:44px;padding:10px 18px;
+  border:0;border-radius:9px;background:transparent;color:var(--kagit);cursor:pointer;
+}
+.grup button[aria-pressed="true"]{background:var(--sinyal);color:var(--gece);}
+.indirim{margin-top:14px;font-size:14px;color:var(--jel-lime);font-weight:600;min-height:21px;}
+
+/* ── Kartlar ─────────────────────────────────────────────────── */
+.bolum{padding:clamp(44px,6vw,76px) 0;}
+.durum{color:var(--metin-soluk);font-size:15px;}
+.kartlar{
+  display:grid;gap:18px;
+  grid-template-columns:repeat(auto-fit,minmax(272px,1fr));
+  align-items:start;
+  /* ⚠ Rozet kutunun USTUNE tasiyor; kirpilmasin diye yer birakiliyor. */
+  padding-top:16px;
+}
+.kart{
+  position:relative;                 /* rozetin dayanagi */
+  border:1px solid var(--cizgi);border-radius:var(--yuvarlak);
+  background:var(--yuzey);padding:28px 24px;
+  display:flex;flex-direction:column;box-shadow:var(--golge);
+}
+.kart.onerilen{border-color:var(--sinyal);border-width:2px;padding:27px 23px;}
+
+/* ⛔ ROZET AKIStan CIKTI ve bu ISIN KENDISI.
+   Önce kutunun ICINDE, baslikla ayni akistaydi: yalnizca BIR kartta
+   oldugu icin o kartin basligini ve altindaki her seyi asagi itiyordu
+   ve iki kart HIZASIZ goruniyordu. Kullanici bildirdi:
+   "sağ ve soldaki yazılar birbirinin hizasında değil ... Önerileni
+    kutu dışına kutunun üst kısmına al."
+   position:absolute ile akistan cikti: artik iki kartin da basligi
+   ayni yerden basliyor. */
+.kart .rozet{
+  position:absolute;top:0;left:24px;transform:translateY(-50%);
+  font-family:'IBM Plex Mono',monospace;font-size:11px;font-weight:600;
+  text-transform:uppercase;letter-spacing:.09em;
+  color:var(--kagit);background:var(--sinyal-metin);
+  padding:5px 11px;border-radius:999px;white-space:nowrap;
+}
+.kart h2{margin:0 0 6px;}
+.kart .tanim{font-size:14px;color:var(--metin-soluk);margin:0 0 18px;min-height:42px;}
+.fiyat{font-family:'Archivo',sans-serif;font-size:clamp(30px,3.4vw,40px);
+  font-weight:900;letter-spacing:-.03em;font-variant-numeric:tabular-nums;margin:0;}
+.fiyat small{font-size:.9rem;font-weight:500;color:var(--metin-soluk);letter-spacing:0;}
+.fiyat-alt{font-size:13px;color:var(--metin-soluk);margin:4px 0 18px;min-height:20px;}
+.kalan{font-size:13px;color:var(--sinyal-metin);font-weight:600;margin:0 0 12px;}
+.kart ul{list-style:none;margin:0 0 22px;padding:0;font-size:15px;flex:1;}
+.kart li{padding:7px 0 7px 24px;position:relative;}
+.kart li::before{content:'';position:absolute;left:6px;top:15px;
+  width:7px;height:7px;border-radius:50%;background:var(--sinyal);}
+
+/* ── Dugmeler (ana sayfanin dugme dili) ──────────────────────── */
+.btn{
+  font:inherit;font-size:15.5px;font-weight:600;min-height:52px;padding:14px 20px;
+  border:2px solid var(--cizgi);border-radius:12px;background:transparent;
+  color:var(--metin);cursor:pointer;text-align:center;text-decoration:none;
+  display:flex;align-items:center;justify-content:center;
+  transition:transform .14s ease, box-shadow .14s ease;
+}
+.btn:hover{transform:translateY(-2px);}
+/* ⛔ Birincil dugmede yazi KOYU, beyaz degil: beyaz bu turuncuda 3.12
+   ediyor ve govde esigi 4.5. Koyu ile 5.82. Olculdu. */
+.btn-ana{background:var(--sinyal);border-color:var(--sinyal);color:var(--gece);
+  box-shadow:0 5px 0 var(--sinyal-koyu);}
+.btn-ana:active{transform:translateY(3px);box-shadow:0 2px 0 var(--sinyal-koyu);}
+.btn-sm{min-height:42px;padding:10px 16px;font-size:14.5px;border-radius:10px;
+  border-color:transparent;background:var(--sinyal);color:var(--gece);
+  box-shadow:0 4px 0 var(--sinyal-koyu);white-space:nowrap;}
+/* ⚠ Dar ekranda uzun etiket ust cubugu 8px TASIRIYORDU. Gizlemek
+   yerine kisaltildi: kaydirmadan gorunen tek cagri dugmesi o. */
+.cta-kisa{display:none;}
+@media(max-width:640px){
+  .cta-uzun{display:none;}
+  .cta-kisa{display:inline;}
+  .btn-sm{padding:10px 13px;}
+  .dil-dug{padding:9px 9px;}
+  .ust-ic{gap:8px;}
+}
+/* Alt bilgideki baglantilar esnek satirda artik satir ici DEGIL;
+   parmakla basiliyorlar, dokunma hedefi verilmeli. */
+.alt-ic a{min-height:44px;display:inline-flex;align-items:center;}
+@media (prefers-reduced-motion:reduce){ .btn:hover,.btn:active{transform:none;} }
+
+/* ── Notlar ──────────────────────────────────────────────────── */
+.notlar{display:grid;gap:16px;}
+@media(min-width:820px){ .notlar{grid-template-columns:1fr 1fr;} }
+.not{background:var(--yuzey);border:1px solid var(--cizgi);
+  border-radius:var(--yuvarlak);padding:26px 24px;box-shadow:var(--golge);}
+.not h3{margin:0 0 10px;}
+.not p{font-size:15px;color:var(--metin-soluk);margin:0 0 8px;}
+.not p:last-child{margin-bottom:0;}
+
+/* ── Alt bilgi ───────────────────────────────────────────────── */
+.alt{background:var(--gece);color:rgba(255,249,240,.66);padding:34px 0 44px;font-size:14.5px;}
+.alt-ic{display:flex;flex-wrap:wrap;gap:12px 24px;align-items:center;}
+.alt a{text-decoration:none;}
+.alt a:hover{text-decoration:underline;}
+:focus-visible{outline:3px solid var(--sinyal);outline-offset:3px;border-radius:4px;}
 </style>
 </head>
 <body>
-<div class="sar">
-<header>
-  <a class="brand" href="/">Shootboard</a>
-  <div class="ust-sag">
-    <div class="grup" role="group">
-      <button type="button" data-dil="tr" aria-pressed="true">Türkçe</button>
-      <button type="button" data-dil="en" aria-pressed="false">English</button>
+
+<header class="ust">
+  <div class="sar ust-ic">
+    <a class="marka" href="./">Shootboard</a>
+    <div class="ust-sag">
+      <button class="dil-dug" type="button" data-dil="tr" aria-pressed="true">TR</button>
+      <button class="dil-dug" type="button" data-dil="en" aria-pressed="false">EN</button>
+      <a class="btn btn-sm" href="app.html">
+        <span class="cta-uzun" data-m="uygulama">Uygulamayı aç</span>
+        <span class="cta-kisa" data-m="uygulama_kisa">Aç</span>
+      </a>
     </div>
-    <a class="btn btn-sm" href="app.html" data-m="uygulama">Uygulamayı aç</a>
   </div>
 </header>
 
-<h1 data-m="baslik">Fiyatlar</h1>
-<p class="alt" data-m="alt"></p>
+<section class="tepe">
+  <div class="sar">
+    <span class="rozet" data-m="tepe_rozet">Hesapsız başla — kart istemiyoruz</span>
+    <h1 data-m="baslik">Fiyatlar</h1>
+    <p class="tepe-alt" data-m="alt"></p>
 
-<div class="secici">
-  <div class="grup" role="group" id="paraSecici">
-    <button type="button" data-para="TRY" aria-pressed="true">TRY</button>
-    <button type="button" data-para="USD" aria-pressed="false">USD</button>
+    <div class="secici">
+      <div class="grup" role="group" id="paraSecici">
+        <button type="button" data-para="TRY" aria-pressed="true">TRY</button>
+        <button type="button" data-para="USD" aria-pressed="false">USD</button>
+      </div>
+      <div class="grup" role="group" id="donemSecici">
+        <button type="button" data-donem="monthly" aria-pressed="true" data-m="aylik">Aylık</button>
+        <button type="button" data-donem="yearly" aria-pressed="false" data-m="yillik">Yıllık</button>
+      </div>
+    </div>
+    <p class="indirim" id="indirim"></p>
   </div>
-  <div class="grup" role="group" id="donemSecici">
-    <button type="button" data-donem="monthly" aria-pressed="true" data-m="aylik">Aylık</button>
-    <button type="button" data-donem="yearly" aria-pressed="false" data-m="yillik">Yıllık</button>
+</section>
+<div class="klaket" aria-hidden="true"></div>
+
+<section class="bolum">
+  <div class="sar">
+    <div id="durum" class="durum"></div>
+    <div class="kartlar" id="kartlar"></div>
   </div>
-</div>
-<p class="indirim" id="indirim"></p>
+</section>
 
-<div id="durum" class="durum"></div>
-<div class="kartlar" id="kartlar"></div>
+<section class="bolum" style="padding-top:0;">
+  <div class="sar notlar">
+    <div class="not">
+      <h3 data-m="ucretsiz_bas">Ücretsiz olan ne?</h3>
+      <p data-m="ucretsiz_1"></p>
+      <p data-m="ucretsiz_2"></p>
+    </div>
+    <div class="not">
+      <h3 data-m="ai_bas">AI kendi anahtarınla</h3>
+      <p data-m="ai_1"></p>
+    </div>
+  </div>
+</section>
 
-<div class="not">
-  <h3 data-m="ucretsiz_bas">Ücretsiz olan ne?</h3>
-  <p data-m="ucretsiz_1"></p>
-  <p data-m="ucretsiz_2"></p>
-</div>
-
-<div class="not">
-  <h3 data-m="ai_bas">AI kendi anahtarınla</h3>
-  <p data-m="ai_1"></p>
-</div>
-
-<footer>
-  <a href="sartlar.html" data-m="sartlar">Kullanım şartları</a> ·
-  <a href="privacy.html" data-m="gizlilik">Gizlilik</a> ·
-  <a href="kilavuz.html" data-m="kilavuz">Kılavuz</a>
+<footer class="alt">
+  <div class="sar alt-ic">
+    <a class="marka" href="./" style="color:var(--kagit);">Shootboard</a>
+    <a href="sartlar.html" data-m="sartlar">Kullanım şartları</a>
+    <a href="privacy.html" data-m="gizlilik">Gizlilik</a>
+    <a href="kilavuz.html" data-m="kilavuz">Kılavuz</a>
+  </div>
 </footer>
-</div>
 
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.45.4/dist/umd/supabase.js"></script>
 <script>
@@ -157,6 +261,8 @@ const esc = (s)=>{ const d=document.createElement('div');
 // kurulumu, satilmiyor.
 const M = {
   tr: {
+    uygulama_kisa:"Aç",
+    tepe_rozet:"Hesapsız başla — kart istemiyoruz",
     uygulama:'Uygulamayı aç', baslik:'Fiyatlar', aylik:'Aylık', yillik:'Yıllık',
     alt:'Bir çekimden çıkan on paylaşımı tek yerden yönetmek için. Hesap açmadan denemeye başlayabilirsin.',
     ucretsiz_bas:'Ücretsiz olan ne?',
@@ -193,6 +299,8 @@ const M = {
     }
   },
   en: {
+    uygulama_kisa:"Open",
+    tepe_rozet:"Start without an account — no card needed",
     uygulama:'Open the app', baslik:'Pricing', aylik:'Monthly', yillik:'Yearly',
     alt:'For running the ten posts that come out of one shoot from a single place. You can start without an account.',
     ucretsiz_bas:'What stays free?',
