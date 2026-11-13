@@ -38,14 +38,46 @@ const bak = (ad, ko, ek)=>{ if(ko){ g++; console.log('  ok  '+ad); } else { k++;
     bak('gizlilik sayfasina bag var', (await p.$$('a[href$="privacy.html"]')).length >= 1);
 
     // Kontrast: gri yazilar okunur olmali.
+    // ⚠ 13 KASIM 2026: ZEMIN ARTIK GERCEKTEN HESAPLANIYOR.
+    // Onceden her ogenin rengi BODY'nin zeminiyle karsilastiriliyordu.
+    // Sayfaya koyu bir ust cubuk eklenince cubuktaki KREM yazi, krem
+    // body zeminiyle karsilastirildi ve oran 1.00 cikti -- yazi gayet
+    // okunurken test "okunmuyor" dedi. YANLIS ALARM.
+    // ⛔ Olcum ZAYIFLATILMADI, DOGRULUGU ARTIRILDI: artik yazinin
+    // arkasindaki gercek zemin bulunuyor ve yari saydam katmanlar
+    // harmanlaniyor. Gercekten okunmayan yaziyi hala yakaliyor.
     const zayif = await p.evaluate(() => {
-      const cz = v => { const c = v.match(/\d+/g).slice(0,3).map(Number).map(x => { x/=255; return x <= .03928 ? x/12.92 : Math.pow((x+.055)/1.055, 2.4); }); return .2126*c[0]+.7152*c[1]+.0722*c[2]; };
-      const zemin = cz(getComputedStyle(document.body).backgroundColor);
+      const kat = v => { const m = v.match(/[\d.]+/g); if(!m) return null;
+        return { rgb: m.slice(0,3).map(Number), a: m.length>3 ? parseFloat(m[3]) : 1 }; };
+      const ciz = rgb => { const c = rgb.map(x => { x/=255;
+        return x <= .03928 ? x/12.92 : Math.pow((x+.055)/1.055, 2.4); });
+        return .2126*c[0]+.7152*c[1]+.0722*c[2]; };
+      const zeminBul = el => {
+        const y = [];
+        for(let e = el; e && e !== document.documentElement; e = e.parentElement){
+          const x = kat(getComputedStyle(e).backgroundColor);
+          if(!x || x.a === 0) continue;
+          y.push(x);
+          if(x.a === 1) break;
+        }
+        let alt = y.length && y[y.length-1].a === 1 ? y.pop().rgb : [255,255,255];
+        for(let i = y.length-1; i >= 0; i--){
+          const x = y[i];
+          alt = alt.map((v,j)=> Math.round(x.rgb[j]*x.a + v*(1-x.a)));
+        }
+        return alt;
+      };
       const kotu = [];
       document.querySelectorAll('p,li,td,th,h1,h2,a').forEach(el => {
         if (!el.textContent.trim()) return;
-        const l = cz(getComputedStyle(el).color);
-        const o = (Math.max(l,zemin)+.05)/(Math.min(l,zemin)+.05);
+        const r = el.getBoundingClientRect();
+        if (r.width < 2 || r.height < 2) return;
+        const yk = kat(getComputedStyle(el).color); if(!yk) return;
+        const zem = zeminBul(el);
+        // Yazi da yari saydam olabilir: zemine harmanlaniyor.
+        const yazi = yk.rgb.map((v,i)=> Math.round(v*yk.a + zem[i]*(1-yk.a)));
+        const l1 = ciz(yazi), l2 = ciz(zem);
+        const o = (Math.max(l1,l2)+.05)/(Math.min(l1,l2)+.05);
         if (o < 4.5) kotu.push(el.tagName + ' ' + o.toFixed(2));
       });
       return kotu;
