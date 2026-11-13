@@ -3721,6 +3721,19 @@ textarea.sc-ai-brief{min-height:64px;resize:vertical;line-height:1.5;}
              duzenek silinmedi, oradan tekrar kullanilacak. -->
         <button class="rail-link" id="pitchToggle" aria-expanded="false" data-i18n="pitch_show" hidden>What is Shootboard?</button>
         <button class="rail-link" id="tourBtn" data-i18n="btn_tour">? How this works</button>
+        <!-- FIYATLAR. Serit ustunde, "bu nasil calisir"in hemen altinda:
+             odeme kararini veren kisi urunu anlatan baglantilarin yaninda
+             ariyor; ayarlarin (AI, hatirlatici, etiket) arasina konulsa
+             kaybolurdu.
+             ⛔ Bu serit oturum ACIK ve KAPALI iken AYNI, yani baglanti her
+             iki durumda da gorunuyor. Oturum acmis kisiye ayrica hesap
+             penceresinde "Planin" satiri var (asagida, #hesapPlanAd).
+             Adres ?lang= tasiyor: fiyat sayfasi kendi basina TARAYICININ
+             diline bakiyor, uygulamanin diline degil. Ikisi ayri olunca
+             Turkce uygulamadan Ingilizce sayfaya dusuluyordu. Degeri
+             setLanguage yaziyor (.fiyat-baglanti). -->
+        <a class="rail-link fiyat-baglanti" id="fiyatLink" href="fiyatlar.html?lang=en"
+           target="_blank" rel="noopener" data-i18n="btn_fiyat">💳 Pricing</a>
         <!-- Hava blogu gizlenmisse geri getiren baglanti; blok acikken
              bu dugme gizli duruyor. -->
         <button class="rail-link" id="havaGosterBtn" hidden data-i18n="hv_show">Weather &amp; light</button>
@@ -5345,6 +5358,23 @@ textarea.sc-ai-brief{min-height:64px;resize:vertical;line-height:1.5;}
     <h2 data-i18n="hesap_title">Your account</h2>
     <p class="onay-vurgu" id="hesapEposta"></p>
 
+    <!-- PLAN SATIRI. Kullanicinin istegi: "login olduktan sonra da
+         iceride yer almali". Seritteki baglanti herkese gorunuyor; bu
+         satir oturum acmis kisiye SU AN hangi planda oldugunu da
+         soyluyor -- fiyat sayfasina gitmeden once bilmesi gereken sey.
+         ⛔ Plan adi SUNUCUDAN okunuyor (gecerli_plan, sql/70), tarayicida
+         hesaplanmiyor. Sebep: "iptal edilmis ama suresi bitmemis abonelik
+         hala gecerli" kurali tek yerde dursun; iki yere kopyalanirsa biri
+         eskir. Okunamazsa satir sebebi yaziyor, sayi/ad UYDURMUYOR. -->
+    <div class="hesap-satir">
+      <div>
+        <div class="hesap-ad" data-i18n="hesap_plan">Your plan</div>
+        <p class="hint hesap-not" id="hesapPlanAd">—</p>
+      </div>
+      <a class="btn fiyat-baglanti" id="hesapPlanLink" href="fiyatlar.html?lang=en"
+         target="_blank" rel="noopener" data-i18n="hesap_plan_gor">See plans</a>
+    </div>
+
     <div class="hesap-satir">
       <div>
         <div class="hesap-ad" data-i18n="auth_signout">Sign out</div>
@@ -5634,6 +5664,7 @@ const LANG = {
     btn_reset: "Reset Demo",
     btn_tour: "? How this works",
     btn_guide: "📖 User guide",
+    btn_fiyat: "💳 Pricing",
     btn_feedback: "💬 Feedback",
     cal_more: (n)=> `+${n} more`,
     cal_less: "Show less",
@@ -5691,6 +5722,15 @@ const LANG = {
     hesap_cikis_not: "Your work stays in the cloud. Sign back in and it is all where you left it.",
     hesap_title: "Your account",
     hesap_ac: "Open",
+    hesap_plan: "Your plan",
+    hesap_plan_gor: "See plans",
+    hesap_plan_okunuyor: "checking…",
+    // Okunamadi demek, "Starter" demek DEGILDIR: sunucuya ulasilamadiysa
+    // kullanicinin odedigi plan da gorunmez olur. Yanlis plan yazmak,
+    // hic yazmamaktan kotu.
+    hesap_plan_hata: "could not be read — check your connection",
+    plan_ad: { starter:"Starter", creator_pro:"Creator Pro",
+               studio:"Studio", founding:"Founding Member" },
     hesap_sifre_not: "Set or replace the password you sign in with.",
     hesap_yedek_not: "Download everything as a file before you delete anything.",
     hesap_sil_baslik: "Delete your account",
@@ -6931,6 +6971,7 @@ const LANG = {
     btn_reset: "Demoyu Sıfırla",
     btn_tour: "? Bu nasıl çalışır",
     btn_guide: "📖 Kullanım kılavuzu",
+    btn_fiyat: "💳 Fiyatlar",
     btn_feedback: "💬 Geri Bildirim",
     cal_more: (n)=> `+${n} daha`,
     cal_less: "Daha az",
@@ -6988,6 +7029,12 @@ const LANG = {
     hesap_cikis_not: "Çalışman bulutta kalır. Tekrar giriş yaptığında bıraktığın yerden devam edersin.",
     hesap_title: "Hesabın",
     hesap_ac: "Aç",
+    hesap_plan: "Planın",
+    hesap_plan_gor: "Planları gör",
+    hesap_plan_okunuyor: "okunuyor…",
+    hesap_plan_hata: "okunamadı — bağlantını kontrol et",
+    plan_ad: { starter:"Starter", creator_pro:"Creator Pro",
+               studio:"Studio", founding:"Kurucu Üye" },
     hesap_sifre_not: "Giriş yaparken kullandığın şifreyi belirle ya da değiştir.",
     hesap_yedek_not: "Bir şey silmeden önce her şeyi dosya olarak indir.",
     hesap_sil_baslik: "Hesabını sil",
@@ -8300,6 +8347,14 @@ function setLanguage(lang, buluttanGeldi){
   // gore olani gosteriyor.
   const kilavuz = document.getElementById('kilavuzLink');
   if(kilavuz) kilavuz.href = (lang === 'tr') ? 'kilavuz.html' : 'guide.html';
+  // Fiyat sayfasi TEK dosya, dili adresten aliyor (?lang=). Kendi basina
+  // navigator.language'a bakiyor; uygulamayi Turkce kullanan ama tarayicisi
+  // Ingilizce olan kisi Ingilizce sayfaya dusuyordu.
+  // ⚠ PARA BIRIMI DEGISMIYOR: o nerede odeyecegiyle ilgili, ne okudugula
+  // degil. Sayfanin kendi dugmesiyle degistiriliyor.
+  document.querySelectorAll('.fiyat-baglanti').forEach(a=>{
+    a.href = 'fiyatlar.html?lang=' + (lang === 'tr' ? 'tr' : 'en');
+  });
   refreshAuthUi();
   renderFbUses();
   populateSelects();
@@ -23561,6 +23616,48 @@ function sifreSorulsunMu(){
   return true;
 }
 // ---- Hesap penceresi ----
+// Plan anahtarini okunur ada cevirir.
+// AYRI BIR ISLEV OLMASI KASITLI. Bu esleme ag cagrisinin icinde kalsa
+// yalnizca sahte bir `sb` ile denenebilirdi -- ve `sb` modul kapanisinda
+// duruyor, `window.sb = ...` onu DEGISTIRMIYOR, yeni bir degisken
+// yaratiyor. Ilk yazilan test tam bu yuzden sessizce bosa gecti: uc
+// olcum de her halde 'Starter' okudu, cunku gercek kod hic calismadi.
+// Saf islev disaridan cagrilabiliyor, yani olcum gercekten isiriyor.
+function planAdiMetni(anahtar){
+  const adlar = t('plan_ad');
+  // Taninmayan anahtar SESSIZCE kaybolmasin: yeni bir plan eklenip
+  // buraya adi yazilmadiginda bos satir degil, anahtarin kendisi
+  // gorunsun -- fark edilir bir sey olsun.
+  return adlar[anahtar] || String(anahtar || '') || adlar.starter;
+}
+
+// Oturum acmis kisiye SU ANKI planini yaziyor.
+// ⛔ Kural SUNUCUDA: gecerli_plan() (sql/70) iptal edilmis ama suresi
+// bitmemis abonelige hala plan adini donduruyor, suresi bitene
+// "starter" diyor. Ayni mantigi burada tekrar yazmak iki yerde iki
+// dogru uretirdi -- biri eskiyince hangisinin dogru oldugu belirsiz
+// kalirdi.
+//
+// `oku` YALNIZCA TEST ICIN var; uygulama hicbir yerde gecmiyor.
+// Olmasaydi asagidaki catch blogu -- yani "okunamadiysa plan adi
+// UYDURULMAZ" kurali -- hic denenemezdi.
+async function planSatiriCiz(oku){
+  const et = document.getElementById('hesapPlanAd');
+  if(!et) return;
+  et.textContent = t('hesap_plan_okunuyor');
+  const getir = oku || ((sb && session) ? (()=> sb.rpc('gecerli_plan')) : null);
+  // Oturum yokken sunucuya hic gidilmiyor: aboneligi olmayan Starter.
+  if(!getir){ et.textContent = planAdiMetni('starter'); return; }
+  try{
+    const { data, error } = await getir();
+    if(error) throw error;
+    et.textContent = planAdiMetni(data);
+  }catch(e){
+    // CLAUDE.md Bolum 4: dogrulanmayan sey yazilmaz. Okunamadiysa
+    // "Starter" YAZMIYOR -- odenmis bir plani yok gostermek olurdu.
+    et.textContent = t('hesap_plan_hata');
+  }
+}
 function hesapPenceresiniAc(){
   const bul = id => document.getElementById(id);
   const eposta = (session && session.user && session.user.email) || '';
@@ -23574,6 +23671,7 @@ function hesapPenceresiniAc(){
   bul('hesapSilBtn').disabled = true;
   const d = bul('hesapDurum'); d.textContent = ''; d.className = 'ai-status';
   bul('hesapOverlay').classList.add('open');
+  planSatiriCiz();
   yedekListesiCiz();
   aiBolumuCiz();
   mcpBolumuCiz();

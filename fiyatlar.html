@@ -228,7 +228,19 @@ const M = {
 // navigator.language tarayicinin kendi ayari. Kullanici dugmeyle
 // degistirebiliyor.
 const trMi = /^tr\b/i.test(navigator.language || '');
-let dil = trMi ? 'tr' : 'en';
+// Uygulama kendi dilini adreste gonderiyor (?lang=tr|en). Sebep:
+// uygulamayi Turkce kullanan ama tarayicisi Ingilizce olan kisi, bu
+// sayfaya Ingilizce dusuyordu. Adreste gecerli bir deger yoksa eski
+// davranis aynen duruyor: tarayicinin dili.
+// ⚠ PARA BIRIMI ADRESTEN ALINMIYOR. Dil ne OKUDUGUNU, para birimi
+// NEREDE ODEYECEGINI soyluyor; ikisi ayri sorular. Para birimi yine
+// tarayicinin dilinden baslayip dugmeyle degisiyor.
+let adresDili = null;
+try{
+  const q = new URLSearchParams(location.search).get('lang');
+  if(q === 'tr' || q === 'en') adresDili = q;
+}catch(e){}
+let dil = adresDili || (trMi ? 'tr' : 'en');
 let para = trMi ? 'TRY' : 'USD';
 let donem = 'monthly';
 let veri = null;

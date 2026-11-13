@@ -2936,6 +2936,100 @@ maddenin sonunda parantez içinde duruyor.
     Merchant of record; KDV ve fatura onlarda. Türkiye'den satıcı
     uygunluğu raporun 9. bölümünde. 2-3 gün.
 
+    **13 Kasım 2026 — Lemon Squeezy'nin kendi sayfası okundu.**
+    Kaynak: `docs.lemonsqueezy.com/help/getting-started/supported-countries`
+    (o gün okundu; sayfada güncellenme tarihi yazmıyor, altında yalnızca
+    "© 2026 Lemon Squeezy, LLC" var).
+
+    · **Türkiye "Bank payouts supported in the following countries"
+      listesinde VAR**, `Tunisia` ile `United Arab Emirates` arasında,
+      dipnot işareti olmadan.
+    · Türkiye, "Unsupported countries for purchases" listesinde YOK —
+      yani müşteri de ödeme yapabiliyor.
+    · İkinci yol PayPal: *"PayPal payouts are supported in 200+
+      countries and regions."*
+    · ⚠ Asgari tutar, para birimi ya da Türkiye'ye özel bir şart
+      sayfada YAZMIYOR. Yazmadığı için buraya da yazılmadı.
+
+    ⚠ **DOĞRULANMASI GEREKEN SORU — kapanmadı.** Sayfadaki Hindistan
+    dipnotu banka ödemesinin Stripe üzerinden yürüdüğünü açık ediyor:
+    *"From May 2024, Stripe only accepts new accounts from India on an
+    invite-only basis. This means merchants will only be able to set up
+    a bank payout method if their accounts are pre-approved by Stripe."*
+    Türkiye için böyle bir dipnot yok, **ama Stripe'ın Türkiye'yi kendi
+    ülke listesinde nasıl tuttuğu bu sayfadan görünmüyor.** Kayıt
+    olmadan önce Stripe'ın kendi ülke sayfası okunacak.
+
+    ⛔ **Oturumda daha önce iletilen "Lemon Squeezy Stripe Managed
+    Payments'a katlanıyor ve o Türkiye'yi desteklemiyor" riski BU
+    SAYFADA DOĞRULANMADI.** Sayfada Stripe Managed Payments, bir geçiş,
+    kapanma ya da "yeni kayıt alınmıyor" diye hiçbir şey yok. O bilgi
+    başka kaynaklardan gelmişti; ikisi birleştirilmedi. Sağlayıcı
+    seçimi yapılmadan önce doğrudan Lemon Squeezy'ye sorulacak.
+    (CLAUDE.md Bölüm 4: doğrulanmayan şey doğrulanmış gibi yazılmaz.)
+
+    **13 Kasım 2026 — STRIPE'IN KENDİ SAYFALARI DA OKUNDU. İKİ KAYNAK
+    ÇELİŞİYOR ve bu çelişki KAPANMADI.**
+
+    `stripe.com/global` — "Global availability" başlığı altında
+    *"Stripe is currently supported in the following countries/regions,
+    with more to come."* diyor ve **51 ülke sayıyor. TÜRKİYE O LİSTEDE
+    YOK.** (Liste sayfayı JavaScript yazıyor; ham HTML'de hiç ülke
+    geçmiyor, o yüzden tarayıcıda açılıp okundu. Listede Yunanistan,
+    BAE, Tayland, Malezya, Meksika, Brezilya var; Türkiye yok.)
+
+    `docs.stripe.com/connect/cross-border-payouts` —
+    *"Platforms based in the US, UK, EEA, Canada, or Switzerland can
+    transfer funds to connected accounts in any of those regions"* ve
+    hemen ardından *"Stripe doesn't support self-serve cross-border
+    payouts to countries outside the listed regions. Contact sales to
+    discuss alternatives, or use Global Payouts."*
+    Türkiye bu beş bölgenin hiçbirinde değil.
+
+    ⚠ **ÇELİŞKİ ŞU:** Lemon Squeezy "Türkiye'ye banka ödemesi
+    yapılabilir" diyor; Stripe kendi ülke listesinde Türkiye'yi
+    saymıyor ve kendi belgesinde Türkiye'nin bulunduğu bölgelere
+    self-servis sınır ötesi ödeme yapmadığını yazıyor. Lemon Squeezy
+    sayfasındaki Hindistan dipnotu da banka ödemesinin Stripe'a
+    dayandığını açık ediyor.
+
+    ⛔ **BURADAN "ÇALIŞMAZ" SONUCU ÇIKARILMADI ve çıkarılmamalı.**
+    Stripe'ın `Global Payouts` diye ayrı bir ürünü var ve kendi
+    belgesi onu *"transfer funds to recipients in any supported
+    country"* diye tanımlıyor — Lemon Squeezy Türkiye'ye onunla ya da
+    başka bir yolla ödüyor olabilir. **Hangisi olduğunu bu üç sayfadan
+    göremiyorum.** Varsayım yazmıyorum (CLAUDE.md Bölüm 4).
+
+    **BİR SONRAKİ ADIM — kullanıcı kararı gerekiyor:**
+    Lemon Squeezy'ye doğrudan sorulacak tek soru şu:
+    *"Türkiye'de şahıs şirketi olarak kayıtlı bir satıcıya banka
+    ödemesi (TRY ya da USD) gerçekten yapıyor musunuz; Stripe'ın
+    Türkiye'yi kendi ülke listesinde saymaması buna engel mi?"*
+    Cevap gelmeden ödeme sağlayıcısı seçilmeyecek, kod yazılmayacak.
+
+    ⛔ **İKİNCİ KAPI KAPALI — PayPal Türkiye'de yok.**
+    Kullanıcı, 13 Kasım 2026, kendi sözleriyle: *"lemon squeezy den
+    başka çaremiz yok. Pay Pal TR de yok"*.
+    (Bu bir KULLANICI BEYANI; bir sayfadan doğrulanmadı. Doğrulanması
+    da gerekmiyor: kendi ülkesindeki kendi durumunu biliyor.)
+
+    **SONUÇ — bu, soruyu bir ayrıntıdan GİT/GİTME KARARINA çeviriyor.**
+    Lemon Squeezy'nin Türkiye'ye iki ödeme yolu vardı; PayPal kapalı
+    olduğuna göre **banka ödemesi TEK yol.** Ve yukarıda okunan Stripe
+    sayfaları tam o yolu soru işareti yapıyor.
+
+    ⚠ **"Başka çaremiz yok" o kapıyı AÇMIYOR.** Kapı ya açık ya değil;
+    çaresizlik bir cevap değil. Cevap gelmeden ödeme kodu yazmak,
+    sonradan baştan yazılacak bir altyapı demek — o yüzden Aşama 7
+    (ödeme, test kipi) bu cevap gelene kadar BAŞLAMIYOR.
+
+    **Cevap "hayır" gelirse tek yol:** yurt içi bir sağlayıcı
+    (iyzico / PayTR / Param gibi) + ayrı bir yurt dışı sağlayıcı.
+    Bedeli: merchant of record ortadan kalkıyor, yani KDV ve fatura
+    BİZİM üstümüze geçiyor. Bu, şahıs şirketi için gerçek bir yük ve
+    mali müşavire sorulacak bir konu. ⛔ Bugün bu yol hakkında hiçbir
+    şey doğrulanmadı; buraya sağlayıcı adı, oran ya da şart YAZILMADI.
+
 16. **Ücretli pakette AI'yı ürünün karşılaması** (rapor: Öncelik 2)
     Bugün kullanıcı kendi Gemini anahtarını giriyor. Rapor bunu *"teknik
     olmayan üreticinin en büyük terk noktası"* diyor. Ücretli kullanıcı
