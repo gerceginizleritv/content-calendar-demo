@@ -104,6 +104,136 @@ Sekiz setin listesi kullanıcıdan geldi (63 madde). Kod yazmadan önce:
 
 ---
 
+## 14 KASIM 2026 — PLANLAMA SOHBETİNDEN GELEN LİSTE
+
+Kullanıcı planlama sohbetinin (ChatGPT) durum raporunu buraya getirdi
+ve "listemizde olmayanları ekle" dedi. Aşağısı o karşılaştırma.
+⚠ Rapor **o sohbetin bildiği kadarıyla** yazılmış; geliştirme
+tarafında neyin bittiğini göremiyor. Üç yerde yanlış biliyor, bölüm
+B'de düzeltildi.
+
+### A. Listemizde OLMAYAN işler — eklendi
+
+**Fiyat tarafı (hepsi BÖLÜM 2'ye bağlı, bu dosyada aşağıda):**
+
+1. **Kıyaslama tablosu.** `starter-pro-kiyaslama-v2.xlsx` — sarı
+   Starter sütununda olmaması gerekenlere "Yok" yazılacak.
+   **Kullanıcının kendi işi**; fiyat promptunun girdisi. Planlama
+   sohbeti dolduğunda tabloyu kesinleştirip fiyat sayfası için 8-10
+   satırlık özet önerecek.
+2. **Fiyat promptuna girecek yeni kararlar** (planlama sohbeti
+   yazacak, ama uygulamada **kota olarak zorlanacağı** için bizi de
+   bağlıyor): script sınırı **2** · AI **tamamen Pro'da** · hazır
+   setler sınıra **sayılmıyor** · **Studio / Agency sütunu yok** ·
+   PDF/CSV dışa aktarma **satılamaz**.
+3. **TRY fiyatları kesinleşmedi.** Köşeli parantezle verilenler:
+   320, 250, 1.050, 850, 2.450. ⛔ Bu sayılar **doğrulanmadı**,
+   yalnızca aktarıldı — hangi satır hangi pakete ait, burada belli
+   değil.
+4. **KDV dahil mi + fatura programı.** İkisi için **mali müşavire
+   danışılacak**; buradan cevaplanamaz.
+5. **TRY fiyatını kim alabilir?** Ülke / para birimi kuralı.
+6. **Bugün ücretsiz giriş yapmış hesaplara ne olacak?** Geçiş
+   kuralı. (Ödeme sağlayıcısı kararı zaten yukarıda, "Karar bekleyen
+   üç şey" içinde.)
+
+**Ürün tarafı:**
+
+7. **PDF / CSV dışa aktarma — yapılsın mı, stratejiden mi çıksın?**
+   ✅ **Doğrulandı:** uygulamada PDF ve CSV dışa aktarma **yok**.
+   Olan tek şey JSON yedek (`#exportBtn` → `shootboard-yedek-*.json`,
+   app.html:19283). Yani raporun "uygulamada yok" tespiti doğru.
+   `CSV / Google Sheets` bu dosyada **içe** aktarma olarak geçiyor
+   (Öncelik 2), dışa aktarma hiç yoktu.
+8. **Push bildirimi fizibilitesi** — bölüm C'de cevaplandı.
+9. **İki dilde paylaşım.** Türkçe ve İngilizce videoları aynı
+   hesapta nasıl paylaşacağımız. Kullanıcı *"ayrıca konuşalım"*
+   demiş, konuşulmamış; bu dosyada da hiç yoktu.
+
+**Bize bağlı olan, planlama sohbetinin işleri** (yapan onlar, ama
+kilidi biz açıyoruz — kayda geçiyor ki beklediği şey unutulmasın):
+
+10. **Tanıtım videosu** gerçek ekran görüntüsü bekliyor; görüntüler
+    **renk işi bitince** alınacak. Uygulama rengi değişince videonun
+    renklerine de bakılacak.
+11. **Videonun kalan sürümleri** (İngilizce, yatay, uzun). İngilizce
+    açılış için Flow'da **12 kredilik** yeni klip gerekiyor;
+    harcamadan önce sorulacak.
+12. **İlk altı Reels senaryosu.** Strateji hazır, senaryolar
+    yazılmadı. **"AI tamamen Pro'da"** kararı Gemini Reels'ını
+    etkiliyor.
+13. **30 günlük Instagram planı** hazır; başlangıç tarihi
+    **tasarımın yayına girmesine** bağlı.
+
+Yani (c) Aşama 4-7 bu üç işi de kilitliyor.
+
+**Sıra önerisi (planlama sohbetinden):** renk → çekim setleri →
+basitleştirme → **en son** fiyatlandırma. Gerekçe: hepsi `app.html`'e
+dokunuyor, ikisi aynı anda verilmeyecek. Bu sıra bizim elimizdeki
+sırayla uyumlu.
+
+### B. Planlama sohbetine düzeltilecek üç şey
+
+1. **"Renk paleti — verilmedi sanıyorum" YANLIŞ.** Prompt verildi ve
+   **yarısı canlıda**: Aşama 2 (koyu tema) ve Aşama 3 (açık tema),
+   19 değişken × üç blok, `main`'de. Ölçüldü: iki temada da sekiz
+   ekranda **0 zayıf kontrast**, ve eski açık temanın **4 gerçek
+   hatası** bu arada kapandı. Kalan: Aşama 4-7 (yukarıda).
+2. **"Bej kâğıt rengi logoda ve klaket şeridinde kalsın mı?" sorusu
+   kodda zaten cevaplanmış** — ayrı bir karar gerekmiyor.
+   Logo SVG'si (app.html:3670) ve klaket şeridi (`body::before`,
+   app.html:124) renklerini **değişkenden** alıyor: `var(--text)`,
+   `var(--accent)`, `var(--bg)`, `var(--text-dim)`, `var(--amber)`.
+   Yani palet değişince ikisi de kendiliğinden yeni palete geçti.
+   Bej `#F1EDE3` **tek bir yerde** kaldı: `app.html:22940`
+   theme-color meta'sı — o da (c) **Aşama 5**'in işi. Soru "kalsın
+   mı" değil, "Aşama 5 yapılınca gidecek".
+3. **"Çekim setleri — üzerinde çalışıyor" DEĞİL: başlamadı.** Dört
+   soru cevap bekliyor (hava eşikleri · 63 maddenin İngilizcesi ·
+   not alanı tasarımı · ⛔ *"çekimden 4 saat önce"* hesaplanamıyor,
+   çünkü projede yalnızca tarih var, saat yok). Ayrıntı yukarıda,
+   "(b) Çanta ve Yapılacaklar".
+
+### C. Push bildirimi — fizibilitenin doğrulanabilen kısmı
+
+Rapor *"hesapsız kullanıcıda ve iPhone'da çalışıp çalışmadığı belli
+değil"* diyor. İkisi de cevaplanabiliyor.
+
+**iPhone: çalışıyor, ama şartlı.** Kullanıcının Shootboard'u **ana
+ekrana eklemesi şart**; yoksa iOS hiç bildirim göndermiyor. Bu zaten
+bu dosyada yazılı ("Yapılacak 2 — Tarayıcı bildirimi") ve
+uygulamanın kendi metninde de söylüyor (`rm_ch_browser_lead`).
+
+⛔ **Hesapsız kullanıcı: zamanlanmış push İMKÂNSIZ.** Sebebi veri
+değil mimari: `saveProjects()` (app.html:9566) yerel kopyayı **her
+zaman** yazıyor ama sunucuya yalnızca `if(session)` gönderiyor.
+Hesapsız kullanıcının terminleri Supabase'e **hiç ulaşmıyor**; sunucu
+tarafında zamanlanmış bir iş neyi hatırlatacağını bilemez. Hesapsızda
+çalışan tek şey bugün de olan şey: **uygulama açılırken** bildirim.
+
+**Bugün ne var:** izin isteme ve uygulama açıkken bildirim
+(app.html:22556 ve 22575) çalışıyor; `sw.js:120` gelen bir push'u
+gösterebiliyor. Eksik olan **gönderim tarafı**: Edge Function +
+zamanlanmış görev + VAPID. Bu dosyadaki tabloda da öyle yazıyor
+("Kim yapar: Claude yazar, KULLANICI kurar").
+
+⛔ Maliyet/sayı yazılmadı — doğrulanamıyor.
+
+### D. Bir çelişki: "AI tamamen Pro'da" ile "başka AI sağlayıcı"
+
+"AI tamamen Pro'da" kararı, bu dosyadaki **"BAŞKA BİR AI SAĞLAYICI
+(ChatGPT / Claude)"** bölümünün gerekçesiyle çarpışıyor. O bölümün
+dayanağı **erişilebilirlik**: Gemini ücretsiz anahtar veriyor, kart
+istemiyor, tarayıcıdan çağrılabiliyor. Ama AI ücretsiz katmanda hiç
+görünmeyecekse "ücretsiz anahtar" gerekçesi zayıflıyor; buna karşılık
+Pro kullanıcısının elindeki anahtar Gemini'nin olmayabilir, yani
+ChatGPT/Claude desteği **daha** önemli hale geliyor.
+
+İkisi aynı turda karara bağlanacak. (Aşama 5'in "AI taslak üretme —
+SONA" kararı da aynı tura bakıyor.)
+
+---
+
 ## AŞAMA 5 — PLAN LİSTESİ: ALINAN KARARLAR
 ## 12 Kasım 2026 — kod yazılmadan önce
 
