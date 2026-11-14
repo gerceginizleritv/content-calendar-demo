@@ -113,9 +113,30 @@ değil elin ÜSTÜNDE duruyormuş gibi görünüyordu — kullanıcı
 - camın kenarları: x 1482–1728, y 449–966
 - köşe yarıçapı: ~30 piksel → kaynak ekran görüntüsünde **160 piksel**
 
-Yöntem: kaynak görüntüye önce `roundrectangle 0,0 1319,2849 160,160`
-maskesi alfa olarak uygulanıyor, sonra perspektif dönüşümü yapılıyor.
-Köşeler böylece perspektifle birlikte dönüyor.
+**SON YÖNTEM — kullanıcının tarif ettiği, 14 Kasım 2026.**
+Kullanıcının kendi sözleriyle: *"telefon ekranının tamamını chrome key
+ile boya ve boyadığın yeri kızın parmakları yok olmayacak şekilde sil.
+Sonra app görselini alta bu görseli üste koy."* Yani KATMAN SIRASI
+ters: fotoğraf ÜSTTE, uygulama ALTTA, ekranın olduğu yer fotoğrafta
+DELİK.
+
+Uygulaması (chroma key'e gerek yok, çünkü ekranın grisi zaten neredeyse
+saf):
+1. Özgün fotoğrafta ekranın düz grisi bulunuyor:
+   `min(r,g,b) > 140` ve `max-min < 26`, cömert bir dörtgenin içinde.
+2. Bu maske uygulamanın alfası ile çarpılıyor; kenarı 1 piksel
+   yumuşatılıyor (tırtık olmasın).
+3. Uygulama YALNIZCA maskenin içine çiziliyor.
+
+Sonuç: çerçeve, yuvarlak köşeler, parmaklar ve cam yansımaları
+kendiliğinden ÜSTTE kalıyor — tek tek maskelemeye gerek yok. Köşeleri
+elle yuvarlamaya da gerek kalmıyor; maske camın gerçek şeklini zaten
+taşıyor.
+
+⚠ **Bu fotoğrafta parmaklar camın üstüne taşmıyor** (ölçüldü: dörtgenin
+yalnızca %3,5'i gri değil, o da köşeler ve kenar yansımaları). Yani
+"parmak ekranın üstünde" etkisi istenirse FOTOĞRAFIN KENDİSİNDE öyle
+olmalı; montajla sonradan eklenemez — eklenirse uydurma olur.
 
 ⚠ Köşeleri gözle değil ÖLÇEREK bulmak gerekiyor: parlak gri maskesi
 çerçevedeki yansımayı da sayıyor, o yüzden ilk ölçümüm camı olduğundan
