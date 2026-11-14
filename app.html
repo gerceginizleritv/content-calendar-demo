@@ -1071,6 +1071,32 @@ body.suruklenirken *{cursor:grabbing !important;}
 /* Mekan kartindaki foy: Bugun sayfasindaki dl ile AYNI izgara
    (bg-mekan-dl), ustunde ince bir ayirici. */
 .mk-foy{margin-top:10px;padding-top:10px;border-top:1px solid var(--line);}
+/* ── KART YUKSEKLIGI SINIRLI ─────────────────────────────────────
+   Kullanici bildirdi: "metin ne eklenirse eklensin bu kadar uzun
+   olmamali, kutu olcekleri sabit olmali, altinda devami yazar".
+   Uzun izin/dikkat notlari olan bir mekan kartin bes kati oluyordu ve
+   izgaradaki butun satiri uzatiyordu.
+   Sinir 132px: iki-uc satirlik bir ozet gosteriyor, gerisi "Devami"
+   ile aciliyor. Metin SILINMIYOR, yalnizca katlaniyor. */
+.mk-foy{max-height:132px;overflow:hidden;position:relative;}
+.mk-foy.acik{max-height:none;}
+/* Altta yumusak bir kaybolma: daha fazlasi oldugu gorunsun.
+   ⚠ `.tasiyor` SART. Solma her foyde cizilseydi, tasmayan kartta da
+   son satir yari silik gorunurdu -- "devami var" diye yaniltirdi ama
+   devami yoktu. Kullanici gozuyle fark etti, olcum fark etmedi.
+   ⚠ Zemin degiskenden geliyor, iki temada da dogru. */
+.mk-foy.tasiyor:not(.acik)::after{
+  content:'';position:absolute;left:0;right:0;bottom:0;height:26px;
+  background:linear-gradient(to bottom, transparent, var(--surface));
+  pointer-events:none;
+}
+.mk-devam{
+  display:inline-block;margin-top:6px;padding:3px 0;border:0;background:none;
+  font:inherit;font-size:12px;font-weight:600;color:var(--accent);
+  cursor:pointer;text-decoration:underline;
+}
+.mk-devam:hover{color:var(--accent-hover);}
+.mk-devam:focus-visible{outline:2px solid var(--accent);outline-offset:2px;}
 /* Tarihi gecmis ve bitmemis adim: hem hucre hem tarih kutusu kirmizi. */
 /* Adim hucresi: kutucuk + tarih METNI. Tarih girisi ayri pencerede;
    yedi tarih kutusu satiri okunmaz hale getiriyordu. */
@@ -6367,6 +6393,7 @@ const LANG = {
     mk_sort_waiting: "Waiting work first",
     mk_has_permission: "permission noted",
     mk_has_cautions: "watch out",
+    mk_devam: "Show more", mk_daha_az: "Show less",
     mk_map: "Map ↗",
     mk_linked: (n)=> `${n} project${n===1?'':'s'} use this place.`,
     mk_limit: (n)=> `The place list is full (${n}).`,
@@ -7661,6 +7688,7 @@ const LANG = {
     mk_sort_waiting: "\u00D6nce bekleyen i\u015Fi olanlar",
     mk_has_permission: "izin notu var",
     mk_has_cautions: "dikkat",
+    mk_devam: "Devam\u0131", mk_daha_az: "Daha az",
     mk_map: "Harita ↗",
     mk_linked: (n)=> `${n} proje bu mekanı kullanıyor.`,
     mk_limit: (n)=> `Mekan listesi doldu (${n}).`,
@@ -11966,9 +11994,32 @@ function renderMekanlar(){
     el.addEventListener('click', e=>{
       // Harita baglantisina tiklamak pencereyi acmasin.
       if(e.target.closest('[data-dis]')) return;
+      // "Devami" dugmesi de pencereyi acmasin: isi yalnizca katlamak.
+      if(e.target.closest('.mk-devam')) return;
       mekanPenceresiniAc(el.dataset.mk);
     });
   });
+  /* ⚠ DUGME YALNIZCA GERCEKTEN TASAN KARTA KONUYOR. Her karta
+     konulsaydi kisa notlu mekanlarda tiklayinca hicbir sey olmayan bir
+     dugme dururdu. Olcum: scrollHeight > clientHeight. */
+  /* ⚠ OLCUM BIR SONRAKI CIZIME BIRAKILIYOR. Hemen olculurse yazi
+     tipleri ve izgara yerlesmeden once bakilmis oluyor; satir sayisi
+     degisince tasma yanlis hesaplaniyor. */
+  requestAnimationFrame(()=> kutu.querySelectorAll('.mk-foy').forEach(foy=>{
+    if(foy.scrollHeight <= foy.clientHeight + 2) return;
+    foy.classList.add('tasiyor');
+    const dug = document.createElement('button');
+    dug.type = 'button';
+    dug.className = 'mk-devam';
+    dug.textContent = t('mk_devam');
+    dug.setAttribute('aria-expanded', 'false');
+    dug.addEventListener('click', ()=>{
+      const acik = foy.classList.toggle('acik');
+      dug.textContent = t(acik ? 'mk_daha_az' : 'mk_devam');
+      dug.setAttribute('aria-expanded', String(acik));
+    });
+    foy.insertAdjacentElement('afterend', dug);
+  }));
 }
 
 function mekanPenceresiniAc(id, sonra){

@@ -163,6 +163,17 @@
   display:inline-flex;align-items:center;gap:10px;text-decoration:none;
   font-family:'Archivo',sans-serif;font-weight:800;font-size:19px;letter-spacing:-.4px;
 }
+/* ⚠ KILAVUZ VE GUIDE'DA MARKA BIR SPAN, YAZI ICINDEKI <a>.
+   `.marka{text-decoration:none}` o ice gecmis bagi kapsamiyor; sayfanin
+   kendi `a{}` kurali da text-decoration vermediginden tarayicinin
+   varsayilan alt cizgisi kaliyordu. Sonuc: logonun yanindaki
+   "Shootboard" yazisinin altinda cizgi. Kullanici 14 Kasim 2026'da
+   sordu: "bunu neden ekledin?" -- eklenmemisti, kapatan kural
+   kalkmisti (kontrast duzeltmesinde sayfanin kendi .marka a kurali
+   silinmisti ve alt cizgiyi de o kapatiyormus).
+   Burada kapatiliyor: ortak dosyada, butun sayfalar icin. */
+.marka a, .brand a{text-decoration:none;color:inherit;}
+
 .marka::before, .brand::before{
   content:'';flex:none;width:1.55em;height:1.55em;
   background:url(logo.svg) center/contain no-repeat;

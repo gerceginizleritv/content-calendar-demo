@@ -523,6 +523,11 @@ img{max-width:100%;height:auto;display:block;}
 .giris-alt{font-size:14.5px;color:rgba(255,249,240,.72);margin:0 0 16px;}
 .giris-baslik{font-family:'Archivo',sans-serif;font-weight:700;font-size:17px;margin:0 0 8px;}
 .giris-ince{font-size:13px;color:rgba(255,249,240,.6);margin-top:14px;}
+/* Hesapsız yol: birincil eylemin altında, ayrı ve görünür. */
+.giris-konuk{margin-top:18px;padding-top:16px;border-top:1px solid var(--cizgi-acik);}
+.dug-konuk{width:100%;color:var(--kagit);border-color:rgba(255,249,240,.45);}
+.dug-konuk:hover{border-color:var(--kagit);}
+.giris-konuk-not{margin:8px 0 0;font-size:12.5px;color:rgba(255,249,240,.72);}
 .giris-ince a{color:var(--jel-lime);}
 
 /* ── Google düğmesi ── */
@@ -618,6 +623,24 @@ img{max-width:100%;height:auto;display:block;}
 
 /* .dug-ikincil eski adı; yeni sayfadaki .dug-hayalet ile aynı iş. */
 .dug-ikincil{background:transparent;border-color:currentColor;}
+/* ⚠ "Giriş yap" ile "Şifreni mi unuttun" düğmeleri TAM SIFIR boşlukla
+   uç uca duruyordu (biri 938'de bitiyor, diğeri 938'de başlıyordu);
+   kenarlıkları üst üste binip tek bir kalın çizgi gibi görünüyordu.
+   Kullanıcı 14 Kasım 2026'da bildirdi. */
+#linkDug{margin-top:10px;}
+/* ⚠ DEVRE DIŞI DÜĞMELER GÖRÜNMEZ OLUYORDU. Sayfada devre dışı stili
+   yoktu; tarayıcı kendi varsayılanını uyguluyordu (rgba(16,16,16,.3),
+   yani neredeyse siyah) ve koyu kartın üstünde kontrast 1,07'ye
+   düşüyordu — yazı tamamen kayboluyordu.
+   "Şifreni mi unuttun" düğmesi e-posta girilene kadar devre dışı
+   olduğu için en çok orada görünüyordu. */
+.giris .dug:disabled{
+  color:rgba(255,249,240,.55);
+  border-color:rgba(255,249,240,.22);
+  background:transparent;
+  cursor:not-allowed;
+}
+.giris .dug-birincil:disabled{background:rgba(255,249,240,.1);}
 .dug-ikincil:hover{background:rgba(255,255,255,.1);}
 .giris .dug{width:100%;}
 /* ⛔ AMA GOZ DUGMESI HARIC. Tam genislik olunca sifre kutusunun
@@ -1012,9 +1035,16 @@ img{max-width:100%;height:auto;display:block;}
               <button class="dug dug-ikincil" type="button" id="linkDug" data-m="send_btn">Şifreni mi unuttun? Giriş bağlantısı gönder</button>
             </div>
 
-            <p class="giris-ince">
-              <a href="app.html" data-m="guest_link">Hesapsız devam et →</a>
-            </p>
+            <!-- ⚠ ESKİDEN KÜÇÜK BİR BAĞLANTIYDI. Kahramanda "Hesapsız
+                 dene" yazıyor ama bu panelde kocaman "Kayıt ol" karşılıyor
+                 ve hesapsız yol en altta soluk bir bağlantı olarak
+                 kalıyordu. Kullanıcı bildirdi. Artık kendi düğmesi var;
+                 birincil eylemin hemen altında, onunla yarışmayan bir
+                 ikincil düğme olarak. -->
+            <div class="giris-konuk">
+              <a class="dug dug-ikincil dug-konuk" href="app.html" data-m="guest_link">Hesapsız devam et →</a>
+              <p class="giris-konuk-not" data-m="guest_note">Hesap açmadan dene — takvimin bu tarayıcıda kalır, istersen sonra taşırsın.</p>
+            </div>
             <p class="durum" id="girisDurum" hidden></p>
           </div>
 
@@ -1075,6 +1105,7 @@ var EN = {
   guc_2:"İyi. 12 karakteri geçersen kırılması belirgin şekilde zorlaşır.",
   guc_3:"Güçlü.",
   guest_link:"Continue without an account →",
+  guest_note:"Try it without an account — your calendar stays in this browser, and you can move it later.",
   hero_cta1:"Start free — sign in or sign up",
   hero_cta2:"Try without an account",
   kural_buyuk:"One capital letter",
