@@ -849,6 +849,64 @@ body.suruklenirken *{cursor:grabbing !important;}
 }
 .hg-chip .cal-chip-title{overflow:hidden;text-overflow:ellipsis;white-space:nowrap;min-width:0;}
 .hg-chip .cal-time{font-size:11px;}
+/* ---- HAFTA/GUN IZGARASI: HER KUTU HER YERDE AYNI BOY ----------------
+   14 Kasim 2026. Kullanici bildirdi: "bu takvim icerisindeki postlarin
+   her birinin boyutu birbirinden farkli ve takvim genisliyor."
+   UC kural birbirini bozuyordu:
+     1. .cal-chip{flex:1} -- kutular hucrenin boyunu PAYLASIYORDU. Bir
+        saatte tek kayit varsa o kutu butun satiri kapliyor, dort kayit
+        varsa dorde bolunuyordu. Ayni kayit, komsu gunde baska boy.
+     2. @media(min-width:701px){.cal-chip{flex-wrap:wrap}} basligi alt
+        satira atiyor; uzerine dil ya da AI rozeti binince UCUNCU satir
+        aciliyor ve o kutu otekilerden uzun oluyordu.
+     3. .hg-cell icerige gore buyudugu icin saat satiri da esniyordu.
+   Artik kutu --hg-chip-h, hucre --hg-gorunen kadar kutu. Olculer
+   DEGISKENDE ve medya sorgusu YOK: telefon, tablet ve bilgisayarda
+   ayni (kullanicinin sarti).
+   ⛔ Yalnizca .hour-grid icinde: AY gorunumu bu kuralların disinda. */
+.hour-grid{--hg-chip-h:49px; --hg-gorunen:2; --hg-ara:3px;}
+.hg-cell{
+  height:calc(var(--hg-gorunen) * var(--hg-chip-h)
+            + (var(--hg-gorunen) - 1) * var(--hg-ara) + 6px);
+  min-height:0;position:relative;overflow:hidden;justify-content:flex-start;
+}
+/* ⚠ KUTU IZGARA, ESNEK DEGIL. Esnek + flex-wrap ile satir sayisi
+   SUTUN GENISLIGINE gore degisiyordu: olculdu, serbest yukseklik
+   masaustunde 53, TABLETTE 70, telefonda 47 piksel. Tablette ikon/tur/
+   saat satiri da ikiye bolunup kutu UC satir oluyordu. Izgarada her
+   cocugun yeri yazili, yani kutu her genislikte TAM IKI SATIR. */
+.hour-grid .hg-chip{
+  display:grid;
+  grid-template-columns:auto auto 1fr;
+  grid-template-rows:auto auto;
+  align-content:center;align-items:center;
+  column-gap:5px;row-gap:2px;
+  flex:0 0 var(--hg-chip-h);height:var(--hg-chip-h);min-height:0;overflow:hidden;
+}
+.hour-grid .hg-chip .cal-pico{grid-column:1;grid-row:1;}
+.hour-grid .hg-chip .cal-badge{grid-column:2;grid-row:1;}
+.hour-grid .hg-chip .cal-time{grid-column:3;grid-row:1;justify-self:start;}
+.hour-grid .hg-chip .cal-chip-title{grid-column:1 / -1;grid-row:2;}
+/* Rozet ve saat burada kucuk: ust satir ne kadar kisa olursa kutu da o
+   kadar kisa, 16 saatlik izgara o kadar az uzuyor. */
+.hour-grid .hg-chip .cal-badge{padding:0 4px;font-size:10px;line-height:1.6;}
+.hour-grid .hg-chip .cal-time{font-size:10.5px;}
+/* Dil ve AI rozeti burada YOK: ucuncu satiri acan ikisiydi. Ay
+   gorunumunde ve kayit penceresinde duruyorlar. */
+.hg-chip .cal-dil, .hg-chip .ai-rozet{display:none;}
+/* ⚠ "+N" AKISTA DEGIL, hucrenin USTUNE biniyor. Akista bir oge olsaydi
+   onu tasiyan hucre otekilerden uzun olurdu; kullanicinin sarti
+   "yazanlar ve yazmayanlar ayni boyutta olmali her zaman" idi. */
+.hg-tasma{
+  position:absolute;right:3px;bottom:3px;z-index:2;
+  border:1px solid var(--accent);background:var(--accent);color:var(--on-accent);
+  font-family:'IBM Plex Mono',monospace;font-size:10.5px;font-weight:600;
+  line-height:1;padding:3px 5px;border-radius:2px;cursor:pointer;
+}
+.hg-tasma:hover{background:var(--accent-hover);border-color:var(--accent-hover);}
+/* Acilinca hucre kendi icerigi kadar uzuyor: bu KULLANICININ actigi bir
+   sey, kendiliginden olan bir esneme degil. */
+.hg-cell.hg-acik{height:auto;overflow:visible;}
 @media(max-width:700px){
   .hour-grid{--hg-etiket:44px;}
   /* Yedi sutun 390 piksele sigmiyor: sutunlara okunabilir bir alt sinir
@@ -6065,6 +6123,7 @@ const LANG = {
     foy_not: "You mark a post as published yourself. Shootboard does not watch the platforms.",
     foy_bos: "No entries this week.",
     hg_early: "Before 09:00 / no time",
+    hg_tasma: "More entries at this hour — click to open",
     table_date: "Date",
     state_posted: "Posted",
     state_not_posted: "Not posted",
@@ -7362,6 +7421,7 @@ const LANG = {
     foy_not: "Yay\u0131nlad\u0131ktan sonra i\u015fareti sen koyars\u0131n. Shootboard platformlar\u0131 dinlemez.",
     foy_bos: "Bu hafta kay\u0131t yok.",
     hg_early: "09:00 öncesi / saatsiz",
+    hg_tasma: "Bu saatte daha fazla kayıt var — açmak için tıkla",
     table_date: "Tarih",
     state_posted: "Yayınlandı",
     state_not_posted: "Yayınlanmadı",
@@ -17399,6 +17459,29 @@ function hgChip(ev){
   return chip;
 }
 
+// Hucreye sigan kutu sayisi. CSS'teki --hg-gorunen ile AYNI olmak
+// zorunda: biri degisip oteki kalirsa "+N" yanlis sayi yazar. O yuzden
+// deger buradan CSS'e yaziliyor, iki yerde elle tutulmuyor.
+const HG_GORUNEN = 2;
+function hgTasmaIsareti(hucre, toplam){
+  if(toplam <= HG_GORUNEN) return;
+  const dug = document.createElement('button');
+  dug.type = 'button';
+  dug.className = 'hg-tasma';
+  dug.textContent = '+' + (toplam - HG_GORUNEN);
+  dug.title = t('hg_tasma');
+  dug.setAttribute('aria-expanded', 'false');
+  dug.addEventListener('click', e=>{
+    // ⚠ stopPropagation SART: hucrenin kendi tiklamasi "o saate yeni
+    // kayit" penceresini aciyor; isaret onu tetiklememeli.
+    e.stopPropagation();
+    const acik = hucre.classList.toggle('hg-acik');
+    dug.textContent = acik ? '\u2212' : ('+' + (toplam - HG_GORUNEN));
+    dug.setAttribute('aria-expanded', String(acik));
+  });
+  hucre.appendChild(dug);
+}
+
 function renderSaatIzgarasi(gunSayisi){
   const grid = document.getElementById('calGrid');
   grid.className = 'cal-grid hour-grid';
@@ -17409,6 +17492,7 @@ function renderSaatIzgarasi(gunSayisi){
   // Cok gunlu izgara dar ekranda sabit sutunla kayiyor; tek gun tam
   // genislikte kaliyor.
   grid.classList.toggle('hg-cok', gunSayisi > 1);
+  grid.style.setProperty('--hg-gorunen', String(HG_GORUNEN));
   grid.innerHTML = '';
   const locale = currentLang === 'tr' ? 'tr-TR' : 'en-US';
   const start = calWindowStart();
@@ -17449,7 +17533,9 @@ function renderSaatIzgarasi(gunSayisi){
       // data-saat YOK: buraya birakilirsa yalnizca tarih degisiyor,
       // saat oldugu gibi kaliyor.
       const h = ekle('hg-cell hg-early', null, { gun:g.key });
-      g.kayitlar.filter(hgErkenMi).forEach(ev=> h.appendChild(hgChip(ev)));
+      const erken = g.kayitlar.filter(hgErkenMi);
+      erken.forEach(ev=> h.appendChild(hgChip(ev)));
+      hgTasmaIsareti(h, erken.length);
     });
   }
 
@@ -17460,8 +17546,9 @@ function renderSaatIzgarasi(gunSayisi){
       const bugunMu = g.d.toDateString() === bugun.toDateString();
       const h = ekle('hg-cell' + (bugunMu ? ' today' : ''), null,
                      { gun:g.key, saat:String(saat).padStart(2,'0') });
-      g.kayitlar.filter(e=> !hgErkenMi(e) && hgSaat(e) === saat)
-                .forEach(ev=> h.appendChild(hgChip(ev)));
+      const saatlik = g.kayitlar.filter(e=> !hgErkenMi(e) && hgSaat(e) === saat);
+      saatlik.forEach(ev=> h.appendChild(hgChip(ev)));
+      hgTasmaIsareti(h, saatlik.length);
       // Bos hucreye tiklayinca o gun ve SAATLE yeni kayit aciliyor.
       h.addEventListener('click', e=>{
         if(e.target.closest('.cal-chip')) return;
