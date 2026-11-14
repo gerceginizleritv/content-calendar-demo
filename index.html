@@ -1319,17 +1319,43 @@ var authDonusu = /access_token=|[?&]code=|error_description=/.test(location.hash
 // Girisi baslatirken de isaretliyoruz: bazi akislarda adres cubugu temiz
 // donuyor, o zaman bu bayrak yonlendirmeyi kurtariyor.
 function donusIsaretle(){ try{ sessionStorage.setItem('slate_giris_donus','1'); }catch(e){} }
+/* ⚠ BU FONKSİYON İŞARETİ SİLMEZ — yalnızca bakar.
+   Eskiden siliyordu ve giriş akışını bozuyordu:
+     1. Google'dan dönülüyor, getSession() çalışıyor ama oturum henüz
+        hazır değil (kod takası bitmemiş), null dönüyor.
+     2. donusVarMi() true dönüyor VE İŞARETİ SİLİYOR. Oturum null
+        olduğu için yönlendirme olmuyor, ana sayfa gösteriliyor.
+     3. Saniyeler sonra SIGNED_IN geliyor — işaret artık yok,
+        donusVarMi() bu kez false. Yönlendirme yine olmuyor.
+   Kullanıcı 14 Kasım 2026'da bunu yaşadı: giriş olmuş ama ana sayfada
+   kalmış, uygulamaya girmek için iki kez daha tıklamak zorunda kalmış.
+   İşaret artık yalnızca uygulamayaGit() içinde, gerçekten
+   yönlendirirken siliniyor. */
 function donusVarMi(){
-  try{
-    if(sessionStorage.getItem('slate_giris_donus')){
-      sessionStorage.removeItem('slate_giris_donus');
-      return true;
-    }
-  }catch(e){}
+  try{ return !!sessionStorage.getItem('slate_giris_donus'); }catch(e){}
   return false;
+}
+function donusTemizle(){
+  try{ sessionStorage.removeItem('slate_giris_donus'); }catch(e){}
+}
+
+/* ⚠ BU FONKSİYON TAŞINMAYI UNUTULMUŞTU. Eski ana sayfada tanımlıydı;
+   giriş bölümü buraya taşınırken çağrıları geldi ama tanımı gelmedi.
+   Üç yerden çağrılıyor ve üçü de "ReferenceError: izleyipGit is not
+   defined" veriyordu — yani GİRİŞTEN SONRAKİ BÜTÜN YÖNLENDİRMELER
+   kırıktı. Kullanıcı 14 Kasım 2026'da bunu yaşadı: Google ile girdi,
+   ana sayfada kaldı, uygulamaya girmek için iki kez daha tıkladı.
+   ⚠ Hata görünmüyordu çünkü donusVarMi() işareti erken tüketiyor ve
+   bu satıra hiç gelinmiyordu. Bir hata başka bir hatayı gizliyordu. */
+function izleyipGit(ad, adres, degistir){
+  izle(ad);
+  setTimeout(function(){
+    if(degistir) location.replace(adres); else location.href = adres;
+  }, 150);
 }
 
 function uygulamayaGit(){
+  donusTemizle();                 // işaret BURADA tükeniyor
   durum('st_going', 'Signed in — opening Shootboard…', 'ok');
   izleyipGit('funnel/landing-to-app', 'app.html', true);
 }
