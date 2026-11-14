@@ -285,9 +285,21 @@ img{max-width:100%;height:auto;display:block;}
   }
   .kahraman-foto{
     position:absolute;inset:0;width:100%;height:100%;
-    /* ⚠ ÜSTTEN hizalı, ortadan değil: kırpma alttan olsun, kafadan
-       değil. Telefonun alt kenarı kadraj dışına taşabilir, kafa taşamaz. */
-    aspect-ratio:auto;object-position:50% 12%;
+    /* ⚠ GENİŞLİK SINIRLI. Fotoğraf ekranla birlikte sonsuza kadar
+       genişleseydi şerit orantısız basıklaşırdı: 2560 pikselde
+       fotoğrafın yalnızca %50'si görünür, telefon tek başına %48 yer
+       kaplar ve yüze yer kalmazdı. Genişlik 1800'de durduruluyor;
+       solunda kalan yeri bölümün turuncu zemini dolduruyor (aynı
+       renk, görünmez bir ek).
+       Sonuç: 1280'den 2560'a kadar kadraj SABİT kalıyor, çünkü
+       40vw/720 ikilisi oranı 2.5'te tutuyor ve fotoğrafın %71,5'i
+       her boyda görünüyor.
+       ⚠ Hizalama %28: ölçülen telefon aralığı %29,8-%78,2; bu değerle
+       pencere %8-%79,5 oluyor, yani telefonun tamamı İÇERİDE ve yüz
+       de kesilmiyor. Önce %12 denenmişti: telefonun altı kesiliyordu
+       (kullanıcı bildirdi), ondan önce ortalıydı: kafa kesiliyordu. */
+    aspect-ratio:auto;object-position:50% 28%;
+    width:min(100%,1800px);left:auto;right:0;
     /* ⚠ z-index ŞART. ::before kutunun ilk çocuğu sayılıyor, fotoğraf
        ise ondan sonra boyanıyor: sıra verilmezse turuncu katman
        fotoğrafın ALTINDA kalıyor ve hiçbir işe yaramıyor. Bu tam
