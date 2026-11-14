@@ -6,6 +6,104 @@ duruyor, neden ertelendiği de yazıyor ki aynı tartışma baştan yapılmasın
 
 ---
 
+## 14 KASIM 2026 — AÇIK İŞLER (oturum yarıda kesildi)
+
+### ⚠ ÖNCE BU: tam test koşusu yarıda kaldı
+
+Koşu **32/197**'de durduruldu (kullanıcı bilgisayarını kapatacaktı).
+O noktaya kadar kırmızı yoktu ama **165 test koşmadı**.
+**Dönüşte ilk iş:** `bash testler/kosu.sh` — temiz çıkarsa aşağıdaki
+iki commit `main`'e gönderilir.
+
+### ⚠ `main`'e GÖNDERİLMEYİ BEKLEYEN İKİ COMMIT
+
+| Commit | İçerik |
+|---|---|
+| `297c8dc` | Google ile giriş tek tıklamaya indi + `giris-donus.test.js` |
+| `1690061` | Mekân kartları, giriş paneli, markadaki alt çizgi, devre dışı düğme kontrastı + `mekan-kart-yukseklik.test.js` |
+
+İkisi de **`yedek/kahraman-yatay`** dalında GitHub'da duruyor; konteyner
+kapansa bile kaybolmazlar. `main`'e push edilmedi çünkü `main` canlı
+siteyi yayına alıyor ve koşu tamamlanmadı.
+
+---
+
+### (c) Renk paleti — Aşama 2 ve 3 canlıda, 4-7 kaldı
+
+| Aşama | Ne yapılacak |
+|---|---|
+| **4** | Elle yazılmış **53 rengi** değişkene bağla. İçinde: fikir kartı etiketleri (altı renklik küme — tek tek değil küme olarak uyarlanmalı), mekân baş harflerinin hesaplanan rengi (`hsl(var(--mk-h) 45% 50%)`), pencere perdelerinin üç ayrı koyuluğu (`rgba(4,5,10,.8/.6/.45)`), 11 yerdeki `#fff`, `--green` dururken sabit yazılmış `#5FD9A0`. **Ayrıca yan menü paletteki kendi rengini alacak** (`#0B0C0D` / `#F2F2F3`); bugün `--surface` kullanıyor, yani yüzeyle aynı. ⛔ **Google'ın 13 logo rengine DOKUNULMAZ** (Drive ikonu, "Google ile giriş"). |
+| **5** | `manifest.json` (`theme_color`, `background_color`), `<meta name="theme-color">` (app.html:9 ve 22863'teki JS), **`sw.js` önbellek sürümü** (`SURUM`). ⚠ Sonuncusu atlanırsa kullanıcıda eski renkler önbellekte takılı kalır. |
+| **6** | `paylas.html` — kullanıcı kapsama aldı. `yonetim.html` ve `deneme.html` de eski palette; onlar sonraya bırakıldı. |
+| **7** | `MARKA.md` "Görsel kimlik" bölümü — hâlâ **eski paleti** yazıyor (`#F1EDE3` / `#C4350A`). Metin önce kullanıcıya gösterilecek. |
+
+**Palet (kullanıcı onaylı, "Kömür ve turuncu"):**
+
+| | KOYU | AÇIK |
+|---|---|---|
+| zemin | `#0F1011` | `#FAFAFA` |
+| yan menü | `#0B0C0D` | `#F2F2F3` |
+| yüzey | `#17181A` | `#FFFFFF` |
+| ikinci yüzey | `#1F2124` | `#EFEFF1` |
+| çizgi | `#2A2C30` | `#E2E3E6` |
+| metin | `#EDEEF0` | `#17181A` |
+| soluk metin | `#9A9DA3` | `#5E6167` |
+| vurgu | `#FF6B35` | `#C8400B` |
+| vurgu üstü yazı | `#0F1011` | `#FFFFFF` |
+| olumlu | `#4CC38A` | `#1E7A4E` |
+| uyarı | `#F5B544` | `#8A5A00` |
+| hata | `#FF6B6B` | `#B3261E` |
+
+**Türetilenler (onaylandı, app.html'de uygulandı):** `--line-soft`
+`#212429`/`#EEEFF1` · `--bekleyen` `#70757D`/`#8D9199` · `--accent-dim`
+`#9196A0`/`#64686F` · `--accent-hover` `#FF8A5C`/`#A8340A` ·
+`--accent-soft` `#32190D`/`#FDF1EB` · `--amber-soft` `#352A12`/`#FBF1DC`.
+Platform renkleri **değişmedi** (sekizi de yeni zeminde en az 3,97).
+
+---
+
+### (b) Çanta ve Yapılacaklar — başlamadı
+
+Sekiz setin listesi kullanıcıdan geldi (63 madde). Kod yazmadan önce:
+
+1. **Hava eşikleri** — kullanıcı önermemi istedi, "kamera ve telefonların
+   yağmur/soğuk dayanıklılığına göre". ⛔ Doğrulanmadan sayı yazılmayacak.
+2. **63 maddenin İngilizcesi** — koda koymadan önce tablo olarak
+   gösterilecek (kullanıcının kuralı).
+3. **Not alanı tasarımı** — "hazır sete bir not ya da yeni bir alet
+   ekleyebilsin".
+4. ⛔ **ÇÖZÜLMEMİŞ ÇELİŞKİ:** *"çekimden 4 saat önce"* hatırlatması
+   **hesaplanamıyor** — projelerde yalnızca tarih var, saat yok
+   (`/^\d{4}-\d{2}-\d{2}$/`, app.html:9453). Ya saat alanı eklenecek
+   ya hatırlatma yeniden tanımlanacak. **Karar kullanıcıda.**
+
+---
+
+### Karar bekleyen üç şey
+
+- **Ödeme.** Lemon Squeezy Türkiye'ye banka havalesiyle ödüyor; Stripe'ın
+  kendi ülke listesinde Türkiye yok; PayPal da yok. Tek yol banka
+  havalesi. Git/gitme kararı kullanıcıda.
+- ⛔ **`MARKA.md` 49. satır** hâlâ yanlış iddiayı taşıyor: *"senin adına
+  hiçbir yere gönderi atmaz"*. Oysa Instagram/Facebook'a otomatik yayın
+  var (varsayılan kapalı). Siteden altı yerden silindi; marka belgesinde
+  duruyor. **Kullanıcının belgesi olduğu için dokunulmadı.**
+- **`privacy.html` Open-Meteo'yu anmıyor.** Cloudflare R2, GoatCounter,
+  Google ve Supabase yazılı; ama koordinat (app.html:16248) ve yazılan
+  yer adları (16292) Open-Meteo'ya gidiyor.
+
+---
+
+### Daha önce ertelenmiş, duruyor
+
+- Giriş anında **veri taşınmıyor**: mekânlar, fikirler, scriptler hesaba
+  geçmiyor.
+- Yönetim fonksiyonunda **kalıcı hız sınırı ve iki adımlı doğrulama** yok.
+- "Basitleşme + yedi adım" çalışması.
+- `calisma` dalı `main`'in gerisinde.
+
+---
+
 ## AŞAMA 5 — PLAN LİSTESİ: ALINAN KARARLAR
 ## 12 Kasım 2026 — kod yazılmadan önce
 
