@@ -2920,6 +2920,121 @@ biçimlendirme, kendi alan adı.
 
 ---
 
+## Nerede kaldık (15 Kasım 2026, akşam — LOGO + PUSH BAŞLADI)
+
+Kullanıcı PC'yi kapattı, **yarın devam.** Bu bölüm devir notudur.
+
+### ✅ BİTEN — logo ailesi tek kaynağa getirildi
+
+Kullanıcı PC'de kurduktan sonra masaüstü simgesini gördü:
+*"pc de icon bu şekilde bizim kendi iconumuz logomuz olamaz mı"*.
+Haklıydı — PWA ikonu **jenerik bir "not kâğıdı"** çizimiydi, logo
+değildi, turuncusu bile paletten değildi.
+
+⛔ **Sorun sanılandan büyüktü: ikon ailesinin TAMAMI ayrışmıştı.**
+`favicon.svg` 13 Kasım'da maviden turuncu klakete çevrilmiş, ama PNG
+sürümler 31 Ekim'de kalmıştı. Yani sekme simgesi, Apple simgesi ve
+PWA simgesi üç ayrı şeyi gösteriyordu.
+
+Hepsi `logo-koyu.svg`'den yeniden üretildi (koyu zemin için olan sürüm;
+`logo.svg` açık zemin içindir ve kendi yorumunda "koyu zemine koyma"
+yazıyor):
+
+| Dosya | Boyut | Not |
+|---|---|---|
+| `icons/icon-192.png` · `icon-512.png` | %84 logo | `purpose: any` |
+| `icons/icon-maskable-192.png` · `-512` | %60 logo | **YENİ** |
+| `apple-touch-icon.png` | 180 | opak (iOS alfa sevmiyor) |
+| `favicon-32x32.png` · `favicon-16x16.png` | — | artık klaket |
+| `favicon.ico` | 16+32+48 | elle paketlendi |
+
+⛔ **Manifest'te gerçek bir hata vardı:** `any` ve `maskable` için
+**aynı dosya** veriliyordu. Maskable ikon daire/kare maskeye kırpılır,
+yani kenarlar kesilirdi. Artık ayrı, boşluklu dosya.
+
+`sw.js` SURUM **v6 → v7**: eski önbellek eski ikonu tutardı.
+
+`sayfa-saglik.test.js` yeni ikonlarla **geçti**.
+
+### 🔄 BAŞLAYAN — push bildirimi
+
+Kullanıcı: *"ben pc başında olmayacağım sen push mesaj için
+çalışmalar başla"*.
+
+**Durum tespiti (doğrulandı, varsayım değil):**
+
+| Parça | Durum |
+|---|---|
+| `sw.js:119` push dinleyicisi | ✅ zaten vardı |
+| Bildirim izni (`app.html:22938`) | ✅ var |
+| Uygulama AÇIKKEN bildirim | ✅ var |
+| Abonelik tablosu | ✅ **bu oturumda yazıldı** → `sql/71` |
+| Şifreleme + VAPID imzası | ✅ **bu oturumda yazıldı + DOĞRULANDI** |
+| Gönderen Edge Function | ⬜ yazılacak |
+| İstemci tarafı `pushManager.subscribe` | ⬜ yazılacak |
+| Zamanlanmış görev (cron) | ⬜ kullanıcı kuracak |
+| VAPID anahtar çifti | ⬜ kullanıcı üretecek |
+
+**Yazılan dosyalar:**
+
+- `sql/71-push-abonelikleri.sql` — tablo + RLS. Hiçbir şeyi geri
+  almıyor, tekrar çalıştırılması güvenli. **Henüz ÇALIŞTIRILMADI.**
+- `supabase/functions/push-gonder/webpush.ts` — RFC 8291 (şifreleme),
+  RFC 8188 (paketleme), RFC 8292 (VAPID imzası). **Dış kütüphane yok**,
+  depodaki gelenek bu: hiçbir Edge Function dış paket çekmiyor.
+- `testler/webpush-vektor.test.js` — **8 kontrol, 8'i geçti.**
+
+⚠ **Şifreleme UYDURULMADI, RFC'nin kendi sayılarıyla doğrulandı.**
+Test vektörü `https://www.rfc-editor.org/rfc/rfc8291.txt` Bölüm 5'ten
+indirildi (host bu oturumda ağ listesine eklendi). Aynı girdilerle
+üretilen şifreli metin, RFC'nin yazdığıyla **birebir aynı**.
+
+⚠ **Bu testin sınırı:** doğrulanan şey şifrelemenin standarda
+uygunluğu. Gerçek bir push servisinin kabul edip etmediği **ancak
+canlıda, gerçek bir cihaza bildirim düşünce** belli olur.
+
+### Alınan tasarım kararları (yarın tekrar tartışılmasın)
+
+1. **VAPID açık anahtarı `app.html`'e GÖMÜLMEYECEK.** Edge Function GET
+   ile döndürecek, istemci açılışta çekecek. Sebebi: kullanıcı hiçbir
+   dosyayı elle düzenlemek zorunda kalmasın; anahtar yalnızca Supabase
+   sırlarında dursun.
+2. **Abonelikler ayrı tablo**, `user_prefs` içinde değil. Bir
+   kullanıcının birden çok tarayıcısı olur.
+3. **Ölü abonelik silinir**, mezar taşı tutulmaz. 404/410 dönen
+   abonelik bir daha dirilmez.
+4. **Endpoint tekil (kullanıcı başına değil GENEL).** Aynı tarayıcı
+   başka hesapla girerse satırı devralır; bildirim yanlış hesaba
+   gitmez.
+
+### ⛔ YARIN ÇÖZÜLECEK AÇIK SORU — saat dilimi
+
+Hatırlatma saati (`prefs.reminders.saat`) **kullanıcının yerel
+saati**, ama kullanıcının saat dilimi **hiçbir yerde saklanmıyor**
+(mekânlarda var, kullanıcıda yok). Sunucu bunu bilmeden ne zaman
+göndereceğini hesaplayamaz.
+
+Önerilen: istemci `Intl.DateTimeFormat().resolvedOptions().timeZone`
+değerini `prefs`e yazsın. Küçük bir ekleme ama `app.html`'e dokunuyor.
+
+### ⛔ İKİNCİ AÇIK SORU — termin hesabı iki yerde olacak
+
+`hatirlatilacaklar()` (app.html:22050) terminleri tarayıcıda
+hesaplıyor. Gönderen Edge Function aynı hesabı **Deno'da tekrar**
+yapacak. İki kopya ayrışır — bu depo tam bu hatayı defalarca yaşadı
+(politika tablosu, palet, ikon ailesi).
+
+Yarın karar verilecek: (a) iki kopya + ayrışmayı yakalayan test,
+(b) hesabı SQL'e taşıyıp ikisinin de oradan okuması.
+
+### Kaydın durumu
+
+Bu işler **`yedek/push-bildirimi` dalında**, `main`'de DEĞİL.
+Sebebi: tam test koşusu yapılmadı ve kural "main'e göndermeden önce
+tam test" diyor. Yarın tam koşu yeşilse `main`'e geçecek.
+
+---
+
 ## Nerede kaldık (15 Kasım 2026 — "her şeyin İngilizcesi olmalı")
 
 Kullanıcı: *"hazırlanan her şey mutlaka invgilizcede olmalı !"* ve
