@@ -436,6 +436,45 @@ body::before{
   color:var(--text-dim);
 }
 .rail-link:hover{background:var(--surface-2);color:var(--text);}
+/* ---- "Telefona kur" dugmesi ---------------------------------------
+   Kullanicinin karari: NOTR cerceve ("Giris yap" gibi), vurgu rengi
+   "+ Yeni Giris" gibi asil ise ait kalsin. Hesapsiz ziyaretciye de
+   gorunuyor: demo hesapsiz calisiyor ve ana ekrana ekleyen kisi geri
+   donme ihtimali en yuksek kisi.
+   ⚠ Dugme ACILISTA GORUNMUYOR; yalnizca kurulabilir bir durum varsa
+   JS onu aciyor (asagida). Olu dugme olmaz. */
+.rail-kur{width:100%;gap:7px;margin-top:8px;}
+.rail-kur-not{margin:6px 0 0;font-size:11.5px;line-height:1.45;color:var(--text-dim);}
+/* ---- iPhone / iPad tarifi ------------------------------------------
+   Apple tek dokunusla kuruluma izin vermiyor; dugme bunun yerine bu
+   tarifi aciyor. Semalar CIZGI: Apple'in ekran goruntusu ya da simgesi
+   KOPYALANMADI, sade bir sema cizildi.
+   ⚠ Semadaki KONUMLAR dogrulanmadi: Apple adimlari yaziyla veriyor ama
+   dugmenin ekranda NEREDE durdugunu yazmiyor, satir ici simge resmiyle
+   gosteriyor. Dogrulanan sey adimlarin sirasi ve menu adlari. */
+.kur-sema{border:1px solid var(--line);border-radius:2px;padding:12px;
+  background:var(--surface-2);margin:0 0 6px;}
+.kur-sema svg{display:block;width:100%;max-width:190px;margin:0 auto;height:auto;}
+.kur-sema .s-cizgi{fill:none;stroke:var(--text-dim);stroke-width:1.5;}
+.kur-sema .s-vurgu{fill:none;stroke:var(--accent);stroke-width:2.2;}
+.kur-sema .s-etiket{fill:var(--accent);font:600 11px 'IBM Plex Mono',monospace;}
+.kur-sema .s-metin{fill:var(--text-dim);font:10px 'IBM Plex Sans',sans-serif;}
+.kur-blok{margin:0 0 20px;}
+.kur-blok h3{font-size:13px;margin:0 0 3px;}
+.kur-blok .kur-kosul{font-size:12px;color:var(--text-dim);margin:0 0 10px;}
+.kur-blok ol{margin:0;padding-left:19px;font-size:13px;line-height:1.55;}
+.kur-blok li{margin-bottom:4px;}
+.kur-vurgu-not{border:1px solid var(--amber);background:var(--amber-soft);
+  border-radius:2px;padding:10px 12px;font-size:12.5px;line-height:1.5;margin:4px 0 0;}
+/* Telefonda yan serit yatay bir cubuga donuyor ve orasi zaten dar:
+   dugme orada DEGIL, "⋯" cekmecesinde duruyor.
+   ⚠ KIMLIKLE YAZILDI, SINIFLA DEGIL. Ilk yazilista `.rail-kur` idi ve
+   TUTMADI: dosyada daha sonra gelen bir sinif kurali display'i
+   eziyordu. Olculdu, telefonda display:flex cikti ve dugme hem ust
+   seritte hem cekmecede gorundu. Kimlik secicisi (1,0,0) her sinifi
+   yener, boylece dosyadaki sira onemsiz. */
+@media(max-width:700px){ #kurBtn, #kurNot{display:none;} }
+@media(min-width:701px){ #kurBtnMobil{display:none;} }
 .rail-link:focus-visible{outline:2px solid var(--accent);outline-offset:2px;}
 .rail-prefs{display:flex;gap:6px;align-items:center;margin-top:8px;}
 /* Dil anahtari artik kimlik blogunda: giris dugmesiyle ayni genislikte,
@@ -3928,6 +3967,8 @@ textarea.sc-ai-brief{min-height:64px;resize:vertical;line-height:1.5;}
         <div class="avatar" id="railAvatar" aria-hidden="true"></div>
         <div class="rail-name" id="railName" hidden></div>
         <button class="btn btn-sm rail-auth" id="authBtn" data-i18n="btn_signin">☁ Sign in</button>
+        <button type="button" class="btn btn-sm rail-kur" id="kurBtn" hidden><svg viewBox="0 0 16 16" width="14" height="14" fill="none" aria-hidden="true" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" style="flex:none"><path d="M8 2v8"/><path d="M4.5 7 8 10.5 11.5 7"/><path d="M3 13h10"/></svg><span class="kur-etiket">Install</span></button>
+        <p class="rail-kur-not" id="kurNot" data-i18n="kur_not" hidden>Add Shootboard to your Home Screen.</p>
         <!-- DIL ANAHTARI BURADA, "⋯" menusunun dibinde degil. Eskiden
              seridin en altindaki tercihler kutusundaydi: masaustunde
              kaydirmadan gorunmuyordu, telefonda "⋯" menusunun icinde
@@ -4022,6 +4063,7 @@ textarea.sc-ai-brief{min-height:64px;resize:vertical;line-height:1.5;}
       <div class="rail-foot" id="railFoot">
         <!-- Alt sayfanın tutamağı: yalnızca telefonda görünüyor. -->
         <span class="rail-foot-tut" aria-hidden="true"></span>
+        <button type="button" class="rail-link" id="kurBtnMobil" hidden><span class="kur-etiket">Install</span></button>
         <!-- Tanitim blogu simdilik kapali: bu is uygulamanin tepesinde
              degil, ayri bir karsilama sayfasinda anlatilacak. Metin ve
              duzenek silinmedi, oradan tekrar kullanilacak. -->
@@ -4589,6 +4631,17 @@ textarea.sc-ai-brief{min-height:64px;resize:vertical;line-height:1.5;}
   </div>
 </div>
 
+<div class="overlay" id="kurTarifOverlay">
+  <div class="modal" style="max-width:560px;">
+    <h2 data-i18n="kur_t_baslik">Add Shootboard to your Home Screen</h2>
+    <p class="hint" data-i18n="kur_t_lead">Apple does not allow one-tap install, so it takes a few steps.</p>
+    <div id="kur_t_icerik"></div>
+    <p class="kur-vurgu-not" data-i18n="kur_t_webapp"></p>
+    <div class="satir" style="display:flex;justify-content:flex-end;margin-top:16px;">
+      <button type="button" class="btn" id="kur_t_kapat" data-i18n="btn_close">Close</button>
+    </div>
+  </div>
+</div>
 <div class="overlay" id="paylasOverlay">
   <div class="modal" style="max-width:480px;">
     <h2 data-i18n="pay_title">Share a read-only link</h2>
@@ -7063,6 +7116,20 @@ const LANG = {
     hs_sil: (ad)=> `Delete “${ad}”?`,
     hs_sil_bagli: (ad, n)=> `“${ad}” is used by ${n} entr${n === 1 ? 'y' : 'ies'}. Those entries are not deleted; they will show the account as removed. Delete it?`,
     rm_btn: "🔔 Reminders",
+    kur_btn_telefon: "Install on phone",
+    kur_btn_bilgisayar: "Install on computer",
+    kur_not: "Add Shootboard to your Home Screen. It opens like an app and works without a connection.",
+    kur_t_baslik: "Add Shootboard to your Home Screen",
+    kur_t_lead: "Apple does not allow a one-tap install, so it takes a few steps. The names below are Apple's own.",
+    kur_t_webapp: "⚠ Leave Open as Web App turned on. On iPhone, notifications depend on it.",
+    kur_t_ip1_bas: "If your Tabs layout is Bottom or Top",
+    kur_t_ip1_kosul: "The Share button sits in the bar.",
+    kur_t_ip2_bas: "Otherwise",
+    kur_t_ip2_kosul: "If you cannot see the Share button.",
+    kur_t_ipad_bas: "On iPad",
+    kur_t_ipad_kosul: "There is one extra step: View More.",
+    kur_t_paylas: "Share",
+    kur_t_sayfamenu: "Page Menu",
     rm_title: "Deadline reminders",
     rm_lead: "Shootboard can tell you about a step before its deadline passes. Two channels, each switched on separately.",
     rm_when_title: "When should it remind you?",
@@ -8326,6 +8393,20 @@ const LANG = {
     hs_sil: (ad)=> `“${ad}” silinsin mi?`,
     hs_sil_bagli: (ad, n)=> `“${ad}” ${n} kayıtta kullanılıyor. O kayıtlar silinmiyor; hesabı silinmiş olarak gösterecekler. Yine de silinsin mi?`,
     rm_btn: "🔔 Hatırlatmalar",
+    kur_btn_telefon: "Telefona kur",
+    kur_btn_bilgisayar: "Bilgisayara kur",
+    kur_not: "Shootboard'u ana ekranına ekle. Uygulama gibi açılır, internet yokken de çalışır.",
+    kur_t_baslik: "Shootboard'u ana ekranına ekle",
+    kur_t_lead: "Apple tek dokunuşla kuruluma izin vermiyor, birkaç adım gerekiyor. Aşağıdaki adlar Apple'ın kendi adları.",
+    kur_t_webapp: "⚠ Web Uygulaması Olarak Aç anahtarını açık bırak. iPhone'da bildirimler buna bağlı.",
+    kur_t_ip1_bas: "Sekmeler yerleşimin Alt ya da Üst ise",
+    kur_t_ip1_kosul: "Paylaş düğmesi çubuğun içinde durur.",
+    kur_t_ip2_bas: "Değilse",
+    kur_t_ip2_kosul: "Paylaş düğmesini göremiyorsan.",
+    kur_t_ipad_bas: "iPad'de",
+    kur_t_ipad_kosul: "Fazladan bir adım var: Daha Fazla Görüntüle.",
+    kur_t_paylas: "Paylaş",
+    kur_t_sayfamenu: "Sayfa Menüsü",
     rm_title: "Termin hatırlatmaları",
     rm_lead: "Shootboard bir adımın termini geçmeden sana haber verebilir. İki kanal var, her biri ayrı ayrı açılıyor.",
     rm_when_title: "Ne zaman hatırlatsın?",
@@ -23208,6 +23289,187 @@ document.getElementById('rm_dosyaBtn').addEventListener('click', ()=>{
 // Service worker: cevrimdisi acilis ve bildirimin tiklanmasi icin.
 // Yalnizca https ve localhost'ta kayit oluyor; dosyadan acilan sayfada
 // tarayici izin vermiyor ve konsola hata yaziyor.
+/* ====================================================================
+   "TELEFONA KUR" DUGMESI
+   Uygulama kurulabilir durumdaydi (manifest, simgeler, sw.js) ama
+   tetikleyen bir dugme yoktu; kullanici tarayici menusunden kendisi
+   bulmak zorundaydi.
+
+   ⛔ OLU DUGME OLMAZ. Dugme yalnizca SU IKI durumda aciliyor:
+     1. Tarayici kurulabilir diyorsa (beforeinstallprompt geldiyse), ya da
+     2. iPhone/iPad ise -- orada Apple tek dokunusa izin vermiyor, ama
+        gosterilecek bir TARIF var.
+   Ikisi de yoksa (Firefox, zaten kurulu) dugme gizli kaliyor.
+
+   ⚠ ACILISTA KENDILIGINDEN ACILAN HICBIR SEY YOK: serit, pencere ya da
+   bildirim eklenmedi. Kurulum bir kere yapilan bir is; her acilista
+   dikkat cekmesi gerekmiyor.
+
+   Tarayici destegi (kaynaktan dogrulandi, 15 Kasim 2026):
+   Chrome, Edge 79+, Samsung Internet 8.2+ -> var.
+   Safari (iPhone/iPad/Mac) ve Firefox -> YOK. iOS'ta butun tarayicilar
+   Safari motorunu kullandigi icin iPhone'daki Chrome da yok.
+   ==================================================================== */
+/* iPhone / iPad tarifi. Semalar CIZGI SVG; Apple'in gorseli
+   kopyalanmadi. Adim adlari Apple'in KENDI sayfalarindan alindi
+   (support.apple.com, TR ve EN), ezberden yazilmadi. */
+function kurSemasiIphoneSerit(){
+  return '<svg viewBox="0 0 220 300" aria-hidden="true">' +
+    '<rect class="s-cizgi" x="26" y="8" width="168" height="284" rx="22"/>' +
+    '<rect class="s-cizgi" x="38" y="26" width="144" height="200" rx="4" opacity=".45"/>' +
+    '<rect class="s-cizgi" x="38" y="236" width="144" height="26" rx="13"/>' +
+    '<text class="s-metin" x="52" y="253">shootboard.app</text>' +
+    '<g class="s-cizgi" stroke-linecap="round">' +
+      '<path d="M48 276 l-6 -5 6 -5"/><path d="M78 266 l6 5 -6 5"/>' +
+      '<path d="M140 271 h12"/><path d="M146 265 v12"/>' +
+      '<rect x="166" y="265" width="12" height="12" rx="2"/></g>' +
+    '<g class="s-vurgu" stroke-linecap="round" stroke-linejoin="round">' +
+      '<circle cx="110" cy="271" r="15"/><path d="M110 265 v11"/>' +
+      '<path d="M106 269 l4 -4 4 4"/><path d="M103 277 h14"/></g>' +
+    '<text class="s-etiket" x="110" y="297" text-anchor="middle">' + escapeHtml(t('kur_t_paylas')) + '</text></svg>';
+}
+function kurSemasiIphoneMenu(){
+  return '<svg viewBox="0 0 220 300" aria-hidden="true">' +
+    '<rect class="s-cizgi" x="26" y="8" width="168" height="284" rx="22"/>' +
+    '<rect class="s-cizgi" x="38" y="26" width="144" height="200" rx="4" opacity=".45"/>' +
+    '<rect class="s-cizgi" x="38" y="248" width="144" height="28" rx="14"/>' +
+    '<text class="s-metin" x="58" y="266">shootboard.app</text>' +
+    '<g class="s-vurgu" stroke-linecap="round"><circle cx="166" cy="262" r="11"/>' +
+      '<circle cx="162" cy="262" r="1.3" fill="currentColor" stroke="none"/>' +
+      '<circle cx="166" cy="262" r="1.3" fill="currentColor" stroke="none"/>' +
+      '<circle cx="170" cy="262" r="1.3" fill="currentColor" stroke="none"/></g>' +
+    '<text class="s-etiket" x="166" y="289" text-anchor="middle">' + escapeHtml(t('kur_t_sayfamenu')) + '</text></svg>';
+}
+function kurSemasiIpad(){
+  return '<svg viewBox="0 0 300 230" aria-hidden="true">' +
+    '<rect class="s-cizgi" x="8" y="8" width="284" height="214" rx="12"/>' +
+    '<rect class="s-cizgi" x="20" y="20" width="260" height="30" rx="4"/>' +
+    '<rect class="s-cizgi" x="86" y="27" width="120" height="16" rx="8" opacity=".55"/>' +
+    '<text class="s-metin" x="96" y="39">shootboard.app</text>' +
+    '<rect class="s-cizgi" x="20" y="58" width="260" height="152" rx="4" opacity=".45"/>' +
+    '<g class="s-vurgu" stroke-linecap="round" stroke-linejoin="round">' +
+      '<circle cx="248" cy="35" r="12"/><path d="M248 29 v11"/>' +
+      '<path d="M244 33 l4 -4 4 4"/><path d="M241 41 h14"/></g>' +
+    '<text class="s-etiket" x="248" y="62" text-anchor="middle">' + escapeHtml(t('kur_t_paylas')) + '</text></svg>';
+}
+function kurBlok(basAnahtar, kosulAnahtar, sema, adimlar){
+  return '<div class="kur-blok"><h3>' + escapeHtml(t(basAnahtar)) + '</h3>' +
+    '<p class="kur-kosul">' + escapeHtml(t(kosulAnahtar)) + '</p>' +
+    '<div class="kur-sema">' + sema + '</div><ol>' +
+    adimlar.map(a=> '<li>' + a + '</li>').join('') + '</ol></div>';
+}
+function kurTarifiAc(){
+  const kap = document.getElementById('kur_t_icerik');
+  const pencere = document.getElementById('kurTarifOverlay');
+  if(!kap || !pencere) return;
+  const tr = (currentLang === 'tr');
+  const E = escapeHtml;
+  // ⚠ Menu adlari Apple'in kendi sayfalarindan. Apple'in TURKCE sayfasi
+  // bir yerde "Share" diyor (cevrilmemis); oldugu gibi birakildi, yoksa
+  // kullanici ekranda "Paylas" arayip bulamaz.
+  const ekle  = tr ? '<b>Ana Ekrana Ekle</b>' : '<b>Add to Home Screen</b>';
+  const webap = tr ? '<b>Web Uygulaması Olarak Aç</b>' : '<b>Open as Web App</b>';
+  const onay  = tr ? '<b>Ekle</b>' : '<b>Add</b>';
+  const dahaf = tr ? '<b>Daha Fazla Görüntüle</b>' : '<b>View More</b>';
+  const payls = tr ? '<b>Paylaş düğmesi</b>' : '<b>Share</b>';
+  const smenu = tr ? '<b>Sayfa Menüsü düğmesi</b>' : '<b>Page Menu button</b>';
+  const dokun = tr ? 'ne dokun' : '';
+  let html = '';
+  if(/iPad/.test(navigator.userAgent||'') ||
+     (/Macintosh/.test(navigator.userAgent||'') && 'ontouchend' in document)){
+    html = kurBlok('kur_t_ipad_bas','kur_t_ipad_kosul', kurSemasiIpad(), [
+      tr ? ('Web sitesini görüntülerken ' + payls + '’ne dokun') : ('While viewing the website, tap ' + payls),
+      tr ? (dahaf + '’ye dokun') : ('Tap ' + dahaf),
+      tr ? (ekle + '’ye dokun') : ('Tap ' + ekle),
+      tr ? (webap + '’ı seç, ' + onay + '’ye dokun') : ('Turn on ' + webap + ', then tap ' + onay)
+    ]);
+  } else {
+    html = kurBlok('kur_t_ip1_bas','kur_t_ip1_kosul', kurSemasiIphoneSerit(), [
+      tr ? (payls + '’ne dokun') : ('Tap ' + payls),
+      tr ? ('Listede aşağı kaydır, ' + ekle + '’ye dokun') : ('Scroll down, then tap ' + ekle),
+      tr ? (webap + '’ı seç, ' + onay + '’ye dokun') : ('Turn on ' + webap + ', then tap ' + onay)
+    ]) + kurBlok('kur_t_ip2_bas','kur_t_ip2_kosul', kurSemasiIphoneMenu(), [
+      tr ? (smenu + '’ne dokun') : ('Tap ' + smenu),
+      tr ? ('Açılan listede <b>Share</b>’e dokun') : ('Tap <b>Share</b>'),
+      tr ? ('Aşağı kaydır, ' + ekle + '’ye dokun') : ('Scroll down, then tap ' + ekle),
+      tr ? (webap + '’ı seç, ' + onay + '’ye dokun') : ('Turn on ' + webap + ', then tap ' + onay)
+    ]);
+  }
+  kap.innerHTML = html;
+  pencere.classList.add('open');
+}
+(function(){
+  const k = document.getElementById('kur_t_kapat');
+  if(k) k.addEventListener('click', ()=>
+    document.getElementById('kurTarifOverlay').classList.remove('open'));
+})();
+
+(function(){
+  const dugmeler = ['kurBtn','kurBtnMobil'].map(id=>document.getElementById(id)).filter(Boolean);
+  const not = document.getElementById('kurNot');
+  if(!dugmeler.length) return;
+  let istem = null;
+
+  // Zaten kuruluysa dugme anlamsiz. iOS kendi bayragini kullaniyor.
+  function kuruluMu(){
+    try{
+      if(window.matchMedia('(display-mode: standalone)').matches) return true;
+      if(window.navigator.standalone === true) return true;
+    }catch(e){}
+    return false;
+  }
+  // ⚠ iPad'in son surumleri kendini Mac gibi tanitiyor; dokunma
+  // destegi olan bir "Mac" pratikte iPad.
+  function iosMu(){
+    const ua = navigator.userAgent || '';
+    if(/iPad|iPhone|iPod/.test(ua)) return true;
+    return /Macintosh/.test(ua) && typeof document !== 'undefined' && 'ontouchend' in document;
+  }
+  function telefonMu(){
+    return /Android|iPhone|iPod/i.test(navigator.userAgent || '') || iosMu();
+  }
+
+  // Etiket cihaza gore. data-i18n ozniteligi veriliyor ki dil
+  // degisince applyStaticI18n kendiliginden dogrusunu yazsin.
+  const anahtar = telefonMu() ? 'kur_btn_telefon' : 'kur_btn_bilgisayar';
+  document.querySelectorAll('.kur-etiket').forEach(e=>{
+    e.setAttribute('data-i18n', anahtar);
+    if(typeof t === 'function') e.textContent = t(anahtar);
+  });
+
+  function tazele(){
+    const goster = !kuruluMu() && (istem !== null || iosMu());
+    dugmeler.forEach(d=> d.hidden = !goster);
+    if(not) not.hidden = !goster;
+  }
+
+  window.addEventListener('beforeinstallprompt', e=>{
+    // Tarayicinin kendi seridini engelleyip olayi saklıyoruz: kurulum
+    // kullanicinin bastigi anda, bizim dugmemizden baslasin.
+    e.preventDefault();
+    istem = e;
+    tazele();
+  });
+  window.addEventListener('appinstalled', ()=>{ istem = null; tazele(); });
+
+  dugmeler.forEach(d=> d.addEventListener('click', async ()=>{
+    if(istem){
+      istem.prompt();
+      try{
+        const sonuc = await istem.userChoice;
+        // Reddedildiyse dugme YERINDE KALIYOR: kullanici yeniden
+        // basabilmeli. Kabul edilince appinstalled zaten gizliyor.
+        if(sonuc && sonuc.outcome === 'accepted') istem = null;
+      }catch(e){}
+      tazele();
+      return;
+    }
+    if(iosMu() && typeof kurTarifiAc === 'function') kurTarifiAc();
+  }));
+
+  tazele();
+})();
+
 if('serviceWorker' in navigator && (location.protocol === 'https:' || location.hostname === 'localhost' || location.hostname === '127.0.0.1')){
   window.addEventListener('load', ()=>{
     navigator.serviceWorker.register('./sw.js').catch(err=> console.error('[sw] kaydedilemedi', err));
