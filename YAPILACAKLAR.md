@@ -104,6 +104,83 @@ Sekiz setin listesi kullanıcıdan geldi (63 madde). Kod yazmadan önce:
 
 ---
 
+## 15 KASIM 2026 — GÜVENLİK DENETİMİ ve DEPO KARARI
+
+### ⏰ TARİHLİ İKİ İŞ
+
+**1. İki adımlı doğrulama — SON TARİH 24 KASIM 2026.**
+GitHub hesabın (`gerceginizleritv`) üstünde uyarı duruyor: *"two-factor
+authentication will be permanently required on your account after
+November 24, 2026"*. Kurulmazsa hesaba erişim kısıtlanır — ve canlı
+site bu depodan yayınlanıyor. ⛔ Kurarken verilen **kurtarma kodları
+mutlaka saklanacak** (Drive ya da şifre yöneticisi; sohbete yazılmaz).
+
+**2. GitHub Pro — KARAR VERİLDİ, ödeme şirket kurulunca.**
+Kullanıcının kendi sözleriyle: *"Pro kararımı verdim. Ama bir kaç gün
+sonra şirketim kurulmuş olacak. Burada harcadığım ödemelerin faturasını
+alıp şirketime masrafa göstereceğim için bir kaç gün bekleyecek."*
+
+Doğrulanan bilgiler (ekran görüntüsünden, 15 Kasım 2026):
+- **Pro kişisel hesapta var, $4 USD/ay** (yılda ~$48).
+- "Collaboration → Pages and wikis" satırı: Free'de *Public
+  repositories*, **Pro'da ✓** — yani kapalı depodan da site yayınlanıyor.
+- ⛔ **Organizasyona taşımak GEREKMİYOR.** Daha önce "Team planı lazım,
+  depo organizasyona taşınmalı" diye yazılmıştı; o YANLIŞTI. Depo
+  adresi, `gerceginizleritv.github.io` adresi ve Google anahtarının
+  kısıt listesi olduğu gibi kalıyor.
+
+Ödeme yapılmadan önce: **fatura şirkete kesilsin diye GitHub'ın
+faturalama bilgilerine şirket adı ve vergi numarası girilmeli** — ilk
+ödemeden ÖNCE, yoksa fatura şahsa çıkar.
+
+Pro alındıktan sonra yapılacak: depoyu private yap (Settings → General
+→ Danger Zone → Change visibility). Sonra sitenin hâlâ açıldığı
+doğrulanacak.
+
+### 🔒 GÜVENLİK DENETİMİ — YAPILDI, TEMİZ
+
+| Kontrol | Sonuç |
+|---|---|
+| 573 commit'te gizli anahtar/token | **Yok** — JWT, OpenAI, GitHub, AWS, Slack, özel anahtar: hiçbiri |
+| Supabase anahtarı | `sb_publishable_…` — istemci kodunda durmak için tasarlandı, sorun değil |
+| 27 tablo — RLS | **Hepsinde açık** (`calendar_events` dahil; kullanıcı Supabase'te doğruladı) |
+| Sınırsız politika var mı | **Yok.** Açık olan tek şey fiyat tabloları (`plans`, `plan_prices`, `plan_limits`, `tax_settings`) ve `founding_seats` kontenjan sayacı — hepsi bilerek |
+| `workspaces` tablosu | Alarm **yanlıştı**: INSERT koşulu `with_check`'te duruyor ve `owner_id = auth.uid()` diyor; anonim kimse ekleyemez |
+| Depolama kovaları | Yedek kovası **kapalı**; `paylasim` ve `takvim` açık ama tahmin edilemez jetonla korumalı |
+| 7 Edge Function | Hepsi yetki istiyor (401/403) |
+| CI akışları | Sır sızdırmıyor |
+
+⚠ **Bir ders:** ilk RLS taramam dokuz tabloyu "RLS yok" diye
+işaretledi. **Yanlıştı** — SQL'de hizalama için çoklu boşluk kullanılmış
+(`alter table public.ideas   enable row level security;`) ve tek boşluk
+arayan desenim kaçırdı. Aynı şekilde `workspaces` alarmı da desen
+hatasıydı. Tarama sonucu, deseni doğrulanmadan rapor edilmemeli.
+
+### ⛔ SİLİNDİ: açıkta kalmış eski Google anahtarı
+
+`AIzaSyCpvL…` ile başlayan anahtar 2 Eylül'de koda konmuş, 13 Eylül'de
+yenisiyle değiştirilmiş (commit `05ecb09`) ama **git geçmişinde kalmıştı**
+ve depo herkese açık. Eski proje numarası: **600126485767**.
+**Kullanıcı 15 Kasım 2026'da sildi.** ✅
+
+Kullanımdaki anahtar (proje **1050310663036**) kontrol edildi:
+Application restrictions = **Websites**, listede
+`https://gerceginizleritv.github.io/*` ve `https://shootboard.app/*`.
+`CNAME` zaten `shootboard.app` (www'suz), yani liste yeterli. ✅
+
+### Bilinmesi gereken: `app.html` HER DURUMDA açık
+
+Shootboard bir tarayıcı uygulaması; `app.html` siteyi açan herkesin
+tarayıcısına iniyor. **Depoyu kapatmak onu gizlemez.** Pro'nun gizlediği
+şeyler: `sql/` (şema ve RLS politikaları), `supabase/functions/`
+(sunucu kodu), `docs/` ve `YAPILACAKLAR.md` (iş planı), `testler/`, ve
+**573 commit'lik git geçmişi**.
+
+⚠ Daha önce "GitHub Pro hem kodu hem belgeleri kapatır" yazılmıştı;
+**o yanlıştı**, yalnızca yarısı doğru.
+
+---
+
 ## 14 KASIM 2026 — PLANLAMA SOHBETİNDEN GELEN LİSTE
 
 Kullanıcı planlama sohbetinin (ChatGPT) durum raporunu buraya getirdi
