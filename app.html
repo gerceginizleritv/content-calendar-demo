@@ -45,6 +45,19 @@
   --green:#1E7A4E;
   --red:#B3261E;
   --on-accent:#FFFFFF;
+  /* ---- Asama 4 (15 Kasim 2026): elle yazilmis renkler buraya tasindi. */
+  --on-green:#FFFFFF; --on-red:#FFFFFF;
+  /* Perdeler iki temada da AYNI: perde "arkadakini karart" demek. */
+  --perde-koyu:rgba(4,5,10,.80); --perde-orta:rgba(4,5,10,.60); --perde-hafif:rgba(4,5,10,.45);
+  /* Mekan bas harfi kimlikten turetiliyor (--mk-h); doygunluk ve
+     parlaklik tema basina ayarlanabilsin diye disari alindi. */
+  --mk-doygunluk:45%; --mk-parlaklik:50%;
+  /* Fikir karti etiketleri: KATEGORIK bir kume, var olan bir
+     degiskenle degistirilemez -- yalnizca tek yere toplandi.
+     Eskiden uc ayri blokta, 18 satirdaydi. Tonlar AYNEN tasindi. */
+  --fk-renk0:#9E1B32; --fk-renk1:#A86A12; --fk-renk2:#25654A;
+  --fk-renk3:#7A6810; --fk-renk4:#6A4BB0; --fk-renk5:#4A5A6E;
+  --fk-yazi:#FFFFFF;
   --p-youtube:#DA4B42; --p-instagram:#C0478E; --p-tiktok:#14868F; --p-facebook:#3B6FC4;
   --p-threads:#616B78; --p-x:#232B36; --p-pinterest:#A8322C; --p-linkedin:#1C6C9C;
 }
@@ -65,6 +78,18 @@
     --green:#4CC38A;
     --red:#FF6B6B;
     --on-accent:#0F1011;
+    --on-green:#0F1011; --on-red:#0F1011;
+    /* Perdeler iki temada da AYNI: perde "arkadakini karart" demek. */
+    --perde-koyu:rgba(4,5,10,.80); --perde-orta:rgba(4,5,10,.60); --perde-hafif:rgba(4,5,10,.45);
+    /* Mekan bas harfi kimlikten turetiliyor (--mk-h); doygunluk ve
+       parlaklik tema basina ayarlanabilsin diye disari alindi. */
+    --mk-doygunluk:45%; --mk-parlaklik:50%;
+    /* Fikir karti etiketleri: KATEGORIK bir kume, var olan bir
+       degiskenle degistirilemez -- yalnizca tek yere toplandi.
+       Eskiden uc ayri blokta, 18 satirdaydi. Tonlar AYNEN tasindi. */
+    --fk-renk0:#9E1B32; --fk-renk1:#B87A1E; --fk-renk2:#25654A;
+    --fk-renk3:#8E7A15; --fk-renk4:#6A4BB0; --fk-renk5:#585349;
+    --fk-yazi:#FFFFFF;
     --p-youtube:#F2808F; --p-instagram:#D96BA6; --p-tiktok:#3CA9B2; --p-facebook:#6B9AE0;
     --p-threads:#8A94A2; --p-x:#9AA4B2; --p-pinterest:#D4685F; --p-linkedin:#4E9AC8;
   }
@@ -85,6 +110,18 @@
   --green:#4CC38A;
   --red:#FF6B6B;
   --on-accent:#0F1011;
+  --on-green:#0F1011; --on-red:#0F1011;
+  /* Perdeler iki temada da AYNI: perde "arkadakini karart" demek. */
+  --perde-koyu:rgba(4,5,10,.80); --perde-orta:rgba(4,5,10,.60); --perde-hafif:rgba(4,5,10,.45);
+  /* Mekan bas harfi kimlikten turetiliyor (--mk-h); doygunluk ve
+     parlaklik tema basina ayarlanabilsin diye disari alindi. */
+  --mk-doygunluk:45%; --mk-parlaklik:50%;
+  /* Fikir karti etiketleri: KATEGORIK bir kume, var olan bir
+     degiskenle degistirilemez -- yalnizca tek yere toplandi.
+     Eskiden uc ayri blokta, 18 satirdaydi. Tonlar AYNEN tasindi. */
+  --fk-renk0:#9E1B32; --fk-renk1:#B87A1E; --fk-renk2:#25654A;
+  --fk-renk3:#8E7A15; --fk-renk4:#6A4BB0; --fk-renk5:#585349;
+  --fk-yazi:#FFFFFF;
   --p-youtube:#F2808F; --p-instagram:#D96BA6; --p-tiktok:#3CA9B2; --p-facebook:#6B9AE0;
   --p-threads:#8A94A2; --p-x:#9AA4B2; --p-pinterest:#D4685F; --p-linkedin:#4E9AC8;
 }
@@ -144,7 +181,10 @@ body::before{
 .shell{display:flex;gap:20px;align-items:flex-start;}
 .rail{
   width:208px;flex:none;display:flex;flex-direction:column;gap:16px;
-  padding:16px 12px;background:var(--surface);
+  /* ⚠ Asama 4: yan menu artik paletin KENDI "yan menu" rengini
+     aliyor. --pencere-arka 13 Kasim'da tanimlanmisti ama HICBIR YERDE
+     kullanilmiyordu; yan menu yuzeyle ayni renkteydi, ayrismiyordu. */
+  padding:16px 12px;background:var(--pencere-arka);
   border:1px solid var(--line);border-radius:2px;
 }
 /* min-width:0 sart: olmadan genis takvim tablosu seridi ezip sayfayi
@@ -245,7 +285,7 @@ body::before{
 .bugun-ico{width:17px;height:17px;flex:none;}
 .bugun-sayi{
   margin-left:auto;flex:none;min-width:19px;padding:1px 6px;
-  border-radius:2px;background:var(--accent);color:#fff;
+  border-radius:2px;background:var(--accent);color:var(--on-accent);
   font-size:11px;font-weight:700;text-align:center;
   font-variant-numeric:tabular-nums;
 }
@@ -749,7 +789,7 @@ body::before{
 .hesap-sil{display:inline-flex;align-items:center;justify-content:center;width:22px;height:22px;
   padding:0;border:0;border-radius:50%;background:transparent;color:var(--text-dim);cursor:pointer;}
 .hesap-sil svg{width:14px;height:14px;}
-.hesap-sil:hover{background:var(--red);color:#fff;}
+.hesap-sil:hover{background:var(--red);color:var(--on-red);}
 .hesap-pico{width:17px;height:17px;flex-shrink:0;display:inline-flex;}
 .hesap-pico svg{width:100%;height:100%;}
 .hesap-ad{font-weight:600;font-size:13.5px;}
@@ -991,7 +1031,7 @@ body.suruklenirken *{cursor:grabbing !important;}
 /* Durum rozeti adin yaninda: bitmis iste yesil onay, iptalde etiket. */
 .pbadge{margin-left:7px;font-size:10px;vertical-align:middle;}
 .pbadge.bitti{display:inline-flex;align-items:center;justify-content:center;
-  width:16px;height:16px;border-radius:50%;background:var(--green);color:#fff;
+  width:16px;height:16px;border-radius:50%;background:var(--green);color:var(--on-green);
   font-size:10px;font-weight:700;line-height:1;}
 .pbadge.iptal{text-transform:uppercase;letter-spacing:.06em;color:var(--red);
   border:1px solid var(--red);border-radius:2px;padding:1px 7px;font-weight:600;}
@@ -1370,10 +1410,10 @@ body.suruklenirken *{cursor:grabbing !important;}
   background:rgba(255,255,255,.74);color:#2A3340;padding:0 3px;border-radius:2px;}
 .mk-harf{position:absolute;inset:0;display:flex;align-items:center;justify-content:center;
   font-family:'IBM Plex Sans',sans-serif;font-size:32px;font-weight:800;letter-spacing:1px;
-  color:hsl(var(--mk-h) 45% 50%);background:var(--surface-2);}
+  color:hsl(var(--mk-h) var(--mk-doygunluk) var(--mk-parlaklik));background:var(--surface-2);}
 /* Renk yuzeyle karistiriliyor: ayni kural hem acik hem koyu temada tutuyor. */
 @supports (background:color-mix(in srgb,red 10%,white)){
-  .mk-harf{background:color-mix(in srgb,hsl(var(--mk-h) 45% 50%) 15%,var(--surface));}
+  .mk-harf{background:color-mix(in srgb,hsl(var(--mk-h) var(--mk-doygunluk) var(--mk-parlaklik)) 15%,var(--surface));}
 }
 .mk-govde{padding:11px 13px 12px;display:flex;flex-direction:column;flex:1;}
 .mk-foto-satir{display:flex;gap:8px;align-items:center;}
@@ -1646,28 +1686,16 @@ textarea.sc-ai-brief{min-height:64px;resize:vertical;line-height:1.5;}
 .fk-add-label{font-size:12px;text-transform:uppercase;letter-spacing:.06em;font-weight:600;}
 /* Alti yumusak ton. Renk kimlikten turetiliyor: ayni fikir her acilista
    ayni renkte, duvar yenilemede baskalasmiyor. */
-.fk-card.renk0{--fk-tag:#9E1B32;--fk-tag-text:#fff;}
-.fk-card.renk1{--fk-tag:#A86A12;--fk-tag-text:#fff;}
-.fk-card.renk2{--fk-tag:#25654A;--fk-tag-text:#fff;}
-.fk-card.renk3{--fk-tag:#7A6810;--fk-tag-text:#fff;}
-.fk-card.renk4{--fk-tag:#6A4BB0;--fk-tag-text:#fff;}
-.fk-card.renk5{--fk-tag:#4A5A6E;--fk-tag-text:#fff;}
-/* Koyu temada rozet tonlari biraz aciliyor. Medya sorgusu SART:
-   :root:not([data-theme="light"]) tek basina acik temada da esleser. */
-@media (prefers-color-scheme: dark){
-  :root:not([data-theme="light"]) .fk-card.renk0{--fk-tag:#9E1B32;}
-  :root:not([data-theme="light"]) .fk-card.renk1{--fk-tag:#B87A1E;}
-  :root:not([data-theme="light"]) .fk-card.renk2{--fk-tag:#25654A;}
-  :root:not([data-theme="light"]) .fk-card.renk3{--fk-tag:#8E7A15;}
-  :root:not([data-theme="light"]) .fk-card.renk4{--fk-tag:#6A4BB0;}
-  :root:not([data-theme="light"]) .fk-card.renk5{--fk-tag:#585349;}
-}
-:root[data-theme="dark"] .fk-card.renk0{--fk-tag:#9E1B32;}
-:root[data-theme="dark"] .fk-card.renk1{--fk-tag:#B87A1E;}
-:root[data-theme="dark"] .fk-card.renk2{--fk-tag:#25654A;}
-:root[data-theme="dark"] .fk-card.renk3{--fk-tag:#8E7A15;}
-:root[data-theme="dark"] .fk-card.renk4{--fk-tag:#6A4BB0;}
-:root[data-theme="dark"] .fk-card.renk5{--fk-tag:#585349;}
+.fk-card.renk0{--fk-tag:var(--fk-renk0);--fk-tag-text:var(--fk-yazi);}
+.fk-card.renk1{--fk-tag:var(--fk-renk1);--fk-tag-text:var(--fk-yazi);}
+.fk-card.renk2{--fk-tag:var(--fk-renk2);--fk-tag-text:var(--fk-yazi);}
+.fk-card.renk3{--fk-tag:var(--fk-renk3);--fk-tag-text:var(--fk-yazi);}
+.fk-card.renk4{--fk-tag:var(--fk-renk4);--fk-tag-text:var(--fk-yazi);}
+.fk-card.renk5{--fk-tag:var(--fk-renk5);--fk-tag-text:var(--fk-yazi);}
+/* ⚠ KOYU TEMA ICIN AYRI BLOK KALMADI. Ayni alti renk uc ayri yerde
+   yaziliydi (18 satir); biri degisince otekiler unutulurdu. Tonlar
+   artik paletin icinde, tema degiskeni degistirdigi icin bu kurallar
+   kendiliginden dogru rengi aliyor. Hicbir ton DEGISMEDI. */
 /* Scriptler sayfasi: kart listesi. */
 .sc-tools{display:flex;align-items:center;gap:12px;margin-bottom:14px;}
 .sc-card{display:flex;flex-direction:column;gap:6px;width:100%;text-align:left;
@@ -2286,7 +2314,7 @@ textarea.sc-ai-brief{min-height:64px;resize:vertical;line-height:1.5;}
   border-radius:2px;background:var(--bg);color:var(--text);font:inherit;font-size:13px;
   resize:vertical;}
 .ih-toplu .btn{margin-top:8px;}
-.overlay{display:none;position:fixed;inset:0;background:rgba(4,5,10,0.8);z-index:50;align-items:center;justify-content:center;padding:20px;overscroll-behavior:none;}
+.overlay{display:none;position:fixed;inset:0;background:var(--perde-koyu);z-index:50;align-items:center;justify-content:center;padding:20px;overscroll-behavior:none;}
 .overlay.open{display:flex;}
 /* PENCERE. Cizim (project/FoyKayit.dc.html) 2px duz kenarlik ve ustte
    klaket seridi gosteriyor; onceki hal 1px cerceve + 3px duz vurgu
@@ -2445,7 +2473,7 @@ textarea.sc-ai-brief{min-height:64px;resize:vertical;line-height:1.5;}
 /* Bos kutu da gorunmeli: arka plani ve kenari acikca boyaniyor, yoksa koyu
    temada zeminle ayni tona dusuyordu. */
 .upload-toggle .box{width:17px;height:17px;border:1.5px solid var(--accent-dim);background:var(--surface);display:flex;align-items:center;justify-content:center;font-size:11px;border-radius:2px;flex:none;}
-.upload-toggle.checked .box{background:var(--green);color:#fff;border-color:var(--green);}
+.upload-toggle.checked .box{background:var(--green);color:var(--on-green);border-color:var(--green);}
 .posted-hint{font-size:11.5px;color:var(--text-dim);margin:-9px 0 15px;line-height:1.5;}
 /* Otomatik story yayini. Kutucuk kullanicinin, alttaki satirlar sistemin:
    ikisi gorsel olarak da ayri dursun diye durum satiri cerceveli. */
@@ -2786,7 +2814,7 @@ textarea.sc-ai-brief{min-height:64px;resize:vertical;line-height:1.5;}
 .pending-row{cursor:pointer;transition:background .12s;}
 .pending-row:hover{background:var(--surface-2);}
 .pending-overdue td:first-child{color:var(--red);font-weight:600;}
-.pending-empty{padding:16px 0;color:#5FD9A0;font-weight:600;}
+.pending-empty{padding:16px 0;color:var(--green);font-weight:600;}
 .storage-bar-track{background:var(--surface-2);border-radius:2px;height:10px;overflow:hidden;}
 .storage-bar-fill{height:100%;transition:width .3s;}
 .storage-top-item{display:flex;justify-content:space-between;padding:2px 0;font-size:13px;}
@@ -3149,7 +3177,7 @@ textarea.sc-ai-brief{min-height:64px;resize:vertical;line-height:1.5;}
   .rail-more[aria-expanded="true"]{border-color:var(--accent);color:var(--accent);}
   .rail-arka{
     display:block;position:fixed;inset:0;z-index:59;
-    background:rgba(4,5,10,0.6);
+    background:var(--perde-orta);
   }
   .rail-arka[hidden]{display:none;}
   .rail-foot{
@@ -3496,7 +3524,7 @@ textarea.sc-ai-brief{min-height:64px;resize:vertical;line-height:1.5;}
 
 /* Filtre paneli basligi ve arka perdesi: masaustunde gorunmez (acilir
    menu dugmeye yaslanir), telefonda alt sayfanin parcasi. */
-.fbackdrop{display:none;position:fixed;inset:0;z-index:58;background:rgba(4,5,10,.45);
+.fbackdrop{display:none;position:fixed;inset:0;z-index:58;background:var(--perde-hafif);
   /* ⚠ cursor:pointer iOS ICIN, fare icin degil. iOS Safari bir
      ogeye click GONDERMEYEBILIYOR: baglanti, dugme, onclick
      ozniteligi ya da cursor:pointer yoksa dokunus click'e
