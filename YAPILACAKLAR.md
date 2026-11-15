@@ -104,6 +104,80 @@ Sekiz setin listesi kullanıcıdan geldi (63 madde). Kod yazmadan önce:
 
 ---
 
+## "TELEFONA KUR" DÜĞMESİ — 1. AŞAMA BİTTİ (15 Kasım 2026)
+
+İş planlama/tasarım sohbetinden geldi. Dört aşama, her biri ayrı onayla.
+
+### Kurulabilirlik: hazır ✅
+`manifest.json` şartları karşılıyor (`display:standalone`,
+`start_url:./app.html`, 192 ve 512 simgeler, `any` + `maskable`),
+dosyalar yerinde, `sw.js` kayıtlı (app.html:23213).
+⛔ **Kurulum düğmesi yok**: `beforeinstallprompt`, `appinstalled`,
+`display-mode` kontrolü — hiçbiri.
+
+### Tarayıcı tablosu (kaynaktan doğrulandı)
+Chrome (Android/masaüstü) · Edge 79+ · Samsung Internet 8.2+ → tek
+dokunuşla kurulum var. **Safari (iPhone/iPad/Mac) ve Firefox → yok.**
+iPhone'da Chrome da yok (iOS'ta bütün tarayıcılar Safari motorunu
+kullanıyor). Chrome'un kendi belgesi "çalışmayan kurulum düğmesi
+gösterme" diyor — brief'teki "ölü düğme olmaz" şartıyla aynı.
+
+⚠ `navigator.install()` / HTML `<install>` öğesi deneme aşamasında
+(origin trial 153'te bitiyor). **Şimdilik kullanılmayacak**;
+`beforeinstallprompt` bugün her yerde çalışıyor.
+
+### ⛔ Apple tarifi: araştırma sohbetinin çizdiği YANLIŞTI
+Apple'ın kendi sayfalarından alındı (*Bookmark a website in Safari*,
+iPhone ve iPad; iOS 27 sürümü):
+
+**iPhone:** `Tap ⟨the Page Menu button⟩, then tap Share.` —
+*"If your Tabs layout is Bottom or Top, tap ⟨the Share button⟩"* →
+`Scroll down the list of options, then tap Add to Home Screen.` → `Tap Add.`
+
+**iPad:** `While viewing the website, tap ⟨simge⟩, tap View More, then
+tap Add to Home Screen.`
+
+Farklar: ayrım "beş düğme mi üç nokta mı" DEĞİL, **"Tabs layout" ayarı
+Bottom/Top mı değil mi**. Apple iki düğme adı veriyor: *Page Menu
+button* ve *Share button*. **iPad'de fazladan "View More" adımı var.**
+Apple ayrıca: *"If you don't see Add to Home Screen… tap Edit Actions"*.
+
+### 🔑 "Open as Web App" — tarife GİRECEK (kullanıcı kararı)
+Apple'ın ayrı sayfası var (*Turn a website into an app*) ve ekleme
+sırasında açılan bir anahtar:
+> *"Turn on Open as Web App. … When you tap the icon, the website opens
+> just like an app. **You can receive notifications from the web app**"*
+
+⚠ **iPhone'da bildirim almanın yolu bu anahtar.** Push işi buna bağlı.
+
+### Doğrulanamayanlar (uydurulmayacak)
+- Paylaş düğmesinin **fiziksel yeri** (üst mü alt mı): Apple metinde
+  yazmıyor, satır içi simge resmiyle gösteriyor. "iPad'de sağ üstte"
+  ezberi **doğrulanmadı**.
+- Safari dışı tarayıcılar hakkında Apple bu sayfalarda bir şey demiyor.
+- **Menülerin Türkçe adları** doğrulanmadı.
+- ⚠ Gerçek bir iPhone/iPad'de denenemiyor; şemalar çizilince
+  kullanıcıdan kendi cihazında kontrol etmesi adım adım istenecek.
+
+### Kullanıcının verdiği üç karar (15 Kasım 2026)
+1. **Düğme çerçevesi: A — nötr** ("Giriş yap" gibi). Vurgu rengi
+   "+ Yeni Giriş" gibi asıl işe ait kalsın.
+2. **Hesapsız ziyaretçiye de görünecek.** Demo hesapsız çalışıyor ve
+   değerinin yarısı o; ana ekrana ekleyen kişi geri dönme ihtimali en
+   yüksek kişi.
+3. **iPhone'da İKİ şema birden** alt alta çizilecek (Page Menu yolu ve
+   doğrudan Paylaş yolu), çünkü hangi "Tabs layout" ayarının açık
+   olduğu koddan güvenilir şekilde anlaşılamıyor.
+
+### Kalan aşamalar
+2. Android ve masaüstü düğmesi (yan menü + "⋯" çekmecesi)
+3. iPhone/iPad tarifi ve şemaları (önce şemalar gösterilecek)
+4. Kılavuz metinleri (`kilavuz.html`, `guide.html`) — metin önce gösterilecek
+
+Bu işten SONRA: **push bildirimi fizibilite raporu**.
+
+---
+
 ## MEKÂNLAR SAYFASI — KARTLAR SABİT BOYDA OLACAK (15 Kasım 2026)
 
 Kullanıcı ekran görüntüsüyle bildirdi: *"mekanlar sayfasında da buraya
@@ -131,6 +205,28 @@ Yapılacak, takvim kutularında yapılanın aynısı:
    serbest bırakır (takvimde hücreler 39 ve 192 diye iki boy çıkmıştı).
 2. Yükseklik **tahmin edilmeyecek**: takvimde 192 yazıldı, içerik 195
    istiyordu ve üçüncü kutunun altı kırpıldı.
+
+---
+
+## ⛔ 8097 / 8098 / 8099 PORTLARI TESTLERİN — EKRAN GÖRÜNTÜSÜ İÇİN KULLANMA
+
+15 Kasım 2026'da tam koşuda `duzeltme.test.js` kırmızı verdi. Kırmızı
+**gerçek değildi**: ekran görüntüsü almak için 8099'a kendi sunucumu
+kurmuştum ve o port testlerin.
+
+`testler/kosu.sh` satır 28 bunu zaten yazıyor:
+> 8098 = depo kökü · **8099 = lokasyon uygulaması** (`index.html`
+> → `lokasyon.html`) · 8097 = eski anlık görüntü
+
+`duzeltme.test.js` `http://127.0.0.1:8099/index.html` açıyor ve
+lokasyon uygulamasını bekliyor; benim sunucum depo kökünü sunduğu için
+ana sayfa geldi ve test düştü.
+
+⛔ **Ekran görüntüsü / ölçüm sunucuları 8101 ve üstünü kullanacak.**
+Koşu sürerken bu üç porta hiçbir şey kurulmayacak.
+
+⚠ Kirlenen koşu güvenilmezdi: 1-56 arası testler o pencerede koştu.
+Koşu durdurulup baştan başlatıldı.
 
 ---
 
