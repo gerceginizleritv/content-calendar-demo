@@ -171,6 +171,32 @@ kaç görüntülenme olduğu doğrulanmadı. Yukarıdaki dersin gereği.
 
 ---
 
+⛔ **OTOMATİK YAYIN KULLANICILARA AÇILMADI — ÜRÜNÜN PARÇASI DEĞİL.**
+15 Kasım 2026'da kullanıcı bunu bir kez daha söylemek zorunda kaldı:
+*"Claude otomatik yayını sadece ben kendi hesabım için kurdum! Şu an
+kullanıcılara açılmayacak !!! Kaç defa daha söyleyeceğim sana bunu !!"*
+
+Yazılı olmadığı için defalarca soruldu. Artık yazılı.
+
+Yukarıdaki tablo **yalnızca `bostancioglum@gmail.com` hesabının kendi
+kurulumunu** anlatıyor. `pc/story-yukle.py` kullanıcının kendi
+bilgisayarında koşuyor; Shootboard'a kaydolan hiç kimsede otomatik
+yayın yok, olmayacak.
+
+**Bunun doğurduğu sonuçlar — bir daha hata olarak bildirme:**
+
+- `MARKA.md`'deki *"senin adına hiçbir yere gönderi atmaz"* iddiası
+  **DOĞRUDUR.** Ürün gerçekten atmıyor. Bu satır yanlış değil, çelişki
+  değil, düzeltilecek bir şey değil. (Bu yanlışlıkla iki kez "yanlış
+  iddia" diye bildirildi.)
+- Sitede, kılavuzda, gizlilik ve şartlar sayfalarında otomatik yayından
+  söz edilmez — anlatılacak bir kullanıcı özelliği değil.
+- Bir özellik kullanıcıya açılacaksa bunu **kullanıcı söyler.** Politika
+  tablosundaki "açık", o çiftin kullanıcılarda açık olduğu anlamına
+  **gelmez.**
+
+---
+
 ## 6. SQL DOSYALARI — YENİDEN KOŞTURMA TUZAKLARI
 
 Numaralı dosyalar birikimli değil; bazıları eski işlevleri yeniden

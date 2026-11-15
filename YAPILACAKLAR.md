@@ -84,10 +84,14 @@ Sekiz setin listesi kullanıcıdan geldi (63 madde). Kod yazmadan önce:
 - **Ödeme.** Lemon Squeezy Türkiye'ye banka havalesiyle ödüyor; Stripe'ın
   kendi ülke listesinde Türkiye yok; PayPal da yok. Tek yol banka
   havalesi. Git/gitme kararı kullanıcıda.
-- ⛔ **`MARKA.md` 49. satır** hâlâ yanlış iddiayı taşıyor: *"senin adına
-  hiçbir yere gönderi atmaz"*. Oysa Instagram/Facebook'a otomatik yayın
-  var (varsayılan kapalı). Siteden altı yerden silindi; marka belgesinde
-  duruyor. **Kullanıcının belgesi olduğu için dokunulmadı.**
+- ✅ **`MARKA.md` 49. satır KAPANDI — iddia doğruydu, ben yanlıştım.**
+  *"senin adına hiçbir yere gönderi atmaz"* satırı iki kez "yanlış
+  iddia" diye bildirildi. Değil. 15 Kasım 2026'da kullanıcı düzeltti:
+  otomatik yayın **yalnızca kendi hesabı için**, kendi bilgisayarındaki
+  `pc/story-yukle.py` ile kurulu; **kullanıcılara açılmadı ve
+  açılmayacak.** Yani ürün gerçekten kimsenin adına gönderi atmıyor ve
+  satır olduğu gibi kalıyor. Kural `CLAUDE.md` Bölüm 5'e yazıldı ki
+  üçüncü kez sorulmasın.
 - **`privacy.html` Open-Meteo'yu anmıyor.** Cloudflare R2, GoatCounter,
   Google ve Supabase yazılı; ama koordinat (app.html:16248) ve yazılan
   yer adları (16292) Open-Meteo'ya gidiyor.
@@ -2904,6 +2908,50 @@ ve tema düğmeleri eklendi, tüm metinlerin kontrastı ölçülüp düzeltildi.
 
 Sırada bekleyenler: termin hatırlatmaları, script alanına metin
 biçimlendirme, kendi alan adı.
+
+---
+
+## Nerede kaldık (15 Kasım 2026 — "her şeyin İngilizcesi olmalı")
+
+Kullanıcı: *"hazırlanan her şey mutlaka invgilizcede olmalı !"* ve
+ardından *"sana sorduğum tuşlar için hazırladığın görsellerin
+ingilizcesi var mı diye"*.
+
+**Sonuç: kurulum kılavuzunun şemaları ve adım yazıları iki dilde tam.**
+Tarayıcıda iki dil de açılıp etiketler tek tek okutularak doğrulandı
+(uydurulmadı, Bölüm 4'ün gereği).
+
+Soru sorulduğu için iki **gerçek** kusur çıktı:
+
+1. ⛔ **İngilizcede yanlış menü adı.** Bir adımda "Show More" yazıyordu;
+   iPhone ekranında yazan ad **"View More"**. İngilizce kullanan kişi
+   ekranda o yazıyı arayıp bulamayacaktı. Metin artık şema
+   etiketleriyle **aynı değişkenden** (`dahaf`) geliyor — ikisi bir
+   daha ayrışamaz. Ders: aynı dizgeyi iki yere elle yazmak, ikisinin
+   ayrışmasını zaman meselesi yapar.
+2. ⛔ **Kılavuz AÇIKKEN dil değişirse eski dilde kalıyordu.** Şemaların
+   HTML'i pencere açılırken bir kez üretiliyor. `setLanguage` artık
+   pencere açıksa `kurTarifiAc()`'i tekrar çağırıyor.
+
+**Depo genelinde Türkçe-only taraması:** sözlük bloklarının dışında 140
+eşleşme çıktı, çoğu meşru ve İngilizce gerektirmiyor:
+
+| Tür | Örnek | Neden sorun değil |
+|---|---|---|
+| Mekân adı çözümleme sözcükleri | `ören yeri`, `manastır`, `müze` | Türkçe mekân adlarını tanımak için **veri**, arayüz metni değil |
+| Dil seçicisi | `Türkçe` | Dil adı kendi dilinde yazılır |
+| CSS yorumları | gün kısaltmaları | Kullanıcı görmez |
+| HTML yedek metinleri | `data-i18n` ile üzerine yazılanlar | Açılışta sözlükten geliyor |
+| `tr ? ... : ...` şubeleri | kılavuz adımları | İngilizcesi karşı şubede |
+
+⚠ **Kalan iş:** bu 140'ın tamamı tek tek ayıklanmadı. Yukarıdaki beş
+kalıp büyük kısmını açıklıyor ama "hepsi temiz" denemez —
+doğrulanmayan şey yazılmıyor (Bölüm 4). Bu oturumda **eklenen** kodun
+tamamı tarandı ve temiz.
+
+**Yanlış alarm düzeltmesi:** önceki taramada `mk_daha_az` anahtarı
+"eksik" göründü; eksik değil, arama girintiyi yanlış varsaymış.
+İki dilde de var (`Show less` / `Daha az`).
 
 ---
 
