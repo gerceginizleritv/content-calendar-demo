@@ -104,6 +104,36 @@ Sekiz setin listesi kullanıcıdan geldi (63 madde). Kod yazmadan önce:
 
 ---
 
+## MEKÂNLAR SAYFASI — KARTLAR SABİT BOYDA OLACAK (15 Kasım 2026)
+
+Kullanıcı ekran görüntüsüyle bildirdi: *"mekanlar sayfasında da buraya
+biz izin notu eklenirse yine kutu büyüyor. Bu kutular da sabit
+büyüklükte olmalı."*
+
+Görüntüde net: `Balıklı Meryem Ana Rum Manastırı` ve `Kin Kapısı`
+kartlarında izin/dikkat notu açık ve o kartlar diğerlerinden belirgin
+şekilde uzun; satırın tamamı onlara göre esniyor.
+
+⚠ **Bu, 14 Kasım'da yapılan işin EKSİK kalan yarısı.** O gün `.mk-foy`
+(not gövdesi) 132 pikselle sınırlandı ve "Devamı" düğmesi eklendi — ama
+**kartın kendisi** sabitlenmedi. Not bloğu eklendiğinde kart yine
+büyüyor.
+
+Yapılacak, takvim kutularında yapılanın aynısı:
+- Kart yüksekliği sabit (ölçülerek bulunacak, tahmin edilmeyecek).
+- Notu olan ve olmayan kartlar **her zaman aynı boyda**.
+- Taşan not "Devamı" ile açılır; açılış **kullanıcının** işi, kendiliğinden
+  olan bir esneme değil.
+- Üç ekran boyunda ölçülecek (masaüstü, tablet, telefon).
+
+⛔ Takvim işinde iki tuzak yaşandı, burada da beklenir:
+1. Sınıf yalnızca *bazı* kartlara ekleniyorsa `:not()` kuralı ötekileri
+   serbest bırakır (takvimde hücreler 39 ve 192 diye iki boy çıkmıştı).
+2. Yükseklik **tahmin edilmeyecek**: takvimde 192 yazıldı, içerik 195
+   istiyordu ve üçüncü kutunun altı kırpıldı.
+
+---
+
 ## 15 KASIM 2026 — TEST KOŞTURMA DÜZENİ (kullanıcı onayladı)
 
 Kullanıcının isteği, planlama sohbeti üzerinden geldi: *"her adımda
