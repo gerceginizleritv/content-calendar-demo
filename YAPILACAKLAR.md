@@ -108,12 +108,12 @@ Sekiz setin listesi kullanıcıdan geldi (63 madde). Kod yazmadan önce:
 
 ### ⏰ TARİHLİ İKİ İŞ
 
-**1. İki adımlı doğrulama — SON TARİH 24 KASIM 2026.**
-GitHub hesabın (`gerceginizleritv`) üstünde uyarı duruyor: *"two-factor
-authentication will be permanently required on your account after
-November 24, 2026"*. Kurulmazsa hesaba erişim kısıtlanır — ve canlı
-site bu depodan yayınlanıyor. ⛔ Kurarken verilen **kurtarma kodları
-mutlaka saklanacak** (Drive ya da şifre yöneticisi; sohbete yazılmaz).
+**1. İki adımlı doğrulama — ✅ ZATEN KURULU.**
+GitHub hesabında (`gerceginizleritv`) 24 Kasım 2026 son tarihli bir
+uyarı şeridi görünüyordu; kullanıcı 15 Kasım'da *"2FA kurulmuştu
+zaten"* dedi. Yapılacak bir şey yok. ⛔ Tek hatırlatma: kurtarma
+kodları saklanmış olmalı (Drive ya da şifre yöneticisi) — telefon
+kaybolursa hesaba yalnızca onlarla girilir.
 
 **2. GitHub Pro — KARAR VERİLDİ, ödeme şirket kurulunca.**
 Kullanıcının kendi sözleriyle: *"Pro kararımı verdim. Ama bir kaç gün
