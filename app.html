@@ -959,7 +959,7 @@ body.suruklenirken *{cursor:grabbing !important;}
    ==================================================================== */
 @media(min-width:1320px){
   .hour-grid .hg-chip,
-  .cal-day .cal-chip{
+  .cal-grid .cal-day .cal-chip{
     grid-template-columns:40px 1fr;
     grid-template-rows:auto 1fr auto;
     column-gap:0; row-gap:0; padding:0;
@@ -974,7 +974,7 @@ body.suruklenirken *{cursor:grabbing !important;}
      merkezde duruyordu. Artik ucu de sutunun 40 pikselini dolduruyor,
      yani merkezleri birebir ayni. */
   .hour-grid .hg-chip .cal-time,
-  .cal-day .cal-chip .cal-time{
+  .cal-grid .cal-day .cal-chip .cal-time{
     grid-column:1; grid-row:1;
     justify-self:stretch; align-self:stretch;
     display:flex;align-items:center;justify-content:center;
@@ -984,7 +984,7 @@ body.suruklenirken *{cursor:grabbing !important;}
     border-right:1px solid var(--line-soft);
   }
   .hour-grid .hg-chip .cal-pico,
-  .cal-day .cal-chip .cal-pico{
+  .cal-grid .cal-day .cal-chip .cal-pico{
     grid-column:1; grid-row:2;
     justify-self:stretch; align-self:stretch;
     /* ⚠ width/height AUTO SART: .cal-pico tabanda `width:15px` tasiyor
@@ -1002,9 +1002,9 @@ body.suruklenirken *{cursor:grabbing !important;}
     background:transparent; border-right:1px solid var(--line-soft);
   }
   .hour-grid .hg-chip .cal-pico svg,
-  .cal-day .cal-chip .cal-pico svg{width:15px;height:15px;}
+  .cal-grid .cal-day .cal-chip .cal-pico svg{width:15px;height:15px;}
   .hour-grid .hg-chip .cal-badge,
-  .cal-day .cal-chip .cal-badge{
+  .cal-grid .cal-day .cal-chip .cal-badge{
     grid-column:1; grid-row:3;
     justify-self:stretch; align-self:stretch;
     display:flex;align-items:center;justify-content:center;
@@ -1015,7 +1015,7 @@ body.suruklenirken *{cursor:grabbing !important;}
   }
   /* Baslik: IKI SATIR, ikincinin sonunda uc nokta. */
   .hour-grid .hg-chip .cal-chip-title,
-  .cal-day .cal-chip .cal-chip-title{
+  .cal-grid .cal-day .cal-chip .cal-chip-title{
     grid-column:2; grid-row:1 / -1;
     display:-webkit-box; -webkit-line-clamp:2; -webkit-box-orient:vertical;
     white-space:normal; overflow:hidden;
