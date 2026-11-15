@@ -104,6 +104,38 @@ Sekiz setin listesi kullanıcıdan geldi (63 madde). Kod yazmadan önce:
 
 ---
 
+## 15 KASIM 2026 — TEST KOŞTURMA DÜZENİ (kullanıcı onayladı)
+
+Kullanıcının isteği, planlama sohbeti üzerinden geldi: *"her adımda
+bütün testleri beklemek uzun sürüyor."* Tam koşu ~30-45 dakika.
+
+⚠ Önce çelişki kontrolü yapıldı: `testler/README.md` yalnızca testlerin
+NASIL koşturulacağını anlatıyor, NE ZAMAN koşturulacağına dair kural
+koymuyor; `CLAUDE.md`'de de test sıklığı kuralı yok. **Çelişki yok.**
+
+| Ne zaman | Ne koşar |
+|---|---|
+| Küçük değişiklikten sonra | Yalnızca ilgili testler. **Hangileri seçildi ve neden yeterli olduğu bir satırla yazılır.** |
+| **Yedek dala** commit | Hedefli koşu yeter — yedek bir güvenlik ağı, teslim değil |
+| ⛔ **`main`'e göndermeden önce** | **BÜTÜN testler.** `main` canlı siteyi yayına alıyor. |
+| Bir aşamayı "bitti" diye raporlamadan önce | **BÜTÜN testler** |
+| Para/hesap (fiyat, ödeme, yönetim), veri yapısı, eşitleme, yedek ve geri yükleme | **Her seferinde BÜTÜN testler** |
+
+⛔ **Kısmi koşu asla "bütün testler geçti" diye raporlanmaz.** Her
+raporda **kaç test koştu, kaç tanesi koşmadı** yazılır.
+
+⚠ Bunun değeri aynı gün görüldü: "8 geçti, 0 kaldı" diye rapor edilen
+bir koşuda `ay.test.js` ve `hafta.test.js` **hiç koşmamıştı** — filtreye
+`ay.test` yazılmıştı ama `kosu.sh` dosya adından `.test.js`'i atıp
+kalanla eşleştiriyor, yani ad `ay`. Tam eşleşme seçeneği yok; geniş
+eşleşen bir ad verildiğinde (`ay` → `yayin`, `paylas`...) beklenenden
+çok daha fazla test koşuyor.
+
+⛔ **Testleri zayıflatmak, silmek ya da atlatmak bu düzenin parçası
+DEĞİL.** Değişen yalnızca hangi testin ne zaman koştuğu.
+
+---
+
 ## 15 KASIM 2026 — GÜVENLİK DENETİMİ ve DEPO KARARI
 
 ### ⏰ TARİHLİ İKİ İŞ
