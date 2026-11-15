@@ -9,16 +9,22 @@
 <link rel="icon" href="favicon.svg" type="image/svg+xml">
 <link rel="icon" href="favicon.ico" sizes="any">
 <style>
-/* Renkler gizlilik ve sartlar sayfalariyla ayni: uc sayfa da ayni urun
-   gibi okunsun. Bu sayfa da hicbir dis kaynak yuklemiyor, olcum yapmiyor. */
+/* Asama 6 (15 Kasim 2026): bu sayfa uygulamanin "Komur ve turuncu"
+   paletine gecti. Degerler app.html'deki paletten BIREBIR alindi.
+   ⚠ ESKIDEN gizlilik ve sartlar sayfalariyla ayni renkteydi ("uc sayfa
+   da ayni urun gibi okunsun"). Simdi O UCLU BOZUK: privacy.html ve
+   sartlar.html hala bej palette. Kullanici bunu bilerek secti
+   ("paylas.html de uysun, diger ikisi sonra"). Oteki ikisi
+   guncellenince bu not silinecek.
+   Bu sayfa hicbir dis kaynak yuklemiyor, olcum yapmiyor. */
 :root{
-  --bg:#F1EDE3; --surface:#FBF9F3; --surface-2:#E7E2D5; --line:#D7D1C2;
-  --text:#15130F; --text-dim:#585349; --accent:#C4350A; --amber:#8F5309;
+  --bg:#FAFAFA; --surface:#FFFFFF; --surface-2:#EFEFF1; --line:#E2E3E6;
+  --text:#17181A; --text-dim:#5E6167; --accent:#C8400B; --amber:#8A5A00;
 }
 @media (prefers-color-scheme: dark){
   :root{
-    --bg:#15130F; --surface:#1E1B16; --surface-2:#272219; --line:#37312A;
-    --text:#F0EBE0; --text-dim:#ABA496; --accent:#FF7A45; --amber:#E8A94A;
+    --bg:#0F1011; --surface:#17181A; --surface-2:#1F2124; --line:#2A2C30;
+    --text:#EDEEF0; --text-dim:#9A9DA3; --accent:#FF6B35; --amber:#F5B544;
   }
 }
 *{box-sizing:border-box;}

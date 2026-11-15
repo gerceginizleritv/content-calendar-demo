@@ -6,7 +6,7 @@
 <title>Shootboard — Content Calendar (One Shoot, Every Post)</title>
 <meta name="description" content="One shoot becomes ten posts. Shootboard keeps every Reel, Short, carousel and story on one board with its own caption, cover text and time slot — a planning board, not an auto-poster.">
 <link rel="manifest" href="manifest.json">
-<meta name="theme-color" content="#15130F">
+<meta name="theme-color" content="#0F1011">
 <link rel="icon" href="favicon.svg" type="image/svg+xml">
 <link rel="icon" href="favicon.ico" sizes="any">
 <link rel="icon" href="favicon-32x32.png" sizes="32x32" type="image/png">
@@ -23122,7 +23122,11 @@ function applyThemeLabel(){
   const dark = currentTheme() === 'dark';
   btn.textContent = dark ? '\u2600 ' + t('btn_theme_light') : '\uD83C\uDF19 ' + t('btn_theme_dark');
   const meta = document.querySelector('meta[name="theme-color"]');
-  if(meta) meta.setAttribute('content', dark ? '#15130F' : '#F1EDE3');
+  /* ⚠ Asama 5 (15 Kasim 2026): bu ikili ESKI PALETTEN kalmisti.
+     Uygulama 13 Kasim'da "Komur ve turuncu"ya gecti ama telefonun
+     adres cubugu hala bej donemi rengini gosteriyordu. Degerler
+     paletin kendi zemin renkleri: --bg koyu / --bg acik. */
+  if(meta) meta.setAttribute('content', dark ? '#0F1011' : '#FAFAFA');
 }
 document.getElementById('themeBtn').addEventListener('click', ()=>{
   const next = currentTheme() === 'dark' ? 'light' : 'dark';

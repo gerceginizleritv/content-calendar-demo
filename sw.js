@@ -20,7 +20,11 @@
    yeniden yaziliyor.
    ===================================================================== */
 
-const SURUM = 'shootboard-v5';
+/* ⚠ SURUM HER PALET/GORUNUM DEGISIKLIGINDE ARTMALI. v5 -> v6:
+   13 Kasim'daki palet degisikligi ve 15 Kasim'daki Asama 4
+   onbellekteki eski CSS yuzunden eski kullaniciya ULASMIYORDU.
+   activate kancasi SURUM disindaki butun onbellekleri siliyor. */
+const SURUM = 'shootboard-v6';
 const KABUK = [
   './app.html',
   './index.html',
