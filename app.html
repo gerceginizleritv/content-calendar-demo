@@ -931,6 +931,100 @@ body.suruklenirken *{cursor:grabbing !important;}
    kadar kisa, 16 saatlik izgara o kadar az uzuyor. */
 .hour-grid .hg-chip .cal-badge{padding:0 4px;font-size:10px;line-height:1.6;}
 .hour-grid .hg-chip .cal-time{font-size:10.5px;}
+/* ====================================================================
+   KUTU IC DUZENI -- SOL SERIT  (15 Kasim 2026, kullanici tasarimi "C3")
+   Kullanicinin sikayeti: "Kutu icinde ilgili postun konusu bile tam
+   okunamiyor." Ust satir ikon + tur + saate gidiyordu, basliga tek
+   satir kaliyor ve o da kesiliyordu.
+   Yeni duzen: solda dar bir serit (saat / ikon / tur alt alta), sagda
+   basligin IKI SATIRI.
+
+   ⛔ KUTU VE HUCRE OLCULERINE DOKUNULMADI. Kutu 49px, hafta hucresi
+   107px, ay hucresi 195px, sutun genislikleri -- hepsi aynen kaliyor.
+   Degisen yalnizca kutunun ICI.
+
+   ⚠ YALNIZCA 1200px USTUNDE. Olculdu: 1023'te kutu 123px, 1200'de
+   115px, 1440'ta 150px. 40 pikseli serit yiyince dar ekranda basliga
+   kalan yer bugunkunden iyi olmuyor -- tasarimin kazanci genis
+   ekranda. Altinda bugunku duzen aynen kaliyor (kullanicinin secimi:
+   "A -- geniste yeni, darda bugunku").
+
+   ⚠ JS'E DOKUNULMADI. Kutunun cocuklari zaten ayri sinifli; izgarada
+   her birine yer verilerek DOM sirasi degistirilmeden kuruldu. JS'in
+   tutundugu id ve sinif adlari korundu.
+   ==================================================================== */
+@media(min-width:1200px){
+  .hour-grid .hg-chip,
+  .cal-day .cal-chip{
+    grid-template-columns:40px 1fr;
+    grid-template-rows:auto 1fr auto;
+    column-gap:0; row-gap:0; padding:0;
+    align-content:stretch; align-items:stretch;
+  }
+  /* Saat seridi: zemin METIN rengi, yazi ZEMIN rengi. Iki temada
+     kendiliginden ters doner -- koyu temada acik serit, acik temada
+     koyu serit. Yeni renk degeri yazilmadi. */
+  /* ⚠ justify-self:stretch SART. Asama 4'te yazilan eski kural
+     `justify-self:start` diyor ve bu blok onu ezmiyordu: olculdu,
+     saat 32px, ikon 15px, tur 40px genisligindeydi -- uc oge uc ayri
+     merkezde duruyordu. Artik ucu de sutunun 40 pikselini dolduruyor,
+     yani merkezleri birebir ayni. */
+  .hour-grid .hg-chip .cal-time,
+  .cal-day .cal-chip .cal-time{
+    grid-column:1; grid-row:1;
+    justify-self:stretch; align-self:stretch;
+    display:flex;align-items:center;justify-content:center;
+    background:var(--text); color:var(--bg);
+    font-family:'IBM Plex Mono',monospace; font-size:10.5px; font-weight:600;
+    line-height:1; padding:3px 0; letter-spacing:-.2px;
+    border-right:1px solid var(--line-soft);
+  }
+  .hour-grid .hg-chip .cal-pico,
+  .cal-day .cal-chip .cal-pico{
+    grid-column:1; grid-row:2;
+    justify-self:stretch; align-self:stretch;
+    /* ⚠ width/height AUTO SART: .cal-pico tabanda `width:15px` tasiyor
+       ve BELIRLI genisligi olan bir izgara ogesi YAYILMAZ. Olculdu:
+       stretch yazildigi halde ikon 15px kaliyor ve merkezi 325.5'te
+       duruyordu, saat ve tur ise 338'de -- ucu uc ayri merkezdeydi.
+       Ikonun kendi boyu alttaki svg kuralindan geliyor. */
+    width:auto; height:auto;
+    display:flex;align-items:center;justify-content:center;
+    /* ⚠ GRI ZEMIN KALDIRILDI. --surface-2 ile cizilmisti ama oge
+       sutunu doldurmadigi icin acik temada ikonun arkasinda 15
+       piksellik gri bir blok gibi gorunuyordu (kullanici bildirdi).
+       Serit artik kutuyla ayni zeminde; ayrimi sagdaki ince cizgi
+       yapiyor. */
+    background:transparent; border-right:1px solid var(--line-soft);
+  }
+  .hour-grid .hg-chip .cal-pico svg,
+  .cal-day .cal-chip .cal-pico svg{width:15px;height:15px;}
+  .hour-grid .hg-chip .cal-badge,
+  .cal-day .cal-chip .cal-badge{
+    grid-column:1; grid-row:3;
+    justify-self:stretch; align-self:stretch;
+    display:flex;align-items:center;justify-content:center;
+    background:transparent; border:0;
+    border-right:1px solid var(--line-soft);
+    border-radius:0; padding:2px 0; margin:0;
+    font-size:9.5px; line-height:1; letter-spacing:-.2px;
+  }
+  /* Baslik: IKI SATIR, ikincinin sonunda uc nokta. */
+  .hour-grid .hg-chip .cal-chip-title,
+  .cal-day .cal-chip .cal-chip-title{
+    grid-column:2; grid-row:1 / -1;
+    display:-webkit-box; -webkit-line-clamp:2; -webkit-box-orient:vertical;
+    white-space:normal; overflow:hidden;
+    align-self:center; padding:0 8px; line-height:1.28;
+  }
+  /* ⚠ "+N" rozeti hafta gorunumunde alt sagda duruyor ve ikinci
+     kutunun basligina biniyordu. Rozeti tasiyan hucrenin SON kutusunda
+     basligin sagina rozet kadar bosluk birakiliyor. Rozetin yeri ve
+     mantigi DEGISMEDI. Ay gorunumunde rozet gun numarasinin yaninda,
+     hicbir kutuya binmiyor -- orada bosluga gerek yok. */
+  .hg-chip.hg-son-gorunen .cal-chip-title{padding-right:36px;}
+}
+
 /* Dil ve AI rozeti burada YOK: ucuncu satiri acan ikisiydi. Ay
    gorunumunde ve kayit penceresinde duruyorlar. */
 .hg-chip .cal-dil, .hg-chip .ai-rozet{display:none;}
@@ -17568,6 +17662,14 @@ function hgTasmaIsareti(hucre, toplam){
   dug.className = 'hg-tasma';
   dug.textContent = '+' + (toplam - HG_GORUNEN);
   dug.title = t('hg_tasma');
+  /* ⚠ Son GORUNEN kutu isaretleniyor ki basligin sagina rozet kadar
+     bosluk birakilabilsin. CSS'te `:last-of-type` denendi ve TUTMADI:
+     hucre tasan kayitlari DOM'da tutuyor (yalnizca kirpiyor), yani
+     son tip ekranda OLMAYAN kutuydu. Olculdu: 10 rozetin 10'u da
+     baslik metninin ustune biniyordu. Isaret buradan veriliyor cunku
+     kac kutunun gorundugunu bilen tek yer HG_GORUNEN. */
+  const gorunenler = hucre.querySelectorAll('.hg-chip');
+  if(gorunenler[HG_GORUNEN - 1]) gorunenler[HG_GORUNEN - 1].classList.add('hg-son-gorunen');
   dug.setAttribute('aria-expanded', 'false');
   dug.addEventListener('click', e=>{
     // ⚠ stopPropagation SART: hucrenin kendi tiklamasi "o saate yeni
