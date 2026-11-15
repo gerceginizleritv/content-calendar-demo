@@ -208,6 +208,27 @@ Yapılacak, takvim kutularında yapılanın aynısı:
 
 ---
 
+## KOŞU SÜRERKEN BOŞ DURMA (15 Kasım 2026, kullanıcı kuralı)
+
+> *"bundan sonra bekleme gerektirmeyen ve app.html ve index.html'i
+> değiştirmeyecek işleri testler devam ederken yapman. Bu şekilde en
+> azından biraz zaman kazanırız"*
+
+Tam koşu 30-40 dakika sürüyor. O sürede yapılabilecekler:
+
+| Yapılabilir | Yapılamaz |
+|---|---|
+| Araştırma (web, Apple/MDN belgeleri) | ⛔ `app.html` ya da `index.html` değiştirmek |
+| `YAPILACAKLAR.md` ve öteki belgeler | ⛔ Uygulamayı tarayıcıda açıp ekran görüntüsü almak |
+| Yeni dosya üretmek (şema, önizleme, test dosyası) | ⛔ 8097/8098/8099 portlarına sunucu kurmak |
+| Kod okumak, plan çıkarmak, ölçüm betiği yazmak | ⛔ Testlerin okuduğu herhangi bir dosyayı değiştirmek |
+| Commit ve yedek dala push | |
+
+⚠ Sebep: testler `app.html`'i **diskten** okuyor; koşu sürerken
+değiştirmek ölçümü kirletir. Port kuralı için bir üstteki bölüme bak.
+
+---
+
 ## ⛔ 8097 / 8098 / 8099 PORTLARI TESTLERİN — EKRAN GÖRÜNTÜSÜ İÇİN KULLANMA
 
 15 Kasım 2026'da tam koşuda `duzeltme.test.js` kırmızı verdi. Kırmızı
