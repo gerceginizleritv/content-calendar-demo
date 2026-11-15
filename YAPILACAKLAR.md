@@ -208,6 +208,37 @@ Yapılacak, takvim kutularında yapılanın aynısı:
 
 ---
 
+## ⛔ app.html'DE CSS YAZARKEN: EŞİT ÖZGÜLLÜK + SONRAKİ KURAL = SESSİZ KAYIP
+
+15 Kasım 2026'da **beş kez** aynı tuzağa düşüldü. `app.html` 24 bin
+satır ve aynı öğeye bakan kurallar dosyanın çok farklı yerlerinde.
+Eşit özgüllükte iki kural varsa **dosyada SONRA gelen kazanır.**
+
+| Yazılan | Nerede kaybetti | Belirti |
+|---|---|---|
+| `.hg-chip{flex:0 0 ...}` | `.cal-chip{flex:1}` daha sonra | Kutu 40 değil 82 px |
+| `.cal-day .cal-chip{grid-...}` | ay kuralları 2112'de | Saat şeridinin **rengi** tuttu, **yerleşimi** tutmadı |
+| `.rail-kur{display:none}` | bir sınıf kuralı sonra | Telefonda düğme hem şeritte hem çekmecede |
+| `.s-metin-vurgu{fill:...}` | `.s-metin{font:...}` sonra | Vurgulu satır gri ve ince kaldı |
+| `.wordmark{font-size}` (13 Kasım) | aynı seçici sonra | Marka "Shoot..." diye kesildi |
+
+**Kural:** `app.html`'de bir öğeye kural yazmadan önce
+`grep -n '<seçici>' app.html` ile **bütün** kurallarını çıkar. Kendi
+kuralın en sondaki değilse **özgüllüğü yükselt**:
+- sınıf ekle (`.hour-grid .hg-chip`)
+- öğe adı ekle (`text.s-metin-vurgu`)
+- kimlik kullan (`#kurBtn`) — kimlik her sınıfı yener
+
+⚠ **En sinsi belirti:** kuralın bir KISMI tutar, bir kısmı tutmaz.
+Ay görünümünde saat şeridinin rengi geçti ama yerleşimi ezildi, çünkü
+ezen kural `background` yazmıyordu. "Yarısı çalışıyor" görürsen önce
+özgüllüğe bak.
+
+⚠ `font:` ve `padding:` gibi **kısayollar** yazılmayan alt özellikleri
+de sıfırlar. `font:10px ...` yazan bir kural `font-weight`'i de ezer.
+
+---
+
 ## KOŞU SÜRERKEN BOŞ DURMA (15 Kasım 2026, kullanıcı kuralı)
 
 > *"bundan sonra bekleme gerektirmeyen ve app.html ve index.html'i

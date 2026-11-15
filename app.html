@@ -458,6 +458,12 @@ body::before{
 .kur-sema .s-cizgi{fill:none;stroke:var(--text-dim);stroke-width:1.5;}
 .kur-sema .s-vurgu{fill:none;stroke:var(--accent);stroke-width:2.2;}
 .kur-sema .s-etiket{fill:var(--accent);font:600 11px 'IBM Plex Mono',monospace;}
+/* ⚠ `text.` oneki SART. Bu kural once `.kur-sema .s-metin-vurgu`
+   diye yazildi ve TUTMADI: `.kur-sema .s-metin` ayni ozgullukte ve
+   dosyada DAHA SONRA geliyor; ustelik `font:` KISAYOLU kullandigi
+   icin font-weight'i de sifirliyor. Sonuc: vurgulu satirlar gri ve
+   ince kaliyordu. Oge adi eklenince ozgulluk (0,2,1) oluyor. */
+.kur-sema text.s-metin-vurgu{fill:var(--accent);font-weight:700;}
 .kur-sema .s-metin{fill:var(--text-dim);font:10px 'IBM Plex Sans',sans-serif;}
 .kur-blok{margin:0 0 20px;}
 .kur-blok h3{font-size:13px;margin:0 0 3px;}
@@ -23337,38 +23343,60 @@ function kurSemasiIphoneSerit(){
    oluyor -- kullanicinin ekraninda "Daha Az Goruntule" dugmesi
    gorunuyordu, yani kapaliyken "Daha Fazla Goruntule" diyor ve
    Ana Ekrana Ekle o acilmadan gorunmeyebiliyor. */
+/* ⚠ IKONLAR SATIR MERKEZINDEN TURETILIYOR. Once sabit koordinatlarla
+   cizilmislerdi ve olculdu: satir merkezinin 3,5-4 piksel ALTINDA
+   duruyorlardi -- yazi ortalandiktan sonra bu daha da belli oldu,
+   kullanici "oradaki isaret yamuk" diye bildirdi.
+   Her ikon 16x16'lik bir kutuya cizilip translate ile satirin
+   merkezine oturtuluyor; boylece satir yuksekligi degisse de ortali
+   kalirlar. */
+function kurIkon(cy, ic){
+  return '<g class="s-vurgu" transform="translate(27,' + (cy - 8) + ')" ' +
+         'stroke-linecap="round" stroke-linejoin="round">' + ic + '</g>';
+}
+const KUR_IKON_PAYLAS = '<path d="M8 11 V2"/><path d="M4.5 5.5 L8 2 11.5 5.5"/>' +
+                        '<path d="M2.5 9 v5 h11 v-5"/>';
+const KUR_IKON_EKLE   = '<rect x="1" y="1" width="14" height="14" rx="3"/>' +
+                        '<path d="M8 4.5 v7"/><path d="M4.5 8 h7"/>';
+const KUR_IKON_AC     = '<path d="M4.5 9.5 L8 6 11.5 9.5"/>';
 function kurSemasiMenuListe(){
+  /* ⚠ dominant-baseline="middle" SART ve iki satir AYNI yazi tipinde.
+     Vurgulu satirlar mono, otekiler sans idi; ayni taban cizgisiyle
+     cizilince dikeyde kayiyorlardi -- kullanici "yamuk duruyor" diye
+     bildirdi. Artik yazi satirin ORTASINA hizalaniyor ve hizalama
+     yazi tipinden bagimsiz. */
   const satir = (y, metin, vurgu) =>
     '<rect class="' + (vurgu ? 's-vurgu' : 's-cizgi') + '" x="18" y="' + y + '" width="184" height="26" rx="5"' +
       (vurgu ? '' : ' opacity=".45"') + '/>' +
-    '<text class="' + (vurgu ? 's-etiket' : 's-metin') + '" x="56" y="' + (y + 17) + '">' + metin + '</text>';
+    '<text class="s-metin' + (vurgu ? ' s-metin-vurgu' : '') + '" x="56" y="' + (y + 14.3) +
+      '" dominant-baseline="middle">' + metin + '</text>';
   return '<svg viewBox="0 0 220 210" aria-hidden="true">' +
     satir(6,  'Web Sitesini Çevir…', false) +
-    satir(38, 'Paylaş', true) +
-    '<g class="s-vurgu" stroke-linecap="round" stroke-linejoin="round">' +
-      '<path d="M34 58 v-11"/><path d="M30 51 l4 -4 4 4"/>' +
-      '<path d="M28 56 v6 h12 v-6"/></g>' +
+    satir(38, 'Paylaş', true) + kurIkon(38 + 13, KUR_IKON_PAYLAS) +
     satir(70, 'Şuraya Ekle: Yer İşaretleri', false) +
     satir(102,'Sayfada Bul', false) +
     satir(134,'Sayfa Büyütme', false) +
     satir(166,'Bana Bildir', false) + '</svg>';
 }
 function kurSemasiPaylasListe(){
+  /* ⚠ dominant-baseline="middle" SART ve iki satir AYNI yazi tipinde.
+     Vurgulu satirlar mono, otekiler sans idi; ayni taban cizgisiyle
+     cizilince dikeyde kayiyorlardi -- kullanici "yamuk duruyor" diye
+     bildirdi. Artik yazi satirin ORTASINA hizalaniyor ve hizalama
+     yazi tipinden bagimsiz. */
   const satir = (y, metin, vurgu) =>
     '<rect class="' + (vurgu ? 's-vurgu' : 's-cizgi') + '" x="18" y="' + y + '" width="184" height="26" rx="5"' +
       (vurgu ? '' : ' opacity=".45"') + '/>' +
-    '<text class="' + (vurgu ? 's-etiket' : 's-metin') + '" x="56" y="' + (y + 17) + '">' + metin + '</text>';
+    '<text class="s-metin' + (vurgu ? ' s-metin-vurgu' : '') + '" x="56" y="' + (y + 14.3) +
+      '" dominant-baseline="middle">' + metin + '</text>';
   return '<svg viewBox="0 0 220 178" aria-hidden="true">' +
     satir(6,  'Okuma Listesine Ekle', false) +
     satir(38, 'Daha Fazla Görüntüle', false) +
-    '<g class="s-cizgi" stroke-linecap="round" opacity=".7">' +
-      '<path d="M30 54 l4 -4 4 4"/></g>' +
+    '<g class="s-cizgi" stroke-linecap="round" stroke-linejoin="round" opacity=".7" ' +
+      'transform="translate(27,' + (38 + 13 - 8) + ')">' + KUR_IKON_AC + '</g>' +
     satir(70, 'Favorilere Ekle', false) +
     satir(102,'Sayfada Bul', false) +
-    satir(134,'Ana Ekrana Ekle', true) +
-    '<g class="s-vurgu" stroke-linecap="round">' +
-      '<rect x="27" y="144" width="14" height="14" rx="3"/>' +
-      '<path d="M34 148 v6"/><path d="M31 151 h6"/></g>' + '</svg>';
+    satir(134,'Ana Ekrana Ekle', true) + kurIkon(134 + 13, KUR_IKON_EKLE) + '</svg>';
 }
 function kurSemasiIphoneMenu(){
   return '<svg viewBox="0 0 220 300" aria-hidden="true">' +
