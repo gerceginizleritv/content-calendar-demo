@@ -1967,6 +1967,76 @@ textarea.sc-ai-brief{min-height:64px;resize:vertical;line-height:1.5;}
 .cal-day-num{font-family:'IBM Plex Mono',monospace;font-size:11px;color:var(--text-dim);margin-bottom:7px;}
 .cal-day.today .cal-day-num{color:var(--accent);font-weight:700;}
 .cal-chip-row{display:flex;gap:3px;margin-bottom:3px;}
+/* ---- AY IZGARASI: kutu ve gun hucresi de SABIT ----------------------
+   15 Kasim 2026. Kullanicinin talimati: "ay - hafta - gun fark etmez
+   kutu ebatlari degismeyecek, icerisine bir seyler eklendikce buyuyen
+   kutular olmamali."
+   Olculdu (72 kayitlik gercek Ekim verisi, uc ekran boyunda):
+     masaustu  gun 272 / kutu 75          -- tek deger
+     TABLET    gun 323 ve 341 / kutu 92 ve 110   -- ikiser ayri boy
+     TELEFON   gun 0, 149 ve 204          -- uc ayri boy
+   Sebep hafta gorunumundekiyle ayni: flex-wrap satir sayisini SUTUN
+   GENISLIGINE birakiyordu. Kutu burada da izgara: her genislikte tam
+   iki satir, hafta gorunumuyle AYNI yukseklik.
+   ⚠ Hucre yuksekligi 701px'ten YUKARIDA sabitleniyor: 700'un altinda ay
+   gorunumu tek sutunlu bir LISTEye donusuyor (bkz. @media max-width:700,
+   `.cal-more{display:none}` ve butun satirlar gorunur). Orada sabit
+   yukseklik kayitlari kirpardi. Kutu yine her yerde ayni. ------------ */
+.cal-grid{--ay-kutu-h:49px; --ay-gorunen:3; --ay-ara:3px;}
+.cal-day .cal-chip{
+  display:grid;
+  grid-template-columns:auto auto 1fr;
+  grid-template-rows:auto auto;
+  align-content:center;align-items:center;
+  column-gap:5px;row-gap:2px;
+  height:var(--ay-kutu-h);min-height:0;overflow:hidden;
+}
+.cal-day .cal-chip .cal-pico{grid-column:1;grid-row:1;}
+.cal-day .cal-chip .cal-badge{grid-column:2;grid-row:1;padding:0 4px;font-size:10px;line-height:1.6;}
+.cal-day .cal-chip .cal-time{grid-column:3;grid-row:1;justify-self:start;font-size:10.5px;}
+.cal-day .cal-chip .ev-yayin{grid-column:3;grid-row:1;justify-self:end;}
+.cal-day .cal-chip .cal-chip-title{grid-column:1 / -1;grid-row:2;}
+/* Ucuncu satiri acan ogeler: ay kutusunda da gizli. Yayin durumu zaten
+   kutunun sol kenar cizgisinden ve yayin noktasindan okunuyor; dil ve
+   AI rozetleri kayit penceresinde duruyor. */
+.cal-day .cal-chip .cal-state,
+.cal-day .cal-chip .cal-dil,
+.cal-day .cal-chip .ai-rozet,
+.cal-day .cal-chip .cal-tz{display:none;}
+@media(min-width:701px){
+  .cal-day{
+    /* 39 = 18 (ust+alt dolgu) + 21 (gun numarasi 14 + altindaki 7 bosluk).
+       Kalani kutu basina (yukseklik + alt bosluk).
+       ⚠ Ilk denemede 192 yazilmisti ve UCUNCU kutunun ALTI KIRPILIYORDU:
+       son satirin 3px'lik alt boslugu hesaba katilmamisti. Olculdu
+       (1440, 1024 ve 760 genisliginde ucu de ayni): gereken 195. */
+    height:calc(39px + var(--ay-gorunen) * (var(--ay-kutu-h) + var(--ay-ara)));
+    min-height:0;position:relative;
+  }
+  /* Kullanicinin actigi hucre buyuyebilir: bu kendiliginden olan bir
+     esneme degil, istenen bir acilis.
+     ⚠ `:has(.cal-more)` SART. `collapsed` sinifi YALNIZCA tasan gune
+     ekleniyor (bkz. renderCal, `if(gizli > 0)`), yani sade
+     `:not(.collapsed)` tasmayan BUTUN gunleri de yakaliyordu ve onlari
+     serbest birakiyordu. Olculdu: tasmasiz hucreler 39 ve 192 diye iki
+     ayri boy cikti. Kural artik yalnizca "+N" tasiyan ve kullanici
+     tarafindan ACILMIS hucreye bakiyor. */
+  .cal-day:has(.cal-more):not(.collapsed){height:auto;}
+  /* ⚠ "+N" AKISTA DEGIL. Akista bir oge olsaydi onu tasiyan hucre
+     otekilerden uzun olurdu; kullanicinin sarti "yazanlar ve
+     yazmayanlar ayni boyutta olmali her zaman" idi. */
+  /* ⚠ ROZET USTTE, ALTTA DEGIL. Alt sagda dururken UCUNCU kutunun
+     basligini ortuyordu (gozle gorildu, olcum gormedi). Gun numarasinin
+     sagindaki serit zaten bos; oraya alininca hicbir seyi ortmuyor. */
+  .cal-day .cal-more{
+    position:absolute;right:6px;top:6px;width:auto;z-index:2;
+    min-height:0;padding:3px 5px;line-height:1;
+    background:var(--accent);color:var(--on-accent);border-radius:2px;
+  }
+  .cal-day .cal-more:hover{background:var(--accent-hover);text-decoration:none;}
+  /* Acikken akisa donuyor: hucre zaten uzamis durumda. */
+  .cal-day:has(.cal-more):not(.collapsed) .cal-more{position:static;width:100%;background:none;color:var(--accent);}
+}
 /* Örnek şeridi: uyarı değil, bilgi. Kırmızı ya da sarı değil; takvimin
    rengiyle aynı ailede, ama çerçevesi kesik çizgili -- "geçici" demek
    için metne gerek kalmıyor. */
