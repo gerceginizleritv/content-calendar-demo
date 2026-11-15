@@ -8744,6 +8744,10 @@ function setLanguage(lang, buluttanGeldi){
   // gore olani gosteriyor.
   const kilavuz = document.getElementById('kilavuzLink');
   if(kilavuz) kilavuz.href = (lang === 'tr') ? 'kilavuz.html' : 'guide.html';
+  // Kurulum tarifi ACIKKEN dil degisirse icerik eski dilde kalirdi:
+  // HTML pencere acilirken bir kez uretiliyor. Acik ise yeniden uret.
+  const kurP = document.getElementById('kurTarifOverlay');
+  if(kurP && kurP.classList.contains('open') && typeof kurTarifiAc === 'function') kurTarifiAc();
   // Fiyat sayfasi TEK dosya, dili adresten aliyor (?lang=). Kendi basina
   // navigator.language'a bakiyor; uygulamayi Turkce kullanan ama tarayicisi
   // Ingilizce olan kisi Ingilizce sayfaya dusuyordu.
@@ -23359,6 +23363,27 @@ const KUR_IKON_PAYLAS = '<path d="M8 11 V2"/><path d="M4.5 5.5 L8 2 11.5 5.5"/>'
 const KUR_IKON_EKLE   = '<rect x="1" y="1" width="14" height="14" rx="3"/>' +
                         '<path d="M8 4.5 v7"/><path d="M4.5 8 h7"/>';
 const KUR_IKON_AC     = '<path d="M4.5 9.5 L8 6 11.5 9.5"/>';
+/* ⚠ SEMA SATIRLARI IKI DILDE. Once yalnizca Turkce yazilmisti:
+   Ingilizce secildiginde iOS menusu Ingilizce olur ama semada Turkce
+   yazardi (kullanici sordu).
+   ⛔ YALNIZCA VURGULU SATIRLAR DOGRULANDI (Apple'in kendi TR ve EN
+   sayfalarindan): Paylas/Share, Ana Ekrana Ekle/Add to Home Screen,
+   Daha Fazla Goruntule/View More. Oteki satirlar YALNIZCA BAGLAM --
+   menunun neye benzedigini gostermek icin; Ingilizceleri Apple'in
+   sayfasindan tek tek dogrulanmadi, Safari'nin bilinen oge adlari
+   kullanildi. Vurgulu olanin dogru olmasi yeterli, kullanici onu
+   ariyor. */
+const KUR_SEMA_METIN = {
+  tr: { cevir:'Web Sitesini Çevir…', paylas:'Paylaş', yerim:'Şuraya Ekle: Yer İşaretleri',
+        bul:'Sayfada Bul', zoom:'Sayfa Büyütme', bildir:'Dikkat Dağıtıcı Öğeleri Gizle',
+        okuma:'Okuma Listesine Ekle', dahafazla:'Daha Fazla Görüntüle',
+        favori:'Favorilere Ekle', ekle:'Ana Ekrana Ekle' },
+  en: { cevir:'Translate Website…', paylas:'Share', yerim:'Add to Bookmarks',
+        bul:'Find on Page', zoom:'Page Zoom', bildir:'Hide Distracting Items',
+        okuma:'Add to Reading List', dahafazla:'View More',
+        favori:'Add to Favorites', ekle:'Add to Home Screen' }
+};
+function kurSemaM(){ return KUR_SEMA_METIN[currentLang] || KUR_SEMA_METIN.en; }
 function kurSemasiMenuListe(){
   /* ⚠ dominant-baseline="middle" SART ve iki satir AYNI yazi tipinde.
      Vurgulu satirlar mono, otekiler sans idi; ayni taban cizgisiyle
@@ -23371,12 +23396,12 @@ function kurSemasiMenuListe(){
     '<text class="s-metin' + (vurgu ? ' s-metin-vurgu' : '') + '" x="56" y="' + (y + 14.3) +
       '" dominant-baseline="middle">' + metin + '</text>';
   return '<svg viewBox="0 0 220 210" aria-hidden="true">' +
-    satir(6,  'Web Sitesini Çevir…', false) +
-    satir(38, 'Paylaş', true) + kurIkon(38 + 13, KUR_IKON_PAYLAS) +
-    satir(70, 'Şuraya Ekle: Yer İşaretleri', false) +
-    satir(102,'Sayfada Bul', false) +
-    satir(134,'Sayfa Büyütme', false) +
-    satir(166,'Bana Bildir', false) + '</svg>';
+    satir(6,  kurSemaM().cevir, false) +
+    satir(38, kurSemaM().paylas, true) + kurIkon(38 + 13, KUR_IKON_PAYLAS) +
+    satir(70, kurSemaM().yerim, false) +
+    satir(102,kurSemaM().bul, false) +
+    satir(134,kurSemaM().zoom, false) +
+    satir(166,kurSemaM().bildir, false) + '</svg>';
 }
 function kurSemasiPaylasListe(){
   /* ⚠ dominant-baseline="middle" SART ve iki satir AYNI yazi tipinde.
@@ -23390,13 +23415,13 @@ function kurSemasiPaylasListe(){
     '<text class="s-metin' + (vurgu ? ' s-metin-vurgu' : '') + '" x="56" y="' + (y + 14.3) +
       '" dominant-baseline="middle">' + metin + '</text>';
   return '<svg viewBox="0 0 220 178" aria-hidden="true">' +
-    satir(6,  'Okuma Listesine Ekle', false) +
-    satir(38, 'Daha Fazla Görüntüle', false) +
+    satir(6,  kurSemaM().okuma, false) +
+    satir(38, kurSemaM().dahafazla, false) +
     '<g class="s-cizgi" stroke-linecap="round" stroke-linejoin="round" opacity=".7" ' +
       'transform="translate(27,' + (38 + 13 - 8) + ')">' + KUR_IKON_AC + '</g>' +
-    satir(70, 'Favorilere Ekle', false) +
-    satir(102,'Sayfada Bul', false) +
-    satir(134,'Ana Ekrana Ekle', true) + kurIkon(134 + 13, KUR_IKON_EKLE) + '</svg>';
+    satir(70, kurSemaM().favori, false) +
+    satir(102,kurSemaM().bul, false) +
+    satir(134,kurSemaM().ekle, true) + kurIkon(134 + 13, KUR_IKON_EKLE) + '</svg>';
 }
 function kurSemasiIphoneMenu(){
   return '<svg viewBox="0 0 220 300" aria-hidden="true">' +
@@ -23443,7 +23468,6 @@ function kurTarifiAc(){
   const dahaf = tr ? '<b>Daha Fazla Görüntüle</b>' : '<b>View More</b>';
   const payls = tr ? '<b>Paylaş düğmesi</b>' : '<b>Share</b>';
   const smenu = tr ? '<b>Sayfa Menüsü düğmesi</b>' : '<b>Page Menu button</b>';
-  const dokun = tr ? 'ne dokun' : '';
   let html = '';
   if(/iPad/.test(navigator.userAgent||'') ||
      (/Macintosh/.test(navigator.userAgent||'') && 'ontouchend' in document)){
@@ -23460,7 +23484,7 @@ function kurTarifiAc(){
       tr ? ('Açılan listede <b>Paylaş</b>’a dokun') : ('Tap <b>Share</b> in the list')
     ]) + kurBlok('kur_t_ip2_bas','kur_t_ip2_kosul', kurSemasiPaylasListe(), [
       tr ? ('Liste katlıysa <b>Daha Fazla Görüntüle</b>’ye dokun')
-         : ('If the list is collapsed, tap <b>Show More</b>'),
+         : ('If the list is collapsed, tap ' + dahaf),
       tr ? ('Aşağı kaydır, ' + ekle + '’ye dokun') : ('Scroll down, then tap ' + ekle),
       tr ? (webap + '’ı seç, ' + onay + '’ye dokun') : ('Turn on ' + webap + ', then tap ' + onay)
     ]);
