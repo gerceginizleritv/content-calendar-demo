@@ -7122,10 +7122,10 @@ const LANG = {
     kur_t_baslik: "Add Shootboard to your Home Screen",
     kur_t_lead: "Apple does not allow a one-tap install, so it takes a few steps. The names below are Apple's own.",
     kur_t_webapp: "⚠ Leave Open as Web App turned on. On iPhone, notifications depend on it.",
-    kur_t_ip1_bas: "If your Tabs layout is Bottom or Top",
-    kur_t_ip1_kosul: "The Share button sits in the bar.",
-    kur_t_ip2_bas: "Otherwise",
-    kur_t_ip2_kosul: "If you cannot see the Share button.",
+    kur_t_ip1_bas: "1 · Open the menu",
+    kur_t_ip1_kosul: "Find Share.",
+    kur_t_ip2_bas: "2 · The Share sheet",
+    kur_t_ip2_kosul: "Add to Home Screen is in this list.",
     kur_t_ipad_bas: "On iPad",
     kur_t_ipad_kosul: "There is one extra step: View More.",
     kur_t_paylas: "Share",
@@ -8399,10 +8399,10 @@ const LANG = {
     kur_t_baslik: "Shootboard'u ana ekranına ekle",
     kur_t_lead: "Apple tek dokunuşla kuruluma izin vermiyor, birkaç adım gerekiyor. Aşağıdaki adlar Apple'ın kendi adları.",
     kur_t_webapp: "⚠ Web Uygulaması Olarak Aç anahtarını açık bırak. iPhone'da bildirimler buna bağlı.",
-    kur_t_ip1_bas: "Sekmeler yerleşimin Alt ya da Üst ise",
-    kur_t_ip1_kosul: "Paylaş düğmesi çubuğun içinde durur.",
-    kur_t_ip2_bas: "Değilse",
-    kur_t_ip2_kosul: "Paylaş düğmesini göremiyorsan.",
+    kur_t_ip1_bas: "1 · Menüyü aç",
+    kur_t_ip1_kosul: "Paylaş’ı bul.",
+    kur_t_ip2_bas: "2 · Paylaş sayfası",
+    kur_t_ip2_kosul: "Ana Ekrana Ekle bu listede.",
     kur_t_ipad_bas: "iPad'de",
     kur_t_ipad_kosul: "Fazladan bir adım var: Daha Fazla Görüntüle.",
     kur_t_paylas: "Paylaş",
@@ -23328,6 +23328,48 @@ function kurSemasiIphoneSerit(){
       '<path d="M106 269 l4 -4 4 4"/><path d="M103 277 h14"/></g>' +
     '<text class="s-etiket" x="110" y="297" text-anchor="middle">' + escapeHtml(t('kur_t_paylas')) + '</text></svg>';
 }
+/* ⚠ BU IKI SEMA KULLANICININ KENDI iPhone EKRANINDAN cizildi
+   (15 Kasim 2026, iki ekran goruntusu gonderdi). Daha once ezberden
+   cizilmisti. Apple'in ekran goruntusu KOPYALANMADI; gorulen duzen
+   cizgiyle yeniden cizildi.
+   1. asama: sayfa menusu acilir, icinde Paylas var.
+   2. asama: Paylas sayfasinda Ana Ekrana Ekle var. Liste KATLANABILIR
+   oluyor -- kullanicinin ekraninda "Daha Az Goruntule" dugmesi
+   gorunuyordu, yani kapaliyken "Daha Fazla Goruntule" diyor ve
+   Ana Ekrana Ekle o acilmadan gorunmeyebiliyor. */
+function kurSemasiMenuListe(){
+  const satir = (y, metin, vurgu) =>
+    '<rect class="' + (vurgu ? 's-vurgu' : 's-cizgi') + '" x="18" y="' + y + '" width="184" height="26" rx="5"' +
+      (vurgu ? '' : ' opacity=".45"') + '/>' +
+    '<text class="' + (vurgu ? 's-etiket' : 's-metin') + '" x="56" y="' + (y + 17) + '">' + metin + '</text>';
+  return '<svg viewBox="0 0 220 210" aria-hidden="true">' +
+    satir(6,  'Web Sitesini Çevir…', false) +
+    satir(38, 'Paylaş', true) +
+    '<g class="s-vurgu" stroke-linecap="round" stroke-linejoin="round">' +
+      '<path d="M34 58 v-11"/><path d="M30 51 l4 -4 4 4"/>' +
+      '<path d="M28 56 v6 h12 v-6"/></g>' +
+    satir(70, 'Şuraya Ekle: Yer İşaretleri', false) +
+    satir(102,'Sayfada Bul', false) +
+    satir(134,'Sayfa Büyütme', false) +
+    satir(166,'Bana Bildir', false) + '</svg>';
+}
+function kurSemasiPaylasListe(){
+  const satir = (y, metin, vurgu) =>
+    '<rect class="' + (vurgu ? 's-vurgu' : 's-cizgi') + '" x="18" y="' + y + '" width="184" height="26" rx="5"' +
+      (vurgu ? '' : ' opacity=".45"') + '/>' +
+    '<text class="' + (vurgu ? 's-etiket' : 's-metin') + '" x="56" y="' + (y + 17) + '">' + metin + '</text>';
+  return '<svg viewBox="0 0 220 178" aria-hidden="true">' +
+    satir(6,  'Okuma Listesine Ekle', false) +
+    satir(38, 'Daha Fazla Görüntüle', false) +
+    '<g class="s-cizgi" stroke-linecap="round" opacity=".7">' +
+      '<path d="M30 54 l4 -4 4 4"/></g>' +
+    satir(70, 'Favorilere Ekle', false) +
+    satir(102,'Sayfada Bul', false) +
+    satir(134,'Ana Ekrana Ekle', true) +
+    '<g class="s-vurgu" stroke-linecap="round">' +
+      '<rect x="27" y="144" width="14" height="14" rx="3"/>' +
+      '<path d="M34 148 v6"/><path d="M31 151 h6"/></g>' + '</svg>';
+}
 function kurSemasiIphoneMenu(){
   return '<svg viewBox="0 0 220 300" aria-hidden="true">' +
     '<rect class="s-cizgi" x="26" y="8" width="168" height="284" rx="22"/>' +
@@ -23384,13 +23426,13 @@ function kurTarifiAc(){
       tr ? (webap + '’ı seç, ' + onay + '’ye dokun') : ('Turn on ' + webap + ', then tap ' + onay)
     ]);
   } else {
-    html = kurBlok('kur_t_ip1_bas','kur_t_ip1_kosul', kurSemasiIphoneSerit(), [
-      tr ? (payls + '’ne dokun') : ('Tap ' + payls),
-      tr ? ('Listede aşağı kaydır, ' + ekle + '’ye dokun') : ('Scroll down, then tap ' + ekle),
-      tr ? (webap + '’ı seç, ' + onay + '’ye dokun') : ('Turn on ' + webap + ', then tap ' + onay)
-    ]) + kurBlok('kur_t_ip2_bas','kur_t_ip2_kosul', kurSemasiIphoneMenu(), [
-      tr ? (smenu + '’ne dokun') : ('Tap ' + smenu),
-      tr ? ('Açılan listede <b>Share</b>’e dokun') : ('Tap <b>Share</b>'),
+    html = kurBlok('kur_t_ip1_bas','kur_t_ip1_kosul', kurSemasiMenuListe(), [
+      tr ? (smenu + '’ne dokun — ' + payls + ' doğrudan çubuktaysa bu adımı atla')
+         : ('Tap ' + smenu + ' — skip this if ' + payls + ' is already in the bar'),
+      tr ? ('Açılan listede <b>Paylaş</b>’a dokun') : ('Tap <b>Share</b> in the list')
+    ]) + kurBlok('kur_t_ip2_bas','kur_t_ip2_kosul', kurSemasiPaylasListe(), [
+      tr ? ('Liste katlıysa <b>Daha Fazla Görüntüle</b>’ye dokun')
+         : ('If the list is collapsed, tap <b>Show More</b>'),
       tr ? ('Aşağı kaydır, ' + ekle + '’ye dokun') : ('Scroll down, then tap ' + ekle),
       tr ? (webap + '’ı seç, ' + onay + '’ye dokun') : ('Turn on ' + webap + ', then tap ' + onay)
     ]);
