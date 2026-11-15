@@ -943,17 +943,21 @@ body.suruklenirken *{cursor:grabbing !important;}
    107px, ay hucresi 195px, sutun genislikleri -- hepsi aynen kaliyor.
    Degisen yalnizca kutunun ICI.
 
-   ⚠ YALNIZCA 1200px USTUNDE. Olculdu: 1023'te kutu 123px, 1200'de
+   ⚠ YALNIZCA 1320px USTUNDE. Olculdu: 1023'te kutu 123px, 1200'de
    115px, 1440'ta 150px. 40 pikseli serit yiyince dar ekranda basliga
    kalan yer bugunkunden iyi olmuyor -- tasarimin kazanci genis
-   ekranda. Altinda bugunku duzen aynen kaliyor (kullanicinin secimi:
+   ekranda. Esik ONCE 1200 yazildi; 1200'de basliga 75px kaliyor, yani
+   kazanc kucuktu. Kullanici 1320'ye cekilmesini istedi: dar ekranda
+   bugunku duzen daha uzun korunuyor, yeni duzen ancak gercekten
+   kazandirdigi genislikte devreye giriyor.
+   Altinda bugunku duzen aynen kaliyor (kullanicinin secimi:
    "A -- geniste yeni, darda bugunku").
 
    ⚠ JS'E DOKUNULMADI. Kutunun cocuklari zaten ayri sinifli; izgarada
    her birine yer verilerek DOM sirasi degistirilmeden kuruldu. JS'in
    tutundugu id ve sinif adlari korundu.
    ==================================================================== */
-@media(min-width:1200px){
+@media(min-width:1320px){
   .hour-grid .hg-chip,
   .cal-day .cal-chip{
     grid-template-columns:40px 1fr;
