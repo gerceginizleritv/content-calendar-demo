@@ -92,9 +92,18 @@ Sekiz setin listesi kullanıcıdan geldi (63 madde). Kod yazmadan önce:
   açılmayacak.** Yani ürün gerçekten kimsenin adına gönderi atmıyor ve
   satır olduğu gibi kalıyor. Kural `CLAUDE.md` Bölüm 5'e yazıldı ki
   üçüncü kez sorulmasın.
-- **`privacy.html` Open-Meteo'yu anmıyor.** Cloudflare R2, GoatCounter,
-  Google ve Supabase yazılı; ama koordinat (app.html:16248) ve yazılan
-  yer adları (16292) Open-Meteo'ya gidiyor.
+- ✅ **`privacy.html` Open-Meteo'yu artık anıyor (15 Kasım 2026).**
+  Servis tablosunun **hem İngilizce hem Türkçe** sürümüne satır
+  eklendi: koordinat **iki ondalığa yuvarlanmış** (≈1 km) ya da
+  yazdığın yer adı gidiyor; hesap, anahtar ve çerez yok. Satır
+  Cloudflare R2'den **önceye** konuldu, böylece tablonun altındaki
+  "son beş" cümlesinin saydığı beş satır bozulmadı.
+  ⚠ **Ders:** bu iş sırasında "privacy.html'in Türkçesi yok" diye
+  yanlış bildirdim. Var — sayfa İngilizce bölümden sonra Türkçe
+  bölümü taşıyor (iki `<h1>`, 89. ve 302. satır). `sartlar.html` de
+  öyle. Yanlışın sebebi: başlık aramasını `head -8` ile kestim ve
+  ikinci dili hiç görmedim. **Dosyanın tamamına bakmadan "yok"
+  demeyin** (Bölüm 4'ün tekrarı).
 
 ---
 

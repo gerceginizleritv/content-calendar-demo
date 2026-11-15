@@ -183,10 +183,25 @@ shot checklist, kit list, kit, script, idea, template.
 
 ## Görsel kimlik
 
-- **Zemin:** kemik beyazı kâğıt `#F1EDE3` (koyu temada mürekkep `#15130F`)
-- **Vurgu:** sinyal turuncusu `#C4350A` (koyu temada `#FF7A45`)
-- **Metin:** mürekkep siyahı `#15130F`
+- **Zemin:** nötr beyaz `#FAFAFA` (koyu temada `#0F1011`)
+- **Pencere zemini:** `#F2F2F3` (koyu temada `#0B0C0D`) — pencerelerin
+  arkasında kalan kat
+- **Vurgu:** sinyal turuncusu `#C8400B` (koyu temada `#FF6B35`)
+- **Metin:** `#17181A` (koyu temada `#EDEEF0`)
 - **Yazı tipi:** IBM Plex Sans (metin), IBM Plex Mono (veri ve etiketler)
 - **İmza:** klaket şeridi — diyagonal siyah-beyaz bant
+
+⚠ **15 Kasım 2026'da palet değişti.** Önceki kimlik kemik beyazı kâğıt
+(`#F1EDE3`) ve mürekkep siyahı (`#15130F`) üzerineydi; bu belge sekiz
+gün boyunca o eski değerleri taşıdı. Yeni palet nötr: kâğıt benzetmesi
+bırakıldı.
+
+**Bu listenin tek kaynağı `app.html`'deki palet blokları** (`:root`,
+`@media (prefers-color-scheme: dark)` ve `[data-theme="dark"]`). İkisi
+ayrışırsa doğru olan koddur; bu belge güncellenir, kod değil.
+
+⚠ `privacy.html` ve `sartlar.html` hâlâ eski bej palette — kullanıcı
+bunu bilerek seçti (hukuki metin ayrı okunsun diye). `paylas.html`
+15 Kasım'da uygulama paletine geçirildi.
 
 Dünyası set ekipmanı ve saha çekimi; kurumsal SaaS değil.
