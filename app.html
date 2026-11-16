@@ -2585,6 +2585,13 @@ textarea.sc-ai-brief{min-height:64px;resize:vertical;line-height:1.5;}
 /* SAYFA KIPI — pencere degil, sayfanin kendisi.
    `display:none` varsayilani ayni kaliyor ki `open` gelmeden
    gorunmesin; acikken blok olarak AKISA giriyor, perde yok. */
+.script-sayfasi{display:none;}
+.script-sayfasi.open{display:block;}
+.script-sayfasi .modal{
+  max-width:none;max-height:none;overflow-y:visible;
+  border-width:1px;padding:20px;
+}
+#scriptsPage:has(#scriptOverlay.open) > :not(#scriptOverlay){display:none;}
 .liste-bolumu{display:none;}
 .liste-bolumu.open{display:block;margin-top:18px;padding-top:16px;
   border-top:2px solid var(--line);}
@@ -5100,7 +5107,13 @@ textarea.sc-ai-brief{min-height:64px;resize:vertical;line-height:1.5;}
   </div>
 </div>
 
-<div class="overlay" id="scriptOverlay">
+<!-- ⛔ ARTIK PENCERE DEGIL, SCRIPTLER SAYFASININ ICINDEKI SAYFA.
+     Kullanici 16 Kasim 2026: "scriptler sayfasinda da durum ayni,
+     pop-up cikiyor". Gerekce ve yontem projectEditOverlay ile ayni:
+     `overlay` sinifi birakildi, `id` ve `open` KALDI (23 test dosyasi
+     bu sinifa bakiyor, 14 iddia; ve govde kilidi `.overlay.open`
+     sorguluyor -- sayfada kilitlenmemeli). -->
+<div class="script-sayfasi" id="scriptOverlay">
   <div class="modal modal-lg sc-modal">
     <div class="sc-head">
       <h2 lang="en" data-i18n="sc_title">Script</h2>
@@ -6754,6 +6767,7 @@ const LANG = {
     // 50. madde (16 Kasim 2026): proje artik pencere degil SAYFA;
     // geri seridi listeye donuyor.
     sayfa_geri: "\u2190 Projects",
+    sayfa_geri_sc: "\u2190 Scripts",
     pe_name: "Project name",
     pe_type: "Type",
     pe_address: "Address",
@@ -8090,6 +8104,7 @@ const LANG = {
     // 50. madde (16 Kasim 2026): proje artik pencere degil SAYFA;
     // geri seridi listeye donuyor.
     sayfa_geri: "\u2190 Projeler",
+    sayfa_geri_sc: "\u2190 Scriptler",
     pe_name: "Proje adı",
     pe_type: "Tür",
     pe_address: "Adres",
@@ -13790,7 +13805,7 @@ async function scriptAiYaz(){
 // id verilirse o script aciliyor; verilmezse yeni bir taslak baslatiliyor
 // (baslangic degerleriyle: bir fikirden ya da fikir listesinden gelmis
 // olabilir).
-function openScript(id, baslangic){
+function openScript(id, baslangic, sessizRota){
   const sc = id ? scriptById(id) : null;
   acikScriptId = sc ? sc.id : null;
   yeniScriptTaslak = sc ? null : Object.assign({ text:'', title:'', projectId:'', projectIds:[], ideaIds:[] }, baslangic || {});
@@ -13832,12 +13847,54 @@ function openScript(id, baslangic){
                       zaman: (veri.driveModified || '') };
   driveYazDugmesiTazele();
   driveDurum('');
+  // ⛔ SAYFAYA GECMEK SART. Script artik SCRIPTLER SAYFASININ icinde
+  //   bir sayfa; baska bir sekmedeyken acilirsa `open` sinifi gelir
+  //   ama scriptsPage gizli oldugu icin KULLANICI HICBIR SEY GORMEZ.
+  //   Ilk surumde bu atlandi ve iki test yakaladi (script-akis
+  //   "hidden <div … class='script-sayfasi open'>", ai-tarif ise
+  //   gizli elemanin olculeri 0 oldugu icin "ustte mi" iddiasinda).
+  //   sessizRota: adres yazmiyor, cunku hemen asagida script rotasi
+  //   PUSH ediliyor ve ara adim geldigi sayfanin kaydini ezerdi.
+  setPage('scripts', true);
+  scriptSayfaKipineTasi();
   document.getElementById('scriptOverlay').classList.add('open');
+  scriptGeriTazele();
+  if(!sessizRota) rotaYaz('/script/' + (id || 'yeni'), true);
+  try{ window.scrollTo({ top: 0, behavior: 'instant' }); }catch(e){ window.scrollTo(0, 0); }
   (veri.text ? document.getElementById('sc_text') : document.getElementById('sc_title')).focus();
 }
-function closeScript(){
+// Proje sayfasiyla ayni yontem: eleman acilista #scriptsPage icine
+// tasiniyor, geri seridi JS uretiyor.
+function scriptSayfaKipineTasi(){
+  const el = document.getElementById('scriptOverlay');
+  const sayfa = document.getElementById('scriptsPage');
+  if(!el || !sayfa) return;
+  if(el.parentElement !== sayfa) sayfa.appendChild(el);
+  const kutu = el.querySelector('.modal');
+  if(kutu && !kutu.querySelector('.sayfa-geri')){
+    const serit = document.createElement('div');
+    serit.className = 'sayfa-geri';
+    serit.innerHTML = '<button type="button" id="sc_geri"></button>'
+                    + '<span class="sayfa-geri-ad" id="sc_geriAd"></span>';
+    kutu.insertBefore(serit, kutu.firstChild);
+    serit.querySelector('#sc_geri').addEventListener('click', ()=> closeScript());
+  }
+  scriptGeriTazele();
+}
+function scriptGeriTazele(){
+  const dug = document.getElementById('sc_geri');
+  if(dug) dug.textContent = t('sayfa_geri_sc');
+  const ad = document.getElementById('sc_geriAd');
+  if(ad){
+    const b = document.getElementById('sc_title');
+    ad.textContent = (b && b.value) ? b.value : t('sc_new');
+  }
+}
+function closeScript(sessizRota){
   document.getElementById('scriptOverlay').classList.remove('open');
   acikScriptId = null; yeniScriptTaslak = null;
+  if(typeof renderScriptler === 'function') renderScriptler();
+  if(!sessizRota) rotaYaz('/scripts', false);
 }
 function scriptKaydet(){
   const baslik = document.getElementById('sc_title').value;
@@ -13985,6 +14042,13 @@ window.addEventListener('popstate', ()=>{
     openProjectEdit(r[1], true);
     return;
   }
+  if(r[0] === 'script' && r[1] && r[1] !== 'yeni'){
+    setPage('scripts', true);
+    openScript(r[1], undefined, true);
+    return;
+  }
+  const scriptEl = document.getElementById('scriptOverlay');
+  if(scriptEl && scriptEl.classList.contains('open')) closeScript(true);
   // Sayfa rotasi: geri tusu kullaniciyi GELDIGI sayfaya dondursun.
   // Proje sayfasi acikken once onu kapatmak gerekiyor, yoksa liste
   // CSS ile gizli kalir.
@@ -16107,7 +16171,8 @@ document.getElementById('sc_newIdea').addEventListener('keydown', e=>{
   if(e.key === 'Enter'){ e.preventDefault(); scriptPencereFikirEkle(); }
 });
 document.getElementById('sc_cancel').addEventListener('click', closeScript);
-document.getElementById('scriptOverlay').addEventListener('click', e=>{ if(e.target.id==='scriptOverlay') closeScript(); });
+// ⛔ PERDE TIKLAMASI KALDIRILDI (proje sayfasiyla ayni gerekce):
+//   sayfa kipinde "disarisi" sayfanin kendi bos alani.
 document.getElementById('sc_save').addEventListener('click', scriptKaydet);
 // Kaydettikten sonraki "Drive'a gonder": Drive penceresi ayni, tek fark
 // yazma bitince script penceresinin de kapanmasi.
