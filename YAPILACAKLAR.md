@@ -63,6 +63,12 @@ haber ver.
 
 ### 2 · Çekim setleri (hepsi aynı ekran)
 - ⬜ **9.** Menü adı "Malzeme" → "Çekim Setleri" (`tab_kit`, iki dil)
+- ⬜ **40.** **Sözlük parite testi** (EN/TR anahtar denkliği) —
+  ⚠ **9'dan hemen SONRA, 6/7/8'den ÖNCE.** Bugün böyle bir bekçi
+  **yok**: bir anahtar tek dile yazılırsa hiçbir yerde kırmızı yanmıyor,
+  yalnızca gözle görülüyor. 6/7/8/10/11/12 maddeleri **çok yeni dize**
+  getiriyor; bekçi onlardan önce kurulsun. Üçüncü dille ilgisi yok,
+  bugünün işine yarıyor (41. maddeye bak).
 - ⬜ **6.** Sekiz hazır set, düzeltilmiş adlarla
 - ⬜ **7.** Sete tek düğmeyle madde ekleme
 - ⬜ **8.** Maddeye not alanı — ⚠ kullanıcının şartı: **önce rapor**
@@ -152,6 +158,12 @@ haber ver.
   ⛔ `CLAUDE.md` Bölüm 3 bunu bugün YASAKLIYOR. O kuralı yalnızca
   kullanıcı kaldırır. Kullanıcı açıkça "aç" demeden kod yazılmaz,
   bayrak açılmaz, kimseye anahtar üretilmez.
+- ⬜ **41.** **Üçüncü dil (TR/EN dışı)** — **EN SONA**, kullanıcı
+  kararı (16 Kasım 2026). Maliyet o gün **koddan ölçüldü**, aşağıdaki
+  "ÜÇÜNCÜ DİL MALİYETİ" bölümünde duruyor.
+  ⚠ **41'in ilk adımı çeviri DEĞİL:** 34 yerdeki
+  `currentLang === 'tr' ? 'tr' : 'en'` sıralama kapısını tek merkeze
+  toplamak. O yapılmadan üçüncü dil İngilizce sıralamasıyla sıralanır.
 
 ## Bitenler (bu listeden)
 
@@ -166,6 +178,90 @@ sebebi uygulamada değildi — Windows'un Chrome'a bildirim izni kapalıydı.
 - PDF / CSV dışa aktarma — kullanıcının kararı, istenmedi
 - Birleşik kutu (aynı içerik tek kutuda) — ayrı iş, istenmedi
 - Mağazaya sarmalama / yerli uygulama — bilerek ertelendi
+
+---
+
+## 16 KASIM 2026 — ÜÇÜNCÜ DİL MALİYETİ (ölçüldü)
+
+Kullanıcı sordu: "TR ve EN haricinde ek dil eklemenin maliyeti ne?
+GitHub ya da Supabase'de ek yer tutar mı?" Sayılar **koddan**
+çıkarıldı, tahmin değil.
+
+### Neden EN SONA (kullanıcının sezgisi doğru çıktı)
+
+Üç sebep, üçüncüsü belirleyici:
+
+1. **`t()` İngilizce'ye düşüyor** (`app.html:8721-8725`). Yani üçüncü
+   dil **her an** eklenebilir; bugün yapılan hiçbir iş onu sonra
+   zorlaştırmıyor. Erken yapmanın teknik bir kazancı yok.
+2. **`LANG_NAMES` tek satır** (`app.html:6097`) ve `prefs` sütunu
+   `jsonb` (`sql/06-tercihler.sql:48`) — altyapı hazır, beklemenin
+   bedeli yok.
+3. ⛔ **Listede 20'den fazla açık madde var ve her biri YENİ DİZE
+   getiriyor.** Bugün çevrilen bir sözlük, 6/7/8/10/11/12 ve ayarlar
+   sayfası bitince yeniden çevrilmek zorunda kalır. Üçüncü dil
+   varken her yeni özellik **1,5 kat** dize maliyeti demek.
+
+⚠ **Ama 40. madde (parite testi) EN SONA DEĞİL.** O bekçi üçüncü dil
+için değil, **bugünkü TR/EN için** gerekiyor: bu oturumda zaten
+`"boş yanıt"` diye üç yere gömülmüş Türkçe bir dize bulundu ve
+İngilizce kullanan kişiye görünüyordu. Bekçisi olmayan şey
+sessizce bozuluyor.
+
+### Çevrilecek miktar
+
+| Yer | Dize | Boyut |
+|---|---|---|
+| `app.html` ana sözlük | 1 186 | 80 KB |
+| `app.html` ilk-adım turu | 51 | 4,5 KB |
+| `app.html` küçük sözlükler (platform, rozet, durum) | ~30 | ~1 KB |
+| `index.html` | 132 | 7,6 KB |
+| `lokasyon.html` | 114 | 4,6 KB |
+| `fiyatlar.html` | 42 | 3,1 KB |
+| `paylas.html` | 11 | 0,6 KB |
+| **Toplam arayüz** | **~1 566** | **~101 KB** |
+
+Düzyazı ayrıca: `kilavuz.html` 56 KB / `guide.html` 54 KB (üçüncü dil
+**ayrı dosya** ister), `privacy.html` 27 KB ve `sartlar.html` 23 KB
+(iki dili **aynı dosyada ayrı bölüm** olarak taşıyor → her birine
+üçüncü bölüm).
+
+### Kullanıcının elle yapacağı (kod değil, panel işi)
+
+1. **Üç görsel.** `index.html:1294` dile göre resim değiştiriyor:
+   `kahraman-<dil>.webp`, `uygulama-tablet-<dil>.webp`,
+   `uygulama-telefon-<dil>.webp`.
+2. **Üç e-posta şablonu** Supabase panelinde: `confirm-signup`,
+   `hosgeldin`, `magic-link`.
+3. **İki Edge Function dağıtımı:** `hosgeldin` (`index.ts:108` dili
+   `'tr' | 'en' | 'both'` diye sabitlemiş) ve `push-gonder`
+   (`index.ts:41-52` bildirim metni iki dilde sabit).
+
+### Yer
+
+- **GitHub: ~450 KB artış.** Depo 8,8 MB; yani **%5 civarı**.
+  240 KB'ı görsel.
+- **Supabase: sıfır.** `prefs` alanı `jsonb`; `"lang":"de"` ile
+  `"lang":"tr"` aynı yeri tutuyor. Yeni tablo, sütun ya da satır yok.
+
+### Gizli maliyetler
+
+| Sorun | Nerede | Sonucu |
+|---|---|---|
+| **Parite testi yok** | — | Eksik anahtar hiç kırmızı yanmaz → **40. madde** |
+| 34 sıralama kapısı | `app.html` içinde `currentLang === 'tr' ? 'tr' : 'en'` | Üçüncü dil İngilizce sıralanır → **41'in ilk adımı** |
+| Kılavuz ayrı dosya | `kilavuz.html` / `guide.html` | Her kılavuz değişikliği **üç** dosyada. Bu deponun tekrarlayan hatası tam bu: bir yerde düzeltip ötekilerde unutmak. |
+
+⚠ **Çeviri hızı ölçülemedi, uydurulmadı.** Kod tarafı (parite testi,
+`LANG_NAMES`, sıralama merkezi, iskelet) bir oturumluk; asıl yük
+1 566 dize + 79 KB düzyazı. Hukuk metinleri (`privacy`, `sartlar`)
+kullanıcıya **doğrulattırılmadan** "tamam" denmez (Bölüm 4).
+
+### Hangi dil?
+
+**Kullanıcı söylemedi, seçilmedi.** Sorduğu şey maliyetti. Dil
+seçimi bir **pazar kararı** ve yalnızca kullanıcı verir — 41. madde
+sırası gelince önce bu sorulacak.
 
 ---
 
