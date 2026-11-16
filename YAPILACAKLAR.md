@@ -2920,6 +2920,118 @@ biçimlendirme, kendi alan adı.
 
 ---
 
+# ÇALIŞMA SIRASI — kullanıcı onayladı (16 Kasım 2026)
+
+Araştırma sohbeti 39 maddelik bir liste gönderdi. Durum **koddan ve
+git geçmişinden** doğrulandı (hafızadan işaretlenmedi; geçmiş tam,
+607 commit, kesik değil). Kullanıcı aşağıdaki sırayı onayladı.
+
+⚠ **Her maddenin KENDİ prompt'undaki kurallar aynen geçerli**: önce
+plan, sorular, aşama onayları. Bu sıra o kuralları kaldırmaz.
+⚠ **PROMPT YOK** olan maddeyi tek satırdan tasarlama — sırası gelince
+dur ve kullanıcıya söyle.
+⚠ **KARAR BEKLİYOR** olanı atla, sırası gelince sor.
+⚠ Bir madde bitince bu listeyi güncelle ve kullanıcıya tek satırla
+haber ver.
+
+## Sıra
+
+### 1 · Bugünün yarım işleri  ⬜ SIRADA
+- ⬜ **Mekân kartları sabit yükseklik.** Kullanıcı bildirdi: "mekanlar
+  sayfasında izin notu eklenirse yine kutu büyüyor". 14 Kasım'da
+  `.mk-foy` sınırlandı ama kartın kendisi sınırlanmadı.
+- ⬜ **Push'u `fiyatlar.html`'e özellik olarak ekle** (iki dilde).
+  Kullanıcı kararı: fiyatlandırmaya girecek. Artık eklenebilir —
+  16 Kasım'da canlıda doğrulandı (`gonderildi:3, hata:0`, üç cihazda
+  bildirim göründü). O dosyanın kuralı: yalnızca VAR OLAN özellikler.
+- ⬜ **Hatırlatma tercihinin cihazlar arası senkronu.** Kullanıcı
+  16 Kasım'da onayladı. İzin cihaza ait ve uzaktan verilemez;
+  senkronlanacak olan NİYET. Yeni cihazda uygulama kendiliğinden
+  izin istesin, izin varsa abone olsun.
+- ⬜ **140 Türkçe-only dizenin kalan ayıklaması.** 15 Kasım'da beş
+  kalıp açıklandı ama tamamı tek tek bakılmadı.
+
+### 2 · Çekim setleri (hepsi aynı ekran)
+- ⬜ **9.** Menü adı "Malzeme" → "Çekim Setleri" (`tab_kit`, iki dil)
+- ⬜ **6.** Sekiz hazır set, düzeltilmiş adlarla
+- ⬜ **7.** Sete tek düğmeyle madde ekleme
+- ⬜ **8.** Maddeye not alanı — ⚠ kullanıcının şartı: **önce rapor**
+- ⬜ **10.** Set önerisi penceresi (çekim tarihi girilince)
+- ⬜ **11.** Havaya göre set önerisi
+- ⬜ **12.** Zamanlama (set doğru günde öne çıkar)
+
+### 3 · Sınırlar
+- ⬜ **1.** Instagram 5 hashtag sınırı (AI 8-15 üretiyor), YouTube
+  60 karakter üstü, Reels kapağı. Bugün `f_hashtags` yalnızca
+  **karakter** sınırı taşıyor (400), **adet** sınırı yok.
+
+### 4 · Basitleştirme (hepsi ilk deneyimi değiştiriyor)
+- ⬜ **17.** İlk ekran: kendiliğinden açılan tur yok
+  (bugün `tourAutoSequence = true`, app.html:25300)
+- ⬜ **18.** Yeni kayıt: üç alan görünür, gerisi katlı
+- ⬜ **19.** Gezinme: bugün **yedi** sekme → dörde
+- ⬜ **20.** Boş ekran yok
+- ⬜ **21.** Yedi adım: atlanabilir adım ve hazır akışlar
+
+### 5 · Listeler ve föy
+- ⬜ **2.** Plan listesi (`tasarim/plan-listesi.md` var, kod yok)
+- ⬜ **3.** Yayın günü listesi, platforma göre
+- ⬜ **13.** Çekim Föyü tasarımı (bütün aşamaları)
+
+### 6 · Fiyatlandırma (para işleri en sonda)
+- ⬜ **28.** Starter / Creator Pro kıyaslama tablosu — girdi geldi
+  (46 satır: 31 ortak, 15 yalnızca Pro). ⛔ Uygulamada **açık
+  olmayan** özellik siteye "var" diye konmaz. İlk raporda her satır
+  için "bugün var mı" sütunu.
+- ⬜ **29.** Ödeme duvarı ve veri taşıma. Bugün yalnızca kayıt/proje
+  **sayısı** sınırlanıyor (`sinirlariUygula`), özellik bazlı duvar
+  yok. ⚠ Bugün herkese açık olan bazı özellikler "yalnızca Pro"
+  listesinde: kapatmak MEVCUT kullanıcıları etkiler — **kullanıcıya
+  sor, kendiliğinden kapatma.**
+- ⬜ **30.** Kullanım kaydı
+- ⬜ **26.** Ödeme, test modunda — ⚠ **sağlayıcı kararı da bekliyor**
+- ⬜ **31.** Fatura programı bağlantısı
+- ⬜ **32.** Canlıya geçiş
+
+### 7 · Düzen
+- ⬜ **36.** Test düzeni üç kademe. `kosu.sh` ve 207 test var ama
+  `testler/README.md`'de kademe tarifi **yok**.
+
+### 8 · Prompt / karar bekleyenler — sırası gelince DUR
+- ⬜ **37.** Gemini dışı sağlayıcılar — **PROMPT YOK**.
+  Doğrulandı: `app.html`'de tek adres `generativelanguage.googleapis.com`.
+  `callClaude` bu dosyada **hiç olmadı** — yalnızca
+  `testler/eski/index.html` (eski prototip) ve bu dosyanın 1 Eylül
+  kaydında geçiyor. Yani "kaldırıldı" değil, "hiç getirilmedi".
+  ⛔ Sağlayıcıların tarayıcıdan doğrudan çağrılmaya izin verip
+  vermediği **doğrulanmadı** — sırası gelince kendi belgelerinden
+  okunacak, ezberden yazılmayacak.
+- ⬜ **38.** Plan aktarma — altyapı var (`ai/` klasörü, `ai_aktarimlar`,
+  `imp_paket_ipucu`). Plan kararı: yalnızca Creator Pro. Nasıl
+  tanıtılacağı kullanıcının kararı.
+
+### 9 · En son
+- ⬜ **39.** MCP'nin ücretli kullanıcılara açılması — **KARAR BEKLİYOR**.
+  ⛔ `CLAUDE.md` Bölüm 3 bunu bugün YASAKLIYOR. O kuralı yalnızca
+  kullanıcı kaldırır. Kullanıcı açıkça "aç" demeden kod yazılmaz,
+  bayrak açılmaz, kimseye anahtar üretilmez.
+
+## Bitenler (bu listeden)
+
+4, 5 (A) · 14, 15, 16 (C) · 22, 23, 24, 25, 27 (E) · 33, 34, 35 (F)
+
+**35 (push) 16 Kasım 2026'da canlıda uçtan uca doğrulandı:** üç cihaza
+gönderildi, üçünde de bildirim göründü. Windows'ta görünmemesinin
+sebebi uygulamada değildi — Windows'un Chrome'a bildirim izni kapalıydı.
+
+## Başlanmayacaklar (kullanıcı kararı)
+
+- PDF / CSV dışa aktarma — kullanıcının kararı, istenmedi
+- Birleşik kutu (aynı içerik tek kutuda) — ayrı iş, istenmedi
+- Mağazaya sarmalama / yerli uygulama — bilerek ertelendi
+
+---
+
 ## Nerede kaldık (16 Kasım 2026 — PUSH BİTTİ, kuruluma hazır)
 
 ### Kullanıcının verdiği iki karar
