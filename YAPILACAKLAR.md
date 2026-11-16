@@ -118,12 +118,38 @@ başlasın diye. Tam koşudan sonra değişmiş görünmesi normaldir.
 - ⬜ **9b.** ⚠ `MARKA.md` sözlüğü güncellenecek: menü adı artık
   "Çekim Setleri" / "Shoot kits". Sözlükte `set` satırı var ama
   **menü adı** olarak yazılı değil. Küçük iş, 6'dan önce yapılabilir.
-- ⬜ **40.** **Sözlük parite testi** (EN/TR anahtar denkliği) —
-  ⚠ **9'dan hemen SONRA, 6/7/8'den ÖNCE.** Bugün böyle bir bekçi
-  **yok**: bir anahtar tek dile yazılırsa hiçbir yerde kırmızı yanmıyor,
-  yalnızca gözle görülüyor. 6/7/8/10/11/12 maddeleri **çok yeni dize**
-  getiriyor; bekçi onlardan önce kurulsun. Üçüncü dille ilgisi yok,
-  bugünün işine yarıyor (41. maddeye bak).
+- ✅ **40.** **Sözlük parite testi** (16 Kasım 2026, `main`'de).
+  `testler/sozluk-paritesi.test.js`, **52 kontrol**.
+
+  Uygulamanın **kendi içinden** okuyor (dosyayı ayrıştırmıyor —
+  ayrıştırma sahte güven verir, değişken adı değişince sessizce boş
+  tarar). Yedi sözlük çiftinin tamamı: `LANG` · `TYPE_NAMES` ·
+  `TYPE_LABELS` · `STATUS_LABELS` · `ORNEK_METIN` ·
+  `TOUR_STEPS_I18N` (dizi) · `KUR_SEMA_METIN`.
+
+  Her dil `en` ile karşılaştırılıyor (`en` referans, çünkü `t()` eksik
+  anahtarda ona düşüyor). Altı boyut: **eksik** anahtar · **fazla**
+  anahtar (yazım hatası) · **tür** uyuşmazlığı (metin/fonksiyon) ·
+  fonksiyon **aritesi** · **boş** metin · **dizi boyu**.
+
+  ⛔ **DİL LİSTESİ SABİT YAZILMADI.** Test `Object.keys(LANG)` ile
+  hangi diller varsa onları geziyor. **41. madde altı dil ekleyince
+  bu test onları kendiliğinden kapsayacak** — tek satır değişiklik
+  gerekmiyor. (41'in 9. şartı böylece baştan karşılandı.)
+
+  Beş mutasyonla kanıtlandı: anahtar silindi · fazla anahtar eklendi ·
+  fonksiyon düz metne çevrildi · metin boşaltıldı · arite değiştirildi.
+  **Beşi de doğru kontrol tarafından** kırmızı yandı.
+
+  ⚠ **Test bir şey buldu, incelendi, hata DEĞİLDİ:** `ai_drafted_prefix`
+  Türkçe'de boş. `app.html:21289` cümleyi üç parçadan kuruyor —
+  İngilizce *"Drafted with "* + Gemini + *". Feel free to edit it."*,
+  Türkçe *""* + Gemini + *" ile taslak hazırlandı…"*. Türkçe'de fiil
+  sonda, yani önek **meşru olarak** boş. Test zayıflatılmadı; sebebi
+  yazılı ayrı bir `BOS_OLABILIR` listesi açıldı. ⚠ 41. madde o listeyi
+  büyütecek (Almanca ve Rusça'da da edat/fiil yeri farklı); her ekleme
+  ayrı satır ve ayrı sebep ister — "hepsini serbest bırak" diye genel
+  bir kural YAZILMAZ, yoksa kazara boş kalan etiket görünmez.
 - ⬜ **6.** Sekiz hazır set, düzeltilmiş adlarla
 - ⬜ **7.** Sete tek düğmeyle madde ekleme
 - ⬜ **8.** Maddeye not alanı — ⚠ kullanıcının şartı: **önce rapor**
