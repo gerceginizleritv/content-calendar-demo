@@ -2585,6 +2585,16 @@ textarea.sc-ai-brief{min-height:64px;resize:vertical;line-height:1.5;}
 /* SAYFA KIPI — pencere degil, sayfanin kendisi.
    `display:none` varsayilani ayni kaliyor ki `open` gelmeden
    gorunmesin; acikken blok olarak AKISA giriyor, perde yok. */
+.kayit-sayfasi{display:none;}
+.kayit-sayfasi.open{display:block;}
+/* ⚠ Klaket seridi (#editOverlay .modal::before) KALIYOR: kaydin
+   kimligini tasiyan isaret o. Yalnizca kutunun pencere olculeri
+   duzlesiyor. */
+.kayit-sayfasi .modal{
+  max-width:none;max-height:none;overflow-y:visible;
+  border-width:1px;padding:26px 20px;
+}
+#calendarPage:has(#editOverlay.open) > :not(#editOverlay){display:none;}
 .script-sayfasi{display:none;}
 .script-sayfasi.open{display:block;}
 .script-sayfasi .modal{
@@ -5327,7 +5337,16 @@ textarea.sc-ai-brief{min-height:64px;resize:vertical;line-height:1.5;}
   </div>
 </div>
 
-<div class="overlay" id="editOverlay">
+<!-- ⛔ ARTIK PENCERE DEGIL, TAKVIM SAYFASININ ICINDEKI SAYFA.
+     Kullanici 16 Kasim 2026: "takvimde yeni giris ya da girilmis olan
+     herhangi bir girisi duzenlemenin de bu sekilde pop-up yerine
+     arkadaki takvim goruntusunun gitmesi, giris bolumunun gelmesi ve
+     orada islemler bitince takvim gorunumune geri donmesi lazim,
+     cunku bu pop-up cok kucuk."
+     Gerekce ve yontem oteki uc ekranla ayni: `overlay` sinifi
+     birakildi, `id` ve `open` KALDI (15 test dosyasi bu sinifa
+     bakiyor, 25 iddia). -->
+<div class="kayit-sayfasi" id="editOverlay">
   <!-- role/aria-modal/aria-labelledby: cizimdeki role="dialog" burada.
        OLCULDU (11 Kasim 2026): uculu de YOKTU, acilista odak pencereye
        GIRMIYORDU ve Esc kapatmiyordu. Ekran okuyucu pencereyi bir
@@ -6768,6 +6787,7 @@ const LANG = {
     // geri seridi listeye donuyor.
     sayfa_geri: "\u2190 Projects",
     sayfa_geri_sc: "\u2190 Scripts",
+    sayfa_geri_ev: "\u2190 Calendar",
     pe_name: "Project name",
     pe_type: "Type",
     pe_address: "Address",
@@ -8105,6 +8125,7 @@ const LANG = {
     // geri seridi listeye donuyor.
     sayfa_geri: "\u2190 Projeler",
     sayfa_geri_sc: "\u2190 Scriptler",
+    sayfa_geri_ev: "\u2190 Takvim",
     pe_name: "Proje adı",
     pe_type: "Tür",
     pe_address: "Adres",
@@ -14042,6 +14063,15 @@ window.addEventListener('popstate', ()=>{
     openProjectEdit(r[1], true);
     return;
   }
+  if(r[0] === 'kayit'){
+    // Kayit sayfasi acikken geri: kapat, takvime don.
+    const kayitEl = document.getElementById('editOverlay');
+    if(kayitEl && kayitEl.classList.contains('open')) closeModal(true);
+    setPage('calendar', true);
+    return;
+  }
+  const kayitEl = document.getElementById('editOverlay');
+  if(kayitEl && kayitEl.classList.contains('open')) closeModal(true);
   if(r[0] === 'script' && r[1] && r[1] !== 'yeni'){
     setPage('scripts', true);
     openScript(r[1], undefined, true);
@@ -19592,7 +19622,16 @@ function openModal(ev, hazirTarih, hazirSaat, hazirProje){
     refreshTypeDependentFields();
   }
   modalHesapTazele(); otoYayinTazele(); platformSaatSenkron();
+  // ⛔ SAYFAYA GECMEK SART. 3. parcada (scriptler) bu atlanmisti ve
+  //   kayit `open` olup da GORUNMUYORDU; iki test yakaladi. Burada
+  //   bastan yapiliyor. sessizRota: hemen asagida kayit rotasi PUSH
+  //   ediliyor, ara adim gelinen sayfanin kaydini ezerdi.
+  setPage('calendar', true);
+  kayitSayfaKipineTasi();
   document.getElementById('editOverlay').classList.add('open');
+  kayitGeriTazele();
+  if(!(ev && ev.__sessizRota)) rotaYaz('/kayit/' + ((ev && ev.id) || 'yeni'), true);
+  try{ window.scrollTo({ top: 0, behavior: 'instant' }); }catch(e){ window.scrollTo(0, 0); }
   // Kaydirma her acilista basa alinmali: uzun formda asagi inip Iptal'e basan
   // biri, sonraki acilista pencereyi biraktigi yerden goruyordu.
   const kutu = document.querySelector('#editOverlay .modal');
@@ -19653,9 +19692,37 @@ let kunyeSaatSecildi = true;
 });
 // Pencereyi acan oge: kapanista odak buraya doner.
 let modalAcanOge = null;
-function closeModal(){
+// Oteki uc ekranla ayni yontem: eleman acilista #calendarPage icine
+// tasiniyor, geri seridi JS uretiliyor.
+function kayitSayfaKipineTasi(){
+  const el = document.getElementById('editOverlay');
+  const sayfa = document.getElementById('calendarPage');
+  if(!el || !sayfa) return;
+  if(el.parentElement !== sayfa) sayfa.appendChild(el);
+  const kutu = el.querySelector('.modal');
+  if(kutu && !kutu.querySelector('.sayfa-geri')){
+    const serit = document.createElement('div');
+    serit.className = 'sayfa-geri';
+    serit.innerHTML = '<button type="button" id="ev_geri"></button>'
+                    + '<span class="sayfa-geri-ad" id="ev_geriAd"></span>';
+    kutu.insertBefore(serit, kutu.firstChild);
+    serit.querySelector('#ev_geri').addEventListener('click', ()=> closeModal());
+  }
+  kayitGeriTazele();
+}
+function kayitGeriTazele(){
+  const dug = document.getElementById('ev_geri');
+  if(dug) dug.textContent = t('sayfa_geri_ev');
+  const ad = document.getElementById('ev_geriAd');
+  if(ad){
+    const b = document.getElementById('f_title');
+    ad.textContent = (b && b.value) ? b.value : t('btn_new');
+  }
+}
+function closeModal(sessizRota){
   document.getElementById('editOverlay').classList.remove('open');
   currentEvent = null;
+  if(!sessizRota) rotaYaz('/calendar', false);
   // Butun kapatma yollari buradan geciyor: Vazgec, perdeye tiklama, ×
   // (× perdeye tiklanmis gibi davraniyor) ve kaydetme. Kaydetmede kayit
   // zaten olustugu icin asagidaki kontrol sessizce geciyor.
@@ -19952,7 +20019,8 @@ document.getElementById('f_platform').addEventListener('change', ()=>{
 });
 document.getElementById('addBtn').addEventListener('click', ()=> openModal(null));
 document.getElementById('cancelBtn').addEventListener('click', closeModal);
-document.getElementById('editOverlay').addEventListener('click', (e)=>{ if(e.target.id==='editOverlay') closeModal(); });
+// ⛔ PERDE TIKLAMASI KALDIRILDI (oteki sayfalarla ayni gerekce):
+//   sayfa kipinde "disarisi" sayfanin kendi bos alani.
 // Esc = Vazgec. YENI BIR KAYIP YOLU DEGIL: perdeye tiklamak zaten ayni
 // anda ve ayni sekilde uyarisiz kapatiyor (bir ust satir). Esc onun
 // klavye karsiligi. Baska bir pencere acikken karismasin diye yalnizca

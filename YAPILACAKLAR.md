@@ -200,10 +200,108 @@ başlasın diye. Tam koşudan sonra değişmiş görünmesi normaldir.
   ⚠ Mutasyon denemesi testin **kendi hatasını da** buldu: iki iddia
   aynı şeyi ölçüyordu, ayrıştırıldı.
 - ⬜ **10.** Set önerisi penceresi (çekim tarihi girilince)
+  ⚠ **EŞLEŞME TABLOSU GELDİ** (kullanıcı, 16 Kasım 2026). İki durum:
+  **işaretli** (pencere açılınca seçili gelir) ve **işaretsiz**
+  (listede durur, kullanıcı isterse işaretler).
+
+  | Proje türü | İşaretli | İşaretsiz |
+  |---|---|---|
+  | Dış çekim | Dış çekim | Konuşmalı çekim, Telefonla çekim |
+  | Mekan çekimi | Dış çekim | Konuşmalı çekim, Telefonla çekim |
+  | Stüdyo | Konuşmalı çekim | Telefonla çekim |
+  | Vlog | **Konuşmalı çekim + Dış çekim** | Telefonla çekim |
+  | Ürün inceleme | Konuşmalı çekim | Telefonla çekim |
+  | Masabaşı / grafik | *(hiçbiri)* | *(hiçbiri)* |
+  | Diğer | *(hiçbiri)* | Dış çekim, Konuşmalı çekim, Telefonla çekim |
+
+  ⛔ **"Telefonla çekim" hiçbir türde işaretli GELMEZ** — bir tür
+  değil, cihaz seçimi. ⛔ **"Uçuş günü" ve "Soğuk ve ıslak" türe
+  BAĞLANMAZ**: biri kullanıcının kendi seçimi, öteki havaya göre
+  (11. madde). ⛔ Zaten eklenmiş set yeniden önerilmez; reddedilen
+  öneri aynı proje için yeniden sorulmaz.
+
+  **Koddan doğrulananlar (16 Kasım 2026):**
+  - ✅ **"Konuşmalı çekim" gerçekten ses/mikrofon ağırlıklı** —
+    `app.html:8560`: iki mikrofon (asıl + yedek), kulaklık, taze
+    mikrofon pili, alıcı + yedek kaydedici, 30 saniye oda sesi.
+    Stüdyo ve Ürün inceleme eşlemesi bu varsayıma dayanıyordu;
+    **varsayım doğru.**
+  - ✅ Proje türleri **yedi tane** ve adları tabloyla aynı
+    (`PROJ_TYPES`, `app.html:10148`).
+  - ⛔ **Pencere bugün HİÇ YOK.** 10. madde henüz yapılmadı; yani
+    "birden fazla işaretli set gösterebiliyor mu" sorusunun cevabı
+    *hayır, çünkü pencere yok*. Bu eşleşme **pencereyle birlikte**
+    baştan çok-seçimli kurulacak; ara çözüme gerek yok.
+  - ⛔ **Genel setler (Önceki akşam / Kayda basmadan / Çekimden
+    sonra) bugün HİÇBİR türe önerilmiyor** — öneri mekanizması yok.
+    Yani "Masabaşı'nda önerilmesin" şartı kendiliğinden sağlanıyor;
+    pencere kurulurken o türde hiçbir set önerilmeyecek.
 - ⬜ **11.** Havaya göre set önerisi
 - ⬜ **12.** Zamanlama (set doğru günde öne çıkar)
 
 ### 3 · Sınırlar
+- ⬜ **52.** **Fikirlere öncelik** (kullanıcı kararı, 16 Kasım 2026).
+  Üç düzey, adlar kesin: **1 Çok Öncelikli · 2 Orta Öncelik ·
+  3 Düşük Öncelik** (EN: High / Medium / Low priority).
+  **İsteğe bağlı** — seçmeden kaydetmek engellenmez, varsayılan düzey
+  atanmaz; "önceliksiz" ayrı bir durumdur, "düşük" değildir.
+  **Yalnızca Creator Pro.** Süzme olacak (1/2/3/önceliksiz).
+  Birleşmede **büyük öncelik kazanır** (1+2→1, 2+3→2, 2+2→2;
+  öncelikli + önceliksiz → öncelikli). **Projeye dönüşünce öncelik
+  biter** — projeye öncelik alanı EKLENMEZ. **AI, İçe Aktar ve MCP
+  ile gelen fikirler önceliksiz** gelir. Mevcut fikirlere dokunulmaz.
+  **Paylaşımda görünmez.**
+
+  ⛔ **KODDAN DOĞRULANDI — VERİ KAYBI RİSKİ GERÇEK.**
+  `fikirTemizle` (`app.html:14643`) beyaz listeli bir nesne kuruyor;
+  **listede olmayan alan sessizce DÜŞER.** Yani `priority` alanı
+  temizleyiciye eklenmezse yedekten geri yükleme, bulut eşitleme ve
+  eski sürümle açık kalmış ikinci bir sekme onu **siler**. Aynı tuzak
+  `setTemizle`'de vardı (8. madde) ve orada iki biçim birden kabul
+  edilerek çözüldü — burada da **test yazılacak**.
+
+  ⚠ Renk için ilke: **yeni renk yok.** Üç düzey uygulamanın var olan
+  değişkenlerine bağlanacak — `--accent` / `--amber` / `--text-dim` —
+  böylece palet işi (C grubu) ne zaman yapılırsa yapılsın öncelik
+  renkleri kendiliğinden uyar. ⛔ `--red` **kullanılmayacak**:
+  uygulamada hata ve gecikme demek. ⚠ Yalnızca renge dayanılmayacak
+  (turuncu ve sarı renk körlüğünde yakın): rakam + dolu nokta
+  (1 ●●● · 2 ●●○ · 3 ●○○) ve ekran okuyucu için düzeyin adı.
+  ⚠ Açık temada **ikinci yüzey** üstünde 1. ve 2. düzey 4.5
+  kontrastın altına düşüyor — işaret ana yüzeyde dursun. Kontrastlar
+  uygulanmadan **ölçülecek** (Bölüm 4).
+
+- ⬜ **53.** **Çoklu hesap: platform başına en fazla 2** (kullanıcı
+  kararı, 16 Kasım 2026). Starter 1, Creator Pro 2. Bugünkü
+  `HESAP_ADET = 60` toplam sınırı bunun yerine geçer.
+  Takvim kutusuna hesabın **kısa adı** yalnızca o platformda iki
+  hesap varsa eklenecek. Süzgeç kalır, varsayılan "tüm hesaplar".
+  ⛔ **Mevcut veriye dokunulmaz:** 2'den fazla hesabı olanın
+  hesapları silinmez, kayıt bağları kopmaz; yalnızca yenisi eklenemez.
+  ⚠ `MARKA.md`: bu bir **bağlantı değil ETİKET** — "hesaplarına
+  bağlanır" anlamına gelen metin yazılmaz.
+
+  ⛔ **ÖNCE ŞU HATA: "Hangi hesaba?" alanı çıkmıyor.**
+  Kullanıcı canlıda ikinci bir Instagram hesabı ekledi, Yeni Giriş'te
+  Instagram'ı işaretledi, alan **çıkmadı**.
+  **Koddan doğrulandı:**
+
+  | Ne | Sonuç |
+  |---|---|
+  | Özellik canlıda mı | **Evet** — `main` ile çalışma dalı aynı |
+  | Alan ne zaman çıkıyor | `hesapSeritGerekir(p)` = o platformda **1'den fazla** hesap (`app.html:14476`) |
+  | Tazeleme bağlı mı | **Evet** — `platformChecks` değişince `modalHesapTazele` koşuyor (`app.html:20016`) |
+  | **Şüpheli** | `hesapPlatformDoldur` (`app.html:24020`) seçiciye **boş seçenek koymuyor**; varsayılan `CAL_SM_PLATFORMS[0]` = **YouTube** |
+
+  ⚠ **En olası sebep:** hesap eklenirken platform seçicisi
+  değiştirilmediyse hesap **YouTube'a** kaydedilmiştir. O zaman
+  Instagram'da hâlâ tek hesap vardır ve alan doğru olarak çıkmaz.
+  ⛔ Tahmin değil **doğrulanacak**: kullanıcı Hesap etiketleri
+  listesinde ikinci hesabın hangi platformun altında yazdığına
+  bakacak. Doğruysa düzeltme "varsayılanı YouTube yapmamak" olur
+  (boş + "platform seç" ya da ilk kaydetmede uyarı) — **onay alınacak.**
+  ⚠ Bu senaryoyu kapsayan test yok; yazılacak.
+
 - ⬜ **51.** **MEKÂNLARA TÜR ALANI + çekim türüne göre süzme.**
   Kullanıcı 16 Kasım 2026'da ekran görüntüsüyle sordu: *"Masabaşı
   çekimde neden altta mekanlar çıkıyor? Çekim türüne göre gelmesi
