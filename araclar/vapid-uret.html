@@ -1,0 +1,200 @@
+<!doctype html>
+<html lang="tr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="robots" content="noindex, nofollow">
+<title>VAPID anahtarı üret — Shootboard</title>
+<!--
+  VAPID ANAHTAR ÜRETECİ — kurulum aracı, ürünün parçası değil.
+
+  NEDEN VAR
+    Push bildirimi için bir anahtar çiftine ihtiyaç var. Kullanıcı
+    yazılımcı değil; bilgisayarına Node ya da openssl kurmasını
+    istemek yanlış olurdu. Bu sayfa anahtarı TARAYICIDA üretiyor.
+
+  ⛔ HİÇBİR ŞEY DIŞARI ÇIKMIYOR. Sayfanın ağa çıkan tek bir satırı
+     yok: ne fetch, ne XHR, ne form, ne dış betik, ne dış yazı tipi.
+     Anahtar bu sekmede üretiliyor ve sekme kapanınca yok oluyor.
+
+  ⛔ ÖZEL ANAHTARI KİMSEYE GÖNDERME. Sohbete de yapıştırma.
+     Yalnızca Supabase'in gizli ayarlarına yazılır.
+
+  Hiçbir yerden bağlantı verilmiyor; arama motorlarına da kapalı.
+-->
+<style>
+  :root{
+    --bg:#FAFAFA; --yuzey:#FFFFFF; --cizgi:#E2E3E6;
+    --metin:#17181A; --soluk:#5E6167; --vurgu:#C8400B; --uyari:#8A1C1C;
+  }
+  @media (prefers-color-scheme: dark){
+    :root:not([data-theme="light"]){
+      --bg:#0F1011; --yuzey:#17181A; --cizgi:#2A2C30;
+      --metin:#EDEEF0; --soluk:#9A9DA3; --vurgu:#FF6B35; --uyari:#FF8A8A;
+    }
+  }
+  :root[data-theme="dark"]{
+    --bg:#0F1011; --yuzey:#17181A; --cizgi:#2A2C30;
+    --metin:#EDEEF0; --soluk:#9A9DA3; --vurgu:#FF6B35; --uyari:#FF8A8A;
+  }
+  *{box-sizing:border-box;}
+  body{
+    margin:0; background:var(--bg); color:var(--metin);
+    font:15px/1.6 system-ui,-apple-system,Segoe UI,Roboto,sans-serif;
+    padding:24px 16px;
+  }
+  main{max-width:720px; margin:0 auto;}
+  h1{font-size:1.4rem; margin:0 0 4px; text-wrap:balance;}
+  .alt{color:var(--soluk); margin:0 0 20px;}
+  .kutu{
+    background:var(--yuzey); border:1px solid var(--cizgi);
+    border-radius:10px; padding:16px; margin:14px 0;
+  }
+  .uyari{border-color:var(--uyari);}
+  .uyari strong{color:var(--uyari);}
+  button{
+    font:inherit; font-weight:600; cursor:pointer;
+    background:var(--vurgu); color:#fff; border:0;
+    border-radius:8px; padding:11px 18px;
+  }
+  button:focus-visible{outline:3px solid var(--vurgu); outline-offset:2px;}
+  button.ikincil{background:transparent; color:var(--vurgu);
+    border:1px solid var(--vurgu); padding:7px 12px; font-size:13px;}
+  label{display:block; font-weight:600; margin:14px 0 4px;}
+  textarea{
+    width:100%; font:13px/1.5 ui-monospace,SFMono-Regular,Menlo,monospace;
+    background:var(--bg); color:var(--metin);
+    border:1px solid var(--cizgi); border-radius:8px; padding:10px;
+    resize:vertical; min-height:62px; word-break:break-all;
+  }
+  .satir{display:flex; gap:8px; align-items:center; margin-top:6px; flex-wrap:wrap;}
+  .not{font-size:13px; color:var(--soluk); margin:6px 0 0;}
+  .diller{float:right; font-size:13px;}
+  .diller button{background:none; color:var(--vurgu); border:0; padding:2px 6px;
+    text-decoration:underline; font-weight:600;}
+  [hidden]{display:none !important;}
+</style>
+</head>
+<body>
+<main>
+  <div class="diller">
+    <button type="button" data-dil="tr">Türkçe</button>
+    <button type="button" data-dil="en">English</button>
+  </div>
+
+  <h1 data-t="baslik">VAPID anahtarı üret</h1>
+  <p class="alt" data-t="alt">Push bildirimi için gereken anahtar çifti. Bu sayfa anahtarı senin tarayıcında üretir.</p>
+
+  <div class="kutu uyari">
+    <strong data-t="guvenBas">Hiçbir şey dışarı çıkmıyor.</strong>
+    <p class="not" data-t="guvenMetin">Bu sayfanın ağa çıkan tek bir satırı yok. Anahtar bu sekmede üretiliyor ve sekmeyi kapatınca yok oluyor. Özel anahtarı kimseye gönderme, sohbete de yapıştırma — yalnızca Supabase'in gizli ayarlarına yazılır.</p>
+  </div>
+
+  <button type="button" id="uret" data-t="uretDugme">Anahtar çiftini üret</button>
+
+  <div id="sonuc" hidden>
+    <label for="acik" data-t="acikEtiket">VAPID_ACIK (açık anahtar)</label>
+    <textarea id="acik" readonly spellcheck="false"></textarea>
+    <div class="satir">
+      <button type="button" class="ikincil" data-kopya="acik" data-t="kopyala">Kopyala</button>
+      <span class="not" data-t="acikNot">Bu gizli değil; tarayıcılara zaten gidiyor.</span>
+    </div>
+
+    <label for="ozel" data-t="ozelEtiket">VAPID_OZEL (özel anahtar)</label>
+    <textarea id="ozel" readonly spellcheck="false"></textarea>
+    <div class="satir">
+      <button type="button" class="ikincil" data-kopya="ozel" data-t="kopyala">Kopyala</button>
+      <span class="not"><strong data-t="ozelNot">Bu GİZLİ. Yalnızca Supabase'e yazılır.</strong></span>
+    </div>
+
+    <div class="kutu">
+      <p class="not" data-t="sonraki">Sonraki adım: ikisini de Supabase → Edge Functions → Secrets bölümüne yaz. Adımların tamamı depodaki supabase/functions/push-gonder/README.md dosyasında.</p>
+    </div>
+  </div>
+</main>
+
+<script>
+const T = {
+  tr: {
+    baslik:'VAPID anahtarı üret',
+    alt:'Push bildirimi için gereken anahtar çifti. Bu sayfa anahtarı senin tarayıcında üretir.',
+    guvenBas:'Hiçbir şey dışarı çıkmıyor.',
+    guvenMetin:'Bu sayfanın ağa çıkan tek bir satırı yok. Anahtar bu sekmede üretiliyor ve sekmeyi kapatınca yok oluyor. Özel anahtarı kimseye gönderme, sohbete de yapıştırma — yalnızca Supabase’in gizli ayarlarına yazılır.',
+    uretDugme:'Anahtar çiftini üret',
+    acikEtiket:'VAPID_ACIK (açık anahtar)',
+    ozelEtiket:'VAPID_OZEL (özel anahtar)',
+    kopyala:'Kopyala',
+    kopyalandi:'Kopyalandı',
+    acikNot:'Bu gizli değil; tarayıcılara zaten gidiyor.',
+    ozelNot:'Bu GİZLİ. Yalnızca Supabase’e yazılır.',
+    sonraki:'Sonraki adım: ikisini de Supabase → Edge Functions → Secrets bölümüne yaz. Adımların tamamı depodaki supabase/functions/push-gonder/README.md dosyasında.',
+    hata:'Bu tarayıcı anahtar üretemedi. Chrome, Edge ya da Safari’nin güncel bir sürümünü dene.'
+  },
+  en: {
+    baslik:'Generate a VAPID key',
+    alt:'The key pair push notifications need. This page generates it inside your own browser.',
+    guvenBas:'Nothing leaves this page.',
+    guvenMetin:'This page has not a single line that touches the network. The key is generated in this tab and disappears when you close it. Never send the private key to anyone, and never paste it into a chat — it only goes into Supabase’s secrets.',
+    uretDugme:'Generate the key pair',
+    acikEtiket:'VAPID_ACIK (public key)',
+    ozelEtiket:'VAPID_OZEL (private key)',
+    kopyala:'Copy',
+    kopyalandi:'Copied',
+    acikNot:'This one is not secret; it is sent to browsers anyway.',
+    ozelNot:'This one is SECRET. It only goes into Supabase.',
+    sonraki:'Next step: put both into Supabase → Edge Functions → Secrets. The full steps are in supabase/functions/push-gonder/README.md in the repository.',
+    hata:'This browser could not generate the key. Try a current version of Chrome, Edge or Safari.'
+  }
+};
+let dil = (navigator.language || 'en').toLowerCase().startsWith('tr') ? 'tr' : 'en';
+
+function dilUygula(){
+  document.documentElement.lang = dil;
+  document.title = T[dil].baslik + ' — Shootboard';
+  document.querySelectorAll('[data-t]').forEach(e=>{
+    const k = e.getAttribute('data-t');
+    if(T[dil][k] !== undefined) e.textContent = T[dil][k];
+  });
+}
+document.querySelectorAll('[data-dil]').forEach(b=>{
+  b.addEventListener('click', ()=>{ dil = b.dataset.dil; dilUygula(); });
+});
+dilUygula();
+
+function b64url(u){
+  let s = '';
+  for(let i = 0; i < u.length; i++) s += String.fromCharCode(u[i]);
+  return btoa(s).replace(/\+/g,'-').replace(/\//g,'_').replace(/=+$/,'');
+}
+
+document.getElementById('uret').addEventListener('click', async ()=>{
+  try{
+    // P-256 — RFC 8292'nin istediği eğri.
+    const cift = await crypto.subtle.generateKey(
+      { name:'ECDSA', namedCurve:'P-256' }, true, ['sign','verify']);
+    // Açık anahtar: 65 baytlık sıkıştırılmamış biçim (0x04 ile başlar).
+    const acik = new Uint8Array(await crypto.subtle.exportKey('raw', cift.publicKey));
+    // Özel anahtar: JWK'nin d alanı, zaten base64url.
+    const jwk = await crypto.subtle.exportKey('jwk', cift.privateKey);
+    document.getElementById('acik').value = b64url(acik);
+    document.getElementById('ozel').value = jwk.d;
+    document.getElementById('sonuc').hidden = false;
+  }catch(e){
+    alert(T[dil].hata);
+  }
+});
+
+document.querySelectorAll('[data-kopya]').forEach(b=>{
+  b.addEventListener('click', async ()=>{
+    const alan = document.getElementById(b.dataset.kopya);
+    alan.select();
+    try{ await navigator.clipboard.writeText(alan.value); }
+    catch(e){ document.execCommand('copy'); }
+    const eski = b.textContent;
+    b.textContent = T[dil].kopyalandi;
+    setTimeout(()=>{ b.textContent = eski; }, 1400);
+  });
+});
+</script>
+</body>
+</html>
