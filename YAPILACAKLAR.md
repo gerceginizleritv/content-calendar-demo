@@ -434,7 +434,7 @@ başlasın diye. Tam koşudan sonra değişmiş görünmesi normaldir.
   ⚠ Bölüm 7: metinler iki dilde. Bekçi test: eklenen madde **geri
   çıkarılabiliyor mu** ölçülecek.
 
-- ⬜ **50.** ⛔ **PROJE DÜZENLEME POP-UP DEĞİL SAYFA OLSUN.**
+- ✅ **50.** ⛔ **PROJE DÜZENLEME POP-UP DEĞİL SAYFA OLSUN.** — **BİTTİ (16 Kasım 2026).**
   Kullanıcı 16 Kasım 2026'da ekran görüntüsüyle bildirdi:
   *"Bu ekran pop-up gibi bir ekranda açıldığı için burada yönetmek de
   zor. Herhangi bir projeyi tıklayıp açtığımızda pop-up da değil tıpkı
@@ -480,6 +480,54 @@ başlasın diye. Tam koşudan sonra değişmiş görünmesi normaldir.
   ⚠ Bu madde **47 (üst menü birliği)** ve **48 (dil sürekliliği)** ile
   aynı aileden: üçü de "sayfa" kavramına dokunuyor. Sırası gelince
   birlikte planlanacak.
+
+  ---
+
+  ✅ **YAPILDI — beş parça, hepsi ölçüldü (16 Kasım 2026).**
+  Kullanıcı kapsamı iki kez genişletti: önce scriptler
+  (*"scriptler sayfasında da durum aynı pop up çıkıyor"*), sonra
+  takvim girişi (*"takvim de yeni giriş ya da girilmiş olan herhangi
+  bir girişi düzenlemenin de bu şekilde pop up yerine arkadaki takvim
+  görüntüsünün gitmesi... çünkü bu pop up çok küçük yine"*).
+
+  | Parça | Ne oldu |
+  |---|---|
+  | 1 | Proje düzenleme sayfa oldu; liste gizleniyor, adres `#/proje/<id>` |
+  | 2 | Çekim listesi **ayrı pencere değil**, proje sayfasının içinde bölüm — kapatınca projede kalınıyor |
+  | 3 | Scriptler sayfa oldu, adres `#/script/<id>` |
+  | 4 | Takvim girişi sayfa oldu, adres `#/kayit/<id>` |
+  | 5 | "Kaydet" şeridi yapışkan; sayfa kipinde kutu genişliği düzleşti |
+
+  **Yukarıdaki üç soru uygulamayla cevaplandı:**
+  1. Geri dönüş **tarayıcının geri tuşuyla** — adres değişiyor.
+     Sekme değiştirme `replaceState` (geçmişi kirletmiyor), kayıt
+     açma `pushState`.
+  2. Çekim listesi proje sayfasının **içinde bölüm**.
+  3. Telefonda da aynı sayfa düzeni; yapışkan "Kaydet" şeridi
+     özellikle telefon için.
+
+  ⛔ **Cerrahi yöntem — bir daha aynısını yap.** Ögenin `id`'si ve
+  `open` sınıfı KORUNDU, yalnızca `overlay` sınıfı düştü. Böylece
+  23 test dosyasındaki ~40 iddia yerinde kaldı, ve gövde kilidini
+  kuran üç `.overlay.open` sorgusu bu üç ögeyi artık bulmuyor —
+  sayfanın arkasında donduracak bir şey olmadığı için doğrusu bu.
+
+  **Yol boyunca düzeltilen beş test** (hiçbiri gevşetilmedi):
+  `bugun-sayfa`, `giris-donus`, `dokunmatik`, `sc-yerlesim`,
+  `mobil-kayma`. Son ikisinde ölçüler **açılır pencere tasarımını**
+  ölçüyordu; arkalarındaki gerçek güvenceye yeniden yönlendirildi ve
+  `mobil-kayma`'ya sayfa kipinin kendi şartı **eklendi** (çıkışta
+  takvim bıraktığı yere dönüyor — bunu hiçbir test ölçmüyordu).
+
+  ⚠ **Yapışkan şeritte öğrenilen CSS kuralı.** Şerit `position:sticky`
+  alıyordu ama hiç tutunmuyordu. Sebep: `.modal.sc-modal`
+  `overflow:hidden` yazıyor ve **bir eksen gizliyken öbür eksenin
+  `visible`'ı tarayıcı tarafından zorla `auto`ya çevriliyor.** Kutu
+  kendi kaydırma kabı kalınca yapışkan şerit pencereye değil kutunun
+  hiç kaymayan iç alanına tutunmaya çalışıyordu. İki ekseni birlikte
+  açmak gerekti.
+
+  Tam koşu: **214 test, hepsi geçti.** `main` → `8e450e6`.
 - ⬜ **48.** ⛔ **DİL SÜREKLİLİĞİ — SİTENİN TAMAMINDA TEK DAVRANIŞ.**
   ⚠ **41. maddeden (altı dil) ÖNCE bitmek zorunda.** Kullanıcı
   16 Kasım 2026'da söyledi: *"Kullanıcı sitenin herhangi bir yerinde
