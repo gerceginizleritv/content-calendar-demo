@@ -157,7 +157,6 @@ create policy genel_ayarlar_oku
 
 -- ─────────────────────────────────────────────────────────────────
 -- DOĞRULAMA — bu dosyayı çalıştırdıktan sonra şunu çalıştır.
--- Üç satır dönmeli ve üçü de beklenen değeri göstermeli.
 -- ─────────────────────────────────────────────────────────────────
 -- Dört satır dönmeli:
 --   tablo: push_abonelikleri   -> 1
