@@ -7409,6 +7409,7 @@ const LANG = {
     ai_drafted_prefix: "Drafted with ",
     ai_drafted_suffix: ". Feel free to edit it.",
     ai_error_prefix: "Could not reach the API: ",
+    ai_error_empty: "empty response",
     ai_error_suffix: " — check your key in Settings and try again.",
     pending_count_text: (n)=> `${n} ${n===1?'entry is':'entries are'} not yet posted`,
     pending_overdue_clause: (n)=> ` — ${n} of ${n===1?'it is':'them are'} already past ${n===1?'its':'their'} time`,
@@ -8694,6 +8695,7 @@ const LANG = {
     ai_drafted_prefix: "",
     ai_drafted_suffix: " ile taslak hazırlandı. Dilediğin gibi düzenleyebilirsin.",
     ai_error_prefix: "API'ye ulaşılamadı: ",
+    ai_error_empty: "boş yanıt",
     ai_error_suffix: " — Ayarlar'dan anahtarını kontrol edip tekrar dene.",
     pending_count_text: (n)=> `${n} içerik henüz yüklenmedi`,
     pending_overdue_clause: (n)=> ` — bunlardan ${n} tanesinin saati çoktan geçmiş`,
@@ -13390,7 +13392,11 @@ async function scriptAiYaz(){
   if(ham === null) return;
   const temiz = aiTemizle(ham, false);
   if(!temiz){
-    durumEl.textContent = t('ai_error_prefix') + 'boş yanıt' + t('ai_error_suffix');
+    // ⛔ "boş yanıt" SABIT TURKCE YAZILIYDI, cevrilmis iki metnin
+    // ORTASINDA. Ingilizce kullanan "Could not reach the API: boş
+    // yanıt — check your key..." goruyordu. 16 Kasim 2026'da
+    // Turkce-only dize taramasinda yakalandi.
+    durumEl.textContent = t('ai_error_prefix') + t('ai_error_empty') + t('ai_error_suffix');
     durumEl.className = 'sc-drive-durum error';
     return;
   }
@@ -15590,7 +15596,11 @@ async function scriptBaslikAiYaz(){
   if(ham === null) return;
   const temiz = aiTemizle(ham, true);
   if(!temiz){
-    durumEl.textContent = t('ai_error_prefix') + 'boş yanıt' + t('ai_error_suffix');
+    // ⛔ "boş yanıt" SABIT TURKCE YAZILIYDI, cevrilmis iki metnin
+    // ORTASINDA. Ingilizce kullanan "Could not reach the API: boş
+    // yanıt — check your key..." goruyordu. 16 Kasim 2026'da
+    // Turkce-only dize taramasinda yakalandi.
+    durumEl.textContent = t('ai_error_prefix') + t('ai_error_empty') + t('ai_error_suffix');
     durumEl.className = 'ai-status sc-baslik-durum error';
     return;
   }
@@ -21247,7 +21257,11 @@ async function aiAlanUret(alan, alanId, dugmeId, calisanEtiket, secenek){
   const cokSatirli = alan === 'caption' || alan === 'thumbPrompt';
   const temiz = aiTemizle(ham, !cokSatirli);
   if(!temiz){
-    durumEl.textContent = t('ai_error_prefix') + 'boş yanıt' + t('ai_error_suffix');
+    // ⛔ "boş yanıt" SABIT TURKCE YAZILIYDI, cevrilmis iki metnin
+    // ORTASINDA. Ingilizce kullanan "Could not reach the API: boş
+    // yanıt — check your key..." goruyordu. 16 Kasim 2026'da
+    // Turkce-only dize taramasinda yakalandi.
+    durumEl.textContent = t('ai_error_prefix') + t('ai_error_empty') + t('ai_error_suffix');
     durumEl.className = 'ai-status error';
     return false;
   }

@@ -40,8 +40,26 @@ haber ver.
   16 Kasım'da onayladı. İzin cihaza ait ve uzaktan verilemez;
   senkronlanacak olan NİYET. Yeni cihazda uygulama kendiliğinden
   izin istesin, izin varsa abone olsun.
-- ⬜ **140 Türkçe-only dizenin kalan ayıklaması.** 15 Kasım'da beş
-  kalıp açıklandı ama tamamı tek tek bakılmadı.
+- ✅ **Türkçe-only dize denetimi BİTTİ** (16 Kasım 2026).
+  Tarama yorumlar elenerek yeniden yapıldı (ilk denemede CSS
+  yorumlarındaki örnekler sayılıyordu). Sözlük blokları dışında
+  **128** eşleşme çıktı, hepsi sınıflandırıldı:
+
+  | Kaç | Ne | Durum |
+  |---|---|---|
+  | ~80 | Mekân adı çözümleme sözcükleri (`ören yeri`, `manastır`, `sarnıç`…) | **Veri**, arayüz değil — Türkçe kalmalı |
+  | ~40 | Tur içeriği (`Fikirden yayına giden yol`…) | **İki dilli** — `tr: [` bir DİZİ, ilk aramam yalnızca nesneleri yakalıyordu |
+  | 5 | İçe aktarma sütun ipuçları (`gün`, `tür`, `başlık`) | **Veri**, İngilizceleriyle birlikte duruyor (`'tarih','date','gün','day'`) |
+  | 3 | Dil adları (`Türkçe`, `Français`) | Doğru — dil adı kendi dilinde yazılır |
+  | 3 | Demo/örnek metin | Kullanıcının göreceği içerik değil |
+  | ~11 | Kurulum tarifinin `tr ? … : …` şubeleri | İngilizcesi karşı şubede |
+  | **3** | **`"boş yanıt"`** | ⛔ **GERÇEK HATA — düzeltildi** |
+
+  ⛔ **Bulunan hata:** `"boş yanıt"` üç yerde, **çevrilmiş iki metnin
+  ortasına** sabit Türkçe olarak gömülmüştü. İngilizce kullanan kişi
+  *"Could not reach the API: boş yanıt — check your key…"* görüyordu.
+  `ai_error_empty` anahtarı eklendi (iki dilde), üç kullanım da ona
+  çevrildi.
 
 ### 2 · Çekim setleri (hepsi aynı ekran)
 - ⬜ **9.** Menü adı "Malzeme" → "Çekim Setleri" (`tab_kit`, iki dil)

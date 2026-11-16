@@ -70,8 +70,25 @@ const stub = (satir, patlasin) => {
   k('tercihlerde beklenmeyen alan yok', fazla.length === 0, fazla);
   k('hatırlatma ayarları buluta gidiyor',
     !!r.son.prefs.reminders && 'takvim' in r.son.prefs.reminders, r.son.prefs.reminders);
-  k('TARAYICI anahtarı buluta GİTMİYOR',
-    !('tarayici' in (r.son.prefs.reminders||{})), r.son.prefs.reminders);
+  // ⚠ KARAR 16 KASIM 2026'DA TERSINE DONDU. Bu satir eskiden
+  //   "TARAYICI anahtari buluta GITMIYOR" diye olcuyordu; gerekce
+  //   "calismayan bir ayari baska cihazda acik gostermek" idi.
+  //   Kullanici bunun tersini istedi: "pc de ya da iphone da tarayici
+  //   bildirimi izni veren kisi her iki tarafta da bunu esitlemis
+  //   olmali."
+  //
+  //   ⛔ SENKRONLANAN SEY IZIN DEGIL, NIYET. Izin cihazin kendisine
+  //   ait ve uzaktan verilemez. Tasinan "ben bildirim istiyorum"
+  //   karari; yeni cihazda anahtar ACIK geliyor, "izin ver" dugmesi
+  //   bekliyor ve NEDEN bekledigi yaziyor (rm_push_izin). Eski
+  //   gerekce bu yuzden gecersiz kaldi.
+  //
+  //   Test ZAYIFLATILMADI, YON DEGISTIRDI: alanin bulunmadigini degil
+  //   BULUNDUGUNU ve boolean oldugunu olcuyor. Alan kazara kalkarsa
+  //   yine kirmizi yanar.
+  k('TARAYICI niyeti buluta GIDIYOR',
+    typeof (r.son.prefs.reminders||{}).tarayici === 'boolean',
+    r.son.prefs.reminders);
   k('damga da gönderiliyor', !!(r.son && r.son.updated_at), (r.son||{}).updated_at);
   k('tek istek (her tuşta değil)', r.yazma === 1, r.yazma+' istek');
   await page.close();
