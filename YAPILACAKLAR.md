@@ -158,6 +158,32 @@ başlasın diye. Tam koşudan sonra değişmiş görünmesi normaldir.
 - ⬜ **12.** Zamanlama (set doğru günde öne çıkar)
 
 ### 3 · Sınırlar
+- ⬜ **43.** **Mekânlar sayfasına fotoğraflı liste görünümü + görünüm
+  değiştirme tuşu.** Kullanıcı 16 Kasım 2026'da istedi: *"places /
+  mekanlar sayfasında yine fotoğraflı görünümlü liste görünümü
+  eklenecek. Üst bölüme liste ve diğer görünüm türü için eklediğime
+  benzer bir tuş ekle, görünümler arasında geçiş yapabilsin."*
+
+  Bugün mekânlar yalnızca **kart ızgarası** olarak çiziliyor
+  (`renderMekanlar`, `.mk-kart`, sabit `--mk-kart-h:362px`). İkinci
+  bir görünüm yok.
+
+  ⚠ **SIRASI GELİNCE SORULACAK — ad uydurulmayacak:** Kullanıcı
+  "eklediğime benzer bir tuş" dedi ve iki ikonlu (liste / ızgara) bir
+  ekran görüntüsü gönderdi. **O tuş bu depoda yok.** Depodaki tek
+  benzer şey `app.html:4454` `.view-toggle` — takvim sayfasında, beş
+  **yazılı** düğme (Month/Week/Day/Table/Sheet). `lokasyon.html:1014`
+  `.cal-view-toggle` de üç yazılı düğme. İkisi de ekran
+  görüntüsündeki iki-ikonlu çift değil. Hangisini kastettiği
+  **sorulacak**, tahmin edilmeyecek.
+
+  Yapılacaklar (sırası gelince planlanacak):
+  - İkinci görünüm: her mekân **bir satır**, solda fotoğraf küçük
+    resmi, yanında ad/adres/rozetler.
+  - Üst bölümde görünüm değiştirme tuşu; seçim **hatırlansın**
+    (takvimdeki görünüm `localStorage`'da saklanıyor, aynı kalıp).
+  - ⚠ `mekan-kart-olcu.test.js` kart görünümünün sabit yüksekliğini
+    ölçüyor; yeni görünüm o testi bozmamalı, kendi ölçüsü olmalı.
 - ⬜ **42.** **Yerel biçim merkezi** — ⚠ kullanıcı 16 Kasım 2026'da
   ekletti: *"kullanıcı hangi dil ile kullanıyorsa o dilde olmalı.
   Yeni eklenecek dillere göre düzenlenmesi lazım."*
