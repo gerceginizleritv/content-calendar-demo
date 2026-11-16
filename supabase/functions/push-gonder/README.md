@@ -84,6 +84,30 @@ onları kendisi tanımlıyor.
 Ne göreceksin: Secrets listesinde dört yeni satır. Değerler
 gösterilmiyor, yalnızca adlar — bu normal.
 
+**Aynı adımın ikinci yarısı:** açık anahtar bir de veritabanına
+yazılacak, çünkü uygulamanın aboneliği açarken ona ihtiyacı var.
+
+4. Supabase → **SQL Editor** → **New query**.
+5. Şunu yapıştır ve `<ACIK-ANAHTAR>` yerine 2. adımdaki **açık**
+   anahtarı koy:
+
+```
+insert into public.genel_ayarlar (anahtar, deger, not_)
+values ('vapid_acik', '<ACIK-ANAHTAR>',
+        'Push aboneligi icin. Gizli DEGIL, tarayiciya gidiyor.')
+on conflict (anahtar) do update
+  set deger = excluded.deger, guncellendi = now();
+```
+
+6. **Run.**
+
+Ne göreceksin: "Success. No rows returned".
+
+⛔ Buraya **özel** anahtarı yazma. Bu tablo herkese açık okunuyor —
+öyle olması gerekiyor, çünkü giriş yapmamış ziyaretçinin de abonelik
+açabilmesi lazım. Açık anahtar zaten gizli değil; özel anahtar
+yalnızca yukarıdaki Secrets kutusuna girer.
+
 ### Adım 4 — Fonksiyonu dağıt
 
 İki yol var, **birini** seç.
@@ -184,10 +208,15 @@ koşusunda — yani **en geç 59 dakika** içinde. Saatte bir koşuyor.
 | `POST /` | bir gönderim turu — `x-push-secret` başlığı ister |
 | `OPTIONS /` | CORS ön kontrolü (app.html başka kökenden çağırıyor) |
 
-`GET` herkese açık ve açık olması gerekiyor: `app.html` VAPID açık
-anahtarını buradan çekiyor. Anahtar `app.html`'e **bilerek
-gömülmedi** — gömülseydi her değişiklikte dosyayı elle düzenlemek
-gerekirdi.
+`GET` bir **sağlık kontrolü**: dağıtımın tuttuğunu ve hangi sırların
+tanımlı olduğunu dışarıdan görmenin tek yolu. Özel anahtar buradan
+asla dönmüyor.
+
+⚠ **`app.html` bu fonksiyonu hiç çağırmıyor.** VAPID açık anahtarını
+`genel_ayarlar` tablosundan okuyor. Sebebi: panelden kurulan
+fonksiyonun adresindeki kısa ad **rastgele** üretiliyor, yani
+`app.html` o adresi önceden bilemezdi. Tablodan okuyunca istemci
+fonksiyonun adresinden tamamen bağımsız kalıyor.
 
 ## Gönderim turunda ne oluyor
 

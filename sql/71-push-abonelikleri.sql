@@ -99,11 +99,73 @@ create policy push_abonelikleri_sil
   on public.push_abonelikleri for delete
   using (user_id = auth.uid());
 
+-- ═══════════════════════════════════════════════════════════════════
+-- GENEL AYARLAR — VAPID AÇIK ANAHTARI BURADA DURUYOR
+-- ═══════════════════════════════════════════════════════════════════
+--
+-- NEDEN BİR TABLO, NEDEN app.html'e GÖMÜLMÜYOR
+--   Tarayıcının push aboneliği açması için VAPID **açık** anahtarına
+--   ihtiyacı var. Üç yol vardı:
+--     1. app.html'e gömmek    -> kullanıcı dosyayı elle düzenlemeli
+--     2. Edge Function'dan okumak -> ⛔ OLMUYOR: panelden kurulan
+--        fonksiyonun adresindeki kısa ad RASTGELE üretiliyor, yani
+--        app.html o adresi önceden bilemez. Bu tuzak bu depoda iki
+--        kez 404'e yol açtı (sql/20'nin başı, hosgeldin README).
+--     3. Veritabanından okumak -> seçilen yol. İstemci fonksiyonun
+--        adresinden tamamen bağımsız kalıyor.
+--
+-- ⛔ BURAYA GİZLİ BİR ŞEY YAZILMAZ. Tablo HERKESE AÇIK okunuyor.
+--   VAPID **özel** anahtarı buraya değil, Supabase gizli ayarlarına
+--   (Edge Functions -> Secrets) yazılır. Açık anahtar gizli değildir:
+--   zaten her tarayıcıya gidiyor.
+
+create table if not exists public.genel_ayarlar (
+  anahtar text primary key,
+  deger   text not null,
+  not_    text,
+  guncellendi timestamptz not null default now()
+);
+
+alter table public.genel_ayarlar enable row level security;
+
+-- Okuma herkese açık (giriş yapmamış ziyaretçi dahil): abonelik
+-- açabilmek için anahtara ihtiyaç var.
+drop policy if exists genel_ayarlar_oku on public.genel_ayarlar;
+create policy genel_ayarlar_oku
+  on public.genel_ayarlar for select
+  using (true);
+
+-- ⛔ YAZMA POLİTİKASI YOK. Yani hiçbir kullanıcı yazamaz; satır
+--   yalnızca panelden (service_role) konulur. Politika yokken RLS
+--   açık bir tabloya yazılamaz -- kapıyı kapalı tutan şey bu.
+
+-- ─────────────────────────────────────────────────────────────────
+-- VAPID AÇIK ANAHTARINI BURAYA YAZ
+-- ─────────────────────────────────────────────────────────────────
+-- Aşağıdaki satırı AYRI bir sorgu olarak çalıştır. <ACIK-ANAHTAR>
+-- yerine araclar/vapid-uret.html sayfasının verdiği **açık** anahtarı
+-- koy (yaklaşık 87 karakter, 'B' ile başlar).
+--
+-- ⚠ ÖZEL anahtarı buraya YAZMA. O yalnızca Supabase gizli ayarlarına
+--   girer. Bu tablo herkese açık okunuyor.
+--
+--   insert into public.genel_ayarlar (anahtar, deger, not_)
+--   values ('vapid_acik', '<ACIK-ANAHTAR>',
+--           'Push aboneligi icin. Gizli DEGIL, tarayiciya gidiyor.')
+--   on conflict (anahtar) do update
+--     set deger = excluded.deger, guncellendi = now();
+
 -- ─────────────────────────────────────────────────────────────────
 -- DOĞRULAMA — bu dosyayı çalıştırdıktan sonra şunu çalıştır.
 -- Üç satır dönmeli ve üçü de beklenen değeri göstermeli.
 -- ─────────────────────────────────────────────────────────────────
--- select 'tablo var' as kontrol,
+-- Dört satır dönmeli:
+--   tablo: push_abonelikleri   -> 1
+--   RLS acik                   -> true
+--   politika sayisi            -> 4
+--   tablo: genel_ayarlar       -> 1
+--
+-- select 'tablo: push_abonelikleri' as kontrol,
 --        count(*)::text as sonuc
 --   from information_schema.tables
 --  where table_schema = 'public' and table_name = 'push_abonelikleri'
@@ -114,4 +176,9 @@ create policy push_abonelikleri_sil
 -- union all
 -- select 'politika sayisi',
 --        (select count(*)::text from pg_policies
---          where tablename = 'push_abonelikleri');
+--          where tablename = 'push_abonelikleri')
+-- union all
+-- select 'tablo: genel_ayarlar',
+--        count(*)::text
+--   from information_schema.tables
+--  where table_schema = 'public' and table_name = 'genel_ayarlar';
