@@ -301,6 +301,27 @@ başlasın diye. Tam koşudan sonra değişmiş görünmesi normaldir.
   detayları, iptal kutusu, fikirler, scriptler, çekim listesi ve adım
   termin tarihleri — **hepsi tek bir dar kutuya** sığdırılmış.
 
+  ⛔ **GERİ DÖNÜŞ YOK — kullanıcı 16 Kasım'da ikinci kez bildirdi:**
+  *"Bu pop-up içerisinde çekim listesine tıkladığımda yeni pop-up
+  çıkıyor, sonra geri dönmek istersem dönemiyorum."*
+
+  **Akış koddan çıkarıldı:**
+
+  | Adım | Ne oluyor | Nerede |
+  |---|---|---|
+  | 1 | *Projeyi düzenle* penceresi açık | `projectEditOverlay` |
+  | 2 | "Çekim listesi" satırına basılıyor | `pe_liste` (`app.html:15759`) |
+  | 3 | Form **önce kaydediliyor** ve düzenleme penceresi kapanıyor | `projeyiKaydet()` |
+  | 4 | Çekim listesi **ayrı bir pencere** olarak açılıyor | `cekimListesiAc` |
+  | 5 | Kapatınca `renderProjects()` çalışıyor → **proje tablosu** | `cekimListesiKapat` (`app.html:10814`) |
+
+  ✅ İyi yanı: 3. adımda form kaydedildiği için **veri kaybı yok.**
+  ⛔ Kötü yanı: 5. adımda "projeye geri dön" diye bir şey **yok**.
+  Kullanıcı tabloya düşüyor ve projeyi listeden yeniden bulup açmak
+  zorunda kalıyor. İki pencere bir **yığın** oluşturmuyor.
+
+  Bu tam olarak **gerçek sayfa + tarayıcı geri tuşunun** çözdüğü şey.
+
   ⚠ Depoda toplam **22 ayrı overlay** var; hepsi değişmeyecek.
   Bu madde **proje düzenlemeyi** (ve içinden açılan çekim listesini)
   kendi sayfasına taşıyor. Sırası gelince kullanıcıya sorulacak:
