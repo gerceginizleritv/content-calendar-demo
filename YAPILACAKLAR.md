@@ -158,12 +158,24 @@ haber ver.
   ⛔ `CLAUDE.md` Bölüm 3 bunu bugün YASAKLIYOR. O kuralı yalnızca
   kullanıcı kaldırır. Kullanıcı açıkça "aç" demeden kod yazılmaz,
   bayrak açılmaz, kimseye anahtar üretilmez.
-- ⬜ **41.** **Üçüncü dil (TR/EN dışı)** — **EN SONA**, kullanıcı
-  kararı (16 Kasım 2026). Maliyet o gün **koddan ölçüldü**, aşağıdaki
-  "ÜÇÜNCÜ DİL MALİYETİ" bölümünde duruyor.
-  ⚠ **41'in ilk adımı çeviri DEĞİL:** 34 yerdeki
-  `currentLang === 'tr' ? 'tr' : 'en'` sıralama kapısını tek merkeze
-  toplamak. O yapılmadan üçüncü dil İngilizce sıralamasıyla sıralanır.
+
+### I · Diller  ⬜ EN SON GRUP
+- ⬜ **41.** **Altı yeni arayüz dili:** Ispanyolca (`es`), Brezilya
+  Portekizcesi (`pt-BR`), Almanca (`de`), Fransızca (`fr`), İtalyanca
+  (`it`), Rusça (`ru`). Kullanıcı 16 Kasım 2026'da hem dilleri hem de
+  **en sona** kararını verdi. Ayrıntı: aşağıdaki "DİLLER" bölümü.
+  ⛔ **Kullanıcı "dillere başla" demeden kod yazılmaz.**
+  ⚠ **İKİ ÖN KOŞUL, ikisi de 41'den ÖNCE:**
+  1. **40** (sözlük parite testi) — Sıra 2'de.
+  2. **Yerel biçim merkezi.** Bugün tarih/sıralama biçimi **19 yerde**
+     iki dile sabitlenmiş (`currentLang === 'tr' ? 'tr-TR' : 'en-US'`
+     ve `en-GB` türevleri: `app.html` 15, `paylas.html` 3,
+     `fiyatlar.html` 1). Ayrıca **34 yerde** `… ? 'tr' : 'en'`
+     sıralama/büyük-harf kapısı var. Toplam **53 yer**. Bunlar
+     düzelmeden dil eklenirse yeni diller **hata vermeden** Amerikan
+     tarih biçimi ve İngilizce sıralamasıyla kalır.
+  ⚠ **Dalga dalga:** önce `es` + `pt-BR`, sonra `de` + `fr`, sonra
+  `it` + `ru`. Her dalgadan sonra kullanıcıya göster, onay al.
 
 ## Bitenler (bu listeden)
 
@@ -181,7 +193,7 @@ sebebi uygulamada değildi — Windows'un Chrome'a bildirim izni kapalıydı.
 
 ---
 
-## 16 KASIM 2026 — ÜÇÜNCÜ DİL MALİYETİ (ölçüldü)
+## 16 KASIM 2026 — DİLLER (karar + ölçüm)
 
 Kullanıcı sordu: "TR ve EN haricinde ek dil eklemenin maliyeti ne?
 GitHub ya da Supabase'de ek yer tutar mı?" Sayılar **koddan**
@@ -228,21 +240,37 @@ Düzyazı ayrıca: `kilavuz.html` 56 KB / `guide.html` 54 KB (üçüncü dil
 
 ### Kullanıcının elle yapacağı (kod değil, panel işi)
 
-1. **Üç görsel.** `index.html:1294` dile göre resim değiştiriyor:
-   `kahraman-<dil>.webp`, `uygulama-tablet-<dil>.webp`,
-   `uygulama-telefon-<dil>.webp`.
-2. **Üç e-posta şablonu** Supabase panelinde: `confirm-signup`,
-   `hosgeldin`, `magic-link`.
+1. **18 görsel** (3 × 6 dil). `index.html:1294` dile göre resim
+   değiştiriyor: `kahraman-<dil>.webp`, `uygulama-tablet-<dil>.webp`,
+   `uygulama-telefon-<dil>.webp`. Yani her dil için uygulamanın o
+   dildeki üç ekran görüntüsü gerekiyor.
+   ⚠ **Dalga başına 6 görsel** (iki dil × üç görsel) — dalga dalga
+   gitmenin bir sebebi de bu.
+2. **18 e-posta şablonu** (3 × 6 dil) Supabase panelinde:
+   `confirm-signup`, `hosgeldin`, `magic-link`.
 3. **İki Edge Function dağıtımı:** `hosgeldin` (`index.ts:108` dili
    `'tr' | 'en' | 'both'` diye sabitlemiş) ve `push-gonder`
    (`index.ts:41-52` bildirim metni iki dilde sabit).
 
-### Yer
+### Yer — ⚠ ALTI DİLLE ÇARPILIYOR
 
-- **GitHub: ~450 KB artış.** Depo 8,8 MB; yani **%5 civarı**.
-  240 KB'ı görsel.
-- **Supabase: sıfır.** `prefs` alanı `jsonb`; `"lang":"de"` ile
+Aşağıdaki sayılar **tek dil** içindir; karar altı dil olduğu için
+altıyla çarpılıyor.
+
+| | Tek dil | **Altı dil** |
+|---|---|---|
+| Sözlükler (`app.html`, `index`, `lokasyon`, `fiyatlar`, `paylas`) | ~101 KB | **~606 KB** |
+| Kılavuz (ayrı dosya) | ~55 KB | **~330 KB** |
+| Gizlilik + şartlar (üçüncü bölüm) | ~24 KB | **~144 KB** |
+| E-posta şablonları | ~30 KB | **~180 KB** |
+| Dile bağlı görseller (3 adet) | ~240 KB | **~1 440 KB** |
+| **Toplam** | **~450 KB** | **~2,7 MB** |
+
+- **GitHub:** depo 8,8 MB → **~11,5 MB**, yani **%31 artış.** Yarısından
+  fazlası görsel (1,4 MB).
+- **Supabase: sıfır.** `prefs` alanı `jsonb`; `"lang":"ru"` ile
   `"lang":"tr"` aynı yeri tutuyor. Yeni tablo, sütun ya da satır yok.
+  ⛔ Ödeme/abonelik tarafında da değişiklik yok (Rusça notuna bak).
 
 ### Gizli maliyetler
 
@@ -253,15 +281,115 @@ Düzyazı ayrıca: `kilavuz.html` 56 KB / `guide.html` 54 KB (üçüncü dil
 | Kılavuz ayrı dosya | `kilavuz.html` / `guide.html` | Her kılavuz değişikliği **üç** dosyada. Bu deponun tekrarlayan hatası tam bu: bir yerde düzeltip ötekilerde unutmak. |
 
 ⚠ **Çeviri hızı ölçülemedi, uydurulmadı.** Kod tarafı (parite testi,
-`LANG_NAMES`, sıralama merkezi, iskelet) bir oturumluk; asıl yük
-1 566 dize + 79 KB düzyazı. Hukuk metinleri (`privacy`, `sartlar`)
+`LANG_NAMES`, yerel biçim merkezi, çoğul yardımcısı, iskelet) bir
+oturumluk ve **altı dil için bir kez** yapılıyor; asıl yük dil başına
+1 566 dize + 79 KB düzyazı, yani **altı dilde ~9 400 dize + ~474 KB
+düzyazı.** Hukuk metinleri (`privacy`, `sartlar`)
 kullanıcıya **doğrulattırılmadan** "tamam" denmez (Bölüm 4).
 
-### Hangi dil?
+### Hangi diller — KARAR VERİLDİ (16 Kasım 2026)
 
-**Kullanıcı söylemedi, seçilmedi.** Sorduğu şey maliyetti. Dil
-seçimi bir **pazar kararı** ve yalnızca kullanıcı verir — 41. madde
-sırası gelince önce bu sorulacak.
+Kullanıcı altı dil seçti: **es, pt-BR, de, fr, it, ru.** Bugünkü
+ikisiyle toplam **sekiz dil**.
+
+- **Ispanyolca:** Latin Amerika'ya uygun, yansız İspanyolca
+  (İspanya'ya özgü kalıplar yok, "vosotros" yok). Tek `es`.
+- **Portekizce:** **Brezilya** (Portekiz değil). Tek `pt`; `pt-PT`
+  tarayıcısında da `pt-BR` açılacak.
+- **Rusça bilerek listede.** Kullanıcının notu: Rusya'dan ödeme
+  alınamıyor olabilir (kartlar Mart 2022'den beri askıda). Kullanıcı
+  biliyor, *"Rusya'ya gerekirse ücretsiz veririm ileride"* dedi.
+  ⛔ **Ödeme tarafında şimdi hiçbir şey yapılmaz**; sırası gelince
+  kullanıcıya sorulur.
+- ⛔ **Kapsam dışı:** sağdan sola diller (Arapça, İbranice), Hintçe,
+  Endonezce, Japonca vb. Kullanıcı istemeden başka dil eklenmez.
+- ⛔ **Çevrilmeyenler:** plan adları (`Starter`, `Creator Pro`).
+
+### Araştırma sohbetinin sayıları — DEPODAN DOĞRULANDI
+
+Araştırma sohbeti 3 Eylül kaydına dayanan sayılar gönderdi; §4 gereği
+hepsi koddan yeniden sayıldı. **İkisi değişmiş:**
+
+| İddia | Depodaki gerçek | Durum |
+|---|---|---|
+| Yerel biçim 8 yerde sabit | **19 yer** (`app.html` 15, `paylas.html` 3, `fiyatlar.html` 1) + ayrı kalıpta **34** sıralama kapısı = **53** | ⛔ sayı iki kattan fazla büyümüş |
+| Dil başına ~32 KB ham | **~80 KB** (ana sözlük, 1 186 anahtar) + tur 4,5 KB | ⛔ ölçüm yenilendi |
+| `buyuk-harf.test.js` var | **var** | ✅ |
+| Lokasyon uygulamasında Rusça çalışıyor | **çalışıyor** — `lokasyon.html:1589` `ru:` sözlüğü, seçicide 🇷🇺 RU | ✅ örnek alınacak |
+| Çoğul riski sayılmadı | **76 anahtar** sayı alıyor (`app.html` EN sözlüğünde `anahtar: (n)=>` biçiminde) | ✅ sayıldı |
+| Kiril yazı tipi şüphesi | **sorun yok** — IBM Plex Sans ve IBM Plex Mono, Google Fonts'tan `cyrillic` + `cyrillic-ext` alt kümeleriyle geliyor (CSS'ten doğrulandı) | ✅ |
+
+### ⛔ YOL ÜSTÜNDE BULUNAN AYRI HATA (dil işinin parçası değil)
+
+`lokasyon.html` ay adlarını **üç yerde** `'tr-TR'` diye SABİT yazıyor:
+satır 2218, 2319, 3085. Ama o sayfanın dil seçicisinde **tr, en, ru**
+var. Yani İngilizce ya da Rusça kullanan biri takvimde **Türkçe ay
+adı** görüyor (`Kas`, `Ara`). Bugünkü bir hata, altı dille ilgisi yok.
+
+⚠ Düzeltilmedi: §2 gereği onay bekliyor. Kullanıcıya bildirildi.
+
+### Çoğul biçimleri — 76 anahtar
+
+Rusça'da dört çoğul biçimi var (1 video / 2 video / 5 video ayrı
+yazılır); `es`, `fr`, `it`, `pt` de "one/other" dışında biçim
+isteyebiliyor. **Sayı içeren metinler elle birleştirilmeyecek**;
+`Intl.PluralRules` üzerinden tek bir yardımcıya bağlanacak. Bugün
+76 anahtar sayı alıyor, hepsi o yardımcıya geçecek.
+
+### Metin uzaması — 375 pikselde denetlenecek
+
+Almanca, İtalyanca, Fransızca ve Rusça etiketler İngilizcenin 2-3
+katına çıkabiliyor. Düğme, sekme, takvim hücresi ve telefon
+genişliğinde taşma her dilde ekranda ölçülecek.
+
+⚠ **Bunun bir örneği bugün yaşandı:** 9. maddede menü adı tek
+kelimeden ("Malzeme") iki kelimeye ("Çekim Setleri") çıkınca
+701-980 piksel arasında sekme etiketi **iki satıra sardı**.
+`testler/sekme-adi.test.js` o bekçiyi kurdu ve sekiz dilde de
+koşacak — yeni diller için hazır duruyor.
+
+### Büyük/küçük harf
+
+Türkçe'ye özel `i`/`I` mantığı başka dillere sızmayacak; Almanca'da
+isimler büyük harfle başlıyor ve `text-transform:uppercase` "ß" gibi
+harflerde bozulabiliyor. `testler/buyuk-harf.test.js` yeni dillerle
+de koşacak.
+
+### Yalnızca arayüz değil — tam liste kullanıcıya sorulacak
+
+Arayüz çevrilip bunlar İngilizce kalırsa ürün yarım görünür.
+⚠ **Hangilerinin bu işe dahil olduğunu kullanıcı seçecek:**
+örnek/demo içerikler · karşılama ve giriş e-postaları
+(`supabase/email`, `hosgeldin`) · kılavuz sayfaları
+(`kilavuz.html` / `guide.html`) · tanıtım sayfası (`index.html`) ·
+gizlilik ve şartlar · asistan kartı (`ai/asistan-karti.md`) ·
+bildirim metinleri (`push-gonder`) · hata mesajları.
+
+### Marka dili her dilde geçerli
+
+`MARKA.md`'deki yasak ifadeler çeviride de yasak: "otomatik paylaşır",
+"hesaplarına bağlanır", "istatistik gösterir" anlamına gelen hiçbir
+çeviri yazılmaz. `MARKA.md`'nin terim karşılıkları (shoot, post,
+entry, project, place…) için **her dilde sabit bir terim listesi**
+çıkarılacak ve önce kullanıcıya gösterilecek.
+
+### Çeviri kalitesi
+
+⚠ Çeviriyi Claude yazacaksa bunu **açıkça söyleyecek** ve ana dili
+konuşan biri gözden geçirmeden "tamam" demeyecek; "gözden
+geçirilmedi" diye işaretlenecek.
+
+### Boyut — eklemeden önce ve sonra ölçülecek
+
+3 Eylül kaydı "sınır ~8-10 dil" diyor. Sekiz dille **sınırın
+içindeyiz ama ucundayız.** ⚠ Sayfa boyutu eklemeden önce ve sonra
+ölçülüp kullanıcıya **sayıyla** bildirilecek. Tahmin yazılmayacak.
+
+### Dil seçimi ve varsayılan
+
+Yeni kullanıcıda tarayıcı dili bu sekizden biriyse o dil açılacak,
+değilse İngilizce. Seçim bulutta saklanıyor
+(`testler/dil-bulut.test.js`); yeni kodla da çalıştığı test edilecek.
 
 ---
 
