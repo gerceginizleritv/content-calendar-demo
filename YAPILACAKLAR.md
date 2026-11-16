@@ -204,6 +204,34 @@ başlasın diye. Tam koşudan sonra değişmiş görünmesi normaldir.
 - ⬜ **12.** Zamanlama (set doğru günde öne çıkar)
 
 ### 3 · Sınırlar
+- ⬜ **51.** **Mekân seçicisi çekim türüne göre gelsin.** Kullanıcı
+  16 Kasım 2026'da ekran görüntüsüyle sordu: *"Masabaşı çekimde neden
+  altta mekanlar çıkıyor? Çekim türüne göre gelmesi gerekmiyor mu bu
+  mekanların?"*
+
+  **Doğrulandı — yarısı zaten türe bağlı, yarısı değil:**
+
+  | Alan | Türe bağlı mı | Nerede |
+  |---|---|---|
+  | **Adres kutusu** | ✅ evet | `adresAlaniniTazele` (`app.html:13787`): yalnızca saha işlerinde çıkıyor, ve mekân seçiliyse hiç çıkmıyor |
+  | **Mekân seçicisi** (arama + kutucuklu liste) | ⛔ **hayır** | Her türde açık — "Masabaşı / grafik" projesinde de 71 mekân listeleniyor |
+
+  Kapının kendisi var: `PROJ_TYPES_ADDRESS = ['outdoor','venue']` ve
+  `adresGerekir()` (`app.html:10182`). Yalnızca **adres kutusuna**
+  bağlanmış, mekân bloğuna bağlanmamış.
+
+  ⚠ **Körü körüne gizlemek doğru olmayabilir** — sırası gelince
+  sorulacak:
+  1. Stüdyo çekiminin de bir mekânı olabilir (kiralık stüdyo).
+     Yani "saha işi değil" demek "mekânı yok" demek değil.
+  2. Masabaşı / grafik işinde mekân gerçekten anlamsız mı, yoksa
+     **katlanmış** (kapalı) mı durmalı?
+  3. Bugün mekânı seçili bir proje türü "masabaşı"na çevrilirse o
+     bağ ne olacak — silinecek mi, sessizce duracak mı?
+
+  ⚠ Mekân seçiliyken adres kutusunun gizlenme kuralı **bozulmayacak**;
+  o kural yazılı bir karar (iki adres kutusu "hangisi geçerli"
+  sorusunu doğuruyordu).
 - ⬜ **49.** ⛔ **SET YÖNETİMİ: İÇİ GÖRÜNMÜYOR, MADDE ÇIKARILAMIYOR.**
   Kullanıcı 16 Kasım 2026'da 7. maddeyi denedi ve iki eksik buldu:
 

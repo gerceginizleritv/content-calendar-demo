@@ -2481,6 +2481,25 @@ textarea.sc-ai-brief{min-height:64px;resize:vertical;line-height:1.5;}
 .ih-set-art{background:none;border:none;color:var(--accent);font-size:15px;
   font-weight:700;line-height:1;cursor:pointer;padding:0 2px;}
 .ih-set-art:hover{color:var(--accent-hover);}
+/* 49. madde — SETIN ICI. Oncesinde cip yalnizca ad+sayi gosteriyordu;
+   kullanici bir seti EKLEMEDEN once ne oldugunu goremiyordu ve
+   "hangisini hangi cekime ekleyecegimi bilemiyorum" dedi. */
+.ih-set-bak{background:none;border:none;color:var(--text-dim);font-size:11px;
+  line-height:1;cursor:pointer;padding:0 2px;}
+.ih-set-bak:hover{color:var(--accent);}
+.ih-set-bak[aria-expanded="true"]{color:var(--accent);}
+.set-icerik{width:100%;margin:6px 0 2px;border:1px solid var(--line);
+  border-radius:2px;background:var(--surface-2);padding:7px 9px;}
+.set-sat{display:flex;align-items:baseline;gap:7px;padding:3px 0;
+  border-bottom:1px solid var(--line-soft);font-size:12.5px;}
+.set-sat:last-child{border-bottom:0;}
+.set-sat > span{flex:1;min-width:0;}
+.set-not{flex:none;max-width:45%;overflow:hidden;text-overflow:ellipsis;
+  white-space:nowrap;color:var(--text-dim);font-size:11.5px;font-style:italic;}
+.set-mad-sil{background:none;border:none;color:var(--text-dim);font-size:15px;
+  line-height:1;cursor:pointer;padding:0 3px;flex:none;}
+.set-mad-sil:hover{color:var(--red);}
+.set-icerik .hint{margin:5px 0 0;}
 .ih-set-yeni{border-style:dashed;}
 .ih-setler .hint{width:100%;margin:0 0 2px;}
 /* CEKIM GUNUNDE ISIK. Form alani gibi gorunmemeli: kutusu yok,
@@ -7201,6 +7220,12 @@ const LANG = {
     set_copy_here: "Copy to my kits",
     set_copied: (ad, n)=> `“${ad}” copied to your kits — ${n} items.`,
     set_copy_bos: "This one has nothing to pack — only things to do.",
+    // 49. madde (16 Kasim 2026): setin icini gormek ve madde cikarmak.
+    set_peek: "Show what is inside",
+    set_item_del: "Take out of this kit",
+    set_item_removed: (ad)=> `“${ad}” taken out.`,
+    set_last_item: "A kit cannot be empty. Delete the whole kit instead.",
+    set_hazir_read: "This one comes with the app, so it cannot be edited. “+” copies the gear into your own kits — then it is yours to change.",
     set_made: (ad, n)=> `"${ad}" saved — ${n} items.`,
     set_del_ask: (ad)=> `Remove the kit "${ad}"? The items stay in your kit list.`,
     set_limit: (n)=> `You can keep ${n} kits.`,
@@ -8496,6 +8521,12 @@ const LANG = {
     set_copy_here: "Setlerime kopyala",
     set_copied: (ad, n)=> `“${ad}” setlerine kopyalandı — ${n} madde.`,
     set_copy_bos: "Bunda götürülecek bir şey yok — yalnızca yapılacak işler var.",
+    // 49. madde (16 Kasim 2026): setin icini gormek ve madde cikarmak.
+    set_peek: "İçindekileri göster",
+    set_item_del: "Bu setten çıkar",
+    set_item_removed: (ad)=> `“${ad}” çıkarıldı.`,
+    set_last_item: "Set boş kalamaz. Bunun yerine setin tamamını sil.",
+    set_hazir_read: "Bu set uygulamayla geliyor, değiştirilemez. “+” malzemeleri kendi setlerine kopyalar — sonrası senin.",
     set_made: (ad, n)=> `"${ad}" kaydedildi \u2014 ${n} madde.`,
     set_del_ask: (ad)=> `"${ad}" seti silinsin mi? Maddeler k\u00fct\u00fcphanende kal\u0131r.`,
     set_limit: (n)=> `${n} set tutabilirsin.`,
@@ -10359,6 +10390,61 @@ function setlerBuluttan(uzak){
 // Sayfadaki secim gecici: sayfadan cikinca unutuluyor, hicbir yere
 // kaydedilmiyor.
 const sayfaSecimi = new Set();
+// 49. MADDE — SETIN ICINI GORMEK VE MADDE CIKARMAK.
+//
+// ⛔ CIPE BASMA DAVRANISI DEGISMEDI. Cipe basmak hala seti listeye
+//   ekliyor (pencerede) ya da seciyor (sayfada). Icini gormek AYRI
+//   bir kucuk dugme: var olan aliskanlik ve o davranisi olcen testler
+//   bozulmasin diye.
+//
+// Hangi setin acik oldugu TEK yerde duruyor; ayni anda yalnizca bir
+// tane acik kaliyor, yoksa cip seridi ekran boyu uzuyor.
+let acikSet = null;   // { kap: 'ih' | 'ihs' | 'hset', anahtar: id | sira }
+function setAcikMi(kap, anahtar){
+  return !!acikSet && acikSet.kap === kap && String(acikSet.anahtar) === String(anahtar);
+}
+function setBakCevir(kap, anahtar, ciz){
+  acikSet = setAcikMi(kap, anahtar) ? null : { kap, anahtar };
+  ciz();
+}
+// maddeler: [{metin, not}]. silinebilir: yalnizca KULLANICININ kendi
+// setinde true -- hazir setler kodun icinde metin ve herkeste ayni,
+// onlardan madde cikarmak once kendi kopyani yaratmayi gerektiriyor.
+function setIcerikHtml(maddeler, silinebilir, anahtar){
+  if(!maddeler.length) return '';
+  return `<div class="set-icerik">`
+    + maddeler.map((m, i)=>
+        `<div class="set-sat"><span>${escapeHtml(m.metin)}</span>`
+        + (m.not ? `<i class="set-not">${escapeHtml(m.not)}</i>` : '')
+        + (silinebilir
+            ? `<button type="button" class="set-mad-sil"
+                 data-set-mad="${escapeHtml(String(anahtar))}" data-set-sira="${i}"
+                 title="${escapeHtml(t('set_item_del'))}"
+                 aria-label="${escapeHtml(t('set_item_del'))}">−</button>`
+            : '')
+        + `</div>`).join('')
+    + (silinebilir ? '' : `<p class="hint">${escapeHtml(t('set_hazir_read'))}</p>`)
+    + `</div>`;
+}
+// Setten TEK MADDE cikarma. 7. maddede "+" eklenmis ama karsiligi
+// olan "−" eklenmemisti: ekleme kolaylasmis, geri alma seti bastan
+// yaratmak olarak kalmisti. Kullanici 16 Kasim 2026'da bildirdi.
+function setMaddeSil(id, sira){
+  const st = ihtiyacSetleri.find(x=> x.id === id);
+  if(!st || !st.maddeler[sira]) return;
+  // ⛔ SON MADDE SILINMIYOR. setTemizle bos seti null donduruyor, yani
+  //   son maddeyi silmek seti SESSIZCE yok ederdi. Setin tamamini
+  //   silmek ayri bir dugme ve onay istiyor; ikisi karismasin.
+  if(st.maddeler.length <= 1){ ihNot(acikSet ? acikSet.kap : 'ihs', t('set_last_item')); return; }
+  const cikan = st.maddeler[sira].metin;
+  const temiz = setTemizle({ id: st.id, ad: st.ad,
+                             maddeler: st.maddeler.filter((_, i)=> i !== sira) });
+  if(!temiz) return;
+  ihtiyacSetleri = ihtiyacSetleri.map(x=> x.id === st.id ? temiz : x);
+  saveSetler();
+  setleriCiz('ih'); setleriCiz('ihs');
+  ihNot(acikSet ? acikSet.kap : 'ihs', t('set_item_removed')(cikan));
+}
 function setleriCiz(onek){
   const ek = onek || 'ih';
   const kap = document.getElementById(ek + '_setler');
@@ -10371,15 +10457,24 @@ function setleriCiz(onek){
   const setler = ihtiyacSetleri.map(s=>
     `<span class="ih-set" data-set-ekle="${escapeHtml(s.id)}" role="button" tabindex="0">
        ${escapeHtml(s.ad)}<b>${s.maddeler.length}</b>
+       <button type="button" class="ih-set-bak" data-set-bak="${escapeHtml(s.id)}"
+               aria-expanded="${setAcikMi(ek, s.id)}"
+               title="${escapeHtml(t('set_peek'))}"
+               aria-label="${escapeHtml(t('set_peek'))}">${setAcikMi(ek, s.id) ? '▴' : '▾'}</button>
        ${artVar ? `<button type="button" class="ih-set-art" data-set-art="${escapeHtml(s.id)}"
                title="${escapeHtml(t('set_add_here')(sayfaSecimi.size))}"
                aria-label="${escapeHtml(t('set_add_here')(sayfaSecimi.size))}">+</button>` : ''}
        <button type="button" class="ih-set-sil" data-set-sil="${escapeHtml(s.id)}"
                title="${escapeHtml(t('cl_remove'))}" aria-label="${escapeHtml(t('cl_remove'))}">×</button>
      </span>`).join('');
+  // Acik set panelini ciplerin ARDINA koyuyoruz: .set-icerik tam
+  // genislik aliyor, yani flex seridinde kendi satirina dusuyor.
+  // Ayni anda tek panel acik: yoksa serit ekran boyu uzuyor.
+  const acikOlan = ihtiyacSetleri.find(x=> setAcikMi(ek, x.id));
   kap.innerHTML = (ihtiyacSetleri.length ? `<p class="hint">${escapeHtml(t('set_head'))}</p>` : '')
     + setler
-    + `<button type="button" class="ih-set ih-set-yeni" data-set-yap>${escapeHtml(t(sayfa ? 'set_new_sayfa' : 'set_new'))}</button>`;
+    + `<button type="button" class="ih-set ih-set-yeni" data-set-yap>${escapeHtml(t(sayfa ? 'set_new_sayfa' : 'set_new'))}</button>`
+    + (acikOlan ? setIcerikHtml(acikOlan.maddeler, true, acikOlan.id) : '');
   kap.querySelectorAll('[data-set-ekle]').forEach(el=>{
     el.addEventListener('click', e=>{
       if(e.target.closest('[data-set-sil]')) return;
@@ -10395,6 +10490,20 @@ function setleriCiz(onek){
   //   kullanici ekledigi anda secimi kaybeder.
   kap.querySelectorAll('[data-set-art]').forEach(el=>{
     el.addEventListener('click', e=>{ e.stopPropagation(); seteEkle(el.dataset.setArt); });
+  });
+  // ⚠ stopPropagation burada da sart: dugme cipin ICINDE ve cipin
+  //   kendi tiklamasi seti listeye ekliyor/seciyor.
+  kap.querySelectorAll('[data-set-bak]').forEach(el=>{
+    el.addEventListener('click', e=>{
+      e.stopPropagation();
+      setBakCevir(ek, el.dataset.setBak, ()=> setleriCiz(ek));
+    });
+  });
+  kap.querySelectorAll('[data-set-mad]').forEach(el=>{
+    el.addEventListener('click', e=>{
+      e.stopPropagation();
+      setMaddeSil(el.dataset.setMad, +el.dataset.setSira);
+    });
   });
   kap.querySelector('[data-set-yap]').addEventListener('click', ()=> setYap(ek));
 }
@@ -10747,13 +10856,26 @@ function hazirSetCipleri(){
   // ⚠ Cip artik <button> DEGIL <span>: icine ikinci bir dugme ("+")
   //   girdi ve ic ice dugme gecersiz HTML. role/tabindex ile ayni
   //   erisilebilirlik korunuyor -- kendi setlerinin cipi de boyle.
-  return hazirSetler().map((x, i)=>
+  const liste = hazirSetler();
+  const acikSira = liste.findIndex((x, i)=> setAcikMi('hset', i));
+  return liste.map((x, i)=>
     `<span class="ih-set hset-cip" data-hset="${i}" role="button" tabindex="0">`
     + `${escapeHtml(x.ad)}<b>${x.m.length}</b>`
+    + `<button type="button" class="ih-set-bak" data-hbak="${i}"`
+    + ` aria-expanded="${setAcikMi('hset', i)}"`
+    + ` title="${escapeHtml(t('set_peek'))}"`
+    + ` aria-label="${escapeHtml(t('set_peek'))}">${setAcikMi('hset', i) ? '▴' : '▾'}</button>`
     + `<button type="button" class="ih-set-art" data-hkopya="${i}"`
     + ` title="${escapeHtml(t('set_copy_here'))}"`
     + ` aria-label="${escapeHtml(t('set_copy_here'))}">+</button>`
-    + `</span>`).join('');
+    + `</span>`).join('')
+    // ⚠ Hazir set paneli SALT OKUNUR: bu setler kodun icinde metin ve
+    //   herkeste ayni. "+" yalnizca 'canta' maddelerini kopyaliyor,
+    //   panel ise setin TAMAMINI gosteriyor -- aradaki farki ipucu
+    //   satiri soyluyor, yoksa "8 madde gordum, 4 geldi" olurdu.
+    + (acikSira >= 0
+        ? setIcerikHtml(liste[acikSira].m.map(m=> ({ metin: m[1], not: '' })), false, acikSira)
+        : '');
 }
 // 7. MADDE — HAZIR SETI KENDI SETLERINE KOPYALA.
 // Hazir setler kodun icinde METIN: hicbir yere kaydedilmiyor ve
@@ -10792,6 +10914,15 @@ function hazirSetleriBagla(kap){
   //   hem listeye dokulur.
   kap.querySelectorAll('[data-hkopya]').forEach(el=>{
     el.addEventListener('click', e=>{ e.stopPropagation(); hazirSetiKopyala(+el.dataset.hkopya); });
+  });
+  kap.querySelectorAll('[data-hbak]').forEach(el=>{
+    el.addEventListener('click', e=>{
+      e.stopPropagation();
+      setBakCevir('hset', +el.dataset.hbak, ()=>{
+        kap.innerHTML = hazirSetCipleri();
+        hazirSetleriBagla(kap);
+      });
+    });
   });
   kap.querySelectorAll('[data-hset]').forEach(el=>{
     el.addEventListener('click', ()=> hazirSetiEkle(Number(el.dataset.hset)));
