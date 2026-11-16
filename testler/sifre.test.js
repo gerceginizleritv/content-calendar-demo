@@ -59,8 +59,16 @@ const bak = (ad, ko, ek)=>{ if(ko){ g++; console.log('  ok  '+ad); } else { k++;
   // penceresinin icinde. Oturum yokken o pencereye girilemiyor: sol
   // menudeki dugme "Giris yap" olarak duruyor.
   bak('eski ayri sifre dugmesi kalmadi', await p.$('#railSifreBtn') === null);
+  // ⚠ Eskiden data-i18n ozniteligine bakiyordu. 16 Kasim 2026'da o
+  // oznitelik dugmeden KALDIRILDI: applyStaticI18n metni anahtardan duz
+  // metin olarak geri yazip refreshAuthUi'nin kurdugu ikon+etiket
+  // yapisini siliyordu, o yuzden dar ekranda etiketi gizlemek imkansizdi.
+  // Test artik MEKANIZMAYI degil DAVRANISI olcuyor: dugme gercekten
+  // giris cagrisi yapiyor mu. Bu daha guclu bir kontrol -- oznitelik
+  // dogru olup metin yanlis olsaydi eski hali bunu kacirirdi.
   bak('oturum yokken sol menu girise cagiriyor',
-      await p.$eval('#authBtn', e => e.getAttribute('data-i18n')) === 'btn_signin');
+      await p.$eval('#authBtn', e => e.textContent.trim()) ===
+      await p.evaluate(() => t('btn_signin')));
   bak('hesap penceresi kapali', !(await p.$eval('#hesapOverlay', e => e.classList.contains('open'))));
   bak('sifre satiri hesap penceresinde duruyor', await p.$('#hesapSifreBtn') !== null);
   await p.evaluate(() => { sifrePenceresiniAc(); });
