@@ -40,8 +40,18 @@ const { chromium } = require('./araclar');
         modalYuk: Math.round(modal.getBoundingClientRect().height),
         ekranYuk: window.innerHeight,
         modalGen: Math.round(modal.getBoundingClientRect().width),
-        icerdeMi: modal.getBoundingClientRect().bottom <= window.innerHeight + 1
-                  && modal.getBoundingClientRect().top >= -1,
+        // ⛔ BU OLCU ESKIDEN "kutu tamamen ekrana sigiyor mu" diye bakiyordu.
+        // O, ACILIR PENCERE tasariminin sartiydi. Artik script editoru bir
+        // SAYFA; sayfanin ekrandan uzun olmasi normaldir, kusur degil.
+        // Olcunun arkasindaki GERCEK guvence ise duruyor: hicbir sey
+        // kirpilmayacak, her yere ulasilabilecek. Iki parcaya ayirdim:
+        //   1) editorun BASI acilisda goruntude olacak (yukari kacmayacak),
+        //   2) ALTINA kaydirarak ULASILABILECEK -- yani belgenin kaydirma
+        //      yuksekligi kutunun altini kapsayacak. Bir ata `overflow:hidden`
+        //      ile alti kirparsa bu iddia duser.
+        basiGorunur: modal.getBoundingClientRect().top >= -1,
+        altaUlasilir: modal.getBoundingClientRect().bottom + window.scrollY
+                      <= document.documentElement.scrollHeight + 1,
         kaydetGorunur: kaydet.getBoundingClientRect().bottom <= window.innerHeight + 1
                        && kaydet.getBoundingClientRect().top >= 0,
         metinKayiyor: ta.scrollHeight > ta.clientHeight + 2,
@@ -51,7 +61,8 @@ const { chromium } = require('./araclar');
     });
     console.log('  ── '+ad);
     k('    pencerenin KENDİSİ kaymıyor', r.modalKayiyor === false, {modal:r.modalYuk, ekran:r.ekranYuk});
-    k('    pencere tamamen ekranda', r.icerdeMi === true);
+    k('    editörün başı görünüyor', r.basiGorunur === true);
+    k('    editörün altına ulaşılıyor (kırpılmıyor)', r.altaUlasilir === true);
     k('    “Kaydet” düğmesi görünür', r.kaydetGorunur === true);
     k('    UZUN script metin kutusunda kayıyor', r.metinKayiyor === true, r.metinYuk+'px');
     k('    metin kutusu boğulmadı (yeterli yükseklik)', r.metinYuk >= 110, r.metinYuk+'px');

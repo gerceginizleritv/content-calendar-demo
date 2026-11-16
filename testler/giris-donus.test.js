@@ -48,7 +48,11 @@ const { chromium } = require('./araclar');
     });
     await p.goto('http://127.0.0.1:8098/index.html', { waitUntil:'domcontentloaded' });
     await p.waitForTimeout(2500);
-    const nerede = p.url().split('/').pop().split('?')[0].split('#')[0];
+    // ⚠ HASH ONCE ATILIYOR. 16 Kasim 2026'da uygulamaya adres yonetimi
+    //   girdi (#/calendar gibi) ve hash'in ICINDE '/' var; once '/'
+    //   ile bolunurse son parca "calendar" cikiyor ve olcum dosya
+    //   adini hic gormuyordu. Iddia ayni: hangi SAYFAYA gidildi.
+    const nerede = p.url().split('#')[0].split('?')[0].split('/').pop();
     bak('Google donusunde DOGRUDAN uygulamaya geciliyor', nerede === 'app.html', nerede);
     bak('yonlendirme sirasinda sayfa hatasi yok', hatalar.length === 0, hatalar.slice(0,2));
     await c.close();
@@ -69,7 +73,11 @@ const { chromium } = require('./araclar');
     });
     await p.goto('http://127.0.0.1:8098/index.html', { waitUntil:'domcontentloaded' });
     await p.waitForTimeout(1500);
-    const nerede = p.url().split('/').pop().split('?')[0].split('#')[0];
+    // ⚠ HASH ONCE ATILIYOR. 16 Kasim 2026'da uygulamaya adres yonetimi
+    //   girdi (#/calendar gibi) ve hash'in ICINDE '/' var; once '/'
+    //   ile bolunurse son parca "calendar" cikiyor ve olcum dosya
+    //   adini hic gormuyordu. Iddia ayni: hangi SAYFAYA gidildi.
+    const nerede = p.url().split('#')[0].split('?')[0].split('/').pop();
     bak('isaret yokken ana sayfada kaliniyor', nerede === 'index.html' || nerede === '', nerede);
     await c.close();
   }

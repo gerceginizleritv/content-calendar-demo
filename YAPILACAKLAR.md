@@ -319,6 +319,31 @@ başlasın diye. Tam koşudan sonra değişmiş görünmesi normaldir.
   **alanın ancak İKİ hesapta görüneceğini söylemiyor.** Tek hesaplı
   kullanıcı kayıt ekranında neden seçim çıkmadığını anlayamıyor.
 
+  **ÜÇÜ DE YAPILACAK** (kullanıcı onayı, 16 Kasım 2026 —
+  *"Üçünü de yapılacaklara ekle"*). Üçü bir arada yapılacak, çünkü
+  üçü de aynı pencereyi (Hesaplar) düzeltiyor:
+
+  - ⬜ **53a. Enter kaydedecek.** Hesap formundaki alanlarda Enter
+    "Ekle" ile aynı işi yapacak. `hs_kaydet` `type="button"` olduğu ve
+    etrafında `<form>` bulunmadığı için Enter bugün sessizce yutuluyor.
+    ⚠ Alanları bir `<form>` içine almak **sayfayı yenileyebilir**;
+    yenilenme kaydı kaybeder. Ya `submit` olayında `preventDefault()`
+    çağrılacak, ya da form olmadan alanlara `keydown` dinleyicisi
+    konacak. Bekçi test: alanları doldur, Enter'a bas, hesabın
+    listeye düştüğünü ölç (bugün düşmüyor).
+  - ⬜ **53b. Alanın iki hesapta göründüğü yazacak.** `hs_intro`
+    metni "Aynı platformda **iki** hesabın olduğunda kayıt ekranında
+    hangi hesap olduğunu seçebilirsin" gibi şartı söyleyen bir cümle
+    olacak. Tek hesaplı kullanıcı neden seçim çıkmadığını anlayacak.
+  - ⬜ **53c. Zorunlu alan basmadan önce belli olacak.** Ad alanı
+    zorunlu (`hesapKaydet` boş adda uyarı veriyor, o kısım doğru) ama
+    bu, "Ekle"ye basılmadan önce görünmüyor. Alan zorunlu olduğunu
+    gösterecek (etikette işaret + `required`).
+
+  ⛔ **Üçü de HER DİLDE** (Bölüm 7). 53b yeni bir arayüz dizesi, 53c
+  etiketi değiştiriyor: ikisi de her dilin sözlüğüne girecek.
+  `testler/sozluk-paritesi.test.js` eksik anahtarı yakalar.
+
   **Önerilen üç küçük düzeltme — kullanıcı onayı bekliyor:**
   1. Alanlarda **Enter kaydetsin** ("Ekle" ile aynı).
   2. Pencereye tek cümle: *"Bir platformda **iki** hesabın olduğunda,

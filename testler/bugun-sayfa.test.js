@@ -68,7 +68,7 @@ const gunler = (n)=> {
   const acikPencere = ()=> p.evaluate(()=>{
     const o = document.querySelector('.overlay.open');
     if(o) return o.id;
-    const sayfaKipi = ['cekimListesiOverlay', 'projectEditOverlay']
+    const sayfaKipi = ['cekimListesiOverlay', 'projectEditOverlay', 'editOverlay']
       .find(id=>{
         const e = document.getElementById(id);
         return e && e.classList.contains('open');
@@ -85,7 +85,7 @@ const gunler = (n)=> {
   //   okunuyor -- ilk surumde tam bu oldu.
   const kapat = ()=> p.evaluate(()=>{
     document.querySelectorAll('.overlay.open').forEach(o=> o.classList.remove('open'));
-    ['cekimListesiOverlay', 'projectEditOverlay'].forEach(id=>{
+    ['cekimListesiOverlay', 'projectEditOverlay', 'editOverlay'].forEach(id=>{
       const e = document.getElementById(id);
       if(e) e.classList.remove('open');
     });

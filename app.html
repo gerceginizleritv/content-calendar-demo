@@ -2585,6 +2585,50 @@ textarea.sc-ai-brief{min-height:64px;resize:vertical;line-height:1.5;}
 /* SAYFA KIPI — pencere degil, sayfanin kendisi.
    `display:none` varsayilani ayni kaliyor ki `open` gelmeden
    gorunmesin; acikken blok olarak AKISA giriyor, perde yok. */
+/* ⛔ EYLEM SERIDI YAPISKAN. Pencere kipinde Kaydet/Vazgec her zaman
+   ekrandaydi (pencere 88vh ile sinirliydi). Sayfa kipinde form
+   ekrandan uzun olabiliyor ve dugmeler altta kaliyor -- telefonda
+   kullanici kaydetmek icin uzun uzun asagi kaydirmak zorunda kalirdi.
+   Bunu sc-yerlesim testi yakaladi ("Kaydet dugmesi gorunur").
+   Testi gevsetmek yerine DUGME yapiskan yapildi: olcunun arkasindaki
+   gercek ihtiyac "Kaydet'e ulasabilmek"ti. */
+/* ⛔ SAYFA KIPINDE SABIT GENISLIK KALKIYOR. `.modal.modal-lg` pencere
+   icin `width:min(1040px,96vw)` aliyor; sayfa kipinde yan menu 252
+   piksel yedigi icin 252+1040=1292 > 1280 oluyor ve SAYFA YANA
+   KAYIYOR. sc-yerlesim testi "sayfa yana kaymiyor" ile yakaladi. */
+.proje-sayfasi .modal, .script-sayfasi .modal, .kayit-sayfasi .modal{
+  width:100%;
+  /* ⛔ IKI EKSEN BIRLIKTE. Yalnizca `overflow-y:visible` yazmak ISE
+     YARAMIYOR: `.modal.sc-modal` (satir ~1472) `overflow:hidden` ile
+     overflow-x'i de gizliyor ve CSS kuralina gore bir eksen gizliyken
+     otekinin `visible`i tarayici tarafindan ZORLA `auto`ya cevriliyor.
+     Boylece kutu kendisi bir kaydirma kabi kaliyor ve icindeki
+     yapiskan eylem seridi PENCEREYE degil kutunun kendi (hic kaymayan)
+     kaydirma alanina tutunmaya calisiyor -- yani hic tutunmuyordu.
+     Olcum: kaydirma 400 iken Kaydet 818'de, yani serit sayfayla
+     birlikte aynen asagi kayiyordu. */
+  overflow:visible;max-height:none;
+}
+/* Script kutusu pencere icin `display:flex;height:100%` ile KENDI
+   icinde kaydirmak uzere kurulmus; sayfa kipinde bu duzlesiyor ve
+   kaydirmayi sayfanin kendisi yapiyor. */
+.script-sayfasi .modal.sc-modal{display:block;height:auto;max-height:none;
+  overflow:visible;}
+.script-sayfasi .sc-modal .sc-govde{overflow:visible;min-height:0;}
+/* Kullanicinin sikayeti "bu pop up cok kucuk"ti: sayfa kipinde metin
+   alani da buyuyor. */
+.script-sayfasi .sc-modal .sc-text{height:52vh;}
+.proje-sayfasi .modal-actions,
+.script-sayfasi .modal-actions,
+.kayit-sayfasi .modal-actions{
+  position:sticky;bottom:0;z-index:3;
+  background:var(--surface);
+  /* ⛔ NEGATIF KENAR BOSLUGU YOK. Ilk surumde serit kutunun dolgusunu
+     tasmak icin margin:-20px aliyordu ve SAYFAYI YANA KAYDIRIYORDU;
+     sc-yerlesim testi "sayfa yana kaymiyor" iddiasiyla yakaladi. */
+  padding:12px 0;
+  border-top:1px solid var(--line);
+}
 .kayit-sayfasi{display:none;}
 .kayit-sayfasi.open{display:block;}
 /* ⚠ Klaket seridi (#editOverlay .modal::before) KALIYOR: kaydin
@@ -13881,7 +13925,7 @@ function openScript(id, baslangic, sessizRota){
   document.getElementById('scriptOverlay').classList.add('open');
   scriptGeriTazele();
   if(!sessizRota) rotaYaz('/script/' + (id || 'yeni'), true);
-  try{ window.scrollTo({ top: 0, behavior: 'instant' }); }catch(e){ window.scrollTo(0, 0); }
+  sayfaBasaGit();
   (veri.text ? document.getElementById('sc_text') : document.getElementById('sc_title')).focus();
 }
 // Proje sayfasiyla ayni yontem: eleman acilista #scriptsPage icine
@@ -13913,6 +13957,7 @@ function scriptGeriTazele(){
 }
 function closeScript(sessizRota){
   document.getElementById('scriptOverlay').classList.remove('open');
+  sayfaKaymasiniGeriVer();
   acikScriptId = null; yeniScriptTaslak = null;
   if(typeof renderScriptler === 'function') renderScriptler();
   if(!sessizRota) rotaYaz('/scripts', false);
@@ -14045,6 +14090,23 @@ function projeGeriTazele(){
 // ⚠ Sayfa gecisleri (setPage) adresi REPLACE ediyor, proje acmak ise
 //   PUSH: boylece sekme gezinmek gecmisi doldurmuyor ama projeden
 //   geri tusu listeye donuyor.
+// SAYFA KIPINDE KAYDIRMA YERI. Pencere kipinde arka plan yerinde
+// duruyordu; sayfa kipinde ekran degistigi icin acarken basa gitmek
+// SART (yoksa formun ortasindan basliyor). Ama kapaninca kullanici
+// BIRAKTIGI YERE donmeli: takvimin ortasinda bir kayit acip kapatan
+// biri ayin basina firlamamali.
+// ⚠ Bu eksikligi dokunmatik testi yakaladi: acilista scrollTo(0,0)
+//   olunca test icin olculen dokunma koordinatlari kaymisti.
+let sayfaKaymaYeri = 0;
+function sayfaBasaGit(){
+  try{ sayfaKaymaYeri = window.scrollY || 0; }catch(e){ sayfaKaymaYeri = 0; }
+  try{ window.scrollTo({ top: 0, behavior: 'instant' }); }catch(e){ window.scrollTo(0, 0); }
+}
+function sayfaKaymasiniGeriVer(){
+  const y = sayfaKaymaYeri; sayfaKaymaYeri = 0;
+  if(!y) return;
+  try{ window.scrollTo({ top: y, behavior: 'instant' }); }catch(e){ window.scrollTo(0, y); }
+}
 function rotaYaz(rota, yeniKayit){
   try{
     const h = '#' + rota;
@@ -14102,7 +14164,7 @@ function openProjectEdit(id, sessizRota){
   document.getElementById('projectEditOverlay').classList.add('open');
   projeGeriTazele();
   if(!sessizRota) rotaYaz('/proje/' + id, true);
-  try{ window.scrollTo({ top: 0, behavior: 'instant' }); }catch(e){ window.scrollTo(0, 0); }
+  sayfaBasaGit();
 }
 async function projeSil(p){
   if(!p) return;
@@ -14121,6 +14183,7 @@ async function projeSil(p){
 
 function closeProjectEdit(sessizRota){
   document.getElementById('projectEditOverlay').classList.remove('open');
+  sayfaKaymasiniGeriVer();
   duzenlenenProje = null;
   // Liste geri geliyor; sayfa kipinde gizlenmis olan satirlar yeniden
   // cizilsin ki arada degisen bir sey varsa gorunsun.
@@ -19631,7 +19694,7 @@ function openModal(ev, hazirTarih, hazirSaat, hazirProje){
   document.getElementById('editOverlay').classList.add('open');
   kayitGeriTazele();
   if(!(ev && ev.__sessizRota)) rotaYaz('/kayit/' + ((ev && ev.id) || 'yeni'), true);
-  try{ window.scrollTo({ top: 0, behavior: 'instant' }); }catch(e){ window.scrollTo(0, 0); }
+  sayfaBasaGit();
   // Kaydirma her acilista basa alinmali: uzun formda asagi inip Iptal'e basan
   // biri, sonraki acilista pencereyi biraktigi yerden goruyordu.
   const kutu = document.querySelector('#editOverlay .modal');
@@ -19721,6 +19784,7 @@ function kayitGeriTazele(){
 }
 function closeModal(sessizRota){
   document.getElementById('editOverlay').classList.remove('open');
+  sayfaKaymasiniGeriVer();
   currentEvent = null;
   if(!sessizRota) rotaYaz('/calendar', false);
   // Butun kapatma yollari buradan geciyor: Vazgec, perdeye tiklama, ×

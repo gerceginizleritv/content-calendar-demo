@@ -42,7 +42,13 @@ const { chromium, devices } = require('./araclar');
   await page.touchscreen.tap(hedefler.x, hedefler.y);
   await page.waitForTimeout(300);
   k('kısa dokunuş kaydı açıyor', await page.evaluate(()=> document.getElementById('editOverlay').classList.contains('open')));
-  await page.evaluate(()=> document.getElementById('editOverlay').classList.remove('open'));
+  // ⚠ GERCEK KAPATMA YOLU kullaniliyor. Siniffi elle silmek 16 Kasim
+  //   2026'dan beri yetmiyor: kayit artik SAYFA (50. madde) ve acilirken
+  //   sayfa basa kaydiriliyor; kaymayi geri veren closeModal. Sinif elle
+  //   silinince sayfa basta kaliyor, asagida olculen dokunma
+  //   koordinatlari baska bir hucreye denk geliyordu.
+  await page.evaluate(()=> closeModal());
+  await page.waitForTimeout(150);
 
   // Basili tutup surukle
   const cdp = await ctx.newCDPSession(page);
