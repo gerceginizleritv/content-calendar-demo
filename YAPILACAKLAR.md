@@ -20,6 +20,35 @@ dur ve kullanıcıya söyle.
 ⚠ Bir madde bitince bu listeyi güncelle ve kullanıcıya tek satırla
 haber ver.
 
+## ⚡ TEST KOŞUSU — ARTIK İKİ KOŞUCU VAR (16 Kasım 2026)
+
+Kullanıcı söyledi: *"Çok fazla bekleme süreci harcıyorum."* Ölçüldü ve
+çözüldü.
+
+| Koşucu | Ne yapar | Süre (210 test) |
+|---|---|---|
+| `testler/kosu.sh` | Tek sıra. **Dokunulmadı**, bilinen kapı. | **27 dk 50 sn** |
+| `testler/hizli.sh` | 3 işçi paralel + 3 zamana duyarlı test sonda tek sıra | **10 dk 43 sn** |
+
+İkisi de aynı testleri aynı argümanlarla koşuyor; ikisi de aynı gün
+**210/210** verdi. `hizli.sh` **2,6 kat** hızlı.
+
+**Çalışma düzeni:**
+1. Geliştirme sırasında yalnızca etkilenen testler:
+   `bash testler/hizli.sh <ad> <ad>` → **2-4 dakika.**
+2. `main`'e göndermeden önce tam kapı: `bash testler/hizli.sh` →
+   **~11 dakika.**
+
+⛔ **Zamana duyarlı üç test paralel koşmaz** (`ai-gorunur`,
+`gezinme-tavani`, `hatirlatma`); `hizli.sh` içindeki `SERI` listesinde
+ve sonda tek sıra koşuyorlar. Sebep 27 Ekim 2026: aynı commit'in iki
+CI koşusunda iki test **yalnızca zaman aşımından** kırmızı yanmıştı,
+kod doğruydu, koşucu ~4 kat yavaştı. Bir test paralelde **rastgele**
+kırmızı yanmaya başlarsa önce o listeye ekle — ⛔ testi zayıflatma.
+
+⚠ `testler/sureler.txt` koşu sürelerini tutuyor; uzun testler önce
+başlasın diye. Tam koşudan sonra değişmiş görünmesi normaldir.
+
 ## Sıra
 
 ### 1 · Bugünün yarım işleri  ⬜ SIRADA
@@ -62,7 +91,33 @@ haber ver.
   çevrildi.
 
 ### 2 · Çekim setleri (hepsi aynı ekran)
-- ⬜ **9.** Menü adı "Malzeme" → "Çekim Setleri" (`tab_kit`, iki dil)
+- ✅ **9.** Menü adı **"Malzeme" → "Çekim Setleri"** (16 Kasım 2026,
+  `main`'de). İngilizcesi **"Shoot kits"**, dar ekran kısa biçimi
+  **"Set" / "Kit"** (öteki sekmelerin kalıbı: Fikir, Mekan, Proje —
+  tekil ve kısa). 15 yerde: menü (iki dil, iki biçim), HTML yedek
+  metni, ilk-adım turunun menü sırası cümlesi (iki dil), kılavuz
+  (`kilavuz.html` + `guide.html`, ikisinde de iki yer),
+  `KONTROL-EDILECEKLER.md`, iki kod yorumu.
+
+  ⛔ **BU RENAME BİR BOZULMA ÇIKARDI, bekçi test yakaladı.** Ad tek
+  kelimeden iki kelimeye çıkınca **701-980 piksel** arasında sekme
+  etiketi **iki satıra sardı**: 768 pikselde etiket 87 piksel istiyor,
+  düğmenin iç genişliği 84. Sekme etiketinde `white-space:nowrap`
+  **yok**, yani fazlalık kırpılmıyor — **sarıyor** ve o sekme çubuğu
+  bozuyor. 700 ve altında yazı küçüldüğü için, 980 üstünde yer olduğu
+  için sarmıyordu; 1024 üstünde şerit dikey, orada hiç sorun yok.
+
+  Düzeltme (kullanıcı onayıyla): kısa ada geçiş **560 yerine 1023**
+  kırılma noktasına taşındı — yani şerit yataya döndüğü anda. Yeni
+  kırılma noktası açılmadı. Yan faydası: "Şablonlar" ve "Mekanlar" da
+  o aralıkta dolguya taşıyordu, onlar da düzeldi.
+
+  Test: `testler/sekme-adi.test.js`, **218 kontrol**, 15 genişlik ×
+  2 dil. İki mutasyonla kanıtlandı. ⚠ Bu bekçi **sekiz dilde de**
+  koşacak (41. madde) — metin uzaması tam bu şekilde görünür.
+- ⬜ **9b.** ⚠ `MARKA.md` sözlüğü güncellenecek: menü adı artık
+  "Çekim Setleri" / "Shoot kits". Sözlükte `set` satırı var ama
+  **menü adı** olarak yazılı değil. Küçük iş, 6'dan önce yapılabilir.
 - ⬜ **40.** **Sözlük parite testi** (EN/TR anahtar denkliği) —
   ⚠ **9'dan hemen SONRA, 6/7/8'den ÖNCE.** Bugün böyle bir bekçi
   **yok**: bir anahtar tek dile yazılırsa hiçbir yerde kırmızı yanmıyor,
