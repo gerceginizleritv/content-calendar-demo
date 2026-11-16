@@ -74,7 +74,7 @@ const { chromium } = require('./araclar');
              aramaSonuc, tekSecim, kutuIsaretli, secimSayisi: sayfaSecimi.size };
   });
 
-  k('menüde "Malzeme" sekmesi var', r.sekmeVar);
+  k('menüde "Çekim Setleri" sekmesi var', r.sekmeVar);
   k('sekme sayfayı açıyor', r.sayfaAcik && r.sekmeEtkin);
   k('boş sayfa ne yapılacağını söylüyor', /yaz|yapıştır/.test(r.bosMetin), r.bosMetin.slice(0,60));
   k('sayfadan madde eklenebiliyor', r.kutuphane.length === 4, r.kutuphane);

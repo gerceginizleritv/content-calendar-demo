@@ -54,7 +54,7 @@ Canlı sitede ölçüldü: 7 başlık düğmesi, "Çekim" penceresinde 4 soru.
 altında listeye düşecek. Çipin üstündeki sayı kaç madde geleceğini
 söylüyor.
 
-4. **Şunu kontrol et:** sol menü → **Malzeme** sayfasına git.
+4. **Şunu kontrol et:** sol menü → **Çekim Setleri** sayfasına git.
    Kendi malzeme kütüphanen ve kendi setlerin **değişmemiş olmalı**.
    Değiştiyse **dur, bana yaz**.
 

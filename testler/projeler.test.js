@@ -25,7 +25,7 @@ const { chromium, ORNEKSIZ } = require('./araclar');
   // Sekmeler: fikir ve script projeden bagimsiz birer sayfa; mekanlar da
   // eski lokasyon takibinden tasindi. Projeler EN USTTE: cekim asil orada
   // yurutuluyor.
-  // Yedinci sekme: Malzeme (cekim kutuphanesi). Kutuphane onceden yalnizca
+  // Yedinci sekme: Cekim Setleri (cekim kutuphanesi). Kutuphane onceden yalnizca
   // cekim listesinin icinden aciliyordu; kullanici menude de istedi.
   k('yedi sekme var', await page.evaluate(()=> document.querySelectorAll('.tab').length === 7));
   // Acilis artik Projeler DEGIL: girisi olmayan ziyaretci Takvim'le
