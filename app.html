@@ -1371,8 +1371,14 @@ body.suruklenirken *{cursor:grabbing !important;}
    izgaradaki butun satiri uzatiyordu.
    Sinir 132px: iki-uc satirlik bir ozet gosteriyor, gerisi "Devami"
    ile aciliyor. Metin SILINMIYOR, yalnizca katlaniyor. */
-.mk-foy{max-height:132px;overflow:hidden;position:relative;}
-.mk-foy.acik{max-height:none;}
+/* ⚠ 16 Kasim 2026: sabit 132 yerine KALAN YERI dolduruyor. Kart
+   yuksekligi artik sabit; foye kac piksel kaldigi oteki satirlara
+   gore degisiyor ve foy o kadarini gosteriyor. Boylece foysuz bir
+   kartla foylu bir kart AYNI boyda duruyor.
+   flex:1 1 0 + min-height:0 -- ikisi de sart, yoksa foy kalan yere
+   sigmak yerine karti tasiriyor. */
+.mk-foy{flex:1 1 0;min-height:0;overflow:hidden;position:relative;}
+.mk-foy.acik{flex:none;min-height:0;overflow:visible;}
 /* Altta yumusak bir kaybolma: daha fazlasi oldugu gorunsun.
    ⚠ `.tasiyor` SART. Solma her foyde cizilseydi, tasmayan kartta da
    son satir yari silik gorunurdu -- "devami var" diye yaniltirdi ama
@@ -1585,9 +1591,30 @@ body.suruklenirken *{cursor:grabbing !important;}
    adindan once GORUNTUSUNDEN taniyorsun. Ust seritte sirasiyla su var —
    varsa fotograf, yoksa harita baglantisindan cikarilan harita karesi,
    o da yoksa adin bas harfleri. Yani serit hicbir zaman bos degil. */
-#mk_list{display:grid;grid-template-columns:repeat(auto-fill,minmax(230px,1fr));gap:14px;}
+/* ── KART OLCULERI SABIT ──────────────────────────────────────────
+   Kullanici bildirdi: "mekanlar sayfasinda izin notu eklenirse yine
+   kutu buyuyor. Bu kutular da sabit buyuklukte olmali."
+   14 Kasim'da .mk-foy 132 pikselle sinirlandi ama KARTIN KENDISI
+   sinirsiz kaldi. 16 Kasim 2026'da olculdu: kartlar 189 ile 495
+   piksel arasinda degisiyordu, fark 233 piksel.
+   ⛔ Izgarada daha kotusu: tek bir uzun kart BUTUN SATIRI geriyordu.
+      Kisa notlu bir mekanin karti da 422 piksel oluyordu.
+   Degiskeni yaratan dort sey olculdu ve ucu sinirlandi:
+     baslik 57px (uc satir) -> iki satir
+     adres  32px (iki satir) -> bir satir
+     foy    132 ya da 0     -> kalan yeri dolduruyor
+   Takvim kutularindaki cozumun aynisi: olcu sabit, icerik sigdigi
+   kadar, gerisi "Devami" ile aciliyor. */
+#mk_list{display:grid;grid-template-columns:repeat(auto-fill,minmax(230px,1fr));gap:14px;
+  --mk-kart-h:362px;}
 .mk-kart{border:1px solid var(--line);border-radius:2px;overflow:hidden;
-  cursor:pointer;background:var(--surface);display:flex;flex-direction:column;}
+  cursor:pointer;background:var(--surface);display:flex;flex-direction:column;
+  height:var(--mk-kart-h);}
+/* Foy acilinca kart buyuyor: kullanici bilerek acti, kirpmak anlamsiz. */
+.mk-kart:has(.mk-foy.acik){height:auto;}
+/* ⚠ min-height:0 SART: flex ogeleri varsayilan olarak icerikten dar
+   olmuyor; onsuz foy kalan yere sigmak yerine karti tasiriyordu. */
+.mk-kart .mk-govde{min-height:0;}
 .mk-kart:hover{border-color:var(--accent-dim);}
 .mk-gorsel{position:relative;height:118px;overflow:hidden;background:var(--surface-2);
   border-bottom:1px solid var(--line);}
@@ -1643,9 +1670,15 @@ body.suruklenirken *{cursor:grabbing !important;}
   background:rgba(255,255,255,.74);color:#2A3340;padding:0 3px;border-radius:2px;
   text-decoration:none;}
 .mk-wiki:hover{color:var(--accent);}
-.mk-ad{font-size:14.5px;font-weight:600;}
+/* Iki satir: uc satira saran uzun adlar karti 19 piksel uzatiyordu. */
+.mk-ad{font-size:14.5px;font-weight:600;
+  display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;
+  overflow:hidden;}
 .mk-yer{font-size:12.5px;color:var(--text-dim);margin-top:2px;}
-.mk-adres{font-size:12.5px;color:var(--text-dim);margin-top:2px;overflow-wrap:anywhere;}
+/* Tek satir: iki satira saran adres karti 16 piksel uzatiyordu.
+   Tamami mekan penceresinde zaten duruyor. */
+.mk-adres{font-size:12.5px;color:var(--text-dim);margin-top:2px;
+  overflow:hidden;text-overflow:ellipsis;white-space:nowrap;}
 /* Eklenme tarihi: kartin en altinda, kucuk ve soluk. Siralamayi
    eklenme tarihine aldiginda neye gore siralandigi gorunur olsun. */
 .mk-eklendi{font-size:11px;color:var(--text-dim);margin-top:6px;
@@ -12431,6 +12464,14 @@ function renderMekanlar(){
      tipleri ve izgara yerlesmeden once bakilmis oluyor; satir sayisi
      degisince tasma yanlis hesaplaniyor. */
   requestAnimationFrame(()=> kutu.querySelectorAll('.mk-foy').forEach(foy=>{
+    /* ⛔ ZATEN VARSA IKINCISINI KOYMA. Olcum bir sonraki cizime
+       birakildigi icin, liste ayni karede IKI KEZ cizilirse iki
+       requestAnimationFrame sirada bekliyor; ikisi de o anki DOM'u
+       sorguluyor ve ikisi de dugme ekliyor. Sonuc: kartta alt alta
+       iki "Devami" dugmesi, ve foyden ~25 piksel calinmis yer.
+       16 Kasim 2026'da ekran goruntusunde gorundu. */
+    if(foy.nextElementSibling &&
+       foy.nextElementSibling.classList.contains('mk-devam')) return;
     if(foy.scrollHeight <= foy.clientHeight + 2) return;
     foy.classList.add('tasiyor');
     const dug = document.createElement('button');
