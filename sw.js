@@ -20,14 +20,17 @@
    yeniden yaziliyor.
    ===================================================================== */
 
-/* ⚠ SURUM HER PALET/GORUNUM DEGISIKLIGINDE ARTMALI. v6 -> v7:
+/* ⚠ SURUM HER PALET/GORUNUM DEGISIKLIGINDE ARTMALI. v7 -> v8:
+   16 Kasim 2026 -- push bildiriminde renotify acildi. Servis calisani
+   degisti, tarayicilarin yenisini almasi icin surum artti.
+   v6 -> v7:
    15 Kasim 2026 -- ikon ailesinin tamami klaket logosuna gecti.
    Eski onbellek eski ikonu tutar, o yuzden surum artti.
    v5 -> v6:
    13 Kasim'daki palet degisikligi ve 15 Kasim'daki Asama 4
    onbellekteki eski CSS yuzunden eski kullaniciya ULASMIYORDU.
    activate kancasi SURUM disindaki butun onbellekleri siliyor. */
-const SURUM = 'shootboard-v7';
+const SURUM = 'shootboard-v8';
 const KABUK = [
   './app.html',
   './index.html',
@@ -131,7 +134,16 @@ self.addEventListener('push', (olay)=>{
       icon: './icons/icon-192.png',
       badge: './icons/icon-192.png',
       tag: veri.etiket || 'slate-termin',
-      renotify: false
+      // ⛔ renotify TRUE olmali. Etiket ayni oldugu icin yeni bildirim
+      //   eskisinin YERINE geciyor; renotify kapaliyken bu degisim
+      //   SESSIZ oluyor -- banner cikmiyor, ses olmuyor.
+      //   Senaryo: bugunun hatirlatmasi Bildirim Merkezi'nde okunmadan
+      //   duruyor, yarinki geliyor ve onun yerine sessizce geciyor.
+      //   Kullanici yarinki hatirlatmayi HIC duymuyor.
+      //   16 Kasim 2026'da ilk canli denemede fark edildi.
+      //   Etiket yine duruyor: ayni bildirimin ust uste yigilmasini
+      //   o engelliyor.
+      renotify: true
     })
   );
 });
