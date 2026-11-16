@@ -24,6 +24,16 @@
 <!-- Ortak marka paleti: renk, dugme ve kontrast kurallari TEK yerde. -->
 <link rel="stylesheet" href="marka.css">
 <style>
+/* YATAY YAYLANMA. Telefonda sayfa saga sola oynuyordu: parmak biraz yana
+   kaydiginda tarayici belgeyi yatayda "lastik gibi" cekiyor ve birakinca
+   geri firlatiyor. Sayfa aslinda ekrandan genis degil -- olculdu, yaylanma
+   bos yerde oluyor; arkadaki zemin aciga ciktigi icin fark ediliyor.
+   ⛔ 16 Kasim 2026: bu duzeltme app.html'de VARDI, diger sekiz sayfada
+   YOKTU. Kullanici index.html'de gordu ve bildirdi. Bir yerde duzeltilip
+   otekilerde unutulmasi bu deponun tekrarlayan hatasi.
+   testler/yatay-yaylanma.test.js artik hepsini kontrol ediyor. */
+html{overscroll-behavior-x:none;}
+body{overscroll-behavior-x:none;}
 /* ⛔ KENDI RENK TANIMLARI KALDIRILDI -- marka.css'ten geliyor.
    Ayni degiskenleri bes sayfada ayri ayri tutmak, rengi
    degistirirken birini unutmak demekti. Degisken ADLARI aynen
@@ -86,7 +96,9 @@ code{font-family:ui-monospace,'SF Mono',Menlo,Consolas,monospace;font-size:.88em
 .kutu-bas{font-weight:600;margin:0 0 6px;}
 .uyari{border-left:3px solid var(--amber);}
 .ipucu{border-left:3px solid var(--green);}
-table{width:100%;border-collapse:collapse;margin:14px 0;font-size:.92rem;
+/* overscroll-behavior-x:contain -- tablo sonuna gelince kaydirma
+   SAYFAYA zincirlenmesin: yoksa sayfa yatayda yaylaniyor. */
+table{overscroll-behavior-x:contain;width:100%;border-collapse:collapse;margin:14px 0;font-size:.92rem;
   display:block;overflow-x:auto;max-width:68ch;}
 th,td{text-align:left;padding:9px 10px;border-bottom:1px solid var(--line);vertical-align:top;}
 th{color:var(--text-dim);font-weight:600;font-size:.8rem;text-transform:uppercase;letter-spacing:.05em;}
@@ -159,8 +171,10 @@ footer{border-top:1px solid var(--line);margin-top:56px;padding-top:22px;
   .yan{display:none;}
   .mob-menu{display:block;position:sticky;top:52px;z-index:15;background:var(--bg);
     border-bottom:1px solid var(--line);margin:0 -22px;padding:9px 22px;}
+  /* overscroll-behavior-x:contain -- serit sonuna gelince kaydirma
+     SAYFAYA zincirlenmesin, yoksa sayfa yatayda yaylaniyor. */
   .mob-menu ol{display:flex;gap:6px;overflow-x:auto;list-style:none;margin:0;padding:0;
-    scrollbar-width:none;}
+    overscroll-behavior-x:contain;scrollbar-width:none;}
   .mob-menu ol::-webkit-scrollbar{display:none;}
   .mob-menu a{white-space:nowrap;font-size:.8rem;padding:5px 11px;border-radius:20px;
     border:1px solid var(--line);color:var(--text-dim);text-decoration:none;}
@@ -625,16 +639,60 @@ footer{border-top:1px solid var(--line);margin-top:56px;padding-top:22px;
       <h2>Hatırlatmalar ve takvim aboneliği</h2>
       <p>Termin tarihi girdiysen Shootboard seni uyarabilir. İki kanal var:</p>
       <ul>
-        <li><strong>Tarayıcı bildirimi.</strong> Uygulamayı açtığında o günün ve geciken adımların
-          bildirimi düşer. Tarayıcıdan izin istemesi bundan.</li>
+        <li><strong>Tarayıcı bildirimi.</strong> İki ayrı anda çalışıyor: Shootboard'u
+          <strong>açtığında</strong> o günün ve geciken adımları bildirim olarak düşüyor;
+          Shootboard <strong>kapalıyken</strong> de seçtiğin saatte bildirim geliyor. İkincisi
+          için birkaç koşul var, aşağıda yazıyor.</li>
         <li><strong>Takvim aboneliği (.ics).</strong> Terminlerini Google Takvim, Apple Takvim ya da
-          Outlook'a <strong>abonelik olarak</strong> ekler. Bu daha güçlü olan: telefonundaki
-          takvim uygulaması Shootboard açık olmasa da hatırlatır.</li>
+          Outlook'a <strong>abonelik olarak</strong> ekler. Telefonundaki takvim uygulaması
+          Shootboard açık olmasa da hatırlatır.</li>
       </ul>
       <p>Abonelik adresi tahmin edilemeyecek uzunlukta rastgele bir jetondur; "yenile" dersen eski
         adres ölür, yenisi doğar.</p>
       <p>Hangi adımlar için uyarılmak istediğini seçebilirsin: bir gün önce, terminin kendi günü,
-        geciktiğinde.</p>
+        geciktiğinde. <strong>Hatırlatma saati</strong> her iki kanal için de geçerli.</p>
+
+      <h3>Kapalıyken gelen bildirim</h3>
+      <p>Bu bildirimi uygulama değil <strong>sunucu</strong> gönderiyor — bilgisayarın kapalı,
+        tarayıcın kapalı olsa bile geliyor. Çalışması için üç şey gerekiyor:</p>
+      <ol class="liste">
+        <li><strong>Giriş yapmış olman.</strong> Hatırlatmayı sunucu gönderiyor ve senin
+          terminlerini bilmesi gerekiyor. Hesapsız kullanırken terminler yalnızca kendi
+          tarayıcında duruyor, sunucuya hiç ulaşmıyor — bu yüzden hesapsızda yalnızca
+          "uygulamayı açtığında gelen" bildirim var.</li>
+        <li><strong>Bildirime izin vermen.</strong> 🔔 Hatırlatmalar penceresinde
+          "Tarayıcı bildirimi"ni aç; tarayıcı izin soracak.</li>
+        <li><strong>iPhone ve iPad'de: Shootboard'u ana ekrana eklemen.</strong> iOS, ana ekrana
+          eklenmemiş sitelere kapalıyken bildirim göndermiyor. Ekleme adımları için sol menüdeki
+          <strong>"Telefona kur"</strong> düğmesine bas; ekran görüntüleriyle anlatıyor.</li>
+      </ol>
+      <p>Üçü de tamamsa 🔔 Hatırlatmalar penceresinde <strong>"Bu cihazda kapalıyken bildirim
+        açık"</strong> yazısını görürsün. Bir şey eksikse ne eksik olduğunu orada yazıyor —
+        tahmin etmen gerekmiyor.</p>
+      <p>Bildirim, seçtiğin saatten sonraki ilk kontrolde gelir; kontrol saatte bir yapılıyor.
+        Günde <strong>bir kez</strong> gelir: aynı terminler için gün boyu tekrar tekrar
+        bildirim düşmez.</p>
+      <p><strong>Her cihaz ayrı.</strong> Telefonunda açman bilgisayarında da açmıyor; hangi
+        cihazda istiyorsan orada bir kez açman gerekiyor. Çıkış yaptığında o cihazın bildirimi
+        kendiliğinden kapanır.</p>
+
+      <h3>Bildirim gelmiyorsa</h3>
+      <p>Sırayla şunlara bak — en sık çıkan sebep en üstte:</p>
+      <ol class="liste">
+        <li><strong>Windows'ta:</strong> Ayarlar → Sistem → Bildirimler listesinde
+          <strong>Google Chrome açık mı?</strong> Kapalıysa Chrome bildirimi gösteremez —
+          sen siteye izin vermiş olsan bile. <em>İlk kurulumda en çok buradan takılınıyor.</em>
+          Aynı sayfada <strong>Rahatsız Etmeyin</strong> kapalı olmalı.</li>
+        <li><strong>Bilgisayarda Chrome açık mı?</strong> Tamamen kapalıysa bildirim
+          gösterilmez. <strong>Win + N</strong> ile Bildirim Merkezi'ne de bak: gelmiş ama
+          köşedeki pencereyi kaçırmış olabilirsin.</li>
+        <li><strong>iPhone ve iPad'de:</strong> Shootboard ana ekrana eklenmiş mi? iOS,
+          eklenmemiş siteye kapalıyken bildirim göndermiyor. Neredeyse her zaman sebep budur.</li>
+        <li><strong>Hatırlatmalar penceresine bak:</strong> bir şey eksikse orada yazıyor —
+          giriş yapılmamış, izin verilmemiş, ana ekrana eklenmemiş gibi.</li>
+        <li><strong>Ortada hatırlatılacak bir şey var mı?</strong> Bugün ya da yarın tarihli,
+          henüz işaretlenmemiş bir adım yoksa bildirim gitmez; bu doğru davranış.</li>
+      </ol>
     </section>
 
     <section class="bolum" id="iceaktar">

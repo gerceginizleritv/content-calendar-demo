@@ -24,6 +24,16 @@
 <!-- Ortak marka paleti: renk, dugme ve kontrast kurallari TEK yerde. -->
 <link rel="stylesheet" href="marka.css">
 <style>
+/* YATAY YAYLANMA. Telefonda sayfa saga sola oynuyordu: parmak biraz yana
+   kaydiginda tarayici belgeyi yatayda "lastik gibi" cekiyor ve birakinca
+   geri firlatiyor. Sayfa aslinda ekrandan genis degil -- olculdu, yaylanma
+   bos yerde oluyor; arkadaki zemin aciga ciktigi icin fark ediliyor.
+   ⛔ 16 Kasim 2026: bu duzeltme app.html'de VARDI, diger sekiz sayfada
+   YOKTU. Kullanici index.html'de gordu ve bildirdi. Bir yerde duzeltilip
+   otekilerde unutulmasi bu deponun tekrarlayan hatasi.
+   testler/yatay-yaylanma.test.js artik hepsini kontrol ediyor. */
+html{overscroll-behavior-x:none;}
+body{overscroll-behavior-x:none;}
 /* ⛔ KENDI RENK TANIMLARI KALDIRILDI -- marka.css'ten geliyor.
    Ayni degiskenleri bes sayfada ayri ayri tutmak, rengi
    degistirirken birini unutmak demekti. Degisken ADLARI aynen
@@ -86,7 +96,9 @@ code{font-family:ui-monospace,'SF Mono',Menlo,Consolas,monospace;font-size:.88em
 .kutu-bas{font-weight:600;margin:0 0 6px;}
 .uyari{border-left:3px solid var(--amber);}
 .ipucu{border-left:3px solid var(--green);}
-table{width:100%;border-collapse:collapse;margin:14px 0;font-size:.92rem;
+/* overscroll-behavior-x:contain -- tablo sonuna gelince kaydirma
+   SAYFAYA zincirlenmesin: yoksa sayfa yatayda yaylaniyor. */
+table{overscroll-behavior-x:contain;width:100%;border-collapse:collapse;margin:14px 0;font-size:.92rem;
   display:block;overflow-x:auto;max-width:68ch;}
 th,td{text-align:left;padding:9px 10px;border-bottom:1px solid var(--line);vertical-align:top;}
 th{color:var(--text-dim);font-weight:600;font-size:.8rem;text-transform:uppercase;letter-spacing:.05em;}
@@ -159,8 +171,10 @@ footer{border-top:1px solid var(--line);margin-top:56px;padding-top:22px;
   .yan{display:none;}
   .mob-menu{display:block;position:sticky;top:52px;z-index:15;background:var(--bg);
     border-bottom:1px solid var(--line);margin:0 -22px;padding:9px 22px;}
+  /* overscroll-behavior-x:contain -- serit sonuna gelince kaydirma
+     SAYFAYA zincirlenmesin, yoksa sayfa yatayda yaylaniyor. */
   .mob-menu ol{display:flex;gap:6px;overflow-x:auto;list-style:none;margin:0;padding:0;
-    scrollbar-width:none;}
+    overscroll-behavior-x:contain;scrollbar-width:none;}
   .mob-menu ol::-webkit-scrollbar{display:none;}
   .mob-menu a{white-space:nowrap;font-size:.8rem;padding:5px 11px;border-radius:20px;
     border:1px solid var(--line);color:var(--text-dim);text-decoration:none;}
@@ -628,15 +642,61 @@ footer{border-top:1px solid var(--line);margin-top:56px;padding-top:22px;
       <h2>Reminders and calendar subscription</h2>
       <p>If you have entered deadlines, Shootboard can warn you. Two channels:</p>
       <ul>
-        <li><strong>Browser notification.</strong> When you open the app, today's and overdue steps
-          come through. That is why it asks for permission.</li>
+        <li><strong>Browser notification.</strong> It works at two separate moments: when you
+          <strong>open</strong> Shootboard, today's and overdue steps come through; and while
+          Shootboard is <strong>closed</strong>, a notification arrives at the time you choose.
+          The second one has a few conditions, listed below.</li>
         <li><strong>Calendar subscription (.ics).</strong> Adds your deadlines to Google Calendar,
-          Apple Calendar or Outlook <strong>as a subscription</strong>. This is the stronger one:
-          your phone's calendar reminds you even when Shootboard is closed.</li>
+          Apple Calendar or Outlook <strong>as a subscription</strong>. Your phone's calendar
+          reminds you even when Shootboard is closed.</li>
       </ul>
       <p>The subscription address is a random token long enough not to be guessed; hit "refresh" and
         the old address dies and a new one is born.</p>
-      <p>You choose which steps you want warning about: the day before, on the day, once overdue.</p>
+      <p>You choose which steps you want warning about: the day before, on the day, once overdue.
+        The <strong>reminder time</strong> applies to both channels.</p>
+
+      <h3>Notifications while the app is closed</h3>
+      <p>This one is sent by the <strong>server</strong>, not by the app — it arrives even with
+        your computer off and your browser closed. Three things are needed:</p>
+      <ol class="liste">
+        <li><strong>You are signed in.</strong> The server sends the reminder, so it has to know
+          your deadlines. Without an account your deadlines stay in your own browser and never
+          reach the server — which is why, without an account, you only get the notification
+          that arrives when you open the app.</li>
+        <li><strong>You allowed notifications.</strong> Turn on "Browser notification" in the
+          🔔 Reminders window; the browser will ask for permission.</li>
+        <li><strong>On iPhone and iPad: Shootboard is on your Home Screen.</strong> iOS sends
+          nothing to a site that has not been added to the Home Screen. For the steps, tap
+          <strong>"Install app"</strong> in the left sidebar; it shows you the actual screens.</li>
+      </ol>
+      <p>With all three in place, the 🔔 Reminders window says <strong>"Closed-app notifications
+        are on for this device."</strong> If something is missing, it says which — you do not
+        have to guess.</p>
+      <p>The notification arrives at the first check after the time you set; the check runs once
+        an hour. It arrives <strong>once a day</strong>: the same deadlines will not keep
+        notifying you all day long.</p>
+      <p><strong>Each device is separate.</strong> Turning it on on your phone does not turn it on
+        on your computer; you turn it on once on each device you want it. Signing out turns that
+        device's notifications off by itself.</p>
+
+      <h3>If no notification arrives</h3>
+      <p>Check these in order — the most common cause is first:</p>
+      <ol class="liste">
+        <li><strong>On Windows:</strong> Settings → System → Notifications — is
+          <strong>Google Chrome turned on</strong> in that list? If it is off, Chrome cannot
+          show a notification even when you have allowed the site.
+          <em>This is where first-time setups get stuck most often.</em> On the same page,
+          <strong>Do not disturb</strong> must be off.</li>
+        <li><strong>Is Chrome running?</strong> If it is fully closed, nothing is shown. Press
+          <strong>Win + N</strong> to open the notification centre too — it may have arrived
+          while you missed the corner popup.</li>
+        <li><strong>On iPhone and iPad:</strong> is Shootboard on your Home Screen? iOS sends
+          nothing to a site that has not been added. This is almost always the reason.</li>
+        <li><strong>Look at the Reminders window:</strong> if something is missing it says so
+          there — not signed in, permission not granted, not added to the Home Screen.</li>
+        <li><strong>Is there anything to remind you about?</strong> With no unticked step dated
+          today or tomorrow, nothing is sent — that is correct behaviour.</li>
+      </ol>
     </section>
 
     <section class="bolum" id="iceaktar">

@@ -206,6 +206,34 @@ koşusunda — yani **en geç 59 dakika** içinde. Saatte bir koşuyor.
 
 ---
 
+## Bildirim gitti ama görünmüyorsa
+
+Fonksiyonun cevabında `"gonderildi"` sıfırdan büyük ve `"hata":0` ise
+bildirim **teslim edilmiştir**. Push servisi kabul etmiştir. O noktadan
+sonrası işletim sisteminin ve tarayıcının işidir.
+
+⛔ **Windows'ta ilk bakılacak yer burası.** 16 Kasım 2026'da ilk
+kurulumda tam bu yaşandı: `gonderildi:3, hata:0` dönüyordu, iPhone'a
+bildirim düşüyordu, **iki ayrı Windows bilgisayarında** hiç
+görünmüyordu. Chrome'un kendi izni verilmişti; eksik olan Windows'un
+izniydi.
+
+Sırayla:
+
+1. **Windows → Ayarlar → Sistem → Bildirimler** → listede
+   **Google Chrome** açık mı? Kapalıysa Chrome bildirimi gösteremez,
+   kendi izni verilmiş olsa bile.
+2. Aynı sayfada **Rahatsız Etmeyin / Odaklanma** kapalı mı?
+3. **Chrome açık mı?** Tamamen kapalıysa bildirim gösterilmez.
+4. **Win + N** ile Bildirim Merkezi — bildirim gelmiş ama banner
+   kaçmış olabilir.
+5. Chrome'da sitenin kendi izni: adres çubuğundaki kilit simgesi →
+   **Bildirimler** → İzin ver.
+
+iPhone'da hiç görünmüyorsa sebep neredeyse her zaman tektir:
+**uygulama ana ekrana eklenmemiştir.** iOS, ana ekrana eklenmemiş
+siteye kapalıyken bildirim göndermiyor.
+
 ## Uçlar
 
 | yöntem | ne yapar |

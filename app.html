@@ -191,6 +191,10 @@ body::before{
    yatay kaydiriyor. */
 .rail-main{flex:1;min-width:0;}
 
+/* Marka bir BAGLANTI ama metin gibi duruyor: alti cizili olsa baslik
+   cubugunda gurultu yapardi. Dokunma hedefi kendi genisligi kadar. */
+a.lockup{text-decoration:none;color:inherit;display:flex;align-items:center;}
+a.lockup:focus-visible{outline:2px solid var(--accent);outline-offset:3px;border-radius:3px;}
 .rail-brand{padding:2px 6px 0;}
 .rail-me{display:flex;flex-direction:column;align-items:center;gap:8px;
   padding:4px 6px 14px;border-bottom:1px solid var(--line-soft);}
@@ -207,7 +211,12 @@ body::before{
 .avatar.bos svg{width:28px;height:28px;display:block;}
 .rail-name{font-size:12.5px;font-weight:600;text-align:center;
   max-width:100%;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;}
-.btn.rail-auth{width:100%;justify-content:center;}
+/* gap SART: ikon ve etiket AYRI span'lar (refreshAuthUi oyle kuruyor,
+   cunku dar ekranda yalnizca etiket gizleniyor). Oteki dugmelerde
+   emoji ile yazi TEK metin dugumunde oldugu icin aradaki bosluk
+   karakterden geliyor; burada gelmiyor. gap olmadan "☁Hesabım" diye
+   bitisik duruyordu -- 16 Kasim 2026'da sifre.test.js yakaladi. */
+.btn.rail-auth{width:100%;justify-content:center;gap:5px;}
 
 /* --- Hava ve isik seridi ---
    Cekim planlayan biri icin sicaklik degil ISIK asil bilgi: gun dogumu,
@@ -529,12 +538,37 @@ body::before{
   .avatar.bos,
   .avatar:empty{display:none;}
   .btn.rail-auth{width:auto;white-space:nowrap;}
+  /* ⛔ GIRIS YAPMISKEN DUGMENIN YAZISI GIZLENIYOR, bulut ikonu kaliyor.
+     Sebep olculdu (16 Kasim 2026, 390 piksel): kimlik blogu 188 piksel
+     kapliyordu ve markaya 78 kaliyordu; marka adinin ihtiyaci 106.
+     Fotograf zaten "giris yapildi" diyor, yaninda ayrica "Hesabım"
+     yazmak ayni seyi iki kez soylemek ve 55 piksel yemekti.
+     ⚠ GIRIS YAPMAMISKEN yazi KALIYOR ("Giriş yap"): orada fotograf
+     gizli oldugu icin yer var, ve o bir cagri -- ikona indirgenirse
+     ne oldugu anlasilmaz. Ekran okuyucu her iki durumda da tam metni
+     duyuyor (aria-label). */
+  .btn.rail-auth.girisli .auth-etiket{display:none;}
+  .btn.rail-auth.girisli{padding-left:9px;padding-right:9px;}
   /* Dil anahtari ust cubukta: tam ad ("Türkçe") yerine dar bir kutu.
      Genis birakildiginda marka adi "S."ye dusuyor ve "Giriş yap" iki
      satira boluniyordu -- olculdu. Kutu daralinca ikisi de yerine
      oturuyor, secenek metni yine tam okunuyor cunku acilir liste
-     kutunun genisligiyle sinirli degil. */
-  .rail-lang{width:auto;margin-top:0;padding-left:8px;padding-right:20px;}
+     kutunun genisligiyle sinirli degil.
+     ⚠ 16 Kasim 2026: punto 12.5 -> 11.5, dolgu 7/10 -> 5/11.
+     Kullanicinin istegi: "dil secicisini de bir miktar kucuk font ile".
+     ⚠ Burada yazan ESKI deger (padding-right:20px) HIC UYGULANMIYORDU:
+     asagidaki `.lang-select` esit ozgullukte ve SONRA geldigi icin
+     padding'i 7/10'a ceviriyordu. Olculdu. Once bu yanlis anlasilip
+     "20'den 16'ya indiriyorum" diye yazildi ve kutu 63'ten 66'ya
+     GENISLEDI -- yani duzeltme sandigim sey bozuyordu. */
+  /* ⛔ `select.rail-lang` YAZILDI, duz `.rail-lang` DEGIL. Asagida
+     2972. satirda `.lang-select{padding:7px 10px;font-size:12.5px}` var;
+     esit ozgullukte ve SONRA geldigi icin kazaniyordu. Bu yuzden buraya
+     yillardir yazilan `padding-right:20px` HIC UYGULANMIYORDU -- 16 Kasim
+     2026'da olculdu: hesaplanan punto 16px, sag dolgu 10px cikti.
+     Bu deponun tekrarlayan hatasi; ayni tuzak 583. satirda da yazili. */
+  select.rail-lang{width:auto;margin-top:0;padding-left:5px;padding-right:11px;
+    font-size:11.5px;min-height:32px;}
   .rail-nav{flex-direction:row;gap:4px;width:100%;
     border-top:1px solid var(--line-soft);padding-top:8px;}
   /* min-width:0 SART: flex ogeleri varsayilan olarak icerikten dar
@@ -570,10 +604,20 @@ body::before{
      boyut genisliğe göre ölçekleniyor. */
   .lockup .wordmark{font-size:clamp(14.5px,3.9vw,17.5px);}
 }
-@media(max-width:380px){
+/* ⚠ ESIK 380'DEN 339'A INDI (16 Kasim 2026). Sebep: giris yapmisken
+   hesap dugmesinin YAZISI gizlendi (99 -> 32 piksel) ve dil kutusu
+   daraldi; bosalan yer marka adini 360 ve 375 piksellik telefonlarda da
+   tasiyor -- olculdu: 360, 375, 390 ve 412'de iki dilde de TAM.
+   360'in altinda yine isaret tek basina kaliyor, cunku orada kirpilmis
+   bir "Shootboa..." markayi tasimiyor (340'ta olculdu). */
+@media(max-width:359px){
   .wordmark{display:none;}
+}
+@media(max-width:380px){
   .lockup .mark{width:24px;height:24px;}
   .btn.rail-auth{padding:6px 8px;}
+  /* Dar ekranda ad biraz kuculerek sigiyor. */
+  .lockup .wordmark{font-size:clamp(13px,4vw,16px);}
 }
 
 /* --- Sayfa alti ------------------------------------------------------- */
@@ -840,7 +884,14 @@ body::before{
 .hesap-ad{font-weight:600;font-size:13.5px;}
 .hesap-url{flex:1;min-width:0;font-size:12.5px;color:var(--text-dim);overflow:hidden;
   text-overflow:ellipsis;white-space:nowrap;}
-.tpl-wrap{overflow-x:auto;border:1px solid var(--line);border-radius:2px;background:var(--surface);}
+/* overscroll-behavior-x:contain -- yana kayan her alana GEREKLI. Alan
+   sonuna gelince kaydirma sayfaya zincirleniyor ve sayfa yatayda
+   "lastik gibi" yayilaniyor. 16 Kasim 2026'da kullanici bildirdi:
+   takvim izgarasinda ve takvim tablosunda koruma vardi, bu ucunde
+   (sablon, proje tablosu, fiyat tablosu) ve mobil istatistik seridinde
+   YOKTU. */
+.tpl-wrap{overflow-x:auto;overscroll-behavior-x:contain;
+  border:1px solid var(--line);border-radius:2px;background:var(--surface);}
 .tpl-table{border-collapse:collapse;width:max-content;min-width:100%;font-size:12.5px;}
 .tpl-table th,.tpl-table td{border-bottom:1px solid var(--line-soft);
   border-right:1px solid var(--line-soft);padding:9px 9px;vertical-align:top;text-align:left;}
@@ -1142,7 +1193,8 @@ body.suruklenirken *{cursor:grabbing !important;}
    kendiliginden kayiyordu. Simdi proje sutunu 200px, kalan genislik yedi
    adim sutununa ESIT bolunuyor — tablo bosluk birakmadan yayiliyor.
    Dar ekranda min-width devreye giriyor ve tablo kendi icinde kayiyor. */
-.proj-table-wrap{overflow-x:auto;border:1px solid var(--line);border-radius:2px;
+.proj-table-wrap{overflow-x:auto;overscroll-behavior-x:contain;
+  border:1px solid var(--line);border-radius:2px;
   background:var(--surface);}
 .proj-table{border-collapse:collapse;table-layout:fixed;width:100%;
   min-width:calc(var(--pname-w,268px) + 7 * 92px);font-size:13px;}
@@ -1922,8 +1974,8 @@ textarea.sc-ai-brief{min-height:64px;resize:vertical;line-height:1.5;}
      zaten ayni sayilari gosteriyor ve onlara tiklanabiliyor.
      Serit tek satira iniyor, yana kayiyor: bakmak isteyen kaydiriyor,
      istemeyenin yolunu kesmiyor. */
-  .proj-stats{display:flex;gap:0;overflow-x:auto;-webkit-overflow-scrolling:touch;
-    scrollbar-width:none;margin-bottom:10px;}
+  .proj-stats{display:flex;gap:0;overflow-x:auto;overscroll-behavior-x:contain;
+    -webkit-overflow-scrolling:touch;scrollbar-width:none;margin-bottom:10px;}
   .proj-stats::-webkit-scrollbar{display:none;}
   .pstat{flex:none;padding:6px 11px;gap:5px;}
   .pstat b{font-size:14px;}
@@ -3834,7 +3886,7 @@ textarea.sc-ai-brief{min-height:64px;resize:vertical;line-height:1.5;}
 /* Yatay kaydirma SAYFADA degil tablonun KENDI icinde: dar ekranda
    butun sayfanin yana kaymasi .shell yorumunda anlatilan eski bir
    arizaydi, tekrarlamasin. */
-.fy-tablo{overflow-x:auto;min-width:0;}
+.fy-tablo{overflow-x:auto;overscroll-behavior-x:contain;min-width:0;}
 .fy-baslik-satir,.fy-satir{
   display:grid;
   grid-template-columns:92px 58px 86px 52px minmax(0,1fr) 150px 112px;
@@ -3966,13 +4018,24 @@ textarea.sc-ai-brief{min-height:64px;resize:vertical;line-height:1.5;}
        basliyordu). Hepsi sola tasindi; ust taraf tamamen bosaldi. -->
   <div class="shell">
     <aside class="rail" id="rail">
-      <div class="rail-brand"><div class="lockup"><span class="mark"><svg viewBox="0 0 64 64" aria-hidden="true"><rect x="6" y="24" width="52" height="34" rx="7" fill="var(--text)"/><g transform="rotate(-9 32 17)"><rect x="6" y="7" width="52" height="15" rx="3.5" fill="var(--accent)"/><path d="M17 7 L22.5 7 L14.5 22 L9 22 Z" fill="var(--bg)"/><path d="M33 7 L38.5 7 L30.5 22 L25 22 Z" fill="var(--bg)"/><path d="M49 7 L54.5 7 L46.5 22 L41 22 Z" fill="var(--bg)"/></g><rect x="15" y="34" width="26" height="3.4" rx="1.7" fill="var(--text-dim)"/><rect x="15" y="43" width="17" height="3.4" rx="1.7" fill="var(--amber)"/></svg></span><span class="wordmark">Shootboard</span></div><div class="rail-tagline" data-i18n="rail_tagline">Content calendar for video creators</div></div>
+      <!-- ⛔ MARKA ARTIK BAGLANTI (16 Kasim 2026). Uygulamanin icinden
+           ana sayfaya donmenin HIC YOLU YOKTU: kullanici "iceri girdikten
+           sonra index.html'e gidemiyorum, oradaki kilavuz ve diger seyleri
+           okuyamiyorum" dedi. Kilavuz ⋯ cekmecesinde vardi ama ana sayfa
+           hicbir yerde yoktu. -->
+      <div class="rail-brand"><a class="lockup" href="index.html" data-i18n-title="rail_home" title="Home"><span class="mark"><svg viewBox="0 0 64 64" aria-hidden="true"><rect x="6" y="24" width="52" height="34" rx="7" fill="var(--text)"/><g transform="rotate(-9 32 17)"><rect x="6" y="7" width="52" height="15" rx="3.5" fill="var(--accent)"/><path d="M17 7 L22.5 7 L14.5 22 L9 22 Z" fill="var(--bg)"/><path d="M33 7 L38.5 7 L30.5 22 L25 22 Z" fill="var(--bg)"/><path d="M49 7 L54.5 7 L46.5 22 L41 22 Z" fill="var(--bg)"/></g><rect x="15" y="34" width="26" height="3.4" rx="1.7" fill="var(--text-dim)"/><rect x="15" y="43" width="17" height="3.4" rx="1.7" fill="var(--amber)"/></svg></span><span class="wordmark">Shootboard</span></a><div class="rail-tagline" data-i18n="rail_tagline">Content calendar for video creators</div></div>
 
       <!-- Kimlik: fotograf, ad, ve hemen ALTINDA giris dugmesi. -->
       <div class="rail-me">
         <div class="avatar" id="railAvatar" aria-hidden="true"></div>
         <div class="rail-name" id="railName" hidden></div>
-        <button class="btn btn-sm rail-auth" id="authBtn" data-i18n="btn_signin">☁ Sign in</button>
+        <!-- ⛔ data-i18n YOK, bilerek. applyStaticI18n metni anahtardan DUZ
+             METIN olarak geri yaziyor ve refreshAuthUi'nin kurdugu
+             ikon+etiket yapisini siliyordu: dar ekranda etiketi gizlemek
+             imkansiz hale geliyordu (16 Kasim 2026'da tam bu oldu).
+             Dugmenin metnini YALNIZCA refreshAuthUi yaziyor; dil
+             degisince setLanguage zaten onu cagiriyor. -->
+        <button class="btn btn-sm rail-auth" id="authBtn"><span aria-hidden="true">☁</span><span class="auth-etiket">Sign in</span></button>
         <button type="button" class="btn btn-sm rail-kur" id="kurBtn" hidden><svg viewBox="0 0 16 16" width="14" height="14" fill="none" aria-hidden="true" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" style="flex:none"><path d="M8 2v8"/><path d="M4.5 7 8 10.5 11.5 7"/><path d="M3 13h10"/></svg><span class="kur-etiket">Install</span></button>
         <p class="rail-kur-not" id="kurNot" data-i18n="kur_not" hidden>Add Shootboard to your Home Screen.</p>
         <!-- DIL ANAHTARI BURADA, "⋯" menusunun dibinde degil. Eskiden
@@ -5526,6 +5589,7 @@ textarea.sc-ai-brief{min-height:64px;resize:vertical;line-height:1.5;}
         <button type="button" class="btn btn-sm" id="rm_izinBtn" data-i18n="rm_ch_browser_ask" hidden>Allow notifications</button>
       </div>
       <p class="rm-durum" id="rm_izinDurum"></p>
+      <p class="rm-durum" id="rm_pushDurum"></p>
       <p class="rm-not" data-i18n="rm_ch_browser_note">For now the notification arrives when you open Shootboard.</p>
     </div>
 
@@ -6006,6 +6070,7 @@ const LANG = {
     banner_rest: "Click any day to add an entry, or any entry to edit it. It all works <b>without an account</b> — your calendar stays in this browser. Sign in with Google or an email link only if you want the same calendar on your phone too. The demo holds up to 100 entries.",
     eyebrow: "QUEUE — NEXT 6 WEEKS",
     rail_tagline: "Content calendar for video creators",
+    rail_home: "Home page",
     h1: "One shoot becomes ten posts. Shootboard keeps all ten on one board.",
     h1_sub: "The same footage goes out as a Reel, a Short, a carousel and a story — each with its own caption, cover text and time slot. You tick them off as they go out; Shootboard keeps the list of what is still waiting.",
     btn_new: "+ New Entry",
@@ -7154,6 +7219,12 @@ const LANG = {
     rm_ch_browser_denied: "This browser has blocked notifications for Shootboard. Allow them again from the padlock icon in the address bar.",
     rm_ch_browser_none: "This browser cannot show notifications.",
     rm_ch_browser_note: "Notifications also arrive while Shootboard is closed, at the time you set below. You need to be signed in: the reminder is sent from the server, which needs to know your deadlines.",
+    rm_push_ok: "Closed-app notifications are on for this device.",
+    rm_push_hesapsiz: "Sign in to also get notifications while Shootboard is closed.",
+    rm_push_desteklenmiyor: "This browser cannot deliver notifications while Shootboard is closed. You will still get them while Shootboard is open.",
+    rm_push_ios: "On iPhone and iPad, add Shootboard to your Home Screen first — otherwise iOS delivers nothing while the app is closed.",
+    rm_push_anahtar_yok: "A server setting is missing, so closed-app notifications cannot be set up yet.",
+    rm_push_hata: "This device could not be registered. You will still get notifications while Shootboard is open.",
     rm_ch_cal: "Your own calendar",
     rm_ch_cal_lead: "Two calendar addresses are published: one for your deadlines, one for your posts. You add them to Google Calendar, your phone or Outlook once. Deadlines carry the reminder; posts just sit on the calendar at their own time.",
     // MCP erisimi.
@@ -7329,6 +7400,7 @@ const LANG = {
     banner_rest: "Bir güne tıklayarak kayıt ekle, bir kayda tıklayarak düzenle. Hepsi <b>hesapsız çalışır</b> — takvimin bu tarayıcıda kalır. Aynı takvimi telefonunda da istiyorsan Google ya da e-posta linkiyle giriş yap. Demo 100 kayıt tutar.",
     eyebrow: "SIRADAKİLER — ÖNÜMÜZDEKİ 6 HAFTA",
     rail_tagline: "Video üreticileri için içerik takvimi",
+    rail_home: "Ana sayfa",
     h1: "Tek çekim on paylaşıma dönüşür. Shootboard onunu da tek panoda tutar.",
     h1_sub: "Aynı çekim; Reels, Shorts, carousel ve hikaye olarak çıkar — her biri kendi caption'ı, kapak metni ve saatiyle. Yayınladıkça işaretlersin; Shootboard bekleyenlerin listesini tutar.",
     btn_new: "+ Yeni Giriş",
@@ -8431,6 +8503,12 @@ const LANG = {
     rm_ch_browser_denied: "Bu tarayıcı Shootboard'un bildirimlerini engellemiş. Adres çubuğundaki kilit simgesinden yeniden izin verebilirsin.",
     rm_ch_browser_none: "Bu tarayıcı bildirim gösteremiyor.",
     rm_ch_browser_note: "Bildirim Shootboard kapalıyken de geliyor, aşağıda seçtiğin saatte. Bunun için giriş yapmış olman gerekiyor: hatırlatmayı sunucu gönderiyor ve terminlerini bilmesi lazım.",
+    rm_push_ok: "Bu cihazda kapalıyken bildirim açık.",
+    rm_push_hesapsiz: "Kapalıyken de bildirim almak için giriş yap.",
+    rm_push_desteklenmiyor: "Bu tarayıcı kapalıyken bildirim gönderemiyor. Shootboard açıkken bildirim yine gelecek.",
+    rm_push_ios: "iPhone ve iPad'de önce Shootboard'u ana ekrana ekle — yoksa iOS kapalıyken hiçbir şey göndermiyor.",
+    rm_push_anahtar_yok: "Sunucu ayarı eksik, kapalıyken bildirim şimdilik kurulamıyor.",
+    rm_push_hata: "Bu cihaz kaydedilemedi. Shootboard açıkken bildirim yine gelecek.",
     rm_ch_cal: "Kendi takvimin",
     rm_ch_cal_lead: "İki takvim adresi yayınlanıyor: biri terminlerin, biri paylaşımların için. Bu adresleri Google Takvim'e, telefonuna ya da Outlook'a bir kez ekliyorsun. Hatırlatmayı terminler taşıyor; paylaşımlar takvimde kendi saatinde duruyor.",
     // MCP erisimi.
@@ -23011,13 +23089,36 @@ function pushSaatDilimi(){
   catch(e){ return ''; }
 }
 
+// ⚠ Bu cihazda abonelik hangi sebeple acilmadi. Ekranda gosteriliyor.
+//   16 Kasim 2026'ya kadar hicbir sebep gosterilmiyordu: ekranda
+//   "bildirimler acik" yaziyordu ama abonelik hic acilmamisti ve
+//   kullanici bosuna bekledi. Sessiz vazgecme buradan bitti.
+let pushSonDurum = '';
+
+// iOS'ta push YALNIZCA ana ekrana eklenmis uygulamada calisiyor.
+// Safari sekmesinde abonelik acilsa bile bildirim gelmez.
+function pushIosEngeli(){
+  const u = navigator.userAgent || '';
+  const iosMu = /iPad|iPhone|iPod/.test(u) ||
+                (/Macintosh/.test(u) && 'ontouchend' in document);
+  if(!iosMu) return false;
+  let kurulu = false;
+  try{
+    kurulu = (window.matchMedia && matchMedia('(display-mode: standalone)').matches)
+             || navigator.standalone === true;
+  }catch(e){}
+  return !kurulu;
+}
+
 // Donus degerleri konusuyor: cagiran taraf neden olmadigini bilsin.
 async function pushAboneOl(){
-  if(!sb || !session) return 'hesapsiz';
-  if(!('serviceWorker' in navigator) || !('PushManager' in window)) return 'desteklenmiyor';
-  if(bildirimDurumu() !== 'granted') return 'izin-yok';
+  if(!sb || !session) return (pushSonDurum = 'hesapsiz');
+  if(!('serviceWorker' in navigator) || !('PushManager' in window))
+    return (pushSonDurum = 'desteklenmiyor');
+  if(pushIosEngeli()) return (pushSonDurum = 'ios');
+  if(bildirimDurumu() !== 'granted') return (pushSonDurum = 'izin-yok');
   const anahtar = await vapidAcikAl();
-  if(!anahtar) return 'anahtar-yok';
+  if(!anahtar) return (pushSonDurum = 'anahtar-yok');
   try{
     const kayit = await navigator.serviceWorker.ready;
     let abone = await kayit.pushManager.getSubscription();
@@ -23029,18 +23130,40 @@ async function pushAboneOl(){
     }
     const j = abone.toJSON ? abone.toJSON() : null;
     if(!j || !j.endpoint || !j.keys || !j.keys.p256dh || !j.keys.auth){
-      return 'anahtarsiz-abonelik';
+      return (pushSonDurum = 'hata');
     }
-    const { error } = await sb.from('push_abonelikleri').upsert([{
-      user_id: session.user.id,
-      endpoint: j.endpoint,
+    // ⛔ UPSERT KULLANILMIYOR, bilerek. Upsert satirin TAMAMINI yeniden
+    //   yaziyor ve verilmeyen sutunlar varsayilanina donuyor -- yani
+    //   son_gonderim_gunu NULL oluyordu. Sonucu: uygulama her acildiginda
+    //   "bugun gonderildi" isareti silinir ve AYNI hatirlatma gun icinde
+    //   tekrar tekrar gelirdi. Acilista abone olma eklenince bu her gun
+    //   yasanacakti. 16 Kasim 2026'da kullanici fark etti: gonderimden
+    //   sonra iPhone'un isareti duruyordu ama Chrome'unki silinmisti.
+    //
+    //   Onun yerine ONCE GUNCELLE, satir yoksa EKLE. Guncelleme yalnizca
+    //   adi gecen sutunlara dokunuyor, son_gonderim_gunu yerinde kaliyor.
+    const simdi = new Date().toISOString();
+    const alanlar = {
       p256dh: j.keys.p256dh,
       auth: j.keys.auth,
       cihaz: pushCihazEtiketi(),
       saat_dilimi: pushSaatDilimi(),
-      son_gorulme: new Date().toISOString()
-    }], { onConflict: 'endpoint' });
-    if(error) throw error;
+      son_gorulme: simdi
+    };
+    const { data: guncel, error: guncelHata } = await sb
+      .from('push_abonelikleri')
+      .update(alanlar)
+      .eq('endpoint', j.endpoint)
+      .select('id');
+    if(guncelHata) throw guncelHata;
+    if(!guncel || !guncel.length){
+      const { error } = await sb.from('push_abonelikleri')
+        .insert([Object.assign({ user_id: session.user.id,
+                                 endpoint: j.endpoint }, alanlar)]);
+      if(error) throw error;
+    }
+    pushSonDurum = 'ok';
+    pushDurumuYaz();
     return 'ok';
   }catch(e){
     // ⚠ BILINEN SINIR: ayni tarayicida BASKA bir hesap abonelik birakmis
@@ -23049,8 +23172,26 @@ async function pushAboneOl(){
     //   Cikista pushAbonelikBirak() cagriliyor, normal akista olmaz.
     //   Olursa kullanici bildirim almaz ve sebebi burada gorunur.
     console.error('[push] abone olunamadi', e);
+    pushSonDurum = 'hata';
+    pushDurumuYaz();
     return 'hata';
   }
+}
+
+// Sebebi ekrana yazar. Izin satirini (rm_izinDurum) TEKRARLAMIYOR:
+// 'izin-yok' durumunda burasi bos kaliyor, cunku o bilgi zaten ustte.
+function pushDurumuYaz(){
+  const e = document.getElementById('rm_pushDurum');
+  if(!e) return;
+  const esleme = {
+    ok:'rm_push_ok', hesapsiz:'rm_push_hesapsiz',
+    desteklenmiyor:'rm_push_desteklenmiyor', ios:'rm_push_ios',
+    'anahtar-yok':'rm_push_anahtar_yok', hata:'rm_push_hata'
+  };
+  const anahtar = hatirlatma.tarayici ? esleme[pushSonDurum] : null;
+  e.textContent = anahtar ? t(anahtar) : '';
+  e.className = 'rm-durum' + (pushSonDurum === 'ok' ? ' ok'
+                            : (anahtar ? ' hata' : ''));
 }
 
 async function pushAbonelikBirak(){
@@ -23109,6 +23250,7 @@ function hatirlatmaEkraniTazele(){
   // yalnizca takvim acikken gorunuyordu.
   el('rm_saatSatir').hidden = !(hatirlatma.takvim || hatirlatma.tarayici);
   el('rm_when_warn').hidden = (hatirlatma.once || hatirlatma.gun || hatirlatma.gecikti);
+  pushDurumuYaz();
 
   // Tarayici kanali
   const durum = bildirimDurumu();
@@ -23836,7 +23978,28 @@ function refreshAuthUi(){
   if(!b) return;
   // Serit dar: e-postanin tamami dugmeye sigmiyor, ad ustte ayri satirda
   // duruyor. Dugme yalnizca eylemi soyluyor.
-  b.textContent = session ? t('btn_signed_in') : t('btn_signin');
+  // Metin "☁ Hesabım" bicimde: ilk boslukta IKON ve ETIKET diye
+  // ayriliyor ki dar ekranda yalnizca etiket gizlenebilsin.
+  // ⚠ Dugmede data-i18n YOK (bilerek): applyStaticI18n bu yapiyi duz
+  //   metne cevirip siliyordu.
+  const tamMetin = session ? t('btn_signed_in') : t('btn_signin');
+  const ayrac = tamMetin.indexOf(' ');
+  const ikonu = ayrac > 0 ? tamMetin.slice(0, ayrac) : '';
+  const etiketi = ayrac > 0 ? tamMetin.slice(ayrac + 1) : tamMetin;
+  b.textContent = '';
+  if(ikonu){
+    const i = document.createElement('span');
+    i.setAttribute('aria-hidden', 'true');
+    i.textContent = ikonu;
+    b.appendChild(i);
+  }
+  const et = document.createElement('span');
+  et.className = 'auth-etiket';
+  et.textContent = etiketi;
+  b.appendChild(et);
+  // Dar ekranda yazi gizleniyor; ekran okuyucu tam metni yine duysun.
+  b.setAttribute('aria-label', tamMetin);
+  b.classList.toggle('girisli', !!session);
   b.title = session ? session.user.email : '';
   if(session) document.getElementById('cloudNudge').hidden = true;
   // Uzun geri bildirim formu yalnizca DENEYENE soruluyor; hesabi olmayan
@@ -23958,6 +24121,28 @@ setTimeout(veriHazirIsaretle, 8000);
 async function acilistaBildirim(){
   try{ await veriHazir; }catch(e){}
   terminBildirimi();
+  // ⛔ ACILISTA ABONELIK KONTROLU -- 16 Kasim 2026'da eklendi.
+  //   Eskiden pushAboneOl() YALNIZCA "Tarayici bildirimi" anahtari
+  //   kapalidan acia cevrildiginde cagriliyordu. Anahtari zaten acik
+  //   olan kullanici (push'tan onceden kalma) hic abone olmuyordu:
+  //   ekranda "bildirimler acik" yaziyordu, abonelik satiri yoktu ve
+  //   bildirim hic gelmiyordu. Kullanici bunu bildirdi ve sebebi
+  //   bulunana kadar bosuna bekledi.
+  //
+  //   Artik her acilista bakiliyor. pushAboneOl zaten var olan
+  //   aboneligi yeniden kullaniyor (getSubscription), yani bu cagri
+  //   ikinci bir abonelik URETMIYOR; yalnizca eksikse tamamliyor ve
+  //   satirin son_gorulme damgasini tazeliyor.
+  if(hatirlatma.tarayici && bildirimDurumu() === 'granted'){
+    try{ await pushAboneOl(); }catch(e){ console.warn('[push] acilis', e); }
+  }else{
+    // Anahtar kapaliysa ya da izin yoksa sebebi yine de hesaplansin:
+    // kullanici pencereyi actiginda dogru satiri gorsun.
+    if(hatirlatma.tarayici && typeof pushIosEngeli === 'function' && pushIosEngeli()){
+      pushSonDurum = 'ios';
+    }
+  }
+  if(typeof pushDurumuYaz === 'function') pushDurumuYaz();
 }
 async function otomatikBekleyenler(){
   await veriHazir;
