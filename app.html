@@ -7254,6 +7254,7 @@ const LANG = {
     rm_ch_browser_note: "Notifications also arrive while Shootboard is closed, at the time you set below. You need to be signed in: the reminder is sent from the server, which needs to know your deadlines.",
     rm_push_ok: "Closed-app notifications are on for this device.",
     rm_push_hesapsiz: "Sign in to also get notifications while Shootboard is closed.",
+    rm_push_izin: "You turned this on, on another device. This one needs permission too — the button above.",
     rm_push_desteklenmiyor: "This browser cannot deliver notifications while Shootboard is closed. You will still get them while Shootboard is open.",
     rm_push_ios: "On iPhone and iPad, add Shootboard to your Home Screen first — otherwise iOS delivers nothing while the app is closed.",
     rm_push_anahtar_yok: "A server setting is missing, so closed-app notifications cannot be set up yet.",
@@ -8538,6 +8539,7 @@ const LANG = {
     rm_ch_browser_note: "Bildirim Shootboard kapalıyken de geliyor, aşağıda seçtiğin saatte. Bunun için giriş yapmış olman gerekiyor: hatırlatmayı sunucu gönderiyor ve terminlerini bilmesi lazım.",
     rm_push_ok: "Bu cihazda kapalıyken bildirim açık.",
     rm_push_hesapsiz: "Kapalıyken de bildirim almak için giriş yap.",
+    rm_push_izin: "Bunu başka bir cihazda açmışsın. Bu cihazda da izin vermen gerekiyor — yukarıdaki düğme.",
     rm_push_desteklenmiyor: "Bu tarayıcı kapalıyken bildirim gönderemiyor. Shootboard açıkken bildirim yine gelecek.",
     rm_push_ios: "iPhone ve iPad'de önce Shootboard'u ana ekrana ekle — yoksa iOS kapalıyken hiçbir şey göndermiyor.",
     rm_push_anahtar_yok: "Sunucu ayarı eksik, kapalıyken bildirim şimdilik kurulamıyor.",
@@ -16079,6 +16081,19 @@ function tercihPrefsYap(){
   // kaliyor: bildirim izni tarayiciya ozel, baska cihazda "acik"
   // yazmak calismayan bir ayari acik gostermek olurdu.
   prefs.reminders = {
+    // ⚠ tarayici 16 Kasim 2026'da eklendi -- kullanicinin istegi:
+    //   "pc de ya da iphone da tarayici bildirimi izni veren kisi her
+    //    iki tarafta da bunu esitlemis olmali".
+    //   Senkronlanan sey IZIN DEGIL, NIYET. Izin cihazin kendisine ait
+    //   ve uzaktan verilemez; bir cihazda izin vermek otekini
+    //   etkilemiyor. Burada tasinan "ben bildirim istiyorum" karari.
+    //
+    //   ⛔ Eski karar bunu BILEREK disarida birakiyordu: "calismayan bir
+    //   ayari baska cihazda acik gostermek". O itiraz artik gecersiz --
+    //   16 Kasim'da eklenen durum satiri (rm_pushDurum) neyin eksik
+    //   oldugunu SOYLUYOR: izin yok, giris yok, ana ekrana eklenmemis.
+    //   Kullanici bos bir "acik" yazisina bakmiyor.
+    tarayici: hatirlatma.tarayici,
     takvim: hatirlatma.takvim, once: hatirlatma.once,
     gun: hatirlatma.gun, gecikti: hatirlatma.gecikti, jeton: hatirlatma.jeton,
     // ⚠ saat 16 Kasim 2026'da eklendi. Sebebi: push bildirimini SUNUCU
@@ -22141,10 +22156,25 @@ function hatirlatmaKaydet(){
   try{ localStorage.setItem(HATIRLATMA_ANAHTARI, JSON.stringify(hatirlatma)); }catch(e){}
   tercihPushKuyrukla();
 }
-// Buluttan gelen ayar: tarayici anahtari HARIC.
+// Buluttan gelen ayar.
+// ⚠ 16 Kasim 2026'ya kadar tarayici anahtari BILEREK disarida
+//   birakiliyordu. Artik geliyor: kullanici bir cihazda "istiyorum"
+//   deyince oteki cihazda da anahtar acik geliyor ve "Bildirimlere
+//   izin ver" dugmesi orada bekliyor (hatirlatmaEkraniTazele o dugmeyi
+//   zaten tarayici acik + izin 'default' iken gosteriyor).
+//
+//   ⛔ IZIN KENDILIGINDEN ISTENMIYOR. MDN'in kendi sayfasi diyor ki
+//   istek "kullanici etkilesimine cevaben" yapilmali. Acilista
+//   sormak tarayicilarin istemedigi bir sey; sessizce reddedilebilir
+//   ve kullaniciya da saldirgan gelir. O yuzden son adim bir dokunus
+//   olarak kaliyor.
 function hatirlatmaBuluttan(uzak){
   if(!uzak || typeof uzak !== 'object') return;
   const t = hatirlatmaTemizle(uzak);
+  // Eski satirlarda bu alan yok: o zaman YERELDEKI deger korunuyor,
+  // yoksa buluttan gelen varsayilan (false) cihazdaki acik ayari
+  // kapatirdi.
+  if(typeof uzak.tarayici === 'boolean') hatirlatma.tarayici = t.tarayici;
   hatirlatma.takvim  = t.takvim;
   hatirlatma.once    = t.once;
   hatirlatma.gun     = t.gun;
@@ -22153,6 +22183,15 @@ function hatirlatmaBuluttan(uzak){
   hatirlatma.saat    = t.saat;
   try{ localStorage.setItem(HATIRLATMA_ANAHTARI, JSON.stringify(hatirlatma)); }catch(e){}
   hatirlatmaEkraniTazele();
+  // Niyet buluttan ACIK geldiyse ve bu cihazda izin ZATEN varsa,
+  // abonelik hemen aciliyor. Yoksa anahtar acik gorunur ama bildirim
+  // gelmezdi: tercih senkronu bos bir vaat olurdu.
+  // ⚠ pushAboneOl var olan aboneligi yeniden kullaniyor, ikinci bir
+  //   abonelik uretmiyor.
+  if(hatirlatma.tarayici && typeof bildirimDurumu === 'function' &&
+     bildirimDurumu() === 'granted' && typeof pushAboneOl === 'function'){
+    pushAboneOl().catch(()=>{});
+  }
 }
 
 function jetonUret(){
@@ -23229,7 +23268,18 @@ function pushDurumuYaz(){
     desteklenmiyor:'rm_push_desteklenmiyor', ios:'rm_push_ios',
     'anahtar-yok':'rm_push_anahtar_yok', hata:'rm_push_hata'
   };
-  const anahtar = hatirlatma.tarayici ? esleme[pushSonDurum] : null;
+  // ⚠ Izin HENUZ sorulmamissa (default) sebebi burasi soyluyor.
+  //   Senkron senaryosu: kullanici baska cihazda actigi icin anahtar
+  //   bu cihazda da acik GELIYOR; dugme duruyor ama neden durdugu
+  //   yazmiyordu. 16 Kasim 2026'da eklendi.
+  //   ⛔ Izin KENDILIGINDEN istenmiyor: MDN'in kendi sayfasi istegin
+  //   "kullanici etkilesimine cevaben" yapilmasini soyluyor.
+  const izinBekliyor = hatirlatma.tarayici &&
+                       typeof bildirimDurumu === 'function' &&
+                       bildirimDurumu() === 'default';
+  const anahtar = !hatirlatma.tarayici ? null
+                : izinBekliyor ? 'rm_push_izin'
+                : esleme[pushSonDurum];
   e.textContent = anahtar ? t(anahtar) : '';
   e.className = 'rm-durum' + (pushSonDurum === 'ok' ? ' ok'
                             : (anahtar ? ' hata' : ''));
