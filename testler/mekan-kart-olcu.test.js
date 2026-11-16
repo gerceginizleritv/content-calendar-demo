@@ -67,8 +67,23 @@ const GENISLIKLER = [1280, 1024, 390];
       if (hata) { cevap.writeHead(404); cevap.end(); return; }
       const u = path.extname(dosya);
       cevap.writeHead(200, { 'Content-Type':
+        // ⛔ .css BURADA OLMAK ZORUNDA. Tarayici stil sayfasini YANLIS
+        //   MIME turuyle gelirse REDDEDIYOR: sayfa boyasiz aciliyor,
+        //   butun `var(--…)` degerleri bos cozuluyor ve olcum sessizce
+        //   yanlis sonuc veriyor. 16 Kasim 2026'da tam bu oldu --
+        //   kilavuz sayfalari `marka.css` yukluyor, test onu
+        //   `application/octet-stream` diye servis etti ve telefonda
+        //   "vurgu gorunmuyor" diye VAR OLMAYAN bir hata bildirdi.
+        //   (app.html dis stil sayfasi yuklemiyor, o yuzden ona bakan
+        //   testler etkilenmemisti -- ama bir gun yuklerse etkilenir.)
         u === '.html' ? 'text/html; charset=utf-8' :
-        u === '.js' ? 'text/javascript' : 'application/octet-stream' });
+        u === '.css'  ? 'text/css; charset=utf-8' :
+        u === '.js'   ? 'text/javascript' :
+        u === '.json' ? 'application/json' :
+        u === '.svg'  ? 'image/svg+xml' :
+        u === '.webp' ? 'image/webp' :
+        u === '.png'  ? 'image/png' :
+        u === '.woff2'? 'font/woff2' : 'application/octet-stream' });
       cevap.end(veri);
     });
   });

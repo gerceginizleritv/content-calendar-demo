@@ -158,6 +158,73 @@ başlasın diye. Tam koşudan sonra değişmiş görünmesi normaldir.
 - ⬜ **12.** Zamanlama (set doğru günde öne çıkar)
 
 ### 3 · Sınırlar
+- ⬜ **44.** **Fiyatlar sayfası — para birimi, ölçü, özet, üstteki
+  tuşlar.** Kullanıcı 16 Kasım 2026'da istedi, dört ayrı iş:
+
+  1. **Kullanıcı nereden girdiyse o fiyatı görsün.** Bugün
+     `fiyatlar.html:386` adresteki `?lang` ya da tarayıcı diline
+     bakıyor; **bölgeye göre** seçim yok.
+  2. **USD → EURO.** ⚠ Fiyatlar **çevrilmeyecek**: kullanıcı
+     *"TRY'de daha ucuz planlıyorum"* dedi, yani TRY ve EUR **ayrı
+     rakamlar**. ⛔ Rakamları kullanıcı verecek — **uydurulmayacak**
+     (Bölüm 4).
+  3. **Kutular aynı ölçüde olsun.** Ekran görüntüsünde Starter ve
+     Creator Pro kutuları farklı yükseklikte. ⚠ Mekân kartlarında
+     aynı hata vardı ve `mekan-kart-olcu.test.js` ile kapatıldı;
+     buraya da **ölçen bir test** yazılacak.
+  4. **Fiyata dahil olanların kısa özeti** eklenecek; o satır
+     eklenirken kutu ölçüsü de düzeltilecek.
+  5. **Üstteki fiyatla ilgili tuşlar kaldırılacak.** Ekran
+     görüntüsünde iki çift var: **TRY/USD** ve **Aylık/Yıllık**.
+     ⚠ Kullanıcı *"fiyat ile ilgili olan"* dedi — TRY/USD çifti para
+     birimi otomatik seçileceği için zaten gereksiz, ama
+     **Aylık/Yıllık da kalkacak mı sırası gelince SORULACAK.**
+
+- ⬜ **45.** **Ana sayfa kahraman bölümü: geniş ekranda ortada büyük
+  turuncu boşluk.** Kullanıcı 16 Kasım 2026'da yüksek çözünürlüklü
+  geniş ekranda gördü: yazılar sola dayanmış, yazı bloğu ile
+  fotoğraftaki kişi arasında kocaman boş turuncu alan kalıyor.
+  İstenen: **yazılar kahramana daha yakın** dursun.
+  ⚠ Çözüm dar ekranı bozmamalı; `index.html`'de kahraman düzeni
+  birkaç kırılma noktasına bakıyor. Ölçerek yapılacak (9. maddede
+  olduğu gibi: önce ölç, sonra iddia yaz).
+
+- ⬜ **46.** **Favicon aileleri ayrışmış.** Kullanıcı sekmelerde
+  gördü: `fiyatlar.html` ile `index.html` farklı ikon gösteriyor.
+  **Koddan doğrulandı, iki ayrı sebep var:**
+
+  | Bulgu | Ayrıntı |
+  |---|---|
+  | `index.html` **tek başına** yalnızca `favicon.svg` yüklüyor | Öteki yedi sayfa `favicon.svg` + `favicon.ico` yüklüyor |
+  | `favicon.svg` **13 Kasım** tarihli | `favicon.ico`, `favicon-32x32.png`, `favicon-16x16.png`, `apple-touch-icon.png` hepsi **16 Kasım** — yani SVG, ailenin geri kalanından **üç gün eski** |
+
+  ⚠ Bu deponun tekrarlayan hatası: ikon ailesi daha önce de ayrışmıştı
+  (13 Kasım kaydı). Düzeltilince **bekçi test** yazılacak: her yayın
+  sayfası aynı ikon kümesini yüklesin ve dosyalar aynı kaynaktan
+  üretilmiş olsun.
+
+- ⬜ **47.** **Üst menü her sayfada aynı olsun.** Kullanıcı
+  16 Kasım 2026'da bildirdi: *"ana sayfadan kılavuz sayfasına geçince
+  üst menüler neden farklı? Kılavuz sayfasına geçince Başla tuşu
+  falan yok oluyor."* **Koddan doğrulandı — üç ayrı üst menü var:**
+
+  | Sayfa | Menü | Sağ taraf |
+  |---|---|---|
+  | `index.html` | Nasıl çalışır · Neler var · Ne değildir · Fiyatlar · Kılavuz | **TR/EN düğmeleri** + **"Ücretsiz başla"** |
+  | `fiyatlar.html` | Ana sayfa · Fiyatlar · Kılavuz | — |
+  | `kilavuz.html` | Ana sayfa · Fiyatlar · Kılavuz | "English" **bağlantısı** + "Uygulamayı aç →" — **ne dil düğmesi ne CTA** |
+
+  İstenen: hepsi **ana sayfadaki gibi** olsun.
+  ⚠ Dikkat: `kilavuz.html`/`guide.html` dili **ayrı dosyayla**
+  değiştiriyor (düğmeyle değil), `fiyatlar.html` ise `?lang` ile.
+  Tek bir üst menüye geçerken bu üç davranış birleştirilecek.
+  ⛔ **41. madde ile doğrudan bağlantılı:** altı yeni dil gelince
+  dil seçimi sekiz dile çıkıyor; iki düğme (TR/EN) yetmeyecek,
+  uygulamadaki gibi bir **açılır liste** gerekecek. Bu madde o
+  karardan önce bitirilirse iki kez yapılır. ⚠ Sırası gelince
+  kullanıcıya bu bağlantı hatırlatılacak.
+  ⚠ Düzeltilince **bekçi test**: her yayın sayfasının üst menüsü
+  aynı bağlantı kümesini ve CTA'yı taşısın (Bölüm 7).
 - ⬜ **43.** **Mekânlar sayfasına fotoğraflı liste görünümü + görünüm
   değiştirme tuşu.** Kullanıcı 16 Kasım 2026'da istedi: *"places /
   mekanlar sayfasında yine fotoğraflı görünümlü liste görünümü

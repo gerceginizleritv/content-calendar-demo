@@ -210,3 +210,43 @@ yaratıyor ve **yeni bir dosyanın işini sessizce geri alıyor.**
 
 Her dosyanın başında hangi dosyanın neyi geri aldığı yazılı; yeni bir
 dosya eklerken aynı uyarıyı yaz.
+
+---
+
+## 7. HER ÖZELLİK HER DİLDE OLUR
+
+> *"bundan sonra tüm hazırlayacağım özellikler tüm dillerde olmalı
+> biliyorsun. Dil bizim için bir ayırıcı özellik değil, daha çok
+> kişiye ulaşmak için bir yer olacak."*
+> — kullanıcı, 16 Kasım 2026. Kurala yazılması istendi.
+
+**"Biliyorsun" bir talimat değildir** (Bölüm 1'deki aileden). Yazılı
+olmadığı için unutuluyor, artık yazılı.
+
+Dil bir **özellik değil**, ürünün ulaşacağı insan sayısı. Bu yüzden
+bir işi "bitti" saymadan önce:
+
+- Yeni bir **arayüz dizesi** mi eklendi? Her dilin sözlüğüne eklenir.
+  Bekçi: `testler/sozluk-paritesi.test.js` — eksik anahtarı,
+  fazla anahtarı, tür/arite uyuşmazlığını ve boş metni yakalıyor,
+  ve **dil listesini sabit yazmıyor** (yeni dil kendiliğinden girer).
+- Yeni bir **sayfa** mı eklendi? Her dilde karşılığı olur.
+- **Kılavuza** bir bölüm mü eklendi? Her dilin kılavuzuna eklenir.
+  Bekçi: `testler/kilavuz-vurgu.test.js` — kılavuzları `id="yanMenu"`
+  ile **buluyor**, listelemiyor; yeni dilin kılavuzu otomatik girer.
+- **Tarih, saat, sıralama, büyük/küçük harf** mi var? Kullanıcının
+  diline göre olur. ⛔ Bugün 56 yer iki dile sabitlenmiş durumda;
+  `YAPILACAKLAR.md` 42. madde bunu tek merkeze topluyor.
+- **E-posta, bildirim, hata mesajı** da arayüzdür. Arayüz çevrilip
+  bunlar İngilizce kalırsa ürün yarım görünür.
+
+⚠ **Bu deponun tekrarlayan hatası tam burada:** bir yerde yapıp
+ötekilerde unutmak. Otomatik yayın tablosu, palet değerleri, ikon
+ailesi, hesap silme listesi, yatay yaylanma koruması — hepsi aynı
+şekilde ayrıştı. Çözüm her seferinde aynı oldu: **listeyi elle
+yazmayan, kendi bulan bir bekçi test.** Yeni bir dil boyutu eklerken
+aynısını yap.
+
+⛔ **Bir özellik tek dilde bitirilip "sonra çevrilir" diye
+bırakılmaz.** Bırakılacaksa kullanıcı söyler.
+
