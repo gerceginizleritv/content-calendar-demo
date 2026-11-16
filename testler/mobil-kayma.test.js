@@ -63,7 +63,16 @@ const kaydir = (p, y) => p.evaluate(v=> window.scrollTo(0, v), y);
   await p.waitForTimeout(200);
   const once = await kilit(p);
   bak('once sayfa asagida', once.kayma > 100, String(once.kayma));
-  await p.evaluate(()=>{ openModal(null, fmtKey(new Date())); });
+  // ⛔ BURADA ESKIDEN GIRIS DUZENLEYICISI (openModal) ACILIYORDU.
+  // O artik PENCERE DEGIL, SAYFA (kullanici karari, 16 Kasim 2026:
+  // "pop up yerine arkadaki takvim goruntusunun gitmesi"). Sayfa kipinde
+  // arkada dondurulacak bir takvim kalmiyor -- takvimin YERINI aliyor --
+  // yani bu olcu onu olcmeyi birakti. Ama olcunun arkasindaki ihtiyac
+  // duruyor: GERI KALAN 18 gercek pencerede govde kilidi hala sart.
+  // Olcu onlardan birine yoneldi. Ihtiyac kutuphanesi secildi cunku
+  // acilisinda ne ag cagrisi ne odak kaydirmasi var; olcuye gurultu
+  // katmiyor. (Sayfa kipinin kendi sarti asagida ayrica olculuyor.)
+  await p.evaluate(()=>{ ihtiyacPenceresiAc(); });
   await p.waitForTimeout(450);
   const acik = await kilit(p);
   bak('KAYDIRMA DONDU (position:fixed)', acik.donuk, JSON.stringify(acik));
@@ -81,6 +90,30 @@ const kaydir = (p, y) => p.evaluate(v=> window.scrollTo(0, v), y);
   bak('top temizlendi', sonra.top === '', sonra.top);
   bak('AYNI YERE geri donuldu', Math.abs(sonra.kayma - once.kayma) <= 2,
       once.kayma + ' -> ' + sonra.kayma);
+
+  // Yukaridaki olcunun ikinci yarisi. Giris duzenleyicisi sayfa oldugu
+  // icin govde DONDURULMAYACAK (donduracak bir arka plan yok) ama
+  // kullanicinin kayma konumu kaybolmayacak: sayfa bastan acilacak,
+  // cikista takvim BIRAKTIGI YERE donecek. Bunu `sayfaBasaGit()` ve
+  // `sayfaKaymasiniGeriVer()` yapiyor; buraya kadar HICBIR test
+  // olcmuyordu (sayfa-duzeni testi yalnizca adresi ve geri tusunu
+  // olcuyor). Kullanicinin sikayeti tam buydu: takvimde asagida
+  // calisirken bir kayit acip kapatinca basa dusmek.
+  console.log('[giris SAYFASI: basa gidiyor, cikista kayma geri geliyor]');
+  await kaydir(p, 300);
+  await p.waitForTimeout(250);
+  const sOnce = await kilit(p);
+  bak('once takvim asagida', sOnce.kayma > 100, String(sOnce.kayma));
+  await p.evaluate(()=>{ openModal(null, fmtKey(new Date())); });
+  await p.waitForTimeout(450);
+  const sAcik = await kilit(p);
+  bak('sayfa kipinde govde DONDURULMUYOR', !sAcik.donuk, JSON.stringify(sAcik));
+  bak('giris sayfasi BASTAN aciliyor', sAcik.kayma <= 2, String(sAcik.kayma));
+  await p.evaluate(()=> closeModal());
+  await p.waitForTimeout(400);
+  const sSonra = await kilit(p);
+  bak('cikista takvim AYNI YERE donuyor', Math.abs(sSonra.kayma - sOnce.kayma) <= 2,
+      sOnce.kayma + ' -> ' + sSonra.kayma);
 
   console.log('["..." alt sayfasi da donduruyor]');
   // Playwright'in click'i ogeyi gorunur kilmak icin sayfayi yukari
@@ -102,7 +135,11 @@ const kaydir = (p, y) => p.evaluate(v=> window.scrollTo(0, v), y);
   console.log('[iki sey ust uste acilinca kilit erken kalkmiyor]');
   await p.evaluate(()=> document.getElementById('railMoreBtn').click());
   await p.waitForTimeout(350);
-  await p.evaluate(()=>{ openModal(null, fmtKey(new Date())); });
+  // Ayni sebeple burada da gercek bir pencere aciliyor: olculen sey
+  // "iki kilit sahibi ust uste acilinca biri kapanirken kilit erken
+  // kalkmiyor". Sayfa kipi kilit sahibi olmadigi icin bu olcuyu
+  // kuramazdi.
+  await p.evaluate(()=>{ ihtiyacPenceresiAc(); });
   await p.waitForTimeout(400);
   bak('ikisi acikken donuk', (await kilit(p)).donuk);
   // Alt sayfa kapansin, pencere acik kalsin: kilit SURMELI.
@@ -126,7 +163,19 @@ const kaydir = (p, y) => p.evaluate(v=> window.scrollTo(0, v), y);
   bak('masaustunde position static kaliyor',
       await d.evaluate(()=> getComputedStyle(document.body).position) === 'static',
       await d.evaluate(()=> getComputedStyle(document.body).position));
-  bak('masaustunde sayfa yerinden oynamadi',
+  await d.evaluate(()=> closeModal());
+  await d.waitForTimeout(300);
+  // ⛔ "sayfa yerinden oynamadi" olcusu GERCEK PENCEREYE tasindi.
+  // Giris duzenleyicisi artik sayfa oldugu icin BASTAN acilmasi DOGRU
+  // davranis, kusur degil -- sayfanin ortasina dusmek istemiyoruz
+  // (yukarida ayrica olculuyor, cikista da ayni yere donuyor).
+  // Masaustunde bir PENCERE acilinca sayfanin oynamamasi sarti ise
+  // aynen duruyor ve burada olculuyor.
+  await d.evaluate(()=> window.scrollTo(0, 180));
+  await d.waitForTimeout(200);
+  await d.evaluate(()=>{ ihtiyacPenceresiAc(); });
+  await d.waitForTimeout(400);
+  bak('masaustunde pencere acilinca sayfa yerinden oynamadi',
       Math.abs(await d.evaluate(()=> Math.round(window.scrollY)) - 180) <= 2,
       String(await d.evaluate(()=> Math.round(window.scrollY))));
   await d.close();
