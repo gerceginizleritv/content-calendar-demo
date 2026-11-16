@@ -211,7 +211,12 @@ a.lockup:focus-visible{outline:2px solid var(--accent);outline-offset:3px;border
 .avatar.bos svg{width:28px;height:28px;display:block;}
 .rail-name{font-size:12.5px;font-weight:600;text-align:center;
   max-width:100%;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;}
-.btn.rail-auth{width:100%;justify-content:center;}
+/* gap SART: ikon ve etiket AYRI span'lar (refreshAuthUi oyle kuruyor,
+   cunku dar ekranda yalnizca etiket gizleniyor). Oteki dugmelerde
+   emoji ile yazi TEK metin dugumunde oldugu icin aradaki bosluk
+   karakterden geliyor; burada gelmiyor. gap olmadan "☁Hesabım" diye
+   bitisik duruyordu -- 16 Kasim 2026'da sifre.test.js yakaladi. */
+.btn.rail-auth{width:100%;justify-content:center;gap:5px;}
 
 /* --- Hava ve isik seridi ---
    Cekim planlayan biri icin sicaklik degil ISIK asil bilgi: gun dogumu,
@@ -23127,16 +23132,36 @@ async function pushAboneOl(){
     if(!j || !j.endpoint || !j.keys || !j.keys.p256dh || !j.keys.auth){
       return (pushSonDurum = 'hata');
     }
-    const { error } = await sb.from('push_abonelikleri').upsert([{
-      user_id: session.user.id,
-      endpoint: j.endpoint,
+    // ⛔ UPSERT KULLANILMIYOR, bilerek. Upsert satirin TAMAMINI yeniden
+    //   yaziyor ve verilmeyen sutunlar varsayilanina donuyor -- yani
+    //   son_gonderim_gunu NULL oluyordu. Sonucu: uygulama her acildiginda
+    //   "bugun gonderildi" isareti silinir ve AYNI hatirlatma gun icinde
+    //   tekrar tekrar gelirdi. Acilista abone olma eklenince bu her gun
+    //   yasanacakti. 16 Kasim 2026'da kullanici fark etti: gonderimden
+    //   sonra iPhone'un isareti duruyordu ama Chrome'unki silinmisti.
+    //
+    //   Onun yerine ONCE GUNCELLE, satir yoksa EKLE. Guncelleme yalnizca
+    //   adi gecen sutunlara dokunuyor, son_gonderim_gunu yerinde kaliyor.
+    const simdi = new Date().toISOString();
+    const alanlar = {
       p256dh: j.keys.p256dh,
       auth: j.keys.auth,
       cihaz: pushCihazEtiketi(),
       saat_dilimi: pushSaatDilimi(),
-      son_gorulme: new Date().toISOString()
-    }], { onConflict: 'endpoint' });
-    if(error) throw error;
+      son_gorulme: simdi
+    };
+    const { data: guncel, error: guncelHata } = await sb
+      .from('push_abonelikleri')
+      .update(alanlar)
+      .eq('endpoint', j.endpoint)
+      .select('id');
+    if(guncelHata) throw guncelHata;
+    if(!guncel || !guncel.length){
+      const { error } = await sb.from('push_abonelikleri')
+        .insert([Object.assign({ user_id: session.user.id,
+                                 endpoint: j.endpoint }, alanlar)]);
+      if(error) throw error;
+    }
     pushSonDurum = 'ok';
     pushDurumuYaz();
     return 'ok';

@@ -66,9 +66,15 @@ const bak = (ad, ko, ek)=>{ if(ko){ g++; console.log('  ok  '+ad); } else { k++;
   // Test artik MEKANIZMAYI degil DAVRANISI olcuyor: dugme gercekten
   // giris cagrisi yapiyor mu. Bu daha guclu bir kontrol -- oznitelik
   // dogru olup metin yanlis olsaydi eski hali bunu kacirirdi.
+  // ⚠ Bosluklar NORMALLESTIRILIYOR. Dugme ikon ve etiket diye iki
+  // span tasiyor (dar ekranda yalnizca etiket gizleniyor); aradaki
+  // gorsel bosluk CSS gap'inden geliyor, metinden degil. Yani
+  // textContent "☁Giriş yap" oluyor, sozlukteki metin "☁ Giriş yap".
+  // Olculen sey BOSLUK DEGIL, dugmenin giris cagrisi yapmasi.
+  const sadelestir = (x) => x.replace(/\s+/g, '');
   bak('oturum yokken sol menu girise cagiriyor',
-      await p.$eval('#authBtn', e => e.textContent.trim()) ===
-      await p.evaluate(() => t('btn_signin')));
+      sadelestir(await p.$eval('#authBtn', e => e.textContent)) ===
+      sadelestir(await p.evaluate(() => t('btn_signin'))));
   bak('hesap penceresi kapali', !(await p.$eval('#hesapOverlay', e => e.classList.contains('open'))));
   bak('sifre satiri hesap penceresinde duruyor', await p.$('#hesapSifreBtn') !== null);
   await p.evaluate(() => { sifrePenceresiniAc(); });
