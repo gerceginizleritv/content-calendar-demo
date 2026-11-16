@@ -150,14 +150,105 @@ başlasın diye. Tam koşudan sonra değişmiş görünmesi normaldir.
   büyütecek (Almanca ve Rusça'da da edat/fiil yeri farklı); her ekleme
   ayrı satır ve ayrı sebep ister — "hepsini serbest bırak" diye genel
   bir kural YAZILMAZ, yoksa kazara boş kalan etiket görünmez.
-- ⬜ **6.** Sekiz hazır set, düzeltilmiş adlarla
-- ⬜ **7.** Sete tek düğmeyle madde ekleme
-- ⬜ **8.** Maddeye not alanı — ⚠ kullanıcının şartı: **önce rapor**
+- ✅ **6.** Sekiz hazır set (16 Kasım 2026). Setler 12 Kasım'da
+  kodlanmıştı; açık kalan tek şey adlardı. Kullanıcı sekiz adın
+  tamamını gözden geçirdi ve **"adlar doğru"** dedi — değişiklik yok.
+  Tablo yukarıdaki "(b) Çanta ve Yapılacaklar" bölümünde.
+- ✅ **7.** **Sete tek düğmeyle madde ekleme** (16 Kasım 2026).
+  Öncesinde var olan bir sete madde eklemenin tek yolu seti **aynı
+  adla baştan yaratmaktı** (`setYap` aynı adlı seti siliyor): üç adım
+  ve adı yeniden yazmak.
+
+  Artık kütüphane sayfasında madde(ler)i işaretle → set çipindeki
+  **"+"** düğmesine bas. Kullanıcının seçtiği tasarım (a):
+  - **"+" yalnızca** kütüphane sayfasında ve **yalnızca bir şey
+    işaretliyken** çıkıyor. Pencerede çoklu seçim yok (orada tıklamak
+    maddeyi doğrudan listeye atıyor).
+  - **Hazır set çipinde de "+" var:** basınca o set **senin setlerine
+    kopyalanıyor.** Hazır setler kodun içinde metin, herkeste aynı ve
+    üzerine yazılamaz; düzenlenecek olan o kopya.
+  - Aynı adlı setin varsa kopyalama **üstüne yazmıyor, birleştiriyor**
+    — kendi eklediğin maddeler kaybolmasın.
+  - Hazır setten **yalnızca `canta` maddeleri** kopyalanıyor. Set
+    "benim malzemem" demek; *"30 saniye oda sesi kaydet"* bir iş.
+
+  ⚠ `stopPropagation` şart: "+" çipin içinde ve çipin kendi tıklaması
+  seti **açıyor** (seçimi değiştiriyor). Durdurulmasaydı kullanıcı
+  eklediği anda seçimini kaybederdi — test bunu ölçüyor.
+- ✅ **8.** **Maddeye not alanı** (16 Kasım 2026). Kullanıcının şartı
+  gereği **önce rapor verildi**, sonra kod yazıldı.
+
+  Rapordan çıkan bulgu: not alanı **çekim listesi maddesinde zaten
+  vardı** (`listeMaddeTemizle` → `not`, 200 karakter, "+ not"
+  düğmesi), ama **sete kaydedince kayboluyordu** — set yapısı
+  `maddeler: [düz metin]` idi. *"Powerbank — çantanın yan cebinde"*
+  notunu yazıp seti kaydedince not gidiyordu.
+
+  Yapılan: set yapısı `[{metin, not}]` oldu; `setYap` notları
+  topluyor, `setiListeyeEkle` listeye **geri yazıyor**.
+
+  ⛔ **GÖÇ — bu değişikliğin en tehlikeli yanı.** `setTemizle` **her
+  okuma yolunda** duruyor (`readSetler` ve `setlerBuluttan`). Eski düz
+  metin biçimini kabul etmeseydi kullanıcının kayıtlı setleri **hem
+  tarayıcıdan hem buluttan sessizce silinirdi** — ekranda hiçbir şey
+  patlamadan. İki biçim de kabul ediliyor ve o satır **kaldırılmaz**.
+
+  **Test:** `testler/set-not-ekle.test.js`, **16 kontrol**. Dört
+  mutasyonla kanıtlandı: göç kapatıldı · `stopPropagation` silindi ·
+  not geri yazılmadı · hazır setten "yap" da kopyalandı — dördü de
+  **doğru** kontrolden kırmızı yandı.
+  ⚠ Mutasyon denemesi testin **kendi hatasını da** buldu: iki iddia
+  aynı şeyi ölçüyordu, ayrıştırıldı.
 - ⬜ **10.** Set önerisi penceresi (çekim tarihi girilince)
 - ⬜ **11.** Havaya göre set önerisi
 - ⬜ **12.** Zamanlama (set doğru günde öne çıkar)
 
 ### 3 · Sınırlar
+- ⬜ **48.** ⛔ **DİL SÜREKLİLİĞİ — SİTENİN TAMAMINDA TEK DAVRANIŞ.**
+  ⚠ **41. maddeden (altı dil) ÖNCE bitmek zorunda.** Kullanıcı
+  16 Kasım 2026'da söyledi: *"Kullanıcı sitenin herhangi bir yerinde
+  hangi dili seçiyorsa o dil ile açılmalı tüm sayfalar. Daha sonra
+  dil değişimi yaparsa seçtiği dil ile devamlılık olmalı. Bu nedenle
+  senin tüm bu dil karmaşasını diğer diller sisteme girmeden çözmen
+  lazım."*
+
+  **BULUNAN HATA — doğrulandı, canlıda:** İngilizce ana sayfanın en
+  altındaki *"Put your next shoot on the board…"* bölümünde
+  **"user guide"** düğmesine basınca **Türkçe kılavuz** açılıyor.
+  Sebebi kesin: `index.html:1305` dil değişince kılavuz bağlantılarını
+  düzeltiyor ama seçicisi yalnızca `#dipKilavuz` ve `.ust-nav`
+  içindekileri kapsıyor. **Satır 1082'deki son bölüm düğmesi
+  (`son_cta2`) hiçbirine girmiyor** ve `kilavuz.html` olarak kalıyor.
+  ⚠ Tek satırlık düzeltmesi var, ama aşağıdaki asıl sorun
+  çözülmeden yapılırsa **dördüncü bir yama** olur.
+
+  **ASIL SORUN: aynı işi yapan ÜÇ AYRI MEKANİZMA var.**
+
+  | Sayfa | Dili nasıl taşıyor | Sorunu |
+  |---|---|---|
+  | `index.html` | `localStorage['demo_ui_language']` + her bağlantıyı **tek tek yeniden yazma** (`:1305`) | Seçici eksik kalınca bağlantı yanlış dile gider — **şu an öyle** |
+  | `fiyatlar.html` | Adresteki `?lang=tr` | Bağlantıyı kuran taraf eklemeyi unutursa tarayıcı diline düşer |
+  | `kilavuz.html` / `guide.html` | **Ayrı dosya**, aralarında düz bağlantı | Dil seçici yok; "English" diye tek bir bağlantı var |
+  | `app.html` | `LANG` + bulutta `prefs.lang` | Tek düzgün olan bu |
+
+  ⛔ **Altı dil gelince bu üç mekanizma sekiz dille çarpılır.**
+  `kilavuz.html`/`guide.html` kalıbı sekiz ayrı dosya demek ve
+  aralarındaki bağlantı sayısı 8×7'ye çıkar. Bugün **iki** dille bile
+  bir bağlantı kaçmış durumda.
+
+  **Yapılacak:** tek bir dil kaynağı ve tek bir bağlantı kuralı.
+  ⚠ Tasarımı sırası gelince kullanıcıya sunulacak; en az şu üçü
+  kararlaştırılacak:
+  1. Dil hafızası nerede duracak (bugün `localStorage` +
+     `prefs.lang`, ikisi 13 Kasım'da zaten bir kez ayrışmıştı).
+  2. Sayfalar arası nasıl taşınacak (adres mi, hafıza mı, ikisi mi) —
+     ⚠ arama motoru için her dilin **kendi adresi** olmalı.
+  3. Kılavuz sekiz ayrı dosya mı kalacak, yoksa tek dosya + sözlük mü.
+
+  ⚠ **Bekçi test şart** (Bölüm 7'deki kalıp): depodaki her yayın
+  sayfasında, her dilde, **dil değiştirip** bütün iç bağlantıların
+  o dile gittiğini ölçen bir test. Listeyi elle yazmayan, sayfaları
+  kendi bulan cinsten — yoksa dördüncü bağlantı yine kaçar.
 - ⬜ **44.** **Fiyatlar sayfası — EUR, bölgeye göre para birimi, eşit
   kutu, özet satırı.** Kullanıcı 16 Kasım 2026'da istedi.
 
@@ -228,6 +319,17 @@ başlasın diye. Tam koşudan sonra değişmiş görünmesi normaldir.
      gerekiyor — rakamı **kullanıcı** verecek (Bölüm 4).
      ⚠ Tasarım, indirim **sıfır ya da yokken** rozetin ne olacağını da
      çözecek: gizlenecek mi, yoksa başka bir şey mi yazacak.
+     ✅ Kullanıcı 16 Kasım'da söyledi: **"önemli değil, placeholder
+     olsun; düzenlemeyi yapınca ona göre çalışır."** Yani %0 çıkması
+     işi durdurmuyor, tasarım rakamdan bağımsız kurulacak.
+
+     ⚠ **BAŞLIKTAKİ CÜMLE DE BÜYÜYECEK.** Kullanıcı 16 Kasım'da ekran
+     görüntüsüyle işaretledi: başlıktaki *"Yıllık ödemede %22 kadar
+     daha ucuz."* satırı (`fiyatlar.html` → `#indirim`) **çok küçük**.
+     Bugün `.hint` benzeri küçük punto ile çiziliyor; para kazandıran
+     cümlenin düğmelerden sonra kaybolmaması gerekiyor. Karttaki rozet
+     ve "Yıllık" düğmesinin yanındaki oranla **aynı tasarım ailesinden**
+     olacak — üçü birden tek seferde çözülecek.
   8. ⚠ **Bölüm 7 gereği her dilde**: `fiyatlar.html` kendi sözlüğünü
      taşıyor (42 anahtar), 41. madde ile altı dile çıkacak.
 

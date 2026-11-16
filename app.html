@@ -2476,6 +2476,11 @@ textarea.sc-ai-brief{min-height:64px;resize:vertical;line-height:1.5;}
 .ih-set-sil{background:none;border:none;color:var(--text-dim);font-size:14px;line-height:1;
   cursor:pointer;padding:0 2px;}
 .ih-set-sil:hover{color:var(--red);}
+/* "+" silme tusunun IKIZI ama vurgu renginde: biri ekler, oteki siler;
+   ikisi yan yana durdugu icin yanlis basmak ucuz olmali degil. */
+.ih-set-art{background:none;border:none;color:var(--accent);font-size:15px;
+  font-weight:700;line-height:1;cursor:pointer;padding:0 2px;}
+.ih-set-art:hover{color:var(--accent-hover);}
 .ih-set-yeni{border-style:dashed;}
 .ih-setler .hint{width:100%;margin:0 0 2px;}
 /* CEKIM GUNUNDE ISIK. Form alani gibi gorunmemeli: kutusu yok,
@@ -7188,6 +7193,14 @@ const LANG = {
     set_ask: "What is this kit called? (Street shoot, Interview…)",
     set_empty_warn: "Add the gear to this list first, then turn it into a kit.",
     set_added: (n)=> n ? `${n} added.` : "They were already on the list.",
+    // 7. madde (16 Kasim 2026): var olan sete tek dugmeyle madde ekleme.
+    set_add_here: (n)=> `Add ${n} selected to this kit`,
+    set_added_to: (n, ad)=> `${n} added to “${ad}”.`,
+    set_add_none: "They are already in that kit.",
+    set_sel_empty: "Select something first.",
+    set_copy_here: "Copy to my kits",
+    set_copied: (ad, n)=> `“${ad}” copied to your kits — ${n} items.`,
+    set_copy_bos: "This one has nothing to pack — only things to do.",
     set_made: (ad, n)=> `"${ad}" saved — ${n} items.`,
     set_del_ask: (ad)=> `Remove the kit "${ad}"? The items stay in your kit list.`,
     set_limit: (n)=> `You can keep ${n} kits.`,
@@ -8475,6 +8488,14 @@ const LANG = {
     set_ask: "Bu setin ad\u0131 ne olsun? (Sokak \u00e7ekimi, R\u00f6portaj\u2026)",
     set_empty_warn: "\u00d6nce k\u00fct\u00fcphaneden malzeme ekle, sonra onlardan set yap.",
     set_added: (n)=> n ? `${n} madde eklendi.` : "Hepsi zaten listedeydi.",
+    // 7. madde (16 Kasim 2026): var olan sete tek dugmeyle madde ekleme.
+    set_add_here: (n)=> `İşaretli ${n} maddeyi bu sete ekle`,
+    set_added_to: (n, ad)=> `“${ad}” setine ${n} madde eklendi.`,
+    set_add_none: "Hepsi zaten o sette.",
+    set_sel_empty: "Önce bir şey işaretle.",
+    set_copy_here: "Setlerime kopyala",
+    set_copied: (ad, n)=> `“${ad}” setlerine kopyalandı — ${n} madde.`,
+    set_copy_bos: "Bunda götürülecek bir şey yok — yalnızca yapılacak işler var.",
     set_made: (ad, n)=> `"${ad}" kaydedildi \u2014 ${n} madde.`,
     set_del_ask: (ad)=> `"${ad}" seti silinsin mi? Maddeler k\u00fct\u00fcphanende kal\u0131r.`,
     set_limit: (n)=> `${n} set tutabilirsin.`,
@@ -10286,10 +10307,30 @@ function yeniSetId(){ return 'st_' + Date.now().toString(36) + '_' + Math.random
 function setTemizle(ham){
   const ad = String((ham && ham.ad) || '').trim().slice(0, 60);
   if(!ad) return null;
-  const maddeler = Array.isArray(ham && ham.maddeler)
-    ? [...new Set(ham.maddeler.filter(x=> typeof x === 'string')
-        .map(x=> x.trim().slice(0,120)).filter(Boolean))].slice(0, 100)
-    : [];
+  // ⛔ IKI BICIM BIRDEN KABUL EDILIYOR, VE BU GECICI BIR SEY DEGIL.
+  //   16 Kasim 2026'dan once `maddeler` DUZ METIN dizisiydi; 8. madde
+  //   (maddeye not) gelince { metin, not } nesnesine dondu. Eski bicim
+  //   kabul edilmezse kullanicinin KAYITLI SETLERI SESSIZCE BOSALIR --
+  //   setTemizle her okuma yolunda duruyor (readSetler, setlerBuluttan),
+  //   yani hata aninda hem tarayicidaki hem buluttaki veri giderdi.
+  //   Bu deponun en pahali hata turu; satir KALDIRILMAZ.
+  const gorulen = new Set();
+  const maddeler = (Array.isArray(ham && ham.maddeler) ? ham.maddeler : [])
+    .map(x=>{
+      const nesne = x && typeof x === 'object';
+      const metin = String((nesne ? x.metin : x) || '').trim().slice(0, 120);
+      if(!metin) return null;
+      return { metin, not: String((nesne && x.not) || '').trim().slice(0, 200) };
+    })
+    .filter(x=>{
+      if(!x) return false;
+      // Ayni madde iki kez durmasin; karsilastirma kutuphanedekiyle ayni
+      // kural (bas/son bosluk ve buyuk/kucuk harf onemsiz).
+      const k = ihtiyacAnahtari(x.metin);
+      if(gorulen.has(k)) return false;
+      gorulen.add(k); return true;
+    })
+    .slice(0, 100);
   if(!maddeler.length) return null;
   return { id: String((ham && ham.id) || yeniSetId()).slice(0,40), ad, maddeler };
 }
@@ -10322,13 +10363,20 @@ function setleriCiz(onek){
   const ek = onek || 'ih';
   const kap = document.getElementById(ek + '_setler');
   if(!kap) return;
+  const sayfa = ek === 'ihs';
+  // 7. madde: "+" YALNIZCA kutuphane sayfasinda ve YALNIZCA bir sey
+  // isaretliyken cikiyor. Pencerede (onek 'ih') coklu secim yok --
+  // orada tiklamak maddeyi dogrudan listeye atiyor, isaretlemiyor.
+  const artVar = sayfa && sayfaSecimi.size > 0;
   const setler = ihtiyacSetleri.map(s=>
     `<span class="ih-set" data-set-ekle="${escapeHtml(s.id)}" role="button" tabindex="0">
        ${escapeHtml(s.ad)}<b>${s.maddeler.length}</b>
+       ${artVar ? `<button type="button" class="ih-set-art" data-set-art="${escapeHtml(s.id)}"
+               title="${escapeHtml(t('set_add_here')(sayfaSecimi.size))}"
+               aria-label="${escapeHtml(t('set_add_here')(sayfaSecimi.size))}">+</button>` : ''}
        <button type="button" class="ih-set-sil" data-set-sil="${escapeHtml(s.id)}"
                title="${escapeHtml(t('cl_remove'))}" aria-label="${escapeHtml(t('cl_remove'))}">×</button>
      </span>`).join('');
-  const sayfa = ek === 'ihs';
   kap.innerHTML = (ihtiyacSetleri.length ? `<p class="hint">${escapeHtml(t('set_head'))}</p>` : '')
     + setler
     + `<button type="button" class="ih-set ih-set-yeni" data-set-yap>${escapeHtml(t(sayfa ? 'set_new_sayfa' : 'set_new'))}</button>`;
@@ -10342,7 +10390,37 @@ function setleriCiz(onek){
   kap.querySelectorAll('[data-set-sil]').forEach(el=>{
     el.addEventListener('click', ()=> setiSil(el.dataset.setSil));
   });
+  // ⚠ stopPropagation SART: "+" cipin ICINDE ve cipin kendi tiklamasi
+  //   seti ACIYOR (setiSayfadaSec secimi degistiriyor). Durdurulmazsa
+  //   kullanici ekledigi anda secimi kaybeder.
+  kap.querySelectorAll('[data-set-art]').forEach(el=>{
+    el.addEventListener('click', e=>{ e.stopPropagation(); seteEkle(el.dataset.setArt); });
+  });
   kap.querySelector('[data-set-yap]').addEventListener('click', ()=> setYap(ek));
+}
+// 7. MADDE — VAR OLAN BIR SETE TEK DUGMEYLE MADDE EKLEME.
+// Oncesinde tek yol seti AYNI ADLA bastan yaratmakti (setYap ayni adli
+// seti siliyor): uc adim ve adi yeniden yazmak. Artik isaretle + bas.
+function seteEkle(id){
+  const s = ihtiyacSetleri.find(x=> x.id === id);
+  if(!s) return;
+  if(!sayfaSecimi.size){ ihNot('ihs', t('set_sel_empty')); return; }
+  const vardi = new Set(s.maddeler.map(m=> ihtiyacAnahtari(m.metin)));
+  const yeni = [...sayfaSecimi]
+    .map(mid=> (ihtiyaclar.find(x=> x.id === mid) || {}).ad)
+    .filter(Boolean)
+    .filter(ad=> !vardi.has(ihtiyacAnahtari(ad)))
+    .map(ad=> ({ metin: ad, not: '' }));
+  if(!yeni.length){ ihNot('ihs', t('set_add_none')); return; }
+  // setTemizle'den GECIYOR: 100 madde siniri, kirpma ve tekrar elemesi
+  // tek yerde kalsin diye.
+  const temiz = setTemizle({ id: s.id, ad: s.ad, maddeler: s.maddeler.concat(yeni) });
+  if(!temiz) return;
+  const eklenen = temiz.maddeler.length - s.maddeler.length;
+  ihtiyacSetleri = ihtiyacSetleri.map(x=> x.id === s.id ? temiz : x);
+  saveSetler();
+  setleriCiz('ihs'); setleriCiz('ih');
+  ihNot('ihs', eklenen ? t('set_added_to')(eklenen, temiz.ad) : t('set_add_none'));
 }
 // Sayfada bir sete dokunmak onu ACIYOR: icindeki maddeler isaretleniyor.
 // Boylece var olan bir seti gorebiliyor, birkac madde ekleyip ayni adla
@@ -10351,8 +10429,8 @@ function setiSayfadaSec(id){
   const s = ihtiyacSetleri.find(x=> x.id === id);
   if(!s) return;
   sayfaSecimi.clear();
-  s.maddeler.forEach(ad=>{
-    const m = ihtiyaclar.find(x=> ihtiyacAnahtari(x.ad) === ihtiyacAnahtari(ad));
+  s.maddeler.forEach(md=>{
+    const m = ihtiyaclar.find(x=> ihtiyacAnahtari(x.ad) === ihtiyacAnahtari(md.metin));
     if(m) sayfaSecimi.add(m.id);
   });
   kitSayfasiCiz();
@@ -10361,9 +10439,12 @@ function setiListeyeEkle(id){
   const s = ihtiyacSetleri.find(x=> x.id === id);
   if(!s || !listeProjesi) return;
   let eklenen = 0;
-  s.maddeler.forEach(ad=>{
-    const kutuphanede = ihtiyaclar.find(x=> ihtiyacAnahtari(x.ad) === ihtiyacAnahtari(ad));
-    if(listeMaddeEkle(ad, 'kutuphane', kutuphanede ? kutuphanede.grup : '')) eklenen++;
+  s.maddeler.forEach(md=>{
+    const kutuphanede = ihtiyaclar.find(x=> ihtiyacAnahtari(x.ad) === ihtiyacAnahtari(md.metin));
+    // 8. madde: setteki not listeye GERI yaziliyor. Eskiden set yalnizca
+    // metin tasiyordu, yani "Powerbank — cantanin yan cebinde" notu seti
+    // kaydedince kayboluyordu.
+    if(listeMaddeEkle(md.metin, 'kutuphane', kutuphanede ? kutuphanede.grup : '', md.not)) eklenen++;
   });
   ihNot('ih', t('set_added')(eklenen));
   ihtiyacListesiCiz();
@@ -10381,13 +10462,20 @@ function ihNot(onek, metin){
 async function setYap(onek){
   const sayfa = onek === 'ihs';
   // Sayfada isaretlenenler, pencerede o projenin listesindekiler.
+  // 8. madde: artik { metin, not } toplaniyor. Sayfadaki kutuphane
+  // maddelerinin notu YOK (kutuphane {id, ad, grup} tasiyor); not
+  // yalnizca cekim listesi maddesinde var, oradan geliyor.
   const adaylar = sayfa
-    ? [...sayfaSecimi].map(id=> (ihtiyaclar.find(x=> x.id === id) || {}).ad).filter(Boolean)
+    ? [...sayfaSecimi].map(id=>{
+        const m = ihtiyaclar.find(x=> x.id === id);
+        return m ? { metin: m.ad, not: '' } : null;
+      }).filter(Boolean)
     // 'canta' da aday: hazir setten gelen malzeme de kullanicinin
     // kendi setine girebilmeli. 'yap' DEGIL -- set "benim malzemem",
     // is maddesi orada isi bozar.
     : projeListesi(listeProjesi || {})
-        .filter(x=> x.kaynak === 'kutuphane' || x.kaynak === 'canta').map(x=> x.metin);
+        .filter(x=> x.kaynak === 'kutuphane' || x.kaynak === 'canta')
+        .map(x=> ({ metin: x.metin, not: x.not || '' }));
   if(!adaylar.length){ uyari(t(sayfa ? 'set_empty_sayfa' : 'set_empty_warn')); return; }
   if(ihtiyacSetleri.length >= SET_MAX){ uyari(t('set_limit')(SET_MAX)); return; }
   const ad = await sor(t('set_ask'));
@@ -10656,12 +10744,55 @@ function hazirSetiEkle(sira){
 // Cipler iki yerde ciziliyor: listenin ustundeki katlanir serit ve bos
 // ekrandaki blok. Ikisi de ayni uretici, tek fark hangi kaba girdigi.
 function hazirSetCipleri(){
+  // ⚠ Cip artik <button> DEGIL <span>: icine ikinci bir dugme ("+")
+  //   girdi ve ic ice dugme gecersiz HTML. role/tabindex ile ayni
+  //   erisilebilirlik korunuyor -- kendi setlerinin cipi de boyle.
   return hazirSetler().map((x, i)=>
-    `<button type="button" class="ih-set hset-cip" data-hset="${i}">`
-    + `${escapeHtml(x.ad)}<b>${x.m.length}</b></button>`).join('');
+    `<span class="ih-set hset-cip" data-hset="${i}" role="button" tabindex="0">`
+    + `${escapeHtml(x.ad)}<b>${x.m.length}</b>`
+    + `<button type="button" class="ih-set-art" data-hkopya="${i}"`
+    + ` title="${escapeHtml(t('set_copy_here'))}"`
+    + ` aria-label="${escapeHtml(t('set_copy_here'))}">+</button>`
+    + `</span>`).join('');
+}
+// 7. MADDE — HAZIR SETI KENDI SETLERINE KOPYALA.
+// Hazir setler kodun icinde METIN: hicbir yere kaydedilmiyor ve
+// herkeste ayni. Uzerine madde eklenemez. Kullanicinin karari
+// (16 Kasim 2026): "+" basilinca once KENDI setlerine bir kopyasi
+// cikiyor, duzenlenecek olan o kopya; hazir set herkeste bozulmadan
+// kaliyor.
+// ⛔ YALNIZCA 'canta' MADDELERI KOPYALANIYOR. Set "benim malzemem"
+//   demek; "30 saniye oda sesi kaydet" bir is, malzeme degil. Ayni
+//   kural setYap'ta da var.
+function hazirSetiKopyala(sira){
+  const h = hazirSetler()[sira];
+  if(!h) return;
+  const maddeler = h.m.filter(x=> x[0] === 'canta').map(x=> ({ metin: x[1], not: '' }));
+  if(!maddeler.length){ ihNot('ih', t('set_copy_bos')); return; }
+  // Ayni adli set varsa USTUNE YAZILMIYOR, BIRLESTIRILIYOR: kullanici
+  // kendi ekledigi maddeleri kaybetmesin.
+  const vardi = ihtiyacSetleri.find(x=> x.ad.toLocaleLowerCase('tr') === h.ad.toLocaleLowerCase('tr'));
+  if(!vardi && ihtiyacSetleri.length >= SET_MAX){ uyari(t('set_limit')(SET_MAX)); return; }
+  const temiz = setTemizle(vardi
+    ? { id: vardi.id, ad: vardi.ad, maddeler: vardi.maddeler.concat(maddeler) }
+    : { ad: h.ad, maddeler });
+  if(!temiz) return;
+  const eklenen = temiz.maddeler.length - (vardi ? vardi.maddeler.length : 0);
+  ihtiyacSetleri = vardi
+    ? ihtiyacSetleri.map(x=> x.id === vardi.id ? temiz : x)
+    : ihtiyacSetleri.concat([temiz]);
+  saveSetler();
+  setleriCiz('ih'); setleriCiz('ihs');
+  ihNot('ih', eklenen ? t('set_copied')(temiz.ad, eklenen) : t('set_add_none'));
 }
 function hazirSetleriBagla(kap){
   if(!kap) return;
+  // ⚠ stopPropagation SART: "+" cipin icinde, cipin kendi tiklamasi
+  //   seti LISTEYE ekliyor. Durdurulmazsa tek basista hem kopyalanir
+  //   hem listeye dokulur.
+  kap.querySelectorAll('[data-hkopya]').forEach(el=>{
+    el.addEventListener('click', e=>{ e.stopPropagation(); hazirSetiKopyala(+el.dataset.hkopya); });
+  });
   kap.querySelectorAll('[data-hset]').forEach(el=>{
     el.addEventListener('click', ()=> hazirSetiEkle(Number(el.dataset.hset)));
   });
@@ -10776,12 +10907,14 @@ function listeMaddeCikar(id){
   projeListesiYaz(pr, projeListesi(pr).filter(x=> x.id !== id));
   cekimListesiCiz();
 }
-function listeMaddeEkle(metin, kaynak, grup){
+function listeMaddeEkle(metin, kaynak, grup, not){
   const pr = listeProjesi;
   if(!pr) return null;
   const liste = projeListesi(pr);
   if(liste.length >= LISTE_MAX){ uyari(t('cl_limit')(LISTE_MAX)); return null; }
-  const madde = listeMaddeTemizle({ metin, kaynak: kaynak || 'elle', grup: grup || '' });
+  // `not` 8. maddeyle geldi ve ISTEGE BAGLI: eski cagri yerleri (elle
+  // ekleme, mekandan gelen, hazir set) dort parametre vermiyor.
+  const madde = listeMaddeTemizle({ metin, kaynak: kaynak || 'elle', grup: grup || '', not: not || '' });
   if(!madde) return null;
   // Ayni metin listede zaten varsa ikinci kez eklenmiyor.
   if(liste.some(x=> ihtiyacAnahtari(x.metin) === ihtiyacAnahtari(madde.metin))) return null;
