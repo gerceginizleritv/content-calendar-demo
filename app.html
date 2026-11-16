@@ -7145,7 +7145,7 @@ const LANG = {
     rm_when_gecikti_note: "“When a step is already late” works in the browser notification only. A calendar file writes its reminders in advance, so it cannot know later that a step slipped.",
     rm_kapsam: "These <b>reminders</b> are for <b>project step deadlines</b> — script, filming, audio, edit, approval, packaging, publishing. Your posts get no reminder: they go to a calendar of their own, without an alarm, so your phone does not buzz for every single post.",
     rm_saat_et: "Reminder time",
-    rm_saat_not: "Applies to calendar reminders.",
+    rm_saat_not: "Applies to the calendar file and to browser notifications.",
     rm_when_none: "Pick at least one moment, otherwise nothing is sent.",
     rm_ch_browser: "Browser notification",
     rm_ch_browser_lead: "Works on computers and Android. On iPhone you must add Shootboard to the home screen first, otherwise iOS sends no notification.",
@@ -7153,7 +7153,7 @@ const LANG = {
     rm_ch_browser_ask: "Allow notifications",
     rm_ch_browser_denied: "This browser has blocked notifications for Shootboard. Allow them again from the padlock icon in the address bar.",
     rm_ch_browser_none: "This browser cannot show notifications.",
-    rm_ch_browser_note: "For now the notification arrives when you open Shootboard. Sending while Shootboard is closed is the next step.",
+    rm_ch_browser_note: "Notifications also arrive while Shootboard is closed, at the time you set below. You need to be signed in: the reminder is sent from the server, which needs to know your deadlines.",
     rm_ch_cal: "Your own calendar",
     rm_ch_cal_lead: "Two calendar addresses are published: one for your deadlines, one for your posts. You add them to Google Calendar, your phone or Outlook once. Deadlines carry the reminder; posts just sit on the calendar at their own time.",
     // MCP erisimi.
@@ -8422,7 +8422,7 @@ const LANG = {
     rm_when_gecikti_note: "“Adım geciktiğinde” yalnızca tarayıcı bildiriminde çalışır. Takvim dosyası hatırlatmalarını önceden yazıyor, bu yüzden bir adımın sonradan geciktiğini bilemez.",
     rm_kapsam: "Bu <b>hatırlatmalar</b> <b>proje adımlarının terminleri</b> içindir — script, çekim, ses, kurgu, onay, paketleme, yayın. Paylaşımların için hatırlatma kurulmuyor: onlar kendi ayrı takvimine, alarmsız giriyor — her paylaşım için telefonun titremesin diye.",
     rm_saat_et: "Hatırlatma saati",
-    rm_saat_not: "Takvim hatırlatmaları için geçerli.",
+    rm_saat_not: "Takvim dosyası ve tarayıcı bildirimi için geçerli.",
     rm_when_none: "En az bir an seç, yoksa hiçbir şey gönderilmez.",
     rm_ch_browser: "Tarayıcı bildirimi",
     rm_ch_browser_lead: "Bilgisayarda ve Android'de çalışıyor. iPhone'da önce Shootboard'u ana ekrana eklemen ŞART, yoksa iOS bildirim göndermiyor.",
@@ -8430,7 +8430,7 @@ const LANG = {
     rm_ch_browser_ask: "Bildirimlere izin ver",
     rm_ch_browser_denied: "Bu tarayıcı Shootboard'un bildirimlerini engellemiş. Adres çubuğundaki kilit simgesinden yeniden izin verebilirsin.",
     rm_ch_browser_none: "Bu tarayıcı bildirim gösteremiyor.",
-    rm_ch_browser_note: "Şimdilik bildirim, Shootboard'u açtığında geliyor. Shootboard kapalıyken gönderim sonraki adım.",
+    rm_ch_browser_note: "Bildirim Shootboard kapalıyken de geliyor, aşağıda seçtiğin saatte. Bunun için giriş yapmış olman gerekiyor: hatırlatmayı sunucu gönderiyor ve terminlerini bilmesi lazım.",
     rm_ch_cal: "Kendi takvimin",
     rm_ch_cal_lead: "İki takvim adresi yayınlanıyor: biri terminlerin, biri paylaşımların için. Bu adresleri Google Takvim'e, telefonuna ya da Outlook'a bir kez ekliyorsun. Hatırlatmayı terminler taşıyor; paylaşımlar takvimde kendi saatinde duruyor.",
     // MCP erisimi.
@@ -15961,7 +15961,11 @@ function tercihPrefsYap(){
   // yazmak calismayan bir ayari acik gostermek olurdu.
   prefs.reminders = {
     takvim: hatirlatma.takvim, once: hatirlatma.once,
-    gun: hatirlatma.gun, gecikti: hatirlatma.gecikti, jeton: hatirlatma.jeton
+    gun: hatirlatma.gun, gecikti: hatirlatma.gecikti, jeton: hatirlatma.jeton,
+    // ⚠ saat 16 Kasim 2026'da eklendi. Sebebi: push bildirimini SUNUCU
+    // gonderiyor ve kullanicinin hangi saatte istedigini bilmesi gerek.
+    // Bu alan olmadan sunucu varsayilan 09:00'a dusuyordu.
+    saat: hatirlatma.saat
   };
   return prefs;
 }
@@ -22027,6 +22031,7 @@ function hatirlatmaBuluttan(uzak){
   hatirlatma.gun     = t.gun;
   hatirlatma.gecikti = t.gecikti;
   hatirlatma.jeton   = t.jeton;
+  hatirlatma.saat    = t.saat;
   try{ localStorage.setItem(HATIRLATMA_ANAHTARI, JSON.stringify(hatirlatma)); }catch(e){}
   hatirlatmaEkraniTazele();
 }
@@ -22937,6 +22942,134 @@ async function bildirimIzniIste(){
   if(!('Notification' in window)) return 'yok';
   try{ return await Notification.requestPermission(); }catch(e){ return bildirimDurumu(); }
 }
+
+// ---- PUSH ABONELIGI (Shootboard KAPALIYKEN gelen bildirim) ---------
+//
+// Acik olan bildirim ile bunun farki: asagidaki terminBildirimi()
+// uygulama ACIKKEN gosteriyor. Push ise kapaliyken geliyor ve onu
+// sunucu yolluyor (supabase/functions/push-gonder).
+//
+// ⛔ VAPID ACIK ANAHTARI BURAYA GOMULU DEGIL. genel_ayarlar
+//    tablosundan okunuyor. Sebebi: panelden kurulan Edge Function'in
+//    adresindeki kisa ad RASTGELE uretiliyor, yani bu dosya o adresi
+//    onceden bilemez. Tablodan okuyunca istemci fonksiyonun adresinden
+//    tamamen bagimsiz kaliyor. (Ayrinti: sql/71'in ortasi.)
+//
+// ⚠ HESAPSIZ KULLANICIDA CALISMAZ ve calisamaz: terminler sunucuya
+//   hic ulasmiyor (saveProjects yalnizca if(session) gonderiyor), yani
+//   sunucu neyi hatirlatacagini bilemez. Hesapsizda yalnizca uygulama
+//   acilirken gelen bildirim var.
+let vapidAcikOnbellek = null;
+
+async function vapidAcikAl(){
+  if(vapidAcikOnbellek !== null) return vapidAcikOnbellek;
+  vapidAcikOnbellek = '';
+  if(!sb) return '';
+  try{
+    const { data, error } = await sb.from('genel_ayarlar')
+      .select('deger').eq('anahtar', 'vapid_acik').maybeSingle();
+    if(error) throw error;
+    vapidAcikOnbellek = (data && data.deger) || '';
+  }catch(e){
+    // Tablo henuz kurulmamis olabilir (sql/71 calistirilmadan once).
+    // Sessizce bos donuyoruz: abonelik acilmaz, uygulama calismaya
+    // devam eder.
+    console.warn('[push] vapid anahtari okunamadi', e);
+  }
+  return vapidAcikOnbellek;
+}
+
+// base64url -> bayt dizisi. pushManager.subscribe ham bayt istiyor.
+function pushAnahtarBayt(s){
+  const d = String(s || '').replace(/-/g, '+').replace(/_/g, '/');
+  const ham = atob(d + '='.repeat((4 - (d.length % 4)) % 4));
+  const u = new Uint8Array(ham.length);
+  for(let i = 0; i < ham.length; i++) u[i] = ham.charCodeAt(i);
+  return u;
+}
+
+// Kullaniciya "hangi cihaz" diye gosterebilmek icin kaba bir etiket.
+// ⛔ Kimlik degil: parmak izi cikaracak bir sey toplanmiyor.
+function pushCihazEtiketi(){
+  const u = navigator.userAgent || '';
+  const tarayici = /Edg\//.test(u) ? 'Edge'
+                 : /OPR\//.test(u) ? 'Opera'
+                 : /Chrome\//.test(u) ? 'Chrome'
+                 : /Firefox\//.test(u) ? 'Firefox'
+                 : /Safari\//.test(u) ? 'Safari' : '?';
+  const sistem = /Windows/.test(u) ? 'Windows'
+               : /Android/.test(u) ? 'Android'
+               : /iPhone|iPad|iPod/.test(u) ? 'iOS'
+               : /Mac OS X/.test(u) ? 'macOS'
+               : /Linux/.test(u) ? 'Linux' : '?';
+  return (tarayici + ' — ' + sistem).slice(0, 64);
+}
+
+// Sunucu "bugun"u kullanicinin gununde hesaplasin diye.
+function pushSaatDilimi(){
+  try{ return Intl.DateTimeFormat().resolvedOptions().timeZone || ''; }
+  catch(e){ return ''; }
+}
+
+// Donus degerleri konusuyor: cagiran taraf neden olmadigini bilsin.
+async function pushAboneOl(){
+  if(!sb || !session) return 'hesapsiz';
+  if(!('serviceWorker' in navigator) || !('PushManager' in window)) return 'desteklenmiyor';
+  if(bildirimDurumu() !== 'granted') return 'izin-yok';
+  const anahtar = await vapidAcikAl();
+  if(!anahtar) return 'anahtar-yok';
+  try{
+    const kayit = await navigator.serviceWorker.ready;
+    let abone = await kayit.pushManager.getSubscription();
+    if(!abone){
+      abone = await kayit.pushManager.subscribe({
+        userVisibleOnly: true,                 // ⛔ sart: sessiz push yasak
+        applicationServerKey: pushAnahtarBayt(anahtar)
+      });
+    }
+    const j = abone.toJSON ? abone.toJSON() : null;
+    if(!j || !j.endpoint || !j.keys || !j.keys.p256dh || !j.keys.auth){
+      return 'anahtarsiz-abonelik';
+    }
+    const { error } = await sb.from('push_abonelikleri').upsert([{
+      user_id: session.user.id,
+      endpoint: j.endpoint,
+      p256dh: j.keys.p256dh,
+      auth: j.keys.auth,
+      cihaz: pushCihazEtiketi(),
+      saat_dilimi: pushSaatDilimi(),
+      son_gorulme: new Date().toISOString()
+    }], { onConflict: 'endpoint' });
+    if(error) throw error;
+    return 'ok';
+  }catch(e){
+    // ⚠ BILINEN SINIR: ayni tarayicida BASKA bir hesap abonelik birakmis
+    //   ve cikarken temizlememisse (sekme cokmus, veri silinmis) bu
+    //   upsert RLS'e takilir -- satir onun, biz guncelleyemeyiz.
+    //   Cikista pushAbonelikBirak() cagriliyor, normal akista olmaz.
+    //   Olursa kullanici bildirim almaz ve sebebi burada gorunur.
+    console.error('[push] abone olunamadi', e);
+    return 'hata';
+  }
+}
+
+async function pushAbonelikBirak(){
+  if(!('serviceWorker' in navigator)) return;
+  try{
+    const kayit = await navigator.serviceWorker.getRegistration();
+    const abone = kayit && await kayit.pushManager.getSubscription();
+    if(!abone) return;
+    const adres = abone.endpoint;
+    // ONCE satir siliniyor: oturum hala acikken silinebilsin. Tersi
+    // sirada cikis once olursa RLS kendi satirimizi da silmemize
+    // izin vermez ve satir sonsuza kadar kalir.
+    if(sb && session && adres){
+      try{ await sb.from('push_abonelikleri').delete().eq('endpoint', adres); }
+      catch(e){ console.warn('[push] satir silinemedi', e); }
+    }
+    await abone.unsubscribe();
+  }catch(e){ console.warn('[push] abonelik birakilamadi', e); }
+}
 // Bildirim SLATE ACILDIGINDA gonderiliyor; kapaliyken gonderim sonraki
 // adim. Gunde bir kez: her yenilemede tekrar cikan bildirim, bildirimi
 // kapatilir hale getirir.
@@ -22971,7 +23104,10 @@ function hatirlatmaEkraniTazele(){
   el('rm_tarayici').checked = hatirlatma.tarayici;
   el('rm_takvim').checked = hatirlatma.takvim;
   el('rm_saat').value = hatirlatma.saat;
-  el('rm_saatSatir').hidden = !hatirlatma.takvim;
+  // Saat IKI kanali da ilgilendiriyor: takvim dosyasi alarmini buna
+  // gore yaziyor, push bildirimi de bu saatte gonderiliyor. Eskiden
+  // yalnizca takvim acikken gorunuyordu.
+  el('rm_saatSatir').hidden = !(hatirlatma.takvim || hatirlatma.tarayici);
   el('rm_when_warn').hidden = (hatirlatma.once || hatirlatma.gun || hatirlatma.gecikti);
 
   // Tarayici kanali
@@ -23181,12 +23317,14 @@ document.getElementById('rm_tarayici').addEventListener('change', async (e)=>{
   // kalmak, kullanicinin "actim ama gelmiyor" demesine yol aciyordu.
   if(hatirlatma.tarayici && bildirimDurumu() === 'default') await bildirimIzniIste();
   hatirlatmaEkraniTazele();
-  if(hatirlatma.tarayici) terminBildirimi();
+  if(hatirlatma.tarayici){ terminBildirimi(); pushAboneOl(); }
+  else pushAbonelikBirak();
 });
 document.getElementById('rm_izinBtn').addEventListener('click', async ()=>{
   await bildirimIzniIste();
   hatirlatmaEkraniTazele();
   terminBildirimi();
+  if(hatirlatma.tarayici) pushAboneOl();
 });
 
 document.getElementById('rm_takvim').addEventListener('change', async (e)=>{
@@ -23211,6 +23349,9 @@ document.getElementById('rm_takvim').addEventListener('change', async (e)=>{
 
 // Saat degisince ayarla birlikte TAKVIM DOSYASI da yeniden yaziliyor:
 // yalnizca ayari kaydetmek, kullanicinin takviminde eski saati birakirdi.
+// ⚠ Saat artik yalnizca .ics dosyasini degil, SUNUCUNUN ne zaman
+// bildirim gonderecegini de belirliyor. hatirlatmaKaydet() zaten
+// tercihPushKuyrukla() cagiriyor, yani deger buluta gidiyor.
 document.getElementById('rm_saat').addEventListener('change', (e)=>{
   const v = e.target.value;
   if(!/^([01]\d|2[0-3]):[0-5]\d$/.test(v)){ e.target.value = hatirlatma.saat; return; }
@@ -24518,6 +24659,12 @@ document.getElementById('hesapOverlay').addEventListener('click', (e)=>{
 });
 document.getElementById('hesapCikisBtn').addEventListener('click', async ()=>{
   track('funnel/signed-out');
+  // ⛔ CIKIStAN ONCE: abonelik satiri bu hesaba ait ve RLS geregi
+  //   yalnizca bu oturum silebilir. Cikis once yapilirsa satir
+  //   sonsuza kadar kalir ve ayni tarayicida baska bir hesap abonelik
+  //   acamaz. Ayrica cikmis bir hesabin terminleri gelmeye devam
+  //   etmemeli.
+  await pushAbonelikBirak();
   await sb.auth.signOut();
   // Cikan kisi bos bir uygulamada kalmasin: karsilama sayfasina donuyor,
   // giris ve kayit orada. replace() kullaniliyor ki geri tusu cikilmis
@@ -24617,6 +24764,11 @@ const HESAP_TABLOLARI = ['calendar_events','projects','ideas','scripts',
                          'project_scripts','tiktok_hesaplari',
                          'youtube_hesaplari','threads_hesaplari',
                          'threads_yanitlari',
+                         // sql/71 ile gelen push abonelikleri. BEKCI bunu
+                         // da yakaladi (16 Kasim 2026): tablo yazildiktan
+                         // hemen sonra hesap-sil testi kirmizi yandi.
+                         // Cascade var ama yetmez -- yukaridaki nota bak.
+                         'push_abonelikleri',
                          // sql/69 ile gelen uc tablo. hesap-sil testindeki
                          // BEKCI bunlari yakaladi: sql/ icinde user_id
                          // tasiyan her tablo bu listede olmak zorunda.

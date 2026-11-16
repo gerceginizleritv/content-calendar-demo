@@ -20,11 +20,14 @@
    yeniden yaziliyor.
    ===================================================================== */
 
-/* ⚠ SURUM HER PALET/GORUNUM DEGISIKLIGINDE ARTMALI. v5 -> v6:
+/* ⚠ SURUM HER PALET/GORUNUM DEGISIKLIGINDE ARTMALI. v6 -> v7:
+   15 Kasim 2026 -- ikon ailesinin tamami klaket logosuna gecti.
+   Eski onbellek eski ikonu tutar, o yuzden surum artti.
+   v5 -> v6:
    13 Kasim'daki palet degisikligi ve 15 Kasim'daki Asama 4
    onbellekteki eski CSS yuzunden eski kullaniciya ULASMIYORDU.
    activate kancasi SURUM disindaki butun onbellekleri siliyor. */
-const SURUM = 'shootboard-v6';
+const SURUM = 'shootboard-v7';
 const KABUK = [
   './app.html',
   './index.html',
@@ -33,7 +36,9 @@ const KABUK = [
   './ai/dogrula.js',
   './favicon.svg',
   './icons/icon-192.png',
-  './icons/icon-512.png'
+  './icons/icon-512.png',
+  './icons/icon-maskable-192.png',
+  './icons/icon-maskable-512.png'
 ];
 
 self.addEventListener('install', (olay)=>{

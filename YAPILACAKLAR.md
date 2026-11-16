@@ -2920,6 +2920,213 @@ biçimlendirme, kendi alan adı.
 
 ---
 
+## Nerede kaldık (16 Kasım 2026 — PUSH BİTTİ, kuruluma hazır)
+
+### Kullanıcının verdiği iki karar
+
+**1. Termin hesabını SUNUCU yapacak.** Kullanıcı sordu: *"Normal
+şartlar altında sunucu daha sağlıklı değil mi? Sonuçta sunucu her
+zaman açık ve saati çalışıyor"* — haklıydı ve benim çerçevelemem
+hatalıydı. "Tarayıcı hesaplayıp yüklesin" seçeneğinin dezavantajı
+olarak "dosya eskir" demiştim; abartmışım, çünkü terminler ancak
+uygulamada bir şey değişince değişir. Asıl fark: sunucu
+**veritabanındaki asıl kaynağı** okuyor, araya bir yükleme adımı
+girmiyor. O adım bir kez başarısız olsa bildirim sessizce gelmezdi.
+
+⚠ "Tek kopya" seçeneği **zaten yoktu**: tarayıcı internetsizken ve
+hesapsız kullanıcıda da hatırlatma göstermek zorunda, yani kendi
+hesabını her hâlükârda tutuyor. Ben yanlış sunmuşum.
+
+Ayrışma riski `testler/termin-ikiz.test.js` ile **görünür** kılındı
+(ortadan kaldırılamaz). Mutasyonla kanıtlandı: üç bozma denendi,
+üçü de yakalandı.
+
+**2. Push, fiyatlandırmaya girecek.** Kullanıcı: *"ok çok daha iyi
+bu da bizim fiyatlandırmamıza ek olarak girecek bir konu olur"*.
+
+⚠ **`fiyatlar.html`'e HENÜZ EKLENMEDİ ve eklenmemeli.** O dosyada
+yazılı kural: *"YALNIZCA VAR OLAN ÖZELLİKLER"* — özellik denetiminde
+"yok" çıkanlar bilerek listeden çıkarılmış. Push canlıda değil:
+VAPID anahtarı üretilmedi, fonksiyon dağıtılmadı, `sql/71` ve
+`sql/72` çalıştırılmadı. **Kurulum bitip ilk bildirim gerçekten
+düştükten sonra** `fiyatlar.html`'deki `ozellik` listesine eklenecek
+(iki dilde, 298. ve 338. satırlar).
+
+⚠ Özellik **kendiliğinden** hesaba bağlı, zorlama bir sınır değil:
+hesapsız kullanıcının terminleri sunucuya hiç ulaşmıyor
+(`saveProjects` yalnızca `if(session)` gönderiyor), yani sunucu neyi
+hatırlatacağını bilemiyor. Hesapsızda yalnızca uygulama açılırken
+bildirim var. Bu, arayüz metnine de yazıldı (`rm_ch_browser_note`).
+
+### Yazılan dosyalar — hepsi hazır, kurulum bekliyor
+
+| Dosya | Ne |
+|---|---|
+| `supabase/functions/push-gonder/webpush.ts` | RFC 8291/8188/8292, dış kütüphane yok |
+| `…/terminler.ts` | termin kuralının sunucu kopyası |
+| `…/index.ts` | gönderen fonksiyon (GET: sağlık, POST: tur) |
+| `…/README.md` | **yedi adımlı kurulum**, adım adım |
+| `sql/71` | `push_abonelikleri` + `genel_ayarlar` |
+| `sql/72` | saatlik cron |
+| `araclar/vapid-uret.html` | anahtarı kullanıcının tarayıcısında üretir |
+| `testler/webpush-vektor.test.js` | 8 kontrol — RFC'nin resmî vektörü |
+| `testler/termin-ikiz.test.js` | 11 kontrol — iki kopya karşılaştırması |
+
+### Doğrulananlar (iddia değil, ölçüm)
+
+- **Şifreleme RFC 8291 Bölüm 5'in resmî vektörüyle birebir tutuyor.**
+  Vektör `https://www.rfc-editor.org/rfc/rfc8291.txt` adresinden
+  indirildi (host ağ listesine eklendi).
+- `vapid-uret.html` **hiç dış ağ isteği yapmıyor** (ölçüldü).
+  Anahtar uzunlukları doğru (87/43), açık anahtar `0x04` ile başlıyor,
+  her üretim farklı, sayfa iki dilde.
+- İki kopya testi mutasyonla kanıtlandı.
+
+### ⛔ Testin yakaladığı GERÇEK hata
+
+`hesap-sil.test.js` kırmızı yandı. Depoda bir **bekçi** varmış:
+`sql/` içinde `user_id` taşıyan her tablo `HESAP_TABLOLARI`'nda olmak
+zorunda. `push_abonelikleri` listede değildi — yani **hesabını silen
+kullanıcının push aboneliği kalacaktı.** Listeye eklendi.
+
+Cascade vardı ama yetmiyor: cascade yalnızca auth kullanıcısı
+silinince çalışıyor, uygulamanın yedek silme yolu bu listeyi
+kullanıyor. (Aynı bekçi `sql/69`'un üç tablosunu da yakalamıştı.)
+
+### Bilinen sınır (koda ve buraya yazıldı)
+
+Aynı tarayıcıda **başka bir hesap** abonelik bırakmış ve çıkarken
+temizlememişse (sekme çöktü, veri silindi), yeni hesabın aboneliği
+RLS'e takılır — satır onun, biz güncelleyemeyiz. Normal akışta olmaz:
+çıkışta `pushAbonelikBirak()` çağrılıyor, hem de `signOut`'tan ÖNCE
+(tersi sırada RLS kendi satırımızı silmemize de izin vermezdi).
+
+### Sırada ne var
+
+1. Kullanıcı `README.md`'deki yedi adımı uygulayacak.
+2. İlk bildirim gerçekten düştükten **sonra**: `fiyatlar.html`'e
+   özellik olarak eklenecek, `MARKA.md` sözlüğüne bakılacak.
+3. ⚠ **Gerçek bir push servisinin kabul edip etmediği hâlâ
+   doğrulanmadı.** Şifrelemenin standarda uygunluğu kanıtlandı ama
+   uçtan uca deneme ancak canlıda yapılabilir.
+
+---
+
+## Nerede kaldık (15 Kasım 2026, akşam — LOGO + PUSH BAŞLADI)
+
+Kullanıcı PC'yi kapattı, **yarın devam.** Bu bölüm devir notudur.
+
+### ✅ BİTEN — logo ailesi tek kaynağa getirildi
+
+Kullanıcı PC'de kurduktan sonra masaüstü simgesini gördü:
+*"pc de icon bu şekilde bizim kendi iconumuz logomuz olamaz mı"*.
+Haklıydı — PWA ikonu **jenerik bir "not kâğıdı"** çizimiydi, logo
+değildi, turuncusu bile paletten değildi.
+
+⛔ **Sorun sanılandan büyüktü: ikon ailesinin TAMAMI ayrışmıştı.**
+`favicon.svg` 13 Kasım'da maviden turuncu klakete çevrilmiş, ama PNG
+sürümler 31 Ekim'de kalmıştı. Yani sekme simgesi, Apple simgesi ve
+PWA simgesi üç ayrı şeyi gösteriyordu.
+
+Hepsi `logo-koyu.svg`'den yeniden üretildi (koyu zemin için olan sürüm;
+`logo.svg` açık zemin içindir ve kendi yorumunda "koyu zemine koyma"
+yazıyor):
+
+| Dosya | Boyut | Not |
+|---|---|---|
+| `icons/icon-192.png` · `icon-512.png` | %84 logo | `purpose: any` |
+| `icons/icon-maskable-192.png` · `-512` | %60 logo | **YENİ** |
+| `apple-touch-icon.png` | 180 | opak (iOS alfa sevmiyor) |
+| `favicon-32x32.png` · `favicon-16x16.png` | — | artık klaket |
+| `favicon.ico` | 16+32+48 | elle paketlendi |
+
+⛔ **Manifest'te gerçek bir hata vardı:** `any` ve `maskable` için
+**aynı dosya** veriliyordu. Maskable ikon daire/kare maskeye kırpılır,
+yani kenarlar kesilirdi. Artık ayrı, boşluklu dosya.
+
+`sw.js` SURUM **v6 → v7**: eski önbellek eski ikonu tutardı.
+
+`sayfa-saglik.test.js` yeni ikonlarla **geçti**.
+
+### 🔄 BAŞLAYAN — push bildirimi
+
+Kullanıcı: *"ben pc başında olmayacağım sen push mesaj için
+çalışmalar başla"*.
+
+**Durum tespiti (doğrulandı, varsayım değil):**
+
+| Parça | Durum |
+|---|---|
+| `sw.js:119` push dinleyicisi | ✅ zaten vardı |
+| Bildirim izni (`app.html:22938`) | ✅ var |
+| Uygulama AÇIKKEN bildirim | ✅ var |
+| Abonelik tablosu | ✅ **bu oturumda yazıldı** → `sql/71` |
+| Şifreleme + VAPID imzası | ✅ **bu oturumda yazıldı + DOĞRULANDI** |
+| Gönderen Edge Function | ⬜ yazılacak |
+| İstemci tarafı `pushManager.subscribe` | ⬜ yazılacak |
+| Zamanlanmış görev (cron) | ⬜ kullanıcı kuracak |
+| VAPID anahtar çifti | ⬜ kullanıcı üretecek |
+
+**Yazılan dosyalar:**
+
+- `sql/71-push-abonelikleri.sql` — tablo + RLS. Hiçbir şeyi geri
+  almıyor, tekrar çalıştırılması güvenli. **Henüz ÇALIŞTIRILMADI.**
+- `supabase/functions/push-gonder/webpush.ts` — RFC 8291 (şifreleme),
+  RFC 8188 (paketleme), RFC 8292 (VAPID imzası). **Dış kütüphane yok**,
+  depodaki gelenek bu: hiçbir Edge Function dış paket çekmiyor.
+- `testler/webpush-vektor.test.js` — **8 kontrol, 8'i geçti.**
+
+⚠ **Şifreleme UYDURULMADI, RFC'nin kendi sayılarıyla doğrulandı.**
+Test vektörü `https://www.rfc-editor.org/rfc/rfc8291.txt` Bölüm 5'ten
+indirildi (host bu oturumda ağ listesine eklendi). Aynı girdilerle
+üretilen şifreli metin, RFC'nin yazdığıyla **birebir aynı**.
+
+⚠ **Bu testin sınırı:** doğrulanan şey şifrelemenin standarda
+uygunluğu. Gerçek bir push servisinin kabul edip etmediği **ancak
+canlıda, gerçek bir cihaza bildirim düşünce** belli olur.
+
+### Alınan tasarım kararları (yarın tekrar tartışılmasın)
+
+1. **VAPID açık anahtarı `app.html`'e GÖMÜLMEYECEK.** Edge Function GET
+   ile döndürecek, istemci açılışta çekecek. Sebebi: kullanıcı hiçbir
+   dosyayı elle düzenlemek zorunda kalmasın; anahtar yalnızca Supabase
+   sırlarında dursun.
+2. **Abonelikler ayrı tablo**, `user_prefs` içinde değil. Bir
+   kullanıcının birden çok tarayıcısı olur.
+3. **Ölü abonelik silinir**, mezar taşı tutulmaz. 404/410 dönen
+   abonelik bir daha dirilmez.
+4. **Endpoint tekil (kullanıcı başına değil GENEL).** Aynı tarayıcı
+   başka hesapla girerse satırı devralır; bildirim yanlış hesaba
+   gitmez.
+
+### ⛔ YARIN ÇÖZÜLECEK AÇIK SORU — saat dilimi
+
+Hatırlatma saati (`prefs.reminders.saat`) **kullanıcının yerel
+saati**, ama kullanıcının saat dilimi **hiçbir yerde saklanmıyor**
+(mekânlarda var, kullanıcıda yok). Sunucu bunu bilmeden ne zaman
+göndereceğini hesaplayamaz.
+
+Önerilen: istemci `Intl.DateTimeFormat().resolvedOptions().timeZone`
+değerini `prefs`e yazsın. Küçük bir ekleme ama `app.html`'e dokunuyor.
+
+### ⛔ İKİNCİ AÇIK SORU — termin hesabı iki yerde olacak
+
+`hatirlatilacaklar()` (app.html:22050) terminleri tarayıcıda
+hesaplıyor. Gönderen Edge Function aynı hesabı **Deno'da tekrar**
+yapacak. İki kopya ayrışır — bu depo tam bu hatayı defalarca yaşadı
+(politika tablosu, palet, ikon ailesi).
+
+Yarın karar verilecek: (a) iki kopya + ayrışmayı yakalayan test,
+(b) hesabı SQL'e taşıyıp ikisinin de oradan okuması.
+
+### Kaydın durumu
+
+Bu işler **`yedek/push-bildirimi` dalında**, `main`'de DEĞİL.
+Sebebi: tam test koşusu yapılmadı ve kural "main'e göndermeden önce
+tam test" diyor. Yarın tam koşu yeşilse `main`'e geçecek.
+
+---
+
 ## Nerede kaldık (15 Kasım 2026 — "her şeyin İngilizcesi olmalı")
 
 Kullanıcı: *"hazırlanan her şey mutlaka invgilizcede olmalı !"* ve
