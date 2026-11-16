@@ -15,6 +15,16 @@
 <link rel="icon" type="image/png" sizes="16x16" href="favicon-16x16.png">
 <link rel="apple-touch-icon" sizes="180x180" href="apple-touch-icon.png">
 <style>
+/* YATAY YAYLANMA. Telefonda sayfa saga sola oynuyordu: parmak biraz yana
+   kaydiginda tarayici belgeyi yatayda "lastik gibi" cekiyor ve birakinca
+   geri firlatiyor. Sayfa aslinda ekrandan genis degil -- olculdu, yaylanma
+   bos yerde oluyor; arkadaki zemin aciga ciktigi icin fark ediliyor.
+   ⛔ 16 Kasim 2026: bu duzeltme app.html'de VARDI, diger sekiz sayfada
+   YOKTU. Kullanici index.html'de gordu ve bildirdi. Bir yerde duzeltilip
+   otekilerde unutulmasi bu deponun tekrarlayan hatasi.
+   testler/yatay-yaylanma.test.js artik hepsini kontrol ediyor. */
+html{overscroll-behavior-x:none;}
+body{overscroll-behavior-x:none;}
 @import url('https://fonts.googleapis.com/css2?family=Poppins:wght@400;600;700;800&family=JetBrains+Mono:wght@400;500;700&display=swap');
 
 :root{
@@ -914,7 +924,7 @@ body.suruklenirken *{cursor:grabbing !important;}
 
   /* Yatay (Tablo) view: horizontal scroll instead of squeezing 9 columns */
   .cal-table{table-layout:auto;min-width:820px;}
-  #calTableView{overflow-x:auto;-webkit-overflow-scrolling:touch;}
+  #calTableView{overflow-x:auto;overscroll-behavior-x:contain;-webkit-overflow-scrolling:touch;}
 }
 
 </style>

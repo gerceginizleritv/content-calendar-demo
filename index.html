@@ -20,6 +20,16 @@
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.45.4/dist/umd/supabase.js"></script>
 
 <style>
+/* YATAY YAYLANMA. Telefonda sayfa saga sola oynuyordu: parmak biraz yana
+   kaydiginda tarayici belgeyi yatayda "lastik gibi" cekiyor ve birakinca
+   geri firlatiyor. Sayfa aslinda ekrandan genis degil -- olculdu, yaylanma
+   bos yerde oluyor; arkadaki zemin aciga ciktigi icin fark ediliyor.
+   ⛔ 16 Kasim 2026: bu duzeltme app.html'de VARDI, diger sekiz sayfada
+   YOKTU. Kullanici index.html'de gordu ve bildirdi. Bir yerde duzeltilip
+   otekilerde unutulmasi bu deponun tekrarlayan hatasi.
+   testler/yatay-yaylanma.test.js artik hepsini kontrol ediyor. */
+html{overscroll-behavior-x:none;}
+body{overscroll-behavior-x:none;}
 /* ══════════════════════════════════════════════════════════════════
    IŞIK JELLERİ — renk sistemi
    ──────────────────────────────────────────────────────────────────
