@@ -2582,6 +2582,31 @@ textarea.sc-ai-brief{min-height:64px;resize:vertical;line-height:1.5;}
   border-radius:2px;background:var(--bg);color:var(--text);font:inherit;font-size:13px;
   resize:vertical;}
 .ih-toplu .btn{margin-top:8px;}
+/* SAYFA KIPI — pencere degil, sayfanin kendisi.
+   `display:none` varsayilani ayni kaliyor ki `open` gelmeden
+   gorunmesin; acikken blok olarak AKISA giriyor, perde yok. */
+.proje-sayfasi{display:none;}
+.proje-sayfasi.open{display:block;}
+/* Icerideki kutu artik "ayri bir kagit" degil, sayfanin govdesi:
+   genislik siniri, 88vh yuksekligi ve kendi kaydirmasi kalkiyor --
+   kaydirma SAYFANIN kendisinde olacak. */
+.proje-sayfasi .modal{
+  max-width:none;max-height:none;overflow-y:visible;
+  border-width:1px;padding:20px;
+}
+/* ⛔ Proje sayfasi acikken listenin kendisi GIZLENIYOR. Kullanicinin
+   istedigi tam buydu: "sagdaki projelerin listesinin gidip yerine
+   buyuk bir sayfada projeyi calisabilecegim alan". */
+#projectsPage:has(#projectEditOverlay.open) > :not(#projectEditOverlay){display:none;}
+/* Geri serisi: sayfanin en ustunde, her zaman gorunur. Pop-up'ta
+   yalnizca bir "x" vardi ve nereye donulecegi belli degildi. */
+.sayfa-geri{display:flex;align-items:center;gap:10px;margin:0 0 14px;}
+.sayfa-geri button{font:inherit;font-size:13px;font-weight:600;cursor:pointer;
+  background:none;border:1px solid var(--line);border-radius:2px;
+  padding:7px 12px;color:var(--text);}
+.sayfa-geri button:hover{border-color:var(--accent);color:var(--accent);}
+.sayfa-geri .sayfa-geri-ad{font-size:13px;color:var(--text-dim);
+  overflow:hidden;text-overflow:ellipsis;white-space:nowrap;}
 .overlay{display:none;position:fixed;inset:0;background:var(--perde-koyu);z-index:50;align-items:center;justify-content:center;padding:20px;overscroll-behavior:none;}
 .overlay.open{display:flex;}
 /* PENCERE. Cizim (project/FoyKayit.dc.html) 2px duz kenarlik ve ustte
@@ -4612,7 +4637,26 @@ textarea.sc-ai-brief{min-height:64px;resize:vertical;line-height:1.5;}
      Iki sey YALNIZCA duzenlerken cikiyor: "iptal edildi" ve "Sil".
      Henuz var olmayan bir projeyi iptal etmek ya da silmek diye bir sey
      yok; orada dursaydi ne yaptigi anlasilmazdi. -->
-<div class="overlay" id="projectEditOverlay">
+<!-- ⛔ BU ARTIK BIR PENCERE DEGIL, PROJELER SAYFASININ ICINDEKI BIR
+     SAYFA. Kullanici 16 Kasim 2026'da uc kez bildirdi: "pop-up da
+     degil tipki bir sayfa gibi acilmasi lazim", "geri donmek istersem
+     donemiyorum".
+
+     ⚠ `overlay` SINIFI BILEREK KALDIRILDI ama `id` ve acikken eklenen
+     `open` sinifi AYNEN DURUYOR. Sebebi iki yonlu:
+       · 11 test dosyasi `#projectEditOverlay.open` diye bakiyor ve
+         hicbiri "bu bir pop-up" demiyor, "duzenleyici acik mi" diyor.
+         Sinifi korumak o 23 iddiayi ZAYIFLATMADAN yasatiyor.
+       · Uc yer `document.querySelector('.overlay.open')` ile GOVDE
+         KILIDINI aciyor (15480, 17748, 17928). Sayfa oldugunda govde
+         kilitlenmemeli; `overlay` sinifi kalkinca o sorgular bunu
+         artik pencere saymiyor. Tek satirla iki is.
+
+     ⚠ Eleman acilista JS ile #projectsPage ICINE tasiniyor (bkz.
+     `sayfaKipineTasi`). Isaretlemede burada durmasinin sebebi: blok
+     buyuk ve elle tasinmasi kirilgan; tek satirlik appendChild hem
+     kimligi hem butun dinleyicileri oldugu gibi koruyor. -->
+<div class="proje-sayfasi" id="projectEditOverlay">
   <div class="modal">
     <h2 id="pe_baslik" data-i18n="pe_title">Edit project</h2>
     <div class="field"><label data-i18n="pe_name">Project name</label>
@@ -6690,6 +6734,9 @@ const LANG = {
     p_deadline_var: (g)=> `Deadline: ${g} — click to change`,
     p_overdue: (n)=> n===1 ? '1 step is past its deadline:' : `${n} steps are past their deadline:`,
     pe_title: "Edit project",
+    // 50. madde (16 Kasim 2026): proje artik pencere degil SAYFA;
+    // geri seridi listeye donuyor.
+    sayfa_geri: "\u2190 Projects",
     pe_name: "Project name",
     pe_type: "Type",
     pe_address: "Address",
@@ -8023,6 +8070,9 @@ const LANG = {
     p_deadline_var: (g)=> `Teslim tarihi: ${g} — değiştirmek için tıkla`,
     p_overdue: (n)=> `${n} adımın teslim tarihi geçti:`,
     pe_title: "Projeyi düzenle",
+    // 50. madde (16 Kasim 2026): proje artik pencere degil SAYFA;
+    // geri seridi listeye donuyor.
+    sayfa_geri: "\u2190 Projeler",
     pe_name: "Proje adı",
     pe_type: "Tür",
     pe_address: "Adres",
@@ -13832,11 +13882,81 @@ function projeFormunuDoldur(p, yeniAd){
   adresAlaniniTazele(tur, document.getElementById('pe_addressWrap'));
   peIsikTazele();
 }
-function openProjectEdit(id){
+// ---- PROJE SAYFASI -------------------------------------------------
+// Eleman isaretlemede ust seviyede duruyor ama YERI burasi degil:
+// acilista #projectsPage'in icine tasiniyor. Tek satirlik appendChild
+// kimligi de butun dinleyicileri de oldugu gibi koruyor; blogu elle
+// tasimak kirilgandi.
+//
+// ⚠ Geri serisi ISARETLEMEDE YOK, burada uretiliyor: boylece buyuk
+//   bloga dokunulmuyor ve metni dil degisince tazelenebiliyor.
+function sayfaKipineTasi(){
+  const el = document.getElementById('projectEditOverlay');
+  const sayfa = document.getElementById('projectsPage');
+  if(!el || !sayfa) return;
+  if(el.parentElement !== sayfa) sayfa.appendChild(el);
+  const kutu = el.querySelector('.modal');
+  if(kutu && !kutu.querySelector('.sayfa-geri')){
+    const serit = document.createElement('div');
+    serit.className = 'sayfa-geri';
+    serit.innerHTML = '<button type="button" id="pe_geri"></button>'
+                    + '<span class="sayfa-geri-ad" id="pe_geriAd"></span>';
+    kutu.insertBefore(serit, kutu.firstChild);
+    serit.querySelector('#pe_geri').addEventListener('click', ()=> closeProjectEdit());
+  }
+  projeGeriTazele();
+}
+function projeGeriTazele(){
+  const dug = document.getElementById('pe_geri');
+  if(dug) dug.textContent = t('sayfa_geri');
+  const ad = document.getElementById('pe_geriAd');
+  if(ad) ad.textContent = duzenlenenProje ? duzenlenenProje.name : t('p_add');
+}
+
+// ---- ADRES (rota) --------------------------------------------------
+// ⛔ Uygulamada bugune kadar HIC adres yonetimi yoktu: location.hash,
+//   pushState, popstate hicbiri kullanilmiyordu. Kullanici 16 Kasim
+//   2026'da "girdigim yerden geri donemiyorum" dedi; tarayicinin geri
+//   tusunun calismasi icin tek yol bu.
+//
+// ⚠ Sayfa gecisleri (setPage) adresi REPLACE ediyor, proje acmak ise
+//   PUSH: boylece sekme gezinmek gecmisi doldurmuyor ama projeden
+//   geri tusu listeye donuyor.
+function rotaYaz(rota, yeniKayit){
+  try{
+    const h = '#' + rota;
+    if(location.hash === h) return;
+    if(yeniKayit) history.pushState({ rota }, '', h);
+    else history.replaceState({ rota }, '', h);
+  }catch(e){ /* dosyadan acilmis olabilir; gezinme yine calisir */ }
+}
+function rotaOku(){
+  return (location.hash || '').replace(/^#\/?/, '').split('/').filter(Boolean);
+}
+window.addEventListener('popstate', ()=>{
+  const r = rotaOku();
+  if(r[0] === 'proje' && r[1] && projectById(r[1])){
+    setPage('projects');
+    openProjectEdit(r[1], true);
+    return;
+  }
+  // Proje sayfasi acikken geri tusu: sayfayi KAPAT, listeye don.
+  if(document.getElementById('projectEditOverlay').classList.contains('open')){
+    closeProjectEdit(true);
+  }
+});
+
+// sessizRota true ise adres yazilmiyor: cagri zaten geri tusundan
+// geliyor ve ikinci bir kayit gecmisi bozar.
+function openProjectEdit(id, sessizRota){
   const p = projectById(id);
   if(!p) return;
+  sayfaKipineTasi();
   projeFormunuDoldur(p);
   document.getElementById('projectEditOverlay').classList.add('open');
+  projeGeriTazele();
+  if(!sessizRota) rotaYaz('/proje/' + id, true);
+  try{ window.scrollTo({ top: 0, behavior: 'instant' }); }catch(e){ window.scrollTo(0, 0); }
 }
 async function projeSil(p){
   if(!p) return;
@@ -13853,9 +13973,13 @@ async function projeSil(p){
   saveProjects(); save(); renderProjects(); renderCal();
 }
 
-function closeProjectEdit(){
+function closeProjectEdit(sessizRota){
   document.getElementById('projectEditOverlay').classList.remove('open');
   duzenlenenProje = null;
+  // Liste geri geliyor; sayfa kipinde gizlenmis olan satirlar yeniden
+  // cizilsin ki arada degisen bir sey varsa gorunsun.
+  if(typeof renderProjects === 'function') renderProjects();
+  if(!sessizRota) rotaYaz('/projeler', false);
 }
 
 
@@ -15589,8 +15713,11 @@ document.getElementById('tplOvrSave').addEventListener('click', ()=>{
 // dolduruyordu ve iki ekranin farkli alanlar sormasi "burasi neresi"
 // dedirtiyordu.
 function openProjectNew(ad){
+  sayfaKipineTasi();
   projeFormunuDoldur(null, ad || '');
   document.getElementById('projectEditOverlay').classList.add('open');
+  projeGeriTazele();
+  rotaYaz('/proje/yeni', true);
   document.getElementById('pe_name').focus();
 }
 document.getElementById('p_openNew').addEventListener('click', ()=> openProjectNew());
@@ -15618,7 +15745,11 @@ document.getElementById('pe_delete').addEventListener('click', ()=>{
   closeProjectEdit();
   projeSil(p);
 });
-document.getElementById('projectEditOverlay').addEventListener('click', e=>{ if(e.target.id==='projectEditOverlay') closeProjectEdit(); });
+// ⛔ PERDE TIKLAMASI KALDIRILDI. Pencere kipinde disariya tiklamak
+//   kapatmak demekti; sayfa kipinde "disarisi" sayfanin kendi bos
+//   alani ve orada tiklayan kullanici kapanmasini beklemiyor.
+//   Kapatma artik yalnizca geri seridi, Vazgec ve tarayicinin geri
+//   tusuyla oluyor.
 // Tek kaydetme yolu: yeni projede once kayit dogruyor, sonra ayni kod
 // alanlari yaziyor. Ayri bir "olustur" isleyicisi olsaydi (eskiden oyleydi)
 // eklenen her yeni alani iki yere birden yazmak gerekirdi.
