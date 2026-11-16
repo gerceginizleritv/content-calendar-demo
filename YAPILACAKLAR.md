@@ -158,27 +158,56 @@ başlasın diye. Tam koşudan sonra değişmiş görünmesi normaldir.
 - ⬜ **12.** Zamanlama (set doğru günde öne çıkar)
 
 ### 3 · Sınırlar
-- ⬜ **44.** **Fiyatlar sayfası — para birimi, ölçü, özet, üstteki
-  tuşlar.** Kullanıcı 16 Kasım 2026'da istedi, dört ayrı iş:
+- ⬜ **44.** **Fiyatlar sayfası — EUR, bölgeye göre para birimi, eşit
+  kutu, özet satırı.** Kullanıcı 16 Kasım 2026'da istedi.
 
-  1. **Kullanıcı nereden girdiyse o fiyatı görsün.** Bugün
-     `fiyatlar.html:386` adresteki `?lang` ya da tarayıcı diline
-     bakıyor; **bölgeye göre** seçim yok.
-  2. **USD → EURO.** ⚠ Fiyatlar **çevrilmeyecek**: kullanıcı
-     *"TRY'de daha ucuz planlıyorum"* dedi, yani TRY ve EUR **ayrı
-     rakamlar**. ⛔ Rakamları kullanıcı verecek — **uydurulmayacak**
-     (Bölüm 4).
-  3. **Kutular aynı ölçüde olsun.** Ekran görüntüsünde Starter ve
-     Creator Pro kutuları farklı yükseklikte. ⚠ Mekân kartlarında
-     aynı hata vardı ve `mekan-kart-olcu.test.js` ile kapatıldı;
-     buraya da **ölçen bir test** yazılacak.
-  4. **Fiyata dahil olanların kısa özeti** eklenecek; o satır
+  ✅ **ÖNCE İYİ HABER — panel → sayfa zinciri ZATEN KURULU.**
+  Kullanıcı *"admin panelinden gireceğim fiyat fiyatlar sayfasında
+  görünecek şekilde design edeceksin"* dedi; koddan doğrulandı,
+  bugün zaten öyle çalışıyor:
+
+  | Halka | Nerede |
+  |---|---|
+  | Panel fiyatı yazıyor | `yonetim.html:376-448` → `plan_prices.amount_minor` |
+  | Her değişiklik geçmişe düşüyor | `sql/69:255` trigger → `price_history` |
+  | Tablo herkese **açık okunur** | `sql/69:390` `for select using (true)` |
+  | Sayfa tablodan okuyup çiziyor | `fiyatlar.html:490` `plan_prices` → `fiyatBul()` |
+
+  Yani ekrandaki "320 TL" şu an bile panelden geliyor. **Yeniden
+  kurulacak bir şey yok**; aşağıdakiler onun üstüne ekleniyor.
+
+  **Yapılacaklar:**
+
+  1. ⛔ **EUR — SQL gerekiyor, ENGEL BURADA.** `sql/69:129` şöyle
+     yazıyor: `check (currency in ('USD','TRY'))`. Yani **EUR bugün
+     veritabanına GİRMİYOR**, panel de yazamaz. Yeni bir SQL dosyası
+     kısıtı güncelleyecek ve EUR satırlarını açacak.
+     ⚠ SQL'i **kullanıcı çalıştırır**, adım adım yazılacak
+     (Bölüm 1). ⚠ `sql/69` yeniden koşturulursa kısıt geri gelir —
+     yeni dosyanın başına bu uyarı yazılacak (Bölüm 6).
+  2. **USD satırları EUR'ya geçecek.** ⛔ Rakamlar **çevrilmeyecek**:
+     kullanıcı *"TRY'de daha ucuz planlıyorum"* dedi, yani TRY ve EUR
+     **ayrı rakamlar**. ⛔ Rakamları **kullanıcı panelden girecek** —
+     uydurulmayacak (Bölüm 4). Kod yalnızca EUR'yu mümkün kılacak.
+  3. **Bölgeye göre para birimi.** Bugün `fiyatlar.html:389`
+     `let para = trMi ? 'TRY' : 'USD'` — yani **dile** bakıyor,
+     bölgeye değil. Kullanıcı nereden girdiyse o para birimi açılacak.
+     ⚠ Bölge nereden anlaşılacak (saat dilimi mi, `navigator.language`
+     bölge eki mi, bir servis mi) sırası gelince kullanıcıya
+     sorulacak — tahminle seçilmeyecek.
+  4. ✅ **Aylık/Yıllık KALIYOR** (kullanıcı 16 Kasım'da onayladı).
+     Yalnızca **TRY/USD çifti** kalkacak: para birimi artık otomatik.
+  5. **Kutular aynı ölçüde olsun.** Ekran görüntüsünde Starter ve
+     Creator Pro farklı yükseklikte. ⚠ Mekân kartlarında aynı hata
+     vardı; `mekan-kart-olcu.test.js` ile kapatıldı. Buraya da
+     **ölçen bir test** yazılacak.
+  6. **Fiyata dahil olanların kısa özeti** eklenecek; o satır
      eklenirken kutu ölçüsü de düzeltilecek.
-  5. **Üstteki fiyatla ilgili tuşlar kaldırılacak.** Ekran
-     görüntüsünde iki çift var: **TRY/USD** ve **Aylık/Yıllık**.
-     ⚠ Kullanıcı *"fiyat ile ilgili olan"* dedi — TRY/USD çifti para
-     birimi otomatik seçileceği için zaten gereksiz, ama
-     **Aylık/Yıllık da kalkacak mı sırası gelince SORULACAK.**
+     ⛔ Özette **yalnızca VAR OLAN özellikler** yazılacak:
+     `fiyatlar.html:309` zaten uyarıyor — PDF/CSV dışa aktarma ve
+     ekip özellikleri özellik denetiminde **YOK** çıktı.
+  7. ⚠ **Bölüm 7 gereği her dilde**: `fiyatlar.html` kendi sözlüğünü
+     taşıyor (42 anahtar), 41. madde ile altı dile çıkacak.
 
 - ⬜ **45.** **Ana sayfa kahraman bölümü: geniş ekranda ortada büyük
   turuncu boşluk.** Kullanıcı 16 Kasım 2026'da yüksek çözünürlüklü
