@@ -206,7 +206,29 @@ başlasın diye. Tam koşudan sonra değişmiş görünmesi normaldir.
      ⛔ Özette **yalnızca VAR OLAN özellikler** yazılacak:
      `fiyatlar.html:309` zaten uyarıyor — PDF/CSV dışa aktarma ve
      ekip özellikleri özellik denetiminde **YOK** çıktı.
-  7. ⚠ **Bölüm 7 gereği her dilde**: `fiyatlar.html` kendi sözlüğünü
+  7. **Yıllık indirim oranı GÖZE ÇARPSIN.** Kullanıcı 16 Kasım 2026'da
+     ekran görüntüsüyle istedi: kartta yıllık fiyatın yazdığı yere
+     *"%35 indirim"* gibi **tasarlanmış, dikkat çekici** bir öğe
+     gelecek (kendi fontu ve görseli), **ve aynı oran "Yıllık"
+     düğmesinin yanında da yazacak.**
+
+     ✅ **Hesap ZATEN VAR, sabit yazılmıyor:** `fiyatlar.html:439-447`
+     her planın `yearly ÷ 12` değerini `monthly` ile karşılaştırıyor
+     ve **görünen planlar arasındaki EN KÜÇÜK** indirimi yazıyor
+     (hiçbir plan için abartılmasın diye). Bugün bu oran yalnızca
+     başlıktaki tek cümlede görünüyor (`#indirim`), kartta değil.
+     Yani iş **hesap yazmak değil, o sayıyı doğru yerlere taşıyıp
+     tasarlamak**.
+
+     ⛔ **DİKKAT — BUGÜNKÜ RAKAMLARLA İNDİRİM SIFIR.** Kullanıcının
+     gönderdiği ekranda Creator Pro **250 TL/ay** ve **yıllık 3.000 TL**:
+     250 × 12 = 3.000, yani **hiç indirim yok**. Rozet otomatik
+     hesaplandığı için bugün **%0** çıkar ve görünmez. Oranın
+     görünmesi için yıllık fiyatın panelden daha düşük girilmesi
+     gerekiyor — rakamı **kullanıcı** verecek (Bölüm 4).
+     ⚠ Tasarım, indirim **sıfır ya da yokken** rozetin ne olacağını da
+     çözecek: gizlenecek mi, yoksa başka bir şey mi yazacak.
+  8. ⚠ **Bölüm 7 gereği her dilde**: `fiyatlar.html` kendi sözlüğünü
      taşıyor (42 anahtar), 41. madde ile altı dile çıkacak.
 
 - ⬜ **45.** **Ana sayfa kahraman bölümü: geniş ekranda ortada büyük
@@ -678,9 +700,32 @@ Platform renkleri **değişmedi** (sekizi de yeni zeminde en az 3,97).
 
 ---
 
-### (b) Çanta ve Yapılacaklar — başlamadı
+### (b) Çanta ve Yapılacaklar — ✅ KOD YAZILDI (12 Kasım 2026)
 
-Sekiz setin listesi kullanıcıdan geldi (63 madde). Kod yazmadan önce:
+⚠ **BU BÖLÜM 16 KASIM 2026'YA KADAR "başlamadı" DİYORDU — YANLIŞTI.**
+Sekiz set 12 Kasım'da kodlandı: `app.html` içinde `LANG[dil].hset`,
+**63 madde**, iki dilde, `testler/hazir-setler.test.js` bekçisiyle
+(bir dilde eksik madde, donmuş grup başlığı, uçuş günü setinde sayı,
+kullanıcının kendi verisine dokunma — dördünü de ölçüyor).
+
+Bugünkü sekiz set (16 Kasım 2026'da koddan sayıldı):
+
+| # | Türkçe | İngilizce | Çanta | Yap |
+|---|---|---|---|---|
+| 1 | Önceki akşam | The night before | 2 | 7 |
+| 2 | Dış çekim | Outdoor shoot | 9 | 0 |
+| 3 | Konuşmalı çekim | Interview | 5 | 4 |
+| 4 | Telefonla çekim | Shooting on a phone | 3 | 7 |
+| 5 | Kayda basmadan | Before you hit record | 0 | 8 |
+| 6 | Çekimden sonra | After the shoot | 0 | 7 |
+| 7 | Uçuş günü | Flying day | 3 | 2 |
+| 8 | Soğuk ve ıslak | Cold and wet | 4 | 2 |
+
+İki dilin çanta/yap sayıları birebir tutuyor. ⚠ **6. maddenin açık
+kalan tek kısmı "düzeltilmiş adlar"** — hangi adın neye düzeltileceği
+hiçbir yerde yazılı değil, kullanıcıya soruldu.
+
+Aşağıdaki dört madde o günün notu; 1, 3 ve 4 hâlâ açık:
 
 1. **Hava eşikleri** — kullanıcı önermemi istedi, "kamera ve telefonların
    yağmur/soğuk dayanıklılığına göre". ⛔ Doğrulanmadan sayı yazılmayacak.
