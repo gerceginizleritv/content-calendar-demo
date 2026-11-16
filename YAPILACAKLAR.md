@@ -293,13 +293,37 @@ başlasın diye. Tam koşudan sonra değişmiş görünmesi normaldir.
   | Tazeleme bağlı mı | **Evet** — `platformChecks` değişince `modalHesapTazele` koşuyor (`app.html:20016`) |
   | **Şüpheli** | `hesapPlatformDoldur` (`app.html:24020`) seçiciye **boş seçenek koymuyor**; varsayılan `CAL_SM_PLATFORMS[0]` = **YouTube** |
 
-  ⚠ **En olası sebep:** hesap eklenirken platform seçicisi
-  değiştirilmediyse hesap **YouTube'a** kaydedilmiştir. O zaman
-  Instagram'da hâlâ tek hesap vardır ve alan doğru olarak çıkmaz.
-  ⛔ Tahmin değil **doğrulanacak**: kullanıcı Hesap etiketleri
-  listesinde ikinci hesabın hangi platformun altında yazdığına
-  bakacak. Doğruysa düzeltme "varsayılanı YouTube yapmamak" olur
-  (boş + "platform seç" ya da ilk kaydetmede uyarı) — **onay alınacak.**
+  ✅ **ÇÖZÜLDÜ — HATA DEĞİLMİŞ** (kullanıcı ekran görüntüsü gönderdi,
+  16 Kasım 2026). Listede **tek hesap** var: *BOSVALAB · Instagram*.
+  Alanın şartı iki hesap; Instagram'da bir hesap olduğu için alan
+  **doğru davranıp** çıkmamış. İkinci hesap hiç eklenmemiş.
+
+  ⚠ **Önceki tahminim ("platform YouTube'a düşmüştür") YANLIŞTI.**
+  Hesap doğru biçimde Instagram'da kayıtlı. Tahmin yazılmıştı,
+  ekran görüntüsü çürüttü — Bölüm 4'ün tekrarı.
+
+  ⛔ **ASIL BULGU: ENTER TUŞU HİÇBİR ŞEY YAPMIYOR.** Formdaki
+  alanlarda Enter'a basmak kaydetmiyor; kaydeden tek şey "Ekle"
+  düğmesi (`hs_kaydet`, `app.html:24148`). Düğme `type="button"` ve
+  etrafında `<form>` yok, yani **Enter sessizce yutuluyor** — ne
+  kayıt oluşuyor ne uyarı çıkıyor. Alanları doldurup Enter'a basan
+  kullanıcı hesabın eklendiğini sanıyor. Kullanıcının yaşadığı şeyin
+  en olası sebebi bu.
+
+  ⚠ İkinci bulgu: ad alanı zorunlu (`hesapKaydet` boş adda uyarı
+  veriyor, o kısım doğru) ama **hangi alanın zorunlu olduğu basmadan
+  önce belli değil.**
+
+  ⚠ Üçüncü bulgu: pencerenin açıklaması (`hs_intro`) *"Aynı
+  platformda birden çok hesabın varsa buraya ekle"* diyor ama
+  **alanın ancak İKİ hesapta görüneceğini söylemiyor.** Tek hesaplı
+  kullanıcı kayıt ekranında neden seçim çıkmadığını anlayamıyor.
+
+  **Önerilen üç küçük düzeltme — kullanıcı onayı bekliyor:**
+  1. Alanlarda **Enter kaydetsin** ("Ekle" ile aynı).
+  2. Pencereye tek cümle: *"Bir platformda **iki** hesabın olduğunda,
+     kayıt açarken hangisine gideceğini sorarız."*
+  3. Ad alanının zorunlu olduğu basmadan önce belli olsun.
   ⚠ Bu senaryoyu kapsayan test yok; yazılacak.
 
 - ⬜ **51.** **MEKÂNLARA TÜR ALANI + çekim türüne göre süzme.**
