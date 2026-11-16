@@ -77,6 +77,36 @@ haber ver.
 - ⬜ **12.** Zamanlama (set doğru günde öne çıkar)
 
 ### 3 · Sınırlar
+- ⬜ **42.** **Yerel biçim merkezi** — ⚠ kullanıcı 16 Kasım 2026'da
+  ekletti: *"kullanıcı hangi dil ile kullanıyorsa o dilde olmalı.
+  Yeni eklenecek dillere göre düzenlenmesi lazım."*
+
+  ⛔ **BUGÜN CANLI BİR HATA VAR.** `lokasyon.html` ay adlarını **üç
+  yerde** `'tr-TR'` diye SABİT yazıyor (satır **2218, 2319, 3085**)
+  ama o sayfanın dil seçicisinde **tr, en, ru** var. Yani İngilizce
+  ya da Rusça kullanan biri takvimde **Türkçe ay adı** görüyor
+  ("Kas", "Ara"). Doğrulandı, uydurma değil.
+
+  Aynı ailenin tamamı (koddan sayıldı, 16 Kasım 2026):
+
+  | Kalıp | Kaç yer | Nerede |
+  |---|---|---|
+  | `currentLang === 'tr' ? 'tr-TR' : 'en-US'` (ve `en-GB` türevleri) | **19** | `app.html` 15, `paylas.html` 3, `fiyatlar.html` 1 |
+  | `… ? 'tr' : 'en'` (sıralama, büyük/küçük harf) | **34** | `app.html` |
+  | Sabit `'tr-TR'`, dil seçicisi varken | **3** | `lokasyon.html` 2218, 2319, 3085 |
+  | **Toplam** | **56** | |
+
+  Yapılacak: tek bir **dil → locale eşlemesi** (`tr`→`tr-TR`,
+  `en`→`en-GB` ya da `en-US`, sonra `es`, `pt-BR`, `de`, `fr`, `it`,
+  `ru`), 56 yeri ona bağla, testini yaz.
+
+  ⚠ **İki işi birden yapıyor:** (a) bugünkü lokasyon hatasını
+  kapatıyor, (b) **41. maddenin ön koşulu.** Bu düzelmeden dil
+  eklenirse yeni diller **hata vermeden** Amerikan tarih biçimi ve
+  İngilizce sıralamasıyla kalır — sessiz bozulma.
+
+  ⛔ Sıralamada 41'den ÖNCE olmak zorunda, ama 41'i beklemiyor:
+  lokasyon hatası bugün canlı.
 - ⬜ **1.** Instagram 5 hashtag sınırı (AI 8-15 üretiyor), YouTube
   60 karakter üstü, Reels kapağı. Bugün `f_hashtags` yalnızca
   **karakter** sınırı taşıyor (400), **adet** sınırı yok.
@@ -167,13 +197,8 @@ haber ver.
   ⛔ **Kullanıcı "dillere başla" demeden kod yazılmaz.**
   ⚠ **İKİ ÖN KOŞUL, ikisi de 41'den ÖNCE:**
   1. **40** (sözlük parite testi) — Sıra 2'de.
-  2. **Yerel biçim merkezi.** Bugün tarih/sıralama biçimi **19 yerde**
-     iki dile sabitlenmiş (`currentLang === 'tr' ? 'tr-TR' : 'en-US'`
-     ve `en-GB` türevleri: `app.html` 15, `paylas.html` 3,
-     `fiyatlar.html` 1). Ayrıca **34 yerde** `… ? 'tr' : 'en'`
-     sıralama/büyük-harf kapısı var. Toplam **53 yer**. Bunlar
-     düzelmeden dil eklenirse yeni diller **hata vermeden** Amerikan
-     tarih biçimi ve İngilizce sıralamasıyla kalır.
+  2. **42** (yerel biçim merkezi) — Sıra 3'te, **56 yer**. O madde
+     bugünkü `lokasyon.html` hatasını da kapatıyor; ayrıntı orada.
   ⚠ **Dalga dalga:** önce `es` + `pt-BR`, sonra `de` + `fr`, sonra
   `it` + `ru`. Her dalgadan sonra kullanıcıya göster, onay al.
 
@@ -326,7 +351,8 @@ satır 2218, 2319, 3085. Ama o sayfanın dil seçicisinde **tr, en, ru**
 var. Yani İngilizce ya da Rusça kullanan biri takvimde **Türkçe ay
 adı** görüyor (`Kas`, `Ara`). Bugünkü bir hata, altı dille ilgisi yok.
 
-⚠ Düzeltilmedi: §2 gereği onay bekliyor. Kullanıcıya bildirildi.
+✅ **Kullanıcı 16 Kasım 2026'da onayladı ve listeye ekletti: 42. madde
+(Sıra 3).** Orada 56 yerin tamamıyla birlikte ele alınıyor.
 
 ### Çoğul biçimleri — 76 anahtar
 
