@@ -204,6 +204,58 @@ başlasın diye. Tam koşudan sonra değişmiş görünmesi normaldir.
 - ⬜ **12.** Zamanlama (set doğru günde öne çıkar)
 
 ### 3 · Sınırlar
+- ⬜ **49.** ⛔ **SET YÖNETİMİ: İÇİ GÖRÜNMÜYOR, MADDE ÇIKARILAMIYOR.**
+  Kullanıcı 16 Kasım 2026'da 7. maddeyi denedi ve iki eksik buldu:
+
+  > *"Tıkladığım setler geldi ama içlerini daha önce herhangi bir
+  > yerde göremediğim için hangisini hangi çekime ekleyeceğimi
+  > bilemiyorum. Ayrıca buraya ekledim ama buradan geri de
+  > çıkaramıyorum — yani + var ama − yok."*
+
+  **İkisi de doğrulandı:**
+
+  | Eksik | Bugünkü durum |
+  |---|---|
+  | Setin içi görünmüyor | Çip yalnızca **ad + sayı** gösteriyor (`.hset-cip`). İçindeki maddeleri görmenin hiçbir yolu yok — set ancak **eklendikten sonra** ne olduğu anlaşılıyor |
+  | Madde çıkarılamıyor | Setten **tek madde silme yok**. Tek yol `setiSil` ile **setin tamamını** silmek |
+
+  ⚠ **İkinci eksik 7. maddeyle BEN getirdim:** "+" eklendi, karşılığı
+  olan "−" eklenmedi. Ekleme kolaylaştı, geri alma aynı kaldı
+  (seti baştan yaratmak). Asimetri.
+
+  Yapılacak: setin içi **eklemeden önce** görünsün (çipe basınca
+  açılan önizleme ya da satır), ve her maddenin yanında **çıkarma**
+  olsun. ⚠ Hazır setler kodun içinde metin ve herkeste aynı —
+  onlardan madde çıkarmak **kendi kopyanı** yaratmak demek
+  (7. madde bu yolu zaten kurdu).
+  ⚠ Bölüm 7: metinler iki dilde. Bekçi test: eklenen madde **geri
+  çıkarılabiliyor mu** ölçülecek.
+
+- ⬜ **50.** ⛔ **PROJE DÜZENLEME POP-UP DEĞİL SAYFA OLSUN.**
+  Kullanıcı 16 Kasım 2026'da ekran görüntüsüyle bildirdi:
+  *"Bu ekran pop-up gibi bir ekranda açıldığı için burada yönetmek de
+  zor. Herhangi bir projeyi tıklayıp açtığımızda pop-up da değil tıpkı
+  bir sayfa gibi açılması lazım!"*
+
+  **Doğrulandı:** `app.html:4596` — proje düzenleme bir
+  `overlay` + `modal` çifti (`projectEditOverlay`). Ve çekim listesi
+  **bu pencerenin içinden** yine bir pop-up olarak açılıyor
+  (`cekimListesiOverlay`) — yani **pop-up içinde pop-up.**
+  Ekran görüntüsünde pencere; ad, tür, tarih, mekân arama, saha
+  detayları, iptal kutusu, fikirler, scriptler, çekim listesi ve adım
+  termin tarihleri — **hepsi tek bir dar kutuya** sığdırılmış.
+
+  ⚠ Depoda toplam **22 ayrı overlay** var; hepsi değişmeyecek.
+  Bu madde **proje düzenlemeyi** (ve içinden açılan çekim listesini)
+  kendi sayfasına taşıyor. Sırası gelince kullanıcıya sorulacak:
+  1. Geri dönüş nasıl olacak — tarayıcının geri tuşu çalışsın mı,
+     yani adres değişsin mi.
+  2. Çekim listesi o sayfanın **içinde bir bölüm** mü olacak, yoksa
+     ayrı bir sayfa mı.
+  3. Telefonda düzen ne olacak.
+  ⚠ Bu madde **47 (üst menü birliği)** ve **48 (dil sürekliliği)** ile
+  aynı aileden: üçü de "sayfa" kavramına dokunuyor. Sırası gelince
+  birlikte planlanacak.
 - ⬜ **48.** ⛔ **DİL SÜREKLİLİĞİ — SİTENİN TAMAMINDA TEK DAVRANIŞ.**
   ⚠ **41. maddeden (altı dil) ÖNCE bitmek zorunda.** Kullanıcı
   16 Kasım 2026'da söyledi: *"Kullanıcı sitenin herhangi bir yerinde
