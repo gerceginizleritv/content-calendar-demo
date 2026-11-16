@@ -204,34 +204,62 @@ başlasın diye. Tam koşudan sonra değişmiş görünmesi normaldir.
 - ⬜ **12.** Zamanlama (set doğru günde öne çıkar)
 
 ### 3 · Sınırlar
-- ⬜ **51.** **Mekân seçicisi çekim türüne göre gelsin.** Kullanıcı
-  16 Kasım 2026'da ekran görüntüsüyle sordu: *"Masabaşı çekimde neden
-  altta mekanlar çıkıyor? Çekim türüne göre gelmesi gerekmiyor mu bu
-  mekanların?"*
+- ⬜ **51.** **MEKÂNLARA TÜR ALANI + çekim türüne göre süzme.**
+  Kullanıcı 16 Kasım 2026'da ekran görüntüsüyle sordu: *"Masabaşı
+  çekimde neden altta mekanlar çıkıyor? Çekim türüne göre gelmesi
+  gerekmiyor mu bu mekanların?"* — sonra eşlemenin tamamını verdi.
 
-  **Doğrulandı — yarısı zaten türe bağlı, yarısı değil:**
+  **Bugünkü durum doğrulandı — yarısı zaten türe bağlı, yarısı değil:**
 
   | Alan | Türe bağlı mı | Nerede |
   |---|---|---|
-  | **Adres kutusu** | ✅ evet | `adresAlaniniTazele` (`app.html:13787`): yalnızca saha işlerinde çıkıyor, ve mekân seçiliyse hiç çıkmıyor |
-  | **Mekân seçicisi** (arama + kutucuklu liste) | ⛔ **hayır** | Her türde açık — "Masabaşı / grafik" projesinde de 71 mekân listeleniyor |
+  | **Adres kutusu** | ✅ evet | `adresAlaniniTazele` (`app.html:13787`) |
+  | **Mekân seçicisi** | ⛔ **hayır** | Her türde açık — "Masabaşı / grafik" projesinde de bütün mekânlar listeleniyor |
 
-  Kapının kendisi var: `PROJ_TYPES_ADDRESS = ['outdoor','venue']` ve
-  `adresGerekir()` (`app.html:10182`). Yalnızca **adres kutusuna**
-  bağlanmış, mekân bloğuna bağlanmamış.
+  ⛔ **ASIL ENGEL: MEKÂN KAYDINDA TÜR ALANI YOK.** `mekanTemizle`
+  (`app.html:14090`) şu alanları tutuyor: ad, şehir, ilçe, adres,
+  izin, dikkat, notlar, haritalar/drive/görsel bağlantısı, koordinat,
+  ülke, saat dilimi, kaynak. **Kategori/tür yok.** Yani "sadece
+  stüdyo adresleri gelsin" demek **yeni bir alan** demek.
 
-  ⚠ **Körü körüne gizlemek doğru olmayabilir** — sırası gelince
-  sorulacak:
-  1. Stüdyo çekiminin de bir mekânı olabilir (kiralık stüdyo).
-     Yani "saha işi değil" demek "mekânı yok" demek değil.
-  2. Masabaşı / grafik işinde mekân gerçekten anlamsız mı, yoksa
-     **katlanmış** (kapalı) mı durmalı?
-  3. Bugün mekânı seçili bir proje türü "masabaşı"na çevrilirse o
-     bağ ne olacak — silinecek mi, sessizce duracak mı?
+  **Kullanıcının verdiği eşleme (16 Kasım 2026):**
+
+  | Proje türü | Hangi mekânlar gelecek |
+  |---|---|
+  | Dış çekim | hepsi (ya da "dış mekân" türündekiler) |
+  | Mekan çekimi | hepsi (ya da "mekân" türündekiler) |
+  | **Stüdyo** | **yalnızca "stüdyo" türündekiler** — *"kullanıcı bir yerde mekanlar arasına stüdyo adresi girebilir; stüdyo seçerse sadece stüdyo adresleri gelir"* |
+  | Vlog | ⚠ **SORULACAK** — cevaplanmadı |
+  | **Ürün inceleme** | **hiçbiri** — *"mekanların gelmesine gerek yok"* |
+  | **Masabaşı / grafik** | **hiçbiri** — *"mekanlara gerek yok"* |
+  | **Diğer** | **yalnızca "diğer" türündekiler** — *"diğer diye bir yer eklerse kullanıcı, o zaman gelmesi lazım"* |
+
+  **Bunun gerektirdikleri (sırası gelince adım adım yazılacak):**
+  1. `mekanTemizle`'ye **tür alanı** + geçerli değer listesi.
+     ⚠ Beyaz listede olmayan alan **sessizce düşüyor** — bu deponun
+     yazılı dersi (koordinat alanları aynı tuzağa düşmüştü).
+  2. ⛔ **Supabase'de yeni sütun** gerekiyor: `mekanRowYap`
+     (`app.html:14122`) sütunları tek tek yazıyor. Yani **kullanıcının
+     çalıştıracağı bir SQL dosyası** olacak.
+     ⚠ Depoda bunun kalıbı var: `mekanFotoSutunu` ve
+     `mekanKonumSutunlari` bayrakları, sütun yoksa **false'a düşüp**
+     kaydı bütünüyle engellememek için. Yeni alan da aynı kalıbı
+     izleyecek — SQL çalıştırılmadan uygulama bozulmayacak.
+  3. Mekân ekleme/düzenleme ekranında tür seçici (iki dilde, Bölüm 7).
+  4. Var olan mekânların türü **boş** kalacak; boş tür "hepsinde
+     görünür" mü sayılacak yoksa "hiçbirinde" mi — ⚠ **sorulacak.**
+     (Boş = görünmez seçilirse kullanıcının bugünkü mekânları
+     projelerde **birden kaybolur**; bu yüzden varsayılan "görünür"
+     olmalı gibi duruyor.)
+  5. Proje türü değişince seçili mekânların bağına ne olacak —
+     ⚠ **sorulacak** (silinecek mi, sessizce duracak mı).
 
   ⚠ Mekân seçiliyken adres kutusunun gizlenme kuralı **bozulmayacak**;
-  o kural yazılı bir karar (iki adres kutusu "hangisi geçerli"
-  sorusunu doğuruyordu).
+  o yazılı bir karar (iki adres kutusu "hangisi geçerli" sorusunu
+  doğuruyordu).
+  ⚠ Bekçi test: her proje türü için **hangi mekânların listelendiğini**
+  ölçen bir test — eşleme tablosu koda gömülü kalmasın.
+
 - ⬜ **49.** ⛔ **SET YÖNETİMİ: İÇİ GÖRÜNMÜYOR, MADDE ÇIKARILAMIYOR.**
   Kullanıcı 16 Kasım 2026'da 7. maddeyi denedi ve iki eksik buldu:
 

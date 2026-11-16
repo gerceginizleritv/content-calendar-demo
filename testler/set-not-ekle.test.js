@@ -259,6 +259,123 @@ const KOK = path.join(__dirname, '..');
       ' -> ' + kopya.ikinciSayi);
   });
 
+  // ── 7. SETIN ICI + MADDE CIKARMA (49. madde) ──────────────────────
+  // Kullanici 7. maddeyi deneyince iki eksik buldu: setin icini
+  // goremiyordu ("hangisini hangi cekime ekleyecegimi bilemiyorum")
+  // ve ekledigi maddeyi geri cikaramiyordu ("+ var ama - yok").
+  const bak = await p.evaluate(async () => {
+    const bekle = ms => new Promise(r => setTimeout(r, ms));
+    document.querySelectorAll('.overlay.open').forEach(e => e.classList.remove('open'));
+    ihtiyaclar = [{ id: 'ih_x', ad: 'Xenon', grup: '' }, { id: 'ih_y', ad: 'Yildiz', grup: '' }];
+    ihtiyacSetleri = [
+      setTemizle({ id: 'st_1', ad: 'Birinci',
+                   maddeler: [{ metin: 'Xenon', not: 'yan cep' }, { metin: 'Yildiz', not: '' }] }),
+      setTemizle({ id: 'st_2', ad: 'Ikinci', maddeler: ['Tek madde'] }),
+    ];
+    saveSetler();
+    acikSet = null;
+    sayfaSecimi.clear();
+    document.getElementById('tabKit').click();
+    await bekle(200);
+    kitSayfasiCiz();
+
+    const kapali = document.querySelectorAll('#ihs_setler .set-icerik').length;
+    const bakDugmesi = document.querySelectorAll('#ihs_setler [data-set-bak]').length;
+
+    // "▾" bas: panel acilmali, AMA set listeye eklenmemeli/secilmemeli
+    const secimOnce = sayfaSecimi.size;
+    document.querySelector('#ihs_setler [data-set-bak="st_1"]').click();
+    await bekle(120);
+    const panel = document.querySelector('#ihs_setler .set-icerik');
+    const satirlar = panel ? [...panel.querySelectorAll('.set-sat > span')].map(e => e.textContent) : [];
+    const notlar = panel ? [...panel.querySelectorAll('.set-not')].map(e => e.textContent) : [];
+    const secimSonra = sayfaSecimi.size;
+
+    // Ikinci seti ac: ilki KAPANMALI (ayni anda tek panel)
+    document.querySelector('#ihs_setler [data-set-bak="st_2"]').click();
+    await bekle(120);
+    const ikiAcik = document.querySelectorAll('#ihs_setler .set-icerik').length;
+
+    // st_1'e don ve bir madde cikar
+    document.querySelector('#ihs_setler [data-set-bak="st_1"]').click();
+    await bekle(120);
+    const silDugmesi = document.querySelectorAll('#ihs_setler .set-mad-sil').length;
+    document.querySelector('#ihs_setler .set-mad-sil').click();
+    await bekle(120);
+    const st1 = ihtiyacSetleri.find(x => x.id === 'st_1');
+
+    // Tek maddeli sette SON maddeyi silme denemesi
+    document.querySelector('#ihs_setler [data-set-bak="st_2"]').click();
+    await bekle(120);
+    const sonSil = document.querySelector('#ihs_setler .set-mad-sil');
+    if (sonSil) sonSil.click();
+    await bekle(120);
+    const st2 = ihtiyacSetleri.find(x => x.id === 'st_2');
+
+    return { kapali, bakDugmesi, satirlar, notlar, secimOnce, secimSonra, ikiAcik,
+             silDugmesi, st1Maddeler: st1.maddeler.map(x => x.metin),
+             st2Var: !!st2, st2Sayi: st2 ? st2.maddeler.length : 0 };
+  });
+
+  dene('★ panel başta KAPALI', () => {
+    assert.strictEqual(bak.kapali, 0, 'panel kendiliğinden açık geldi');
+    assert.strictEqual(bak.bakDugmesi, 2, bak.bakDugmesi + ' "içindekiler" düğmesi, 2 bekleniyordu');
+  });
+  dene('★ setin İÇİ görünüyor (49. madde)', () => {
+    assert.deepStrictEqual(bak.satirlar, ['Xenon', 'Yildiz'],
+      'panelde maddeler yok: ' + JSON.stringify(bak.satirlar));
+  });
+  dene('★ panelde NOTLAR da görünüyor', () => {
+    assert.deepStrictEqual(bak.notlar, ['yan cep'],
+      'not panelde görünmüyor: ' + JSON.stringify(bak.notlar));
+  });
+  dene('★ "içindekiler" düğmesi seti listeye EKLEMİYOR', () => {
+    assert.strictEqual(bak.secimSonra, bak.secimOnce,
+      'panel açmak seçimi değiştirdi — stopPropagation yok');
+  });
+  dene('★ aynı anda TEK panel açık', () => {
+    assert.strictEqual(bak.ikiAcik, 1, bak.ikiAcik + ' panel birden açık');
+  });
+  dene('★ "−" ile madde ÇIKARILIYOR', () => {
+    assert.strictEqual(bak.silDugmesi, 2, 'kendi setinde − düğmesi yok');
+    assert.deepStrictEqual(bak.st1Maddeler, ['Yildiz'],
+      'madde çıkarılmadı: ' + JSON.stringify(bak.st1Maddeler));
+  });
+  dene('★ SON madde silinmiyor (set sessizce yok olmasın)', () => {
+    assert.strictEqual(bak.st2Var, true,
+      'tek maddeli setin son maddesi silinince set YOK OLDU — setTemizle boş seti null döndürüyor');
+    assert.strictEqual(bak.st2Sayi, 1);
+  });
+
+  // Hazir set paneli SALT OKUNUR olmali
+  const hazirPanel = await p.evaluate(async () => {
+    const bekle = ms => new Promise(r => setTimeout(r, ms));
+    acikSet = null;
+    const kap = document.getElementById('cl_hset');
+    kap.innerHTML = hazirSetCipleri();
+    hazirSetleriBagla(kap);
+    kap.querySelector('[data-hbak="0"]').click();
+    await bekle(120);
+    const panel = kap.querySelector('.set-icerik');
+    return { acildi: !!panel,
+             satirSayi: panel ? panel.querySelectorAll('.set-sat').length : 0,
+             silVar: panel ? panel.querySelectorAll('.set-mad-sil').length : 0,
+             ipucu: panel ? !!panel.querySelector('.hint') : false,
+             hazirSayi: hazirSetler()[0].m.length };
+  });
+
+  dene('★ hazır setin içi de görünüyor', () => {
+    assert.strictEqual(hazirPanel.acildi, true, 'hazır set paneli açılmadı');
+    assert.strictEqual(hazirPanel.satirSayi, hazirPanel.hazirSayi,
+      'panel setin tamamını göstermiyor');
+  });
+  dene('★ hazır set paneli SALT OKUNUR ("−" yok)', () => {
+    assert.strictEqual(hazirPanel.silVar, 0,
+      'hazır setten madde silme düğmesi çizilmiş — o setler herkeste aynı');
+    assert.strictEqual(hazirPanel.ipucu, true,
+      '"+ ile kendine kopyala" ipucu yok; kullanıcı neden silemediğini anlamaz');
+  });
+
   dene('sayfada JS hatası yok', () => {
     assert.deepStrictEqual(sayfaHatalari, [], sayfaHatalari.join('\n    '));
   });
