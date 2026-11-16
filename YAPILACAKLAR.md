@@ -69,6 +69,21 @@ haber ver.
   Bugün bunların her biri AYRI bir pencere (`hesapOverlay`,
   `remindersOverlay`, `aiSettingsOverlay`, hesap etiketleri). Hepsi
   ⋯ çekmecesinden ayrı ayrı açılıyor.
+
+  **Ayarlar sayfasına taşınacaklar** (kullanıcı, 16 Kasım 2026):
+  - Hesabım (bugün `hesapOverlay`)
+  - Hatırlatmalar (bugün `remindersOverlay`)
+  - Hesap etiketleri (bugün `hesapEtiketBtn`)
+  - AI / Gemini ayarları (bugün `aiSettingsOverlay`)
+  - **Açık / koyu tema** (bugün ⋯ çekmecesinde `themeBtn`)
+  - **Dil seçimi** (bugün ÜST ŞERİTTE `langSelect`)
+
+  ⚠ Dil seçici üst şeritten kalkarsa marka adına **63 piksel** yer
+  açılır. 16 Kasım'da ölçüldü: o kutu şeridin en dar yerinde ikinci
+  büyük tüketici. Marka adının üçüncü kez kırpılmasının sebeplerinden
+  biriydi. Taşınırken bu kazanç da hesaba katılsın.
+  ⚠ Dil ve tema **girişsiz ziyaretçide de** erişilebilir kalmalı;
+  ayarlar sayfası hesaba bağlanırsa o iki ayar kaybolur.
   ⚠ Bu madde 19'un (sekme sayısı) hemen öncesine konuldu: ikisi de
   gezinmeyi yeniden kuruyor ve aynı iskelete dokunuyor; ayrı ayrı
   yapılırsa iş iki kez yapılır.
