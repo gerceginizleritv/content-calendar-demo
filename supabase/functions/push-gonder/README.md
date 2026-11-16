@@ -170,7 +170,13 @@ gidiyor.
 
 4. **Run.**
 
-Ne göreceksin: "Success. No rows returned".
+Ne göreceksin: tek sütunlu tek satır — başlığı `schedule`, içinde bir
+sayı (örneğin 3). O sayı, kurulan zamanlayıcı işinin numarasıdır.
+
+⚠ Burada **"Success. No rows returned" BEKLEME.** Betiğin son satırı
+`select cron.schedule(...)` ve bu, kurduğu işin numarasını geri
+döndürüyor. 16 Kasım 2026'da bu belge yanlışlıkla "no rows" yazıyordu
+ve kullanıcı doğru çıktıyı görüp "bu ne?" diye sormak zorunda kaldı.
 
 ⚠ Dosyanın sonundaki kontrol sorguları **yorum içinde**, bilerek.
 Onları yukarıdaki betikle birlikte çalıştırma: biri patlarsa kurulum
