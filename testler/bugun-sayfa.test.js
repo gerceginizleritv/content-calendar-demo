@@ -59,16 +59,36 @@ const gunler = (n)=> {
       ne: (e.querySelector('.bg-ne')||{}).textContent,
       yan: (e.querySelector('.bg-yan')||{}).textContent,
       sinif: e.className })));
+  // ⚠ 16 Kasim 2026'da GENISLETILDI, zayiflatilmadi: proje duzenleme ve
+  //   cekim listesi artik PENCERE DEGIL SAYFA (50. madde), yani
+  //   `.overlay` sinifini tasimiyorlar. Iddia ayni sey: "hangi ekran
+  //   acildi". Yalnizca secici dogru ekranlari da taniyor.
+  //   ⛔ Once `.overlay.open` ile araniyor ki gercek pencereler
+  //      (termin, kayit) ONCE bulunsun; sayfa kipindekiler sonra.
   const acikPencere = ()=> p.evaluate(()=>{
     const o = document.querySelector('.overlay.open');
-    return o ? o.id : (document.querySelector('#bugunPage:not([hidden])') ? 'bugunPage' : 'yok');
+    if(o) return o.id;
+    const sayfaKipi = ['cekimListesiOverlay', 'projectEditOverlay']
+      .find(id=>{
+        const e = document.getElementById(id);
+        return e && e.classList.contains('open');
+      });
+    if(sayfaKipi) return sayfaKipi;
+    return document.querySelector('#bugunPage:not([hidden])') ? 'bugunPage' : 'yok';
   });
   const acikSayfa = ()=> p.evaluate(()=>{
     const a = [...document.querySelectorAll('.rail-main > div[id$="Page"]')].find(d=> !d.hidden);
     return a ? a.id : 'yok';
   });
+  // ⚠ Sayfa kipindekiler de kapatiliyor (50. madde). Kapatilmazsa acik
+  //   kalan bolum BIR SONRAKI iddiaya tasiyor ve yanlis ekran adi
+  //   okunuyor -- ilk surumde tam bu oldu.
   const kapat = ()=> p.evaluate(()=>{
     document.querySelectorAll('.overlay.open').forEach(o=> o.classList.remove('open'));
+    ['cekimListesiOverlay', 'projectEditOverlay'].forEach(id=>{
+      const e = document.getElementById(id);
+      if(e) e.classList.remove('open');
+    });
     setPage('bugun');
   });
 

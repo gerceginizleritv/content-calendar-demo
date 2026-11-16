@@ -2585,6 +2585,16 @@ textarea.sc-ai-brief{min-height:64px;resize:vertical;line-height:1.5;}
 /* SAYFA KIPI — pencere degil, sayfanin kendisi.
    `display:none` varsayilani ayni kaliyor ki `open` gelmeden
    gorunmesin; acikken blok olarak AKISA giriyor, perde yok. */
+.liste-bolumu{display:none;}
+.liste-bolumu.open{display:block;margin-top:18px;padding-top:16px;
+  border-top:2px solid var(--line);}
+/* Bolumun kendi "pencere" kutusu da duzlesiyor: sayfanin devami. */
+.liste-bolumu .modal{
+  background:none;border:0;padding:0;max-width:none;max-height:none;
+  overflow-y:visible;width:100%;
+}
+/* Bolum acikken "Cekim listesi" satiri gereksiz: zaten asagida duruyor. */
+#projectEditOverlay:has(#cekimListesiOverlay.open) #pe_liste{display:none;}
 .proje-sayfasi{display:none;}
 .proje-sayfasi.open{display:block;}
 /* Icerideki kutu artik "ayri bir kagit" degil, sayfanin govdesi:
@@ -5008,7 +5018,14 @@ textarea.sc-ai-brief{min-height:64px;resize:vertical;line-height:1.5;}
      doldurulan form. Isaretleme ANINDA kaydediliyor, "Kaydet"e basmak
      gerekmiyor — cami icinde kutuyu isaretleyip telefonu cebe koyan
      kisi kaydetmeyi de hatirlamak zorunda kalmasin. -->
-<div class="overlay" id="cekimListesiOverlay">
+<!-- ⛔ ARTIK PENCERE DEGIL, PROJE SAYFASININ ICINDEKI BIR BOLUM.
+     Kullanici 16 Kasim 2026: "bu pop-up icerisinde cekim listesine
+     tikladigimda yeni pop-up cikiyor, sonra geri donmek istersem
+     donemiyorum." Pop-up icinde pop-up tam buradaydi.
+     ⚠ `overlay` sinifi birakildi, `id` ve `open` KALDI -- gerekcesi
+     projectEditOverlay'inkiyle ayni (uc test o sinifa bakiyor ve
+     govde kilidi `.overlay.open` sorguluyor). -->
+<div class="liste-bolumu" id="cekimListesiOverlay">
   <div class="modal modal-lg cl-modal">
     <div class="modal-head">
       <div>
@@ -10841,9 +10858,26 @@ function bugunOzeti(gun, simdi){
 }
 
 // ---- Cekim listesi penceresi ---------------------------------------
+// ⚠ ARTIK HER ZAMAN PROJE SAYFASININ ICINDE ACILIYOR. Cagri nereden
+//   gelirse gelsin (proje tablosundaki cip, Bugun sayfasi, proje
+//   sayfasindaki satir) once o projenin SAYFASI aciliyor, sonra liste
+//   o sayfanin icinde bir bolum olarak genisliyor. Boylece kapatinca
+//   kullanici PROJEDE kaliyor -- eskiden proje tablosuna dusuyordu ve
+//   projeye geri donemiyordu.
 function cekimListesiAc(id){
   const pr = projectById(id);
   if(!pr) return;
+  setPage('projects', true);
+  // Zaten o projenin sayfasi acik degilse ac. Acikken yeniden
+  // doldurmak kullanicinin yazdigi ama kaydetmedigi seyi silerdi.
+  const sayfaEl = document.getElementById('projectEditOverlay');
+  if(!sayfaEl.classList.contains('open') || !duzenlenenProje || duzenlenenProje.id !== pr.id){
+    openProjectEdit(pr.id);
+  }
+  // Bolum, proje sayfasinin kutusunun SONUNA tasiniyor.
+  const kutu = sayfaEl.querySelector('.modal');
+  const bolum = document.getElementById('cekimListesiOverlay');
+  if(kutu && bolum && bolum.parentElement !== kutu) kutu.appendChild(bolum);
   listeProjesi = pr;
   listeNotAcik = new Set();
   document.getElementById('cl_proje').textContent = pr.name;
@@ -10860,10 +10894,21 @@ function cekimListesiAc(id){
   }
   cekimListesiCiz();
   document.getElementById('cekimListesiOverlay').classList.add('open');
+  // Bolum sayfanin altinda; kullanici oraya BAKSIN diye kaydiriliyor.
+  try{ document.getElementById('cekimListesiOverlay')
+        .scrollIntoView({ block:'start', behavior:'smooth' }); }catch(e){}
 }
 function cekimListesiKapat(){
   document.getElementById('cekimListesiOverlay').classList.remove('open');
   listeProjesi = null;
+  // ⛔ renderProjects() BURADAN KALDIRILDI. Eskiden liste kapaninca
+  //   kullanici PROJE TABLOSUNA dusuyordu ve acik projesine geri
+  //   donemiyordu -- kullanicinin bildirdigi hata tam buydu. Artik
+  //   bolum kapaniyor, proje sayfasi acik KALIYOR.
+  // renderProjects() KOSULSUZ: liste proje sayfasi acikken zaten CSS
+  // ile gizli, yani cizmek kullaniciyi hicbir yere goturmuyor ama
+  // tablodaki "bitti/toplam" cipi taze kaliyor. Ilk surumde kosullu
+  // yazilmisti ve cip bayat kaldi (cekim-listesi testi yakaladi).
   renderProjects();
 }
 function listeGrupAdi(madde){
@@ -13936,10 +13981,17 @@ function rotaOku(){
 window.addEventListener('popstate', ()=>{
   const r = rotaOku();
   if(r[0] === 'proje' && r[1] && projectById(r[1])){
-    setPage('projects');
+    setPage('projects', true);
     openProjectEdit(r[1], true);
     return;
   }
+  // Sayfa rotasi: geri tusu kullaniciyi GELDIGI sayfaya dondursun.
+  // Proje sayfasi acikken once onu kapatmak gerekiyor, yoksa liste
+  // CSS ile gizli kalir.
+  const sayfaEl = document.getElementById('projectEditOverlay');
+  if(sayfaEl && sayfaEl.classList.contains('open')) closeProjectEdit(true);
+  const sayfaAdi = SAYFALAR.some(x=> x[0] === r[0]) ? r[0] : null;
+  if(sayfaAdi){ setPage(sayfaAdi, true); return; }
   // Proje sayfasi acikken geri tusu: sayfayi KAPAT, listeye don.
   if(document.getElementById('projectEditOverlay').classList.contains('open')){
     closeProjectEdit(true);
@@ -15166,7 +15218,11 @@ const SAYFALAR = [
   ['kit',       'kitPage',       'tabKit'],
   ['templates', 'templatesPage', 'tabTemplates']
 ];
-function setPage(ad){
+// sessizRota: adres YAZILMIYOR. cekimListesiAc boyle cagiriyor --
+// oradan once sayfa degisip sonra proje PUSH ediliyor; ara adimda
+// adres yazilsaydi geldigi sayfanin gecmis kaydi EZILIRDI ve Bugun'den
+// gelen kullanici geri tusuyla Bugun'e donemezdi.
+function setPage(ad, sessizRota){
   if(!SAYFALAR.some(x=>x[0] === ad)) ad = 'projects';
   SAYFALAR.forEach(([anahtar, sayfa, sekme])=>{
     document.getElementById(sayfa).hidden = anahtar !== ad;
@@ -15185,6 +15241,11 @@ function setPage(ad){
   // sessionStorage ikisini birden veriyor: sekme icinde yenileme yerini
   // koruyor, yeni bir ziyaret Bugun'den basliyor.
   try{ sessionStorage.setItem('demo_page', ad); }catch(e){ /* onemsiz */ }
+  // ⚠ REPLACE, push DEGIL: sekmeler arasinda gezinmek gecmisi
+  //   doldurmamali. Gecmise kayit yalnizca bir KAYIT acilinca
+  //   dusuyor (proje sayfasi), cunku geri tusunun donmesi gereken
+  //   yer orasi.
+  if(!sessizRota) rotaYaz('/' + ad, false);
   if(ad === 'projects') renderProjects();
   if(ad === 'templates') renderSablon();
   if(ad === 'ideas') renderFikirler();
