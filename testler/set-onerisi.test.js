@@ -343,10 +343,20 @@ const GENEL = ['onceki','kayda','sonra'];
     o.adetSonra = etiket();
     o.hala9Satir = document.querySelectorAll('[data-somad^="konusmali:"]').length;
     // Ekle
-    document.getElementById('pe_oneriEkle').click(); await bekle(1200);
-    o.sayfaAcikKaldi = document.getElementById('projectEditOverlay').classList.contains('open');
-    o.duzenlenen = duzenlenenProje ? duzenlenenProje.name : null;
-    o.listeBolumuAcildi = document.getElementById('cekimListesiOverlay').classList.contains('open');
+    // ⛔ 17 KASIM 2026 -- AYRI "Tikli setleri ekle" DUGMESI KALDIRILDI.
+    //    Kullanici: "bu tus burada gereksiz bir hal aliyor... kullanici
+    //    projeyi kayit ettiginde zaten bu secilenlerin de otomatik
+    //    olarak kayit olmasi lazim." Secim artik projenin KENDI
+    //    Kaydet / + Proje olustur tusuyla kaydediliyor.
+    document.getElementById('pe_save').click(); await bekle(1400);
+    document.querySelectorAll('#dlgOverlay.open').forEach(e => e.classList.remove('open'));
+    await bekle(200);
+    // Kaydet sayfayi kapatiyor (normal davranis). Kullanicinin akisi:
+    // projeye GERI GIRIP ekledigini gormek.
+    const kayitli = projects.find(x => x.name === 'Ic olcumu');
+    openProjectEdit(kayitli.id, true); await bekle(600);
+    o.geriGirinceAcik = document.getElementById('cekimListesiOverlay').classList.contains('open');
+    o.geriGirinceSatir = document.querySelectorAll('#cl_liste .cl-blok').length;
     const pr = projects.find(x => x.name === 'Ic olcumu');
     o.maddeSayisi = pr ? (pr.checklist || []).length : -1;
     o.cikarilanListede = pr
@@ -386,16 +396,28 @@ const GENEL = ['onceki','kayda','sonra'];
       'cikarilan madde yine eklendi: "istemedigini cikarabilmeli" karsilanmiyor');
     assert.ok(ic.maddeSayisi > 0, 'hic madde eklenmedi');
   });
-  dene('★ GERILEME: "Ekle" proje sayfasini KAPATMIYOR', () => {
-    assert.strictEqual(ic.sayfaAcikKaldi, true,
-      'proje sayfasi kapandi: kullanici 17 Kasim 2026\'da tam bunu yasadi');
-    assert.strictEqual(ic.duzenlenen, 'Ic olcumu',
-      'duzenlenen proje yanlis/bos: form "yeni proje" sanir ve Kaydet yeni-proje yolunu kosar');
-    assert.ok(/^#\/proje\//.test(ic.adres), 'adres proje sayfasinda degil: ' + ic.adres);
+  // ⛔ BU IKI IDDIA YENIDEN YONLENDIRILDI (17 Kasim 2026).
+  //    Ayri "Tikli setleri ekle" dugmesi KALDIRILDI; kullanici:
+  //    "bu tus burada gereksiz bir hal aliyor... projeyi kayit
+  //    ettiginde zaten bu secilenlerin de kayit olmasi lazim."
+  //    Artik secim projenin KENDI Kaydet tusuyla kaydediliyor ve
+  //    kaydetmek sayfayi kapatir -- her kaydetmede oldugu gibi.
+  //    Yani "Ekle sayfayi kapatmasin" sarti ortadan kalkti.
+  //
+  //    Arkasindaki GERCEK ihtiyac duruyor: kullanici ekledigini
+  //    GOREBILMELI. Olcu ona yoneldi: kaydedilen maddeler projede
+  //    duruyor mu, ve projeye geri girince GORUNUYOR mu.
+  dene('★ seçilen setler PROJE KAYDEDİLİNCE kaydediliyor', () => {
+    assert.ok(ic.maddeSayisi > 0,
+      'proje kaydedildi ama cekim listesi bos: secim kaydedilmemis');
+    assert.strictEqual(ic.cikarilanListede, false,
+      'tikten cikarilan arac yine kaydedilmis');
   });
-  dene('★ eklenenler HEMEN gorunuyor (cekim listesi aciliyor)', () => {
-    assert.strictEqual(ic.listeBolumuAcildi, true,
-      'kullanici ne eklendigini goremiyor -- sikayetin kendisi buydu');
+  dene('★ projeye geri girince eklenenler GORUNUYOR', () => {
+    assert.strictEqual(ic.geriGirinceAcik, true,
+      'projeye geri girince cekim listesi acilmiyor: kullanici ne eklendigini goremez');
+    assert.ok(ic.geriGirinceSatir > 0,
+      'projeye geri girince madde gorunmuyor: ' + ic.geriGirinceSatir);
   });
 
   // ── 8. MADDE TIKLERI SETIN TIKINI IZLIYOR ──────────────────────
@@ -489,6 +511,24 @@ const GENEL = ['onceki','kayda','sonra'];
     assert.strictEqual(tik.yenidenTiklenince.tikli, tik.yenidenTiklenince.toplam,
       'set yeniden tiklendi ama onceden cikarilan arac tiksiz kaldi: ' +
       'kullanici "hepsi tiklenir" bekliyor');
+  });
+
+  // ── 9. ⛔ AYRI "EKLE" DUGMESI OLMAMALI ──────────────────────────
+  // Kullanici (17 Kasim 2026): "bu tus burada gereksiz bir hal aliyor.
+  // Burada zaten kullanici bir proje icerisinde ve projede bu alan
+  // haricinde de yaptigi her seyi ilk ekranda en altta yer alan
+  // PROJE OLUSTUR tusu ile kayit edecek."
+  const dugmeler = await p.evaluate(() => ({
+    ekle: !!document.getElementById('pe_oneriEkle'),
+    sonra: !!document.getElementById('pe_oneriSonra'),
+    kaydet: !!document.getElementById('pe_save')
+  }));
+  dene('★ ayrı "Tikli setleri ekle" düğmesi YOK', () => {
+    assert.strictEqual(dugmeler.ekle, false,
+      'ayrı ekleme düğmesi geri gelmiş: kullanıcı "gereksiz" dedi');
+    assert.strictEqual(dugmeler.sonra, false, '"Şimdi değil" düğmesi geri gelmiş');
+    assert.strictEqual(dugmeler.kaydet, true,
+      'projenin kendi Kaydet düğmesi yok: seçim hiç kaydedilemez');
   });
 
   dene('sayfa hatasi yok', () => {

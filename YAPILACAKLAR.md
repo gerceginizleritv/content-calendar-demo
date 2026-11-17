@@ -763,6 +763,64 @@ dokunmak ve ikinci seferde birincisini bozmak demek.
   — "benzettim" demek yetmiyor. **Mutasyonla kanıtlandı:** kart
   görünümü geri konunca iki iddia düştü (yükseklik 39'a karşı 26).
 
+  ---
+
+  ⛔ **DÖRDÜNCÜ TUR — İKİ AYRI KUSUR (17 Kasım 2026).**
+
+  **A. Ayrı "Tikli setleri ekle" düğmesi kaldırıldı.** Kullanıcı:
+
+  > *"Bu tuş burada gereksiz bir hal alıyor. Burada zaten kullanıcı bir
+  > proje içerisinde ve projede bu alan haricinde de yaptığı her şeyi
+  > ilk ekranda en altta yer alan PROJE OLUŞTUR tuşu ile kayıt
+  > edecek."*
+
+  Haklı. Seçim artık projenin **kendi Kaydet / + Proje oluştur**
+  tuşuyla kaydediliyor (`projeyiKaydet` içinde). "Şimdi değil" de
+  kalktı: tik koymazsanız zaten bir şey eklenmiyor.
+  ⚠ Bölüm **kapalıysa** dokunulmuyor — kullanıcının görmediği bir şeyi
+  kaydetmek olurdu.
+  Ölçüldü: tikten çıkarılan araçla birlikte 17 yerine **16** madde
+  kaydedildi, çıkarılan araç listede yok.
+
+  **B. Hazır setler şeridindeki `+` çalışmıyordu — aslında çalışıyordu,
+  ama görünmez bir iş yapıyordu.** Kullanıcı: *"hazır setleri hiçbir
+  şekilde ekleyemiyorum, yanlarındaki + işareti çalışmıyor."*
+
+  ÖLÇÜLDÜ: `+` seti **"kendi setlerim"e kopyalıyordu** (`+` sonrası
+  kendi set sayısı 0→1, çekim listesi 0'da kaldı). Geri bildirimi
+  yazdığı öge `ih_topluNot` — **İhtiyaç kütüphanesi penceresinde**, ve
+  çekim listesi açıkken o pencere kapalı. Yani sıfır geri bildirim.
+  ⛔ Üstelik `id="ih_not"` diye bir öge depoda **hiç yok**; `ihNot`
+  çağrılarının bir kısmı zaten hiçbir yere yazmıyordu.
+
+  Çekim listesinin içinde `+` doğal olarak **"bu listeye ekle"**
+  demek — öyle oldu. **"Setlerime kopyala" kaybolmadı**: `▾` ile
+  açılan önizleme panelinde **adıyla** duruyor, yani ne yaptığı belli.
+
+  Bekçiler: `set-onerisi` **43 iddia** (ayrı ekleme düğmesi yok +
+  seçim kaydedilince uygulanıyor), `liste-duzeni` **22 iddia**
+  (`+` listeye ekliyor, kendi setlerime dokunmuyor, kopyalama düğmesi
+  adıyla duruyor ve çalışıyor). **Mutasyonla kanıtlandı.**
+
+  ⚠ **Üç test hatamı daha ölçüm yakaladı, üçü de yazıldı:**
+  1. Kaydet projeyi kaydedip **sayfayı kapatıyor** (normal davranış);
+     testler düğmeye bastıktan sonra sayfada kalmayı bekliyordu.
+     Projeye geri girilerek ölçülüyor — kullanıcının akışı da bu.
+  2. Geri girince bölüm **kapalı gruplarla** açılıyor; ölçüm satır
+     arıyordu ve bulamıyordu. Önce bir grup açılıyor.
+  3. `elementFromPoint` yalnızca **ekrandaki** noktaları görüyor; tik
+     kutusu `y=1147`'deydi, pencere 900 yüksekliğinde. "Parmak hedefi
+     küçüldü" diyen ölçü **uygulama değil kendisi** yanılıyordu.
+     Kutu önce görüntüye getiriliyor.
+
+  ⬜ **KALAN:** çekim listesindeki tikin anlamı. Kullanıcı kararı
+  (17 Kasım 2026): **hepsi tikli gelsin, tikten çıkarmak maddeyi
+  listeden çıkarsın.** Bedeli kullanıcıya yazılı olarak soruldu ve
+  kabul edildi: sahadaki "topladım" işaretlemesi ve `0/9` sayacı
+  gidiyor, `×` gereksizleşiyor, "İşaretleri temizle" kalkıyor.
+  ⚠ `bitti` alanı **kayıtta kalacak** (arayüzden kalkacak), geri
+  getirmek tek satır olsun diye. Ayrı bir turda yapılacak.
+
   ⛔ **TAM KOŞU İKİ TEST DÜŞÜRDÜ — ikisi de GERÇEK bulgu çıktı.**
 
   1. **`cekim-listesi` düştü: elle eklenen madde görünmüyordu.**

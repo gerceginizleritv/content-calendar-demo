@@ -2659,6 +2659,10 @@ textarea.sc-ai-brief{min-height:64px;resize:vertical;line-height:1.5;}
 .cl-grup-ac:hover{opacity:1;}
 .cl-altgrup{font-size:12px;letter-spacing:.06em;text-transform:uppercase;
   opacity:.6;margin:8px 0 2px;}
+.hset-kopya{display:flex;justify-content:flex-end;margin:6px 0 2px;}
+.hset-kopya-dug{background:none;border:1px solid var(--line);border-radius:2px;
+  color:var(--text-dim);font:inherit;font-size:12px;padding:5px 10px;cursor:pointer;}
+.hset-kopya-dug:hover{color:var(--accent);border-color:var(--accent);}
 /* ⛔ 55/2 -- CEKIM LISTESI SATIRI "KART" DEGIL, ONERI BOLUMUYLE AYNI
    TEMIZ SATIR. Kullanici UCUNCU kez bildirdi (17 Kasim 2026, iki ekran
    goruntusuyle): "burasi kullanicinin kafasini karistiriyor... ikinci
@@ -4915,10 +4919,12 @@ textarea.sc-ai-brief{min-height:64px;resize:vertical;line-height:1.5;}
       <div class="set-oneri-bas" data-i18n="so_title">Kits for this shoot</div>
       <div class="set-oneri-not" data-i18n="so_not">Ticked ones are the usual pick for this shoot type.</div>
       <div id="pe_oneriListe"></div>
-      <div class="set-oneri-dugmeler">
-        <button class="btn" id="pe_oneriSonra" data-i18n="so_sonra">Not now</button>
-        <button class="btn btn-primary" id="pe_oneriEkle" data-i18n="so_ekle">Add ticked kits</button>
-      </div>
+      <!-- ⛔ "Tikli setleri ekle" / "Simdi degil" DUGMELERI KALDIRILDI.
+           Kullanici karari (17 Kasim 2026): "bu tus burada gereksiz bir
+           hal aliyor... kullanici projeyi kayit ettiginde zaten bu
+           secilenlerin de otomatik olarak kayit olmasi lazim."
+           Secim artik projenin kendi Kaydet / + Proje olustur tusuyla
+           kaydediliyor (projeyiKaydet icinde). -->
     </div>
     <div class="modal-actions">
       <button class="btn btn-danger" id="pe_delete" data-i18n="p_delete">Delete</button>
@@ -11409,8 +11415,8 @@ function hazirSetCipleri(){
     + ` title="${escapeHtml(t('set_peek'))}"`
     + ` aria-label="${escapeHtml(t('set_peek'))}">${setAcikMi('hset', i) ? '▴' : '▾'}</button>`
     + `<button type="button" class="ih-set-art" data-hkopya="${i}"`
-    + ` title="${escapeHtml(t('set_copy_here'))}"`
-    + ` aria-label="${escapeHtml(t('set_copy_here'))}">+</button>`
+    + ` title="${escapeHtml(t('set_add_here'))}"`
+    + ` aria-label="${escapeHtml(t('set_add_here'))}">+</button>`
     + `</span>`).join('')
     // ⚠ Hazir set paneli SALT OKUNUR: bu setler kodun icinde metin ve
     //   herkeste ayni. "+" yalnizca 'canta' maddelerini kopyaliyor,
@@ -11418,6 +11424,11 @@ function hazirSetCipleri(){
     //   satiri soyluyor, yoksa "8 madde gordum, 4 geldi" olurdu.
     + (acikSira >= 0
         ? setIcerikHtml(liste[acikSira].m.map(m=> ({ metin: m[1], not: '' })), false, acikSira)
+          // ⛔ "Kendi setlerime kopyala" BURAYA TASINDI. Eskiden "+"
+          //    bunu yapiyordu ama hicbir yerde soylemiyordu. Burada
+          //    ADIYLA duruyor, yani ne oldugu belli.
+          + `<div class="hset-kopya"><button type="button" class="hset-kopya-dug"`
+          + ` data-hkopyala="${acikSira}">${escapeHtml(t('set_copy_here'))}</button></div>`
         : '');
 }
 // 7. MADDE — HAZIR SETI KENDI SETLERINE KOPYALA.
@@ -11455,8 +11466,18 @@ function hazirSetleriBagla(kap){
   // ⚠ stopPropagation SART: "+" cipin icinde, cipin kendi tiklamasi
   //   seti LISTEYE ekliyor. Durdurulmazsa tek basista hem kopyalanir
   //   hem listeye dokulur.
+  // ⛔ "+" ARTIK BU LISTEYE EKLIYOR (17 Kasim 2026).
+  //    Kullanici "+ isareti calismiyor" diye bildirdi. OLCULDU: calisiyordu
+  //    ama seti "kendi setlerim"e KOPYALIYORDU ve bunu soyledigi oge
+  //    (ih_topluNot) Ihtiyac kutuphanesi penceresinde -- cekim listesi
+  //    acikken o pencere KAPALI. Yani gorunmez bir is yapiyordu.
+  //    Cekim listesinin icinde "+" dogal olarak "bu listeye ekle" demek.
+  //    Kopyalama kaybolmadi: onizleme panelinde ADIYLA duruyor (asagida).
   kap.querySelectorAll('[data-hkopya]').forEach(el=>{
-    el.addEventListener('click', e=>{ e.stopPropagation(); hazirSetiKopyala(+el.dataset.hkopya); });
+    el.addEventListener('click', e=>{ e.stopPropagation(); hazirSetiEkle(+el.dataset.hkopya); });
+  });
+  kap.querySelectorAll('[data-hkopyala]').forEach(el=>{
+    el.addEventListener('click', e=>{ e.stopPropagation(); hazirSetiKopyala(+el.dataset.hkopyala); });
   });
   kap.querySelectorAll('[data-hbak]').forEach(el=>{
     el.addEventListener('click', e=>{
@@ -16455,6 +16476,21 @@ async function projeyiKaydet(){
   p.shootDate = document.getElementById('pe_shoot').value || '';
   p.cancelled = document.getElementById('pe_cancelled').checked;
   sahaAlanlariniOku(p);
+  // ⛔ SET ONERISI PROJEYLE BIRLIKTE KAYDEDILIYOR (17 Kasim 2026).
+  //    Eskiden ayri bir "Tikli setleri ekle" dugmesi vardi; kullanici
+  //    hakli olarak "burada gereksiz" dedi -- zaten projenin icinde ve
+  //    altta Kaydet / + Proje olustur duruyor.
+  // ⚠ Bolum KAPALIYSA dokunulmuyor: kullanicinin gormedigi bir seyi
+  //   kaydetmek olurdu.
+  const oneriEl = document.getElementById('pe_oneri');
+  if(oneriEl && !oneriEl.hidden){
+    const secili = Object.keys(oneriSetTik).filter(k=> oneriSetTik[k]);
+    if(secili.length) setOnerisiUygula(p, secili, oneriHaricMad);
+    p.setOneri = p.setOneri || { soruldu:false, eklenen:[] };
+    p.setOneri.soruldu = true;
+    p.setOneri.eklenen = (p.setOneri.eklenen || []).concat(secili);
+    setOnerisiKapat();
+  }
   projDirtyIsaretle(p.id);
   saveProjects();
   // Kayitlardaki proje adi kopyasi da tazeleniyor; aksi halde takvimde
@@ -16526,54 +16562,6 @@ document.getElementById('pe_oneriListe').addEventListener('change', (e)=>{
       ? t('so_madde')(maddeler.length)
       : tikli + ' / ' + t('so_madde')(maddeler.length);
   }
-});
-document.getElementById('pe_oneriSonra').addEventListener('click', ()=>{
-  // "Simdi degil": bolum kapaniyor. Isaret KAYDEDILMIS projeye
-  // yaziliyor; yeni projede henuz kayit yok, orada bolumun kapanmasi
-  // yetiyor (kaydedilince tarih dolu olacagi icin tetik de susuyor).
-  if(duzenlenenProje){
-    duzenlenenProje.setOneri = duzenlenenProje.setOneri || { soruldu:false, eklenen:[] };
-    duzenlenenProje.setOneri.soruldu = true;
-    projDirtyIsaretle(duzenlenenProje.id);
-    saveProjects();
-  }
-  setOnerisiKapat();
-});
-document.getElementById('pe_oneriEkle').addEventListener('click', async ()=>{
-  // Secim hafizadan okunuyor, DOM'dan degil: tek dogru kaynak o.
-  const secili = Object.keys(oneriSetTik).filter(k=> oneriSetTik[k]);
-  if(!secili.length){ uyari(t('so_bos')); return; }
-  // ⛔ FORM ONCE KAYDEDILIYOR. Yeni projede henuz kayit yok, ayrica
-  //    kullanicinin girdigi ad/tur/tarih kaybolmasin. Ayni desen
-  //    "Cekim listesi" dugmesinde de var ve orada veri kaybini bu
-  //    onlemisti.
-  const sonuc = await projeyiKaydet();
-  if(!sonuc || !sonuc.proje) return;         // ad bos: kaydet uyarmistir
-  const pr = sonuc.proje;
-  const eklenen = setOnerisiUygula(pr, secili, oneriHaricMad);
-  pr.setOneri = pr.setOneri || { soruldu:false, eklenen:[] };
-  pr.setOneri.soruldu = true;
-  pr.setOneri.eklenen = (pr.setOneri.eklenen || []).concat(secili);
-  projDirtyIsaretle(pr.id);
-  saveProjects();
-  setOnerisiKapat();
-  // ⛔ 17 KASIM 2026 -- KULLANICININ YASADIGI HATA BURADAYDI.
-  //    `projeyiKaydet()` sonunda `closeProjectEdit()` cagiriyor
-  //    (app.html ~16182), yani PROJE SAYFASINI KAPATIYOR. Kullanici
-  //    "Tikli setleri ekle"ye basiyor, sayfa kapaniyor, proje listesi
-  //    geri geliyor -- ve eklenen maddeleri hicbir yerde goremedigi
-  //    icin kaybolduklarini saniyor. Veri YERINDEYDI (17 madde,
-  //    etiket "0/17"), gorunmuyordu.
-  //    Kullanicinin sozleri: "ekle dedim projeyi kaydettim ama projeyi
-  //    geri acinca bunlarin hic biri gorunmuyordu."
-  //
-  //    Cozum: `cekimListesiAc` projenin sayfasini GERI ACIYOR ve cekim
-  //    listesi bolumunu gosteriyor. Boylece kullanici birakitigi yerde
-  //    kaliyor VE ekledigi maddeleri hemen goruyor. Ayni kalip
-  //    "Cekim listesi" dugmesinde de var (pe_liste).
-  //    ⚠ `uyari()` kaldirildi: ustune bir pencere daha acmak yerine
-  //      kullanici sonucu DOGRUDAN goruyor.
-  cekimListesiAc(pr.id);
 });
 document.getElementById('pe_save').addEventListener('click', async ()=>{
   const sonuc = await projeyiKaydet();

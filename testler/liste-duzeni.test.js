@@ -100,7 +100,14 @@ const KOK = path.join(__dirname, '..');
     const g = document.getElementById('pe_shoot');
     g.value = '2026-12-28'; g.dispatchEvent(new Event('change'));
     await bekle(300);
-    document.getElementById('pe_oneriEkle').click(); await bekle(1200);
+    // ⛔ 17 KASIM 2026 -- AYRI "Tikli setleri ekle" DUGMESI KALDIRILDI.
+    //    Kullanici: "bu tus burada gereksiz bir hal aliyor... kullanici
+    //    projeyi kayit ettiginde zaten bu secilenlerin de otomatik
+    //    olarak kayit olmasi lazim." Secim artik projenin KENDI
+    //    Kaydet / + Proje olustur tusuyla kaydediliyor.
+    document.getElementById('pe_save').click(); await bekle(1400);
+    document.querySelectorAll('#dlgOverlay.open').forEach(e => e.classList.remove('open'));
+    await bekle(200);
     const pr = projects.find(x => x.name === 'Liste duzeni');
     o.maddeSayisi = pr ? (pr.checklist || []).length : -1;
     o.setAnahtarlari = pr ? Array.from(new Set((pr.checklist || []).map(x => x.set))) : [];
@@ -304,12 +311,35 @@ const KOK = path.join(__dirname, '..');
                yukseklik: Math.round(k.height) }; };
     const om = document.querySelector('[data-somad]').closest('label');
     o.oneri = bic(om, om.querySelector('span'));
-    document.getElementById('pe_oneriEkle').click(); await bekle(1200);
+    // ⛔ 17 KASIM 2026 -- AYRI "Tikli setleri ekle" DUGMESI KALDIRILDI.
+    //    Kullanici: "bu tus burada gereksiz bir hal aliyor... kullanici
+    //    projeyi kayit ettiginde zaten bu secilenlerin de otomatik
+    //    olarak kayit olmasi lazim." Secim artik projenin KENDI
+    //    Kaydet / + Proje olustur tusuyla kaydediliyor.
+    document.getElementById('pe_save').click(); await bekle(1400);
+    document.querySelectorAll('#dlgOverlay.open').forEach(e => e.classList.remove('open'));
+    await bekle(200);
+    // ⚠ Kaydet projeyi kaydedip SAYFAYI KAPATIYOR (normal kaydetme
+    //   davranisi). Olcum icin projeye geri girmek gerekiyor; zaten
+    //   kullanicinin akisi da bu -- 55. madde geri girince bolumu
+    //   kendiliginden aciyor.
+    const kayitli = projects.find(x => x.name === 'Esitlik olcumu');
+    openProjectEdit(kayitli.id, true); await bekle(600);
+    // ⚠ Geri girince bolum KAPALI gruplarla aciliyor (kullanicinin
+    //   istedigi ozet). Satir olcmek icin bir grubu acmak gerekiyor.
+    const ilkAc = document.querySelector('#cl_liste .cl-grup-ac');
+    if (ilkAc) { ilkAc.click(); await bekle(400); }
     const cm = document.querySelector('#cl_liste .cl-satir');
     o.liste = bic(cm, cm.querySelector('.cl-metin'));
     o.girintiVar = !!document.querySelector('#cl_liste .cl-ic');
     // Parmak hedefi: kutudan 14 px uzakta hala kutu mu
+    // ⛔ ONCE GORUNTUYE GETIR. `elementFromPoint` yalnizca EKRANDAKI
+    //    noktalari goruyor; oge ekranin altinda kalirsa null doner ve
+    //    olcu "tiklanamiyor" der. 17 Kasim 2026'da tam bu oldu: kutu
+    //    y=1147'deydi, pencere 900 yuksekliginde -- uygulama degil
+    //    OLCUM yaniliyordu.
     const kutu = cm.querySelector('.cl-kutu');
+    kutu.scrollIntoView({ block: 'center' }); await bekle(250);
     const kk = kutu.getBoundingClientRect();
     const uzak = document.elementFromPoint(kk.left + kk.width / 2 - 14,
                                            kk.top + kk.height / 2);
@@ -361,6 +391,55 @@ const KOK = path.join(__dirname, '..');
     assert.ok(esit.not, 'not kutusu hiç açılmadı');
     assert.strictEqual(esit.not.altinda, true, 'not kutusu metnin altında değil');
     assert.strictEqual(esit.not.tamGenislik, true, 'not kutusu tam genişlikte değil');
+  });
+
+  // ── 6. ⛔ HAZIR SETLER SERIDINDEKI "+" BU LISTEYE EKLER ──────────
+  // Kullanici bildirdi (17 Kasim 2026): "hazir setleri hic bir sekilde
+  // ekleyemiyorum, yanlarindaki + isareti calismiyor."
+  // OLCULDU: calisiyordu ama seti "kendi setlerim"e KOPYALIYORDU ve
+  // bunu soyledigi oge (ih_topluNot) Ihtiyac kutuphanesi penceresinde
+  // -- cekim listesi acikken o pencere KAPALI. Gorunmez bir is.
+  // Cekim listesinin icinde "+" dogal olarak "bu listeye ekle" demek.
+  const serit = await p.evaluate(async () => {
+    const bekle = ms => new Promise(r => setTimeout(r, ms));
+    const pr = projects.find(x => x.name === 'Esitlik olcumu');
+    cekimListesiAc(pr.id); await bekle(600);
+    const fold = document.getElementById('cl_hsetFold');
+    if (fold) fold.open = true;
+    await bekle(250);
+    const o = { artiSayisi: document.querySelectorAll('#cl_hset [data-hkopya]').length };
+    const once = (projects.find(x => x.name === 'Esitlik olcumu').checklist || []).length;
+    const setOnce = ihtiyacSetleri.length;
+    // Henuz eklenmemis bir set: "Telefonla cekim"
+    const artilar = Array.prototype.slice.call(
+      document.querySelectorAll('#cl_hset [data-hkopya]'));
+    if (artilar[3]) artilar[3].click();
+    await bekle(700);
+    o.listeArtti = (projects.find(x => x.name === 'Esitlik olcumu').checklist || []).length - once;
+    o.kendiSetDegisti = ihtiyacSetleri.length - setOnce;
+    // Onizleme panelinde ADIYLA duran kopyalama dugmesi
+    const bak = document.querySelector('#cl_hset [data-hbak]');
+    if (bak) bak.click(); await bekle(400);
+    const kop = document.querySelector('#cl_hset [data-hkopyala]');
+    o.kopyaDugmeMetni = kop ? kop.textContent.trim() : '';
+    const setOnce2 = ihtiyacSetleri.length;
+    if (kop) kop.click(); await bekle(600);
+    o.kopyaCalisti = ihtiyacSetleri.length - setOnce2;
+    return o;
+  });
+  dene('★ şeritteki "+" BU LİSTEYE ekliyor', () => {
+    assert.ok(serit.artiSayisi >= 8, '"+" düğmeleri yok: ' + serit.artiSayisi);
+    assert.ok(serit.listeArtti > 0,
+      '"+" basıldı ama çekim listesine hiç madde girmedi — kullanıcının ' +
+      '"çalışmıyor" dediği şey buydu');
+    assert.strictEqual(serit.kendiSetDegisti, 0,
+      '"+" hâlâ "kendi setlerim"e kopyalıyor: görünmez bir iş yapıyor');
+  });
+  dene('★ "Setlerime kopyala" kaybolmadı, ADIYLA duruyor', () => {
+    assert.ok(serit.kopyaDugmeMetni.length > 3,
+      'kopyalama düğmesi önizleme panelinde yok: işlev kayboldu');
+    assert.strictEqual(serit.kopyaCalisti, 1,
+      'kopyalama düğmesi çalışmıyor');
   });
 
   dene('sayfa hatasi yok', () => {
