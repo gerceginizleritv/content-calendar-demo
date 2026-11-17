@@ -2657,6 +2657,8 @@ textarea.sc-ai-brief{min-height:64px;resize:vertical;line-height:1.5;}
 .cl-grup-ac{flex:none;background:none;border:0;cursor:pointer;
   color:inherit;opacity:.7;font-size:16px;padding:2px 8px;line-height:1;}
 .cl-grup-ac:hover{opacity:1;}
+.cl-altgrup{font-size:12px;letter-spacing:.06em;text-transform:uppercase;
+  opacity:.6;margin:8px 0 2px;}
 .proje-sayfasi .modal-actions,
 .script-sayfasi .modal-actions,
 .kayit-sayfasi .modal-actions{
@@ -11083,6 +11085,16 @@ function cekimListesiAc(id, kaydirmasiz){
     cipler.innerHTML = hazirSetCipleri();
     hazirSetleriBagla(cipler);
   }
+  // ⛔ ACILMA DURUMU NIYETE GORE.
+  //    `kaydirmasiz` = bolum KENDILIGINDEN aciliyor (proje acilisi).
+  //    Orada kullanicinin istedigi sey OZET: gruplar kapali, "+" ile
+  //    aciliyor ("basligin altinda + isaretli olarak ... gorur").
+  //    Kullanici "Cekim listesi"ne BILEREK bastiysa niyeti listeyi
+  //    gormek; her grubu tek tek actirmak sahada angarya olurdu, o
+  //    yuzden hepsi ACIK geliyor. Eski davranis da buydu.
+  if(!kaydirmasiz){
+    projeListesi(pr).forEach(x=>{ listeAcikGrup[listeGrupAnahtari(x)] = true; });
+  }
   cekimListesiCiz();
   document.getElementById('cekimListesiOverlay').classList.add('open');
   // Bolum sayfanin altinda; kullanici oraya BAKSIN diye kaydiriliyor.
@@ -11105,6 +11117,27 @@ function cekimListesiKapat(){
   // tablodaki "bitti/toplam" cipi taze kaliyor. Ilk surumde kosullu
   // yazilmisti ve cip bayat kaldi (cekim-listesi testi yakaladi).
   renderProjects();
+}
+// Maddenin dustugu grubun ANAHTARI. Tek yerde duruyor: cizim, acma
+// ve yeni madde ekleme uceu de buna bakiyor, yoksa uc ayri yerde
+// ayni mantik yazilir ve biri degisince otekiler sessizce ayrisir.
+// Bir setin icindeki maddeleri "Canta" / "Yap" diye ayiriyor.
+// Sira ILK GORULME sirasinda: setler "en cok unutulan en ustte" diye
+// dizili, alfabetik siralamak onu bozardi.
+function altGruplar(maddeler){
+  const sira = []; const kova = new Map();
+  maddeler.forEach(x=>{
+    const ad = listeGrupAdi(x);
+    if(!kova.has(ad)){ kova.set(ad, []); sira.push(ad); }
+    kova.get(ad).push(x);
+  });
+  return sira.map(ad=> ({ ad, maddeler: kova.get(ad) }));
+}
+function listeGrupAnahtari(madde){
+  const setAdlari = {};
+  hazirSetler().forEach(x=>{ if(x && x.k) setAdlari[x.k] = x.ad; });
+  return (madde.set && setAdlari[madde.set]) ? ('set:' + madde.set)
+                                             : ('kaynak:' + listeGrupAdi(madde));
 }
 function listeGrupAdi(madde){
   if(madde.kaynak === 'mekan') return t('cl_group_place')(madde.grup || '');
@@ -11456,8 +11489,7 @@ function cekimListesiCiz(){
   const gruplar = [];
   const kova = new Map();
   liste.forEach(x=>{
-    const anahtar = (x.set && setAdi[x.set]) ? ('set:' + x.set)
-                                             : ('kaynak:' + listeGrupAdi(x));
+    const anahtar = listeGrupAnahtari(x);
     if(!kova.has(anahtar)){ kova.set(anahtar, []); gruplar.push(anahtar); }
     kova.get(anahtar).push(x);
   });
@@ -11477,7 +11509,18 @@ function cekimListesiCiz(){
     +     ' aria-label="' + escapeHtml(acik ? t('cl_grup_kapat') : t('cl_grup_ac')) + '">'
     +     (acik ? '−' : '+') + '</button>'
     + '</div>'
-    + (acik ? maddeler.map(x=>`
+    // ⛔ SET BASLIGI ALTINDA "Canta" / "Yap" ALT BASLIKLARI.
+    //    Set gruplamasina gecerken bu ayrim KAYBOLMAMALI: eski karar
+    //    gerekcesiyle yaziliydi -- "goturulecek sey ile yapilacak is
+    //    ayri basliklarda; ikisi karisirsa cantayi toplarken 'oda sesi
+    //    kaydet' maddesinin yaninda durur". `hazir-setler` testi bunu
+    //    yakaladi. Ust duzey SET, alt duzey canta/yap: iki karar da
+    //    yerinde.
+    // ⚠ Yalnizca SET gruplarinda: kaynak gruplarinin basligi zaten
+    //   canta/yap'in kendisi, alt baslik tekrar olurdu.
+    + (acik ? (setMi ? altGruplar(maddeler) : [{ ad:'', maddeler }]).map(ag=>
+        (ag.ad ? '<div class="cl-altgrup">' + escapeHtml(ag.ad) + '</div>' : '')
+        + ag.maddeler.map(x=>`
       <div class="cl-satir ${x.bitti ? 'bitti' : ''}">
         <button type="button" class="cl-kutu ${x.bitti ? 'on' : ''}" data-cl-tik="${escapeHtml(x.id)}"
                 aria-pressed="${x.bitti}" aria-label="${escapeHtml(x.metin)}">${x.bitti ? '✓' : ''}</button>
@@ -11491,7 +11534,7 @@ function cekimListesiCiz(){
         </div>
         <button type="button" class="cl-sil" data-cl-sil="${escapeHtml(x.id)}"
                 title="${escapeHtml(t('cl_remove'))}" aria-label="${escapeHtml(t('cl_remove'))}">×</button>
-      </div>`).join('') : '')
+      </div>`).join('')).join('') : '')
     + '</div>';
   }).join('');
   kap.querySelectorAll('[data-cl-ac]').forEach(el=>{
@@ -11557,6 +11600,12 @@ function listeMaddeEkle(metin, kaynak, grup, not, set){
   // Ayni metin listede zaten varsa ikinci kez eklenmiyor.
   if(liste.some(x=> ihtiyacAnahtari(x.metin) === ihtiyacAnahtari(madde.metin))) return null;
   projeListesiYaz(pr, liste.concat([madde]));
+  // ⛔ YENI MADDENIN GRUBU ACILIYOR. Gruplar kapali basladigi icin
+  //    (55. madde), yeni eklenen madde KAPALI bir gruba duserse
+  //    ekranda hic gorunmez ve kullanici "eklenmedi" sanir.
+  //    17 Kasim 2026: `cekim-listesi` testi tam bunu yakaladi --
+  //    elle eklenen madde listede bulunamadi.
+  listeAcikGrup[listeGrupAnahtari(madde)] = true;
   return madde;
 }
 

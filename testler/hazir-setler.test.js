@@ -152,7 +152,17 @@ async function sayfa(b, genislik){
       // Sira korunuyor mu: "en cok unutulan en ustte".
       siraAyni: l.every((x,i)=> x.metin === kaynak[i][1] && x.kaynak === kaynak[i][0]),
       isaretsiz: l.every(x=> x.bitti === false),
-      gruplar: [...new Set([...document.querySelectorAll('#cl_liste .cl-grup, #cl_liste h4')]
+      // ⛔ 17 KASIM 2026 -- YAPI IKI DUZEYLI OLDU (55. madde).
+      //    Ust duzey SET adi (`.cl-grup-ad`), alt duzey "Canta"/"Yap"
+      //    (`.cl-altgrup`). Eskiden tek duzey vardi ve bu olcu
+      //    `.cl-grup`e bakiyordu; o secici artik sayiyi ve +/- isaretini
+      //    de topluyor ("Onceki aksam0/9-"). Olcunun ARKASINDAKI
+      //    guvence degismedi: goturulecek sey ile yapilacak is ayri
+      //    dursun, ve basliklar donmus metin olmasin. Ikisi de
+      //    asagida, artik IKI DUZEYDE olculuyor.
+      altGruplar: [...new Set([...document.querySelectorAll('#cl_liste .cl-altgrup')]
+        .map(x=> x.textContent.trim()))],
+      setBasliklari: [...new Set([...document.querySelectorAll('#cl_liste .cl-grup-ad')]
         .map(x=> x.textContent.trim()))]
     };
   });
@@ -163,24 +173,37 @@ async function sayfa(b, genislik){
   k('★ kullanıcının kendi setleri DEĞİŞMİYOR', ekle.setlerAyni === true);
   k('sıra korunuyor', ekle.siraAyni === true);
   k('hiçbiri işaretli gelmiyor', ekle.isaretsiz === true);
-  k('listede "Çanta" ve "Yap" başlıkları', ekle.gruplar.join(',') === 'Yap,Çanta', ekle.gruplar.join(','));
+  k('listede "Çanta" ve "Yap" alt başlıkları (set içinde ayrı duruyor)',
+     ekle.altGruplar.slice().sort().join(',') === 'Yap,Çanta',
+     ekle.altGruplar.join(','));
+  k('★ üst başlık SETİN ADI (kaynak adı değil)',
+     ekle.setBasliklari.length === 1 && /akşam|night/i.test(ekle.setBasliklari[0]),
+     ekle.setBasliklari.join(','));
 
   // ───────── 4) Donmus baslik tuzagi ─────────
   const cevir = await m.page.evaluate(async ()=>{
     setLanguage('en'); cekimListesiCiz();
     await new Promise(r=> setTimeout(r, 150));
-    const en = [...new Set([...document.querySelectorAll('#cl_liste .cl-grup, #cl_liste h4')]
-      .map(x=> x.textContent.trim()))];
+    const al = ()=> ({
+      alt: [...new Set([...document.querySelectorAll('#cl_liste .cl-altgrup')]
+        .map(x=> x.textContent.trim()))],
+      set: [...new Set([...document.querySelectorAll('#cl_liste .cl-grup-ad')]
+        .map(x=> x.textContent.trim()))] });
+    const en = al();
     const seritEN = document.querySelector('#cl_hsetFold summary').textContent.trim();
     setLanguage('tr'); cekimListesiCiz();
     await new Promise(r=> setTimeout(r, 150));
-    const tr = [...new Set([...document.querySelectorAll('#cl_liste .cl-grup, #cl_liste h4')]
-      .map(x=> x.textContent.trim()))];
+    const tr = al();
     return { en, tr, seritEN, seritTR: document.querySelector('#cl_hsetFold summary').textContent.trim() };
   });
-  k('★ GRUP BAŞLIKLARI DİLLE DEĞİŞİYOR (donmuş metin değil)',
-     cevir.en.join(',') === 'Do,Bring' && cevir.tr.join(',') === 'Yap,Çanta',
-     cevir.en.join(',') + ' / ' + cevir.tr.join(','));
+  k('★ ALT BAŞLIKLAR DİLLE DEĞİŞİYOR (donmuş metin değil)',
+     cevir.en.alt.slice().sort().join(',') === 'Bring,Do' &&
+     cevir.tr.alt.slice().sort().join(',') === 'Yap,Çanta',
+     cevir.en.alt.join(',') + ' / ' + cevir.tr.alt.join(','));
+  k('★ SET BAŞLIĞI DA DİLLE DEĞİŞİYOR',
+     cevir.en.set.join(',') !== cevir.tr.set.join(',') &&
+     cevir.en.set.length > 0 && cevir.tr.set.length > 0,
+     cevir.en.set.join(',') + ' / ' + cevir.tr.set.join(','));
   k('şerit başlığı da çevriliyor', cevir.seritEN !== cevir.seritTR,
      cevir.seritEN + ' / ' + cevir.seritTR);
 

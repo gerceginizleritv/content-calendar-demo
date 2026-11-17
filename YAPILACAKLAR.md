@@ -720,6 +720,34 @@ dokunmak ve ikinci seferde birincisini bozmak demek.
   Ayrıca ölçüm dayanıklı hale getirildi: bölüm hiç açılmazsa test
   çökmek yerine **sebebi söyleyen** bir iddiayla düşüyor.
 
+  ⛔ **TAM KOŞU İKİ TEST DÜŞÜRDÜ — ikisi de GERÇEK bulgu çıktı.**
+
+  1. **`cekim-listesi` düştü: elle eklenen madde görünmüyordu.**
+     Gruplar kapalı başladığı için, yeni eklenen madde **yeni bir
+     gruba** düşünce ekranda hiç görünmüyordu — kullanıcı "eklenmedi"
+     sanardı. Düzeltildi: `listeMaddeEkle` eklediği maddenin grubunu
+     **açıyor**. Bu bir test uyarlaması değil, **kusur düzeltmesi**.
+
+  2. **`hazir-setler` düştü: "Çanta" / "Yap" ayrımı kayboluyordu.**
+     O ayrım gerekçesiyle yazılmıştı: *"götürülecek şey ile yapılacak
+     iş ayrı başlıklarda; ikisi karışırsa çantayı toplarken 'oda sesi
+     kaydet' maddesinin yanında durur."* Set başlığına geçerken onu
+     sessizce kaybetmek yanlış olurdu. **İki düzey kuruldu:** üst
+     başlık **setin adı**, içinde **Çanta / Yap alt başlıkları**.
+     Test iki düzeyi birden ölçecek şekilde yeniden yönlendirildi ve
+     **güçlendi**: artık set başlığının da dille değiştiğini ölçüyor.
+
+  ⚠ **Açılma durumu niyete göre:** bölüm **kendiliğinden** açıldıysa
+  (projeye giriş) gruplar **kapalı** — kullanıcının istediği özet.
+  Kullanıcı "Çekim listesi"ne **bilerek** bastıysa hepsi **açık** —
+  sahada her grubu tek tek açtırmak angarya olurdu, eski davranış da
+  buydu.
+
+  ⚠ Grup anahtarını üreten mantık **tek yere** toplandı
+  (`listeGrupAnahtari`): çizim, açma ve yeni madde ekleme üçü de ona
+  bakıyor. Üç ayrı yerde yazılsaydı biri değişince ötekiler sessizce
+  ayrışırdı — bu deponun tekrarlayan hatası.
+
   **Önerilen üç küçük düzeltme — kullanıcı onayı bekliyor:**
   1. Alanlarda **Enter kaydetsin** ("Ekle" ile aynı).
   2. Pencereye tek cümle: *"Bir platformda **iki** hesabın olduğunda,
