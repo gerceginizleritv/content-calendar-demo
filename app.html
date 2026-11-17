@@ -2659,6 +2659,45 @@ textarea.sc-ai-brief{min-height:64px;resize:vertical;line-height:1.5;}
 .cl-grup-ac:hover{opacity:1;}
 .cl-altgrup{font-size:12px;letter-spacing:.06em;text-transform:uppercase;
   opacity:.6;margin:8px 0 2px;}
+/* ⛔ 55/2 -- CEKIM LISTESI SATIRI "KART" DEGIL, ONERI BOLUMUYLE AYNI
+   TEMIZ SATIR. Kullanici UCUNCU kez bildirdi (17 Kasim 2026, iki ekran
+   goruntusuyle): "burasi kullanicinin kafasini karistiriyor... ikinci
+   ekran goruntusunde secim alani TEMIZ, ayni sekilde birincisi de
+   olsun; kullanici her iki tarafta da AYNI seyi gorur."
+   Ilk surumde yalnizca GRUPLAMA ayni yapilmisti, SATIRIN KENDISI
+   kart olarak kalmisti: cerceve + zemin + 7px alt bosluk + 26px kutu.
+   Olculen fark buydu.
+
+   ⚠ KAPSAM `#cl_liste` ILE SINIRLI. `.cl-satir` ve `.cl-kutu`
+     "Cekim Setleri" sayfasinda da kullaniliyor (#ihs_liste);
+     sinifi global degistirmek kullanicinin gormedigi bir ekrani da
+     degistirirdi. */
+#cl_liste .cl-ic{margin:0 0 8px 26px;padding-left:10px;
+  border-left:2px solid var(--line);}
+#cl_liste .cl-satir{border:0;background:none;border-radius:0;
+  margin-bottom:0;padding:4px 0;}
+/* ⚠ "+ not" METNIN ALTINDA degil YANINDA. Altta dururken satir 41,5
+   piksel oluyordu; oneri satiri 26. Olculen fark buydu ve goz onu
+   "baska bir liste" diye okuyor. Yanina alinca ikisi AYNI yukseklikte.
+   Not yine bir dokunus uzakta: basilinca kutu ALTA aciliyor
+   (flex-wrap ile kendi satirina gecer, genisligi %100). */
+#cl_liste .cl-orta{flex-direction:row;align-items:baseline;
+  flex-wrap:wrap;gap:4px 8px;}
+#cl_liste .cl-orta .cl-metin{flex:1 1 auto;min-width:0;}
+#cl_liste .cl-orta .cl-not{flex:1 0 100%;}
+#cl_liste .cl-metin{font-size:13px;}
+/* ⚠ Kutu KUCULDU ama PARMAK HEDEFI KUCULMEDI. Gorunen kare 18px,
+   tiklanabilir alan gorunmez bir katmanla 40px. Sahada kucuk bir
+   kutuya nisan almak zor -- bu ders kodda zaten yaziliydi
+   (.cl-kutu yorumu), gorunus ugruna cope atilmiyor. */
+#cl_liste .cl-kutu{width:18px;height:18px;border-width:1.4px;
+  font-size:11px;margin-top:1px;position:relative;}
+#cl_liste .cl-kutu::after{content:'';position:absolute;inset:-11px;}
+#cl_liste .cl-notac{font-size:11px;opacity:.65;}
+#cl_liste .cl-sil{opacity:.4;font-size:14px;padding:0 2px;}
+#cl_liste .cl-satir:hover .cl-sil,
+#cl_liste .cl-sil:focus-visible{opacity:1;}
+#cl_liste .cl-altgrup{margin:6px 0 0;}
 .proje-sayfasi .modal-actions,
 .script-sayfasi .modal-actions,
 .kayit-sayfasi .modal-actions{
@@ -11518,7 +11557,7 @@ function cekimListesiCiz(){
     //    yerinde.
     // ⚠ Yalnizca SET gruplarinda: kaynak gruplarinin basligi zaten
     //   canta/yap'in kendisi, alt baslik tekrar olurdu.
-    + (acik ? (setMi ? altGruplar(maddeler) : [{ ad:'', maddeler }]).map(ag=>
+    + (acik ? '<div class="cl-ic">' + (setMi ? altGruplar(maddeler) : [{ ad:'', maddeler }]).map(ag=>
         (ag.ad ? '<div class="cl-altgrup">' + escapeHtml(ag.ad) + '</div>' : '')
         + ag.maddeler.map(x=>`
       <div class="cl-satir ${x.bitti ? 'bitti' : ''}">
@@ -11534,7 +11573,7 @@ function cekimListesiCiz(){
         </div>
         <button type="button" class="cl-sil" data-cl-sil="${escapeHtml(x.id)}"
                 title="${escapeHtml(t('cl_remove'))}" aria-label="${escapeHtml(t('cl_remove'))}">×</button>
-      </div>`).join('')).join('') : '')
+      </div>`).join('')).join('') + '</div>' : '')
     + '</div>';
   }).join('');
   kap.querySelectorAll('[data-cl-ac]').forEach(el=>{

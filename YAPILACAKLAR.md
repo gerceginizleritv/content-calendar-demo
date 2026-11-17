@@ -720,6 +720,49 @@ dokunmak ve ikinci seferde birincisini bozmak demek.
   Ayrıca ölçüm dayanıklı hale getirildi: bölüm hiç açılmazsa test
   çökmek yerine **sebebi söyleyen** bir iddiayla düşüyor.
 
+  ⛔ **ÜÇÜNCÜ TUR — SATIRIN KENDİSİ.** Kullanıcı aynı şeyi üçüncü kez
+  bildirdi (17 Kasım 2026, iki ekran görüntüsünü yan yana koyarak):
+
+  > *"Burası kullanıcının kafasını karıştırıyor. İkinci ekran
+  > görüntüsünde seçim alanı TEMİZ; aynı şekilde birincisi de olsun,
+  > kullanıcı her iki tarafta da AYNI şeyi görür. Sadece artık seçim
+  > yaptıktan sonraki alanda bunlar + / − ile kapalı olarak gelir,
+  > o kadar."*
+
+  **Haklıydı ve eksik yapmıştım:** ilk iki turda yalnızca
+  **gruplamayı** aynı yapmıştım, **satırın kendisini** değil.
+  Ölçülen fark:
+
+  | | Öneri (temiz) | Çekim listesi (kart) |
+  |---|---|---|
+  | Çerçeve | yok | 1 px |
+  | Zemin | yok | `var(--bg)` |
+  | Dolgu | `4px 0` | `9px 10px` |
+  | Alt boşluk | 0 | 7 px |
+  | Yazı | 13 px | 13,5 px |
+  | **Yükseklik** | **26 px** | **41,5 px** |
+
+  Kart kabuğu kaldırıldı; ölçüm sonrası **26'ya karşı 27 piksel**.
+
+  ⚠ **"+ not" metnin ALTINDAN YANINA alındı.** Altta dururken satır
+  41,5 kalıyordu; asıl yükseklik farkı oydu. Not yine bir dokunuş
+  uzakta: basılınca kutu **altta, tam genişlikte** açılıyor (ölçüldü).
+
+  ⚠ **Parmak hedefi KÜÇÜLMEDİ.** Kutu 26 → 18 piksel ama tıklanabilir
+  alan görünmez bir katmanla 40 pikselde tutuldu. *"Küçük bir kutuya
+  nişan almak sahada zor"* dersi kodda zaten yazılıydı; görünüş uğruna
+  çöpe atılmadı. Test kutunun 14 px uzağının hâlâ tıklanabildiğini
+  ölçüyor.
+
+  ⚠ **Kapsam `#cl_liste` ile sınırlı.** `.cl-satir` ve `.cl-kutu`
+  **Çekim Setleri** sayfasında da kullanılıyor (`#ihs_liste`); sınıfı
+  global değiştirmek kullanıcının görmediği bir ekranı da değiştirirdi.
+
+  Bekçi **20 iddiaya** çıktı: iki ekranın çerçevesi, zemini, dolgusu,
+  satır aralığı, yazı boyu ve yüksekliği **karşılaştırılarak** ölçülüyor
+  — "benzettim" demek yetmiyor. **Mutasyonla kanıtlandı:** kart
+  görünümü geri konunca iki iddia düştü (yükseklik 39'a karşı 26).
+
   ⛔ **TAM KOŞU İKİ TEST DÜŞÜRDÜ — ikisi de GERÇEK bulgu çıktı.**
 
   1. **`cekim-listesi` düştü: elle eklenen madde görünmüyordu.**

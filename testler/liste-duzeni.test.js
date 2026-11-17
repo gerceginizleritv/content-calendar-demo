@@ -276,6 +276,93 @@ const KOK = path.join(__dirname, '..');
       'bos projede bolum acik: onceki projenin listesi gorunur');
   });
 
+  // ── 5. ⛔ IKI EKRAN AYNI GORUNMELI ──────────────────────────────
+  // Kullanici UCUNCU kez bildirdi (17 Kasim 2026, iki ekran
+  // goruntusuyle): "burasi kullanicinin kafasini karistiriyor...
+  // ikinci ekran goruntusunde secim alani TEMIZ, ayni sekilde
+  // birincisi de olsun; kullanici her iki tarafta da AYNI seyi gorur."
+  //
+  // Ilk iki turda yalnizca GRUPLAMA ayni yapilmisti; SATIRIN KENDISI
+  // kart olarak kalmisti (cerceve + zemin + 7px alt bosluk + 26px
+  // kutu, yukseklik 41,5'e karsi 26). Bu bolum tam o farki olcuyor.
+  const esit = await p.evaluate(async () => {
+    const bekle = ms => new Promise(r => setTimeout(r, ms));
+    const o = {};
+    openProjectNew(''); await bekle(300);
+    document.getElementById('pe_name').value = 'Esitlik olcumu';
+    document.getElementById('pe_type').value = 'vlog';
+    document.getElementById('pe_type').dispatchEvent(new Event('change'));
+    const g = document.getElementById('pe_shoot');
+    g.value = '2026-12-30'; g.dispatchEvent(new Event('change'));
+    await bekle(350);
+    const bic = (el, yaziEl) => { const c = getComputedStyle(el);
+      const k = el.getBoundingClientRect();
+      return { dolgu: c.paddingTop + '/' + c.paddingBottom + '/' + c.paddingLeft,
+               cerceve: c.borderTopWidth + '/' + c.borderLeftWidth,
+               zemin: c.backgroundColor, altBosluk: c.marginBottom,
+               yazi: getComputedStyle(yaziEl || el).fontSize,
+               yukseklik: Math.round(k.height) }; };
+    const om = document.querySelector('[data-somad]').closest('label');
+    o.oneri = bic(om, om.querySelector('span'));
+    document.getElementById('pe_oneriEkle').click(); await bekle(1200);
+    const cm = document.querySelector('#cl_liste .cl-satir');
+    o.liste = bic(cm, cm.querySelector('.cl-metin'));
+    o.girintiVar = !!document.querySelector('#cl_liste .cl-ic');
+    // Parmak hedefi: kutudan 14 px uzakta hala kutu mu
+    const kutu = cm.querySelector('.cl-kutu');
+    const kk = kutu.getBoundingClientRect();
+    const uzak = document.elementFromPoint(kk.left + kk.width / 2 - 14,
+                                           kk.top + kk.height / 2);
+    o.uzaktanTiklanir = !!(uzak && uzak.closest('.cl-kutu'));
+    o.kutuGorunen = Math.round(kk.width);
+    // Not kutusu metnin ALTINDA ve tam genislikte mi
+    const notBtn = cm.querySelector('[data-cl-notac]');
+    if (notBtn) { notBtn.click(); await bekle(350); }
+    const s2 = document.querySelector('#cl_liste .cl-satir');
+    const nt = s2.querySelector('.cl-not');
+    o.not = nt ? {
+      altinda: Math.round(nt.getBoundingClientRect().top) >
+               Math.round(s2.querySelector('.cl-metin').getBoundingClientRect().top),
+      tamGenislik: Math.abs(nt.getBoundingClientRect().width -
+        s2.querySelector('.cl-orta').getBoundingClientRect().width) <= 2
+    } : null;
+    return o;
+  });
+
+  dene('★ iki ekranın satır BİÇİMİ aynı (kart değil, temiz satır)', () => {
+    assert.strictEqual(esit.liste.cerceve, esit.oneri.cerceve,
+      'çekim listesi satırı hâlâ çerçeveli: kart gibi görünüyor');
+    assert.strictEqual(esit.liste.zemin, esit.oneri.zemin,
+      'çekim listesi satırının kendi zemini var: kart gibi görünüyor');
+    assert.strictEqual(esit.liste.dolgu, esit.oneri.dolgu,
+      'dolgular ayrı: ' + esit.liste.dolgu + ' / ' + esit.oneri.dolgu);
+    assert.strictEqual(esit.liste.altBosluk, esit.oneri.altBosluk,
+      'satır aralıkları ayrı: ' + esit.liste.altBosluk + ' / ' + esit.oneri.altBosluk);
+    assert.strictEqual(esit.liste.yazi, esit.oneri.yazi,
+      'yazı boyları ayrı: ' + esit.liste.yazi + ' / ' + esit.oneri.yazi);
+  });
+  dene('★ iki ekranın satır YÜKSEKLİĞİ aynı', () => {
+    const fark = Math.abs(esit.liste.yukseklik - esit.oneri.yukseklik);
+    assert.ok(fark <= 3,
+      'satır yükseklikleri ayrı: liste ' + esit.liste.yukseklik +
+      ', öneri ' + esit.oneri.yukseklik + ' (fark ' + fark +
+      ') — göz bunu "başka bir liste" diye okuyor');
+  });
+  dene('maddeler set başlığının altına GİRİNTİLİ giriyor', () => {
+    assert.strictEqual(esit.girintiVar, true);
+  });
+  dene('★ kutu küçüldü ama PARMAK HEDEFİ küçülmedi', () => {
+    assert.ok(esit.kutuGorunen <= 20,
+      'kutu hâlâ iri: ' + esit.kutuGorunen + 'px');
+    assert.strictEqual(esit.uzaktanTiklanir, true,
+      'kutunun 14 px uzağı tıklanamıyor: sahada parmakla nişan almak zorlaşır');
+  });
+  dene('not kutusu metnin ALTINDA ve tam genişlikte açılıyor', () => {
+    assert.ok(esit.not, 'not kutusu hiç açılmadı');
+    assert.strictEqual(esit.not.altinda, true, 'not kutusu metnin altında değil');
+    assert.strictEqual(esit.not.tamGenislik, true, 'not kutusu tam genişlikte değil');
+  });
+
   dene('sayfa hatasi yok', () => {
     assert.deepStrictEqual(sayfaHatasi, []);
   });
