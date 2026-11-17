@@ -423,8 +423,38 @@ başlasın diye. Tam koşudan sonra değişmiş görünmesi normaldir.
   ⚠ Bu, **49. maddenin öneri bölümüne düşen yarısıdır.** 49 hâlâ açık:
   kullanıcının *kendi* setlerinden madde çıkarma ve Çekim listesi
   ekranındaki set yönetimi ayrı iş.
-- ⬜ **11.** Havaya göre set önerisi
-- ⬜ **12.** Zamanlama (set doğru günde öne çıkar)
+- ⬜ **11.** Havaya göre set önerisi — ⚠ **TASARIMDAN SONRAYA ALINDI**
+- ⬜ **12.** Zamanlama (set doğru günde öne çıkar) — ⚠ **TASARIMDAN
+  SONRAYA ALINDI**
+
+### 2b · TASARIM — ÖNE ALINDI (kullanıcı, 17 Kasım 2026)  ⬜ SIRADA
+
+> *"evet tasarım işlerini öne al"* — kullanıcı, 17 Kasım 2026.
+
+Sebebi: bunlar kullanıcının **ekranda gördüğü** şeyler. 11 ve 12
+(hava, zamanlama) bu bölümün arkasına geçti.
+
+⚠ **Madde gövdeleri aşağıda, kendi yerlerinde duruyor** (43–48);
+burada yalnızca sıra var. Numaralar değişmedi — değiştirmek sohbetteki
+ve commit'lerdeki atıfları kırardı.
+
+**Sıra ve gerekçesi:**
+
+| # | İş | Neden bu sırada |
+|---|---|---|
+| **46** | Favicon aileleri ayrışmış | Küçük ve mekanik; başka hiçbir şeye dokunmuyor |
+| **45** | Ana sayfa kahraman boşluğu | Tek sayfa, tek düzen işi |
+| **47 + 48** | Üst menü birliği **+** dil sürekliliği | ⛔ **BİRLİKTE** — aşağıya bak |
+| **43** | Mekânlar: fotoğraflı liste görünümü | Uygulama içi, kendi başına |
+| **44** | Fiyatlar sayfası | En büyüğü: para birimi, admin fiyatı, indirim yüzdesi |
+
+⛔ **47 ve 48 NEDEN BİRLİKTE.** 48. madde zaten yazıyor: dil
+bağlantısının tek satırlık düzeltmesi var ama *"asıl sorun çözülmeden
+yapılırsa **dördüncü bir yama** olur"*. Üst menüyü birleştirmek (47)
+dil bağlantılarını da kapsıyor — menü her sayfada aynı olacaksa dil
+seçicisi de aynı olacak. İkisini ayrı yapmak aynı dosyalara iki kez
+dokunmak ve ikinci seferde birincisini bozmak demek.
+⚠ 48'in ayrıca **41'den (altı dil) önce bitmesi şart** — orada yazılı.
 
 ### 3 · Sınırlar
 - ⬜ **52.** **Fikirlere öncelik** (kullanıcı kararı, 16 Kasım 2026).
