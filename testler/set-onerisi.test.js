@@ -289,6 +289,98 @@ const GENEL = ['onceki','kayda','sonra'];
       'bos bir oneri bolumu kullaniciya "bir sey mi eksik?" dedirtir');
   });
 
+  // ── 7. SETIN ICI GORUNUYOR, MADDE CIKARILABILIYOR ───────────────
+  // Kullanici istedi (17 Kasim 2026): "bu setlerin icerikleri de
+  // mutlaka gorunuyor olmali. Hatta bu setlerin icerisinde yer alan
+  // bazi araclari da dilerse cikarabilmeli. Illa her vlogda hep ayni
+  // araclari kullanmasi gerekmiyor."
+  // Ayni sikayeti 16 Kasim'da 49. madde icin de yazmisti: "+ var ama
+  // - yok."
+  //
+  // ⛔ VE BURADA BIR GERILEME BEKCISI VAR. 17 Kasim 2026'da kullanici
+  //    su hatayi yasadi: "ekle dedim projeyi kaydettim ama projeyi
+  //    geri acinca bunlarin hic biri gorunmuyordu."
+  //    Sebep: `projeyiKaydet()` sonunda `closeProjectEdit()` cagiriyor,
+  //    yani PROJE SAYFASINI KAPATIYOR. "Ekle" basilinca sayfa kapaniyor,
+  //    proje listesi geri geliyor ve kullanici eklenen maddeleri
+  //    hicbir yerde goremiyordu. Veri yerindeydi, GORUNMUYORDU.
+  //    Asagidaki uc iddia (sayfa acik kaldi mi, duzenlenen proje dogru
+  //    mu, cekim listesi acildi mi) o hatanin bekcisi.
+  const ic = await p.evaluate(async () => {
+    const bekle = ms => new Promise(r => setTimeout(r, ms));
+    const o = {};
+    openProjectNew(''); await bekle(300);
+    document.getElementById('pe_name').value = 'Ic olcumu';
+    document.getElementById('pe_type').value = 'vlog';
+    document.getElementById('pe_type').dispatchEvent(new Event('change'));
+    const g = document.getElementById('pe_shoot');
+    g.value = '2026-12-20'; g.dispatchEvent(new Event('change'));
+    await bekle(250);
+    o.acildi = !document.getElementById('pe_oneri').hidden;
+    // Kapaliyken madde satiri YOK
+    o.kapaliIcSatir = document.querySelectorAll('[data-somad]').length;
+    // Setin icini ac
+    document.querySelector('[data-sobak="konusmali"]').click(); await bekle(200);
+    const mad = Array.prototype.slice.call(
+      document.querySelectorAll('[data-somad^="konusmali:"]'));
+    o.icSatir = mad.length;
+    o.metinVar = mad.every(x => (x.closest('label').textContent || '').trim().length > 2);
+    o.hepsiTikli = mad.every(x => x.checked);
+    const etiket = () => document.querySelector('[data-soblok="konusmali"] .set-oneri-adet').textContent;
+    o.adetOnce = etiket();
+    // Bir maddeyi tikten cikar
+    o.cikarilan = (mad[0].closest('label').textContent || '').trim();
+    mad[0].checked = false;
+    mad[0].dispatchEvent(new Event('change', { bubbles: true })); await bekle(200);
+    o.adetSonra = etiket();
+    o.hala9Satir = document.querySelectorAll('[data-somad^="konusmali:"]').length;
+    // Ekle
+    document.getElementById('pe_oneriEkle').click(); await bekle(1200);
+    o.sayfaAcikKaldi = document.getElementById('projectEditOverlay').classList.contains('open');
+    o.duzenlenen = duzenlenenProje ? duzenlenenProje.name : null;
+    o.listeBolumuAcildi = document.getElementById('cekimListesiOverlay').classList.contains('open');
+    const pr = projects.find(x => x.name === 'Ic olcumu');
+    o.maddeSayisi = pr ? (pr.checklist || []).length : -1;
+    o.cikarilanListede = pr
+      ? (pr.checklist || []).some(m => o.cikarilan.indexOf(m.metin) >= 0) : true;
+    o.adres = location.hash;
+    return o;
+  });
+
+  dene('★ setin ICI gorunuyor (maddeler metinleriyle)', () => {
+    assert.strictEqual(ic.acildi, true, 'oneri bolumu acilmadi');
+    assert.strictEqual(ic.kapaliIcSatir, 0, 'kapaliyken madde satiri var');
+    assert.ok(ic.icSatir >= 5, 'setin ici acilmadi, satir: ' + ic.icSatir);
+    assert.strictEqual(ic.metinVar, true, 'madde satirlarinin metni bos');
+  });
+  dene('setin maddeleri varsayilan olarak TIKLI', () => {
+    assert.strictEqual(ic.hepsiTikli, true);
+  });
+  dene('★ madde tikten cikarilabiliyor ve sayi bunu yaziyor', () => {
+    assert.notStrictEqual(ic.adetOnce, ic.adetSonra,
+      'bir madde cikarildi ama sayi etiketi degismedi: kullanici ne cikardigini gormez');
+    assert.ok(/\//.test(ic.adetSonra),
+      'etiket "8 / 9 madde" bicimine gecmedi: ' + ic.adetSonra);
+    assert.strictEqual(ic.hala9Satir, ic.icSatir,
+      'bolum yeniden cizildi: tiklanan kutudan odak kacar');
+  });
+  dene('★ tikten cikarilan madde cekim listesine GIRMIYOR', () => {
+    assert.strictEqual(ic.cikarilanListede, false,
+      'cikarilan madde yine eklendi: "istemedigini cikarabilmeli" karsilanmiyor');
+    assert.ok(ic.maddeSayisi > 0, 'hic madde eklenmedi');
+  });
+  dene('★ GERILEME: "Ekle" proje sayfasini KAPATMIYOR', () => {
+    assert.strictEqual(ic.sayfaAcikKaldi, true,
+      'proje sayfasi kapandi: kullanici 17 Kasim 2026\'da tam bunu yasadi');
+    assert.strictEqual(ic.duzenlenen, 'Ic olcumu',
+      'duzenlenen proje yanlis/bos: form "yeni proje" sanir ve Kaydet yeni-proje yolunu kosar');
+    assert.ok(/^#\/proje\//.test(ic.adres), 'adres proje sayfasinda degil: ' + ic.adres);
+  });
+  dene('★ eklenenler HEMEN gorunuyor (cekim listesi aciliyor)', () => {
+    assert.strictEqual(ic.listeBolumuAcildi, true,
+      'kullanici ne eklendigini goremiyor -- sikayetin kendisi buydu');
+  });
+
   dene('sayfa hatasi yok', () => {
     assert.deepStrictEqual(sayfaHatasi, []);
   });

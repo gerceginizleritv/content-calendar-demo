@@ -369,6 +369,60 @@ başlasın diye. Tam koşudan sonra değişmiş görünmesi normaldir.
   bakıyor). Sebep testin içine yazıldı.
   ⚠ Ders: yeşil bir test, yanlış sebeple yeşil olabilir. Mutasyon
   denemesi olmasa bu görülmezdi.
+
+  ---
+
+  ⛔ **KULLANICI CANLIDA İKİ EKSİK BULDU (17 Kasım 2026) — İKİSİ DE
+  DÜZELTİLDİ.** Kullanıcının sözleri:
+
+  > *"Proje açtım, tür olarak Vlog seçtim, çekim tarihi alanına bir
+  > tarih girdim, altta bazı setler çıktı, ekle dedim, projeyi
+  > kaydettim ama projeyi geri açınca bunların hiç biri
+  > görünmüyordu."*
+
+  **1. KÖK SEBEP — benim hatam, ve veri kaybı DEĞİL.** `projeyiKaydet()`
+  sonunda `closeProjectEdit()` çağırıyor (`app.html` ~16182), yani
+  **proje sayfasını kapatıyor.** "Ekle" düğmesinde onu çağırdığım için
+  kullanıcı basınca sayfa kapanıyor, proje listesi geri geliyordu; form
+  da "yeni proje" sanmaya devam ediyordu (`duzenlenenProje` null), bu
+  yüzden "Kaydet"e basınca yeni-proje soruları çıkıyordu.
+
+  Ölçüldü: veri **yerindeydi** — 17 madde, `setOneri` kayıtlı, etiket
+  `0/17`, Çekim listesi 17 satır. Kullanıcı onları **göremiyordu**,
+  çünkü maddeler Çekim listesi bölümünün içinde ve o bölüm kapalıydı.
+
+  Çözüm: eklendikten sonra `cekimListesiAc(pr.id)` çağrılıyor — proje
+  sayfası **geri açılıyor** ve çekim listesi bölümü **gösteriliyor**.
+  Kullanıcı bıraktığı yerde kalıyor ve eklediğini **hemen görüyor**.
+  `uyari()` penceresi kaldırıldı: üstüne bir pencere daha açmak yerine
+  sonuç doğrudan görünüyor.
+
+  **2. SETİN İÇİ GÖRÜNÜYOR, MADDE ÇIKARILABİLİYOR.** Kullanıcının
+  sözleri:
+
+  > *"Bu altta eklenen setler set olarak ekleniyor ama kullanıcı bu
+  > setlerin içerisinde ne gibi araçlar var ne yok bunu ezberlemez,
+  > ezberlemek zorunda da değil. Bu setlerin içerikleri de mutlaka
+  > görünüyor olmalı. Hatta bu setlerin içerisinde yer alan bazı
+  > araçları da dilerse çıkarabilmeli. İlla her vlogda hep aynı
+  > araçları kullanması gerekmiyor."*
+
+  Öneri satırları artık `▾` ile **açılıyor**: maddeler metinleriyle
+  görünüyor, her maddenin **kendi tiki** var ve varsayılan tikli
+  geliyor. Tikten çıkarılan madde çekim listesine **hiç girmiyor**.
+  Sayı etiketi bunu yazıyor: `9 madde` → `8 / 9 madde`.
+  ⚠ Madde tiki değişince bölüm **yeniden çizilmiyor**, yalnızca sayı
+  etiketi tazeleniyor — yeniden çizmek tıklanan kutudan odağı kaçırır
+  ve klavyeyle gezen kullanıcı yerini kaybeder. Test bunu da ölçüyor.
+
+  **Bekçi büyüdü:** `set-onerisi.test.js` **35 iddia** (29 + 6).
+  İçlerinde bir **gerileme bekçisi** var: "Ekle" proje sayfasını
+  kapatmıyor · düzenlenen proje doğru · çekim listesi açılıyor.
+  **Mutasyonla kanıtlandı:** hata geri konulunca o iki iddia düştü.
+
+  ⚠ Bu, **49. maddenin öneri bölümüne düşen yarısıdır.** 49 hâlâ açık:
+  kullanıcının *kendi* setlerinden madde çıkarma ve Çekim listesi
+  ekranındaki set yönetimi ayrı iş.
 - ⬜ **11.** Havaya göre set önerisi
 - ⬜ **12.** Zamanlama (set doğru günde öne çıkar)
 
@@ -566,6 +620,13 @@ başlasın diye. Tam koşudan sonra değişmiş görünmesi normaldir.
   (7. madde bu yolu zaten kurdu).
   ⚠ Bölüm 7: metinler iki dilde. Bekçi test: eklenen madde **geri
   çıkarılabiliyor mu** ölçülecek.
+
+  ⚠ **17 Kasım 2026 — BU MADDENİN BİR YARISI 10. MADDEDE YAPILDI.**
+  Set önerisi bölümünde setin içi `▾` ile açılıyor, her maddenin kendi
+  tiki var ve tikten çıkarılan madde eklenmiyor. Kullanıcı aynı şeyi
+  oradan bir daha istedi. **Bu madde yine açık:** kullanıcının *kendi*
+  setlerinden madde çıkarma ve Çekim listesi ekranındaki set yönetimi
+  hâlâ yapılmadı.
 
 - ✅ **50.** ⛔ **PROJE DÜZENLEME POP-UP DEĞİL SAYFA OLSUN.** — **BİTTİ (16 Kasım 2026).**
   Kullanıcı 16 Kasım 2026'da ekran görüntüsüyle bildirdi:

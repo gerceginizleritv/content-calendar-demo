@@ -2631,6 +2631,19 @@ textarea.sc-ai-brief{min-height:64px;resize:vertical;line-height:1.5;}
   font-variant-numeric:tabular-nums;}
 .set-oneri-dugmeler{display:flex;gap:8px;justify-content:flex-end;
   margin-top:10px;flex-wrap:wrap;}
+.set-oneri-blok{border-top:1px solid var(--line);}
+.set-oneri-blok:first-child{border-top:0;}
+.set-oneri-satir > label{flex:1 1 auto;min-width:0;cursor:pointer;}
+.set-oneri-bak{flex:none;background:none;border:0;cursor:pointer;
+  color:inherit;opacity:.7;font-size:14px;padding:2px 6px;line-height:1;}
+.set-oneri-bak:hover{opacity:1;}
+/* Setin ICI: kullanici hangi araclarin geldigini goruyor ve
+   istemedigini tikten cikariyor (kullanici istegi, 17 Kasim 2026). */
+.set-oneri-ic{margin:0 0 8px 26px;padding-left:10px;
+  border-left:2px solid var(--line);}
+.set-oneri-mad{display:flex;align-items:flex-start;gap:8px;padding:4px 0;
+  font-size:13px;cursor:pointer;}
+.set-oneri-mad input{flex:none;margin-top:2px;}
 .proje-sayfasi .modal-actions,
 .script-sayfasi .modal-actions,
 .kayit-sayfasi .modal-actions{
@@ -11125,21 +11138,65 @@ function setOnerisiProjesi(){
   const tur = (document.getElementById('pe_type') || {}).value || 'other';
   return { type: tur, setOneri: { soruldu:false, eklenen:[] } };
 }
+// Bolumun kendi durumu. ⛔ Her gosterimde SIFIRLANIYOR (setOnerisiGoster):
+// baska bir projeden kalma tik durumu tasinmasin.
+//   oneriAcikSet  : ici gorunen setlerin anahtari
+//   oneriHaricMad : '<anahtar>:<sira>' -> kullanicinin TIKTEN CIKARDIGI madde
+let oneriAcikSet = {};
+let oneriHaricMad = {};
+// Setin maddeleri: [['canta'|'yap', metin], ...]
+function setOnerisiMaddeleri(k){
+  const st = hazirSetler().find(x=> x && x.k === k);
+  return (st && Array.isArray(st.m)) ? st.m : [];
+}
+// ⛔ KULLANICI ISTEDI (17 Kasim 2026): "bu setlerin icerikleri de mutlaka
+//    gorunuyor olmali. Hatta bu setlerin icerisinde yer alan bazi
+//    araclari da dilerse cikarabilmeli. Illa her vlogda hep ayni
+//    araclari kullanmasi gerekmiyor."
+//    Ayni sikayeti 16 Kasim'da 49. madde icin de yazmisti: "+ var ama
+//    - yok". Bu yuzden oneri satirlari ACILABILIR ve her maddenin kendi
+//    tiki var; tikten cikarilan madde cekim listesine HIC girmiyor.
 function setOnerisiCiz(){
   const kap = document.getElementById('pe_oneriListe');
   if(!kap) return 0;
   const liste = setOnerisiListesi(setOnerisiProjesi());
-  kap.innerHTML = liste.map(x=>
-    '<label class="set-oneri-satir"><input type="checkbox" data-so="' +
-    escapeHtml(x.k) + '"' + (x.tikli ? ' checked' : '') + '>' +
-    '<span>' + escapeHtml(x.ad) + '</span>' +
-    '<span class="set-oneri-adet">' + escapeHtml(t('so_madde')(x.madde)) +
-    '</span></label>').join('');
+  kap.innerHTML = liste.map(x=>{
+    const acik = !!oneriAcikSet[x.k];
+    const maddeler = setOnerisiMaddeleri(x.k);
+    // Kac maddesi tikli: kullanici bir sey cikardiysa "9 madde" yerine
+    // "7 / 9 madde" yaziyor, yoksa ne cikardigi gorunmez olurdu.
+    const tikliAdet = maddeler.filter((m, i)=> !oneriHaricMad[x.k + ':' + i]).length;
+    const adetYazi = tikliAdet === maddeler.length
+      ? t('so_madde')(maddeler.length)
+      : tikliAdet + ' / ' + t('so_madde')(maddeler.length);
+    return '<div class="set-oneri-blok" data-soblok="' + escapeHtml(x.k) + '">'
+      + '<div class="set-oneri-satir">'
+      +   '<input type="checkbox" data-so="' + escapeHtml(x.k) + '"'
+      +     (x.tikli ? ' checked' : '') + ' id="so_k_' + escapeHtml(x.k) + '">'
+      +   '<label for="so_k_' + escapeHtml(x.k) + '">' + escapeHtml(x.ad) + '</label>'
+      +   '<span class="set-oneri-adet">' + escapeHtml(adetYazi) + '</span>'
+      +   '<button type="button" class="set-oneri-bak" data-sobak="' + escapeHtml(x.k) + '"'
+      +     ' aria-expanded="' + acik + '"'
+      +     ' title="' + escapeHtml(t('set_peek')) + '"'
+      +     ' aria-label="' + escapeHtml(t('set_peek')) + '">' + (acik ? '▴' : '▾') + '</button>'
+      + '</div>'
+      + (acik
+          ? '<div class="set-oneri-ic">' + maddeler.map((m, i)=>
+              '<label class="set-oneri-mad">'
+              + '<input type="checkbox" data-somad="' + escapeHtml(x.k + ':' + i) + '"'
+              +   (oneriHaricMad[x.k + ':' + i] ? '' : ' checked') + '>'
+              + '<span>' + escapeHtml(m[1]) + '</span>'
+              + '</label>').join('') + '</div>'
+          : '')
+      + '</div>';
+  }).join('');
   return liste.length;
 }
 function setOnerisiGoster(){
   const b = document.getElementById('pe_oneri');
   if(!b) return;
+  // Baska bir projeden kalma tik/acilma durumu tasinmasin.
+  oneriAcikSet = {}; oneriHaricMad = {};
   // Hic satir yoksa bolum ACILMIYOR: Masabasi/grafik turu (kullanici
   // karari) ya da onerilecek her set zaten eklenmis. Bos bir bolum
   // gostermek kullaniciya "bir sey mi eksik?" dedirtir.
@@ -11154,9 +11211,13 @@ function setOnerisiKapat(){
 // ⛔ listeMaddeEkle YENIDEN YAZILMIYOR, kullaniliyor: ayni metni iki kez
 //    eklememe, LISTE_MAX siniri ve kaydetme onun icinde. Tek yaptigimiz
 //    hedef projeyi gecici olarak ona gostermek.
-function setOnerisiUygula(pr, anahtarlar){
+// ⛔ TIKTEN CIKARILAN MADDE EKLENMIYOR. `haric` = {'<anahtar>:<sira>':true}
+//    Kullanici karari (17 Kasim 2026): "illa her vlogda hep ayni
+//    araclari kullanmasi gerekmiyor".
+function setOnerisiUygula(pr, anahtarlar, haric){
   const setler = hazirSetler();
   const oncekiHedef = listeProjesi;
+  const atlanan = haric || {};
   listeProjesi = pr;
   let eklenen = 0;
   try{
@@ -11164,7 +11225,8 @@ function setOnerisiUygula(pr, anahtarlar){
       const st = setler.find(x=> x && x.k === k);
       if(!st || !Array.isArray(st.m)) return;
       // Sira KORUNUYOR: setler "en cok unutulan en ustte" diye dizili.
-      st.m.forEach(x=>{
+      st.m.forEach((x, i)=>{
+        if(atlanan[k + ':' + i]) return;
         if(listeMaddeEkle(x[1], x[0] === 'canta' ? 'canta' : 'yap')) eklenen++;
       });
     });
@@ -16203,6 +16265,35 @@ document.getElementById('pe_type').addEventListener('change', ()=>{
   const b = document.getElementById('pe_oneri');
   if(b && !b.hidden) setOnerisiCiz();
 });
+// Setin icini acma/kapama.
+document.getElementById('pe_oneriListe').addEventListener('click', (e)=>{
+  const dugme = e.target.closest('[data-sobak]');
+  if(!dugme) return;
+  const k = dugme.getAttribute('data-sobak');
+  oneriAcikSet[k] = !oneriAcikSet[k];
+  setOnerisiCiz();
+});
+// Madde tikini kaldirma/geri koyma.
+// ⚠ BOLUM YENIDEN CIZILMIYOR, yalnizca sayi etiketi tazeleniyor:
+//   yeniden cizmek tiklanan kutudan odagi kacirir ve klavyeyle
+//   gezen kullanici yerini kaybeder.
+document.getElementById('pe_oneriListe').addEventListener('change', (e)=>{
+  const kutu = e.target.closest('[data-somad]');
+  if(!kutu) return;
+  const anahtar = kutu.getAttribute('data-somad');
+  if(kutu.checked) delete oneriHaricMad[anahtar];
+  else oneriHaricMad[anahtar] = true;
+  const k = anahtar.split(':')[0];
+  const blok = document.querySelector('[data-soblok="' + k + '"]');
+  const etiket = blok && blok.querySelector('.set-oneri-adet');
+  if(etiket){
+    const maddeler = setOnerisiMaddeleri(k);
+    const tikli = maddeler.filter((m, i)=> !oneriHaricMad[k + ':' + i]).length;
+    etiket.textContent = tikli === maddeler.length
+      ? t('so_madde')(maddeler.length)
+      : tikli + ' / ' + t('so_madde')(maddeler.length);
+  }
+});
 document.getElementById('pe_oneriSonra').addEventListener('click', ()=>{
   // "Simdi degil": bolum kapaniyor. Isaret KAYDEDILMIS projeye
   // yaziliyor; yeni projede henuz kayit yok, orada bolumun kapanmasi
@@ -16227,21 +16318,30 @@ document.getElementById('pe_oneriEkle').addEventListener('click', async ()=>{
   const sonuc = await projeyiKaydet();
   if(!sonuc || !sonuc.proje) return;         // ad bos: kaydet uyarmistir
   const pr = sonuc.proje;
-  const eklenen = setOnerisiUygula(pr, secili);
+  const eklenen = setOnerisiUygula(pr, secili, oneriHaricMad);
   pr.setOneri = pr.setOneri || { soruldu:false, eklenen:[] };
   pr.setOneri.soruldu = true;
   pr.setOneri.eklenen = (pr.setOneri.eklenen || []).concat(secili);
   projDirtyIsaretle(pr.id);
   saveProjects();
   setOnerisiKapat();
-  // Madde sayisi etiketi tazeleniyor; liste bolumu acikse o da.
-  const sayi = listeSayilari(pr);
-  const etiket = document.getElementById('pe_listeTag');
-  if(etiket) etiket.textContent = sayi.tum ? sayi.bitti + '/' + sayi.tum : t('sc_empty');
-  if(listeProjesi && listeProjesi.id === pr.id && typeof cekimListesiCiz === 'function'){
-    cekimListesiCiz();
-  }
-  uyari(t('so_eklendi')(eklenen));
+  // ⛔ 17 KASIM 2026 -- KULLANICININ YASADIGI HATA BURADAYDI.
+  //    `projeyiKaydet()` sonunda `closeProjectEdit()` cagiriyor
+  //    (app.html ~16182), yani PROJE SAYFASINI KAPATIYOR. Kullanici
+  //    "Tikli setleri ekle"ye basiyor, sayfa kapaniyor, proje listesi
+  //    geri geliyor -- ve eklenen maddeleri hicbir yerde goremedigi
+  //    icin kaybolduklarini saniyor. Veri YERINDEYDI (17 madde,
+  //    etiket "0/17"), gorunmuyordu.
+  //    Kullanicinin sozleri: "ekle dedim projeyi kaydettim ama projeyi
+  //    geri acinca bunlarin hic biri gorunmuyordu."
+  //
+  //    Cozum: `cekimListesiAc` projenin sayfasini GERI ACIYOR ve cekim
+  //    listesi bolumunu gosteriyor. Boylece kullanici birakitigi yerde
+  //    kaliyor VE ekledigi maddeleri hemen goruyor. Ayni kalip
+  //    "Cekim listesi" dugmesinde de var (pe_liste).
+  //    ⚠ `uyari()` kaldirildi: ustune bir pencere daha acmak yerine
+  //      kullanici sonucu DOGRUDAN goruyor.
+  cekimListesiAc(pr.id);
 });
 document.getElementById('pe_save').addEventListener('click', async ()=>{
   const sonuc = await projeyiKaydet();
