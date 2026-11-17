@@ -274,7 +274,7 @@ başlasın diye. Tam koşudan sonra değişmiş görünmesi normaldir.
   **doğru** kontrolden kırmızı yandı.
   ⚠ Mutasyon denemesi testin **kendi hatasını da** buldu: iki iddia
   aynı şeyi ölçüyordu, ayrıştırıldı.
-- ⬜ **10.** Set önerisi penceresi (çekim tarihi girilince)
+- ✅ **10.** Set önerisi (çekim tarihi girilince) — **BİTTİ (17 Kasım 2026).**
   ⚠ **EŞLEŞME TABLOSU GELDİ** (kullanıcı, 16 Kasım 2026). İki durum:
   **işaretli** (pencere açılınca seçili gelir) ve **işaretsiz**
   (listede durur, kullanıcı isterse işaretler).
@@ -311,6 +311,64 @@ başlasın diye. Tam koşudan sonra değişmiş görünmesi normaldir.
     sonra) bugün HİÇBİR türe önerilmiyor** — öneri mekanizması yok.
     Yani "Masabaşı'nda önerilmesin" şartı kendiliğinden sağlanıyor;
     pencere kurulurken o türde hiçbir set önerilmeyecek.
+
+  ---
+
+  ✅ **YAPILDI. Kullanıcının dört kurulum kararı (17 Kasım 2026):**
+
+  | Soru | Karar |
+  |---|---|
+  | Görünüm | **Proje sayfasının içinde bölüm** — açılır pencere değil |
+  | Tetik | **Çekim tarihi ilk kez girildiğinde** |
+  | Üç genel set | Her türde **tiksiz** listede |
+  | Masabaşı / grafik | Öneri **hiç çıkmıyor** |
+
+  "Görünüm" sorusu önemliydi: 50. maddede bütün pencereler sayfaya
+  çevrildi (*"pop up çok küçük"*). Yeni bir pencere açmak o işi geri
+  alırdı, bu yüzden soruldu.
+
+  **Nasıl kuruldu:**
+
+  - ⛔ **Eşleşme sıraya göre değil, SABİT ANAHTARA göre.** Sekiz setin
+    her birine iki dilde aynı anahtar eklendi (`k: 'dis'` gibi).
+    Sıraya güvenmek bu deponun tekrarlayan hatası olurdu: biri
+    sözlüğü düzenleyip setleri yer değiştirince eşleşme **sessizce**
+    bozulur ve kimse görmez.
+  - ⛔ **`sanitizeProject` beyaz listesine `setOneri` alanı eklendi**
+    (`soruldu` + `eklenen`). Eklenmese her okumada sessizce silinirdi:
+    öneri her açılışta yeniden çıkar, eklenmiş set yeniden önerilirdi.
+    `fikirTemizle`/`setTemizle` ailesinin bilinen tuzağı.
+  - `listeMaddeEkle` **yeniden yazılmadı, kullanıldı**: aynı metni iki
+    kez eklememe, `LISTE_MAX` sınırı ve kaydetme onun içinde.
+  - "Ekle"ye basınca **form önce kaydediliyor** — yeni projede henüz
+    kayıt yok ve girilen ad/tür/tarih kaybolmasın. Aynı desen "Çekim
+    listesi" düğmesinde de var.
+  - Bölüm **açıkken** tür değişirse listesi tazeleniyor (türü sonradan
+    düzelten kullanıcı yanlış setleri görmesin). ⚠ Bu yeni bir tetik
+    değil; kapalı bölümü açmıyor.
+  - Yedi sözlük anahtarı iki dilde (`so_title`, `so_not`, `so_madde`,
+    `so_ekle`, `so_sonra`, `so_bos`, `so_eklendi`). Parite testi geçti.
+
+  **Bekçi:** `testler/set-onerisi.test.js`, **29 iddia**. Yedi türün
+  hepsi kullanıcının tablosuyla tek tek karşılaştırılıyor; üç yasak
+  ayrıca ölçülüyor (telefon hiçbir türde tikli değil · uçuş ve soğuk
+  hiçbir türde yok · genel setler hep tiksiz).
+
+  **Üç mutasyonla kanıtlandı:** vlog eşleşmesi bozulunca, `desk`
+  tabloya eklenince ve beyaz listeden alan çıkarılınca ilgili iddialar
+  düştü.
+
+  ⛔ **MUTASYON BİR TEST HATASI YAKALADI — kayda geçsin.** `desk`
+  mutasyonunda "Masabaşı'nda hiç açılmıyor" iddiası **yine geçti**.
+  Sebep: test yeni projeyi `openProjectEdit(null)` ile açıyordu, ama
+  o fonksiyon başında `if(!p) return;` taşıyor — yani null ile
+  **hiçbir şey yapmıyor.** Form önceki projede kalıyordu ve ölçü
+  `desk`'e değil ona bakıyordu. Doğru kapı `openProjectNew()`.
+  Düzeltildi; ayrıca iddia artık **ölçünün doğru şeye baktığını da
+  kanıtlıyor** (`duzenlenenProje` null mı, öneri `desk` türüne mi
+  bakıyor). Sebep testin içine yazıldı.
+  ⚠ Ders: yeşil bir test, yanlış sebeple yeşil olabilir. Mutasyon
+  denemesi olmasa bu görülmezdi.
 - ⬜ **11.** Havaya göre set önerisi
 - ⬜ **12.** Zamanlama (set doğru günde öne çıkar)
 

@@ -2618,6 +2618,19 @@ textarea.sc-ai-brief{min-height:64px;resize:vertical;line-height:1.5;}
 /* Kullanicinin sikayeti "bu pop up cok kucuk"ti: sayfa kipinde metin
    alani da buyuyor. */
 .script-sayfasi .sc-modal .sc-text{height:52vh;}
+/* Set onerisi bolumu: sayfanin devami, ayri bir kutu degil. */
+.set-oneri{margin-top:14px;padding:14px;border:1px solid var(--line);
+  border-radius:2px;background:var(--surface);}
+.set-oneri-bas{font-weight:700;margin-bottom:4px;}
+.set-oneri-not{font-size:13px;opacity:.75;margin-bottom:10px;}
+.set-oneri-satir{display:flex;align-items:center;gap:8px;padding:6px 0;
+  cursor:pointer;}
+.set-oneri-satir input{flex:none;}
+.set-oneri-satir > span:first-of-type{flex:1 1 auto;min-width:0;}
+.set-oneri-adet{flex:none;font-size:12px;opacity:.65;
+  font-variant-numeric:tabular-nums;}
+.set-oneri-dugmeler{display:flex;gap:8px;justify-content:flex-end;
+  margin-top:10px;flex-wrap:wrap;}
 .proje-sayfasi .modal-actions,
 .script-sayfasi .modal-actions,
 .kayit-sayfasi .modal-actions{
@@ -4826,6 +4839,20 @@ textarea.sc-ai-brief{min-height:64px;resize:vertical;line-height:1.5;}
     <button class="btn btn-wide" id="pe_script"><span data-i18n="pe_script">Scripts…</span><span class="btn-tag" id="pe_scriptTag"></span></button>
     <button class="btn btn-wide" id="pe_liste"><span data-i18n="cl_open">Checklist</span><span class="btn-tag" id="pe_listeTag"></span></button>
     <button class="btn btn-wide" id="pe_deadlines" data-i18n="pe_deadlines">Step deadlines…</button>
+    <!-- SET ONERISI (10. madde). ⛔ ACILIR PENCERE DEGIL, sayfanin
+         ICINDE bolum: kullanici karari 17 Kasim 2026. Dun butun
+         pencereler sayfaya cevrildi ("pop up cok kucuk"), yeni bir
+         pencere acmak o isi geri alirdi.
+         Gizli duruyor; cekim tarihi ILK KEZ girilince aciliyor. -->
+    <div class="set-oneri" id="pe_oneri" hidden>
+      <div class="set-oneri-bas" data-i18n="so_title">Kits for this shoot</div>
+      <div class="set-oneri-not" data-i18n="so_not">Ticked ones are the usual pick for this shoot type.</div>
+      <div id="pe_oneriListe"></div>
+      <div class="set-oneri-dugmeler">
+        <button class="btn" id="pe_oneriSonra" data-i18n="so_sonra">Not now</button>
+        <button class="btn btn-primary" id="pe_oneriEkle" data-i18n="so_ekle">Add ticked kits</button>
+      </div>
+    </div>
     <div class="modal-actions">
       <button class="btn btn-danger" id="pe_delete" data-i18n="p_delete">Delete</button>
       <button class="btn" id="pe_cancel" data-i18n="btn_cancel">Cancel</button>
@@ -7275,7 +7302,7 @@ const LANG = {
     hset_hint: "These come with the app. Once added, the items are yours — change them or delete them.",
     hset_bos_head: "Start with a ready-made kit",
     hset: [
-      { ad: "The night before", m: [
+      { k: 'onceki', ad: "The night before", m: [
         ['yap', "Charge every battery, mic batteries included"],
         ['yap', "Check the last shoot is backed up, then format the cards"],
         ['yap', "Set resolution and frame rate"],
@@ -7285,7 +7312,7 @@ const LANG = {
         ['yap', "Lay everything out in one place"],
         ['canta', "Tripod plate, already on the camera"],
         ['canta', "Spare batteries, in the same bag as the camera"] ] },
-      { ad: "Outdoor shoot", m: [
+      { k: 'dis', ad: "Outdoor shoot", m: [
         ['canta', "Camera, lens, plate on"],
         ['canta', "Two spare batteries"],
         ['canta', "Spare card"],
@@ -7295,7 +7322,7 @@ const LANG = {
         ['canta', "Lens cloth"],
         ['canta', "Power bank and cable"],
         ['canta', "Tape and a knife"] ] },
-      { ad: "Interview", m: [
+      { k: 'konusmali', ad: "Interview", m: [
         ['canta', "Two microphones: the main one and a backup"],
         ['canta', "Headphones"],
         ['canta', "A fresh mic battery"],
@@ -7305,7 +7332,7 @@ const LANG = {
         ['yap', "Silence every phone in the room"],
         ['yap', "Switch on the receiver and the backup recorder"],
         ['yap', "Record 30 seconds of room tone"] ] },
-      { ad: "Shooting on a phone", m: [
+      { k: 'telefon', ad: "Shooting on a phone", m: [
         ['yap', "Charge the phone"],
         ['yap', "Free up storage"],
         ['yap', "Turn on Do Not Disturb"],
@@ -7316,7 +7343,7 @@ const LANG = {
         ['canta', "Tripod or a grip"],
         ['canta', "Power bank"],
         ['yap', "Shoot a test, listen back"] ] },
-      { ad: "Before you hit record", m: [
+      { k: 'kayda', ad: "Before you hit record", m: [
         ['yap', "Check there is battery and card space"],
         ['yap', "Check the white balance"],
         ['yap', "Check the focus is on the eyes"],
@@ -7325,7 +7352,7 @@ const LANG = {
         ['yap', "Put the headphones on, hear the sound"],
         ['yap', "Shoot ten seconds, watch it"],
         ['yap', "Hit record, see the red light"] ] },
-      { ad: "After the shoot", m: [
+      { k: 'sonra', ad: "After the shoot", m: [
         ['yap', "Walk the place before you leave"],
         ['yap', "Microphone, recorder, charger, plate: count them"],
         ['yap', "Copy the cards to two separate places"],
@@ -7333,13 +7360,13 @@ const LANG = {
         ['yap', "Do not wipe the card until both copies are checked"],
         ['yap', "Put the batteries on charge"],
         ['yap', "Note anything broken, missing or running low"] ] },
-      { ad: "Flying day", m: [
+      { k: 'ucus', ad: "Flying day", m: [
         ['canta', "Spare batteries and power bank, in your cabin bag"],
         ['yap', "Cover the battery terminals or bag them separately"],
         ['yap', "Look up your airline's battery rules"],
         ['canta', "Camera and cards, in your cabin bag"],
         ['canta', "Chargers and a plug adapter"] ] },
-      { ad: "Cold and wet", m: [
+      { k: 'soguk', ad: "Cold and wet", m: [
         ['canta', "Spare battery in an inside pocket"],
         ['canta', "A zip bag for the camera"],
         ['yap', "Bag the camera before you go indoors"],
@@ -7362,6 +7389,13 @@ const LANG = {
     set_copy_here: "Copy to my kits",
     set_copied: (ad, n)=> `“${ad}” copied to your kits — ${n} items.`,
     set_copy_bos: "This one has nothing to pack — only things to do.",
+    so_title: "Kits for this shoot",
+    so_not: "Ticked ones are the usual pick for this shoot type. Untick anything you do not need.",
+    so_madde: (n)=> n === 1 ? "1 item" : `${n} items`,
+    so_ekle: "Add ticked kits",
+    so_sonra: "Not now",
+    so_bos: "Nothing is ticked.",
+    so_eklendi: (n)=> n ? `${n} added to the checklist.` : "They were already on the list.",
     // 49. madde (16 Kasim 2026): setin icini gormek ve madde cikarmak.
     set_peek: "Show what is inside",
     set_item_del: "Take out of this kit",
@@ -8581,7 +8615,7 @@ const LANG = {
     hset_hint: "Kutudan \u00e7\u0131kan listeler. Ekledi\u011fin madde senin olur \u2014 de\u011fi\u015ftirebilir, silebilirsin.",
     hset_bos_head: "Haz\u0131r setle ba\u015fla",
     hset: [
-      { ad: "\u00d6nceki ak\u015fam", m: [
+      { k: 'onceki', ad: "\u00d6nceki ak\u015fam", m: [
         ['yap', "B\u00fct\u00fcn pilleri \u015farja tak, mikrofon pilleri dahil"],
         ['yap', "Son \u00e7ekim yedeklendi mi bak, sonra kartlar\u0131 bi\u00e7imlendir"],
         ['yap', "\u00c7\u00f6z\u00fcn\u00fcrl\u00fck ve kare h\u0131z\u0131n\u0131 ayarla"],
@@ -8591,7 +8625,7 @@ const LANG = {
         ['yap', "Her \u015feyi tek yere diz"],
         ['canta', "Tripod plakas\u0131 kameraya tak\u0131l\u0131"],
         ['canta', "Yedek piller kamerayla ayn\u0131 \u00e7antada"] ] },
-      { ad: "D\u0131\u015f \u00e7ekim", m: [
+      { k: 'dis', ad: "D\u0131\u015f \u00e7ekim", m: [
         ['canta', "Kamera, lens, plaka tak\u0131l\u0131"],
         ['canta', "\u0130ki yedek pil"],
         ['canta', "Yedek kart"],
@@ -8601,7 +8635,7 @@ const LANG = {
         ['canta', "Lens bezi"],
         ['canta', "Powerbank ve kablo"],
         ['canta', "Bant ve \u00e7ak\u0131"] ] },
-      { ad: "Konu\u015fmal\u0131 \u00e7ekim", m: [
+      { k: 'konusmali', ad: "Konu\u015fmal\u0131 \u00e7ekim", m: [
         ['canta', "\u0130ki mikrofon: as\u0131l ve yedek"],
         ['canta', "Kulakl\u0131k"],
         ['canta', "Taze mikrofon pili"],
@@ -8611,7 +8645,7 @@ const LANG = {
         ['yap', "Odadaki b\u00fct\u00fcn telefonlar\u0131 sustur"],
         ['yap', "Al\u0131c\u0131y\u0131 ve yedek kaydediciyi a\u00e7"],
         ['yap', "30 saniye oda sesi kaydet"] ] },
-      { ad: "Telefonla \u00e7ekim", m: [
+      { k: 'telefon', ad: "Telefonla \u00e7ekim", m: [
         ['yap', "Telefonu \u015farj et"],
         ['yap', "Depolamada yer a\u00e7"],
         ['yap', "Rahats\u0131z etme modunu a\u00e7"],
@@ -8622,7 +8656,7 @@ const LANG = {
         ['canta', "Tripod ya da tutucu"],
         ['canta', "Powerbank"],
         ['yap', "Deneme \u00e7ek, dinle"] ] },
-      { ad: "Kayda basmadan", m: [
+      { k: 'kayda', ad: "Kayda basmadan", m: [
         ['yap', "Pil ve kartta yer var m\u0131 bak"],
         ['yap', "Beyaz dengesine bak"],
         ['yap', "Odak g\u00f6zlerde mi bak"],
@@ -8631,7 +8665,7 @@ const LANG = {
         ['yap', "Kulakl\u0131\u011f\u0131 tak, sesi duy"],
         ['yap', "On saniye \u00e7ek, izle"],
         ['yap', "Kayda bas, k\u0131rm\u0131z\u0131 \u0131\u015f\u0131\u011f\u0131 g\u00f6r"] ] },
-      { ad: "\u00c7ekimden sonra", m: [
+      { k: 'sonra', ad: "\u00c7ekimden sonra", m: [
         ['yap', "Ayr\u0131lmadan mekan\u0131 dola\u015f"],
         ['yap', "Mikrofon, kaydedici, \u015farj aleti, plaka: say"],
         ['yap', "Kartlar\u0131 iki ayr\u0131 yere kopyala"],
@@ -8639,13 +8673,13 @@ const LANG = {
         ['yap', "\u0130ki kopya da kontrol edilene kadar kart\u0131 silme"],
         ['yap', "Pilleri \u015farja tak"],
         ['yap', "Bozuk, eksik, azalan ne varsa not et"] ] },
-      { ad: "U\u00e7u\u015f g\u00fcn\u00fc", m: [
+      { k: 'ucus', ad: "U\u00e7u\u015f g\u00fcn\u00fc", m: [
         ['canta', "Yedek piller ve powerbank kabin \u00e7antas\u0131nda"],
         ['yap', "Pil u\u00e7lar\u0131n\u0131 kapat ya da ayr\u0131 po\u015fetle"],
         ['yap', "Havayolunun pil kurallar\u0131na bak"],
         ['canta', "Kamera ve kartlar kabin \u00e7antas\u0131nda"],
         ['canta', "\u015earj aletleri ve priz adapt\u00f6r\u00fc"] ] },
-      { ad: "So\u011fuk ve \u0131slak", m: [
+      { k: 'soguk', ad: "So\u011fuk ve \u0131slak", m: [
         ['canta', "Yedek pil i\u00e7 cepte"],
         ['canta', "Kamera i\u00e7in kapan\u0131r po\u015fet"],
         ['yap', "\u0130\u00e7eri girmeden kameray\u0131 po\u015fetle"],
@@ -8668,6 +8702,13 @@ const LANG = {
     set_copy_here: "Setlerime kopyala",
     set_copied: (ad, n)=> `“${ad}” setlerine kopyalandı — ${n} madde.`,
     set_copy_bos: "Bunda götürülecek bir şey yok — yalnızca yapılacak işler var.",
+    so_title: "Bu çekim için setler",
+    so_not: "Tikli olanlar bu çekim türünün alışılmış seçimi. Gerekmeyeni tikten çıkar.",
+    so_madde: (n)=> n === 1 ? "1 madde" : `${n} madde`,
+    so_ekle: "Tikli setleri ekle",
+    so_sonra: "Şimdi değil",
+    so_bos: "Hiçbiri tikli değil.",
+    so_eklendi: (n)=> n ? `${n} madde çekim listesine eklendi.` : "Hepsi zaten listedeydi.",
     // 49. madde (16 Kasim 2026): setin icini gormek ve madde cikarmak.
     set_peek: "İçindekileri göster",
     set_item_del: "Bu setten çıkar",
@@ -10213,7 +10254,22 @@ function sanitizeProject(raw){
     // Cekim listesi: sahada isaretlenen maddeler. Bozuk bir deger
     // listeyi topluca dusurmesin diye madde madde temizleniyor.
     checklist: Array.isArray(raw.checklist)
-      ? raw.checklist.map(listeMaddeTemizle).filter(Boolean).slice(0, LISTE_MAX) : []
+      ? raw.checklist.map(listeMaddeTemizle).filter(Boolean).slice(0, LISTE_MAX) : [],
+    // Set onerisi hafizasi: soru bu projede bir kez soruldu mu, ve
+    // hangi setler eklendi.
+    // ⛔ BU ALAN BEYAZ LISTEDE OLMAK ZORUNDA. sanitizeProject bir beyaz
+    //    liste: burada olmayan alan HER OKUMADA sessizce silinir.
+    //    Silinse ne olurdu: "soruldu" kaybolur ve oneri her acilista
+    //    yeniden cikar; "eklenen" kaybolur ve eklenmis set yeniden
+    //    onerilir. fikirTemizle/setTemizle ailesinin bilinen tuzagi.
+    setOneri: {
+      soruldu: !!(raw.setOneri && raw.setOneri.soruldu === true),
+      eklenen: (raw.setOneri && Array.isArray(raw.setOneri.eklenen))
+        ? raw.setOneri.eklenen
+            .filter(x=> typeof x === 'string' && /^[a-z]{1,20}$/.test(x))
+            .slice(0, 16)
+        : []
+    }
   };
   // Her adimin kendi teslim tarihi olabiliyor; gecerse satirda kirmizi
   // cikiyor ve sayfanin ustunde sayiliyor.
@@ -11012,6 +11068,109 @@ function listeGrupAdi(madde){
 // Eklenince maddeler YALNIZCA o projenin cekim listesine giriyor,
 // malzeme kutuphanesine DEGIL: "30 saniye oda sesi kaydet" bir
 // malzeme degil, is. (Kullanicinin karari, 12 Kasim 2026.)
+// ---- SET ONERISI: PROJE TURU -> HANGI SETLER --------------------
+// Kullanicinin kendi tablosu (16 Kasim 2026); kurulum kararlari
+// 17 Kasim 2026.
+//
+// ⛔ ESLESME SIRAYA GORE DEGIL, SABIT ANAHTARA GORE. Sozlukteki sekiz
+//    setin her birinde `k` alani var. Siraya guvenmek bu deponun
+//    tekrarlayan hatasi olurdu: biri sozlugu duzenleyip setleri yer
+//    degistirince eslesme SESSIZCE bozulur ve kimse gormez.
+// ⛔ 'telefon' HICBIR turde tikli gelmez -- bir tur degil, cihaz
+//    secimi (kullanici boyle soyledi).
+// ⛔ 'ucus' ve 'soguk' hicbir turde YOK: biri kullanicinin kendi
+//    secimi, oteki havaya gore (11. madde).
+// ⛔ 'desk' (Masabasi / grafik) TABLODA YOK, bilerek: o turde oneri
+//    HIC cikmiyor. Bos bir oneri bolumu gostermek kullaniciya
+//    "bir sey mi eksik?" dedirtir.
+const SET_ONERI_GENEL = ['onceki','kayda','sonra'];
+const SET_ONERI = {
+  outdoor: { tikli: ['dis'],             tiksiz: ['konusmali','telefon'] },
+  venue:   { tikli: ['dis'],             tiksiz: ['konusmali','telefon'] },
+  studio:  { tikli: ['konusmali'],       tiksiz: ['telefon'] },
+  vlog:    { tikli: ['konusmali','dis'], tiksiz: ['telefon'] },
+  review:  { tikli: ['konusmali'],       tiksiz: ['telefon'] },
+  other:   { tikli: [],                  tiksiz: ['dis','konusmali','telefon'] }
+};
+// Oneri listesi: once tikli olanlar, sonra tiksizler, en sonda uc genel
+// set (hepsi tiksiz -- kullanici karari 17 Kasim 2026: "tabloda
+// olmamalari 'onerilmesin' degil 'tikli gelmesin' diye okunur").
+// ⛔ ZATEN EKLENMIS SET LISTEYE GIRMIYOR.
+function setOnerisiListesi(pr){
+  const e = SET_ONERI[pr && pr.type];
+  if(!e) return [];                      // desk ya da bilinmeyen tur
+  const eklenmis = (pr.setOneri && Array.isArray(pr.setOneri.eklenen))
+                   ? pr.setOneri.eklenen : [];
+  const setler = hazirSetler();
+  const satir = (k, tikli)=>{
+    const sira = setler.findIndex(x=> x && x.k === k);
+    // Sozlukte o anahtar yoksa satir sessizce atlaniyor: eksik ceviri
+    // oneriyi topluca dusurmesin. Sozluk parite testi eksigi yakalar.
+    if(sira === -1) return null;
+    if(eklenmis.indexOf(k) !== -1) return null;
+    return { k, sira, ad: setler[sira].ad, tikli,
+             madde: Array.isArray(setler[sira].m) ? setler[sira].m.length : 0 };
+  };
+  return e.tikli.map(k=> satir(k, true))
+    .concat(e.tiksiz.map(k=> satir(k, false)))
+    .concat(SET_ONERI_GENEL.map(k=> satir(k, false)))
+    .filter(Boolean);
+}
+
+// ---- SET ONERISI BOLUMU ----------------------------------------
+// Yeni projede henuz KAYIT YOK: tur alanindan gecici bir nesne
+// kuruluyor ki eslesme yine calissin.
+function setOnerisiProjesi(){
+  if(duzenlenenProje) return duzenlenenProje;
+  const tur = (document.getElementById('pe_type') || {}).value || 'other';
+  return { type: tur, setOneri: { soruldu:false, eklenen:[] } };
+}
+function setOnerisiCiz(){
+  const kap = document.getElementById('pe_oneriListe');
+  if(!kap) return 0;
+  const liste = setOnerisiListesi(setOnerisiProjesi());
+  kap.innerHTML = liste.map(x=>
+    '<label class="set-oneri-satir"><input type="checkbox" data-so="' +
+    escapeHtml(x.k) + '"' + (x.tikli ? ' checked' : '') + '>' +
+    '<span>' + escapeHtml(x.ad) + '</span>' +
+    '<span class="set-oneri-adet">' + escapeHtml(t('so_madde')(x.madde)) +
+    '</span></label>').join('');
+  return liste.length;
+}
+function setOnerisiGoster(){
+  const b = document.getElementById('pe_oneri');
+  if(!b) return;
+  // Hic satir yoksa bolum ACILMIYOR: Masabasi/grafik turu (kullanici
+  // karari) ya da onerilecek her set zaten eklenmis. Bos bir bolum
+  // gostermek kullaniciya "bir sey mi eksik?" dedirtir.
+  if(setOnerisiCiz() === 0){ b.hidden = true; return; }
+  b.hidden = false;
+}
+function setOnerisiKapat(){
+  const b = document.getElementById('pe_oneri');
+  if(b) b.hidden = true;
+}
+// Secilen setlerin maddeleri cekim listesine giriyor.
+// ⛔ listeMaddeEkle YENIDEN YAZILMIYOR, kullaniliyor: ayni metni iki kez
+//    eklememe, LISTE_MAX siniri ve kaydetme onun icinde. Tek yaptigimiz
+//    hedef projeyi gecici olarak ona gostermek.
+function setOnerisiUygula(pr, anahtarlar){
+  const setler = hazirSetler();
+  const oncekiHedef = listeProjesi;
+  listeProjesi = pr;
+  let eklenen = 0;
+  try{
+    anahtarlar.forEach(k=>{
+      const st = setler.find(x=> x && x.k === k);
+      if(!st || !Array.isArray(st.m)) return;
+      // Sira KORUNUYOR: setler "en cok unutulan en ustte" diye dizili.
+      st.m.forEach(x=>{
+        if(listeMaddeEkle(x[1], x[0] === 'canta' ? 'canta' : 'yap')) eklenen++;
+      });
+    });
+  } finally { listeProjesi = oncekiHedef; }
+  return eklenen;
+}
 function hazirSetler(){
   const d = t('hset');
   return Array.isArray(d) ? d : [];
@@ -14042,6 +14201,9 @@ function projeFormunuDoldur(p, yeniAd){
   document.getElementById('pe_ideasTag').textContent = kacFikir ? t('fk_count')(kacFikir) : t('sc_empty');
   const sayi = yeni ? { bitti:0, tum:0 } : listeSayilari(p);
   document.getElementById('pe_listeTag').textContent = sayi.tum ? sayi.bitti + '/' + sayi.tum : t('sc_empty');
+  // Oneri bolumu her form acilisinda KAPALI basliyor: baska bir
+  // projeden kalma bayat bir liste gorunmesin.
+  setOnerisiKapat();
 
   sahaAlanlariniDoldur(p || {});
   mekanSecimiDoldur('', 'pe', yeni ? [] : projeMekanlari(p));
@@ -16020,6 +16182,67 @@ async function projeyiKaydet(){
   closeProjectEdit(); renderProjects(); renderCal();
   return { proje: p, yeni };
 }
+// ---- SET ONERISI OLAYLARI (10. madde) --------------------------
+// ⛔ TETIK: cekim tarihi ILK KEZ girilince (kullanici karari
+//    17 Kasim 2026). "Ilk kez"in olcusu projenin KAYITLI tarihinin
+//    olmamasi; kayitli tarihi olan bir projede tarihi degistirmek
+//    oneriyi TETIKLEMIYOR. Boylece cekimi erteleyen kullanici ayni
+//    soruyu tekrar tekrar gormuyor.
+document.getElementById('pe_shoot').addEventListener('change', ()=>{
+  const g = document.getElementById('pe_shoot');
+  if(!g.value) return;                       // tarih silindi: bir sey yapma
+  if(duzenlenenProje && duzenlenenProje.shootDate) return;   // ilk kez degil
+  const pr = setOnerisiProjesi();
+  if(pr.setOneri && pr.setOneri.soruldu) return;             // bir kez soruldu
+  setOnerisiGoster();
+});
+// Bolum ACIKKEN tur degisirse listesi tazeleniyor: turu sonradan
+// duzelten kullanici yanlis setleri gormesin.
+// ⚠ Bu YENI BIR TETIK DEGIL -- kapali bolumu acmiyor.
+document.getElementById('pe_type').addEventListener('change', ()=>{
+  const b = document.getElementById('pe_oneri');
+  if(b && !b.hidden) setOnerisiCiz();
+});
+document.getElementById('pe_oneriSonra').addEventListener('click', ()=>{
+  // "Simdi degil": bolum kapaniyor. Isaret KAYDEDILMIS projeye
+  // yaziliyor; yeni projede henuz kayit yok, orada bolumun kapanmasi
+  // yetiyor (kaydedilince tarih dolu olacagi icin tetik de susuyor).
+  if(duzenlenenProje){
+    duzenlenenProje.setOneri = duzenlenenProje.setOneri || { soruldu:false, eklenen:[] };
+    duzenlenenProje.setOneri.soruldu = true;
+    projDirtyIsaretle(duzenlenenProje.id);
+    saveProjects();
+  }
+  setOnerisiKapat();
+});
+document.getElementById('pe_oneriEkle').addEventListener('click', async ()=>{
+  const secili = Array.prototype.slice
+    .call(document.querySelectorAll('#pe_oneriListe input[data-so]:checked'))
+    .map(x=> x.getAttribute('data-so'));
+  if(!secili.length){ uyari(t('so_bos')); return; }
+  // ⛔ FORM ONCE KAYDEDILIYOR. Yeni projede henuz kayit yok, ayrica
+  //    kullanicinin girdigi ad/tur/tarih kaybolmasin. Ayni desen
+  //    "Cekim listesi" dugmesinde de var ve orada veri kaybini bu
+  //    onlemisti.
+  const sonuc = await projeyiKaydet();
+  if(!sonuc || !sonuc.proje) return;         // ad bos: kaydet uyarmistir
+  const pr = sonuc.proje;
+  const eklenen = setOnerisiUygula(pr, secili);
+  pr.setOneri = pr.setOneri || { soruldu:false, eklenen:[] };
+  pr.setOneri.soruldu = true;
+  pr.setOneri.eklenen = (pr.setOneri.eklenen || []).concat(secili);
+  projDirtyIsaretle(pr.id);
+  saveProjects();
+  setOnerisiKapat();
+  // Madde sayisi etiketi tazeleniyor; liste bolumu acikse o da.
+  const sayi = listeSayilari(pr);
+  const etiket = document.getElementById('pe_listeTag');
+  if(etiket) etiket.textContent = sayi.tum ? sayi.bitti + '/' + sayi.tum : t('sc_empty');
+  if(listeProjesi && listeProjesi.id === pr.id && typeof cekimListesiCiz === 'function'){
+    cekimListesiCiz();
+  }
+  uyari(t('so_eklendi')(eklenen));
+});
 document.getElementById('pe_save').addEventListener('click', async ()=>{
   const sonuc = await projeyiKaydet();
   // Termin tarihleri YENI projede hemen soruluyor: proje kurulurken akil
