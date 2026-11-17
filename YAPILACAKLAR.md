@@ -1173,6 +1173,64 @@ dokunmak ve ikinci seferde birincisini bozmak demek.
      → dört genişlikte de düştü, ölçülen oranlar **1,0 · 1,67 · 2,26**
      — CSS yorumundaki sayıyla birebir aynı.
 
+  ⛔ **İKİNCİ TUR — AŞIRI DÜZELTMİŞİM (17 Kasım 2026).** Yazıyı
+  fotoğrafa bağlayınca bu sefer **solda** kocaman boş turuncu kaldı.
+  Kullanıcı ekran görüntüsüyle bildirdi: *"yazılar tıpkı yeşil alanda
+  olduğu gibi o hizalamada olmalı."*
+
+  **Doğru ölçü:** yazı, sayfanın **standart sütununda** başlasın —
+  ortalanmış 1180 piksellik kap + 32 iç boşluk. Yeşil bölüm, fiyat
+  bölümü ve diğer bölümler zaten orada.
+
+  | Ekran | Standart sütun | Yazı (sonra) | Turuncu biter |
+  |---|---|---|---|
+  | 1280 | 82 | 82–492 | 549 |
+  | 1600 | 242 | 242–754 | 799 |
+  | 1920 | 402 | 402–978 | 1023 |
+  | 2560 | 722 | 722–1298 | 1536 |
+  | 3440 | 1162 | 1162–1738 | 2416 |
+
+  Turuncu katman da **gerektiği yerde uzadı** (`max()` ile iki şartın
+  büyüğü): hem fotoğrafın kendi turuncusuyla hizalı kalıyor hem de
+  yazının tamamını örtüyor. 1600–1920 arasında ikincisi belirleyici.
+
+  ⛔ **ÖLÇÜMÜMDE İKİ HATA BULDUM, ikisi de yazıldı:**
+  1. Telefonun yerini fotoğraf genişliğinin %29,8'i diye
+     **hesaplıyordum**. `object-fit:cover` yatayda da kırpıyor, yani o
+     oranın ekranda karşılığı yok. Piksel ölçümü gerçeği gösterdi:
+     fotoğrafın turuncusu her genişlikte **%43,2'de** bitiyor.
+  2. İlk piksel taraması **yazının koyu harflerine** çarpıp duruyordu,
+     yani turuncunun bittiği yeri değil yazının başladığı yeri
+     ölçüyordu. Yazı gizlenerek yeniden ölçüldü.
+
+  ⚠ Testteki iki eski iddia (*"aralık büyümüyor"*, *"boşluk
+  açılmıyor"*) **kaldırıldı**: yanlış modele dayanıyorlardı ve
+  kullanıcının yeni kararıyla çelişiyorlardı (ortalanmış sütun geniş
+  ekranda zaten boşluk bırakır). Güvence kaybolmadı, yer değiştirdi:
+  yazı **standart sütunda başlıyor** ve **turuncunun içinde**
+  bitiyor — ikisi de ölçülüyor, ikincisi 24 piksel kenar payıyla.
+
+- ✅ **45b.** **Üst menüdeki "Ücretsiz başla" düğmesi dil tuşlarıyla
+  aynı boyda** (kullanıcı isteği, 17 Kasım 2026): *"sanki alt tarafta
+  bulunan koyu bandın dışına çıkıyor gibi... bir miktar küçülebilir ve
+  yanında yer alan dil tuşları büyüklüğüne gelebilir."*
+
+  ⚠ **ÖLÇÜLDÜ — düğme bandın dışına TAŞMIYORDU.** Bandın altı 63,
+  düğmenin altı 54,6: 8,4 piksel **içeride**. Ama dil tuşlarından
+  iriydi (**47,2**'ye karşı **44**, yazı 14,5'e karşı 12) ve turuncusu
+  hemen altındaki kahraman turuncusuyla aynı olduğu için göz ikisini
+  birleştirip "taşmış" diye okuyor. Kullanıcının teşhisi değil ama
+  çözümü doğruydu.
+
+  `.dug-sm` ölçüleri `.dil-dug` ile eşitlendi: `min-height:44px`,
+  dikey dolgu 9, köşe 9, yazı 13. Ölçüm sonrası ikisi de **üst 9,
+  alt 53, yükseklik 44**.
+  ⚠ Yatay dolgu 16'da bırakıldı (dil tuşunda 12): etiket "Ücretsiz
+  başla", tek harflik TR/EN değil.
+  ⚠ `dug-sm` yalnızca bu tek düğmede kullanılıyor — başka bir yer
+  etkilenmedi.
+  ⚠ 44 piksel **dokunma hedefi korundu**; test ayrıca onu da ölçüyor.
+
 - ⬜ **46.** **Favicon aileleri ayrışmış.** Kullanıcı sekmelerde
   gördü: `fiyatlar.html` ile `index.html` farklı ikon gösteriyor.
   **Koddan doğrulandı, iki ayrı sebep var:**

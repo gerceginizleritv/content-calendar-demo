@@ -170,7 +170,19 @@ img{max-width:100%;height:auto;display:block;}
 .dug-hayalet:hover{background:rgba(255,255,255,.1);}
 .dug-koyu{background:var(--gece);color:var(--kagit);box-shadow:0 6px 0 rgba(0,0,0,.32);}
 .dug-koyu:active{transform:translateY(3px);box-shadow:0 3px 0 rgba(0,0,0,.32);}
-.dug-sm{min-height:42px;padding:10px 18px;font-size:14.5px;border-radius:10px;}
+/* ⚠ ÜST MENÜDEKİ "Ücretsiz başla" DİL TUŞLARIYLA AYNI BOYDA.
+   Kullanıcı bildirdi (17 Kasım 2026): "sanki alt tarafta bulunan koyu
+   bandın dışına çıkıyor gibi... bir miktar küçülebilir ve yanında yer
+   alan dil tuşları büyüklüğüne gelebilir."
+   ÖLÇÜLDÜ: düğme bandın DIŞINA TAŞMIYOR (bandın altı 63, düğmenin altı
+   54,6 — 8,4 piksel içeride). Ama dil tuşlarından iriydi: 47,2'ye
+   karşı 44, yazı 14,5'e karşı 12. Üstelik turuncusu hemen altındaki
+   kahraman turuncusuyla aynı, göz ikisini birleştirip "taşmış" diye
+   okuyor. Ölçüler `.dil-dug` ile eşitlendi: min-height 44, dikey
+   dolgu 9, köşe 9.
+   ⚠ Yatay dolgu 16'da bırakıldı (dil tuşunda 12): etiket "Ücretsiz
+     başla", tek harflik TR/EN değil. */
+.dug-sm{min-height:44px;padding:9px 16px;font-size:13px;border-radius:9px;}
 /* ⚠ Dar ekranda uzun etiket dugmeyi IKI SATIRA kiriyor ve 62px'lik
    ust cubuktan tasiriyordu. Gizlemek yerine KISALTILDI: kaydirmadan
    gorunen tek cagri dugmesi o. */
@@ -178,7 +190,7 @@ img{max-width:100%;height:auto;display:block;}
 @media(max-width:640px){
   .cta-uzun{display:none;}
   .cta-kisa{display:inline;}
-  .dug-sm{padding:10px 13px;}
+  .dug-sm{padding:9px 12px;}
   .dil-dug{padding:9px 9px;}
   .ust-ic{gap:8px;}
 }
@@ -288,6 +300,14 @@ img{max-width:100%;height:auto;display:block;}
   .kahraman-ust{display:flex;align-items:center;min-height:clamp(500px,40vw,720px);
     --foto-gen:min(100%,1800px);
     --foto-sol:max(0px,calc(100% - 1800px));
+    /* ⚠ 17 Kasım 2026, ikinci tur. İlk düzeltmede yazıyı fotoğrafa
+       bağladım ve bu sefer SOLDA kocaman boş turuncu kaldı — kullanıcı
+       ekran görüntüsüyle bildirdi. İstediği: yazı, sayfanın geri
+       kalanıyla (yeşil bölümle) AYNI sütunda dursun.
+       `--sar-sol` tam olarak o sütunun sol kenarı: ortalanmış 1180
+       piksellik kabın kenarı + 32 piksel iç boşluk. */
+    --sar-sol:calc(max(0px, (100% - 1180px) / 2) + 32px);
+    --yazi-sag:calc(var(--sar-sol) + min(32vw,576px));
     /* ⚠ Yazının ARKASINDAKİ GERÇEK RENK bu. Fotoğraf ve turuncu
        katman bunun üstünü tamamen kapattığı için görünmüyor; ama
        burada yazılı olması şart: kontrast denetimi DOM'da zemin
@@ -311,9 +331,16 @@ img{max-width:100%;height:auto;display:block;}
     /* ⚠ Kırılma noktaları artık EKRANIN değil FOTOĞRAFIN yüzdesi.
        Yüzde kalsaydı yazı sağa kayınca turuncunun dışına düşer ve
        kontrast çökerdi (yorumda yazılı: 2,26'ya iniyordu). */
+    /* ⚠ İKİ ŞARTIN BÜYÜĞÜ. Katman hem fotoğrafın kendi turuncusuyla
+       hizalı kalmalı (fotoğraf %43,2'de bitiyor — ÖLÇÜLDÜ), hem de
+       yazının tamamını örtmeli. 1600-1920 arasında ikincisi daha
+       geniş; ötekilerde birincisi. max() ikisini de karşılıyor ve
+       gereksiz yere turuncuyu büyütmüyor. */
     background:linear-gradient(to right,
-      rgb(249,116,26) 0 calc(var(--foto-sol) + var(--foto-gen) * .40),
-      rgba(249,116,26,0) calc(var(--foto-sol) + var(--foto-gen) * .46));
+      rgb(249,116,26) 0 max(calc(var(--foto-sol) + var(--foto-gen) * .40),
+                            calc(var(--yazi-sag) + 24px)),
+      rgba(249,116,26,0) max(calc(var(--foto-sol) + var(--foto-gen) * .46),
+                             calc(var(--yazi-sag) + 110px)));
   }
   .kahraman-foto{
     position:absolute;inset:0;width:100%;height:100%;
@@ -344,10 +371,13 @@ img{max-width:100%;height:auto;display:block;}
      sola yaslı: sol boşluk + sütun genişliği toplamı en fazla
      %38 -- turuncunun bittiği yerin (%41-44) ve telefonun
      başladığı yerin (%55) ikisinin de solunda. */
-  .kahraman-ust .sar{position:relative;z-index:2;width:100%;max-width:none;
-    padding-top:0;padding-right:24px;
-    /* Fotoğrafın sol kenarı + her zamanki iç boşluk. */
-    padding-left:calc(var(--foto-sol) + clamp(24px,6vw,96px));}
+  /* ⛔ ÖZEL HİZALAMA YOK: kap sayfanın STANDART `.sar`'ı gibi
+     davranıyor (ortalanmış 1180 piksel + 32 iç boşluk). Böylece
+     kahraman yazısı yeşil bölümle, fiyat bölümüyle ve diğer
+     bölümlerle AYNI sütunda başlıyor — kullanıcının istediği bu.
+     ⚠ Burada `max-width:none` ya da elle hesaplanmış `padding-left`
+       KALMADI; eklenirse hiza yine kayar. */
+  .kahraman-ust .sar{position:relative;z-index:2;padding-top:0;}
   /* ⚠ Tek sütun. Eskiden burada iki sütun vardı (yazı + telefon
      maketi); maket kalkınca kural kalsaydı başlık 1280px ekranda
      267 piksellik bir şeride sıkışırdı -- ölçtüm, sıkışıyordu. */

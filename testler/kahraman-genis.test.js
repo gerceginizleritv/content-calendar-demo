@@ -76,8 +76,27 @@ const dene = (ad, fn) => {
       const foto = document.querySelector('.kahraman-foto');
       const f = kutu(foto), y = kutu(ic), u = kutu(ust);
       const telefonSol = Math.round(f.sol + (f.sag - f.sol) * sabit.oran);
-      return { W: innerWidth, foto: f, yazi: y, ust: u,
+      // Sayfanin STANDART sutunu: ortalanmis .sar'in yazi kenari.
+      // Kahramanin disindaki ilk .sar aliniyor (yesil bolum vb.).
+      const sarlar = Array.prototype.slice.call(document.querySelectorAll('.sar'))
+        .filter(x => !x.closest('.kahraman-ust'));
+      const sar = sarlar[0];
+      const standartSol = sar
+        ? Math.round(sar.getBoundingClientRect().left +
+            parseFloat(getComputedStyle(sar).paddingLeft)) : -1;
+      // Ust menu: turuncu dugme ve dil tuslari
+      const dug = Array.prototype.slice.call(
+        document.querySelectorAll('header a, header button'))
+        .filter(x => /ücretsiz|free/i.test(x.textContent))[0];
+      const dil = Array.prototype.slice.call(
+        document.querySelectorAll('header a, header button'))
+        .filter(x => /^(TR|EN)$/i.test(x.textContent.trim()))[0];
+      const olc = e => { const b = e.getBoundingClientRect();
+        return { ust: Math.round(b.top), alt: Math.round(b.bottom),
+                 yuk: Math.round(b.height) }; };
+      return { W: innerWidth, foto: f, yazi: y, ust: u, standartSol,
                telefonSol, bosluk: telefonSol - y.sag,
+               menu: (dug && dil) ? { dugme: olc(dug), dil: olc(dil) } : null,
                yaziRengi: getComputedStyle(document.querySelector('.kahraman-ust h1')).color };
     }, { oran: TELEFON_SOL_ORAN });
 
@@ -104,8 +123,11 @@ const dene = (ad, fn) => {
       const noktalar = [];
       for(let i = 0; i < 5; i++){
         const yy = g.yaziUst + (g.yaziAlt - g.yaziUst) * (i / 4);
+        // ⚠ +24: yazinin SAGINDA kenar payi da turuncu olmali.
+        //   Tam sinirda bitmek, bir sonraki ceviri daha uzun oldugunda
+        //   sessizce disari tasmak demektir.
         noktalar.push({ y: Math.round(yy), sol: al(g.yaziSag - 6, yy),
-                        sag: al(g.yaziSag + 6, yy) });
+                        sag: al(g.yaziSag + 24, yy) });
       }
       return { noktalar, tuvalGen: c.width, tuvalYuk: c.height };
     }, { png, yaziSag: o.yazi.sag,
@@ -153,33 +175,56 @@ const dene = (ad, fn) => {
     });
   });
 
-  // ⛔ ASIL IDDIA: kompozisyon OLCEKTEN BAGIMSIZ.
-  // Fotograf 1800'de durdugu icin, ondan genis her ekranda yazi ile
-  // telefonun arasi AYNI kalmali. Kullanicinin sikayeti tam olarak bu
-  // araligin buyumesiydi.
-  const genisler = olculer.filter(o => o.W >= FOTO_EN_COK + 100);
-  dene('★ geniş ekranlarda yazı-telefon aralığı BÜYÜMÜYOR', () => {
-    assert.ok(genisler.length >= 2, 'ölçülen geniş ekran sayısı az');
-    const araliklar = genisler.map(o => o.bosluk);
-    const enKucuk = Math.min.apply(null, araliklar);
-    const enBuyuk = Math.max.apply(null, araliklar);
-    assert.ok(enBuyuk - enKucuk <= 12,
-      'aralık ekranla birlikte değişiyor: ' +
-      genisler.map(o => o.W + '→' + o.bosluk).join(', ') +
-      ' — kullanıcının bildirdiği hata buydu (2560→+381, 3440→+979)');
+  // ⛔ BU IKI IDDIA KALDIRILDI VE YERINE YUKARIDAKI "STANDART SUTUN"
+  //    IDDIASI GECTI. Sebebi iki kat:
+  //
+  //    1) YANLIS MODEL. Telefonun yeri fotografin GENISLIGININ %29,8'i
+  //       diye hesaplaniyordu. `object-fit:cover` yatayda da KIRPIYOR,
+  //       yani o oran ekranda karsiligi olmayan bir sayi. Piksel
+  //       olcumu gercegi gosterdi: fotografin turuncusu her genislikte
+  //       %43,2'de bitiyor (1280→548, 1920→896, 2560→1536, 3440→2416).
+  //    2) KULLANICININ KARARI DEGISTI. Ilk duzeltme yaziyi fotografa
+  //       bagladi ve solda kocaman bos turuncu kaldi. Kullanici
+  //       (17 Kasim 2026): "yazilar tipki yesil alanda oldugu gibi o
+  //       hizalamada olmali." Ortalanmis sutun genis ekranda zaten
+  //       bosluk birakir; "aralik buyumesin" sarti o kararla celisiyor.
+  //
+  //    Guvence kaybolmadi, yer degistirdi: yazi STANDART SUTUNDA
+  //    basliyor (yukarida) ve TURUNCUNUN ICINDE bitiyor (asagida,
+  //    piksel + kontrast olcumuyle).
+  // ⛔ 17 KASIM 2026, IKINCI TUR. Ilk duzeltme yaziyi FOTOGRAFA
+  //    baglamisti ve bu sefer SOLDA kocaman bos turuncu kaldi --
+  //    kullanici ekran goruntusuyle bildirdi: "yazilar tipki yesil
+  //    alanda oldugu gibi o hizalamada olmali".
+  //    Dogru olcu: yazi, sayfanin STANDART sutununda baslasin.
+  dene('★ yazı sayfanın STANDART sütununda başlıyor (yeşil bölümle aynı hiza)', () => {
+    const sapan = olculer.filter(o => Math.abs(o.yazi.sol - o.standartSol) > 2)
+      .map(o => o.W + ': yazı ' + o.yazi.sol + ', standart sütun ' + o.standartSol);
+    assert.deepStrictEqual(sapan, [],
+      'kahraman yazısı sayfanın geri kalanıyla aynı hizada değil:\n    ' +
+      sapan.join('\n    '));
   });
-  dene('★ hiçbir genişlikte yazı ile telefon arasında boşluk AÇILMIYOR', () => {
-    const acik = olculer.filter(o => o.bosluk > 40)
-      .map(o => o.W + '→+' + o.bosluk + 'px');
-    assert.deepStrictEqual(acik, [],
-      'ortada boş turuncu alan kaldı: ' + acik.join(', '));
+
+  // ── ÜST MENÜ: "Ücretsiz başla" dil tuşlarıyla aynı boyda ─────────
+  // Kullanıcı bildirdi (17 Kasım 2026): "sanki koyu bandın dışına
+  // çıkıyor gibi... dil tuşları büyüklüğüne gelebilir."
+  // ⚠ ÖLÇÜLDÜ: düğme bandın dışına TAŞMIYORDU (8,4 px içeride). Ama
+  //   dil tuşlarından iriydi (47,2'ye karşı 44) ve turuncusu alttaki
+  //   kahraman turuncusuyla aynı olduğu için göz "taşmış" diye okuyor.
+  dene('★ üst menüdeki birincil düğme dil tuşlarıyla AYNI boyda', () => {
+    const sapan = olculer.filter(o => o.menu).filter(o =>
+      Math.abs(o.menu.dugme.yuk - o.menu.dil.yuk) > 1 ||
+      Math.abs(o.menu.dugme.ust - o.menu.dil.ust) > 1 ||
+      Math.abs(o.menu.dugme.alt - o.menu.dil.alt) > 1)
+      .map(o => o.W + ': düğme ' + JSON.stringify(o.menu.dugme) +
+                ', dil ' + JSON.stringify(o.menu.dil));
+    assert.deepStrictEqual(sapan, [],
+      'üst menüdeki düğme dil tuşlarıyla aynı boyda değil:\n    ' + sapan.join('\n    '));
   });
-  dene('yazı bloğu fotoğrafın sol kenarını takip ediyor', () => {
-    const genis = olculer.filter(o => o.W > FOTO_EN_COK);
-    genis.forEach(o => {
-      assert.ok(o.yazi.sol > o.foto.sol && o.yazi.sol - o.foto.sol < 220,
-        o.W + ': yazı fotoğrafı takip etmiyor (yazı ' + o.yazi.sol +
-        ', fotoğraf ' + o.foto.sol + ')');
+  dene('üst menü düğmesi 44 px dokunma hedefini koruyor', () => {
+    olculer.filter(o => o.menu).forEach(o => {
+      assert.ok(o.menu.dugme.yuk >= 44,
+        o.W + ': düğme ' + o.menu.dugme.yuk + ' px — parmak hedefi küçüldü');
     });
   });
 
