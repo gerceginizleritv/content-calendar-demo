@@ -398,6 +398,99 @@ const GENEL = ['onceki','kayda','sonra'];
       'kullanici ne eklendigini goremiyor -- sikayetin kendisi buydu');
   });
 
+  // ── 8. MADDE TIKLERI SETIN TIKINI IZLIYOR ──────────────────────
+  // ⛔ KULLANICININ BILDIRDIGI HATA (17 Kasim 2026, ekran goruntusu):
+  //    "Default gelenler haricinde diger setlerin basliklarinda tik
+  //    olmamasina ragmen onlarin altinda yer alan tum araclar tikli
+  //    geliyor. Bu sekilde olmamali."
+  //    Sebebi: madde tiki setin tikinden BAGIMSIZ ciziliyordu.
+  //    Dogrusu: set tiksizse maddeleri de tiksiz (ve kapali); set
+  //    tiklenince hepsi tiklenir; kullanici iclerinden cikarir.
+  const tik = await p.evaluate(async () => {
+    const bekle = ms => new Promise(r => setTimeout(r, ms));
+    const durum = () => {
+      const o = {};
+      document.querySelectorAll('[data-soblok]').forEach(b => {
+        const k = b.getAttribute('data-soblok');
+        const setKutu = b.querySelector('[data-so]');
+        const mad = Array.prototype.slice.call(b.querySelectorAll('[data-somad]'));
+        o[k] = { setTikli: setKutu.checked,
+                 tikli: mad.filter(x => x.checked).length,
+                 toplam: mad.length,
+                 kapali: mad.filter(x => x.disabled).length };
+      });
+      return o;
+    };
+    openProjectNew(''); await bekle(300);
+    document.getElementById('pe_name').value = 'Tik olcumu';
+    document.getElementById('pe_type').value = 'vlog';
+    document.getElementById('pe_type').dispatchEvent(new Event('change'));
+    const g = document.getElementById('pe_shoot');
+    g.value = '2026-12-22'; g.dispatchEvent(new Event('change'));
+    await bekle(300);
+    const o = { baslangic: durum() };
+    // Tiksiz bir seti TIKLE
+    let tel = document.querySelector('[data-so="telefon"]');
+    tel.checked = true; tel.dispatchEvent(new Event('change', { bubbles: true }));
+    await bekle(250);
+    o.tiklenince = durum().telefon;
+    // Icinden bir arac cikar
+    const ilk = document.querySelector('[data-somad^="telefon:"]');
+    ilk.checked = false; ilk.dispatchEvent(new Event('change', { bubbles: true }));
+    await bekle(200);
+    o.cikarilinca = document.querySelector('[data-soblok="telefon"] .set-oneri-adet').textContent;
+    // ⚠ TAZE SECICI: bolum yeniden cizildigi icin eski oge artik
+    //   belgede degil; eskisine olay gondermek HICBIR SEY yapmaz.
+    //   17 Kasim 2026'da olcum tam bu yuzden yanlis sonuc verdi.
+    tel = document.querySelector('[data-so="telefon"]');
+    tel.checked = false; tel.dispatchEvent(new Event('change', { bubbles: true }));
+    await bekle(250);
+    o.tiksizlesince = durum().telefon;
+    // Yeniden tiklenince eski "cikarilmis" hafizasi TEMIZ mi
+    tel = document.querySelector('[data-so="telefon"]');
+    tel.checked = true; tel.dispatchEvent(new Event('change', { bubbles: true }));
+    await bekle(250);
+    o.yenidenTiklenince = durum().telefon;
+    return o;
+  });
+
+  dene('★ TIKLI setlerin araclari tikli ve acik', () => {
+    ['konusmali', 'dis'].forEach(k => {
+      assert.strictEqual(tik.baslangic[k].setTikli, true, k + ' tikli gelmeliydi');
+      assert.strictEqual(tik.baslangic[k].tikli, tik.baslangic[k].toplam,
+        k + ': tikli setin bazi araclari tiksiz');
+      assert.strictEqual(tik.baslangic[k].kapali, 0, k + ': tikli setin araclari kapali');
+    });
+  });
+  dene('★ TIKSIZ setlerin araclari TIKSIZ (kullanicinin bildirdigi hata)', () => {
+    ['telefon', 'onceki', 'kayda', 'sonra'].forEach(k => {
+      assert.strictEqual(tik.baslangic[k].setTikli, false, k + ' tiksiz olmaliydi');
+      assert.strictEqual(tik.baslangic[k].tikli, 0,
+        k + ': set tiksiz ama ' + tik.baslangic[k].tikli +
+        ' araci tikli -- kullaniciya "bunlar gelecek" dedirtir, oysa gelmiyorlar');
+      assert.strictEqual(tik.baslangic[k].kapali, tik.baslangic[k].toplam,
+        k + ': tiksiz setin araclari tiklanabilir durumda');
+    });
+  });
+  dene('★ set tiklenince HEPSI tiklenir', () => {
+    assert.strictEqual(tik.tiklenince.setTikli, true);
+    assert.strictEqual(tik.tiklenince.tikli, tik.tiklenince.toplam);
+    assert.strictEqual(tik.tiklenince.kapali, 0);
+  });
+  dene('tikli setten arac cikarilabiliyor', () => {
+    assert.ok(/\//.test(tik.cikarilinca), 'sayi "9 / 10" bicimine gecmedi: ' + tik.cikarilinca);
+  });
+  dene('★ set tiksizlesince araclari da tiksizlesir', () => {
+    assert.strictEqual(tik.tiksizlesince.setTikli, false);
+    assert.strictEqual(tik.tiksizlesince.tikli, 0);
+    assert.strictEqual(tik.tiksizlesince.kapali, tik.tiksizlesince.toplam);
+  });
+  dene('★ yeniden tiklenince eski "cikarilmis" hafizasi TEMIZ', () => {
+    assert.strictEqual(tik.yenidenTiklenince.tikli, tik.yenidenTiklenince.toplam,
+      'set yeniden tiklendi ama onceden cikarilan arac tiksiz kaldi: ' +
+      'kullanici "hepsi tiklenir" bekliyor');
+  });
+
   dene('sayfa hatasi yok', () => {
     assert.deepStrictEqual(sayfaHatasi, []);
   });

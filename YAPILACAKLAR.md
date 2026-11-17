@@ -587,6 +587,54 @@ dokunmak ve ikinci seferde birincisini bozmak demek.
   etiketi değiştiriyor: ikisi de her dilin sözlüğüne girecek.
   `testler/sozluk-paritesi.test.js` eksik anahtarı yakalar.
 
+- ⬜ **54.** ⛔ **KENDİ SETLERİNİ VE KENDİ ÇEKİM TÜRÜNÜ KUR —
+  CREATOR PRO.** Kullanıcı istedi (17 Kasım 2026), kendi sözleriyle:
+
+  > *"Bu hazır setleri de kullanıcı kendi isteğine göre bazı araçları
+  > çıkarıp ya da ekleyip kişiselleştirmek isteyebilir, kendi setini
+  > yaratmak yerine. Bunu da ayarlar içerisinde bir yerde ona
+  > kişiselleştirme ve hangi tip videoya atamak istiyorsa düzenleme
+  > arayüzü vermeliyiz. Belki de bizim default video tipleri haricinde
+  > kendi bir tip eklemek isteyecek, mesela 2 kişinin karşılıklı
+  > konuştuğu podcast gibi. Bu ve benzer şeyleri kişiselleştirip kayıt
+  > edip sürekli kullanabilmeli. Bu Creator Pro planda yer alacak bir
+  > özellik olacak."*
+
+  **Üç ayrı iş var, sırası da bu:**
+
+  | # | İş |
+  |---|---|
+  | 54a | Hazır setin **kendi kopyanı** düzenleyebilme (araç çıkar / ekle) |
+  | 54b | Bir seti **hangi çekim türüne** öneri olarak atayacağını seçme |
+  | 54c | **Kendi çekim türünü** ekleme (örn. "Podcast — iki kişi") |
+
+  **Koddan doğrulanan tuzaklar — sırası gelince bunlara dikkat:**
+
+  - ⛔ **`sanitizeProject` kendi türünü SESSİZCE SİLER.** Bugün
+    `type: PROJ_TYPES.indexOf(raw.type) !== -1 ? raw.type : 'other'`
+    yazıyor (`app.html`). Kullanıcının eklediği tür bu listede
+    olmadığı için her okumada **`'other'`a düşer** ve kullanıcı
+    "türüm kayboldu" der. Beyaz liste genişletilmeden 54c yapılamaz.
+  - ⛔ Hazır setler **kodun içinde metin** (`t('hset')`) ve herkeste
+    aynı; üzerine yazılamaz. 7. madde bunun yolunu zaten kurmuştu:
+    "+" basınca **kendi kopyan** çıkıyor. 54a o kopyanın üstüne
+    kurulacak, hazır setler bozulmadan kalacak.
+  - ⛔ Set anahtarları (`k`) **eşleşme tablosunun** (`SET_ONERI`)
+    kimliği. Kullanıcının kendi setinin de bir anahtarı olacak ve
+    **hazır setlerinkiyle çakışmamalı.**
+  - ⚠ Tür ekleme şunlara dokunuyor: tür açılır listesi, `SET_ONERI`
+    eşleşmesi, `adresGerekir(tür)`, `TYPE_NAMES` / `TYPE_LABELS`
+    sözlükleri. Sırası gelince tek tek çıkarılacak.
+  - ⛔ **Bölüm 7: her dilde.** Kullanıcının yazdığı set/tür adı
+    **veri**, çevrilmez; ama arayüz dizeleri her dile girer.
+
+  ⚠ **Creator Pro'ya ait.** `fiyatlar.html`'deki plan karşılaştırmasına
+  da satır eklenecek — ⛔ **44. madde (fiyatlar sayfası) bundan ÖNCE
+  bitmeli**, yoksa satır iki kez yazılır.
+
+  ⚠ Bu madde **49** ile aynı aileden (set yönetimi: içi görünsün,
+  madde çıkarılsın). 49 bitmeden 54a'ya başlanmaz.
+
   **Önerilen üç küçük düzeltme — kullanıcı onayı bekliyor:**
   1. Alanlarda **Enter kaydetsin** ("Ekle" ile aynı).
   2. Pencereye tek cümle: *"Bir platformda **iki** hesabın olduğunda,

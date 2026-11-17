@@ -2644,6 +2644,9 @@ textarea.sc-ai-brief{min-height:64px;resize:vertical;line-height:1.5;}
 .set-oneri-mad{display:flex;align-items:flex-start;gap:8px;padding:4px 0;
   font-size:13px;cursor:pointer;}
 .set-oneri-mad input{flex:none;margin-top:2px;}
+/* Seti tiksiz olan maddeler: tiksiz VE kapali. Solukluk bunu goz ile
+   de soyluyor, yoksa "neden tiklayamiyorum" sorusu dogardi. */
+.set-oneri-mad-kapali{opacity:.45;cursor:default;}
 .proje-sayfasi .modal-actions,
 .script-sayfasi .modal-actions,
 .kayit-sayfasi .modal-actions{
@@ -11148,6 +11151,12 @@ function setOnerisiProjesi(){
 //   oneriHaricMad : '<anahtar>:<sira>' -> kullanicinin TIKTEN CIKARDIGI madde
 let oneriAcikSet = {};
 let oneriHaricMad = {};
+// ⛔ SETIN TIKI DE HAFIZADA. Eskiden yalnizca DOM'da duruyordu ve madde
+//    tikleri ondan BAGIMSIZ ciziliyordu: tiksiz bir setin altindaki
+//    butun araclar TIKLI gorunuyordu. Kullanici 17 Kasim 2026'da ekran
+//    goruntusuyle bildirdi ("Telefonla cekim" tiksiz, 10 aracin hepsi
+//    tikli). Artik maddeler setin tikini IZLIYOR.
+let oneriSetTik = {};
 // Setin maddeleri: [['canta'|'yap', metin], ...]
 function setOnerisiMaddeleri(k){
   const st = hazirSetler().find(x=> x && x.k === k);
@@ -11169,14 +11178,17 @@ function setOnerisiCiz(){
     const maddeler = setOnerisiMaddeleri(x.k);
     // Kac maddesi tikli: kullanici bir sey cikardiysa "9 madde" yerine
     // "7 / 9 madde" yaziyor, yoksa ne cikardigi gorunmez olurdu.
+    const setTikli = !!oneriSetTik[x.k];
     const tikliAdet = maddeler.filter((m, i)=> !oneriHaricMad[x.k + ':' + i]).length;
-    const adetYazi = tikliAdet === maddeler.length
+    // Set tiksizken sayi sade yaziliyor: hicbiri secili degil, "8 / 9"
+    // demek yaniltir.
+    const adetYazi = (!setTikli || tikliAdet === maddeler.length)
       ? t('so_madde')(maddeler.length)
       : tikliAdet + ' / ' + t('so_madde')(maddeler.length);
     return '<div class="set-oneri-blok" data-soblok="' + escapeHtml(x.k) + '">'
       + '<div class="set-oneri-satir">'
       +   '<input type="checkbox" data-so="' + escapeHtml(x.k) + '"'
-      +     (x.tikli ? ' checked' : '') + ' id="so_k_' + escapeHtml(x.k) + '">'
+      +     (setTikli ? ' checked' : '') + ' id="so_k_' + escapeHtml(x.k) + '">'
       +   '<label for="so_k_' + escapeHtml(x.k) + '">' + escapeHtml(x.ad) + '</label>'
       +   '<span class="set-oneri-adet">' + escapeHtml(adetYazi) + '</span>'
       // ⛔ ISARET "+" ve "-" (kullanici karari 17 Kasim 2026: "setlerin
@@ -11190,9 +11202,14 @@ function setOnerisiCiz(){
       + '</div>'
       + (acik
           ? '<div class="set-oneri-ic">' + maddeler.map((m, i)=>
-              '<label class="set-oneri-mad">'
+              '<label class="set-oneri-mad' + (setTikli ? '' : ' set-oneri-mad-kapali') + '">'
+              // ⛔ Madde tiki SETIN TIKINI izliyor. Set tiksizse madde de
+              //    tiksiz ve KAPALI: tiksiz bir setin altinda tikli arac
+              //    gostermek kullaniciya "bunlar gelecek" dedirtirdi --
+              //    gelmiyorlardi. Kullanicinin bildirdigi hata buydu.
               + '<input type="checkbox" data-somad="' + escapeHtml(x.k + ':' + i) + '"'
-              +   (oneriHaricMad[x.k + ':' + i] ? '' : ' checked') + '>'
+              +   (setTikli && !oneriHaricMad[x.k + ':' + i] ? ' checked' : '')
+              +   (setTikli ? '' : ' disabled') + '>'
               + '<span>' + escapeHtml(m[1]) + '</span>'
               + '</label>').join('') + '</div>'
           : '')
@@ -11210,8 +11227,11 @@ function setOnerisiGoster(){
   //    almali." Ilk surumde kapali basliyordu ve kullanici hakli
   //    olarak "setlerin icerikleri yine detayli olarak gorunmuyor"
   //    dedi -- kapali bir liste, setin icini yine ezberletir.
-  oneriAcikSet = {};
-  setOnerisiListesi(setOnerisiProjesi()).forEach(x=>{ oneriAcikSet[x.k] = true; });
+  oneriAcikSet = {}; oneriSetTik = {};
+  setOnerisiListesi(setOnerisiProjesi()).forEach(x=>{
+    oneriAcikSet[x.k] = true;
+    oneriSetTik[x.k] = !!x.tikli;      // tikli olanlar eslesme tablosundan
+  });
   // Hic satir yoksa bolum ACILMIYOR: Masabasi/grafik turu (kullanici
   // karari) ya da onerilecek her set zaten eklenmis. Bos bir bolum
   // gostermek kullaniciya "bir sey mi eksik?" dedirtir.
@@ -16293,6 +16313,19 @@ document.getElementById('pe_oneriListe').addEventListener('click', (e)=>{
 //   yeniden cizmek tiklanan kutudan odagi kacirir ve klavyeyle
 //   gezen kullanici yerini kaybeder.
 document.getElementById('pe_oneriListe').addEventListener('change', (e)=>{
+  // SETIN tiki: maddeleri de surukluyor.
+  // ⛔ Kullanici karari (17 Kasim 2026): "kullanici kendi seti
+  //    isaretlerse hepsi tiklenir, iclerinden cikarmak istediklerinin
+  //    tiklerini kaldirir". Bu yuzden set tiklenince o setin eski
+  //    haric listesi TEMIZLENIYOR: tertemiz baslasin.
+  const setKutu = e.target.closest('[data-so]');
+  if(setKutu){
+    const k = setKutu.getAttribute('data-so');
+    oneriSetTik[k] = setKutu.checked;
+    Object.keys(oneriHaricMad).forEach(a=>{ if(a.split(':')[0] === k) delete oneriHaricMad[a]; });
+    setOnerisiCiz();
+    return;
+  }
   const kutu = e.target.closest('[data-somad]');
   if(!kutu) return;
   const anahtar = kutu.getAttribute('data-somad');
@@ -16322,9 +16355,8 @@ document.getElementById('pe_oneriSonra').addEventListener('click', ()=>{
   setOnerisiKapat();
 });
 document.getElementById('pe_oneriEkle').addEventListener('click', async ()=>{
-  const secili = Array.prototype.slice
-    .call(document.querySelectorAll('#pe_oneriListe input[data-so]:checked'))
-    .map(x=> x.getAttribute('data-so'));
+  // Secim hafizadan okunuyor, DOM'dan degil: tek dogru kaynak o.
+  const secili = Object.keys(oneriSetTik).filter(k=> oneriSetTik[k]);
   if(!secili.length){ uyari(t('so_bos')); return; }
   // ⛔ FORM ONCE KAYDEDILIYOR. Yeni projede henuz kayit yok, ayrica
   //    kullanicinin girdigi ad/tur/tarih kaybolmasin. Ayni desen
