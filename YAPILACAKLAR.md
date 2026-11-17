@@ -65,10 +65,33 @@ başlasın diye. Tam koşudan sonra değişmiş görünmesi normaldir.
   Starter'ın "hesapsız çalışır" tanımıyla bağdaşmıyor. "Bulut" satırı
   zaten Creator Pro'daydı.
   Eklenme şartı sağlandı: o gün canlıda uçtan uca doğrulandı.
-- ⬜ **Hatırlatma tercihinin cihazlar arası senkronu.** Kullanıcı
-  16 Kasım'da onayladı. İzin cihaza ait ve uzaktan verilemez;
-  senkronlanacak olan NİYET. Yeni cihazda uygulama kendiliğinden
-  izin istesin, izin varsa abone olsun.
+- ✅ **Hatırlatma tercihinin cihazlar arası senkronu** — **YAPILMIŞTI,
+  liste güncellenmemişti** (17 Kasım 2026'da doğrulandı).
+  ⚠ Bu maddeyi "yapılacak" diye okuyup baştan yazmaya kalkmak boş
+  emek olurdu; önce koda bakıldı. Bekçi: `hatirlatma-senkron.test.js`,
+  **7 iddia**, hepsi geçiyor:
+
+  | Ölçü | Durum |
+  |---|---|
+  | Niyet buluta yazılıyor (`prefs.reminders`) | ✅ |
+  | Buluttan **açık** gelince o cihazda da açılıyor | ✅ |
+  | Buluttan **kapalı** gelince kapanıyor | ✅ |
+  | Eski satırda alan yoksa yereldeki değer korunuyor | ✅ |
+  | İzin beklerken "izin ver" düğmesi görünüyor | ✅ |
+  | İzin beklerken **sebebi iki dilde** yazıyor | ✅ |
+  | Anahtar kapalıyken ne düğme ne metin var | ✅ |
+
+  ⛔ **Maddenin bir yarısı BİLEREK yapılmadı — kullanıcı kararı
+  bekliyor.** Madde *"yeni cihazda uygulama kendiliğinden izin
+  istesin"* diyor. Yapılmadı; sebebi `app.html`'deki yorumda yazılı:
+  bildirim izni isteği tarayıcılar tarafından **kullanıcı
+  etkileşimine cevaben** olmak üzere şartlanıyor, açılışta sormak
+  sessizce reddedilebiliyor ve kullanıcıya saldırgan geliyor.
+  Bugünkü davranış: yeni cihazda anahtar **açık** geliyor ve
+  "Bildirimlere izin ver" düğmesi **sebebiyle birlikte** orada
+  bekliyor — tek dokunuş kalıyor.
+  ⚠ Kullanıcı "yine de denensin" derse yapılır; o zaman hangi
+  tarayıcıda çalıştığı **ölçülecek**, varsayılmayacak.
 - ✅ **Türkçe-only dize denetimi BİTTİ** (16 Kasım 2026).
   Tarama yorumlar elenerek yeniden yapıldı (ilk denemede CSS
   yorumlarındaki örnekler sayılıyordu). Sözlük blokları dışında
@@ -115,9 +138,12 @@ başlasın diye. Tam koşudan sonra değişmiş görünmesi normaldir.
   Test: `testler/sekme-adi.test.js`, **218 kontrol**, 15 genişlik ×
   2 dil. İki mutasyonla kanıtlandı. ⚠ Bu bekçi **sekiz dilde de**
   koşacak (41. madde) — metin uzaması tam bu şekilde görünür.
-- ⬜ **9b.** ⚠ `MARKA.md` sözlüğü güncellenecek: menü adı artık
-  "Çekim Setleri" / "Shoot kits". Sözlükte `set` satırı var ama
-  **menü adı** olarak yazılı değil. Küçük iş, 6'dan önce yapılabilir.
+- ✅ **9b.** `MARKA.md` sözlüğüne **menü adı** eklendi (17 Kasım 2026).
+  Satır: **Çekim Setleri** · kullanma: Malzeme, Ekipman · EN *Shoot kits*,
+  dar ekranda **Set** / *Kit*. Adlar `app.html`'deki `tab_kit` /
+  `tab_kit_k` anahtarlarından okundu, hafızadan yazılmadı.
+  `set` satırı (kütüphaneden kaydedilmiş malzeme grubu) olduğu gibi
+  duruyor: o **kavram**, yenisi **menü adı** — ikisi ayrı şey.
 - ✅ **40.** **Sözlük parite testi** (16 Kasım 2026, `main`'de).
   `testler/sozluk-paritesi.test.js`, **52 kontrol**.
 

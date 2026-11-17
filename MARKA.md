@@ -95,6 +95,7 @@ bir cümle asla kurulmamalı.** Bu, olmayan bir özelliği vaat etmek olur.
 | **çekim listesi** | checklist, kontrol listesi | O çekime götürülecekler |
 | **ihtiyaç kütüphanesi** | envanter | Bir kez yazılan malzeme listesi |
 | **set** | paket, kit | Kütüphaneden kaydedilmiş malzeme grubu |
+| **Çekim Setleri** | Malzeme, Ekipman | **Menü adı.** EN: *Shoot kits*. Dar ekranda kısa biçim: **Set** / *Kit* (16 Kasım 2026'da "Malzeme"den değişti) |
 | **script** | senaryo, metin | Videonun yazısı |
 | **fikir** | not | Henüz script olmamış her şey |
 | **şablon** | imza | Açıklamanın standart kapanışı |
