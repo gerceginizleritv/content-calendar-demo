@@ -635,6 +635,53 @@ dokunmak ve ikinci seferde birincisini bozmak demek.
   ⚠ Bu madde **49** ile aynı aileden (set yönetimi: içi görünsün,
   madde çıkarılsın). 49 bitmeden 54a'ya başlanmaz.
 
+- ⬜ **55.** ⛔ **ÇEKİM LİSTESİ EKRANI, EKLEME EKRANIYLA AYNI DİLİ
+  KONUŞSUN.** Kullanıcı bildirdi (17 Kasım 2026, ekran görüntüsüyle),
+  kendi sözleriyle:
+
+  > *"Ekleme yapıldıktan sonra Çekim Listesine tıkladım, liste açık ve
+  > bir önceki eklediğim alandan farklı olarak geliyor. Burası da tıpkı
+  > ekleme alanındaki gibi ana başlığın altında tikli liste olarak
+  > gelmeli, altında not alanları bulunmalı. Bu ekran kullanıcının
+  > kafasını karıştırıyor, farklı bir liste gibi geliyor."*
+
+  **İstediği akış, kendi sıralamasıyla:**
+
+  1. Kullanıcı listeleri ekledi ve kaydetti.
+  2. Sonra proje içine girer; **çekim listesine tıklamadan**, başlığın
+     altında eklediği listeleri **`+` işaretli** olarak, bir önceki
+     sayfadakinin aynısı biçiminde görür.
+  3. `+`'ya tıklar, listeler açılır; düzenlemek isterse tikleri
+     kaldırır, notu varsa ilgili yere yazar.
+  4. İşi bitince kaydeder, kapatır.
+
+  ⛔ **KÖK ENGEL — koddan doğrulandı (17 Kasım 2026).** Çekim listesi
+  maddeleri **hangi setten geldiklerini KAYDETMİYOR.**
+  `listeMaddeTemizle` beyaz listesinde yalnızca `kaynak` var
+  (`elle` · `kutuphane` · `mekan` · `canta` · `yap`) ve
+  `listeMaddeEkle(x[1], 'canta'|'yap')` çağrısı set adını geçmiyor.
+  Ekran da bu yüzden **kaynağa göre** grupluyor — ekrandaki "ÇANTA" ve
+  "YAP" başlıkları o. Set başlığı altında gruplamak için her maddeye
+  **set anahtarı** yazılmalı.
+
+  **Bunun getirdikleri:**
+
+  - ⛔ Yeni alan `listeMaddeTemizle` **beyaz listesine** eklenmeli,
+    yoksa her okumada sessizce silinir. (`setOneri` alanında 17 Kasım'da
+    aynı tuzak yaşandı; `fikirTemizle`/`setTemizle` ailesi.)
+  - ⚠ **Bugün eklenmiş maddelerde set anahtarı YOK.** Onlar
+    gruplanamaz; "set dışı" bir bölümde durmalı, kaybolmamalı.
+    ⛔ Eski maddeyi silmek ya da zorla bir sete atamak **veri kaybı**
+    sayılır — kullanıcının elle eklediği maddeler de o kovada.
+  - ⚠ Not alanı zaten var (`+ not`, 8. madde) ama **set başlığı altında
+    değil**; yeni düzende maddenin altına girecek.
+  - ⚠ `+` / `−` davranışı öneri bölümüyle **aynı** olmalı — kullanıcının
+    şikâyeti tam olarak "farklı bir alan gibi görünüyor".
+
+  ⚠ Bu madde **49** ve **54** ile aynı aileden. 49'un öneri bölümüne
+  düşen yarısı 10. maddede yapıldı; bu madde aynı dili **çekim listesi
+  ekranına** taşıyor.
+
   **Önerilen üç küçük düzeltme — kullanıcı onayı bekliyor:**
   1. Alanlarda **Enter kaydetsin** ("Ekle" ile aynı).
   2. Pencereye tek cümle: *"Bir platformda **iki** hesabın olduğunda,
