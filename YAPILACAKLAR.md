@@ -1068,14 +1068,67 @@ dokunmak ve ikinci seferde birincisini bozmak demek.
   8. ⚠ **Bölüm 7 gereği her dilde**: `fiyatlar.html` kendi sözlüğünü
      taşıyor (42 anahtar), 41. madde ile altı dile çıkacak.
 
-- ⬜ **45.** **Ana sayfa kahraman bölümü: geniş ekranda ortada büyük
-  turuncu boşluk.** Kullanıcı 16 Kasım 2026'da yüksek çözünürlüklü
+- ✅ **45.** **Ana sayfa kahraman bölümü: geniş ekranda ortada büyük
+  turuncu boşluk.** — **BİTTİ (17 Kasım 2026).** Kullanıcı 16 Kasım 2026'da yüksek çözünürlüklü
   geniş ekranda gördü: yazılar sola dayanmış, yazı bloğu ile
   fotoğraftaki kişi arasında kocaman boş turuncu alan kalıyor.
   İstenen: **yazılar kahramana daha yakın** dursun.
   ⚠ Çözüm dar ekranı bozmamalı; `index.html`'de kahraman düzeni
   birkaç kırılma noktasına bakıyor. Ölçerek yapılacak (9. maddede
   olduğu gibi: önce ölç, sonra iddia yaz).
+
+  ---
+
+  ✅ **ÖNCE ÖLÇÜLDÜ.** Yazının bitişi ile fotoğraftaki telefonun
+  başlangıcı arasındaki aralık:
+
+  | Ekran | Önce | Sonra |
+  |---|---|---|
+  | 1280 | −105 px | −105 px |
+  | 1920 | −54 px | −136 px |
+  | **2560** | **+381 px (%14,9)** | −136 px |
+  | **3440** | **+979 px (%28,5)** | −136 px |
+
+  **Kök sebep:** yazı sol kenara `clamp(24px,6vw,96px)` ile
+  **çivilenmişti**, fotoğraf ise sağa yaslı ve `min(100%,1800px)`'de
+  duruyor. Ekran 1800'ü geçince fotoğraf sağa kaçıyor, yazı yerinde
+  kalıyor ve araları sınırsız açılıyor.
+
+  **Çözüm — iki değişken.** `--foto-sol: max(0px, calc(100% - 1800px))`
+  ve `--foto-gen: min(100%,1800px)`. Yazının sol boşluğu *ve* turuncu
+  katmanın kırılma noktaları artık **fotoğrafın sol kenarına** göre
+  hesaplanıyor. Sütun genişliği de `min(32vw,576px)` — 576, fotoğraf
+  genişliğinin %32'si. Böylece kompozisyon **ölçekten bağımsız**:
+  1920'den yukarısında aralık sabit −136 px.
+
+  ⛔ **Turuncu katman da taşınmak ZORUNDAYDI.** Kırılma noktaları ekran
+  yüzdesi olarak kalsaydı, sağa kayan yazı turuncunun dışına düşerdi;
+  CSS yorumunda yazılı tuzak bu (*"kontrast 2,26'ya iniyordu"*).
+
+  ⛔ **MEVCUT KONTRAST TESTİ BU GENİŞLİKLERİ ÖLÇMÜYORDU** — yalnızca
+  **1280 pikselde** koşuyor (`kontrast.test.js:54`). Yani değiştirdiğim
+  aralığın hiç bekçisi yoktu.
+
+  **Yeni bekçi:** `testler/kahraman-genis.test.js`, **11 iddia**,
+  1280 / 1920 / 2560 / 3440'ta.
+  ⛔ Zemin **hesaplanmıyor, ÖLÇÜLÜYOR**: sayfanın ekran görüntüsü
+  tuvale çizilip **piksel okunuyor**, sonra yazı rengiyle arasındaki
+  **kontrast oranı** WCAG formülüyle hesaplanıyor. CSS'ten hesaplamak
+  CSS'i ikinci kez yazmak olurdu — kendi kendini doğrulayan test
+  hiçbir şey kanıtlamaz.
+  ⚠ Tek dikey nokta yetmiyor (fotoğrafın rengi dikeyde değişiyor):
+  yazı bloğu boyunca **beş nokta**, her birinde yazının sağ ucu.
+
+  **Üç mutasyonla kanıtlandı:**
+  1. Yazı yine sol kenara çivilendi → aralık `2560→+624`, `3440→+1504`
+     oldu, üç iddia düştü.
+  2. Turuncu katman yine ekran yüzdesi yapıldı → **yakalanmadı**, ve
+     bu **doğru**: o noktalarda fotoğrafın kendisi zaten turuncu, yani
+     o değişiklik görünen zemini bozmuyor. Katman daha dar kadrajlar
+     için sigorta olarak duruyor.
+  3. Yazı sütunu `min(60vw,1200px)` yapılıp mor sütunun üstüne taşındı
+     → dört genişlikte de düştü, ölçülen oranlar **1,0 · 1,67 · 2,26**
+     — CSS yorumundaki sayıyla birebir aynı.
 
 - ⬜ **46.** **Favicon aileleri ayrışmış.** Kullanıcı sekmelerde
   gördü: `fiyatlar.html` ile `index.html` farklı ikon gösteriyor.

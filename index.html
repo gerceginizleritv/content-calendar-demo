@@ -273,7 +273,21 @@ img{max-width:100%;height:auto;display:block;}
      genişlikte fotoğrafın yalnızca %57'si görünüyordu; kafa ile
      telefonun tamamı %62'lik bir aralık, yani kafa dışarıda kalıyordu
      (kullanıcı canlıda gördü). 40vw/720 ile %62'nin üstüne çıkıyor. */
+  /* ⚠ 45. MADDE — YAZI FOTOĞRAFI TAKİP EDİYOR (17 Kasım 2026).
+     Kullanıcı geniş ekranda gördü: "yazılar sola dayanmış, ortada
+     kocaman boş turuncu alan". ÖLÇÜLDÜ — yazının bitişi ile
+     fotoğraftaki telefonun başlangıcı arasındaki aralık:
+       1280 px → −105    1920 px → −54
+       2560 px → +381    3440 px → +979
+     Sebebi: yazı sol kenara 96 pikselde ÇİVİLİ, fotoğraf ise sağa
+     yaslı ve 1800 pikselde duruyor. Ekran büyüdükçe fotoğraf sağa
+     kaçıyor, yazı yerinde kalıyor ve araları açılıyor.
+     Çözüm: iki değişken. Yazının sol boşluğu da, turuncu katmanın
+     kırılma noktaları da fotoğrafın SOL KENARINA göre hesaplanıyor;
+     böylece kompozisyon her genişlikte aynı kalıyor. */
   .kahraman-ust{display:flex;align-items:center;min-height:clamp(500px,40vw,720px);
+    --foto-gen:min(100%,1800px);
+    --foto-sol:max(0px,calc(100% - 1800px));
     /* ⚠ Yazının ARKASINDAKİ GERÇEK RENK bu. Fotoğraf ve turuncu
        katman bunun üstünü tamamen kapattığı için görünmüyor; ama
        burada yazılı olması şart: kontrast denetimi DOM'da zemin
@@ -294,8 +308,12 @@ img{max-width:100%;height:auto;display:block;}
      renk, ekran ne kadar kırpılırsa kırpılsın hep aynı. */
   .kahraman-ust::before{
     content:'';position:absolute;inset:0;pointer-events:none;z-index:1;
+    /* ⚠ Kırılma noktaları artık EKRANIN değil FOTOĞRAFIN yüzdesi.
+       Yüzde kalsaydı yazı sağa kayınca turuncunun dışına düşer ve
+       kontrast çökerdi (yorumda yazılı: 2,26'ya iniyordu). */
     background:linear-gradient(to right,
-      rgb(249,116,26) 0 40%, rgba(249,116,26,0) 46%);
+      rgb(249,116,26) 0 calc(var(--foto-sol) + var(--foto-gen) * .40),
+      rgba(249,116,26,0) calc(var(--foto-sol) + var(--foto-gen) * .46));
   }
   .kahraman-foto{
     position:absolute;inset:0;width:100%;height:100%;
@@ -327,11 +345,17 @@ img{max-width:100%;height:auto;display:block;}
      %38 -- turuncunun bittiği yerin (%41-44) ve telefonun
      başladığı yerin (%55) ikisinin de solunda. */
   .kahraman-ust .sar{position:relative;z-index:2;width:100%;max-width:none;
-    padding-top:0;padding-left:clamp(24px,6vw,96px);padding-right:24px;}
+    padding-top:0;padding-right:24px;
+    /* Fotoğrafın sol kenarı + her zamanki iç boşluk. */
+    padding-left:calc(var(--foto-sol) + clamp(24px,6vw,96px));}
   /* ⚠ Tek sütun. Eskiden burada iki sütun vardı (yazı + telefon
      maketi); maket kalkınca kural kalsaydı başlık 1280px ekranda
      267 piksellik bir şeride sıkışırdı -- ölçtüm, sıkışıyordu. */
-  .kahraman-ic{grid-template-columns:1fr;max-width:32vw;}
+  /* ⚠ Sütun genişliği de SINIRLI. 32vw tek başına kalsaydı 3440
+     pikselde 1101 piksellik bir sütun doğar ve yazı telefonun
+     üstüne taşardı. 576 = fotoğraf genişliğinin (1800) %32'si:
+     kompozisyon ölçekten bağımsız aynı kalıyor. */
+  .kahraman-ic{grid-template-columns:1fr;max-width:min(32vw,576px);}
   /* Sütun daraldı: başlık da ona göre. */
   .kahraman-ust h1{font-size:clamp(34px,4.4vw,60px);}
   /* Turuncunun üzerinde koyu mürekkep. */
