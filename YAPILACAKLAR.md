@@ -813,13 +813,52 @@ dokunmak ve ikinci seferde birincisini bozmak demek.
      küçüldü" diyen ölçü **uygulama değil kendisi** yanılıyordu.
      Kutu önce görüntüye getiriliyor.
 
-  ⬜ **KALAN:** çekim listesindeki tikin anlamı. Kullanıcı kararı
-  (17 Kasım 2026): **hepsi tikli gelsin, tikten çıkarmak maddeyi
-  listeden çıkarsın.** Bedeli kullanıcıya yazılı olarak soruldu ve
-  kabul edildi: sahadaki "topladım" işaretlemesi ve `0/9` sayacı
-  gidiyor, `×` gereksizleşiyor, "İşaretleri temizle" kalkıyor.
-  ⚠ `bitti` alanı **kayıtta kalacak** (arayüzden kalkacak), geri
-  getirmek tek satır olsun diye. Ayrı bir turda yapılacak.
+  **C. Çekim listesindeki tikin anlamı değişti — BİTTİ.**
+  Kullanıcı kararı (17 Kasım 2026):
+
+  > *"Hepsi TİKLİ gelsin, tikten çıkarmak maddeyi LİSTEDEN çıkarsın."*
+
+  Şikâyet şuydu: *"kullanıcı burada listede yer alan araçları
+  işaretlerse bu sefer onları silmiş oluyor. Bu büyük bir
+  karışıklık!"* — iki ayrı silme yolu (tik + `×`) ve iki ayrı tik
+  anlamı (öneride "ekle", listede "bitti") aynı ekranda duruyordu.
+
+  Artık tek anlam var: **tik = "bu madde listede"**. Kalkanlar:
+  satır sonundaki `×`, "İşaretleri temizle" düğmesi, `bitti/toplam`
+  sayacı (hem bölüm sayacı, hem grup başlığı, hem proje satırındaki
+  çip artık sadece madde sayısı yazıyor: `17 madde`).
+  ⚠ `bitti` alanı **kayıtta duruyor**, yalnızca arayüzden kalktı —
+  sahadaki "topladım" işaretlemesi geri gelecekse tek satır.
+
+  Ölçüldü (proje sayfası, 17 maddelik liste): sayaç `17 madde`,
+  tiksiz satır **0**, `×` düğmesi **0**, "İşaretleri temizle" **yok**;
+  bir tik kaldırılınca madde 17→**16**, ekrandan gitti, listede yok.
+
+  Bekçiler, üçü de **mutasyonla kanıtlandı**:
+  `cekim-listesi` (tik → anında tarayıcıya yazılan çıkarma · hepsi
+  tikli · ikinci silme yolu yok · çip madde sayısı),
+  `liste-duzeni` **22 iddia** (tikten çıkarmak satırı düşürüyor, grup
+  sayacı tazeleniyor, grup **açık** kalıyor),
+  `hazir-setler` (setten gelen maddelerin hepsi tikli).
+  Mutasyonlar: (1) tik çıkarmasın → 3 + 1 iddia düştü, (2) kutular
+  tiksiz çizilsin → üç testin üçü de düştü, (3) `×` geri gelsin →
+  "ikinci silme yolu yok" düştü.
+
+  ⛔ **ÖLÇÜM YERİNE ÖNCE ÇÖKME GELDİ — SEBEBİ YAZILDI.**
+  B'nin ilk hali sayfayı hiç açtırmadı: `missing ) after argument
+  list`. Sebep, satır şablonunun **içine** yazdığım HTML yorumunda
+  **ters tırnak** kullanmam — şablon dizesi (`` ` ``) orada bitiyor.
+  Yorum artık düz tırnakla yazılı ve kuralı kendi içinde söylüyor.
+  Ders: `app.html`'de şablon dizesinin içindeki yoruma ters tırnak
+  yazılmaz.
+
+  ⚠ **İKİNCİ TUZAK: "koşu bitti" bildirimi koşunun bitişi değildi.**
+  `nohup bash hizli.sh &` kabuğu **hemen** dönüyor; arka plan görevi
+  "exit 0" diye haber verdi, oysa testler henüz başlamıştı.
+  `ciktilar/*.kod` dosyaları da bir önceki koşudan **kalmıştı** —
+  "217 test, hiç hata yok" diye okunuyordu. Dosya saatlerine bakmak
+  yakaladı. Bundan sonra: koşu bitişi `.kod` dosyalarının **saatiyle**
+  doğrulanacak, bildirimle değil.
 
   ⛔ **TAM KOŞU İKİ TEST DÜŞÜRDÜ — ikisi de GERÇEK bulgu çıktı.**
 

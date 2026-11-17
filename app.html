@@ -5217,7 +5217,7 @@ textarea.sc-ai-brief{min-height:64px;resize:vertical;line-height:1.5;}
          okunur geliyor ki sahada iki ayri yere bakmak gerekmesin. -->
     <div class="cl-dikkat" id="cl_dikkat" hidden></div>
     <div class="modal-actions">
-      <button type="button" class="btn" id="cl_temizle" data-i18n="cl_clear">Clear the ticks</button>
+      <!-- "Isaretleri temizle" KALDIRILDI: temizlenecek isaret kalmadi. -->
       <button type="button" class="btn btn-primary" id="cl_bitti" data-i18n="btn_done">Done</button>
     </div>
   </div>
@@ -11499,7 +11499,7 @@ function cekimListesiCiz(){
   const liste = projeListesi(pr);
   const say = listeSayilari(pr);
   document.getElementById('cl_sayac').innerHTML = say.tum
-    ? t('cl_progress')(say.bitti, say.tum) : '';
+    ? escapeHtml(t('so_madde')(say.tum)) : '';
   // Projenin serbest "cekimde dikkat" metni: madde degil, okunacak sey.
   const dikkat = document.getElementById('cl_dikkat');
   const metin = (pr.cautions || '').trim();
@@ -11557,12 +11557,12 @@ function cekimListesiCiz(){
     const setMi = anahtar.slice(0, 4) === 'set:';
     const ad = setMi ? setAdi[anahtar.slice(4)] : anahtar.slice(7);
     const maddeler = kova.get(anahtar);
-    const bittiSayi = maddeler.filter(m=> m.bitti).length;
+    // Sade sayi: "bitti" diye bir hal kalmadi.
     const acik = !!listeAcikGrup[anahtar];
     return '<div class="cl-blok">'
     + '<div class="cl-grup">'
     +   '<span class="cl-grup-ad">' + escapeHtml(ad) + '</span>'
-    +   '<span class="cl-grup-say">' + bittiSayi + '/' + maddeler.length + '</span>'
+    +   '<span class="cl-grup-say">' + escapeHtml(t('so_madde')(maddeler.length)) + '</span>'
     +   '<button type="button" class="cl-grup-ac" data-cl-ac="' + escapeHtml(anahtar) + '"'
     +     ' aria-expanded="' + acik + '"'
     +     ' title="' + escapeHtml(acik ? t('cl_grup_kapat') : t('cl_grup_ac')) + '"'
@@ -11581,9 +11581,23 @@ function cekimListesiCiz(){
     + (acik ? '<div class="cl-ic">' + (setMi ? altGruplar(maddeler) : [{ ad:'', maddeler }]).map(ag=>
         (ag.ad ? '<div class="cl-altgrup">' + escapeHtml(ag.ad) + '</div>' : '')
         + ag.maddeler.map(x=>`
-      <div class="cl-satir ${x.bitti ? 'bitti' : ''}">
-        <button type="button" class="cl-kutu ${x.bitti ? 'on' : ''}" data-cl-tik="${escapeHtml(x.id)}"
-                aria-pressed="${x.bitti}" aria-label="${escapeHtml(x.metin)}">${x.bitti ? '✓' : ''}</button>
+      <!-- ⛔ TIK = "BU LISTEDE". Kullanici karari (17 Kasim 2026):
+           "hepsi tikli gelsin, tikten cikarmak maddeyi listeden
+           cikarsin." Eskiden tik "topladim/yaptim" demekti ve oneri
+           ekranindaki "bu set gelsin" tikiyle AYNI gorunup ZIT anlama
+           geliyordu -- kullanicinin "buyuk bir karisiklik" dedigi sey
+           buydu.
+           ⚠ Bedeli kullaniciya yazili soruldu ve kabul edildi: sahadaki
+             "topladim" isaretlemesi ve 0/9 sayaci gitti, "×" gereksiz
+             kaldi, "Isaretleri temizle" kalkti.
+           ⚠ "bitti" alani KAYITTA DURUYOR, yalnizca arayuzden kalkti:
+             fikir degisirse geri getirmek tek satir.
+           ⚠ BU YORUM SABLON DIZESININ ICINDE: ters tirnak kullanma,
+             diziyi bitirir. 17 Kasim 2026'da tam bu oldu ve sayfa
+             "missing ) after argument list" ile hic acilmadi. -->
+      <div class="cl-satir">
+        <button type="button" class="cl-kutu on" data-cl-tik="${escapeHtml(x.id)}"
+                aria-pressed="true" aria-label="${escapeHtml(x.metin)}">✓</button>
         <div class="cl-orta">
           <div class="cl-metin">${escapeHtml(x.metin)}</div>
           ${(x.not || listeNotAcik.has(x.id))
@@ -11592,8 +11606,8 @@ function cekimListesiCiz(){
             : `<button type="button" class="cl-notac" data-cl-notac="${escapeHtml(x.id)}"
                  >${escapeHtml(t('cl_note_add'))}</button>`}
         </div>
-        <button type="button" class="cl-sil" data-cl-sil="${escapeHtml(x.id)}"
-                title="${escapeHtml(t('cl_remove'))}" aria-label="${escapeHtml(t('cl_remove'))}">×</button>
+        <!-- "×" KALDIRILDI: tiki kaldirmak zaten listeden cikariyor,
+             ikisi ayni isi yapiyordu. -->
       </div>`).join('')).join('') + '</div>' : '')
     + '</div>';
   }).join('');
@@ -11607,9 +11621,7 @@ function cekimListesiCiz(){
   kap.querySelectorAll('[data-cl-tik]').forEach(el=>{
     el.addEventListener('click', ()=> listeMaddeTikla(el.dataset.clTik));
   });
-  kap.querySelectorAll('[data-cl-sil]').forEach(el=>{
-    el.addEventListener('click', ()=> listeMaddeCikar(el.dataset.clSil));
-  });
+  // "×" kaldirildi (tik zaten cikariyor), dinleyicisi de gitti.
   // Not ANINDA kaydediliyor: sahada "sanduka sayisi 3" yazip telefonu
   // cebe koyan kisi ayrica kaydetmeyi hatirlamak zorunda kalmasin.
   kap.querySelectorAll('[data-cl-notac]').forEach(el=>{
@@ -11625,12 +11637,14 @@ function cekimListesiCiz(){
     el.addEventListener('blur', ()=> listeNotYaz(el.dataset.clNot, el.value));
   });
 }
+// ⛔ TIKI KALDIRMAK MADDEYI LISTEDEN CIKARIYOR (kullanici karari,
+//    17 Kasim 2026). Eskiden "bitti" isaretini cevirirdi.
+// ⚠ ONAY SORULMUYOR: kullanici "tikten cikarmak listeden cikarsin"
+//   dedi, her tikte onay penceresi acmak o akisi bogar. Cikarilan
+//   hazir set maddesi setten yeniden eklenebiliyor; elle yazilan
+//   madde ise geri gelmiyor -- bu, kararin bilinen bedeli.
 function listeMaddeTikla(id){
-  const pr = listeProjesi;
-  if(!pr) return;
-  const liste = projeListesi(pr).map(x=> x.id === id ? { ...x, bitti: !x.bitti } : x);
-  projeListesiYaz(pr, liste);
-  cekimListesiCiz();
+  listeMaddeCikar(id);
 }
 function listeNotYaz(id, deger){
   const pr = listeProjesi;
@@ -12069,7 +12083,7 @@ function renderProjects(){
                   >${IKON_SCRIPT}<b>${scriptSayisi(p.id) || 0}</b></button>
           <button type="button" class="pn-ico ${listeSayilari(p).tum?'dolu':''}" data-proj-list="${escapeHtml(p.id)}"
                   title="${escapeHtml(t('cl_open'))}" aria-label="${escapeHtml(t('cl_open'))}"
-                  >${IKON_LISTE}<b>${listeSayilari(p).tum ? listeSayilari(p).bitti + '/' + listeSayilari(p).tum : 0}</b></button>
+                  >${IKON_LISTE}<b>${listeSayilari(p).tum}</b></button>
           ${baglar}
           <span class="pn-meta"${yerAdlari.length > 1 ? ` title="${escapeHtml(yerAdlari.join(' → '))}"` : ''}>${[
             escapeHtml(projTypeName(p.type || 'other')),
@@ -14482,7 +14496,7 @@ function projeFormunuDoldur(p, yeniAd){
   const kacFikir = yeni ? 0 : fikirSayisi(p.id);
   document.getElementById('pe_ideasTag').textContent = kacFikir ? t('fk_count')(kacFikir) : t('sc_empty');
   const sayi = yeni ? { bitti:0, tum:0 } : listeSayilari(p);
-  document.getElementById('pe_listeTag').textContent = sayi.tum ? sayi.bitti + '/' + sayi.tum : t('sc_empty');
+  document.getElementById('pe_listeTag').textContent = sayi.tum ? t('so_madde')(sayi.tum) : t('sc_empty');
   // Oneri bolumu her form acilisinda KAPALI basliyor: baska bir
   // projeden kalma bayat bir liste gorunmesin.
   setOnerisiKapat();
@@ -16855,13 +16869,8 @@ document.getElementById('cl_ekleBtn').addEventListener('click', cekimListesiYeni
 document.getElementById('cl_yeni').addEventListener('keydown', e=>{
   if(e.key === 'Enter'){ e.preventDefault(); cekimListesiYeniEkle(); }
 });
-document.getElementById('cl_temizle').addEventListener('click', async ()=>{
-  const pr = listeProjesi;
-  if(!pr || !listeSayilari(pr).bitti) return;
-  if(!await onayla(t('cl_clear_ask'))) return;
-  projeListesiYaz(pr, projeListesi(pr).map(x=> ({ ...x, bitti: false })));
-  cekimListesiCiz();
-});
+// "Isaretleri temizle" kaldirildi: tik artik "bu listede" demek,
+// temizlenecek bir isaret kalmadi. Dinleyicisi de gitti.
 // ---- Ihtiyac kutuphanesi --------------------------------------------
 document.getElementById('ih_close').addEventListener('click', ihtiyacPenceresiKapat);
 document.getElementById('ih_bitti').addEventListener('click', ihtiyacPenceresiKapat);

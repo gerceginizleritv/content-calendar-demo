@@ -151,7 +151,15 @@ async function sayfa(b, genislik){
       setlerAyni: JSON.stringify(ihtiyacSetleri) === setOnce,
       // Sira korunuyor mu: "en cok unutulan en ustte".
       siraAyni: l.every((x,i)=> x.metin === kaynak[i][1] && x.kaynak === kaynak[i][0]),
-      isaretsiz: l.every(x=> x.bitti === false),
+      // ⛔ 17 KASIM 2026 -- TIK ARTIK "BITTI" DEMIYOR, "LISTEDE" DEMEK.
+      //    Bu olcu `bitti === false` ariyor ve iddia "hicbiri isaretli
+      //    gelmiyor" diyordu; ekranda ise HEPSI tikli geliyor. Alan
+      //    kayitta duruyor (ileride geri getirmek tek satir), ama
+      //    kullanicinin GORDUGU sey icin arayisi olculmesi gerekiyor.
+      //    Iki olcu birden: kayitta alan temiz, ekranda hepsi tikli.
+      alanTemiz: l.every(x=> x.bitti === false),
+      tiksizSatir: document.querySelectorAll('#cl_liste .cl-kutu:not(.on)').length,
+      tikliSatir: document.querySelectorAll('#cl_liste .cl-kutu.on').length,
       // ⛔ 17 KASIM 2026 -- YAPI IKI DUZEYLI OLDU (55. madde).
       //    Ust duzey SET adi (`.cl-grup-ad`), alt duzey "Canta"/"Yap"
       //    (`.cl-altgrup`). Eskiden tek duzey vardi ve bu olcu
@@ -172,7 +180,11 @@ async function sayfa(b, genislik){
   k('★ MALZEME KÜTÜPHANESİ DEĞİŞMİYOR', ekle.kutuphaneAyni === true);
   k('★ kullanıcının kendi setleri DEĞİŞMİYOR', ekle.setlerAyni === true);
   k('sıra korunuyor', ekle.siraAyni === true);
-  k('hiçbiri işaretli gelmiyor', ekle.isaretsiz === true);
+  k('kayıttaki "bitti" alanı temiz giriyor', ekle.alanTemiz === true);
+  k('★ setten gelen maddelerin HEPSİ tikli (tik = "bu madde listede")',
+     ekle.tiksizSatir === 0 && ekle.tikliSatir === ekle.sayi,
+     'tiksiz: ' + ekle.tiksizSatir + ' · tikli: ' + ekle.tikliSatir +
+     ' · madde: ' + ekle.sayi);
   k('listede "Çanta" ve "Yap" alt başlıkları (set içinde ayrı duruyor)',
      ekle.altGruplar.slice().sort().join(',') === 'Yap,Çanta',
      ekle.altGruplar.join(','));

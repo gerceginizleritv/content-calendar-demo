@@ -77,13 +77,41 @@ const { chromium } = require('./araclar');
     await bekle(150);
     const tekrarSayisi = metinler().filter(x=>/Dört taşın/i.test(x)).length;
 
-    // 5) İşaretlemek ANINDA kaydediliyor (Kaydet'e basılmadan)
-    document.querySelector('#cl_liste .cl-kutu').click();
+    // 5) TIK = "bu madde listede". Tikten cikarmak maddeyi LISTEDEN
+    //    CIKARIYOR ve bu ANINDA kaydediliyor (Kaydet'e basilmadan).
+    // ⛔ 17 KASIM 2026 -- TIKIN ANLAMI DEGISTI.
+    //    Eskiden tik "bu isi bitirdim" demekti ve bu olcu
+    //    `checklist[].bitti === true` ariyordu. Kullanici bunu bir
+    //    karisiklik olarak bildirdi: "kullanici burada listede yer alan
+    //    araclari isaretlerse bu sefer onlari silmis oluyor". Karar:
+    //    hepsi TIKLI gelir, tikten cikarmak maddeyi listeden cikarir.
+    //    Olcunun ARKASINDAKI guvence degismedi: tiklamak Kaydet'i
+    //    beklemeden tarayiciya yazilsin. Artik SILINME uzerinden olculuyor.
+    // ⚠ ELLE EKLENEN maddeyi seciyoruz (4. adim). Rastgele ilk satiri
+    //    tiklamak mekandan gelen ":izin" maddesini dusurebilir ve
+    //    asagidaki 10. adim "izinMaddesi undefined" diye coker.
+    const cikarilacak = [...document.querySelectorAll('#cl_liste .cl-satir')]
+      .find(x=> /Dört taşın/i.test((x.querySelector('.cl-metin')||{}).textContent || ''));
+    const tikOnceSayi = projeListesi(projectById('p_sokollu')).length;
+    const tikOnceSayac = document.getElementById('cl_sayac').textContent;
+    cikarilacak.querySelector('.cl-kutu').click();
     await bekle(150);
     const yereldeki = JSON.parse(localStorage.getItem('demo_projects_v2') || localStorage.getItem('demo_projects') || '[]');
     const yerelProje = (Array.isArray(yereldeki) ? yereldeki : []).find(x=>x.id==='p_sokollu');
-    const yereldeIsaret = !!(yerelProje && (yerelProje.checklist||[]).some(x=>x.bitti));
+    const yerelListe = (yerelProje && yerelProje.checklist) || [];
+    // Kaydet'e basilmadi: tarayicida madde artik YOK.
+    const yereldenCikti = !yerelListe.some(x=> /Dört taşın/i.test(x.metin || ''));
+    const yereldeSayi = yerelListe.length;
+    const tikSonraSayi = projeListesi(projectById('p_sokollu')).length;
+    const ekrandaCikti = [...document.querySelectorAll('#cl_liste .cl-metin')]
+      .every(x=> !/Dört taşın/i.test(x.textContent || ''));
     const sayacMetni = document.getElementById('cl_sayac').textContent;
+    // Hepsi tikli mi: tiksiz satir KALMAMALI.
+    const tiksizSatir = document.querySelectorAll('#cl_liste .cl-kutu:not(.on)').length;
+    // "Isaretleri temizle" dugmesi ve satir sonundaki "×" KALKTI:
+    // tik zaten cikarma isini yapiyor, iki ayri silme yolu karistiriyordu.
+    const temizleDugmesi = !!document.getElementById('cl_temizle');
+    const silDugmesi = document.querySelectorAll('#cl_liste [data-cl-sil]').length;
 
     // 6) Not yazmak (SAHADA DOLDUR). Bos not kutusu satirda DURMUYOR:
     //    once "+ not" dugmesi var, tiklaninca kutu aciliyor.
@@ -156,7 +184,9 @@ const { chromium } = require('./araclar');
     const kutuphaneYerel = JSON.parse(localStorage.getItem('demo_ihtiyaclar') || '[]');
 
     return { bosMetin, bosMaddeSayisi, cipVar, acildi, ilkMaddeler, mekandanSayi, grupBasliklari, dikkatGorunuyor, dikkatMetni,
-             elleEklendi, tekrarSayisi, yereldeIsaret, sayacMetni, notKaydedildi,
+             elleEklendi, tekrarSayisi, sayacMetni, notKaydedildi,
+             tikOnceSayi, tikSonraSayi, tikOnceSayac, yereldenCikti, yereldeSayi,
+             ekrandaCikti, tiksizSatir, temizleDugmesi, silDugmesi,
              notKutusuGizli: !notKutusuOnce,
              kutuphaneAcildi, kutuphanedeVar, listedeVar, topluAdlar, topluNot, powerbankSayisi,
              listeyeGirmedi, osmoListede, osmoCikti, osmoKutuphanede,
@@ -177,8 +207,20 @@ const { chromium } = require('./araclar');
   k('projenin serbest "dikkat" metni pencerede', r.dikkatGorunuyor && /geniş/.test(r.dikkatMetni), r.dikkatMetni.slice(0,60));
   k('elle madde eklendi', r.elleEklendi);
   k('aynı madde ikinci kez eklenmiyor', r.tekrarSayisi === 1, r.tekrarSayisi);
-  k('işaret ANINDA tarayıcıya yazılıyor (Kaydet yok)', r.yereldeIsaret);
-  k('sayaç kaç maddenin tamam olduğunu yazıyor', /1/.test(r.sayacMetni), r.sayacMetni);
+  k('★ tikten çıkarmak maddeyi LİSTEDEN çıkarıyor',
+     r.tikSonraSayi === r.tikOnceSayi - 1 && r.ekrandaCikti,
+     r.tikOnceSayi + ' → ' + r.tikSonraSayi + ' · ekrandan gitti: ' + r.ekrandaCikti);
+  k('★ çıkarma ANINDA tarayıcıya yazılıyor (Kaydet yok)',
+     r.yereldenCikti && r.yereldeSayi === r.tikOnceSayi - 1,
+     'yerelde ' + r.yereldeSayi + ' madde · gitti: ' + r.yereldenCikti);
+  k('★ maddelerin HEPSİ tikli geliyor (tiksiz satır yok)',
+     r.tiksizSatir === 0, 'tiksiz satır: ' + r.tiksizSatir);
+  k('★ ikinci silme yolu YOK ("×" ve "İşaretleri temizle" kalktı)',
+     r.temizleDugmesi === false && r.silDugmesi === 0,
+     'temizle: ' + r.temizleDugmesi + ' · ×: ' + r.silDugmesi);
+  k('sayaç listede kaç madde olduğunu yazıyor',
+     r.sayacMetni !== r.tikOnceSayac && /\d/.test(r.sayacMetni),
+     r.tikOnceSayac + ' → ' + r.sayacMetni);
   k('boş not kutusu satırda yer KAPLAMIYOR', r.notKutusuGizli);
   k('sahada yazılan not kaydediliyor', r.notKaydedildi);
   k('kütüphane penceresi açılıyor', r.kutuphaneAcildi);
@@ -195,7 +237,11 @@ const { chromium } = require('./araclar');
   k('mekan notu değişince madde metni tazeleniyor', r.izinMetniTazelendi);
   k('tazelenirken işaret korunuyor', r.izinIsaretiDuruyor);
   k('pencere kapanıyor', r.kapandi);
-  k('proje satırındaki çip "bitti/toplam" gösteriyor', /\//.test(r.cipYazi), r.cipYazi);
+  // ⛔ 17 KASIM 2026: cip "bitti/toplam" idi (orn. "3/17"). Tik artik
+  //    "bitti" demedigi icin pay anlamsizdi; cip LISTEDEKI MADDE
+  //    SAYISINI yaziyor. Guvence ayni: cip sayiyi gosteriyor.
+  k('proje satırındaki çip listedeki madde sayısını gösteriyor',
+     /^[0-9]+$/.test(r.cipYazi.trim()) && Number(r.cipYazi.trim()) > 0, r.cipYazi);
   k('kütüphane tarayıcıya yazılıyor', r.kutuphaneYerelSayi >= 4, r.kutuphaneYerelSayi);
 
   console.log(hata ? '\n'+hata+' HATA' : '\nHEPSİ GEÇTİ');

@@ -139,8 +139,9 @@ const KOK = path.join(__dirname, '..');
     //   istiyoruz. 17 Kasim 2026'da mutasyon denemesinde test
     //   "Cannot read properties of null" diye coktu -- dusuyordu ama
     //   sebebi soylemiyordu.
-    o.acik = { isaret: '', satir: 0, notDugmesi: 0, tikKutusu: 0 };
-    o.tikSonrasi = { say: '', isaret: '' };
+    o.acik = { isaret: '', satir: 0, notDugmesi: 0, tikKutusu: 0,
+               say: '', tiksiz: 0 };
+    o.tikSonrasi = { say: '', isaret: '', satir: 0 };
     const ilkBlok = blok()[0];
     if (ilkBlok) {
       const dugme = ilkBlok.querySelector('.cl-grup-ac');
@@ -151,7 +152,9 @@ const KOK = path.join(__dirname, '..');
         o.acik = { isaret: (b0.querySelector('.cl-grup-ac') || {}).textContent || '',
                    satir: b0.querySelectorAll('.cl-satir').length,
                    notDugmesi: b0.querySelectorAll('[data-cl-notac]').length,
-                   tikKutusu: b0.querySelectorAll('[data-cl-tik]').length };
+                   tikKutusu: b0.querySelectorAll('[data-cl-tik]').length,
+                   say: ((b0.querySelector('.cl-grup-say') || {}).textContent || '').trim(),
+                   tiksiz: b0.querySelectorAll('.cl-kutu:not(.on)').length };
         o.acik.isaret = String(o.acik.isaret).trim();
         const tik = b0.querySelector('[data-cl-tik]');
         if (tik) { tik.click(); await bekle(300); }
@@ -159,6 +162,7 @@ const KOK = path.join(__dirname, '..');
         if (b1) {
           o.tikSonrasi = {
             say: ((b1.querySelector('.cl-grup-say') || {}).textContent || '').trim(),
+            satir: b1.querySelectorAll('.cl-satir').length,
             isaret: ((b1.querySelector('.cl-grup-ac') || {}).textContent || '').trim() };
         }
       }
@@ -202,11 +206,23 @@ const KOK = path.join(__dirname, '..');
     assert.strictEqual(akis.acik.isaret, '−', 'isaret "−" olmadi');
     assert.ok(akis.acik.satir >= 5, 'madde satiri: ' + akis.acik.satir);
     assert.strictEqual(akis.acik.tikKutusu, akis.acik.satir, 'her maddede tik kutusu yok');
+    assert.strictEqual(akis.acik.tiksiz, 0,
+      'tiksiz satir var: hepsi TIKLI gelmeli (tik = "bu madde listede")');
     assert.strictEqual(akis.acik.notDugmesi, akis.acik.satir,
       'her maddede not alani yok: kullanici "altinda not alanlari bulunmali" dedi');
   });
   dene('madde tiklaninca grup sayisi artiyor, grup ACIK kaliyor', () => {
-    assert.strictEqual(akis.tikSonrasi.say.split('/')[0], '1', akis.tikSonrasi.say);
+    // ⛔ 17 KASIM 2026 -- TIKIN ANLAMI DEGISTI. Eskiden tik "bitti"
+    //    demekti ve bu olcu grup sayacinin payini ("1/9") okuyordu.
+    //    Kullanici bunu karisiklik olarak bildirdi; karar: hepsi TIKLI
+    //    gelir, tikten cikarmak maddeyi LISTEDEN cikarir. Sayacta pay
+    //    kalmadi, grup "9 madde" yaziyor. Guvence ayni kaldi: tiklamak
+    //    sayaci tazeliyor ve grubu KAPATMIYOR.
+    assert.strictEqual(akis.tikSonrasi.satir, akis.acik.satir - 1,
+      'tikten cikarmak satiri listeden dusurmedi: ' +
+      akis.acik.satir + ' -> ' + akis.tikSonrasi.satir);
+    assert.notStrictEqual(akis.tikSonrasi.say, akis.acik.say,
+      'grup sayaci tazelenmedi: ' + akis.acik.say);
     assert.strictEqual(akis.tikSonrasi.isaret, '−', 'tiklayinca grup kapandi');
   });
 
