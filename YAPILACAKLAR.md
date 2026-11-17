@@ -978,6 +978,63 @@ dokunmak ve ikinci seferde birincisini bozmak demek.
   sayfası aynı ikon kümesini yüklesin ve dosyalar aynı kaynaktan
   üretilmiş olsun.
 
+  ---
+
+  ✅ **BİTTİ (17 Kasım 2026). ⛔ MADDENİN KENDİSİ EKSİK YAZILMIŞTI.**
+  Madde *"`index.html` tek başına, öteki yedi sayfa svg+ico"* diyordu.
+  Ölçüldü: **15 sayfa, YEDİ farklı kalıp** —
+
+  | Kalıp | Sayfalar |
+  |---|---|
+  | Hiç ikon yok | `aktar` · `tiktok` · `youtube` |
+  | Yalnızca svg | `index` · `yonetim` |
+  | svg + ico | `fiyatlar` · `guide` · `kilavuz` · `paylas` · `privacy` · `sartlar` |
+  | svg + 32 | `deneme` |
+  | svg + 32 + apple | `index-eski` |
+  | **svg yok**, ico+32+16+apple | `lokasyon` |
+  | Tam küme (5) | `app` |
+
+  **İkinci sebep de doğrulandı ve kök nedeni bulundu.** `7c7224b`
+  (15 Kasım) commit'inin adı *"Logo ailesi tek kaynağa getirildi"*:
+  ICO/PNG/apple/PWA ikonları **`logo-koyu.svg`'den yeniden üretilmiş**,
+  ama `favicon.svg` 13 Kasım'da kalmış. Yani sekme ikonu **koyu
+  gövdeli** (`logo.svg` sürümü), raster aile **açık gövdeli**
+  (`logo-koyu.svg` sürümü) — iki ayrı çizim.
+
+  **Yapılanlar:**
+
+  - 14 Shootboard sayfası artık **aynı beş satırlık** ikon bloğunu
+    taşıyor (`app.html`'inki kanonik alındı).
+  - `favicon.svg` tek kaynaktan yeniden yazıldı: geometri
+    `logo-koyu.svg` ile **birebir aynı**, renkler `prefers-color-scheme`
+    ile gövdeyi izliyor — açık temada koyu gövde, koyu temada açık
+    gövde. **Ölçüldü** (Chromium, beş dolgunun hepsi iki temada).
+    Desteklemeyen tarayıcı `:root` varsayılanına düşer: eski davranış.
+  - ⛔ **Yolda bir hata yaptım ve test onu yakalıyor:** `favicon.svg`'nin
+    yorumuna **çift tire** yazdım; XML yorumunda yasak olduğu için
+    dosya ayrıştırılamaz hâle geldi ve ikon **hiç çizilmezdi**.
+    Ölçümle görüldü (`rectSayisi: 0`). Bekçi artık bunu da ölçüyor.
+
+  **Bekçi:** `testler/ikon-ailesi.test.js`, **8 iddia**.
+  ⛔ Sayfa listesi **tutmuyor** — kök dizindeki her `.html`'i kendi
+  buluyor, yeni sayfa kendiliğinden kapsama giriyor (Bölüm 7 kuralı).
+  Ölçtükleri: her Shootboard sayfası aynı kümeyi yüklüyor · dosyalar
+  diskte var · `favicon.svg` geçerli XML · üç SVG **aynı geometri** ·
+  iki tema birlikte taşınıyor.
+  **Üç mutasyonla kanıtlandı:** bir sayfadan ikon silinince, geometri
+  değişince ve yoruma çift tire konunca ilgili iddialar düştü.
+
+  ⚠ **İKİ SORU KULLANICIDA — cevap gelene kadar dokunulmadı:**
+  1. **`lokasyon.html`** içinde *"Shootboard"* **hiç geçmiyor**
+     (kullanıcının kendi kanalına ait saha dosyası). Bugün Shootboard
+     ICO/PNG'lerini taşıyor ama SVG'si yok. Shootboard ikonu mu alsın,
+     kendi ikonu mu olsun, yoksa hiç mi? **Kapsam dışı bırakıldı.**
+     ⚠ Ayrım kendi kendini denetliyor: sayfa bir gün Shootboard markalı
+     olursa teste girer ve ikonsuzsa düşer.
+  2. **`index-eski.html`** eski ana sayfa ve **hiçbir sayfa ona
+     bağlanmıyor**. Dursun mu, silinsin mi? Şimdilik duruyor ve ikon
+     kümesini aldı.
+
 - ⬜ **47.** **Üst menü her sayfada aynı olsun.** Kullanıcı
   16 Kasım 2026'da bildirdi: *"ana sayfadan kılavuz sayfasına geçince
   üst menüler neden farklı? Kılavuz sayfasına geçince Başla tuşu

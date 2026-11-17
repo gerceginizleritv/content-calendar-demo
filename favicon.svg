@@ -1,12 +1,45 @@
+<!--
+  SHOOTBOARD SEKME IKONU
+  17 Kasim 2026. logo-koyu.svg / logo.svg ile AYNI geometri.
+
+  ⛔ BU DOSYA TEK BASINA DEGISTIRILMEZ. Uc dosya bir aile:
+     logo.svg (acik zemin), logo-koyu.svg (koyu zemin), favicon.svg
+     ve ondan uretilen favicon.ico, favicon-16x16.png,
+     favicon-32x32.png, apple-touch-icon.png, icons/*.
+     Biri guncellenip otekiler unutulursa iki ayri logo olur.
+     15 Kasim 2026'da tam bu oldu: PNG/ICO ailesi logo-koyu.svg'den
+     yeniden uretildi, favicon.svg 13 Kasim'da kaldi ve sekmede raster
+     ailesinden FARKLI bir ikon gorundu. Kullanici bildirdi.
+
+  ⛔ XML YORUMUNDA CIFT TIRE KULLANILMAZ. 17 Kasim 2026'da bu dosya
+     tam bu yuzden bir kez bozuldu: yorumda cift tire gecince XML
+     ayristirilamadi ve ikon HIC cizilmedi. Bekci test artik dosyanin
+     ayristigini da olcuyor.
+
+  Renkler GOVDEYI IZLIYOR; ikisi birlikte degisir, tek basina degil:
+    govde KOYU (#17122A) ise disler acik, cizgiler #8E8799 ve #FFBE3D
+    govde ACIK (#FFF9F0) ise disler koyu,  cizgiler #9B9389 ve #C4800F
+  Turuncu cubuk (#FF5A1F) iki temada da ayni: markanin sabiti.
+
+  Acik/koyu uyumu OLCULDU (Chromium, 17 Kasim 2026): acik temada koyu
+  govde, koyu temada acik govde geliyor. Desteklemeyen tarayici :root
+  varsayilanina duser, yani acik zemin surumu: eski davranis.
+-->
 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64" role="img"
      aria-label="Shootboard">
-  <rect x="6" y="24" width="52" height="34" rx="7" fill="#17122A"/>
+  <style>
+    :root{ --govde:#17122A; --dis:#FFF9F0; --cizgi:#8E8799; --vurgu:#FFBE3D; }
+    @media (prefers-color-scheme: dark){
+      :root{ --govde:#FFF9F0; --dis:#17122A; --cizgi:#9B9389; --vurgu:#C4800F; }
+    }
+  </style>
+  <rect x="6" y="24" width="52" height="34" rx="7" fill="var(--govde)"/>
   <g transform="rotate(-9 32 17)">
     <rect x="6" y="7" width="52" height="15" rx="3.5" fill="#FF5A1F"/>
-    <path d="M17 7 L22.5 7 L14.5 22 L9 22 Z" fill="#FFF9F0"/>
-    <path d="M33 7 L38.5 7 L30.5 22 L25 22 Z" fill="#FFF9F0"/>
-    <path d="M49 7 L54.5 7 L46.5 22 L41 22 Z" fill="#FFF9F0"/>
+    <path d="M17 7 L22.5 7 L14.5 22 L9 22 Z" fill="var(--dis)"/>
+    <path d="M33 7 L38.5 7 L30.5 22 L25 22 Z" fill="var(--dis)"/>
+    <path d="M49 7 L54.5 7 L46.5 22 L41 22 Z" fill="var(--dis)"/>
   </g>
-  <rect x="15" y="34" width="26" height="3.4" rx="1.7" fill="#8E8799"/>
-  <rect x="15" y="43" width="17" height="3.4" rx="1.7" fill="#FFBE3D"/>
+  <rect x="15" y="34" width="26" height="3.4" rx="1.7" fill="var(--cizgi)"/>
+  <rect x="15" y="43" width="17" height="3.4" rx="1.7" fill="var(--vurgu)"/>
 </svg>
