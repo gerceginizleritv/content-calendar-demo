@@ -2647,6 +2647,16 @@ textarea.sc-ai-brief{min-height:64px;resize:vertical;line-height:1.5;}
 /* Seti tiksiz olan maddeler: tiksiz VE kapali. Solukluk bunu goz ile
    de soyluyor, yoksa "neden tiklayamiyorum" sorusu dogardi. */
 .set-oneri-mad-kapali{opacity:.45;cursor:default;}
+/* 55. MADDE -- cekim listesi grup basligi: oneri bolumuyle AYNI dil.
+   Kullanicinin sikayeti "farkli bir liste gibi geliyor" idi. */
+.cl-blok + .cl-blok{margin-top:10px;}
+.cl-grup{display:flex;align-items:center;gap:8px;}
+.cl-grup-ad{flex:1 1 auto;min-width:0;}
+.cl-grup-say{flex:none;font-size:12px;opacity:.65;
+  font-variant-numeric:tabular-nums;}
+.cl-grup-ac{flex:none;background:none;border:0;cursor:pointer;
+  color:inherit;opacity:.7;font-size:16px;padding:2px 8px;line-height:1;}
+.cl-grup-ac:hover{opacity:1;}
 .proje-sayfasi .modal-actions,
 .script-sayfasi .modal-actions,
 .kayit-sayfasi .modal-actions{
@@ -7413,6 +7423,8 @@ const LANG = {
     so_bos: "Nothing is ticked.",
     so_eklendi: (n)=> n ? `${n} added to the checklist.` : "They were already on the list.",
     so_goster: "Show what is in this kit",
+    cl_grup_ac: "Open this list",
+    cl_grup_kapat: "Close this list",
     so_gizle: "Hide what is in this kit",
     // 49. madde (16 Kasim 2026): setin icini gormek ve madde cikarmak.
     set_peek: "Show what is inside",
@@ -8728,6 +8740,8 @@ const LANG = {
     so_bos: "Hiçbiri tikli değil.",
     so_eklendi: (n)=> n ? `${n} madde çekim listesine eklendi.` : "Hepsi zaten listedeydi.",
     so_goster: "Bu setin içini göster",
+    cl_grup_ac: "Bu listeyi aç",
+    cl_grup_kapat: "Bu listeyi kapat",
     so_gizle: "Bu setin içini gizle",
     // 49. madde (16 Kasim 2026): setin icini gormek ve madde cikarmak.
     set_peek: "İçindekileri göster",
@@ -10511,6 +10525,13 @@ let listeProjesi = null;
 // Notu acilmis maddeler. Pencere kapaninca unutuluyor: bos birakilan
 // bir not kutusu bir dahaki acilista yine yer kaplamasin.
 let listeNotAcik = new Set();
+// 55. MADDE -- cekim listesindeki gruplarin acik/kapali durumu.
+// ⛔ KAPALI BASLIYOR. Kullanicinin istedigi akis (17 Kasim 2026):
+//    "projeye girip cekim listelerine bile tiklamadan basligin altinda
+//     + isaretli olarak ekledigi listeleri gorur; + isaretine tiklar,
+//     listeler acilir". Yani ilk bakista kisa bir ozet, ayrinti istege
+//    bagli.
+let listeAcikGrup = {};
 
 function yeniIhtiyacId(){ return 'ih_' + Date.now().toString(36) + '_' + Math.random().toString(36).slice(2,6); }
 function yeniListeId(){ return 'cl_' + Date.now().toString(36) + '_' + Math.random().toString(36).slice(2,6); }
@@ -10848,7 +10869,17 @@ function listeMaddeTemizle(ham){
     // yazilsaydi dil degistiren kullanici Turkce grup basligi
     // gorurdu. Kaynak bir ANAHTAR, basligi listeGrupAdi ceviriyor.
     kaynak: ['elle','kutuphane','mekan','canta','yap']
-      .indexOf(ham && ham.kaynak) !== -1 ? ham.kaynak : 'elle'
+      .indexOf(ham && ham.kaynak) !== -1 ? ham.kaynak : 'elle',
+    // 55. MADDE -- MADDE HANGI SETTEN GELDI.
+    // ⛔ BU ALAN BEYAZ LISTEDE OLMAK ZORUNDA: burasi bir beyaz liste,
+    //    yazilmayan alan HER OKUMADA sessizce silinir. Silinirse cekim
+    //    listesi set basligi altinda gruplayamaz ve kullanicinin
+    //    sikayeti ("farkli bir liste gibi geliyor") geri doner.
+    // ⚠ Bos olabilir: 17 Kasim 2026'dan ONCE eklenmis maddelerde ve
+    //    elle yazilan maddelerde set yok. Onlar kaynak basliklari
+    //    altinda duruyor; zorla bir sete atanmiyorlar.
+    set: (ham && typeof ham.set === 'string' && /^[a-z]{1,20}$/.test(ham.set))
+      ? ham.set : ''
   };
 }
 function projeListesi(pr){
@@ -11020,7 +11051,10 @@ function bugunOzeti(gun, simdi){
 //   o sayfanin icinde bir bolum olarak genisliyor. Boylece kapatinca
 //   kullanici PROJEDE kaliyor -- eskiden proje tablosuna dusuyordu ve
 //   projeye geri donemiyordu.
-function cekimListesiAc(id){
+// `kaydirmasiz`: bolum acilirken sayfa oraya KAYDIRILMIYOR. Proje
+// acilisinda kendiliginden acilan bolum icin gerekli -- yoksa kullanici
+// projeyi acar acmaz sayfanin altina dusardi.
+function cekimListesiAc(id, kaydirmasiz){
   const pr = projectById(id);
   if(!pr) return;
   setPage('projects', true);
@@ -11036,6 +11070,7 @@ function cekimListesiAc(id){
   if(kutu && bolum && bolum.parentElement !== kutu) kutu.appendChild(bolum);
   listeProjesi = pr;
   listeNotAcik = new Set();
+  listeAcikGrup = {};        // baska projeden kalma acilma durumu tasinmasin
   document.getElementById('cl_proje').textContent = pr.name;
   document.getElementById('cl_yeni').value = '';
   listeyiMekanlardanTazele(pr);
@@ -11051,8 +11086,12 @@ function cekimListesiAc(id){
   cekimListesiCiz();
   document.getElementById('cekimListesiOverlay').classList.add('open');
   // Bolum sayfanin altinda; kullanici oraya BAKSIN diye kaydiriliyor.
-  try{ document.getElementById('cekimListesiOverlay')
-        .scrollIntoView({ block:'start', behavior:'smooth' }); }catch(e){}
+  // ⚠ Kendiliginden acilista kaydirilmiyor: proje acilir acilmaz
+  //   sayfanin altina dusmek istemiyoruz.
+  if(!kaydirmasiz){
+    try{ document.getElementById('cekimListesiOverlay')
+          .scrollIntoView({ block:'start', behavior:'smooth' }); }catch(e){}
+  }
 }
 function cekimListesiKapat(){
   document.getElementById('cekimListesiOverlay').classList.remove('open');
@@ -11262,7 +11301,7 @@ function setOnerisiUygula(pr, anahtarlar, haric){
       // Sira KORUNUYOR: setler "en cok unutulan en ustte" diye dizili.
       st.m.forEach((x, i)=>{
         if(atlanan[k + ':' + i]) return;
-        if(listeMaddeEkle(x[1], x[0] === 'canta' ? 'canta' : 'yap')) eklenen++;
+        if(listeMaddeEkle(x[1], x[0] === 'canta' ? 'canta' : 'yap', '', '', k)) eklenen++;
       });
     });
   } finally { listeProjesi = oncekiHedef; }
@@ -11277,7 +11316,8 @@ function hazirSetiEkle(sira){
   if(!s || !listeProjesi) return;
   let eklenen = 0;
   // Sira KORUNUYOR: "en cok unutulan en ustte" diye dizildiler.
-  s.m.forEach(x=>{ if(listeMaddeEkle(x[1], x[0] === 'canta' ? 'canta' : 'yap')) eklenen++; });
+  s.m.forEach(x=>{
+    if(listeMaddeEkle(x[1], x[0] === 'canta' ? 'canta' : 'yap', '', '', s.k)) eklenen++; });
   ihNot('ih', t('set_added')(eklenen));
   cekimListesiCiz();
 }
@@ -11401,16 +11441,43 @@ function cekimListesiCiz(){
   }
   // Gruplar ilk gorulme sirasinda duruyor: kullanicinin ekledigi sira
   // anlamli, alfabetik siralamak onu bozardi.
+  //
+  // ⛔ 55. MADDE -- SET BASLIGI ALTINDA GRUPLAMA. Kullanici bildirdi
+  //    (17 Kasim 2026): "bir onceki ekledigim alandan farkli olarak
+  //    geliyor... farkli bir liste gibi geliyor". Oneri bolumu setlere
+  //    gore diziliyordu, bu ekran ise KAYNAGA gore ("Canta" / "Yap")
+  //    -- cunku maddeler hangi setten geldiklerini kaydetmiyordu.
+  //    Artik kaydediyorlar (`set` alani) ve ekran once ona bakiyor.
+  // ⚠ Set anahtari OLMAYAN madde zorla bir sete atanmiyor: eski
+  //    kayitlar ve elle yazilanlar eski kaynak basliklari altinda
+  //    duruyor. Zorlamak veri kaybi sayilirdi.
+  const setAdi = {};
+  hazirSetler().forEach(x=>{ if(x && x.k) setAdi[x.k] = x.ad; });
   const gruplar = [];
   const kova = new Map();
   liste.forEach(x=>{
-    const ad = listeGrupAdi(x);
-    if(!kova.has(ad)){ kova.set(ad, []); gruplar.push(ad); }
-    kova.get(ad).push(x);
+    const anahtar = (x.set && setAdi[x.set]) ? ('set:' + x.set)
+                                             : ('kaynak:' + listeGrupAdi(x));
+    if(!kova.has(anahtar)){ kova.set(anahtar, []); gruplar.push(anahtar); }
+    kova.get(anahtar).push(x);
   });
-  kap.innerHTML = gruplar.map(ad=>
-    '<div class="cl-grup">' + escapeHtml(ad) + '</div>' +
-    kova.get(ad).map(x=>`
+  kap.innerHTML = gruplar.map(anahtar=>{
+    const setMi = anahtar.slice(0, 4) === 'set:';
+    const ad = setMi ? setAdi[anahtar.slice(4)] : anahtar.slice(7);
+    const maddeler = kova.get(anahtar);
+    const bittiSayi = maddeler.filter(m=> m.bitti).length;
+    const acik = !!listeAcikGrup[anahtar];
+    return '<div class="cl-blok">'
+    + '<div class="cl-grup">'
+    +   '<span class="cl-grup-ad">' + escapeHtml(ad) + '</span>'
+    +   '<span class="cl-grup-say">' + bittiSayi + '/' + maddeler.length + '</span>'
+    +   '<button type="button" class="cl-grup-ac" data-cl-ac="' + escapeHtml(anahtar) + '"'
+    +     ' aria-expanded="' + acik + '"'
+    +     ' title="' + escapeHtml(acik ? t('cl_grup_kapat') : t('cl_grup_ac')) + '"'
+    +     ' aria-label="' + escapeHtml(acik ? t('cl_grup_kapat') : t('cl_grup_ac')) + '">'
+    +     (acik ? '−' : '+') + '</button>'
+    + '</div>'
+    + (acik ? maddeler.map(x=>`
       <div class="cl-satir ${x.bitti ? 'bitti' : ''}">
         <button type="button" class="cl-kutu ${x.bitti ? 'on' : ''}" data-cl-tik="${escapeHtml(x.id)}"
                 aria-pressed="${x.bitti}" aria-label="${escapeHtml(x.metin)}">${x.bitti ? '✓' : ''}</button>
@@ -11424,8 +11491,16 @@ function cekimListesiCiz(){
         </div>
         <button type="button" class="cl-sil" data-cl-sil="${escapeHtml(x.id)}"
                 title="${escapeHtml(t('cl_remove'))}" aria-label="${escapeHtml(t('cl_remove'))}">×</button>
-      </div>`).join('')
-  ).join('');
+      </div>`).join('') : '')
+    + '</div>';
+  }).join('');
+  kap.querySelectorAll('[data-cl-ac]').forEach(el=>{
+    el.addEventListener('click', ()=>{
+      const a = el.dataset.clAc;
+      listeAcikGrup[a] = !listeAcikGrup[a];
+      cekimListesiCiz();
+    });
+  });
   kap.querySelectorAll('[data-cl-tik]').forEach(el=>{
     el.addEventListener('click', ()=> listeMaddeTikla(el.dataset.clTik));
   });
@@ -11469,14 +11544,15 @@ function listeMaddeCikar(id){
   projeListesiYaz(pr, projeListesi(pr).filter(x=> x.id !== id));
   cekimListesiCiz();
 }
-function listeMaddeEkle(metin, kaynak, grup, not){
+function listeMaddeEkle(metin, kaynak, grup, not, set){
   const pr = listeProjesi;
   if(!pr) return null;
   const liste = projeListesi(pr);
   if(liste.length >= LISTE_MAX){ uyari(t('cl_limit')(LISTE_MAX)); return null; }
   // `not` 8. maddeyle geldi ve ISTEGE BAGLI: eski cagri yerleri (elle
   // ekleme, mekandan gelen, hazir set) dort parametre vermiyor.
-  const madde = listeMaddeTemizle({ metin, kaynak: kaynak || 'elle', grup: grup || '', not: not || '' });
+  const madde = listeMaddeTemizle({ metin, kaynak: kaynak || 'elle', grup: grup || '',
+                                    not: not || '', set: set || '' });
   if(!madde) return null;
   // Ayni metin listede zaten varsa ikinci kez eklenmiyor.
   if(liste.some(x=> ihtiyacAnahtari(x.metin) === ihtiyacAnahtari(madde.metin))) return null;
@@ -14424,6 +14500,17 @@ function openProjectEdit(id, sessizRota){
   projeGeriTazele();
   if(!sessizRota) rotaYaz('/proje/' + id, true);
   sayfaBasaGit();
+  // ⛔ 55. MADDE -- LISTE DOLUYSA BOLUM KENDILIGINDEN ACILIYOR.
+  //    Kullanicinin istedigi akis (17 Kasim 2026): "proje icerisine
+  //    girip cekim listelerini bile tiklamadan basligin altinda +
+  //    isaretli olarak ekledigi listeleri gorur".
+  // ⚠ Gruplar KAPALI geldigi icin sayfa uzamiyor: yalnizca birkac
+  //   baslik satiri. Ayrinti `+` ile aciliyor.
+  // ⚠ Bos listede acilmiyor: bos bir bolum gostermek "bir sey mi
+  //   eksik?" dedirtir (ayni gerekce set onerisinde de var).
+  // ⚠ `cekimListesiAc` icinde "sayfa zaten acik mi" kontrolu var,
+  //   o yuzden buradan cagirmak ozyineleme uretmiyor.
+  if(projeListesi(p).length) cekimListesiAc(id, true);
 }
 async function projeSil(p){
   if(!p) return;
@@ -14442,6 +14529,16 @@ async function projeSil(p){
 
 function closeProjectEdit(sessizRota){
   document.getElementById('projectEditOverlay').classList.remove('open');
+  // ⛔ CEKIM LISTESI BOLUMU DE KAPANIYOR. Kapanmazsa baska bir projeye
+  //    girildiginde ONCEKI projenin listesi acik kaliyor ve basligi da
+  //    onun adini gosteriyordu. Olculdu (17 Kasim 2026): bos "B"
+  //    projesi acilinca bolum "A dolu" basligiyla ve A'nin iki grubuyla
+  //    duruyordu -- kullanici baska bir projenin cekim listesini kendi
+  //    projesi sanirdi. Kusur eskiden beri vardi; 55. maddede bolum
+  //    kendiliginden acilmaya baslayinca gorunur hale geldi.
+  // ⚠ cekimListesiKapat() `listeProjesi`yi de null yapiyor, yani bayat
+  //    hedef de kalmiyor.
+  if(typeof cekimListesiKapat === 'function') cekimListesiKapat();
   sayfaKaymasiniGeriVer();
   duzenlenenProje = null;
   // Liste geri geliyor; sayfa kipinde gizlenmis olan satirlar yeniden

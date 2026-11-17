@@ -635,8 +635,8 @@ dokunmak ve ikinci seferde birincisini bozmak demek.
   ⚠ Bu madde **49** ile aynı aileden (set yönetimi: içi görünsün,
   madde çıkarılsın). 49 bitmeden 54a'ya başlanmaz.
 
-- ⬜ **55.** ⛔ **ÇEKİM LİSTESİ EKRANI, EKLEME EKRANIYLA AYNI DİLİ
-  KONUŞSUN.** Kullanıcı bildirdi (17 Kasım 2026, ekran görüntüsüyle),
+- ✅ **55.** ⛔ **ÇEKİM LİSTESİ EKRANI, EKLEME EKRANIYLA AYNI DİLİ
+  KONUŞSUN.** — **BİTTİ (17 Kasım 2026).** Kullanıcı bildirdi (17 Kasım 2026, ekran görüntüsüyle),
   kendi sözleriyle:
 
   > *"Ekleme yapıldıktan sonra Çekim Listesine tıkladım, liste açık ve
@@ -681,6 +681,44 @@ dokunmak ve ikinci seferde birincisini bozmak demek.
   ⚠ Bu madde **49** ve **54** ile aynı aileden. 49'un öneri bölümüne
   düşen yarısı 10. maddede yapıldı; bu madde aynı dili **çekim listesi
   ekranına** taşıyor.
+
+  ---
+
+  ✅ **YAPILDI.**
+
+  - Maddeler artık **hangi setten geldiklerini kaydediyor** (`set`
+    alanı, `listeMaddeTemizle` beyaz listesinde).
+  - Çekim listesi **set adıyla** gruplanıyor; set anahtarı olmayan
+    maddeler eski kaynak başlıkları altında duruyor — **zorla
+    atanmıyor, kaybolmuyor.**
+  - Gruplar **kapalı** başlıyor, işaret **`+`**; açılınca `−` oluyor.
+    Her maddenin tiki ve **not alanı** var. Öneri bölümüyle aynı dil.
+  - Projeye girince **liste doluysa bölüm kendiliğinden açılıyor** —
+    kullanıcının şartı *"çekim listesine bile tıklamadan"*. Boş
+    projede açılmıyor. Açılış sayfayı aşağı **kaydırmıyor**.
+
+  ⛔ **YOLDA ESKİDEN BERİ VAR OLAN BİR KUSUR BULUNDU VE DÜZELTİLDİ.**
+  `closeProjectEdit` çekim listesi bölümünü kapatmıyordu. Ölçüldü:
+  dolu "A" projesinden çıkıp **boş "B"** projesine girince bölüm
+  **"A dolu" başlığıyla ve A'nın iki grubuyla açık** kalıyordu.
+  Kullanıcı başka bir projenin çekim listesini kendi projesi sanırdı.
+  Bu madde bölümü kendiliğinden açmaya başlayınca görünür hale geldi.
+
+  **Bekçi:** `testler/liste-duzeni.test.js`, **15 iddia**.
+  **Üç mutasyonla kanıtlandı:** beyaz listeden `set` çıkarılınca
+  başlıklar `["Çanta","Yap"]`a döndü (kullanıcının gördüğü hatanın
+  kendisi), kendiliğinden açılma kaldırılınca ve bölüm kapanması
+  kaldırılınca ilgili iddialar düştü.
+
+  ⚠ **İKİ TEST HATAMI MUTASYON YAKALADI, ikisi de yazıldı:**
+  1. Grupları bir döngüde açıyordum; her tıklama bölümü yeniden
+     çizdiği için sonraki ögeler **belgede değildi**. Test "ekranda
+     10, listede 19" dedi — uygulama değil, test yanılıyordu.
+  2. "Bölüm kendiliğinden açılıyor" iddiası **yanlış sebeple**
+     geçiyordu: bölüm zaten ekleme akışından açık kalıyordu. Artık
+     iddia önce "kapandı mı"yı kanıtlıyor.
+  Ayrıca ölçüm dayanıklı hale getirildi: bölüm hiç açılmazsa test
+  çökmek yerine **sebebi söyleyen** bir iddiayla düşüyor.
 
   **Önerilen üç küçük düzeltme — kullanıcı onayı bekliyor:**
   1. Alanlarda **Enter kaydetsin** ("Ekle" ile aynı).
