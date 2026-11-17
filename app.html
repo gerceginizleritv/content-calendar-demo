@@ -22877,6 +22877,14 @@ function hatirlatmaBuluttan(uzak){
      bildirimDurumu() === 'granted' && typeof pushAboneOl === 'function'){
     pushAboneOl().catch(()=>{});
   }
+  // Niyet buluttan ACIK geldi ama bu cihazda izin henuz yok: "yeni
+  // cihazda kendiliginden sorulsun" tam olarak bu durum. Acilis
+  // kancasi niyeti bulut gelmeden once okumus olabilir, o yuzden
+  // ikinci cagri burada; cihaz basina bir kez isareti ikisini de
+  // emniyete aliyor.
+  else if(hatirlatma.tarayici && typeof otoIzinIste === 'function'){
+    otoIzinIste().catch(()=>{});
+  }
 }
 
 function jetonUret(){
@@ -23784,6 +23792,47 @@ function bildirimDurumu(){
 async function bildirimIzniIste(){
   if(!('Notification' in window)) return 'yok';
   try{ return await Notification.requestPermission(); }catch(e){ return bildirimDurumu(); }
+}
+
+// ---- ACILISTA KENDILIGINDEN IZIN ISTEME --------------------------
+// Kullanici karari (17 Kasim 2026): "Denensin: acilista kendiliginden
+// sorulsun." Daha once BILEREK yapilmamisti; gerekcesi
+// hatirlatmaBuluttan'in ustundeki notta duruyor ve HALA gecerli:
+// tarayicilar izin istegini kullanici etkilesimine baglayabiliyor,
+// yani istek sessizce reddedilebilir.
+//
+// ⛔ BU YUZDEN ISTEK "EK BIR SANS", TEK YOL DEGIL. "Bildirimlere izin
+// ver" dugmesi yerinde KALIYOR (hatirlatmaEkraniTazele onu izin
+// 'default' iken gosteriyor). Istek ise yaramazsa kullanici yolu
+// kapanmiyor -- sadece bir dokunus kazanma denemesi.
+//
+// ⛔ CIHAZ BASINA BIR KEZ. Her acilista sormak kullaniciya saldirgan
+// gelir ve tarayicilar tekrarlanan istegi cezalandirabiliyor. Isaret
+// YERELDE duruyor, buluta yazilmiyor: "sordum mu" cihaza ait bir
+// olgu, niyet degil -- yeni cihazda yeniden sorulmasi GEREKIYOR,
+// maddenin istedigi sey tam olarak bu.
+//
+// ⚠ Isaret await'ten ONCE konuyor: fonksiyon iki yerden cagriliyor
+// (acilis ve buluttan niyet gelmesi) ve ikisi ust uste dusunce iki
+// pencere acilmasin.
+const IZIN_SORULDU = 'demo_izin_soruldu';
+async function otoIzinIste(){
+  if(!hatirlatma.tarayici) return 'niyet kapali';
+  if(typeof bildirimDurumu !== 'function' || bildirimDurumu() === 'yok') return 'yok';
+  // Karari verilmis izne dokunulmuyor: 'denied' iken sormak hicbir sey
+  // yapmaz, 'granted' iken de gereksiz.
+  if(bildirimDurumu() !== 'default') return 'karar verilmis';
+  // iOS'ta ana ekrana eklenmeden web push zaten calismiyor; orada
+  // sormak bos bir pencere acmak olurdu.
+  if(typeof pushIosEngeli === 'function' && pushIosEngeli()) return 'ios';
+  try{ if(localStorage.getItem(IZIN_SORULDU) === '1') return 'zaten soruldu'; }catch(e){}
+  try{ localStorage.setItem(IZIN_SORULDU, '1'); }catch(e){}
+  const sonuc = await bildirimIzniIste();
+  if(sonuc === 'granted' && typeof pushAboneOl === 'function'){
+    try{ await pushAboneOl(); }catch(e){}
+  }
+  if(typeof hatirlatmaEkraniTazele === 'function') hatirlatmaEkraniTazele();
+  return sonuc;
 }
 
 // ---- PUSH ABONELIGI (Shootboard KAPALIYKEN gelen bildirim) ---------
@@ -24917,6 +24966,8 @@ async function acilistaBildirim(){
     if(hatirlatma.tarayici && typeof pushIosEngeli === 'function' && pushIosEngeli()){
       pushSonDurum = 'ios';
     }
+    // Niyet acik ama izin henuz sorulmamis: acilista bir kez soruluyor.
+    try{ await otoIzinIste(); }catch(e){ console.warn('[push] oto izin', e); }
   }
   if(typeof pushDurumuYaz === 'function') pushDurumuYaz();
 }

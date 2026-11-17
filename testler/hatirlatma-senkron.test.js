@@ -10,12 +10,19 @@
 //      etkilemiyor, bunu hicbir tarayiciya kabul ettiremeyiz.
 //      Tasinan sey "ben bildirim istiyorum" karari.
 //
-//   ⛔ IZIN KENDILIGINDEN ISTENMIYOR. MDN'in Notification.requestPermission
-//      sayfasi: istek "kullanici etkilesimine cevaben" yapilmali.
-//      Acilista sormak tarayicilarin istemedigi bir sey. O yuzden yeni
-//      cihazda son adim bir dokunus olarak kaliyor: anahtar ACIK
+//   ⚠ 17 KASIM 2026'DA DEGISTI -- YUKARIDAKI SATIRIN ESKI HALI
+//      "izin kendiliginden ISTENMIYOR" diyordu. Kullanici "denensin,
+//      acilista kendiliginden sorulsun" dedi ve `otoIzinIste()`
+//      eklendi (5. bolum olcuyor).
+//
+//   ⛔ AMA GEREKCE SILINMEDI, CUNKU HALA GECERLI: MDN'in
+//      Notification.requestPermission sayfasi istegin "kullanici
+//      etkilesimine cevaben" yapilmasi gerektigini yaziyor, yani
+//      istek sessizce reddedilebilir. Bu yuzden kendiliginden istek
+//      EK BIR SANS olarak kuruldu, TEK YOL olarak degil: anahtar ACIK
 //      geliyor, "Bildirimlere izin ver" dugmesi orada bekliyor ve
-//      neden bekledigi YAZIYOR.
+//      neden bekledigi YAZIYOR (4. bolum). Istek ise yaramazsa
+//      kullanici yolu kapanmiyor.
 //
 //   Bu alan 16 Kasim 2026'ya kadar BILEREK senkronlanmiyordu; gerekce
 //   "calismayan bir ayari baska cihazda acik gostermek" idi. O itiraz
@@ -151,6 +158,108 @@ const KOK = path.join(__dirname, '..');
   dene('anahtar kapaliyken ne dugme ne metin var', () => {
     assert.strictEqual(ekran.kapaliMetin, '');
     assert.strictEqual(ekran.kapaliDugme, false);
+  });
+
+  // ── 5. ACILISTA KENDILIGINDEN IZIN ISTEME ─────────────────────────
+  // Kullanici karari (17 Kasim 2026): "Denensin: acilista
+  // kendiliginden sorulsun."
+  //
+  // ⛔ BU TEST TARAYICI POLITIKASINI OLCMUYOR, OLCEMEZ. Headless
+  //    tarayicida izin penceresi diye bir sey yok; olculen sey
+  //    `otoIzinIste()`in NE ZAMAN sordugu, ne zaman SUSTUGU ve KAC KEZ
+  //    sordugu. Gercek tarayicinin pencereyi gosterip gostermedigi
+  //    kullanicinin kendi cihazinda dogrulanacak.
+  const oto = await p.evaluate(async () => {
+    const asilDurum = bildirimDurumu, asilIste = bildirimIzniIste;
+    const asilAbone = pushAboneOl, asilIos = pushIosEngeli;
+    let kacKezSoruldu = 0, kacKezAboneOldu = 0, cevap = 'default';
+    bildirimIzniIste = async () => { kacKezSoruldu++; return cevap; };
+    pushAboneOl = async () => { kacKezAboneOldu++; return 'ok'; };
+    pushIosEngeli = () => false;
+    const sifirla = () => { kacKezSoruldu = 0; kacKezAboneOldu = 0;
+      try { localStorage.removeItem('demo_izin_soruldu'); } catch (e) {} };
+    const o = {};
+
+    // niyet KAPALI -> sorulmaz
+    sifirla(); bildirimDurumu = () => 'default'; hatirlatma.tarayici = false;
+    o.niyetKapali = { sonuc: await otoIzinIste(), kac: kacKezSoruldu };
+
+    // izin ZATEN VERILMIS -> sorulmaz (gereksiz)
+    sifirla(); bildirimDurumu = () => 'granted'; hatirlatma.tarayici = true;
+    o.izinVar = { sonuc: await otoIzinIste(), kac: kacKezSoruldu };
+
+    // izin REDDEDILMIS -> sorulmaz (sormak hicbir sey yapmaz)
+    sifirla(); bildirimDurumu = () => 'denied';
+    o.izinYok = { sonuc: await otoIzinIste(), kac: kacKezSoruldu };
+
+    // iOS, ana ekrana EKLENMEMIS -> sorulmaz (push zaten calismiyor)
+    sifirla(); bildirimDurumu = () => 'default'; pushIosEngeli = () => true;
+    o.ios = { sonuc: await otoIzinIste(), kac: kacKezSoruldu };
+    pushIosEngeli = () => false;
+
+    // ASIL DURUM: niyet acik + izin 'default' -> BIR KEZ soruluyor
+    sifirla();
+    o.ilk = { sonuc: await otoIzinIste(), kac: kacKezSoruldu };
+    // Ayni cihazda IKINCI cagri -> tekrar sormuyor
+    o.ikinci = { sonuc: await otoIzinIste(), kac: kacKezSoruldu };
+    // Iki cagri UST USTE dusse de (acilis + buluttan niyet) iki pencere
+    // acilmamali: isaret await'ten once konuyor.
+    sifirla();
+    const ikisi = await Promise.all([otoIzinIste(), otoIzinIste()]);
+    o.ustUste = { kac: kacKezSoruldu, sonuclar: ikisi };
+
+    // IZIN VERILIRSE abonelik aciliyor
+    sifirla(); cevap = 'granted';
+    o.verildi = { sonuc: await otoIzinIste(), abone: kacKezAboneOldu };
+
+    // Isaret BULUTA yazilmiyor: "sordum mu" cihaza ait, niyet degil
+    hatirlatma.tarayici = true;
+    o.bulutAlanlari = Object.keys(tercihPrefsYap().reminders);
+
+    bildirimDurumu = asilDurum; bildirimIzniIste = asilIste;
+    pushAboneOl = asilAbone; pushIosEngeli = asilIos;
+    return o;
+  });
+
+  dene('niyet KAPALIYKEN izin sorulmuyor', () => {
+    assert.strictEqual(oto.niyetKapali.kac, 0);
+    assert.strictEqual(oto.niyetKapali.sonuc, 'niyet kapali');
+  });
+  dene('izin ZATEN VERILMISSE sorulmuyor', () => {
+    assert.strictEqual(oto.izinVar.kac, 0);
+    assert.strictEqual(oto.izinVar.sonuc, 'karar verilmis');
+  });
+  dene('izin REDDEDILMISSE sorulmuyor', () => {
+    assert.strictEqual(oto.izinYok.kac, 0,
+      'reddedilmis izin yeniden soruldu: hicbir sey yapmaz, kullaniciyi rahatsiz eder');
+  });
+  dene('iOS ana ekrana eklenmemisse sorulmuyor', () => {
+    assert.strictEqual(oto.ios.kac, 0);
+    assert.strictEqual(oto.ios.sonuc, 'ios');
+  });
+  dene('★ niyet ACIK + izin bekliyorsa BIR KEZ soruluyor', () => {
+    assert.strictEqual(oto.ilk.kac, 1, 'acilista hic sorulmadi');
+  });
+  dene('★ CIHAZ BASINA BIR KEZ: ikinci acilista sormuyor', () => {
+    assert.strictEqual(oto.ikinci.kac, 1,
+      'her acilista soruyor: kullaniciya saldirgan gelir ve tarayici cezalandirir');
+    assert.strictEqual(oto.ikinci.sonuc, 'zaten soruldu');
+  });
+  dene('★ iki cagri UST USTE dusse de tek pencere', () => {
+    assert.strictEqual(oto.ustUste.kac, 1,
+      'acilis ve buluttan niyet ust uste dusunce iki kez soruldu: ' +
+      JSON.stringify(oto.ustUste.sonuclar));
+  });
+  dene('izin verilince abonelik aciliyor', () => {
+    assert.strictEqual(oto.verildi.sonuc, 'granted');
+    assert.strictEqual(oto.verildi.abone, 1,
+      'izin alindi ama abone olunmadi: bildirim yine gelmez');
+  });
+  dene('★ "soruldu" isareti BULUTA yazilmiyor', () => {
+    assert.ok(!oto.bulutAlanlari.includes('izinSoruldu'),
+      'isaret buluta gitti: yeni cihazda "zaten soruldu" sanilir ve HIC sorulmaz');
+    assert.ok(oto.bulutAlanlari.includes('tarayici'),
+      'niyet alani kayboldu: ' + JSON.stringify(oto.bulutAlanlari));
   });
 
   await p.close();

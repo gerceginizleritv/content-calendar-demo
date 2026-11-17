@@ -90,8 +90,57 @@ başlasın diye. Tam koşudan sonra değişmiş görünmesi normaldir.
   Bugünkü davranış: yeni cihazda anahtar **açık** geliyor ve
   "Bildirimlere izin ver" düğmesi **sebebiyle birlikte** orada
   bekliyor — tek dokunuş kalıyor.
-  ⚠ Kullanıcı "yine de denensin" derse yapılır; o zaman hangi
-  tarayıcıda çalıştığı **ölçülecek**, varsayılmayacak.
+  ✅ **KULLANICI "DENENSİN" DEDİ — YAPILDI (17 Kasım 2026).**
+  `otoIzinIste()` eklendi (`app.html`, `bildirimIzniIste`'nin altında).
+  İki yerden çağrılıyor: açılışta (`acilistaBildirim`) ve niyet
+  buluttan gelince (`hatirlatmaBuluttan`).
+
+  **Beş kapı — hepsi testli:**
+
+  | Durum | Davranış |
+  |---|---|
+  | Niyet kapalı | sorulmuyor |
+  | İzin zaten verilmiş | sorulmuyor (gereksiz) |
+  | İzin reddedilmiş | sorulmuyor (sormak hiçbir şey yapmaz) |
+  | iOS, ana ekrana eklenmemiş | sorulmuyor (web push zaten çalışmıyor) |
+  | Niyet açık + izin bekliyor | **cihaz başına BİR KEZ** soruluyor |
+
+  ⛔ **İstek EK BİR ŞANS, tek yol değil.** "Bildirimlere izin ver"
+  düğmesi yerinde kaldı. Gerekçe silinmedi çünkü hâlâ geçerli: MDN
+  isteğin kullanıcı etkileşimine cevaben olmasını yazıyor, yani istek
+  sessizce reddedilebilir. Reddedilirse kullanıcı yolu kapanmıyor.
+
+  ⛔ **"Soruldu" işareti BULUTA YAZILMIYOR** (`demo_izin_soruldu`,
+  yerelde). Sebebi: "sordum mu" cihaza ait bir olgu, niyet değil.
+  Buluta yazılsaydı yeni cihazda "zaten soruldu" sanılır ve maddenin
+  istediği şey — yeni cihazda sorulması — hiç olmazdı. Test bunu
+  ayrıca ölçüyor.
+
+  ⚠ İşaret `await`'ten **önce** konuyor: iki çağrı üst üste düşerse
+  (açılış + buluttan niyet) iki pencere açılmasın.
+
+  Bekçi: `hatirlatma-senkron.test.js` **16 iddia** (7 eskisi + 9
+  yenisi), hepsi geçiyor. **İki mutasyonla kanıtlandı:** işaret
+  kontrolü kaldırılınca iki iddia düştü; işaret `await`'ten sonraya
+  alınınca yalnızca "üst üste" iddiası düştü — yani her iddia kendi
+  şeyini ölçüyor.
+
+  ⛔ **ÖLÇÜLEMEYEN KISIM — DOĞRULAMA KULLANICIDA.** Bu depoda yalnızca
+  Chromium kurulu (Firefox ve WebKit yok, `playwright install`
+  çalıştırılmadı) ve **headless tarayıcıda izin penceresi diye bir şey
+  yok**. Yani "gerçek tarayıcı dokunuşsuz isteği gösterir mi"
+  sorusu buradan **cevaplanamaz**.
+
+  Chromium'da ölçülen tek şey (17 Kasım 2026): dokunuşsuz istek
+  **hata fırlatmıyor** ve dokunuşlu istekle **aynı** sonucu veriyor
+  (varsayılan bağlamda ikisi de `default`, izin verilmiş bağlamda
+  ikisi de `granted`). Bu, "uygulamayı bozmaz" demek; "pencere
+  görünür" demek **değil**.
+
+  ⚠ Test de bunu ölçmüyor ve ölçtüğünü iddia etmiyor; ölçtüğü şey
+  `otoIzinIste()`in ne zaman sorduğu, ne zaman sustuğu ve kaç kez
+  sorduğu. Gerçek tarayıcı davranışı kullanıcının kendi cihazında
+  doğrulanacak; adımlar kullanıcıya verildi.
 - ✅ **Türkçe-only dize denetimi BİTTİ** (16 Kasım 2026).
   Tarama yorumlar elenerek yeniden yapıldı (ilk denemede CSS
   yorumlarındaki örnekler sayılıyordu). Sözlük blokları dışında
