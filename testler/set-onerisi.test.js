@@ -317,9 +317,17 @@ const GENEL = ['onceki','kayda','sonra'];
     g.value = '2026-12-20'; g.dispatchEvent(new Event('change'));
     await bekle(250);
     o.acildi = !document.getElementById('pe_oneri').hidden;
-    // Kapaliyken madde satiri YOK
-    o.kapaliIcSatir = document.querySelectorAll('[data-somad]').length;
-    // Setin icini ac
+    // ⛔ ICERIKLER ILK ACILISTA GORUNUR OLMALI. Kullanici karari
+    //    (17 Kasim 2026): "ilk liste tavsiyesi geldiginde setlerin
+    //    icerigi de altinda yer almali". Ilk surum kapali basliyordu
+    //    ve kullanici "icerikler yine gorunmuyor" diye bildirdi.
+    o.ilkAcilistaIcSatir = document.querySelectorAll('[data-somad]').length;
+    o.dugmeIsaretiAcik = document.querySelector('[data-sobak="konusmali"]').textContent.trim();
+    // "-" ile KAPAT
+    document.querySelector('[data-sobak="konusmali"]').click(); await bekle(200);
+    o.kapaninca = document.querySelectorAll('[data-somad^="konusmali:"]').length;
+    o.dugmeIsaretiKapali = document.querySelector('[data-sobak="konusmali"]').textContent.trim();
+    // "+" ile yeniden AC
     document.querySelector('[data-sobak="konusmali"]').click(); await bekle(200);
     const mad = Array.prototype.slice.call(
       document.querySelectorAll('[data-somad^="konusmali:"]'));
@@ -347,11 +355,20 @@ const GENEL = ['onceki','kayda','sonra'];
     return o;
   });
 
-  dene('★ setin ICI gorunuyor (maddeler metinleriyle)', () => {
+  dene('★ setin ICI ILK ACILISTA gorunuyor (maddeler metinleriyle)', () => {
     assert.strictEqual(ic.acildi, true, 'oneri bolumu acilmadi');
-    assert.strictEqual(ic.kapaliIcSatir, 0, 'kapaliyken madde satiri var');
-    assert.ok(ic.icSatir >= 5, 'setin ici acilmadi, satir: ' + ic.icSatir);
+    assert.ok(ic.ilkAcilistaIcSatir > 0,
+      'icerikler kapali basliyor: kullanici setin icini yine ezberlemek zorunda kalir');
+    assert.ok(ic.icSatir >= 5, 'setin ici gorunmuyor, satir: ' + ic.icSatir);
     assert.strictEqual(ic.metinVar, true, 'madde satirlarinin metni bos');
+  });
+  dene('★ "+" / "−" ile kapanip aciliyor', () => {
+    assert.strictEqual(ic.dugmeIsaretiAcik, '−',
+      'acikken isaret "−" degil: ' + JSON.stringify(ic.dugmeIsaretiAcik));
+    assert.strictEqual(ic.kapaninca, 0, '"−" basildi ama icerik kapanmadi');
+    assert.strictEqual(ic.dugmeIsaretiKapali, '+',
+      'kapaliyken isaret "+" degil: ' + JSON.stringify(ic.dugmeIsaretiKapali));
+    assert.ok(ic.icSatir >= 5, '"+" basildi ama icerik geri acilmadi');
   });
   dene('setin maddeleri varsayilan olarak TIKLI', () => {
     assert.strictEqual(ic.hepsiTikli, true);

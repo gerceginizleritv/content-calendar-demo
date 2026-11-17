@@ -423,6 +423,32 @@ başlasın diye. Tam koşudan sonra değişmiş görünmesi normaldir.
   ⚠ Bu, **49. maddenin öneri bölümüne düşen yarısıdır.** 49 hâlâ açık:
   kullanıcının *kendi* setlerinden madde çıkarma ve Çekim listesi
   ekranındaki set yönetimi ayrı iş.
+
+  ⛔ **İKİNCİ TUR — KULLANICI AYNI ŞEYİ BİR DAHA SÖYLEDİ
+  (17 Kasım 2026).** İlk sürümde içerikler **kapalı** başlıyordu ve
+  işaret `▾` idi. Kullanıcı ekran görüntüleriyle bildirdi:
+
+  > *"Burada gelen setlerin içerikleri yine detaylı olarak
+  > görünmüyor. İlk liste tavsiyesi geldiğinde setlerin içeriği de
+  > altında yer almalı. Ekle dedikten sonra kapanabilir. Hatta
+  > setlerin yanında + ve − olsun, bu listeler kapatılsın açılsın."*
+
+  Yapıldı: içerikler **açık başlıyor**, işaretler **`+` / `−`**.
+  İki dilde iki yeni anahtar (`so_goster`, `so_gizle`).
+
+  ⚠ **Ölçüldü:** Vlog'da altı set, **52 madde satırı**, bölüm
+  **1716 piksel** (masaüstü 900 piksel ekran) / **1869 piksel**
+  (telefon). Yani öneri bölümü yaklaşık iki ekran uzunluğunda ve
+  "Tikli setleri ekle" düğmesine ulaşmak için kaydırmak gerekiyor.
+  Yana kayma yok. Kullanıcı istediği için böyle bırakıldı; rahatsız
+  ederse seçenek şu: **yalnızca tikli setler açık başlasın**, tiksiz
+  olanlar `+` ile açılsın (Vlog'da 52 yerine ~18 satır).
+
+  ⚠ **Kullanıcı eski sürümü denemişti.** Birinci ekran görüntüsündeki
+  *"17 madde çekim listesine eklendi"* penceresi `db619a1`'de
+  kaldırılmıştı; üçüncü görüntüdeki *"Çekim listesi 0/17"* ise
+  maddelerin **yerinde olduğunun** kanıtıydı. Bildirilen "kayboldu"
+  gerçekte "görünmüyordu" idi ve düzeltmesi `main`'e henüz gitmemişti.
 - ⬜ **11.** Havaya göre set önerisi — ⚠ **TASARIMDAN SONRAYA ALINDI**
 - ⬜ **12.** Zamanlama (set doğru günde öne çıkar) — ⚠ **TASARIMDAN
   SONRAYA ALINDI**
