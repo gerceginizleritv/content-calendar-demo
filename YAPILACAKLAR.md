@@ -1869,7 +1869,30 @@ dokunmak ve ikinci seferde birincisini bozmak demek.
   yapılsın (uzun olan dil bugün Türkçe, yarın başka bir dil olabilir
   — bu yüzden dil listesi teste elle yazılmayacak).
 
-- ⬜ **57.** **Dil seçicide bayrak.** Kullanıcı 18 Kasım 2026'da istedi:
+- ✅ **57. BİTTİ (18 Kasım 2026).** **Dil seçicide bayrak.**
+
+  Kullanıcı aynı gün sordu: *"57 — dil seçicide bayrak — bu ne??"*
+  Cevap: iş zaten bitmişti, işaret bayat kalmıştı.
+
+  ⛔ **MADDEYİ AÇIK TUTAN ENDİŞE DE ÇÖZÜLDÜ.** Aşağıda "Windows
+  bayrak emojisini çizmiyor, yerine TR gibi iki harf gösteriyor —
+  kullanıcı kendi bilgisayarında bakıp söyleyecek" yazıyordu.
+  O endişe artık **geçersiz**: emoji bırakıldı, yerine **gömülü SVG
+  bayraklar** geldi (`uret/bayraklar.js`, her dil için kendi
+  `viewBox`'ı). SVG her işletim sisteminde aynı çizilir; Windows
+  sorusu ortadan kalktı.
+  ⚠ Seçeneklerden (b) — *"`<select>` yerine resim koyabilen özel bir
+  açılır liste"* — de yapıldı: `.dil-tetik` düğmesi +
+  `role="listbox"` paneli, klavye ve ekran okuyucu desteğiyle.
+
+  ⏭ **GERİYE KALAN TEK SORU 41. MADDEYE TAŞINDI:** "bayrak bir dilin
+  değil bir ÜLKENİN işareti" — İspanyolca, Arapça, Rusça tek bir
+  ülkeye ait değil. Bu, altı yeni dil geldiğinde sorulacak; bugünkü
+  iki dilin işi bitti.
+
+  ⬇ Maddenin özgün hâli kayıt için duruyor:
+
+  Kullanıcı 18 Kasım 2026'da istedi:
 
   > *"Eğer diller için açılır menü ekliyorsan dil isminin yanına
   > bayrak da ekle!"*
@@ -2388,6 +2411,13 @@ dokunmak ve ikinci seferde birincisini bozmak demek.
   bayrak açılmaz, kimseye anahtar üretilmez.
 
 ### I · Diller  ⬜ EN SON GRUP
+- ⬜ **41.** ⚠ **57'DEN DEVREDEN SORU: HANGİ DİLE HANGİ BAYRAK?**
+  Bayrak bir dilin değil bir **ülkenin** işareti. Bugünkü iki dil
+  için 🇹🇷 ve 🇬🇧 seçildi (🇬🇧 yerine 🇺🇸 isteniyorsa tek satır), ama
+  İspanyolca, Arapça, Rusça tek bir ülkeye ait değil.
+  ⛔ **Sorulacak, tahmin edilmeyecek.** Bayraklar `uret/bayraklar.js`
+  içinde gömülü SVG; yeni dilin bayrağı oraya eklenecek.
+
 - ⬜ **41.** **Altı yeni arayüz dili:** Ispanyolca (`es`), Brezilya
   Portekizcesi (`pt-BR`), Almanca (`de`), Fransızca (`fr`), İtalyanca
   (`it`), Rusça (`ru`). Kullanıcı 16 Kasım 2026'da hem dilleri hem de
