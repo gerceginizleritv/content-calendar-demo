@@ -1615,6 +1615,48 @@ dokunmak ve ikinci seferde birincisini bozmak demek.
   güvence korunup ifadesi sayfaya taşınacak (18 Kasım'da 11 testte
   aynısı yapıldı).
 
+- ⬜ **59.** **"Fotoğrafı olmayanlara bak" — tuş çalışıyor ama ne
+  yaptığını ANLATMIYOR.** Kullanıcı 18 Kasım 2026'da ekran
+  görüntüsüyle sordu: *"O yazı ne anlama geliyor anlamadım. Ayrıca
+  'fotoğrafı olmayanlara bak' tuşu çalışıyor mu? Ben tıkladım ama bir
+  sonuç dönmedi."*
+
+  ✅ **ÖNCE İYİ HABER: TUŞ ÇALIŞIYOR.** Kullanıcının durumu birebir
+  yeniden üretildi ve ölçüldü: **54 mekân, fotoğrafı olmayan 1 tane**
+  (Balıklı Meryem Ana). Tuş o bir mekâna bakmış, Vikipedi'de bir şey
+  bulamamış ve bunu söylemiş. Kusur **işlevde değil, ANLATIMDA.**
+
+  **Üç ayrı sorun, üçü de ölçüldü:**
+
+  | # | Sorun | Neden kafa karıştırıyor |
+  |---|---|---|
+  | 1 | *"1 mekâna bakıldı"* | 54 mekânı olan biri "neden yalnızca 1?" diye düşünüyor. Sayı **fotoğrafı eksik olanların** sayısı ama cümle bunu söylemiyor. |
+  | 2 | **Hangi mekâna** bakıldığı yazmıyor | Tarama sırasında ad görünüyor (`mk_photo_scan`) ama tek mekânda bir saniye bile sürmüyor. Bitince ad kayboluyor. |
+  | 3 | *"Kartlarda harita duruyor"* | Fotoğraf bulunamayınca kartın haritaya düştüğünü **bilmeyen** biri için anlamsız. |
+
+  **Dördüncü sorun — tarama sonrası iz kalmıyor:** hangi mekânın hâlâ
+  fotoğrafsız olduğu listede görünmüyor. Kullanıcı 54 kartı tek tek
+  gezmeden bulamıyor.
+
+  ⚠ **METİN UYDURULMAYACAK, KULLANICIYA SORULACAK.** Sırası gelince
+  şu seçenekler sunulacak (Bölüm 4: ürün metni uydurulmaz):
+  - Cümlenin **mekânın adını** taşıması (*"Balıklı Meryem Ana için
+    Vikipedi'de fotoğraf bulunamadı"*)
+  - Sayının ne olduğunu açması (*"fotoğrafı eksik 1 mekâna bakıldı"*)
+  - Harita cümlesinin kalıp kalmayacağı
+  - Fotoğrafsız mekânların listede **işaretlenmesi** (rozet) ya da
+    süzgece bir *"fotoğrafı olmayanlar"* seçeneği eklenmesi
+
+  ⛔ **Bölüm 7 — HER DİLDE.** `mk_photo_scan_done` ve
+  `mk_photo_scan` iki dilde de duruyor (`app.html:7119` / `8470`);
+  metin değişirse ikisi de değişir. Bekçi hazır:
+  `testler/sozluk-paritesi.test.js` — tür/arite uyuşmazlığını da
+  yakalıyor, yani `(b, t)=>` arite'si bozulursa düşer.
+
+  ⚠ Düzeltilince **bekçi test**: fotoğrafsız mekân sayısı 0, 1 ve
+  çok olduğunda çıkan cümleler ayrı ayrı ölçülsün — bugün yalnızca
+  "bulundu / bulunamadı" ayrımı var.
+
 ### 4 · Basitleştirme (hepsi ilk deneyimi değiştiriyor)
 - ⬜ **17.** İlk ekran: kendiliğinden açılan tur yok
   (bugün `tourAutoSequence = true`, app.html:25300)
