@@ -1176,13 +1176,24 @@ dokunmak ve ikinci seferde birincisini bozmak demek.
      Bekçi: `testler/fiyat-para-birimi.test.js`, **9 iddia**, üç
      mutasyonla kanıtlandı.
 
-     ⬜ **KALAN:** panelde para biriminin **açık/kapalı** anahtarı.
-     `plan_prices.active` sütunu var ve sayfa onu zaten dinliyor,
-     ama panel o sütunu **yönetmiyor**. Eklemek için `yonetim.html`
-     ile birlikte **Edge Function** (`supabase/functions/yonetim`,
-     `islem:'fiyat-degistir'` ailesi) de değişip **yeniden
-     dağıtılmalı** — dağıtımı kullanıcı yapıyor. Sırası gelince
-     kullanıcıya sorulacak: şimdi mi, sonra mı.
+     ⬜ Panelde para biriminin **açık/kapalı** anahtarı ayrı bir
+     madde oldu: **60.** Kullanıcı 18 Kasım 2026'da *"ok yapılacaklar
+     ekle sonra yaparız"* dedi.
+
+     ✅ **SQL ÇALIŞTIRILDI VE DOĞRULANDI (18 Kasım 2026).**
+     Kullanıcı *"ok sql tamam"* dedi; veritabanından okunarak
+     doğrulandı (Bölüm 4 — "muhtemelen olmuştur" denmedi):
+     18 satır, üç para birimi. **EUR karşılığı olmayan USD satırı
+     yok, USD'den farklı EUR satırı yok.**
+
+     | plan · dönem | TRY | USD | EUR |
+     |---|---|---|---|
+     | creator_pro · monthly | 32.000 | 900 | 900 |
+     | creator_pro · yearly | 300.000 | 8.400 | 8.400 |
+     | founding · once | 245.000 | 6.900 | 6.900 |
+     | starter · monthly | 0 | 0 | 0 |
+     | studio · monthly | 105.000 | 2.900 | 2.900 |
+     | studio · yearly | 1.020.000 | 28.800 | 28.800 |
   3. **Bölgeye göre para birimi.** Bugün `fiyatlar.html:389`
      `let para = trMi ? 'TRY' : 'USD'` — yani **dile** bakıyor,
      bölgeye değil. Kullanıcı nereden girdiyse o para birimi açılacak.
@@ -1684,6 +1695,50 @@ dokunmak ve ikinci seferde birincisini bozmak demek.
   ⚠ Düzeltilince **bekçi test**: fotoğrafsız mekân sayısı 0, 1 ve
   çok olduğunda çıkan cümleler ayrı ayrı ölçülsün — bugün yalnızca
   "bulundu / bulunamadı" ayrımı var.
+
+- ⬜ **60.** **Yönetim panelinde para biriminin AÇIK/KAPALI
+  anahtarı.** Kullanıcı 18 Kasım 2026: *"Admin panelinde hangi
+  fiyatı kullanabileceğimiz ve ne kadar olacağını arka planda ben
+  yazabileyim"* → **ne kadar olacağı** aynı gün bitti (44.2),
+  **hangisinin kullanılacağı** bu madde. Sonraya bırakıldı:
+  *"ok yapılacaklar ekle sonra yaparız."*
+
+  ✅ **YARISI ZATEN HAZIR.** `plan_prices.active` sütunu var ve
+  **fiyat sayfası onu zaten dinliyor** — `active=false` olan para
+  biriminin hem fiyatı hem **düğmesi** kayboluyor, tek para birimi
+  kalırsa seçici hiç görünmüyor. Bunların bekçisi de var
+  (`testler/fiyat-para-birimi.test.js`).
+
+  ⬜ **EKSİK OLAN: paneli o sütunu yazabilir hale getirmek.**
+
+  | Halka | Durum |
+  |---|---|
+  | `plan_prices.active` sütunu | ✅ var (`sql/69`) |
+  | Fiyat sayfası dinliyor | ✅ var |
+  | `yonetim.html` tabloda gösteriyor | ⬜ yok |
+  | Edge Function işlemi | ⬜ yok — `islem:'fiyat-degistir'` yalnızca `amount_minor` yazıyor |
+
+  ⛔ **BU BİR DAĞITIM İŞİ.** Panel doğrudan veritabanına yazmıyor,
+  `supabase/functions/yonetim` Edge Function'ına yazıyor. Yani
+  değişiklik iki dosyada: `yonetim.html` **ve** o fonksiyon —
+  ve fonksiyon **yeniden dağıtılmalı.**
+  ⚠ **Dağıtımı kullanıcı yapar, adım adım yazılacak** (Bölüm 1).
+  Dağıtım adımları `supabase/functions/*/README.md` dosyalarında
+  yazılı; "nasıl dağıtıyorsan öyle dağıt" denmeyecek.
+
+  ⚠ **SIRASI GELİNCE SORULACAK:**
+  1. Anahtar **para birimi başına mı** olsun (EUR'yu tümden kapat),
+     yoksa **satır başına mı** (yalnızca studio/yearly EUR'yu kapat)?
+     Sütun satır başına; panelde tümden kapatmak için birden çok
+     satırı birden değiştirmek gerekir.
+  2. Bir para birimini kapatmak **o parayla ödeyen mevcut aboneleri**
+     etkiler mi? (Bugün ödeme altyapısı yok; soru canlıya geçmeden
+     önce cevaplanmalı.)
+  3. Kapatma da fiyat değişimi gibi **onay** istesin mi?
+
+  ⚠ Düzeltilince **bekçi test**: panelden kapatılan satırın fiyat
+  sayfasında kaybolduğu uçtan uca ölçülsün — bugün yalnızca
+  sayfanın tarafı ölçülüyor.
 
 ### 4 · Basitleştirme (hepsi ilk deneyimi değiştiriyor)
 - ⬜ **17.** İlk ekran: kendiliğinden açılan tur yok
