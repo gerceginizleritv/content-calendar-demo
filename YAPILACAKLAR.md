@@ -1260,9 +1260,20 @@ dokunmak ve ikinci seferde birincisini bozmak demek.
      yurt dışındaki bir Türk ya da Türkiye'deki bir yabancı yanlış
      para birimini görür ve düzeltemez. Kullanıcı bunu bilerek seçti.
 
-     ⛔ **AYRI VE DAHA KÜÇÜK BİR YANLIŞLIK — BUGÜN CANLIDA VAR,
-     ÖLÇÜLDÜ (18 Kasım 2026).** Bu, ülke kilidi işi değil; onun
-     beklemesi bunu da bekletmek zorunda değil. Karar kullanıcının.
+     ⛔ **BUNA DAHİL: TÜRKÇE SAYFADA DOLAR ÇIKIYOR — BUGÜN CANLIDA
+     VAR, ÖLÇÜLDÜ (18 Kasım 2026).** Ayrı ve tek satırlık bir
+     yanlışlık; "şimdi mi düzeltelim, Cloudflare'e mi kalsın" diye
+     soruldu.
+
+     ✅ **KULLANICI KARAR VERDİ (18 Kasım 2026): CLOUDFLARE'E KALSIN.**
+     Kendi sözleriyle: *"cloudflare e kalsın"* · *"buna dahil et"*.
+     Yani bu **ayrı bir açık madde değil**, 44.3'ün parçası ve
+     Cloudflare işi yapılırken birlikte çözülecek.
+
+     ⛔ **BİR DAHA SORMA, AYRI OLARAK DÜZELTME.** Bir sonraki
+     oturumda "Türkçe sayfada dolar çıkıyor" diye **hata olarak
+     bildirme** ve "tek satır, hemen düzeltelim" diye **teklif
+     etme** — karar verilmiş durumda.
 
      | Satır | Ne yapıyor |
      |---|---|
@@ -1277,11 +1288,15 @@ dokunmak ve ikinci seferde birincisini bozmak demek.
      (tarayıcı dili `en-US`). Yani sayfa "299 TL" demesi gerekirken
      "$9" diyor.
 
-     ⚠ Tek satırlık iş: `para` da `dil` gibi sayfanın dilinden
-     türetilir (`dil === 'tr' ? 'TRY' : 'USD'`). Cloudflare işi bunun
-     **üstüne** gelir, yerine değil. ⛔ Kullanıcı söylemeden
-     yapılmadı — para birimi konusu Cloudflare'e bırakıldığı için
-     kendi başıma dokunulmadı.
+     **CLOUDFLARE İŞİ YAPILIRKEN BU DA ÇÖZÜLECEK — ne yapılacağı:**
+     `para` artık tarayıcı diline bakmayacak. Cloudflare ülkeyi
+     söylediğinde para birimi **ülkeden** gelecek; ülke bilinmiyorsa
+     düşülecek değer tarayıcı dili değil **sayfanın kendi dili**
+     olacak (`dil === 'tr' ? 'TRY' : 'USD'`) — yani Türkçe sayfa hiçbir
+     koşulda dolar göstermeyecek.
+     ⚠ 44.3'ün bekçi testi bunu da ölçecek: **Türkçe sayfada seçili
+     para birimi TRY**, tarayıcı dili ne olursa olsun. Bugünkü arıza
+     tam bu iddiayla yakalanırdı ve yoktu.
 
   **📏 44.5/44.6/44.7 İÇİN ÖLÇÜLEN SAYILAR (18 Kasım 2026).**
   Tasarıma başlamadan önce ölçüldü, uydurulmadı:
@@ -5952,6 +5967,22 @@ maddenin sonunda parantez içinde duruyor.
    ticari satış yok, o yüzden 0. gün için ACİL DEĞİL; ama kendi alan adı
    ve HTTPS de aynı taşımayla geliyor, ikisini birlikte yapmak mantıklı.
    Yarım gün.
+
+   ⛔ **BU TAŞIMAYA BAĞLANMIŞ İŞ VAR — 44.3. Taşıma yapılırken onu da
+   yap, yoksa bekleyen iki şey sessizce beklemeye devam eder.**
+   Kullanıcı 18 Kasım 2026'da iki kararı burada birleştirdi:
+
+   1. **Para birimi ülkeye göre, düğme olmadan.** *"kullanıcı hangi
+      ülkeden giriyorsa sadece o fiyatları görmeli — hatta burada
+      farklı para birimi tuşları çıkmamalı."* Cloudflare ziyaretçinin
+      ülkesini kendisi söylüyor; GitHub Pages'te bu mümkün değil
+      (durağan site, bizim kodumuz koşmuyor).
+   2. **Türkçe sayfada dolar çıkması.** *"cloudflare e kalsın"* ·
+      *"buna dahil et"*. `kaynak/fiyatlar.html:414` hâlâ tarayıcı
+      diline bakıyor.
+
+   ⚠ Tam ayrıntı, ölçülen sayılar ve neyin neden bugün yapılamadığı
+   **44.3'te** yazılı — taşımaya başlamadan önce orayı oku.
 
 0. **Gelen kutusu çoklu kullanıcıya hazır değil — DENEME ENGELİ**
    (3 Eylül 2026, başka bir oturumun eklediği özellik)
