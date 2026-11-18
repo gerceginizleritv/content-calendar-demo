@@ -486,7 +486,7 @@ kapandı.** Tablo kayıt için duruyor; sıradaki iş için aşağıdaki
 | 44.4 Aylık/Yıllık kalıyor | ✅ Karar verildi |
 | 44.5 Kutular eşit ölçüde | ✅ BİTTİ (18 Kasım) |
 | 44.7 Yıllık indirim rozeti (üç yerde) | ✅ BİTTİ (18 Kasım) |
-| 44.6 "Neler dahil" özeti | ⏸ **KULLANICIYA SORULACAK** — kartlarda zaten madde listesi var, "kısa özet" ondan farklı bir şey mi? |
+| 44.6 "Neler dahil" özeti | ❌ **YAPILMAYACAK** — kullanıcı: *"kısa özete gerek yok, karşılaştırma listesi öncesindeydi bu"* |
 | 44.3 Ülkeye göre para birimi, düğmesiz | ⏸ **CLOUDFLARE'E BAĞLI** (kullanıcı kararı) |
 
 ⛔ **47 ve 48 NEDEN BİRLİKTE.** 48. madde zaten yazıyor: dil
@@ -1378,25 +1378,24 @@ dokunmak ve ikinci seferde birincisini bozmak demek.
      plan listesi ya da genişlik eşiği yazmıyor — yarın üçüncü plan
      görünür olursa kendiliğinden girer (Bölüm 7'nin bekçi kuralı).
      ⛔ Yuvarlamıyor: alt piksel ölçülüyor, eşik 0,5 px.
-  6. ⏸ **KULLANICIYA SORULACAK — maddenin kendisi belirsiz.**
-     *"Fiyata dahil olanların kısa özeti"* yazıyor ama **kartlarda
-     zaten madde listesi var** (Starter 4 madde, Creator Pro 6
-     madde; ekran görüntüsünde görünüyor). Bu madde yazıldığında o
-     liste olmayabilir.
+  6. ❌ **KAPANDI — YAPILMAYACAK (18 Kasım 2026, kullanıcı kararı).**
 
-     ⚠ **Sorulacak:** "kısa özet" bu listeden **farklı** bir şey mi
-     (örneğin fiyatın altında tek satırlık bir toplama), yoksa
-     madde **zaten karşılanmış** mı?
-     ⛔ Tahminle fazladan bir şey eklenmedi — var olanın üstüne
-     gereksiz bir özet koymak sayfayı kalabalıklaştırırdı.
+     Soruldu: *"kısa özet" kartlardaki madde listesinden farklı bir
+     şey mi, yoksa madde zaten karşılanmış mı?*
+     Kullanıcı: *"kısa özete gerek yok karşılaştırma listesi
+     öncesindeydi bu"*
 
-     Maddenin ikinci yarısı (*"o satır eklenirken kutu ölçüsü de
-     düzeltilecek"*) **44.5'te bitti**, bu soruyu beklemedi.
+     Yani bu madde **karşılaştırma listesi (28. madde) ortaya
+     çıkmadan önce** yazılmış; o liste ve kartlardaki madde listesi
+     (Starter 4, Creator Pro 6 madde) işi zaten görüyor.
 
-     ⛔ Cevap ne olursa olsun geçerli: özette **yalnızca VAR OLAN
-     özellikler** yazılacak — `fiyatlar.html` zaten uyarıyor,
-     PDF/CSV dışa aktarma ve ekip özellikleri özellik denetiminde
-     **YOK** çıktı.
+     ⛔ **BİR DAHA AÇMA.** Gelecek bir oturum "fiyata dahil olanların
+     özeti eksik" diye **bildirmesin** ve kartlara fazladan bir özet
+     satırı **eklemesin** — var olanın üstüne konulacak bir özet
+     sayfayı kalabalıklaştırır ve kullanıcı bunu istemedi.
+
+     ✅ Maddenin ikinci yarısı (*"o satır eklenirken kutu ölçüsü de
+     düzeltilecek"*) **44.5'te bitti**, bu kararı beklemedi.
   7. ✅ **BİTTİ (18 Kasım 2026) — yıllık indirim oranı üç yerde,
      tasarlanmış bir öğe olarak.**
 
