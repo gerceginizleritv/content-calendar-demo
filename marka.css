@@ -311,31 +311,83 @@ img{max-width:100%;height:auto;display:block;}
 
 
 /* ────────────────────────────────────────────────────────────────
-   DIL SECICI (ust menu, uret/ust-menu.js uretiyor)
-   ⛔ 18 KASIM 2026 — OLCULDU: telefonda yalnizca 19 piksel
-   yuksekligindeydi. `sayfa-saglik` testi "dokunma hedefleri 40px+"
-   diye dusurdu ve HAKLIYDI: parmakla secilemeyecek kadar kucuktu.
-   Eskiden burada iki ayri dugme (.dil-dug) vardi ve onlarin kendi
-   olcusu vardi; acilir listeye gecilince olcu kimsede kalmadi.
+   DIL SECICI  (ust menu · uret/ust-menu.js uretiyor)
+
+   ⛔ 18 KASIM 2026 — YERLI <select> BIRAKILDI. Kullanici:
+   "bu gercekten kotu gorunuyor, cok amator duruyor." Hakliydi:
+   beyaz cerceveli kutu bir FORM ALANI gibi duruyordu ve turuncu
+   cagri tusuyla ayni agirlikta yarisiyordu.
+
+   KARAR: tetikleyici SESSIZ olacak -- menu baglantilariyla ayni
+   ton, ayni punto, cercevesiz. Sayfadaki TEK dolu turuncu oge
+   cagri tusu olarak kalsin. Panel ise tasarlanmis: kagit zemin,
+   yumusak golge, 44 piksellik satirlar.
    ──────────────────────────────────────────────────────────────── */
-.dil-sec{
-  min-height:44px;
-  padding:0 30px 0 10px;
-  font:inherit;
-  font-size:13px;
-  line-height:1.2;
-  color:inherit;
-  background:transparent;
-  border:1px solid currentColor;
-  border-radius:9px;
-  cursor:pointer;
-  appearance:none;
-  -webkit-appearance:none;
-  /* Kendi oku: appearance:none yerli oku da kaldiriyor. */
-  background-image:url("data:image/svg+xml;charset=utf-8,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 12 8'%3E%3Cpath fill='%23fff' d='M1 1l5 5 5-5'/%3E%3C/svg%3E");
-  background-repeat:no-repeat;
-  background-position:right 10px center;
-  background-size:11px 7px;
+.dil{position:relative;}
+/* ⚠ Menuden AYRIL. Ilk surumde "Kilavuz"a yapisikti ve altinci bir
+   menu maddesi gibi okunuyordu; bu bir GEZINME degil bir AYAR.
+   Ince bir ayrac ve biraz bosluk ikisini ayiriyor.
+   Telefonda menu zaten gizli, ayrac da gereksiz. */
+@media(min-width:880px){
+  .dil{margin-left:10px;padding-left:22px;}
+  .dil::before{
+    content:""; position:absolute; left:0; top:50%;
+    width:1px; height:20px; margin-top:-10px;
+    background:var(--cizgi-acik);
+  }
 }
-.dil-sec:focus-visible{outline:2px solid currentColor;outline-offset:2px;}
-.dil-sec option{color:#111;background:#fff;}
+
+.dil-tetik{
+  display:flex; align-items:center; gap:8px;
+  min-height:44px; padding:0 4px;
+  background:none; border:0; cursor:pointer;
+  font:inherit; font-size:14.5px; font-weight:500;
+  color:var(--metin-ters); opacity:.82;
+  transition:opacity .15s;
+}
+.dil-tetik:hover,.dil-tetik[aria-expanded="true"]{opacity:1;}
+.dil-tetik:focus-visible{outline:2px solid var(--sinyal);outline-offset:3px;border-radius:8px;}
+.dil-ok{width:11px;height:7px;opacity:.7;transition:transform .18s;}
+.dil-tetik[aria-expanded="true"] .dil-ok{transform:rotate(180deg);}
+
+/* Bayrak: ince bir cerce ile zemine yapismasin (beyaz alanlar
+   kagit panelde kaybolmasin diye). */
+.bayrak{
+  width:22px; height:15px; flex:none; display:block;
+  border-radius:3px; object-fit:cover;
+  box-shadow:0 0 0 1px rgba(0,0,0,.18);
+}
+
+.dil-panel{
+  position:absolute; top:calc(100% + 10px); right:0; z-index:60;
+  min-width:186px; padding:6px;
+  background:var(--kagit); color:var(--metin);
+  border:1px solid var(--cizgi); border-radius:14px;
+  box-shadow:0 1px 2px rgba(23,18,42,.08), 0 12px 28px -8px rgba(23,18,42,.32);
+}
+.dil-panel[hidden]{display:none;}
+
+.dil-satir{
+  display:flex; align-items:center; gap:10px;
+  min-height:44px; padding:0 10px;
+  border-radius:10px; text-decoration:none;
+  color:var(--metin); font-size:14.5px; font-weight:500;
+}
+.dil-satir:hover{background:var(--duman);}
+.dil-satir:focus-visible{outline:2px solid var(--sinyal);outline-offset:-2px;}
+.dil-satir span{flex:1;}
+.dil-tik{width:14px;height:14px;flex:none;opacity:0;color:var(--sinyal-metin);}
+.dil-satir.secili{color:var(--sinyal-metin);}
+.dil-satir.secili .dil-tik{opacity:1;}
+
+/* Telefonda yalnizca bayrak ve ok: menu baglantilari zaten
+   gizleniyor, dar seritte ad yer kapliyordu. Dokunma hedefi
+   44 pikselin altina DUSMUYOR. */
+@media(max-width:879px){
+  .dil-ad{
+    position:absolute; width:1px; height:1px;
+    margin:-1px; padding:0; overflow:hidden;
+    clip:rect(0 0 0 0); white-space:nowrap; border:0;
+  }
+  .dil-tetik{min-width:44px; justify-content:center; padding:0 6px;}
+}

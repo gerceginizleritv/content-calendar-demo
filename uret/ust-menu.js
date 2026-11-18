@@ -16,6 +16,7 @@
 
 const { DILLER, kodlar } = require('./diller.js');
 const { SAYFALAR, BOLUMLER, CTA, adres } = require('./sayfalar.js');
+const { bayrak } = require('./bayraklar.js');
 
 const BAS = '<!-- UST-MENU: URETILIYOR (uret/ust-menu.js) -- ELLE DEGISTIRME -->';
 const SON = '<!-- /UST-MENU -->';
@@ -54,32 +55,71 @@ function ustMenu({ sayfa, dil }){
   // DIL SECICI: urunun kendi kalibi (app.html:4301 langSelect).
   // Iki dugme yerine acilir liste -- 41. maddede alti dil daha
   // gelecek ve o gun burasi degismeyecek.
-  satir.push('      <select class="dil-sec" aria-label="' + kacir(DILLER[dil].secEtiket) + '">');
+  // ─────────────────────────────────────────────────────────────
+  // DIL SECICI
+  // ⛔ 18 KASIM 2026 — YERLI <select> BIRAKILDI. Kullanici:
+  //    "bu gercekten kotu gorunuyor, cok amator duruyor. Bu alani
+  //    farklilastirmamiz ve siteye yarasir sekilde premium
+  //    gorunmesi lazim." Hakliydi: beyaz cerceveli kutu bir FORM
+  //    ALANI gibi duruyordu, turuncu cagri tusuyla ayni agirlikta
+  //    yarisiyordu ve menunun sade diline hic akraba degildi.
+  //
+  // Yeni yapi: SESSIZ tetikleyici (menu baglantilariyla ayni ton)
+  // + tasarlanmis panel. Satirlar <a> -- yani BETIK KAPALIYKEN DE
+  // calisiyor; betik yalnizca paneli acip klavyeyi yonetiyor.
+  // ─────────────────────────────────────────────────────────────
+  satir.push('      <div class="dil" data-dil-kutu>');
+  satir.push('        <button type="button" class="dil-tetik" aria-haspopup="listbox"'
+             + ' aria-expanded="false" aria-label="' + kacir(DILLER[dil].secEtiket) + '">');
+  satir.push('          ' + bayrak(dil, 'tetik' + dil));
+  satir.push('          <span class="dil-ad">' + kacir(DILLER[dil].ad) + '</span>');
+  satir.push('          <svg class="dil-ok" viewBox="0 0 12 8" aria-hidden="true" focusable="false">'
+             + '<path d="M1 1.5 6 6.5 11 1.5" fill="none" stroke="currentColor"'
+             + ' stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/></svg>');
+  satir.push('        </button>');
+  satir.push('        <div class="dil-panel" role="listbox" hidden'
+             + ' aria-label="' + kacir(DILLER[dil].secEtiket) + '">');
   for(const k of kodlar()){
-    satir.push('        <option value="' + kacir(adres(sayfa, k)) + '" data-dil="' + kacir(k) + '"'
-               + (k === dil ? ' selected' : '') + '>'
-               + kacir((DILLER[k].bayrak ? DILLER[k].bayrak + ' ' : '') + DILLER[k].ad)
-               + '</option>');
+    const bu = (k === dil);
+    satir.push('          <a class="dil-satir' + (bu ? ' secili' : '') + '" role="option"'
+               + ' aria-selected="' + (bu ? 'true' : 'false') + '"'
+               + ' hreflang="' + kacir(k) + '" data-dil="' + kacir(k) + '"'
+               + ' href="' + kacir(adres(sayfa, k)) + '">');
+    satir.push('            ' + bayrak(k, 'satir' + k + dil));
+    satir.push('            <span>' + kacir(DILLER[k].ad) + '</span>');
+    satir.push('            <svg class="dil-tik" viewBox="0 0 14 14" aria-hidden="true" focusable="false">'
+               + '<path d="M2 7.5 5.5 11 12 3.5" fill="none" stroke="currentColor"'
+               + ' stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>');
+    satir.push('          </a>');
   }
-  satir.push('      </select>');
-  // ⛔ 18 KASIM 2026 — SECICI OLUYDU. Cizilmisti ama hicbir sey
-  //    dinlemiyordu: secmek sayfayi degistirmiyordu. Bekci de
-  //    kacirdi, cunku "secici VAR" ve "dogru adresleri tasiyor"
-  //    diye olcuyordu; "secince GIDIYOR" diye olcmuyordu.
-  //    Artik oyle bir iddia da var.
-  // ⚠ Dil TARAYICIYA DA YAZILIYOR: kullanici bir dahaki sefere
-  //    duz adresten (shootboard.app) girdiginde kendi dilinde
-  //    acilsin. Kullanici 18 Kasim 2026: "ingilizce secili iken
-  //    ana sayfaya gidince Turkceye dondu."
+  satir.push('        </div>');
+  satir.push('      </div>');
+  // ⛔ SECICININ CALISTIGI OLCULUYOR. Ilk surumde <select> cizilmis
+  //    ama hicbir sey dinlemiyordu: secmek sayfayi degistirmiyordu.
+  //    Bekci "secici VAR" diyordu, "secince GIDIYOR" demiyordu.
+  // ⚠ Dil TARAYICIYA DA yaziliyor: kullanici bir dahaki sefere duz
+  //    adresten girdiginde kendi dilinde acilsin.
   satir.push('      <script>(function(){');
-  satir.push('        var s=document.currentScript.previousElementSibling;');
-  satir.push('        if(!s||s.tagName!=="SELECT")s=document.querySelector("select.dil-sec");');
-  satir.push('        if(!s)return;');
-  satir.push('        s.addEventListener("change",function(){');
-  satir.push('          var k=s.options[s.selectedIndex];');
-  satir.push('          if(!k||!k.value)return;');
-  satir.push('          try{localStorage.setItem("demo_ui_language",k.getAttribute("data-dil"));}catch(e){}');
-  satir.push('          location.href=k.value;');
+  satir.push('        var k=document.currentScript.previousElementSibling;');
+  satir.push('        if(!k||!k.hasAttribute("data-dil-kutu"))return;');
+  satir.push('        var t=k.querySelector(".dil-tetik"),pnl=k.querySelector(".dil-panel");');
+  satir.push('        if(!t||!pnl)return;');
+  satir.push('        var sat=[].slice.call(pnl.querySelectorAll(".dil-satir"));');
+  satir.push('        function ac(v){pnl.hidden=!v;t.setAttribute("aria-expanded",v?"true":"false");');
+  satir.push('          if(v){var s=pnl.querySelector(".dil-satir.secili")||sat[0];if(s)s.focus();}}');
+  satir.push('        t.addEventListener("click",function(e){e.stopPropagation();ac(pnl.hidden);});');
+  satir.push('        sat.forEach(function(a){a.addEventListener("click",function(){');
+  satir.push('          try{localStorage.setItem("demo_ui_language",a.getAttribute("data-dil"));}catch(e){}});});');
+  satir.push('        document.addEventListener("click",function(e){if(!k.contains(e.target))ac(false);});');
+  satir.push('        k.addEventListener("keydown",function(e){');
+  satir.push('          if(e.key==="Escape"){ac(false);t.focus();return;}');
+  satir.push('          if(e.key!=="ArrowDown"&&e.key!=="ArrowUp")return;');
+  satir.push('          e.preventDefault();');
+  satir.push('          if(pnl.hidden){ac(true);return;}');
+  satir.push('          var i=sat.indexOf(document.activeElement);');
+  satir.push('          var y=e.key==="ArrowDown"?i+1:i-1;');
+  satir.push('          if(y<0)y=sat.length-1; if(y>=sat.length)y=0;');
+  satir.push('          if(sat[y])sat[y].focus();');
   satir.push('        });');
   satir.push('      })();<\/script>');
   satir.push('      <a class="dug dug-birincil dug-sm" href="'

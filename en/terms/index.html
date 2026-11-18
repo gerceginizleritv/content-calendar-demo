@@ -91,19 +91,46 @@ footer{margin-top:26px;color:var(--text-dim);font-size:.85rem;}
       <a href="/en/guide/">Guide</a>
     </nav>
     <div class="ust-sag">
-      <select class="dil-sec" aria-label="Language">
-        <option value="/tr/sartlar/" data-dil="tr">🇹🇷 Türkçe</option>
-        <option value="/en/terms/" data-dil="en" selected="">🇬🇧 English</option>
-      </select>
+      <div class="dil" data-dil-kutu="">
+        <button type="button" class="dil-tetik" aria-haspopup="listbox" aria-expanded="false" aria-label="Language">
+          <svg class="bayrak" viewBox="0 0 60 30" aria-hidden="true" focusable="false"><clipPath id="bktetiken"><path d="M30,15 h30 v15 z v15 h-30 z h-30 v-15 z v-15 h30 z"></path></clipPath><path d="M0,0 v30 h60 v-30 z" fill="#012169"></path><path d="M0,0 L60,30 M60,0 L0,30" stroke="#fff" stroke-width="6"></path><path d="M0,0 L60,30 M60,0 L0,30" clip-path="url(#bktetiken)" stroke="#C8102E" stroke-width="4"></path><path d="M30,0 v30 M0,15 h60" stroke="#fff" stroke-width="10"></path><path d="M30,0 v30 M0,15 h60" stroke="#C8102E" stroke-width="6"></path></svg>
+          <span class="dil-ad">English</span>
+          <svg class="dil-ok" viewBox="0 0 12 8" aria-hidden="true" focusable="false"><path d="M1 1.5 6 6.5 11 1.5" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"></path></svg>
+        </button>
+        <div class="dil-panel" role="listbox" hidden="" aria-label="Language">
+          <a class="dil-satir" role="option" aria-selected="false" hreflang="tr" data-dil="tr" href="/tr/sartlar/">
+            <svg class="bayrak" viewBox="0 0 60 40" aria-hidden="true" focusable="false"><rect width="60" height="40" fill="#E30A17"></rect><circle cx="22" cy="20" r="10" fill="#fff"></circle><circle cx="25.5" cy="20" r="8" fill="#E30A17"></circle><path fill="#fff" d="M35.6 20 30.9 21.5l2.9 4-0.03-4.95 4.7 1.57-2.9-4 2.9-4-4.7 1.57 0.03-4.95-2.9 4z"></path></svg>
+            <span>Türkçe</span>
+            <svg class="dil-tik" viewBox="0 0 14 14" aria-hidden="true" focusable="false"><path d="M2 7.5 5.5 11 12 3.5" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"></path></svg>
+          </a>
+          <a class="dil-satir secili" role="option" aria-selected="true" hreflang="en" data-dil="en" href="/en/terms/">
+            <svg class="bayrak" viewBox="0 0 60 30" aria-hidden="true" focusable="false"><clipPath id="bksatirenen"><path d="M30,15 h30 v15 z v15 h-30 z h-30 v-15 z v-15 h30 z"></path></clipPath><path d="M0,0 v30 h60 v-30 z" fill="#012169"></path><path d="M0,0 L60,30 M60,0 L0,30" stroke="#fff" stroke-width="6"></path><path d="M0,0 L60,30 M60,0 L0,30" clip-path="url(#bksatirenen)" stroke="#C8102E" stroke-width="4"></path><path d="M30,0 v30 M0,15 h60" stroke="#fff" stroke-width="10"></path><path d="M30,0 v30 M0,15 h60" stroke="#C8102E" stroke-width="6"></path></svg>
+            <span>English</span>
+            <svg class="dil-tik" viewBox="0 0 14 14" aria-hidden="true" focusable="false"><path d="M2 7.5 5.5 11 12 3.5" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"></path></svg>
+          </a>
+        </div>
+      </div>
       <script>(function(){
-        var s=document.currentScript.previousElementSibling;
-        if(!s||s.tagName!=="SELECT")s=document.querySelector("select.dil-sec");
-        if(!s)return;
-        s.addEventListener("change",function(){
-          var k=s.options[s.selectedIndex];
-          if(!k||!k.value)return;
-          try{localStorage.setItem("demo_ui_language",k.getAttribute("data-dil"));}catch(e){}
-          location.href=k.value;
+        var k=document.currentScript.previousElementSibling;
+        if(!k||!k.hasAttribute("data-dil-kutu"))return;
+        var t=k.querySelector(".dil-tetik"),pnl=k.querySelector(".dil-panel");
+        if(!t||!pnl)return;
+        var sat=[].slice.call(pnl.querySelectorAll(".dil-satir"));
+        function ac(v){pnl.hidden=!v;t.setAttribute("aria-expanded",v?"true":"false");
+          if(v){var s=pnl.querySelector(".dil-satir.secili")||sat[0];if(s)s.focus();}}
+        t.addEventListener("click",function(e){e.stopPropagation();ac(pnl.hidden);});
+        sat.forEach(function(a){a.addEventListener("click",function(){
+          try{localStorage.setItem("demo_ui_language",a.getAttribute("data-dil"));}catch(e){}});});
+        document.addEventListener("click",function(e){if(!k.contains(e.target))ac(false);});
+        k.addEventListener("keydown",function(e){
+          if(e.key==="Escape"){ac(false);t.focus();return;}
+          if(e.key!=="ArrowDown"&&e.key!=="ArrowUp")return;
+          e.preventDefault();
+          if(pnl.hidden){ac(true);return;}
+          var i=sat.indexOf(document.activeElement);
+          var y=e.key==="ArrowDown"?i+1:i-1;
+          if(y<0)y=sat.length-1; if(y>=sat.length)y=0;
+          if(sat[y])sat[y].focus();
         });
       })();</script>
       <a class="dug dug-birincil dug-sm" href="/en/#giris">
