@@ -1740,6 +1740,73 @@ dokunmak ve ikinci seferde birincisini bozmak demek.
   sayfasında kaybolduğu uçtan uca ölçülsün — bugün yalnızca
   sayfanın tarafı ölçülüyor.
 
+- ⬜ **61.** **Yönetim panelinde fiyat tablosu KULLANIŞLI olsun —
+  her plan bir satır, para birimi × dönem sütun.** Kullanıcı
+  18 Kasım 2026'da iki ekran görüntüsüyle istedi:
+
+  > *"Admin sayfasında fiyat yönetimi için daha kolay bir sayfa
+  > yapabilir miyiz! Örnek SS ekte, sadece Excel'de bu tabloyu nasıl
+  > rahat kullanırım onu göstermek için yazdım — tasarım değişikliği
+  > değil, tablonun kullanımını rahatlatacak değişiklik."*
+
+  **BUGÜNKÜ HÂLİ (koddan ölçüldü, `yonetim.html:375`):** her
+  plan × para birimi × dönem **ayrı bir satır** → bugün **18 satır**
+  ve **18 ayrı "Kaydet" düğmesi**. Sıralama plan → para → dönem
+  olduğu için aynı planın TRY, EUR ve USD satırları birbirinden
+  uzağa düşüyor; bir planın fiyatlarını karşılaştırmak için
+  gözle tarama gerekiyor.
+
+  **İSTENEN (kullanıcının Excel taslağı):** satır = plan,
+  sütun = dönem × para birimi.
+
+  | | monthly TRY | yearly TRY | monthly EUR | yearly EUR | monthly USD | yearly USD |
+  |---|---|---|---|---|---|---|
+  | Starter | | | | | | |
+  | Creator Pro | | | | | | |
+  | Founding | | | | | | |
+  | Studio Pro | | | | | | |
+
+  18 satır → **4 satır**. Bir planın bütün fiyatları tek bakışta.
+
+  ⚠ **DİKKAT EDİLECEKLER (ölçüldü):**
+  - **Gizli planlar.** `founding` ve `studio` bugün `gizli` etiketi
+    taşıyor; matriste de o işaret durmalı, yoksa yönetici satılmayan
+    bir planın fiyatını düzenlediğini fark etmez.
+  - **Her hücre aynı dönemi taşımıyor.** `founding` yalnızca `once`,
+    `starter` yalnızca `monthly`. Matris boş hücreleri **boş**
+    göstermeli, sıfır değil — sıfır "bedava" demek, boş "böyle bir
+    fiyat yok" demek; ikisi karıştırılırsa ücretli plan bedava olur.
+  - **Kaydetme yolu.** Panel doğrudan veritabanına yazmıyor;
+    `supabase/functions/yonetim` → `islem:'fiyat-degistir'` **tek
+    satır** alıyor ve her kayıtta **onay** istiyor (çok büyük
+    değişimde ikinci onay). Matris çok hücreyi birden değiştirmeye
+    davet ediyor; bu soruyu doğuruyor.
+
+  ⚠ **SIRASI GELİNCE SORULACAK:**
+  1. **Kaydetme hücre başına mı, satır başına mı, tablo başına mı?**
+     Tablo başına "hepsini kaydet" istenirse Edge Function'a **toplu
+     işlem** eklenip **yeniden dağıtılması** gerekir (dağıtımı
+     kullanıcı yapar). Hücre başına kalırsa dağıtım gerekmez.
+  2. **Onay nasıl olsun?** Bugün her kayıtta ayrı onay penceresi
+     çıkıyor. Altı hücre değiştirildiyse altı pencere mi, tek bir
+     özet mi?
+  3. **Para birimi sütunları sabit mi, veriden mi?** Fiyat sayfası
+     18 Kasım'da veriden beslenir hâle geldi (44.2); panel de aynı
+     yoldan gitmeli ki yarın dördüncü para birimi eklenince sütun
+     elle yazılmasın.
+  4. Dönem sırası: Excel taslağında **dönem önce, para birimi
+     sonra** (monthly TRY · yearly TRY · monthly EUR …). Öyle mi
+     kalsın, yoksa para birimi önce mi gruplansın?
+
+  ⚠ Düzeltilince **bekçi test**: matrisin her hücresi doğru
+  plan/para/dönem üçlüsüne yazıyor mu, ve boş hücre **sıfır olarak
+  kaydedilmiyor** mu — ikincisi para hatası doğurur.
+
+  ✅ **İLGİLİ KANIT:** kullanıcının ekran görüntüsünde EUR satırları
+  **düzenlenmiş** görünüyor (creator_pro TRY aylık 299 / yıllık 2999,
+  USD yıllık 98, EUR yıllık 89). Yani 44.2'nin kurduğu zincir —
+  SQL → panel → sayfa — uçtan uca çalışıyor.
+
 ### 4 · Basitleştirme (hepsi ilk deneyimi değiştiriyor)
 - ⬜ **17.** İlk ekran: kendiliğinden açılan tur yok
   (bugün `tourAutoSequence = true`, app.html:25300)
