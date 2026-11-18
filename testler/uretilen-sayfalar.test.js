@@ -308,10 +308,22 @@ const SUNUCU = process.env.URET_SUNUCU || 'http://127.0.0.1:8098';
       for(const s of SAYFALAR){
         const p5 = await tarayici.newPage({ viewport:{ width: olcek.w, height: olcek.h } });
         await p5.goto(SUNUCU + adres(s.ad, d), { waitUntil: 'load' });
-        await p5.waitForTimeout(400);
+        // ⚠ Yazi tipi gelmeden olcmek genislikleri oynatir; iki kare
+        //   beklemek de yerlesmeyi bitirir.
+        await p5.evaluate(()=> document.fonts.ready);
+        await p5.evaluate(()=> new Promise(r=>
+          requestAnimationFrame(()=> requestAnimationFrame(r))));
         yerler.push(Object.assign({ sayfa: s.ad }, await p5.evaluate(()=>{
+          // ⛔ YUVARLAMIYORUZ. 18 Kasim 2026'da tam kosu bu olcude
+          //    "1 piksel kayiyor: ev=526 oteki=525" dedi ve tek
+          //    basina kosunca 0 cikti. Sebebi olculdu: gercek deger
+          //    HER SAYFADA 525.4844 -- yuvarlama sinirina 0.016 px.
+          //    Yani Math.round bir kil payi farki 1 PIKSELLIK
+          //    ARIZAYA cevirdi. Yuvarlama hem UYDURUR (bu oldu) hem
+          //    GIZLER (525.0 ile 525.4 ayni gorunur).
+          //    Alt piksel olcup "gozle gorunur kayma yok" diyoruz.
           const r = (sel)=>{ const e = document.querySelector(sel);
-            return e ? Math.round(e.getBoundingClientRect().left) : -1; };
+            return e ? e.getBoundingClientRect().left : -1; };
           return { marka: r('.marka'), nav1: r('.ust-nav a'),
                    dil: r('.dil-tetik'), cta: r('.ust-sag .dug') };
         })));
@@ -320,10 +332,15 @@ const SUNUCU = process.env.URET_SUNUCU || 'http://127.0.0.1:8098';
       for(const alan of ['marka', 'nav1', 'dil', 'cta']){
         const degerler = yerler.map(x=> x[alan]);
         const sapma = Math.max(...degerler) - Math.min(...degerler);
+        // ⚠ Esik 0.5 px: gozle gorunmeyen alt piksel gurultusu gecer,
+        //   GERCEK kayma gecmez. Bu olcunun dogdugu iki arizanin
+        //   buyuklugu 125 px ve 14 px'ti -- ikisi de esigin cok
+        //   uzerinde. Yani bu gevsetme degil, yuvarlama uçurumunun
+        //   kaldirilmasi: 0.5 px'lik her kayma yine yakalaniyor.
         dene('★ ' + olcek.ad + '/' + d + ': "' + alan + '" her sayfada AYNI yerde', ()=>{
-          assert.strictEqual(sapma, 0,
-            'sayfadan sayfaya ' + sapma + ' piksel kayiyor: '
-            + yerler.map(x=> x.sayfa + '=' + x[alan]).join(' '));
+          assert.ok(sapma < 0.5,
+            'sayfadan sayfaya ' + sapma.toFixed(3) + ' piksel kayiyor: '
+            + yerler.map(x=> x.sayfa + '=' + x[alan].toFixed(2)).join(' '));
         });
       }
     }
