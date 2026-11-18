@@ -2170,6 +2170,86 @@ dokunmak ve ikinci seferde birincisini bozmak demek.
   ⚠ **Bu bir TEŞHİS değil, bir GÜVENCE.** Sebep ne olursa olsun
   (ağ, CDN, sunucu) kullanıcı ekranda bekleyip durmuyor.
 
+- ⬜ **64.** ⛔ **ÜST VE ALT MENÜ HER SAYFADA AYNI VE SABİT OLSUN
+  (app hariç).** Kullanıcı 18 Kasım 2026'da bildirdi:
+
+  > *"alt bölümde yer alan kullanım şartları linkine gittiğimde üst
+  > menü genişliyor gibi geldi bana. Önemli — üst ve alt menü hiçbir
+  > sayfada yer değiştirmesin kaybolmasın! Her sayfada üst ve alt
+  > menü mutlaka aynı olsun. (app hariç) ... tüm sayfaları kontrol
+  > et ve tüm sayfalarda üst ve alt menünün aynı ve sabit
+  > boyutlarda olduğundan emin ol ve düzelt."*
+
+  ✅ **ÖLÇÜLDÜ (18 Kasım 2026) — kullanıcı haklı ve sorun gördüğünden
+  BÜYÜK.** On üretilen sayfa 1280px'te ölçüldü:
+
+  **Üst menü — 22 piksel fark:**
+
+  | Sayfalar | Yükseklik |
+  |---|---|
+  | `/tr/` `/tr/fiyatlar/` `/tr/kilavuz/` + İngilizceleri | 63 px |
+  | `/tr/gizlilik/` `/tr/sartlar/` `/en/privacy/` `/en/terms/` | **85 px** |
+
+  Sebep bulundu: şartlar/gizlilik sayfalarında `.ust` öğesinin
+  **kendi `padding-bottom:22px`'i** var. İçerik (`.ust-ic` 62 px) ve
+  çağrı düğmesi (44 px) her sayfada aynı — fark yalnızca o dolgudan.
+  ⚠ 47. madde tam bu aileyi kapatmıştı (bir sayfanın kendi menü
+  stili olması); bu artık kalmış.
+
+  **Alt menü — her sayfada başka, ikisinde HİÇ YOK:**
+
+  | Sayfa | Yükseklik | Bağlantı |
+  |---|---|---|
+  | `/tr/` · `/en/` | 161,2 px | 5 |
+  | `/tr/fiyatlar/` · `/en/pricing/` | 122 px | 4 |
+  | `/tr/kilavuz/` · `/en/guide/` | 104,3 px | 5 |
+  | `/tr/gizlilik/` | 23,1 px | **1** |
+  | `/tr/sartlar/` | 23,1 px | **2** |
+  | `/en/privacy/` · `/en/terms/` | ⛔ **HİÇ YOK** | — |
+
+  ⛔ **İngilizce gizlilik ve şartlar sayfalarında alt menü hiç yok.**
+  47. maddede üst menü birleştirildi ama **alt menüye dokunulmadı**;
+  her sayfa kendi altlığını taşımaya devam etti.
+
+  **Yapılacak:**
+  1. Üst menünün ölçüsü üretilen `<style>` bloğunda çivilensin —
+     sayfanın kendi `.ust` dolgusu ezilsin.
+  2. ⛔ **Alt menü de üst menü gibi ÜRETİLSİN** (`uret/alt-menu.js`),
+     her sayfaya aynısı girsin. Elle yazılan altlıklar kalksın.
+  3. Bekçi: üst menü ölçüsü bugün yalnızca **yatay** konumu ölçüyor
+     (`uretilen-sayfalar.test.js`); **yükseklik** ölçülmediği için
+     bu 22 piksel sekiz gün görünmedi. Yükseklik de ölçülecek, alt
+     menü de ölçülecek — ⛔ ikisi de **liste yazmayan** bekçiyle
+     (sayfalar `sayfalar.js`'ten, diller `diller.js`'ten).
+
+  ⚠ **app.html kapsam dışı** — kullanıcı "app hariç" dedi.
+
+- ⬜ **65.** **Hakkımızda sayfası + İletişim sayfası.** Kullanıcı
+  18 Kasım 2026'da istedi: *"yapılacaklara başka bir bölüm —
+  hakkımızda sayfası ve iletişim sayfası. Bunlar da yapılacaklar
+  listesinde olsun."*
+
+  ⚠ **İÇERİK KULLANICIDAN GELECEK — UYDURULMAYACAK** (Bölüm 4).
+  Bu iki sayfa şirket, kişi ve iletişim bilgisi içerir; hiçbiri
+  koddan ya da tahminden yazılamaz. Sırası gelince sorulacak:
+
+  | Hakkımızda | İletişim |
+  |---|---|
+  | Kim yazdı, neden yazıldı | Hangi e-posta görünecek |
+  | Hangi hikâye anlatılacak | Form mu, düz adres mi |
+  | Fotoğraf/görsel olacak mı | Sosyal hesaplar listelenecek mi |
+  | Şirket/şahıs bilgisi görünecek mi | Yanıt süresi sözü verilecek mi |
+
+  ✅ **ELDEKİ DOĞRULANMIŞ TEK BİLGİ:** `hello@shootboard.app`
+  Cloudflare Email Routing ile Gmail'e düşüyor (bu dosyada kayıtlı).
+  ⛔ Bunun dışında hiçbir iletişim bilgisi uydurulmayacak.
+
+  **Bağlı işler — ikisi de 64 ve Bölüm 7 ile birlikte:**
+  - İki sayfa da **her dilde** olacak (Bölüm 7), yani `uret/
+    sayfalar.js`'e kayıt + her dilde kaynak.
+  - Üst ve alt menüye girecekler — yani **64 bitmeden eklenirse**
+    menü dağınıklığı iki sayfa daha çoğalır. ⚠ Sırası: önce 64.
+
 ### 4 · Basitleştirme (hepsi ilk deneyimi değiştiriyor)
 - ⬜ **17.** İlk ekran: kendiliğinden açılan tur yok
   (bugün `tourAutoSequence = true`, app.html:25300)
