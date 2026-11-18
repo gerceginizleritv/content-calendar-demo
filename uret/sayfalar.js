@@ -44,6 +44,14 @@ const SAYFALAR = [
   { ad: 'kilavuz',  kaynak: { tr: 'kilavuz.html', en: 'guide.html' },
     duzCok: [{ dosya: 'kilavuz.html', dil: 'tr' }, { dosya: 'guide.html', dil: 'en' }],
     parca:   { tr: 'kilavuz',   en: 'guide' },
+    // ⚠ `altId`: altliktaki baglantinin HTML kimligi. Kimlik
+    //   uydurma degil, BAGLI: `testler/karsilama-olcum.test.js:80`
+    //   ona tikliyor ve `kaynak/index.html:1398` onu seciyor.
+    //   18 Kasim 2026'da alt menu uretilmeye baslayinca kimlik
+    //   dustu ve `kilavuz.test.js` bunu yakaladi ("karsilama
+    //   sayfasinin dibinde de var" -> YOK). Kimlik URETICIYE
+    //   yazilmadi: sayfa adi koda gomulmesin diye TABLODA duruyor.
+    altId:   'dipKilavuz',
     menu:    { tr: 'Kılavuz',   en: 'Guide' },       menude: true },
 
   // ⛔ Bu iki sayfa TEK DOSYADA UST USTE iki dil tasiyor: once

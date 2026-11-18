@@ -116,7 +116,11 @@ function altMenu({ dil }){
   //    elle eklenmesi gereken bir liste olsaydi unutulurdu. Bu
   //    deponun tekrarlayan hatasi tam bu (CLAUDE.md Bolum 7).
   SAYFALAR.filter(s=> s.ad !== 'ev').forEach(s=>{
-    satir.push('    <a href="' + kacir(adres(s.ad, dil)) + '">'
+    // ⚠ `altId` varsa kimlik de yaziliyor. Hangi sayfanin kimligi
+    //   oldugu BURADA degil, sayfalar.js'te duruyor.
+    satir.push('    <a'
+             + (s.altId ? ' id="' + kacir(s.altId) + '"' : '')
+             + ' href="' + kacir(adres(s.ad, dil)) + '">'
              + kacir(s.menu[dil]) + '</a>');
   });
 
