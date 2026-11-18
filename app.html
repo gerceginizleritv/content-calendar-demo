@@ -1623,6 +1623,84 @@ body.suruklenirken *{cursor:grabbing !important;}
    kadar, gerisi "Devami" ile aciliyor. */
 #mk_list{display:grid;grid-template-columns:repeat(auto-fill,minmax(230px,1fr));gap:14px;
   --mk-kart-h:362px;}
+/* ── GORUNUM DEGISTIRME TUSU (iki ikonlu cift) ────────────────────
+   Kullanici 16 Kasim 2026 ekran goruntusuyle istedi, 18 Kasim'da
+   "yoksa benzer yeni bir tus olustur" dedi. Secili olan dolu
+   zeminli; bicim `aria-pressed`ten besleniyor, ayri sinif yok --
+   boylece gorsel durum ile erisilebilirlik durumu AYRISAMAZ. */
+.gorunum-sec{display:inline-flex;gap:2px;padding:2px;
+  border:1px solid var(--line);border-radius:3px;}
+.gs-dug{display:flex;align-items:center;justify-content:center;
+  width:34px;height:30px;padding:0;border:0;border-radius:2px;
+  background:none;color:var(--muted);cursor:pointer;
+  transition:background .12s,color .12s;}
+.gs-dug:hover{color:var(--text);}
+.gs-dug[aria-pressed="true"]{background:var(--accent);color:#fff;}
+.gs-dug:focus-visible{outline:2px solid var(--accent);outline-offset:1px;}
+.gs-svg{width:17px;height:17px;display:block;}
+/* ⛔ DOKUNMA HEDEFI. Olculdu 18 Kasim 2026: arac cubugunun oteki
+   dugmeleri masaustunde 36, TELEFONDA 44 piksel; bu tus her ikisinde
+   de 30 kaliyordu -- telefonda parmakla basilacak kadar buyuk degil.
+   ⚠ Telefonda grubun kendi dolgusu SIFIRLANIYOR ki dugme 44'e
+   cikarken grup komsularindan belirgin sekilde uzamasin. */
+@media(max-width:879px){
+  .gorunum-sec{padding:0;}
+  .gs-dug{width:44px;height:44px;border-radius:2px;}
+}
+
+/* ── MEKAN SATIRI (liste gorunumu) ────────────────────────────────
+   ⚠ KART IZGARASINI ETKILEMEZ: butun kurallar `.mk-liste` altinda.
+   `mekan-kart-olcu` testi kartlarin AYNI yukseklikte olmasini
+   olcuyor ve bu gorunum ona dokunmuyor. */
+/* ⛔ KIMLIK + SINIF. Kapsayici `#mk_list{display:grid}` diye KIMLIKLE
+   yazilmis; duz `.mk-liste` onu yenemiyor ve satirlar YAN YANA
+   diziliyordu (ekran goruntusunde goruldu). Belirginlik esitlendi. */
+#mk_list.mk-liste{display:block;}
+.mk-satir{display:flex;align-items:center;gap:12px;
+  padding:10px 12px;border:1px solid var(--line);border-radius:2px;
+  margin-bottom:-1px;cursor:pointer;background:var(--card);}
+.mk-satir:hover{border-color:var(--accent-dim);position:relative;z-index:1;}
+/* ⛔ 18 KASIM 2026 — `position:relative` BURADA ZORUNLU.
+   `mekanGorseli()` UC AYRI sey donebiliyor: fotograf, harita karosu
+   ya da bas harf (`.mk-harf`). Bas harf `position:absolute` ve
+   konumlanacak bir ATA ariyor; kutuda `position` yoksa en yakin
+   konumlanmis ataya -- yani sayfanin tamamina -- yayiliyor.
+   ⛔ OLCULDU: kural kaldirilinca cocuk 76x54 yerine 1280x800
+   oluyor. Ekran goruntusunde "SM" harfleri sayfayi kaplamisti.
+   ⚠ Kutu `overflow:hidden` oldugu icin DISARIDAN dogru gorunuyor;
+   bu yuzden bekci kutuyu DEGIL COCUGU olcuyor
+   (`mekan-gorunum.test.js`, "gorselin ICERIGI kutuyu asiyor").
+   ⚠ Asagidaki `> *` kurali bunun yerine GECMEZ, yaninda durur:
+   ileride eklenecek konumlanmamis bir cocuk icin guvence. */
+.mk-satir-gorsel{flex:none;width:76px;height:54px;border-radius:2px;
+  overflow:hidden;background:var(--surface-2);position:relative;
+  display:flex;align-items:center;justify-content:center;}
+.mk-satir-gorsel > *{width:100%;height:100%;margin:0;
+  object-fit:cover;display:flex;align-items:center;justify-content:center;}
+.mk-satir-gorsel img{object-fit:cover;}
+.mk-satir-gorsel .mk-harf{font-size:19px;}
+/* Wikipedia kaynak baglantisi satirda okunamayacak kadar kucuk
+   kaliyor; kartta ve mekan penceresinde duruyor. */
+.mk-satir-gorsel .mk-wiki{display:none;}
+.mk-satir-orta{flex:1;min-width:0;}
+.mk-satir-orta .mk-ad{margin:0;}
+.mk-satir-yer{font-size:12.5px;color:var(--muted);margin-top:2px;
+  overflow:hidden;text-overflow:ellipsis;white-space:nowrap;}
+.mk-satir-rozet{flex:none;margin:0;}
+
+/* Telefonda rozetler alt satira insin, ad ve adres kirpilmasin. */
+@media(max-width:560px){
+  .mk-satir{flex-wrap:wrap;}
+  .mk-satir-gorsel{width:56px;height:42px;}
+  /* ⛔ `flex-basis:100%` + `margin-left:68px` EKRANI ASIYORDU:
+     kutu satirin tamami kadar genis, ustune 68 piksel de kaydirilmis.
+     Olculdu: 390 piksellik ekranda 31 piksel yatay tasma. Genislik
+     artik kenar boslugunu DUSEREK hesaplaniyor.
+     ⚠ Depoda bunun iki ayri bekcisi var: `yatay-yaylanma` ve
+     `mobil-kayma`. */
+  .mk-satir-rozet{flex-basis:calc(100% - 68px);margin-left:68px;}
+}
+
 .mk-kart{border:1px solid var(--line);border-radius:2px;overflow:hidden;
   cursor:pointer;background:var(--surface);display:flex;flex-direction:column;
   height:var(--mk-kart-h);}
@@ -4518,6 +4596,10 @@ textarea.sc-ai-brief{min-height:64px;resize:vertical;line-height:1.5;}
       <input type="search" id="mk_search" data-i18n-placeholder="mk_search_ph" placeholder="Search places — name, city or address">
       <span class="proj-count" id="mk_count"></span>
       <button type="button" class="btn btn-sira" id="mk_sira"></button>
+      <!-- GORUNUM: kart izgarasi / fotografli satir listesi.
+           Secim hatirlanıyor (demo_mk_gorunum), takvimdeki
+           `demo_view` ile ayni kalip. -->
+      <div class="gorunum-sec" id="mk_gorunum" role="group"></div>
       <!-- Fotografsiz mekan varsa cikiyor: tek tek pencere acmadan
            hepsine birden bakiyor. -->
       <button type="button" class="btn" id="mk_fotoHepsi" hidden data-i18n="mk_photo_all">Look for photos</button>
@@ -7027,6 +7109,10 @@ const LANG = {
     mk_image_hint: "Optional. Without one the card shows the map, so a map link is usually enough.",
     mk_photo_find: "Find a photo",
     mk_photo_all: "Look for missing photos",
+    // Gorunum degistirme tusu (18 Kasim 2026). ⚠ CLAUDE.md Bolum 7:
+    // her arayuz dizesi HER DILDE. Bekci: sozluk-paritesi.
+    mk_view_cards: "Card view",
+    mk_view_list: "List view",
     mk_photo_searching: "Looking on Wikipedia…",
     mk_photo_found: (b)=> `Found: ${b}. Check it, then save.`,
     mk_photo_none: "Nothing on Wikipedia for this one. Paste a link, or leave it — the card shows the map.",
@@ -8376,6 +8462,8 @@ const LANG = {
     mk_image_hint: "İsteğe bağlı. Koymazsan kartta harita görünür; çoğu zaman harita bağlantısı yeter.",
     mk_photo_find: "Fotoğraf bul",
     mk_photo_all: "Fotoğrafı olmayanlara bak",
+    mk_view_cards: "Kart görünümü",
+    mk_view_list: "Liste görünümü",
     mk_photo_searching: "Vikipedi'de aranıyor…",
     mk_photo_found: (b)=> `Bulundu: ${b}. Bir bak, sonra kaydet.`,
     mk_photo_none: "Vikipedi'de bununla ilgili bir şey yok. Bağlantı yapıştırabilir ya da boş bırakabilirsin — kartta harita görünür.",
@@ -10447,6 +10535,13 @@ const IKON_HARITA = `<svg class="pn-svg" viewBox="0 0 24 24" fill="none" stroke=
 const IKON_FIKIR  = `<svg class="pn-svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M9 18h6M10 21h4"/><path d="M12 3a6 6 0 0 0-3.6 10.8c.5.4.8 1 .9 1.6l.1.6h5.2l.1-.6c.1-.6.4-1.2.9-1.6A6 6 0 0 0 12 3z"/></svg>`;
 const IKON_SCRIPT = `<svg class="pn-svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M6.5 3.5h8L19 8v12.5H6.5z"/><path d="M14 3.5V8h5"/><path d="M9.5 12.5h6M9.5 16h4"/></svg>`;
 const IKON_LISTE  = `<svg class="pn-svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 6.6l1.7 1.7L9 5"/><path d="M4 13.1l1.7 1.7L9 11.5"/><path d="M4 19.6l1.7 1.7L9 18"/><path d="M12.5 7h7.5M12.5 13.5h7.5M12.5 20h7.5"/></svg>`;
+// ⛔ 18 KASIM 2026 — GORUNUM DEGISTIRME TUSU. Kullanici 16 Kasim'da
+// "eklediğime benzer bir tuş" diyerek iki ikonlu bir cift gonderdi;
+// o tus bu depoda YOKTU (takvimdekiler yazili dugme). 18 Kasim'da
+// "yoksa benzer yeni bir tus olustur" dedi ve bunlar cizildi.
+// ⚠ Oteki ikonlarla AYNI dilde: 24x24, currentColor, 1.9 kalinlik.
+const IKON_IZGARA = `<svg class="gs-svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="3.5" y="3.5" width="7" height="7" rx="1.4"/><rect x="13.5" y="3.5" width="7" height="7" rx="1.4"/><rect x="3.5" y="13.5" width="7" height="7" rx="1.4"/><rect x="13.5" y="13.5" width="7" height="7" rx="1.4"/></svg>`;
+const IKON_SATIR  = `<svg class="gs-svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="3.5" y="4.5" width="5" height="5" rx="1.2"/><rect x="3.5" y="14.5" width="5" height="5" rx="1.2"/><path d="M11.5 6h9M11.5 9h6M11.5 16h9M11.5 19h6"/></svg>`;
 const IKON_TAKVIM = `<svg class="pn-svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="3.2" y="5" width="17.6" height="15" rx="2.2"/><path d="M3.2 9.6h17.6M8 3.4v3.2M16 3.4v3.2"/><path d="M12 13v4M10 15h4"/></svg>`;
 
 // --- Proje sayfasi ---------------------------------------------------
@@ -13314,10 +13409,46 @@ function mekanFoyu(m){
   }
   return satirlar.length ? '<dl class="mk-foy bg-mekan-dl">' + satirlar.join('') + '</dl>' : '';
 }
+// MEKANLAR GORUNUMU: 'kart' (izgara) ya da 'liste' (fotografli satir).
+// ⚠ VARSAYILAN 'kart': kullanici karari 18 Kasim 2026 -- "bugunku hali
+//   gelsin, liste istege bagli ikinci gorunum olsun".
+// Secim hatirlaniyor; takvimdeki `demo_view` ile ayni kalip.
+let mekanGorunumu = 'kart';
+try{
+  const v = localStorage.getItem('demo_mk_gorunum');
+  if(v === 'kart' || v === 'liste') mekanGorunumu = v;
+}catch(e){}
+
+function mekanGorunumuYaz(mod){
+  if(mod !== 'kart' && mod !== 'liste') return;
+  mekanGorunumu = mod;
+  try{ localStorage.setItem('demo_mk_gorunum', mod); }catch(e){}
+  renderMekanlar();
+}
+
+// Iki ikonlu cift. Secili olan `aria-pressed="true"` tasiyor; bicim
+// de ondan besleniyor, ayri bir sinifa gerek yok.
+function mekanGorunumTusu(){
+  const kutu = document.getElementById('mk_gorunum');
+  if(!kutu) return;
+  const dugme = (mod, ikon, anahtar)=>
+    `<button type="button" class="gs-dug" data-mkgor="${mod}"`
+    + ` aria-pressed="${mekanGorunumu === mod ? 'true' : 'false'}"`
+    + ` title="${escapeHtml(t(anahtar))}" aria-label="${escapeHtml(t(anahtar))}">${ikon}</button>`;
+  kutu.innerHTML = dugme('kart', IKON_IZGARA, 'mk_view_cards')
+                 + dugme('liste', IKON_SATIR, 'mk_view_list');
+  kutu.querySelectorAll('[data-mkgor]').forEach(b=>{
+    b.addEventListener('click', ()=> mekanGorunumuYaz(b.getAttribute('data-mkgor')));
+  });
+}
+
 function renderMekanlar(){
   const kutu = document.getElementById('mk_list');
   if(!kutu) return;
   const liste = mekanlariSuz();
+  mekanGorunumTusu();
+  // Kutunun sinifi gorunume gore: izgara mi, satir listesi mi.
+  kutu.classList.toggle('mk-liste', mekanGorunumu === 'liste');
   document.getElementById('mk_count').textContent =
     mekanlar.length ? t('mk_count')(liste.length, mekanlar.length) : '';
   document.getElementById('mk_fotoHepsi').hidden = mekanFotosuzlar().length === 0;
@@ -13343,6 +13474,34 @@ function renderMekanlar(){
     const kac = mekanProjeleri(m.id).length;
     const bekleyen = mekanBekleyenleri(m.id).length;
     const harita = disUrl(m.mapsUrl);
+    // ── SATIR GORUNUMU ────────────────────────────────────────────
+    // Kullanici karari 18 Kasim 2026: solda fotograf, yaninda ad,
+    // altinda ilce/sehir ve adres, sagda rozetler.
+    // ⚠ EKLENME TARIHI SATIRA GIRMIYOR: kullanici "fotograf + ad +
+    //   adres + rozetler" secti; tarih kartta zaten duruyor ve
+    //   satirda yer kapliyordu.
+    // ⚠ FOY (mk-foy) DA GIRMIYOR: katlanan uzun not satir
+    //   yuksekligini kullanicinin kontrol edemeyecegi kadar
+    //   buyutuyor. Mekana tiklayinca pencerede tamami aciliyor.
+    if(mekanGorunumu === 'liste'){
+      return `<div class="mk-satir" data-mk="${escapeHtml(m.id)}">
+        <div class="mk-satir-gorsel">${mekanGorseli(m)}</div>
+        <div class="mk-satir-orta">
+          <div class="mk-ad">${escapeHtml(mekanAdi(m))}${aiRozet('places', m.id)}</div>
+          ${(yer || m.address)
+            ? `<div class="mk-satir-yer">${escapeHtml([yer, m.address].filter(Boolean).join(' · '))}</div>`
+            : ''}
+        </div>
+        <div class="mk-rozetler mk-satir-rozet">
+          ${bekleyen
+            ? `<span class="mk-rozet mk-bekleyen">${escapeHtml(t('mk_waiting')(bekleyen))}</span>`
+            : (kac ? `<span class="mk-rozet">${escapeHtml(t('mk_projects')(kac))}</span>` : '')}
+          ${m.permission ? `<span class="mk-rozet">${escapeHtml(t('mk_has_permission'))}</span>` : ''}
+          ${m.cautions ? `<span class="mk-rozet mk-dikkat">${escapeHtml(t('mk_has_cautions'))}</span>` : ''}
+          ${harita ? `<a class="mk-rozet" href="${escapeHtml(harita)}" target="_blank" rel="noopener" data-dis>${escapeHtml(t('mk_map'))}</a>` : ''}
+        </div>
+      </div>`;
+    }
     return `<div class="mk-kart" data-mk="${escapeHtml(m.id)}">
       <div class="mk-gorsel">${mekanGorseli(m)}</div>
       <div class="mk-govde">

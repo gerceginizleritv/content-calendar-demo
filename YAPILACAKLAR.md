@@ -1555,6 +1555,66 @@ dokunmak ve ikinci seferde birincisini bozmak demek.
   adıyla bulunduğunu ölçüyor; bayrak alanı eklenince metin
   "🇹🇷 Türkçe" oldu ve iddia kendiliğinden kapsadı.
 
+- ⬜ **58.** ⛔ **UYGULAMA İÇİNDE "AYARLAR" SAYFASI + dil tuşunun
+  uygulamaya yakışır hâle gelmesi.** Kullanıcı 18 Kasım 2026'da
+  istedi:
+
+  > *"App içerisinde de dil tuşu var, bu tuşu da app'e uygun şekilde
+  > düzeltmemiz lazım. Daha önce sana yazdığım gibi bazı başlıkları
+  > app içerisinde settings gibi bir sayfaya alıp her şeyi tıpkı
+  > projects'te olduğu gibi sayfa gibi oluşturup kullanıcının
+  > ayarlarını yapmasını isteyebiliriz. AI, hesap etiketleri, konum,
+  > dil vs."*
+
+  **a · Dil tuşu.** `app.html:4342` bugün yerli bir `<select>`
+  (`#langSelect`, `.rail-lang`) — yan menünün içinde duruyor.
+  ⚠ **Sitede bu iş 18 Kasım'da zaten yapıldı:** yerli `<select>`
+  bırakıldı, yerine bayraklı özel seçici geldi
+  (`uret/ust-menu.js`, `uret/bayraklar.js`, `marka.css` `.dil-*`).
+  Kullanıcı site için *"çok amatör duruyor"* demişti. Uygulamadaki
+  tuş **aynı akıbete uğrayacak** ama uygulamanın kendi paletiyle
+  (`--accent`, `--line`, `--surface-2` …), sitenin paletiyle değil.
+  ⚠ **Bayraklar hazır:** `uret/bayraklar.js` SVG olarak tutuyor;
+  uygulamaya kopyalanmayacak, **ortak bir yerden** okunacak — yoksa
+  bu deponun tekrarlayan hatası (bir yerde yapıp ötekinde unutmak)
+  yine olur.
+
+  **b · Ayarlar sayfası.** Bugün yan menünün dibinde **dağınık**
+  duruyorlar; koddan sayıldı (`app.html:4428-4470`):
+
+  | Öge | Bugün nerede |
+  |---|---|
+  | Dil seçici | `#langSelect`, yan menü üstü |
+  | ✨ AI (Gemini) | `#aiSettingsBtn` → pencere |
+  | 🔔 Hatırlatmalar | `#remindersBtn` → pencere |
+  | Hesap etiketleri | `#hesapEtiketBtn` → pencere |
+  | Hava & ışık | `#havaGosterBtn` (konum buradan geliyor) |
+  | Tema (açık/koyu) | `#themeBtn` |
+  | Bilgisayara kur | `#kurBtnMobil` |
+  | Hesabım | `.rail-me` |
+
+  İstenen: bunların **Projeler gibi bir SAYFA** olması
+  (`SAYFALAR` dizisine `['ayarlar','ayarlarPage','tabAyarlar']`),
+  pencere değil. 50. maddede proje düzenleme pop-up'tan sayfaya
+  alınmıştı; aynı gerekçe: *"bu pop-up çok küçük"*.
+
+  ⚠ **SIRASI GELİNCE SORULACAK, tahmin edilmeyecek:**
+  1. Hangileri sayfaya taşınacak, hangileri yan menüde kalacak?
+     (Tema tuşu tek tıkla çalışıyor; sayfaya girmek onu yavaşlatır.)
+  2. Sayfa **bölümlü tek sayfa** mı olsun, yoksa sol tarafta kendi
+     alt menüsü olan bir yapı mı?
+  3. Yan menüde ayarlara giden **tek bir düğme** mi kalsın, yoksa
+     kısayollar da dursun mu?
+  4. "Konum" derken hava/ışık için kullanılan konum mu kastediliyor,
+     yoksa ayrı bir ayar mı?
+
+  ⛔ **Bölüm 7 — HER DİLDE.** Yeni sayfanın her başlığı, her etiketi
+  iki dilde (yarın sekiz dilde) olacak. Bekçi hazır:
+  `testler/sozluk-paritesi.test.js`.
+  ⚠ Taşınan pencerelerin testleri var; hiçbiri **zayıflatılmayacak**,
+  güvence korunup ifadesi sayfaya taşınacak (18 Kasım'da 11 testte
+  aynısı yapıldı).
+
 ### 4 · Basitleştirme (hepsi ilk deneyimi değiştiriyor)
 - ⬜ **17.** İlk ekran: kendiliğinden açılan tur yok
   (bugün `tourAutoSequence = true`, app.html:25300)
