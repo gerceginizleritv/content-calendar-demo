@@ -87,7 +87,41 @@ a{color:inherit;}
   border:0;border-radius:9px;background:transparent;color:var(--kagit);cursor:pointer;
 }
 .grup button[aria-pressed="true"]{background:var(--sinyal);color:var(--gece);}
-.indirim{margin-top:14px;font-size:14px;color:var(--jel-lime);font-weight:600;min-height:21px;}
+/* ⛔ YILLIK INDIRIM — UC YERDE AYNI AILE (YAPILACAKLAR 44.7).
+   Kullanici 16 Kasim 2026, ekran goruntusuyle: oran GOZE CARPSIN,
+   "kendi fontu ve gorseli" olsun; ayrica baslikti cumle "cok kucuk".
+   Uc yer: (1) baslikti cumlenin icindeki oran, (2) "Yillik"
+   dugmesinin yani, (3) her kartta yillik fiyatin yani.
+   ⚠ Renk secimi keyfi degil: marka.css --jel-lime icin "ustune KOYU
+     yazi: 14.06" diyor, yani ZEMIN rengi. Yazi rengi olarak degil
+     HAP ZEMINI olarak kullaniliyor; uzerindeki --metin ile kontrast
+     14.06 (WCAG AA esigi 4.5).
+   ⚠ Turuncu ONERILEN rozetinden kasten AYRI renk: biri tavsiye,
+     oteki para. Ayni renk olsalardi ikisi tek sinyal gibi okunurdu. */
+.ind-rozet{
+  display:inline-block;
+  font-family:'IBM Plex Mono',monospace;font-weight:600;
+  text-transform:uppercase;letter-spacing:.08em;white-space:nowrap;
+  background:var(--jel-lime);color:var(--metin);border-radius:999px;
+}
+/* ⚠ Olculer BAGLAMA gore, "buyuk/kucuk" diye degil: her hap
+   yanindaki yazidan bir tik kucuk ama okunur kalsin diye. */
+.ind-rozet.ind-denetim{font-size:12.5px;padding:8px 13px;}  /* dugme yani */
+.ind-rozet.ind-cumle{font-size:13px;padding:5px 11px;}      /* 17px cumle icinde */
+.ind-rozet.ind-kart{font-size:11px;padding:4px 9px;}        /* 13px fiyat-alt icinde */
+
+/* ⛔ BASLIKTAKI CUMLE BUYUDU: 14px -> 17px. Kullanici "cok kucuk"
+   dedi; para kazandiran cumle dugmelerden sonra kaybolmayacak.
+   Renk lime'dan krem'e cevrildi cunku lime artik HAPTA; cumlenin
+   kendisi --metin-ters (koyu zeminde 17.35 kontrast). */
+.indirim{margin-top:14px;font-size:17px;color:var(--metin-ters);
+  font-weight:600;min-height:34px;
+  display:flex;align-items:center;gap:8px;flex-wrap:wrap;}
+
+/* "Yillik" dugmesinin YANINDA duran hap. ⚠ Dugmenin ICINE
+   konulamaz: metinleriYaz() [data-m] tasiyan her ogenin
+   textContent'ini bastan yaziyor, icerideki hap silinirdi. */
+.donem-sarmal{display:flex;align-items:center;gap:10px;flex-wrap:wrap;}
 
 /* ── Kartlar ─────────────────────────────────────────────────── */
 .bolum{padding:clamp(44px,6vw,76px) 0;}
@@ -95,7 +129,19 @@ a{color:inherit;}
 .kartlar{
   display:grid;gap:18px;
   grid-template-columns:repeat(auto-fit,minmax(272px,1fr));
-  align-items:start;
+  /* ⛔ `align-items:start` BURADAN KALKTI (18 Kasim 2026, YAPILACAKLAR 44.5).
+     Kullanici 16 Kasim'da ekran goruntusuyle bildirdi: Starter ve
+     Creator Pro kutulari farkli yukseklikte. Olculdu:
+       1280 -> 499,2 / 575,2 px  = 76 px fark
+        900 -> 477,7 / 577,7 px  = 100 px fark (Ingilizcede 124 px)
+     Sebep tek satirdi: `start` izgaranin kartlari GERMESINI
+     engelliyordu, her kart kendi dogal boyunda duruyordu.
+     ⚠ Asagidaki `.kart ul{flex:1}` ZATEN dugmeyi kartin dibine itmek
+       icin yazilmis -- yani kart GERILMEK uzere tasarlanmisti,
+       izgara izin vermiyordu. Simdi izgaranin kendi varsayilani
+       (stretch) gecerli.
+     ⚠ Rozet `position:absolute`, germeden etkilenmiyor.
+     Bekci: testler/fiyat-kart-olcu.test.js */
   /* ⚠ Rozet kutunun USTUNE tasiyor; kirpilmasin diye yer birakiliyor. */
   padding-top:16px;
 }
@@ -233,9 +279,14 @@ a{color:inherit;}
              Kullanici 18 Kasim 2026: "admin panelinde hangi fiyati
              kullanabilecegimizi ... ben yazabileyim." -->
       </div>
-      <div class="grup" role="group" id="donemSecici">
-        <button type="button" data-donem="monthly" aria-pressed="true" data-m="aylik">Aylık</button>
-        <button type="button" data-donem="yearly" aria-pressed="false" data-m="yillik">Yıllık</button>
+      <div class="donem-sarmal">
+        <div class="grup" role="group" id="donemSecici">
+          <button type="button" data-donem="monthly" aria-pressed="true" data-m="aylik">Aylık</button>
+          <button type="button" data-donem="yearly" aria-pressed="false" data-m="yillik">Yıllık</button>
+        </div>
+        <!-- ⚠ Oran VERIDEN hesaplanir; burada sabit sayi YOK.
+             Indirim yoksa bu oge gizli kalir (hidden). -->
+        <span class="ind-rozet ind-denetim" id="donemIndirim" hidden></span>
       </div>
     </div>
     <p class="indirim" id="indirim"></p>
@@ -313,7 +364,8 @@ const M = {
     sec:'Başla', ucretsizSec:'Ücretsiz başla',
     yillikYok:'Bu planın yıllık fiyatı yok.',
     yuzde:(n)=> '%' + n,
-    indirimMetin:(y)=> 'Yıllık ödemede ' + y + ' kadar daha ucuz.',
+    indirimOnce:'Yıllık ödemede', indirimSonra:'kadar daha ucuz.',
+    indirimRozet:(y)=> y + ' indirim',
     kalan:(k,t)=> t + ' kişilikten ' + k + ' yer kaldı.',
     doldu:'Kontenjan doldu.',
     yukleniyor:'Fiyatlar yükleniyor…',
@@ -363,7 +415,8 @@ const M = {
     yillikYok:'This plan has no yearly price.',
     // ⚠ Yuzde isareti Ingilizcede ARKADA: "22%", "%22" degil.
     yuzde:(n)=> n + '%',
-    indirimMetin:(y)=> 'Paying yearly is ' + y + ' cheaper.',
+    indirimOnce:'Paying yearly is', indirimSonra:'cheaper.',
+    indirimRozet:(y)=> y + ' off',
     kalan:(k,t)=> k + ' of ' + t + ' places left.',
     doldu:'All places taken.',
     yukleniyor:'Loading prices…',
@@ -459,6 +512,20 @@ function paraYaz(minor, birim){
   return sayi + ' ' + birim;
 }
 
+// Bir planin KENDI yillik indirimi (0-1 arasi oran) ya da null.
+// ⚠ Basliktaki cumle ve dugme yanindaki hap GORUNEN planlarin EN
+//   KUCUK oranini yaziyor ("...kadar" = en fazla bu kadar), boylece
+//   hicbir plan icin abartilmis olmuyor. KART ise kendi oranini
+//   yaziyor, cunku o kartta duran rakam o planin kendi rakami.
+//   Bugun tek bir planin yillik fiyati var, yani ikisi ayni cikiyor.
+function indirimOrani(planKey){
+  const a = fiyatBul(planKey, para, 'monthly');
+  const y = fiyatBul(planKey, para, 'yearly');
+  if(!(a && y && a.amount_minor > 0)) return null;
+  const aylikYillik = y.amount_minor / 12;
+  return aylikYillik < a.amount_minor ? 1 - aylikYillik / a.amount_minor : null;
+}
+
 function fiyatBul(plan, birim, d){
   return (veri.fiyatlar || []).find(x=>
     x.plan_key === plan && x.currency === birim && x.period === d && x.active !== false);
@@ -520,15 +587,32 @@ function ciz(){
   // yaziyor -- boylece hicbir plan icin abartilmis olmuyor.
   const oranlar = [];
   (veri.planlar || []).forEach(p=>{
-    const a = fiyatBul(p.key, para, 'monthly'), y = fiyatBul(p.key, para, 'yearly');
-    if(a && y && a.amount_minor > 0){
-      const aylikYillik = y.amount_minor / 12;
-      if(aylikYillik < a.amount_minor) oranlar.push(1 - aylikYillik / a.amount_minor);
-    }
+    const o = indirimOrani(p.key);
+    if(o !== null) oranlar.push(o);
   });
-  $('indirim').textContent = oranlar.length
-    ? m.indirimMetin(m.yuzde(Math.round(Math.min(...oranlar) * 100)))
-    : '';
+  const enKucukYuzde = oranlar.length
+    ? Math.round(Math.min(...oranlar) * 100) : 0;
+
+  // ⛔ BASLIKTAKI CUMLE: oran artik HAP icinde (44.7). textContent
+  //    yerine oge kuruluyor; "Yillik odemede [%16] kadar daha ucuz."
+  //    ⚠ Hapta yalnizca ORAN var, "indirim" sozcugu YOK: cumlenin
+  //      icinde "%16 indirim kadar daha ucuz" bozuk Turkce olurdu.
+  const indKutu = $('indirim');
+  indKutu.textContent = '';
+  if(enKucukYuzde > 0){
+    const hap = document.createElement('span');
+    hap.className = 'ind-rozet ind-cumle';
+    hap.textContent = m.yuzde(enKucukYuzde);
+    indKutu.append(m.indirimOnce + ' ', hap, ' ' + m.indirimSonra);
+  }
+
+  // ⛔ "Yillik" DUGMESININ YANINDAKI HAP (44.7). Burada cumle yok,
+  //    tek basina duruyor -- o yuzden "indirim" sozcugu de yaziyor.
+  //    ⚠ Aylik secilyken de gorunur: amac yillaga gecmeye tesvik.
+  const donemHap = $('donemIndirim');
+  donemHap.textContent = enKucukYuzde > 0
+    ? m.indirimRozet(m.yuzde(enKucukYuzde)) : '';
+  donemHap.hidden = enKucukYuzde === 0;
 
   $('kartlar').innerHTML = (veri.planlar || []).map(p=>{
     const f = fiyatBul(p.key, para, donem)
@@ -539,6 +623,8 @@ function ciz(){
     const aylikEs = donem === 'yearly' && f.period === 'yearly'
       ? Math.round(f.amount_minor / 12) : null;
     const ucretsiz = f.amount_minor === 0;
+    const kartOran = indirimOrani(p.key);
+    const kartYuzde = kartOran === null ? 0 : Math.round(kartOran * 100);
     const kontenjan = p.key === 'founding' ? veri.kontenjan : null;
     const kalanAdet = kontenjan ? Math.max(0, kontenjan.quota - kontenjan.sold) : null;
 
@@ -549,8 +635,18 @@ function ciz(){
       + '<p class="tanim">' + esc(m.tanim[p.key] || '') + '</p>'
       + '<p class="fiyat">' + esc(paraYaz(aylikEs !== null ? aylikEs : f.amount_minor, para))
       + (ucretsiz || tekSeferlik ? '' : '<small>' + esc(m.ayda) + '</small>') + '</p>'
+      // ⛔ KARTTAKI INDIRIM ROZETI (44.7). Kullanici: oran "kartta
+      //    yillik fiyatin yazdigi yere" gelsin. O yer burasi:
+      //    `.fiyat-alt` yalnizca YILLIK secilyken "Yilda · 2.999 TL"
+      //    yaziyor. Rozet de yalnizca orada ve indirim VARSA cikiyor.
+      //    ⚠ Oran VERIDEN; sabit sayi yok. Indirim 0 ise rozet yok
+      //      ("%0 indirim" yazmak gurultu olurdu).
       + '<p class="fiyat-alt">'
       + (aylikEs !== null ? esc(m.yilda) + ' · ' + esc(paraYaz(f.amount_minor, para)) : '')
+      + (aylikEs !== null && kartYuzde > 0
+          ? ' <span class="ind-rozet ind-kart">'
+            + esc(m.indirimRozet(m.yuzde(kartYuzde))) + '</span>'
+          : '')
       + '</p>'
       + (kalanAdet !== null
           ? '<p class="kalan">' + esc(kalanAdet > 0 ? m.kalan(kalanAdet, kontenjan.quota) : m.doldu) + '</p>'

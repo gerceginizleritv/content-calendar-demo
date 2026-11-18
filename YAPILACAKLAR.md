@@ -466,13 +466,28 @@ ve commit'lerdeki atıfları kırardı.
 
 **Sıra ve gerekçesi:**
 
-| # | İş | Neden bu sırada |
+⛔ **BU SIRA BİTTİ — 18 Kasım 2026 itibarıyla altısından beşi
+kapandı.** Tablo kayıt için duruyor; sıradaki iş için aşağıdaki
+"kalan" satırına bak.
+
+| # | İş | Durum |
 |---|---|---|
-| **46** | Favicon aileleri ayrışmış | Küçük ve mekanik; başka hiçbir şeye dokunmuyor |
-| **45** | Ana sayfa kahraman boşluğu | Tek sayfa, tek düzen işi |
-| **47 + 48** | Üst menü birliği **+** dil sürekliliği | ⛔ **BİRLİKTE** — aşağıya bak |
-| **43** | Mekânlar: fotoğraflı liste görünümü | Uygulama içi, kendi başına |
-| **44** | Fiyatlar sayfası | ⏸ Para birimi parçası **Cloudflare'e bağlandı** (44.3). Kalanı serbest: eşit kutu, özet satırı, indirim rozeti |
+| **46** | Favicon aileleri ayrışmış | ✅ **BİTTİ** (17 Kasım) |
+| **45** | Ana sayfa kahraman boşluğu | ✅ **BİTTİ** (17 Kasım) |
+| **47 + 48** | Üst menü birliği **+** dil sürekliliği | ✅ **BİTTİ** (18 Kasım) |
+| **43** | Mekânlar: fotoğraflı liste görünümü | ✅ **BİTTİ** (18 Kasım) |
+| **44** | Fiyatlar sayfası | ⏳ **Kısmen** — aşağıya bak |
+
+**44'ün bugünkü hâli:**
+
+| Parça | Durum |
+|---|---|
+| 44.1–44.2 EUR + para birimleri veriden | ✅ BİTTİ (18 Kasım) |
+| 44.4 Aylık/Yıllık kalıyor | ✅ Karar verildi |
+| 44.5 Kutular eşit ölçüde | ✅ BİTTİ (18 Kasım) |
+| 44.7 Yıllık indirim rozeti (üç yerde) | ✅ BİTTİ (18 Kasım) |
+| 44.6 "Neler dahil" özeti | ⏸ **KULLANICIYA SORULACAK** — kartlarda zaten madde listesi var, "kısa özet" ondan farklı bir şey mi? |
+| 44.3 Ülkeye göre para birimi, düğmesiz | ⏸ **CLOUDFLARE'E BAĞLI** (kullanıcı kararı) |
 
 ⛔ **47 ve 48 NEDEN BİRLİKTE.** 48. madde zaten yazıyor: dil
 bağlantısının tek satırlık düzeltmesi var ama *"asıl sorun çözülmeden
@@ -1079,7 +1094,24 @@ dokunmak ve ikinci seferde birincisini bozmak demek.
   açmak gerekti.
 
   Tam koşu: **214 test, hepsi geçti.** `main` → `8e450e6`.
-- ⬜ **48.** ⛔ **DİL SÜREKLİLİĞİ — SİTENİN TAMAMINDA TEK DAVRANIŞ.**
+- ✅ **48. BİTTİ (18 Kasım 2026).** ⛔ **DİL SÜREKLİLİĞİ — SİTENİN
+  TAMAMINDA TEK DAVRANIŞ.**
+
+  Sayfalar `/tr/` ve `/en/` ağacında üretiliyor; düz adresler
+  yönlendiriciye dönüştü (`uret/yonlendirici.js`), sıralama
+  `?lang=` → hafıza → tarayıcı dili → varsayılan. Sayfanın kendi
+  dili `window.SAYFA_DILI` ile `<head>`'e çivileniyor, hafıza
+  adresin dilini **ezmiyor**.
+
+  ⚠ Yol boyunca iki gerçek gerileme yakalandı: dil açılır listesi
+  çizilmiş ama **bağlanmamıştı** (seçmek sayfayı değiştirmiyordu),
+  ve Almanca tarayıcı **Türkçe** sayfaya düşüyordu (`YABANCI='en'`
+  eklendi, x-default ona bağlandı).
+
+  Bekçi: `testler/uretilen-sayfalar.test.js` (**95 iddia**) +
+  `dil-varsayilan.test.js`.
+
+  ⬇ Maddenin özgün hâli kayıt için duruyor:
   ⚠ **41. maddeden (altı dil) ÖNCE bitmek zorunda.** Kullanıcı
   16 Kasım 2026'da söyledi: *"Kullanıcı sitenin herhangi bir yerinde
   hangi dili seçiyorsa o dil ile açılmalı tüm sayfalar. Daha sonra
@@ -1323,16 +1355,95 @@ dokunmak ve ikinci seferde birincisini bozmak demek.
   rakamı sabit yazmayacak.
   4. ✅ **Aylık/Yıllık KALIYOR** (kullanıcı 16 Kasım'da onayladı).
      Yalnızca **TRY/USD çifti** kalkacak: para birimi artık otomatik.
-  5. **Kutular aynı ölçüde olsun.** Ekran görüntüsünde Starter ve
-     Creator Pro farklı yükseklikte. ⚠ Mekân kartlarında aynı hata
-     vardı; `mekan-kart-olcu.test.js` ile kapatıldı. Buraya da
-     **ölçen bir test** yazılacak.
-  6. **Fiyata dahil olanların kısa özeti** eklenecek; o satır
-     eklenirken kutu ölçüsü de düzeltilecek.
-     ⛔ Özette **yalnızca VAR OLAN özellikler** yazılacak:
-     `fiyatlar.html:309` zaten uyarıyor — PDF/CSV dışa aktarma ve
-     ekip özellikleri özellik denetiminde **YOK** çıktı.
-  7. **Yıllık indirim oranı GÖZE ÇARPSIN.** Kullanıcı 16 Kasım 2026'da
+  5. ✅ **BİTTİ (18 Kasım 2026) — kutular aynı ölçüde.**
+     Ölçüldü, sebep tek satırdı:
+
+     | Genişlik | Önce | Sonra |
+     |---|---|---|
+     | 1280 | 499,2 / 575,2 px (**76 px fark**) | 575,2 / 575,2 |
+     | 900 | 477,7 / 577,7 px (**100 px**) | 577,7 / 577,7 |
+     | 900 (İngilizce) | **124 px fark** | eşit |
+
+     Kök sebep: `.kartlar{align-items:start}` ızgaranın kartları
+     **germesini** engelliyordu. ⚠ `.kart ul{flex:1}` zaten düğmeyi
+     kartın dibine itmek için yazılmıştı — yani kart gerilmek üzere
+     tasarlanmış, ızgara izin vermiyormuş. Satır kalktı; düğmeler
+     artık iki kartta da dipten **29 px**.
+
+     ⚠ Telefonda (390px) ızgara **tek sütuna** iniyor; orada alt alta
+     duran kartların boyu farklı olabilir ve bu normal.
+
+     Bekçi: `testler/fiyat-kart-olcu.test.js`, **13 iddia**. Test
+     satırları **kendisi buluyor** (aynı üst kenar = aynı satır),
+     plan listesi ya da genişlik eşiği yazmıyor — yarın üçüncü plan
+     görünür olursa kendiliğinden girer (Bölüm 7'nin bekçi kuralı).
+     ⛔ Yuvarlamıyor: alt piksel ölçülüyor, eşik 0,5 px.
+  6. ⏸ **KULLANICIYA SORULACAK — maddenin kendisi belirsiz.**
+     *"Fiyata dahil olanların kısa özeti"* yazıyor ama **kartlarda
+     zaten madde listesi var** (Starter 4 madde, Creator Pro 6
+     madde; ekran görüntüsünde görünüyor). Bu madde yazıldığında o
+     liste olmayabilir.
+
+     ⚠ **Sorulacak:** "kısa özet" bu listeden **farklı** bir şey mi
+     (örneğin fiyatın altında tek satırlık bir toplama), yoksa
+     madde **zaten karşılanmış** mı?
+     ⛔ Tahminle fazladan bir şey eklenmedi — var olanın üstüne
+     gereksiz bir özet koymak sayfayı kalabalıklaştırırdı.
+
+     Maddenin ikinci yarısı (*"o satır eklenirken kutu ölçüsü de
+     düzeltilecek"*) **44.5'te bitti**, bu soruyu beklemedi.
+
+     ⛔ Cevap ne olursa olsun geçerli: özette **yalnızca VAR OLAN
+     özellikler** yazılacak — `fiyatlar.html` zaten uyarıyor,
+     PDF/CSV dışa aktarma ve ekip özellikleri özellik denetiminde
+     **YOK** çıktı.
+  7. ✅ **BİTTİ (18 Kasım 2026) — yıllık indirim oranı üç yerde,
+     tasarlanmış bir öğe olarak.**
+
+     | Nerede | Ne yazıyor | Ne zaman |
+     |---|---|---|
+     | "Yıllık" düğmesinin yanında | `%9 İNDİRİM` / `9% OFF` | indirim varsa — **aylıkta da**, yıllığa teşvik |
+     | Başlıktaki cümlenin içinde | `Yıllık ödemede [%9] kadar daha ucuz.` | indirim varsa |
+     | Kartta, yıllık fiyatın yanında | `%9 İNDİRİM` / `9% OFF` | **yalnızca yıllık seçiliyken** |
+
+     **Tasarım — üçü de aynı aile:** lime hap (`--jel-lime` #C8F24B)
+     üstünde koyu yazı, IBM Plex Mono, büyük harf, harf aralığı.
+     ⚠ Renk keyfi değil: `marka.css` bu renk için *"üstüne KOYU
+     yazı: 14.06"* diyor — yani **zemin** rengi. Ölçüldü, kontrast
+     **14,06** (WCAG AA eşiği 4,5).
+     ⚠ Turuncu ÖNERİLEN rozetinden **kasten ayrı renk**: biri
+     tavsiye, öteki para. Aynı renk olsalar tek sinyal gibi okunurdu.
+     Ölçüler bağlama göre: düğme yanı 12,5px · cümle içi 13px ·
+     kart içi 11px.
+
+     **Başlıktaki cümle büyüdü:** 14px → **17px**, rengi lime'dan
+     kreme döndü (lime artık hapta). Kullanıcının *"çok küçük"*
+     şikâyeti buydu.
+
+     ⚠ **Hangi oran nerede:** başlık ve düğme **görünen planların
+     EN KÜÇÜK** oranını yazıyor (*"...kadar"* = en fazla bu kadar),
+     böylece hiçbir plan için abartılmış olmuyor. **Kart kendi
+     oranını** yazıyor, çünkü o kartta duran rakam o planın kendi
+     rakamı. Bugün tek planın yıllık fiyatı olduğu için ikisi aynı
+     çıkıyor. ⚠ Kullanıcı *"aynı oran"* demişti; ikisi ayrışırsa
+     doğru olan karttaki olduğu için böyle kuruldu — **itiraz
+     ederse değişir.**
+
+     ⛔ **İNDİRİM YOKSA HİÇBİR YERDE ROZET YOK.** "%0 indirim"
+     yazmak gürültü, hatta yanıltıcı olurdu.
+
+     Bekçi: `testler/fiyat-indirim-rozeti.test.js`, **12 iddia**.
+     Dört mutasyonla kanıtlandı: oran sabit yazılınca 6 iddia düşer,
+     kart rozeti dönem gözetmeyince 2, indirim 0'ken rozet çıkınca 2,
+     İngilizce sözlüğe girmeyince 1.
+     ⛔ **DÖRDÜNCÜ MUTASYON ÖNCE YAKALANMADI** — iddia yanlış nedenle
+     yeşildi: iki dilin dizelerini karşılaştırıyordu, oysa `yuzde`
+     biçimi zaten farklı (`%30` ve `30%`), yani İngilizce hiç
+     çevrilmese bile dizeler eşit çıkmıyordu. Artık sayı ve `%`
+     atılıp **sözcük** karşılaştırılıyor. Mutasyon olmasa bu boş
+     bekçi fark edilmeyecekti.
+
+  7b. ⬜ **ESKİ MADDE (kayıt için).** Kullanıcı 16 Kasım 2026'da
      ekran görüntüsüyle istedi: kartta yıllık fiyatın yazdığı yere
      *"%35 indirim"* gibi **tasarlanmış, dikkat çekici** bir öğe
      gelecek (kendi fontu ve görseli), **ve aynı oran "Yıllık"
@@ -1488,7 +1599,7 @@ dokunmak ve ikinci seferde birincisini bozmak demek.
   etkilenmedi.
   ⚠ 44 piksel **dokunma hedefi korundu**; test ayrıca onu da ölçüyor.
 
-- ⬜ **46.** **Favicon aileleri ayrışmış.** Kullanıcı sekmelerde
+- ✅ **46. BİTTİ (17 Kasım 2026).** **Favicon aileleri ayrışmış.** Kullanıcı sekmelerde
   gördü: `fiyatlar.html` ile `index.html` farklı ikon gösteriyor.
   **Koddan doğrulandı, iki ayrı sebep var:**
 
@@ -1559,7 +1670,23 @@ dokunmak ve ikinci seferde birincisini bozmak demek.
      bağlanmıyor**. Dursun mu, silinsin mi? Şimdilik duruyor ve ikon
      kümesini aldı.
 
-- ⬜ **47.** **Üst menü her sayfada aynı olsun.** Kullanıcı
+- ✅ **47. BİTTİ (18 Kasım 2026).** **Üst menü her sayfada aynı olsun.**
+
+  Menü artık elle yazılmıyor: `uret/ust-menu.js` üretiyor ve her
+  sayfaya aynısı giriyor. Kayma iki ayrı sebepten geliyordu ve
+  ikisi de ölçüldü: `.ust-sag`'ın sol kenarı ana sayfada sabit,
+  ötekilerde `auto` idi (**125 px**); çağrı düğmesinin ölçüsü ana
+  sayfada 13px/44px, ötekilerde 14,5px/42px idi (**14 px**).
+  İkisi de üretilen `<style>` bloğunda birleştirildi.
+
+  Bekçi: `testler/ust-menu-birligi.test.js` (**8 iddia**) +
+  `uretilen-sayfalar.test.js` içindeki kayma ölçüsü — ⛔ o ölçü
+  18 Kasım'da **alt piksele** çevrildi (yuvarlama uçurumu), iki
+  mutasyonla kanıtlandı: 119 px ve **1 px** hâlâ yakalanıyor.
+
+  ⬇ Maddenin özgün hâli kayıt için duruyor:
+
+  Kullanıcı
   16 Kasım 2026'da bildirdi: *"ana sayfadan kılavuz sayfasına geçince
   üst menüler neden farklı? Kılavuz sayfasına geçince Başla tuşu
   falan yok oluyor."* **Koddan doğrulandı — üç ayrı üst menü var:**
@@ -1581,8 +1708,32 @@ dokunmak ve ikinci seferde birincisini bozmak demek.
   kullanıcıya bu bağlantı hatırlatılacak.
   ⚠ Düzeltilince **bekçi test**: her yayın sayfasının üst menüsü
   aynı bağlantı kümesini ve CTA'yı taşısın (Bölüm 7).
-- ⬜ **43.** **Mekânlar sayfasına fotoğraflı liste görünümü + görünüm
-  değiştirme tuşu.** Kullanıcı 16 Kasım 2026'da istedi: *"places /
+- ✅ **43. BİTTİ (18 Kasım 2026).** **Mekânlar sayfasına fotoğraflı
+  liste görünümü + görünüm değiştirme tuşu.**
+
+  ✅ **AÇIK NOKTA KAPANDI:** aşağıdaki *"sırası gelince sorulacak"*
+  sorusu soruldu. Kullanıcı: *"yoksa benzer yeni bir tuş oluştur."*
+  Yani ekran görüntüsündeki iki-ikonlu çift bu depoda olmadığı için
+  **yeni bir tuş** yapıldı — tahmin edilmedi, soruldu.
+
+  | Ne | Nerede |
+  |---|---|
+  | İki ikonlu görünüm tuşu | `app.html` → `IKON_IZGARA` / `IKON_SATIR`, `.gorunum-sec` |
+  | Telefonda dokunma hedefi 44px | `.gs-dug` |
+  | Satır görünümü | `renderMekanlar` içinde `.mk-satir` dalı |
+  | Seçim hatırlanıyor | `demo_mk_gorunum` (takvimdeki kalıbın aynısı) |
+  | İki dilde etiket | `mk_view_cards` / `mk_view_list` (Bölüm 7) |
+
+  ⚠ Yol boyunca üç ölçüm hatası çıktı ve üçü de **ölçülerek**
+  bulundu: satırlar yan yana diziliyordu (ID özgüllüğü — `#mk_list`
+  `.mk-liste`'yi yeniyordu), baş harfler 1280×800'ü dolduruyordu
+  (`position:relative` eksikti), telefonda 31px taşma vardı.
+
+  Bekçi: `testler/mekan-gorunum.test.js`, **12 iddia**.
+
+  ⬇ Maddenin özgün hâli kayıt için duruyor:
+
+  Kullanıcı 16 Kasım 2026'da istedi: *"places /
   mekanlar sayfasında yine fotoğraflı görünümlü liste görünümü
   eklenecek. Üst bölüme liste ve diğer görünüm türü için eklediğime
   benzer bir tuş ekle, görünümler arasında geçiş yapabilsin."*
