@@ -30,6 +30,22 @@
 #     olmadigindan emin ol; yoksa iki test ayni porta baglanip
 #     RASTGELE kirmizi yanar ve sebebi gorunmez.
 #
+# ⛔ "KOSU BITTI MI" SORUSUNU `pgrep` ILE SORMA — YANLIS CEVAP VERIR.
+#   18 Kasim 2026'da iki kez yanilttI: koşu 11dk51sn'de bitti,
+#   "=== BITTI — 224 gecti, 0 kaldi ===" yazildi, butun .kod
+#   dosyalari tamamdi -- ama `bash hizli.sh` sureci 30 dakika sonra
+#   hala YASIYORDU.
+#   Sebep: asagidaki `sunucu()` paylasilan 8098'i arka planda
+#   baslatiyor ve o surec betigin COCUGU olarak kaliyor; bash
+#   cikarken onu bekliyor (/proc/<pid>/wchan = do_wait). Sunucu
+#   hic bitmedigi icin betik de bitmiyor.
+#   ⚠ Isin kendisi bitmis durumda; asili kalan yalnizca kabuk.
+#
+#   DOGRU SINYAL: gunlukteki (ya da sonuc.txt'teki) son satir.
+#     grep -q '^=== BITTI' sonuc.txt
+#   ⛔ `pgrep -f hizli.sh` ayrica KENDI komut satirinda "hizli.sh"
+#     gecen her seyi (izleyici dongusunu, grep'i) de bulur.
+#
 # ⛔ ZAMANA DUYARLI TESTLER PARALEL KOSMAZ. Asagidaki SERI listesi
 #   sonda, tek sira kosuyor. Sebebi 27 Ekim 2026: ayni commit'in iki
 #   CI kosusunda iki test YALNIZCA "Timeout exceeded" ile kaldi; kod
