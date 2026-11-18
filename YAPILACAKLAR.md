@@ -472,7 +472,7 @@ ve commit'lerdeki atıfları kırardı.
 | **45** | Ana sayfa kahraman boşluğu | Tek sayfa, tek düzen işi |
 | **47 + 48** | Üst menü birliği **+** dil sürekliliği | ⛔ **BİRLİKTE** — aşağıya bak |
 | **43** | Mekânlar: fotoğraflı liste görünümü | Uygulama içi, kendi başına |
-| **44** | Fiyatlar sayfası | En büyüğü: para birimi, admin fiyatı, indirim yüzdesi |
+| **44** | Fiyatlar sayfası | ⏸ Para birimi parçası **Cloudflare'e bağlandı** (44.3). Kalanı serbest: eşit kutu, özet satırı, indirim rozeti |
 
 ⛔ **47 ve 48 NEDEN BİRLİKTE.** 48. madde zaten yazıyor: dil
 bağlantısının tek satırlık düzeltmesi var ama *"asıl sorun çözülmeden
@@ -1194,12 +1194,71 @@ dokunmak ve ikinci seferde birincisini bozmak demek.
      | starter · monthly | 0 | 0 | 0 |
      | studio · monthly | 105.000 | 2.900 | 2.900 |
      | studio · yearly | 1.020.000 | 28.800 | 28.800 |
-  3. **Bölgeye göre para birimi.** Bugün `fiyatlar.html:389`
-     `let para = trMi ? 'TRY' : 'USD'` — yani **dile** bakıyor,
-     bölgeye değil. Kullanıcı nereden girdiyse o para birimi açılacak.
-     ⚠ Bölge nereden anlaşılacak (saat dilimi mi, `navigator.language`
-     bölge eki mi, bir servis mi) sırası gelince kullanıcıya
-     sorulacak — tahminle seçilmeyecek.
+  3. ⏸ **Para birimi ÜLKEYE göre — KARAR VERİLDİ, CLOUDFLARE'E
+     BAĞLANDI (18 Kasım 2026).** Bu madde önce "bölgeye göre
+     varsayılan para birimi" diyordu; kullanıcı istediği şeyi
+     **büyüttü**. Kendi sözleriyle:
+
+     > *"ama unutma yapılacaklar da kişinin girdiği ülkeye göre para
+     > birimi çıkması lazım. Çünkü buradaki fiyatların tamamı
+     > birbirinden farklı"*
+     >
+     > *"kullanıcı hangi ülkeden giriyorsa sadece o fiyatları görmeli
+     > — hatta burada farklı para birimi tuşları çıkmamalı. Yani
+     > kullanıcı para birimini kendi değiştirememeli"*
+
+     Yani iş artık "doğru para birimiyle **aç**" değil, "yalnızca o
+     para birimi **olsun**": düğmeler kalkacak, seçim elden alınacak.
+     Gerekçesi kullanıcının kendi gerekçesi ve doğrulanmış: aylık
+     creator_pro TRY'de 320 TL, USD'de 9 dolar, EUR'da 9 euro —
+     bunlar birbirinin çevirisi değil (tablo yukarıda, 44.2).
+
+     **KARAR: Cloudflare taşımasını bekleyip BİR KEREDE yapılacak.**
+     Kullanıcı üç seçenek arasından bunu seçti. Yani fiyat sayfasının
+     para birimi seçicisine **o güne kadar dokunulmayacak**; bugün
+     TRY/USD/EUR düğmeleri görünmeye devam ediyor ve bu bir eksik
+     değil, **verilmiş bir karar**. ⛔ Bir sonraki oturumda "düğmeler
+     hâlâ duruyor" diye hata olarak bildirme.
+
+     **NEDEN BUGÜN YAPILAMIYOR — iki ayrı sebep, ikisi de ölçüldü:**
+
+     | İstenen | Bugünkü durum |
+     |---|---|
+     | Düğme çıkmasın, tek para birimi görünsün | Yapılabilirdi |
+     | Doğru ülkenin fiyatı açılsın | Ancak **tahminle** (saat dilimi) |
+     | Kullanıcı diğerlerini **göremesin** | ⛔ **Yapılamaz** |
+
+     1. Site GitHub Pages'te **durağan**. Ziyaretçi sayfayı açtığında
+        bizim hiçbir kodumuz koşmuyor; dosyalar olduğu gibi veriliyor.
+        Ülkeyi ancak **tarayıcının içinde** tahmin edebiliriz (saat
+        dilimi ya da `navigator.language` bölge eki) — ve tarayıcıda
+        olan her şeyi ziyaretçi değiştirebilir. Yani bu bir
+        **varsayılan** olurdu, **kilit** olmazdı.
+     2. ⛔ **Daha önemlisi: fiyat tablosu HERKESE AÇIK OKUNUR.**
+        `sql/69:390` → `create policy plan_prices_oku ... using (true)`.
+        18 satırın **tamamı** şu an bile tarayıcıya geliyor; sayfa
+        sadece bir kısmını çiziyor. **Düğmeyi kaldırmak fiyatları
+        ekrandan kaldırır, VERİDEN kaldırmaz.** Bu yüzden "kilitledim"
+        denmeyecek — denirse yanlış söylenmiş olur (Bölüm 4).
+
+     **CLOUDFLARE'DEN SONRA NE DEĞİŞİYOR:** sayfa sunulurken kendi
+     kodumuz koşabiliyor ve Cloudflare ziyaretçinin ülkesini kendisi
+     söylüyor — dışarıya ek istek gitmiyor, ziyaretçinin adresi başka
+     bir şirkete verilmiyor (üçüncü taraf servis seçeneği bu yüzden
+     elendi; gizlilik/şartlar sayfalarına her dilde ekleme de
+     gerekmiyor). O zaman ülke tarayıcı ayarıyla değiştirilemez hale
+     geliyor.
+     ⚠ **Ama kilit tek başına bununla tamamlanmıyor:** fiyat verisinin
+     de filtreli gelmesi gerekiyor, yoksa (2) numaralı sebep yerinde
+     kalır. Sırası geldiğinde çözülecek iki parça: (a) ülkeyi kenarda
+     okumak, (b) sayfaya yalnızca o ülkenin satırlarını göndermek.
+     ⛔ Bunun bugünkü Supabase altyapısıyla mümkün olup olmadığı
+     **ARAŞTIRILMADI** — kullanıcı araştırma seçeneğini seçmedi.
+     Sırası gelince araştırılacak, **uydurulmayacak.**
+
+     ⚠ **BİR KEZ SÖYLENDİ, KARAR KULLANICININ:** düğme hiç olmazsa
+     yurt dışındaki bir Türk ya da Türkiye'deki bir yabancı yanlış
+     para birimini görür ve düzeltemez. Kullanıcı bunu bilerek seçti.
   4. ✅ **Aylık/Yıllık KALIYOR** (kullanıcı 16 Kasım'da onayladı).
      Yalnızca **TRY/USD çifti** kalkacak: para birimi artık otomatik.
   5. **Kutular aynı ölçüde olsun.** Ekran görüntüsünde Starter ve
@@ -1806,6 +1865,65 @@ dokunmak ve ikinci seferde birincisini bozmak demek.
   **düzenlenmiş** görünüyor (creator_pro TRY aylık 299 / yıllık 2999,
   USD yıllık 98, EUR yıllık 89). Yani 44.2'nin kurduğu zincir —
   SQL → panel → sayfa — uçtan uca çalışıyor.
+
+- ⬜ **62.** **Supabase kitaplığı DIŞARIDAN geliyor — beş sayfanın
+  ortak tek dayanağı.** 18 Kasım 2026'da fiyat sayfası arızası
+  araştırılırken çıktı.
+
+  `cdn.jsdelivr.net` adresinden çekiliyor ve depoda **yerel kopyası
+  yok** (`testler/sahte-supabase.js` yalnızca testlerin taklidi).
+  Koddan sayıldı, beş sayfa da aynı adrese bağlı:
+
+  | Sayfa | Satır |
+  |---|---|
+  | `app.html` (uygulamanın kendisi) | `<script src="…jsdelivr…supabase-js@2.45.4…">` |
+  | `yonetim.html` (yönetim paneli) | aynı |
+  | `kaynak/fiyatlar.html` | `276` |
+  | `kaynak/index.html` | aynı |
+  | `lokasyon.html` | aynı |
+
+  O adrese bir gün ulaşılamazsa **uygulama, panel ve fiyat sayfası
+  birden** çalışmaz. Çözüm: kitaplığı depoya koyup kendi alan
+  adımızdan sunmak — o zaman üçüncü taraf tek dayanak ortadan kalkar.
+
+  ⛔ **BU, 18 KASIM ARIZASININ SEBEBİ DEĞİLDİ — yanlış suçladım,
+  kaydı buraya düşüyorum ki bir daha aynı yoldan gidilmesin.**
+  Kullanıcı *"Fiyatlar yükleniyor…"* yazısında takılı bir sayfa
+  gördü ve ben kitaplığı suçladım. Kanıt tersini söylüyor:
+  `kaynak/fiyatlar.html:248` → `<div id="durum" class="durum"></div>`,
+  yani o kutu HTML'de **boş**; "yükleniyor" yazısını bizim betiğimiz
+  yazıyor ve onu ancak **kitaplığın var olduğunu gördükten sonra**
+  yazıyor (yoksa "tarayıcı kitaplığı yüklenemedi" yazardı). Demek ki
+  kitaplık **sorunsuz gelmiş**. Kullanıcının konsolunda da sayfaya
+  ait tek hata yoktu (gördüğü satır bir tarayıcı eklentisine aitti).
+  Takılan şey **veritabanına giden isteğin kendisiydi**: yanıt hiç
+  dönmedi, ve yanıtsız kalan bir istek konsola hiçbir şey yazmaz.
+  Kullanıcı aynı gün *"sayfada euro dahil tüm fiyatları görüyorum"*
+  dedi — yani geçici bir takılmaydı.
+
+  Ders (Bölüm 4): **belirtiye uyan ilk açıklamayı sebep sanma.**
+  Kanıt zinciri kurulana kadar "şu yüzden" denmeyecek.
+
+- ✅ **63. BİTTİ (18 Kasım 2026)** — **fiyat sayfası artık
+  "yükleniyor"da TAKILI kalmıyor.** Yukarıdaki arızanın asıl kusuru
+  buydu: istek yanıtsız kalırsa `await` sonsuza kadar bekliyordu —
+  ne hata mesajı, ne tekrar deneme. Sayfanın söyleyecek sözü yoktu.
+
+  | Ne | Nerede |
+  |---|---|
+  | 12 saniyede zaman aşımı | `kaynak/fiyatlar.html` → `zamanAsimli()` |
+  | "Yüklenemedi" + **Tekrar dene** düğmesi (sayfa yenilemeye gerek yok) | aynı dosya, `catch` |
+  | İngilizce sayfada aynı güvence, kendi diliyle (Bölüm 7) | aynı dosya, iki sözlük |
+
+  Ölçüldü: 12. saniyede yazı değişiyor, gerçek bir `<button>`
+  çıkıyor, telefonda **47px** dokunma yüksekliği (44 eşiğinin
+  üstünde). Bekçi: `testler/fiyat-para-birimi.test.js`, **15 iddia**;
+  üç mutasyonla kanıtlandı (zaman aşımı kaldırılınca 5 iddia düşer,
+  düğme düz yazıya çevrilince 5 iddia düşer, İngilizce sözlüğe
+  girmezse 1 iddia düşer).
+
+  ⚠ **Bu bir TEŞHİS değil, bir GÜVENCE.** Sebep ne olursa olsun
+  (ağ, CDN, sunucu) kullanıcı ekranda bekleyip durmuyor.
 
 ### 4 · Basitleştirme (hepsi ilk deneyimi değiştiriyor)
 - ⬜ **17.** İlk ekran: kendiliğinden açılan tur yok
