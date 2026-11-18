@@ -37,6 +37,42 @@ function ustMenu({ sayfa, dil }){
   if(!DILLER[dil]) throw new Error('bilinmeyen dil: ' + dil);
   const satir = [];
   satir.push(BAS);
+  // ⛔ 18 KASIM 2026 — YERLESIM DE TEK KAYNAKTAN.
+  //    Kullanici: "menude sayfalar arasinda gezindigimde menude yer
+  //    alan yazilar ust alanda saga sola dogru kayiyor, tum
+  //    sayfalarda sabit durmali."
+  //    Olculdu ve hakliydi: menunun ISARETLEMESI tek kaynaktan
+  //    geliyordu ama YERLESIMI hala her sayfanin kendi stilinden:
+  //      /tr/          .ust-ic gap 14px · .ust-sag margin-left 22px
+  //      /tr/fiyatlar/ .ust-ic gap 12px · .ust-sag margin-left AUTO
+  //    Ikinci durumda hem menu hem sag blok "auto" ile sola
+  //    yasliyor, bos alani ikiye boluyor ve menu ORTAYA kayiyordu
+  //    (ilk madde 503 yerine 378 pikselde).
+  //
+  // ⚠ NEDEN BURADA, marka.css'te DEGIL: marka.css <head>'de,
+  //    sayfanin kendi <style>'indan ONCE yukleniyor; ayni
+  //    belirginlikteki sayfa kurali onu ezerdi. Bu blok menunun
+  //    hemen yaninda, belge sirasinda EN SONDA -- dolayisiyla
+  //    kazaniyor. Tek kaynak olmasi da boylece korunuyor.
+  satir.push('<style>');
+  satir.push('.ust .ust-ic{display:flex;align-items:center;gap:14px;}');
+  satir.push('.ust .ust-nav{margin-left:auto;}');
+  satir.push('.ust .ust-sag{margin-left:0;display:flex;align-items:center;gap:8px;}');
+  satir.push('@media(max-width:879px){.ust .ust-sag{margin-left:auto;}}');
+  // ⛔ CAGRI DUGMESININ OLCUSU DE TEK KAYNAKTAN.
+  //    Olculdu: ana sayfada 13px yazi / 44px yukseklik / 121px
+  //    genislik, oteki sayfalarda 14.5px / 42px / 135px. Yani ayni
+  //    dugme her sayfada baska boydaydi ve sag blok 14 piksel
+  //    kayiyordu -- kullanicinin gordugu "yazilar saga sola
+  //    kayiyor"un ikinci sebebi buydu.
+  // ⚠ KUCUK OLAN HALI DOGRU OLAN: kullanici 17 Kasim 2026'da
+  //    "bu tus bir miktar kuculebilir ve yaninda yer alan dil
+  //    tuslari buyuklugune gelebilir" dedi (45. madde) ve o
+  //    duzeltme yalnizca ana sayfaya girmisti. Artik her sayfada.
+  satir.push('.ust .ust-sag .dug-sm{min-height:44px;padding:9px 16px;'
+             + 'font-size:13px;border-radius:9px;}');
+  satir.push('@media(max-width:879px){.ust .ust-sag .dug-sm{padding:9px 12px;}}');
+  satir.push('</style>');
   satir.push('<header class="ust">');
   satir.push('  <div class="sar ust-ic">');
   satir.push('    <a class="marka" href="' + kacir(adres('ev', dil)) + '">Shootboard</a>');

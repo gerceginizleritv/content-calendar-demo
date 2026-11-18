@@ -285,6 +285,51 @@ const SUNUCU = process.env.URET_SUNUCU || 'http://127.0.0.1:8098';
   }
 
   // ───────────────────────────────────────────────────────────────
+  // UST MENU HER SAYFADA AYNI YERDE DURUYOR MU
+  //
+  // ⛔ 18 KASIM 2026 — KULLANICI BILDIRDI: "menude sayfalar arasinda
+  //    gezindigimde menude yer alan yazilar ust alanda saga sola
+  //    dogru kayiyor, tum sayfalarda sabit durmali."
+  //    Olculdu ve hakliydi. IKI ayri sebep vardi, ikisi de ayni
+  //    aileden: menunun ISARETLEMESI tek kaynaktan geliyordu ama
+  //    GORUNUMU hala her sayfanin kendi stilinden.
+  //      1. .ust-sag'in sol kenari: ana sayfada 22px sabit, oteki
+  //         sayfalarda AUTO -> menu ortaya kayiyordu (125 piksel).
+  //      2. Cagri dugmesinin olcusu: ana sayfada 13px/44px, oteki
+  //         sayfalarda 14.5px/42px -> 14 piksel daha kayma.
+  //    Ikisi de uret/ust-menu.js'in urettigi <style> blogunda
+  //    birlesti. Bu olcu listeyi YAZMIYOR: sayfalari sayfalar.js'ten,
+  //    dilleri diller.js'ten aliyor.
+  for(const olcek of [{ ad:'masaustu', w:1280, h:900 },
+                      { ad:'tablet',   w:900,  h:800 },
+                      { ad:'telefon',  w:390,  h:844 }]){
+    for(const d of DIL){
+      const yerler = [];
+      for(const s of SAYFALAR){
+        const p5 = await tarayici.newPage({ viewport:{ width: olcek.w, height: olcek.h } });
+        await p5.goto(SUNUCU + adres(s.ad, d), { waitUntil: 'load' });
+        await p5.waitForTimeout(400);
+        yerler.push(Object.assign({ sayfa: s.ad }, await p5.evaluate(()=>{
+          const r = (sel)=>{ const e = document.querySelector(sel);
+            return e ? Math.round(e.getBoundingClientRect().left) : -1; };
+          return { marka: r('.marka'), nav1: r('.ust-nav a'),
+                   dil: r('.dil-tetik'), cta: r('.ust-sag .dug') };
+        })));
+        await p5.close();
+      }
+      for(const alan of ['marka', 'nav1', 'dil', 'cta']){
+        const degerler = yerler.map(x=> x[alan]);
+        const sapma = Math.max(...degerler) - Math.min(...degerler);
+        dene('★ ' + olcek.ad + '/' + d + ': "' + alan + '" her sayfada AYNI yerde', ()=>{
+          assert.strictEqual(sapma, 0,
+            'sayfadan sayfaya ' + sapma + ' piksel kayiyor: '
+            + yerler.map(x=> x.sayfa + '=' + x[alan]).join(' '));
+        });
+      }
+    }
+  }
+
+  // ───────────────────────────────────────────────────────────────
   // DIL SECICI GERCEKTEN CALISIYOR MU
   //
   // ⛔ 18 KASIM 2026 — BU BOLUM BIR BEKCI HATASINDAN DOGDU.
