@@ -1824,9 +1824,83 @@ dokunmak ve ikinci seferde birincisini bozmak demek.
   60 karakter üstü, Reels kapağı. Bugün `f_hashtags` yalnızca
   **karakter** sınırı taşıyor (400), **adet** sınırı yok.
 
-- ⬜ **56.** **Fikirler sayfası: kart yüksekliği sabitlensin + Türkçe
-  "hepsini ayır" düğmesi kısalsın.** Kullanıcı 18 Kasım 2026'da iki
-  ekran görüntüsüyle istedi:
+- ✅ **56. BİTTİ (18 Kasım 2026).** **Fikirler sayfası: kart yüksekliği
+  sabitlendi + Türkçe "hepsini ayır" düğmesi kısaldı.**
+
+  **Üç karar da kullanıcıya SORULDU, hiçbiri tahmin edilmedi:**
+
+  | Soru | Cevap |
+  |---|---|
+  | Türkçe düğme metni | **"Hepsini ayır"** |
+  | Kartın üst sınırı | **5 satır metin** |
+  | Metin sığmayınca | **"…" ile kesilsin, tıklayınca açılsın** |
+
+  **a · Kart yüksekliği.** Önce ölçüldü, sınır YOKTU:
+
+  | Harf | Gövde | Kart |
+  |---|---|---|
+  | 80 | 62,8 px | 153,8 px |
+  | 647 | 397,5 px | 488,5 px |
+  | 1295 | 795 px | **886 px** (kısanın ~6 katı) |
+
+  ⚠ Piksel değeri **ekran görüntüsünden okunmadı** (Bölüm 4):
+  kullanıcıya satır sayısıyla soruldu. Sınır da elle yazılmadı —
+  `calc(13.5px * 1.55 * 5)`, yani punto ve satır aralığından
+  hesaplanıyor; yarın punto değişirse sınır kendiliğinden uyar.
+  Sonuç: sınırı aşan her kart **195,6 px**, kısa kartlar 150 px.
+
+  ⛔ **İLK ÇÖZÜM YETMEDİ VE BUNU ÖLÇÜ YAKALADI.** Yalnızca
+  `-webkit-line-clamp` konmuştu; o özellik **düz metni** kırpıyor ama
+  parçalı bir fikrin gövdesi blok öğelerden oluşuyor ve hiç
+  kırpılmıyordu: **24 parçalı kart 2087,4 px** çıktı — yani sınırsız
+  hâlinden (886) **daha kötü**. "Sınır koydum" deyip geçilseydi durum
+  kötüleşmiş olacaktı. `max-height` sert sınır olarak eklendi.
+
+  **b · Türkçe düğme metni.** Adaylar ölçüldü:
+
+  | Metin | Genişlik | Düğme satırı | Kart |
+  |---|---|---|---|
+  | "3 parçanın hepsini ayır" (eski) | 164,5 px | **3** | 233,8 px |
+  | **"Hepsini ayır"** ✅ | 95,9 px | 2 | **203,8 px** |
+  | "3'ü de ayır" | 85,2 px | 2 | 203,8 px |
+  | "Üçünü ayır" | 88,3 px | 2 | 203,8 px |
+  | "Hepsini ayır (3)" | 113,8 px | **3** | 233,8 px |
+  | *"Split all 3"* (İngilizce) | 84,2 px | 2 | 203,8 px |
+
+  ⚠ **Sayının çıkması zevk değil, ölçünün gerektirdiği şey:**
+  parantezle tutulduğunda bile düğme yine üç satıra iniyordu.
+  ⚠ `(n)=>` arite'si korundu (sözlük paritesi testi tür/arite arıyor).
+  ⚠ İngilizceye dokunulmadı — kullanıcıya soruldu, kalsın dendi.
+
+  Bekçi: `testler/fikir-kart-olcu.test.js`, **8 iddia**. Dil listesi
+  elle yazılmıyor, uygulamanın kendi `LANG` sözlüğünden okunuyor.
+  Üç mutasyonla kanıtlandı: sert sınır kalkarsa 2 iddia düşer
+  (kart 10.122 px'e çıkıyor), eski Türkçe metin dönerse 3 iddia
+  düşer, `line-clamp` kalkarsa 1 iddia düşer.
+
+  ⛔ **ÜÇÜNCÜ MUTASYON ÖNCE YAKALANMADI.** `-webkit-line-clamp`
+  kaldırılıp yalnızca `max-height` bırakıldığında test geçiyordu:
+  yükseklik yine sınırlıydı ama metin **"…" olmadan ortadan**
+  kesiliyordu — oysa kullanıcının seçimi tam olarak "… ile kesilsin"
+  idi. Ölçüldü: ayırt edici bir dış iz yok (`scrollHeight` iki
+  durumda da 670 px), üç noktayı tarayıcı çiziyor ve DOM'dan
+  okunamıyor. Bu yüzden o iddia **görünüşü değil mekanizmayı**
+  doğruluyor ve sınırı testin içine yazıldı; ekranda gerçekten "…"
+  çıktığı ayrıca ekran görüntüsüyle doğrulandı.
+
+  ⬜ **AÇIK KALAN TEK ŞEY — KULLANICIYA SORULACAK:** çok parçalı bir
+  fikirde kartta **kaç parça olduğu artık hiçbir yerde görünmüyor.**
+  Düz metinde "…" çıkıyor ama parçalar ayrı satırlar olduğu için
+  oraya üç nokta düşmüyor; sayı da düğme metninden çıktı. Yani dokuz
+  parçalı bir kart üç parça gösteriyor ve gerisi olduğunu belli
+  etmiyor — bu **eksik değil, yanıltıcı**. Seçenekler: (1) gövdenin
+  altına soluklaşan bir geçiş, (2) "+6 daha" gibi küçük bir sayı,
+  (3) olduğu gibi bırak.
+  ⛔ Tahminle eklenmedi.
+
+  ⬇ Maddenin özgün hâli kayıt için duruyor:
+
+  Kullanıcı 18 Kasım 2026'da iki ekran görüntüsüyle istedi:
 
   > *"Burada fikir içeriği uzadıkça alan da aşağı doğru kayıyor,
   > buranın sabit bir ölçüde olması lazım — maks yüksekliği 2.

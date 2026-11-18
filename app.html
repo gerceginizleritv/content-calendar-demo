@@ -1940,8 +1940,37 @@ textarea.sc-ai-brief{min-height:64px;resize:vertical;line-height:1.5;}
   padding:4px;cursor:pointer;border-radius:2px;flex-shrink:0;}
 .fk-x svg{width:15px;height:15px;display:block;}
 .fk-x:hover{color:var(--red);background:var(--surface-2);}
+/* ⛔ 18 KASIM 2026 — KART ARTIK METIN KADAR UZAMIYOR (YAPILACAKLAR 56a).
+   Kullanici: "fikir içeriği uzadıkça alan da aşağı doğru kayıyor,
+   buranın sabit bir ölçüde olması lazım."
+   Olculdu, sinir YOKTU ve kart metinle birlikte buyuyordu:
+       80 harf -> govde  62,8 px -> kart 153,8 px
+      161 harf -> govde 104,6 px -> kart 195,6 px
+      323 harf -> govde 209,2 px -> kart 300,2 px
+      647 harf -> govde 397,5 px -> kart 488,5 px
+     1295 harf -> govde   795 px -> kart   886 px   (kisanin ~6 kati)
+   ⚠ Piksel degeri EKRAN GORUNTUSUNDEN OKUNMADI (Bolum 4): kullaniciya
+     satir sayisiyla soruldu, "5 satir" secildi.
+   ⚠ Tasan metin icin de soruldu: "'…' ile kesilsin, tiklayinca
+     acilsin" secildi. Karta tiklayinca duzenleme ZATEN aciliyor,
+     yani alisilmis davranis degismiyor ve ek bir dugme gerekmiyor.
+   ⚠ `-webkit-line-clamp` ucu noktayi KENDISI koyuyor; elle "..."
+     eklenmiyor, yani metin veride kirpilmiyor -- yalnizca gorunumde. */
 .fk-card-body{flex:1;font-size:13.5px;line-height:1.55;cursor:text;
-  overflow-wrap:anywhere;}
+  overflow-wrap:anywhere;
+  display:-webkit-box;-webkit-box-orient:vertical;
+  -webkit-line-clamp:5;line-clamp:5;overflow:hidden;
+  /* ⛔ `line-clamp` TEK BASINA YETMIYOR -- olculdu ve kacirdi.
+     O ozellik yalnizca DUZ METNI kirpiyor; parcali bir fikrin
+     govdesi blok ogelerden olustugu icin hic kirpilmiyordu:
+       24 parcali kart -> 2087,4 px  (sinirsiz haliyle 886 px'ti,
+       yani "sinir koydum" denip gecilse durum DAHA KOTU gorunecekti)
+     `max-height` sert siniri koyuyor; ikisi birlikte hem duz metni
+     "…" ile kesiyor hem parcali govdeyi ayni yukseklikte tutuyor.
+     ⚠ 5 satir = 13,5px * 1,55 * 5 = 104,625 px. Sayi elle
+       yazilmadi: punto ve satir araligi yukarida ne ise ondan
+       hesaplaniyor, yarin punto degisirse sinir kendiliginden uyar. */
+  max-height:calc(13.5px * 1.55 * 5);}
 .fk-card-body p{margin:0 0 8px;}
 .fk-card-body p:last-child{margin-bottom:0;}
 /* Birlesik kartta parcalar arasinda ince bir cizgi: kacinin birlestigi
@@ -8551,7 +8580,28 @@ const LANG = {
     fk_add_open: "Yeni fikir",
     fk_search_ph: "Fikirlerde ara…",
     fk_project_title: "Proje ekle — bir fikir birden çok projeye bağlanabilir",
-    fk_split: (n)=> `${n} parçanın hepsini ayır`,
+    // ⛔ 18 KASIM 2026 — SAYI METINDEN CIKTI (YAPILACAKLAR 56b).
+    //    Kullanici: "'3 parçanın hepsini ayır', İngilizce 'split
+    //    all 3'e göre daha uzun olduğu için bu da alanda aşağı
+    //    atmasına neden oluyor."
+    //    Olculdu ve hakliydi: eski metin 164,5 px genisligindeydi ve
+    //    mini dugmeleri UC satira indiriyordu; kart 233,8 px oluyordu
+    //    (Ingilizcede 203,8). Aradaki 30 px yalnizca bu metinden.
+    //    Adaylar olculdu, kullanici "Hepsini ayır"i secti:
+    //      "3 parçanın hepsini ayır"  164,5 px · 3 satir · 233,8
+    //      "Hepsini ayır"              95,9 px · 2 satir · 203,8 ✅
+    //      "3'ü de ayır"               85,2 px · 2 satir · 203,8
+    //      "Üçünü ayır"                88,3 px · 2 satir · 203,8
+    //      "Hepsini ayır (3)"         113,8 px · 3 satir · 233,8
+    //    ⚠ SAYI NEDEN CIKTI: parantezle tutuldugunda bile dugme yine
+    //      UC satira iniyordu. Yani sayinin cikmasi kullanicinin
+    //      zevki degil, olcunun gerektirdigi sey.
+    //    ⚠ `(n)=>` ARITE'SI KORUNDU: sozluk-paritesi testi diller
+    //      arasinda tur ve arite esitligi ariyor; `n` kullanilmasa da
+    //      parametre duruyor, yoksa bekci duser.
+    //    ⚠ Ingilizceye DOKUNULMADI: kullaniciya soruldu, "Split all 3"
+    //      kalsin dendi.
+    fk_split: (n)=> `Hepsini ayır`,
     fk_part_out: "Bunu dışarı çıkar — sürükleyerek de olur",
     fk_none: "Henüz fikir yok. En zoru ilk satır — yarım da olsa yaz.",
     fk_none_all: "Henüz fikir yok.",
