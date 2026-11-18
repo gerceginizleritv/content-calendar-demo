@@ -1401,9 +1401,41 @@ dokunmak ve ikinci seferde birincisini bozmak demek.
 
      | Nerede | Ne yazıyor | Ne zaman |
      |---|---|---|
-     | "Yıllık" düğmesinin yanında | `%9 İNDİRİM` / `9% OFF` | indirim varsa — **aylıkta da**, yıllığa teşvik |
-     | Başlıktaki cümlenin içinde | `Yıllık ödemede [%9] kadar daha ucuz.` | indirim varsa |
-     | Kartta, yıllık fiyatın yanında | `%9 İNDİRİM` / `9% OFF` | **yalnızca yıllık seçiliyken** |
+     | Başlıktaki cümlenin içinde | `Yıllık ödemede [%16] kadar daha ucuz.` | indirim varsa |
+     | Kartta, yıllık fiyatın yanında | `%16 İNDİRİM` / `16% OFF` | **yalnızca yıllık seçiliyken** |
+
+     ⛔ **ÜÇÜNCÜ YER KALDIRILDI (aynı gün, kullanıcı geri aldı).**
+     16 Kasım'da *"aynı oran Yıllık düğmesinin yanında da yazacak"*
+     denmişti; yapıldı, kullanıcı gördü ve bildirdi:
+
+     > *"üst bölümde aylık yıllık seçimlerinde üst bölümde yıllık
+     > yanında %16 indirim yazıyor ama o sürekli orada zaten o
+     > bölümde altta duran 'Yıllık ödemede %16 kadar daha ucuz.'
+     > mevcut"*
+
+     Haklı: hap sürekli oradaydı ve hemen altındaki cümle aynı şeyi
+     söylüyordu. Kaldırıldı.
+     ⛔ **GERİ EKLENMEYECEK** — kullanıcı söylemedikçe. Bekçi iddia:
+     *"oran dönem seçicinin yanında TEKRAR ETMİYOR"*.
+
+     ⛔ **KUTU ARTIK AYLIK/YILLIK ARASINDA ESNEMİYOR.** Kullanıcı iki
+     ekran görüntüsüyle bildirdi: *"ss2'de indirim satırı gelince
+     yıllık plana kutular hafif bir esniyor."* Ölçüldü:
+
+     | | Aylık | Yıllık | Esneme |
+     |---|---|---|---|
+     | `.fiyat-alt` | 20 px | 25,6 px | +5,6 |
+     | Kart (1280) | 575,2 | 580,8 | **5,6 px** |
+     | Kart (900) | 577,7 | 583,3 | **5,6 px** |
+
+     ⚠ **Çözüm sabit piksel DEĞİL:** rozetin kendisi aylıkta da
+     yerinde duruyor, yalnızca `visibility:hidden`. Böylece ayrılan
+     yer rozetin kendi stilinden geliyor — yarın puntosu ya da
+     dolgusu değişirse yer kendiliğinden uyar. Elle yazılmış bir
+     `25.6px` olsaydı o gün sessizce yanlış olurdu.
+     ⚠ `display:none` olmaz: yer kaplamaz, esneme geri gelirdi.
+     ⚠ Yalnızca indirim VARSA yer ayrılıyor; yoksa boş yer de yok.
+     Ölçüldü: esneme üç genişlikte de **0,0 px**.
 
      **Tasarım — üçü de aynı aile:** lime hap (`--jel-lime` #C8F24B)
      üstünde koyu yazı, IBM Plex Mono, büyük harf, harf aralığı.
@@ -1431,10 +1463,11 @@ dokunmak ve ikinci seferde birincisini bozmak demek.
      ⛔ **İNDİRİM YOKSA HİÇBİR YERDE ROZET YOK.** "%0 indirim"
      yazmak gürültü, hatta yanıltıcı olurdu.
 
-     Bekçi: `testler/fiyat-indirim-rozeti.test.js`, **12 iddia**.
-     Dört mutasyonla kanıtlandı: oran sabit yazılınca 6 iddia düşer,
+     Bekçi: `testler/fiyat-indirim-rozeti.test.js`, **16 iddia**.
+     Altı mutasyonla kanıtlandı: oran sabit yazılınca 6 iddia düşer,
      kart rozeti dönem gözetmeyince 2, indirim 0'ken rozet çıkınca 2,
-     İngilizce sözlüğe girmeyince 1.
+     İngilizce sözlüğe girmeyince 1, **yer tutucu kaldırılınca 2**
+     (esneme geri gelir), **dönem seçicinin yanına hap konulunca 2**.
      ⛔ **DÖRDÜNCÜ MUTASYON ÖNCE YAKALANMADI** — iddia yanlış nedenle
      yeşildi: iki dilin dizelerini karşılaştırıyordu, oysa `yuzde`
      biçimi zaten farklı (`%30` ve `30%`), yani İngilizce hiç

@@ -61,14 +61,22 @@ const FIYAT = (yillikMinor)=> [
     await p.evaluate(()=> document.fonts.ready);
 
     const oku = ()=> p.evaluate(()=>{
-      const hap = document.getElementById('donemIndirim');
       const cumle = document.getElementById('indirim');
-      const kart = [...document.querySelectorAll('.fiyat-alt .ind-rozet')];
-      const s = hap && !hap.hidden ? getComputedStyle(hap) : null;
-      return { denetim: hap && !hap.hidden ? hap.textContent.trim() : null,
+      const tum = [...document.querySelectorAll('.fiyat-alt .ind-rozet')];
+      // ⚠ Aylikta rozet YERINI tutuyor ama gorunmuyor (kutu
+      //   esnemesin diye). "Gorunur" olani ayirmak sart.
+      const gorunur = tum.filter(x=> getComputedStyle(x).visibility !== 'hidden');
+      const s = gorunur[0] ? getComputedStyle(gorunur[0]) : null;
+      const sarmal = document.querySelector('.donem-sarmal');
+      return { // Donem secicinin yaninda hap OLMAMALI (asagiya bak)
+               denetimHapSayisi: sarmal
+                 ? sarmal.querySelectorAll('.ind-rozet').length : 0,
                cumle: cumle.textContent.trim(),
                cumleHap: (cumle.querySelector('.ind-rozet') || {}).textContent || null,
-               kart: kart.map(x=> x.textContent.trim()),
+               kart: gorunur.map(x=> x.textContent.trim()),
+               kartYerTutucu: tum.length - gorunur.length,
+               kartYuk: [...document.querySelectorAll('#kartlar > .kart')]
+                 .map(x=> +x.getBoundingClientRect().height.toFixed(1)),
                yazi: s ? s.color : null, zemin: s ? s.backgroundColor : null };
     });
     const kur = (yillik, donem)=> p.evaluate(({ pl, fi, dn })=>{
@@ -93,9 +101,7 @@ const FIYAT = (yillikMinor)=> [
     const o30 = sonuc[d + ':30:yillik'], o30a = sonuc[d + ':30:aylik'];
     const o10 = sonuc[d + ':10:yillik'], o0  = sonuc[d + ':0:yillik'];
 
-    dene('★ ' + d + ': oran VERIDEN — %30 uc yerde de yaziyor', ()=>{
-      assert.ok(o30.denetim && o30.denetim.indexOf(yuzde(30)) !== -1,
-        'dugme yanindaki hap: ' + JSON.stringify(o30.denetim));
+    dene('★ ' + d + ': oran VERIDEN — iki yerde de %30 yaziyor', ()=>{
       assert.strictEqual(o30.cumleHap, yuzde(30),
         'baslikti cumledeki hap: ' + JSON.stringify(o30.cumleHap));
       assert.strictEqual(o30.kart.length, 1, 'kart rozeti sayisi: ' + o30.kart.length);
@@ -104,28 +110,47 @@ const FIYAT = (yillikMinor)=> [
     });
 
     dene('★ ' + d + ': fiyat degisince oran da DEGISIYOR (sabit yazili degil)', ()=>{
-      assert.ok(o10.denetim && o10.denetim.indexOf(yuzde(10)) !== -1,
-        'yillik fiyat degisti ama dugme hapi: ' + JSON.stringify(o10.denetim));
       assert.strictEqual(o10.cumleHap, yuzde(10),
-        'cumledeki hap: ' + JSON.stringify(o10.cumleHap));
+        'yillik fiyat degisti ama cumledeki hap: ' + JSON.stringify(o10.cumleHap));
       assert.ok(o10.kart[0] && o10.kart[0].indexOf(yuzde(10)) !== -1,
         'kart rozeti: ' + JSON.stringify(o10.kart[0]));
     });
 
-    dene('★ ' + d + ': kart rozeti YALNIZCA yillik secilyken', ()=>{
+    // ⛔ 18 KASIM 2026 — DONEM SECICININ YANINDA HAP OLMAYACAK.
+    //    16 Kasim'da kullanici oranin "Yillik" dugmesinin yaninda da
+    //    yazmasini istemisti; yapildi, sonra GORDU ve geri aldi:
+    //    hap surekli orada duruyordu ve hemen altindaki cumle zaten
+    //    ayni seyi soyluyordu. Bu iddia onun geri gelmesini engeller.
+    dene('★ ' + d + ': oran donem secicinin yaninda TEKRAR ETMIYOR', ()=>{
+      assert.strictEqual(o30.denetimHapSayisi, 0,
+        'donem secicinin yaninda ' + o30.denetimHapSayisi + ' hap var'
+        + ' -- altindaki cumle zaten ayni orani soyluyor');
+    });
+
+    dene('★ ' + d + ': kart rozeti yalnizca YILLIKTA GORUNUYOR', ()=>{
       assert.strictEqual(o30a.kart.length, 0,
-        'aylik secilyken kartta rozet var: ' + JSON.stringify(o30a.kart));
-      // ⚠ Dugme yanindaki hap aylikta da durur: amac yillaga tesvik.
-      assert.ok(o30a.denetim, 'aylik secilyken dugme hapi kayboldu');
+        'aylik secilyken kartta GORUNUR rozet var: ' + JSON.stringify(o30a.kart));
+    });
+
+    // ⛔ 18 KASIM 2026 — KUTU AYLIK/YILLIK ARASINDA ESNEMEYECEK.
+    //    Kullanici iki ekran goruntusuyle bildirdi. Olculdu: rozet
+    //    satira girince `.fiyat-alt` 20 -> 25,6 px, kart 5,6 px
+    //    buyuyordu. Rozet artik aylikta da YERINI tutuyor (gorunmez).
+    dene('★ ' + d + ': kart yuksekligi aylik/yillik ayni (esneme yok)', ()=>{
+      assert.strictEqual(o30a.kartYerTutucu, 1,
+        'aylikta yer tutucu rozet yok -- kutu esner');
+      assert.deepStrictEqual(o30a.kartYuk, o30.kartYuk,
+        'aylik ' + JSON.stringify(o30a.kartYuk)
+        + ' yillik ' + JSON.stringify(o30.kartYuk) + ' -- kutu esniyor');
     });
 
     dene('★ ' + d + ': INDIRIM YOKSA hicbir yerde rozet yok', ()=>{
-      assert.strictEqual(o0.denetim, null,
-        'indirim yokken dugme hapi duruyor: ' + JSON.stringify(o0.denetim));
       assert.strictEqual(o0.cumle, '',
         'indirim yokken cumle duruyor: ' + JSON.stringify(o0.cumle));
       assert.strictEqual(o0.kart.length, 0,
         'indirim yokken kart rozeti duruyor: ' + JSON.stringify(o0.kart));
+      assert.strictEqual(o0.kartYerTutucu, 0,
+        'indirim yokken bos yer ayriliyor -- gereksiz');
     });
 
     dene('★ ' + d + ': hap kontrasti AA esiginin uzerinde', ()=>{
@@ -146,9 +171,6 @@ const FIYAT = (yillikMinor)=> [
     //    karsilastiriliyor: tr " indirim" · en " off".
     const sadeleştir = (x)=> String(x || '').replace(/[\d%\s]+/g, ' ').trim();
     const tr = sonuc['tr:30:yillik'], en = sonuc['en:30:yillik'];
-    assert.notStrictEqual(sadeleştir(tr.denetim), sadeleştir(en.denetim),
-      'dugme hapi iki dilde AYNI SOZCUK: ' + JSON.stringify(sadeleştir(tr.denetim))
-      + ' -- sozluge girmemis');
     assert.notStrictEqual(sadeleştir(tr.kart[0]), sadeleştir(en.kart[0]),
       'kart rozeti iki dilde AYNI SOZCUK: ' + JSON.stringify(sadeleştir(tr.kart[0])));
     assert.notStrictEqual(sadeleştir(tr.cumle), sadeleştir(en.cumle),

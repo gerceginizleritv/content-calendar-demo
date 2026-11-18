@@ -105,9 +105,11 @@ a{color:inherit;}
 }
 /* ⚠ Olculer BAGLAMA gore, "buyuk/kucuk" diye degil: her hap
    yanindaki yazidan bir tik kucuk ama okunur kalsin diye. */
-.ind-rozet.ind-denetim{font-size:12.5px;padding:8px 13px;}  /* dugme yani */
 .ind-rozet.ind-cumle{font-size:13px;padding:5px 11px;}      /* 17px cumle icinde */
 .ind-rozet.ind-kart{font-size:11px;padding:4px 9px;}        /* 13px fiyat-alt icinde */
+/* ⚠ Aylikta rozet YERINI tutuyor ama gorunmuyor: kutu esnemesin.
+   `display:none` OLMAZ -- yer kaplamazdi, esneme geri gelirdi. */
+.ind-rozet[data-yer-tutucu]{visibility:hidden;}
 
 /* ⛔ BASLIKTAKI CUMLE BUYUDU: 14px -> 17px. Kullanici "cok kucuk"
    dedi; para kazandiran cumle dugmelerden sonra kaybolmayacak.
@@ -331,9 +333,16 @@ a{color:inherit;}
           <button type="button" data-donem="monthly" aria-pressed="true" data-m="aylik">Monthly</button>
           <button type="button" data-donem="yearly" aria-pressed="false" data-m="yillik">Yearly</button>
         </div>
-        <!-- ⚠ Oran VERIDEN hesaplanir; burada sabit sayi YOK.
-             Indirim yoksa bu oge gizli kalir (hidden). -->
-        <span class="ind-rozet ind-denetim" id="donemIndirim" hidden=""></span>
+        <!-- ⛔ 18 KASIM 2026 — BURADAKI HAP KALDIRILDI.
+             16 Kasim'da kullanici oranin "Yillik" dugmesinin yaninda
+             da yazmasini istemisti; yapildi, sonra GORDU ve kendisi
+             bildirdi: hap SUREKLI orada duruyor ve hemen altindaki
+             "Yillik odemede %16 kadar daha ucuz." cumlesi zaten ayni
+             seyi soyluyor. Iki kez soylenmis oluyordu.
+             ⚠ Yani bu, 16 Kasim istegin bir parcasinin kullanici
+               tarafindan geri alinmasi. Oran hala IKI yerde:
+               basliktaki cumlede ve kartta yillik fiyatin yaninda.
+             ⛔ Geri eklenmeyecek -- kullanici soylemedikce. -->
       </div>
     </div>
     <p class="indirim" id="indirim"></p>
@@ -653,13 +662,6 @@ function ciz(){
     indKutu.append(m.indirimOnce + ' ', hap, ' ' + m.indirimSonra);
   }
 
-  // ⛔ "Yillik" DUGMESININ YANINDAKI HAP (44.7). Burada cumle yok,
-  //    tek basina duruyor -- o yuzden "indirim" sozcugu de yaziyor.
-  //    ⚠ Aylik secilyken de gorunur: amac yillaga gecmeye tesvik.
-  const donemHap = $('donemIndirim');
-  donemHap.textContent = enKucukYuzde > 0
-    ? m.indirimRozet(m.yuzde(enKucukYuzde)) : '';
-  donemHap.hidden = enKucukYuzde === 0;
 
   $('kartlar').innerHTML = (veri.planlar || []).map(p=>{
     const f = fiyatBul(p.key, para, donem)
@@ -690,9 +692,23 @@ function ciz(){
       //      ("%0 indirim" yazmak gurultu olurdu).
       + '<p class="fiyat-alt">'
       + (aylikEs !== null ? esc(m.yilda) + ' · ' + esc(paraYaz(f.amount_minor, para)) : '')
-      + (aylikEs !== null && kartYuzde > 0
-          ? ' <span class="ind-rozet ind-kart">'
-            + esc(m.indirimRozet(m.yuzde(kartYuzde))) + '</span>'
+      // ⛔ 18 KASIM 2026 — KUTU ARTIK ESNEMIYOR. Kullanici iki ekran
+      //    goruntusuyle bildirdi: aylıktan yillaga gecince kutular
+      //    "hafif esniyor". Olculdu: `.fiyat-alt` bos iken 20 px,
+      //    rozet girince 25,6 px -> kart 5,6 px buyuyordu (1280 ve
+      //    900'de; telefonda kartlar alt alta oldugu icin 0).
+      //    ⚠ COZUM SABIT PIKSEL DEGIL: rozetin KENDISI aylikta da
+      //      yerinde duruyor, yalnizca gorunmuyor. Boylece ayrilan
+      //      yer rozetin kendi stilinden geliyor; yarin puntosu ya
+      //      da dolgusu degisirse yer kendiliginden ona uyar.
+      //      Elle yazilmis bir "25.6px" olsaydi o gun sessizce
+      //      yanlis olurdu.
+      //    ⚠ Yalnizca indirim VARSA yer ayriliyor. Indirim yoksa
+      //      rozet hic cikmayacagi icin esneme de yok, bos yer de.
+      + (kartYuzde > 0
+          ? ' <span class="ind-rozet ind-kart"'
+            + (aylikEs !== null ? '' : ' aria-hidden="true" data-yer-tutucu')
+            + '>' + esc(m.indirimRozet(m.yuzde(kartYuzde))) + '</span>'
           : '')
       + '</p>'
       + (kalanAdet !== null
