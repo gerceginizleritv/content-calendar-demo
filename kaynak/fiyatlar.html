@@ -216,7 +216,15 @@ a{color:inherit;}
 
     <div class="secici">
       <div class="grup" role="group" id="paraSecici">
-        <!-- ⛔ 18 KASIM 2026 — DUGMELER ELLE YAZILMIYOR.
+        <!-- ⚠ YER TUTUCU. Fiyat verisi gelene kadar gorunen hal.
+             ⛔ 18 Kasim 2026'da bir sure HIC dugme yoktu ve bu bir
+             GERILEME idi: Supabase yavassa ya da erisilemezse
+             kullanici para birimi secicisini HIC goremiyordu.
+             `fiyat-baglantisi` testi yakaladi.
+             Veri gelince `paraSeciciCiz()` burayi BASTAN yaziyor. -->
+        <button type="button" data-para="TRY" aria-pressed="true">TRY</button>
+        <button type="button" data-para="USD" aria-pressed="false">USD</button>
+        <!-- ⛔ 18 KASIM 2026 — VERI GELINCE LISTE ELLE YAZILMIYOR.
              Onceden TRY ve USD burada sabit duruyordu; EUR eklenince
              ucuncusu da elle yazilmak zorunda kalirdi ve yarin baska
              bir para birimi gelince yine. Artik `paraSeciciCiz()`
@@ -463,6 +471,12 @@ function paraBirimleri(){
     if(x.active === false) continue;
     if(gorulen.indexOf(x.currency) === -1) gorulen.push(x.currency);
   }
+  // ⚠ VERI HENUZ GELMEDI: sayfadaki yer tutucu dugmeler neyse o.
+  //   Boylece secici kaybolmuyor; veri gelince asagisi devraliyor.
+  if(!gorulen.length){
+    return [...document.querySelectorAll('#paraSecici [data-para]')]
+      .map(b=> b.dataset.para);
+  }
   // Sabit bir sira: once TRY, sonra USD, sonra EUR, sonra otekiler.
   // ⚠ Siralama GORUNUM icin; hangilerinin VAR oldugunu yine veri
   //   soyluyor.
@@ -490,8 +504,12 @@ function paraSeciciCiz(){
 function ciz(){
   const m = M[dil];
   metinleriYaz();
-  if(!veri) return;
+  // ⚠ SECICI VERIDEN ONCE de tazeleniyor: `aria-pressed` secili para
+  //   birimini gostersin. Eskiden HTML'deki sabit isaret duruyordu ve
+  //   Ingilizce tarayicili ziyaretcide para USD'yken TRY dugmesi
+  //   basili gorunuyordu.
   paraSeciciCiz();
+  if(!veri) return;
 
   // ⚠ INDIRIM YUZDESI SABIT YAZILMIYOR, FIYATLARDAN HESAPLANIYOR.
   // Promptun sarti. Kullanicinin soyledigi "%22" yalnizca Creator

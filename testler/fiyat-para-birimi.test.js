@@ -78,6 +78,24 @@ function fiyatlar(eurAktif, tekPara){
       (document.body.innerText.match(/[€$][\d.,]+|[\d.,]+ TL/g) || []).slice(0, 3)), 350));
   }, kod);
 
+  // ── 0 · VERI GELMEDEN ───────────────────────────────────────────
+  // ⛔ 18 KASIM 2026 — BU IDDIA BIR GERILEMEDEN DOGDU VE ONU BEN
+  //    DEGIL `fiyat-baglantisi` YAKALADI. Secici yalnizca veri
+  //    gelince ciziliyordu; Supabase yavassa ya da erisilemezse
+  //    kullanici para birimi secicisini HIC goremiyordu. Sayfa
+  //    acilir acilmaz (veri yokken) dugmeler DURMALI.
+  const veriden0nce = await p.evaluate(()=>({
+    dugme: document.querySelectorAll('#paraSecici [data-para]').length,
+    basili: [...document.querySelectorAll('#paraSecici [data-para]')]
+      .filter(x=> x.getAttribute('aria-pressed') === 'true').length
+  }));
+  dene('★ VERI GELMEDEN de para birimi secicisi duruyor', ()=>{
+    assert.ok(veriden0nce.dugme >= 2,
+      'veri yokken ' + veriden0nce.dugme + ' dugme var -- secici kayboluyor');
+    assert.strictEqual(veriden0nce.basili, 1,
+      'tam olarak bir dugme basili olmali: ' + veriden0nce.basili);
+  });
+
   // ── 1 · EUR ACIK ────────────────────────────────────────────────
   const acik = await kur(true, false);
   dene('★ para birimleri VERIDEN uretiliyor (EUR dahil)', ()=>{
