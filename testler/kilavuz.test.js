@@ -12,7 +12,12 @@ async function say(p, s){ return p.$$eval(s, e=> e.length).catch(()=> 0); }
   const t = await chromium.launch();
   const veri = {};
 
-  for(const [dil, dosya] of [['tr','kilavuz.html'], ['en','guide.html']]){
+  // ⛔ 18 KASIM 2026 — KILAVUZLAR DIL AGACINA TASINDI.
+  //    kilavuz.html ve guide.html artik birer YONLENDIRICI; gercek
+  //    sayfalar /tr/kilavuz/ ve /en/guide/ altinda. Eski adresler
+  //    yonlendirmeyi yapiyor mu diye `uretilen-sayfalar` testi
+  //    ayrica olcuyor; burada KILAVUZUN KENDISI olculuyor.
+  for(const [dil, dosya] of [['tr','tr/kilavuz/'], ['en','en/guide/']]){
     console.log('[' + dosya + ']');
     const p = await (await t.newContext({ viewport:{width:1280,height:900} })).newPage();
     const hata = []; p.on('pageerror', e=> hata.push(String(e)));
@@ -90,15 +95,18 @@ async function say(p, s){ return p.$$eval(s, e=> e.length).catch(()=> 0); }
       veri.tr.bolumler.join(',') === veri.en.bolumler.join(','),
       veri.tr.bolumler.join(',') + ' vs ' + veri.en.bolumler.join(','));
   bak('basliklar farkli (ceviri var)', veri.tr.baslik !== veri.en.baslik);
+  // ⚠ 18 KASIM 2026: hreflang artik DIL AGACI adreslerini gosteriyor
+  //   (/tr/kilavuz/ · /en/guide/), duz dosya adlarini degil. Guvence
+  //   degismedi: her kilavuz OTEKI dildekini isaret ediyor mu.
   bak('tr sayfasi en sayfasini gosteriyor',
-      veri.tr.alternatif.some(x=> /^en=.*guide\.html$/.test(x)), veri.tr.alternatif.join(' '));
+      veri.tr.alternatif.some(x=> /^en=.*\/en\/guide\/$/.test(x)), veri.tr.alternatif.join(' '));
   bak('en sayfasi tr sayfasini gosteriyor',
-      veri.en.alternatif.some(x=> /^tr=.*kilavuz\.html$/.test(x)), veri.en.alternatif.join(' '));
+      veri.en.alternatif.some(x=> /^tr=.*\/tr\/kilavuz\/$/.test(x)), veri.en.alternatif.join(' '));
 
   console.log('[telefonda]');
   {
     const p = await (await t.newContext({ viewport:{width:390,height:844}, isMobile:true, hasTouch:true })).newPage();
-    await p.goto(KOK + '/kilavuz.html', { waitUntil:'domcontentloaded' });
+    await p.goto(KOK + '/tr/kilavuz/', { waitUntil:'domcontentloaded' });
     await p.waitForTimeout(600);
     bak('sayfa yana kaymiyor',
         (await p.evaluate(()=> document.documentElement.scrollWidth - window.innerWidth)) <= 0);
@@ -125,7 +133,7 @@ async function say(p, s){ return p.$$eval(s, e=> e.length).catch(()=> 0); }
     bak('ingilizcede guide.html', /guide\.html$/.test(await p.$eval('#kilavuzLink', e=> e.getAttribute('href'))),
         await p.$eval('#kilavuzLink', e=> e.getAttribute('href')));
 
-    await p.goto(KOK + '/index.html', { waitUntil:'domcontentloaded' });
+    await p.goto(KOK + '/tr/', { waitUntil:'domcontentloaded' });
     await p.waitForTimeout(900);
     bak('karsilama sayfasinin dibinde de var', await p.$('#dipKilavuz') !== null);
     await p.close();

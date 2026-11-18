@@ -1,3 +1,13 @@
+// ⚠ 18 KASIM 2026: `.tepe-sag` KALKTI. Yalnizca kaynak/index.html'de
+//   vardi ve HICBIR CSS kurali tasimiyordu -- testlerin tutamagiydi.
+//   Ust menu artik tek kaynaktan uretiliyor (uret/ust-menu.js) ve
+//   sag bolum her sayfada `.ust-sag`. Vestijyel bir sinifi 16 sayfaya
+//   yaymak yerine olcu gercek sinifa baglandi; guvence ayni.
+// ⛔ 18 KASIM 2026 — "/index.html" ARTIK BIR YONLENDIRICI.
+//    Yayin sayfalari dil agacina tasindi; duz adres yalnizca dili
+//    okuyup /tr/ ya da /en/ adresine gonderiyor. Bu olcu Turkce
+//    ana sayfayi olcuyor, dolayisiyla dogrudan /tr/ yukleniyor.
+//    (Yonlendiricinin kendisi `uretilen-sayfalar` testinde olculuyor.)
 // Sifreyle giris ve sifre belirleme. Baglanti spam'e dustugunde kullanicinin
 // disarida kalmamasi icin eklendi; bu deneme iki ekranin da acildigini,
 // okundugunu ve uretilen sifrenin gucunu kontrol ediyor.
@@ -84,15 +94,19 @@ const bak = (ad, ko, ek)=>{ if(ko){ g++; console.log('  ok  '+ad); } else { k++;
   await p.evaluate(() => document.getElementById('sifreOverlay').classList.remove('open'));
 
   // --- karsilama sayfasi ---
-  await p.goto(KOK + '/index.html', { waitUntil: 'networkidle' });
+  await p.goto(KOK + '/tr/', { waitUntil: 'networkidle' });
   console.log('[index.html]');
   bak('giris kartinda sifre kutusu var', await p.$('#sifreAlan') !== null);
   bak('giris dugmesi var', await p.$('#sifreGirisDug') !== null);
-  const tepe = await p.$eval('.tepe-sag .dug', e => ({ href: e.getAttribute('href'), y: e.textContent.trim() }));
+  const tepe = await p.$eval('.ust-sag .dug', e => ({ href: e.getAttribute('href'), y: e.textContent.trim() }));
   bak('tepedeki dugme girise gidiyor', tepe.href === '#giris', tepe.href + ' / ' + tepe.y);
   const kahraman = await p.$eval('.kahraman-dug .dug-birincil', e => e.getAttribute('href'));
   bak('kahraman dugmesi girise gidiyor', kahraman === '#giris', kahraman);
-  bak('hesapsiz devam baglantisi duruyor', await p.$('a[href="app.html"]') !== null);
+  // ⚠ 18 KASIM 2026: SONEK esleme. Uretilen sayfalarda adresler
+  //   kokten yazili ("/app.html") cunku /tr/ icinden goreli
+  //   yazilirsa /tr/app.html aranir ve 404 olur. Guvence degismedi:
+  //   "hesapsiz devam" baglantisi duruyor ve uygulamaya gidiyor.
+  bak('hesapsiz devam baglantisi duruyor', await p.$('a[href$="app.html"]') !== null);
   const genis = await p.evaluate(() => document.documentElement.scrollWidth - document.documentElement.clientWidth);
   bak('karsilama sayfasinda yatay kaydirma yok', genis <= 0, genis + 'px');
   await p.evaluate(() => document.getElementById('giris').scrollIntoView());

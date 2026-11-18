@@ -38,9 +38,18 @@ dene('★ menu HER SAYFADA AYNI (yalnizca "buradasin" isareti farkli)', ()=>{
     //   aria-current="page"  ve  <option ... selected>
     const sadelestir = (t)=> t
       .replace(/ aria-current="page"/g, '')
-      .replace(/ selected/g, '')
-      .replace(/<option value="[^"]*"/g, '<option value="?"')
-      .replace(/href="[^"]*#/g, 'href="?#');
+      // Dil satirlari sayfaya gore farkli adres tasiyor; menunun
+      // AYNI olup olmadigini olcerken adresi degil YAPIYI
+      // karsilastiriyoruz.
+      // ⚠ SIRA ONEMLI: once CAPALAR. Ana sayfada capa "#nasil",
+      //   oteki sayfalarda "/tr/#nasil" -- ikisi de "?#nasil"
+      //   olmali. Adres kurali once kosarsa "/tr/#nasil" tumden
+      //   "?" oluyor ve iki menu farkli gorunuyor (18 Kasim 2026'da
+      //   tam bu oldu, OLCU yaniliyordu).
+      .replace(/href="[^"]*#/g, 'href="?#')
+      .replace(/href="\/[a-z]{2}\/[^"]*"/g, 'href="?"')
+      .replace(/ id="bk[a-z0-9]+"/g, ' id="?"')
+      .replace(/url\(#bk[a-z0-9]+\)/g, 'url(#?)');
     const ilk = sadelestir(M[SAYFA[0] + '@' + d]);
     for(const s of SAYFA){
       assert.strictEqual(sadelestir(M[s + '@' + d]), ilk,
@@ -59,15 +68,26 @@ dene('★ HER sayfada CTA var (kullanicinin sikayeti buydu)', ()=>{
 });
 
 dene('★ HER sayfada dil secici var ve BUTUN dilleri tasiyor', ()=>{
+  // ⛔ 18 KASIM 2026 — YERLI <select> BIRAKILDI. Kullanici:
+  //    "cok amator duruyor". Yerine bayrakli ozel secici geldi:
+  //    .dil-tetik dugmesi + role="listbox" panel + her dil icin
+  //    bir <a class="dil-satir">. Satirlar GERCEK BAGLANTI, yani
+  //    betik kapaliyken de calisiyor -- iddia da bunu olcuyor.
   for(const d of DIL) for(const s of SAYFA){
     const t = M[s+'@'+d];
-    assert.ok(/<select class="dil-sec"/.test(t), s+'@'+d+' dil secici yok');
+    assert.ok(/<button type="button" class="dil-tetik"/.test(t),
+      s+'@'+d+' dil tetikleyicisi yok');
+    assert.ok(/aria-haspopup="listbox"/.test(t), s+'@'+d+' aria-haspopup yok');
+    assert.ok(/<div class="dil-panel" role="listbox"/.test(t), s+'@'+d+' panel yok');
     for(const k of DIL){
-      assert.ok(t.includes('>' + DILLER[k].ad + '</option>'),
-        s+'@'+d+' icinde "' + DILLER[k].ad + '" secenegi yok');
-      assert.ok(t.includes('value="' + adres(s, k) + '"'),
-        s+'@'+d+' · ' + k + ' secenegi AYNI sayfanin ' + k + ' adresine gitmiyor');
+      assert.ok(t.includes('>' + DILLER[k].ad + '</span>'),
+        s+'@'+d+' icinde "' + DILLER[k].ad + '" satiri yok');
+      assert.ok(t.includes('href="' + adres(s, k) + '"'),
+        s+'@'+d+' · ' + k + ' satiri AYNI sayfanin ' + k + ' adresine gitmiyor');
     }
+    // Bulunulan dil isaretli olsun.
+    assert.ok(t.includes('class="dil-satir secili" role="option" aria-selected="true"'),
+      s+'@'+d+' secili dil isaretlenmemis');
   }
 });
 
@@ -75,7 +95,7 @@ dene('★ dil degistirmek AYNI sayfada kaliyor (ana sayfaya atmiyor)', ()=>{
   // 48. maddenin kok sebebi: baglantinin biri dile gore yeniden
   // yazilmayi kaciriyordu. Secici artik adresi tablodan uretiyor.
   for(const s of SAYFA) for(const a of DIL) for(const b of DIL){
-    assert.ok(M[s+'@'+a].includes('value="' + adres(s, b) + '"'),
+    assert.ok(M[s+'@'+a].includes('href="' + adres(s, b) + '"'),
       s + ' sayfasinda ' + a + '->' + b + ' gecisi yanlis adrese gidiyor');
   }
 });

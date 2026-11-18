@@ -132,7 +132,17 @@ dene('★ ust menu URETILMIS halle AYNI (bayatlamamis)', ()=>{
     //   2026'da bu iddia tam bu yuzden dustu -- uygulama degil
     //   OLCUM yaniliyordu. Guvence degismedi (menu kaynagiyla
     //   birebir ayni olsun), yalnizca karsilastirma sadelesti.
-    const sade = (x)=> x.replace(/=""/g, '').replace(/\s+/g, ' ').trim();
+    // ⚠ TARAYICI SERILESTIRMESI, IKI YERDE:
+    //   1. Bos degerli oznitelik: `selected` -> `selected=""`
+    //   2. Kendini kapatan SVG etiketi: `<rect .../>` -> `<rect ...></rect>`
+    //   Ikisi de 18 Kasim 2026'da bu iddiayi dusurdu; ikisinde de
+    //   UYGULAMA degil OLCUM yaniliyordu. Guvence degismedi: menu
+    //   kaynagiyla birebir ayni olsun.
+    const sade = (x)=> x
+      .replace(/=""/g, '')
+      .replace(/\s*\/>/g, '>')
+      .replace(/<\/(?:rect|circle|path|clipPath|polygon|line|g)>/g, '')
+      .replace(/\s+/g, ' ').trim();
     assert.strictEqual(sade(icinde), sade(beklenen),
       s.ad+'@'+d+' menusu BAYAT -- "node uret/uret.js" yeniden kosmali');
   }
@@ -241,7 +251,7 @@ const SUNUCU = process.env.URET_SUNUCU || 'http://127.0.0.1:8098';
       baslik: document.title,
       menu: [...document.querySelectorAll('.ust-nav a')].map(a=> a.textContent.trim()),
       cta: !!document.querySelector('.ust-sag .dug'),
-      secici: !!document.querySelector('select.dil-sec'),
+      secici: !!document.querySelector('.dil-tetik') && !!document.querySelector('.dil-panel'),
       // ⛔ ACILDIKTAN SONRAKI baglantilar. Dosyaya bakan olcu
       //    yetmiyor: 18 Kasim 2026'da index.html'in calisma
       //    zamani yeniden-yazmasini geri acan mutasyon HICBIR
@@ -291,8 +301,17 @@ const SUNUCU = process.env.URET_SUNUCU || 'http://127.0.0.1:8098';
     await p3.goto(SUNUCU + adres(s.ad, d), { waitUntil: 'load' });
     await p3.waitForTimeout(500);
     let gittigi = null, hafiza = null;
+    const panelKapali = await p3.evaluate(()=>{
+      const x = document.querySelector('.dil-panel'); return !x || x.hidden;
+    });
     try {
-      await p3.selectOption('select.dil-sec', adres(s.ad, hedefDil));
+      // ⛔ 18 KASIM 2026: YERLI <select> BIRAKILDI (kullanici "amator"
+      //    buldu). Artik tetikleyiciye tiklanip panelden satir
+      //    seciliyor. Olculen sey AYNI: secmek gercekten o sayfaya
+      //    goturuyor mu, ve dil hatirlaniyor mu.
+      await p3.click('.dil-tetik');
+      await p3.waitForTimeout(250);
+      await p3.click('.dil-satir[data-dil="' + hedefDil + '"]');
       await p3.waitForTimeout(800);
       gittigi = new URL(p3.url()).pathname;
       hafiza = await p3.evaluate(()=>{ try{ return localStorage.getItem('demo_ui_language'); }catch(e){ return null; } });
@@ -302,6 +321,10 @@ const SUNUCU = process.env.URET_SUNUCU || 'http://127.0.0.1:8098';
     dene('★ ' + s.ad + ': dil secmek GERCEKTEN o sayfaya goturuyor', ()=>{
       assert.strictEqual(gittigi, adres(s.ad, hedefDil),
         'secici OLU ya da yanlis yere goturuyor');
+    });
+    dene(s.ad + ': panel basta KAPALI', ()=>{
+      assert.strictEqual(panelKapali, true,
+        'dil paneli sayfa acilir acilmaz acik geliyor');
     });
     dene('★ ' + s.ad + ': secilen dil TARAYICIYA yaziliyor (sureklilik)', ()=>{
       assert.strictEqual(hafiza, hedefDil,

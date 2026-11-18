@@ -1,3 +1,8 @@
+// ⛔ 18 KASIM 2026 — "/index.html" ARTIK BIR YONLENDIRICI.
+//    Yayin sayfalari dil agacina tasindi; duz adres yalnizca dili
+//    okuyup /tr/ ya da /en/ adresine gonderiyor. Bu olcu Turkce
+//    ana sayfayi olcuyor, dolayisiyla dogrudan /tr/ yukleniyor.
+//    (Yonlendiricinin kendisi `uretilen-sayfalar` testinde olculuyor.)
 // ANA SAYFA KAHRAMANI GENIS EKRANDA (YAPILACAKLAR 45. madde)
 //
 // NEDEN BU TEST VAR
@@ -48,7 +53,14 @@ const dene = (ad, fn) => {
 (async () => {
   const sunucu = http.createServer((istek, cevap) => {
     const yol = decodeURIComponent(istek.url.split('?')[0]);
-    const dosya = path.join(KOK, yol === '/' ? 'index.html' : yol.slice(1));
+    // ⚠ 18 KASIM 2026: KLASOR ADRESI DE CALISSIN. Yayin sayfalari
+    //   /tr/ ve /en/ altina tasindi; "/tr/" bir DIZIN ve readFile
+    //   dizin okuyamiyor -> 404 -> bos sayfa -> butun olculer null.
+    //   Gercek sunucu (GitHub Pages) bu adreste index.html sunuyor;
+    //   bu mini sunucu da artik oyle yapiyor.
+    const sonEk = yol.endsWith('/') ? yol.slice(1) + 'index.html'
+                                    : (yol === '' ? 'index.html' : yol.slice(1));
+    const dosya = path.join(KOK, sonEk || 'index.html');
     fs.readFile(dosya, (hata, veri) => {
       if (hata) { cevap.writeHead(404); cevap.end(); return; }
       cevap.writeHead(200, { 'Content-Type':
@@ -64,7 +76,7 @@ const dene = (ad, fn) => {
     const p = await tarayici.newPage({ viewport: { width: W, height: 900 } });
     const sayfaHatasi = [];
     p.on('pageerror', e => sayfaHatasi.push(String(e.message).slice(0, 90)));
-    await p.goto('http://localhost:' + PORT + '/index.html', { waitUntil: 'load' });
+    await p.goto('http://localhost:' + PORT + '/tr/', { waitUntil: 'load' });
     await p.waitForTimeout(500);
 
     const o = await p.evaluate((sabit) => {
@@ -88,9 +100,12 @@ const dene = (ad, fn) => {
       const dug = Array.prototype.slice.call(
         document.querySelectorAll('header a, header button'))
         .filter(x => /ücretsiz|free/i.test(x.textContent))[0];
-      const dil = Array.prototype.slice.call(
-        document.querySelectorAll('header a, header button'))
-        .filter(x => /^(TR|EN)$/i.test(x.textContent.trim()))[0];
+      // ⛔ 18 KASIM 2026: DIL SECIMI ARTIK "TR"/"EN" DUGMESI DEGIL.
+      //    Kullanici yerli <select>'i "amator" buldu; yerine bayrakli
+      //    ozel bir secici geldi (uret/ust-menu.js). Olcunun isi ayni:
+      //    dil secici ile cagri dugmesi AYNI HIZADA mi, ikisi de
+      //    ayni yukseklikte mi.
+      const dil = document.querySelector('header .dil-tetik');
       const olc = e => { const b = e.getBoundingClientRect();
         return { ust: Math.round(b.top), alt: Math.round(b.bottom),
                  yuk: Math.round(b.height) }; };

@@ -1,3 +1,13 @@
+// ⚠ 18 KASIM 2026: `.tepe-sag` KALKTI. Yalnizca kaynak/index.html'de
+//   vardi ve HICBIR CSS kurali tasimiyordu -- testlerin tutamagiydi.
+//   Ust menu artik tek kaynaktan uretiliyor (uret/ust-menu.js) ve
+//   sag bolum her sayfada `.ust-sag`. Vestijyel bir sinifi 16 sayfaya
+//   yaymak yerine olcu gercek sinifa baglandi; guvence ayni.
+// ⛔ 18 KASIM 2026 — "/index.html" ARTIK BIR YONLENDIRICI.
+//    Yayin sayfalari dil agacina tasindi; duz adres yalnizca dili
+//    okuyup /tr/ ya da /en/ adresine gonderiyor. Bu olcu Turkce
+//    ana sayfayi olcuyor, dolayisiyla dogrudan /tr/ yukleniyor.
+//    (Yonlendiricinin kendisi `uretilen-sayfalar` testinde olculuyor.)
 // Telefonda "Giris yap" dugmesine basan kisi DOGRUDAN forma dusmeli.
 // Iki sutun tek sutuna inince anlatim once geliyordu ve form ekranin
 // altinda kaliyordu.
@@ -13,7 +23,7 @@ const EKRANLAR = [['iPhone SE',375,667],['iPhone 14',390,844],['Android',412,915
   for (const [ad, w, h] of EKRANLAR) {
     const c = await t.newContext({ viewport:{width:w,height:h}, isMobile:true, hasTouch:true });
     const p = await c.newPage();
-    await p.goto(KOK + '/index.html', { waitUntil:'networkidle' });
+    await p.goto(KOK + '/tr/', { waitUntil:'networkidle' });
     console.log('[' + ad + ' ' + w + 'x' + h + ']');
 
     bak('sayfa yatay kaymiyor',
@@ -21,11 +31,11 @@ const EKRANLAR = [['iPhone SE',375,667],['iPhone 14',390,844],['Android',412,915
 
     // Dar ekranda tepedeki dugmenin kisa yazisi gorunuyor.
     if (w <= 640) {
-      const y = await p.$eval('.tepe-sag .dug', e => e.innerText.trim());
+      const y = await p.$eval('.ust-sag .dug', e => e.innerText.trim());
       bak('tepedeki dugme kisa yaziyi kullaniyor', y.length <= 12, y);
     }
 
-    await p.click('.tepe-sag .dug');
+    await p.click('.ust-sag .dug');
     // Sayfa yumusak kayiyor (scroll-behavior:smooth). Sabit 700 ms bekleme
     // CI'nin yavas makinesinde bazen yetmiyor ve olcum kaydirma ortasinda
     // aliniyordu. Kaydirma DURANA kadar bekliyoruz.
@@ -60,7 +70,7 @@ const EKRANLAR = [['iPhone SE',375,667],['iPhone 14',390,844],['Android',412,915
   // Masaustunde sira DEGISMEMELI: anlatim solda, form sagda.
   const c2 = await t.newContext({ viewport:{width:1280,height:900} });
   const p2 = await c2.newPage();
-  await p2.goto(KOK + '/index.html', { waitUntil:'networkidle' });
+  await p2.goto(KOK + '/tr/', { waitUntil:'networkidle' });
   console.log('[masaustu 1280x900]');
   const yer = await p2.evaluate(() => {
     const sol = document.querySelector('.giris-sol').getBoundingClientRect();

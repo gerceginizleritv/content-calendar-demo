@@ -270,15 +270,25 @@ const BAGLAYICILAR = [
         && !/googleapis\.com\/youtube/.test(islev));
 
     // Belge ile kod ayni kapsami sayiyor mu?
-    const gizlilik = oku('privacy.html');
+    // ⛔ 18 KASIM 2026 — GIZLILIK METNI DILE BOLUNDU.
+    //    privacy.html bir YONLENDIRICI oldu; metin artik
+    //    en/privacy/ (Ingilizce) ve tr/gizlilik/ (Turkce)
+    //    dosyalarinda. Eskiden ikisi TEK dosyada ust usteydi ve bu
+    //    olcu ikisini birden orada ariyordu.
+    // ⚠ IDDIA ZAYIFLAMADI, GUCLENDI: eskiden iki cumle ayni dosyada
+    //    olunca gecerdi; simdi HER DILIN KENDI dosyasinda olmak
+    //    zorunda. Bir dilde unutulursa yakalanir.
+    const gizlilikEn = oku('en/privacy/index.html');
+    const gizlilikTr = oku('tr/gizlilik/index.html');
     bak('★ gizlilik metni de youtube.upload diyor',
-        /youtube\.upload/.test(gizlilik));
+        /youtube\.upload/.test(gizlilikEn) && /youtube\.upload/.test(gizlilikTr),
+        'en=' + /youtube\.upload/.test(gizlilikEn) + ' tr=' + /youtube\.upload/.test(gizlilikTr));
     // ⚠ VE BELGE "KANAL ADINI SAKLIYORUZ" DEMEMELI: o alan bu kapsamla
     // her zaman bos kaliyor. Fazla soylemek de yanlis soylemektir.
     bak('★ gizlilik metni kanal adinin BOS kaldigini soyluyor',
-        /stay <strong>empty<\/strong>/.test(gizlilik)
-        && /<strong>boş<\/strong>/.test(gizlilik),
-        'privacy.html');
+        /stay <strong>empty<\/strong>/.test(gizlilikEn)
+        && /<strong>boş<\/strong>/.test(gizlilikTr),
+        'en/privacy + tr/gizlilik');
   }
 
   // ══════════════════════════════════════════════════════════════════
@@ -320,12 +330,16 @@ const BAGLAYICILAR = [
   }
   {
     // Ve belge bunu anlatiyor olmali -- iki dilde.
-    const gizlilik = oku('privacy.html');
+    // ⚠ 18 KASIM 2026: metin dile bolundu, her dil KENDI dosyasinda
+    //   aranıyor. Eskiden ikisi ayni dosyadaydi; simdi bir dilde
+    //   unutulursa yakalanir.
+    const gizlilikEn = oku('en/privacy/index.html');
+    const gizlilikTr = oku('tr/gizlilik/index.html');
     bak('★ gizlilik metni kesme yolunu anlatiyor (en)',
-        /from Shootboard's YouTube page/.test(gizlilik));
+        /from Shootboard's YouTube page/.test(gizlilikEn), 'en/privacy');
     bak('★ gizlilik metni kesme yolunu anlatiyor (tr)',
-        /Shootboard'un YouTube\s*\n?\s*sayfasından/.test(gizlilik),
-        (/Shootboard'un YouTube[^<]*/.exec(gizlilik) || [''])[0].slice(0, 60));
+        /Shootboard'un YouTube\s*\n?\s*sayfasından/.test(gizlilikTr),
+        (/Shootboard'un YouTube[^<]*/.exec(gizlilikTr) || [''])[0].slice(0, 60));
   }
 
   console.log('\n' + g + ' gecti, ' + k + ' kaldi');

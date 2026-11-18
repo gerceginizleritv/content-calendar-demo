@@ -18,7 +18,12 @@ const SAYFALAR = [
   // ⚠ 13 Kasim 2026: ana sayfa yeni tasarima gecti. Eski sayfadaki
   // #dilDug yerine, SECILI dil dugmesi okunuyor -- metni yine
   // 'TR'/'EN'. Olculen sey ayni: varsayilan dil tarayiciya gore mi.
-  ['karsilama (/)',       'http://127.0.0.1:8098/',          '[data-dil][aria-pressed="true"]']
+  // ⛔ 18 KASIM 2026: dil secici yeniden tasarlandi (kullanici yerli
+  //   <select>'i "amator" buldu). Artik TR/EN dugmesi yok; secili
+  //   dil panelde aria-selected="true" tasiyan satir. Metni "Türkçe"
+  //   oldugu icin dil KODU `data-dil` ozniteliginden okunuyor.
+  //   Olculen sey ayni: varsayilan dil tarayiciya gore mi.
+  ['karsilama (/)',       'http://127.0.0.1:8098/',          '.dil-satir[aria-selected="true"]']
 ];
 const BEKLENEN = { 'tr-TR':'tr', 'en-US':'en', 'de-DE':'en' };   // de: tanimadigimiz dil → en
 
@@ -30,7 +35,7 @@ const BEKLENEN = { 'tr-TR':'tr', 'en-US':'en', 'de-DE':'en' };   // de: tanimadi
   // ana sayfada o dugme yok -> TimeoutError. Olculen sey degismedi.
   const dilOku = async (p, sec)=> sec === '#langSelect'
     ? await p.inputValue('#langSelect')
-    : (await p.textContent(sec)).trim().toLowerCase();
+    : (await p.getAttribute(sec, 'data-dil') || '').trim().toLowerCase();
 
   const sayfaAc = async (locale, url, onceki)=>{
     const c = await b.newContext({ locale });                  // TEMIZ profil

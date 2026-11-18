@@ -22,4 +22,14 @@ const DILLER = {
 
 const VARSAYILAN = 'tr';
 
-module.exports = { DILLER, VARSAYILAN, kodlar: () => Object.keys(DILLER) };
+// ⛔ TANIMADIGIMIZ DILDEN GELEN ZIYARETCI INGILIZCE GORUR.
+//    Bu kural depoda zaten vardi (kaynak/index.html): Turkce bir
+//    tarayiciyla gelen Turkce, BASKA HER DIL Ingilizce aliyordu.
+//    18 Kasim 2026'da yonlendirici yazilirken yanlislikla bozuldu:
+//    Almanca tarayici Turkce sayfaya dusuyordu. `dil-varsayilan`
+//    testi yakaladi ("de-DE → en" bekliyordu, "tr" geldi).
+// ⚠ VARSAYILAN ile ayni sey DEGIL: VARSAYILAN sitenin birincil
+//    dili (kanonik adres), YABANCI ise "seni tanimadim" cevabi.
+const YABANCI = 'en';
+
+module.exports = { DILLER, VARSAYILAN, YABANCI, kodlar: () => Object.keys(DILLER) };

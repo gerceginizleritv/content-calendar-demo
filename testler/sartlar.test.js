@@ -5,37 +5,82 @@ const KOK = process.argv[2] || 'http://127.0.0.1:8098';
 let g = 0, k = 0;
 const bak = (ad, ko, ek)=>{ if(ko){ g++; console.log('  ok  '+ad); } else { k++; console.log('  YOK '+ad+(ek?' -> '+ek:'')); } };
 
+// ⛔ 18 KASIM 2026 — YAYIN SAYFALARI DIL AGACINA TASINDI.
+//    index.html, kilavuz.html, sartlar.html ... artik birer
+//    YONLENDIRICI (1 KB); metin /tr/... ve /en/... altinda.
+//    Bu testteki olculer o dosyalari DOSYA OLARAK okuyup "belge su
+//    cumleyi soyluyor mu" diye bakiyor. Yonlendiricide cumle yok,
+//    dolayisiyla hepsi dusuyordu.
+// ⚠ Eski ad verilince her iki dilin sayfasi BIRLESTIRILEREK
+//    donuyor: olcunun sordugu soru ("belge bunu soyluyor mu")
+//    degismedi. Bir dile ozel iddialar zaten kendi dosyasini
+//    aciktan istiyor (orn. tr/gizlilik/index.html).
+const AGAC = {
+  'index.html':    ['tr/index.html', 'en/index.html'],
+  'fiyatlar.html': ['tr/fiyatlar/index.html', 'en/pricing/index.html'],
+  'kilavuz.html':  ['tr/kilavuz/index.html'],
+  'guide.html':    ['en/guide/index.html'],
+  'privacy.html':  ['tr/gizlilik/index.html', 'en/privacy/index.html'],
+  'sartlar.html':  ['tr/sartlar/index.html', 'en/terms/index.html']
+};
+function belgeYollari(f){ return AGAC[f] || [f]; }
+
 (async () => {
   const t = await chromium.launch({ });
 
+  // ⛔ 18 KASIM 2026 — SARTLAR SAYFASI DILE BOLUNDU.
+  //    Eskiden tek dosyada ust uste iki dil vardi (once Ingilizce,
+  //    sonra id="turkce" ile Turkce) ve bu olcu "iki dil de var"
+  //    diye IKI h1 ariyordu. Turkce okuyan kisi sayfanin BASINDA
+  //    Ingilizce metinle karsilasiyordu; dil surekliligi istenince
+  //    bolundu (47+48).
+  // ⚠ IDDIA ZAYIFLAMADI, GUCLENDI: eskiden iki dilin cumleleri AYNI
+  //    dosyada araniyordu, yani biri eksik olsa oteki kurtariyordu.
+  //    Simdi her dil KENDI sayfasinda denetleniyor; bir dilde
+  //    unutulan cumle yakalanir.
+  const BOLUM_SAYISI = 14;
+  const DILLER = [
+    { kod:'tr', yol:'/tr/sartlar/', kapanir:/30 gün/, kapanir2:/kapan/i,
+      verisi:/sizin kalır/i, ucret:/ücretsiz/i, kart:/kart bilgisi/i,
+      sil:/Hesabını sil/, gizlilikYolu:'/tr/gizlilik/' },
+    { kod:'en', yol:'/en/terms/',  kapanir:/30 days/, kapanir2:/shut/i,
+      verisi:/stays yours/i, ucret:/free/i, kart:/No card/i,
+      sil:/Delete your account/, gizlilikYolu:'/en/privacy/' }
+  ];
+
   for (const tema of ['light','dark']) {
+   for (const d of DILLER) {
     const p = await (await t.newContext({ colorScheme: tema, viewport:{width:1100,height:900} })).newPage();
     const konsol = [];
     p.on('pageerror', e => konsol.push(String(e)));
-    await p.goto(KOK + '/sartlar.html', { waitUntil:'networkidle' });
-    console.log('[sartlar.html · ' + tema + ']');
-    bak('sayfa aciliyor', (await p.title()).includes('Shootboard'), await p.title());
-    bak('sayfa hatasi yok', konsol.length === 0, konsol[0]);
+    await p.goto(KOK + d.yol, { waitUntil:'networkidle' });
+    console.log('[' + d.yol + ' · ' + tema + ']');
+    bak(d.kod + ': sayfa aciliyor', (await p.title()).includes('Shootboard'), await p.title());
+    bak(d.kod + ': sayfa hatasi yok', konsol.length === 0, konsol[0]);
 
     const b = await p.evaluate(() => ({
       basliklar: [...document.querySelectorAll('h1')].map(x => x.textContent.trim()),
       bolum: document.querySelectorAll('h2').length,
-      turkce: !!document.getElementById('turkce'),
+      dil: document.documentElement.lang,
+      otekiDil: !!document.querySelector('.dil-panel .dil-satir'),
       yatay: document.documentElement.scrollWidth - document.documentElement.clientWidth
     }));
-    bak('iki dil de var', b.basliklar.length === 2, b.basliklar.join(' / '));
-    bak('bolumler yerinde', b.bolum === 28, b.bolum + ' baslik');
-    bak('turkce bolume atlanabiliyor', b.turkce);
-    bak('yatay kaydirma yok', b.yatay <= 0, b.yatay + 'px');
+    bak(d.kod + ': TEK dil var (oteki dil ayri sayfada)', b.basliklar.length === 1,
+        b.basliklar.join(' / '));
+    bak(d.kod + ': sayfa dili dogru', b.dil === d.kod, b.dil);
+    bak(d.kod + ': bolumler yerinde', b.bolum === BOLUM_SAYISI, b.bolum + ' baslik');
+    bak(d.kod + ': oteki dile gecilebiliyor (ust menu dil secici)', b.otekiDil);
+    bak(d.kod + ': yatay kaydirma yok', b.yatay <= 0, b.yatay + 'px');
 
     // Kullanicinin sordugu iki soru sayfada CEVAPLI olmali.
     const yazi = await p.evaluate(() => document.body.innerText);
-    bak('"kapanirsa ne olur" cevapli', /30 gün|30 days/.test(yazi) && /kapan|shut/i.test(yazi));
-    bak('"verim ne olur" cevapli', /sizin kalır|stays yours/i.test(yazi));
-    bak('ucret bugun yok diyor', /ücretsiz|free/i.test(yazi) && /kart bilgisi|No card/i.test(yazi));
-    bak('hesap silme anlatiliyor', /Hesabını sil|Delete your account/.test(yazi));
-    bak('iletisim adresi var', yazi.includes('hello@shootboard.app'));
-    bak('gizlilik sayfasina bag var', (await p.$$('a[href$="privacy.html"]')).length >= 1);
+    bak(d.kod + ': "kapanirsa ne olur" cevapli', d.kapanir.test(yazi) && d.kapanir2.test(yazi));
+    bak(d.kod + ': "verim ne olur" cevapli', d.verisi.test(yazi));
+    bak(d.kod + ': ucret bugun yok diyor', d.ucret.test(yazi) && d.kart.test(yazi));
+    bak(d.kod + ': hesap silme anlatiliyor', d.sil.test(yazi));
+    bak(d.kod + ': iletisim adresi var', yazi.includes('hello@shootboard.app'));
+    bak(d.kod + ': gizlilik sayfasina bag var (ayni dilde)',
+        (await p.locator('a[href="' + d.gizlilikYolu + '"]').count()) >= 1, d.gizlilikYolu);
 
     // Kontrast: gri yazilar okunur olmali.
     // ⚠ 13 KASIM 2026: ZEMIN ARTIK GERCEKTEN HESAPLANIYOR.
@@ -82,11 +127,19 @@ const bak = (ad, ko, ek)=>{ if(ko){ g++; console.log('  ok  '+ad); } else { k++;
       });
       return kotu;
     });
-    bak('yazilar okunur (4.5:1)', zayif.length === 0, zayif.slice(0,3).join(', '));
+    bak(d.kod + ': yazilar okunur (4.5:1)', zayif.length === 0, zayif.slice(0,3).join(', '));
+    await p.close();
+   }
   }
 
   // Kayit ekraninda kabul cumlesi ve baglantilar
-  for (const [ad, yol, kutu] of [['karsilama', '/index.html', '#kayitPanel'], ['uygulama', '/app.html', '#authKayitPanel']]) {
+  // ⚠ 18 KASIM 2026: "/index.html" artik bir YONLENDIRICI; Turkce
+  //   karsilama sayfasi /tr/ adresinde. Beklenen baglantilar da dil
+  //   agacinin adresleri oldu. Guvence ayni: kabul cumlesi kayit
+  //   panelinin icinde mi ve iki belgeye de baglaniyor mu.
+  for (const [ad, yol, kutu, sartYolu, gizYolu] of [
+        ['karsilama', '/tr/',      '#kayitPanel',     '/tr/sartlar/',  '/tr/gizlilik/'],
+        ['uygulama',  '/app.html', '#authKayitPanel', 'sartlar.html',  'privacy.html']]) {
     const p = await (await t.newContext({ viewport:{width:1280,height:1000} })).newPage();
     await p.goto(KOK + yol, { waitUntil:'networkidle' });
     if (yol.endsWith('app.html')) { await p.evaluate(() => openAuth()); await p.waitForSelector('#authOverlay.open'); }
@@ -103,12 +156,13 @@ const bak = (ad, ko, ek)=>{ if(ko){ g++; console.log('  ok  '+ad); } else { k++;
     }, kutu);
     bak('kabul cumlesi kayit panelinde', c !== null);
     if (c) {
-      bak('sartlar baglantisi var', c.baglar.includes('sartlar.html'), c.baglar.join(', '));
-      bak('gizlilik baglantisi var', c.baglar.includes('privacy.html'), c.baglar.join(', '));
-      bak('cumle kabulden soz ediyor', /accept|kabul/i.test(c.yazi), c.yazi.slice(0,60));
+      bak(ad + ': sartlar baglantisi var', c.baglar.includes(sartYolu), c.baglar.join(', '));
+      bak(ad + ': gizlilik baglantisi var', c.baglar.includes(gizYolu), c.baglar.join(', '));
+      bak(ad + ': cumle kabulden soz ediyor', /accept|kabul/i.test(c.yazi), c.yazi.slice(0,60));
     }
     // Dipteki bag
-    bak('dipte sartlar bagi var', (await p.$$('a[href="sartlar.html"]')).length >= 1);
+    bak(ad + ': dipte sartlar bagi var',
+        (await p.locator('a[href="' + sartYolu + '"]').count()) >= 1, sartYolu);
     await p.close();
   }
 
@@ -146,7 +200,7 @@ const bak = (ad, ko, ek)=>{ if(ko){ g++; console.log('  ok  '+ad); } else { k++;
   console.log('[belgeler gerçeğe bağlı mı]');
   {
     const fs = require('fs'), yol = require('path');
-    const oku = (f)=> fs.readFileSync(yol.join(__dirname, '..', f), 'utf8');
+    const oku = (f)=> belgeYollari(f).map(y=> fs.readFileSync(yol.join(__dirname, '..', y), 'utf8')).join('\n');
     const worker = oku('supabase/functions/story-yayin/index.ts');
     const m = /YAYINLANABILIR\s*=\s*\[([^\]]*)\]/.exec(worker);
     bak('worker yayınlanabilir platform listesi okunabiliyor', !!m, String(m));
@@ -285,7 +339,7 @@ const bak = (ad, ko, ek)=>{ if(ko){ g++; console.log('  ok  '+ad); } else { k++;
       // `oku` yukaridaki kapsamda kaldi; bu olcum yayin ozelligine
       // bagli olmadigi icin kendi okuyucusunu kuruyor.
       const fs2 = require('fs'), yol2 = require('path');
-      const oku = (f)=> fs2.readFileSync(yol2.join(__dirname, '..', f), 'utf8');
+      const oku = (f)=> belgeYollari(f).map(y=> fs2.readFileSync(yol2.join(__dirname, '..', y), 'utf8')).join('\n');
       const yukleyici = oku('pc/story-yukle.py');
       const temizlikVar = /def\s+temizlik_turu\s*\(/.test(yukleyici)
                        && /def\s+r2_sil\s*\(/.test(yukleyici)
@@ -328,7 +382,7 @@ const bak = (ad, ko, ek)=>{ if(ko){ g++; console.log('  ok  '+ad); } else { k++;
     // burasi duser ve hangi belgede eksik oldugunu soyler.
     {
       const fs2 = require('fs'), yol2 = require('path');
-      const oku = (f)=> fs2.readFileSync(yol2.join(__dirname, '..', f), 'utf8');
+      const oku = (f)=> belgeYollari(f).map(y=> fs2.readFileSync(yol2.join(__dirname, '..', y), 'utf8')).join('\n');
       const worker = oku('supabase/functions/story-yayin/index.ts')
         .replace(/\/\*[\s\S]*?\*\//g, '').replace(/\/\/[^\n]*/g, '');
       const m = /const YAYINLANABILIR = \[([^\]]*)\]/.exec(worker);
@@ -408,7 +462,7 @@ const bak = (ad, ko, ek)=>{ if(ko){ g++; console.log('  ok  '+ad); } else { k++;
     //   Birini 90'a cekip otekini 30'da birakmak hicbir sey degistirmez.
     {
       const fs2 = require('fs'), yol2 = require('path');
-      const oku = (f)=> fs2.readFileSync(yol2.join(__dirname, '..', f), 'utf8');
+      const oku = (f)=> belgeYollari(f).map(y=> fs2.readFileSync(yol2.join(__dirname, '..', y), 'utf8')).join('\n');
       const GUN = { sayi: 90, en: 'ninety', tr: 'doksan' };
 
       for(const belge of ['sartlar.html', 'privacy.html']){
@@ -443,7 +497,7 @@ const bak = (ad, ko, ek)=>{ if(ko){ g++; console.log('  ok  '+ad); } else { k++;
     // kendiliginden susuyor.
     {
       const fs2 = require('fs'), yol2 = require('path');
-      const oku = (f)=> fs2.readFileSync(yol2.join(__dirname, '..', f), 'utf8');
+      const oku = (f)=> belgeYollari(f).map(y=> fs2.readFileSync(yol2.join(__dirname, '..', y), 'utf8')).join('\n');
       const worker = oku('supabase/functions/story-yayin/index.ts')
         .replace(/\/\*[\s\S]*?\*\//g, '').replace(/\/\/[^\n]*/g, '');
       const ytVar = /const YAYINLANABILIR = \[[^\]]*'youtube'/.test(worker);

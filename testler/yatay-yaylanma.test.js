@@ -33,10 +33,32 @@ const path = require('path');
 
 const KOK = path.join(__dirname, '..');
 
+// ⛔ 18 KASIM 2026 — YAYIN SAYFALARI DIL AGACINA TASINDI.
+//    index.html, kilavuz.html, fiyatlar.html ... artik birer
+//    YONLENDIRICI (1 KB, kaydirilacak icerigi yok); gercek sayfalar
+//    /tr/... ve /en/... altinda. Eski liste yonlendiricileri
+//    olcuyordu ve "yaylanmaya kapali degil" diye dusuyordu.
+// ⚠ AGAC KENDI BULUNUYOR: yeni dilin sayfalari listeye elle
+//    yazilmadan denetime giriyor (CLAUDE.md Bolum 7).
+function agacSayfalari(){
+  const bulunan = [];
+  for(const dil of fs.readdirSync(KOK, { withFileTypes:true })){
+    if(!dil.isDirectory() || !/^[a-z]{2}$/.test(dil.name)) continue;
+    const gez = (d)=>{
+      for(const g of fs.readdirSync(d, { withFileTypes:true })){
+        const tam = path.join(d, g.name);
+        if(g.isDirectory()) gez(tam);
+        else if(g.name === 'index.html') bulunan.push(path.relative(KOK, tam));
+      }
+    };
+    gez(path.join(KOK, dil.name));
+  }
+  return bulunan.sort();
+}
+
 const SAYFALAR = [
-  'app.html', 'index.html', 'kilavuz.html', 'guide.html', 'fiyatlar.html',
-  'lokasyon.html', 'privacy.html', 'sartlar.html', 'paylas.html',
-];
+  'app.html', 'lokasyon.html', 'paylas.html',
+].concat(agacSayfalari());
 
 // Denetim disi birakilanlar ve SEBEBI. Sebepsiz dosya buraya yazilmaz.
 const KAPSAM_DISI = {
@@ -47,6 +69,14 @@ const KAPSAM_DISI = {
   'tiktok.html': 'platform dogrulama sayfasi, tek satir',
   'youtube.html': 'platform dogrulama sayfasi, tek satir',
   'araclar/vapid-uret.html': 'kurulum araci, yana kayan alani yok',
+  // Yonlendiriciler: 1 KB, govdesinde yalnizca <noscript> listesi
+  // var; kaydirilacak icerik yok. Gercek sayfa dil agacinda.
+  'index.html': 'dil yonlendiricisi, kaydirilacak icerigi yok',
+  'fiyatlar.html': 'dil yonlendiricisi, kaydirilacak icerigi yok',
+  'kilavuz.html': 'dil yonlendiricisi, kaydirilacak icerigi yok',
+  'guide.html': 'dil yonlendiricisi, kaydirilacak icerigi yok',
+  'privacy.html': 'dil yonlendiricisi, kaydirilacak icerigi yok',
+  'sartlar.html': 'dil yonlendiricisi, kaydirilacak icerigi yok',
 };
 
 function kurallar(css) {

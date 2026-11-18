@@ -43,9 +43,32 @@ const dene = (ad, fn) => {
 };
 
 // ---- Sayfalari KENDI BUL ----
-const sayfalar = fs.readdirSync(KOK)
-  .filter(f => f.endsWith('.html'))
-  .sort();
+// ⛔ 18 KASIM 2026 — TARAMA DERINLESTI. Yayin sayfalari artik kokte
+//    degil, dil agacinda duruyor (/tr/..., /en/...). Kok taramasi
+//    yalnizca yonlendiricileri goruyordu ve "ikon ailesi yine
+//    ayristi" diye dustu. Ilke degismedi: liste YAZILMIYOR,
+//    bulunuyor; yeni dilin sayfasi kendiliginden denetime giriyor.
+// ⚠ ATLANAN: kaynak/ (uretimin GIRDISI -- ciktisi degil; sayilirsa
+//    ayni sayfa iki kez denetlenir ve kaynakta adresler henuz
+//    goreli), testler/, surum gecmisi.
+// ⚠ `araclar/` ve `supabase/email/` YAYIN SAYFASI DEGIL: biri ic
+//   arac, oteki e-posta sablonu. Ikisinde de "Shootboard" geciyor
+//   ama tarayicida sekme olarak acilmiyorlar. Kok taramasi
+//   zamaninda zaten kapsam disindaydilar.
+const ATLA = new Set(['kaynak', 'testler', 'node_modules', '.git',
+                      'denetim', 'docs', 'eski', 'araclar', 'supabase']);
+function htmlBul(dizin, derinlik){
+  if(derinlik > 3) return [];
+  let bulunan = [];
+  for(const g of fs.readdirSync(dizin, { withFileTypes: true })){
+    if(g.name.startsWith('.') || ATLA.has(g.name)) continue;
+    const tam = path.join(dizin, g.name);
+    if(g.isDirectory()) bulunan = bulunan.concat(htmlBul(tam, derinlik + 1));
+    else if(g.name.endsWith('.html')) bulunan.push(path.relative(KOK, tam));
+  }
+  return bulunan;
+}
+const sayfalar = htmlBul(KOK, 0).sort();
 
 const oku = f => fs.readFileSync(path.join(KOK, f), 'utf8');
 const ikonlari = metin => {
@@ -54,7 +77,13 @@ const ikonlari = metin => {
   let m;
   while ((m = re.exec(metin))) {
     const h = /href="([^"]+)"/i.exec(m[0]);
-    if (h) r.push(h[1]);
+    // ⚠ 18 KASIM 2026: DOSYA ADIYLA karsilastir, yazilisiyla degil.
+    //   Dil agacindaki sayfalar "/favicon.svg" yazmak ZORUNDA
+    //   (/tr/fiyatlar/ icinden goreli yazilirsa 404 olur), kokteki
+    //   sayfalar ise "favicon.svg" yaziyor. Ayni dosya, iki
+    //   yazilis. Guvence degismedi: her sayfa AYNI ikon ailesini
+    //   yukluyor mu.
+    if (h) r.push(h[1].replace(/^\.?\//, ''));
   }
   return r;
 };

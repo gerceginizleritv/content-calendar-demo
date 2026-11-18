@@ -22,11 +22,16 @@
 //   mumkun degil.
 'use strict';
 
-const { DILLER, VARSAYILAN, kodlar } = require('./diller.js');
+const { DILLER, VARSAYILAN, YABANCI, kodlar } = require('./diller.js');
 
 function kacir(s){
   return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;')
                   .replace(/>/g,'&gt;').replace(/"/g,'&quot;');
+}
+
+// Tanimadigimiz dil icin hedef: YABANCI varsa o, yoksa VARSAYILAN.
+function H_YABANCI(adresler){
+  return adresler[YABANCI] !== undefined ? YABANCI : VARSAYILAN;
 }
 
 function yonlendirici({ adresler, kokBaglanti, baslik }){
@@ -38,16 +43,31 @@ function yonlendirici({ adresler, kokBaglanti, baslik }){
   satir.push('<meta charset="utf-8">');
   satir.push('<meta name="viewport" content="width=device-width,initial-scale=1">');
   satir.push('<title>' + kacir(baslik) + '</title>');
+  // ⛔ IKON KUMESI BURADA DA DURUYOR. Yonlendirici kisa sure de olsa
+  //    tarayicida aciliyor ve icinde "Shootboard" geciyor; eksik
+  //    birakilirsa hem sekmede bos ikon gorunur hem de
+  //    `ikon-ailesi` testi "ikon ailesi yine ayristi" diye duser.
+  //    ⚠ Bu bes satir deponun ortak kumesi; degisirse HER yerde
+  //    degisir (46. madde).
+  satir.push('<link rel="icon" href="/favicon.svg" type="image/svg+xml">');
+  satir.push('<link rel="icon" href="/favicon.ico" sizes="any">');
+  satir.push('<link rel="icon" href="/favicon-32x32.png" sizes="32x32" type="image/png">');
+  satir.push('<link rel="icon" href="/favicon-16x16.png" sizes="16x16" type="image/png">');
+  satir.push('<link rel="apple-touch-icon" sizes="180x180" href="/apple-touch-icon.png">');
   // Arama motoru: bu adres kopya degil, dillerin kapisi.
   satir.push('<link rel="canonical" href="' + kacir(kokBaglanti + adresler[VARSAYILAN]) + '">');
   for(const k of diller){
     satir.push('<link rel="alternate" hreflang="' + kacir(k) + '" href="'
                + kacir(kokBaglanti + adresler[k]) + '">');
   }
+  // x-default: "dilini tanimadigimiz ziyaretci buraya" demek --
+  // dolayisiyla YABANCI hedefiyle ayni yer.
   satir.push('<link rel="alternate" hreflang="x-default" href="'
-             + kacir(kokBaglanti + adresler[VARSAYILAN]) + '">');
+             + kacir(kokBaglanti + adresler[H_YABANCI(adresler)]) + '">');
   satir.push('<script>(function(){');
-  satir.push('  var H=' + JSON.stringify(adresler) + ',V=' + JSON.stringify(VARSAYILAN) + ';');
+  // V: tanimadigimiz dilden gelenin gidecegi yer. Bu VARSAYILAN
+  // degil YABANCI: Turkce tarayici Turkce, oteki her dil Ingilizce.
+  satir.push('  var H=' + JSON.stringify(adresler) + ',V=' + JSON.stringify(H_YABANCI(adresler)) + ';');
   satir.push('  var d=null;');
   satir.push('  try{var q=new URLSearchParams(location.search).get("lang");if(q&&H[q])d=q;}catch(e){}');
   satir.push('  if(!d){try{var m=localStorage.getItem("demo_ui_language");if(m&&H[m])d=m;}catch(e){}}');

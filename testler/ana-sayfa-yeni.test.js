@@ -199,13 +199,19 @@ const bak=(a,ko,ek)=>{ if(ko){g++;console.log('  ok  '+a);} else {k++;console.lo
     //    degisti: dil artik ADRESTE (/en/) tasiniyor, sorgu
     //    parametresinde degil -- her dilin kendi adresi olsun diye
     //    (48. madde, kullanici karari 18 Kasim 2026).
-    await p.selectOption('select.dil-sec', '/en/'); await p.waitForTimeout(900);
+    // ⛔ 18 KASIM 2026, IKINCI TUR: yerli <select> de birakildi.
+    //    Kullanici ilk halini "amator" buldu; yerine bayrakli ozel
+    //    secici geldi. Tetikleyiciye tiklanip panelden satir
+    //    seciliyor. Olculen sey AYNI.
+    await p.click('.dil-tetik'); await p.waitForTimeout(250);
+    await p.click('.dil-satir[data-dil="en"]'); await p.waitForTimeout(900);
     const en = await p.evaluate(()=>({ lang:document.documentElement.lang,
       h1:(document.querySelector('h1')||{}).textContent.slice(0,40),
       fiyat:(document.querySelector('.ust-nav a[href*="pricing"], .ust-nav a[href*="fiyatlar"]')||{}).getAttribute('href') }));
     bak('EN gecisi calisti', en.lang==='en' && /One shoot/.test(en.h1), en.lang+' / '+en.h1);
     bak('fiyat baglantisi dili tasiyor', en.fiyat==='/en/pricing/', String(en.fiyat));
-    await p.selectOption('select.dil-sec', '/tr/'); await p.waitForTimeout(900);
+    await p.click('.dil-tetik'); await p.waitForTimeout(250);
+    await p.click('.dil-satir[data-dil="tr"]'); await p.waitForTimeout(900);
     const tr = await p.evaluate(()=> (document.querySelector('h1')||{}).textContent.slice(0,40));
     bak('TR geri donuyor (metin kaybolmuyor)', /Bir çekimden/.test(tr), tr);
     // ⛔ Yasak cumleler
