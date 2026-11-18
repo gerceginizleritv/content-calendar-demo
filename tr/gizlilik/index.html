@@ -2,8 +2,8 @@
 <html lang="tr"><head><script>window.SAYFA_DILI="tr";</script>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Privacy Policy — Shootboard</title>
-<meta name="description" content="What Shootboard stores, what leaves your browser, and who else is involved. Plain language, no dark patterns.">
+<title>Gizlilik Politikası — Shootboard</title>
+<meta name="description" content="Kısacası. Shootboard bir demodur. Varsayılan olarak oluşturduğunuz her şey kendi tarayıcınızda kalır, hiçbir sunucuya ulaşmaz. Giriş yapmayı seçerseniz…">
 <link rel="icon" href="/favicon.svg" type="image/svg+xml">
 <link rel="icon" href="/favicon.ico" sizes="any">
 <link rel="icon" href="/favicon-32x32.png" sizes="32x32" type="image/png">
@@ -92,9 +92,20 @@ footer{margin-top:26px;color:var(--text-dim);font-size:.85rem;}
     </nav>
     <div class="ust-sag">
       <select class="dil-sec" aria-label="Dil">
-        <option value="/tr/gizlilik/" selected="">Türkçe</option>
-        <option value="/en/privacy/">English</option>
+        <option value="/tr/gizlilik/" data-dil="tr" selected="">🇹🇷 Türkçe</option>
+        <option value="/en/privacy/" data-dil="en">🇬🇧 English</option>
       </select>
+      <script>(function(){
+        var s=document.currentScript.previousElementSibling;
+        if(!s||s.tagName!=="SELECT")s=document.querySelector("select.dil-sec");
+        if(!s)return;
+        s.addEventListener("change",function(){
+          var k=s.options[s.selectedIndex];
+          if(!k||!k.value)return;
+          try{localStorage.setItem("demo_ui_language",k.getAttribute("data-dil"));}catch(e){}
+          location.href=k.value;
+        });
+      })();</script>
       <a class="dug dug-birincil dug-sm" href="/tr/#giris">
         <span class="cta-uzun">Ücretsiz başla</span>
         <span class="cta-kisa">Başla</span>
@@ -103,226 +114,10 @@ footer{margin-top:26px;color:var(--text-dim);font-size:.85rem;}
   </div>
 </header>
 <!-- /UST-MENU -->
-<div class="wrap">
-
-<header>
-  <h1>Privacy Policy</h1>
-  <p class="updated">Last updated: 27 September 2026</p>
-  <p class="langbar"><strong>English</strong> · <a href="#turkce">Türkçe için tıklayın</a></p>
-</header>
-
-<div class="callout">
-  <p>
-    <strong>The short version.</strong> Shootboard is a demo. By default everything you
-    create stays in your own browser and never reaches a server. If you choose to
-    sign in, your email address and your calendar entries are stored so they can
-    follow you to another device. We do not sell anything, we do not run ads, and
-    we do not use tracking cookies.
-  </p>
-</div>
-
-<h2>1. Who runs this</h2>
-<p>
-  Shootboard is an independent demo project, not a registered company. Questions about
-  this policy or your data go to
-  <a href="mailto:hello@shootboard.app">hello@shootboard.app</a>.
-</p>
-
-<h2>2. What stays in your browser</h2>
-<p>
-  Without an account, Shootboard stores everything locally using your browser's
-  <code>localStorage</code>. Nothing is sent anywhere. That includes:
-</p>
-<ul>
-  <li>Your calendar entries — titles, dates, times, captions, cover text, platform and status</li>
-  <li>Your interface language and light/dark preference</li>
-  <li>Small flags remembering that you have seen the intro tour</li>
-  <li>An AI provider key, if you choose to enter one (see section 6)</li>
-</ul>
-<p>
-  Clearing your browser data erases all of it. We cannot recover it, because we
-  never had it.
-</p>
-
-<h2>3. What happens if you sign in</h2>
-<p>
-  Signing in is optional and the demo works fully without it. If you do sign in —
-  by email link or with Google — the following is stored in our database, hosted by
-  Supabase:
-</p>
-<ul>
-  <li><strong>Your email address</strong>, which is what identifies your account.</li>
-  <li>
-    <strong>Your calendar entries</strong>, so the same calendar appears on your
-    other devices.
-  </li>
-  <li>
-    If you sign in with Google, Google tells us your <strong>name, email address
-    and profile picture</strong>. We use the email address to identify your account.
-    We never receive your Google password, and we get no access to your Gmail,
-    Drive, Contacts or any other Google service.
-  </li>
-</ul>
-<p>
-  Database access rules restrict every row to the account that created it, so
-  another signed-in user cannot read your entries.
-</p>
-<p>When you create an account we send you one welcome email, and each sign-in by email link sends one link. Both go out through Resend from hello@shootboard.app. We do not send newsletters or promotional email without asking you first.</p>
-
-<h2>4. Feedback form</h2>
-<p>
-  If you send feedback, the answers you type are delivered to us by email through
-  Web3Forms. That message contains what you wrote, your interface language, a
-  timestamp, and your email address only if you chose to give one. If you leave the
-  email field blank, the feedback is anonymous.
-</p>
-
-<h2>5. Visit counting</h2>
-<p>
-  We count visits and which features get used, so we know whether the demo is worth
-  continuing. This uses GoatCounter, which sets no tracking cookies and builds no
-  profile of you; what we see are aggregate counts, not
-  individuals. We do not use Google Analytics or advertising trackers.
-</p>
-
-<h2>6. The AI caption feature</h2>
-<p>
-  Shootboard can draft captions, but it has no AI service of its own. You supply your own
-  API key from Anthropic or Google. That key is stored only in your browser and is
-  sent directly from your browser to the provider you chose, along with the text of
-  the entry you are working on. It never passes through us and we never see it or
-  your prompts. Your use of that provider is governed by their terms, not ours.
-</p>
-
-<h2>7. Everyone else involved</h2>
-<table>
-  <tbody><tr><th>Service</th><th>What it is for</th><th>What it can see</th></tr>
-  <tr><td>Supabase</td><td>Accounts and calendar storage</td><td>Your email and entries, only if you sign in</td></tr>
-  <tr><td>Google</td><td>Optional sign-in</td><td>That you signed in to Shootboard</td></tr>
-  <tr><td>GitHub Pages</td><td>Serving this site</td><td>Standard web server records, including IP address</td></tr>
-  <tr><td>Web3Forms</td><td>Delivering feedback</td><td>Only what you type into the feedback form</td></tr>
-  <tr><td>Resend</td><td>Sending sign-in links and the welcome email</td><td>Your email address and the message we send you</td></tr>
-  <tr><td>GoatCounter</td><td>Visit counts</td><td>Aggregate visit data, no cookies</td></tr>
-  <tr><td>Google Fonts, jsDelivr</td><td>Fonts and one code library</td><td>Your IP address, as with any file a browser loads</td></tr>
-  <tr><td>Open-Meteo</td><td>The weather for a place on your calendar</td><td>That place’s coordinates, rounded to two decimals (about 1 km), or the place name you typed. No account, no key, no cookie</td></tr>
-  <tr><td>Anthropic or Google AI</td><td>Captions, only with your own key</td><td>The text you ask them to work on</td></tr>
-  <tr><td>Cloudflare R2</td><td>Holding a video or cover file so that the platform can fetch it — only if you use scheduled publishing</td><td>The file itself. It sits at a <strong>public address</strong>: anyone with the link can open it</td></tr>
-  <tr><td>Meta (Instagram, Facebook)</td><td>Publishing a scheduled post — only for entries where you switched it on</td><td>The video or image, its caption, and that it came from your own connected account</td></tr>
-  <tr><td>TikTok</td><td>Dropping a scheduled video into your TikTok drafts — only for entries where you switched it on</td><td>The video file, its size, and that it came from your own connected account. Not the caption: that endpoint carries no text</td></tr>
-  <tr><td>YouTube (Google)</td><td>Uploading a scheduled Short — only for entries where you switched it on</td><td>The video file, its title, description, tags and your channel name</td></tr>
-  <tr><td>Threads (Meta)</td><td>Publishing a scheduled post or poll — only for entries where you switched it on</td><td>The text you wrote, the cover image if the entry has one, and that it came from your own connected account</td></tr>
-</tbody></table>
-<p>
-  The last five only come into play if you use scheduled publishing. That feature is
-  off unless you turn it on, entry by entry, and it needs your own account for that
-  platform connected. If you never use it, no file of yours ever reaches any of them.
-</p>
-<p>
-  <strong>Each platform is separate.</strong> Connecting Instagram does not connect
-  TikTok or YouTube, and disconnecting one leaves the others alone. We store an access
-  token for each platform you connect. Those tokens stay on the server: they are never
-  sent to your browser and no page of this app can read them.
-</p>
-<p>
-  <strong>Shootboard reads nothing back.</strong> We do not fetch your posts, views,
-  comments, subscribers or follower counts from any of these platforms. The connection
-  is one-way — out of Shootboard, into your account — and the permission we ask for is
-  the narrowest one that allows an upload.
-</p>
-<p>
-  <strong>Why the address has to be public.</strong> Meta does not accept an upload from
-  us; it fetches the file itself from a URL. A private address would be refused. The
-  link is long and unguessable, but it is not a secret: treat anything you publish
-  this way as public from the moment it is uploaded. (TikTok and YouTube are different:
-  there we send the file ourselves, in pieces. They do not need a public address — the
-  same address is used because one file may go to several platforms.)
-</p>
-
-<h2>7b. YouTube in particular</h2>
-<p>
-  Shootboard's YouTube upload uses <strong>YouTube API Services</strong>. By connecting
-  a YouTube channel you also accept the
-  <a href="https://www.youtube.com/t/terms" target="_blank" rel="noopener">YouTube Terms of Service</a>,
-  and Google's handling of your data is covered by the
-  <a href="https://policies.google.com/privacy" target="_blank" rel="noopener">Google Privacy Policy</a>.
-</p>
-<ul>
-  <li>
-    <strong>What we ask for.</strong> One permission:
-    <code>youtube.upload</code>. It allows uploading a video. It does not allow reading
-    your analytics, your comments, your subscribers, or anything already on your channel.
-  </li>
-  <li>
-    <strong>What we store.</strong> An access token, a refresh token, and the time of the
-    last error if one happened. Nothing else. The tokens live in a server-side table that
-    the browser cannot reach. There are also fields for your channel id and name, and in
-    practice they stay <strong>empty</strong>: reading them would need a wider permission
-    than uploading does, and we do not ask for one.
-  </li>
-  <li>
-    <strong>What we send.</strong> Only the video file and the text you wrote in the
-    entry: title, description and tags. Nothing is sent for an entry whose scheduled
-    publishing you did not switch on.
-  </li>
-  <li>
-    <strong>How to revoke it.</strong> Two ways, either is enough:
-    from Shootboard's YouTube page, or from Google directly at
-    <a href="https://myaccount.google.com/permissions" target="_blank" rel="noopener">myaccount.google.com/permissions</a>.
-    Revoking stops all future uploads; videos already uploaded stay on your channel and
-    are yours to delete.
-  </li>
-  <li>
-    <strong>What we delete.</strong> Disconnecting deletes the stored tokens immediately.
-    Deleting your Shootboard account deletes them too.
-  </li>
-</ul>
-
-<h2>8. How long we keep things</h2>
-<p>
-  Account data is kept while your account exists. Local browser data lives until you
-  clear it. Feedback messages sit in an email inbox and are kept while they are
-  still useful. Automatic backups hold the last seven days and roll over on their own.
-</p>
-<p>
-  Files uploaded for scheduled publishing are the exception. Once every entry using a
-  file has gone out, the tool that uploaded it deletes the video and its cover from
-  object storage; a file that never gets published is dropped by a ninety-day cleanup
-  rule on the storage itself. <strong>Deleting your account does not trigger either
-  one</strong> — the app holds no key to that storage. Ask us from Feedback if you
-  want something removed sooner.
-</p>
-
-<h2>9. Your choices</h2>
-<ul>
-  <li><strong>Use it without an account.</strong> Nothing leaves your browser.</li>
-  <li><strong>Sign out.</strong> The screen returns to browser-only data.</li>
-  <li>
-    <strong>Delete your account and everything in it.</strong> Email
-    <a href="mailto:hello@shootboard.app">hello@shootboard.app</a> from
-    the address you signed up with and we will delete it.
-  </li>
-  <li><strong>Clear your browser data</strong> to erase the local copy.</li>
-</ul>
-<p>
-  Depending on where you live you may have rights to access, correct, export or
-  erase your data. Write to the address above and we will act on it.
-</p>
-
-<h2>10. Children</h2>
-<p>Shootboard is not intended for children under 13 and we do not knowingly collect their data.</p>
-
-<h2>11. Changes</h2>
-<p>
-  If this policy changes, the date at the top changes with it. Shootboard is a demo under
-  active development, so it is worth a glance if you return after a long gap.
-</p>
-
-<hr>
-
-<header id="turkce" style="border:0;padding-top:44px;margin-bottom:24px;">
+<div class="wrap"><header>
   <h1>Gizlilik Politikası</h1>
   <p class="updated">Son güncelleme: 27 Eylül 2026</p>
-  <p class="langbar"><a href="#">English</a> · <strong>Türkçe</strong></p>
+  
 </header>
 
 <div class="callout">

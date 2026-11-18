@@ -15,27 +15,47 @@
 // tek dosyaysa dizge, dile goreyse nesne yazilir.
 'use strict';
 
+// ⛔ KAYNAKLAR BURADA DURUYOR, KOKTE DEGIL.
+//    18 Kasim 2026'da tasindilar. Sebep: uretici hem /tr/ ve /en/
+//    agacini hem de DUZ adresleri (shootboard.app, /fiyatlar.html)
+//    yaziyor. Kaynak kokte kalsaydi uretici kendi kaynagini
+//    ustune yazardi.
+// ⚠ DUZ SAYFALARI ELLE DEGISTIRME: her uretimde bastan yazilirlar.
+//    Degisiklik kaynak/ altina.
+const KAYNAK_DIZIN = 'kaynak';
+
 const SAYFALAR = [
-  { ad: 'ev',       kaynak: 'index.html',
+  // `duz`: bugunku dosya adi ve o dosyanin BUGUNKU dili. Eski
+  //  adresler calismaya devam ediyor, yalnizca yeni menuyu
+  //  tasiyorlar ve baglantilari dil agacina gidiyor.
+  { ad: 'ev',       kaynak: 'index.html',   duz: { dosya: 'index.html',    dil: 'tr' },
     parca:   { tr: '',          en: '' },
     // ⚠ menude:false -- marka ("Shootboard") zaten eve goturuyor.
     //   Ornek alinan menu index.html'inki ve orada "Ana sayfa"
     //   maddesi YOK; iki kez ayni yere giden baglanti olmasin.
     menu:    { tr: 'Ana sayfa', en: 'Home' },        menude: false },
 
-  { ad: 'fiyatlar', kaynak: 'fiyatlar.html',
+  { ad: 'fiyatlar', kaynak: 'fiyatlar.html', duz: { dosya: 'fiyatlar.html', dil: 'tr' },
     parca:   { tr: 'fiyatlar',  en: 'pricing' },
     menu:    { tr: 'Fiyatlar',  en: 'Pricing' },     menude: true },
 
+  // ⚠ Kilavuzun iki ayri kaynagi var, dolayisiyla IKI duz adresi:
+  //   kilavuz.html (tr) ve guide.html (en).
   { ad: 'kilavuz',  kaynak: { tr: 'kilavuz.html', en: 'guide.html' },
+    duzCok: [{ dosya: 'kilavuz.html', dil: 'tr' }, { dosya: 'guide.html', dil: 'en' }],
     parca:   { tr: 'kilavuz',   en: 'guide' },
     menu:    { tr: 'Kılavuz',   en: 'Guide' },       menude: true },
 
-  { ad: 'gizlilik', kaynak: 'privacy.html',
+  // ⛔ Bu iki sayfa TEK DOSYADA UST USTE iki dil tasiyor: once
+  //    Ingilizce yari, sonra <hr>, sonra id="turkce" ile Turkce yari.
+  //    Uretici her dil icin OTEKI yariyi atiyor. `trCapa` bolmenin
+  //    nerede oldugunu soyluyor. (48. maddenin tablosunda bu kalip
+  //    hic yoktu; 18 Kasim 2026'da olcerek bulundu.)
+  { ad: 'gizlilik', kaynak: 'privacy.html', duz: { dosya: 'privacy.html', dil: 'en' }, trCapa: 'turkce',
     parca:   { tr: 'gizlilik',  en: 'privacy' },
     menu:    { tr: 'Gizlilik',  en: 'Privacy' },     menude: false },
 
-  { ad: 'sartlar',  kaynak: 'sartlar.html',
+  { ad: 'sartlar',  kaynak: 'sartlar.html', duz: { dosya: 'sartlar.html', dil: 'en' }, trCapa: 'turkce',
     parca:   { tr: 'sartlar',   en: 'terms' },
     menu:    { tr: 'Şartlar',   en: 'Terms' },       menude: false }
 ];
@@ -79,4 +99,4 @@ function kaynakDosya(sayfa, dil){
   return typeof sayfa.kaynak === 'string' ? sayfa.kaynak : sayfa.kaynak[dil];
 }
 
-module.exports = { SAYFALAR, DOKUNULMAZ, BOLUMLER, CTA, sayfaBul, adres, kaynakDosya };
+module.exports = { SAYFALAR, KAYNAK_DIZIN, DOKUNULMAZ, BOLUMLER, CTA, sayfaBul, adres, kaynakDosya };

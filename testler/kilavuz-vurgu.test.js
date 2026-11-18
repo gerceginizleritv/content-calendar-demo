@@ -48,9 +48,31 @@ const KOK = path.join(__dirname, '..');
   };
 
   // Kilavuzlar BULUNUYOR, listelenmiyor.
-  const KILAVUZLAR = fs.readdirSync(KOK)
-    .filter(f => f.endsWith('.html') && !f.startsWith('.'))
-    .filter(f => fs.readFileSync(path.join(KOK, f), 'utf8').includes('id="yanMenu"'));
+  // ⛔ 18 KASIM 2026 — TARAMA DERINLESTI. Kilavuzlar artik kokte
+  //    degil, dil agacinda duruyor: tr/kilavuz/index.html ve
+  //    en/guide/index.html. Kok taramasi hicbir sey bulamayinca
+  //    test "en az iki kilavuz" iddiasiyla dustu -- ve HAKLIYDI:
+  //    bos tarama sessizce yesil yanmasin diye konulmustu, isini
+  //    yapti. Ilke degismedi: liste YAZILMIYOR, bulunuyor; yeni
+  //    dilin kilavuzu kendiliginden denetime giriyor.
+  // ⚠ ATLANAN KLASORLER: kaynak/ (uretimin girdisi, ciktisi degil --
+  //    sayilirsa ayni kilavuz iki kez denetlenir), testler/, eski
+  //    surumler ve surum gecmisi.
+  const ATLA = new Set(['kaynak', 'testler', 'node_modules', '.git', 'denetim', 'docs']);
+  function htmlBul(dizin, derinlik){
+    if(derinlik > 3) return [];
+    let bulunan = [];
+    for(const g of fs.readdirSync(dizin, { withFileTypes: true })){
+      if(g.name.startsWith('.') || ATLA.has(g.name)) continue;
+      const tam = path.join(dizin, g.name);
+      if(g.isDirectory()) bulunan = bulunan.concat(htmlBul(tam, derinlik + 1));
+      else if(g.name.endsWith('.html')) bulunan.push(tam);
+    }
+    return bulunan;
+  }
+  const KILAVUZLAR = htmlBul(KOK, 0)
+    .filter(f => fs.readFileSync(f, 'utf8').includes('id="yanMenu"'))
+    .map(f => path.relative(KOK, f));
 
   dene('★ bekçi: en az iki kılavuz bulundu (boş tarama değil)', () => {
     assert.ok(KILAVUZLAR.length >= 2,

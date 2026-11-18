@@ -10,8 +10,14 @@
 'use strict';
 
 const DILLER = {
-  tr: { ad: 'Türkçe',  htmlLang: 'tr', secEtiket: 'Dil' },
-  en: { ad: 'English', htmlLang: 'en', secEtiket: 'Language' }
+  // ⚠ BAYRAK BIR DILIN DEGIL BIR ULKENIN isareti. Ingilizce
+  //    yalnizca Birlesik Krallik'ta konusulmuyor; 41. maddede
+  //    gelecek diller (ispanyolca, arapca, rusca...) coklu ulkeye
+  //    yayiliyor. Kullanici 18 Kasim 2026'da bayrak istedi, eklendi;
+  //    yeni dil eklerken hangi bayragin konacagi KULLANICIYA
+  //    sorulacak, tahmin edilmeyecek.
+  tr: { ad: 'Türkçe',  bayrak: '🇹🇷', htmlLang: 'tr', secEtiket: 'Dil' },
+  en: { ad: 'English', bayrak: '🇬🇧', htmlLang: 'en', secEtiket: 'Language' }
 };
 
 const VARSAYILAN = 'tr';

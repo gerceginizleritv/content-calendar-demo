@@ -56,10 +56,32 @@ function ustMenu({ sayfa, dil }){
   // gelecek ve o gun burasi degismeyecek.
   satir.push('      <select class="dil-sec" aria-label="' + kacir(DILLER[dil].secEtiket) + '">');
   for(const k of kodlar()){
-    satir.push('        <option value="' + kacir(adres(sayfa, k)) + '"'
-               + (k === dil ? ' selected' : '') + '>' + kacir(DILLER[k].ad) + '</option>');
+    satir.push('        <option value="' + kacir(adres(sayfa, k)) + '" data-dil="' + kacir(k) + '"'
+               + (k === dil ? ' selected' : '') + '>'
+               + kacir((DILLER[k].bayrak ? DILLER[k].bayrak + ' ' : '') + DILLER[k].ad)
+               + '</option>');
   }
   satir.push('      </select>');
+  // ⛔ 18 KASIM 2026 — SECICI OLUYDU. Cizilmisti ama hicbir sey
+  //    dinlemiyordu: secmek sayfayi degistirmiyordu. Bekci de
+  //    kacirdi, cunku "secici VAR" ve "dogru adresleri tasiyor"
+  //    diye olcuyordu; "secince GIDIYOR" diye olcmuyordu.
+  //    Artik oyle bir iddia da var.
+  // ⚠ Dil TARAYICIYA DA YAZILIYOR: kullanici bir dahaki sefere
+  //    duz adresten (shootboard.app) girdiginde kendi dilinde
+  //    acilsin. Kullanici 18 Kasim 2026: "ingilizce secili iken
+  //    ana sayfaya gidince Turkceye dondu."
+  satir.push('      <script>(function(){');
+  satir.push('        var s=document.currentScript.previousElementSibling;');
+  satir.push('        if(!s||s.tagName!=="SELECT")s=document.querySelector("select.dil-sec");');
+  satir.push('        if(!s)return;');
+  satir.push('        s.addEventListener("change",function(){');
+  satir.push('          var k=s.options[s.selectedIndex];');
+  satir.push('          if(!k||!k.value)return;');
+  satir.push('          try{localStorage.setItem("demo_ui_language",k.getAttribute("data-dil"));}catch(e){}');
+  satir.push('          location.href=k.value;');
+  satir.push('        });');
+  satir.push('      })();<\/script>');
   satir.push('      <a class="dug dug-birincil dug-sm" href="'
              + kacir(capaAdresi(sayfa, dil, CTA.capa)) + '">');
   satir.push('        <span class="cta-uzun">' + kacir(CTA.uzun[dil]) + '</span>');

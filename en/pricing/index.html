@@ -197,9 +197,20 @@ a{color:inherit;}
     </nav>
     <div class="ust-sag">
       <select class="dil-sec" aria-label="Language">
-        <option value="/tr/fiyatlar/">Türkçe</option>
-        <option value="/en/pricing/" selected="">English</option>
+        <option value="/tr/fiyatlar/" data-dil="tr">🇹🇷 Türkçe</option>
+        <option value="/en/pricing/" data-dil="en" selected="">🇬🇧 English</option>
       </select>
+      <script>(function(){
+        var s=document.currentScript.previousElementSibling;
+        if(!s||s.tagName!=="SELECT")s=document.querySelector("select.dil-sec");
+        if(!s)return;
+        s.addEventListener("change",function(){
+          var k=s.options[s.selectedIndex];
+          if(!k||!k.value)return;
+          try{localStorage.setItem("demo_ui_language",k.getAttribute("data-dil"));}catch(e){}
+          location.href=k.value;
+        });
+      })();</script>
       <a class="dug dug-birincil dug-sm" href="/en/#giris">
         <span class="cta-uzun">Start free</span>
         <span class="cta-kisa">Start</span>

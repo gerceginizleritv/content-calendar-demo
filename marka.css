@@ -308,3 +308,34 @@ img{max-width:100%;height:auto;display:block;}
   .dil-dug{padding:9px 9px;}
   .ust-ic{gap:8px;}
 }
+
+
+/* ────────────────────────────────────────────────────────────────
+   DIL SECICI (ust menu, uret/ust-menu.js uretiyor)
+   ⛔ 18 KASIM 2026 — OLCULDU: telefonda yalnizca 19 piksel
+   yuksekligindeydi. `sayfa-saglik` testi "dokunma hedefleri 40px+"
+   diye dusurdu ve HAKLIYDI: parmakla secilemeyecek kadar kucuktu.
+   Eskiden burada iki ayri dugme (.dil-dug) vardi ve onlarin kendi
+   olcusu vardi; acilir listeye gecilince olcu kimsede kalmadi.
+   ──────────────────────────────────────────────────────────────── */
+.dil-sec{
+  min-height:44px;
+  padding:0 30px 0 10px;
+  font:inherit;
+  font-size:13px;
+  line-height:1.2;
+  color:inherit;
+  background:transparent;
+  border:1px solid currentColor;
+  border-radius:9px;
+  cursor:pointer;
+  appearance:none;
+  -webkit-appearance:none;
+  /* Kendi oku: appearance:none yerli oku da kaldiriyor. */
+  background-image:url("data:image/svg+xml;charset=utf-8,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 12 8'%3E%3Cpath fill='%23fff' d='M1 1l5 5 5-5'/%3E%3C/svg%3E");
+  background-repeat:no-repeat;
+  background-position:right 10px center;
+  background-size:11px 7px;
+}
+.dil-sec:focus-visible{outline:2px solid currentColor;outline-offset:2px;}
+.dil-sec option{color:#111;background:#fff;}

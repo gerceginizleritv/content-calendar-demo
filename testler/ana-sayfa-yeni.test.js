@@ -35,7 +35,7 @@ const bak=(a,ko,ek)=>{ if(ko){g++;console.log('  ok  '+a);} else {k++;console.lo
     const istek=[]; // ⚠ TAM ADRES saklaniyor, yalnizca dosya adi degil: konak adi
     // olmadan "hangi CDN engelli" filtresi calismiyordu.
     p.on('requestfailed',r=>istek.push(r.url()+' :: '+(r.failure()||{}).errorText));
-    await p.goto(KOK+'/index.html',{waitUntil:'networkidle'});
+    await p.goto(KOK+'/tr/',{waitUntil:'networkidle'});
     // Tembel (lazy) resimler yalnizca gorunur olunca yuklenir: once
     // sayfayi sonuna kadar kaydirmadan 'yuklenmedi' demek yanlis olur.
     for(let i=0;i<24;i++){ await p.mouse.wheel(0,900); await p.waitForTimeout(120); }
@@ -189,13 +189,23 @@ const bak=(a,ko,ek)=>{ if(ko){g++;console.log('  ok  '+a);} else {k++;console.lo
         JSON.stringify(kontrast.slice(0,4)));
 
     // Dil degistir
-    await p.click('[data-dil="en"]'); await p.waitForTimeout(400);
+    // ⛔ 18 KASIM 2026 — DIL SECIMI ARTIK IKI DUGME DEGIL, ACILIR
+    //    LISTE. Kullanici 47. maddede istedi ("menu her sayfada ayni
+    //    olsun") ve 41. maddede alti dil daha gelecek; iki dugme
+    //    sekiz dile cikmiyordu. Eski olcu [data-dil="en"] dugmesine
+    //    tikliyordu, o dugme artik yok.
+    // ⚠ GUVENCE AYNI: dil degistirince metin o dile geciyor mu,
+    //    ve fiyat baglantisi dili TASIYOR mu. Yalnizca ifade
+    //    degisti: dil artik ADRESTE (/en/) tasiniyor, sorgu
+    //    parametresinde degil -- her dilin kendi adresi olsun diye
+    //    (48. madde, kullanici karari 18 Kasim 2026).
+    await p.selectOption('select.dil-sec', '/en/'); await p.waitForTimeout(900);
     const en = await p.evaluate(()=>({ lang:document.documentElement.lang,
       h1:(document.querySelector('h1')||{}).textContent.slice(0,40),
-      fiyat:(document.querySelector('a[href^="fiyatlar"]')||{}).getAttribute('href') }));
+      fiyat:(document.querySelector('.ust-nav a[href*="pricing"], .ust-nav a[href*="fiyatlar"]')||{}).getAttribute('href') }));
     bak('EN gecisi calisti', en.lang==='en' && /One shoot/.test(en.h1), en.lang+' / '+en.h1);
-    bak('fiyat baglantisi dili tasiyor', en.fiyat==='fiyatlar.html?lang=en', en.fiyat);
-    await p.click('[data-dil="tr"]'); await p.waitForTimeout(400);
+    bak('fiyat baglantisi dili tasiyor', en.fiyat==='/en/pricing/', String(en.fiyat));
+    await p.selectOption('select.dil-sec', '/tr/'); await p.waitForTimeout(900);
     const tr = await p.evaluate(()=> (document.querySelector('h1')||{}).textContent.slice(0,40));
     bak('TR geri donuyor (metin kaybolmuyor)', /Bir çekimden/.test(tr), tr);
     // ⛔ Yasak cumleler

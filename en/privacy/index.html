@@ -3,7 +3,7 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Privacy Policy — Shootboard</title>
-<meta name="description" content="What Shootboard stores, what leaves your browser, and who else is involved. Plain language, no dark patterns.">
+<meta name="description" content="The short version. Shootboard is a demo. By default everything you create stays in your own browser and never reaches a server. If you choose to sign in,…">
 <link rel="icon" href="/favicon.svg" type="image/svg+xml">
 <link rel="icon" href="/favicon.ico" sizes="any">
 <link rel="icon" href="/favicon-32x32.png" sizes="32x32" type="image/png">
@@ -92,9 +92,20 @@ footer{margin-top:26px;color:var(--text-dim);font-size:.85rem;}
     </nav>
     <div class="ust-sag">
       <select class="dil-sec" aria-label="Language">
-        <option value="/tr/gizlilik/">Türkçe</option>
-        <option value="/en/privacy/" selected="">English</option>
+        <option value="/tr/gizlilik/" data-dil="tr">🇹🇷 Türkçe</option>
+        <option value="/en/privacy/" data-dil="en" selected="">🇬🇧 English</option>
       </select>
+      <script>(function(){
+        var s=document.currentScript.previousElementSibling;
+        if(!s||s.tagName!=="SELECT")s=document.querySelector("select.dil-sec");
+        if(!s)return;
+        s.addEventListener("change",function(){
+          var k=s.options[s.selectedIndex];
+          if(!k||!k.value)return;
+          try{localStorage.setItem("demo_ui_language",k.getAttribute("data-dil"));}catch(e){}
+          location.href=k.value;
+        });
+      })();</script>
       <a class="dug dug-birincil dug-sm" href="/en/#giris">
         <span class="cta-uzun">Start free</span>
         <span class="cta-kisa">Start</span>
@@ -108,7 +119,7 @@ footer{margin-top:26px;color:var(--text-dim);font-size:.85rem;}
 <header>
   <h1>Privacy Policy</h1>
   <p class="updated">Last updated: 27 September 2026</p>
-  <p class="langbar"><strong>English</strong> · <a href="#turkce">Türkçe için tıklayın</a></p>
+  
 </header>
 
 <div class="callout">
@@ -317,225 +328,7 @@ footer{margin-top:26px;color:var(--text-dim);font-size:.85rem;}
   active development, so it is worth a glance if you return after a long gap.
 </p>
 
-<hr>
 
-<header id="turkce" style="border:0;padding-top:44px;margin-bottom:24px;">
-  <h1>Gizlilik Politikası</h1>
-  <p class="updated">Son güncelleme: 27 Eylül 2026</p>
-  <p class="langbar"><a href="#">English</a> · <strong>Türkçe</strong></p>
-</header>
-
-<div class="callout">
-  <p>
-    <strong>Kısacası.</strong> Shootboard bir demodur. Varsayılan olarak oluşturduğunuz
-    her şey kendi tarayıcınızda kalır, hiçbir sunucuya ulaşmaz. Giriş yapmayı
-    seçerseniz e-posta adresiniz ve takvim kayıtlarınız saklanır; amacı başka bir
-    cihazda da aynı takvimi görmenizdir. Hiçbir şey satmıyoruz, reklam
-    göstermiyoruz, takip çerezi kullanmıyoruz.
-  </p>
-</div>
-
-<h2>1. Bunu kim yürütüyor</h2>
-<p>
-  Shootboard bağımsız bir demo projesidir, kayıtlı bir şirket değildir. Bu politika ya da
-  verileriniz hakkındaki sorular:
-  <a href="mailto:hello@shootboard.app">hello@shootboard.app</a>.
-</p>
-
-<h2>2. Tarayıcınızda kalanlar</h2>
-<p>
-  Hesap olmadan Shootboard her şeyi tarayıcınızın <code>localStorage</code> alanında
-  saklar. Hiçbir yere gönderilmez. Bunlar:
-</p>
-<ul>
-  <li>Takvim kayıtlarınız — başlık, tarih, saat, açıklama metni, kapak yazısı, platform ve durum</li>
-  <li>Arayüz diliniz ve açık/koyu tema tercihiniz</li>
-  <li>Tanıtım turunu gördüğünüzü hatırlayan küçük işaretler</li>
-  <li>Girmeyi seçerseniz bir yapay zekâ sağlayıcı anahtarı (bkz. 6. bölüm)</li>
-</ul>
-<p>
-  Tarayıcı verilerinizi temizlerseniz hepsi silinir. Bizde hiç bulunmadığı için geri
-  getiremeyiz.
-</p>
-
-<h2>3. Giriş yaparsanız ne oluyor</h2>
-<p>
-  Giriş isteğe bağlıdır, demo onsuz da tam çalışır. Giriş yaparsanız — e-posta linki
-  ya da Google ile — şunlar Supabase'de barındırılan veritabanımızda saklanır:
-</p>
-<ul>
-  <li><strong>E-posta adresiniz</strong>; hesabınızı tanımlayan şey budur.</li>
-  <li>
-    <strong>Takvim kayıtlarınız</strong>; aynı takvimi diğer cihazlarınızda da
-    görebilmeniz için.
-  </li>
-  <li>
-    Google ile girerseniz Google bize <strong>adınızı, e-posta adresinizi ve profil
-    fotoğrafınızı</strong> bildirir. Hesabınızı tanımlamak için e-posta adresini
-    kullanırız. Google şifrenizi hiçbir zaman almayız; Gmail, Drive, Kişiler ya da
-    başka bir Google hizmetinize erişimimiz olmaz.
-  </li>
-</ul>
-<p>
-  Veritabanı erişim kuralları her satırı yalnızca onu oluşturan hesaba açar; giriş
-  yapmış başka bir kullanıcı sizin kayıtlarınızı okuyamaz.
-</p>
-<p>Hesap açtığınızda size bir hoş geldin e-postası, e-posta bağlantısıyla her girişte bir bağlantı göndeririz. İkisi de Resend üzerinden hello@shootboard.app adresinden çıkar. Sormadan bülten ya da tanıtım e-postası göndermeyiz.</p>
-
-<h2>4. Geri bildirim formu</h2>
-<p>
-  Geri bildirim gönderirseniz yazdıklarınız Web3Forms üzerinden bize e-posta olarak
-  iletilir. O mesajda yazdığınız metin, arayüz diliniz, zaman damgası ve —yalnızca
-  siz verdiyseniz— e-posta adresiniz bulunur. E-posta alanını boş bırakırsanız geri
-  bildirim anonim olur.
-</p>
-
-<h2>5. Ziyaret sayımı</h2>
-<p>
-  Demonun devam etmeye değip değmediğini anlamak için ziyaretleri ve hangi
-  özelliklerin kullanıldığını sayıyoruz. Bunun için GoatCounter kullanılıyor; takip çerezi koymuyor ve sizin
-  hakkınızda profil çıkarmıyor; gördüğümüz şey kişiler değil, toplam sayılar. Google Analytics ya da
-  reklam takipçisi kullanmıyoruz.
-</p>
-
-<h2>6. Yapay zekâ metin özelliği</h2>
-<p>
-  Shootboard açıklama metni yazabiliyor ama kendine ait bir yapay zekâ hizmeti yok.
-  Anthropic ya da Google'dan aldığınız kendi API anahtarınızı siz giriyorsunuz. O
-  anahtar yalnızca tarayıcınızda saklanır ve üzerinde çalıştığınız kaydın metniyle
-  birlikte doğrudan tarayıcınızdan seçtiğiniz sağlayıcıya gider. Bizden geçmez;
-  anahtarınızı da isteklerinizi de görmeyiz. O sağlayıcıyı kullanmanız bizim
-  değil, onların koşullarına tabidir.
-</p>
-
-<h2>7. İşin içindeki diğer taraflar</h2>
-<table>
-  <tbody><tr><th>Servis</th><th>Ne için</th><th>Ne görebiliyor</th></tr>
-  <tr><td>Supabase</td><td>Hesap ve takvim saklama</td><td>Yalnızca giriş yaparsanız e-postanız ve kayıtlarınız</td></tr>
-  <tr><td>Google</td><td>İsteğe bağlı giriş</td><td>Shootboard'a giriş yaptığınızı</td></tr>
-  <tr><td>GitHub Pages</td><td>Bu siteyi yayınlama</td><td>IP adresi dahil olağan sunucu kayıtları</td></tr>
-  <tr><td>Web3Forms</td><td>Geri bildirimi iletme</td><td>Yalnızca forma yazdıklarınızı</td></tr>
-  <tr><td>Resend</td><td>Giriş bağlantısı ve hoş geldin e-postasını gönderme</td><td>E-posta adresiniz ve size gönderdiğimiz mesaj</td></tr>
-  <tr><td>GoatCounter</td><td>Ziyaret sayımı</td><td>Toplam ziyaret verisi, çerez yok</td></tr>
-  <tr><td>Google Fonts, jsDelivr</td><td>Yazı tipleri ve bir kod kütüphanesi</td><td>IP adresiniz — tarayıcının yüklediği her dosyada olduğu gibi</td></tr>
-  <tr><td>Open-Meteo</td><td>Takviminizdeki bir mekânın hava durumu</td><td>O mekânın koordinatı, iki ondalığa yuvarlanmış (yaklaşık 1 km), ya da yazdığınız yer adı. Hesap yok, anahtar yok, çerez yok</td></tr>
-  <tr><td>Anthropic veya Google AI</td><td>Metin yazımı, yalnızca kendi anahtarınızla</td><td>Üzerinde çalışmasını istediğiniz metni</td></tr>
-  <tr><td>Cloudflare R2</td><td>Video ya da kapak dosyasını platform çekebilsin diye tutma — yalnızca zamanlanmış yayını kullanırsanız</td><td>Dosyanın kendisi. <strong>Herkese açık bir adreste</strong> duruyor: bağlantıyı bilen açabilir</td></tr>
-  <tr><td>Meta (Instagram, Facebook)</td><td>Zamanlanmış paylaşımı yayınlama — yalnızca tikini açtığınız kayıtlar için</td><td>Video ya da görsel, altyazısı, ve kendi bağlı hesabınızdan geldiği</td></tr>
-  <tr><td>TikTok</td><td>Zamanlanmış videoyu TikTok taslaklarınıza bırakma — yalnızca tikini açtığınız kayıtlar için</td><td>Video dosyası, boyutu ve kendi bağlı hesabınızdan geldiği. Altyazı değil: o uç metin taşımıyor</td></tr>
-  <tr><td>YouTube (Google)</td><td>Zamanlanmış Short'u yükleme — yalnızca tikini açtığınız kayıtlar için</td><td>Video dosyası, başlığı, açıklaması, etiketleri ve kanal adınız</td></tr>
-  <tr><td>Threads (Meta)</td><td>Zamanlanmış paylaşımı ya da anketi yayınlama — yalnızca tikini açtığınız kayıtlar için</td><td>Yazdığınız metin, kayıtta varsa kapak görseli, ve kendi bağlı hesabınızdan geldiği</td></tr>
-</tbody></table>
-<p>
-  Son beşi yalnızca zamanlanmış yayını kullanırsanız devreye giriyor. O özellik
-  açmadıkça kapalı, her kayıt için ayrı ayrı açılıyor ve o platformdaki kendi
-  hesabınızın bağlı olmasını gerektiriyor. Hiç kullanmazsanız hiçbir dosyanız
-  hiçbirine ulaşmıyor.
-</p>
-<p>
-  <strong>Her platform ayrı.</strong> Instagram'ı bağlamak TikTok'u ya da YouTube'u
-  bağlamıyor; birini kesmek ötekilere dokunmuyor. Bağladığınız her platform için bir
-  erişim jetonu saklıyoruz. O jetonlar sunucuda kalıyor: tarayıcınıza hiç gitmiyorlar
-  ve bu uygulamanın hiçbir sayfası onları okuyamıyor.
-</p>
-<p>
-  <strong>Shootboard geri hiçbir şey okumuyor.</strong> Bu platformlardan
-  gönderilerinizi, görüntülenmelerinizi, yorumlarınızı, abonelerinizi ya da takipçi
-  sayınızı çekmiyoruz. Bağlantı tek yönlü — Shootboard'dan çıkıp hesabınıza giriyor —
-  ve istediğimiz izin, yüklemeye yeten en dar izin.
-</p>
-<p>
-  <strong>Adres neden herkese açık olmak zorunda.</strong> Meta dosyayı bizden
-  yüklemeyi kabul etmiyor; kendisi bir adresten çekiyor. Özel bir adres reddedilir.
-  Bağlantı uzun ve tahmin edilemez, ama sır değil: bu yolla yayınladığınız her şeyi
-  yüklendiği andan itibaren herkese açık sayın. (TikTok ve YouTube'da durum farklı:
-  orada dosyayı parça parça biz gönderiyoruz, herkese açık bir adrese ihtiyaç yok --
-  aynı adres kullanılıyor çünkü bir dosya birkaç platforma gidebiliyor.)
-</p>
-
-<h2>7b. Özel olarak YouTube</h2>
-<p>
-  Shootboard'un YouTube yüklemesi <strong>YouTube API Servisleri</strong>ni kullanıyor.
-  Bir YouTube kanalı bağladığınızda
-  <a href="https://www.youtube.com/t/terms" target="_blank" rel="noopener">YouTube Hizmet Şartları</a>'nı
-  da kabul etmiş oluyorsunuz; Google'ın verilerinizi nasıl işlediği
-  <a href="https://policies.google.com/privacy" target="_blank" rel="noopener">Google Gizlilik Politikası</a>
-  kapsamında.
-</p>
-<ul>
-  <li>
-    <strong>Ne istiyoruz.</strong> Tek bir izin: <code>youtube.upload</code>. Video
-    yüklemeye yetiyor. İstatistiklerinizi, yorumlarınızı, abonelerinizi ya da kanalınızda
-    zaten duran hiçbir şeyi okumaya yetmiyor.
-  </li>
-  <li>
-    <strong>Ne saklıyoruz.</strong> Bir erişim jetonu, bir yenileme jetonu ve bir hata
-    olduysa son hatanın zamanı. Başka bir şey yok. Jetonlar tarayıcının erişemediği bir
-    sunucu tablosunda duruyor. Kanal kimliği ve kanal adı için de birer alan var ama
-    pratikte <strong>boş</strong> kalıyorlar: onları okumak, yüklemekten daha geniş bir
-    izin gerektiriyor ve o izni istemiyoruz.
-  </li>
-  <li>
-    <strong>Ne gönderiyoruz.</strong> Yalnızca video dosyasını ve kayda sizin yazdığınız
-    metni: başlık, açıklama ve etiketler. Zamanlanmış yayınını açmadığınız bir kayıt için
-    hiçbir şey gönderilmiyor.
-  </li>
-  <li>
-    <strong>Nasıl geri alınır.</strong> İki yol var, biri yeter: Shootboard'un YouTube
-    sayfasından, ya da doğrudan Google'dan
-    <a href="https://myaccount.google.com/permissions" target="_blank" rel="noopener">myaccount.google.com/permissions</a>
-    adresinden. Geri almak bundan sonraki bütün yüklemeleri durduruyor; yüklenmiş
-    videolar kanalınızda kalıyor ve silmek sizin elinizde.
-  </li>
-  <li>
-    <strong>Ne siliyoruz.</strong> Bağlantıyı kesmek saklanan jetonları anında siliyor.
-    Shootboard hesabınızı silmek de siliyor.
-  </li>
-</ul>
-
-<h2>8. Ne kadar süre saklıyoruz</h2>
-<p>
-  Hesap verileri hesabınız var olduğu sürece saklanır. Yerel tarayıcı verisi siz
-  temizleyene kadar durur. Geri bildirim mesajları bir e-posta kutusunda, işe
-  yaradıkları sürece kalır. Otomatik yedekler son yedi günü tutar ve kendiliğinden
-  devreder.
-</p>
-<p>
-  Zamanlanmış yayın için yüklenen dosyalar istisna. O dosyayı kullanan her kaydın
-  yayını çıktığında, dosyayı yükleyen araç videoyu ve kapağı nesne deposundan siliyor;
-  hiç yayınlanmayan bir dosyayı da deponun kendi doksan günlük temizlik kuralı
-  düşürüyor. <strong>Hesabınızı silmek bu ikisini tetiklemiyor</strong> — uygulamanın
-  o deponun anahtarı yok. Daha erken kaldırılmasını isterseniz Geri Bildirim'den yazın.
-</p>
-
-<h2>9. Seçenekleriniz</h2>
-<ul>
-  <li><strong>Hesapsız kullanın.</strong> Hiçbir şey tarayıcınızdan çıkmaz.</li>
-  <li><strong>Çıkış yapın.</strong> Ekran yalnızca tarayıcıdaki veriye döner.</li>
-  <li>
-    <strong>Hesabınızı ve içindeki her şeyi sildirin.</strong> Kaydolduğunuz adresten
-    <a href="mailto:hello@shootboard.app">hello@shootboard.app</a>
-    adresine yazın, silelim.
-  </li>
-  <li><strong>Tarayıcı verilerinizi temizleyin</strong>, yerel kopya silinsin.</li>
-</ul>
-<p>
-  Yaşadığınız yere bağlı olarak verilerinize erişme, düzeltme, dışa aktarma veya
-  sildirme haklarınız olabilir. Yukarıdaki adrese yazın, gereğini yapalım.
-</p>
-
-<h2>10. Çocuklar</h2>
-<p>Shootboard 13 yaşından küçükler için tasarlanmamıştır ve bilerek onların verisini toplamayız.</p>
-
-<h2>11. Değişiklikler</h2>
-<p>
-  Bu politika değişirse en üstteki tarih de değişir. Shootboard geliştirilmeye devam eden
-  bir demo olduğu için, uzun bir aradan sonra dönerseniz göz atmakta fayda var.
-</p>
-
-<footer>
-  <p><a href="/app.html">← Shootboard'a dön</a></p>
-</footer>
 
 </div>
 

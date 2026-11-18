@@ -1526,6 +1526,35 @@ dokunmak ve ikinci seferde birincisini bozmak demek.
   yapılsın (uzun olan dil bugün Türkçe, yarın başka bir dil olabilir
   — bu yüzden dil listesi teste elle yazılmayacak).
 
+- ⬜ **57.** **Dil seçicide bayrak.** Kullanıcı 18 Kasım 2026'da istedi:
+
+  > *"Eğer diller için açılır menü ekliyorsan dil isminin yanına
+  > bayrak da ekle!"*
+
+  **Yapıldı** (aynı gün): `uret/diller.js` her dile bir `bayrak`
+  alanı taşıyor, `uret/ust-menu.js` seçenek metnine yazıyor —
+  🇹🇷 Türkçe · 🇬🇧 English. Yeni dil eklemek yine **tek satır**.
+
+  ⚠ **AÇIK KALAN İKİ ŞEY, İKİSİ DE KULLANICIYA SORULACAK:**
+
+  1. **Windows'ta bayrak emojisi bayrak olarak görünmüyor.** Windows
+     bayrak emojilerini çizmiyor; onların yerine iki harf gösteriyor
+     (Türkçe için "TR" gibi). ⛔ **Bunu buradan doğrulayamam** —
+     Linux'ta koşuyorum. Kullanıcı kendi bilgisayarında bakıp
+     söyleyecek. Bayrak gerçekten görünmüyorsa seçenekler:
+     (a) olduğu gibi bırak (iki harf de bilgi veriyor),
+     (b) `<select>` yerine resim koyabilen özel bir açılır liste yaz
+     — daha büyük iş, klavye ve ekran okuyucu desteği elde yazılır.
+  2. **Bayrak bir dilin değil bir ÜLKENİN işareti.** 41. maddede
+     altı dil gelecek; İspanyolca, Arapça, Rusça gibi diller tek bir
+     ülkeye ait değil. Hangi dile hangi bayrağın konacağı
+     **sorulacak, tahmin edilmeyecek.** Bugünkü iki dil için
+     🇹🇷 ve 🇬🇧 seçildi; 🇬🇧 yerine 🇺🇸 isteniyorsa tek satır.
+
+  Bekçi: `testler/ust-menu-birligi.test.js` — her dilin seçenekte
+  adıyla bulunduğunu ölçüyor; bayrak alanı eklenince metin
+  "🇹🇷 Türkçe" oldu ve iddia kendiliğinden kapsadı.
+
 ### 4 · Basitleştirme (hepsi ilk deneyimi değiştiriyor)
 - ⬜ **17.** İlk ekran: kendiliğinden açılan tur yok
   (bugün `tourAutoSequence = true`, app.html:25300)

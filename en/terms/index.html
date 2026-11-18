@@ -3,7 +3,7 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Terms of Use — Shootboard</title>
-<meta name="description" content="What Shootboard promises, what it does not, what happens to your work, and what happens if it shuts down. Plain language.">
+<meta name="description" content="The short version. Shootboard is free while it is in trial. What you write stays yours. You can download all of it at any time, and you can delete your…">
 <link rel="icon" href="/favicon.svg" type="image/svg+xml">
 <link rel="icon" href="/favicon.ico" sizes="any">
 <link rel="icon" href="/favicon-32x32.png" sizes="32x32" type="image/png">
@@ -92,9 +92,20 @@ footer{margin-top:26px;color:var(--text-dim);font-size:.85rem;}
     </nav>
     <div class="ust-sag">
       <select class="dil-sec" aria-label="Language">
-        <option value="/tr/sartlar/">Türkçe</option>
-        <option value="/en/terms/" selected="">English</option>
+        <option value="/tr/sartlar/" data-dil="tr">🇹🇷 Türkçe</option>
+        <option value="/en/terms/" data-dil="en" selected="">🇬🇧 English</option>
       </select>
+      <script>(function(){
+        var s=document.currentScript.previousElementSibling;
+        if(!s||s.tagName!=="SELECT")s=document.querySelector("select.dil-sec");
+        if(!s)return;
+        s.addEventListener("change",function(){
+          var k=s.options[s.selectedIndex];
+          if(!k||!k.value)return;
+          try{localStorage.setItem("demo_ui_language",k.getAttribute("data-dil"));}catch(e){}
+          location.href=k.value;
+        });
+      })();</script>
       <a class="dug dug-birincil dug-sm" href="/en/#giris">
         <span class="cta-uzun">Start free</span>
         <span class="cta-kisa">Start</span>
@@ -108,7 +119,7 @@ footer{margin-top:26px;color:var(--text-dim);font-size:.85rem;}
 <header>
   <h1>Terms of Use</h1>
   <p class="updated">Last updated: 27 September 2026</p>
-  <p class="langbar"><strong>English</strong> · <a href="#turkce">Türkçe için tıklayın</a></p>
+  
 </header>
 
 <div class="callout">
@@ -309,219 +320,7 @@ footer{margin-top:26px;color:var(--text-dim);font-size:.85rem;}
 <h2>14. Getting in touch</h2>
 <p><a href="mailto:hello@shootboard.app">hello@shootboard.app</a> — one person reads it.</p>
 
-<hr>
 
-<header id="turkce" style="border:0;padding-top:44px;margin-bottom:24px;">
-  <h1>Kullanım Şartları</h1>
-  <p class="updated">Son güncelleme: 27 Eylül 2026</p>
-  <p class="langbar"><a href="#">English</a> · <strong>Türkçe</strong></p>
-</header>
-
-<div class="callout">
-  <p>
-    <strong>Kısacası.</strong> Shootboard deneme sürecinde ücretsiz. Yazdığınız her şey
-    sizin kalır. Hepsini istediğiniz an dosya olarak indirebilir, hesabınızı da
-    uygulamanın içinden kendiniz silebilirsiniz. Shootboard bir gün kapanırsa
-    çalışmanızı alabilmeniz için en az 30 gün önceden e-posta ile haber verilir.
-    Bugün hiçbir ücret alınmıyor ve size sorulmadan hiçbir ücret alınmayacak.
-  </p>
-</div>
-
-<h2>1. Kiminle anlaşıyorsunuz</h2>
-<p>
-  Shootboard'u Türkiye'de tek bir kişi yapıyor ve işletiyor; arkasında henüz bir
-  şirket yok. O kişiye <a href="mailto:hello@shootboard.app">hello@shootboard.app</a>
-  adresinden ulaşabilirsiniz; Shootboard'dan gelen herhangi bir e-postayı
-  cevapladığınızda da aynı yere düşer.
-</p>
-<p>Shootboard'u kullanarak bu şartları kabul etmiş olursunuz. Kabul etmiyorsanız lütfen kullanmayın.</p>
-
-<h2>2. Shootboard nedir, ne değildir</h2>
-<p>
-  Shootboard içerik için bir planlama panosudur. Bir çekimden çıkan paylaşımları
-  takip eder: her birinin ne olduğunu, ne zaman çıkacağını ve hangi aşamada
-  olduğunu.
-</p>
-<p>
-  <strong>Otomatik yayın isteğe bağlı ve sınırlı.</strong> Shootboard belirlediğiniz
-  saatte bir paylaşım gönderebilir — ama yalnızca o platformdaki kendi hesabınızı
-  bağlarsanız, yalnızca tikini kendiniz açtığınız kayıtlar için, ve yalnızca
-  bilgisayarınızdaki küçük yükleyici video dosyasını bağladıktan sonra. Açmadıkça
-  kapalıdır; her kayıt için ayrı ayrı açılır. "Göndermek" her yerde aynı şey değil:
-</p>
-<ul>
-  <li><strong>Instagram ve Facebook</strong> — paylaşım yayınlanır. Yayındadır.</li>
-  <li>
-    <strong>TikTok</strong> — video TikTok taslaklarınıza bırakılır, paylaşma düğmesine
-    siz basarsınız. Shootboard TikTok'ta yayın yapmaz. Altyazı da gitmez: o uç metin
-    taşımıyor, onu uygulamada siz yazarsınız.
-  </li>
-  <li>
-    <strong>YouTube</strong> — Short başlığı, açıklaması ve etiketleriyle yüklenir. O
-    varsayılan değiştirilmediyse <strong>özel</strong> olarak gelir.
-  </li>
-  <li>
-    <strong>Threads</strong> — gönderi yazdığınız metinle gidiyor; kayıtta kapak
-    görseli varsa o da gidiyor. Anket en çok dört seçenekle gidiyor; altına
-    yazdığınız yanıt belirlediğiniz saatte gönderiliyor.
-  </li>
-  <li>
-    <strong>Bunların dışındaki her yere</strong> — X, LinkedIn, Pinterest ve
-    gerisi — paylaşımı siz yaparsınız.
-  </li>
-</ul>
-<p>
-  Zamanlanmış bir paylaşım çıktığında video ya da görsel, sizin yazdığınız metinle
-  birlikte Shootboard'dan çıkıp o platforma gider. Özelliğin amacı bu, ama açıkça
-  yazmakta fayda var: ne zamanladıysanız o yayınlanır, belirlediğiniz saatte, size bir
-  daha sorulmadan. Yayın başarısız olursa kayıt "başarısız" işaretlenir ve e-posta
-  gelir — Shootboard sessizce sonsuza kadar denemez.
-</p>
-<p>
-  <strong>Bir platformu bağlamak onun kurallarını da kabul etmek demek.</strong> Her
-  bağlantı ayrıdır ve onu siz kurarsınız. Özel olarak YouTube için: Shootboard
-  <strong>YouTube API Servisleri</strong>ni kullanıyor. Bir kanal bağladığınızda
-  <a href="https://www.youtube.com/t/terms" target="_blank" rel="noopener">YouTube Hizmet Şartları</a>'nı
-  kabul etmiş olursunuz; Google'ın verilerinizi nasıl işlediği
-  <a href="https://policies.google.com/privacy" target="_blank" rel="noopener">Google Gizlilik Politikası</a>
-  kapsamındadır. Bu erişimi dilediğiniz an
-  <a href="https://myaccount.google.com/permissions" target="_blank" rel="noopener">myaccount.google.com/permissions</a>
-  adresinden ya da Shootboard'un YouTube sayfasından geri alabilirsiniz. Ne istediğimiz,
-  ne sakladığımız ve ne gönderdiğimiz <a href="/en/privacy/">Gizlilik Politikası</a>'nın
-  7b bölümünde yazıyor.
-</p>
-
-<h2>3. Hesabınız</h2>
-<ul>
-  <li>Bir hesap bir kişiye aittir. Şifrenizi paylaşmayın.</li>
-  <li>Hesabınız üzerinden olanlardan siz sorumlusunuz.</li>
-  <li>13 yaşından büyük olmanız gerekir.</li>
-  <li>
-    Shootboard'u hesapsız da kullanabilirsiniz. O zaman her şey o tek tarayıcıda
-    kalır: tarayıcı verilerinizi temizlerseniz silinir ve başka bir cihaz görmez.
-  </li>
-</ul>
-
-<h2>4. Yazdığınız her şey sizin kalır</h2>
-<p>
-  Takvim kayıtlarınız, projeleriniz, fikirleriniz ve scriptleriniz size aittir.
-  Bunlar üzerinde hiçbir mülkiyet ya da lisans iddiamız yok. Yalnızca Shootboard
-  size diğer cihazlarınızda geri gösterebilsin diye saklanır.
-</p>
-<p>
-  İçeriğinizi bir şey eğitmek için okumuyoruz, satmıyoruz ve başka kimseye
-  göstermiyoruz. Neyi neden sakladığımız
-  <a href="/en/privacy/">Gizlilik Politikası</a>'nda tek tek yazılı.
-</p>
-
-<h2>5. Yapılmaması gerekenler</h2>
-<ul>
-  <li>Hukuka aykırı ya da başkasının hakkını çiğneyen bir şey saklamak.</li>
-  <li>Başka birinin hesabına ya da verisine ulaşmaya çalışmak.</li>
-  <li>Servise saldırmak, yük bindirmek ya da sormadan açık aramak.</li>
-  <li>Shootboard'u kendi ürününüzmüş gibi yeniden satmak.</li>
-</ul>
-<p>
-  Bunlardan biri olursa hesap askıya alınabilir ya da kapatılabilir. Sebep izin
-  verdiği ölçüde ne olduğu size söylenir ve çalışmanızı dışa aktarmanız için
-  fırsat verilir.
-</p>
-
-<h2>6. AI özelliği ve kendi anahtarınız</h2>
-<p>
-  AI ile taslak yazma isteğe bağlıdır ve <strong>sizin kendi</strong> Google Gemini
-  anahtarınızla çalışır. Anahtar tarayıcınızda saklanır, bize hiç ulaşmaz. İstekler
-  doğrudan tarayıcınızdan Google'a gider; dolayısıyla o isteklere Google'ın kendi
-  şartları uygulanır ve doğacak ücret sizinle Google arasındadır.
-</p>
-<p>
-  AI'ın yazdığı şey bir taslaktır. Yayınlamadan önce kontrol edin — sonuçta ortaya
-  koyan sizsiniz.
-</p>
-
-<h2>7. Burası bir deneme süreci</h2>
-<p>
-  Shootboard erken aşamada bir yazılım ve deneme sürecinde. Kesinti olabilir,
-  özellikler değişebilir, hata çıkması olağandır. Kesintisizlik garantisi ve destek
-  taahhüdü yoktur; yine de
-  <a href="mailto:hello@shootboard.app">hello@shootboard.app</a> adresine yazdığınızı
-  ürünü yapan kişi okur.
-</p>
-<p>
-  Bu yüzden: <strong>kendi yedeğinizi alın.</strong> Hesap penceresindeki "Yedek Dışa
-  Aktar" her şeyi tek dosya olarak indirir. Bir dakikanızı alır.
-</p>
-
-<h2>8. Shootboard kapanırsa</h2>
-<p>Başlamadan önce cevabı hak eden soru bu, o yüzden açıkça yazıyoruz:</p>
-<ul>
-  <li>Servis kapanmadan <strong>en az 30 gün önce e-posta ile</strong> haber verilir.</li>
-  <li>Dışa aktarma o sürenin tamamı boyunca açık kalır.</li>
-  <li>Verileriniz kapanış tarihinden itibaren <strong>30 gün içinde</strong> sunuculardan silinir.</li>
-  <li>Hiçbir şey satılmaz ya da başka birine devredilmez.</li>
-</ul>
-
-<h2>9. Hesabınızı silmek</h2>
-<p>
-  Uygulamada <strong>Hesabım</strong> penceresini açıp <strong>Hesabını sil</strong>
-  bölümünü kullanın. Takviminiz, projeleriniz, fikirleriniz, scriptleriniz,
-  mekanlarınız, kayıtlı hesaplarınız, varsa API anahtarlarınız ve ayarlarınız,
-  dosyalarınızla birlikte sunucudan hemen silinir: takvim aboneliği dosyası, varsa
-  paylaşım bağlantınız ve otomatik yedekleriniz. Geri dönüşü yoktur; kopya
-  istiyorsanız önce dışa aktarın. Otomatik yedekler de her şeyle birlikte silinir;
-  onlar zaten yalnızca son yedi günü tutuyordu.
-</p>
-<p>
-  <strong>Tek istisna, açıkça yazıyorum.</strong> Zamanlanmış yayını kullandıysanız,
-  video ve kapak dosyaları Meta'nın çekebilmesi için ayrı bir nesne deposuna,
-  herkese açık bir adrese yüklenmişti — Meta bir dosyayı yalnızca böyle kabul
-  ediyor. Yayınlanan dosyalar kendiliğinden siliniyor: videoyu yükleyen araç, o dosyayı
-  kullanan her kaydın yayını çıktığında videoyu ve kapağı depodan kaldırıyor. Hiç
-  yayınlanmayan bir dosyayı ise deponun kendi doksan günlük temizlik kuralı düşürüyor.
-  Hesabınızı silmek bu ikisini tetiklemiyor, çünkü uygulamanın o deponun anahtarı yok;
-  daha erken kaldırılmasını isterseniz Geri Bildirim'den yazın.
-</p>
-
-<h2>10. Ücret</h2>
-<p>
-  Shootboard deneme sürecinde ücretsizdir. İleride ücretli olursa önceden haber
-  verilir ve herhangi bir ödeme alınmadan önce size sorulur. Bugün kart bilgisi
-  saklanmıyor ve kendiliğinden hiçbir tahsilat olmuyor. Ücretli planlar başladığında,
-  ilk ödemeden önce iade politikası buraya yazılacak.
-</p>
-
-<h2>11. Söz veremediklerimiz</h2>
-<p>
-  Shootboard olduğu gibi sunulur. Hatasız olacağını, her zaman erişilebilir
-  olacağını ya da belirli bir amaca uygun olduğunu vaat edemeyiz. Hukukun izin
-  verdiği ölçüde dolaylı zararlardan — kaçan bir paylaşım, kaçan bir termin,
-  kaybedilen gelir — sorumlu değiliz.
-</p>
-<p>
-  Buradaki hiçbir madde tüketici mevzuatından doğan haklarınızı sınırlamaz; kastımız
-  ya da ağır ihmalimiz söz konusu olduğunda da sorumluluğumuz sınırlanmaz.
-</p>
-
-<h2>12. Şartlardaki değişiklikler</h2>
-<p>
-  Bu şartlar değişirse en üstteki tarih de değişir. Sizi esaslı biçimde etkileyen
-  bir değişiklikte, yürürlüğe girmesinden en az 15 gün önce e-posta gönderilir.
-  Sonrasında kullanmaya devam etmeniz yeni sürümü kabul ettiğiniz anlamına gelir.
-</p>
-
-<h2>13. Hangi hukuk uygulanır</h2>
-<p>
-  Türk hukuku uygulanır; İstanbul mahkemeleri ve icra daireleri yetkilidir. Tüketici
-  iseniz, bulunduğunuz yerdeki tüketici hakem heyetine ya da tüketici mahkemesine
-  başvurma hakkınız saklıdır.
-</p>
-
-<h2>14. İletişim</h2>
-<p><a href="mailto:hello@shootboard.app">hello@shootboard.app</a> — tek bir kişi okuyor.</p>
-
-<footer>
-  <p><a href="/app.html">← Shootboard'a dön</a> · <a href="/en/privacy/">Gizlilik Politikası</a></p>
-</footer>
 
 </div>
 

@@ -114,7 +114,13 @@ async function olc(p){
     const svgHata = [];
     for(const dosya of ['logo.svg','logo-koyu.svg','favicon.svg']){
       try{
-        const r = await fetch(dosya);
+        // ⚠ 18 KASIM 2026: KOKTEN iste. Duz adresler artik dil
+        //   agacina yonlendiriyor, yani olcum /tr/fiyatlar/ sayfasinda
+        //   kosuyor ve goreli "logo.svg" /tr/fiyatlar/logo.svg olup
+        //   404 aliyordu. Dosyalar kokte duruyor ve her sayfa onlara
+        //   "/logo.svg" diye baglaniyor. Guvence degismedi: bu uc
+        //   dosya gecerli SVG mi.
+        const r = await fetch('/' + dosya);
         if(!r.ok){ svgHata.push(dosya + ' HTTP ' + r.status); continue; }
         const metin = await r.text();
         const belge = new DOMParser().parseFromString(metin, 'image/svg+xml');
@@ -132,7 +138,12 @@ async function olc(p){
       markaLogoAdres: markaOnce.slice(0, 80),
       kayma: document.documentElement.scrollWidth - window.innerWidth,
       zeminAcik: getComputedStyle(document.body).backgroundColor !== 'rgba(0, 0, 0, 0)',
-      markaCss: !!document.querySelector('link[href="marka.css"]'),
+      // ⚠ 18 KASIM 2026: SONEK esleme. Uretilen sayfalarda adres
+      //   koke cevrili ("/marka.css") cunku /tr/fiyatlar/ icinden
+      //   goreli yazilirsa 404 olur. Guvence degismedi: sayfa ortak
+      //   paletten besleniyor mu. Zaten asagidaki --sinyal olcusu
+      //   bunu ayrica kanitliyor.
+      markaCss: !!document.querySelector('link[href$="marka.css"]'),
       // Ayni paletten besleniyor mu: marka.css'in kok degiskeni okunabilmeli
       sinyal: getComputedStyle(document.documentElement).getPropertyValue('--sinyal').trim()
     };

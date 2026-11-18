@@ -59,9 +59,9 @@ dene('★ baslik ve aciklama HER DILDE AYRI (Ingilizce sayfa Turkce tanitmiyor)'
       acik[d] = (/<meta name="description" content="([^"]*)"/.exec(t) || [,''])[1];
       assert.ok(bas[d].trim(), s.ad+'@'+d+' basligi bos');
     }
-    // ⚠ gizlilik/sartlar HENUZ tek dosyada iki dil tasiyor; o ikisi
-    //   bolunene kadar bu iddianin disinda (asagida ayri madde).
-    if(!s.menude) continue;
+    // ⛔ 18 KASIM 2026: gizlilik/sartlar BOLUNDU, artik bu iddia
+    //    onlari da kapsiyor. Bolundukten sonra olculdu: govdesi
+    //    Turkce ama <title> hala "Privacy Policy" idi.
     const ayri = new Set(DIL.map(d=> bas[d]));
     assert.strictEqual(ayri.size, DIL.length,
       s.ad + ' basligi dillere gore degismiyor: ' + JSON.stringify(bas));
@@ -147,15 +147,60 @@ dene('★ uretilen sayfa DOKUNULMAZ dosyalarin adresini BOZMUYOR', ()=>{
   }
 });
 
-dene('gizlilik/sartlar HENUZ bolunmedi (bilinen eksik, yazili dursun)', ()=>{
-  // ⚠ Bu iddia bir KUSURU degil, BILINEN EKSIGI tutuyor. Bolundugu
-  //   gun bu madde silinecek ve ustteki baslik iddiasi onlari da
-  //   kapsayacak (s.menude kosulu kalkacak).
-  for(const s of SAYFALAR.filter(x=> !x.menude)) for(const d of DIL){
-    assert.ok(icerik[s.ad+'@'+d], s.ad+'@'+d+' uretilmemis');
+dene('★ tek dosyada iki dil tasiyan sayfalar DILE BOLUNMUS', ()=>{
+  // privacy.html ve sartlar.html once Ingilizce yari, sonra <hr>,
+  // sonra id="turkce" ile Turkce yari tasiyordu. Turkce okuyan kisi
+  // sayfanin BASINDA Ingilizce metinle karsilasiyordu.
+  for(const s of SAYFALAR.filter(x=> x.trCapa)) for(const d of DIL){
+    const t = icerik[s.ad+'@'+d];
+    const h1 = [...t.matchAll(/<h1[^>]*>([^<]*)<\/h1>/g)].map(m=> m[1].trim());
+    assert.strictEqual(h1.length, 1,
+      s.ad+'@'+d+' icinde ' + h1.length + ' tane <h1> var: ' + JSON.stringify(h1)
+      + ' -- bolunme yapilmamis, iki dil ust uste duruyor');
+    assert.ok(!t.includes('id="turkce"'),
+      s.ad+'@'+d+' hala bolme capasini tasiyor');
+    assert.ok(!/class="langbar"/.test(t),
+      s.ad+'@'+d+' sayfa ici dil cubugu kalmis (dil secici ust menude)');
   }
-  assert.ok(icerik['gizlilik@en'].includes('noindex'),
-    'yarim sayfa noindex tasimali');
+});
+
+dene('★ DUZ adresler dil agacina YONLENDIRIYOR', ()=>{
+  // Kullanici 18 Kasim 2026 iki ekran goruntusu gonderdi: eski
+  // menuyu goruyordu, cunku duz adresler eski haliyle duruyordu.
+  //
+  // ⛔ Duz adresi TEK DILDE uretmek denendi ve iki seyi kirdi:
+  //    "?lang=en" sozlesmesini (app.html fiyat seridi oyle
+  //    bagliyor) ve tarayici dilini. Ikisi de fiyat-baglantisi
+  //    testinde olculdu. Cozum: duz adres YONLENDIRICI oldu.
+  for(const s of SAYFALAR){
+    const duzler = s.duzCok || (s.duz ? [s.duz] : []);
+    for(const d of duzler){
+      const y = path.join(KOK, d.dosya);
+      assert.ok(fs.existsSync(y), d.dosya + ' uretilmemis');
+      const t = fs.readFileSync(y, 'utf8');
+      // Her dile hreflang: arama motoru bunu kopya degil kapi saysin.
+      for(const k of DIL){
+        assert.ok(t.includes('hreflang="' + k + '" href="https://shootboard.app' + adres(s.ad, k) + '"'),
+          d.dosya + ' · ' + k + ' hreflang yok');
+      }
+      assert.ok(t.includes('hreflang="x-default"'), d.dosya + ' x-default yok');
+      // Siralama: ?lang -> hafiza -> tarayici -> varsayilan
+      assert.ok(/URLSearchParams\(location\.search\)\.get\("lang"\)/.test(t),
+        d.dosya + ' ?lang= okunmuyor -- app.html fiyat seridi kirilir');
+      assert.ok(/localStorage\.getItem\("demo_ui_language"\)/.test(t),
+        d.dosya + ' hafizadaki dil okunmuyor -- sureklilik kirilir');
+      assert.ok(/navigator\.language/.test(t),
+        d.dosya + ' tarayici dili okunmuyor');
+      assert.ok(/location\.replace/.test(t), d.dosya + ' yonlendirmiyor');
+      // Betik kapaliysa elle gidilebilsin.
+      assert.ok(/<noscript>/.test(t), d.dosya + ' noscript cikisi yok');
+      for(const k of DIL){
+        assert.ok(t.includes('href="' + adres(s.ad, k) + '" hreflang="' + k + '"'),
+          d.dosya + ' noscript listesinde ' + k + ' yok');
+      }
+      assert.ok(!/content="noindex/.test(t), d.dosya + ' noindex tasiyor');
+    }
+  }
 });
 
 // ─────────────────────────────────────────────────────────────────
@@ -227,6 +272,64 @@ const SUNUCU = process.env.URET_SUNUCU || 'http://127.0.0.1:8098';
       assert.deepStrictEqual([...new Set(kayip)], [], 'eksik dosya');
       assert.deepStrictEqual(jsHata, [], 'JS hatasi');
     });
+  }
+
+  // ───────────────────────────────────────────────────────────────
+  // DIL SECICI GERCEKTEN CALISIYOR MU
+  //
+  // ⛔ 18 KASIM 2026 — BU BOLUM BIR BEKCI HATASINDAN DOGDU.
+  //    Secici cizilmisti ama hicbir sey dinlemiyordu: SECMEK
+  //    SAYFAYI DEGISTIRMIYORDU. Yukaridaki iddialar bunu kacirdi
+  //    cunku "secici VAR" ve "dogru adresleri TASIYOR" diyorlardi;
+  //    "secince GIDIYOR" demiyorlardi. Varligi olculen bir sey
+  //    calistigi anlamina gelmez.
+  for(const s of SAYFALAR){
+    const d = DIL[0], hedefDil = DIL.find(x=> x !== d) || d;
+    const p3 = await tarayici.newPage({ viewport:{ width:1280, height:900 } });
+    await p3.goto(SUNUCU + '/');
+    await p3.evaluate(()=>{ try{ localStorage.clear(); }catch(e){} });
+    await p3.goto(SUNUCU + adres(s.ad, d), { waitUntil: 'load' });
+    await p3.waitForTimeout(500);
+    let gittigi = null, hafiza = null;
+    try {
+      await p3.selectOption('select.dil-sec', adres(s.ad, hedefDil));
+      await p3.waitForTimeout(800);
+      gittigi = new URL(p3.url()).pathname;
+      hafiza = await p3.evaluate(()=>{ try{ return localStorage.getItem('demo_ui_language'); }catch(e){ return null; } });
+    } catch(e){ gittigi = 'HATA: ' + e.message; }
+    await p3.close();
+
+    dene('★ ' + s.ad + ': dil secmek GERCEKTEN o sayfaya goturuyor', ()=>{
+      assert.strictEqual(gittigi, adres(s.ad, hedefDil),
+        'secici OLU ya da yanlis yere goturuyor');
+    });
+    dene('★ ' + s.ad + ': secilen dil TARAYICIYA yaziliyor (sureklilik)', ()=>{
+      assert.strictEqual(hafiza, hedefDil,
+        'dil hatirlanmiyor -- kullanici bir dahaki gelisinde dilini kaybeder');
+    });
+  }
+
+  // ───────────────────────────────────────────────────────────────
+  // DUZ ADRESTE DIL SUREKLILIGI
+  // Kullanici 18 Kasim 2026: "ingilizce secili iken ana sayfaya
+  // gidince Turkceye dondu."
+  for(const s of SAYFALAR){
+    const duzler = s.duzCok || (s.duz ? [s.duz] : []);
+    for(const d of duzler){
+      const baskaDil = DIL.find(x=> x !== d.dil);
+      if(!baskaDil) continue;
+      const p4 = await tarayici.newPage({ viewport:{ width:1280, height:900 } });
+      await p4.goto(SUNUCU + '/');
+      await p4.evaluate(x=>{ try{ localStorage.setItem('demo_ui_language', x); }catch(e){} }, baskaDil);
+      await p4.goto(SUNUCU + '/' + d.dosya, { waitUntil: 'load' });
+      await p4.waitForTimeout(900);
+      const nerede = new URL(p4.url()).pathname;
+      await p4.close();
+      dene('★ ' + d.dosya + ': hatirlanan dile goturuyor', ()=>{
+        assert.strictEqual(nerede, adres(s.ad, baskaDil),
+          'duz adres hatirlanan dili yok saydi -- kullanici dilini kaybeder');
+      });
+    }
   }
 
   await tarayici.close();

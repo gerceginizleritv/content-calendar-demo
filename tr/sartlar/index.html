@@ -2,8 +2,8 @@
 <html lang="tr"><head><script>window.SAYFA_DILI="tr";</script>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Terms of Use — Shootboard</title>
-<meta name="description" content="What Shootboard promises, what it does not, what happens to your work, and what happens if it shuts down. Plain language.">
+<title>Kullanım Şartları — Shootboard</title>
+<meta name="description" content="Kısacası. Shootboard deneme sürecinde ücretsiz. Yazdığınız her şey sizin kalır. Hepsini istediğiniz an dosya olarak indirebilir, hesabınızı da uygulamanın…">
 <link rel="icon" href="/favicon.svg" type="image/svg+xml">
 <link rel="icon" href="/favicon.ico" sizes="any">
 <link rel="icon" href="/favicon-32x32.png" sizes="32x32" type="image/png">
@@ -92,9 +92,20 @@ footer{margin-top:26px;color:var(--text-dim);font-size:.85rem;}
     </nav>
     <div class="ust-sag">
       <select class="dil-sec" aria-label="Dil">
-        <option value="/tr/sartlar/" selected="">Türkçe</option>
-        <option value="/en/terms/">English</option>
+        <option value="/tr/sartlar/" data-dil="tr" selected="">🇹🇷 Türkçe</option>
+        <option value="/en/terms/" data-dil="en">🇬🇧 English</option>
       </select>
+      <script>(function(){
+        var s=document.currentScript.previousElementSibling;
+        if(!s||s.tagName!=="SELECT")s=document.querySelector("select.dil-sec");
+        if(!s)return;
+        s.addEventListener("change",function(){
+          var k=s.options[s.selectedIndex];
+          if(!k||!k.value)return;
+          try{localStorage.setItem("demo_ui_language",k.getAttribute("data-dil"));}catch(e){}
+          location.href=k.value;
+        });
+      })();</script>
       <a class="dug dug-birincil dug-sm" href="/tr/#giris">
         <span class="cta-uzun">Ücretsiz başla</span>
         <span class="cta-kisa">Başla</span>
@@ -103,218 +114,10 @@ footer{margin-top:26px;color:var(--text-dim);font-size:.85rem;}
   </div>
 </header>
 <!-- /UST-MENU -->
-<div class="wrap">
-
-<header>
-  <h1>Terms of Use</h1>
-  <p class="updated">Last updated: 27 September 2026</p>
-  <p class="langbar"><strong>English</strong> · <a href="#turkce">Türkçe için tıklayın</a></p>
-</header>
-
-<div class="callout">
-  <p>
-    <strong>The short version.</strong> Shootboard is free while it is in trial. What you
-    write stays yours. You can download all of it at any time, and you can delete
-    your account yourself from inside the app. If Shootboard ever shuts down, you
-    get at least 30 days' notice by email so you can take your work with you.
-    Nothing is charged today, and nothing will be charged without asking you first.
-  </p>
-</div>
-
-<h2>1. Who you are agreeing with</h2>
-<p>
-  Shootboard is built and run by one person in Türkiye. There is no company behind
-  it yet. You can reach that person at
-  <a href="mailto:hello@shootboard.app">hello@shootboard.app</a>; replies to any
-  Shootboard email arrive in the same inbox.
-</p>
-<p>By using Shootboard you accept these terms. If you do not, please do not use it.</p>
-
-<h2>2. What Shootboard is — and is not</h2>
-<p>
-  Shootboard is a planning board for content. It keeps track of the posts that come
-  out of a shoot: what each one is, when it goes out, and how far along it is.
-</p>
-<p>
-  <strong>Publishing is opt-in, and narrow.</strong> Shootboard can send a post at a
-  time you set — but only if you connect your own account for that platform, only for
-  the entries where you switch it on yourself, and only once the small uploader on
-  your computer has attached the video file. It is off unless you turn it on, entry
-  by entry. What "sending" means is not the same everywhere:
-</p>
-<ul>
-  <li><strong>Instagram and Facebook</strong> — the post is published. It is live.</li>
-  <li>
-    <strong>TikTok</strong> — the video is left in your TikTok drafts and you press
-    share yourself. Shootboard does not publish on TikTok. The caption does not travel
-    either: that endpoint carries no text, so you write it in the app.
-  </li>
-  <li>
-    <strong>YouTube</strong> — the Short is uploaded with its title, description and
-    tags. It arrives as <strong>private</strong> unless that default has been changed.
-  </li>
-  <li>
-    <strong>Threads</strong> — the post goes out with your text, and with the cover
-    image if the entry has one. A poll goes out with up to four options; the reply
-    you wrote is posted under it at the time you set.
-  </li>
-  <li>
-    <strong>Everywhere else</strong> — X, LinkedIn, Pinterest and the rest —
-    posting is still something you do yourself.
-  </li>
-</ul>
-<p>
-  When a scheduled post does go out, the video or image and the text you wrote leave
-  Shootboard and go to that platform. That is the point of the feature, but it is worth
-  saying plainly: what you scheduled is what gets published, at the time you set,
-  without asking you again. If it fails, the entry is marked failed and you get an
-  email — Shootboard does not quietly retry forever.
-</p>
-<p>
-  <strong>Connecting a platform means accepting its rules too.</strong> Each connection
-  is separate and you make it yourself. For YouTube in particular, Shootboard uses
-  <strong>YouTube API Services</strong>: by connecting a channel you agree to the
-  <a href="https://www.youtube.com/t/terms" target="_blank" rel="noopener">YouTube Terms of Service</a>,
-  and Google's handling of your data is covered by the
-  <a href="https://policies.google.com/privacy" target="_blank" rel="noopener">Google Privacy Policy</a>.
-  You can revoke that access at any time from
-  <a href="https://myaccount.google.com/permissions" target="_blank" rel="noopener">myaccount.google.com/permissions</a>
-  or from Shootboard's own YouTube page. What we ask for, store and send is listed in
-  section 7b of the <a href="/tr/gizlilik/">Privacy Policy</a>.
-</p>
-
-<h2>3. Your account</h2>
-<ul>
-  <li>An account belongs to one person. Do not share your password.</li>
-  <li>You are responsible for what happens through your account.</li>
-  <li>You must be 13 or older.</li>
-  <li>
-    You can use Shootboard without an account at all. Then everything stays in that
-    one browser: clearing your browser data deletes it, and no other device sees it.
-  </li>
-</ul>
-
-<h2>4. What you write stays yours</h2>
-<p>
-  Your calendar entries, projects, ideas and scripts belong to you. We claim no
-  ownership and no licence over them. They are stored only so that Shootboard can
-  show them back to you on your other devices.
-</p>
-<p>
-  We do not read your content to train anything, we do not sell it, and we do not
-  show it to anyone else. What we store and why is written out in the
-  <a href="/tr/gizlilik/">Privacy Policy</a>.
-</p>
-
-<h2>5. Things you may not do</h2>
-<ul>
-  <li>Store anything illegal, or anything that infringes someone else's rights.</li>
-  <li>Try to reach another person's account or data.</li>
-  <li>Attack, overload or probe the service for weaknesses without asking first.</li>
-  <li>Resell Shootboard as if it were your own product.</li>
-</ul>
-<p>
-  If any of that happens, the account can be suspended or closed. Where the reason
-  allows it, you will be told what happened and given a chance to export your work.
-</p>
-
-<h2>6. The AI feature and your own key</h2>
-<p>
-  The AI drafting is optional and runs on <strong>your own</strong> Google Gemini
-  key. The key is saved in your browser and never reaches us. Requests go straight
-  from your browser to Google, which means Google's own terms apply to them, and
-  any cost is between you and Google.
-</p>
-<p>
-  What the AI writes is a draft. Check it before you publish it — you are the one
-  putting it out.
-</p>
-
-<h2>7. This is a trial</h2>
-<p>
-  Shootboard is early software in a trial period. It can be interrupted, features
-  can change, and bugs are likely. There is no uptime guarantee and no support
-  commitment, although questions sent to
-  <a href="mailto:hello@shootboard.app">hello@shootboard.app</a> are read by the
-  person who builds it.
-</p>
-<p>
-  Because of that: <strong>keep your own backup.</strong> "Export Backup" in the
-  account window downloads everything as a file. It costs you a minute.
-</p>
-
-<h2>8. If Shootboard shuts down</h2>
-<p>This is the question worth answering before you start, so here it is plainly:</p>
-<ul>
-  <li>You get <strong>at least 30 days' notice by email</strong> before the service closes.</li>
-  <li>Export stays available for that whole period.</li>
-  <li>Your data is deleted from the servers <strong>within 30 days</strong> of the closing date.</li>
-  <li>Nothing is sold or transferred to anyone else.</li>
-</ul>
-
-<h2>9. Deleting your account</h2>
-<p>
-  Open <strong>My account</strong> in the app and use <strong>Delete your account</strong>.
-  Your calendar, projects, ideas, scripts, places, saved accounts, any API keys and
-  your settings are removed from the server at once, together with your files: the
-  calendar-subscription file, any share link and your automatic backups. It cannot be
-  undone, so export first if you want a copy. The automatic backups are deleted with
-  everything else; they only ever held the last seven days.
-</p>
-<p>
-  <strong>One exception, stated plainly.</strong> If you used scheduled publishing, the
-  video and cover files were uploaded to separate object storage so that Meta could
-  fetch them from a public address — that is the only way Meta will accept a file.
-  Published files are removed on their own: the tool that uploaded a video deletes it
-  — and its cover — from that storage once every entry using it has gone out. A file
-  that never gets published is dropped by a ninety-day cleanup rule on the storage
-  itself. Deleting your account does not trigger either one, because the app holds no
-  key to that storage; ask us from Feedback if you want something removed sooner.
-</p>
-
-<h2>10. Price</h2>
-<p>
-  Shootboard is free during the trial. If it ever becomes paid, you will be told in
-  advance and asked before any payment is taken. No card is stored today and no
-  charge happens automatically. When paid plans start, a refund policy will be
-  published here before the first payment.
-</p>
-
-<h2>11. What we cannot promise</h2>
-<p>
-  Shootboard is provided as it is. We cannot promise it will be free of errors, or
-  that it will always be reachable, or that it fits a particular purpose. To the
-  extent the law allows, we are not liable for indirect losses — a missed post, a
-  missed deadline, lost income.
-</p>
-<p>
-  Nothing here limits rights you have under consumer law, and nothing limits
-  liability for our own gross negligence or intent.
-</p>
-
-<h2>12. Changes to these terms</h2>
-<p>
-  If these terms change, the date at the top changes with them. For a change that
-  materially affects you, you get an email at least 15 days before it takes effect.
-  Continuing to use Shootboard after that means you accept the new version.
-</p>
-
-<h2>13. Which law applies</h2>
-<p>
-  Turkish law applies, and the courts and enforcement offices of Istanbul have
-  jurisdiction. If you are a consumer, you keep the right to apply to the consumer
-  arbitration committee or consumer court where you live.
-</p>
-
-<h2>14. Getting in touch</h2>
-<p><a href="mailto:hello@shootboard.app">hello@shootboard.app</a> — one person reads it.</p>
-
-<hr>
-
-<header id="turkce" style="border:0;padding-top:44px;margin-bottom:24px;">
+<div class="wrap"><header>
   <h1>Kullanım Şartları</h1>
   <p class="updated">Son güncelleme: 27 Eylül 2026</p>
-  <p class="langbar"><a href="#">English</a> · <strong>Türkçe</strong></p>
+  
 </header>
 
 <div class="callout">
