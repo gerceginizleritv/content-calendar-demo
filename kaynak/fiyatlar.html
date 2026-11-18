@@ -317,7 +317,8 @@ const M = {
     kalan:(k,t)=> t + ' kişilikten ' + k + ' yer kaldı.',
     doldu:'Kontenjan doldu.',
     yukleniyor:'Fiyatlar yükleniyor…',
-    olmadi:'Fiyatlar yüklenemedi. Ağ bağlantını kontrol edip sayfayı yenile.',
+    olmadi:'Fiyatlar yüklenemedi.',
+    tekrarDene:'Tekrar dene',
     kutuphaneYok:'Sayfa yüklenemedi. Ağ bağlantını kontrol edip sayfayı yenile.',
     tanim:{ starter:'Denemeye başlamak için.',
             creator_pro:'Tek başına çalışan üretici için.',
@@ -366,7 +367,8 @@ const M = {
     kalan:(k,t)=> k + ' of ' + t + ' places left.',
     doldu:'All places taken.',
     yukleniyor:'Loading prices…',
-    olmadi:'Prices could not be loaded. Check your connection and reload.',
+    olmadi:'Prices could not be loaded.',
+    tekrarDene:'Try again',
     kutuphaneYok:'The page could not load. Check your connection and reload.',
     tanim:{ starter:'To start trying it out.',
             creator_pro:'For a creator working alone.',
@@ -563,15 +565,32 @@ function ciz(){
   }).join('');
 }
 
+// ⛔ 18 KASIM 2026 — SAYFA SONSUZA KADAR "YUKLENIYOR" DIYEMEZ.
+//    Kullanici canlida "Fiyatlar yukleniyor..." yazisinda TAKILI
+//    kalan bir sayfa gordu ve hicbir fiyat gelmedi. Kodda hata
+//    yoktu (ayni sayfa calisir bir kitaplikla 18 fiyati yukluyor),
+//    ama istek YANITSIZ kalirsa sayfanin soyleyecek sozu yoktu:
+//    ne hata mesaji, ne tekrar deneme.
+// ⚠ Bu bir TESHIS degil, bir GUVENCE: sebep ne olursa olsun
+//    (ag, CDN, sunucu) kullanici bekleyip durmuyor.
+const YUKLEME_SURESI = 12000;   // 12 saniye
+
+function zamanAsimli(sozler, sure){
+  return Promise.race([
+    Promise.all(sozler),
+    new Promise((_, at)=> setTimeout(()=> at(new Error('zaman_asimi')), sure))
+  ]);
+}
+
 async function yukle(){
   if(!sb){ $('durum').textContent = M[dil].kutuphaneYok; metinleriYaz(); return; }
   $('durum').textContent = M[dil].yukleniyor;
   try{
-    const [pl, fi, ko] = await Promise.all([
+    const [pl, fi, ko] = await zamanAsimli([
       sb.from('plans').select('key,visible,badge,sort').eq('visible', true).order('sort'),
       sb.from('plan_prices').select('plan_key,currency,period,amount_minor,active'),
       sb.from('founding_seats').select('quota,sold,open').eq('id', true).maybeSingle()
-    ]);
+    ], YUKLEME_SURESI);
     if(pl.error || fi.error) throw (pl.error || fi.error);
     veri = {
       // ⛔ YALNIZCA GORUNUR PLANLAR. Studio ve Kurucu Uye bugun
@@ -586,7 +605,20 @@ async function yukle(){
     ciz();
   }catch(e){
     console.error('[fiyatlar]', e);
-    $('durum').textContent = M[dil].olmadi;
+    // ⚠ Yazi degil, DUGME: kullanici sayfayi yenilemeden tekrar
+    //   deneyebilsin. Sebebi de konsola yaziliyor ki bildirirken
+    //   elinde bir sey olsun.
+    const kutu = $('durum');
+    kutu.textContent = '';
+    const yazi = document.createElement('span');
+    yazi.textContent = M[dil].olmadi + ' ';
+    const dug = document.createElement('button');
+    dug.type = 'button';
+    dug.className = 'btn btn-sm';
+    dug.textContent = M[dil].tekrarDene;
+    dug.addEventListener('click', ()=> yukle());
+    kutu.appendChild(yazi);
+    kutu.appendChild(dug);
     metinleriYaz();
   }
 }

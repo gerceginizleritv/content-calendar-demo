@@ -22,6 +22,8 @@
 //   4. Tek para birimi kalirsa secici gizleniyor
 //   5. Secili para birimi kapatilirsa sayfa bos fiyat GOSTERMIYOR
 //   6. ⛔ TRY ve USD bicimi BOZULMADI
+//   7. ⛔ Istek YANITSIZ kalirsa sayfa "yukleniyor"da TAKILI
+//      kalmiyor: 12 saniyede hata + TEKRAR DENE dugmesi, iki dilde
 
 const assert = require('node:assert');
 const { chromium } = require('playwright');
@@ -148,8 +150,86 @@ function fiyatlar(eurAktif, tekPara){
     assert.strictEqual(tek.seciciGizli, true, 'secici hala gorunuyor');
   });
 
+  // ── 4 · ISTEK YANITSIZ KALIRSA ──────────────────────────────────
+  // ⛔ 18 KASIM 2026 — KULLANICI CANLIDA "Fiyatlar yukleniyor..."
+  //    yazisinda TAKILI kalan bir sayfa gordu; hicbir fiyat gelmedi
+  //    ve sayfanin soyleyecek baska sozu yoktu. Sayfa kodu saglamdi
+  //    (ayni sayfa calisir bir kitaplikla 18 fiyati yukluyor), ama
+  //    istek YANITSIZ kalirsa `await` sonsuza kadar bekliyordu:
+  //    ne hata mesaji, ne tekrar deneme.
+  //
+  // ⚠ BU BIR TESHIS DEGIL, BIR GUVENCE. Sebep ne olursa olsun
+  //    (ag, CDN, sunucu) kullanici bekleyip durmuyor.
+  //
+  // Olcu: istegi hic yanitlamayan bir sayfa ac, 12 saniye icinde
+  //   (a) yazi degissin, (b) GERCEK bir dugme cikisin, (c) dugme
+  //   dokunulabilir buyuklukte olsun -- iki dilde de.
+  const askidaOlc = async (yol)=>{
+    const sy = await b.newPage({ viewport:{ width:390, height:844 } });
+    const hata = []; sy.on('pageerror', e=> hata.push(String(e.message)));
+    // ⚠ Sayfada `const sb` BETIK kapsaminda; `window.sb` onu
+    //   degistirmiyor. O yuzden KITAPLIGIN KENDISINI taklit
+    //   ediyoruz: sayfa kendi istemcisini bundan kuruyor.
+    //   Sorgu hic yanit VERMIYOR -- askida kalma tam bu.
+    await sy.route('**/supabase-js**', r=> r.fulfill({
+      contentType: 'application/javascript',
+      body: 'window.supabase={createClient:function(){'
+          + 'var a={eq:function(){return a;},order:function(){return a;},'
+          + 'maybeSingle:function(){return new Promise(function(){});},'
+          + 'then:function(){return new Promise(function(){});}};'
+          + 'return {from:function(){return {select:function(){return a;}};}};'
+          + '}};'
+    }));
+    const t0 = Date.now();
+    await sy.goto(SUNUCU + yol, { waitUntil:'domcontentloaded' });
+    await sy.waitForFunction(()=> !!document.querySelector('#durum button'),
+                             null, { timeout: 20000 }).catch(()=>{});
+    const o = await sy.evaluate(()=>{
+      const d = document.querySelector('#durum button');
+      return { yazi: document.getElementById('durum').textContent.trim(),
+               dugme: d ? d.tagName : null,
+               etiket: d ? d.textContent.trim() : null,
+               yuk: d ? Math.round(d.getBoundingClientRect().height) : 0 };
+    });
+    o.saniye = Math.round((Date.now() - t0) / 1000);
+    o.hata = hata;
+    await sy.close();
+    return o;
+  };
+
+  const trAskida = await askidaOlc('/tr/fiyatlar/');
+  dene('★ istek YANITSIZ kalirsa sayfa "yukleniyor"da TAKILI kalmiyor', ()=>{
+    assert.ok(!/yükleniyor/i.test(trAskida.yazi),
+      '12 saniye sonra hala "' + trAskida.yazi + '" yaziyor');
+    assert.ok(trAskida.saniye <= 16,
+      'cikmasi ' + trAskida.saniye + ' saniye surdu -- 12 olmaliydi');
+  });
+  dene('★ cikan sey YAZI degil TEKRAR DENE dugmesi', ()=>{
+    assert.strictEqual(trAskida.dugme, 'BUTTON',
+      'dugme yok -- kullanici sayfayi yenilemek zorunda kaliyor');
+    assert.ok(trAskida.etiket && trAskida.etiket.length > 0,
+      'dugmenin yazisi bos');
+  });
+  dene('★ tekrar deneme dugmesi telefonda dokunulabiliyor (>=44px)', ()=>{
+    assert.ok(trAskida.yuk >= 44, 'dugme yuksekligi ' + trAskida.yuk + 'px');
+  });
+
+  const enAskida = await askidaOlc('/en/pricing/');
+  dene('★ ayni guvence INGILIZCE sayfada da var (Bolum 7)', ()=>{
+    assert.ok(!/loading/i.test(enAskida.yazi),
+      'ingilizce sayfa hala "' + enAskida.yazi + '" yaziyor');
+    assert.strictEqual(enAskida.dugme, 'BUTTON', 'ingilizce sayfada dugme yok');
+  });
+  dene('★ dugme yazisi CEVRILMIS (iki dil ayni metni kullanmiyor)', ()=>{
+    assert.notStrictEqual(enAskida.etiket, trAskida.etiket,
+      'iki dilde ayni yaziyor: ' + JSON.stringify(trAskida.etiket)
+      + ' -- sozluge girmemis olabilir');
+  });
+
   dene('sayfa hatasi yok', ()=>{
     assert.deepStrictEqual(jsHata, [], jsHata.join(' | '));
+    assert.deepStrictEqual(trAskida.hata, [], trAskida.hata.join(' | '));
+    assert.deepStrictEqual(enAskida.hata, [], enAskida.hata.join(' | '));
   });
 
   await b.close();
