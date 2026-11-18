@@ -1481,6 +1481,51 @@ dokunmak ve ikinci seferde birincisini bozmak demek.
   60 karakter üstü, Reels kapağı. Bugün `f_hashtags` yalnızca
   **karakter** sınırı taşıyor (400), **adet** sınırı yok.
 
+- ⬜ **56.** **Fikirler sayfası: kart yüksekliği sabitlensin + Türkçe
+  "hepsini ayır" düğmesi kısalsın.** Kullanıcı 18 Kasım 2026'da iki
+  ekran görüntüsüyle istedi:
+
+  > *"Burada fikir içeriği uzadıkça alan da aşağı doğru kayıyor,
+  > buranın sabit bir ölçüde olması lazım — maks yüksekliği 2.
+  > gönderdiğim ss'de yer alan kadar yap. Ayrıca burada Türkçe ve
+  > İngilizce değişimlerde altta yer alan '3 parçanın hepsini ayır',
+  > İngilizce 'split all 3'e göre daha uzun olduğu için bu da alanda
+  > aşağı atmasına neden oluyor. Bunu Türkçe daha kısa ve anlamlı
+  > olacak hale çevir."*
+
+  **a · Kart yüksekliği.** Koddan doğrulandı: `app.html:1865`
+  `.fk-card-body` `flex:1` ile yazılmış ve **hiçbir `max-height`
+  yok** — kart metin kadar uzuyor. Birinci ekran görüntüsünde
+  Süleymaniye kartı komşularının birkaç katı yükseklikte ve satırı
+  aşağı itiyor.
+  ⚠ **Piksel değeri UYDURULMAYACAK.** "2. ss'deki kadar" denen
+  yükseklik, iş sırası gelince uygulamadan **ölçülecek**; ekran
+  görüntüsü kırpılmış, oradan piksel okunmaz (Bölüm 4).
+
+  ⚠ **SIRASI GELİNCE SORULACAK:** metin sığmayınca ne olacak?
+  Üç seçenek var ve üçü farklı iş: (1) kartın içinde kaydırma,
+  (2) "…" ile kırpıp tıklayınca açma, (3) kırpıp altına "devamı"
+  bağlantısı. Kullanıcı seçecek, tahmin edilmeyecek.
+
+  **b · Türkçe düğme metni.** Sözlük anahtarı `fk_split`:
+  `app.html:7117` İngilizce `Split all ${n}`, `app.html:8466` Türkçe
+  `${n} parçanın hepsini ayır`. Türkçesi gözle görülür biçimde uzun;
+  ikinci ekran görüntüsünde düğme satıra sığmıyor ve `SCRIPT`
+  düğmesini **alt satıra atıyor** — kartı uzatan ikinci sebep bu.
+  ⚠ **Yeni metin uydurulmayacak, kullanıcı seçecek.** Hazır öneriler
+  (kullanıcıya sunulacak): "Hepsini ayır" · "3'ü de ayır" ·
+  "Üçünü ayır". Sayının metinde kalıp kalmayacağı da kararın parçası.
+
+  ⛔ **Bölüm 7 — HER DİLDE.** `fk_split` bir arayüz dizesi; metin
+  değişirse **her dilin sözlüğünde** değişir. Bekçi hazır:
+  `testler/sozluk-paritesi.test.js` eksik/fazla anahtarı ve
+  **tür/arite uyuşmazlığını** yakalıyor — yani `(n)=>` arite'si
+  bozulursa düşer.
+  ⚠ Düzeltilince **bekçi test**: kartın yüksekliği üst sınırı
+  aşmasın ve düğme satırı **sarmasın**; ölçü iki dilde birden
+  yapılsın (uzun olan dil bugün Türkçe, yarın başka bir dil olabilir
+  — bu yüzden dil listesi teste elle yazılmayacak).
+
 ### 4 · Basitleştirme (hepsi ilk deneyimi değiştiriyor)
 - ⬜ **17.** İlk ekran: kendiliğinden açılan tur yok
   (bugün `tourAutoSequence = true`, app.html:25300)
