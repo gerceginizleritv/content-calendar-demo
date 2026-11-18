@@ -1259,6 +1259,53 @@ dokunmak ve ikinci seferde birincisini bozmak demek.
      ⚠ **BİR KEZ SÖYLENDİ, KARAR KULLANICININ:** düğme hiç olmazsa
      yurt dışındaki bir Türk ya da Türkiye'deki bir yabancı yanlış
      para birimini görür ve düzeltemez. Kullanıcı bunu bilerek seçti.
+
+     ⛔ **AYRI VE DAHA KÜÇÜK BİR YANLIŞLIK — BUGÜN CANLIDA VAR,
+     ÖLÇÜLDÜ (18 Kasım 2026).** Bu, ülke kilidi işi değil; onun
+     beklemesi bunu da bekletmek zorunda değil. Karar kullanıcının.
+
+     | Satır | Ne yapıyor |
+     |---|---|
+     | `kaynak/fiyatlar.html:396` | `const trMi = /^tr\b/i.test(navigator.language)` |
+     | `kaynak/fiyatlar.html:413` | `dil` → **`window.SAYFA_DILI` önce** ✅ düzeltilmiş |
+     | `kaynak/fiyatlar.html:414` | `let para = trMi ? 'TRY' : 'USD'` ⛔ **düzeltilmemiş** |
+
+     Yani **dil** sayfanın kendi dilinden geliyor ama **para birimi**
+     hâlâ tarayıcı dilinden. Sonuç: tarayıcısı Türkçe olmayan biri
+     **Türkçe sayfada dolar fiyatı** görüyor.
+     Ölçüldü: `/tr/fiyatlar/` açıldı, seçili para birimi **USD** çıktı
+     (tarayıcı dili `en-US`). Yani sayfa "299 TL" demesi gerekirken
+     "$9" diyor.
+
+     ⚠ Tek satırlık iş: `para` da `dil` gibi sayfanın dilinden
+     türetilir (`dil === 'tr' ? 'TRY' : 'USD'`). Cloudflare işi bunun
+     **üstüne** gelir, yerine değil. ⛔ Kullanıcı söylemeden
+     yapılmadı — para birimi konusu Cloudflare'e bırakıldığı için
+     kendi başıma dokunulmadı.
+
+  **📏 44.5/44.6/44.7 İÇİN ÖLÇÜLEN SAYILAR (18 Kasım 2026).**
+  Tasarıma başlamadan önce ölçüldü, uydurulmadı:
+
+  | Genişlik | Starter | Creator Pro | Fark |
+  |---|---|---|---|
+  | 1280 (masaüstü) | 499,2 px | 575,2 px | **76,0 px** |
+  | 900 (tablet) | 477,7 px | 577,7 px | **100,0 px** |
+  | 390 (telefon) | 500,8 px | 600,8 px | **100,0 px** |
+
+  ⛔ **44.7'DEKİ "İNDİRİM SIFIR ÇIKAR" NOTU ARTIK GEÇERSİZ.**
+  Kullanıcı panelden fiyatları değiştirmiş; veriden okunan bugünkü
+  rakamlar (görünen planlar: `starter`, `creator_pro`):
+
+  | Para | Aylık | Yıllık | Yıllık ÷ 12 | İndirim |
+  |---|---|---|---|---|
+  | TRY | 299 | 2.999 | 249,92 | **%16** |
+  | USD | 9 | 98 | 8,17 | **%9** |
+  | EUR | 9 | 89 | 7,42 | **%18** |
+
+  Sayfa bugün `#indirim`'de *"Yıllık ödemede %9 kadar daha ucuz."*
+  yazıyor — USD seçili olduğu için. Yani rozetin gösterecek **gerçek
+  bir sayısı var** ve sayı para birimine göre değişiyor; tasarım
+  rakamı sabit yazmayacak.
   4. ✅ **Aylık/Yıllık KALIYOR** (kullanıcı 16 Kasım'da onayladı).
      Yalnızca **TRY/USD çifti** kalkacak: para birimi artık otomatik.
   5. **Kutular aynı ölçüde olsun.** Ekran görüntüsünde Starter ve
