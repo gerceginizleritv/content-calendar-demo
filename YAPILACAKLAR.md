@@ -1151,10 +1151,38 @@ dokunmak ve ikinci seferde birincisini bozmak demek.
      ⚠ SQL'i **kullanıcı çalıştırır**, adım adım yazılacak
      (Bölüm 1). ⚠ `sql/69` yeniden koşturulursa kısıt geri gelir —
      yeni dosyanın başına bu uyarı yazılacak (Bölüm 6).
-  2. **USD satırları EUR'ya geçecek.** ⛔ Rakamlar **çevrilmeyecek**:
-     kullanıcı *"TRY'de daha ucuz planlıyorum"* dedi, yani TRY ve EUR
-     **ayrı rakamlar**. ⛔ Rakamları **kullanıcı panelden girecek** —
-     uydurulmayacak (Bölüm 4). Kod yalnızca EUR'yu mümkün kılacak.
+  2. ✅ **BİTTİ (18 Kasım 2026) — EUR AÇILDI.**
+     ⚠ **KARAR DEĞİŞTİ, sessizce üzerine yazılmadı.** Bu madde
+     önce *"rakamlar çevrilmeyecek, TRY ve EUR ayrı rakamlar"*
+     diyordu. Kullanıcı 18 Kasım 2026'da şunu söyledi:
+
+     > *"Fiyatlar sayfası için USD ne kadar ise EURO o kadar olsun.
+     > Admin panelinde hangi fiyatı kullanabileceğimiz ve ne kadar
+     > olacağını arka planda ben yazabileyim."*
+
+     Yani **EUR = USD rakamı** (kur hesabı yok), **TRY ayrı kalıyor**.
+
+     | Ne | Nerede |
+     |---|---|
+     | Kısıt genişletildi, EUR satırları USD'den kopyalandı | `sql/73-euro.sql` ⚠ **kullanıcı çalıştırır** |
+     | Para birimi listesi artık **veriden** | `kaynak/fiyatlar.html` → `paraBirimleri()` |
+     | EUR'nun kendi simgesi (€) | aynı dosya → `paraYaz()` |
+     | Panelde `active` kapatılırsa düğme de kaybolur | aynı dosya |
+
+     ⛔ Düğmeler eskiden **elle** yazılıydı (TRY, USD); üçüncüsü de
+     elle yazılsaydı yarın dördüncüsü yine yazılacaktı. Artık kodda
+     para birimi listesi **yok**.
+
+     Bekçi: `testler/fiyat-para-birimi.test.js`, **9 iddia**, üç
+     mutasyonla kanıtlandı.
+
+     ⬜ **KALAN:** panelde para biriminin **açık/kapalı** anahtarı.
+     `plan_prices.active` sütunu var ve sayfa onu zaten dinliyor,
+     ama panel o sütunu **yönetmiyor**. Eklemek için `yonetim.html`
+     ile birlikte **Edge Function** (`supabase/functions/yonetim`,
+     `islem:'fiyat-degistir'` ailesi) de değişip **yeniden
+     dağıtılmalı** — dağıtımı kullanıcı yapıyor. Sırası gelince
+     kullanıcıya sorulacak: şimdi mi, sonra mı.
   3. **Bölgeye göre para birimi.** Bugün `fiyatlar.html:389`
      `let para = trMi ? 'TRY' : 'USD'` — yani **dile** bakıyor,
      bölgeye değil. Kullanıcı nereden girdiyse o para birimi açılacak.

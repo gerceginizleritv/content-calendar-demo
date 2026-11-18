@@ -216,8 +216,14 @@ a{color:inherit;}
 
     <div class="secici">
       <div class="grup" role="group" id="paraSecici">
-        <button type="button" data-para="TRY" aria-pressed="true">TRY</button>
-        <button type="button" data-para="USD" aria-pressed="false">USD</button>
+        <!-- ⛔ 18 KASIM 2026 — DUGMELER ELLE YAZILMIYOR.
+             Onceden TRY ve USD burada sabit duruyordu; EUR eklenince
+             ucuncusu da elle yazilmak zorunda kalirdi ve yarin baska
+             bir para birimi gelince yine. Artik `paraSeciciCiz()`
+             bunlari VERIDEN uretiyor: panelde `active` olan her para
+             birimi kendiliginden cikiyor, kapatilan kayboluyor.
+             Kullanici 18 Kasim 2026: "admin panelinde hangi fiyati
+             kullanabilecegimizi ... ben yazabileyim." -->
       </div>
       <div class="grup" role="group" id="donemSecici">
         <button type="button" data-donem="monthly" aria-pressed="true" data-m="aylik">Aylık</button>
@@ -431,7 +437,16 @@ function paraYaz(minor, birim){
   const tamMetin = tam.toLocaleString(dil === 'tr' ? 'tr-TR' : 'en-US');
   const sayi = kus === 0 ? tamMetin
     : tamMetin + (dil === 'tr' ? ',' : '.') + String(kus).padStart(2, '0');
-  return birim === 'TRY' ? sayi + ' TL' : '$' + sayi;
+  // ⛔ SIMGE TABLOSU. Onceden "TRY ise TL, degilse $" yaziyordu;
+  // EUR eklenince euro fiyatlari DOLAR isaretiyle gorunurdu.
+  // ⚠ Yeni para birimi eklenirse simgesi buraya yazilir; yoksa
+  // para biriminin kodu yazilir (yanlis simge gostermektense
+  // "120 SEK" demek dogru).
+  const ONEK = { USD: '$', EUR: '€' };
+  const SONEK = { TRY: ' TL' };
+  if(SONEK[birim]) return sayi + SONEK[birim];
+  if(ONEK[birim]) return ONEK[birim] + sayi;
+  return sayi + ' ' + birim;
 }
 
 function fiyatBul(plan, birim, d){
@@ -439,10 +454,44 @@ function fiyatBul(plan, birim, d){
     x.plan_key === plan && x.currency === birim && x.period === d && x.active !== false);
 }
 
+// Panelde `active` olan para birimleri, verinin icinde gorulen
+// sirayla. ⚠ `fiyatBul` zaten `active !== false` suzuyor; burada da
+// ayni suzgec var ki kapatilan para biriminin DUGMESI de cikmasin.
+function paraBirimleri(){
+  const gorulen = [];
+  for(const x of (veri && veri.fiyatlar) || []){
+    if(x.active === false) continue;
+    if(gorulen.indexOf(x.currency) === -1) gorulen.push(x.currency);
+  }
+  // Sabit bir sira: once TRY, sonra USD, sonra EUR, sonra otekiler.
+  // ⚠ Siralama GORUNUM icin; hangilerinin VAR oldugunu yine veri
+  //   soyluyor.
+  const SIRA = ['TRY', 'USD', 'EUR'];
+  return gorulen.slice().sort((x, y)=>{
+    const a = SIRA.indexOf(x), b = SIRA.indexOf(y);
+    return (a === -1 ? 99 : a) - (b === -1 ? 99 : b);
+  });
+}
+
+function paraSeciciCiz(){
+  const kutu = $('paraSecici');
+  if(!kutu) return;
+  const liste = paraBirimleri();
+  // Secili para birimi listede yoksa (panelden kapatilmis olabilir)
+  // ilkine dusuluyor -- yoksa sayfa bos fiyat gosterirdi.
+  if(liste.length && liste.indexOf(para) === -1) para = liste[0];
+  kutu.innerHTML = liste.map(k=>
+    '<button type="button" data-para="' + k + '" aria-pressed="'
+    + (k === para ? 'true' : 'false') + '">' + k + '</button>').join('');
+  // Tek para birimi varsa secmek diye bir sey yok: secici gizleniyor.
+  kutu.hidden = liste.length < 2;
+}
+
 function ciz(){
   const m = M[dil];
   metinleriYaz();
   if(!veri) return;
+  paraSeciciCiz();
 
   // ⚠ INDIRIM YUZDESI SABIT YAZILMIYOR, FIYATLARDAN HESAPLANIYOR.
   // Promptun sarti. Kullanicinin soyledigi "%22" yalnizca Creator
