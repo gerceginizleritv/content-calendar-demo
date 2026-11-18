@@ -190,6 +190,7 @@ footer{border-top:1px solid var(--line);margin-top:56px;padding-top:22px;
 
 <!-- UST-MENU: URETILIYOR (uret/ust-menu.js) -- ELLE DEGISTIRME -->
 <style>
+.ust{padding-top:0;padding-bottom:0;}
 .ust .ust-ic{display:flex;align-items:center;gap:14px;}
 .ust .ust-nav{margin-left:auto;}
 .ust .ust-sag{margin-left:0;display:flex;align-items:center;gap:8px;}
@@ -909,13 +910,7 @@ footer{border-top:1px solid var(--line);margin-top:56px;padding-top:22px;
       </dl>
     </section>
 
-    <footer>
-      <p>Bir sorunun mu var, bir şey mi eksik? Uygulamadaki <strong>Geri Bildirim</strong>
-        düğmesi doğrudan bunu yazan kişiye gidiyor.</p>
-      <p><a href="/app.html">Uygulamayı aç</a> · <a href="/tr/">Ana sayfa</a> ·
-        <a href="/tr/kilavuz/" hreflang="en">English guide</a> ·
-        <a href="/tr/gizlilik/">Gizlilik</a> · <a href="/tr/sartlar/">Kullanım şartları</a></p>
-    </footer>
+    
   </main>
 </div>
 
@@ -988,4 +983,24 @@ footer{border-top:1px solid var(--line);margin-top:56px;padding-top:22px;
 </script>
 
 
-</body></html>
+<!-- ALT-MENU: URETILIYOR (uret/alt-menu.js) -- ELLE DEGISTIRME -->
+<style>
+.alt{background:var(--gece);color:rgba(255,249,240,.6);padding:34px 0 44px;font-size:14px;border:0;margin:0;}
+.alt .alt-ic{display:flex;flex-wrap:wrap;gap:14px 26px;align-items:center;}
+.alt a{text-decoration:none;opacity:.8;color:inherit;}
+.alt a:hover{opacity:1;text-decoration:underline;}
+.alt{line-height:1.6;}
+.alt .alt-ic a{min-height:44px;display:inline-flex;align-items:center;}
+.alt .alt-son{flex:0 0 100%;width:100%;max-width:none;margin:18px 0 0;opacity:.5;font-size:13px;}
+</style>
+<footer class="alt">
+  <div class="sar alt-ic">
+    <a class="marka" href="/tr/" style="color:var(--kagit);">Shootboard</a>
+    <a href="/tr/fiyatlar/">Fiyatlar</a>
+    <a href="/tr/kilavuz/">Kılavuz</a>
+    <a href="/tr/gizlilik/">Gizlilik</a>
+    <a href="/tr/sartlar/">Şartlar</a>
+    <p class="alt-son">Video üreticileri için içerik takvimi. Planı tutar; yayınlayan sensin.</p>
+  </div>
+</footer>
+<!-- /ALT-MENU --></body></html>

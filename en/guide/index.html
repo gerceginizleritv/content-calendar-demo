@@ -190,6 +190,7 @@ footer{border-top:1px solid var(--line);margin-top:56px;padding-top:22px;
 
 <!-- UST-MENU: URETILIYOR (uret/ust-menu.js) -- ELLE DEGISTIRME -->
 <style>
+.ust{padding-top:0;padding-bottom:0;}
 .ust .ust-ic{display:flex;align-items:center;gap:14px;}
 .ust .ust-nav{margin-left:auto;}
 .ust .ust-sag{margin-left:0;display:flex;align-items:center;gap:8px;}
@@ -911,13 +912,7 @@ footer{border-top:1px solid var(--line);margin-top:56px;padding-top:22px;
       </dl>
     </section>
 
-    <footer>
-      <p>Something missing, something unclear? The <strong>Feedback</strong> button in the app goes
-        straight to the person who writes it.</p>
-      <p><a href="/app.html">Open the app</a> · <a href="/en/">Home</a> ·
-        <a href="/en/guide/" hreflang="tr">Türkçe kılavuz</a> ·
-        <a href="/en/privacy/">Privacy</a> · <a href="/en/terms/">Terms</a></p>
-    </footer>
+    
   </main>
 </div>
 
@@ -983,4 +978,24 @@ footer{border-top:1px solid var(--line);margin-top:56px;padding-top:22px;
 </script>
 
 
-</body></html>
+<!-- ALT-MENU: URETILIYOR (uret/alt-menu.js) -- ELLE DEGISTIRME -->
+<style>
+.alt{background:var(--gece);color:rgba(255,249,240,.6);padding:34px 0 44px;font-size:14px;border:0;margin:0;}
+.alt .alt-ic{display:flex;flex-wrap:wrap;gap:14px 26px;align-items:center;}
+.alt a{text-decoration:none;opacity:.8;color:inherit;}
+.alt a:hover{opacity:1;text-decoration:underline;}
+.alt{line-height:1.6;}
+.alt .alt-ic a{min-height:44px;display:inline-flex;align-items:center;}
+.alt .alt-son{flex:0 0 100%;width:100%;max-width:none;margin:18px 0 0;opacity:.5;font-size:13px;}
+</style>
+<footer class="alt">
+  <div class="sar alt-ic">
+    <a class="marka" href="/en/" style="color:var(--kagit);">Shootboard</a>
+    <a href="/en/pricing/">Pricing</a>
+    <a href="/en/guide/">Guide</a>
+    <a href="/en/privacy/">Privacy</a>
+    <a href="/en/terms/">Terms</a>
+    <p class="alt-son">A content calendar for video creators. It keeps the plan; you do the publishing.</p>
+  </div>
+</footer>
+<!-- /ALT-MENU --></body></html>

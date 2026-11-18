@@ -26,6 +26,7 @@ const { DILLER, VARSAYILAN, kodlar } = require('./diller.js');
 const KOK_BAGLANTI = process.env.URET_KOK || 'https://shootboard.app';
 const { SAYFALAR, KAYNAK_DIZIN, adres, kaynakDosya } = require('./sayfalar.js');
 const { ustMenu, BAS, SON } = require('./ust-menu.js');
+const { altMenu } = require('./alt-menu.js');
 const { yonlendirici } = require('./yonlendirici.js');
 
 const KOK = path.join(__dirname, '..');
@@ -91,7 +92,7 @@ async function sayfaUret(tarayici, sayfa, dil, secenek){
   await p.goto(SUNUCU + '/' + KAYNAK_DIZIN + '/' + kaynak + '?lang=' + dil, { waitUntil: 'load' });
   await p.waitForTimeout(600);
 
-  const html = await p.evaluate(({ dil, menuHtml, BAS, SON, trCapa, dizine, sureklilik,
+  const html = await p.evaluate(({ dil, menuHtml, altMenuHtml, BAS, SON, trCapa, dizine, sureklilik,
                                   kanonikHedef, kokBaglanti, varsayilanDil, adresler }) => {
     document.documentElement.lang = dil;
 
@@ -216,6 +217,23 @@ async function sayfaUret(tarayici, sayfa, dil, secenek){
     else document.body.insertBefore(yuva, document.body.firstChild);
     yuva.outerHTML = menuHtml;
 
+    // 1b) ALT MENUYU DEGISTIR (64. madde).
+    // ⛔ YERINDE DEGISTIRMIYORUZ, SILIP SONA EKLIYORUZ. Sebep
+    //    olculdu: kilavuzun altligi bir KAPSAYICININ ICINDE duruyor
+    //    (kaynak/kilavuz.html:857, girintili). Yerinde degistirilse
+    //    uretilen altlik o dar sutunun icinde kalir ve oteki
+    //    sayfalardan baska gorunurdu -- yani birlestirme isini
+    //    yapmis olmazdik. Govdenin sonuna koymak her sayfada ayni
+    //    yeri garanti ediyor.
+    // ⚠ Altligin ardindan gelen <script>'ler etkilenmiyor.
+    for(const f of document.querySelectorAll('footer')){
+      if(f.parentNode) f.parentNode.removeChild(f);
+    }
+    const altYuva = document.createElement('div');
+    altYuva.setAttribute('data-alt-menu', '1');
+    document.body.appendChild(altYuva);
+    altYuva.outerHTML = altMenuHtml;
+
     // ⛔ GORELI ADRESLERI KOKE CEVIR. Olculdu: /en/pricing/ sayfasi
     //    "marka.css" diye aradigi icin tarayici /en/pricing/marka.css
     //    istiyor ve 404 aliyordu -- sayfa STILSIZ aciliyordu.
@@ -233,7 +251,8 @@ async function sayfaUret(tarayici, sayfa, dil, secenek){
     }
 
     return '<!DOCTYPE html>\n' + document.documentElement.outerHTML;
-  }, { dil, menuHtml: ustMenu({ sayfa: sayfa.ad, dil }), BAS, SON,
+  }, { dil, menuHtml: ustMenu({ sayfa: sayfa.ad, dil }),
+       altMenuHtml: altMenu({ dil }), BAS, SON,
        trCapa: (bol ? (sayfa.trCapa || null) : null),
        dizine, kanonikHedef: kanonik,
        sureklilik: secenek && secenek.sureklilik ? secenek.sureklilik : null,

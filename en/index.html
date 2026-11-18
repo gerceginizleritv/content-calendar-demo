@@ -730,6 +730,7 @@ img{max-width:100%;height:auto;display:block;}
 <!-- ══ ÜST ÇUBUK ══════════════════════════════════════════════ -->
 <!-- UST-MENU: URETILIYOR (uret/ust-menu.js) -- ELLE DEGISTIRME -->
 <style>
+.ust{padding-top:0;padding-bottom:0;}
 .ust .ust-ic{display:flex;align-items:center;gap:14px;}
 .ust .ust-nav{margin-left:auto;}
 .ust .ust-sag{margin-left:0;display:flex;align-items:center;gap:8px;}
@@ -1178,16 +1179,7 @@ img{max-width:100%;height:auto;display:block;}
 </section>
 <div class="klaket ince" aria-hidden="true"></div>
 
-<footer class="alt">
-  <div class="sar alt-ic">
-    <a class="marka" href="/" style="color:var(--kagit);">Shootboard</a>
-    <a href="/en/pricing/" data-m="nav_fiyat">Pricing</a>
-    <a href="/en/guide/" id="dipKilavuz" data-m="alt_kilavuz">Guide</a>
-    <a href="/en/terms/" data-m="alt_sartlar">Terms</a>
-    <a href="/en/privacy/" data-m="alt_gizlilik">Privacy</a>
-    <p class="alt-son" data-m="alt_son">A content calendar for video creators. It keeps the plan; you do the publishing.</p>
-  </div>
-</footer>
+
 
 <script>
 /* ══════════════════════════════════════════════════════════════
@@ -1894,4 +1886,24 @@ try{
 <script data-goatcounter="https://slate-demo.goatcounter.com/count" async="" src="//gc.zgo.at/count.js"></script>
 
 
-</body></html>
+<!-- ALT-MENU: URETILIYOR (uret/alt-menu.js) -- ELLE DEGISTIRME -->
+<style>
+.alt{background:var(--gece);color:rgba(255,249,240,.6);padding:34px 0 44px;font-size:14px;border:0;margin:0;}
+.alt .alt-ic{display:flex;flex-wrap:wrap;gap:14px 26px;align-items:center;}
+.alt a{text-decoration:none;opacity:.8;color:inherit;}
+.alt a:hover{opacity:1;text-decoration:underline;}
+.alt{line-height:1.6;}
+.alt .alt-ic a{min-height:44px;display:inline-flex;align-items:center;}
+.alt .alt-son{flex:0 0 100%;width:100%;max-width:none;margin:18px 0 0;opacity:.5;font-size:13px;}
+</style>
+<footer class="alt">
+  <div class="sar alt-ic">
+    <a class="marka" href="/en/" style="color:var(--kagit);">Shootboard</a>
+    <a href="/en/pricing/">Pricing</a>
+    <a href="/en/guide/">Guide</a>
+    <a href="/en/privacy/">Privacy</a>
+    <a href="/en/terms/">Terms</a>
+    <p class="alt-son">A content calendar for video creators. It keeps the plan; you do the publishing.</p>
+  </div>
+</footer>
+<!-- /ALT-MENU --></body></html>

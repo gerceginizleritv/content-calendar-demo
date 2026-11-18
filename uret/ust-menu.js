@@ -55,6 +55,20 @@ function ustMenu({ sayfa, dil }){
   //    hemen yaninda, belge sirasinda EN SONDA -- dolayisiyla
   //    kazaniyor. Tek kaynak olmasi da boylece korunuyor.
   satir.push('<style>');
+  // ⛔ 18 KASIM 2026 — MENUNUN KENDI YUKSEKLIGI DE TEK KAYNAKTAN.
+  //    Kullanici bildirdi: "kullanim sartlari linkine gittigimde
+  //    ust menu genisliyor gibi geldi bana ... ust ve alt menu
+  //    hicbir sayfada yer degistirmesin kaybolmasin!"
+  //    Olculdu, hakliydi: 1280px'te ust menu ana/fiyatlar/kilavuz
+  //    sayfalarinda 63 px, gizlilik/sartlar/privacy/terms'te 85 px.
+  //    Sebep: o sayfalarda `.ust`un KENDI `padding-bottom:22px`i
+  //    vardi. Icerik (.ust-ic 62 px) ve cagri dugmesi (44 px) her
+  //    sayfada zaten aynidir -- fark yalnizca o dolgudandi.
+  //    ⚠ 47. madde tam bu aileyi kapatmisti (bir sayfanin kendi
+  //      menu stili olmasi); bu bir tanesi kalmis.
+  //    ⚠ Bu 22 piksel SEKIZ GUN gorunmedi cunku bekci yalnizca
+  //      YATAY konumu olcuyordu. Artik yukseklik de olculuyor.
+  satir.push('.ust{padding-top:0;padding-bottom:0;}');
   satir.push('.ust .ust-ic{display:flex;align-items:center;gap:14px;}');
   satir.push('.ust .ust-nav{margin-left:auto;}');
   satir.push('.ust .ust-sag{margin-left:0;display:flex;align-items:center;gap:8px;}');

@@ -2170,8 +2170,67 @@ dokunmak ve ikinci seferde birincisini bozmak demek.
   ⚠ **Bu bir TEŞHİS değil, bir GÜVENCE.** Sebep ne olursa olsun
   (ağ, CDN, sunucu) kullanıcı ekranda bekleyip durmuyor.
 
-- ⬜ **64.** ⛔ **ÜST VE ALT MENÜ HER SAYFADA AYNI VE SABİT OLSUN
-  (app hariç).** Kullanıcı 18 Kasım 2026'da bildirdi:
+- ✅ **64. BİTTİ (18 Kasım 2026).** ⛔ **ÜST VE ALT MENÜ HER SAYFADA
+  AYNI VE SABİT (app hariç).**
+
+  **Sonuç — on üretilen sayfa, üç genişlikte ölçüldü:**
+
+  | Genişlik | Üst menü | Alt menü |
+  |---|---|---|
+  | 1280 | **63 px** (hepsi) | **174,80 px** (hepsi) |
+  | 900 | **63 px** | **174,80 px** |
+  | 390 | **63 px** | **253,59 px** |
+
+  Her sayfada 5 bağlantı, aynı metinler, aynı sırada.
+
+  **Ne yapıldı:**
+  1. Üst menünün dolgusu üretilen `<style>`'da çivilendi
+     (`uret/ust-menu.js`) — sayfanın kendi `.ust` dolgusu artık
+     eziliyor.
+  2. ⛔ **Alt menü artık ÜRETİLİYOR** (`uret/alt-menu.js`, yeni).
+     Her sayfanın elle yazdığı altlık siliniyor, üretilen altlık
+     gövdenin **sonuna** ekleniyor.
+     ⚠ Yerinde değiştirilmedi: kılavuzun altlığı bir kapsayıcının
+     içindeydi, yerinde değiştirilse dar sütunda kalırdı.
+     ⚠ Bağlantı listesi **yazılı değil**: `SAYFALAR` tablosundaki
+     `ev` dışındaki her sayfa giriyor — 65. maddenin sayfaları
+     kendiliğinden girecek.
+  3. Son cümlenin iki dildeki metni **uydurulmadı**;
+     `kaynak/index.html`'in kendi sözlüğünden alındı.
+
+  ⚠ **DÖRT AYRI SEBEP ÇIKTI VE ÜÇÜ ÖLÇMEDEN BULUNAMAZDI:**
+
+  | Sebep | Nerede | Etkisi |
+  |---|---|---|
+  | `.ust{padding-bottom:22px}` | gizlilik/şartlar | üst menü 22 px uzun |
+  | `p{max-width:68ch}` | kılavuz | son cümle satır atlamıyordu → 52,8 px fark |
+  | `footer{border-top:1px}` | kılavuz | tam **1 px** fark |
+  | `.alt-ic a{min-height:44px}` yalnızca fiyatlarda | öteki sayfalar | 13,6 px fark **ve eksik dokunma hedefi** |
+
+  ⛔ İkincisi en sinsisiydi: hesaplanan `flex` değeri **doğru**
+  okunuyordu (`0 0 100%`); yanlış olan `max-width`'ti. Tahminle
+  "flex kısayolu eziliyor" denip yanlış yer düzeltilebilirdi.
+  ✅ Dördüncüsünde kural **kırılmadı, her sayfaya yayıldı**: 44 px
+  telefonda dokunulabilir en küçük ölçü, öteki sayfalar eksikti.
+
+  ✅ **`/en/privacy/` ve `/en/terms/`'te altlığın HİÇ olmamasının
+  sebebi de bulundu:** o iki dosya iki dili üst üste taşıyor, altlık
+  Türkçe yarının içinde kalıyor ve İngilizce üretilirken o yarı
+  atılınca altlık da gidiyordu.
+
+  Bekçi: `testler/menu-olcu-birligi.test.js`, **14 iddia**, üç
+  genişlikte. ⛔ Liste yazmıyor (sayfalar `sayfalar.js`'ten, diller
+  `diller.js`'ten). Dört mutasyonla kanıtlandı: üst menü dolgusu
+  çivilenmezse 3 iddia düşer, alt menü gömülmezse 7, `max-width`
+  kalkarsa 1, 44 px kuralı kalkarsa 4.
+
+  ⛔ **47. MADDENİN BEKÇİSİ BUNU NEDEN KAÇIRDI:** `uretilen-sayfalar`
+  menünün **yatay** konumunu ölçüyordu, **yüksekliğini** değil. O 22
+  piksel sekiz gün görünmedi. Alt menüyü ise hiçbir test ölçmüyordu.
+
+  ⬇ Maddenin özgün hâli kayıt için duruyor:
+
+  Kullanıcı 18 Kasım 2026'da bildirdi:
 
   > *"alt bölümde yer alan kullanım şartları linkine gittiğimde üst
   > menü genişliyor gibi geldi bana. Önemli — üst ve alt menü hiçbir
