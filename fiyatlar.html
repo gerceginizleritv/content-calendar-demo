@@ -286,7 +286,8 @@ const M = {
     nav_ev:'Ana sayfa', nav_fiyat:'Fiyatlar', nav_kilavuz:'Kılavuz',
     uygulama_kisa:"Aç",
     tepe_rozet:"Hesapsız başla — kart istemiyoruz",
-    uygulama:'Uygulamayı aç', baslik:'Fiyatlar', aylik:'Aylık', yillik:'Yıllık',
+    uygulama:'Uygulamayı aç', baslik:'Fiyatlar',
+    meta_desc:'Shootboard planları: ücretsiz Starter ve Creator Pro. Fiyatlar USD ve TRY olarak ayrı ayrı yazılı.', aylik:'Aylık', yillik:'Yıllık',
     alt:'Bir çekimden çıkan on paylaşımı tek yerden yönetmek için. Hesap açmadan denemeye başlayabilirsin.',
     ucretsiz_bas:'Ücretsiz olan ne?',
     ucretsiz_1:'Starter planı para istemiyor ve hesap da istemiyor. Takvim o tarayıcıda kalır, hiçbir sunucuya gitmez.',
@@ -333,7 +334,8 @@ const M = {
     nav_ev:'Home', nav_fiyat:'Pricing', nav_kilavuz:'Guide',
     uygulama_kisa:"Open",
     tepe_rozet:"Start without an account — no card needed",
-    uygulama:'Open the app', baslik:'Pricing', aylik:'Monthly', yillik:'Yearly',
+    uygulama:'Open the app', baslik:'Pricing',
+    meta_desc:'Shootboard plans: free Starter and Creator Pro. Prices are listed separately in USD and TRY.', aylik:'Monthly', yillik:'Yearly',
     alt:'For running the ten posts that come out of one shoot from a single place. You can start without an account.',
     ucretsiz_bas:'What stays free?',
     ucretsiz_1:'Starter asks for no money and no account. The calendar stays in that browser and reaches no server.',
@@ -388,7 +390,11 @@ try{
   const q = new URLSearchParams(location.search).get('lang');
   if(q === 'tr' || q === 'en') adresDili = q;
 }catch(e){}
-let dil = adresDili || (trMi ? 'tr' : 'en');
+// ⛔ window.SAYFA_DILI EN ONCE. /tr/... ve /en/... adreslerinde
+// uretici bunu head'in basina koyuyor; o sayfada dil ADRESIN kendisi
+// demek ve hafiza da tarayici dili de onu ezemez. 18 Kasim 2026'da
+// olculdu: ezebiliyordu (menu Turkce, govde Ingilizce).
+let dil = (typeof window !== 'undefined' && window.SAYFA_DILI) || adresDili || (trMi ? 'tr' : 'en');
 let para = trMi ? 'TRY' : 'USD';
 let donem = 'monthly';
 let veri = null;
@@ -410,6 +416,11 @@ function metinleriYaz(){
   document.querySelectorAll('.ust-nav a[href^="fiyatlar.html"]').forEach(a=>
     a.setAttribute('href', 'fiyatlar.html?lang=' + dil));
   document.title = 'Shootboard — ' + m.baslik;
+  // ⛔ Aciklama da dile gore: arama sonucunda gorunen tek metin.
+  //    18 Kasim 2026'da olculdu: /en/pricing/ sayfasinin aciklamasi
+  //    Turkce kaliyordu. (CLAUDE.md Bolum 7.)
+  var md = document.querySelector('meta[name="description"]');
+  if(md && m.meta_desc) md.setAttribute('content', m.meta_desc);
 }
 
 // Kurus/cent -> okunur. ⚠ Bolme kullanilmiyor: bolum ve kalan ayri
@@ -479,7 +490,7 @@ function ciz(){
       // ⛔ ODEME HENUZ YOK. Dugme uygulamaya goturuyor; "satin al"
       // yazmiyor ve olmayan bir akis vaat etmiyor. Odeme kurulunca
       // buraya baglanacak.
-      + '<a class="btn' + (p.badge === 'recommended' ? ' btn-ana' : '') + '" href="app.html">'
+      + '<a class="btn' + (p.badge === 'recommended' ? ' btn-ana' : '') + '" href="/app.html">'
       + esc(ucretsiz ? m.ucretsizSec : m.sec) + '</a>'
       + '</div>';
   }).join('');

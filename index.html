@@ -1163,6 +1163,10 @@ img{max-width:100%;height:auto;display:block;}
    kalsın.
    ══════════════════════════════════════════════════════════════ */
 var EN = {
+  /* ⚠ Ingilizce metin UYDURULMADI: sayfanin kendi Ingilizce
+     sozlugunden (hero_rozet + hero_h1 + hero_alt) turetildi. */
+  sayfa_basligi:"Shootboard — Content Calendar for Video Creators",
+  meta_desc:"A content calendar that keeps the dozen posts from one shoot on a single board. Reel, Short, carousel, story — each with its own caption, time slot and platform. No auto-posting; it keeps the plan, you publish.",
   signup_legal:"We send one email to confirm the address. By creating an account you accept the <a href=\"sartlar.html\">Terms of Use</a> and the <a href=\"privacy.html\">Privacy Policy</a>.",
   /* ── Giriş bölümü (eski ana sayfadan taşındı) ── */
   email_label:"Your email address",
@@ -1269,7 +1273,15 @@ var EN = {
 
 // Türkçe metin HTML'in içinde duruyor; bir kez okunup saklanıyor ki
 // İngilizceye geçip geri dönmek metni kaybetmesin.
-var TR = {};
+var TR = {
+  /* ⛔ 18 KASIM 2026 — SAYFA BASLIGI VE ACIKLAMASI DA ARAYUZ.
+     Olculdu: /en/index.html'in <title> ve <meta description>
+     etiketleri TURKCE kaliyordu; Ingilizce ana sayfa kendini
+     Turkce tanitiyordu. Her dilin kendi adresi olmasinin tek
+     sebebi arama motorunun o dili gormesi -- baslik cevrilmezse
+     adresin anlami kalmiyor. (CLAUDE.md Bolum 7.) */
+  sayfa_basligi:"Shootboard — Video Üreticileri İçin İçerik Takvimi",
+  meta_desc:"Bir çekimden çıkan onlarca paylaşımı tek panoda tutan içerik takvimi. Reel, Short, carousel, hikâye — her birinin kendi açıklaması, saati ve platformu. Otomatik paylaşım yok; planı tutar, yayınlayan sensin.",};
 document.querySelectorAll('[data-m]').forEach(function(el){ TR[el.dataset.m] = el.textContent; });
 /* ⚠ İçinde bağlantı olan cümleler innerHTML ile okunmalı: textContent
    ile alınsaydı Türkçeye dönüldüğünde bağlantılar kaybolurdu. */
@@ -1308,6 +1320,13 @@ try{
   if(q === 'tr' || q === 'en'){ dil = q; adresDiliVar = true; }
   else if(!/^tr\b/i.test(navigator.language || '')){ dil = 'en'; }
 }catch(e){}
+// ⛔ window.SAYFA_DILI HER SEYI EZER. /tr/... ve /en/... adreslerinde
+// uretici bunu head'in basina koyuyor; o sayfada dil ADRESIN kendisi.
+// adresDiliVar=true yapiliyor ki asagidaki "kalici" yol da dili
+// hafizaya YAZMASIN -- ziyaretcinin genel tercihi degismesin.
+if(typeof window !== 'undefined' && (window.SAYFA_DILI === 'tr' || window.SAYFA_DILI === 'en')){
+  dil = window.SAYFA_DILI; adresDiliVar = true;
+}
 
 /* ⚠ kalici=false: dili EKRANA uygula ama KAYDETME.
    Eski ana sayfadaki kuralın aynısı. İlk açılışta tarayıcının dilini
@@ -1349,15 +1368,31 @@ function dilUygula(yeni, kalici){
      kalırdı -- ki ilk denemede tam olarak öyle oldu. */
   [['uygTablet','uygulama-tablet'],['uygTelefon','uygulama-telefon']].forEach(function(c){
     var e = document.getElementById(c[0]);
-    if(e) e.setAttribute('src', 'gorseller/' + c[1] + '-' + dil + '.webp');
+    if(e) e.setAttribute('src', '/gorseller/' + c[1] + '-' + dil + '.webp');
   });
   var kg = document.getElementById('kahramanGorsel');
   if(kg){
-    kg.setAttribute('src', 'gorseller/kahraman-' + dil + '.webp');
+    kg.setAttribute('src', '/gorseller/kahraman-' + dil + '.webp');
     kg.setAttribute('alt', dil === 'en'
       ? "A content creator holding a pocket camera in one hand and a phone in the other; Shootboard's calendar is open on the phone."
       : "Bir elinde cep kamerası, diğer elinde telefon tutan içerik üreticisi; telefonda Shootboard'un takvim ekranı açık.");
   }
+  // Baslik ve aciklama da dile gore. Bunlar ekranda gorunmez ama
+  // arama sonucunda GORUNEN tek metin.
+  var sz = (dil === 'en') ? EN : TR;
+  if(sz.sayfa_basligi) document.title = sz.sayfa_basligi;
+  var md = document.querySelector('meta[name="description"]');
+  if(md && sz.meta_desc) md.setAttribute('content', sz.meta_desc);
+
+  /* ⛔ 18 KASIM 2026 — BU BLOK URETILEN SAYFALARDA KOSMAZ.
+     /tr/... ve /en/... adreslerinde dili ADRES soyluyor ve
+     baglantilari uretici tablodan yaziyor (uret/sayfalar.js).
+     Burasi oralarda kosarsa dosya adi yazar ve baglantiyi KIRAR:
+     olculdu, /en/ sayfasinda "guide.html" yaziyordu ve tarayici
+     /en/guide.html arayip 404 aliyordu.
+     ⚠ Dumduz adreslerde (bugunku index.html) aynen calisiyor;
+     bu blok silinmedi, yalnizca kosullandi. */
+  if(!(typeof window !== 'undefined' && window.SAYFA_DILI)){
   // Kılavuzun iki ayrı sayfası var (arama motorları için ayrı adres):
   // bağlantılar okunan dile gitsin.
   document.querySelectorAll('#dipKilavuz, .ust-nav a[href$="lavuz.html"], .ust-nav a[href$="guide.html"]')
@@ -1372,6 +1407,7 @@ function dilUygula(yeni, kalici){
   document.querySelectorAll('a[href^="fiyatlar.html"]').forEach(function(a){
     a.setAttribute('href', 'fiyatlar.html?lang=' + dil);
   });
+  }
 }
 document.querySelectorAll('[data-dil]').forEach(function(b){
   b.addEventListener('click', function(){ dilUygula(b.dataset.dil); });
