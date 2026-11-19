@@ -1888,15 +1888,47 @@ dokunmak ve ikinci seferde birincisini bozmak demek.
   doğruluyor ve sınırı testin içine yazıldı; ekranda gerçekten "…"
   çıktığı ayrıca ekran görüntüsüyle doğrulandı.
 
-  ⬜ **AÇIK KALAN TEK ŞEY — KULLANICIYA SORULACAK:** çok parçalı bir
-  fikirde kartta **kaç parça olduğu artık hiçbir yerde görünmüyor.**
-  Düz metinde "…" çıkıyor ama parçalar ayrı satırlar olduğu için
-  oraya üç nokta düşmüyor; sayı da düğme metninden çıktı. Yani dokuz
-  parçalı bir kart üç parça gösteriyor ve gerisi olduğunu belli
-  etmiyor — bu **eksik değil, yanıltıcı**. Seçenekler: (1) gövdenin
-  altına soluklaşan bir geçiş, (2) "+6 daha" gibi küçük bir sayı,
-  (3) olduğu gibi bırak.
-  ⛔ Tahminle eklenmedi.
+  ✅ **KAPANDI (19 Kasım 2026) — "+N daha" işareti eklendi.**
+  Sorun şuydu: çok parçalı bir fikirde kartta kaç parça olduğu
+  hiçbir yerde görünmüyordu. Düz metinde "…" çıkıyor ama parçalar
+  ayrı satırlar olduğu için oraya üç nokta düşmüyor; sayı da düğme
+  metninden çıkmıştı. Dokuz parçalı kart **üç parça gösterip
+  susuyordu** — bu eksik değil **yanıltıcı**.
+  Kullanıcı üç seçenek arasından **"+6 daha" gibi küçük bir sayı**yı
+  seçti.
+
+  | Parça | İşaret |
+  |---|---|
+  | 1 (düz metin) | yok — tarayıcı zaten "…" koyuyor |
+  | 2 (hepsi sığıyor) | yok |
+  | 9 | **+6 daha** / +6 more |
+  | 24 | **+21 daha** / +21 more |
+
+  ⚠ **Sayı sabit değil, her çizimde ÖLÇÜLÜYOR:** kaç parçanın
+  gerçekten göründüğü kart genişliğine bağlı. Pencere boyu değişince
+  yeniden ölçülüyor (yeniden çizilmiyor — sürükleme ve düzenleme
+  durumu bozulmasın diye).
+  ⚠ **Yeri bilerek seçildi:** düğme satırına konsaydı mini düğmeler
+  **üçüncü satıra** inerdi — az önce düzeltilen sorunun ta kendisi.
+  Gövdenin sağ alt köşesinde, mutlak konumda duruyor ve karta
+  **hiç yükseklik eklemiyor** (ölçüldü: işaretli ve işaretsiz kartlar
+  aynı boyda).
+  ⚠ Zemini düz renk değil, soldan silikleşen bir geçiş: düz renk
+  son parçanın yazısını keskin biçimde kesiyordu.
+  ⚠ Yeni sözlük anahtarı `fk_more`, iki dilde de var (Bölüm 7).
+
+  Bekçi 8 → **14 iddia**. Beş mutasyonla kanıtlandı: işaret hiç
+  yazılmazsa 3 iddia düşer, hepsi sığarken de çıkarsa 2, İngilizce
+  sözlüğe girmezse 1, işaret akışa girerse 3, sayı yanlış yazılırsa 2.
+
+  ⛔ **İKİ MUTASYON ÖNCE YAKALANMADI, İKİSİ DE TESTİN KUSURUYDU:**
+  (1) "hepsi sığıyorsa işaret yok" iddiası yalnızca **tek parçalı**
+  kartlara bakıyordu; kod orada zaten erken dönüyor, yani "her zaman
+  göster" mutasyonu görünmüyordu. Hepsi sığan **iki kısa parçalı**
+  bir örnek eklendi.
+  (2) "sınırı aşanlar eşit" iddiası kart **sırasına** güveniyordu
+  (`slice(1)`); yeni örnek eklenince yanlış kartı ölçmeye başladı.
+  Artık fikstür'deki `asar` bayrağına bakıyor, dizine değil.
 
   ⬇ Maddenin özgün hâli kayıt için duruyor:
 

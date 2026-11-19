@@ -73,29 +73,47 @@ const assert = require('node:assert');
     // Hem METIN UZUNLUGU hem PARCA SAYISI artiyor: ilk cozum
     // yalnizca birincisini kapatmisti.
     fikirler = [
-      { n:'kisa',      kat:1,  parca:1  },
-      { n:'orta',      kat:4,  parca:1  },
-      { n:'uzun',      kat:16, parca:1  },
-      { n:'cokparca',  kat:1,  parca:9  },
-      { n:'ikisi',     kat:8,  parca:24 }
+      // `asar`: bu kartin icerigi 5 satirlik siniri ASIYOR mu.
+      // ⚠ Iddialar DIZINE degil bu bayraga bakiyor: yeni bir ornek
+      //   eklendiginde siralama degisse de olcu bozulmuyor.
+      { n:'kisa',      kat:1,  parca:1,  asar:false },
+      { n:'orta',      kat:4,  parca:1,  asar:true  },
+      { n:'uzun',      kat:16, parca:1,  asar:true  },
+      // ⛔ 19 KASIM 2026 — BU SATIR BIR MUTASYON BOSLUGUNDAN DOGDU.
+      //    "Hepsi sigiyorsa isaret yok" iddiasi YALNIZCA tek parcali
+      //    kartlara bakiyordu; orada kod zaten erken donuyor, yani
+      //    "her zaman isaret goster" mutasyonu GORUNMUYORDU ve test
+      //    14/14 geciyordu. Hepsi SIGAN cok parcali bir kart sart:
+      //    iki kisa parca (`kisaParca`) tam o durumu kuruyor.
+      { n:'hepsisigar', kat:1, parca:2, kisaParca:true, asar:false },
+      { n:'cokparca',  kat:1,  parca:9,  asar:true  },
+      { n:'ikisi',     kat:8,  parca:24, asar:true  }
     ].map((x,i)=> ({
-      id:'f'+i, text:C.repeat(x.kat).trim(),
-      parts: Array.from({length:x.parca}, (_,j)=>({ id:'p'+i+j, text:C.repeat(x.kat).trim() })),
+      id:'f'+i, text:C.repeat(x.kat).trim(), __asar:x.asar,
+      parts: Array.from({length:x.parca}, (_,j)=>({ id:'p'+i+j,
+        text: x.kisaParca ? ('p'+(j+1)) : C.repeat(x.kat).trim() })),
       projectId:'p1', sort:i, createdAt:Date.now(), updatedAt:Date.now()
     }));
     saveFikirler(); setPage('ideas'); renderFikirler();
 
     const kartlar = [...document.querySelectorAll('.fk-card')]
       .filter(x=> x.querySelector('.fk-card-body'));
+    const asarMi = fikirler.map(f=> !!f.__asar);
     return {
       yukseklikler: kartlar.map(x=> +x.getBoundingClientRect().height.toFixed(2)),
+      asar: asarMi,
       // Mini dugmeler kac SATIRA yayilmis
       dugmeSatirlari: kartlar.map(x=>{
         const m = [...x.querySelectorAll('.fk-mini')];
         return m.length ? [...new Set(m.map(e=> Math.round(e.getBoundingClientRect().top)))].length : 0;
       }),
       splitMetin: (()=>{ const d = document.querySelector('[data-fk-split]');
-                         return d ? d.textContent.trim() : null; })()
+                         return d ? d.textContent.trim() : null; })(),
+      // "+N daha" isareti: kac parcasi gizli, isaret ne yaziyor
+      isaretler: kartlar.map(x=>{
+        const i = x.querySelector('.fk-gizli');
+        return { parca: x.querySelectorAll('.fk-part').length,
+                 metin: i && !i.hidden ? i.textContent.trim() : null }; })
     };
   }, dil);
 
@@ -111,20 +129,27 @@ const assert = require('node:assert');
     dene('★ ' + d + ': kart yuksekligi metin ve parca sayisindan BAGIMSIZ', ()=>{
       const y = o.yukseklikler;
       assert.ok(y.length >= 5, 'yalnizca ' + y.length + ' kart olculdu');
-      // ⚠ ILK kart BILEREK kisa (tek cumle, tek parca) ve sinira hic
-      //   degmiyor -- kisa kartlarin SISMESI istenmiyor, istenen sey
-      //   uzun olanlarin BUYUMEMESI. O yuzden iddia "hepsi esit"
-      //   degil: "siniri asan her icerik AYNI yukseklikte".
-      const tasanlar = y.slice(1);
+      // ⚠ Bazi ornekler BILEREK kisa (tek cumle, ya da iki kisa
+      //   parca) ve sinira hic degmiyor -- kisa kartlarin SISMESI
+      //   istenmiyor, istenen sey uzun olanlarin BUYUMEMESI.
+      //   O yuzden iddia "hepsi esit" degil: "siniri ASAN her icerik
+      //   ayni yukseklikte". Hangi ornegin astigi fikstur'deki
+      //   `asar` bayragindan geliyor, DIZINDEN degil.
+      const tasanlar = y.filter((_, i)=> o.asar[i]);
+      const kisalar  = y.filter((_, i)=> !o.asar[i]);
+      assert.ok(tasanlar.length >= 3 && kisalar.length >= 2,
+        'fikstur bozuk: ' + JSON.stringify(o.asar));
       const yayilim = Math.max(...tasanlar) - Math.min(...tasanlar);
       assert.ok(yayilim < 0.5,
         'siniri asan kartlar arasinda ' + yayilim.toFixed(2) + ' px fark: '
         + JSON.stringify(y) + ' -- sinir yok ya da yalnizca duz metni kapatiyor'
         + ' (parcali govde blok ogelerden olustugu icin line-clamp onu kirpmaz)');
-      // ⛔ Kisa kart, sinira dayanmis kartlardan UZUN olamaz. Yoksa
-      //    "sinir" diye konan sey aslinda bir ALT sinir olurdu.
-      assert.ok(y[0] <= Math.min(...tasanlar) + 0.5,
-        'kisa kart (' + y[0] + ') sinirli kartlardan uzun: ' + JSON.stringify(y));
+      // ⛔ Kisa kartlarin HICBIRI sinira dayanmis kartlardan uzun
+      //    olamaz. Yoksa "sinir" diye konan sey bir ALT sinir olurdu.
+      for(const k of kisalar){
+        assert.ok(k <= Math.min(...tasanlar) + 0.5,
+          'kisa kart (' + k + ') sinirli kartlardan uzun: ' + JSON.stringify(y));
+      }
     });
 
     dene('★ ' + d + ': mini dugmeler IKI satiri asmiyor', ()=>{
@@ -160,6 +185,73 @@ const assert = require('node:assert');
       'line-clamp yok (' + JSON.stringify(d) + ') -- metin uc nokta'
       + ' olmadan ortadan kesilir; `max-height` tek basina bunu'
       + ' gizler cunku yukseklik yine sinirli gorunur');
+  });
+
+  // ⛔ 19 KASIM 2026 — "KAC PARCA GIZLI" ISARETI (YAPILACAKLAR 56).
+  //    Kart 5 satirda kesilince cok parcali bir fikir uc parca
+  //    gosterip susuyordu; dokuz parcali kart UC parca gosteriyordu
+  //    ve gerisi oldugunu belli etmiyordu. Bu EKSIK degil YANILTICI.
+  //    Kullanici kucuk bir sayi ("+6 daha") secti.
+  for(const d of diller){
+    const isaret = sonuc[d].isaretler;
+    dene('★ ' + d + ': gizli parca sayisi DOGRU yaziyor', ()=>{
+      // Test verisinde 9 ve 24 parcali kartlar var; ikisinde de
+      // isaret cikmali ve sayi GIZLI olan kadar olmali.
+      const cok = isaret.filter(x=> x.parca >= 9);
+      assert.ok(cok.length >= 2, 'cok parcali kart olculemedi');
+      for(const x of cok){
+        assert.ok(x.metin, x.parca + ' parcali kartta isaret YOK'
+          + ' -- kart uc parca gosterip susuyor, bu yaniltici');
+        const n = parseInt(String(x.metin).replace(/[^\d]/g, ''), 10);
+        assert.ok(n > 0 && n < x.parca,
+          x.parca + ' parcada isaret "' + x.metin + '" -- sayi tutmuyor');
+      }
+    });
+
+    dene('★ ' + d + ': parcalarin HEPSI sigiyorsa isaret YOK', ()=>{
+      // Tek parcali kartlarda olmamali: orada tarayici zaten "…"
+      // koyuyor, ikinci bir isaret gurultu olurdu.
+      const tek = isaret.filter(x=> x.parca < 2);
+      assert.ok(tek.length >= 1, 'tek parcali kart olculemedi');
+      for(const x of tek){
+        assert.strictEqual(x.metin, null,
+          'tek parcali kartta isaret var: ' + JSON.stringify(x.metin));
+      }
+      // ⛔ ASIL OLCU BURASI: iki KISA parcali kartta hepsi siginca
+      //    isaret cikmamali. Tek parcali kartlar bunu olcmuyordu
+      //    cunku kod orada zaten erken donuyor.
+      const sigan = isaret.filter(x=> x.parca === 2);
+      assert.ok(sigan.length >= 1, 'hepsi sigan cok parcali kart olculemedi');
+      for(const x of sigan){
+        assert.strictEqual(x.metin, null,
+          'hepsi sigan ' + x.parca + ' parcali kartta isaret var: '
+          + JSON.stringify(x.metin) + ' -- yanlis bilgi veriyor');
+      }
+    });
+  }
+
+  dene('★ Bolum 7: "+N" isareti CEVRILMIS (iki dil ayni sozcuk degil)', ()=>{
+    // ⚠ Sayi ve isaretler atiliyor, SOZCUK karsilastiriliyor.
+    //   18 Kasim'da ogrenildi: bicim farki (%30 / 30%) yuzunden
+    //   dizeler esit cikmayabilir ve iddia yanlis nedenle yesil kalir.
+    const sade = (x)=> String(x || '').replace(/[\d+%\s]+/g, ' ').trim();
+    const tr = (sonuc.tr.isaretler.find(x=> x.metin) || {}).metin;
+    const en = (sonuc.en.isaretler.find(x=> x.metin) || {}).metin;
+    assert.ok(tr && en, 'bir dilde isaret hic cikmadi');
+    assert.notStrictEqual(sade(tr), sade(en),
+      'iki dilde AYNI SOZCUK: ' + JSON.stringify(sade(tr))
+      + ' -- sozluge girmemis olabilir');
+  });
+
+  dene('★ isaret karta YUKSEKLIK EKLEMIYOR', ()=>{
+    // ⚠ Isaret dugme satirina konsaydi mini dugmeler UCUNCU satira
+    //   inerdi -- az once duzeltilen sorunun ta kendisi. Mutlak
+    //   konumda duruyor; isaretli ve isaretsiz kartlar AYNI boyda.
+    const y = sonuc.tr.yukseklikler.filter((_, i)=> sonuc.tr.asar[i]);
+    const yayilim = Math.max(...y) - Math.min(...y);
+    assert.ok(yayilim < 0.5,
+      'isaretli ve isaretsiz kartlar arasinda ' + yayilim.toFixed(2)
+      + ' px fark: ' + JSON.stringify(sonuc.tr.yukseklikler));
   });
 
   dene('★ Turkce "hepsini ayir" metninde SAYI yok', ()=>{

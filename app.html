@@ -1971,6 +1971,23 @@ textarea.sc-ai-brief{min-height:64px;resize:vertical;line-height:1.5;}
        yazilmadi: punto ve satir araligi yukarida ne ise ondan
        hesaplaniyor, yarin punto degisirse sinir kendiliginden uyar. */
   max-height:calc(13.5px * 1.55 * 5);}
+/* ⚠ Sarmal govdenin ustunde duruyor ve TASMAYI KIRPMIYOR: isaret
+   govdenin icinde olsaydi `overflow:hidden` onu da keserdi. */
+.fk-body-sar{position:relative;flex:1;min-height:0;}
+/* "+6 daha" isareti: mutlak konumda, karta YUKSEKLIK EKLEMIYOR.
+   Arkasina kartin zemini konuyor ki altindaki yazinin uzerinde
+   okunabilsin. */
+/* ⚠ Zemin DUZ RENK DEGIL, soldan silikleselen bir gecis: isaret
+   son parcanin yazisinin uzerine denk geliyor ve duz zemin yaziyi
+   KESKIN bicimde kesiyordu ("açıklama" yarida kaliyordu). Gecisle
+   yazi isaretin altina dogru soluyor -- kesilme kaza degil,
+   bilerek yapilmis gibi okunuyor. */
+.fk-gizli{position:absolute;right:0;bottom:0;
+  font-size:11px;font-weight:600;line-height:1.5;
+  color:var(--text-dim);
+  background:linear-gradient(to right, transparent 0, var(--surface) 22px);
+  padding:0 2px 0 28px;pointer-events:none;}
+.fk-gizli[hidden]{display:none;}
 .fk-card-body p{margin:0 0 8px;}
 .fk-card-body p:last-child{margin-bottom:0;}
 /* Birlesik kartta parcalar arasinda ince bir cizgi: kacinin birlestigi
@@ -7230,6 +7247,7 @@ const LANG = {
     fk_search_ph: "Search ideas…",
     fk_project_title: "Add a project — an idea can serve more than one",
     fk_split: (n)=> `Split all ${n}`,
+    fk_more: (n)=> `+${n} more`,
     fk_part_out: "Pull this one out — or drag it",
     fk_none: "No ideas yet. The first line is the hardest — write it half-finished.",
     fk_none_all: "No ideas yet.",
@@ -8602,6 +8620,7 @@ const LANG = {
     //    ⚠ Ingilizceye DOKUNULMADI: kullaniciya soruldu, "Split all 3"
     //      kalsin dendi.
     fk_split: (n)=> `Hepsini ayır`,
+    fk_more: (n)=> `+${n} daha`,
     fk_part_out: "Bunu dışarı çıkar — sürükleyerek de olur",
     fk_none: "Henüz fikir yok. En zoru ilk satır — yarım da olsa yaz.",
     fk_none_all: "Henüz fikir yok.",
@@ -12616,6 +12635,7 @@ function fikirKartiHtml(f){
         </svg>
       </button>
     </div>
+    <div class="fk-body-sar">
     <div class="fk-card-body">
       ${parcali
         ? f.parts.map(x=>`<div class="fk-part" draggable="true"
@@ -12626,6 +12646,23 @@ function fikirKartiHtml(f){
                       title="${escapeHtml(t('fk_part_out'))}">↗</button>
             </div>`).join('')
         : `<p>${escapeHtml(f.text)}</p>`}
+    </div>
+    <!-- ⛔ 19 KASIM 2026 — "KAC PARCA GIZLI" ISARETI (YAPILACAKLAR 56).
+         Kart 5 satirda kesilince cok parcali bir fikir uc parca
+         gosterip susuyordu: dokuz parcali kart UC parca gosteriyordu
+         ve gerisi oldugunu belli etmiyordu. Bu eksik degil
+         YANILTICIYDI. Duz metinde "…" cikiyor ama parcalar ayri
+         satirlar oldugu icin oraya uc nokta dusmuyor; sayi da dugme
+         metninden cikmisti ("Hepsini ayır").
+         Kullanici secti: kucuk bir sayi ("+6 daha").
+         ⚠ YERI ONEMLI: dugme satirina konsaydi mini dugmeler UCUNCU
+           satira inerdi -- az once duzeltilen sorunun ta kendisi.
+           Govdenin sag alt kosesinde, MUTLAK konumda duruyor:
+           karta hic yukseklik eklemiyor.
+         ⚠ Sayi SABIT DEGIL, her cizimde OLCULUYOR: kac parcanin
+           gercekten gorundugu kart genisligine bagli, pencere
+           boyu degisince yeniden hesaplaniyor. -->
+    <span class="fk-gizli" hidden></span>
     </div>
     <div class="fk-card-foot">
       ${f.due
@@ -12830,7 +12867,45 @@ function fikirKartOlaylari(kap){
     });
   });
   fikirSuruklemeKur(kap);
+  fikirGizliSayilariYaz();
 }
+
+// ⛔ 19 KASIM 2026 — "KAC PARCA GIZLI" SAYISI OLCULEREK YAZILIYOR.
+//    Kart govdesi 5 satirda kesiliyor (YAPILACAKLAR 56). Kac parcanin
+//    gercekten gorundugu SABIT DEGIL: kart genisligine, yaziya, dile
+//    gore degisiyor. O yuzden sayi hesaplanmiyor, OLCULUYOR.
+// ⚠ Yalnizca PARCALI fikirde cikiyor. Tek parcali uzun metinde
+//    tarayici zaten "…" koyuyor; orada ikinci bir isaret gurultu
+//    olurdu.
+// ⚠ `hidden` ozniteligi kaldirilip konuyor; metin sozlukten geliyor
+//    (`fk_more`), iki dilde de var (Bolum 7).
+function fikirGizliSayilariYaz(){
+  const kap = document.getElementById('fk_list');
+  if(!kap) return;
+  kap.querySelectorAll('.fk-card').forEach(kart=>{
+    const isaret = kart.querySelector('.fk-gizli');
+    const govde = kart.querySelector('.fk-card-body');
+    if(!isaret || !govde) return;
+    const parcalar = [...govde.querySelectorAll('.fk-part')];
+    if(parcalar.length < 2){ isaret.hidden = true; isaret.textContent = ''; return; }
+    const dip = govde.getBoundingClientRect().bottom;
+    // ⚠ 1 px pay: alt piksel yuvarlamasi son parcayi "gizli"
+    //   saymasin. 18 Kasim'da ayni tuzak menu olcusunde yasandi.
+    const gorunen = parcalar.filter(x=> x.getBoundingClientRect().top < dip - 1).length;
+    const gizli = parcalar.length - gorunen;
+    if(gizli > 0){ isaret.textContent = t('fk_more')(gizli); isaret.hidden = false; }
+    else { isaret.hidden = true; isaret.textContent = ''; }
+  });
+}
+
+// Pencere boyu degisince kart genisligi degisiyor, dolayisiyla kac
+// parcanin sigdigi da degisiyor. Yeniden CIZMIYORUZ (surukleme ve
+// duzenleme durumu bozulmasin), yalnizca sayiyi yeniden olcuyoruz.
+let fikirGizliZaman = null;
+window.addEventListener('resize', ()=>{
+  clearTimeout(fikirGizliZaman);
+  fikirGizliZaman = setTimeout(fikirGizliSayilariYaz, 120);
+});
 
 // --- Kartlari surukleme ------------------------------------------------
 // Iki is birden: bir kartin uzerine birakmak BIRLESTIRIYOR, iki kartin
