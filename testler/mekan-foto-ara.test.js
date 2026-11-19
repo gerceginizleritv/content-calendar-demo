@@ -158,7 +158,20 @@ const FOTO = 'https://upload.wikimedia.org/wikipedia/commons/thumb/a/ab/Tekfur_S
   await p.click('#mk_fotoHepsi');
   await p.waitForFunction(()=> /bakıldı/.test(document.getElementById('mk_fotoDurum').textContent), null, { timeout: 15000 });
   const ozet = await p.$eval('#mk_fotoDurum', e=> e.textContent);
-  bak('ozet dogru sayiyor', /2 mekana bakıldı, 1 fotoğraf/.test(ozet), ozet);
+  // ⛔ 19 KASIM 2026 — IDDIA SOZCUGE DEGIL OLGUYA BAGLANDI.
+  //    Onceden metni harfi harfine ariyordu (/2 mekana bakıldı, 1
+  //    fotoğraf/). Kullanici 59. maddede cumlenin yeniden
+  //    yazilmasini istedi (adi ve sebebi soylesin) ve bu iddia
+  //    dustu -- oysa TARAMA dogru calisiyordu: 2 mekana bakilmis,
+  //    1 fotograf bulunmustu.
+  //    Artik sozlugun KENDI ciktisiyla karsilastiriliyor: bu test
+  //    taramanin DOGRU SAYIP SAYMADIGINI olcuyor, cumlenin nasil
+  //    yazildigini degil. Cumlenin icerigi ayri bir bekcide:
+  //    testler/mekan-foto-tarama.test.js (16 iddia).
+  //    ⚠ Bu bir gevsetme DEGIL: yanlis sayilsaydi (orn. 3/1 ya da
+  //      2/0) beklenen metin tutmaz ve iddia yine duserdi.
+  const beklenen = await p.evaluate(()=> t('mk_photo_scan_done')(1, 2, null));
+  bak('ozet dogru sayiyor', ozet.trim() === beklenen.trim(), ozet);
   bak('bulunan mekana yazildi', await p.evaluate(()=> (mekanById('m_tekfur')||{}).imageUrl) === FOTO);
   bak('bulunamayan bos kaldi', await p.evaluate(()=> (mekanById('m_ev')||{}).imageUrl) === '');
   bak('zaten fotografli olana DOKUNULMADI',
