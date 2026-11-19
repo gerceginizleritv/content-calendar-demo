@@ -69,10 +69,20 @@ const { chromium } = require('./araclar');
     // Tema seritte DEGIL, ayarlar SAYFASINDA.
     temaAyarlarda: !!document.getElementById('themeBtn').closest('#ayarlarPage'),
     temaSeritteDegil: !document.getElementById('themeBtn').closest('.rail'),
-    altta: ['buildId','exportBtn','resetBtn'].every(id=>!!document.getElementById(id).closest('.site-foot')),
+    // ⛔ 19 KASIM 2026 (YAPILACAKLAR 66) — `exportBtn` BU LISTEDEN CIKTI.
+    //    Yedek baglantilari kullanicinin karariyla ayarlar sayfasinin
+    //    "Verilerin" bolumune toplandi; alt seritte YEDEK yok artik.
+    //    ⚠ Iddia ZAYIFLAMADI, IKIYE AYRILDI: alt seritte DURMASI
+    //      gerekenler hala orada mi (surum damgasi, demoyu sifirla) VE
+    //      yedek gercekten TASINDI mi. Ikincisi eskiden hic sorulmuyordu;
+    //      dugme sessizce geri dusse kimse fark etmezdi.
+    altta: ['buildId','resetBtn'].every(id=>!!document.getElementById(id).closest('.site-foot')),
+    yedekAyarlarda: !!document.getElementById('exportBtn').closest('#ayarlarPage')
+                    && !document.getElementById('exportBtn').closest('.site-foot'),
     gizlilikAltta: !!document.querySelector('.site-foot .privacy-link')
   }));
   k('eski üst satırlar kalktı', !ust.headTop && !ust.headActions && !ust.headMeta && !ust.eskiTabs);
+  k('YEDEK ayarlar sayfasına taşındı, alt şeritte değil', ust.yedekAyarlarda === true);
   k('HEPSİ ŞERİTTE (giriş, dil, AYARLAR, nedir, nasıl çalışır, geri bildirim, 3 sekme)', ust.seritte === true);
   k('TEMA AYARLAR SAYFASINDA, şeritte değil', ust.temaAyarlarda && ust.temaSeritteDegil,
     'ayarlarda=' + ust.temaAyarlarda + ' şeritte=' + !ust.temaSeritteDegil);
