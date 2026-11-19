@@ -5753,6 +5753,15 @@ textarea.sc-ai-brief{min-height:64px;resize:vertical;line-height:1.5;}
         <datalist id="mk_ilceListe"></datalist>
       </div>
     </div>
+    <!-- ⛔ MEKAN TURU (YAPILACAKLAR 51). Proje turune gore hangi
+         mekanlarin listelenecegini bu alan belirliyor. Bos birakmak
+         GECERLI bir secim: boyle bir mekan her projede gorunuyor
+         (kullanicinin karari, 19 Kasim 2026). -->
+    <div class="field">
+      <label for="mk_tur" data-i18n="mk_tur">Kind of place</label>
+      <select id="mk_tur"></select>
+      <p class="hint" data-i18n="mk_tur_not">Projects list only the places that fit their type.</p>
+    </div>
     <div class="field">
       <label data-i18n="mk_address">Address</label>
       <input type="text" id="mk_address" maxlength="400">
@@ -7402,6 +7411,14 @@ const LANG = {
     mk_name: "Name",
     mk_name_ph: "Kariye Museum",
     mk_city: "City",
+    mk_tur: "Kind of place",
+    mk_tur_bos: "Not set — shows in every project",
+    mk_tur_dis: "Outdoor spot",
+    mk_tur_mekan: "Venue",
+    mk_tur_studyo: "Studio",
+    mk_tur_diger: "Other",
+    mk_tur_not: "Projects list only the places that fit their type. Leave it unset and the place shows everywhere.",
+    p_place_turde_yok: (n)=> `This project type does not list places. ${n} selected place(s) are still attached — they are not deleted.`,
     mk_district: "District",
     mk_address: "Address",
     mk_permission: "Permission — who gives it, how long it takes",
@@ -8781,6 +8798,14 @@ const LANG = {
     mk_name: "Adı",
     mk_name_ph: "Kariye Müzesi",
     mk_city: "Şehir",
+    mk_tur: "Mekânın türü",
+    mk_tur_bos: "Seçilmedi — her projede görünür",
+    mk_tur_dis: "Dış mekân",
+    mk_tur_mekan: "Mekân",
+    mk_tur_studyo: "Stüdyo",
+    mk_tur_diger: "Diğer",
+    mk_tur_not: "Projeler yalnızca kendi türüne uyan mekânları listeliyor. Boş bırakırsan mekân her yerde görünür.",
+    p_place_turde_yok: (n)=> `Bu proje türünde mekân listelenmiyor. Seçili ${n} mekân duruyor — silinmedi.`,
     mk_district: "İlçe",
     mk_address: "Adres",
     mk_permission: "İzin — kimden alınıyor, ne kadar sürüyor",
@@ -10987,6 +11012,39 @@ function projeAra(liste, q){
 // "dis cekim" deyip nereye gidilecegini yazmamak plani yarim birakir.
 const PROJ_TYPES = ['outdoor','venue','studio','vlog','review','desk','other'];
 const PROJ_TYPES_ADDRESS = ['outdoor','venue'];
+
+// ⛔ MEKAN TURU (YAPILACAKLAR 51). Kullanici 16 Kasim 2026'da
+//    ekran goruntusuyle sordu: "Masabasi cekimde neden altta mekanlar
+//    cikiyor?" Mekan kaydinda tur alani yoktu; sql/74 onu acti.
+const MEKAN_TURLERI = ['dis', 'mekan', 'studyo', 'diger'];
+// Proje turu -> o projede LISTELENECEK mekan turleri.
+//   null  = hicbiri (mekan bagi hic sorulmuyor)
+//   '*'   = hepsi
+// ⚠ Esleme KULLANICININ kendi sozleriyle verdigi tablo (16 ve 19
+//   Kasim 2026). Koda gomulu kalmasin diye tek yerde duruyor ve
+//   `mekan-turu` testi bu tabloyu DISARIDAN okuyup her turu ayri ayri
+//   olcuyor.
+const PROJE_MEKAN_TURU = {
+  outdoor: ['dis'],      // "dis mekan" turundekiler
+  venue:   ['mekan'],    // "mekan" turundekiler
+  studio:  ['studyo'],   // yalnizca studyo adresleri
+  vlog:    '*',          // her yerde cekilir -- kullanicinin karari
+  review:  null,         // "mekanlarin gelmesine gerek yok"
+  desk:    null,         // "mekanlara gerek yok"
+  other:   ['diger']
+};
+// ⛔ TURU BOS OLAN MEKAN HER PROJEDE GORUNUR. Kullanicinin karari
+//    (19 Kasim 2026): bugun kayitli mekanlarin turu bos ve hicbiri
+//    kaybolmasin. Tersi secilseydi butun mekanlar bir anda yok olurdu.
+function mekanTuruUyar(m, projeTuru){
+  const izin = PROJE_MEKAN_TURU[projeTuru];
+  if(izin === undefined) return true;     // tanimadigimiz tur: elemiyoruz
+  if(izin === null) return false;
+  if(izin === '*') return true;
+  if(!m.tur) return true;                 // bos tur her yerde
+  return izin.indexOf(m.tur) !== -1;
+}
+function mekanBagiSorulurMu(projeTuru){ return PROJE_MEKAN_TURU[projeTuru] !== null; }
 function projTypeName(k){ return t('ptype_' + k) || k; }
 function adresGerekir(k){ return PROJ_TYPES_ADDRESS.indexOf(k) !== -1; }
 
@@ -13391,9 +13449,17 @@ const projeMekanSecimi = { pe: [] };
 let mekanSecimAramasi = '';
 // Aranan metin ada, ilceye ve sehre bakiyor: kullanici bazen "Fatih"
 // diye ariyor, mekanin adini hatirlamiyor.
+// ⛔ PROJE TURUNE GORE SUZME (YAPILACAKLAR 51). Kullanici
+//    "masabasi cekimde neden mekanlar cikiyor" diye sordu.
+//    ⚠ Suzme ARAMADAN ONCE: once bu projede gorunebilecekler
+//      ayriliyor, sonra yazilan metin onlarin icinde araniyor.
+//      Tersi olsaydi arama kutusu turu olmayan bir mekani geri
+//      getirirdi.
 function mekanSecimUyanlar(){
   const q = mekanSecimAramasi.trim().toLocaleLowerCase('tr');
-  const liste = mekanSiraliListe();
+  const turSel = document.getElementById('pe_type');
+  const pt = turSel ? turSel.value : '';
+  const liste = mekanSiraliListe().filter(m=> mekanTuruUyar(m, pt));
   if(!q) return liste;
   return liste.filter(m=> [mekanAdi(m), m.name, m.district, m.city]
     .some(x=> String(x || '').toLocaleLowerCase('tr').indexOf(q) !== -1));
@@ -13404,6 +13470,18 @@ function mekanSecimListesiCiz(onek){
   if(!kap) return;
   const secili = new Set(projeMekanSecimi[ek] || []);
   const uyan = mekanSecimUyanlar();
+  // ⛔ BU TURDE MEKAN LISTELENMIYOR (YAPILACAKLAR 51): urun inceleme
+  //    ve masabasi. Kullanicinin kendi sozleri: "mekanlara gerek yok".
+  //    ⚠ SECILI MEKANLAR SILINMIYOR. Kullanici karar verdi (19 Kasim
+  //      2026): "dursun, uyari ciksin". Proje turu sonradan
+  //      degistiginde kullanicinin yazdigi bir sey sessizce yok
+  //      olmamali; cipler yerinde duruyor, bu satir sebebini soyluyor.
+  const turSelK = document.getElementById(ek === 'pe' ? 'pe_type' : ek + '_type');
+  if(turSelK && !mekanBagiSorulurMu(turSelK.value)){
+    const n = (projeMekanSecimi[ek] || []).length;
+    kap.innerHTML = `<p class="mk-sec-bos">${escapeHtml(t('p_place_turde_yok')(n))}</p>`;
+    return;
+  }
   if(!uyan.length){
     kap.innerHTML = `<p class="mk-sec-bos">${escapeHtml(mekanlar.length ? t('p_place_nomatch') : t('p_place_empty'))}</p>`;
     return;
@@ -13523,6 +13601,9 @@ function mekanBilgisiYaz(onek){
   const turSel = document.getElementById(ek + '_type');
   const sarmal = document.getElementById(ek + '_addressWrap');
   if(turSel && sarmal) adresAlaniniTazele(turSel, sarmal);
+  // ⚠ Tur degisince mekan listesi de yeniden ciziliyor: hangi
+  //   mekanlarin listelenecegi TURE bagli (YAPILACAKLAR 51).
+  mekanSecimListesiCiz('pe');
   if(!m){ el.textContent = t('p_place_hint'); el.classList.remove('mk-uyari'); return; }
   const parca = [m.address, m.permission, m.cautions].filter(Boolean);
   el.textContent = parca.join(' · ');
@@ -14090,6 +14171,8 @@ function mekanPenceresiniAc(id, sonra){
   y('mk_lat', m && m.lat != null ? String(m.lat) : ''); y('mk_lon', m && m.lon != null ? String(m.lon) : '');
   y('mk_country', m && m.country); y('mk_timezone', m && m.timezone);
   y('mk_source', m && m.source); y('mk_externalId', m && m.externalId);
+  mekanTurSecenekleri();
+  document.getElementById('mk_tur').value = (m && m.tur) || '';
   mekanAramaSonuclari = []; mekanAramaJeton++;
   const bulListe = document.getElementById('mk_bulListe');
   bulListe.hidden = true; bulListe.innerHTML = '';
@@ -14109,6 +14192,20 @@ function mekanPenceresiniAc(id, sonra){
   document.getElementById('placeOverlay').classList.add('open');
   document.getElementById('mk_name').focus();
 }
+// ⚠ Secenekler HER ACILISTA yeniden yaziliyor, bir kez degil: dil
+//   degisince adlarin da degismesi gerekiyor ve pencere kapaliyken
+//   degisen dil kimseye haber vermiyor.
+// ⚠ LISTE ELLE YAZILMIYOR: `MEKAN_TURLERI`den okunuyor, yani yeni
+//   bir tur eklendiginde secici kendiliginden buyuyor.
+function mekanTurSecenekleri(){
+  const sel = document.getElementById('mk_tur');
+  if(!sel) return;
+  const simdiki = sel.value;
+  sel.innerHTML = `<option value="">${escapeHtml(t('mk_tur_bos'))}</option>`
+    + MEKAN_TURLERI.map(k=>
+        `<option value="${escapeHtml(k)}">${escapeHtml(t('mk_tur_' + k))}</option>`).join('');
+  sel.value = simdiki;
+}
 function mekanPenceresiniKapat(){
   document.getElementById('placeOverlay').classList.remove('open');
   acikMekanId = null;
@@ -14123,7 +14220,8 @@ function mekanKaydet(){
                     imageUrl: al('mk_image'),
                     lat: al('mk_lat'), lon: al('mk_lon'), country: al('mk_country'),
                     timezone: al('mk_timezone'), externalId: al('mk_externalId'),
-                    source: al('mk_source') || 'manual' };
+                    source: al('mk_source') || 'manual',
+                    tur: al('mk_tur') };
   if(!alanlar.name.trim()){ document.getElementById('mk_name').focus(); return; }
   const m = acikMekanId ? mekanGuncelle(acikMekanId, alanlar) : mekanEkle(alanlar);
   if(!m) return;
@@ -15599,6 +15697,9 @@ function mekanTemizle(ham){
     country: y(ham.country, 80),
     timezone: gecerliTz(ham.timezone) ? String(ham.timezone).slice(0, 64) : '',
     source: ['osm', 'google', 'manual'].indexOf(ham.source) !== -1 ? ham.source : '',
+    // ⚠ BEYAZ LISTEDE OLMAYAN ALAN SESSIZCE DUSER -- bu deponun
+    //   yazili dersi (koordinat alanlari ayni tuzaga dusmustu).
+    tur: MEKAN_TURLERI.indexOf(ham.tur) !== -1 ? ham.tur : '',
     externalId: y(ham.externalId, 80),
     createdAt: typeof ham.createdAt === 'number' ? ham.createdAt : Date.now(),
     updatedAt: typeof ham.updatedAt === 'number' ? ham.updatedAt : Date.now()
@@ -15607,6 +15708,9 @@ function mekanTemizle(ham){
 // sql/27 (fotograf sutunu) henuz calistirilmadiysa false'a duser: mekan
 // kaydetmek yalnizca fotograf yuzunden bastan asagi durmasin.
 let mekanFotoSutunu = true;
+// sql/74 (mekan turu) calistirilmadiysa ayni sekilde false'a duser:
+// tur tarayicida kalir, betik calisinca sonraki kayitta gider.
+let mekanTurSutunu = true;
 // sql/33 (koordinat sutunlari) calistirilmadiysa ayni sekilde false'a duser.
 let mekanKonumSutunlari = true;
 const MEKAN_KONUM_SUTUNLARI = ['lat', 'lon', 'country', 'timezone', 'source', 'external_id'];
@@ -15616,10 +15720,11 @@ function mekanRowYap(m, uid){
            notes: m.notes, maps_url: m.mapsUrl, drive_url: m.driveUrl,
            image_url: m.imageUrl, deleted_at: null,
            lat: m.lat, lon: m.lon, country: m.country, timezone: m.timezone,
-           source: m.source, external_id: m.externalId,
+           source: m.source, external_id: m.externalId, tur: m.tur,
            created_at: new Date(m.createdAt).toISOString(),
            updated_at: new Date(m.updatedAt).toISOString() };
   if(!mekanFotoSutunu) delete satir.image_url;
+  if(!mekanTurSutunu) delete satir.tur;
   if(!mekanKonumSutunlari) MEKAN_KONUM_SUTUNLARI.forEach(k=> delete satir[k]);
   return satir;
 }
@@ -15631,6 +15736,7 @@ function mekanRowOku(r){
                         imageUrl: r.image_url || '',
                         lat: r.lat, lon: r.lon, country: r.country || '', timezone: r.timezone || '',
                         source: r.source || '', externalId: r.external_id || '',
+                        tur: r.tur || '',
                         createdAt: r.created_at ? Date.parse(r.created_at) : Date.now(),
                         updatedAt: r.updated_at ? Date.parse(r.updated_at) : 0 });
 }
@@ -15745,6 +15851,11 @@ async function mekanPush(){
   const mesaj = ()=> String((hata && hata.message) || hata || '');
   if(hata && mekanFotoSutunu && /image_url/.test(mesaj())){
     mekanFotoSutunu = false;
+    hata = await kayitPush('places', mekanlar, mekanDirty, mekanRemoved, mekanRowYap);
+  }
+  // sql/74 calistirilmadiysa `tur` sutunu yok: onsuz tekrar dene.
+  if(hata && mekanTurSutunu && /\btur\b/.test(mesaj())){
+    mekanTurSutunu = false;
     hata = await kayitPush('places', mekanlar, mekanDirty, mekanRemoved, mekanRowYap);
   }
   // sql/33 calistirilmadiysa koordinat sutunlari yok: onlarsiz tekrar dene,

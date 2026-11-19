@@ -910,62 +910,68 @@ dokunmak ve ikinci seferde birincisini bozmak demek.
   3. Ad alanının zorunlu olduğu basmadan önce belli olsun.
   ⚠ Bu senaryoyu kapsayan test yok; yazılacak.
 
-- ⬜ **51.** **MEKÂNLARA TÜR ALANI + çekim türüne göre süzme.**
-  Kullanıcı 16 Kasım 2026'da ekran görüntüsüyle sordu: *"Masabaşı
-  çekimde neden altta mekanlar çıkıyor? Çekim türüne göre gelmesi
-  gerekmiyor mu bu mekanların?"* — sonra eşlemenin tamamını verdi.
+- ✅ **51. BİTTİ (19 Kasım 2026).** **MEKÂNLARA TÜR ALANI + çekim
+  türüne göre süzme.** Kullanıcı 16 Kasım 2026'da ekran görüntüsüyle
+  sordu: *"Masabaşı çekimde neden altta mekanlar çıkıyor? Çekim türüne
+  göre gelmesi gerekmiyor mu bu mekanların?"*
 
-  **Bugünkü durum doğrulandı — yarısı zaten türe bağlı, yarısı değil:**
+  ⛔ **ENGEL GERÇEKTİ:** `mekanTemizle` beyaz listesinde tür alanı yoktu
+  (ölçüldü, 19 Kasım). Yani "sadece stüdyo adresleri gelsin" demek yeni
+  bir alan demekti.
 
-  | Alan | Türe bağlı mı | Nerede |
-  |---|---|---|
-  | **Adres kutusu** | ✅ evet | `adresAlaniniTazele` (`app.html:13787`) |
-  | **Mekân seçicisi** | ⛔ **hayır** | Her türde açık — "Masabaşı / grafik" projesinde de bütün mekânlar listeleniyor |
+  **✅ DÖRT SORU SORULDU, KULLANICI CEVAPLADI (19 Kasım 2026):**
 
-  ⛔ **ASIL ENGEL: MEKÂN KAYDINDA TÜR ALANI YOK.** `mekanTemizle`
-  (`app.html:14090`) şu alanları tutuyor: ad, şehir, ilçe, adres,
-  izin, dikkat, notlar, haritalar/drive/görsel bağlantısı, koordinat,
-  ülke, saat dilimi, kaynak. **Kategori/tür yok.** Yani "sadece
-  stüdyo adresleri gelsin" demek **yeni bir alan** demek.
-
-  **Kullanıcının verdiği eşleme (16 Kasım 2026):**
-
-  | Proje türü | Hangi mekânlar gelecek |
+  | Soru | Cevap |
   |---|---|
-  | Dış çekim | hepsi (ya da "dış mekân" türündekiler) |
-  | Mekan çekimi | hepsi (ya da "mekân" türündekiler) |
-  | **Stüdyo** | **yalnızca "stüdyo" türündekiler** — *"kullanıcı bir yerde mekanlar arasına stüdyo adresi girebilir; stüdyo seçerse sadece stüdyo adresleri gelir"* |
-  | Vlog | ⚠ **SORULACAK** — cevaplanmadı |
-  | **Ürün inceleme** | **hiçbiri** — *"mekanların gelmesine gerek yok"* |
-  | **Masabaşı / grafik** | **hiçbiri** — *"mekanlara gerek yok"* |
-  | **Diğer** | **yalnızca "diğer" türündekiler** — *"diğer diye bir yer eklerse kullanıcı, o zaman gelmesi lazım"* |
+  | Vlog'da hangi mekânlar? | **Hepsi** — vlog her yerde çekilir |
+  | Türü boş olan mevcut mekânlar? | **Her projede görünsün** — hiçbiri kaybolmasın |
+  | Dış çekim / Mekân çekimi: hepsi mi, kendi türü mü? | **Katı eşleme** |
+  | Proje türü değişirse seçili mekânlar? | **Dursun, uyarı çıksın** |
 
-  **Bunun gerektirdikleri (sırası gelince adım adım yazılacak):**
-  1. `mekanTemizle`'ye **tür alanı** + geçerli değer listesi.
-     ⚠ Beyaz listede olmayan alan **sessizce düşüyor** — bu deponun
-     yazılı dersi (koordinat alanları aynı tuzağa düşmüştü).
-  2. ⛔ **Supabase'de yeni sütun** gerekiyor: `mekanRowYap`
-     (`app.html:14122`) sütunları tek tek yazıyor. Yani **kullanıcının
-     çalıştıracağı bir SQL dosyası** olacak.
-     ⚠ Depoda bunun kalıbı var: `mekanFotoSutunu` ve
-     `mekanKonumSutunlari` bayrakları, sütun yoksa **false'a düşüp**
-     kaydı bütünüyle engellememek için. Yeni alan da aynı kalıbı
-     izleyecek — SQL çalıştırılmadan uygulama bozulmayacak.
-  3. Mekân ekleme/düzenleme ekranında tür seçici (iki dilde, Bölüm 7).
-  4. Var olan mekânların türü **boş** kalacak; boş tür "hepsinde
-     görünür" mü sayılacak yoksa "hiçbirinde" mi — ⚠ **sorulacak.**
-     (Boş = görünmez seçilirse kullanıcının bugünkü mekânları
-     projelerde **birden kaybolur**; bu yüzden varsayılan "görünür"
-     olmalı gibi duruyor.)
-  5. Proje türü değişince seçili mekânların bağına ne olacak —
-     ⚠ **sorulacak** (silinecek mi, sessizce duracak mı).
+  **Kurulan eşleme** (`PROJE_MEKAN_TURU`, tek yerde):
 
-  ⚠ Mekân seçiliyken adres kutusunun gizlenme kuralı **bozulmayacak**;
-  o yazılı bir karar (iki adres kutusu "hangisi geçerli" sorusunu
-  doğuruyordu).
-  ⚠ Bekçi test: her proje türü için **hangi mekânların listelendiğini**
-  ölçen bir test — eşleme tablosu koda gömülü kalmasın.
+  | Proje türü | Listelenen mekânlar |
+  |---|---|
+  | Dış çekim | "dış mekân" + türü boş |
+  | Mekân çekimi | "mekân" + boş |
+  | Stüdyo | "stüdyo" + boş |
+  | Vlog | hepsi |
+  | Ürün inceleme · Masabaşı | **hiçbiri** |
+  | Diğer | "diğer" + boş |
 
+  **Yapılanlar:**
+  - `sql/74-mekan-turu.sql` — `places.tur` sütunu + CHECK kısıtı.
+    ⚠ **Betik çalışmadan da uygulama çalışır:** `mekanTurSutunu`
+    bayrağı sütun yoksa false'a düşüyor (sql/27 ve sql/33'teki kalıbın
+    aynısı); tür tarayıcıda kalıyor, betik çalışınca ilk kayıtta gidiyor.
+  - `mekanTemizle` beyaz listesine `tur` (⚠ beyaz listede olmayan alan
+    **sessizce düşer** — bu deponun yazılı dersi).
+  - Mekân penceresinde tür seçici. ⚠ Seçenekler **elle yazılmıyor**,
+    `MEKAN_TURLERI`den okunuyor; her açılışta yeniden yazılıyor ki dil
+    değişince adlar da değişsin.
+  - Mekân seçicisi proje türüne göre süzülüyor. ⚠ **Süzme aramadan
+    önce:** tersi olsaydı arama kutusu türü uymayan bir mekânı geri
+    getirirdi.
+  - Mekân sormayan türde (ürün inceleme, masabaşı) seçili mekânlar
+    **duruyor**, yerine sebebini söyleyen bir satır çıkıyor.
+
+  **Bekçi: `testler/mekan-turu.test.js`, 18 iddia.**
+  ⚠ Eşleme **koddan okunuyor, teste kopyalanmıyor** — iki kopya olsaydı
+  biri değiştiğinde öteki sessizce eskirdi.
+  ⛔ Ama "tablo neyse o" demek testi boşa düşürürdü: kullanıcının kendi
+  sözleriyle verdiği satırlar **ayrıca elle** yazılı (masabaşı ve ürün
+  incelemede hiçbiri, stüdyoda yalnızca stüdyo, vlog'da hepsi).
+  Mutasyonla kanıtlandı: tablo bozulunca **tablo iddiaları yine geçti**,
+  elle yazılan dört iddia düştü.
+  Diğer mutasyonlar: türü boş mekân görünmezse 6 iddia düşer, seçici
+  hiç süzmezse 5.
+
+  ⚠ **Bölüm 7:** tür adları ve uyarı cümlesi iki dilde; test ikisinin
+  **farklı** olduğunu da ölçüyor (sözlüğe girmeyen anahtar iki dilde
+  aynı metni verir).
+
+  ⬜ **KULLANICININ YAPACAĞI:** `sql/74` Supabase'de çalıştırılacak.
+  Adımlar sohbette adım adım verildi.
 - ✅ **49. BİTTİ (19 Kasım 2026) — ÖLÇÜLEREK KAPANDI.**
   ⛔ **SET YÖNETİMİ: İÇİ GÖRÜNMÜYOR, MADDE ÇIKARILAMIYOR.**
   Kullanıcı 16 Kasım 2026'da 7. maddeyi denedi ve iki eksik buldu:
