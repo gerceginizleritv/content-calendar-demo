@@ -207,12 +207,28 @@ const metin = (p, sec)=> p.$eval(sec, e=> e.textContent.replace(/\s+/g,' ').trim
   await p0.click('#havaKapatBtn');
   await p0.waitForTimeout(250);
   bak('blok gizlendi', await p0.$eval('#railHava', e=> e.hidden));
-  bak('geri açma bağlantısı çıktı', !(await p0.$eval('#havaGosterBtn', e=> e.hidden)));
   bak('tercih saklandı', await p0.evaluate(()=> localStorage.getItem('demo_hava_kapali')) === 'true');
-  await p0.evaluate(()=> document.getElementById('havaGosterBtn').click());
+  // ⛔ 19 KASIM 2026 — GERI ACMA YERI DEGISTI (YAPILACAKLAR 58 asama 4).
+  //    Eskiden yan menude `#havaGosterBtn` diye bir baglanti beliriyor,
+  //    tiklaninca blok geri geliyordu. Kullanici ayarlarin BIR sayfada
+  //    toplanmasini istedi; o baglanti kalkti, geri acma AYARLAR
+  //    sayfasindaki tikten oluyor.
+  //    ⚠ OLCULEN GERCEK AYNI: gizlenen blok GERI GETIRILEBILIYOR ve
+  //      denetim o anki durumu DOGRU gosteriyor. Yalnizca yolu degisti.
+  //    ⚠ Serit uzerindeki × (hizli gizleme) YERINDE: yukarida olculdu.
+  bak('ayarlardaki tik KAPALI görünüyor',
+      await p0.evaluate(()=>{ setPage('ayarlar');
+        return document.getElementById('hv_gosterTik').checked === false; }));
+  await p0.evaluate(()=>{ const t = document.getElementById('hv_gosterTik');
+                          t.checked = true;
+                          t.dispatchEvent(new Event('change', { bubbles:true })); });
   await p0.waitForTimeout(400);
   bak('blok geri geldi', !(await p0.$eval('#railHava', e=> e.hidden)));
-  bak('geri açma bağlantısı yeniden gizlendi', await p0.$eval('#havaGosterBtn', e=> e.hidden));
+  bak('tercih geri yazıldı',
+      await p0.evaluate(()=> localStorage.getItem('demo_hava_kapali')) === 'false');
+  bak('ayarlardaki tik AÇIK görünüyor',
+      await p0.evaluate(()=> document.getElementById('hv_gosterTik').checked === true));
+  await p0.evaluate(()=> setPage('projects'));
 
   // ---------- 7. Sehir yazarak ----------
   console.log('[konum yerine şehir]');

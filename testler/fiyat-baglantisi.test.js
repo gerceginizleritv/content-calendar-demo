@@ -206,18 +206,28 @@ async function ac(t, w, h){
         await m.$eval('#railFoot', e=> e.scrollWidth+'/'+e.clientWidth));
     await m.click('#railMoreBtn');
     await m.waitForTimeout(400);
-    // ⚠ 19 KASIM 2026: `remindersBtn` yerine `ayarlarBtn`. Hatirlatmalar
-    //   ayarlar sayfasina tasindi (YAPILACAKLAR 58 asama 3), seritteki
-    //   dugmesi kalmadi. Olculen sey ayni: seritteki baglantilarin hepsi
-    //   en dar telefonda da ekranda ve dokunulabilir mi.
-    const IDS = ['tourBtn','fiyatLink','aiSettingsBtn','ayarlarBtn',
-                 'hesapEtiketBtn','kilavuzLink','feedbackBtn'];
+    // ⚠ 19 KASIM 2026 (YAPILACAKLAR 58, asama 3 ve 4): seritten UC
+    //   baglanti kalkti -- `remindersBtn`, `hesapEtiketBtn` ve
+    //   `havaGosterBtn`; ucunun de yeri ayarlar sayfasi. Yerlerine tek
+    //   `ayarlarBtn` geldi. Olculen sey AYNI: seritte ne varsa en dar
+    //   telefonda da ekranda ve dokunulabilir mi.
+    // ⚠ Liste ELLE yazilmiyor artik: seritte o an ne varsa o olculuyor,
+    //   yani yarin eklenen bir baglanti kendiliginden giriyor. Eskiden
+    //   elle yazilan liste, eklenen bir baglantiyi sessizce atlardi.
+    const IDS = await m.evaluate(()=>
+      [...document.querySelectorAll('#railFoot .rail-link')]
+        .filter(e=> !e.hidden).map(e=> e.id).filter(Boolean));
+    // ⛔ BOS LISTE TUZAGI: `[].every(...)` HER ZAMAN dogrudur. Secici
+    //   bir gun tutmazsa asagidaki iki iddia hicbir seyi olcmeden
+    //   yesil kalirdi. Bu oturumda ayni tuzak iki kez yakalandi
+    //   (`#langSelect option`), o yuzden sayi ayrica sart kosuluyor.
+    bak(w+'x'+h+': serit baglantilari BULUNDU', IDS.length >= 5, IDS.join(','));
     const ol = await m.evaluate(ids=> ids.map(id=>{
       const r = document.getElementById(id).getBoundingClientRect();
       return { id, y:Math.round(r.height), ust:Math.round(r.top),
                ic: r.top >= -1 && r.bottom <= innerHeight + 1 };
     }), IDS);
-    bak(w+'x'+h+': yedi baglanti da EKRANDA',
+    bak(w+'x'+h+': ' + IDS.length + ' baglanti da EKRANDA',
         ol.every(x=> x.ic), ol.filter(x=> !x.ic).map(x=> x.id+'@'+x.ust).join(','));
     bak(w+'x'+h+': hepsi 40px+ (dokunma)',
         ol.every(x=> x.y >= 40), ol.filter(x=> x.y < 40).map(x=> x.id+':'+x.y).join(','));

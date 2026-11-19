@@ -73,27 +73,41 @@ const bak = (ad, ko, ek)=>{ if(ko){ g++; console.log('  ok  '+ad); } else { k++;
     events = []; save();
   });
 
-  // ---------------------------------------------------------------- pencere
-  console.log('[hesap penceresi]');
-  // Pencere SERITTEN aciliyor, menuden degil: bu her gun acilan bir sey
-  // degil, bir kez kurulup unutulan bir ayar. Menuye sekiz numarali sekme
-  // koymak alt cubukta zaten verilmis yer savasini yeniden acardi.
-  const menude = await p.evaluate(()=>
-    !!document.querySelector('.rail-nav #hesapEtiketBtn'));
-  bak('menuye sekme OLARAK eklenmemis', menude === false);
-  bak('serit baglantisi var', await p.evaluate(()=>
-    !!document.querySelector('.rail-foot #hesapEtiketBtn')));
+  // ------------------------------------------------- ayarlar sayfasi bolumu
+  console.log('[hesap etiketleri bolumu]');
+  // ⛔ 19 KASIM 2026 — PENCEREDEN SAYFAYA (YAPILACAKLAR 58 asama 4).
+  //   Eskiden `#hesapOverlay2` penceresiydi ve seritte kendi baglantisi
+  //   vardi. Pencerenin kendi notu zaten "bir kez kurulup unutulan bir
+  //   ayar" diyordu; kullanici o turden her seyin TEK BIR SAYFADA
+  //   toplanmasini istedi, seritte tek bir "Ayarlar" dugmesi kaldi.
+  //   ⚠ Olculen sey ZAYIFLAMADI, GUCLENDI: eskiden yalnizca "menude
+  //     sekme yok / seritte baglanti var" soruluyordu. Simdi bolumun
+  //     ayarlar SAYFASININ icinde oldugu ve eski pencerenin GERIDE
+  //     KALMADIGI da olculuyor -- yarim tasimada kullanici ayni ayari
+  //     iki yerde gorur ve hangisinin gectigini bilemez.
+  const yer = await p.evaluate(()=>({
+    menudeSekme: !!document.querySelector('.rail-nav #hesapEtiketBtn'),
+    seritBaglantisi: !!document.getElementById('hesapEtiketBtn'),
+    eskiPencere: !!document.getElementById('hesapOverlay2'),
+    bolumSayfada: !!(document.getElementById('ayarHesapEtiket') || {}).closest
+                   && !!document.getElementById('ayarHesapEtiket').closest('#ayarlarPage')
+  }));
+  bak('menuye sekme OLARAK eklenmemis', yer.menudeSekme === false);
+  bak('eski serit baglantisi GERIDE KALMADI', yer.seritBaglantisi === false);
+  bak('eski PENCERE geride kalmadi', yer.eskiPencere === false);
+  bak('bolum AYARLAR SAYFASININ icinde', yer.bolumSayfada === true);
 
   await p.evaluate(()=>{ hesaplar = []; saveHesaplar(); });
-  await p.click('#hesapEtiketBtn');
+  await p.click('#ayarlarBtn');
   await p.waitForTimeout(350);
   const bos = await p.evaluate(()=>({
-    acik: document.getElementById('hesapOverlay2').classList.contains('open'),
+    acik: !document.getElementById('ayarlarPage').hidden
+          && document.getElementById('ayarHesapEtiket').getBoundingClientRect().height > 0,
     bosNot: !!document.querySelector('#hs_liste .hs-bos'),
     ekle: document.getElementById('hs_kaydet').textContent,
     vazgec: document.getElementById('hs_vazgec').hidden
   }));
-  bak('pencere aciliyor', bos.acik === true);
+  bak('bolum gorunur hale geliyor', bos.acik === true);
   bak('hesap yokken bos not cikiyor', bos.bosNot === true);
   bak('dugme "Ekle" diyor', bos.ekle === 'Ekle', bos.ekle);
   bak('Vazgec gizli (yeni kayit)', bos.vazgec === true);
@@ -101,7 +115,10 @@ const bak = (ad, ko, ek)=>{ if(ko){ g++; console.log('  ok  '+ad); } else { k++;
   // Metinler iki dilde de tanimli olmali: eksik anahtar ekranda anahtarin
   // kendisini yazar ("hs_bos") ve kimse fark etmez.
   const eksik = await p.evaluate(()=>{
-    const anahtar = ['hs_btn','hs_title','hs_intro','hs_ad','hs_ad_ph','hs_platform',
+    // ⚠ 19 KASIM 2026: `hs_btn` listeden cikti -- o anahtar seritteki
+    //   dugmenin metniydi, dugme de kalmadi (YAPILACAKLAR 58 asama 4).
+    //   Bolumun basligi `hs_title`; o listede duruyor.
+    const anahtar = ['hs_title','hs_intro','hs_ad','hs_ad_ph','hs_platform',
       'hs_kullanici','hs_adres','hs_not','hs_not_ph','hs_ekle','hs_bos','hs_platformsuz',
       'hs_ad_gerek','hs_limit','hs_sil','hs_sil_bagli','btn_edit',
       'f_hesap_label','f_hesap_not','f_hesap_yok','f_hesap_silinmis',
@@ -165,7 +182,7 @@ const bak = (ad, ko, ek)=>{ if(ko){ g++; console.log('  ok  '+ad); } else { k++;
   bak('duzenleme YENI hesap acmadi', sonrasi.adet === 1, String(sonrasi.adet));
   bak('ad degisti', sonrasi.ad === 'Gerçeğin İzleri TV', sonrasi.ad);
 
-  await p.evaluate(()=> document.getElementById('hesapOverlay2').classList.remove('open'));
+  await p.evaluate(()=> setPage('projects'));
 
   // ------------------------------------------------- kayit penceresi (alan)
   console.log('[kayit penceresi: alan KOSULLU]');

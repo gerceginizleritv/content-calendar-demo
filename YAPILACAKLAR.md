@@ -2304,10 +2304,99 @@ dokunmak ve ikinci seferde birincisini bozmak demek.
   düşer, bölüm sayfanın dışına alınırsa 1, genişlik sınırı
   kaldırılırsa 1 (1004 px diye bildiriyor).
 
+  ⛔ **3. AŞAMA CANLIDA BÜTÜN BETİĞİ ÖLDÜRDÜ — kullanıcı bildirdi.**
+  *"SIRADAKİLER — ÖNÜMÜZDEKİ 6 HAFTA bölümü geldi"* ve *"sign in tuşu
+  çalışmıyor"*. İkisinin sebebi **tek**:
+
+  `setPage`'e eklenen *"ayarlar açılırsa alanları tazele"* satırı,
+  açılıştaki `setPage(acilisSayfasi)` çağrısında da koşuyor. Kullanıcının
+  en son kaldığı sayfa `ayarlar` ise, tazeleme **henüz tanımlanmamış**
+  `hatirlatma` bağlantısına dokunuyordu:
+
+      Cannot access 'hatirlatma' before initialization
+
+  Hata betiği öldürünce **ardındaki her şey** çalışmıyor — tanıtım
+  kutusunu gizleyen kod da (`pitchUygula`, betiğin ~26050. satırı), giriş
+  düğmesinin dinleyicisi de (~26472). Kullanıcının gördüğü iki belirti
+  tam olarak bunlar.
+
+  ⚠ **"Şu anda düzeldi" demek düzeldiği anlamına gelmedi.** Ayarlardan
+  başka bir sayfaya geçilince uygulama orada açılmıyor ve hata
+  görünmüyor; canlı sayfada ölçüldü, duruyordu.
+
+  ⛔ **NEDEN 230 TESTİN HİÇBİRİ YAKALAMADI:** hepsi uygulamayı
+  **varsayılan sayfada** açıp sonra ayarlara tıklıyordu. Oysa uygulama
+  en son kalınan sayfayı `sessionStorage`'dan hatırlıyor. Depo bu tuzağı
+  biliyordu bile — `hatirlatma.test.js`'in 1. bölümünün adı *"Uygulama
+  hâlâ açılıyor (TDZ hatası yok)"* — ama o da varsayılan sayfadan açıyor.
+
+  Çözüm: tazeleme bir **hazırlık bayrağına** bağlandı
+  (`ayarlarHazir`). Açılışta sessizce atlanıyor; betiğin **sonunda**
+  bayrak açılıyor ve ayarlar sayfası o an açıksa tazeleme bir kez
+  kendisi koşuyor.
+
+  Bekçi: `ayarlar-sayfasi.test.js` → **her sayfadan açılış** deneniyor
+  (liste `SAYFALAR`'dan okunuyor, elle yazılmıyor) ve üç belirti ayrı
+  ayrı ölçülüyor: JS hatası yok · giriş düğmesi çalışıyor · tanıtım
+  kutusu gizli. Ayrıca *"ayarlardan açılınca alanlar KAYITTAN doluyor"*
+  — hatayı susturup işi yapmamak da hatasızdır.
+  Mutasyonla kanıtlandı: bayrak kaldırılınca **dört iddia** düşüyor ve
+  hangi sayfa olduğunu (`ayarlar`) adıyla söylüyor.
+
+  **✅ 4. AŞAMA BİTTİ (19 Kasım 2026) — hesap etiketleri + hava & ışık.**
+
+  **a · Hesap etiketleri.** `#hesapOverlay2` penceresi ve yan menüdeki
+  `hesapEtiketBtn` kaldırıldı; bölüm `#ayarHesapEtiket` olarak sayfaya
+  girdi. Alan kimlikleri korundu. `hesapEtiketleriniAc()` silindi —
+  önce *"başka yerlerden de çağrılıyor"* diye bırakılacaktı, **sayıldı,
+  çağıran başka yer yoktu.**
+
+  **b · Hava & ışık — YALNIZCA AYARI taşındı.** Kullanıcı karar verdi.
+  Şerit (`#railHava`) yan menüde kaldı: içinde **bugünün** gün doğumu,
+  batımı ve altın saati var — plan yaparken göz ucuyla bakılan bir
+  **veri**, ayar değil. Tamamı taşınsaydı altın saati görmek için her
+  seferinde Ayarlar'ı açmak gerekirdi.
+  Ayarlar'a giren: konum (şehir / "Konumu aç") ve göster-gizle tiki.
+  `havaGosterBtn` bağlantısı kalktı; şerit üzerindeki × duruyor.
+  ⚠ **İkinci bir kopya yazılmadı:** `havaKonumIste` ve `havaSehirGonder`
+  bir `nereden` parametresiyle iki yeri birden servis ediyor, kaydetme
+  tek yerde (`havaKonumKaydet`).
+
+  ⛔ **TAŞIMA SIRASINDA BİR `</div>` KESİLDİ** ve `#ayarlarPage` açık
+  kaldı: **ondan sonraki her sayfa onun içine düştü.** Belirtisi sebebine
+  hiç benzemiyordu — kayıt penceresindeki "Kaydet" düğmesi 54×36 yerine
+  **0×0** oldu ve `hesap-arayuz` testi 30 saniye bekleyip zaman aşımına
+  uğradı. Bekçi eklendi: *"sayfalar KARDEŞ, iç içe değil"* (sayfaları
+  `SAYFALAR`'dan okuyor). Mutasyonla kanıtlandı.
+
+  ⛔ **KULLANICI AYRICA BİLDİRDİ:** *"kendi takvimim bölümü var ve orada
+  yukarıdan indirin yazıyor ama hiçbir şey yok"*. Doğruydu ve **eskiden
+  beri** böyleydi (pencereyken de): adres satırı ve "Takvim adresini
+  oluştur" düğmesi duruma göre gizleniyordu ama *"Nasıl eklerim?"* katı
+  ve altındaki üç not **hiç** gizlenmiyordu. Kanal kapalıyken ekranda
+  *"yukarıdan adresi kopyala"* ve *"Yenile / iptal et'e basarsın"*
+  yazıyordu — ikisi de ekranda yokken. Artık `#rm_kurulumNot` adrese
+  bağlı; hem gizlendiği hem **adres oluşunca geri geldiği** ölçülüyor
+  (yoksa "hep gizle" de testi geçerdi).
+
+  ⚠ Dört test yeniden ifade edildi: `hava` (geri açma yolu),
+  `hesap-arayuz` (pencere → sayfa), `fiyat-baglantisi`, `hatirlatma`.
+  `fiyat-baglantisi`'ndeki şerit listesi artık **elle yazılmıyor**,
+  şeritte o an ne varsa onu buluyor — ve boş dönmediği ayrıca şart
+  koşuluyor (bu oturumda iki kez "boş bekçi" yakalandı).
+
+  Bekçi: `ayarlar-sayfasi.test.js` 11 → **16 iddia**.
+
   ⬜ **SONRAKİ AŞAMALAR** (her biri kendi tam koşusuyla):
-  1. **Hesap etiketleri + hava & ışık** (2 + 1)
-  2. **Hesap** (~10 dosya)
-  3. **AI ayarları** (15 + 11) — en geniş olan, tek başına
+  1. **Hesap yönetimi + çıkış** (7 dosya — ölçüldü: `hesap-sil`,
+     `sifre`, `yedek-oto`, `ai-erisimi`, `mcp-bayrak`,
+     `fiyat-baglantisi`, `kur-dugmesi`)
+     ⚠ Kullanıcı 19 Kasım'da sınırı çizdi: *"hesap yönetimi ve hesaptan
+     çıkış ayarlara taşınacak. Ad ve avatar ana ekranda kalmaya devam
+     edecek."* Giriş yapma düğmesi de şeritte kalıyor — giriş yapmamış
+     birinin önce "Ayarlar"ı bulup anlaması beklenemez (dil seçicide
+     aynı gerekçe).
+  2. **AI ayarları** (15 + 11) — en geniş olan, tek başına
 
   ⛔ **Bölüm 7 — HER DİLDE.** Yeni sayfanın her başlığı, her etiketi
   iki dilde (yarın sekiz dilde) olacak. Bekçi hazır:

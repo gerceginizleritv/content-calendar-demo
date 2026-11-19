@@ -73,6 +73,16 @@ async function ac(b, ayar={}) {
     ok('tarayıcı kanalı kapalı', !(await p.isChecked('#rm_tarayici')));
     ok('takvim kanalı kapalı', !(await p.isChecked('#rm_takvim')));
     ok('adres satırı gizli', !(await p.isVisible('#rm_adresSatir')));
+    // ⛔ 19 KASIM 2026 — KULLANICI BILDIRDI: "kendi takvimim bolumu var
+    //    ve orada yukaridan indirin yaziyor ama hic bir sey yok".
+    //    Dogruydu ve ESKIDEN BERI boyleydi (pencereyken de): "Nasil
+    //    eklerim?" kati ve altindaki uc not HIC gizlenmiyordu. Takvim
+    //    kanali kapaliyken ekranda "yukaridan adresi kopyala" ve
+    //    "Yenile / iptal et'e basarsin" yaziyordu -- ikisi de ekranda
+    //    YOKKEN. Artik ADRESE bagli: asagida (bolum 4) adres olusunca
+    //    geri geldigi de olculuyor.
+    ok('kurulum anlatımı da gizli (kopyalanacak adres yok)',
+       !(await p.isVisible('#rm_kurulumNot')));
     await p.close();
   }
 
@@ -96,12 +106,20 @@ async function ac(b, ayar={}) {
     await p.click('#ayarlarBtn'); await p.waitForTimeout(200);
     await p.check('#rm_takvim'); await p.waitForTimeout(300);
     ok('kur düğmesi göründü', await p.isVisible('#rm_kurBtn'));
+    // Kanal ACIK ama adres HENUZ YOK: anlatim hala cikmamali.
+    ok('adres yokken kurulum anlatımı hâlâ gizli',
+       !(await p.isVisible('#rm_kurulumNot')));
     await p.click('#rm_kurBtn'); await p.waitForTimeout(600);
     const y = await p.evaluate(()=>window.__yuk);
     // IKI dosya: terminler ve paylasimlar ayri takvimler. Google'da renk
     // abonelik basina veriliyor, olay basina degil -- tek dosya olsaydi
     // ikisine ayri renk verilemezdi.
     ok('Storage\'a iki dosya yazıldı', !!y && y.length===2, JSON.stringify(y));
+    // ⚠ OLUMLU TARAF: adres OLUSUNCA anlatim geri gelmeli. Bu iddia
+    //   olmasaydi "her zaman gizle" de yukaridaki iki iddiayi gecerdi.
+    ok('adres oluşunca kurulum anlatımı GÖRÜNÜYOR',
+       await p.isVisible('#rm_kurulumNot'));
+    ok('adres satırı da görünüyor', await p.isVisible('#rm_adresSatir'));
     ok('ikisi de text/calendar', y && y.every(x=>/text\/calendar/.test(x.tip)),
        y && y.map(x=>x.tip).join(' | '));
     ok('ikisi de kullanıcı klasöründe',
@@ -194,6 +212,8 @@ async function ac(b, ayar={}) {
     const kayit = await p.evaluate(()=>JSON.parse(localStorage.getItem('demo_reminders')));
     ok('jeton temizlendi', kayit.jeton === '', kayit.jeton);
     ok('adres satırı gizlendi', !(await p.isVisible('#rm_adresSatir')));
+    ok('kurulum anlatımı da geri gizlendi',
+       !(await p.isVisible('#rm_kurulumNot')));
     await p.close();
   }
 

@@ -229,6 +229,138 @@ function dene(ad, fn){
       telOlcum.bolumEni + 'px)');
   });
 
+  // ── SAYFALAR IC ICE GECMIS MI ───────────────────────────────────
+  // ⛔ 19 KASIM 2026 — KAPANMAYAN BIR <div> BUTUN SAYFALARI IC ICE
+  //    GECIRDI. 4. asamada hesap etiketleri tasinirken `.hs-form`'u
+  //    kapatan `</div>` kesildi: `#ayarlarPage` acik kaldi ve ONDAN
+  //    SONRAKI HER SAYFA onun icine dustu.
+  //    ⚠ BELIRTISI SEBEBINE HIC BENZEMIYORDU: kayit penceresindeki
+  //      "Kaydet" dugmesi 54x36 yerine 0x0 oldu ve `hesap-arayuz`
+  //      testi 30 saniye bekleyip zaman asimina ugradi. Sebebi
+  //      bulmak, degisiklik oncesi/sonrasi olcum almayi gerektirdi.
+  //      Bu bekci sebebi DOGRUDAN soyluyor.
+  // ⚠ LISTE YAZMIYOR: sayfalari `SAYFALAR`'dan okuyor, yani yarin
+  //   eklenen sayfa kendiliginden giriyor (asama 5 ve 6 geliyor).
+  const icIce = await p.evaluate(()=>{
+    const ids = SAYFALAR.map(x=> x[1]);
+    const kotu = [];
+    ids.forEach(a=> ids.forEach(c=>{
+      if(a === c) return;
+      const ea = document.getElementById(a), ec = document.getElementById(c);
+      if(ea && ec && ec.contains(ea)) kotu.push(a + ' ⊂ ' + c);
+    }));
+    return kotu;
+  });
+
+  dene('★ sayfalar KARDES, ic ice degil', ()=>{
+    assert.deepStrictEqual(icIce, [],
+      'ic ice gecmis sayfalar: ' + icIce.join(' | ') +
+      ' -- kapanmamis bir <div> var');
+  });
+
+  // ── HER SAYFADAN ACILABILIYOR MU ────────────────────────────────
+  // ⛔ 19 KASIM 2026 — CANLIDA BUTUN BETIGI OLDUREN HATA. Kullanici
+  //    bildirdi: tanitim kutusu ("SIRADAKILER — ONUMUZDEKI 6 HAFTA")
+  //    ekranin tepesinde duruyor ve GIRIS DUGMESI calismiyor.
+  //    Tek sebep: asama 3'te `setPage`'e eklenen "ayarlar acilirsa
+  //    tazele" satiri, acilista cagrilinca HENUZ TANIMLANMAMIS
+  //    `hatirlatma` baglantisina dokunuyordu ->
+  //      "Cannot access 'hatirlatma' before initialization"
+  //    Hata betigi oldurunce ARDINDAKI her sey calismiyor.
+  //    ⚠ NEDEN HICBIR TEST YAKALAMADI: hepsi uygulamayi VARSAYILAN
+  //      sayfada acip sonra ayarlara tikliyordu. Oysa uygulama en son
+  //      kalinan sayfayi hatirliyor -- ayarlara girip sayfayi yenileyen
+  //      herkes bu hatayi aliyordu. `hatirlatma.test.js`'in 1. bolumu
+  //      "TDZ hatasi yok" diyor ama o da varsayilan sayfadan aciyor.
+  //    ⚠ LISTE YAZMIYOR: sayfalari `SAYFALAR`'dan okuyor, yani yarin
+  //      eklenen sayfa kendiliginden olculuyor.
+  const sayfaAdlari = await p.evaluate(()=> SAYFALAR.map(x=> x[0]));
+  const acilisSonuc = [];
+  for(const ad of sayfaAdlari){
+    const a = await b.newPage({ viewport:{ width:1280, height:900 } });
+    const aHata = [];
+    a.on('pageerror', e=> aHata.push(ad + ': ' + e.message));
+    await a.route('**/supabase-js**', r=> r.fulfill({ status:200,
+      contentType:'application/javascript',
+      body:'window.supabase={createClient(){return {auth:{getSession:()=>Promise.resolve({data:{session:null}}),onAuthStateChange(){return {data:{subscription:{unsubscribe(){}}}}}}};}};' }));
+    await a.route('**/goatcounter**', r=> r.abort());
+    await a.addInitScript((x)=>{ try{ localStorage.setItem('demo_seen_intro','1');
+      localStorage.setItem('demo_tour_done','1');
+      sessionStorage.setItem('demo_page', x); }catch(e){} }, ad);
+    await a.goto(SUNUCU + '/app.html', { waitUntil:'domcontentloaded' });
+    await a.waitForTimeout(1800);
+    acilisSonuc.push({ ad, hata: aHata,
+      // Betik olmusse bu ikisi de calismaz: tanitim kutusu gizlenemez
+      // ve giris dugmesinin dinleyicisi takilamaz. Belirtiyi de olcuyoruz,
+      // cunku kullanicinin GORDUGU sey bu.
+      pitch: await a.evaluate(()=>{ const e = document.getElementById('pitchBanner');
+        if(!e) return false; const r = e.getBoundingClientRect();
+        return r.width > 0 && r.height > 0; }),
+      giris: await a.evaluate(()=>{ try{ document.getElementById('authBtn').click();
+        return document.getElementById('authOverlay').classList.contains('open');
+      }catch(e){ return false; } }) });
+    await a.close();
+  }
+
+  dene('★ HER sayfadan acilirken JS hatasi yok', ()=>{
+    const kotu = acilisSonuc.filter(x=> x.hata.length);
+    assert.deepStrictEqual(kotu.map(x=> x.hata).flat(), [],
+      'acilista patlayan sayfalar: ' + kotu.map(x=> x.ad).join(', '));
+  });
+
+  dene('★ HER sayfadan acilista giris dugmesi calisiyor', ()=>{
+    const kotu = acilisSonuc.filter(x=> !x.giris).map(x=> x.ad);
+    assert.deepStrictEqual(kotu, [],
+      'giris penceresi acilmayan sayfalar: ' + kotu.join(', ') +
+      ' -- betik acilista olmus olabilir');
+  });
+
+  dene('★ HER sayfadan acilista tanitim kutusu gizli', ()=>{
+    const kotu = acilisSonuc.filter(x=> x.pitch).map(x=> x.ad);
+    assert.deepStrictEqual(kotu, [],
+      'tanitim kutusu gorunen sayfalar: ' + kotu.join(', '));
+  });
+
+  // ── AYARLARDAN ACILINCA ALANLAR KAYITTAN DOLUYOR MU ─────────────
+  // ⚠ "Hata yok" yetmez: hatayi susturup isi yapmamak da hatasizdir.
+  //   Bu olcum degerlerin GERCEKTEN kayittan geldigini soruyor.
+  const dolum = await (async ()=>{
+    const a = await b.newPage({ viewport:{ width:1280, height:900 } });
+    await a.route('**/supabase-js**', r=> r.fulfill({ status:200,
+      contentType:'application/javascript',
+      body:'window.supabase={createClient(){return {auth:{getSession:()=>Promise.resolve({data:{session:null}}),onAuthStateChange(){return {data:{subscription:{unsubscribe(){}}}}}}};}};' }));
+    await a.route('**/goatcounter**', r=> r.abort());
+    await a.addInitScript(()=>{ try{ localStorage.setItem('demo_seen_intro','1');
+      localStorage.setItem('demo_tour_done','1');
+      localStorage.setItem('demo_reminders', JSON.stringify(
+        { once:false, gun:true, gecikti:false, tarayici:false, takvim:false, saat:'07:30' }));
+      sessionStorage.setItem('demo_page','ayarlar'); }catch(e){} });
+    await a.goto(SUNUCU + '/app.html', { waitUntil:'domcontentloaded' });
+    await a.waitForTimeout(2000);
+    const r = await a.evaluate(()=>({
+      sayfaAcik: !document.getElementById('ayarlarPage').hidden,
+      once: document.getElementById('rm_once').checked,
+      gun: document.getElementById('rm_gun').checked,
+      saat: document.getElementById('rm_saat').value,
+      platformSecenek: document.getElementById('hs_platform').options.length,
+      hesapListesi: document.getElementById('hs_liste').children.length
+    }));
+    await a.close();
+    return r;
+  })();
+
+  dene('★ ayarlardan acilinca alanlar KAYITTAN doluyor', ()=>{
+    assert.strictEqual(dolum.sayfaAcik, true, 'ayarlar sayfasi acilmadi');
+    // Kayitta once=false, gun=true, saat='07:30' yaziyor. HTML
+    // varsayilani bunlarin tersi; yani bu degerler tazelemeden geliyor.
+    assert.strictEqual(dolum.once, false, '"bir gun once" kayittan gelmedi');
+    assert.strictEqual(dolum.gun, true, '"termin gunu" kayittan gelmedi');
+    assert.strictEqual(dolum.saat, '07:30', 'saat kayittan gelmedi: ' + dolum.saat);
+    assert.ok(dolum.platformSecenek > 1,
+      'platform listesi dolmadi (' + dolum.platformSecenek + ' secenek)');
+    assert.ok(dolum.hesapListesi > 0, 'hesap listesi hic cizilmedi');
+  });
+
   dene('sayfa hatasi yok', ()=>{
     assert.deepStrictEqual(jsHata, [], jsHata.join(' | '));
   });
