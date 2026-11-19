@@ -37,7 +37,16 @@ const { chromium } = require('./araclar');
     const mr = modal.getBoundingClientRect();
     return { rehberAcik: document.querySelector('.ai-howto').open,
              kutuGorunur: kutu.getBoundingClientRect().bottom <= mr.bottom + 1,
-             testGorunur: dugme.getBoundingClientRect().bottom <= window.innerHeight + 1,
+             // ⛔ 19 KASIM 2026 — EKRAN DEGIL BOLUM (YAPILACAKLAR 58
+             //    asama 6). Eskiden 440 piksellik bir PENCEREYDI ve
+             //    korunan sey "rehber acilinca test dugmesi pencerenin
+             //    disina tasip ULASILAMAZ olmasin"di. Artik bir SAYFA
+             //    bolumu: asagida olmasi normal, sayfa kaydiriliyor.
+             //    ⚠ Olculen sey AYNI KALDI, olcegi degisti: dugme
+             //      BOLUMUN icinde ve kirpilmamis mi. Ekran yuksekligine
+             //      bagli hali bir SAYFADA hicbir arizayi anlatmiyordu --
+             //      "ekranin altinda kaldi" bir sayfada kusur degil.
+             testGorunur: dugme.getBoundingClientRect().bottom <= mr.bottom + 1,
              modalKayiyor: modal.scrollHeight > modal.clientHeight + 2 };
   });
   k('anahtar VARKEN rehber kapalı', r.rehberAcik === false);
