@@ -2228,9 +2228,62 @@ dokunmak ve ikinci seferde birincisini bozmak demek.
   sayfasında kaybolduğu uçtan uca ölçülsün — bugün yalnızca
   sayfanın tarafı ölçülüyor.
 
-- ⬜ **61.** **Yönetim panelinde fiyat tablosu KULLANIŞLI olsun —
-  her plan bir satır, para birimi × dönem sütun.** Kullanıcı
-  18 Kasım 2026'da iki ekran görüntüsüyle istedi:
+- ✅ **61. BİTTİ (19 Kasım 2026).** **Yönetim panelinde fiyat tablosu
+  matris oldu — her plan bir satır, para birimi × dönem sütun.**
+
+  **18 satır → 4 satır.** Sütunlar: her para biriminin içinde dönem
+  (`monthly EUR · yearly EUR · once EUR · monthly TRY · …`).
+
+  **İki karar kullanıcıya soruldu:**
+
+  | Soru | Cevap |
+  |---|---|
+  | Kaydetme | **Tek "Değişenleri kaydet"**, önce hepsini listeleyen tek onay |
+  | Çok büyük değişim | **O hücre için ayrıca sorsun**, ötekiler kesintisiz geçsin |
+
+  **İki karar de deponun kendi kuralından geldi (sorulmadı):**
+  - **Sütunlar veriden üretiliyor**, liste kodda yazılı değil —
+    fiyat sayfası 18 Kasım'da aynı yoldan geçmişti (44.2). Yarın
+    dördüncü para birimi eklenince sütun elle yazılmayacak.
+  - **Sıra kullanıcının Excel taslağındaki gibi**: sunucu zaten
+    `order=plan_key,currency,period` gönderiyor, yani para birimi
+    içinde `monthly → once → yearly`.
+
+  ⛔ **SUNUCUYA DOKUNULMADI, DAĞITIM GEREKMİYOR.** Bu maddede
+  *"tablo başına 'hepsini kaydet' istenirse Edge Function'a toplu
+  işlem eklenip yeniden dağıtılması gerekir"* yazıyordu — **yanlıştı.**
+  Edge Function hâlâ tek satır alıyor; sayfa o çağrıyı **sırayla**
+  yapıyor. Kullanıcının hiçbir şey dağıtması gerekmedi.
+
+  ⛔ **BOŞ HÜCRE YAZILAMAZ — VE BU ÖNEMLİ.** Sunucu fiyatı
+  `Prefer: resolution=merge-duplicates` ile yazıyor, yani **olmayan**
+  bir plan/para/dönem üçlüsüne yazmak o fiyatı **yaratır**. Bugünkü
+  tablo yalnızca var olan satırları listelediği için panel hiç fiyat
+  yaratamıyordu; matris her hücreyi yazılabilir yapsaydı panele
+  kimsenin istemediği bir yetki eklenmiş olurdu — üstelik para
+  tarafında. Boş hücreler **"—"** olarak duruyor, kutusu yok.
+  Sıfır değil: sıfır "bedava" demek, "—" "böyle bir fiyat yok" demek.
+
+  ⚠ **Yarım kalma:** biri geçip öteki hata verirse hangisinin
+  kaydedildiği tek tek yazılıyor. Toplu kayıtta en kötü şey, neyin
+  geçtiğini bilmemek.
+  ⚠ **Hatalı bir kutu varsa hiçbir şey kaydedilmiyor:** yarısı geçmiş
+  bir fiyat tablosu bırakmaktansa durup göstermek.
+  ⚠ Gizli plan etiketi (`studio`, `founding`) matriste de duruyor.
+  ⚠ `once` sütunlarını yalnızca `founding` kullanıyor, yani üç sütun
+  neredeyse boş duruyor ve tablo geniş. Veriye sadık kalmak için öyle
+  bırakıldı (her fiyatın kendi hücresi var); yatay kaydırma zaten
+  vardı. Daraltma istenirse kullanıcı söyler.
+
+  Bekçi: `testler/yonetim-fiyat-matris.test.js`, **10 iddia**. Panel
+  oturumu ve Edge Function taklit ediliyor. Dört mutasyonla
+  kanıtlandı: sütunlar elle yazılırsa düşer, boş hücreye kutu
+  konursa düşer, gizli etiketi düşerse düşer, değişmeyen hücreler de
+  gönderilirse düşer.
+
+  ⬇ Maddenin özgün hâli kayıt için duruyor:
+
+  Kullanıcı 18 Kasım 2026'da iki ekran görüntüsüyle istedi:
 
   > *"Admin sayfasında fiyat yönetimi için daha kolay bir sayfa
   > yapabilir miyiz! Örnek SS ekte, sadece Excel'de bu tabloyu nasıl
