@@ -2217,6 +2217,12 @@ textarea.sc-ai-brief{min-height:64px;resize:vertical;line-height:1.5;}
 .pe-drive input{flex:1;min-width:0;}
 .pe-drive .btn{flex:none;}
 .btn-sira.acik{border-color:var(--accent);color:var(--accent);}
+/* ⚠ "Fotografi olmayanlar" suzgeci acikken (YAPILACAKLAR 59).
+   Gorunum PROJE SUZGECININ (.pfilt.acik) aynisi, bilerek: ikisi de
+   "listeyi daraltiyorum" diyor; ayri bir gorunum icat etmek
+   kullaniciya iki ayri sey ogretirdi. */
+.btn.acik{border-color:var(--accent);background:var(--accent-soft);
+  color:var(--accent);font-weight:600;}
 /* Hic proje yokken: aciklama ve tek bir dugme, ortada. */
 .proj-empty{display:flex;flex-direction:column;align-items:center;gap:12px;
   padding:34px 20px;border:1px dashed var(--line);border-radius:2px;
@@ -4646,6 +4652,18 @@ textarea.sc-ai-brief{min-height:64px;resize:vertical;line-height:1.5;}
            Secim hatirlanıyor (demo_mk_gorunum), takvimdeki
            `demo_view` ile ayni kalip. -->
       <div class="gorunum-sec" id="mk_gorunum" role="group"></div>
+      <!-- ⛔ 19 KASIM 2026 — "FOTOGRAFI OLMAYANLAR" SUZGECI
+           (YAPILACAKLAR 59). Tarama bitince hangi mekanin hala
+           fotografsiz oldugu hicbir yerde gorunmuyordu; kullanici
+           54 karti tek tek gezmeden bulamiyordu.
+           ⚠ Tarama dugmesiyle AYNI SARTA bagli: fotografsiz mekan
+             yoksa ikisi de gizleniyor. Yoksa suzgec acikken son
+             fotograf da bulunsa kullanici BOS bir listeye bakardi.
+           ⚠ Secim HATIRLANMIYOR: bu bir gorunum tercihi degil, bir
+             ise bakma hali. Sayfaya her girise acik gelmesi
+             "mekanlarim kayboldu" dedirtirdi. -->
+      <button type="button" class="btn" id="mk_fotosuzSuz" hidden
+              aria-pressed="false" data-i18n="mk_photo_filter">Without a photo</button>
       <!-- Fotografsiz mekan varsa cikiyor: tek tek pencere acmadan
            hepsine birden bakiyor. -->
       <button type="button" class="btn" id="mk_fotoHepsi" hidden data-i18n="mk_photo_all">Look for photos</button>
@@ -7163,7 +7181,23 @@ const LANG = {
     mk_photo_found: (b)=> `Found: ${b}. Check it, then save.`,
     mk_photo_none: "Nothing on Wikipedia for this one. Paste a link, or leave it — the card shows the map.",
     mk_photo_scan: (n, t, ad)=> `Looking… ${n}/${t} — ${ad}`,
-    mk_photo_scan_done: (b, t)=> b ? `${t} places checked, ${b} photos found.` : `${t} places checked, nothing found. The cards keep their maps.`,
+    // ⛔ 19 KASIM 2026 — CUMLE NE SAYDIGINI VE HANGI MEKAN OLDUGUNU
+    //    SOYLUYOR (YAPILACAKLAR 59). Eskisi "1 mekana bakildi, bir sey
+    //    cikmadi" diyordu; 54 mekani olan kullanici "neden yalnizca 1?"
+    //    diye sordu. Sayi FOTOGRAFI EKSIK olanlarin sayisiydi ama cumle
+    //    bunu soylemiyordu. Ayrica hangi mekan oldugu ve "kartlarda
+    //    harita duruyor"un ne demek oldugu anlasilmiyordu.
+    //    ⚠ `ad` yalnizca TEK mekan bakildiginda doluyor: birden
+    //      fazlaysa hepsini cumleye sigdirmak olmaz, orada sayi
+    //      yeterli (fotografsizlari suzgecle gormek de mumkun).
+    mk_photo_scan_done: (b, t, ad)=> {
+      const kac = ad ? `1 place without a photo checked (${ad})`
+                     : `${t} places without a photo checked`;
+      if(b === t) return `${kac} — ${b === 1 ? 'a photo was found' : b + ' photos were found'}.`;
+      if(b > 0) return `${kac} — ${b} found, ${t - b} not on Wikipedia. Those cards keep their maps.`;
+      return `${kac} — no photo on Wikipedia. ${ad ? 'That card keeps its map' : 'Those cards keep their maps'}.`;
+    },
+    mk_photo_filter: 'Without a photo',
     mk_photo_wiki: "Wikipedia",
     mk_find: "Find",
     mk_find_title: "Type the name and city, then find the address and map location on OpenStreetMap",
@@ -8515,7 +8549,14 @@ const LANG = {
     mk_photo_found: (b)=> `Bulundu: ${b}. Bir bak, sonra kaydet.`,
     mk_photo_none: "Vikipedi'de bununla ilgili bir şey yok. Bağlantı yapıştırabilir ya da boş bırakabilirsin — kartta harita görünür.",
     mk_photo_scan: (n, t, ad)=> `Aranıyor… ${n}/${t} — ${ad}`,
-    mk_photo_scan_done: (b, t)=> b ? `${t} mekana bakıldı, ${b} fotoğraf bulundu.` : `${t} mekana bakıldı, bir şey çıkmadı. Kartlarda harita duruyor.`,
+    mk_photo_scan_done: (b, t, ad)=> {
+      const kac = ad ? `Fotoğrafı eksik 1 mekâna bakıldı (${ad})`
+                     : `Fotoğrafı eksik ${t} mekâna bakıldı`;
+      if(b === t) return `${kac} — ${b === 1 ? 'fotoğraf bulundu' : b + ' fotoğraf bulundu'}.`;
+      if(b > 0) return `${kac} — ${b} tanesi bulundu, ${t - b} tanesi Vikipedi'de yok. O kartlarda harita görünmeye devam ediyor.`;
+      return `${kac} — Vikipedi'de fotoğraf bulunamadı. ${ad ? 'O kartta' : 'O kartlarda'} harita görünmeye devam ediyor.`;
+    },
+    mk_photo_filter: 'Fotoğrafı olmayanlar',
     mk_photo_wiki: "Vikipedi",
     mk_find: "Bul",
     mk_find_title: "Adı ve şehri yaz, adresi ve harita konumunu OpenStreetMap'te bul",
@@ -13341,9 +13382,13 @@ function mekanAdi(m){
   return currentLang === 'en' ? mekanAdiIngilizce(ad) : ad;
 }
 
+// ⛔ 19 KASIM 2026 — "fotografi olmayanlar" suzgeci (YAPILACAKLAR 59).
+//    Kalici DEGIL: sayfadan cikilinca sifirlaniyor (yukarida sebebi).
+let mekanFotosuzSuzgec = false;
 function mekanlariSuz(){
   const q = mekanArama.trim().toLocaleLowerCase('tr');
   return mekanSiraliListe().filter(m=>{
+    if(mekanFotosuzSuzgec && disUrl(m.imageUrl)) return false;
     if(!q) return true;
     // Cevrilmis ad da samanliga giriyor: Ingilizce arayuzde "mosque"
     // yazan biri Selimiye Camii'ni bulabilsin.
@@ -13576,7 +13621,18 @@ function renderMekanlar(){
   kutu.classList.toggle('mk-liste', mekanGorunumu === 'liste');
   document.getElementById('mk_count').textContent =
     mekanlar.length ? t('mk_count')(liste.length, mekanlar.length) : '';
-  document.getElementById('mk_fotoHepsi').hidden = mekanFotosuzlar().length === 0;
+  // ⚠ Fotografsiz mekan kalmadiysa hem tarama dugmesi hem suzgec
+  //   gizleniyor; suzgec acik kaldiysa KAPATILIYOR, yoksa kullanici
+  //   bos bir listeye bakardi.
+  const fotosuzVar = mekanFotosuzlar().length > 0;
+  if(!fotosuzVar) mekanFotosuzSuzgec = false;
+  document.getElementById('mk_fotoHepsi').hidden = !fotosuzVar;
+  const suzDug = document.getElementById('mk_fotosuzSuz');
+  if(suzDug){
+    suzDug.hidden = !fotosuzVar;
+    suzDug.setAttribute('aria-pressed', String(mekanFotosuzSuzgec));
+    suzDug.classList.toggle('acik', mekanFotosuzSuzgec);
+  }
   siraDugmesiTazele('mk_sira', mekanSiraSecimi);
   if(!liste.length){
     // Bos ekranin ortasinda YOL GOSTEREN dugme. Ekleme dugmesi sayfanin
@@ -13949,7 +14005,14 @@ document.getElementById('mk_fotoHepsi').addEventListener('click', async ()=>{
   }
   dugme.disabled = false;
   mekanFotoTaramasi = false;
-  mkNot('mk_fotoDurum', t('mk_photo_scan_done')(bulunanSayisi, liste.length));
+  // ⚠ Ad yalnizca TEK mekan varken geciyor: cumle o zaman "hangi
+  //   mekan" sorusunu cevapliyor. Coklu durumda ad yerine suzgec var.
+  mkNot('mk_fotoDurum', t('mk_photo_scan_done')(bulunanSayisi, liste.length,
+        liste.length === 1 ? liste[0].name : null));
+  renderMekanlar();
+});
+document.getElementById('mk_fotosuzSuz').addEventListener('click', ()=>{
+  mekanFotosuzSuzgec = !mekanFotosuzSuzgec;
   renderMekanlar();
 });
 document.getElementById('mk_new').addEventListener('click', ()=> mekanPenceresiniAc(null));

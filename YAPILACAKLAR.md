@@ -2087,9 +2087,64 @@ dokunmak ve ikinci seferde birincisini bozmak demek.
   güvence korunup ifadesi sayfaya taşınacak (18 Kasım'da 11 testte
   aynısı yapıldı).
 
-- ⬜ **59.** **"Fotoğrafı olmayanlara bak" — tuş çalışıyor ama ne
-  yaptığını ANLATMIYOR.** Kullanıcı 18 Kasım 2026'da ekran
-  görüntüsüyle sordu: *"O yazı ne anlama geliyor anlamadım. Ayrıca
+- ✅ **59. BİTTİ (19 Kasım 2026).** **"Fotoğrafı olmayanlara bak" —
+  artık ne yaptığını anlatıyor + fotoğrafsızlar süzgeci.**
+
+  **İki karar kullanıcıya soruldu, ikisi de uygulandı:**
+
+  | Soru | Cevap |
+  |---|---|
+  | Sonuç cümlesi | **adı ve sebebi söylesin** |
+  | Listede işaret | **süzgece seçenek eklensin** |
+
+  **a · Cümle.** Eskisi: *"1 mekana bakıldı, bir şey çıkmadı.
+  Kartlarda harita duruyor."* 54 mekânı olan kullanıcı "neden
+  yalnızca 1?" diye sordu — sayı **fotoğrafı eksik** olanların
+  sayısıydı ama cümle bunu söylemiyordu. Yeni hâli (ölçüldü):
+
+  | Durum | Türkçe |
+  |---|---|
+  | 1 mekân, bulunamadı | *Fotoğrafı eksik 1 mekâna bakıldı (Balıklı Meryem Ana) — Vikipedi'de fotoğraf bulunamadı. O kartta harita görünmeye devam ediyor.* |
+  | 1 mekân, bulundu | *…(Balıklı Meryem Ana) — fotoğraf bulundu.* |
+  | 5 mekân, hiçbiri | *Fotoğrafı eksik 5 mekâna bakıldı — Vikipedi'de fotoğraf bulunamadı. O kartlarda harita görünmeye devam ediyor.* |
+  | 5 mekân, 2'si | *… — 2 tanesi bulundu, 3 tanesi Vikipedi'de yok. O kartlarda harita görünmeye devam ediyor.* |
+  | 5 mekân, hepsi | *… — 5 fotoğraf bulundu.* |
+
+  ⚠ Ad yalnızca **tek** mekân bakıldığında geçiyor; çoklu durumda
+  hepsini cümleye sığdırmak olmaz — orada süzgeç devreye giriyor.
+  ⚠ `(b, t)` arite'si `(b, t, ad)` oldu; **iki dilde birden**
+  değişti (Bölüm 7, sözlük paritesi testi arite arıyor).
+
+  **b · Süzgeç.** Araç çubuğuna *"Fotoğrafı olmayanlar"* düğmesi
+  girdi. Ölçüldü: 54 kart → **1 kart**.
+  ⚠ Görünümü proje süzgecinin (`.pfilt.acik`) **aynısı**, bilerek:
+  ikisi de "listeyi daraltıyorum" diyor.
+  ⚠ Tarama düğmesiyle **aynı şarta** bağlı — fotoğrafsız mekân
+  kalmayınca ikisi de gizleniyor **ve açık kalan süzgeç kapanıyor**,
+  yoksa kullanıcı boş bir listeye bakardı.
+  ⚠ Seçim **hatırlanmıyor**: bu bir görünüm tercihi değil, bir işe
+  bakma hâli; her girişte açık gelmesi "mekânlarım kayboldu"
+  dedirtirdi.
+
+  ⛔ **BİR ÖNCEKİ OTURUMDA YANLIŞ BİR İDDİA YAZILDI, ÖLÇÜ ÇÜRÜTTÜ.**
+  `app.html`'deki `if(!liste.length) return;` satırına bakılarak
+  *"fotoğrafsız mekân yokken tuş sessizce ölüyor"* denmiş ve
+  kullanıcıya bu temelde bir soru sorulmuştu (kullanıcı *"hepsinin
+  fotoğrafı var desin"* dedi). Ölçüldü: `renderMekanlar` tuşu
+  **zaten gizliyor** (yükseklik 0, üç durumda da ölçüldü). Yani o
+  satır bir emniyet kemeri, görünen bir kusur değil; kullanıcının
+  cevabı **ulaşılamayan bir duruma** aitti ve uygulanmadı.
+  ⚠ Ders (Bölüm 4): kodu okuyup "şöyle davranıyor" demek ölçmek
+  değildir. Gizleme artık **testle** kayıt altında.
+
+  Bekçi: `testler/mekan-foto-tarama.test.js`, **16 iddia**, iki
+  dilde. Dört mutasyonla kanıtlandı: cümle adı taşımazsa 2 iddia
+  düşer, süzgeç daraltmazsa 2, süzgeç kapanmazsa 2, bulundu/
+  bulunamadı aynı cümleyi verirse 1.
+
+  ⬇ Maddenin özgün hâli kayıt için duruyor:
+
+  Kullanıcı 18 Kasım 2026'da ekran görüntüsüyle sordu: *"O yazı ne anlama geliyor anlamadım. Ayrıca
   'fotoğrafı olmayanlara bak' tuşu çalışıyor mu? Ben tıkladım ama bir
   sonuç dönmedi."*
 
