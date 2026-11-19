@@ -27,7 +27,7 @@ async function dene(b, hata){
   await p.goto('http://127.0.0.1:8098/app.html',{waitUntil:'domcontentloaded'});
   await p.waitForTimeout(1600);
   await p.evaluate(()=>document.querySelectorAll('.overlay.open').forEach(o=>o.classList.remove('open')));
-  await p.click('#remindersBtn'); await p.waitForTimeout(250);
+  await p.click('#ayarlarBtn'); await p.waitForTimeout(250);
   await p.check('#rm_takvim'); await p.waitForTimeout(300);
   await p.click('#rm_kurBtn'); await p.waitForTimeout(700);
   const metin = await p.textContent('#rm_takvimDurum');
@@ -63,7 +63,7 @@ async function dene(b, hata){
     await p2.goto('http://127.0.0.1:8098/app.html',{waitUntil:'domcontentloaded'});
     await p2.waitForTimeout(1600);
     await p2.evaluate(()=>document.querySelectorAll('.overlay.open').forEach(o=>o.classList.remove('open')));
-    await p2.click('#remindersBtn'); await p2.waitForTimeout(250);
+    await p2.click('#ayarlarBtn'); await p2.waitForTimeout(250);
     await p2.check('#rm_takvim'); await p2.waitForTimeout(300);
     ok('yükleme öncesi adres YOK', !(await p2.isVisible('#rm_adresSatir')));
     await p2.click('#rm_kurBtn'); await p2.waitForTimeout(700);

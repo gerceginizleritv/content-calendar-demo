@@ -2218,11 +2218,96 @@ dokunmak ve ikinci seferde birincisini bozmak demek.
   yerleşimini etkiler ("üst şeritte yer dar" — kod yorumu).
   Kullanıcı isterse ayrı bir iş olarak yapılır.
 
+  ⛔ **2. AŞAMA BİR GERİLEME DOĞURDU, TAM KOŞU YAKALADI.**
+  Yeni tetik eski `<select>`'ten geniş çıktı (~45 → **67,17 px**) ve
+  360 pikselde marka adını **kırptı** (kutu 67,8 / gereken 74).
+  375 pikselde test yeşildi ama pay **0,12 PİKSELDİ** — yani şeride
+  eklenecek bir sonraki şey orayı da kırpacaktı.
+  Düzeltme (`@media(max-width:380px)`): bayrak 18×13 → 15×11, dolgu
+  5/8 → 4/6, aralık 5 → 4, **ok işareti gidiyor** (düğme hâlâ
+  `aria-haspopup="listbox"` taşıyor; en dar telefonda marka adı
+  oktan önemli). "TR" yazısı kalıyor — bayrak bir **ülkenin**
+  işareti, dilin değil.
+  ⚠ `marka-adi` testi de **güçlendi**: artık yalnızca "kırpılmadı"
+  demiyor, şeride 8 px'lik sahte bir öğe koyup **pay olup olmadığını**
+  soruyor. Ölçülen pay: 360→10, 375→22, 390→14, 412→22, 430→40 px.
+  Mutasyonla kanıtlandı: düzeltme geri alınınca 375'te **eski iddia
+  yeşil kalıyor**, yeni pay iddiası düşüyor.
+
+  ⛔ **DİL PANELİ YUKARI AÇILIYORDU — kullanıcı bildirdi (19 Kasım).**
+  `.dil-panel{bottom:calc(100% + 4px)}` yazılmıştı. ⚠ Asıl mesele
+  ayrışmaydı: **aynı seçici site sayfalarında zaten aşağı açılıyordu**
+  (`marka.css` → `top:calc(100% + 10px)`). Bu deponun tekrarlayan
+  hatası. Üstelik yalnızca yön değil **görünürlük** sorunuydu:
+  ölçüldü, telefonda panelin **44 pikseli ekranın üstünden taşıp
+  kesiliyordu** (panel −44…37 px). Düzeltildi; `dil-secici-app`
+  testine iki iddia eklendi (aşağı açılıyor · ekranda kalıyor),
+  mutasyonla kanıtlandı.
+
+  **✅ 3. AŞAMA BİTTİ (19 Kasım 2026) — HATIRLATMALAR taşındı.**
+
+  `#remindersOverlay` penceresi ve yan menüdeki `🔔 Hatırlatmalar`
+  düğmesi **kaldırıldı**; bölüm olduğu gibi `#ayarlarPage` içine,
+  `#ayarHatirlatma` başlığı altına girdi.
+
+  | | Önce | Sonra |
+  |---|---|---|
+  | Yer | pencere (`#remindersOverlay`) | ayarlar sayfasının bölümü |
+  | Açan | `#remindersBtn` (yan menü) | `#ayarlarBtn` (tek Ayarlar düğmesi) |
+  | Kapatma | `Kapat` düğmesi + arka perde | yok (sayfada kapatılacak bir şey yok) |
+  | Alanların dolması | pencereyi açan düğme | `setPage('ayarlar')` |
+
+  ⚠ **ALAN KİMLİKLERİ DEĞİŞMEDİ** (`rm_once`, `rm_gun`, `rm_gecikti`,
+  `rm_tarayici`, `rm_takvim`, `rm_saat`, `rm_adres`, `rm_adresPay`,
+  `rm_kurBtn` …). Bunları yazan kod da, ölçen testler de kimlikle
+  buluyor: yer değişti, **sözleşme değişmedi**.
+
+  ⚠ **Tazeleme `setPage`'e bağlandı**, pencereyi açan düğmeye değil.
+  Sebep: sayfaya düğmeye basmadan da gelinebiliyor (adres satırı,
+  oturum hatırası) ve o yollarda alanlar **boş** kalırdı.
+  Mutasyonla kanıtlandı: satır silinince `hatirlatma` testinde
+  **4 iddia** düşüyor.
+
+  ⛔ **`hatirlatmalariAc()` SİLİNDİ.** Onu çağıran tek yer
+  `remindersBtn` idi ve o düğme kalmadı. *"İleride lazım olur"* diye
+  bırakılmadı: çağrılmayan bir işlev, değiştirilirken kimsenin fark
+  etmediği bir işlevdir.
+
+  ⚠ **İKİ TASARIM DÜZELTMESİ ÖLÇÜMDEN ÇIKTI** (pencere 520 px için
+  tasarlanmıştı, sayfa 1004 px çıktı):
+  - `#ayarlarPage{max-width:640px}` — 1280 px ekranda metin satırı
+    **1004 px** (≈140 karakter; rahat okuma 65-75) ve *"Tarayıcı
+    bildirimi"* başlığı kendi tikinden **~1100 px** uzağa düşüyordu.
+    Sınır **sayfaya** kondu, bölüme değil: 4-6. aşamada gelecek
+    bölümler aynı sorunu yaşayacak, tek yerden çözüldü.
+  - Alt başlıklar `h3` → `h4`. Sayfanın bölüm başlıkları `h3`;
+    alt başlıklar da `h3` kalsaydı ekran okuyucuda aynı düzeyde
+    görünüp iç içe geçtikleri kaybolurdu (pencerede üstte `h2` vardı).
+
+  ⚠ **Beş test yeniden ifade edildi, zayıflatılmadı:**
+  `hatirlatma` (17 çağrı `#remindersBtn` → `#ayarlarBtn`; *"sol menüde
+  hatırlatmalar var"* **ikiye ayrıldı** — ayarlar düğmesi görünür mü
+  **ve** bölüm gerçekten o sayfanın içinde mi; ikincisi eskiden hiç
+  ölçülmüyordu), `saat` (4), `sunucu-hatasi` (2), `fiyat-baglantisi`
+  (şerit listesi), `mobil-menu` (şerit listesi).
+
+  ⛔ **`funnel/reminders-opened` BİTTİ.** Onu atan şerit düğmesi
+  kalmadı. Yerine `funnel/ayarlar-opened` sayılıyor — ölçülen şey
+  değişti, adı da değişti. ⚠ Eski olayı arayan bir rapor bu tarihten
+  sonra **sıfır** görecek; bu bir arıza değil.
+
+  Bekçi: `ayarlar-sayfasi.test.js` 6 → **11 iddia**. Yenileri:
+  bölüm sayfada ve görünür · eski pencere/düğme/Kapat **geride
+  kalmadı** · alan kimlikleri duruyor · geniş ekranda sayfa okunur
+  genişlikte · telefonda yatay taşma yok.
+  Üç mutasyonla kanıtlandı: `setPage` tazelemesi silinirse 4 iddia
+  düşer, bölüm sayfanın dışına alınırsa 1, genişlik sınırı
+  kaldırılırsa 1 (1004 px diye bildiriyor).
+
   ⬜ **SONRAKİ AŞAMALAR** (her biri kendi tam koşusuyla):
-  1. **Hatırlatmalar** (5 dosya)
-  2. **Hesap etiketleri + hava & ışık** (2 + 1)
-  3. **Hesap** (~10 dosya)
-  4. **AI ayarları** (15 + 11) — en geniş olan, tek başına
+  1. **Hesap etiketleri + hava & ışık** (2 + 1)
+  2. **Hesap** (~10 dosya)
+  3. **AI ayarları** (15 + 11) — en geniş olan, tek başına
 
   ⛔ **Bölüm 7 — HER DİLDE.** Yeni sayfanın her başlığı, her etiketi
   iki dilde (yarın sekiz dilde) olacak. Bekçi hazır:

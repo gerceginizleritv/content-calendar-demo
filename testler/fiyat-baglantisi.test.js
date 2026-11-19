@@ -206,7 +206,11 @@ async function ac(t, w, h){
         await m.$eval('#railFoot', e=> e.scrollWidth+'/'+e.clientWidth));
     await m.click('#railMoreBtn');
     await m.waitForTimeout(400);
-    const IDS = ['tourBtn','fiyatLink','aiSettingsBtn','remindersBtn',
+    // ⚠ 19 KASIM 2026: `remindersBtn` yerine `ayarlarBtn`. Hatirlatmalar
+    //   ayarlar sayfasina tasindi (YAPILACAKLAR 58 asama 3), seritteki
+    //   dugmesi kalmadi. Olculen sey ayni: seritteki baglantilarin hepsi
+    //   en dar telefonda da ekranda ve dokunulabilir mi.
+    const IDS = ['tourBtn','fiyatLink','aiSettingsBtn','ayarlarBtn',
                  'hesapEtiketBtn','kilavuzLink','feedbackBtn'];
     const ol = await m.evaluate(ids=> ids.map(id=>{
       const r = document.getElementById(id).getBoundingClientRect();

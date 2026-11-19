@@ -902,6 +902,19 @@ a.lockup:focus-visible{outline:2px solid var(--accent);outline-offset:3px;border
 .tpl-step{display:inline-flex;align-items:center;justify-content:center;width:20px;height:20px;
   border-radius:50%;background:var(--accent);color:var(--on-accent);font-size:11px;
   margin-right:9px;flex-shrink:0;}
+/* ⛔ 19 KASIM 2026 — AYARLAR SAYFASINA OKUNUR GENISLIK (YAPILACAKLAR
+   58 asama 3). Hatirlatmalar 520 piksellik bir PENCERE icin
+   tasarlanmisti; sayfaya tasininca 1280 piksellik ekranda olculdu:
+     metin satiri 1004 piksel (≈140 karakter -- rahat okuma 65-75)
+     "Tarayici bildirimi" basligi ile kendi tikinin arasi ~1100 piksel
+   Yani tik kendi basligindan kopuyordu ve metin okunamayacak kadar
+   uzun satirlara yayiliyordu.
+   ⚠ Sinir SAYFAYA kondu, hatirlatma bolumune degil: 4., 5. ve 6.
+     asamada gelecek bolumler (hesap etiketleri, hava, hesap, AI) ayni
+     sorunu yasayacak. Tek yerden cozuluyor.
+   ⚠ 640 piksel: 13,5 piksellik metinde ≈ 90 karakter. Pencerenin
+     480 pikselinden genis ama bir AYAR SAYFASI icin dar degil. */
+#ayarlarPage{max-width:640px;}
 .tpl-h{display:flex;align-items:center;}
 .acc-new-2{grid-template-columns:auto auto;justify-content:start;margin-bottom:14px;}
 .tpl-saved{font-size:12px;color:var(--green);align-self:center;}
@@ -3458,8 +3471,16 @@ textarea.sc-ai-brief{min-height:64px;resize:vertical;line-height:1.5;}
 /* ⚠ Bayragin olcusu BURADA: `uret/bayraklar.js` yalnizca sekli
    veriyor, boyutu her kullanan kendi belirliyor. */
 .dil-sec .bayrak{width:18px;height:13px;flex:none;border-radius:2px;}
+/* ⛔ 19 KASIM 2026 — PANEL YUKARI ACILIYORDU, kullanici bildirdi.
+   Dahasi: SITE SAYFALARINDA (marka.css) ayni secici ZATEN ASAGI
+   aciliyordu (`top:calc(100% + 10px)`). Yani ayni sey iki yerde iki
+   turlu davraniyordu -- bu deponun tekrarlayan hatasi (otomatik yayin
+   tablosu, palet degerleri, ikon ailesi... hepsi boyle ayristi).
+   ⚠ Tetik hem masaustunde (sol seridin USTU) hem telefonda (ust
+     seridin icinde) ekranin ust yarisinda duruyor; asagi acilinca
+     panel ekranda kaliyor. Olculdu: 1280 ve 390 piksel. */
 .dil-panel{
-  position:absolute;left:0;right:0;bottom:calc(100% + 4px);z-index:40;
+  position:absolute;left:0;right:0;top:calc(100% + 4px);z-index:40;
   background:var(--surface);border:1px solid var(--line);border-radius:3px;
   box-shadow:0 8px 24px rgba(0,0,0,.18);padding:3px;
   display:flex;flex-direction:column;gap:1px;
@@ -4221,7 +4242,11 @@ textarea.sc-ai-brief{min-height:64px;resize:vertical;line-height:1.5;}
 .rm-lead{color:var(--text-dim);font-size:13.5px;line-height:1.6;margin:0 0 16px;}
 .rm-bolum{border:1px solid var(--line);border-radius:2px;padding:14px;margin-bottom:14px;}
 .rm-bas{display:flex;align-items:center;gap:10px;margin-bottom:8px;}
-.rm-bas h3{margin:0;font-size:14.5px;font-weight:600;flex:1;}
+/* ⚠ 19 KASIM 2026: h3 -> h4. Hatirlatmalar artik ayarlar
+   SAYFASININ bir bolumu ve o sayfanin bolum basliklari h3; alt
+   basliklar da h3 kalsaydi ekran okuyucuda ayni duzeyde gorunup
+   ic ice gectikleri kaybolurdu. Penceredeyken ustte h2 vardi. */
+.rm-bas h4{margin:0;font-size:14.5px;font-weight:600;flex:1;}
 .rm-not{color:var(--text-dim);font-size:12.5px;line-height:1.55;margin:8px 0 0;}
 .rm-anahtar{display:flex;align-items:center;gap:9px;font-size:13.5px;cursor:pointer;padding:4px 0;}
 .rm-anahtar input{width:16px;height:16px;flex:none;cursor:pointer;}
@@ -4643,7 +4668,6 @@ textarea.sc-ai-brief{min-height:64px;resize:vertical;line-height:1.5;}
              bu dugme gizli duruyor. -->
         <button class="rail-link" id="havaGosterBtn" hidden data-i18n="hv_show">Weather &amp; light</button>
         <button class="rail-link" id="aiSettingsBtn" data-i18n="btn_ai_settings">✨ AI (Gemini)</button>
-        <button class="rail-link" id="remindersBtn" data-i18n="rm_btn">🔔 Reminders</button>
         <!-- Hesap etiketleri MENUYE girmiyor: alt cubukta 560 pikselde
              zaten yer savasi verildi ve bu her gun acilan bir sey degil,
              bir kez kurulup unutulan bir ayar. -->
@@ -4866,6 +4890,107 @@ textarea.sc-ai-brief{min-height:64px;resize:vertical;line-height:1.5;}
            durumunu yazan kod da, onu olcen testler de kimligi
            ariyor. Yeri degisti, sozlesmesi degismedi. -->
       <button class="btn btn-sm" id="themeBtn">🌙 Dark</button>
+    </div>
+
+    <!-- ⛔ 19 KASIM 2026 — HATIRLATMALAR BURAYA TASINDI
+         (YAPILACAKLAR 58, asama 3). Eskiden `#remindersOverlay`
+         penceresiydi ve yan menude kendi dugmesi (`remindersBtn`)
+         vardi; kullanici ayarlarin BIR sayfada toplanmasini istedi.
+         ⚠ ALAN KIMLIKLERI DEGISMEDI (`rm_once`, `rm_saat`,
+           `rm_adres`, `rm_adresPay`, `rm_kurBtn` …): bu alanlari
+           yazan kod da, olcen testler de kimlikle buluyor. Yer
+           degisti, sozlesme degismedi.
+         ⛔ Penceredeki "Kapat" dugmesi (`rm_kapatBtn`) KALDIRILDI:
+           bir SAYFADA kapatilacak bir sey yok. Pencerenin arka
+           perdesine dokunarak kapatma da oyle.
+         ⚠ Bolum acilirken tazelenmesi `setPage`'e baglandi:
+           sayfaya hangi yoldan gelinirse gelinsin (dugme, /ayarlar
+           adresi, oturum hatirasi) alanlar dolu geliyor. -->
+    <h3 class="tpl-h"><span data-i18n="rm_title">Deadline reminders</span></h3>
+    <div class="ayar-blok" id="ayarHatirlatma">
+      <p class="rm-lead" data-i18n="rm_lead">Shootboard can tell you about a step before its deadline passes.</p>
+      <p class="rm-kapsam" data-i18n-html="rm_kapsam">These reminders are for <b>project step deadlines</b> — script, filming, audio, edit, approval, packaging, publishing. The posts on your publishing calendar are not included; you open Shootboard for those.</p>
+
+      <div class="rm-bolum">
+        <div class="rm-bas"><h4 data-i18n="rm_when_title">When should it remind you?</h4></div>
+        <div class="rm-zaman">
+          <label class="rm-anahtar"><input type="checkbox" id="rm_once"><span data-i18n="rm_when_once">The day before</span></label>
+          <label class="rm-anahtar"><input type="checkbox" id="rm_gun"><span data-i18n="rm_when_gun">On the deadline day</span></label>
+          <label class="rm-anahtar"><input type="checkbox" id="rm_gecikti"><span data-i18n="rm_when_gecikti">When a step is already late</span></label>
+        </div>
+        <p class="rm-not" data-i18n="rm_when_gecikti_note">“When a step is already late” works in the browser notification only. A calendar file writes its reminders in advance, so it cannot know later that a step slipped.</p>
+        <p class="rm-durum hata" id="rm_when_warn" hidden data-i18n="rm_when_none">Pick at least one moment.</p>
+      </div>
+
+      <div class="rm-bolum">
+        <div class="rm-bas">
+          <h4 data-i18n="rm_ch_browser">Browser notification</h4>
+          <label class="rm-anahtar"><input type="checkbox" id="rm_tarayici"></label>
+        </div>
+        <p class="rm-not" data-i18n="rm_ch_browser_lead">Works on computers and Android.</p>
+        <div class="rm-dugmeler">
+          <button type="button" class="btn btn-sm" id="rm_izinBtn" data-i18n="rm_ch_browser_ask" hidden>Allow notifications</button>
+        </div>
+        <p class="rm-durum" id="rm_izinDurum"></p>
+        <p class="rm-durum" id="rm_pushDurum"></p>
+        <p class="rm-not" data-i18n="rm_ch_browser_note">For now the notification arrives when you open Shootboard.</p>
+      </div>
+
+      <div class="rm-bolum">
+        <div class="rm-bas">
+          <h4 data-i18n="rm_ch_cal">Your own calendar</h4>
+          <label class="rm-anahtar"><input type="checkbox" id="rm_takvim"></label>
+        </div>
+        <div class="rm-saat" id="rm_saatSatir">
+          <label for="rm_saat" data-i18n="rm_saat_et">Reminder time</label>
+          <input type="time" id="rm_saat" value="09:00" step="300">
+          <span class="rm-not" data-i18n="rm_saat_not">Applies to calendar reminders.</span>
+        </div>
+        <p class="rm-not" data-i18n="rm_ch_cal_lead">Your deadlines are published as a calendar address.</p>
+        <div id="rm_adresSatir" hidden>
+          <p class="rm-adres-et" data-i18n="rm_adres_et">This is the address you paste into your calendar:</p>
+          <p class="rm-adres-alt" data-i18n="rm_adres_termin">Deadlines</p>
+          <div class="rm-adres">
+            <input type="text" id="rm_adres" readonly>
+            <button type="button" class="btn btn-sm" id="rm_kopyaBtn" data-i18n="rm_cal_copy">Copy address</button>
+          </div>
+          <!-- Paylasimlar AYRI bir adres: Google'da renk abonelik basina
+               veriliyor, olay basina degil. Ayri adres olmasaydi "terminleri
+               kapatip yalnizca paylasimlara bakayim" diye bir sey olamazdi. -->
+          <p class="rm-adres-alt" data-i18n="rm_adres_paylasim">Posts</p>
+          <div class="rm-adres">
+            <input type="text" id="rm_adresPay" readonly>
+            <button type="button" class="btn btn-sm" id="rm_kopyaPayBtn" data-i18n="rm_cal_copy">Copy address</button>
+          </div>
+          <p class="rm-not" data-i18n="rm_adres_iki">These are two separate calendars. Subscribe to both, or only the one you want; in your calendar app you can give each its own colour.</p>
+        </div>
+        <div class="rm-dugmeler">
+          <button type="button" class="btn btn-sm btn-primary" id="rm_kurBtn" data-i18n="rm_cal_start">Create the calendar address</button>
+          <button type="button" class="btn btn-sm" id="rm_yenileBtn" data-i18n="rm_cal_renew" hidden>Renew / cancel</button>
+        </div>
+        <p class="rm-durum" id="rm_takvimDurum"></p>
+        <details class="fold fold-modal rm-nasil">
+          <summary><span data-i18n="rm_cal_how">How do I add it?</span></summary>
+          <p class="rm-not" data-i18n-html="rm_cal_how_0">First press <b>Copy address</b> above. Then, in your calendar:</p>
+          <ul>
+            <li data-i18n-html="rm_cal_how_g">Google Calendar: Other calendars → Subscribe to calendar → From URL.</li>
+            <li data-i18n-html="rm_cal_how_i">iPhone: Settings → Calendar → Accounts → Add Subscribed Calendar.</li>
+            <li data-i18n-html="rm_cal_how_o">Outlook: Add calendar → Subscribe from web.</li>
+          </ul>
+        </details>
+        <p class="rm-not rm-ilk" data-i18n="rm_cal_first">Google Calendar does not fetch a new subscription right away — the first time, it can take a few hours to appear. That is Google's own schedule, not a mistake on your side.</p>
+        <p class="rm-not" data-i18n="rm_cal_lag">Calendars check the address on their own schedule.</p>
+        <p class="rm-not" data-i18n="rm_cal_remove">To remove it later you unsubscribe in your calendar app.</p>
+      </div>
+
+      <!-- Dosya indirme KASITLI olarak katli ve uyarili: kullanici bunu
+           tiklamadan once ne olacagini gormus olsun. -->
+      <details class="fold fold-modal">
+        <summary><span data-i18n="rm_file_title">Or: download a file (not recommended)</span></summary>
+        <p class="rm-uyari" data-i18n="rm_file_warn">A downloaded file enters your calendar as separate one-off events.</p>
+        <button type="button" class="btn btn-sm" id="rm_dosyaBtn" data-i18n="rm_file_btn">Download the .ics file anyway</button>
+        <p class="rm-durum" id="rm_dosyaDurum"></p>
+      </details>
     </div>
   </div>
 
@@ -6159,99 +6284,6 @@ textarea.sc-ai-brief{min-height:64px;resize:vertical;line-height:1.5;}
      karari, 3 Eylul 2026). Takvim tarafinda ABONELIK ana yol; dosya
      indirme yalnizca uyarili yedek, cunku indirilen dosyanin olaylari
      takvimden tek tek silinmek zorunda. -->
-<div class="overlay" id="remindersOverlay">
-  <div class="modal" style="max-width:520px;">
-    <h2 data-i18n="rm_title">Deadline reminders</h2>
-    <p class="rm-lead" data-i18n="rm_lead">Shootboard can tell you about a step before its deadline passes.</p>
-    <p class="rm-kapsam" data-i18n-html="rm_kapsam">These reminders are for <b>project step deadlines</b> — script, filming, audio, edit, approval, packaging, publishing. The posts on your publishing calendar are not included; you open Shootboard for those.</p>
-
-    <div class="rm-bolum">
-      <div class="rm-bas"><h3 data-i18n="rm_when_title">When should it remind you?</h3></div>
-      <div class="rm-zaman">
-        <label class="rm-anahtar"><input type="checkbox" id="rm_once"><span data-i18n="rm_when_once">The day before</span></label>
-        <label class="rm-anahtar"><input type="checkbox" id="rm_gun"><span data-i18n="rm_when_gun">On the deadline day</span></label>
-        <label class="rm-anahtar"><input type="checkbox" id="rm_gecikti"><span data-i18n="rm_when_gecikti">When a step is already late</span></label>
-      </div>
-      <p class="rm-not" data-i18n="rm_when_gecikti_note">“When a step is already late” works in the browser notification only. A calendar file writes its reminders in advance, so it cannot know later that a step slipped.</p>
-      <p class="rm-durum hata" id="rm_when_warn" hidden data-i18n="rm_when_none">Pick at least one moment.</p>
-    </div>
-
-    <div class="rm-bolum">
-      <div class="rm-bas">
-        <h3 data-i18n="rm_ch_browser">Browser notification</h3>
-        <label class="rm-anahtar"><input type="checkbox" id="rm_tarayici"></label>
-      </div>
-      <p class="rm-not" data-i18n="rm_ch_browser_lead">Works on computers and Android.</p>
-      <div class="rm-dugmeler">
-        <button type="button" class="btn btn-sm" id="rm_izinBtn" data-i18n="rm_ch_browser_ask" hidden>Allow notifications</button>
-      </div>
-      <p class="rm-durum" id="rm_izinDurum"></p>
-      <p class="rm-durum" id="rm_pushDurum"></p>
-      <p class="rm-not" data-i18n="rm_ch_browser_note">For now the notification arrives when you open Shootboard.</p>
-    </div>
-
-    <div class="rm-bolum">
-      <div class="rm-bas">
-        <h3 data-i18n="rm_ch_cal">Your own calendar</h3>
-        <label class="rm-anahtar"><input type="checkbox" id="rm_takvim"></label>
-      </div>
-      <div class="rm-saat" id="rm_saatSatir">
-        <label for="rm_saat" data-i18n="rm_saat_et">Reminder time</label>
-        <input type="time" id="rm_saat" value="09:00" step="300">
-        <span class="rm-not" data-i18n="rm_saat_not">Applies to calendar reminders.</span>
-      </div>
-      <p class="rm-not" data-i18n="rm_ch_cal_lead">Your deadlines are published as a calendar address.</p>
-      <div id="rm_adresSatir" hidden>
-        <p class="rm-adres-et" data-i18n="rm_adres_et">This is the address you paste into your calendar:</p>
-        <p class="rm-adres-alt" data-i18n="rm_adres_termin">Deadlines</p>
-        <div class="rm-adres">
-          <input type="text" id="rm_adres" readonly>
-          <button type="button" class="btn btn-sm" id="rm_kopyaBtn" data-i18n="rm_cal_copy">Copy address</button>
-        </div>
-        <!-- Paylasimlar AYRI bir adres: Google'da renk abonelik basina
-             veriliyor, olay basina degil. Ayri adres olmasaydi "terminleri
-             kapatip yalnizca paylasimlara bakayim" diye bir sey olamazdi. -->
-        <p class="rm-adres-alt" data-i18n="rm_adres_paylasim">Posts</p>
-        <div class="rm-adres">
-          <input type="text" id="rm_adresPay" readonly>
-          <button type="button" class="btn btn-sm" id="rm_kopyaPayBtn" data-i18n="rm_cal_copy">Copy address</button>
-        </div>
-        <p class="rm-not" data-i18n="rm_adres_iki">These are two separate calendars. Subscribe to both, or only the one you want; in your calendar app you can give each its own colour.</p>
-      </div>
-      <div class="rm-dugmeler">
-        <button type="button" class="btn btn-sm btn-primary" id="rm_kurBtn" data-i18n="rm_cal_start">Create the calendar address</button>
-        <button type="button" class="btn btn-sm" id="rm_yenileBtn" data-i18n="rm_cal_renew" hidden>Renew / cancel</button>
-      </div>
-      <p class="rm-durum" id="rm_takvimDurum"></p>
-      <details class="fold fold-modal rm-nasil">
-        <summary><span data-i18n="rm_cal_how">How do I add it?</span></summary>
-        <p class="rm-not" data-i18n-html="rm_cal_how_0">First press <b>Copy address</b> above. Then, in your calendar:</p>
-        <ul>
-          <li data-i18n-html="rm_cal_how_g">Google Calendar: Other calendars → Subscribe to calendar → From URL.</li>
-          <li data-i18n-html="rm_cal_how_i">iPhone: Settings → Calendar → Accounts → Add Subscribed Calendar.</li>
-          <li data-i18n-html="rm_cal_how_o">Outlook: Add calendar → Subscribe from web.</li>
-        </ul>
-      </details>
-      <p class="rm-not rm-ilk" data-i18n="rm_cal_first">Google Calendar does not fetch a new subscription right away — the first time, it can take a few hours to appear. That is Google's own schedule, not a mistake on your side.</p>
-      <p class="rm-not" data-i18n="rm_cal_lag">Calendars check the address on their own schedule.</p>
-      <p class="rm-not" data-i18n="rm_cal_remove">To remove it later you unsubscribe in your calendar app.</p>
-    </div>
-
-    <!-- Dosya indirme KASITLI olarak katli ve uyarili: kullanici bunu
-         tiklamadan once ne olacagini gormus olsun. -->
-    <details class="fold fold-modal">
-      <summary><span data-i18n="rm_file_title">Or: download a file (not recommended)</span></summary>
-      <p class="rm-uyari" data-i18n="rm_file_warn">A downloaded file enters your calendar as separate one-off events.</p>
-      <button type="button" class="btn btn-sm" id="rm_dosyaBtn" data-i18n="rm_file_btn">Download the .ics file anyway</button>
-      <p class="rm-durum" id="rm_dosyaDurum"></p>
-    </details>
-
-    <div class="modal-actions">
-      <button class="btn btn-primary" id="rm_kapatBtn" data-i18n="btn_close">Close</button>
-    </div>
-  </div>
-</div>
-
 <div class="overlay" id="tourOverlay">
   <!-- Tur penceresi script penceresi gibi: ekrana siğiyor, kayan tek sey
        ortadaki icerik. Baslik ve dugmeler hep yerinde. -->
@@ -7846,7 +7878,6 @@ const LANG = {
     hs_limit: (n)=> `Up to ${n} accounts.`,
     hs_sil: (ad)=> `Delete “${ad}”?`,
     hs_sil_bagli: (ad, n)=> `“${ad}” is used by ${n} entr${n === 1 ? 'y' : 'ies'}. Those entries are not deleted; they will show the account as removed. Delete it?`,
-    rm_btn: "🔔 Reminders",
     kur_btn_telefon: "Install on phone",
     kur_btn_bilgisayar: "Install on computer",
     kur_not: "Add Shootboard to your Home Screen. It opens like an app and works without a connection.",
@@ -9196,7 +9227,6 @@ const LANG = {
     hs_limit: (n)=> `En fazla ${n} hesap.`,
     hs_sil: (ad)=> `“${ad}” silinsin mi?`,
     hs_sil_bagli: (ad, n)=> `“${ad}” ${n} kayıtta kullanılıyor. O kayıtlar silinmiyor; hesabı silinmiş olarak gösterecekler. Yine de silinsin mi?`,
-    rm_btn: "🔔 Hatırlatmalar",
     kur_btn_telefon: "Telefona kur",
     kur_btn_bilgisayar: "Bilgisayara kur",
     kur_not: "Shootboard'u ana ekranına ekle. Uygulama gibi açılır, internet yokken de çalışır.",
@@ -16462,6 +16492,11 @@ function setPage(ad, sessizRota){
   if(ad === 'places') renderMekanlar();
   if(ad === 'kit') kitSayfasiCiz();
   if(ad === 'bugun') bugunCiz();
+  // ⚠ Ayarlar sayfasindaki hatirlatma alanlari KAYITTAN doluyor.
+  //   Eskiden pencereyi acan dugme tazeliyordu; sayfaya dugmeye
+  //   basmadan da gelinebildigi icin (adres satiri, oturum hatirasi)
+  //   tazeleme buraya tasindi.
+  if(ad === 'ayarlar') hatirlatmaEkraniTazele();
 }
 
 document.getElementById('bugunBtn').addEventListener('click', ()=>{
@@ -16841,7 +16876,13 @@ document.getElementById('tabKit').addEventListener('click', ()=> setPage('kit'))
 //    settings gibi bir sayfaya alip her seyi tipki projects'te oldugu
 //    gibi sayfa gibi olusturup kullanicinin ayarlarini yapmasini
 //    isteyebiliriz."
-document.getElementById('ayarlarBtn').addEventListener('click', ()=> setPage('ayarlar'));
+// ⚠ `funnel/reminders-opened` 19 Kasim 2026'da BITTI: onu atan
+//   serit dugmesi kalmadi (asama 3). Yerine ayarlar sayfasinin
+//   acilisi sayiliyor — olculen sey degisti, adi da degisti.
+document.getElementById('ayarlarBtn').addEventListener('click', ()=>{
+  track('funnel/ayarlar-opened');
+  setPage('ayarlar');
+});
 
 // ⚠ Tema dugmesi artik ayarlar sayfasinin ICINDE duruyor (yukarida
 //   `#ayarGorunum`). Kimligi degismedi, yalnizca yeri degisti.
@@ -25258,11 +25299,18 @@ function hatirlatmaAyariniOku(){
   hatirlatmaEkraniTazele();
   takvimTazeleKuyrukla();          // alarm zamanlari .ics icinde
 }
-function hatirlatmalariAc(){
-  hatirlatmaEkraniTazele();
-  document.getElementById('remindersOverlay').classList.add('open');
-  track('funnel/reminders-opened');
-}
+// ⛔ 19 KASIM 2026 — `hatirlatmalariAc()` KALDIRILDI (YAPILACAKLAR
+//    58 asama 3). Hatirlatmalar bir PENCERE degil, ayarlar
+//    sayfasinin bir bolumu; onu acan tek yer seritteki
+//    `remindersBtn` idi ve o dugme de kalmadi. Yani islevi cagiran
+//    hicbir yer yoktu.
+//    ⚠ "Ileride lazim olur" diye BIRAKILMADI: cagirilmayan bir
+//      islev, degistirilirken kimsenin fark etmedigi bir islevdir.
+//      Gerekirse geri yazilir -- yapacagi is iki satir:
+//      `setPage('ayarlar')` ve `#ayarHatirlatma`'ya kaydirmak.
+//    ⚠ Alanlarin DOLMASI `setPage`'e bagli (yukarida): sayfaya
+//      dugmeye basmadan da gelinebiliyor (adres satiri, oturum
+//      hatirasi) ve o yollarda alanlar bos kalirdi.
 
 
 // Ayarlar once yukleniyor: asagidaki dinleyiciler ve acilis bildirimi
@@ -25410,12 +25458,6 @@ document.getElementById('hesapOverlay2').addEventListener('click', (e)=>{
   if(e.target.id === 'hesapOverlay2') document.getElementById('hesapOverlay2').classList.remove('open');
 });
 
-document.getElementById('remindersBtn').addEventListener('click', hatirlatmalariAc);
-document.getElementById('rm_kapatBtn').addEventListener('click',
-  ()=> document.getElementById('remindersOverlay').classList.remove('open'));
-document.getElementById('remindersOverlay').addEventListener('click', (e)=>{
-  if(e.target.id === 'remindersOverlay') e.currentTarget.classList.remove('open');
-});
 
 ['rm_once','rm_gun','rm_gecikti'].forEach(id=>{
   document.getElementById(id).addEventListener('change', hatirlatmaAyariniOku);

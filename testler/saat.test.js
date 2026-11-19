@@ -37,7 +37,7 @@ const tetik = (p, saat, once) => p.evaluate(([s,o])=>{ hatirlatma.saat=s; return
   console.log('\n2. Varsayılan ve saklama');
   {
     const p = await ac(b);
-    await p.click('#remindersBtn'); await p.waitForTimeout(250);
+    await p.click('#ayarlarBtn'); await p.waitForTimeout(250);
     ok('varsayılan 09:00', (await p.inputValue('#rm_saat')) === '09:00');
     ok('takvim kapalıyken saat gizli', !(await p.isVisible('#rm_saatSatir')));
     await p.check('#rm_takvim'); await p.waitForTimeout(250);
@@ -51,7 +51,7 @@ const tetik = (p, saat, once) => p.evaluate(([s,o])=>{ hatirlatma.saat=s; return
   console.log('\n3. Bozuk saat varsayılana düşüyor');
   {
     const p = await ac(b, { takvim:true, saat:'25:99' });
-    await p.click('#remindersBtn'); await p.waitForTimeout(250);
+    await p.click('#ayarlarBtn'); await p.waitForTimeout(250);
     ok('bozuk değer reddedildi', (await p.inputValue('#rm_saat')) === '09:00');
     await p.close();
   }
@@ -59,7 +59,7 @@ const tetik = (p, saat, once) => p.evaluate(([s,o])=>{ hatirlatma.saat=s; return
   console.log('\n4. Açıklama metinleri');
   {
     const p = await ac(b);
-    await p.click('#remindersBtn'); await p.waitForTimeout(250);
+    await p.click('#ayarlarBtn'); await p.waitForTimeout(250);
     const kapsam = await p.textContent('.rm-kapsam');
     ok('kapsam cümlesi var', /proje adımlarının terminleri/i.test(kapsam), kapsam.slice(0,60));
     // Eskiden "paylaşımlar eklenmez" yazıyordu ve doğruydu. Paylaşımlar
@@ -80,7 +80,7 @@ const tetik = (p, saat, once) => p.evaluate(([s,o])=>{ hatirlatma.saat=s; return
     // Terminli bir adim olmadan .ics bos cikiyor; once veri kuruluyor.
     await p.evaluate(()=>{ const x=projeEkle('Saat testi','','','studio','');
       adimTarihiYaz(x,'script','2026-10-01'); saveProjects(); });
-    await p.click('#remindersBtn'); await p.waitForTimeout(250);
+    await p.click('#ayarlarBtn'); await p.waitForTimeout(250);
     await p.check('#rm_takvim'); await p.waitForTimeout(250);
     await p.click('#rm_kurBtn'); await p.waitForTimeout(700);
     // __ics TERMINLER dosyasi. Paylasim dosyasinda alarm YOK ve olmamali:

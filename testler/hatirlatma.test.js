@@ -43,7 +43,18 @@ async function ac(b, ayar={}) {
   {
     const p = await ac(b);
     ok('js hatası yok', p.hatalar.length===0, p.hatalar.join(' | '));
-    ok('sol menüde hatırlatmalar var', await p.isVisible('#remindersBtn'));
+    // ⛔ 19 KASIM 2026 — HATIRLATMALAR ARTIK AYARLAR SAYFASINDA
+    //    (YAPILACAKLAR 58 asama 3). Eskiden yan menude kendi dugmesi
+    //    vardi ve burada o dugme olculuyordu.
+    //    ⚠ Olculen sey ZAYIFLAMADI, IKIYE AYRILDI: hatirlatmalara
+    //      GIDEN yol gorunur mu (ayarlar dugmesi) ve hatirlatmalar
+    //      gercekten o sayfanin icinde mi. Ikincisi eskiden hic
+    //      olculmuyordu -- bolum baska bir yere dusse test yine
+    //      yesil kalirdi.
+    ok('yan menüde ayarlar düğmesi var', await p.isVisible('#ayarlarBtn'));
+    ok('hatırlatmalar AYARLAR SAYFASININ içinde',
+       await p.evaluate(()=> !!document.getElementById('ayarHatirlatma')
+                             .closest('#ayarlarPage')));
     ok('takvim çizildi', (await p.$$('#calGrid .cal-day')).length > 0);
     await p.close();
   }
@@ -51,9 +62,11 @@ async function ac(b, ayar={}) {
   console.log('\n2. Varsayılan ayarlar');
   {
     const p = await ac(b);
-    await p.click('#remindersBtn');
+    await p.click('#ayarlarBtn');
     await p.waitForTimeout(300);
-    ok('pencere açıldı', await p.isVisible('#remindersOverlay'));
+    // ⚠ Pencere degil SAYFA: ayarlar dugmesi sayfayi aciyor ve
+    //   hatirlatma bolumu o sayfanin icinde gorunuyor.
+    ok('hatırlatmalar bölümü göründü', await p.isVisible('#ayarHatirlatma'));
     ok('bir gün önce AÇIK', await p.isChecked('#rm_once'));
     ok('termin günü KAPALI', !(await p.isChecked('#rm_gun')));
     ok('geciktiğinde AÇIK', await p.isChecked('#rm_gecikti'));
@@ -66,7 +79,7 @@ async function ac(b, ayar={}) {
   console.log('\n3. Zaman anahtarları kaydediliyor, hiçbiri seçilmezse uyarı');
   {
     const p = await ac(b);
-    await p.click('#remindersBtn'); await p.waitForTimeout(200);
+    await p.click('#ayarlarBtn'); await p.waitForTimeout(200);
     await p.uncheck('#rm_once'); await p.uncheck('#rm_gecikti');
     await p.waitForTimeout(300);
     ok('uyarı çıktı', await p.isVisible('#rm_when_warn'));
@@ -80,7 +93,7 @@ async function ac(b, ayar={}) {
   console.log('\n4. Takvim aboneliği: adres oluşturma');
   {
     const p = await ac(b, { oturum:{ user:{ id:'11111111-1111-1111-1111-111111111111', email:'a@b.c' } } });
-    await p.click('#remindersBtn'); await p.waitForTimeout(200);
+    await p.click('#ayarlarBtn'); await p.waitForTimeout(200);
     await p.check('#rm_takvim'); await p.waitForTimeout(300);
     ok('kur düğmesi göründü', await p.isVisible('#rm_kurBtn'));
     await p.click('#rm_kurBtn'); await p.waitForTimeout(600);
@@ -116,7 +129,7 @@ async function ac(b, ayar={}) {
       adimTarihiYaz(p2, 'edited', '2026-09-25');
       saveProjects();
     });
-    await p.click('#remindersBtn'); await p.waitForTimeout(200);
+    await p.click('#ayarlarBtn'); await p.waitForTimeout(200);
     await p.check('#rm_takvim'); await p.waitForTimeout(200);
     await p.click('#rm_kurBtn'); await p.waitForTimeout(700);
     const ics = await p.evaluate(()=>window.__ics);
@@ -140,7 +153,7 @@ async function ac(b, ayar={}) {
     const p = await ac(b, { oturum:{ user:{ id:'33333333-3333-3333-3333-333333333333', email:'a@b.c' } },
                             yerel:{ once:false, gun:true, gecikti:true, takvim:false } });
     await p.evaluate(()=>{ const x=projeEkle('Test','', '', 'studio',''); adimTarihiYaz(x,'script','2026-10-01'); saveProjects(); });
-    await p.click('#remindersBtn'); await p.waitForTimeout(200);
+    await p.click('#ayarlarBtn'); await p.waitForTimeout(200);
     await p.check('#rm_takvim'); await p.waitForTimeout(200);
     await p.click('#rm_kurBtn'); await p.waitForTimeout(700);
     const ics = await p.evaluate(()=>window.__ics);
@@ -157,7 +170,7 @@ async function ac(b, ayar={}) {
       adimTarihiYaz(x,'script','2026-10-05'); adimTarihiYaz(x,'filmed','2026-10-06');
       x.script = true; saveProjects();
     });
-    await p.click('#remindersBtn'); await p.waitForTimeout(200);
+    await p.click('#ayarlarBtn'); await p.waitForTimeout(200);
     await p.check('#rm_takvim'); await p.waitForTimeout(200);
     await p.click('#rm_kurBtn'); await p.waitForTimeout(700);
     const ics = await p.evaluate(()=>window.__ics);
@@ -169,7 +182,7 @@ async function ac(b, ayar={}) {
   console.log('\n8. İptal: adres ÖLÜYOR');
   {
     const p = await ac(b, { oturum:{ user:{ id:'55555555-5555-5555-5555-555555555555', email:'a@b.c' } } });
-    await p.click('#remindersBtn'); await p.waitForTimeout(200);
+    await p.click('#ayarlarBtn'); await p.waitForTimeout(200);
     await p.check('#rm_takvim'); await p.waitForTimeout(200);
     await p.click('#rm_kurBtn'); await p.waitForTimeout(600);
     const eskiYol = (await p.evaluate(()=>window.__yuk))[0].yol;
@@ -187,7 +200,7 @@ async function ac(b, ayar={}) {
   console.log('\n9. Yenile: yeni yazılıp SONRA eski siliniyor');
   {
     const p = await ac(b, { oturum:{ user:{ id:'66666666-6666-6666-6666-666666666666', email:'a@b.c' } } });
-    await p.click('#remindersBtn'); await p.waitForTimeout(200);
+    await p.click('#ayarlarBtn'); await p.waitForTimeout(200);
     await p.check('#rm_takvim'); await p.waitForTimeout(200);
     await p.click('#rm_kurBtn'); await p.waitForTimeout(600);
     const ilkYol = (await p.evaluate(()=>window.__yuk))[0].yol;
@@ -216,7 +229,7 @@ async function ac(b, ayar={}) {
   {
     const p = await ac(b, { oturum:{ user:{ id:'77777777-7777-7777-7777-777777777777', email:'a@b.c' } } });
     await p.evaluate(()=>{ window.__yukHata = { message:'Bucket not found' }; });
-    await p.click('#remindersBtn'); await p.waitForTimeout(200);
+    await p.click('#ayarlarBtn'); await p.waitForTimeout(200);
     await p.check('#rm_takvim'); await p.waitForTimeout(200);
     await p.click('#rm_kurBtn'); await p.waitForTimeout(700);
     const m = await p.textContent('#rm_takvimDurum');
@@ -227,7 +240,7 @@ async function ac(b, ayar={}) {
   console.log('\n11. Girişsizken takvim kanalı sebebini söylüyor');
   {
     const p = await ac(b);
-    await p.click('#remindersBtn'); await p.waitForTimeout(200);
+    await p.click('#ayarlarBtn'); await p.waitForTimeout(200);
     await p.check('#rm_takvim'); await p.waitForTimeout(300);
     const m = await p.textContent('#rm_takvimDurum');
     ok('giriş yap deniyor', m.length > 0, m);
@@ -243,7 +256,7 @@ async function ac(b, ayar={}) {
     const p = await ac(b, { oturum:{ user:{ id:'99999999-9999-9999-9999-999999999999', email:'a@b.c' } },
                             prefs:{ prefs:{ lang:'tr', reminders:{ takvim:true, once:false, gun:true, gecikti:false, jeton:'aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaaaaaa' } },
                                     updated_at:new Date().toISOString() } });
-    await p.click('#remindersBtn'); await p.waitForTimeout(400);
+    await p.click('#ayarlarBtn'); await p.waitForTimeout(400);
     ok('termin günü buluttan geldi', await p.isChecked('#rm_gun'));
     ok('bir gün önce kapandı', !(await p.isChecked('#rm_once')));
     ok('takvim açık geldi', await p.isChecked('#rm_takvim'));
@@ -254,7 +267,7 @@ async function ac(b, ayar={}) {
   console.log('\n13b. Adres oluşunca talimat kendiliğinden açılıyor');
   {
     const p = await ac(b, { oturum:{ user:{ id:'11111111-1111-1111-1111-111111111111', email:'a@b.c' } } });
-    await p.click('#remindersBtn'); await p.waitForTimeout(200);
+    await p.click('#ayarlarBtn'); await p.waitForTimeout(200);
     ok('talimat başta kapalı', !(await p.evaluate(()=>document.querySelector('.rm-nasil').open)));
     await p.check('#rm_takvim'); await p.waitForTimeout(300);
     await p.click('#rm_kurBtn'); await p.waitForTimeout(700);
@@ -272,7 +285,7 @@ async function ac(b, ayar={}) {
   console.log('\n14. Dosya indirme: uyarı katlı, boşken söylüyor');
   {
     const p = await ac(b);
-    await p.click('#remindersBtn'); await p.waitForTimeout(200);
+    await p.click('#ayarlarBtn'); await p.waitForTimeout(200);
     const uyariGorunur = await p.isVisible('.rm-uyari');
     ok('uyarı başta GİZLİ (katlı)', !uyariGorunur);
     // Katı, indirme dügmesini ICEREN details'a bakarak ac: metne ya da
@@ -301,7 +314,7 @@ async function ac(b, ayar={}) {
     await p.waitForTimeout(1500);
     ok('js hatası yok', p.hatalar.length===0, p.hatalar.join(' | '));
     await p.evaluate(()=>{ document.querySelectorAll('.overlay.open').forEach(o=>o.classList.remove('open')); });
-    await p.click('#remindersBtn'); await p.waitForTimeout(200);
+    await p.click('#ayarlarBtn'); await p.waitForTimeout(200);
     ok('varsayılana döndü', await p.isChecked('#rm_once'));
     await p.close();
   }
@@ -310,7 +323,7 @@ async function ac(b, ayar={}) {
   {
     const p = await ac(b, { oturum:{ user:{ id:'aaaaaaaa-0000-0000-0000-000000000000', email:'a@b.c' } },
                             yerel:{ takvim:true, jeton:'../../gizli' } });
-    await p.click('#remindersBtn'); await p.waitForTimeout(300);
+    await p.click('#ayarlarBtn'); await p.waitForTimeout(300);
     const adres = await p.inputValue('#rm_adres').catch(()=>'');
     ok('bozuk jeton reddedildi', !adres.includes('..'), adres);
     await p.close();

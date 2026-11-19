@@ -77,6 +77,66 @@ function dene(ad, fn){
     };
   });
 
+  // ── PANEL HANGI YONE ACILIYOR ───────────────────────────────────
+  // ⛔ 19 KASIM 2026 — KULLANICI BILDIRDI: "bu dil drop down u asagi
+  //    degil yukari aciliyor". Dogruydu: `.dil-panel` icin
+  //    `bottom:calc(100% + 4px)` yazilmisti.
+  //    ⚠ ASIL MESELE AYRISMAYDI: ayni secici SITE sayfalarinda
+  //      (marka.css) ZATEN asagi aciliyordu (`top:calc(100% + 10px)`).
+  //      Yani ayni sey iki yerde iki turlu davraniyordu -- bu deponun
+  //      tekrarlayan hatasi. Bu olcum uygulamadaki yonu baglıyor;
+  //      `uretilen-sayfalar` testi site tarafini zaten olcuyor.
+  // ⚠ IKI EKRAN: masaustunde secici SOL SERIDIN ustunde, telefonda
+  //   UST SERIDIN icinde. Ikisinde de asagi acilmali VE ekranda
+  //   kalmali -- "asagi aciliyor" tek basina yetmez, ekranin
+  //   disina tasan bir panel de asagi aciliyordur.
+  const yonler = {};
+  for(const [ad, vp] of [['masaustu', { width:1280, height:900 }],
+                         ['telefon',  { width:390,  height:844 }]]){
+    const y = await b.newPage({ viewport: vp });
+    await y.route('**/supabase-js**', r=> r.fulfill({ status:200,
+      contentType:'application/javascript',
+      body:'window.supabase={createClient(){return {auth:{getSession:()=>Promise.resolve({data:{session:null}}),onAuthStateChange(){return {data:{subscription:{unsubscribe(){}}}}}}};}};' }));
+    await y.route('**/goatcounter**', r=> r.abort());
+    await y.addInitScript(()=>{ try{ localStorage.setItem('demo_seen_intro','1'); }catch(e){} });
+    await y.goto(SUNUCU + '/app.html', { waitUntil:'domcontentloaded' });
+    await y.waitForTimeout(1500);
+    await y.evaluate(()=>{
+      document.querySelectorAll('.overlay.open').forEach(o=> o.classList.remove('open'));
+      setLanguage('tr');
+    });
+    await y.waitForTimeout(250);
+    yonler[ad] = await y.evaluate(()=>{
+      const k = document.getElementById('langSelect');
+      k.querySelector('.dil-tetik').click();
+      const t = k.querySelector('.dil-tetik').getBoundingClientRect();
+      const pn = k.querySelector('.dil-panel').getBoundingClientRect();
+      return { asagi: pn.top >= t.bottom - 1,
+               ekranda: pn.top >= -1 && pn.bottom <= innerHeight + 1,
+               tetikAlt: Math.round(t.bottom), panelUst: Math.round(pn.top),
+               panelAlt: Math.round(pn.bottom), ekran: innerHeight };
+    });
+    await y.close();
+  }
+
+  dene('★ panel ASAGI aciliyor (yukari degil)', ()=>{
+    for(const ad of Object.keys(yonler)){
+      const o = yonler[ad];
+      assert.strictEqual(o.asagi, true,
+        ad + ': panel tetigin USTUNDE aciliyor -- tetigin alti ' +
+        o.tetikAlt + 'px, panelin ustu ' + o.panelUst + 'px');
+    }
+  });
+
+  dene('★ acilan panel EKRANDA kaliyor', ()=>{
+    for(const ad of Object.keys(yonler)){
+      const o = yonler[ad];
+      assert.strictEqual(o.ekranda, true,
+        ad + ': panel ekran disina tasiyor -- panel ' + o.panelUst + '-' +
+        o.panelAlt + 'px, ekran yuksekligi ' + o.ekran + 'px');
+    }
+  });
+
   dene('★ secici artik yerli <select> DEGIL', ()=>{
     assert.strictEqual(yapi.selectVar, false, 'hala bir <select> var');
     assert.strictEqual(yapi.tetikEtiket, 'BUTTON', 'tetik dugme degil: ' + yapi.tetikEtiket);

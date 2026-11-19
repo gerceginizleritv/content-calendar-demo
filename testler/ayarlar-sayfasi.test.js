@@ -16,9 +16,13 @@
 //   hesap ~10, tema 3, etiketler 2, hava 1, kurulum 1). Hepsini tek
 //   seferde tasimak ~20 dosyaya ayni anda dokunmak demekti; bir sey
 //   kirildiginda sebebini bulmak zorlasirdi.
-//   BU ASAMADA: sayfa kuruldu + TEMA tasindi.
-//   ⬜ Sonraki asamalar: dil secici · hatirlatmalar · hesap etiketleri
-//      · hava & isik · hesap · AI. Bu test her asamada BUYUYECEK.
+//   ✅ 1. asama: sayfa kuruldu + TEMA tasindi.
+//   ✅ 2. asama: dil secici yeniden yapildi. ⚠ KULLANICININ KARARIYLA
+//      yan seritte KALDI -- dili bulamayan birinin ayarlar sayfasina
+//      girmesi beklenemez. Olcumu `dil-secici-app` testinde.
+//   ✅ 3. asama: HATIRLATMALAR tasindi (pencere -> sayfa bolumu).
+//   ⬜ Sirada: hesap etiketleri · hava & isik · hesap · AI.
+//      Bu test her asamada BUYUYECEK.
 //
 // NE OLCUYOR
 //   1. Ayarlar bir SAYFA: serit dugmesi onu aciyor, oteki sayfayi
@@ -27,6 +31,9 @@
 //   3. Bolum basliklari iki dilde de cevrili
 //   4. Tema denetimi sayfanin ICINDE ve CALISIYOR (yalnizca durmuyor)
 //   5. ⛔ Seritte tema kalmadi ve bos `.rail-prefs` kutusu da yok
+//   6. ⛔ Hatirlatmalar sayfanin icinde; PENCERESI ve serit dugmesi
+//      geride kalmadi (yarim tasima en kotusu: iki yerde iki kopya)
+//   7. Sayfa OKUNUR genislikte ve telefonda yatay tasma yok
 
 const assert = require('node:assert');
 const { chromium } = require('./araclar');
@@ -138,6 +145,88 @@ function dene(ad, fn){
       'basliklar iki dilde ayni: ' + JSON.stringify(metin[d0].baslik));
     assert.notStrictEqual(metin[d0].giris, metin[d1].giris,
       'giris metni iki dilde ayni');
+  });
+
+  // ── HATIRLATMALAR SAYFADA, PENCERE GERIDE KALMADI ──────────────
+  // ⛔ 19 KASIM 2026 (asama 3). Yarim tasima en kotu sonuc: bolum
+  //   sayfaya girer ama pencere ve serit dugmesi de kalir, kullanici
+  //   ayni ayari iki yerde gorur ve hangisinin gectigini bilemez.
+  //   Bu yuzden "geldi mi" kadar "gitti mi" de olculuyor.
+  const htr = await p.evaluate(()=>{
+    const b = document.getElementById('ayarHatirlatma');
+    return {
+      sayfada: !!(b && b.closest('#ayarlarPage')),
+      gorunur: !!b && b.getBoundingClientRect().height > 0,
+      pencere: !!document.getElementById('remindersOverlay'),
+      seritDugmesi: !!document.getElementById('remindersBtn'),
+      kapatDugmesi: !!document.getElementById('rm_kapatBtn'),
+      // Alan kimlikleri korundu mu: bunlari yazan kod kimlikle buluyor.
+      alanlar: ['rm_once','rm_gun','rm_gecikti','rm_tarayici','rm_takvim',
+                'rm_saat','rm_adres','rm_adresPay','rm_kurBtn']
+                .filter(id=> !document.getElementById(id))
+    };
+  });
+
+  dene('★ hatirlatmalar AYARLAR SAYFASINDA ve gorunur', ()=>{
+    assert.strictEqual(htr.sayfada, true, 'bolum ayarlar sayfasinin icinde degil');
+    assert.strictEqual(htr.gorunur, true, 'bolum gorunmuyor');
+  });
+
+  dene('★ eski PENCERE ve serit dugmesi GERIDE KALMADI', ()=>{
+    assert.strictEqual(htr.pencere, false, '#remindersOverlay hala duruyor');
+    assert.strictEqual(htr.seritDugmesi, false, '#remindersBtn hala duruyor');
+    assert.strictEqual(htr.kapatDugmesi, false,
+      '#rm_kapatBtn hala duruyor -- sayfada kapatilacak bir sey yok');
+  });
+
+  dene('★ alan KIMLIKLERI degismedi', ()=>{
+    // ⚠ Bu alanlari yazan kod da, olcen testler de kimlikle buluyor.
+    //   Tasima sirasinda bir kimlik degisse `hatirlatma` testi duserdi
+    //   ama sebebi gorunmezdi; burada sebep acikca yaziliyor.
+    assert.deepStrictEqual(htr.alanlar, [],
+      'kaybolan alan kimlikleri: ' + htr.alanlar.join(', '));
+  });
+
+  // ── OKUNUR GENISLIK ─────────────────────────────────────────────
+  // ⛔ 19 KASIM 2026: hatirlatmalar 520 piksellik bir PENCERE icin
+  //   tasarlanmisti. Sayfaya tasinir tasinmaz 1280 piksellik ekranda
+  //   olculdu: metin satiri 1004 piksel (≈140 karakter; rahat okuma
+  //   65-75) ve "Tarayici bildirimi" basligi kendi tikinden ~1100
+  //   piksel uzaga dusuyordu. `#ayarlarPage{max-width:640px}` kondu.
+  //   ⚠ Esik 760: 640'in uzerinde pay birakiyor ama "sinir hic yok"
+  //     halini (1004) yakaliyor.
+  const genislik = await p.evaluate(()=>
+    Math.round(document.getElementById('ayarlarPage').getBoundingClientRect().width));
+
+  dene('★ geniş ekranda sayfa OKUNUR genislikte', ()=>{
+    assert.ok(genislik <= 760,
+      'ayarlar sayfasi ' + genislik + 'px genislikte; satirlar okunamayacak ' +
+      'kadar uzuyor ve tikler kendi basliklarindan kopuyor');
+  });
+
+  // Telefonda yatay tasma: tasiyan bolum butun sayfayi yana kaydirir.
+  const tel = await b.newPage({ viewport:{ width:390, height:844 } });
+  await tel.route('**/supabase-js**', r=> r.fulfill({ status:200,
+    contentType:'application/javascript',
+    body:'window.supabase={createClient(){return {auth:{getSession:()=>Promise.resolve({data:{session:null}}),onAuthStateChange(){return {data:{subscription:{unsubscribe(){}}}}}}};}};' }));
+  await tel.route('**/goatcounter**', r=> r.abort());
+  await tel.addInitScript(()=>{ try{ localStorage.setItem('demo_seen_intro','1'); }catch(e){} });
+  await tel.goto(SUNUCU + '/app.html', { waitUntil:'domcontentloaded' });
+  await tel.waitForTimeout(1500);
+  const telOlcum = await tel.evaluate(()=>{
+    document.querySelectorAll('.overlay.open').forEach(o=> o.classList.remove('open'));
+    setPage('ayarlar');
+    const d = document.documentElement;
+    return { tasma: d.scrollWidth - d.clientWidth,
+             bolumEni: Math.round(document.getElementById('ayarHatirlatma')
+                                          .getBoundingClientRect().width) };
+  });
+  await tel.close();
+
+  dene('★ telefonda yatay tasma yok', ()=>{
+    assert.ok(telOlcum.tasma <= 1,
+      'sayfa ' + telOlcum.tasma + 'px yana kayiyor (hatirlatma bolumu ' +
+      telOlcum.bolumEni + 'px)');
   });
 
   dene('sayfa hatasi yok', ()=>{

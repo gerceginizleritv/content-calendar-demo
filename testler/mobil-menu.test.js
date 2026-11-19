@@ -17,7 +17,9 @@ const KOK = process.argv[2] || 'http://127.0.0.1:8098';
 let g = 0, k = 0;
 const bak = (ad, ko, ek)=>{ if(ko){ g++; console.log('  ok  '+ad); } else { k++; console.log('  YOK '+ad+(ek?' -> '+ek:'')); } };
 
-const BAGLANTILAR = ['tourBtn','aiSettingsBtn','remindersBtn','kilavuzLink','feedbackBtn'];
+// ⚠ 19 KASIM 2026: `remindersBtn` yerine `ayarlarBtn` (YAPILACAKLAR 58
+//   asama 3 -- hatirlatmalar ayarlar sayfasina tasindi).
+const BAGLANTILAR = ['tourBtn','aiSettingsBtn','ayarlarBtn','kilavuzLink','feedbackBtn'];
 
 async function ac(t, w){
   const p = await (await t.newContext({ viewport:{width:w,height:844} })).newPage();
