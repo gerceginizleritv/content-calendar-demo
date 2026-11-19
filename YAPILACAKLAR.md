@@ -1921,6 +1921,45 @@ dokunmak ve ikinci seferde birincisini bozmak demek.
   yazılmazsa 3 iddia düşer, hepsi sığarken de çıkarsa 2, İngilizce
   sözlüğe girmezse 1, işaret akışa girerse 3, sayı yanlış yazılırsa 2.
 
+  ✅ **EK DÜZELTME (19 Kasım 2026) — BÜTÜN KARTLAR ARTIK EŞİT.**
+  Kullanıcı bildirdi: *"fikirler bölümünde hepsini ayır tuşu olanlar
+  ile olmayanlar arasında yükseklik farkı var. Hepsi 'Hepsini Ayır'
+  tuşu olanlar ile aynı yükseklikte olsun."*
+
+  Ölçüldü ve haklıydı, **ama sebep düğme değil içerik**:
+
+  | Kart | "Hepsini ayır" | Gövde | Kart |
+  |---|---|---|---|
+  | Kısa tek parçalı | yok | 20,92 | **150** |
+  | Uzun tek parçalı | yok | 104,61 | 195,61 |
+  | Üç parçalı | **var** | 104,63 | 195,63 |
+
+  Parçalı bir fikir, parçalar **ayrı satırlar** olduğu için beş
+  satırlık sınıra hemen dayanıyor; kısa tek parçalı fikir sınırın çok
+  altında kalıyordu. Pratikte *"parçalı olan" = "düğmesi olan"*
+  olduğu için fark düğmeden geliyormuş gibi görünüyordu.
+
+  **İki değişiklik:**
+  1. Gövdeye **üst sınır değil sabit yükseklik** (`max-height` →
+     `height`). Kısa fikir de artık 195,63.
+  2. `.fk-grid{align-items:start}` kalktı. Sebep: kartlar sabitlenince
+     **"YENİ FİKİR"** kutusu tek başına kısa kalıyordu (150'ye karşı
+     195,63) ve alt kenarı hizalanmıyordu — düzeltilen dağınıklığın
+     kalıntısı. Izgaranın kendi germesi geri geldi, o kutu satırın
+     boyuna uzuyor. ⚠ Sabit sayı yazılmadı: kart yüksekliği yarın
+     değişirse kendiliğinden uyar.
+
+  Ölçüldü: **en büyük fark 0,00 px** (ekleme kutusu dahil).
+
+  ⛔ **BU DÜZELTMEDE DE BİR MUTASYON BOŞLUĞU ÇIKTI.** Sabit yükseklik
+  `max-height`'e geri çevrildiğinde test **14/14 geçiyordu**: ızgara
+  germesi açık olduğu için kartlar yine aynı boyda görünüyordu (her
+  kart satırın boyuna uzuyor). Fark **gövdede** kalıyordu — sabitken
+  her gövde 104,63 px, üst sınırken kısa içerik bunun altında.
+  Yani *"kartlar eşit"* iddiası tek başına sabit yüksekliği
+  **korumuyordu**. Gövde ölçüsü de iddiaya eklendi; mutasyon artık
+  62,79 px farkla düşüyor.
+
   ⛔ **İKİ MUTASYON ÖNCE YAKALANMADI, İKİSİ DE TESTİN KUSURUYDU:**
   (1) "hepsi sığıyorsa işaret yok" iddiası yalnızca **tek parçalı**
   kartlara bakıyordu; kod orada zaten erken dönüyor, yani "her zaman

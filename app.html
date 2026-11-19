@@ -1912,8 +1912,18 @@ textarea.sc-ai-brief{min-height:64px;resize:vertical;line-height:1.5;}
   border-radius:2px;background:var(--surface);color:var(--text);font:inherit;font-size:13.5px;}
 .fk-proj-sel{min-width:0;max-width:100%;padding:6px 8px;border:1px solid var(--line);
   border-radius:2px;background:var(--surface);color:var(--text);font:inherit;font-size:12px;}
+/* ⛔ 19 KASIM 2026 — `align-items:start` KALKTI (YAPILACAKLAR 56).
+   Fikir kartlarina sabit yukseklik verilince "YENİ FİKİR" kutusu tek
+   basina kisa kaliyordu (150'ye karsi 195,63) ve alt kenari
+   komsulariyla hizalanmiyordu -- duzeltilen dagniklik'in kalintisi.
+   ⚠ COZUM SABIT SAYI DEGIL: izgaranin kendi varsayilani (stretch)
+     geri geldi, yani o kutu SATIRIN yuksekligine uzuyor. Kart
+     yuksekligi yarin degisirse kendiliginden uyar; elle yazilmis bir
+     "195px" olsaydi o gun sessizce yanlis olurdu.
+   ⚠ Fikir kartlari zaten sabit yukseklikte oldugu icin germe onlari
+     etkilemiyor. */
 .fk-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(228px,1fr));
-  gap:14px;align-items:start;}
+  gap:14px;}
 .fk-empty{grid-column:1/-1;}
 .fk-card{position:relative;display:flex;flex-direction:column;gap:8px;
   border:1px solid var(--line);border-radius:2px;background:var(--surface);
@@ -1970,7 +1980,23 @@ textarea.sc-ai-brief{min-height:64px;resize:vertical;line-height:1.5;}
      ⚠ 5 satir = 13,5px * 1,55 * 5 = 104,625 px. Sayi elle
        yazilmadi: punto ve satir araligi yukarida ne ise ondan
        hesaplaniyor, yarin punto degisirse sinir kendiliginden uyar. */
-  max-height:calc(13.5px * 1.55 * 5);}
+  /* ⛔ 19 KASIM 2026 — `max-height` DEGIL `height`: KUTULAR ESIT OLSUN.
+     Kullanici bildirdi: "fikirler bolumunde hepsini ayir tusu olanlar
+     ile olmayanlar arasinda yukseklik farki var. Hepsi 'Hepsini Ayir'
+     tusu olanlar ile ayni yukseklikte olsun."
+     Olculdu ve hakliydi, ama sebep DUGME DEGIL ICERIK:
+       kisa tek parcali  -> govde  20,92 px -> kart   150 px
+       uzun tek parcali  -> govde 104,61 px -> kart 195,61 px
+       uc parcali (dugme)-> govde 104,63 px -> kart 195,63 px
+       dokuz parcali     -> govde 104,63 px -> kart 195,63 px
+     Parcali bir fikir, parcalar AYRI SATIRLAR oldugu icin bes satirlik
+     sinira hemen dayaniyor; kisa tek parcali fikir sinirin cok altinda
+     kaliyordu. Pratikte "parcali olan" = "dugmesi olan" oldugu icin
+     fark dugmeden geliyormus gibi gorunuyordu.
+     ⚠ `max-height` bir UST SINIR: kisa icerik onun altinda kaliyordu.
+       `height` SABIT: her kart ayni boyda. Kullanicinin istedigi bu.
+     ⚠ Sayi yine elle yazilmiyor, ayni hesaptan geliyor. */
+  height:calc(13.5px * 1.55 * 5);}
 /* ⚠ Sarmal govdenin ustunde duruyor ve TASMAYI KIRPMIYOR: isaret
    govdenin icinde olsaydi `overflow:hidden` onu da keserdi. */
 .fk-body-sar{position:relative;flex:1;min-height:0;}

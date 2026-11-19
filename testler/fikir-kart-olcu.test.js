@@ -99,8 +99,27 @@ const assert = require('node:assert');
     const kartlar = [...document.querySelectorAll('.fk-card')]
       .filter(x=> x.querySelector('.fk-card-body'));
     const asarMi = fikirler.map(f=> !!f.__asar);
+    // ⛔ 19 KASIM 2026 — "YENI FIKIR" KUTUSU DA OLCULUYOR.
+    //    Fikir kartlarina sabit yukseklik verilince o kutu tek basina
+    //    kisa kaldi (150'ye karsi 195,63) ve alt kenari komsulariyla
+    //    hizalanmadi. Izgaranin germesi acilarak duzeltildi; bu olcu
+    //    o kutuyu DISARIDA birakirsa duzeltme sessizce geri alinabilir.
+    const ekleKutusu = [...document.querySelectorAll('.fk-card')]
+      .filter(x=> !x.querySelector('.fk-card-body'))
+      .map(x=> +x.getBoundingClientRect().height.toFixed(2));
     return {
+      ekleKutusu,
       yukseklikler: kartlar.map(x=> +x.getBoundingClientRect().height.toFixed(2)),
+      // ⛔ 19 KASIM 2026 — GOVDE YUKSEKLIGI DE OLCULUYOR, VE BU BIR
+      //    MUTASYON BOSLUGUNDAN DOGDU. Govdeye `height` yerine
+      //    `max-height` konunca test 14/14 GECIYORDU: izgara germesi
+      //    acik oldugu icin kartlar yine ayni boyda gorunuyordu
+      //    (her kart satirin boyuna uzuyor). Fark GOVDEDE kaliyordu:
+      //    sabitken her govde 104,63 px, ust sinirken kisa icerik
+      //    bunun altinda. Yani "kartlar esit" iddiasi tek basina
+      //    sabit yuksekligi KORUMUYORDU.
+      govdeler: kartlar.map(x=>
+        +x.querySelector('.fk-card-body').getBoundingClientRect().height.toFixed(2)),
       asar: asarMi,
       // Mini dugmeler kac SATIRA yayilmis
       dugmeSatirlari: kartlar.map(x=>{
@@ -126,30 +145,34 @@ const assert = require('node:assert');
 
   for(const d of diller){
     const o = sonuc[d];
-    dene('★ ' + d + ': kart yuksekligi metin ve parca sayisindan BAGIMSIZ', ()=>{
-      const y = o.yukseklikler;
-      assert.ok(y.length >= 5, 'yalnizca ' + y.length + ' kart olculdu');
-      // ⚠ Bazi ornekler BILEREK kisa (tek cumle, ya da iki kisa
-      //   parca) ve sinira hic degmiyor -- kisa kartlarin SISMESI
-      //   istenmiyor, istenen sey uzun olanlarin BUYUMEMESI.
-      //   O yuzden iddia "hepsi esit" degil: "siniri ASAN her icerik
-      //   ayni yukseklikte". Hangi ornegin astigi fikstur'deki
-      //   `asar` bayragindan geliyor, DIZINDEN degil.
-      const tasanlar = y.filter((_, i)=> o.asar[i]);
-      const kisalar  = y.filter((_, i)=> !o.asar[i]);
-      assert.ok(tasanlar.length >= 3 && kisalar.length >= 2,
-        'fikstur bozuk: ' + JSON.stringify(o.asar));
-      const yayilim = Math.max(...tasanlar) - Math.min(...tasanlar);
-      assert.ok(yayilim < 0.5,
-        'siniri asan kartlar arasinda ' + yayilim.toFixed(2) + ' px fark: '
-        + JSON.stringify(y) + ' -- sinir yok ya da yalnizca duz metni kapatiyor'
-        + ' (parcali govde blok ogelerden olustugu icin line-clamp onu kirpmaz)');
-      // ⛔ Kisa kartlarin HICBIRI sinira dayanmis kartlardan uzun
-      //    olamaz. Yoksa "sinir" diye konan sey bir ALT sinir olurdu.
-      for(const k of kisalar){
-        assert.ok(k <= Math.min(...tasanlar) + 0.5,
-          'kisa kart (' + k + ') sinirli kartlardan uzun: ' + JSON.stringify(y));
-      }
+    dene('★ ' + d + ': BUTUN kartlar ayni yukseklikte', ()=>{
+      // ⛔ 19 KASIM 2026 — IDDIA GUCLENDI. Once "siniri ASAN kartlar
+      //    esit" diyordu, cunku govdeye UST SINIR (max-height)
+      //    verilmisti ve kisa icerik sinirin altinda kaliyordu.
+      //    Kullanici bildirdi: "hepsini ayir tusu olanlar ile
+      //    olmayanlar arasinda yukseklik farki var. Hepsi 'Hepsini
+      //    Ayir' tusu olanlar ile ayni yukseklikte olsun."
+      //    Olculdu: kisa tek parcali kart 150 px, parcali olanlar
+      //    195,63 px. Sebep DUGME DEGIL ICERIK'ti -- parcalar ayri
+      //    satirlar oldugu icin sinira hemen dayaniyorlar -- ama
+      //    pratikte "parcali olan" = "dugmesi olan".
+      //    Govde SABIT yukseklige cevrildi; iddia artik daha guclu:
+      //    kisasi, uzunu, parcalisi ve "YENI FIKIR" kutusu BIR ARADA.
+      const y = o.yukseklikler.concat(o.ekleKutusu);
+      assert.ok(o.yukseklikler.length >= 5,
+        'yalnizca ' + o.yukseklikler.length + ' fikir karti olculdu');
+      assert.ok(o.ekleKutusu.length >= 1, '"YENI FIKIR" kutusu olculemedi');
+      const fark = Math.max(...y) - Math.min(...y);
+      assert.ok(fark < 0.5, fark.toFixed(3) + ' px fark: fikir kartlari '
+        + JSON.stringify(o.yukseklikler) + ', ekleme kutusu '
+        + JSON.stringify(o.ekleKutusu));
+      // ⛔ GOVDELER DE ESIT OLMALI (yukarida sebebi). Izgara germesi
+      //    kartlari esitler ama govdeyi esitlemez; sabit yukseklik
+      //    gidince bu iddia duser.
+      const gf = Math.max(...o.govdeler) - Math.min(...o.govdeler);
+      assert.ok(gf < 0.5, 'govdeler arasinda ' + gf.toFixed(3) + ' px fark: '
+        + JSON.stringify(o.govdeler)
+        + ' -- govdeye sabit yukseklik yerine UST SINIR konmus olabilir');
     });
 
     dene('★ ' + d + ': mini dugmeler IKI satiri asmiyor', ()=>{
@@ -247,7 +270,7 @@ const assert = require('node:assert');
     // ⚠ Isaret dugme satirina konsaydi mini dugmeler UCUNCU satira
     //   inerdi -- az once duzeltilen sorunun ta kendisi. Mutlak
     //   konumda duruyor; isaretli ve isaretsiz kartlar AYNI boyda.
-    const y = sonuc.tr.yukseklikler.filter((_, i)=> sonuc.tr.asar[i]);
+    const y = sonuc.tr.yukseklikler.concat(sonuc.tr.ekleKutusu);
     const yayilim = Math.max(...y) - Math.min(...y);
     assert.ok(yayilim < 0.5,
       'isaretli ve isaretsiz kartlar arasinda ' + yayilim.toFixed(2)
