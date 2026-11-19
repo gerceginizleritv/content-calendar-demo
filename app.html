@@ -639,6 +639,27 @@ a.lockup:focus-visible{outline:2px solid var(--accent);outline-offset:3px;border
   .btn.rail-auth{padding:6px 8px;}
   /* Dar ekranda ad biraz kuculerek sigiyor. */
   .lockup .wordmark{font-size:clamp(13px,4vw,16px);}
+  /* ⛔ 19 KASIM 2026 — YENI DIL SECICI MARKAYI KIRPTI.
+     Asama 2'de yerli <select> yerine bayrakli ozel tetik geldi ve
+     tetik ~45 pikselden 67,17 piksele cikti. Olculen sonuc: 360
+     pikselde marka adi 6,2 piksel eksikle KIRPILDI (kutu 67,8 /
+     gereken 74) ve 375 pikselde yalnizca 0,12 PIKSEL payla
+     geciyordu -- yani serige eklenecek herhangi bir sey onu da
+     kirpacakti. `marka-adi` testi yakaladi; kullanici gormedi.
+     Tetik burada inceliyor (67,17 -> ~45 piksel):
+       bayrak 18x13 -> 15x11, dolgu 5/8 -> 4/6, aralik 5 -> 4,
+       ok isareti gidiyor.
+     ⚠ OK ISARETI gidince "acilir" oldugu kaybolmuyor: dugme hala
+       aria-haspopup="listbox" tasiyor, ekran okuyucu soyluyor, ve
+       bayrak+kod cifti dokunulacak bir sey oldugunu gosteriyor.
+       En dar telefonda MARKA ADI oku isaretinden onemli -- kullanici
+       kirpilmis markayi uc kez bildirdi, oku bir kez bile istemedi.
+     ⚠ "TR" YAZISI KALIYOR. Bayrak bir ULKENIN isareti, dilin
+       degil (bkz. uret/bayraklar.js): tek basina hangi DILI
+       sectigini soylemiyor. Kisalan sey yalnizca ok ve dolgular. */
+  .rail-lang .dil-tetik{padding-left:4px;padding-right:6px;gap:4px;}
+  .rail-lang .dil-tetik .bayrak{width:15px;height:11px;}
+  .rail-lang .dil-tetik .dil-ok{display:none;}
 }
 
 /* --- Sayfa alti ------------------------------------------------------- */

@@ -98,6 +98,42 @@ const DAR = [320, 340];
     }, dil);
   }
 
+  // ── PAY OLCUMU ────────────────────────────────────────────────────
+  // ⛔ 19 KASIM 2026 — "KIRPILMADI" TEK BASINA YETMIYOR.
+  //   Dil secici yenilendiginde (YAPILACAKLAR 58 asama 2) tetik 45
+  //   pikselden 67,17 piksele cikti. 360 pikselde ad kirpildi ve bu
+  //   test yakaladi -- ama 375 pikselde pay YALNIZCA 0,12 PIKSELDI ve
+  //   test orada YESIL kaldi. Yani serige eklenecek bir sonraki sey
+  //   375'i de kirpacakti ve bunu yine kullanici gorecekti.
+  //   Bu olcum paya bakiyor: serige PAY kadar sahte genislik eklenince
+  //   ad hala kirpilmamis mi? Eklenen oge gercek bir ogenin yerine
+  //   gecmiyor, sadece ayni satirda yer kapliyor -- yani "bu serit daha
+  //   ne kadar dolabilir" sorusunun cevabi.
+  // ⚠ Olculen pay (19 Kasim 2026): 360→10px, 375→22, 390→14, 412→22,
+  //   430→40. En dar durum 360 piksel. Esik 8 piksel: olculen en kucuk
+  //   degerin altinda ama sifirin cok uzerinde, yani yazi tipi
+  //   cizimindeki kucuk oynamalar testi kirmiyor, YENI BIR OGE kiriyor.
+  const PAY = 8;
+  async function payVarMi(sayfa, dil) {
+    return await sayfa.evaluate((d) => {
+      setLanguage(d.dil);
+      const av = document.getElementById('railAvatar');
+      if (av) { av.classList.remove('bos'); av.textContent = 'M'; }
+      session = { user: { email: 'olcum@ornek.test', user_metadata: {} } };
+      refreshAuthUi();
+      const me = document.querySelector('.rail-me');
+      const sahte = document.createElement('span');
+      sahte.style.cssText = 'flex:none;height:1px;width:' + d.pay + 'px;';
+      me.appendChild(sahte);
+      const wm = document.querySelector('.wordmark');
+      const k = wm.getBoundingClientRect();
+      const r = { kirpik: k.width > 0 && wm.scrollWidth > wm.clientWidth + 1,
+                  genislik: Math.round(k.width), gereken: wm.scrollWidth };
+      sahte.remove();
+      return r;
+    }, { dil, pay: PAY });
+  }
+
   for (const w of GENIS) {
     const p = await tarayici.newPage({ ...devices['iPhone 13'],
                                        viewport: { width: w, height: 760 } });
@@ -114,6 +150,13 @@ const DAR = [320, 340];
       dene(w + 'px ' + dil + ': giris yapmisken hesap yazisi gizli', () => {
         assert.strictEqual(r.etiketGizli, true,
           'dugmenin yazisi gorunuyor; markaya yer kalmiyor');
+      });
+      const pr = await payVarMi(p, dil);
+      dene(w + 'px ' + dil + ': markanin en az ' + PAY + 'px PAYI var', () => {
+        assert.ok(!pr.kirpik,
+          'serige ' + PAY + 'px eklenince ad KIRPILIYOR: kutu ' + pr.genislik +
+          'px, gereken ' + pr.gereken + 'px. Pay bu kadar inceyse bir sonraki ' +
+          'serit ogesi markayi kullanicinin ekraninda kirpar.');
       });
     }
     await p.close();
