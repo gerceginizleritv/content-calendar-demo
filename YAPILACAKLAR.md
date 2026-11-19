@@ -2163,14 +2163,66 @@ dokunmak ve ikinci seferde birincisini bozmak demek.
   kaybetmiş bir düğme de "duruyor" görünürdü. Test düğmeye **tıklayıp
   temanın gerçekten değiştiğini** ölçüyor.
 
+  **✅ 2. AŞAMA BİTTİ (19 Kasım 2026) — dil seçici yeniden yapıldı.**
+
+  ⛔ **SEÇİCİNİN YERİ DEĞİŞMEDİ VE BU BİR KARAR.** Kullanıcı önce
+  *"hepsi taşınsın"* demişti; ama depoda bunun tersine verilmiş
+  bilinçli bir karar vardı (`mobil-menu.test.js:57`): dil anahtarı
+  gömülü bir yerden **çıkarılmıştı** çünkü kullanıcı onu bulamıyordu.
+  Ayarlar sayfasına taşımak o kararı geri alırdı — üstelik tam da
+  *"uygulamayı kendi dilinde görmeyen"* kişi için, ki o kişinin önce
+  "Ayarlar" yazan bir düğmeyi **anlaması** gerekir. Çelişki kullanıcıya
+  gösterildi, *"yan menüde kalsın, yalnızca görünüşü düzelsin"* dedi.
+
+  | | Önce | Sonra |
+  |---|---|---|
+  | Öğe | yerli `<select>` | `<button>` + `role="listbox"` panel |
+  | Bayrak | yok | var, **ortak dosyadan** |
+  | Masaüstü | "English" | 🇬🇧 English (170 px) |
+  | Dar ekran | "EN" | 🇬🇧 EN (68 px — eskisi gibi küçük) |
+
+  ⛔ **BAYRAKLAR KOPYALANMADI.** `uret/bayraklar.js` hem CommonJS
+  hem tarayıcı için dışa açıldı; `app.html` onu `<script src>` ile
+  okuyor. Kopyalamak en kolay yoldu ama bu deponun **tekrarlayan
+  hatası** tam o (otomatik yayın tablosu, palet değerleri, ikon
+  ailesi, hesap silme listesi — hepsi öyle ayrıştı). Yeni bir dilin
+  bayrağı bir kez yazılacak, iki yerde birden görünecek.
+  ⚠ Bekçi bunu **ölçüyor**: Node tarafında `bayrak('tr')` ne
+  üretiyorsa ekrandaki yol verisi onunla aynı olmalı.
+
+  ⚠ **İKİ "BOŞ BEKÇİ" BULUNDU VE KAPATILDI.** `dil-varsayilan` ve
+  `mobil-menu` testlerinde *"dar ekranda kısa kod"* iddiaları
+  `#langSelect option` sorgusu üzerinden çalışıyordu. Seçici
+  `<select>` olmaktan çıkınca o sorgu **boş** dönmeye başladı ve boş
+  dizide `.every(...)` **her zaman doğru** olduğu için iki iddia da
+  hiçbir şeyi ölçmeden yeşil kaldı. Artık tetikten okunuyor ve boş
+  olmadığı ayrıca şart koşuluyor; mutasyonla kanıtlandı.
+
+  ⚠ **Dört test yeniden ifade edildi, zayıflatılmadı:**
+  `dil-bulut` (`.value` → işaretli satırın `data-dil`'i),
+  `dil-varsayilan` (`inputValue` → aynı), `mobil-yakinlastirma`
+  (seçici artık form alanı olmadığı için punto tetikten ölçülüyor —
+  ⚠ bu değişiklik iOS riskini **azaltıyor**: 16px kuralı iOS'un form
+  alanına odaklanınca yakınlaştırmasından doğuyor, `<button>` öyle
+  bir yakınlaştırma yapmıyor), `mobil-menu`.
+
+  Bekçi: `testler/dil-secici-app.test.js`, **7 iddia**. Dört
+  mutasyonla kanıtlandı: bayrak kopyalanırsa 1 iddia düşer, Escape
+  kapatmazsa 1, seçim dili değiştirmezse 1, `aria-selected`
+  yazılmazsa 2.
+
+  ⚠ **ÖLÇÜLDÜ AMA DEĞİŞTİRİLMEDİ:** dar ekranda tetiğin yüksekliği
+  **32 px**, deponun 44 px dokunma hedefi standardının altında.
+  ⛔ Bu bir gerileme **değil**: eski `<select>` de 32 px idi
+  (`select.rail-lang{min-height:32px}`). Büyütmek üst şeridin
+  yerleşimini etkiler ("üst şeritte yer dar" — kod yorumu).
+  Kullanıcı isterse ayrı bir iş olarak yapılır.
+
   ⬜ **SONRAKİ AŞAMALAR** (her biri kendi tam koşusuyla):
-  1. **Dil seçici** — uygulamanın paletiyle, bayraklar
-     `uret/bayraklar.js`'ten **ortak** okunacak (kopyalanmayacak).
-     ⚠ O dosya bugün CommonJS; iki yerden de okunabilir hâle gelmeli.
-  2. **Hatırlatmalar** (5 dosya)
-  3. **Hesap etiketleri + hava & ışık** (2 + 1)
-  4. **Hesap** (~10 dosya)
-  5. **AI ayarları** (15 + 11) — en geniş olan, tek başına
+  1. **Hatırlatmalar** (5 dosya)
+  2. **Hesap etiketleri + hava & ışık** (2 + 1)
+  3. **Hesap** (~10 dosya)
+  4. **AI ayarları** (15 + 11) — en geniş olan, tek başına
 
   ⛔ **Bölüm 7 — HER DİLDE.** Yeni sayfanın her başlığı, her etiketi
   iki dilde (yarın sekiz dilde) olacak. Bekçi hazır:

@@ -66,11 +66,16 @@ async function ac(t, w){
       await p.isVisible('#langSelect'));
   // Ust seritte yer dar: tam ad ("Türkçe") marka adini kirpiyordu,
   // kapali etiket kisa koda dusuyor.
+  // ⛔ 19 KASIM 2026 — AYNI "BOS BEKCI" BURADA DA VARDI. Secici
+  //    <select> olmaktan cikinca `#langSelect option` bos donmeye
+  //    basladi ve bos dizide `.every(...)` her zaman dogru oldugu
+  //    icin iddia hicbir seyi olcmeden yesil kaliyordu.
+  //    ⚠ Olculen sey degismedi, tetikten okunuyor ve bos olmadigi da
+  //      sart kosuluyor.
+  const kisaEtiket = await p.$eval('#langSelect .dil-tetik .dil-ad',
+                                   e=> e.textContent.trim());
   bak('dar ekranda kisa kod',
-      await p.evaluate(()=> Array.from(document.querySelectorAll('#langSelect option'))
-                              .every(o=> o.textContent.trim().length <= 3)),
-      await p.evaluate(()=> Array.from(document.querySelectorAll('#langSelect option'))
-                              .map(o=> o.textContent).join(',')));
+      kisaEtiket.length > 0 && kisaEtiket.length <= 3, kisaEtiket);
 
   console.log('[kapaliyken]');
   const acikMi = ()=> p.$eval('#railFoot', e=> e.classList.contains('acik'));

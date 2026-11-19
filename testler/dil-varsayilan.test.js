@@ -33,8 +33,12 @@ const BEKLENEN = { 'tr-TR':'tr', 'en-US':'en', 'de-DE':'en' };   // de: tanimadi
   // ⚠ 13 Kasim 2026: burada `sec` parametresi KULLANILMIYORDU; secici
   // tabloda degistirilmisti ama okuyucu hala '#dilDug' ariyordu ve yeni
   // ana sayfada o dugme yok -> TimeoutError. Olculen sey degismedi.
+  // ⛔ 19 KASIM 2026 — `#langSelect` ARTIK <select> DEGIL
+  //    (YAPILACAKLAR 58): bayrakli ozel secici. `inputValue` calismiyor.
+  //    ⚠ Olculen sey degismedi: "secici o anki dili gosteriyor".
   const dilOku = async (p, sec)=> sec === '#langSelect'
-    ? await p.inputValue('#langSelect')
+    ? await p.$eval('#langSelect .dil-satir[aria-selected="true"]',
+                    e=> (e.dataset.dil || '').trim().toLowerCase())
     : (await p.getAttribute(sec, 'data-dil') || '').trim().toLowerCase();
 
   const sayfaAc = async (locale, url, onceki)=>{
@@ -86,8 +90,17 @@ const BEKLENEN = { 'tr-TR':'tr', 'en-US':'en', 'de-DE':'en' };   // de: tanimadi
     await p.route('**/supabase-js**', r=>r.abort());
     await p.goto('http://127.0.0.1:8098/app.html', { waitUntil:'domcontentloaded' });
     await p.waitForTimeout(900);
-    const etiketler = await p.evaluate(()=> Array.from(document.querySelectorAll('#langSelect option')).map(o=> o.textContent));
-    ok('dar ekranda kisa kod', etiketler.every(s=> s.length <= 3), etiketler.join(','));
+    // ⛔ 19 KASIM 2026 — BU IDDIA BOS KUMEDE SESSIZCE GECIYORDU.
+    //    Secici <select> olmaktan cikti (YAPILACAKLAR 58) ve
+    //    `#langSelect option` sorgusu BOS donmeye basladi. Bos dizide
+    //    `.every(...)` HER ZAMAN dogru -- yani iddia hicbir seyi
+    //    olcmuyordu ama yesil kaliyordu. Tam da bu oturumda birkac kez
+    //    yakalanan "bos bekci" durumu.
+    //    ⚠ Olculen sey degismedi: "dar ekranda gorunen etiket KISA
+    //      KOD, tam ad degil." Artik TETIKTEN okunuyor ve bos olup
+    //      olmadigi ayrica sart kosuluyor.
+    const etiket = await p.$eval('#langSelect .dil-tetik .dil-ad', e=> e.textContent.trim());
+    ok('dar ekranda kisa kod', etiket.length > 0 && etiket.length <= 3, etiket);
     ok('dar ekranda anahtar yine gorunuyor', await p.isVisible('#langSelect'));
     await c.close();
   }

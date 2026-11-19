@@ -40,4 +40,18 @@ function bayrak(kod, ek){
   return f ? f(String(ek || kod).replace(/[^a-z0-9]/gi, '')) : '';
 }
 
-module.exports = { bayrak, BAYRAK };
+// ⛔ 19 KASIM 2026 — BU DOSYA IKI YERDEN OKUNUYOR (YAPILACAKLAR 58).
+//    Site uretici (Node) `require` ile, uygulama (`app.html`) ise
+//    <script src> ile aliyor. Bayraklari uygulamaya KOPYALAMAK en
+//    kolay yoldu ama bu deponun TEKRARLAYAN HATASI tam o: bir yerde
+//    yapip otekinde unutmak (otomatik yayin tablosu, palet degerleri,
+//    ikon ailesi, hesap silme listesi... hepsi boyle ayristi).
+//    Yeni bir dil eklendiginde bayragi BIR kez buraya yazilacak ve
+//    iki yerde birden gorunecek.
+//    ⚠ Bu yuzden dosya hem CommonJS hem tarayici icin disa aciliyor.
+if(typeof module !== 'undefined' && module.exports){
+  module.exports = { bayrak, BAYRAK };
+}
+if(typeof window !== 'undefined'){
+  window.BAYRAKLAR = { bayrak, BAYRAK };
+}

@@ -39,7 +39,15 @@ const stub = (satir, patlasin) => {
 
   // 1) YENI CIHAZ: yerelde tercih yok, bulutta Turkce
   let page = await ac({ bulut:{ user_id:'u42', prefs:{lang:'tr'}, updated_at:new Date(simdi).toISOString() } });
-  let r = await page.evaluate(()=>({ dil: currentLang, secim: document.getElementById('langSelect').value,
+  // ⛔ 19 KASIM 2026 — SECICI ARTIK <select> DEGIL (YAPILACAKLAR 58).
+  //    Kullanici "app icerisindeki dil tusunu app'e uygun sekilde
+  //    duzeltmemiz lazim" dedi; yerli acilir liste gitti, yerine
+  //    bayrakli ozel secici geldi. `.value` artik yok.
+  //    ⚠ OLCULEN SEY DEGISMEDI: "secici o anki dili gosteriyor".
+  //      Ifadesi degisti: isaretli satirin `data-dil`i okunuyor.
+  let r = await page.evaluate(()=>({ dil: currentLang,
+    secim: (document.querySelector('#langSelect .dil-satir[aria-selected="true"]') || {})
+             .dataset?.dil,
     baslik: document.querySelector('[data-i18n="tab_projects"]').textContent.trim() }));
   k('YENİ CİHAZDA DİL BULUTTAN GELDİ', r.dil === 'tr', r.dil);
   k('açılır liste de güncellendi', r.secim === 'tr');

@@ -567,8 +567,13 @@ a.lockup:focus-visible{outline:2px solid var(--accent);outline-offset:3px;border
      yillardir yazilan `padding-right:20px` HIC UYGULANMIYORDU -- 16 Kasim
      2026'da olculdu: hesaplanan punto 16px, sag dolgu 10px cikti.
      Bu deponun tekrarlayan hatasi; ayni tuzak 583. satirda da yazili. */
-  select.rail-lang{width:auto;margin-top:0;padding-left:5px;padding-right:11px;
-    font-size:11.5px;min-height:32px;}
+  /* ⚠ 19 KASIM 2026: `select.rail-lang` idi; secici artik <select>
+     degil, bir <div>. Olcu kurali TETIGE tasindi -- eskiden
+     select'in kendisine uygulaniyordu. */
+  .rail-lang{width:auto;margin-top:0;}
+  .rail-lang .dil-tetik{padding-left:5px;padding-right:8px;
+    font-size:11.5px;min-height:32px;gap:5px;}
+  .rail-lang .dil-panel{left:auto;right:0;min-width:140px;}
   .rail-nav{flex-direction:row;gap:4px;width:100%;
     border-top:1px solid var(--line-soft);padding-top:8px;}
   /* min-width:0 SART: flex ogeleri varsayilan olarak icerikten dar
@@ -3412,6 +3417,43 @@ textarea.sc-ai-brief{min-height:64px;resize:vertical;line-height:1.5;}
 .lang-select:hover{border-color:var(--accent-dim);}
 .lang-select:focus{outline:none;border-color:var(--accent-dim);}
 
+/* ⛔ 19 KASIM 2026 — DIL SECICI (YAPILACAKLAR 58).
+   Yerli <select> gitti. ⚠ Renkler UYGULAMANIN paletinden
+   (--surface, --line, --text, --accent): sitedeki secicinin
+   kendi paleti var ve onu buraya kopyalamak iki ayri gorunum
+   dogururdu. Yapi ayni, giysi farkli. */
+.dil-sec{position:relative;}
+.dil-tetik{
+  display:flex;align-items:center;gap:7px;width:100%;
+  background:var(--surface);border:1px solid var(--line);color:var(--text);
+  padding:7px 10px;min-height:36px;border-radius:2px;cursor:pointer;
+  font:inherit;font-size:12.5px;font-weight:500;
+}
+.dil-tetik:hover{border-color:var(--accent-dim);}
+.dil-tetik:focus-visible{outline:2px solid var(--accent);outline-offset:1px;}
+.dil-ad{flex:1;text-align:left;white-space:nowrap;}
+.dil-ok{width:10px;height:7px;flex:none;opacity:.65;}
+.dil-tetik[aria-expanded="true"] .dil-ok{transform:rotate(180deg);}
+/* ⚠ Bayragin olcusu BURADA: `uret/bayraklar.js` yalnizca sekli
+   veriyor, boyutu her kullanan kendi belirliyor. */
+.dil-sec .bayrak{width:18px;height:13px;flex:none;border-radius:2px;}
+.dil-panel{
+  position:absolute;left:0;right:0;bottom:calc(100% + 4px);z-index:40;
+  background:var(--surface);border:1px solid var(--line);border-radius:3px;
+  box-shadow:0 8px 24px rgba(0,0,0,.18);padding:3px;
+  display:flex;flex-direction:column;gap:1px;
+}
+.dil-panel[hidden]{display:none;}
+.dil-satir{
+  display:flex;align-items:center;gap:7px;width:100%;
+  background:transparent;border:0;color:var(--text);cursor:pointer;
+  padding:7px 8px;border-radius:2px;font:inherit;font-size:12.5px;text-align:left;
+  min-height:36px;
+}
+.dil-satir:hover{background:var(--accent-soft);}
+.dil-satir:focus-visible{outline:2px solid var(--accent);outline-offset:-2px;}
+.dil-satir.secili{color:var(--accent);font-weight:600;}
+
 .pending-table{width:100%;border-collapse:collapse;font-size:12.5px;}
 .pending-table th{padding:6px 8px;text-align:left;border-bottom:1px solid var(--line);color:var(--text-dim);font-weight:600;}
 .pending-table td{padding:7px 8px;border-bottom:1px solid var(--line);}
@@ -4454,7 +4496,21 @@ textarea.sc-ai-brief{min-height:64px;resize:vertical;line-height:1.5;}
              kaydirmadan gorunmuyordu, telefonda "⋯" menusunun icinde
              iki dokunus otedeydi. Yanlis dilde acilmis bir ekranda
              kullanicinin ilk aradigi sey bu. -->
-        <select id="langSelect" class="lang-select rail-lang" aria-label="Language"></select>
+        <!-- ⛔ 19 KASIM 2026 — YERLI `<select>` GITTI (YAPILACAKLAR 58).
+             Kullanici: "app icerisinde de dil tusu var, bu tusu da
+             app'e uygun sekilde duzeltmemiz lazim." Sitede ayni is
+             18 Kasim'da yapilmisti ("cok amator duruyor").
+             ⚠ KIMLIK AYNI KALDI (`langSelect`): yerini ve
+               gorunurlugunu olcen testler kimligi ariyor; yeri
+               degismedi, sozlesmesi degismedi.
+             ⚠ YERI DE AYNI KALDI ve bu bir KARAR: dil anahtari
+               bir kez gomulu bir yerden cikarilmisti cunku kullanici
+               onu bulamiyordu (mobil-menu.test.js:57). Ayarlar
+               sayfasina tasimak o karari geri alirdi -- ustelik tam
+               da "uygulamayi kendi dilinde gormeyen" kisi icin.
+               Kullaniciya soruldu, "yan menude kalsin" dedi.
+             Icerigini `populateLangSelect()` yaziyor. -->
+        <div id="langSelect" class="dil-sec rail-lang"></div>
       </div>
 
       <!-- Hava ve isik. Icerigi tamamen JS yaziyor: izin istenmemis
@@ -6508,6 +6564,15 @@ textarea.sc-ai-brief{min-height:64px;resize:vertical;line-height:1.5;}
   </div>
 </div>
 
+<!-- ⛔ 19 KASIM 2026 — BAYRAKLAR ORTAK DOSYADAN (YAPILACAKLAR 58).
+     Site uretici de ayni dosyayi okuyor (`uret/ust-menu.js` icinden
+     `require`). Uygulamaya KOPYALAMAK en kolay yoldu ama bu deponun
+     tekrarlayan hatasi tam o: bir yerde yapip otekinde unutmak.
+     Yeni bir dil eklendiginde bayragi BIR kez yazilacak.
+     ⚠ Dosya hem CommonJS hem tarayici icin disa aciliyor; burada
+       `window.BAYRAKLAR` olarak geliyor. Gelmezse dil secici
+       bayraksiz ama CALISIR halde ciziliyor. -->
+<script src="uret/bayraklar.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.45.4/dist/umd/supabase.js"></script>
 <script>
 const STORAGE_KEY = 'demo_content_calendar_v1';
@@ -9404,14 +9469,78 @@ function latinYaz(el, metin){
   });
 }
 
+// ⛔ 19 KASIM 2026 — DIL SECICI YENIDEN YAZILDI (YAPILACAKLAR 58).
+//    Eskiden yerli bir <select>'ti; kullanici "app'e uygun sekilde
+//    duzeltmemiz lazim" dedi (sitede ayni is 18 Kasim'da yapilmisti).
+//    ⚠ Bayraklar `uret/bayraklar.js`'ten ORTAK geliyor, kopyalanmadi.
+//      Dosya yuklenmezse secici bayraksiz ama CALISIR halde ciziliyor.
+//    ⚠ Dar ekranda ad yerine kod yaziliyor ("TR"): eski davranis
+//      buydu ve bir test onu olcuyor ("dil secimi hala kucuk").
 function populateLangSelect(){
-  const sel = document.getElementById('langSelect');
-  if(!sel) return;
+  const kutu = document.getElementById('langSelect');
+  if(!kutu) return;
   const dar = DAR_EKRAN();
-  sel.innerHTML = Object.keys(LANG_NAMES).map(code=>
-    `<option value="${code}">${dar ? code.toUpperCase() : LANG_NAMES[code]}</option>`).join('');
-  sel.value = currentLang;
+  const bayrak = (k)=> (window.BAYRAKLAR ? window.BAYRAKLAR.bayrak(k, 'app' + k) : '');
+  const etiket = (k)=> dar ? k.toUpperCase() : LANG_NAMES[k];
+  const kodlar = Object.keys(LANG_NAMES);
+
+  kutu.innerHTML =
+    '<button type="button" class="dil-tetik" aria-haspopup="listbox"'
+    + ' aria-expanded="false">'
+    +   bayrak(currentLang)
+    +   '<span class="dil-ad">' + escapeHtml(etiket(currentLang)) + '</span>'
+    +   '<svg class="dil-ok" viewBox="0 0 12 8" aria-hidden="true"><path d="M1 1.5 6 6.5 11 1.5"'
+    +     ' fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"'
+    +     ' stroke-linejoin="round"/></svg>'
+    + '</button>'
+    + '<div class="dil-panel" role="listbox" hidden>'
+    +   kodlar.map(k=>
+        '<button type="button" class="dil-satir' + (k === currentLang ? ' secili' : '') + '"'
+        + ' role="option" aria-selected="' + (k === currentLang ? 'true' : 'false') + '"'
+        + ' data-dil="' + escapeHtml(k) + '">'
+        +   bayrak(k)
+        +   '<span>' + escapeHtml(LANG_NAMES[k]) + '</span>'
+        + '</button>').join('')
+    + '</div>';
 }
+
+// ⛔ Panel acma/kapama ve klavye. Dinleyiciler BELGEYE bagli, kutuya
+//    degil: `populateLangSelect` her dil degisiminde icerigi bastan
+//    yaziyor ve ogeye bagli bir dinleyici o anda yok olurdu.
+document.addEventListener('click', (e)=>{
+  const kutu = document.getElementById('langSelect');
+  if(!kutu) return;
+  const tetik = e.target.closest && e.target.closest('.dil-tetik');
+  const satir = e.target.closest && e.target.closest('.dil-satir');
+  if(satir && kutu.contains(satir)){
+    setLanguage(satir.dataset.dil);
+    return;   // populateLangSelect paneli zaten kapali ciziyor
+  }
+  if(tetik && kutu.contains(tetik)){
+    const panel = kutu.querySelector('.dil-panel');
+    const acik = !panel.hidden;
+    panel.hidden = acik;
+    tetik.setAttribute('aria-expanded', String(!acik));
+    return;
+  }
+  // Disari tiklaninca kapan.
+  const panel = kutu.querySelector('.dil-panel');
+  if(panel && !panel.hidden){
+    panel.hidden = true;
+    const t = kutu.querySelector('.dil-tetik');
+    if(t) t.setAttribute('aria-expanded', 'false');
+  }
+});
+document.addEventListener('keydown', (e)=>{
+  if(e.key !== 'Escape') return;
+  const kutu = document.getElementById('langSelect');
+  const panel = kutu && kutu.querySelector('.dil-panel');
+  if(panel && !panel.hidden){
+    panel.hidden = true;
+    const t = kutu.querySelector('.dil-tetik');
+    if(t){ t.setAttribute('aria-expanded', 'false'); t.focus(); }
+  }
+});
 // Ekran donunce ya da pencere boyu degisince etiket de degissin.
 try{
   window.matchMedia('(max-width:560px)').addEventListener('change', ()=> populateLangSelect());
@@ -9453,8 +9582,9 @@ function setLanguage(lang, buluttanGeldi){
     // E-postalar bu dilde gitsin diye hesap meta verisine de yaziliyor.
     if(session && sb){ try{ sb.auth.updateUser({ data: { lang } }).catch(()=>{}); }catch(e){} }
   }
-  const sel = document.getElementById('langSelect');
-  if(sel) sel.value = lang;
+  // ⚠ Artik `<select>` degil: secili dili gostermek icin secici
+  //   bastan ciziliyor (tetikteki bayrak, ad ve isaretli satir).
+  populateLangSelect();
   applyStaticI18n();
   // applyStaticI18n giris metnini data-i18n anahtarindan geri yaziyor; Google
   // acikken metin o varyanta donsun diye saglayici durumunu tekrar uyguluyoruz.
@@ -23632,7 +23762,9 @@ try{
   const savedLang = localStorage.getItem(LANG_KEY);
   currentLang = (savedLang && LANG[savedLang]) ? savedLang : detectDefaultLang();
 }catch(e){ currentLang = detectDefaultLang(); }
-document.getElementById('langSelect').addEventListener('change', (e)=> setLanguage(e.target.value));
+// ⚠ Eski `change` dinleyicisi kalkti: secici artik <select> degil.
+//   Tiklama ve klavye `populateLangSelect` yakinindaki belge
+//   dinleyicilerinde.
 populateLangSelect();
 applyStaticI18n();
 populateSelects();

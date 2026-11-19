@@ -72,7 +72,18 @@ const kucukler = (p)=> p.evaluate(()=>{
     const kucuk = await kucukler(p);
     // Masaustunde kural GECERSIZ: arayuz gereksiz yere sismesin.
     bak('masaustunde kucuk alanlar duruyor', kucuk.length > 10, kucuk.length + ' alan');
-    bak('dil secimi hala kucuk', kucuk.some(x=> x.indexOf('langSelect') === 0), kucuk[0]);
+    // ⛔ 19 KASIM 2026 — DIL SECICI ARTIK FORM ALANI DEGIL
+    //    (YAPILACAKLAR 58): yerli <select> gitti, yerine <button> +
+    //    panel geldi. `kucukler()` yalnizca input/select/textarea
+    //    tariyor, o yuzden secici o listeye girmiyor.
+    //    ⚠ OLCULEN SEY DEGISMEDI: "masaustunde arayuz gereksiz yere
+    //      sismiyor, dil secici kucuk kaliyor." Ifadesi tetige tasindi.
+    //    ⚠ BU DEGISIKLIK iOS RISKINI AZALTIYOR, artirmıyor: 16px
+    //      kurali iOS'un form alanina odaklaninca yakinlastirmasi
+    //      yuzunden var; <button> boyle bir yakinlastirma yapmiyor.
+    const tetikPunto = await p.$eval('#langSelect .dil-tetik',
+                                     e=> parseFloat(getComputedStyle(e).fontSize));
+    bak('dil secimi hala kucuk', tetikPunto < 16, tetikPunto + 'px');
     await p.close();
   }
 
