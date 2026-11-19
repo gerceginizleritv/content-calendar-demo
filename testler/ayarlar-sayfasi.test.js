@@ -54,7 +54,7 @@ function dene(ad, fn){
   await p.addInitScript(()=>{ try{ localStorage.setItem('demo_seen_intro','1'); }catch(e){} });
   await p.route('**/supabase-js**', r=> r.fulfill({ status:200,
     contentType:'application/javascript',
-    body:'window.supabase={createClient(){return {auth:{getSession:()=>Promise.resolve({data:{session:null}}),onAuthStateChange(){return {data:{subscription:{unsubscribe(){}}}}}}};}};' }));
+    body:'window.supabase={createClient(){return {auth:{getSession:()=>Promise.resolve({data:{session:null}}),onAuthStateChange(){return {data:{subscription:{unsubscribe(){}}}}}},from(){return {select(){return {eq(){return {maybeSingle:()=>Promise.resolve({data:null,error:null}),order(){return Promise.resolve({data:[],error:null});}};},order(){return Promise.resolve({data:[],error:null});}};},upsert(){return Promise.resolve({error:null});}};},storage:{from(){return {list:()=>Promise.resolve({data:[],error:null}),download:()=>Promise.resolve({data:null,error:null}),upload:()=>Promise.resolve({error:null}),remove:()=>Promise.resolve({error:null})};}},functions:{invoke:()=>Promise.resolve({data:null,error:null})}};}};' }));
   await p.route('**/goatcounter**', r=> r.abort());
   await p.goto(SUNUCU + '/app.html', { waitUntil:'domcontentloaded' });
   await p.waitForTimeout(1500);
@@ -208,7 +208,7 @@ function dene(ad, fn){
   const tel = await b.newPage({ viewport:{ width:390, height:844 } });
   await tel.route('**/supabase-js**', r=> r.fulfill({ status:200,
     contentType:'application/javascript',
-    body:'window.supabase={createClient(){return {auth:{getSession:()=>Promise.resolve({data:{session:null}}),onAuthStateChange(){return {data:{subscription:{unsubscribe(){}}}}}}};}};' }));
+    body:'window.supabase={createClient(){return {auth:{getSession:()=>Promise.resolve({data:{session:null}}),onAuthStateChange(){return {data:{subscription:{unsubscribe(){}}}}}},from(){return {select(){return {eq(){return {maybeSingle:()=>Promise.resolve({data:null,error:null}),order(){return Promise.resolve({data:[],error:null});}};},order(){return Promise.resolve({data:[],error:null});}};},upsert(){return Promise.resolve({error:null});}};},storage:{from(){return {list:()=>Promise.resolve({data:[],error:null}),download:()=>Promise.resolve({data:null,error:null}),upload:()=>Promise.resolve({error:null}),remove:()=>Promise.resolve({error:null})};}},functions:{invoke:()=>Promise.resolve({data:null,error:null})}};}};' }));
   await tel.route('**/goatcounter**', r=> r.abort());
   await tel.addInitScript(()=>{ try{ localStorage.setItem('demo_seen_intro','1'); }catch(e){} });
   await tel.goto(SUNUCU + '/app.html', { waitUntil:'domcontentloaded' });
@@ -282,7 +282,7 @@ function dene(ad, fn){
     a.on('pageerror', e=> aHata.push(ad + ': ' + e.message));
     await a.route('**/supabase-js**', r=> r.fulfill({ status:200,
       contentType:'application/javascript',
-      body:'window.supabase={createClient(){return {auth:{getSession:()=>Promise.resolve({data:{session:null}}),onAuthStateChange(){return {data:{subscription:{unsubscribe(){}}}}}}};}};' }));
+      body:'window.supabase={createClient(){return {auth:{getSession:()=>Promise.resolve({data:{session:null}}),onAuthStateChange(){return {data:{subscription:{unsubscribe(){}}}}}},from(){return {select(){return {eq(){return {maybeSingle:()=>Promise.resolve({data:null,error:null}),order(){return Promise.resolve({data:[],error:null});}};},order(){return Promise.resolve({data:[],error:null});}};},upsert(){return Promise.resolve({error:null});}};},storage:{from(){return {list:()=>Promise.resolve({data:[],error:null}),download:()=>Promise.resolve({data:null,error:null}),upload:()=>Promise.resolve({error:null}),remove:()=>Promise.resolve({error:null})};}},functions:{invoke:()=>Promise.resolve({data:null,error:null})}};}};' }));
     await a.route('**/goatcounter**', r=> r.abort());
     await a.addInitScript((x)=>{ try{ localStorage.setItem('demo_seen_intro','1');
       localStorage.setItem('demo_tour_done','1');
@@ -328,7 +328,7 @@ function dene(ad, fn){
     const a = await b.newPage({ viewport:{ width:1280, height:900 } });
     await a.route('**/supabase-js**', r=> r.fulfill({ status:200,
       contentType:'application/javascript',
-      body:'window.supabase={createClient(){return {auth:{getSession:()=>Promise.resolve({data:{session:null}}),onAuthStateChange(){return {data:{subscription:{unsubscribe(){}}}}}}};}};' }));
+      body:'window.supabase={createClient(){return {auth:{getSession:()=>Promise.resolve({data:{session:null}}),onAuthStateChange(){return {data:{subscription:{unsubscribe(){}}}}}},from(){return {select(){return {eq(){return {maybeSingle:()=>Promise.resolve({data:null,error:null}),order(){return Promise.resolve({data:[],error:null});}};},order(){return Promise.resolve({data:[],error:null});}};},upsert(){return Promise.resolve({error:null});}};},storage:{from(){return {list:()=>Promise.resolve({data:[],error:null}),download:()=>Promise.resolve({data:null,error:null}),upload:()=>Promise.resolve({error:null}),remove:()=>Promise.resolve({error:null})};}},functions:{invoke:()=>Promise.resolve({data:null,error:null})}};}};' }));
     await a.route('**/goatcounter**', r=> r.abort());
     await a.addInitScript(()=>{ try{ localStorage.setItem('demo_seen_intro','1');
       localStorage.setItem('demo_tour_done','1');
@@ -359,6 +359,90 @@ function dene(ad, fn){
     assert.ok(dolum.platformSecenek > 1,
       'platform listesi dolmadi (' + dolum.platformSecenek + ' secenek)');
     assert.ok(dolum.hesapListesi > 0, 'hesap listesi hic cizilmedi');
+  });
+
+  // ── HESAP: KULLANICININ CIZDIGI SINIR ───────────────────────────
+  // ⛔ 19 KASIM 2026 (YAPILACAKLAR 58 asama 5). Kullanici sinirini kendi
+  //    sozleriyle koydu: "hesap yonetimi ve hesaptan cikis ayarlara
+  //    tasinacak. Ad ve avatar ana ekranda kalmaya devam edecek."
+  //    ⚠ GIRIS YAPMA dugmesi de seritte kaldi: giris yapmamis birinin
+  //      once "Ayarlar"i bulup anlamasi beklenemez (dil secicide ayni
+  //      gerekce kullanilmisti). Giris YAPILMISKEN gizleniyor, cunku
+  //      tek isi hesap penceresini acmakti ve o pencere kalmadi.
+  //    ⚠ PLAN SATIRI kapinin DISINDA: oturumsuz biri de hangi planda
+  //      oldugunu (Starter) ve fiyatlari gormeli.
+  const hesapPencere = await p.evaluate(()=>({
+    overlay: !!document.getElementById('hesapOverlay'),
+    kapat: !!document.getElementById('hesapKapat'),
+    sayfada: !!(document.getElementById('ayarHesap') || {}).closest
+             && !!document.getElementById('ayarHesap').closest('#ayarlarPage')
+  }));
+
+  const hesapHal = await p.evaluate(async ()=>{
+    const oku = ()=>({
+      authBtnGizli: document.getElementById('authBtn').hidden,
+      icerikGizli: document.getElementById('hesapIcerik').hidden,
+      kapiGizli: document.getElementById('hesapGirisGerek').hidden,
+      planGorunur: document.getElementById('hesapPlanAd')
+                     .getBoundingClientRect().height > 0,
+      eposta: document.getElementById('hesapEposta').textContent.trim(),
+      avatar: !!document.querySelector('.rail-me #railAvatar'),
+      ad: !!document.querySelector('.rail-me #railName')
+    });
+    setPage('ayarlar');
+    const oturumsuz = oku();
+    // `session` modul kapanisinda bir `let`; sayfa kapsaminda adiyla
+    // erisiliyor (hesap-sil testi de boyle yapiyor).
+    session = { user: { id: 'kim-1', email: 'olcum@ornek.test',
+                        app_metadata: { provider: 'email' } } };
+    // ⛔ SAYFA YENIDEN ACILMIYOR, BILEREK. Kullanici ayarlar
+    //    sayfasindayken "Giris yap"a basarsa `onAuthStateChange` yalnizca
+    //    `refreshAuthUi()` cagiriyor; `setPage` cagrilmiyor. Bolumun
+    //    kapisi o yolda da acilmali. Ilk yazimda burada `setPage` vardi
+    //    ve iddia `refreshAuthUi` yolunu HIC olcmuyordu -- mutasyonla
+    //    yakalandi (cagri silindi, test yine yesil kaldi).
+    refreshAuthUi();
+    const oturumlu = oku();
+    // Alanlarin DOLMASI ayri bir yol: sayfa acilisi.
+    setPage('projects'); setPage('ayarlar');
+    await new Promise(r=> setTimeout(r, 300));
+    const dolu = oku();
+    session = null; refreshAuthUi();
+    return { oturumsuz, oturumlu, dolu };
+  });
+
+  dene('★ oturumsuzken: giris dugmesi seritte, hesap icerigi kapali', ()=>{
+    const o = hesapHal.oturumsuz;
+    assert.strictEqual(o.authBtnGizli, false, 'serit giris dugmesi gizlenmis');
+    assert.strictEqual(o.icerikGizli, true, 'hesap satirlari oturumsuz gosteriliyor');
+    assert.strictEqual(o.kapiGizli, false, '"giris yapmalisin" satiri cikmiyor');
+    assert.strictEqual(o.planGorunur, true,
+      'plan satiri oturumsuz gorunmuyor -- Starter oldugunu gormeli');
+  });
+
+  dene('★ oturum acikken: serit dugmesi gizli, hesap icerigi acik', ()=>{
+    const o = hesapHal.oturumlu;
+    assert.strictEqual(o.authBtnGizli, true,
+      'oturum acikken serit dugmesi hala duruyor -- isi kalmadi');
+    assert.strictEqual(o.icerikGizli, false, 'hesap satirlari acilmadi');
+    assert.strictEqual(o.kapiGizli, true, '"giris yapmalisin" satiri hala duruyor');
+    assert.strictEqual(hesapHal.dolu.eposta, 'olcum@ornek.test',
+      'sayfa acilinca e-posta yazilmadi: ' + JSON.stringify(hesapHal.dolu.eposta));
+  });
+
+  dene('★ AD ve AVATAR seritte KALDI (kullanicinin karari)', ()=>{
+    for(const hal of ['oturumsuz','oturumlu']){
+      assert.strictEqual(hesapHal[hal].avatar, true, hal + ': avatar seritten kalkmis');
+      assert.strictEqual(hesapHal[hal].ad, true, hal + ': ad seritten kalkmis');
+    }
+  });
+
+  dene('★ eski hesap PENCERESI geride kalmadi', ()=>{
+    // Yarim tasimada kullanici ayni ayari iki yerde gorur.
+    assert.strictEqual(hesapPencere.overlay, false, '#hesapOverlay hala duruyor');
+    assert.strictEqual(hesapPencere.kapat, false, '#hesapKapat hala duruyor');
+    assert.strictEqual(hesapPencere.sayfada, true,
+      'hesap bolumu ayarlar sayfasinin icinde degil');
   });
 
   dene('sayfa hatasi yok', ()=>{

@@ -2387,16 +2387,75 @@ dokunmak ve ikinci seferde birincisini bozmak demek.
 
   Bekçi: `ayarlar-sayfasi.test.js` 11 → **16 iddia**.
 
-  ⬜ **SONRAKİ AŞAMALAR** (her biri kendi tam koşusuyla):
-  1. **Hesap yönetimi + çıkış** (7 dosya — ölçüldü: `hesap-sil`,
-     `sifre`, `yedek-oto`, `ai-erisimi`, `mcp-bayrak`,
-     `fiyat-baglantisi`, `kur-dugmesi`)
-     ⚠ Kullanıcı 19 Kasım'da sınırı çizdi: *"hesap yönetimi ve hesaptan
-     çıkış ayarlara taşınacak. Ad ve avatar ana ekranda kalmaya devam
-     edecek."* Giriş yapma düğmesi de şeritte kalıyor — giriş yapmamış
-     birinin önce "Ayarlar"ı bulup anlaması beklenemez (dil seçicide
-     aynı gerekçe).
-  2. **AI ayarları** (15 + 11) — en geniş olan, tek başına
+  **✅ 5. AŞAMA BİTTİ (19 Kasım 2026) — hesap yönetimi + çıkış.**
+
+  Sınırı kullanıcı kendi sözleriyle çizdi: *"hesap yönetimi ve hesaptan
+  çıkış ayarlara taşınacak. Ad ve avatar ana ekranda kalmaya devam
+  edecek."*
+
+  `#hesapOverlay` penceresi kaldırıldı; içeriği `#ayarHesap` bölümü
+  oldu. Alan kimlikleri değişmedi (`hesapEposta`, `hesapCikisBtn`,
+  `hesapSilKutu`, `hesapMcp` …). `hesapKapat` kalktı.
+
+  | | Önce | Sonra |
+  |---|---|---|
+  | Hesap yönetimi | pencere | ayarlar sayfası bölümü |
+  | Şeritteki düğme (giriş yapmışken) | "Hesabım" → pencere | **gizli** |
+  | Şeritteki düğme (çıkışken) | "Giriş yap" | aynen duruyor |
+  | Ad + avatar | şeritte | **şeritte** (kullanıcının kararı) |
+
+  ⚠ **Giriş yapma düğmesi şeritte kaldı.** Giriş yapmamış birinin önce
+  "Ayarlar"ı bulup anlaması beklenemez — dil seçicide aynı gerekçe
+  kullanılmıştı.
+
+  ⚠ **PLAN SATIRI KAPININ DIŞINDA.** İlk yazımda bütün içerik oturum
+  kapısının ardına konmuştu; `fiyat-baglantisi` testi düştü ve haklıydı:
+  oturum açmamış biri de **hangi planda olduğunu (Starter)** ve
+  fiyatları görmeli. Plan satırı dışarı alındı, `planSatiriCiz()`
+  oturum kontrolünden önce çağrılıyor.
+
+  ⚠ **GÖRÜNÜRLÜK ve DOLDURMA ikiye ayrıldı.** Görünürlük ucuz ve her
+  oturum değişiminde gerekli (`hesapGorunurlugu`, `refreshAuthUi`den);
+  doldurma ağ işi yapıyor (plan, yedek listesi, AI, MCP) ve yalnızca
+  sayfa açılınca gerekli (`hesapBolumunuTazele`, `ayarSayfasiTazele`den).
+  Tek işlev olsaydı ya her `refreshAuthUi` dört ağ çağrısı yapardı, ya
+  da bölüm oturum değişince yanlış hâlde kalırdı.
+
+  ⛔ **TAŞIMA GERÇEK BİR BOŞLUK DOĞURDU:** yedek geri yüklenince takvim,
+  projeler, fikirler… yeniden çiziliyordu ama **ayarlar sayfası
+  çizilmiyordu.** Eskiden gerekmiyordu çünkü hesap penceresi geri
+  yüklemeden **önce kapatılıyordu**; artık ayarlar bir SAYFA ve açık
+  kalabiliyor. Çizilmezse kullanıcı yedeği geri yükleyip hesap
+  etiketlerini "gelmemiş" sanırdı. `yedekGeriYukle`'ye
+  `ayarSayfasiTazele()` eklendi.
+
+  ⚠ **Altı test yeniden ifade edildi, zayıflatılmadı:**
+  `fiyat-baglantisi` (pencere → bölüm; kıyas düğmesi `hesapCikisBtn`
+  artık kapının ardında olduğu için `hs_kaydet` oldu — ölçülen şey aynı:
+  plan bağlantısı `<a>` ama `.btn` gibi mi çiziliyor), `sifre`
+  (*"pencere kapalı"* → *"bölüm sayfada ve oturumsuz içeriği gizli"* —
+  **güçlendi**, oturumsuz kullanıcıya hesap satırlarının gösterilmediği
+  eskiden hiç sorulmuyordu), `yedek-oto`, `ai-erisimi`, `hesap-arayuz`,
+  `ayarlar-sayfasi`.
+
+  ⛔ **İKİ MUTASYON BOŞ BEKÇİ ORTAYA ÇIKARDI, İKİSİ DE KAPATILDI:**
+  1. *"Oturum açıkken içerik açılıyor"* iddiası, oturumu kurduktan sonra
+     sayfayı **yeniden açıyordu** — bu yüzden `refreshAuthUi` yolunu hiç
+     ölçmüyordu. Oysa kullanıcı ayarlar sayfasındayken "Giriş yap"a
+     basarsa `setPage` çağrılmıyor. Artık `refreshAuthUi()` sonrası,
+     sayfa yeniden açılmadan ölçülüyor.
+  2. *"Ayarlar sayfası yedekten tazelendi"* iddiası satır sayısı
+     karşılaştırıyordu; yedek fikstüründe **hiç hesap yoktu**, sayı
+     değişmiyordu ve iddia boşlukta geçiyordu. Fikstüre yedekten gelen
+     bir hesap kondu; artık listede adıyla aranıyor.
+
+  Bekçi: `ayarlar-sayfasi.test.js` 16 → **20 iddia**. Üç mutasyonla
+  kanıtlandı: şerit düğmesi gizlenmezse 1 iddia düşer, `refreshAuthUi`
+  görünürlüğü güncellemezse 1, yedek geri yüklemesi ayarları
+  tazelemezse 1.
+
+  ⬜ **SON AŞAMA:** **AI ayarları** (15 + 11 dosya) — en geniş olan,
+  tek başına.
 
   ⛔ **Bölüm 7 — HER DİLDE.** Yeni sayfanın her başlığı, her etiketi
   iki dilde (yarın sekiz dilde) olacak. Bekçi hazır:

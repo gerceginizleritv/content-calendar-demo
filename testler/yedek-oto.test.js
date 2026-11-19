@@ -123,7 +123,11 @@ const OTURUM = { user:{ id: UID, email:'a@b.c', app_metadata:{provider:'email'},
     const gunler = ['2026-09-07.json','2026-09-06.json','2026-09-05.json'];
     const p = await ac(b, { oturum: OTURUM, dosyalar: gunler });
     await p.waitForTimeout(1200);
-    await p.evaluate(()=> hesapPenceresiniAc());
+    // ⛔ 19 KASIM 2026 — HESAP YONETIMI ARTIK PENCERE DEGIL (YAPILACAKLAR
+    //    58 asama 5): ayarlar sayfasinin bir bolumu. `hesapPenceresiniAc()`
+    //    kalkti; bolumu dolduran is `setPage('ayarlar')` ile oluyor.
+    //    ⚠ Olculen sey degismedi, yalnizca ACMA YOLU degisti.
+    await p.evaluate(()=> setPage('ayarlar'));
     await p.waitForFunction(()=> document.querySelectorAll('#yedekListe [data-yedek]').length > 0,
                             null, { timeout: 8000 });
     const satirlar = await p.$$eval('#yedekListe li', e=> e.map(x=> x.textContent.trim()));
@@ -143,7 +147,16 @@ const OTURUM = { user:{ id: UID, email:'a@b.c', app_metadata:{provider:'email'},
       window.__yedekDosya = { urun:'shootboard', surum:1, alindi:'2026-09-07T10:00:00.000Z',
         kayitlar:[], projeler:[{ id:'pr_yedek', name:'Yedekten gelen', type:'other',
                                  steps:{}, deadlines:{}, createdAt: Date.now() }],
-        fikirler:[], scriptler:[], mekanlar:[] };
+        fikirler:[], scriptler:[], mekanlar:[],
+        // ⛔ 19 KASIM 2026 — HESAP YEDEGE BILEREK KONDU. Asagidaki
+        //    "ayarlar sayfasi tazelendi" iddiasi once yalnizca satir
+        //    sayisini karsilastiriyordu; yedekte hic hesap olmadigi
+        //    icin sayi degismiyordu ve iddia BOSLUKTA geciyordu
+        //    (mutasyonla yakalandi: tazeleme cagrisi silindi, test
+        //    yine yesil kaldi). Artik yedekten GELEN bir hesap var;
+        //    ayarlar sayfasi cizilmezse listede gorunmez.
+        hesaplar:[{ id:'hs_yedek', name:'Yedekten hesap', platform:'youtube',
+                    handle:'@yedek', url:'', notlar:'' }] };
       window.onayla = ()=> Promise.resolve(true);
       window.uyari = (m)=>{ window.__mesaj = m; return Promise.resolve(true); };
     }, UID);
@@ -153,8 +166,20 @@ const OTURUM = { user:{ id: UID, email:'a@b.c', app_metadata:{provider:'email'},
         await p.evaluate(()=> window.__indir));
     bak('yedekteki proje geri geldi',
         await p.evaluate(()=> projects.some(x=> x.id === 'pr_yedek')));
-    bak('hesap penceresi kapandi',
-        !(await p.$eval('#hesapOverlay', e=> e.classList.contains('open'))));
+    // ⛔ 19 KASIM 2026 — ESKIDEN "hesap penceresi kapandi" SORULUYORDU.
+    //    Geri yukleme oncesi pencere kapatiliyordu, bu yuzden icindeki
+    //    listelerin bayatlamasi sorun degildi. Artik hesap yonetimi bir
+    //    SAYFA bolumu ve ACIK KALABILIYOR (YAPILACAKLAR 58 asama 5).
+    //    ⚠ Olculen sey GUCLENDI: "pencere kapandi" yerine "ayarlar
+    //      sayfasi YEDEKTEN tazelendi" soruluyor. Cizilmeseydi hesap
+    //      etiketleri listesi yedekten onceki halinde kalir, kullanici
+    //      yedegi geri yukleyip "gelmemis" diye dusunurdu.
+    bak('yedekteki hesap VERIYE geldi',
+        await p.evaluate(()=> hesaplar.some(x=> x.id === 'hs_yedek')));
+    bak('ayarlar sayfasi yedekten tazelendi',
+        await p.evaluate(()=>
+          /Yedekten hesap/.test(document.getElementById('hs_liste').textContent)),
+        await p.evaluate(()=> document.getElementById('hs_liste').textContent.trim().slice(0, 60)));
     await p.close();
   }
 

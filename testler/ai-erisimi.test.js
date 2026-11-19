@@ -205,9 +205,13 @@ async function sayfaAc(t, oncesi){
         auth: { signOut(){ return Promise.resolve({}); }, updateUser(){ return Promise.resolve({ error: null }); } },
         rpc(){ return Promise.resolve({ error: null }); }
       };
-      hesapPenceresiniAc();
+      // ⛔ 19 KASIM 2026 — HESAP YONETIMI ARTIK PENCERE DEGIL (YAPILACAKLAR
+      //    58 asama 5): ayarlar sayfasinin bir bolumu. `hesapPenceresiniAc()`
+      //    kalkti; bolumu dolduran is `setPage('ayarlar')` ile oluyor.
+      //    ⚠ Olculen sey degismedi, yalnizca ACMA YOLU degisti.
+      setPage('ayarlar');
     });
-    await p.waitForSelector('#hesapOverlay.open');
+    await p.waitForSelector('#hesapIcerik:not([hidden])');
     // ANAHTAR YOLU KALDIRILDI. Kullanicinin anahtar uretip bir yere
     // baglamasi gerekiyordu (Custom GPT, otomasyon araci, kendi betigi);
     // sohbet pencereleri istek atamadigi icin anahtari sohbete veren kisi

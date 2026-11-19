@@ -114,20 +114,37 @@ async function ac(t, w, h){
   // ════════════════════════════════════════════════════════════
   console.log('[hesap penceresinde PLAN satiri]');
   await p.evaluate(()=> setLanguage('tr'));
-  await p.evaluate(()=> hesapPenceresiniAc());
+  // ⛔ 19 KASIM 2026 — HESAP YONETIMI ARTIK PENCERE DEGIL (YAPILACAKLAR
+  //    58 asama 5): ayarlar sayfasinin bir bolumu. `hesapPenceresiniAc()`
+  //    kalkti; bolumu dolduran is `setPage('ayarlar')` ile oluyor.
+  //    ⚠ Olculen sey degismedi, yalnizca ACMA YOLU degisti.
+  await p.evaluate(()=> setPage('ayarlar'));
   await p.waitForTimeout(700);
   const hp = await p.evaluate(()=>{
     const a = document.getElementById('hesapPlanAd');
     const b = document.getElementById('hesapPlanLink');
     const r = b.getBoundingClientRect();
-    const c = document.getElementById('hesapCikisBtn').getBoundingClientRect();
-    return { acik: document.getElementById('hesapOverlay').classList.contains('open'),
+    // ⛔ 19 KASIM 2026 — KIYAS DUGMESI DEGISTI. Eskiden `hesapCikisBtn`
+    //    ile olculuyordu; o dugme artik GIRIS KAPISININ ARDINDA (hesap
+    //    yonetimi oturumsuz anlamsiz) ve bu test oturum acamiyor --
+    //    sebebi 20 satir asagida yazili: `sb`/`session` modul
+    //    kapanisinda, disaridan sahte oturum verilemiyor.
+    //    ⚠ OLCULEN SEY AYNI: plan baglantisi `<a>` ama `.btn` gibi
+    //      ciziliyor mu, yoksa cokup incecik mi kaliyor. Kiyas icin
+    //      ayni `.btn` olcusunu tasiyan, oturumsuz da GORUNEN bir
+    //      dugme gerekiyordu: ayarlar sayfasindaki `hs_kaydet`.
+    const c = document.getElementById('hs_kaydet').getBoundingClientRect();
+    // ⚠ Pencere degil SAYFA. Oturumsuzken bolum GORUNUR ama icerigi
+    //   kapinin ardinda; "acildi" demek = bolum ekranda.
+    return { acik: !document.getElementById('ayarlarPage').hidden
+                   && document.getElementById('ayarHesap')
+                        .getBoundingClientRect().height > 0,
              ad: a.textContent.trim(), gorunur: r.width > 0 && r.height > 0,
              boy: Math.round(r.height), komsu: Math.round(c.height) };
   });
-  bak('pencere acildi', hp.acik);
+  bak('hesap bolumu gorunur oldu', hp.acik);
   bak('plan satiri gorunuyor', hp.gorunur);
-  bak('pencerenin kendi dugmeleriyle ayni boyda',
+  bak('sayfanin kendi dugmeleriyle ayni boyda',
       Math.abs(hp.boy - hp.komsu) <= 1, hp.boy + ' vs ' + hp.komsu);
   // Oturum yok -> sunucuya hic gitmiyor, dogrudan Starter.
   bak('oturumsuzken Starter yaziyor', hp.ad === 'Starter', hp.ad);

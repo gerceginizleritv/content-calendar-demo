@@ -85,8 +85,21 @@ const bak = (ad, ko, ek)=>{ if(ko){ g++; console.log('  ok  '+ad); } else { k++;
   bak('oturum yokken sol menu girise cagiriyor',
       sadelestir(await p.$eval('#authBtn', e => e.textContent)) ===
       sadelestir(await p.evaluate(() => t('btn_signin'))));
-  bak('hesap penceresi kapali', !(await p.$eval('#hesapOverlay', e => e.classList.contains('open'))));
-  bak('sifre satiri hesap penceresinde duruyor', await p.$('#hesapSifreBtn') !== null);
+  // ⛔ 19 KASIM 2026 — HESAP YONETIMI PENCERE DEGIL (YAPILACAKLAR 58
+  //    asama 5): ayarlar sayfasinin bolumu. Eskiden "pencere kapali mi"
+  //    soruluyordu; simdi "bolum ayarlar sayfasinda mi ve oturum yokken
+  //    ICERIGI gizli mi" soruluyor.
+  //    ⚠ Guvence ZAYIFLAMADI: eskiden yalnizca pencerenin kapali oldugu
+  //      olculuyordu, simdi oturumsuz kullaniciya hesap satirlarinin
+  //      GOSTERILMEDIGI de olculuyor -- bu eskiden hic sorulmuyordu.
+  bak('hesap bolumu AYARLAR SAYFASINDA',
+      await p.evaluate(()=> !!document.getElementById('ayarHesap')
+                              .closest('#ayarlarPage')));
+  bak('oturum yokken hesap icerigi gizli',
+      await p.$eval('#hesapIcerik', e => e.hidden));
+  bak('oturum yokken "giris yapmalisin" satiri cikiyor',
+      !(await p.$eval('#hesapGirisGerek', e => e.hidden)));
+  bak('sifre satiri hesap bolumunde duruyor', await p.$('#hesapSifreBtn') !== null);
   await p.evaluate(() => { sifrePenceresiniAc(); });
   await p.waitForSelector('#sifreOverlay.open');
   bak('elle acilinca kutu bos geliyor', await p.$eval('#sifreYeni', e => e.value) === '');

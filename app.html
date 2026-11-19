@@ -5023,6 +5023,143 @@ textarea.sc-ai-brief{min-height:64px;resize:vertical;line-height:1.5;}
          ⚠ Buraya giren: KONUM ve GOSTER/GIZLE. Serit uzerindeki
            × (hizli gizleme) duruyor; geri getirme artik BURADAN
            oluyor, eski `havaGosterBtn` baglantisi kalkti. -->
+    <!-- ⛔ 19 KASIM 2026 — HESAP YONETIMI BURAYA TASINDI
+         (YAPILACAKLAR 58, asama 5). Kullanici sinirini kendisi cizdi:
+         "hesap yonetimi ve hesaptan cikis ayarlara tasinacak. Ad ve
+         avatar ana ekranda kalmaya devam edecek."
+         ⚠ AD ve AVATAR seritte (`railName`, `railAvatar`) —
+           dokunulmadi.
+         ⚠ GIRIS YAPMA dugmesi de seritte kaldi. Giris yapmamis
+           birinin once "Ayarlar"i bulup anlamasi beklenemez; dil
+           secicide ayni gerekce kullanildi. Giris YAPILMISKEN o dugme
+           gizleniyor, cunku tek isi bu pencereyi acmakti.
+         ⚠ ALAN KIMLIKLERI DEGISMEDI (`hesapEposta`, `hesapCikisBtn`,
+           `hesapSilKutu`, `hesapMcp` …).
+         ⛔ Pencerenin "Kapat" dugmesi (`hesapKapat`) KALDIRILDI. -->
+    <h3 class="tpl-h"><span data-i18n="hesap_title">Your account</span></h3>
+    <div class="ayar-blok" id="ayarHesap">
+      <!-- Oturum yokken bolum bos kalmasin: ne oldugunu soyleyen bir
+           cumle ve giris penceresini acan bir dugme duruyor. -->
+      <!-- ⛔ PLAN SATIRI KAPININ DISINDA: oturum acmamis biri de
+           hangi planda oldugunu (Starter) ve fiyatlari gormeli.
+           Icerideki satirlarin (cikis, sifre, yedek, AI, MCP, hesabi
+           sil) oturumsuz hicbir anlami yok, onlar kapinin ardinda.
+           ⚠ `planSatiriCiz()` oturumsuz halde sunucuya HIC gitmiyor,
+             dogrudan Starter yaziyor. -->
+      <!-- PLAN SATIRI. Kullanicinin istegi: "login olduktan sonra da
+           iceride yer almali". Seritteki baglanti herkese gorunuyor; bu
+           satir oturum acmis kisiye SU AN hangi planda oldugunu da
+           soyluyor -- fiyat sayfasina gitmeden once bilmesi gereken sey.
+           ⛔ Plan adi SUNUCUDAN okunuyor (gecerli_plan, sql/70), tarayicida
+           hesaplanmiyor. Sebep: "iptal edilmis ama suresi bitmemis abonelik
+           hala gecerli" kurali tek yerde dursun; iki yere kopyalanirsa biri
+           eskir. Okunamazsa satir sebebi yaziyor, sayi/ad UYDURMUYOR. -->
+      <div class="hesap-satir">
+        <div>
+          <div class="hesap-ad" data-i18n="hesap_plan">Your plan</div>
+          <p class="hint hesap-not" id="hesapPlanAd">—</p>
+        </div>
+        <a class="btn fiyat-baglanti" id="hesapPlanLink" href="fiyatlar.html?lang=en"
+           target="_blank" rel="noopener" data-i18n="hesap_plan_gor">See plans</a>
+      </div>
+
+      <!-- ⚠ ISARETLEMEDEKI VARSAYILAN = OTURUMSUZ HAL. Sayfa daha
+           hic acilmamisken de dogru olan bu: hesap satirlarini bos
+           e-postayla gostermektense "giris yapmalisin" demek. -->
+      <div class="rm-bolum" id="hesapGirisGerek">
+        <p class="rm-not" data-i18n="hesap_giris_gerek">Sign in to manage your account.</p>
+        <div class="rm-dugmeler">
+          <button type="button" class="btn btn-sm btn-primary" id="hesapGirisBtn"
+                  data-i18n="btn_signin_plain">Sign in</button>
+        </div>
+      </div>
+      <div id="hesapIcerik" hidden>
+      <p class="onay-vurgu" id="hesapEposta"></p>
+
+      <div class="hesap-satir">
+        <div>
+          <div class="hesap-ad" data-i18n="auth_signout">Sign out</div>
+          <p class="hint hesap-not" data-i18n="hesap_cikis_not">Your work stays in the cloud. Sign back in and it is all where you left it.</p>
+        </div>
+        <button type="button" class="btn" id="hesapCikisBtn" data-i18n="auth_signout">Sign out</button>
+      </div>
+
+      <div class="hesap-satir">
+        <div>
+          <div class="hesap-ad" data-i18n="sifre_change">Change password</div>
+          <p class="hint hesap-not" data-i18n="hesap_sifre_not">Set or replace the password you sign in with.</p>
+        </div>
+        <button type="button" class="btn" id="hesapSifreBtn" data-i18n="hesap_ac">Open</button>
+      </div>
+
+      <div class="hesap-satir">
+        <div>
+          <div class="hesap-ad" data-i18n="btn_export">Export Backup</div>
+          <p class="hint hesap-not" data-i18n="hesap_yedek_not">Download everything as a file before you delete anything.</p>
+        </div>
+        <button type="button" class="btn" id="hesapYedekBtn" data-i18n="hesap_ac">Open</button>
+      </div>
+
+      <!-- Otomatik yedek: kullanicidan hicbir sey beklemiyor. Gunde bir
+           kez, uygulama acilinca alinip hesabin kendi klasorune yaziliyor;
+           son yedi tanesi duruyor. -->
+      <div class="hesap-satir hesap-satir-dikey" id="hesapOtoYedek">
+        <div>
+          <div class="hesap-ad" data-i18n="yedek_oto_baslik">Automatic backups</div>
+          <p class="hint hesap-not" data-i18n="yedek_oto_not">Taken once a day on its own, the last seven are kept. You do not have to do anything.</p>
+        </div>
+        <ul class="yedek-liste" id="yedekListe"></ul>
+      </div>
+
+      <!-- AI ile plan aktarma. API anahtari YOLU KALDIRILDI: kullanicinin
+           anahtar uretip bir yere baglamasi gerekiyordu, bu kimsenin
+           yapmadigi bir kurulum isiydi. Kalan yol kurulumsuz: AI bir JSON
+           paketi veriyor, kullanici Ice Aktar'a yapistiriyor. Burada yalnizca
+           karti kopyalamak ve gecmise bakip geri almak var. -->
+      <div class="hesap-satir hesap-satir-dikey" id="hesapAi">
+        <div>
+          <div class="hesap-ad" data-i18n="ai_er_baslik">Plans from an AI</div>
+          <p class="hint hesap-not" data-i18n="ai_er_not">Plan with ChatGPT, Claude or Gemini, then bring the result here.</p>
+        </div>
+        <div class="ai-er-dugmeler">
+          <button type="button" class="btn" id="aiKartKopyala" data-i18n="ai_er_kart">Copy assistant card</button>
+        </div>
+        <div class="ai-status" id="aiAnahtarDurum"></div>
+        <div class="hesap-ad ai-er-alt" data-i18n="ai_er_aktarimlar">Recent AI imports</div>
+        <ul class="yedek-liste" id="aiAktarimListe"></ul>
+      </div>
+
+      <!-- MCP ERISIMI. Bayrakla aciliyor (user_prefs.prefs.mcp): herkese
+           acik degil. Bir e-posta adresi GOMULMUYOR -- bayrak hesabin kendi
+           ayarlarinda duruyor, kaynak kodda kimsenin adi gecmiyor. -->
+      <div class="hesap-satir hesap-satir-dikey" id="hesapMcp" hidden>
+        <div class="hesap-ad" data-i18n="mcp_baslik">Connect Claude to your calendar</div>
+        <p class="hint hesap-not" data-i18n="mcp_not">Claude can read your calendar and write plans into it directly, instead of you pasting packages by hand. It can add and change entries; it cannot delete anything.</p>
+        <p class="hint hesap-not mcp-uyari" data-i18n="mcp_uyari">The address below contains your key, so it is a secret: anyone who has it can write to your calendar. Do not share it. You can revoke it here at any time.</p>
+        <ul class="yedek-liste" id="mcpListe"></ul>
+        <div id="mcpYeniSatir" hidden>
+          <p class="rm-adres-et" data-i18n="mcp_adres_et">Paste this into claude.ai → Settings → Connectors → Add custom connector. It is shown once.</p>
+          <div class="rm-adres">
+            <input type="text" id="mcpAdres" readonly>
+            <button type="button" class="btn btn-sm" id="mcpKopyaBtn" data-i18n="rm_cal_copy">Copy address</button>
+          </div>
+        </div>
+        <div class="ai-status" id="mcpDurum"></div>
+        <button type="button" class="btn" id="mcpUretBtn" data-i18n="mcp_uret">Create a connection address</button>
+      </div>
+
+      <!-- Geri donusu yok: ayri bir bolumde, kirmizi cerceveli. -->
+      <div class="hesap-tehlike">
+        <div class="hesap-ad" data-i18n="hesap_sil_baslik">Delete your account</div>
+        <p class="hint hesap-not" data-i18n="hesap_sil_not">Your calendar, projects, ideas, scripts and settings are deleted from the server. This cannot be undone.</p>
+        <label class="hesap-onay-et" id="hesapSilEtiket"></label>
+        <input type="text" id="hesapSilKutu" autocomplete="off" spellcheck="false">
+        <div class="ai-status" id="hesapDurum"></div>
+        <button type="button" class="btn btn-danger" id="hesapSilBtn" data-i18n="hesap_sil_btn" disabled>Delete my account</button>
+      </div>
+      </div>
+    </div>
+
     <h3 class="tpl-h"><span data-i18n="hv_title">Weather &amp; light</span></h3>
     <div class="ayar-blok" id="ayarHava">
       <div class="rm-bolum">
@@ -6464,116 +6601,6 @@ textarea.sc-ai-brief{min-height:64px;resize:vertical;line-height:1.5;}
      dusebiliyor. Sifresi olan bir daha e-posta beklemiyor. -->
 <!-- Hesap penceresi. Sifre degistirme ve hesabi silme burada; ikisi de
      ray uzerinde ayri birer baglanti olsaydi kimlik blogu birikirdi. -->
-<div class="overlay" id="hesapOverlay">
-  <div class="modal" style="max-width:440px;">
-    <h2 data-i18n="hesap_title">Your account</h2>
-    <p class="onay-vurgu" id="hesapEposta"></p>
-
-    <!-- PLAN SATIRI. Kullanicinin istegi: "login olduktan sonra da
-         iceride yer almali". Seritteki baglanti herkese gorunuyor; bu
-         satir oturum acmis kisiye SU AN hangi planda oldugunu da
-         soyluyor -- fiyat sayfasina gitmeden once bilmesi gereken sey.
-         ⛔ Plan adi SUNUCUDAN okunuyor (gecerli_plan, sql/70), tarayicida
-         hesaplanmiyor. Sebep: "iptal edilmis ama suresi bitmemis abonelik
-         hala gecerli" kurali tek yerde dursun; iki yere kopyalanirsa biri
-         eskir. Okunamazsa satir sebebi yaziyor, sayi/ad UYDURMUYOR. -->
-    <div class="hesap-satir">
-      <div>
-        <div class="hesap-ad" data-i18n="hesap_plan">Your plan</div>
-        <p class="hint hesap-not" id="hesapPlanAd">—</p>
-      </div>
-      <a class="btn fiyat-baglanti" id="hesapPlanLink" href="fiyatlar.html?lang=en"
-         target="_blank" rel="noopener" data-i18n="hesap_plan_gor">See plans</a>
-    </div>
-
-    <div class="hesap-satir">
-      <div>
-        <div class="hesap-ad" data-i18n="auth_signout">Sign out</div>
-        <p class="hint hesap-not" data-i18n="hesap_cikis_not">Your work stays in the cloud. Sign back in and it is all where you left it.</p>
-      </div>
-      <button type="button" class="btn" id="hesapCikisBtn" data-i18n="auth_signout">Sign out</button>
-    </div>
-
-    <div class="hesap-satir">
-      <div>
-        <div class="hesap-ad" data-i18n="sifre_change">Change password</div>
-        <p class="hint hesap-not" data-i18n="hesap_sifre_not">Set or replace the password you sign in with.</p>
-      </div>
-      <button type="button" class="btn" id="hesapSifreBtn" data-i18n="hesap_ac">Open</button>
-    </div>
-
-    <div class="hesap-satir">
-      <div>
-        <div class="hesap-ad" data-i18n="btn_export">Export Backup</div>
-        <p class="hint hesap-not" data-i18n="hesap_yedek_not">Download everything as a file before you delete anything.</p>
-      </div>
-      <button type="button" class="btn" id="hesapYedekBtn" data-i18n="hesap_ac">Open</button>
-    </div>
-
-    <!-- Otomatik yedek: kullanicidan hicbir sey beklemiyor. Gunde bir
-         kez, uygulama acilinca alinip hesabin kendi klasorune yaziliyor;
-         son yedi tanesi duruyor. -->
-    <div class="hesap-satir hesap-satir-dikey" id="hesapOtoYedek">
-      <div>
-        <div class="hesap-ad" data-i18n="yedek_oto_baslik">Automatic backups</div>
-        <p class="hint hesap-not" data-i18n="yedek_oto_not">Taken once a day on its own, the last seven are kept. You do not have to do anything.</p>
-      </div>
-      <ul class="yedek-liste" id="yedekListe"></ul>
-    </div>
-
-    <!-- AI ile plan aktarma. API anahtari YOLU KALDIRILDI: kullanicinin
-         anahtar uretip bir yere baglamasi gerekiyordu, bu kimsenin
-         yapmadigi bir kurulum isiydi. Kalan yol kurulumsuz: AI bir JSON
-         paketi veriyor, kullanici Ice Aktar'a yapistiriyor. Burada yalnizca
-         karti kopyalamak ve gecmise bakip geri almak var. -->
-    <div class="hesap-satir hesap-satir-dikey" id="hesapAi">
-      <div>
-        <div class="hesap-ad" data-i18n="ai_er_baslik">Plans from an AI</div>
-        <p class="hint hesap-not" data-i18n="ai_er_not">Plan with ChatGPT, Claude or Gemini, then bring the result here.</p>
-      </div>
-      <div class="ai-er-dugmeler">
-        <button type="button" class="btn" id="aiKartKopyala" data-i18n="ai_er_kart">Copy assistant card</button>
-      </div>
-      <div class="ai-status" id="aiAnahtarDurum"></div>
-      <div class="hesap-ad ai-er-alt" data-i18n="ai_er_aktarimlar">Recent AI imports</div>
-      <ul class="yedek-liste" id="aiAktarimListe"></ul>
-    </div>
-
-    <!-- MCP ERISIMI. Bayrakla aciliyor (user_prefs.prefs.mcp): herkese
-         acik degil. Bir e-posta adresi GOMULMUYOR -- bayrak hesabin kendi
-         ayarlarinda duruyor, kaynak kodda kimsenin adi gecmiyor. -->
-    <div class="hesap-satir hesap-satir-dikey" id="hesapMcp" hidden>
-      <div class="hesap-ad" data-i18n="mcp_baslik">Connect Claude to your calendar</div>
-      <p class="hint hesap-not" data-i18n="mcp_not">Claude can read your calendar and write plans into it directly, instead of you pasting packages by hand. It can add and change entries; it cannot delete anything.</p>
-      <p class="hint hesap-not mcp-uyari" data-i18n="mcp_uyari">The address below contains your key, so it is a secret: anyone who has it can write to your calendar. Do not share it. You can revoke it here at any time.</p>
-      <ul class="yedek-liste" id="mcpListe"></ul>
-      <div id="mcpYeniSatir" hidden>
-        <p class="rm-adres-et" data-i18n="mcp_adres_et">Paste this into claude.ai → Settings → Connectors → Add custom connector. It is shown once.</p>
-        <div class="rm-adres">
-          <input type="text" id="mcpAdres" readonly>
-          <button type="button" class="btn btn-sm" id="mcpKopyaBtn" data-i18n="rm_cal_copy">Copy address</button>
-        </div>
-      </div>
-      <div class="ai-status" id="mcpDurum"></div>
-      <button type="button" class="btn" id="mcpUretBtn" data-i18n="mcp_uret">Create a connection address</button>
-    </div>
-
-    <!-- Geri donusu yok: ayri bir bolumde, kirmizi cerceveli. -->
-    <div class="hesap-tehlike">
-      <div class="hesap-ad" data-i18n="hesap_sil_baslik">Delete your account</div>
-      <p class="hint hesap-not" data-i18n="hesap_sil_not">Your calendar, projects, ideas, scripts and settings are deleted from the server. This cannot be undone.</p>
-      <label class="hesap-onay-et" id="hesapSilEtiket"></label>
-      <input type="text" id="hesapSilKutu" autocomplete="off" spellcheck="false">
-      <div class="ai-status" id="hesapDurum"></div>
-      <button type="button" class="btn btn-danger" id="hesapSilBtn" data-i18n="hesap_sil_btn" disabled>Delete my account</button>
-    </div>
-
-    <div class="modal-actions">
-      <button type="button" class="btn" id="hesapKapat" data-i18n="btn_close">Close</button>
-    </div>
-  </div>
-</div>
-
 <div class="overlay" id="sifreOverlay">
   <div class="modal" style="max-width:440px;">
     <h2 data-i18n="sifre_title">Set a password</h2>
@@ -6841,6 +6868,8 @@ const LANG = {
     sifre_later: "Not now",
     sifre_change: "Change password",
     hesap_cikis_not: "Your work stays in the cloud. Sign back in and it is all where you left it.",
+    hesap_giris_gerek: "Sign in to manage your account.",
+    btn_signin_plain: "Sign in",
     hesap_title: "Your account",
     hesap_ac: "Open",
     hesap_plan: "Your plan",
@@ -8228,6 +8257,8 @@ const LANG = {
     sifre_later: "Şimdi değil",
     sifre_change: "Şifreyi değiştir",
     hesap_cikis_not: "Çalışman bulutta kalır. Tekrar giriş yaptığında bıraktığın yerden devam edersin.",
+    hesap_giris_gerek: "Hesabını yönetmek için giriş yapmalısın.",
+    btn_signin_plain: "Giriş yap",
     hesap_title: "Hesabın",
     hesap_ac: "Aç",
     hesap_plan: "Planın",
@@ -16544,6 +16575,7 @@ function ayarSayfasiTazele(){
   hesapFormuTemizle();
   hesaplariCiz();
   havaAyarTazele();
+  hesapBolumunuTazele();
 }
 function setPage(ad, sessizRota){
   if(!SAYFALAR.some(x=>x[0] === ad)) ad = 'projects';
@@ -21884,6 +21916,13 @@ async function yedekGeriYukle(dosya){
   // ihtiyacListesiCiz cagrilsaydi onek varsayilana ('ih') duser ve
   // menudeki Cekim Setleri sayfasi ('ihs') eski halinde kalirdi.
   kitSayfasiCiz();
+  // ⛔ 19 KASIM 2026 (YAPILACAKLAR 58 asama 5): AYARLAR SAYFASI da
+  //    yeniden ciziliyor. Eskiden gerekmiyordu cunku hesap penceresi
+  //    geri yuklemeden ONCE kapatiliyordu; artik ayarlar bir SAYFA ve
+  //    acik kalabiliyor. Cizilmezse hesap etiketleri listesi, hatirlatma
+  //    alanlari ve hava ayari YEDEKTEN ONCEKI hallerinde kalirdi --
+  //    kullanici yedegi geri yukleyip "gelmemis" diye dusunurdu.
+  ayarSayfasiTazele();
   const eklenen = k.yeni + pr.yeni + fk.yeni + sc.yeni + mk.yeni + ih.yeni + st.yeni + hs.yeni;
   const guncel  = k.degisen + pr.degisen + fk.degisen + sc.degisen + mk.degisen
                 + ih.degisen + st.degisen + hs.degisen;
@@ -21966,7 +22005,6 @@ async function yedekListesiCiz(){
         .download(session.user.id + '/' + d.dataset.yedek);
       d.disabled = false;
       if(error || !data){ uyari(t('yedek_oto_hata')); return; }
-      document.getElementById('hesapOverlay').classList.remove('open');
       await yedekGeriYukle(data);
     });
   });
@@ -26148,6 +26186,13 @@ function refreshAuthUi(){
   // Dar ekranda yazi gizleniyor; ekran okuyucu tam metni yine duysun.
   b.setAttribute('aria-label', tamMetin);
   b.classList.toggle('girisli', !!session);
+  // ⛔ 19 KASIM 2026 (asama 5): oturum acikken dugmenin yapacagi is
+  //    kalmadi — hesap yonetimi ayarlar sayfasinda. Seritte ad ve
+  //    avatar duruyor, kullanicinin karari.
+  b.hidden = !!session;
+  // ⚠ Hesap bolumunun hangi halde oldugu OTURUMA bagli, sayfanin
+  //   acilip acilmadigina degil. Pahali doldurma burada YAPILMIYOR.
+  hesapGorunurlugu();
   b.title = session ? session.user.email : '';
   if(session) document.getElementById('cloudNudge').hidden = true;
   // Uzun geri bildirim formu yalnizca DENEYENE soruluyor; hesabi olmayan
@@ -26490,13 +26535,12 @@ document.getElementById('cloudRetry').addEventListener('click', async ()=>{
   }finally{ dugme.disabled = false; }
 });
 
-document.getElementById('authBtn').addEventListener('click', ()=>{
-  if(session){
-    hesapPenceresiniAc();
-  }else{
-    openAuth();
-  }
-});
+// ⛔ 19 KASIM 2026 (asama 5): dugmenin GIRIS YAPILMISKEN tek isi
+//    hesap penceresini acmakti; o pencere kalmadi. Artik yalnizca
+//    GIRIS icin var ve oturum acikken gizleniyor (refreshAuthUi).
+//    ⚠ Ad ve avatar seritte duruyor — kullanicinin karari.
+document.getElementById('authBtn').addEventListener('click', openAuth);
+document.getElementById('hesapGirisBtn').addEventListener('click', openAuth);
 document.getElementById('authCancelBtn').addEventListener('click', ()=> document.getElementById('authOverlay').classList.remove('open'));
 document.getElementById('authOverlay').addEventListener('click', (e)=>{ if(e.target.id==='authOverlay') e.currentTarget.classList.remove('open'); });
 
@@ -26862,20 +26906,43 @@ async function planSatiriCiz(oku){
     et.textContent = t('hesap_plan_hata');
   }
 }
-function hesapPenceresiniAc(){
+// ⛔ 19 KASIM 2026 — ARTIK PENCERE ACMIYOR (YAPILACAKLAR 58
+//    asama 5): hesap yonetimi ayarlar sayfasinin bir bolumu.
+//    ⚠ ADI KORUNDU ve bir YERI daha var: `ayarSayfasiTazele()` bunu
+//      cagiriyor. Yani ayarlar sayfasi hangi yoldan acilirsa acilsin
+//      (dugme, adres satiri, oturum hatirasi) bolum dolu geliyor.
+//    ⚠ OTURUM YOKKEN icerik gizleniyor ve yerine "giris yapmalisin"
+//      satiri cikiyor — bos bir bolum birakmak, orada bir sey
+//      olmadigini degil, bir seyin BOZUK oldugunu dusundurur.
+// ⚠ IKIYE AYRILDI. Gorunurluk UCUZ ve her oturum degisiminde
+//    gerekiyor; doldurma ise AG ISI yapiyor (plan, yedek listesi, AI,
+//    MCP) ve yalnizca ayarlar sayfasi acilinca gerekiyor. Tek islev
+//    olsaydi ya her `refreshAuthUi` dort ag cagrisi yapardi, ya da
+//    bolum oturum degisince yanlis halde kalirdi.
+function hesapGorunurlugu(){
+  const icerik = document.getElementById('hesapIcerik');
+  const gerek = document.getElementById('hesapGirisGerek');
+  if(!icerik || !gerek) return;
+  icerik.hidden = !session;
+  gerek.hidden = !!session;
+}
+function hesapBolumunuTazele(){
   const bul = id => document.getElementById(id);
-  const eposta = (session && session.user && session.user.email) || '';
+  if(!bul('ayarHesap')) return;
+  hesapGorunurlugu();
+  // Plan satiri kapinin DISINDA: oturumsuz da ciziliyor.
+  planSatiriCiz();
+  if(!session) return;
+  const eposta = (session.user && session.user.email) || '';
   bul('hesapEposta').textContent = eposta;
   bul('hesapSilEtiket').textContent = t('hesap_sil_et')(eposta);
   // Sifre satiri Google hesabinda gizli: orada sifre Google'da duruyor,
   // buradan degistirilemez.
-  const saglayici = session && session.user.app_metadata && session.user.app_metadata.provider;
+  const saglayici = session.user.app_metadata && session.user.app_metadata.provider;
   bul('hesapSifreBtn').closest('.hesap-satir').hidden = (saglayici === 'google');
   bul('hesapSilKutu').value = '';
   bul('hesapSilBtn').disabled = true;
   const d = bul('hesapDurum'); d.textContent = ''; d.className = 'ai-status';
-  bul('hesapOverlay').classList.add('open');
-  planSatiriCiz();
   yedekListesiCiz();
   aiBolumuCiz();
   mcpBolumuCiz();
@@ -26987,11 +27054,6 @@ document.getElementById('mcpUretBtn').addEventListener('click', async ()=>{
 document.getElementById('mcpKopyaBtn').addEventListener('click', ()=>
   takvimAdresiKopyala('mcpAdres', document.getElementById('mcpAdres').value));
 
-document.getElementById('hesapKapat').addEventListener('click', ()=>
-  document.getElementById('hesapOverlay').classList.remove('open'));
-document.getElementById('hesapOverlay').addEventListener('click', (e)=>{
-  if(e.target.id === 'hesapOverlay') e.currentTarget.classList.remove('open');
-});
 document.getElementById('hesapCikisBtn').addEventListener('click', async ()=>{
   track('funnel/signed-out');
   // ⛔ CIKIStAN ONCE: abonelik satiri bu hesaba ait ve RLS geregi
@@ -27007,11 +27069,9 @@ document.getElementById('hesapCikisBtn').addEventListener('click', async ()=>{
   location.replace('index.html');
 });
 document.getElementById('hesapSifreBtn').addEventListener('click', ()=>{
-  document.getElementById('hesapOverlay').classList.remove('open');
   sifrePenceresiniAc();
 });
 document.getElementById('hesapYedekBtn').addEventListener('click', ()=>{
-  document.getElementById('hesapOverlay').classList.remove('open');
   document.getElementById('exportBtn').click();
 });
 
