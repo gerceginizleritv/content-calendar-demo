@@ -5158,6 +5158,29 @@ textarea.sc-ai-brief{min-height:64px;resize:vertical;line-height:1.5;}
              calismadigini gormek gerekiyor. -->
         <ul class="ai-test-liste" id="ai_test_list" hidden></ul>
       </div>
+      <!-- ⛔ 19 KASIM 2026 — "AI'DAN PLANLAR" BURAYA GELDI.
+           Kullanici istedi: AI ile ilgili her sey tek baslik altinda.
+           ⚠ Eskiden HESAP bolumunun icindeydi, yani GIRIS KAPISININ
+             ARDINDA. Oysa hicbiri oturum gerektirmiyor: asistan karti
+             bir metin, aktarim defteri (`aiDefter`) YEREL okunuyor.
+             Yani tasima ayni zamanda bir arizayi kapatiyor — giris
+             yapmamis kullanici bu bolume hic ulasamiyordu.
+           ⚠ KIMLIKLER DEGISMEDI (`aiKartKopyala`, `aiAnahtarDurum`,
+             `aiAktarimListe`); `.hesap-satir` sinifi da korundu, gorunum
+             degismesin diye. -->
+      <div class="hesap-satir hesap-satir-dikey" id="hesapAi">
+        <div>
+          <div class="hesap-ad" data-i18n="ai_er_baslik">Plans from an AI</div>
+          <p class="hint hesap-not" data-i18n="ai_er_not">Plan with ChatGPT, Claude or Gemini, then bring the result here.</p>
+        </div>
+        <div class="ai-er-dugmeler">
+          <button type="button" class="btn" id="aiKartKopyala" data-i18n="ai_er_kart">Copy assistant card</button>
+        </div>
+        <div class="ai-status" id="aiAnahtarDurum"></div>
+        <div class="hesap-ad ai-er-alt" data-i18n="ai_er_aktarimlar">Recent AI imports</div>
+        <ul class="yedek-liste" id="aiAktarimListe"></ul>
+      </div>
+
       <div class="modal-actions">
         <button class="btn btn-danger" id="aiForgetBtn" data-i18n="ai_forget" hidden>Remove key</button>
         <button class="btn" id="aiSaveAnywayBtn" data-i18n="ai_save_anyway" hidden>Save without testing</button>
@@ -5259,19 +5282,6 @@ textarea.sc-ai-brief{min-height:64px;resize:vertical;line-height:1.5;}
            yapmadigi bir kurulum isiydi. Kalan yol kurulumsuz: AI bir JSON
            paketi veriyor, kullanici Ice Aktar'a yapistiriyor. Burada yalnizca
            karti kopyalamak ve gecmise bakip geri almak var. -->
-      <div class="hesap-satir hesap-satir-dikey" id="hesapAi">
-        <div>
-          <div class="hesap-ad" data-i18n="ai_er_baslik">Plans from an AI</div>
-          <p class="hint hesap-not" data-i18n="ai_er_not">Plan with ChatGPT, Claude or Gemini, then bring the result here.</p>
-        </div>
-        <div class="ai-er-dugmeler">
-          <button type="button" class="btn" id="aiKartKopyala" data-i18n="ai_er_kart">Copy assistant card</button>
-        </div>
-        <div class="ai-status" id="aiAnahtarDurum"></div>
-        <div class="hesap-ad ai-er-alt" data-i18n="ai_er_aktarimlar">Recent AI imports</div>
-        <ul class="yedek-liste" id="aiAktarimListe"></ul>
-      </div>
-
       <!-- MCP ERISIMI. Bayrakla aciliyor (user_prefs.prefs.mcp): herkese
            acik degil. Bir e-posta adresi GOMULMUYOR -- bayrak hesabin kendi
            ayarlarinda duruyor, kaynak kodda kimsenin adi gecmiyor. -->
@@ -23125,6 +23135,9 @@ function aiAyarlarinaGit(){
 function openAiSettings(){
   const s = getAiSettings();
   aiDurumTazele();
+  // "AI'dan planlar": asistan karti + son aktarimlar. Oturum
+  // gerektirmiyor, defter yerelden okunuyor.
+  aiBolumuCiz();
   // Rehber anahtari OLMAYAN icin var. Anahtar kayitliyken acik durursa
   // ekranin yarisini kaplayip anahtar kutusunu ve test sonuclarini
   // asagi itiyor.
@@ -26974,7 +26987,9 @@ function hesapBolumunuTazele(){
   bul('hesapSilBtn').disabled = true;
   const d = bul('hesapDurum'); d.textContent = ''; d.className = 'ai-status';
   yedekListesiCiz();
-  aiBolumuCiz();
+  // ⚠ `aiBolumuCiz()` ARTIK BURADA DEGIL: "AI'dan planlar" bolumu
+  //   AI basligina tasindi ve oturum gerektirmiyor, bu yuzden
+  //   `openAiSettings()` ciziyor.
   mcpBolumuCiz();
 }
 // ===== MCP erisimi ========================================================
