@@ -2529,6 +2529,67 @@ dokunmak ve ikinci seferde birincisini bozmak demek.
   güvence korunup ifadesi sayfaya taşınacak (18 Kasım'da 11 testte
   aynısı yapıldı).
 
+- ⬜ **66. AYARLAR SAYFASININ SIRALAMASI — benzer işler bir araya.**
+  Kullanıcı 19 Kasım 2026'da söyledi:
+
+  > *"bu ayarlar bölümü sıralaması biraz karıştı. Buraya taşınacak ve
+  > yer alacak tüm başlık ve işlemlerin birbirine benzer ve ilgili
+  > olanlar bir araya gelecek bir sıralama önerisi yap."*
+
+  58. madde ayarları **tek sayfada topladı** ama sırayı taşıma sırası
+  belirledi, kullanım değil. Üç şey yanlış komşuda kaldı:
+
+  1. **Yedekler** (`exportBtn` kopyası + otomatik yedekler) *Hesabın*
+     içinde — oysa bunlar **verinle** ilgili, kimliğinle değil.
+     ⚠ Üstelik yedek **iki ayrı yerde**: Ayarlar'daki bölüm ve sayfa
+     altındaki şerit (`importBtn`, `exportBtn`, `restoreBtn`).
+  2. **MCP** (*"Claude'u takvimine bağla"*) *Hesabın* içinde, oysa
+     yaptığı iş bir **yapay zekâ bağlantısı**.
+  3. **"Yan menüde göster"** bir **görünüm** tercihi ama hava
+     bölümünün içinde.
+
+  ⛔ **BİR KOPYA BULUNDU:** `hesapYedekBtn` hiçbir iş yapmıyor,
+  yalnızca `exportBtn.click()` çağırıyor. Yedekler tek bölümde
+  toplanınca bu satır **kalkıyor**.
+
+  **✅ KULLANICININ ONAYLADIĞI SIRA (19 Kasım 2026):**
+
+  | # | Başlık | İçindekiler |
+  |---|---|---|
+  | 1 | **Görünüm** | tema · **yan menüde hava şeridini göster** |
+  | 2 | **Hatırlatmalar** | ne zaman · tarayıcı bildirimi · kendi takvimin · dosya indir |
+  | 3 | **Planlama bilgileri** | konum (hava & ışık) · hesap etiketleri |
+  | 4 | **Yapay zekâ** | Gemini anahtarı · AI'dan gelen planlar · **Claude'u takvimine bağla** |
+  | 5 | **Verilerin** | **içe aktar** · **yedek dışa aktar** · **yedeği geri yükle** · otomatik yedekler |
+  | 6 | **Hesabın** | planın · şifre · çıkış · hesabını sil |
+
+  Mantığı: önce *nasıl görünsün*, sonra *ne zaman haber versin*, sonra
+  *çekim/yayın bilgilerin*, sonra *araçlar*, sonra *verin*, en sonda
+  *hesabın* — geri dönüşü olmayan **"Hesabını sil"** en dipte.
+
+  ⚠ **İKİ SORU SORULDU, KULLANICI CEVAPLADI:**
+  - *"Yan menüde göster" Görünüm'e mi alınsın (hava ayarı ikiye
+    bölünür) yoksa bütün kalsın mı?* → **Görünüm'e.**
+    ⛔ Not: bu, bir özelliği iki başlığa bölüyor (tik Görünüm'de, konum
+    Planlama'da). Claude bölünmemekten yanaydı; **kullanıcı böldü,
+    karar onun.**
+  - *"Sayfa altındaki yedek bağlantıları Ayarlar'a mı toplansın?"* →
+    **Ayarlar'a.**
+
+  ⬜ **AÇIK KALAN:** sayfa altında *"Demoyu Sıfırla"* ve *"Örnekleri
+  kaldır"* kalıyor. Onlar da veri işlemi; yedekler gidince şeritte
+  Şartlar/Gizlilik'in yanında yalnız kalıyorlar. Taşınsınlar mı —
+  **kullanıcıya sorulacak.**
+
+  ⛔ **BİLİNEN HATA, BU MADDEDE DÜZELTİLECEK:** "AI'dan gelen planlar"
+  bloğu AI bölümünde **"Kaydet & Bağlan" düğmelerinin üstüne** düştü
+  (19 Kasım taşımasında). Düğmeler anahtar kutusunun hemen altında
+  olmalı.
+
+  ⚠ **Bölüm 7 — HER DİLDE.** Üç yeni başlık (`st_plan_title`,
+  `st_ai_title`, `st_data_title`) iki dile de yazılacak. Bekçi hazır:
+  `testler/sozluk-paritesi.test.js`.
+
 - ✅ **59. BİTTİ (19 Kasım 2026).** **"Fotoğrafı olmayanlara bak" —
   artık ne yaptığını anlatıyor + fotoğrafsızlar süzgeci.**
 
