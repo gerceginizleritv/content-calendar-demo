@@ -35,7 +35,7 @@ const { chromium } = require('./araclar');
   const kotu  = { status:400, body:{error:{message:'API key not valid. Please pass a valid API key.'}} };
 
   const anahtarGir = async (page)=>{
-    await page.click('#aiSettingsBtn'); await page.waitForTimeout(200);
+    await page.click('#ayarlarBtn'); await page.waitForTimeout(200);
     await page.fill('#ai_key','AQ.TESTANAHTARI_123456');
     await page.click('#aiSettingsSaveBtn');
     await page.waitForTimeout(900);
@@ -46,11 +46,24 @@ const { chromium } = require('./araclar');
   await anahtarGir(page);
   let r = await page.evaluate(()=>({
     kayit: JSON.parse(localStorage.getItem('demo_ai_settings')||'null'),
-    acik: document.getElementById('aiSettingsOverlay').classList.contains('open')
+    // ⛔ 19 KASIM 2026 — "PENCERE ACIK MI" SORUSU ARTIK YOK (YAPILACAKLAR
+    //    58 asama 6): AI ayarlari bir SAYFA bolumu, hep "acik".
+    //    ⚠ KORU KORUNE CEVIRSEYDIM BU IDDIALAR HER ZAMAN DOGRU OLURDU --
+    //      bu oturumda uc kez yakalanan "bos bekci" tuzagi.
+    //      Yerine pencerenin acik/kapali olmasinin NE ANLATTIGI olculuyor:
+    //        kaydedildi = anahtar kayitli gorunuyor (Kaldir dugmesi cikti,
+    //                     kutu bosaldi, durum satiri doldu)
+    //        kutuDolu   = yazilan anahtar DURUYOR ki tekrar denenebilsin
+    kaydedildi: !document.getElementById('aiForgetBtn').hidden
+                && document.getElementById('ai_key').value === ''
+                && document.getElementById('ai_state').textContent.trim() !== '',
+    kutuDolu: document.getElementById('ai_key').value !== '',
+    bolumGorunur: !document.getElementById('ayarlarPage').hidden
+                  && document.getElementById('ayarAi').getBoundingClientRect().height > 0
   }));
   k('yoğun modelden yedeğe geçiliyor', page.__istekler[0] === 'gemini-3.7-flash' && page.__istekler.length >= 2, page.__istekler);
   k('anahtar kaydedildi', !!r.kayit && r.kayit.provider === 'gemini');
-  k('ekran kapandı', r.acik === false);
+  k('anahtar KAYITLI görünüyor', r.kaydedildi === true);
   await page.close();
 
   console.log('\nİKİ MODEL DE YOĞUN → ANAHTAR YİNE DE KAYDEDİLİYOR');
@@ -58,7 +71,20 @@ const { chromium } = require('./araclar');
   await anahtarGir(page);
   r = await page.evaluate(()=>({
     kayit: JSON.parse(localStorage.getItem('demo_ai_settings')||'null'),
-    acik: document.getElementById('aiSettingsOverlay').classList.contains('open'),
+    // ⛔ 19 KASIM 2026 — "PENCERE ACIK MI" SORUSU ARTIK YOK (YAPILACAKLAR
+    //    58 asama 6): AI ayarlari bir SAYFA bolumu, hep "acik".
+    //    ⚠ KORU KORUNE CEVIRSEYDIM BU IDDIALAR HER ZAMAN DOGRU OLURDU --
+    //      bu oturumda uc kez yakalanan "bos bekci" tuzagi.
+    //      Yerine pencerenin acik/kapali olmasinin NE ANLATTIGI olculuyor:
+    //        kaydedildi = anahtar kayitli gorunuyor (Kaldir dugmesi cikti,
+    //                     kutu bosaldi, durum satiri doldu)
+    //        kutuDolu   = yazilan anahtar DURUYOR ki tekrar denenebilsin
+    kaydedildi: !document.getElementById('aiForgetBtn').hidden
+                && document.getElementById('ai_key').value === ''
+                && document.getElementById('ai_state').textContent.trim() !== '',
+    kutuDolu: document.getElementById('ai_key').value !== '',
+    bolumGorunur: !document.getElementById('ayarlarPage').hidden
+                  && document.getElementById('ayarAi').getBoundingClientRect().height > 0,
     toast: (document.querySelector('.toast, #toast')||{}).textContent || '',
     ipucu: document.getElementById('ai_key_hint').textContent
   }));
@@ -82,12 +108,25 @@ const { chromium } = require('./araclar');
   r = await page.evaluate(()=>({
     kayit: localStorage.getItem('demo_ai_settings'),
     ipucu: document.getElementById('ai_key_hint').textContent,
-    acik: document.getElementById('aiSettingsOverlay').classList.contains('open')
+    // ⛔ 19 KASIM 2026 — "PENCERE ACIK MI" SORUSU ARTIK YOK (YAPILACAKLAR
+    //    58 asama 6): AI ayarlari bir SAYFA bolumu, hep "acik".
+    //    ⚠ KORU KORUNE CEVIRSEYDIM BU IDDIALAR HER ZAMAN DOGRU OLURDU --
+    //      bu oturumda uc kez yakalanan "bos bekci" tuzagi.
+    //      Yerine pencerenin acik/kapali olmasinin NE ANLATTIGI olculuyor:
+    //        kaydedildi = anahtar kayitli gorunuyor (Kaldir dugmesi cikti,
+    //                     kutu bosaldi, durum satiri doldu)
+    //        kutuDolu   = yazilan anahtar DURUYOR ki tekrar denenebilsin
+    kaydedildi: !document.getElementById('aiForgetBtn').hidden
+                && document.getElementById('ai_key').value === ''
+                && document.getElementById('ai_state').textContent.trim() !== '',
+    kutuDolu: document.getElementById('ai_key').value !== '',
+    bolumGorunur: !document.getElementById('ayarlarPage').hidden
+                  && document.getElementById('ayarAi').getBoundingClientRect().height > 0
   }));
   k('geçersiz anahtarda YEDEK MODEL denenmiyor (boşuna istek yok)', page.__istekler.length === 1, page.__istekler);
   k('geçersiz anahtar KAYDEDİLMİYOR', r.kayit === null);
   k('Google’ın kendi cümlesi gösteriliyor', /API key not valid/.test(r.ipucu), r.ipucu.slice(0,60));
-  k('ekran açık kalıyor', r.acik === true);
+  k('yazılan anahtar kutuda duruyor', r.kutuDolu === true);
   await page.close();
 
   console.log('\nÜRETİMDE YOĞUNLUK');

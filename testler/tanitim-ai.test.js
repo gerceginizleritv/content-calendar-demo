@@ -39,7 +39,7 @@ const { chromium } = require('./araclar');
   console.log('\nAI AYARLARI SOL MENÜDEN AÇILIYOR');
   const page = await yeniSayfa(true);
   const menu = await page.evaluate(()=>{
-    const el = document.getElementById('aiSettingsBtn');
+    const el = document.getElementById('ayarlarBtn');
     if(!el) return null;
     return { gorunur: getComputedStyle(el).display !== 'none', metin: el.textContent.trim(),
              railde: !!el.closest('.rail-foot') };
@@ -47,14 +47,16 @@ const { chromium } = require('./araclar');
   k('sol menüde AI düğmesi var', !!menu && menu.gorunur, menu && menu.metin);
   k('düğme alt menüde', !!menu && menu.railde);
 
-  await page.click('#aiSettingsBtn');
+  await page.click('#ayarlarBtn');
   await page.waitForTimeout(250);
   const ekran = await page.evaluate(()=>{
-    const ov = document.getElementById('aiSettingsOverlay');
+    // ⚠ Pencere degil SAYFA bolumu (asama 6).
+    const ov = document.getElementById('ayarAi');
     const rehber = ov.querySelector('.ai-howto');
     const adimlar = [...ov.querySelectorAll('.ai-steps li')].map(li=>li.textContent.trim());
     const link = ov.querySelector('.ai-step-link');
-    return { acik: ov.classList.contains('open'),
+    return { acik: !document.getElementById('ayarlarPage').hidden
+                   && ov.getBoundingClientRect().height > 0,
              rehberGorunur: rehber ? getComputedStyle(rehber).display !== 'none' : false,
              rehberAcik: rehber ? rehber.open : false,
              adim: adimlar.length, ilk: adimlar[0] || '',
@@ -62,7 +64,7 @@ const { chromium } = require('./araclar');
              uyari: (ov.querySelector('.ai-warn')||{}).textContent || '',
              saglayiciSecimi: !!ov.querySelector('#ai_provider') };
   });
-  k('AI ekranı açılıyor', ekran.acik);
+  k('AI bölümü görünür oldu', ekran.acik);
   k('rehber görünür', ekran.rehberGorunur);
   k('rehber baştan açık', ekran.rehberAcik);
   k('4 adım var', ekran.adim === 4, String(ekran.adim));

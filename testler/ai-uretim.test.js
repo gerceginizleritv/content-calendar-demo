@@ -179,7 +179,12 @@ const { chromium } = require('./araclar');
   const adet4 = gidenler.length;
   await page.click('#aiDraftBtn');
   await page.waitForTimeout(400);
-  const ayarAcik = await page.evaluate(()=>document.getElementById('aiSettingsOverlay').classList.contains('open'));
+  // ⛔ 19 KASIM 2026 (asama 6): AI ayarlari artik bir SAYFA bolumu.
+  //    Anahtar yokken taslak istenince kullanici oraya GOTURULMELI;
+  //    olculen sey bu, pencerenin acilmasi degil.
+  const ayarAcik = await page.evaluate(()=>
+    !document.getElementById('ayarlarPage').hidden
+    && document.getElementById('ayarAi').getBoundingClientRect().height > 0);
   k('anahtar yokken ayar ekranı açılıyor', ayarAcik);
   k('anahtar yokken istek gitmiyor', gidenler.length === adet4);
 

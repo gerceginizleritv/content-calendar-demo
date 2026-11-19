@@ -24,7 +24,7 @@ const { chromium, menuAc } = require('./araclar');
     await page.waitForTimeout(1400);
     await page.evaluate(()=>{ document.querySelectorAll('.overlay.open').forEach(o=>o.classList.remove('open')); setLanguage('tr'); });
     await menuAc(page);   // telefonda serit baglantilari alt sayfada
-    await page.click('#aiSettingsBtn'); await page.waitForTimeout(250);
+    await page.click('#ayarlarBtn'); await page.waitForTimeout(250);
     await page.click('#aiTestBtn');
     await page.waitForFunction(()=>!document.getElementById('aiTestBtn').disabled, null, {timeout:20000});
     await page.waitForTimeout(300);
@@ -36,9 +36,14 @@ const { chromium, menuAc } = require('./araclar');
         const sonuc = li.querySelector('.tm-sonuc');
         const ar = ad.getBoundingClientRect(), sr = sonuc.getBoundingClientRect();
         return { adGen:Math.round(ar.width), adYuk:Math.round(ar.height),
-                 sonucYuk:Math.round(sr.height), sonucGen:Math.round(sr.width) };
+                 sonucYuk:Math.round(sr.height), sonucGen:Math.round(sr.width),
+                 // Hem yatay hem dikey kirpilma: ellipsis ile tek satira
+                 // dusurulmus bir metin de, tasip gizlenmis bir metin de
+                 // yakalanir.
+                 sonucKirpik: sonuc.scrollWidth > sonuc.clientWidth + 1
+                           || sonuc.scrollHeight > sonuc.clientHeight + 1 };
       });
-      const modal = document.querySelector('#aiSettingsOverlay .modal');
+      const modal = document.querySelector('#ayarAi');
       return { satirlar, listeGen:Math.round(liste.getBoundingClientRect().width),
                yatay: liste.scrollWidth > liste.clientWidth + 1,
                modalYatay: modal.scrollWidth > modal.clientWidth + 1 };
@@ -48,7 +53,17 @@ const { chromium, menuAc } = require('./araclar');
     k('    model adı TEK satırda (harf harf dökülmüyor)',
        r.satirlar.every(x=>x.adYuk < 30), r.satirlar.map(x=>x.adYuk));
     k('    model adı yeterince geniş', r.satirlar.every(x=>x.adGen > 80), r.satirlar.map(x=>x.adGen));
-    k('    uzun hata metni sarıyor (birkaç satır)', r.satirlar.some(x=>x.sonucYuk > 20), r.satirlar.map(x=>x.sonucYuk));
+    // ⛔ 19 KASIM 2026 — "SARIYOR MU" ARTIK DOGRU SORU DEGIL
+    //    (YAPILACAKLAR 58 asama 6). AI ayarlari 440 piksellik bir
+    //    PENCEREDEYDI; simdi 640 piksellik ayarlar sayfasinin bolumu
+    //    ve ayni uzun hata metni TEK SATIRA sigiyor (36px -> 18px).
+    //    Sarmak bir GENISLIK KAZASIYDI; korunmasi gereken sey o degil.
+    //    ⚠ ASIL GUVENCE: uzun hata metni KIRPILMIYOR, tamami okunuyor.
+    //      Eski hali de bunu koruyordu (kirpilmis metin tek satirda
+    //      kalirdi); yeni hali her genislikte gecerli ve daha dogrudan.
+    k('    uzun hata metni KIRPILMIYOR (tamami okunuyor)',
+       r.satirlar.every(x=> !x.sonucKirpik),
+       r.satirlar.map(x=> x.sonucYuk + (x.sonucKirpik ? ' KIRPIK' : '')));
     k('    listede yatay kaydırma yok', r.yatay === false);
     k('    ekranda yatay kaydırma yok', r.modalYatay === false);
     await page.screenshot({ path:'ciktilar/aitest-'+w+'.png' });

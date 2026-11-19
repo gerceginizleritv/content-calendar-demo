@@ -17,9 +17,17 @@ const KOK = process.argv[2] || 'http://127.0.0.1:8098';
 let g = 0, k = 0;
 const bak = (ad, ko, ek)=>{ if(ko){ g++; console.log('  ok  '+ad); } else { k++; console.log('  YOK '+ad+(ek?' -> '+ek:'')); } };
 
-// ⚠ 19 KASIM 2026: `remindersBtn` yerine `ayarlarBtn` (YAPILACAKLAR 58
-//   asama 3 -- hatirlatmalar ayarlar sayfasina tasindi).
-const BAGLANTILAR = ['tourBtn','aiSettingsBtn','ayarlarBtn','kilavuzLink','feedbackBtn'];
+// ⛔ 19 KASIM 2026 — LISTE ARTIK ELLE YAZILMIYOR (YAPILACAKLAR 58).
+//   3-6. asamalarda seritten UC baglanti kalkti (`remindersBtn`,
+//   `hesapEtiketBtn`, `aiSettingsBtn`, ayrica `havaGosterBtn`) ve
+//   yerlerine tek `ayarlarBtn` geldi. Elle yazilan liste her asamada
+//   elle duzeltilmek zorunda kaldi; ucuncusunde yeter dendi.
+//   ⚠ Olculen sey AYNI: seritte O AN ne varsa hepsi alt sayfada,
+//     ekranda ve dokunulabilir mi. Artik yeni bir baglanti eklenirse
+//     kendiliginden olculuyor.
+//   ⚠ Bos donmedigi AYRICA sart kosuluyor: `[].every(...)` her zaman
+//     dogrudur ve bu oturumda tam o tuzaga uc kez dusuldu.
+let BAGLANTILAR = [];
 
 async function ac(t, w){
   const p = await (await t.newContext({ viewport:{width:w,height:844} })).newPage();
@@ -40,7 +48,12 @@ async function ac(t, w){
   const p = await ac(t, 390);
   const hata = []; p.on('pageerror', e=> hata.push(String(e)));
 
+  BAGLANTILAR = await p.evaluate(()=>
+    [...document.querySelectorAll('#railFoot .rail-link')]
+      .filter(e=> !e.hidden).map(e=> e.id).filter(Boolean));
+
   console.log('[baglantilar yerinde duruyor]');
+  bak('serit baglantilari BULUNDU', BAGLANTILAR.length >= 4, BAGLANTILAR.join(','));
   bak('hepsi hala seridin icinde',
       await p.evaluate(ids=> ids.every(id=>{ const e = document.getElementById(id);
         return !!(e && e.closest('#railFoot')); }), BAGLANTILAR));
@@ -115,11 +128,11 @@ async function ac(t, w){
     const r = document.getElementById(id).getBoundingClientRect();
     return r.width > 0 && r.top >= 0 && r.bottom <= innerHeight + 1;
   }), BAGLANTILAR);
-  bak('BES BAGLANTI DA EKRANDA', gorunen.length === BAGLANTILAR.length, gorunen.join(','));
+  bak(BAGLANTILAR.length + ' BAGLANTI DA EKRANDA', gorunen.length === BAGLANTILAR.length, gorunen.join(','));
   bak('alt alta duruyorlar',
       await p.evaluate(()=>{
         const a = document.getElementById('tourBtn').getBoundingClientRect();
-        const b = document.getElementById('aiSettingsBtn').getBoundingClientRect();
+        const b = document.getElementById('ayarlarBtn').getBoundingClientRect();
         return b.top >= a.bottom - 1;
       }));
   bak('dokunma hedefleri 40px+',

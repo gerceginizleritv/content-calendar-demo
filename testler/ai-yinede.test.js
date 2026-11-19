@@ -22,7 +22,7 @@ const { chromium } = require('./araclar');
     return page;
   };
   const dene = async (page)=>{
-    await page.click('#aiSettingsBtn'); await page.waitForTimeout(200);
+    await page.click('#ayarlarBtn'); await page.waitForTimeout(200);
     await page.fill('#ai_key','AQ.TESTANAHTARI_123456');
     await page.click('#aiSettingsSaveBtn');
     await page.waitForFunction(()=>!document.getElementById('aiSettingsSaveBtn').disabled, null, {timeout:9000});
@@ -47,11 +47,24 @@ const { chromium } = require('./araclar');
   await page.waitForTimeout(300);
   r = await page.evaluate(()=>({
     kayit: JSON.parse(localStorage.getItem('demo_ai_settings')||'null'),
-    acik: document.getElementById('aiSettingsOverlay').classList.contains('open'),
+    // ⛔ 19 KASIM 2026 — "PENCERE ACIK MI" SORUSU ARTIK YOK (YAPILACAKLAR
+    //    58 asama 6): AI ayarlari bir SAYFA bolumu, hep "acik".
+    //    ⚠ KORU KORUNE CEVIRSEYDIM BU IDDIALAR HER ZAMAN DOGRU OLURDU --
+    //      bu oturumda uc kez yakalanan "bos bekci" tuzagi.
+    //      Yerine pencerenin acik/kapali olmasinin NE ANLATTIGI olculuyor:
+    //        kaydedildi = anahtar kayitli gorunuyor (Kaldir dugmesi cikti,
+    //                     kutu bosaldi, durum satiri doldu)
+    //        kutuDolu   = yazilan anahtar DURUYOR ki tekrar denenebilsin
+    kaydedildi: !document.getElementById('aiForgetBtn').hidden
+                && document.getElementById('ai_key').value === ''
+                && document.getElementById('ai_state').textContent.trim() !== '',
+    kutuDolu: document.getElementById('ai_key').value !== '',
+    bolumGorunur: !document.getElementById('ayarlarPage').hidden
+                  && document.getElementById('ayarAi').getBoundingClientRect().height > 0,
     toast: (document.querySelector('.toast, #toast')||{}).textContent || ''
   }));
   k('“Denemeden kaydet” anahtarı kaydediyor', !!r.kayit && r.kayit.key === 'AQ.TESTANAHTARI_123456', r.kayit);
-  k('ekran kapanıyor', r.acik === false);
+  k('anahtar KAYITLI görünüyor', r.kaydedildi === true);
   k('durum dürüstçe söyleniyor', /denenmeden kaydedildi/i.test(r.toast), r.toast);
   await page.close();
 
@@ -73,8 +86,10 @@ const { chromium } = require('./araclar');
   console.log('\nEKRAN YENİDEN AÇILINCA DÜĞME GİZLİ');
   page = await ac(async p=>{ await p.route('**generativelanguage.googleapis.com/v1beta/models/**', r=>{ p.__m.push('x'); }); });
   await dene(page);
-  await page.evaluate(()=>document.getElementById('aiSettingsOverlay').classList.remove('open'));
-  await page.click('#aiSettingsBtn');
+  // ⚠ Pencere yok: "kapat, yeniden ac" yerine sayfadan cikip geri
+  //   geliniyor -- bolumun tazelenme yolu bu.
+  await page.evaluate(()=> setPage('projects'));
+  await page.click('#ayarlarBtn');
   await page.waitForTimeout(200);
   k('yeniden açılınca “Denemeden kaydet” gizli',
      await page.evaluate(()=>document.getElementById('aiSaveAnywayBtn').hidden === true));

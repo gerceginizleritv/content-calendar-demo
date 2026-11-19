@@ -45,7 +45,7 @@ const { chromium } = require('./araclar');
         body: JSON.stringify({error:{message:'busy'}})});
     });
   });
-  await page.click('#aiSettingsBtn'); await page.waitForTimeout(250);
+  await page.click('#ayarlarBtn'); await page.waitForTimeout(250);
   let g = await page.evaluate(()=>({ var: !!document.getElementById('aiTestBtn'),
     gorunur: getComputedStyle(document.getElementById('aiTestBtn')).display !== 'none',
     metin: document.getElementById('aiTestBtn').textContent.trim() }));
@@ -66,7 +66,7 @@ const { chromium } = require('./araclar');
   console.log('\nAĞA ULAŞILAMIYORSA');
   page = await ac(async p=>{ await p.route('**generativelanguage.googleapis.com/v1beta/models',
     r=>r.abort('connectionrefused')); });
-  await page.click('#aiSettingsBtn'); await page.waitForTimeout(250);
+  await page.click('#ayarlarBtn'); await page.waitForTimeout(250);
   await page.click('#aiTestBtn');
   await page.waitForTimeout(900);
   r = await page.evaluate(()=>({ metin: document.getElementById('ai_test_out').textContent,
@@ -79,7 +79,7 @@ const { chromium } = require('./araclar');
   page = await ac(async p=>{ await p.route('**generativelanguage.googleapis.com/v1beta/models',
     r=>r.fulfill({status:400,contentType:'application/json',
       body: JSON.stringify({error:{message:'API key not valid. Please pass a valid API key.'}})})); });
-  await page.click('#aiSettingsBtn'); await page.waitForTimeout(250);
+  await page.click('#ayarlarBtn'); await page.waitForTimeout(250);
   await page.click('#aiTestBtn');
   await page.waitForTimeout(900);
   r = await page.evaluate(()=>document.getElementById('ai_test_out').textContent);

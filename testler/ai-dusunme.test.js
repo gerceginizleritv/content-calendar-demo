@@ -23,7 +23,7 @@ const { chromium } = require('./araclar');
   await page.evaluate(()=>{ document.querySelectorAll('.overlay.open').forEach(o=>o.classList.remove('open')); setLanguage('tr'); });
   console.log('DÜŞÜNME SEVİYESİ İSTEKTE GİDİYOR MU');
 
-  await page.click('#aiSettingsBtn');
+  await page.click('#ayarlarBtn');
   await page.waitForTimeout(200);
   await page.fill('#ai_key','AQ.TESTANAHTARI_123456');
   await page.click('#aiSettingsSaveBtn');

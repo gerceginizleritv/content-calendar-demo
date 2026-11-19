@@ -4664,7 +4664,6 @@ textarea.sc-ai-brief{min-height:64px;resize:vertical;line-height:1.5;}
              setLanguage yaziyor (.fiyat-baglanti). -->
         <a class="rail-link fiyat-baglanti" id="fiyatLink" href="fiyatlar.html?lang=en"
            target="_blank" rel="noopener" data-i18n="btn_fiyat">💳 Pricing</a>
-        <button class="rail-link" id="aiSettingsBtn" data-i18n="btn_ai_settings">✨ AI (Gemini)</button>
         <!-- Tur "nasil calisir"i gosteriyor; kilavuz NEDEN oyle
              calistigini ve her modulun ne ise yaradigini anlatiyor. -->
         <a class="rail-link" id="kilavuzLink" href="guide.html" target="_blank" rel="noopener"
@@ -4877,6 +4876,7 @@ textarea.sc-ai-brief{min-height:64px;resize:vertical;line-height:1.5;}
   <div id="ayarlarPage" hidden>
     <p class="hint" data-i18n="st_intro">Everything you set once and forget. Your calendar and projects are not here — they have their own pages.</p>
 
+
     <h3 class="tpl-h"><span data-i18n="st_look">Appearance</span></h3>
     <div class="ayar-blok" id="ayarGorunum">
       <!-- ⚠ Dugmenin KIMLIGI ayni kaldi (`themeBtn`): metnini ve
@@ -4884,6 +4884,7 @@ textarea.sc-ai-brief{min-height:64px;resize:vertical;line-height:1.5;}
            ariyor. Yeri degisti, sozlesmesi degismedi. -->
       <button class="btn btn-sm" id="themeBtn">🌙 Dark</button>
     </div>
+
 
     <!-- ⛔ 19 KASIM 2026 — HATIRLATMALAR BURAYA TASINDI
          (YAPILACAKLAR 58, asama 3). Eskiden `#remindersOverlay`
@@ -5001,17 +5002,7 @@ textarea.sc-ai-brief{min-height:64px;resize:vertical;line-height:1.5;}
       </details>
     </div>
 
-    <!-- ⛔ 19 KASIM 2026 — HESAP ETIKETLERI BURAYA TASINDI
-         (YAPILACAKLAR 58, asama 4). Eskiden `#hesapOverlay2`
-         penceresiydi ve yan menude kendi dugmesi (`hesapEtiketBtn`)
-         vardi. Pencerenin kendi notu zaten "bir kez kurulup unutulan
-         bir ayar" diyordu -- tam da bu sayfanin tarifi.
-         ⚠ ALAN KIMLIKLERI DEGISMEDI (`hs_ad`, `hs_platform`,
-           `hs_handle`, `hs_url`, `hs_notlar`, `hs_liste`, `hs_kaydet`,
-           `hs_vazgec`): bunlari yazan kod da, olcen testler de
-           kimlikle buluyor.
-         ⛔ Pencerenin kapatma carpisi (`hs_kapat`) KALDIRILDI:
-           sayfada kapatilacak bir sey yok. -->
+
     <!-- ⛔ 19 KASIM 2026 — HAVA & ISIK: YALNIZCA AYARI TASINDI
          (YAPILACAKLAR 58, asama 4). Kullanici karar verdi.
          ⚠ SERIT (`#railHava`) YERINDE KALDI ve bu bir KARAR:
@@ -5023,6 +5014,158 @@ textarea.sc-ai-brief{min-height:64px;resize:vertical;line-height:1.5;}
          ⚠ Buraya giren: KONUM ve GOSTER/GIZLE. Serit uzerindeki
            × (hizli gizleme) duruyor; geri getirme artik BURADAN
            oluyor, eski `havaGosterBtn` baglantisi kalkti. -->
+    <h3 class="tpl-h"><span data-i18n="hv_title">Weather &amp; light</span></h3>
+    <div class="ayar-blok" id="ayarHava">
+      <div class="rm-bolum">
+        <div class="rm-bas">
+          <h4 data-i18n="hv_set_show">Show in the side menu</h4>
+          <label class="rm-anahtar"><input type="checkbox" id="hv_gosterTik"></label>
+        </div>
+        <p class="rm-not" data-i18n="hv_ask">Sunrise, sunset and golden hour for where you are.</p>
+      </div>
+
+      <div class="rm-bolum">
+        <div class="rm-bas"><h4 data-i18n="hv_set_place">Location</h4></div>
+        <p class="rm-durum" id="hv_konumDurum"></p>
+        <div class="rm-dugmeler">
+          <button type="button" class="btn btn-sm" id="hv_izinBtn" data-i18n="hv_ask_btn">Turn on location</button>
+        </div>
+        <!-- Izin veremeyen ya da vermek istemeyen biri de isik
+             saatlerini gorebilsin diye sehir kutusu AYRICA duruyor;
+             seritteki halinde de boyle. -->
+        <form class="rm-saat" id="hv_sehirForm">
+          <input type="text" id="hv_sehirGiris" maxlength="80" autocomplete="address-level2"
+                 data-i18n-placeholder="hv_city_ph" data-i18n-aria="hv_city_ph"
+                 aria-label="City" placeholder="City">
+          <button type="submit" class="btn btn-sm">→</button>
+        </form>
+        <p class="rm-not" data-i18n="hv_set_note">Two decimals are stored.</p>
+      </div>
+    </div>
+
+
+    <!-- ⛔ 19 KASIM 2026 — HESAP ETIKETLERI BURAYA TASINDI
+         (YAPILACAKLAR 58, asama 4). Eskiden `#hesapOverlay2`
+         penceresiydi ve yan menude kendi dugmesi (`hesapEtiketBtn`)
+         vardi. Pencerenin kendi notu zaten "bir kez kurulup unutulan
+         bir ayar" diyordu -- tam da bu sayfanin tarifi.
+         ⚠ ALAN KIMLIKLERI DEGISMEDI (`hs_ad`, `hs_platform`,
+           `hs_handle`, `hs_url`, `hs_notlar`, `hs_liste`, `hs_kaydet`,
+           `hs_vazgec`): bunlari yazan kod da, olcen testler de
+           kimlikle buluyor.
+         ⛔ Pencerenin kapatma carpisi (`hs_kapat`) KALDIRILDI:
+           sayfada kapatilacak bir sey yok. -->
+    <h3 class="tpl-h"><span data-i18n="hs_title">Account labels</span></h3>
+    <div class="ayar-blok" id="ayarHesapEtiket">
+      <p class="hint hs_not" data-i18n="hs_intro">If you have more than one account on the same platform, add them here; when you plan a post you tick which one it goes to. Shootboard never connects to any account and never posts anything on your behalf — this is only a label.</p>
+
+      <ul class="hs-liste" id="hs_liste"></ul>
+
+      <div class="hs-form">
+        <div class="row2">
+          <div class="field">
+            <label data-i18n="hs_ad">Name</label>
+            <input type="text" id="hs_ad" maxlength="80" data-i18n-placeholder="hs_ad_ph" placeholder="Personal">
+          </div>
+          <div class="field">
+            <label data-i18n="hs_platform">Platform</label>
+            <select id="hs_platform"></select>
+          </div>
+        </div>
+        <div class="row2">
+          <div class="field">
+            <label data-i18n="hs_kullanici">Username</label>
+            <input type="text" id="hs_handle" maxlength="80" placeholder="@…">
+          </div>
+          <div class="field">
+            <label data-i18n="hs_adres">Address</label>
+            <input type="url" id="hs_url" maxlength="600" placeholder="https://…">
+          </div>
+        </div>
+        <div class="field">
+          <label data-i18n="hs_not">Note</label>
+          <input type="text" id="hs_notlar" maxlength="1000" data-i18n-placeholder="hs_not_ph" placeholder="Optional">
+        </div>
+        <div class="modal-actions">
+          <button type="button" class="btn" id="hs_vazgec" hidden data-i18n="btn_cancel">Cancel</button>
+          <button type="button" class="btn btn-primary" id="hs_kaydet" data-i18n="hs_ekle">Add</button>
+        </div>
+      </div>
+    </div>
+    <!-- ⛔ 19 KASIM 2026 — AI AYARLARI BURAYA TASINDI
+         (YAPILACAKLAR 58, asama 6 — SON ASAMA). Eskiden
+         `#aiSettingsOverlay` penceresiydi ve yan menude kendi dugmesi
+         (`aiSettingsBtn`) vardi.
+         ⚠ EN GENIS TASIMA: 17 test dosyasi bu pencereye dokunuyordu.
+           Bu yuzden EN SONA birakildi; once dar olanlar tasindi ve her
+           biri kendi tam kosusundan gecti.
+         ⚠ ALAN KIMLIKLERI DEGISMEDI (`ai_key`, `ai_hesaba`,
+           `aiTestBtn`, `ai_test_list`, `aiForgetBtn`,
+           `aiSaveAnywayBtn`, `aiSettingsSaveBtn` …).
+         ⛔ "Vazgec" dugmesi (`aiSettingsCancelBtn`) KALDIRILDI: bir
+           SAYFADA vazgecilecek bir sey yok. "Anahtari kaldir",
+           "Denemeden kaydet" ve "Kaydet & Baglan" DURUYOR — onlar
+           pencereyi kapatmak icin degil, is yapmak icin vardi. -->
+    <h3 class="tpl-h"><span data-i18n="ai_title">Connect Your Own AI</span></h3>
+    <div class="ayar-blok" id="ayarAi">
+      <div class="ai-durum" id="ai_state"></div>
+      <p class="ai-lead" data-i18n="ai_lead">Optional. Everything else in the demo works without it.</p>
+      <!-- Yeni tanisilan bir demoda API anahtari istemek mesru bir tereddut
+           yaratir. Ne oldugunu kucuk gri bir paragrafta degil, okunur uc madde
+           hâlinde soyluyoruz ve dogrulamak isteyene gizlilik sayfasini veriyoruz. -->
+      <ul class="trust-list">
+        <li data-i18n="ai_trust_1">Your key is saved only in this browser. It never reaches our servers, because we do not have any.</li>
+        <li data-i18n="ai_trust_2">Requests go straight from your browser to Google. We never see your key or your prompts.</li>
+        <li data-i18n="ai_trust_3">You can remove the key from this screen at any time.</li>
+      </ul>
+      <a class="trust-link" href="privacy.html" target="_blank" rel="noopener" data-i18n="ai_privacy_link">Read exactly what we store →</a>
+
+      <!-- Anahtari HIC BILMEYEN biri icin adim adim. Bu bolum acik
+           basliyor: "API anahtari" sozunu ilk kez duyan biri icin en buyuk
+           engel, ne yapacagini bilmemek. Katlanmis bir yardim metni bu
+           engeli kaldirmiyor, sadece gizliyor. -->
+      <details class="fold fold-modal ai-howto" open>
+        <summary><span data-i18n="ai_howto_title">How do I get a key? (free, 2 minutes)</span></summary>
+        <ol class="ai-steps">
+          <li>
+            <span data-i18n="ai_step_1">Open Google AI Studio and sign in with your Google account.</span>
+            <a class="ai-step-link" href="https://aistudio.google.com/apikey" target="_blank" rel="noopener" data-i18n="ai_step_1_link">Open AI Studio →</a>
+          </li>
+          <li data-i18n="ai_step_2">Click the “Create API key” button.</li>
+          <li data-i18n="ai_step_3">Copy the key it gives you — a long line starting with AQ. or AIza.</li>
+          <li data-i18n="ai_step_4">Paste it in the box below and press Save.</li>
+        </ol>
+        <p class="ai-warn" data-i18n="ai_howto_note">Free, and it does not ask for a credit card. Careful: a paid ChatGPT or Gemini subscription is a different thing — it does not give you a key. The key comes from the page above.</p>
+      </details>
+
+      <div class="field">
+        <label data-i18n="ai_key_label">Gemini API key</label>
+        <input type="password" id="ai_key" placeholder="AQ.… / AIza…">
+        <p class="ai-key-hint" id="ai_key_hint"></p>
+        <!-- Anahtar varsayilan olarak YALNIZCA bu cihazda duruyor. Telefonda
+             yeniden istenmesin diye hesaba da yazilabiliyor; secim
+             kullanicinin, kutu bos basliyor. -->
+        <label class="ai-hesaba" id="ai_hesabaSatir">
+          <input type="checkbox" id="ai_hesaba">
+          <span data-i18n="ai_hesaba">Keep this key in my account (so my other devices have it too)</span>
+        </label>
+        <p class="ai-key-hint" data-i18n="ai_hesaba_not">Stored in your own row, which only you can read. Leave it off and the key never leaves this device.</p>
+        <div class="ai-test-satir">
+          <button type="button" class="btn btn-sm" id="aiTestBtn" data-i18n="ai_test">Test the connection</button>
+          <span class="ai-status" id="ai_test_out"></span>
+        </div>
+        <!-- Model model sonuc: "calismiyor" demek yetmiyor, HANGISININ
+             calismadigini gormek gerekiyor. -->
+        <ul class="ai-test-liste" id="ai_test_list" hidden></ul>
+      </div>
+      <div class="modal-actions">
+        <button class="btn btn-danger" id="aiForgetBtn" data-i18n="ai_forget" hidden>Remove key</button>
+        <button class="btn" id="aiSaveAnywayBtn" data-i18n="ai_save_anyway" hidden>Save without testing</button>
+        <button class="btn btn-primary" id="aiSettingsSaveBtn" data-i18n="ai_save_connect">Save & Connect</button>
+      </div>
+    </div>
+
+
     <!-- ⛔ 19 KASIM 2026 — HESAP YONETIMI BURAYA TASINDI
          (YAPILACAKLAR 58, asama 5). Kullanici sinirini kendisi cizdi:
          "hesap yonetimi ve hesaptan cikis ayarlara tasinacak. Ad ve
@@ -5157,73 +5300,6 @@ textarea.sc-ai-brief{min-height:64px;resize:vertical;line-height:1.5;}
         <div class="ai-status" id="hesapDurum"></div>
         <button type="button" class="btn btn-danger" id="hesapSilBtn" data-i18n="hesap_sil_btn" disabled>Delete my account</button>
       </div>
-      </div>
-    </div>
-
-    <h3 class="tpl-h"><span data-i18n="hv_title">Weather &amp; light</span></h3>
-    <div class="ayar-blok" id="ayarHava">
-      <div class="rm-bolum">
-        <div class="rm-bas">
-          <h4 data-i18n="hv_set_show">Show in the side menu</h4>
-          <label class="rm-anahtar"><input type="checkbox" id="hv_gosterTik"></label>
-        </div>
-        <p class="rm-not" data-i18n="hv_ask">Sunrise, sunset and golden hour for where you are.</p>
-      </div>
-
-      <div class="rm-bolum">
-        <div class="rm-bas"><h4 data-i18n="hv_set_place">Location</h4></div>
-        <p class="rm-durum" id="hv_konumDurum"></p>
-        <div class="rm-dugmeler">
-          <button type="button" class="btn btn-sm" id="hv_izinBtn" data-i18n="hv_ask_btn">Turn on location</button>
-        </div>
-        <!-- Izin veremeyen ya da vermek istemeyen biri de isik
-             saatlerini gorebilsin diye sehir kutusu AYRICA duruyor;
-             seritteki halinde de boyle. -->
-        <form class="rm-saat" id="hv_sehirForm">
-          <input type="text" id="hv_sehirGiris" maxlength="80" autocomplete="address-level2"
-                 data-i18n-placeholder="hv_city_ph" data-i18n-aria="hv_city_ph"
-                 aria-label="City" placeholder="City">
-          <button type="submit" class="btn btn-sm">→</button>
-        </form>
-        <p class="rm-not" data-i18n="hv_set_note">Two decimals are stored.</p>
-      </div>
-    </div>
-
-    <h3 class="tpl-h"><span data-i18n="hs_title">Account labels</span></h3>
-    <div class="ayar-blok" id="ayarHesapEtiket">
-      <p class="hint hs_not" data-i18n="hs_intro">If you have more than one account on the same platform, add them here; when you plan a post you tick which one it goes to. Shootboard never connects to any account and never posts anything on your behalf — this is only a label.</p>
-
-      <ul class="hs-liste" id="hs_liste"></ul>
-
-      <div class="hs-form">
-        <div class="row2">
-          <div class="field">
-            <label data-i18n="hs_ad">Name</label>
-            <input type="text" id="hs_ad" maxlength="80" data-i18n-placeholder="hs_ad_ph" placeholder="Personal">
-          </div>
-          <div class="field">
-            <label data-i18n="hs_platform">Platform</label>
-            <select id="hs_platform"></select>
-          </div>
-        </div>
-        <div class="row2">
-          <div class="field">
-            <label data-i18n="hs_kullanici">Username</label>
-            <input type="text" id="hs_handle" maxlength="80" placeholder="@…">
-          </div>
-          <div class="field">
-            <label data-i18n="hs_adres">Address</label>
-            <input type="url" id="hs_url" maxlength="600" placeholder="https://…">
-          </div>
-        </div>
-        <div class="field">
-          <label data-i18n="hs_not">Note</label>
-          <input type="text" id="hs_notlar" maxlength="1000" data-i18n-placeholder="hs_not_ph" placeholder="Optional">
-        </div>
-        <div class="modal-actions">
-          <button type="button" class="btn" id="hs_vazgec" hidden data-i18n="btn_cancel">Cancel</button>
-          <button type="button" class="btn btn-primary" id="hs_kaydet" data-i18n="hs_ekle">Add</button>
-        </div>
       </div>
     </div>
   </div>
@@ -6406,70 +6482,6 @@ textarea.sc-ai-brief{min-height:64px;resize:vertical;line-height:1.5;}
   </div>
 </div>
 
-<div class="overlay" id="aiSettingsOverlay">
-  <div class="modal" style="max-width:440px;">
-    <h2 data-i18n="ai_title">Connect Your Own AI</h2>
-    <!-- Kayitli anahtar ekranda GORUNUYOR. Onceki halde kutu bosaltiliyordu
-         ve kullanici anahtarin kaydedilip kaydedilmedigini anlayamiyordu. -->
-    <div class="ai-durum" id="ai_state"></div>
-    <p class="ai-lead" data-i18n="ai_lead">Optional. Everything else in the demo works without it.</p>
-    <!-- Yeni tanisilan bir demoda API anahtari istemek mesru bir tereddut
-         yaratir. Ne oldugunu kucuk gri bir paragrafta degil, okunur uc madde
-         hâlinde soyluyoruz ve dogrulamak isteyene gizlilik sayfasini veriyoruz. -->
-    <ul class="trust-list">
-      <li data-i18n="ai_trust_1">Your key is saved only in this browser. It never reaches our servers, because we do not have any.</li>
-      <li data-i18n="ai_trust_2">Requests go straight from your browser to Google. We never see your key or your prompts.</li>
-      <li data-i18n="ai_trust_3">You can remove the key from this screen at any time.</li>
-    </ul>
-    <a class="trust-link" href="privacy.html" target="_blank" rel="noopener" data-i18n="ai_privacy_link">Read exactly what we store →</a>
-
-    <!-- Anahtari HIC BILMEYEN biri icin adim adim. Bu bolum acik
-         basliyor: "API anahtari" sozunu ilk kez duyan biri icin en buyuk
-         engel, ne yapacagini bilmemek. Katlanmis bir yardim metni bu
-         engeli kaldirmiyor, sadece gizliyor. -->
-    <details class="fold fold-modal ai-howto" open>
-      <summary><span data-i18n="ai_howto_title">How do I get a key? (free, 2 minutes)</span></summary>
-      <ol class="ai-steps">
-        <li>
-          <span data-i18n="ai_step_1">Open Google AI Studio and sign in with your Google account.</span>
-          <a class="ai-step-link" href="https://aistudio.google.com/apikey" target="_blank" rel="noopener" data-i18n="ai_step_1_link">Open AI Studio →</a>
-        </li>
-        <li data-i18n="ai_step_2">Click the “Create API key” button.</li>
-        <li data-i18n="ai_step_3">Copy the key it gives you — a long line starting with AQ. or AIza.</li>
-        <li data-i18n="ai_step_4">Paste it in the box below and press Save.</li>
-      </ol>
-      <p class="ai-warn" data-i18n="ai_howto_note">Free, and it does not ask for a credit card. Careful: a paid ChatGPT or Gemini subscription is a different thing — it does not give you a key. The key comes from the page above.</p>
-    </details>
-
-    <div class="field">
-      <label data-i18n="ai_key_label">Gemini API key</label>
-      <input type="password" id="ai_key" placeholder="AQ.… / AIza…">
-      <p class="ai-key-hint" id="ai_key_hint"></p>
-      <!-- Anahtar varsayilan olarak YALNIZCA bu cihazda duruyor. Telefonda
-           yeniden istenmesin diye hesaba da yazilabiliyor; secim
-           kullanicinin, kutu bos basliyor. -->
-      <label class="ai-hesaba" id="ai_hesabaSatir">
-        <input type="checkbox" id="ai_hesaba">
-        <span data-i18n="ai_hesaba">Keep this key in my account (so my other devices have it too)</span>
-      </label>
-      <p class="ai-key-hint" data-i18n="ai_hesaba_not">Stored in your own row, which only you can read. Leave it off and the key never leaves this device.</p>
-      <div class="ai-test-satir">
-        <button type="button" class="btn btn-sm" id="aiTestBtn" data-i18n="ai_test">Test the connection</button>
-        <span class="ai-status" id="ai_test_out"></span>
-      </div>
-      <!-- Model model sonuc: "calismiyor" demek yetmiyor, HANGISININ
-           calismadigini gormek gerekiyor. -->
-      <ul class="ai-test-liste" id="ai_test_list" hidden></ul>
-    </div>
-    <div class="modal-actions">
-      <button class="btn btn-danger" id="aiForgetBtn" data-i18n="ai_forget" hidden>Remove key</button>
-      <button class="btn" id="aiSaveAnywayBtn" data-i18n="ai_save_anyway" hidden>Save without testing</button>
-      <button class="btn" id="aiSettingsCancelBtn" data-i18n="btn_cancel">Cancel</button>
-      <button class="btn btn-primary" id="aiSettingsSaveBtn" data-i18n="ai_save_connect">Save & Connect</button>
-    </div>
-  </div>
-</div>
-
 <!-- Termin hatirlatmalari. Iki kanal ve her biri AYRI aciliyor (kullanici
      karari, 3 Eylul 2026). Takvim tarafinda ABONELIK ana yol; dosya
      indirme yalnizca uyarili yedek, cunku indirilen dosyanin olaylari
@@ -7179,7 +7191,6 @@ const LANG = {
     ai_hepsi_calisiyor: (i, n)=> `writing ${i}/${n}…`,
     ai_hepsi_bitti: (n)=> n === 1 ? "1 field written." : `${n} fields written.`,
     ai_hepsi_yarim: (i, n)=> `Stopped at ${i}/${n}.`,
-    btn_ai_settings: "✨ AI (Gemini)",
     btn_ai_write: "✨ AI",
     sc_words: (n)=> `${n} words`,
     sc_idea_all: "Select all / none",
@@ -8557,7 +8568,6 @@ const LANG = {
     ai_hepsi_calisiyor: (i, n)=> `${i}/${n} yazılıyor…`,
     ai_hepsi_bitti: (n)=> n === 1 ? "1 alan yazıldı." : `${n} alan yazıldı.`,
     ai_hepsi_yarim: (i, n)=> `${i}/${n} yazıldıktan sonra durdu.`,
-    btn_ai_settings: "✨ AI (Gemini)",
     btn_ai_write: "✨ AI",
     sc_words: (n)=> `${n} kelime`,
     sc_idea_all: "Tümünü seç / bırak",
@@ -16576,6 +16586,7 @@ function ayarSayfasiTazele(){
   hesaplariCiz();
   havaAyarTazele();
   hesapBolumunuTazele();
+  openAiSettings();
 }
 function setPage(ad, sessizRota){
   if(!SAYFALAR.some(x=>x[0] === ad)) ad = 'projects';
@@ -22642,8 +22653,6 @@ async function aiCihazlarArasiSor(){
   trackOnce('funnel/ai-key-hesaba');
 }
 
-document.getElementById('aiSettingsCancelBtn').addEventListener('click', ()=> document.getElementById('aiSettingsOverlay').classList.remove('open'));
-document.getElementById('aiSettingsOverlay').addEventListener('click', (e)=>{ if(e.target.id==='aiSettingsOverlay') document.getElementById('aiSettingsOverlay').classList.remove('open'); });
 // Anahtar KAYDEDILMEDEN once gercekten calisiyor mu diye deneniyor.
 // Yanlis yapistirilmis bir anahtar aksi halde ancak ilk taslakta,
 // anlasilmaz bir hatayla ortaya cikiyordu.
@@ -22675,7 +22684,9 @@ document.getElementById('aiSettingsSaveBtn').addEventListener('click', async ()=
                      { sure: AI_DENEME_ZAMAN_ASIMI, dusunme:'low', enCokJeton: 32 });
     saveAiSettings({ provider:'gemini', key });
     trackOnce('funnel/ai-key-connected');
-    document.getElementById('aiSettingsOverlay').classList.remove('open');
+    // ⚠ Pencere kapanmiyor artik (bir SAYFA): bolum kayittan
+    //   yeniden ciziliyor ki "anahtar kayitli" durumu gorunsun.
+    openAiSettings();
     // ⚠ CIHAZLAR ARASI SORUSU BURADA SORULUYOR, kutuda degil.
     // Ozellik zaten vardi (ai_hesaba kutusu) ama kimse gormuyordu --
     // kullanicinin kendisi bile atlamisti: "ben bile atlamisim". Sebep
@@ -22698,7 +22709,9 @@ document.getElementById('aiSettingsSaveBtn').addEventListener('click', async ()=
     if(err && err.gecici){
       saveAiSettings({ provider:'gemini', key });
       trackOnce('funnel/ai-key-connected');
-      document.getElementById('aiSettingsOverlay').classList.remove('open');
+      // ⚠ Pencere kapanmiyor artik (bir SAYFA): bolum kayittan
+      //   yeniden ciziliyor ki "anahtar kayitli" durumu gorunsun.
+      openAiSettings();
       showToast(t('ai_key_saved_busy'));
       return;
     }
@@ -23035,7 +23048,7 @@ async function aiCalistir(dugme, durumEl, calisanEtiket, prompt, secenek){
       durumEl.textContent = t('ai_anahtar_gerek');
       durumEl.className = (durumEl.dataset.temelSinif || '') + ' error';
     }
-    openAiSettings();
+    aiAyarlarinaGit();
     return null;
   }
   const eskiEtiket = dugme.textContent;
@@ -23092,13 +23105,30 @@ function aiDurumTazele(){
   }
 }
 
+// ⛔ 19 KASIM 2026 — AI BOLUMUNE GOTUREN YOL (YAPILACAKLAR 58
+//    asama 6). Eskiden anahtar yokken taslak istenince pencere
+//    KENDILIGINDEN aciliyordu. Pencere kalmadi; kullanicinin oraya
+//    GOTURULMESI gerekiyor, yoksa "bir sey olmadi" sanir.
+//    ⚠ `openAiSettings()` artik yalnizca TAZELIYOR; goturme isi
+//      burada. Ikisi ayri cunku ayarlar sayfasi acilirken tazeleme
+//      gerekiyor ama goturme gerekmiyor (zaten orada).
+function aiAyarlarinaGit(){
+  setPage('ayarlar');
+  const b = document.getElementById('ayarAi');
+  if(b) b.scrollIntoView({ block:'start', behavior:'smooth' });
+}
+// ⛔ 19 KASIM 2026 — ARTIK PENCERE ACMIYOR (YAPILACAKLAR 58
+//    asama 6): AI ayarlari ayarlar sayfasinin bir bolumu.
+//    ⚠ ADI KORUNDU: `ayarSayfasiTazele()` bunu cagiriyor ve 17 test
+//      dosyasi bu adi biliyor. Yaptigi is "pencereyi ac"tan "bolumu
+//      kayittan tazele"ye dondu -- olculen sey ayni kaldi.
 function openAiSettings(){
   const s = getAiSettings();
   aiDurumTazele();
   // Rehber anahtari OLMAYAN icin var. Anahtar kayitliyken acik durursa
   // ekranin yarisini kaplayip anahtar kutusunu ve test sonuclarini
   // asagi itiyor.
-  const rehber = document.querySelector('#aiSettingsOverlay .ai-howto');
+  const rehber = document.querySelector('#ayarAi .ai-howto');
   if(rehber) rehber.open = !(s && s.key);
   // Onceki denemenin sonuclari yeni acilista durmasin.
   const cikti = document.getElementById('ai_test_out');
@@ -23116,11 +23146,9 @@ function openAiSettings(){
   document.getElementById('ai_hesabaSatir').hidden = !session;
   document.querySelector('[data-i18n="ai_hesaba_not"]').hidden = !session;
   document.getElementById('aiSaveAnywayBtn').hidden = true;
-  document.getElementById('aiSettingsOverlay').classList.add('open');
 }
 
 document.getElementById('ai_hesaba').addEventListener('change', e=> aiHesabaYaz(e.target.checked));
-document.getElementById('aiSettingsBtn').addEventListener('click', openAiSettings);
 
 // Model listesi: kucuk ve hizli bir istek. Donerse ag da anahtar da
 // saglam demektir ve geriye tek ihtimal kalir — modelin yogunlugu.
@@ -23236,7 +23264,9 @@ document.getElementById('aiSaveAnywayBtn').addEventListener('click', ()=>{
   if(!key) return;
   saveAiSettings({ provider:'gemini', key });
   trackOnce('funnel/ai-key-connected');
-  document.getElementById('aiSettingsOverlay').classList.remove('open');
+  // ⚠ Pencere kapanmiyor artik (bir SAYFA): bolum kayittan
+  //   yeniden ciziliyor ki "anahtar kayitli" durumu gorunsun.
+  openAiSettings();
   showToast(t('ai_saved_untested'));
 });
 

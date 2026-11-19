@@ -19,7 +19,7 @@ const { chromium } = require('./araclar');
     await page.goto('http://127.0.0.1:8098/app.html',{waitUntil:'domcontentloaded'});
     await page.waitForTimeout(1400);
     await page.evaluate(()=>{ document.querySelectorAll('.overlay.open').forEach(o=>o.classList.remove('open')); setLanguage('tr'); });
-    await page.click('#aiSettingsBtn'); await page.waitForTimeout(250);
+    await page.click('#ayarlarBtn'); await page.waitForTimeout(250);
     return page;
   };
 
@@ -33,7 +33,7 @@ const { chromium } = require('./araclar');
   r = await page.evaluate(()=>{
     const kutu = document.getElementById('ai_key');
     const dugme = document.getElementById('aiTestBtn');
-    const modal = document.querySelector('#aiSettingsOverlay .modal');
+    const modal = document.querySelector('#ayarAi');
     const mr = modal.getBoundingClientRect();
     return { rehberAcik: document.querySelector('.ai-howto').open,
              kutuGorunur: kutu.getBoundingClientRect().bottom <= mr.bottom + 1,
@@ -51,8 +51,9 @@ const { chromium } = require('./araclar');
   await page.waitForTimeout(200);
   const doluydu = await page.evaluate(()=>document.getElementById('ai_test_list').innerHTML.length > 0);
   k('test sonuçları yazıldı', doluydu === true);
-  await page.evaluate(()=>document.getElementById('aiSettingsOverlay').classList.remove('open'));
-  await page.click('#aiSettingsBtn'); await page.waitForTimeout(250);
+  // ⚠ Pencere yok: sayfadan cikip geri gelmek bolumu tazeliyor.
+  await page.evaluate(()=> setPage('projects'));
+  await page.click('#ayarlarBtn'); await page.waitForTimeout(250);
   const temiz = await page.evaluate(()=>({
     liste: document.getElementById('ai_test_list').hidden,
     cikti: document.getElementById('ai_test_out').textContent }));

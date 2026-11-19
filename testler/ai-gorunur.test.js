@@ -18,7 +18,7 @@ const { chromium } = require('./araclar');
 
   console.log('ANAHTAR KAYITLI MI — EKRANDA YAZIYOR');
   let page = await ac();
-  await page.click('#aiSettingsBtn'); await page.waitForTimeout(250);
+  await page.click('#ayarlarBtn'); await page.waitForTimeout(250);
   let d = await page.evaluate(()=>({ metin: document.getElementById('ai_state').textContent,
     sinif: document.getElementById('ai_state').className,
     gorunur: getComputedStyle(document.getElementById('ai_state')).display !== 'none' }));
@@ -28,9 +28,9 @@ const { chromium } = require('./araclar');
 
   await page.evaluate(()=>{
     localStorage.setItem('demo_ai_settings', JSON.stringify({provider:'gemini', key:'AQ.Ab8RNORNEK_ANAHTAR_wxyz'}));
-    document.getElementById('aiSettingsOverlay').classList.remove('open');
+    /* sayfa: kapatilacak pencere yok */
   });
-  await page.click('#aiSettingsBtn'); await page.waitForTimeout(250);
+  await page.click('#ayarlarBtn'); await page.waitForTimeout(250);
   d = await page.evaluate(()=>({ metin: document.getElementById('ai_state').textContent,
     sinif: document.getElementById('ai_state').className,
     sil: !document.getElementById('aiForgetBtn').hidden }));

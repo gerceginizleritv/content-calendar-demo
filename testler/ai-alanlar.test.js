@@ -43,7 +43,7 @@ const bak = (ad, ko, ek)=>{ if(ko){ g++; console.log('  ok  '+ad); } else { k++;
                          setLanguage('tr'); });
 
   // Anahtar: gercek bir anahtar DEGIL, sadece dugmelerin acilmasi icin.
-  await p.click('#aiSettingsBtn'); await p.waitForTimeout(300);
+  await p.click('#ayarlarBtn'); await p.waitForTimeout(300);
   await p.fill('#ai_key', 'AQ.TESTANAHTARI_123456');
   await p.click('#aiSettingsSaveBtn');
   await p.waitForTimeout(900);

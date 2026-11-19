@@ -74,7 +74,9 @@ const bak = (ad, ko, ek)=>{ if(ko){ g++; console.log('  ok  '+ad); } else { k++;
   }, {oturum, hesaba, cevap});
 
   const anahtarKaydet = async ()=>{
-    await p.evaluate(()=> openAiSettings());
+    // ⚠ 19 KASIM 2026: `openAiSettings()` artik yalnizca TAZELIYOR
+    //   (asama 6); alanlarin GORUNMESI icin sayfaya gitmek gerekiyor.
+    await p.evaluate(()=> setPage('ayarlar'));
     await p.waitForTimeout(350);
     await p.fill('#ai_key', 'AQ.TESTANAHTARI_123456');
     await p.click('#aiSettingsSaveBtn');

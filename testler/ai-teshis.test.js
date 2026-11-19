@@ -37,7 +37,7 @@ const { chromium } = require('./araclar');
   // 3.7 yogun, 3.6 anahtara acik degil, 2.5 calisiyor
   let page = await ac(['gemini-3.7-flash','gemini-3.5-flash-lite','baska-model'],
                       m => m === 'gemini-3.7-flash' ? yogun : iyi);
-  await page.click('#aiSettingsBtn'); await page.waitForTimeout(250);
+  await page.click('#ayarlarBtn'); await page.waitForTimeout(250);
   await page.click('#aiTestBtn');
   await page.waitForFunction(()=>!document.getElementById('aiTestBtn').disabled, null, {timeout:20000});
   await page.waitForTimeout(300);
@@ -65,7 +65,7 @@ const { chromium } = require('./araclar');
   // Simdi yazma: CALISAN modelden basliyor mu?
   page.__uretim.length = 0;
   await page.evaluate(()=>{
-    document.getElementById('aiSettingsOverlay').classList.remove('open');
+    /* sayfa: kapatilacak pencere yok */
     projects = [{ id:'p1', name:'D', type:'other', keywords:'', notes:'', address:'', shootDate:'',
       script:false, shot:false, edited:false, published:false, permit:false, cancelled:false,
       deadlines:{}, createdAt:Date.now() }];
@@ -82,7 +82,7 @@ const { chromium } = require('./araclar');
 
   console.log('\nHİÇBİRİ ÇALIŞMIYORSA');
   page = await ac(['gemini-3.7-flash','gemini-3.6-flash','gemini-3.5-flash','gemini-3.5-flash-lite'], ()=> yogun);
-  await page.click('#aiSettingsBtn'); await page.waitForTimeout(250);
+  await page.click('#ayarlarBtn'); await page.waitForTimeout(250);
   await page.click('#aiTestBtn');
   await page.waitForFunction(()=>!document.getElementById('aiTestBtn').disabled, null, {timeout:20000});
   await page.waitForTimeout(300);

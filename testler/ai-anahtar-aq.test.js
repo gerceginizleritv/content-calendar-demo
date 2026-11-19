@@ -27,7 +27,7 @@ const { chromium } = require('./araclar');
   // Kullanicinin ekranindaki bicim. Gercek anahtar degil, ayni SEKILDE
   // uretilmis bir ornek.
   const YENI = 'AQ.Ab8RN6ORNEKANAHTAR_123456-xyz';
-  await page.click('#aiSettingsBtn');
+  await page.click('#ayarlarBtn');
   await page.waitForTimeout(250);
   await page.fill('#ai_key', YENI);
   await page.click('#aiSettingsSaveBtn');
@@ -36,18 +36,31 @@ const { chromium } = require('./araclar');
     ipucu: document.getElementById('ai_key_hint').textContent,
     sinif: document.getElementById('ai_key_hint').className,
     kayit: JSON.parse(localStorage.getItem('demo_ai_settings')||'null'),
-    acik: document.getElementById('aiSettingsOverlay').classList.contains('open')
+    // ⛔ 19 KASIM 2026 — "PENCERE ACIK MI" SORUSU ARTIK YOK (YAPILACAKLAR
+    //    58 asama 6): AI ayarlari bir SAYFA bolumu, hep "acik".
+    //    ⚠ KORU KORUNE CEVIRSEYDIM BU IDDIALAR HER ZAMAN DOGRU OLURDU --
+    //      bu oturumda uc kez yakalanan "bos bekci" tuzagi.
+    //      Yerine pencerenin acik/kapali olmasinin NE ANLATTIGI olculuyor:
+    //        kaydedildi = anahtar kayitli gorunuyor (Kaldir dugmesi cikti,
+    //                     kutu bosaldi, durum satiri doldu)
+    //        kutuDolu   = yazilan anahtar DURUYOR ki tekrar denenebilsin
+    kaydedildi: !document.getElementById('aiForgetBtn').hidden
+                && document.getElementById('ai_key').value === ''
+                && document.getElementById('ai_state').textContent.trim() !== '',
+    kutuDolu: document.getElementById('ai_key').value !== '',
+    bolumGorunur: !document.getElementById('ayarlarPage').hidden
+                  && document.getElementById('ayarAi').getBoundingClientRect().height > 0
   }));
   k('"AQ." anahtarı biçim kontrolünü GEÇİYOR', !/benzemiyor/.test(s1.ipucu), s1.ipucu);
   k('canlı doğrulama çağrısı yapıldı', cagri === 1, cagri);
   k('anahtar başlıkta doğru gitti', gidenAnahtar === YENI, gidenAnahtar);
   k('anahtar kaydedildi', !!s1.kayit && s1.kayit.key === YENI && s1.kayit.provider === 'gemini', s1.kayit);
-  k('ekran kapandı', s1.acik === false);
+  k('anahtar KAYITLI görünüyor', s1.kaydedildi === true);
 
   // Eski AIza bicimi hala gecerli
   await page.evaluate(()=>{ localStorage.removeItem('demo_ai_settings'); });
   cagri = 0;
-  await page.click('#aiSettingsBtn');
+  await page.click('#ayarlarBtn');
   await page.waitForTimeout(250);
   await page.fill('#ai_key', 'AIzaESKI_BICIM_ANAHTAR_123');
   await page.click('#aiSettingsSaveBtn');
@@ -58,7 +71,7 @@ const { chromium } = require('./araclar');
   // Yanlis yerden yapistirilan hala reddediliyor
   await page.evaluate(()=>{ localStorage.removeItem('demo_ai_settings'); });
   cagri = 0;
-  await page.click('#aiSettingsBtn');
+  await page.click('#ayarlarBtn');
   await page.waitForTimeout(250);
   await page.fill('#ai_key', 'sk-proj-baskabiryerdenkopyalanmis');
   await page.click('#aiSettingsSaveBtn');

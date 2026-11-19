@@ -30,7 +30,7 @@ const { chromium } = require('./araclar');
   // Sinirlari testte kisaltiyoruz: 20 saniye beklemenin anlami yok.
   await page.evaluate(()=>{ window.__eskiCall = callGemini;
     window.callGemini = (k,p,s)=> window.__eskiCall(k,p, 900); });
-  await page.click('#aiSettingsBtn');
+  await page.click('#ayarlarBtn');
   await page.waitForTimeout(200);
   await page.fill('#ai_key','AQ.TESTANAHTARI_123456');
   await page.click('#aiSettingsSaveBtn');
@@ -41,7 +41,20 @@ const { chromium } = require('./araclar');
     ipucu: document.getElementById('ai_key_hint').textContent,
     sinif: document.getElementById('ai_key_hint').className,
     kilit: document.getElementById('aiSettingsSaveBtn').disabled,
-    acik: document.getElementById('aiSettingsOverlay').classList.contains('open'),
+    // ⛔ 19 KASIM 2026 — "PENCERE ACIK MI" SORUSU ARTIK YOK (YAPILACAKLAR
+    //    58 asama 6): AI ayarlari bir SAYFA bolumu, hep "acik".
+    //    ⚠ KORU KORUNE CEVIRSEYDIM BU IDDIALAR HER ZAMAN DOGRU OLURDU --
+    //      bu oturumda uc kez yakalanan "bos bekci" tuzagi.
+    //      Yerine pencerenin acik/kapali olmasinin NE ANLATTIGI olculuyor:
+    //        kaydedildi = anahtar kayitli gorunuyor (Kaldir dugmesi cikti,
+    //                     kutu bosaldi, durum satiri doldu)
+    //        kutuDolu   = yazilan anahtar DURUYOR ki tekrar denenebilsin
+    kaydedildi: !document.getElementById('aiForgetBtn').hidden
+                && document.getElementById('ai_key').value === ''
+                && document.getElementById('ai_state').textContent.trim() !== '',
+    kutuDolu: document.getElementById('ai_key').value !== '',
+    bolumGorunur: !document.getElementById('ayarlarPage').hidden
+                  && document.getElementById('ayarAi').getBoundingClientRect().height > 0,
     kayit: localStorage.getItem('demo_ai_settings')
   }));
   k('düğme SONSUZA KADAR kilitli kalmıyor', r1.kilit === false, gecen+'ms');
@@ -50,12 +63,12 @@ const { chromium } = require('./araclar');
   k('“Google\'ın söylediği” denmiyor (Google bir şey söylemedi)', !/söylediği/.test(r1.ipucu), r1.ipucu.slice(0,40));
   k('hata olarak gösteriliyor', /error/.test(r1.sinif));
   k('çalışmayan anahtar KAYDEDİLMİYOR', r1.kayit === null);
-  k('ekran açık kalıyor (tekrar denenebilsin)', r1.acik === true);
+  k('yazılan anahtar kutuda duruyor (tekrar denenebilsin)', r1.kutuDolu === true);
   await page.close();
 
   console.log('\nAĞA HİÇ ÇIKILAMIYORSA');
   page = await ac('agyok');
-  await page.click('#aiSettingsBtn');
+  await page.click('#ayarlarBtn');
   await page.waitForTimeout(200);
   await page.fill('#ai_key','AQ.TESTANAHTARI_123456');
   await page.click('#aiSettingsSaveBtn');
@@ -67,19 +80,32 @@ const { chromium } = require('./araclar');
 
   console.log('\nANAHTAR ÇALIŞIYORSA (sol menüden girildi)');
   page = await ac('iyi');
-  await page.click('#aiSettingsBtn');
+  await page.click('#ayarlarBtn');
   await page.waitForTimeout(200);
   await page.fill('#ai_key','AQ.TESTANAHTARI_123456');
   await page.click('#aiSettingsSaveBtn');
   await page.waitForTimeout(700);
   const r3 = await page.evaluate(()=>({
-    acik: document.getElementById('aiSettingsOverlay').classList.contains('open'),
+    // ⛔ 19 KASIM 2026 — "PENCERE ACIK MI" SORUSU ARTIK YOK (YAPILACAKLAR
+    //    58 asama 6): AI ayarlari bir SAYFA bolumu, hep "acik".
+    //    ⚠ KORU KORUNE CEVIRSEYDIM BU IDDIALAR HER ZAMAN DOGRU OLURDU --
+    //      bu oturumda uc kez yakalanan "bos bekci" tuzagi.
+    //      Yerine pencerenin acik/kapali olmasinin NE ANLATTIGI olculuyor:
+    //        kaydedildi = anahtar kayitli gorunuyor (Kaldir dugmesi cikti,
+    //                     kutu bosaldi, durum satiri doldu)
+    //        kutuDolu   = yazilan anahtar DURUYOR ki tekrar denenebilsin
+    kaydedildi: !document.getElementById('aiForgetBtn').hidden
+                && document.getElementById('ai_key').value === ''
+                && document.getElementById('ai_state').textContent.trim() !== '',
+    kutuDolu: document.getElementById('ai_key').value !== '',
+    bolumGorunur: !document.getElementById('ayarlarPage').hidden
+                  && document.getElementById('ayarAi').getBoundingClientRect().height > 0,
     kayit: JSON.parse(localStorage.getItem('demo_ai_settings')||'null'),
     kayitPenceresi: document.getElementById('editOverlay').classList.contains('open'),
     toast: (document.querySelector('.toast, #toast') || {}).textContent || ''
   }));
   k('anahtar kaydedildi', !!r3.kayit && r3.kayit.provider === 'gemini');
-  k('ekran kapandı', r3.acik === false);
+  k('anahtar KAYITLI görünüyor', r3.kaydedildi === true);
   k('KAYIT penceresi kendiliğinden AÇILMIYOR', r3.kayitPenceresi === false);
   k('kullanıcıya hazır olduğu söyleniyor', /hazır/.test(r3.toast), r3.toast);
   await page.close();

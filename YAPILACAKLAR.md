@@ -2066,7 +2066,7 @@ dokunmak ve ikinci seferde birincisini bozmak demek.
   adıyla bulunduğunu ölçüyor; bayrak alanı eklenince metin
   "🇹🇷 Türkçe" oldu ve iddia kendiliğinden kapsadı.
 
-- ⬜ **58.** ⛔ **UYGULAMA İÇİNDE "AYARLAR" SAYFASI + dil tuşunun
+- ✅ **58. BİTTİ (19 Kasım 2026).** ⛔ **UYGULAMA İÇİNDE "AYARLAR" SAYFASI + dil tuşunun
   uygulamaya yakışır hâle gelmesi.** Kullanıcı 18 Kasım 2026'da
   istedi:
 
@@ -2454,8 +2454,73 @@ dokunmak ve ikinci seferde birincisini bozmak demek.
   görünürlüğü güncellemezse 1, yedek geri yüklemesi ayarları
   tazelemezse 1.
 
-  ⬜ **SON AŞAMA:** **AI ayarları** (15 + 11 dosya) — en geniş olan,
-  tek başına.
+  **✅ 6. AŞAMA BİTTİ (19 Kasım 2026) — AI ayarları. MADDE TAMAMLANDI.**
+
+  `#aiSettingsOverlay` penceresi kaldırıldı; içeriği `#ayarAi` bölümü
+  oldu. Yan menüdeki `aiSettingsBtn` kalktı. **17 test dosyası** bu
+  pencereye dokunuyordu — en geniş taşıma, o yüzden en sona bırakılmıştı.
+
+  ⛔ **"Vazgeç" düğmesi (`aiSettingsCancelBtn`) kaldırıldı**; "Anahtarı
+  kaldır", "Denemeden kaydet" ve "Kaydet & Bağlan" **duruyor** — onlar
+  pencereyi kapatmak için değil, iş yapmak için vardı.
+
+  ⛔ **ON İDDİA KÖRÜ KÖRÜNE ÇEVRİLSEYDİ BOŞ BEKÇİ OLURDU.** AI
+  testlerinin onunda *"pencere açık mı"* ölçülüyordu; bir SAYFA bölümü
+  hep "açık"tır. Her birinin **ne anlattığı** yazıldı:
+
+  | Eski iddia | Yerine ölçülen |
+  |---|---|
+  | "ekran kapandı" (kayıttan sonra) | anahtar **kayıtlı görünüyor**: Kaldır düğmesi çıktı · kutu boşaldı · durum satırı doldu |
+  | "ekran açık kalıyor" (hatadan sonra) | yazılan anahtar **kutuda duruyor**, düzeltip tekrar denenebilir |
+  | "AI ekranı açılıyor" | bölüm ayarlar sayfasında ve görünür |
+
+  ⚠ Bunlardan birini yine de yanlış yazdım
+  (`r.kaydedildi === false || r.kaydedildi === true` — **her zaman
+  doğru**), fark edilip düzeltildi. Bu oturumda dördüncü "boş bekçi".
+
+  ⛔ **GERÇEK BİR ÜRÜN HATASI ÇIKTI.** Anahtar yokken "AI taslak"a
+  basınca kullanıcı eskiden ayar penceresine **götürülüyordu**. Pencere
+  kalkınca hiçbir yere gitmiyordu — kullanıcı "bir şey olmadı" sanırdı.
+  `aiAyarlarinaGit()` eklendi; `openAiSettings()` artık yalnızca
+  **tazeliyor**. İkisi ayrı: ayarlar sayfası açılırken tazeleme
+  gerekiyor ama götürme gerekmiyor (zaten orada).
+
+  ⛔ **BİR YERLEŞİM TESTİ DÜŞTÜ VE HAKLIYDI — ama sebebi beklenen
+  değildi.** *"Uzun hata metni sarıyor (birkaç satır)"* iddiası,
+  pencerenin 440 piksel olmasından geçiyordu; 640 piksellik sayfada aynı
+  metin **tek satıra sığıyor** (36px → 18px). Sarmak bir **genişlik
+  kazasıydı**; korunması gereken şey *metnin kırpılmaması*. Öyle yazıldı
+  (`scrollWidth`/`scrollHeight` karşılaştırması) — her genişlikte
+  geçerli ve daha doğrudan.
+
+  ⚠ **`mobil-menu`'deki şerit listesi artık elle yazılmıyor.** 3-6.
+  aşamalarda şeritten dört bağlantı kalktı (`remindersBtn`,
+  `hesapEtiketBtn`, `havaGosterBtn`, `aiSettingsBtn`) ve liste her
+  seferinde elle düzeltilmek zorunda kaldı; üçüncüsünde yeter dendi.
+  Artık şeritte o an ne varsa onu buluyor — ve **boş dönmediği ayrıca
+  şart koşuluyor**.
+
+  **Bölüm sırası ölçüye göre değil, KULLANIMA göre dizildi:**
+  Görünüm → Termin hatırlatmaları → Hava ve ışık → Hesap etiketleri →
+  Kendi AI'ını Bağla → **Hesabın**.
+  ⚠ Hesap en sonda çünkü **"Hesabı sil"** onun içinde; geri dönüşü
+  olmayan şey listenin ortasında durmamalı.
+
+  ⛔ **SIRALAMA SIRASINDA AÇIKLAMA BLOKLARI YANLIŞ KESİLDİ** ve
+  `#ayarlarPage` bir `</div>` fazlasıyla erken kapandı — `ayarHesap`
+  sayfanın dışına düştü. Aşama 4'teki aynı aile. Bekçi yine yakaladı
+  (*"hesap bölümü ayarlar sayfasının içinde değil"*). Onarıldıktan sonra
+  div dengesi sayılarak doğrulandı: **71 açılış / 71 kapanış**.
+
+  **Yan menüde kalanlar** (ayar olmayanlar, kullanıcının kararı):
+  ? Bu nasıl çalışır · 💳 Fiyatlar · 📖 Kullanım kılavuzu ·
+  💬 Geri Bildirim · ⚙ **Ayarlar**.
+
+  ⬜ **AÇIK KALAN KÜÇÜK SORU:** `#hesapAi` ("AI'dan planlar" — asistan
+  kartı ve son AI aktarımları) **Hesap** bölümünün içinde duruyor, ayrı
+  bir şey olduğu için taşınmadı. AI ile ilgili her şeyin tek başlık
+  altında toplanması istenirse o da AI bölümüne alınabilir —
+  **kullanıcının kararı.**
 
   ⛔ **Bölüm 7 — HER DİLDE.** Yeni sayfanın her başlığı, her etiketi
   iki dilde (yarın sekiz dilde) olacak. Bekçi hazır:
