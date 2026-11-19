@@ -966,7 +966,8 @@ dokunmak ve ikinci seferde birincisini bozmak demek.
   ⚠ Bekçi test: her proje türü için **hangi mekânların listelendiğini**
   ölçen bir test — eşleme tablosu koda gömülü kalmasın.
 
-- ⬜ **49.** ⛔ **SET YÖNETİMİ: İÇİ GÖRÜNMÜYOR, MADDE ÇIKARILAMIYOR.**
+- ✅ **49. BİTTİ (19 Kasım 2026) — ÖLÇÜLEREK KAPANDI.**
+  ⛔ **SET YÖNETİMİ: İÇİ GÖRÜNMÜYOR, MADDE ÇIKARILAMIYOR.**
   Kullanıcı 16 Kasım 2026'da 7. maddeyi denedi ve iki eksik buldu:
 
   > *"Tıkladığım setler geldi ama içlerini daha önce herhangi bir
@@ -974,32 +975,54 @@ dokunmak ve ikinci seferde birincisini bozmak demek.
   > bilemiyorum. Ayrıca buraya ekledim ama buradan geri de
   > çıkaramıyorum — yani + var ama − yok."*
 
-  **İkisi de doğrulandı:**
+  ⚠ **MADDE AÇIK DURUYORDU AMA İŞ YAPILMIŞTI.** Kullanıcı 19 Kasım'da
+  *"49'a başla"* dedi; koda değil **ekrana** bakıldı ve ikisinin de
+  çalıştığı görüldü:
 
-  | Eksik | Bugünkü durum |
+  | Eksik | Ölçüm (19 Kasım 2026) |
   |---|---|
-  | Setin içi görünmüyor | Çip yalnızca **ad + sayı** gösteriyor (`.hset-cip`). İçindeki maddeleri görmenin hiçbir yolu yok — set ancak **eklendikten sonra** ne olduğu anlaşılıyor |
-  | Madde çıkarılamıyor | Setten **tek madde silme yok**. Tek yol `setiSil` ile **setin tamamını** silmek |
+  | Setin içi görünmüyor | ✅ Çipte `▾` önizleme var — hem hazır setlerde hem kendi setlerinde, hem Çekim listesi ekranında hem boş ekranda |
+  | Madde çıkarılamıyor | ✅ Kendi setinde panel açılıyor, her maddede `−` ("Bu setten çıkar"); basınca madde **veriden de** çıkıyor (3 → 2 ölçüldü). Çekim listesinde ise her maddenin tiki var, tikten çıkarmak maddeyi listeden çıkarıyor |
 
-  ⚠ **İkinci eksik 7. maddeyle BEN getirdim:** "+" eklendi, karşılığı
-  olan "−" eklenmedi. Ekleme kolaylaştı, geri alma aynı kaldı
-  (seti baştan yaratmak). Asimetri.
+  Yani iş **7, 10 ve 55. maddelerin** içinde yapılmış, 49 kapatılmayı
+  unutmuş. ⛔ 19a ile aynı aileden: **listede iş bitmiş ama satırı açık
+  kalmış madde.** Bir sonraki "başla" komutunda yine zaman kaybettirir.
 
-  Yapılacak: setin içi **eklemeden önce** görünsün (çipe basınca
-  açılan önizleme ya da satır), ve her maddenin yanında **çıkarma**
-  olsun. ⚠ Hazır setler kodun içinde metin ve herkeste aynı —
-  onlardan madde çıkarmak **kendi kopyanı** yaratmak demek
-  (7. madde bu yolu zaten kurdu).
-  ⚠ Bölüm 7: metinler iki dilde. Bekçi test: eklenen madde **geri
-  çıkarılabiliyor mu** ölçülecek.
+  ⛔ **AMA ÖLÇÜM BAŞKA BİR HATA BULDU — ve o gerçekti.**
+  Çekim listesindeki hazır set çipinin **"+" düğmesinin ipucu ekranda
+  JS KAYNAK KODU gösteriyordu:**
 
-  ⚠ **17 Kasım 2026 — BU MADDENİN BİR YARISI 10. MADDEDE YAPILDI.**
-  Set önerisi bölümünde setin içi `▾` ile açılıyor, her maddenin kendi
-  tiki var ve tikten çıkarılan madde eklenmiyor. Kullanıcı aynı şeyi
-  oradan bir daha istedi. **Bu madde yine açık:** kullanıcının *kendi*
-  setlerinden madde çıkarma ve Çekim listesi ekranındaki set yönetimi
-  hâlâ yapılmadı.
+      (n)=> `İşaretli ${n} maddeyi bu sete ekle`
 
+  Sebep: `set_add_here` sözlükte bir **işlev** ve `t('set_add_here')`
+  **çağrılmadan** metne gömülmüştü. ⚠ Aynı anahtar kendi setlerinde
+  doğru çağrılıyordu (`t('set_add_here')(sayfaSecimi.size)`); yalnızca
+  bir yerde unutulmuş.
+
+  ⚠ Metin ayrıca **yanlış şeyi** anlatıyordu: orada "+" işaretli
+  maddeleri bir sete eklemiyor, **hazır setin maddelerini çekim
+  listesine** ekliyor. Kendi anahtarı yazıldı (`set_add_list`, iki
+  dilde).
+
+  ⚠ **Koddaki bir not da kodla uyuşmuyordu:** *"+ yalnızca 'çanta'
+  maddelerini kopyalıyor"* yazıyordu, oysa `hazirSetiEkle` setin
+  **bütün** maddelerini ekliyor. Not düzeltildi, koda dokunulmadı.
+
+  **Bekçi: `testler/ipucu-metinleri.test.js` (yeni).**
+  Tek bir ipucuna değil, **hata ailesine** bakıyor: ekranda duran hiçbir
+  `title` / `aria-label` / `placeholder` metninde `=>`, `${` ya da
+  `function` izi olmayacak. Liste yazmıyor — her sayfayı, çekim
+  listesini ve set önizleme panelini gezip **o an ekranda ne varsa**
+  tarıyor, her dilde ayrı.
+  ⚠ `sozluk-paritesi` bunu yakalayamazdı: iki sözlük de **doğruydu**,
+  hata kullanım yerindeydi.
+  Mutasyonla kanıtlandı: hata geri konunca bekçi düşüyor ve yerini
+  (`cekim-listesi · <button> title="(n)=> ..."`) adıyla söylüyor.
+
+  ⬜ **AÇIK KALAN KÜÇÜK SORU:** Çekim listesinde çipin **kendisi** ve
+  içindeki **"+"** aynı işi yapıyor (ikisi de `hazirSetiEkle`). İki
+  ayrı denetim, tek davranış. "+" kaldırılsın mı — **kullanıcıya
+  sorulacak.**
 - ✅ **50.** ⛔ **PROJE DÜZENLEME POP-UP DEĞİL SAYFA OLSUN.** — **BİTTİ (16 Kasım 2026).**
   Kullanıcı 16 Kasım 2026'da ekran görüntüsüyle bildirdi:
   *"Bu ekran pop-up gibi bir ekranda açıldığı için burada yönetmek de

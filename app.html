@@ -7870,6 +7870,7 @@ const LANG = {
     set_added: (n)=> n ? `${n} added.` : "They were already on the list.",
     // 7. madde (16 Kasim 2026): var olan sete tek dugmeyle madde ekleme.
     set_add_here: (n)=> `Add ${n} selected to this kit`,
+    set_add_list: "Add this kit’s items to the list",
     set_added_to: (n, ad)=> `${n} added to “${ad}”.`,
     set_add_none: "They are already in that kit.",
     set_sel_empty: "Select something first.",
@@ -9226,6 +9227,7 @@ const LANG = {
     set_added: (n)=> n ? `${n} madde eklendi.` : "Hepsi zaten listedeydi.",
     // 7. madde (16 Kasim 2026): var olan sete tek dugmeyle madde ekleme.
     set_add_here: (n)=> `İşaretli ${n} maddeyi bu sete ekle`,
+    set_add_list: "Bu setin maddelerini listeye ekle",
     set_added_to: (n, ad)=> `“${ad}” setine ${n} madde eklendi.`,
     set_add_none: "Hepsi zaten o sette.",
     set_sel_empty: "Önce bir şey işaretle.",
@@ -11937,14 +11939,26 @@ function hazirSetCipleri(){
     + ` aria-expanded="${setAcikMi('hset', i)}"`
     + ` title="${escapeHtml(t('set_peek'))}"`
     + ` aria-label="${escapeHtml(t('set_peek'))}">${setAcikMi('hset', i) ? '▴' : '▾'}</button>`
+    // ⛔ 19 KASIM 2026 — BU IPUCU EKRANDA JS KAYNAK KODU
+    //    GOSTERIYORDU: `set_add_here` bir ISLEV ((n)=> ...) ve
+    //    cagrilmadan metne gomulmustu, yani kullanici
+    //    "(n)=> `Isaretli ${n} maddeyi bu sete ekle`" yazisini
+    //    goruyordu. Kendi setlerinde ayni anahtar DOGRU cagriliyor;
+    //    yalnizca burada unutulmus.
+    //    ⚠ Metin ayrica YANLIS SEYI anlatiyordu. Burada "+"
+    //      isaretli maddeleri bir sete eklemiyor; HAZIR SETIN
+    //      maddelerini CEKIM LISTESINE ekliyor. Kendi anahtari yazildi.
     + `<button type="button" class="ih-set-art" data-hkopya="${i}"`
-    + ` title="${escapeHtml(t('set_add_here'))}"`
-    + ` aria-label="${escapeHtml(t('set_add_here'))}">+</button>`
+    + ` title="${escapeHtml(t('set_add_list'))}"`
+    + ` aria-label="${escapeHtml(t('set_add_list'))}">+</button>`
     + `</span>`).join('')
-    // ⚠ Hazir set paneli SALT OKUNUR: bu setler kodun icinde metin ve
-    //   herkeste ayni. "+" yalnizca 'canta' maddelerini kopyaliyor,
-    //   panel ise setin TAMAMINI gosteriyor -- aradaki farki ipucu
-    //   satiri soyluyor, yoksa "8 madde gordum, 4 geldi" olurdu.
+    // ⚠ Hazir set paneli SALT OKUNUR: bu setler kodun icinde metin
+    //   ve herkeste ayni; onlardan madde cikarmak "kendi kopyani
+    //   yaratmak" demek (7. madde o yolu kurdu).
+    // ⛔ 19 KASIM 2026 — BURADAKI ESKI NOT KODLA UYUSMUYORDU:
+    //    "+ yalnizca 'canta' maddelerini kopyaliyor" yaziyordu, oysa
+    //    `hazirSetiEkle` setin BUTUN maddelerini listeye ekliyor.
+    //    Not duzeltildi; kodun kendisine dokunulmadi.
     + (acikSira >= 0
         ? setIcerikHtml(liste[acikSira].m.map(m=> ({ metin: m[1], not: '' })), false, acikSira)
           // ⛔ "Kendi setlerime kopyala" BURAYA TASINDI. Eskiden "+"
