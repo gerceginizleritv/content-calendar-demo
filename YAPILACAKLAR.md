@@ -3059,11 +3059,19 @@ dokunmak ve ikinci seferde birincisini bozmak demek.
 - ⬜ **17.** İlk ekran: kendiliğinden açılan tur yok
   (bugün `tourAutoSequence = true`, app.html:25300)
 - ⬜ **18.** Yeni kayıt: üç alan görünür, gerisi katlı
-- ⬜ **19a. AYARLAR SAYFASI** — kullanıcı istedi (16 Kasım 2026):
+- ✅ **19a. BİTTİ (19 Kasım 2026) — 58. MADDEYLE.** **AYARLAR SAYFASI**
+  — kullanıcı istedi (16 Kasım 2026):
   *"hesabım sayfasına tıklanınca çıkan pop-up'ı değiştirmek istiyorum.
   Böyle bir pop-up yerine bir settings / ayarlar sayfası gibi bir sayfa
   olmalı. Hatta hatırlatmalar, hesap etiketleri, AI gibi başlıkları da
   bu alana taşımak gerekiyor."*
+  ⛔ **BU MADDE 58 İLE BİREBİR AYNI İSTEKTİ** ve listede iki kez
+  duruyordu. 58 altı aşamada bitirildi (19 Kasım 2026): hesap,
+  hatırlatmalar, hesap etiketleri, AI, hava ayarı ve tema tek bir
+  **Ayarlar sayfasında**; yan menüde tek bir ⚙ düğme kaldı.
+  Sıralaması 66. maddede kullanıcının onayıyla yeniden dizildi.
+  ⚠ Aşağıdaki metin O GÜNÜN durumunu anlatıyor, bugünküni değil.
+
   Bugün bunların her biri AYRI bir pencere (`hesapOverlay`,
   `remindersOverlay`, `aiSettingsOverlay`, hesap etiketleri). Hepsi
   ⋯ çekmecesinden ayrı ayrı açılıyor.
