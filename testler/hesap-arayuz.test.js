@@ -89,8 +89,16 @@ const bak = (ad, ko, ek)=>{ if(ko){ g++; console.log('  ok  '+ad); } else { k++;
     menudeSekme: !!document.querySelector('.rail-nav #hesapEtiketBtn'),
     seritBaglantisi: !!document.getElementById('hesapEtiketBtn'),
     eskiPencere: !!document.getElementById('hesapOverlay2'),
-    bolumSayfada: !!(document.getElementById('ayarHesapEtiket') || {}).closest
-                   && !!document.getElementById('ayarHesapEtiket').closest('#ayarlarPage')
+    // ⛔ 19 KASIM 2026 (YAPILACAKLAR 66): `ayarHesapEtiket` diye ayri
+    //    bir baslik KALMADI -- hesap etiketleri, konumla birlikte
+    //    "Planlama bilgileri" bolumune girdi (ikisi de cekimi/yayini
+    //    planlarken gereken bilgi).
+    //    ⚠ Olculen sey ayni: etiket formu ayarlar SAYFASININ icinde mi.
+    //      Artik bolumun kendi kimliginden degil, formun kendisinden
+    //      soruluyor -- bir sonraki gruplamada yine tasinsa bile
+    //      olculen gercek degismez.
+    bolumSayfada: !!(document.getElementById('hs_liste') || {}).closest
+                   && !!document.getElementById('hs_liste').closest('#ayarlarPage')
   }));
   bak('menuye sekme OLARAK eklenmemis', yer.menudeSekme === false);
   bak('eski serit baglantisi GERIDE KALMADI', yer.seritBaglantisi === false);
@@ -102,7 +110,7 @@ const bak = (ad, ko, ek)=>{ if(ko){ g++; console.log('  ok  '+ad); } else { k++;
   await p.waitForTimeout(350);
   const bos = await p.evaluate(()=>({
     acik: !document.getElementById('ayarlarPage').hidden
-          && document.getElementById('ayarHesapEtiket').getBoundingClientRect().height > 0,
+          && document.getElementById('hs_liste').getBoundingClientRect().height > 0,
     bosNot: !!document.querySelector('#hs_liste .hs-bos'),
     ekle: document.getElementById('hs_kaydet').textContent,
     vazgec: document.getElementById('hs_vazgec').hidden

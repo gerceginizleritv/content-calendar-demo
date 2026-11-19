@@ -65,6 +65,11 @@ async function sayfaAc(t, oncesi){
       scripts: [{ title: 'VO v1', text: 'ACILIS\nCati.', project: 'Hanlar' }],
       ideas: [{ text: 'fikir bir', project: 'Hanlar', due: bugun }, { text: 'fikir iki' }]
     };
+    // ⛔ 19 KASIM 2026 (YAPILACAKLAR 66) — YEDEK DUGMELERI ARTIK SAYFA
+    //    ALTINDA DEGIL, AYARLAR SAYFASININ "Verilerin" BOLUMUNDE.
+    //    Kullanicinin karari: yedek iki ayri yerdeydi, Ayarlar'a
+    //    toplandi. Dugmenin KIMLIGI degismedi, yeri degisti.
+    await p.evaluate(()=> setPage('ayarlar'));
     await p.click('#importBtn');
     await p.waitForSelector('#importOverlay.open');
     bak('ice aktar: paket ipucu ve ai/ baglantisi var', await p.$eval('.imp-paket-ipucu a', a=> a.getAttribute('href')) === 'ai/');
@@ -131,6 +136,7 @@ async function sayfaAc(t, oncesi){
     bak('yenilemeden sonra defter ve rozetler duruyor', yenilenmis.defter === 1 && yenilenmis.rozet === 3 + 2 + 1 + 1 + 2, JSON.stringify(yenilenmis));
 
     // Geri alma: Ice Aktar penceresindeki listeden.
+    await p.evaluate(()=> setPage('ayarlar'));
     await p.click('#importBtn');
     try{ await p.waitForSelector('#importOverlay.open', { timeout: 8000 }); }
     catch(e){

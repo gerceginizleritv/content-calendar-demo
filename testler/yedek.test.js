@@ -53,6 +53,11 @@ const TOHUM = ()=>{
   bak('AI ANAHTARI yedege GIRMIYOR', JSON.stringify(y).indexOf('AIzaGIZLI') === -1);
 
   console.log('[indirme]');
+  // ⛔ 19 KASIM 2026 (YAPILACAKLAR 66) — YEDEK DUGMELERI ARTIK SAYFA
+  //    ALTINDA DEGIL, AYARLAR SAYFASININ "Verilerin" BOLUMUNDE.
+  //    Kullanicinin karari: yedek iki ayri yerdeydi, Ayarlar'a
+  //    toplandi. Dugmenin KIMLIGI degismedi, yeri degisti.
+  await p.evaluate(()=> setPage('ayarlar'));
   const [inen] = await Promise.all([
     p.waitForEvent('download'),
     p.click('#exportBtn')

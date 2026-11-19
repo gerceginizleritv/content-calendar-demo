@@ -33,6 +33,11 @@ const CSV_TIRNAKLI = [
   });
 
   console.log('[sekmeli yapistirma — Sheets/Notion kopyasi]');
+  // ⛔ 19 KASIM 2026 (YAPILACAKLAR 66) — YEDEK DUGMELERI ARTIK SAYFA
+  //  ALTINDA DEGIL, AYARLAR SAYFASININ "Verilerin" BOLUMUNDE.
+  //  Kullanicinin karari: yedek iki ayri yerdeydi, Ayarlar'a
+  //  toplandi. Dugmenin KIMLIGI degismedi, yeri degisti.
+  await p.evaluate(()=> setPage('ayarlar'));
   await p.click('#importBtn');
   await p.waitForSelector('#importOverlay.open');
   bak('pencere aciliyor', true);
@@ -78,6 +83,7 @@ const CSV_TIRNAKLI = [
 
   console.log('[tirnakli CSV ve atlanan satir]');
   await p.evaluate(() => { events = []; projects = []; save(); saveProjects(); });
+  await p.evaluate(()=> setPage('ayarlar'));
   await p.click('#importBtn');
   await p.waitForSelector('#importOverlay.open');
   await p.fill('#imp_metin', CSV_TIRNAKLI);
@@ -94,6 +100,7 @@ const CSV_TIRNAKLI = [
   bak('yalnizca iki kayit eklendi', (await p.evaluate(() => events.length)) === 2);
 
   console.log('[elle eslesme ve bozuk girdi]');
+  await p.evaluate(()=> setPage('ayarlar'));
   await p.click('#importBtn');
   await p.waitForSelector('#importOverlay.open');
   await p.fill('#imp_metin', 'bir\niki\nuc');
