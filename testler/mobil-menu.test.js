@@ -42,9 +42,18 @@ async function ac(t, w){
   bak('hepsi hala seridin icinde',
       await p.evaluate(ids=> ids.every(id=>{ const e = document.getElementById(id);
         return !!(e && e.closest('#railFoot')); }), BAGLANTILAR));
-  // TEMA alt sayfada kaliyor: nadiren degistirilen bir ayar.
-  bak('tema alt sayfada',
-      await p.evaluate(()=> !!document.getElementById('themeBtn').closest('#railFoot')));
+  // ⛔ 19 KASIM 2026 — TEMA ALT SAYFADAN CIKTI (YAPILACAKLAR 58).
+  //    Eskiden burada kaliyordu ("nadiren degistirilen bir ayar").
+  //    Kullanici ayarlarin bir SAYFAYA tasinmasini istedi; tema da
+  //    oraya gitti. ⚠ Guvence kaybolmadi, yeri degisti: alt sayfada
+  //    artik ayarlara GOTUREN dugme var ve tema o sayfada.
+  bak('AYARLAR dugmesi alt sayfada',
+      await p.evaluate(()=> !!document.getElementById('ayarlarBtn').closest('#railFoot')));
+  bak('tema AYARLAR SAYFASINDA, alt sayfada degil',
+      await p.evaluate(()=> {
+        const t = document.getElementById('themeBtn');
+        return !!t.closest('#ayarlarPage') && !t.closest('#railFoot');
+      }));
   // DIL anahtari alt sayfadan CIKTI. Orada iken kullanici onu bulamiyordu
   // -- "..." dugmesine basmayi gerektiren bir sey, uygulamayi kendi
   // dilinde gormeyen birinin arayacagi son yer. Artik ust seritte,

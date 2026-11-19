@@ -4581,9 +4581,14 @@ textarea.sc-ai-brief{min-height:64px;resize:vertical;line-height:1.5;}
              ziyaretciyi on soruyla kacirir, deneyiciyi de iki soruyla
              yetersiz birakirdi. Yalnizca oturum acikken gorunuyor. -->
         <button class="rail-link" id="trialFbBtn" hidden data-i18n="dfb_link">📝 Trial feedback</button>
-        <div class="rail-prefs">
-          <button class="btn btn-sm" id="themeBtn">🌙 Dark</button>
-        </div>
+        <!-- ⛔ 19 KASIM 2026 — AYARLAR DUGMESI (YAPILACAKLAR 58).
+             Kullanici "yan menude tek bir Ayarlar dugmesi kalsin"
+             dedi. Ayar olmayan baglantilar (kilavuz, fiyatlar, geri
+             bildirim, tur) yerinde duruyor; bu karar AYARLAR icin.
+             ⚠ Tema dugmesi artik bu sayfanin icinde. Bos kalan
+               `.rail-prefs` kutusu da kaldirildi. -->
+        <button type="button" class="rail-link" id="ayarlarBtn"
+                data-i18n="st_btn">⚙ Settings</button>
       </div>
       <!-- Alt sayfanın arkasındaki karartma: dışarı dokununca kapanıyor. -->
       <div class="rail-arka" id="railArka" hidden></div>
@@ -4754,6 +4759,37 @@ textarea.sc-ai-brief{min-height:64px;resize:vertical;line-height:1.5;}
       <button type="button" class="btn" id="ihs_topluBtn" data-i18n="ih_bulk_add">Add them all</button>
       <p class="hint" id="ihs_topluNot" hidden></p>
     </details>
+  </div>
+
+  <!-- AYARLAR. ⛔ 19 KASIM 2026 — pencereler yerine SAYFA
+       (YAPILACAKLAR 58). Kullanici dagniklik'tan sikayetciydi: bu
+       ayarlar yan menunun dibinde ayri ayri duruyordu ve her biri
+       kucuk bir pencere aciyordu. 50. maddede proje duzenleme ayni
+       gerekceyle pop-up'tan sayfaya alinmisti.
+       ⚠ ASAMALI TASINIYOR, ve asama sinirlari OLCUYLE cizildi:
+         her ayarin kac test dosyasina dokundugu sayildi.
+           AI ayarlari      15 dosya (penceresi ayrica 11)
+           dil secici        6
+           hatirlatmalar     5
+           hesap (rail-me)  ~10  (.rail-me/.rail-auth secicileri dahil)
+           tema              3
+           hesap etiketleri  2
+           hava & isik       1 · kurulum 1
+         Hepsini tek seferde tasimak ~20 dosyaya ayni anda dokunmak
+         demekti; bir sey kirildiginda sebebini bulmak zorlasirdi.
+         ⚠ BU ASAMADA YALNIZCA TEMA geldi -- kalip once en kucuk
+           ornekte kanitlaniyor, sonra buyutuluyor. Otekiler kendi
+           asamalarinda gelecek ve her asamada tam kosu kosuluyor. -->
+  <div id="ayarlarPage" hidden>
+    <p class="hint" data-i18n="st_intro">Everything you set once and forget. Your calendar and projects are not here — they have their own pages.</p>
+
+    <h3 class="tpl-h"><span data-i18n="st_look">Appearance</span></h3>
+    <div class="ayar-blok" id="ayarGorunum">
+      <!-- ⚠ Dugmenin KIMLIGI ayni kaldi (`themeBtn`): metnini ve
+           durumunu yazan kod da, onu olcen testler de kimligi
+           ariyor. Yeri degisti, sozlesmesi degismedi. -->
+      <button class="btn btn-sm" id="themeBtn">🌙 Dark</button>
+    </div>
   </div>
 
   <div id="templatesPage" hidden>
@@ -7308,6 +7344,9 @@ const LANG = {
     fk_project_title: "Add a project — an idea can serve more than one",
     fk_split: (n)=> `Split all ${n}`,
     fk_more: (n)=> `+${n} more`,
+    st_btn: '⚙ Settings',
+    st_intro: 'Everything you set once and forget. Your calendar and projects are not here — they have their own pages.',
+    st_look: 'Appearance',
     fk_part_out: "Pull this one out — or drag it",
     fk_none: "No ideas yet. The first line is the hardest — write it half-finished.",
     fk_none_all: "No ideas yet.",
@@ -8688,6 +8727,9 @@ const LANG = {
     //      kalsin dendi.
     fk_split: (n)=> `Hepsini ayır`,
     fk_more: (n)=> `+${n} daha`,
+    st_btn: '⚙ Ayarlar',
+    st_intro: 'Bir kez kurup unutulan şeyler. Takvimin ve projelerin burada değil — onların kendi sayfaları var.',
+    st_look: 'Görünüm',
     fk_part_out: "Bunu dışarı çıkar — sürükleyerek de olur",
     fk_none: "Henüz fikir yok. En zoru ilk satır — yarım da olsa yaz.",
     fk_none_all: "Henüz fikir yok.",
@@ -16225,7 +16267,14 @@ const SAYFALAR = [
   ['projects',  'projectsPage',  'tabProjects'],
   ['calendar',  'calendarPage',  'tabCalendar'],
   ['kit',       'kitPage',       'tabKit'],
-  ['templates', 'templatesPage', 'tabTemplates']
+  ['templates', 'templatesPage', 'tabTemplates'],
+  // ⛔ 19 KASIM 2026 — AYARLAR BIR SAYFA (YAPILACAKLAR 58).
+  //    Kullanici: "bazi basliklari app icerisinde settings gibi bir
+  //    sayfaya alip her seyi tipki projects'te oldugu gibi SAYFA gibi
+  //    olusturup kullanicinin ayarlarini yapmasini isteyebiliriz."
+  //    ⚠ Ucuncu alan SEKME DEGIL: ayarlar ust seritte bir sekme
+  //      degil, yan menunun dibindeki bir dugme. `bugun` de boyle.
+  ['ayarlar',   'ayarlarPage',   'ayarlarBtn']
 ];
 // sessizRota: adres YAZILMIYOR. cekimListesiAc boyle cagiriyor --
 // oradan once sayfa degisip sonra proje PUSH ediliyor; ara adimda
@@ -16634,6 +16683,23 @@ function bugunDegisti(){
 document.getElementById('tabCalendar').addEventListener('click', ()=> setPage('calendar'));
 document.getElementById('tabProjects').addEventListener('click', ()=>{ track('funnel/projects-opened'); setPage('projects'); });
 document.getElementById('tabKit').addEventListener('click', ()=> setPage('kit'));
+
+// ⛔ 19 KASIM 2026 — AYARLAR SAYFASI (YAPILACAKLAR 58).
+//    Yan menunun dibindeki ayarlar pencereler yerine bir SAYFAYA
+//    tasiniyor. Kullanicinin sozleri: "bazi basliklari app icerisinde
+//    settings gibi bir sayfaya alip her seyi tipki projects'te oldugu
+//    gibi sayfa gibi olusturup kullanicinin ayarlarini yapmasini
+//    isteyebiliriz."
+document.getElementById('ayarlarBtn').addEventListener('click', ()=> setPage('ayarlar'));
+
+// ⚠ Tema dugmesi artik ayarlar sayfasinin ICINDE duruyor (yukarida
+//   `#ayarGorunum`). Kimligi degismedi, yalnizca yeri degisti.
+//   ⛔ ILK DENEMEDE CALISMA ANINDA TASINMAK ISTENDI ve o deneme
+//      dugmeyi seritten SILIP sayfaya koymayi unuttu: sayfa
+//      "addEventListener of null" ile acilmadi ve ARDINDAKI butun
+//      betik oldu (sonraki `const`lar "before initialization"
+//      veriyordu). Olcum yakaladi. Isaretlemede durmasi hem daha
+//      basit hem de boyle bir bosluga yer birakmiyor.
 document.getElementById('tabTemplates').addEventListener('click', ()=>{ track('funnel/templates-opened'); setPage('templates'); });
 // GOVDE KILIDI. Bir pencere ya da alt sayfa acikken arkadaki sayfa
 // durmali: eskiden pencerenin sonuna gelip kaydirmaya devam edince

@@ -56,14 +56,26 @@ const { chromium } = require('./araclar');
     headActions: !!document.querySelector('.head-actions'),
     headMeta: !!document.querySelector('.head-meta'),
     eskiTabs: !!document.querySelector('.tabs'),
-    seritte: ['authBtn','langSelect','themeBtn','pitchToggle','tourBtn','feedbackBtn',
+    // ⛔ 19 KASIM 2026 — `themeBtn` BU LISTEDEN CIKTI (YAPILACAKLAR 58).
+    //    Kullanici ayarlarin yan menuden bir SAYFAYA tasinmasini ve
+    //    "yan menude tek bir Ayarlar dugmesi" kalmasini istedi.
+    //    ⚠ GUVENCE KAYBOLMADI, YERI DEGISTI: tema artik ayarlar
+    //      sayfasinda ve o sayfaya GOTUREN dugme (`ayarlarBtn`)
+    //      seritte -- asagida ayrica olculuyor. Yani "tema seritten
+    //      bir tiklamada ulasilabilir" sozu duruyor.
+    seritte: ['authBtn','langSelect','ayarlarBtn','pitchToggle','tourBtn','feedbackBtn',
               'tabProjects','tabCalendar','tabTemplates']
              .every(id=>!!document.getElementById(id).closest('.rail')),
+    // Tema seritte DEGIL, ayarlar SAYFASINDA.
+    temaAyarlarda: !!document.getElementById('themeBtn').closest('#ayarlarPage'),
+    temaSeritteDegil: !document.getElementById('themeBtn').closest('.rail'),
     altta: ['buildId','exportBtn','resetBtn'].every(id=>!!document.getElementById(id).closest('.site-foot')),
     gizlilikAltta: !!document.querySelector('.site-foot .privacy-link')
   }));
   k('eski üst satırlar kalktı', !ust.headTop && !ust.headActions && !ust.headMeta && !ust.eskiTabs);
-  k('HEPSİ ŞERİTTE (giriş, dil, tema, nedir, nasıl çalışır, geri bildirim, 3 sekme)', ust.seritte === true);
+  k('HEPSİ ŞERİTTE (giriş, dil, AYARLAR, nedir, nasıl çalışır, geri bildirim, 3 sekme)', ust.seritte === true);
+  k('TEMA AYARLAR SAYFASINDA, şeritte değil', ust.temaAyarlarda && ust.temaSeritteDegil,
+    'ayarlarda=' + ust.temaAyarlarda + ' şeritte=' + !ust.temaSeritteDegil);
   k('SÜRÜM DAMGASI SAYFA ALTINDA', ust.altta === true && ust.gizlilikAltta === true);
 
   // 3) Sekmeler calisiyor

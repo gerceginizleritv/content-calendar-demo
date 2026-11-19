@@ -2109,15 +2109,68 @@ dokunmak ve ikinci seferde birincisini bozmak demek.
   pencere değil. 50. maddede proje düzenleme pop-up'tan sayfaya
   alınmıştı; aynı gerekçe: *"bu pop-up çok küçük"*.
 
-  ⚠ **SIRASI GELİNCE SORULACAK, tahmin edilmeyecek:**
-  1. Hangileri sayfaya taşınacak, hangileri yan menüde kalacak?
-     (Tema tuşu tek tıkla çalışıyor; sayfaya girmek onu yavaşlatır.)
-  2. Sayfa **bölümlü tek sayfa** mı olsun, yoksa sol tarafta kendi
-     alt menüsü olan bir yapı mı?
-  3. Yan menüde ayarlara giden **tek bir düğme** mi kalsın, yoksa
-     kısayollar da dursun mu?
-  4. "Konum" derken hava/ışık için kullanılan konum mu kastediliyor,
-     yoksa ayrı bir ayar mı?
+  ✅ **DÖRT SORU DA SORULDU VE CEVAPLANDI (19 Kasım 2026):**
+
+  | Soru | Cevap |
+  |---|---|
+  | Hangileri taşınsın | **Hepsi** — AI, hatırlatmalar, hesap etiketleri, hava & ışık, dil, tema, kurulum, hesap |
+  | Sayfa düzeni | **Tek sayfa, başlıklı bölümler** |
+  | Yan menüde ne kalsın | **Tek bir "Ayarlar" düğmesi** |
+  | "Konum" nedir | **Hava & ışık konumu** (ayrı bir ayar açılmayacak) |
+
+  ⚠ *"Tek Ayarlar düğmesi"* kararı **ayarlar için**; kılavuz,
+  fiyatlar, geri bildirim ve tur bağlantıları yan menüde kalıyor —
+  onlar ayar değil.
+
+  ⛔ **AŞAMALI YAPILIYOR VE AŞAMA SINIRLARI ÖLÇÜYLE ÇİZİLDİ.**
+  Her ayarın kaç test dosyasına dokunduğu sayıldı:
+
+  | Ayar | Dokunan test dosyası |
+  |---|---|
+  | AI ayarları | **15** (penceresi ayrıca 11) |
+  | Hesap (`.rail-me`) | ~10 (`.rail-auth`, `railAvatar`, `railName` dahil) |
+  | Dil seçici | 6 |
+  | Hatırlatmalar | 5 |
+  | Tema | 3 |
+  | Hesap etiketleri | 2 |
+  | Hava & ışık · kurulum | 1 · 1 |
+
+  Hepsini tek seferde taşımak **~20 dosyaya aynı anda dokunmak**
+  demekti; bir şey kırıldığında sebebini bulmak zorlaşırdı. Üstelik
+  taşınan bir denetime tıklayan her test, artık önce ayarlar
+  sayfasını açmak zorunda.
+
+  **✅ 1. AŞAMA BİTTİ (19 Kasım 2026) — sayfa kuruldu + TEMA taşındı.**
+  - `SAYFALAR`'a `['ayarlar','ayarlarPage','ayarlarBtn']` eklendi
+    (üçüncü alan sekme değil, yan menü düğmesi — `bugun` de böyle).
+  - Yan menüde `.rail-prefs` kutusu kalktı, yerine **⚙ Ayarlar**.
+  - ⚠ İlk denemede tema düğmesi çalışma anında taşınacaktı; o deneme
+    düğmeyi şeritten **silip** sayfaya koymayı unuttu ve sayfa
+    `addEventListener of null` ile açılmadı — ardındaki bütün betik
+    öldü. Ölçüm yakaladı. İşaretlemede durması hem daha basit, hem
+    böyle bir boşluğa yer bırakmıyor.
+  - ⛔ **İki test yeniden ifade edildi, zayıflatılmadı:**
+    `serit.test.js` *"hepsi şeritte"* listesinde `themeBtn` yerine
+    `ayarlarBtn` var **ve yeni bir iddia eklendi** (tema ayarlar
+    sayfasında, şeritte değil). `mobil-menu.test.js` de aynı şekilde.
+    Yani güvence kaybolmadı, **güçlendi**.
+
+  Bekçi: `testler/ayarlar-sayfasi.test.js`, **6 iddia**. Dört
+  mutasyonla kanıtlandı: şerit düğmesi sayfayı açmazsa 2 iddia düşer,
+  tema şeritte kalırsa 1, İngilizce sözlüğe girmezse 1, tema
+  dinleyicisi iş yapmazsa 1.
+  ⚠ *"Tema sayfada duruyor"* yetmiyor: taşıma sırasında dinleyicisini
+  kaybetmiş bir düğme de "duruyor" görünürdü. Test düğmeye **tıklayıp
+  temanın gerçekten değiştiğini** ölçüyor.
+
+  ⬜ **SONRAKİ AŞAMALAR** (her biri kendi tam koşusuyla):
+  1. **Dil seçici** — uygulamanın paletiyle, bayraklar
+     `uret/bayraklar.js`'ten **ortak** okunacak (kopyalanmayacak).
+     ⚠ O dosya bugün CommonJS; iki yerden de okunabilir hâle gelmeli.
+  2. **Hatırlatmalar** (5 dosya)
+  3. **Hesap etiketleri + hava & ışık** (2 + 1)
+  4. **Hesap** (~10 dosya)
+  5. **AI ayarları** (15 + 11) — en geniş olan, tek başına
 
   ⛔ **Bölüm 7 — HER DİLDE.** Yeni sayfanın her başlığı, her etiketi
   iki dilde (yarın sekiz dilde) olacak. Bekçi hazır:
