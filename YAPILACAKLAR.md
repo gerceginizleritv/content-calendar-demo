@@ -3023,33 +3023,39 @@ dokunmak ve ikinci seferde birincisini bozmak demek.
 
   ⚠ **app.html kapsam dışı** — kullanıcı "app hariç" dedi.
 
-- ⬜ **65.** **Hakkımızda sayfası + İletişim sayfası.** Kullanıcı
-  18 Kasım 2026'da istedi: *"yapılacaklara başka bir bölüm —
-  hakkımızda sayfası ve iletişim sayfası. Bunlar da yapılacaklar
-  listesinde olsun."*
+- ⬜ **65. HAKKIMIZDA + İLETİŞİM SAYFALARI.** Kullanıcı 18 Kasım
+  2026'da istedi, **19 Kasım 2026'da tarifini verdi:**
 
-  ⚠ **İÇERİK KULLANICIDAN GELECEK — UYDURULMAYACAK** (Bölüm 4).
-  Bu iki sayfa şirket, kişi ve iletişim bilgisi içerir; hiçbiri
-  koddan ya da tahminden yazılamaz. Sırası gelince sorulacak:
+  > *"Hakkımızda sayfası için admin paneline text metin girebileceğim
+  > ve formatlayabileceğim bir alan oluştur, oradan giriş yapayım.
+  > İletişim: iletişim kutusu olan bir sayfa olsun, kullanıcı oradan
+  > yazabilsin, maile gelsin."*
 
-  | Hakkımızda | İletişim |
-  |---|---|
-  | Kim yazdı, neden yazıldı | Hangi e-posta görünecek |
-  | Hangi hikâye anlatılacak | Form mu, düz adres mi |
-  | Fotoğraf/görsel olacak mı | Sosyal hesaplar listelenecek mi |
-  | Şirket/şahıs bilgisi görünecek mi | Yanıt süresi sözü verilecek mi |
+  **a · HAKKIMIZDA — metni yönetim panelinden girilecek.**
+  Sayfa sabit metin taşımayacak; `yonetim.html`'e biçimlendirilebilir
+  bir alan gelecek, sayfa oradan okuyacak. ⚠ Fiyat matrisinde kurulan
+  zincirin aynısı: panel → sunucu → sayfa.
 
-  ✅ **ELDEKİ DOĞRULANMIŞ TEK BİLGİ:** `hello@shootboard.app`
-  Cloudflare Email Routing ile Gmail'e düşüyor (bu dosyada kayıtlı).
-  ⛔ Bunun dışında hiçbir iletişim bilgisi uydurulmayacak.
+  **b · İLETİŞİM — form, gelen ileti e-postaya düşecek.**
+  Kullanıcı yazacak, ileti bir e-posta adresine gidecek.
 
-  **Bağlı işler — ikisi de 64 ve Bölüm 7 ile birlikte:**
-  - İki sayfa da **her dilde** olacak (Bölüm 7), yani `uret/
-    sayfalar.js`'e kayıt + her dilde kaynak.
-  - Üst ve alt menüye girecekler — yani **64 bitmeden eklenirse**
-    menü dağınıklığı iki sayfa daha çoğalır. ⚠ Sırası: önce 64.
+  ⛔ **BAŞLAMADAN ÖNCE CEVAP BEKLEYEN SORULAR** (hepsi işi değiştirir,
+  uydurulmayacak):
 
-### 4 · Basitleştirme (hepsi ilk deneyimi değiştiriyor)
+  | # | Soru | Neden gerekli |
+  |---|---|---|
+  | 1 | İleti **hangi adrese** gidecek? | Kod bir adres uyduramaz |
+  | 2 | E-posta **nasıl** gönderilecek? | Tarayıcı e-posta gönderemez. Bir Edge Function + e-posta servisi (Resend / SendGrid / Postmark …) gerekiyor; **hesap ve anahtar kullanıcıda.** ⛔ Anahtar sohbete yazılmaz; dağıtımı kullanıcı yapar |
+  | 3 | Metin **her dilde ayrı mı** girilecek? | Bölüm 7. İki dil = panelde iki kutu. Tek kutu olursa İngilizce ziyaretçi Türkçe metin görür |
+  | 4 | "Formatlayabileceğim" ne demek? | Kalın/italik/başlık/liste düğmeleri mi, yoksa serbest HTML mi? İkisi ayrı iş |
+  | 5 | Form **spam'e** karşı ne yapacak? | Açık form botların ilk bulduğu şeydir. Soru-cevap, bal küpü alanı ya da hız sınırı — hangisi |
+
+  ⚠ **Hazır olan parçalar:** `yonetim.html` + Edge Function zinciri
+  fiyat matrisi için zaten kurulu (61. madde); üst/alt menü üreticisi
+  yeni sayfayı kendiliğinden alıyor (`uret/sayfalar.js`); kılavuz ve
+  şartlar sayfaları örnek olarak duruyor.
+
+  ⚠ **Bölüm 7:** iki sayfa da iki dilde olacak, menüde de.
 - ⬜ **17.** İlk ekran: kendiliğinden açılan tur yok
   (bugün `tourAutoSequence = true`, app.html:25300)
 - ⬜ **18.** Yeni kayıt: üç alan görünür, gerisi katlı
