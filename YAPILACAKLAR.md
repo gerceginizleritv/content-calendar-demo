@@ -2616,7 +2616,14 @@ dokunmak ve ikinci seferde birincisini bozmak demek.
   3. Yeni bir özellik eklendiğinde varsayılan **açık** mı **kapalı** mı?
      ⚠ "Kapalı" güvenli ama unutulursa özellik hiç görünmez;
      "açık" tersi.
-- ⬜ **66. AYARLAR SAYFASININ SIRALAMASI — benzer işler bir araya.**
+- 🟡 **66. SIRALAMA BİTTİ (19 Kasım 2026), SON PARÇASI AÇIK.**
+  **AYARLAR SAYFASININ SIRALAMASI — benzer işler bir araya.**
+  ✅ Gruplama kullanıcının onayıyla uygulandı ve canlıda.
+  ⬜ **Kalan:** *"Demoyu Sıfırla"* ve *"Örnekleri kaldır"* hem alt
+  şeritte hem "Verilerin" bölümünde duracak (kullanıcı 19 Kasım'da
+  istedi). ⚠ Kopya kod yazılmayacak: iki düğme de tek bir işlevi
+  çağıracak ve örnek kalmayınca gizlenme bakımı **işarete** bağlanacak
+  — bugün o bakım yalnızca alt şerittekine uygulanıyor.
   Kullanıcı 19 Kasım 2026'da söyledi:
 
   > *"bu ayarlar bölümü sıralaması biraz karıştı. Buraya taşınacak ve
@@ -3229,14 +3236,18 @@ dokunmak ve ikinci seferde birincisini bozmak demek.
   bayrak açılmaz, kimseye anahtar üretilmez.
 
 ### I · Diller  ⬜ EN SON GRUP
-- ⬜ **41.** ⚠ **57'DEN DEVREDEN SORU: HANGİ DİLE HANGİ BAYRAK?**
+- ⬜ **41a.** ⚠ **57'DEN DEVREDEN SORU: HANGİ DİLE HANGİ BAYRAK?**
+  ⛔ **NUMARA ÇAKIŞMASI DÜZELTİLDİ (20 Kasım 2026):** bu madde ve
+  aşağıdaki "altı yeni arayüz dili" maddesi İKİSİ DE **41** numarayla
+  duruyordu. "41'e başla" denseydi hangisinin kastedildiği belirsizdi.
+  Bu satır artık **41a**, öteki **41b**.
   Bayrak bir dilin değil bir **ülkenin** işareti. Bugünkü iki dil
   için 🇹🇷 ve 🇬🇧 seçildi (🇬🇧 yerine 🇺🇸 isteniyorsa tek satır), ama
   İspanyolca, Arapça, Rusça tek bir ülkeye ait değil.
   ⛔ **Sorulacak, tahmin edilmeyecek.** Bayraklar `uret/bayraklar.js`
   içinde gömülü SVG; yeni dilin bayrağı oraya eklenecek.
 
-- ⬜ **41.** **Altı yeni arayüz dili:** Ispanyolca (`es`), Brezilya
+- ⬜ **41b.** **Altı yeni arayüz dili:** Ispanyolca (`es`), Brezilya
   Portekizcesi (`pt-BR`), Almanca (`de`), Fransızca (`fr`), İtalyanca
   (`it`), Rusça (`ru`). Kullanıcı 16 Kasım 2026'da hem dilleri hem de
   **en sona** kararını verdi. Ayrıntı: aşağıdaki "DİLLER" bölümü.
