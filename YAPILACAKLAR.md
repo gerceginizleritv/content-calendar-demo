@@ -2616,6 +2616,61 @@ dokunmak ve ikinci seferde birincisini bozmak demek.
   3. Yeni bir özellik eklendiğinde varsayılan **açık** mı **kapalı** mı?
      ⚠ "Kapalı" güvenli ama unutulursa özellik hiç görünmez;
      "açık" tersi.
+- ⬜ **69. FİKİRLERİ ÖNCELİĞE GÖRE SIRALAMA.**
+  Kullanıcı 20 Kasım 2026'da sordu:
+
+  > *"Fikirlerdeki öncelik OK ama unutma yapılacaklarda var mı
+  > hatırlamıyorum fikirleri öncelik sırasına göre sıralayabilmek de
+  > olmalı! yapılacaklarda yoksa ekle"*
+
+  ✅ **HAKLI — LİSTEDE YOKTU, KODDA DA YOK.** Doğrulandı:
+  `fikirSiraliListe()` yalnızca **elle sürükleme sırasına** göre
+  diziyor (`a.sort - b.sort`, eşitse yeni eklenen üstte). Öncelik
+  bugün yalnızca bir **süzgeç** (`fikirFiltresiYap`, `fk_onc_filtre`)
+  — "yalnızca çok öncelikliler görünsün" denebiliyor, ama
+  "önceliğe göre dizilsin" denemiyor. 52. madde sıralamayı hiç
+  kapsamamıştı.
+
+  ✅ **DESEN KURULU.** Projeler ve mekânlar tek bir düğmeyle üç durum
+  arasında dönüyor: `SIRA_DONGU = ['akilli','yeni','eski']`,
+  `siraOku`/`siraYaz`/`siraSonraki`, `siraDugmesiTazele()` ve
+  `.btn-sira` biçimi. ⛔ **Fikirler sayfasında böyle bir düğme yok** —
+  `mk_sira` ve proje karşılığı var, `fk_sira` yok. Eklenecek olan bu.
+
+  ⛔ **EN BÜYÜK ÇELİŞKİ: ELLE SÜRÜKLEME İLE ÖNCELİK SIRASI ÇAKIŞIYOR.**
+  Fikirlerde projelerde ve mekânlarda **olmayan** bir şey var:
+  kullanıcı kartları sürükleyerek kendi sırasını kuruyor ve bu sıra
+  kesirli `sort` alanında **saklanıyor** (`fikirSirala`). Öncelik
+  sırasına geçilince o elle kurulmuş sıra ekranda görünmez olur.
+  ⚠ Bu veri kaybı değil — `sort` alanı duruyor — ama kullanıcı
+    "sıralamam bozuldu" diye okuyabilir. Sorulacak:
+    sürükleme öncelik modunda **kapanacak mı**, yoksa sürükleyince
+    **elle moda mı dönecek**?
+
+  ⚠ **Cevap bekleyen sorular** (sırası gelince sorulacak):
+  1. Öncelik modunda **sürükleme** ne olacak? (kapansın · sürükleyince
+     elle moda dönsün · sürükleme sırayı yine değiştirsin)
+  2. **Önceliksiz fikirler nereye?** ⛔ "Önceliksiz" ayrı bir durum,
+     "düşük" değil (52. maddenin kararı). En alta mı, en üste mi?
+  3. Düğme kaç durumlu olsun? Projelerde/mekânlarda üç
+     (akıllı·yeni·eski); burada dördüncü bir durum mu eklenecek
+     (elle·öncelik·yeni·eski), yoksa fikirlere özel iki durum mu
+     (elle·öncelik)?
+
+  ⚠ **69 ile 68 AKRABA, İKİSİ DE AYNI LİSTEYİ ÇİZİYOR.** 68 görünümü
+  (kart/liste), 69 sırayı değiştiriyor; ikisi de `renderFikirler` ve
+  `fikirSiraliListe` üzerinden geçiyor. ⚠ Önce hangisi yapılırsa
+  öteki onun üstüne binecek — **aynı oturumda ya da arka arkaya**
+  yapılması daha az iş.
+
+  ⚠ **Bölüm 7:** sıra durumlarının adları her dilin sözlüğüne girer
+  (bugünküler `sira_akilli` · `sira_yeni` · `sira_eski`).
+
+  ⚠ **Bekçi test listeyi elle yazmayacak:** düğmenin durumlarını
+  sayfadan bulsun; her durumda fikirlerin **hepsinin** listede
+  kaldığını (hiçbiri kaybolmadığını) ve öncelik modunda sıranın
+  gerçekten 1→2→3 olduğunu ölçsün.
+
 - ⬜ **68. FİKİRLER SAYFASINA GÖRÜNÜM SEÇİCİSİ (mekânlardaki gibi).**
   Kullanıcı 20 Kasım 2026'da istedi:
 
