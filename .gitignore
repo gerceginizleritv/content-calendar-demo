@@ -16,3 +16,9 @@ __pycache__/
 node_modules/
 package.json
 package-lock.json
+
+# Tam kosu kaydi. testler/hizli.sh her kosuda bunu BASTAN yaziyor;
+# kosu surerken yarim duruyor. Gecici bir cikti, depoda isi yok.
+# ⚠ ciktilar/ klasorunun kendisi yok sayilmiyor: icindeki ekran
+#   goruntuleri (sc-*.png, tur-*.png, aitest-*.png) bilerek takipte.
+ciktilar/_tam-kosu.log
