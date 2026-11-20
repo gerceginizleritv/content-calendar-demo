@@ -3121,9 +3121,44 @@ dokunmak ve ikinci seferde birincisini bozmak demek.
   USD yıllık 98, EUR yıllık 89). Yani 44.2'nin kurduğu zincir —
   SQL → panel → sayfa — uçtan uca çalışıyor.
 
-- ⬜ **62.** **Supabase kitaplığı DIŞARIDAN geliyor — beş sayfanın
-  ortak tek dayanağı.** 18 Kasım 2026'da fiyat sayfası arızası
-  araştırılırken çıktı.
+- ✅ **62. BİTTİ (20 Kasım 2026).** **Supabase kitaplığı artık
+  DEPODAN geliyor.** `vendor/supabase-js.js` (2.45.4, npm'den,
+  jsdelivr'ın da aldığı yerden). 14 sayfanın hepsi yerel dosyaya
+  bağlandı; üretilen 4 sayfa elle değil **üreticiden** geçirildi.
+  Bekçi test: `testler/supabase-yerel.test.js` — hem dosyaları
+  tarayıp dışarıdan çeken var mı diye bakıyor, hem 14 sayfayı
+  tarayıcıda açıp `window.supabase` gerçekten var mı diye ölçüyor.
+
+  ⛔ **NEDEN O GÜN YAPILDI: BİR GÜNDE DÖRT ARIZA, HEPSİ AYNI DOSYA.**
+  Google girişi çalışmadı · yönetim paneli "Yükleniyor…" asılı kaldı ·
+  kaydetme sunucuya ulaşmadı · herkese açık fiyatlar sayfası
+  "Fiyatlar yüklenemedi" dedi. Ölçüldü: Supabase'in kendisi sağlamdı
+  (REST beş denemede de 200, 0,18–0,39 sn; auth ayakta; Google OAuth
+  zinciri uçtan uca çalışıyor; canlı `app.html` depodakiyle bayt bayt
+  aynı). Geriye tek ortak bağımlılık kaldı.
+  ⚠ CDN'in o anda takıldığı **kanıtlanmadı** — ölçümü yapan ortamda
+    o adres ağ kuralıyla kapalıydı. Ama arıza *sınıfı* kalktı.
+
+  ⚠ **İKİ ŞEY YOL ÜSTÜNDE ÇIKTI, İKİSİ DE KAYDA GEÇSİN:**
+  1. `lokasyon.html` ve `aktar.html` `supabase.min.js` çekiyordu.
+     O dosya npm paketinde **yok** — jsdelivr onu kendisi üretiyor.
+     İki sayfa, yukarıda var olmayan bir dosyaya bağlıymış.
+  2. ⛔ **Dosyanın adı `supabase-js.js` olmak ZORUNDA.** İlk denemede
+     `supabase.js` kondu ve tam koşu **24 test düşürdü**: testler
+     kütüphaneyi `**/supabase-js**` kalıbıyla yakalayıp taklit
+     ediyor (115 dosyada 128 yer) ve o ad kalıbı tutmuyordu.
+     Testler değiştirilmedi; dosyaya paketin kendi adı verildi.
+
+  ⛔ **BİR TEST YANLIŞ SEBEPLE YEŞİLMİŞ.** `giris-donus.test.js`
+  taklidini `addInitScript` ile kuruyor ama kütüphane **dosyasını
+  engellemiyordu**. Dosya CDN'den geldiği ve ölçüm ortamında o adres
+  kapalı olduğu için taklit ayakta kalıyordu — yani test
+  **internetin olmamasına dayanıyormuş**; internetli bir makinede o
+  zaman da düşerdi. Kütüphane depoya alınıp gerçekten yüklenince
+  taklidin üstüne yazdı ve arıza görünür oldu. İddiası değişmedi,
+  taklidi öteki 115 testteki kalıpla korundu.
+
+  **(Aşağısı maddenin açılış gerekçesi, 18 Kasım 2026.)**
 
   `cdn.jsdelivr.net` adresinden çekiliyor ve depoda **yerel kopyası
   yok** (`testler/sahte-supabase.js` yalnızca testlerin taklidi).
