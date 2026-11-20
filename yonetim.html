@@ -109,6 +109,7 @@ nav.sekme button[aria-selected="true"]{color:var(--text);
     <button role="tab" data-sayfa="hesaplar" aria-selected="false">Hesaplar</button>
     <button role="tab" data-sayfa="odemeler" aria-selected="false">Ödemeler</button>
     <button role="tab" data-sayfa="fiyatlar" aria-selected="false">Fiyatlar</button>
+    <button role="tab" data-sayfa="planlar"  aria-selected="false">Planlar</button>
     <button role="tab" data-sayfa="vergi"    aria-selected="false">Vergi</button>
     <button role="tab" data-sayfa="denetim"  aria-selected="false">Denetim kaydı</button>
   </nav>
@@ -159,6 +160,28 @@ nav.sekme button[aria-selected="true"]{color:var(--text);
     <p><button type="button" class="btn btn-primary" id="fiyatKaydet">Değişenleri kaydet</button></p>
     <h2>Planlar ve limitler</h2>
     <div class="sar-kaydir"><table id="limitTablo"></table></div>
+  </section>
+
+  <!-- PLANLAR: ÖZELLİK × PLAN MATRİSİ (YAPILACAKLAR 67) -->
+  <section class="sayfa" id="s-planlar">
+    <h2>Özellikler</h2>
+    <div class="uyari">
+      <b>Satırda özellik, sütunda plan.</b> Tiki kaldırdığın özellik o
+      plandaki kullanıcılarda <i>görünmez</i> olur.
+      <br><b>Verisi silinmez.</b> Planı düşen kullanıcının verdiği
+      bilgi yerinde durur; plan geri yükseltilince her şey geri gelir.
+      <br><b>—</b> işareti, o plan için öyle bir satır <i>olmadığını</i>
+      gösterir. Yeni bir özellik bu ekrandan açılmaz; SQL ile açılır ki
+      kod ile matris aynı anda değişsin.
+    </div>
+    <div class="sar-kaydir"><table id="ozellikTablo"></table></div>
+
+    <h2>Sayı sınırları</h2>
+    <p class="hint">Kutuyu <b>boş</b> bırakırsan o plan için <b>sınırsız</b>
+      demektir. <b>0</b> yazarsan <b>hiç</b> demektir — ikisi ayrı şey.</p>
+    <div class="sar-kaydir"><table id="limitMatrisTablo"></table></div>
+
+    <p><button type="button" class="btn btn-primary" id="matrisKaydet">Değişenleri kaydet</button></p>
   </section>
 
   <!-- VERGİ -->
@@ -452,6 +475,10 @@ async function yukle(ad, zorla){
           x.tax_id_required ? 'isteniyor' : 'hayır', esc(x.valid_from)]));
       yuklendi.fiyatlar = true; yuklendi.vergi = true;
     }
+    if(ad === 'planlar'){
+      matrisCiz(await cagir({ islem:'matris' }));
+      yuklendi.planlar = true;
+    }
     if(ad === 'denetim'){
       const d = await cagir({ islem:'denetim' });
       tabloCiz($('denetimTablo'),
@@ -467,6 +494,162 @@ async function yukle(ad, zorla){
 }
 
 // ---- Fiyat kaydetme: onay şart --------------------------------------
+// ---- PLAN x OZELLIK MATRISI (YAPILACAKLAR 67) -----------------------
+//
+// ⛔ NE SUTUNLAR NE SATIRLAR BURADA YAZILI.
+//   Sutunlar: `plans` tablosunda `visible === true` olanlar, `sort`
+//   sirasiyla. Kullanicinin karari "yalnizca satistaki planlar" ve o
+//   karar zaten o sutunda yaziyor. Studio satisa acildigi gun sutun
+//   KENDILIGINDEN gelir, buraya bir sey yazmak gerekmez.
+//   Satirlar: sunucudan gelen satirlarda gecen anahtarlar.
+//   ⚠ Ikisini de elle yazsaydim iki kopya olurdu ve biri
+//     degistiginde oteki sessizce eskirdi -- bu deponun tekrarlayan
+//     hatasi (CLAUDE.md Bolum 7'deki bekci test mantigi).
+//
+// ⚠ ADLAR SOZLUKTEN GELIYOR AMA SOZLUK KAYNAK DEGIL. Asagidaki tablo
+//   yalnizca OKUNABILIRLIK icin: `drive_script` yerine "Google
+//   Drive'a script gonderme" yaziyor. Tabloda olmayan bir anahtar
+//   GIZLENMIYOR, ham haliyle gosteriliyor. Boylece SQL ile yeni bir
+//   ozellik acilip buraya adi yazilmasa bile satir EKRANDA GORUNUR.
+//   ⛔ Tersi olsaydi (bilinmeyeni gizlemek) yeni ozellik panelde hic
+//     cikmaz ve kimse fark etmezdi.
+const OZELLIK_ADI = {
+  drive_script:   "Google Drive'a script gönderme",
+  cekim_setleri:  'Çekim setleri',
+  fikir_onceligi: 'Fikirlere öncelik',
+};
+const LIMIT_ADI = {
+  projects: 'Proje', sets: 'Çekim seti', scripts: 'Script', ideas: 'Fikir',
+  kit_items: 'Set içi madde', team_users: 'Ekip kullanıcısı',
+  entries: 'Kayıt', places: 'Mekân', accounts: 'Hesap',
+};
+const PLAN_ADI = {
+  starter: 'Starter', creator_pro: 'Creator Pro',
+  studio: 'Studio', founding: 'Kurucu Üye',
+};
+
+// Gorunur planlar, sira sutununa gore. Sutunlarin TEK kaynagi bu.
+function matrisSutunlari(planlar){
+  return (planlar || []).filter(p=> p.visible === true)
+    .sort((a,b)=> (a.sort || 0) - (b.sort || 0));
+}
+// Gelen satirlardan anahtarlari cikariyor: liste elle yazilmiyor.
+function matrisSatirlari(liste, alan){
+  const gorulen = [];
+  (liste || []).forEach(x=>{ if(gorulen.indexOf(x[alan]) === -1) gorulen.push(x[alan]); });
+  return gorulen;
+}
+
+function matrisCiz(d){
+  const sutun = matrisSutunlari(d.planlar);
+  const sutunBasliklari = sutun.map(p=> ({ ad: PLAN_ADI[p.key] || p.key }));
+
+  // --- Ozellikler: tik kutulari ---
+  const ozAnahtar = matrisSatirlari(d.ozellikler, 'feature_key');
+  const ozHarita = new Map();
+  (d.ozellikler || []).forEach(x=> ozHarita.set(x.plan_key + '|' + x.feature_key, x.enabled));
+  tabloCiz($('ozellikTablo'), [{ad:'Özellik'}].concat(sutunBasliklari),
+    ozAnahtar.map(an=> [esc(OZELLIK_ADI[an] || an)].concat(sutun.map(p=>{
+      const k = p.key + '|' + an;
+      if(!ozHarita.has(k)) return '<span class="hint">—</span>';
+      const acik = ozHarita.get(k) === true;
+      return '<label style="display:inline-flex;min-height:44px;align-items:center">'
+        + '<input type="checkbox" data-oz="' + esc(k) + '"'
+        + ' data-eski="' + (acik ? '1' : '0') + '"' + (acik ? ' checked' : '') + '></label>';
+    }))));
+
+  // --- Limitler: yazi kutulari ---
+  // ⛔ BOS = SINIRSIZ (null), 0 = HIC. Ikisi ayri sey; sql/69 bunlarin
+  //   karistirilmasinin ucretli kullaniciyi hicbir sey yapamaz hale
+  //   getirdigini yaziyor. Bu yuzden bos kutu 0'a DONUSTURULMUYOR.
+  const limAnahtar = matrisSatirlari(d.limitler, 'limit_key');
+  const limHarita = new Map();
+  (d.limitler || []).forEach(x=> limHarita.set(x.plan_key + '|' + x.limit_key, x.limit_value));
+  tabloCiz($('limitMatrisTablo'), [{ad:'Sınır'}].concat(sutunBasliklari),
+    limAnahtar.map(an=> [esc(LIMIT_ADI[an] || an)].concat(sutun.map(p=>{
+      const k = p.key + '|' + an;
+      if(!limHarita.has(k)) return '<span class="hint">—</span>';
+      const v = limHarita.get(k);
+      const metin = (v === null || v === undefined) ? '' : String(v);
+      return '<input type="text" inputmode="numeric" style="width:90px"'
+        + ' placeholder="sınırsız" data-lim="' + esc(k) + '"'
+        + ' data-eski="' + esc(metin) + '" value="' + esc(metin) + '">';
+    }))));
+}
+
+// Metin -> null (sinirsiz) | tam sayi | undefined (gecersiz)
+function limitOku(metin){
+  const t = String(metin ?? '').trim();
+  if(t === '') return null;
+  if(!/^\d+$/.test(t)) return undefined;
+  return Number(t);
+}
+const limitYaz = (v)=> (v === null ? 'sınırsız' : String(v));
+
+$('matrisKaydet').addEventListener('click', async ()=>{
+  const degisen = [];
+
+  document.querySelectorAll('#ozellikTablo input[data-oz]').forEach(k=>{
+    const yeni = k.checked, eski = k.dataset.eski === '1';
+    if(yeni !== eski){
+      const [plan, ozellik] = k.dataset.oz.split('|');
+      degisen.push({ tur:'ozellik', plan, anahtar:ozellik, eski, yeni,
+        etiket: (PLAN_ADI[plan] || plan) + ' · ' + (OZELLIK_ADI[ozellik] || ozellik),
+        anlat: (eski ? 'açık' : 'kapalı') + '  →  ' + (yeni ? 'açık' : 'kapalı') });
+    }
+  });
+
+  const kutular = Array.prototype.slice.call(
+    document.querySelectorAll('#limitMatrisTablo input[data-lim]'));
+  for(const k of kutular){
+    const yeni = limitOku(k.value);
+    if(yeni === undefined){
+      // ⚠ Hatali bir kutu varsa HICBIR SEY kaydedilmiyor -- fiyat
+      //   tablosundaki kuralin aynisi. Yarisi gecmis bir matris
+      //   birakmaktansa durup gostermek.
+      durum('Sınırı ya boş bırak (sınırsız) ya da tam sayı yaz: 100.', true);
+      k.focus(); return;
+    }
+    const eski = limitOku(k.dataset.eski);
+    if(yeni !== eski){
+      const [plan, limit] = k.dataset.lim.split('|');
+      degisen.push({ tur:'limit', plan, anahtar:limit, eski, yeni,
+        etiket: (PLAN_ADI[plan] || plan) + ' · ' + (LIMIT_ADI[limit] || limit),
+        anlat: limitYaz(eski) + '  →  ' + limitYaz(yeni) });
+    }
+  }
+
+  if(!degisen.length){ durum('Değişen bir şey yok.'); return; }
+
+  const ozet = degisen.map(x=> x.etiket + ':  ' + x.anlat).join('\n');
+  if(!confirm(degisen.length + ' ayar değişecek:\n\n' + ozet
+      + '\n\nKapatılan özelliğin verisi SİLİNMEZ, yalnızca görünmez olur.'
+      + '\nOnaylıyor musun?')) return;
+
+  // ⚠ YARIM KALMA: biri gecip oteki hata verirse hangisinin
+  //   kaydedildigi TEK TEK yaziliyor. Toplu kayitta en kotu sey,
+  //   neyin gectigini bilmemek (fiyat kaydetmedeki kuralin aynisi).
+  const gecen = [], kalan = [];
+  for(const x of degisen){
+    try{
+      if(x.tur === 'ozellik'){
+        await cagir({ islem:'ozellik-degistir', onay:true,
+                      plan_key:x.plan, feature_key:x.anahtar, enabled:x.yeni });
+      }else{
+        await cagir({ islem:'limit-degistir', onay:true,
+                      plan_key:x.plan, limit_key:x.anahtar, limit_value:x.yeni });
+      }
+      gecen.push(x.etiket);
+    }catch(err){
+      kalan.push(x.etiket + ' (' + ((err && err.govde && err.govde.hata) || 'hata') + ')');
+    }
+  }
+  await yukle('planlar', true);
+  if(!kalan.length){ durum(gecen.length + ' ayar kaydedildi.'); return; }
+  durum('Kaydedilen: ' + (gecen.join(', ') || 'yok')
+        + ' · KAYDEDİLEMEYEN: ' + kalan.join(', '), true);
+});
+
 // ---- Fiyat kaydetme: TEK dugme, once ozet ve onay --------------------
 // ⛔ 19 KASIM 2026 — MATRISE GECINCE KAYDETME DE DEGISTI
 //    (YAPILACAKLAR 61). Eskiden her satirin kendi Kaydet dugmesi
