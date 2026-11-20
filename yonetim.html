@@ -243,18 +243,83 @@ function durum(metin, hataMi){
 
 // Her çağrı oturum jetonunu taşıyor. ⛔ "Ben yöneticiyim" diye bir
 // bilgi GÖNDERİLMİYOR: kimliği sunucu, jetondan kendisi çözüyor.
-async function cagir(govde){
-  const { data } = await sb.auth.getSession();
-  const jeton = data && data.session && data.session.access_token;
-  if(!jeton) throw new Error('oturum yok');
-  const r = await fetch(UC, {
-    method: 'POST',
-    headers: { 'Content-Type':'application/json', Authorization: 'Bearer ' + jeton },
-    body: JSON.stringify(govde)
+// ⛔ 20 KASIM 2026 — SAYFA SONSUZA KADAR "YUKLENIYOR..." DIYORDU.
+//   Kullanici ekran goruntusuyle gosterdi: Planlar sekmesi acik,
+//   ustte "Yukleniyor..." asili, iki tablo da BOS. Yenileyince giris
+//   sayfasina atiyor, kaydettigi degisiklik denetim kaydina DUSMEMIS.
+//
+//   Sebep: BU FONKSIYONUN HICBIR ZAMAN ASIMI YOKTU. Ne
+//   `sb.auth.getSession()` ne de `fetch` bir sureye baglanmisti;
+//   ikisinden biri cevapsiz kalirsa `await` sonsuza kadar bekliyor,
+//   `yukle`nin catch'i HIC CALISMIYOR ve ekranda "Yukleniyor..."
+//   kaliyordu. Kullaniciya soylenen hicbir sey yoktu.
+//   ⚠ Bu kusur matristen ONCE de vardi; her sekme ayni fonksiyonu
+//     kullaniyor. Matris sekmesinde fark edildi, orada dogmadi.
+const CAGRI_SURESI = 15000;
+
+// Bir sozu sureye bagliyor. ⛔ Promise.race sart: getSession()'in
+// kendisi askida kalabiliyor ve onu disaridan iptal etmenin yolu yok.
+function sureliBekle(soz, ms, ad){
+  let saat;
+  const sure = new Promise((_, red)=>{
+    saat = setTimeout(()=>{ const e = new Error(ad); e.kod = 0; red(e); }, ms);
   });
+  return Promise.race([soz, sure]).finally(()=> clearTimeout(saat));
+}
+
+async function cagir(govde){
+  let data;
+  try{
+    ({ data } = await sureliBekle(sb.auth.getSession(), CAGRI_SURESI, 'zaman_asimi'));
+  }catch(err){
+    const e = new Error(err && err.message === 'zaman_asimi' ? 'zaman_asimi' : 'oturum_yok');
+    e.kod = 0; throw e;
+  }
+  const jeton = data && data.session && data.session.access_token;
+  if(!jeton){ const e = new Error('oturum_yok'); e.kod = 0; throw e; }
+
+  const kes = new AbortController();
+  let r;
+  try{
+    r = await sureliBekle(fetch(UC, {
+      method: 'POST',
+      headers: { 'Content-Type':'application/json', Authorization: 'Bearer ' + jeton },
+      body: JSON.stringify(govde),
+      signal: kes.signal
+    }), CAGRI_SURESI, 'zaman_asimi');
+  }catch(err){
+    try{ kes.abort(); }catch(e){}
+    const e = new Error(err && err.message === 'zaman_asimi' ? 'zaman_asimi' : 'ag_hatasi');
+    e.kod = 0; throw e;
+  }
   const c = await r.json().catch(()=> ({}));
   if(!r.ok){ const e = new Error(c.hata || ('http ' + r.status)); e.kod = r.status; e.govde = c; throw e; }
   return c;
+}
+
+// ⛔ HATAYI ADIYLA SOYLE. Onceki hal her seyi "Olmadi: ..." diye
+//   yaziyordu ve 403 icin her zaman "Bu hesap yonetici degil" diyordu
+//   -- oysa sunucu oturumu dusmus kullaniciya da 403 donuyor, yani o
+//   cumle YANILTICIYDI. Asil sebebi kullanicinin gormesi lazim; bir
+//   arizayi tek tiklamada teshis edilebilir yapan sey bu.
+function hataMetni(e){
+  const m = (e && e.message) || '';
+  if(m === 'zaman_asimi')
+    return 'Sunucu 15 saniyede cevap vermedi. Bağlantını kontrol edip tekrar dene.';
+  if(m === 'oturum_yok')
+    return 'Oturumun düşmüş. Sağ üstten Çık\'a basıp tekrar giriş yap.';
+  if(m === 'ag_hatasi')
+    return 'Sunucuya ulaşılamadı. Bağlantını kontrol et.';
+  if(m === 'satir_yok')
+    return 'Bu satır sunucuda yok. Matris SQL\'i (sql/76) eksik çalışmış olabilir.';
+  if(m === 'bilinmeyen_islem')
+    return 'Sunucudaki yönetim fonksiyonu ESKİ sürüm: bu işlemi tanımıyor. '
+         + 'Edge Function yeniden dağıtılmalı.';
+  if(e && e.kod === 403)
+    return 'Yetki yok. Oturumun düşmüş olabilir — çıkıp tekrar gir. '
+         + '(Hesap gerçekten yönetici değilse de bu yazar.)';
+  if(e && e.kod === 429) return 'Çok fazla istek. Biraz bekleyip tekrar dene.';
+  return 'Olmadı: ' + m;
 }
 
 // ⚠ Kütüphane yüklenemediyse (ağ kesik, CDN engelli) sayfa SESSİZCE
@@ -489,7 +554,7 @@ async function yukle(ad, zorla){
     yuklendi[ad] = true;
     durum('');
   }catch(e){
-    durum(e.kod === 403 ? 'Bu hesap yönetici değil.' : ('Olmadı: ' + e.message), true);
+    durum(hataMetni(e), true);
   }
 }
 
@@ -630,6 +695,7 @@ $('matrisKaydet').addEventListener('click', async ()=>{
   //   kaydedildigi TEK TEK yaziliyor. Toplu kayitta en kotu sey,
   //   neyin gectigini bilmemek (fiyat kaydetmedeki kuralin aynisi).
   const gecen = [], kalan = [];
+  let ilkHata = null;
   for(const x of degisen){
     try{
       if(x.tur === 'ozellik'){
@@ -641,13 +707,34 @@ $('matrisKaydet').addEventListener('click', async ()=>{
       }
       gecen.push(x.etiket);
     }catch(err){
-      kalan.push(x.etiket + ' (' + ((err && err.govde && err.govde.hata) || 'hata') + ')');
+      // ⛔ SEBEBI SAKLAMA. Onceki hal yalnizca sunucunun kisa hata
+      //   kodunu yaziyordu ("hata"); zaman asimi ve dusmus oturum
+      //   ayirt edilemiyordu. Artik ilk hatanin insan diliyle
+      //   karsiligi da yaziliyor.
+      if(!ilkHata) ilkHata = err;
+      kalan.push(x.etiket);
     }
   }
-  await yukle('planlar', true);
-  if(!kalan.length){ durum(gecen.length + ' ayar kaydedildi.'); return; }
-  durum('Kaydedilen: ' + (gecen.join(', ') || 'yok')
-        + ' · KAYDEDİLEMEYEN: ' + kalan.join(', '), true);
+
+  // ⛔ 20 KASIM 2026 — BASARISIZ KAYITTAN SONRA TABLO YENILENMIYOR.
+  //   Onceki hal her durumda `yukle('planlar', true)` cagiriyordu:
+  //   kaydetme basarisiz olsa bile tablo sunucudan baştan cizilip
+  //   kullanicinin degisiklikleri EKRANDAN SILINIYORDU. Kullanici
+  //   "kaydettim, yenileyince yoktu" dedi -- yarisi tam buydu:
+  //   ekranda kaydedilmis gibi duran bir tablo, arkada yazilmamis
+  //   bir sunucu.
+  //   ⚠ Artik yalnizca HEPSI gectiyse yenileniyor. Biri bile
+  //     gecmediyse tablo oldugu gibi kaliyor ki kullanici hicbir seyi
+  //     bastan girmeden tekrar deneyebilsin.
+  if(!kalan.length){
+    await yukle('planlar', true);
+    durum(gecen.length + ' ayar kaydedildi.');
+    return;
+  }
+  durum('KAYDEDİLEMEDİ — ' + hataMetni(ilkHata)
+        + '  ·  Geçen: ' + (gecen.join(', ') || 'yok')
+        + '  ·  Geçmeyen: ' + kalan.join(', ')
+        + '  ·  Ekrandaki değişikliklerin duruyor, tekrar deneyebilirsin.', true);
 });
 
 // ---- Fiyat kaydetme: TEK dugme, once ozet ve onay --------------------

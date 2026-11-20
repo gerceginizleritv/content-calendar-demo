@@ -251,10 +251,19 @@ const VERI = {
   });
   await p.waitForTimeout(900);
   const durumMetni = await p.evaluate(()=> document.getElementById('durum').textContent);
+  // ⚠ 20 KASIM 2026 — BU IDDIANIN METNI DEGISTI, SARTI DEGISMEDI.
+  //   Kaydetme yolu duzeltilince mesaj zenginlesti: artik yalnizca
+  //   "hangisi gecti" degil, SEBEBI de yaziyor. Uc eski sart aynen
+  //   duruyor, ustune DORDUNCU bir sart eklendi (sebep yazili mi) --
+  //   iddia zayiflatilmadi, guclendirildi.
   dene('★ biri hata verirse hangisinin geçtiği EKRANDA yazıyor', ()=>{
-    assert.ok(/KAYDEDİLEMEYEN/.test(durumMetni), 'durum: ' + durumMetni);
+    assert.ok(/KAYDEDİLEMEDİ/.test(durumMetni), 'durum: ' + durumMetni);
     assert.ok(/Fikirlere öncelik/.test(durumMetni), 'durum: ' + durumMetni);
     assert.ok(/Google Drive/.test(durumMetni), 'durum: ' + durumMetni);
+  });
+  dene('★ kırmızı yazı SEBEBİ de söylüyor (yalnızca "hata" demiyor)', ()=>{
+    assert.ok(/sunucuda yok|sql\/76/i.test(durumMetni),
+      'sebep yazmiyor: ' + durumMetni);
   });
 
   dene('sayfa hatası yok', ()=>{
