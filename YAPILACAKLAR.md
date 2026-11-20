@@ -2608,14 +2608,39 @@ dokunmak ve ikinci seferde birincisini bozmak demek.
   tabloya bakmalı. İkisi ayrı iş: matris bu madde, zorlama 29. madde
   (ödeme duvarı).
 
-  ⚠ **Cevap bekleyen sorular** (sırası gelince sorulacak):
-  1. Hücre iki durumlu mu (açık/kapalı), yoksa sayı da tutacak mı
-     (örn. "platform başına hesap: Starter 1, Pro 2" — 53. madde)?
-  2. Planı düşen kullanıcının **verisine** ne olacak? (52'de karar
-     verildi: veri durur, yalnızca görünmez. Aynısı mı?)
-  3. Yeni bir özellik eklendiğinde varsayılan **açık** mı **kapalı** mı?
-     ⚠ "Kapalı" güvenli ama unutulursa özellik hiç görünmez;
-     "açık" tersi.
+  ✅ **KODDAN DOĞRULANAN BAŞLANGIÇ DURUMU (20 Kasım 2026).**
+  Matrisin **yarısı zaten var**, ama bağlı değil:
+  - `plan_limits` tablosu kurulu (`sql/69`): plan × sınır → sayı,
+    `null` = sınırsız. Dört planın satırları dolu.
+  - Yönetim paneli bu tabloyu **gösteriyor ama düzenlettirmiyor**:
+    fiyat satırlarında `<input>` var, limit satırlarında düz metin.
+  - ⛔ **Uygulama `plan_limits`'i HİÇ OKUMUYOR.** `sinirlariUygula()`
+    kullanıcıya özel iki alandan besleniyor (`entry_limit`,
+    `project_limit`). Yani tablo duruyor, kimse kullanmıyor.
+  - Açık/kapalı özellikler için **hiçbir şey yok**. Bugünkü tek kapı
+    `prefs.pro` (52. madde) ve `prefs.mcp` — ikisi de hesap başına
+    elle açılan bayraklar, plana bağlı değil.
+
+  ✅ **DÖRT KARAR ALINDI (20 Kasım 2026, kullanıcı):**
+  1. **İki bölüm olacak:** üstte bugünkü sayı sınırları (artık
+     düzenlenebilir), altta yeni açık/kapalı özellik matrisi.
+     Her hücre kendi türünde kalıyor, karışmıyor.
+  2. **Yeni özelliğin varsayılanı KAPALI** — kullanıcı açana kadar.
+     ⚠ Bilinen riski kayda geçti: panelden açmak unutulursa özellik
+       hiç kimsede görünmez. Bekçi test bunu yakalamalı — kodda
+       tanımlı olup matriste satırı olmayan özelliği bildirsin.
+  3. **Plan düşünce veri DURUR, yalnızca görünmez.** 52'deki kararın
+     aynısı. ⛔ Veri silen bir karar geri alınamaz, bu alınabilir.
+  4. **Sütunlar: yalnızca satıştaki planlar** (bugün Starter ve
+     Creator Pro). Studio ve Founding `visible=false`.
+     ⚠ **OKUMA (karar değil, başlarken doğrulanacak):** sütunlar elle
+       yazılmayacak, `plans` tablosunda `visible = true` olanlardan
+       **üretilecek**. Böylece kullanıcı Studio'yu satışa açtığı gün
+       sütun kendiliğinden geliyor ve "listeyi elle yazma" tuzağına
+       düşülmüyor (bu deponun tekrarlayan hatası).
+
+  ⚠ **Sırası gelince sorulacak, henüz sorulmadı:** özellik listesinin
+  kendisi (1. aşamanın çıktısı) kullanıcıya onaylatılacak.
 - ⬜ **69. FİKİRLERİ ÖNCELİĞE GÖRE SIRALAMA.**
   Kullanıcı 20 Kasım 2026'da sordu:
 
