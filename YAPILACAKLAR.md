@@ -2641,6 +2641,65 @@ dokunmak ve ikinci seferde birincisini bozmak demek.
 
   ⚠ **Sırası gelince sorulacak, henüz sorulmadı:** özellik listesinin
   kendisi (1. aşamanın çıktısı) kullanıcıya onaylatılacak.
+- ⬜ **70. PROJELER TABLOSUNDA ÜST BAŞLIK SABİT KALSIN.**
+  Kullanıcı 20 Kasım 2026'da ekran görüntüsüyle istedi:
+
+  > *"projeler sayfasında proje sayısı çok olduğunda aşağı scroll
+  > edince üst başlıklar doğal olarak kayboluyor acaba üst başlık
+  > bölümünü sabitlesek"*
+
+  Bugün 72 proje var; aşağı inince SCRIPT · ÇEKİM · SES · KURGU ·
+  ONAY · YAYIN PAKETİ · YAYIN başlıkları kayboluyor ve hangi sütuna
+  baktığın anlaşılmıyor.
+
+  ⛔ **BU YALNIZCA MASAÜSTÜ SORUNU — KODDAN DOĞRULANDI.**
+  Telefonda tablo zaten **karta dönüşüyor**: `.proj-table thead`
+  gizleniyor (`app.html`) ve her hücre kendi etiketini taşıyor
+  (`.pcell-et`). Yani telefonda sabitlenecek bir başlık satırı
+  **yok**; orada sorun da yok.
+  ⚠ Çözüm yalnızca geniş ekranda çalışmalı, telefondaki kart
+    düzenini bozmamalı.
+
+  ⚠ **Bilinen tuzak:** `position:sticky` çalışması için kaydıran
+  kapsayıcının `overflow` değeri uygun olmalı. Tablo bir kaydırma
+  kutusunun içindeyse başlık sayfaya değil o kutuya yapışır.
+  ⛔ Ölçülecek, tahmin edilmeyecek.
+
+  ⚠ **Bekçi test:** sayfa aşağı kaydırıldıktan sonra başlık satırının
+  hâlâ görünür olduğunu ölçsün — ve telefon genişliğinde kart
+  düzeninin bozulmadığını. Sütun listesini elle yazmasın.
+
+- ⬜ **71. TÜM CİHAZ TESTİ — GELİŞTİRMELER BİTİNCE.**
+  Kullanıcı 20 Kasım 2026'da söyledi:
+
+  > *"tabii bu sana yazdığım yapılacakları ben genel olarak laptop ve
+  > pc den bakarak yazıyorum. Bunları cep telefonu için de iyi
+  > değerlendirmek gerekir. Tüm geliştirmeler tamamlanınca tüm cihaz
+  > testlerini de yapmak gerekiyor"*
+
+  ⚠ **İKİ AYRI İŞ, KARIŞTIRILMASIN:**
+  1. **Her madde yazılırken telefon da düşünülecek** — bu bir
+     *alışkanlık*, bu maddenin konusu değil. Kullanıcının isteği
+     üzerine `CLAUDE.md`'ye kural olarak yazılması önerildi
+     (Bölüm 7'nin dil kuralıyla aynı aileden: bir yerde yapıp
+     ötekinde unutmak bu deponun tekrarlayan hatası).
+  2. **Sonda tam bir cihaz geçişi** — bu madde.
+
+  ⚠ **Bugün ne var:** testlerin bir kısmı dar genişlikte ölçüyor
+  (360 · 375 · 390 piksel) ama **listeyi her test kendi yazıyor** ve
+  hiçbir yerde "her sayfa şu genişliklerde denendi" diyen tek bir
+  bekçi yok. Yani kapsam **ölçülmemiş durumda**.
+
+  ⚠ **Başlarken önce ölçülecek, sonra yazılacak:** hangi sayfa hangi
+  genişlikte deneniyor, hangisi hiç denenmiyor. ⛔ "Herhalde
+  çoğu denenmiştir" denmeyecek — Bölüm 4.
+
+  ⚠ **Gerçek cihaz mı, benzetim mi?** Playwright gerçek bir telefon
+  değil: dokunma gecikmesi, klavyenin ekranı kaplaması, iOS
+  Safari'nin adres çubuğu davranışı benzetimde görünmez. Bu madde
+  kapatılırken ikisinin de yapılması gerekiyor; kullanıcının kendi
+  telefonunda bakacağı bir liste çıkarılacak.
+
 - ⬜ **69. FİKİRLERİ ÖNCELİĞE GÖRE SIRALAMA.**
   Kullanıcı 20 Kasım 2026'da sordu:
 
