@@ -22,3 +22,6 @@ package-lock.json
 # ⚠ ciktilar/ klasorunun kendisi yok sayilmiyor: icindeki ekran
 #   goruntuleri (sc-*.png, tur-*.png, aitest-*.png) bilerek takipte.
 ciktilar/_tam-kosu.log
+
+# Mutasyon kosusunun gecici kaydi (yukaridaki ile ayni aileden).
+ciktilar/_mut.log
