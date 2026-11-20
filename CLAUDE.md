@@ -250,3 +250,53 @@ aynısını yap.
 ⛔ **Bir özellik tek dilde bitirilip "sonra çevrilir" diye
 bırakılmaz.** Bırakılacaksa kullanıcı söyler.
 
+
+---
+
+## 8. HER ÖZELLİK TELEFONDA DA ÇALIŞIR
+
+> *"bu sana yazdığım yapılacakları ben genel olarak laptop ve pc den
+> bakarak yazıyorum. Bunları cep telefonu için de iyi değerlendirmek
+> gerekir. Tüm geliştirmeler tamamlanınca tüm cihaz testlerini de
+> yapmak gerekiyor."*
+> — kullanıcı, 20 Kasım 2026. Kurala yazılması istendi.
+
+**Kullanıcı yapılacakları bilgisayardan bakarak yazıyor.** Yani her
+madde, farkında olmadan, geniş ekranın diliyle yazılmış oluyor:
+"üst başlık sabitlensin", "tablo iki sütun olsun", "yan yana dursun".
+⛔ Bunları olduğu gibi telefona taşımak yanlıştır — telefonda o düzen
+çoğu zaman **hiç yoktur.**
+
+Gerçek bir örnek (20 Kasım 2026, 70. madde): kullanıcı projeler
+tablosunun üst başlığının sabitlenmesini istedi. Koda bakıldı:
+telefonda o tablo **karta dönüşüyor**, `.proj-table thead` gizli ve
+her hücre kendi etiketini taşıyor. Yani telefonda sabitlenecek bir
+başlık **yok**; istek oraya hiç uygulanmayacak. ⚠ Bakılmasaydı ya
+boşuna iş yapılır ya da kart düzeni bozulurdu.
+
+**Bir işi "bitti" saymadan önce:**
+
+- **Telefonda bu ekran ne oluyor?** Önce **koda bak**, tahmin etme.
+  Tablo mu kalıyor, karta mı dönüyor, gizleniyor mu?
+- **İstek telefonda anlamlı mı?** Anlamsızsa yapma ve **söyle** —
+  "yalnızca geniş ekranda geçerli" diye maddeye yaz.
+- **Dokunma hedefi 44 piksel.** Fare ile tıklanan küçük bir düğme
+  parmakla basılamaz. ⚠ `::after` ile büyütmek işe yaramayabilir:
+  `overflow:hidden` onu kendi içinde kırpar (ölçüldü, 25 piksel
+  çıktı). Gerçek noktayı `elementFromPoint` ile dene, kutu okuma.
+- **Dar genişlikte ölç: 360 · 375 · 390.** 360 en dar gerçek cihaz.
+  Yazı kırpılıyor mu, sayfa yatay taşıyor mu?
+- **Klavye ekranın yarısını kaplar.** Alt tarafa sabitlenen bir
+  düğme, yazı yazarken klavyenin altında kalabilir.
+
+⚠ **Bekçi test dar genişliği de ölçsün.** Yalnızca masaüstünde
+ölçen bir test, telefonda bozulanı göremez.
+
+⚠ **Playwright gerçek bir telefon DEĞİL.** Dokunma gecikmesi,
+klavyenin davranışı, iOS Safari'nin adres çubuğu benzetimde
+görünmez. "Testte geçti" demek "telefonda çalışıyor" demek değildir;
+`YAPILACAKLAR.md` 71. madde sonda gerçek cihaz geçişi için duruyor.
+
+⛔ **Bu, 7. bölümle aynı aileden.** Orada "bir dilde yapıp ötekinde
+unutmak", burada "bir ekranda yapıp ötekinde unutmak". Çözüm de
+aynı: **listeyi elle yazmayan, kendi bulan bir bekçi test.**
