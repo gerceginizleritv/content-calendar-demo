@@ -2110,6 +2110,10 @@ textarea.sc-ai-brief{min-height:64px;resize:vertical;line-height:1.5;}
 .fk-onc[data-d="1"]{color:var(--accent);border-color:var(--accent-dim);}
 .fk-onc[data-d="2"]{color:var(--amber);}
 .fk-onc:focus-visible{outline:2px solid var(--accent);outline-offset:1px;}
+/* ZORUNLU ALAN ISARETI (YAPILACAKLAR 53c). ⚠ Yildiz TEK BASINA
+   anlatmaz; etiketin `title`i ve alanin `aria-required`i da var,
+   ekran okuyucu ikisini de soyluyor. Renk tasiyici bilgi DEGIL. */
+.zorunlu-im{color:var(--accent);margin-left:2px;font-weight:700;}
 .fk-gizli{position:absolute;right:0;bottom:0;
   font-size:11px;font-weight:600;line-height:1.5;
   color:var(--text-dim);
@@ -5109,8 +5113,15 @@ textarea.sc-ai-brief{min-height:64px;resize:vertical;line-height:1.5;}
       <div class="hs-form">
         <div class="row2">
           <div class="field">
-            <label data-i18n="hs_ad">Name</label>
-            <input type="text" id="hs_ad" maxlength="80" data-i18n-placeholder="hs_ad_ph" placeholder="Personal">
+            <!-- ⛔ 20 KASIM 2026 — ZORUNLU OLDUGU BASMADAN ONCE BELLI
+                 DEGILDI (YAPILACAKLAR 53c). `hesapKaydet` bos adda
+                 zaten uyariyordu ama kullanici uyariyi ancak
+                 "Ekle"ye BASTIKTAN sonra goruyordu. -->
+            <label data-i18n="hs_ad">Name</label><span class="zorunlu-im"
+                  id="hs_adZorunlu" data-i18n-title="hs_zorunlu"
+                  title="Required" aria-hidden="true">*</span>
+            <input type="text" id="hs_ad" maxlength="80" required aria-required="true"
+                   data-i18n-placeholder="hs_ad_ph" placeholder="Personal">
           </div>
           <div class="field">
             <label data-i18n="hs_platform">Platform</label>
@@ -8011,7 +8022,10 @@ const LANG = {
     // HESAP ETIKETLERI. "Etiket" kelimesi metinlerde bilerek gecmiyor
     // ama fikir her yerde: burada saklanan sey bir BAG degil, bir AD.
     hs_title: "Account labels",
-    hs_intro: "If you have more than one account on the same platform, add them here; when you plan a post you tick which one it goes to. Shootboard never connects to any account and never posts anything on your behalf — this is only a label.",
+    hs_intro: "If you have more than one account on the same platform, add them here. Once you have two accounts on a platform, the planning screen asks which one a post goes to — with a single account there is nothing to choose, so no question appears. Shootboard never connects to any account and never posts anything on your behalf — this is only a label.",
+    hs_zorunlu: "Required",
+    hs_platform_limit: (platform, n)=>
+      `Up to ${n} accounts on ${platform}. Your existing accounts stay where they are.`,
     hs_ad: "Name",
     hs_ad_ph: "Personal",
     hs_platform: "Platform",
@@ -9382,7 +9396,10 @@ const LANG = {
     step_published: "Yayın",
     // HESAP ETIKETLERI.
     hs_title: "Hesap etiketleri",
-    hs_intro: "Aynı platformda birden çok hesabın varsa buraya ekle; paylaşımı planlarken hangisine gideceğini işaretlersin. Shootboard hiçbir hesaba bağlanmaz, senin adına hiçbir yere gönderi atmaz — bu yalnızca bir etiket.",
+    hs_intro: "Aynı platformda birden çok hesabın varsa buraya ekle. O platformda iki hesabın olduğunda, planlama ekranı paylaşımın hangisine gideceğini sorar — tek hesapta seçilecek bir şey olmadığı için soru da çıkmaz. Shootboard hiçbir hesaba bağlanmaz, senin adına hiçbir yere gönderi atmaz — bu yalnızca bir etiket.",
+    hs_zorunlu: "Zorunlu",
+    hs_platform_limit: (platform, n)=>
+      `${platform} için en fazla ${n} hesap. Mevcut hesapların olduğu gibi kalır.`,
     hs_ad: "Ad",
     hs_ad_ph: "Kişisel",
     hs_platform: "Platform",
@@ -16152,6 +16169,19 @@ let planAnahtari = 'starter';
 // plan_features'tan okunan harita: { ozellik: true/false }. null =
 // HENUZ OKUNMADI (ya da okunamadi) -- o zaman varsayilanlar gecerli.
 let ozellikKapisi = null;
+// Sayi sinirlari: { anahtar: sayi | null }. null = SINIRSIZ.
+// ⚠ Harita null ise HENUZ OKUNMADI; o zaman cagiran yerin kendi
+//   varsayilani gecerli (bugunku davranis).
+let planSinirlari = null;
+
+// ⛔ `null` (sinirsiz) ile "okunmadi" ayri seyler: ilki sayi
+//   dondurmuyor, ikincisi varsayilana dusuyor.
+function planSiniri(anahtar, varsayilan){
+  if(planSinirlari && Object.prototype.hasOwnProperty.call(planSinirlari, anahtar)){
+    return planSinirlari[anahtar];   // sayi ya da null (sinirsiz)
+  }
+  return varsayilan;
+}
 
 function ozellikAcik(anahtar){
   if(ozellikKapisi && Object.prototype.hasOwnProperty.call(ozellikKapisi, anahtar)){
@@ -16213,6 +16243,23 @@ async function planKapisiSenkron(){
     const harita = {};
     (data || []).forEach(x=>{ harita[x.feature_key] = x.enabled === true; });
     ozellikKapisi = harita;
+    // Sayi sinirlari (sql/76 + sql/77). ⚠ AYRI bir istek ve AYRI bir
+    // hata yolu: ozellik kapisi okunup sinirlar okunamazsa, okunan
+    // kisim gecerli olsun -- biri yuzunden oteki de kaybolmasin.
+    try{
+      const { data: lim, error: limHata } = await sb.from('plan_limits')
+        .select('limit_key,limit_value').eq('plan_key', plan);
+      if(limHata) throw limHata;
+      const sHarita = {};
+      // ⛔ null = SINIRSIZ, 0 = HIC. Ikisi ayri sey; sql/69 bunlarin
+      //   karistirilmasinin ucretli kullaniciyi hicbir sey yapamaz
+      //   hale getirdigini yaziyor. null oldugu gibi saklaniyor.
+      (lim || []).forEach(x=>{
+        sHarita[x.limit_key] = (x.limit_value === null || x.limit_value === undefined)
+          ? null : Number(x.limit_value);
+      });
+      planSinirlari = sHarita;
+    }catch(e){ console.error('[plan] sinirlar okunamadi', e); }
     ozellikKapilariUygula();
   }catch(err){
     // ⛔ SESSIZ BIRAKMA AMA KAPATMA DA. Kapi null kaliyor.
@@ -16224,6 +16271,7 @@ async function planKapisiSenkron(){
 function planKapisiSifirla(){
   planAnahtari = 'starter';
   ozellikKapisi = null;
+  planSinirlari = null;
   ozellikKapilariUygula();
 }
 // Birlesmede BUYUK oncelik kazanir (1+2->1, 2+3->2, 2+2->2;
@@ -26009,13 +26057,45 @@ async function hesapSil(id){
   hesaplariCiz(); renderCal();
 }
 
+// ⛔ PLATFORM BASINA HESAP SINIRI (YAPILACAKLAR 53).
+//    Kullanicinin karari (16 Kasim 2026): ayni platformda en fazla
+//    iki hesap; Starter 1, Creator Pro 2. Sayi KODDA SABIT DEGIL:
+//    kullanici 20 Kasim 2026'da yonetim panelinden degistirilmesini
+//    secti, `plan_limits.accounts_per_platform` (sql/77).
+//
+// ⚠ VARSAYILAN 2, 1 DEGIL. Sinir okunamadiginda (ag kesintisi,
+//   hesapsiz kullanim) kullaniciyi BUGUNKUNDEN daha dar bir yere
+//   sikistirmak yanlis olurdu; bugun hic platform siniri yok.
+//   Varsayilani 1 yapmak, bir ag kesintisinde ikinci hesabi
+//   eklemeyi engellerdi.
+function platformHesapSiniri(){
+  const v = planSiniri('accounts_per_platform', 2);
+  return (v === null || v === undefined) ? Infinity : v;   // null = sinirsiz
+}
+function platformHesapSayisi(platform){
+  return hesaplar.filter(h=> h && h.platform === platform).length;
+}
+
 function hesapKaydet(){
   const ad = document.getElementById('hs_ad').value.trim();
   if(!ad){ uyari(t('hs_ad_gerek')); document.getElementById('hs_ad').focus(); return; }
   if(!hesapDuzenId && hesaplar.length >= HESAP_ADET){ uyari(t('hs_limit')(HESAP_ADET)); return; }
+  const secilenPlatform = document.getElementById('hs_platform').value;
+  // ⛔ YALNIZCA YENI EKLERKEN. Duzenlemede sayi degismiyor; burada
+  //   da denese, sinirin ustunde kalmis bir kullanici kendi mevcut
+  //   hesabini DUZENLEYEMEZ hale gelirdi.
+  // ⛔ MEVCUT VERIYE DOKUNULMUYOR: sinirin ustundeki hesaplar
+  //   siliniyor degil, yalnizca yenisi eklenemiyor.
+  if(!hesapDuzenId){
+    const sinir = platformHesapSiniri();
+    if(platformHesapSayisi(secilenPlatform) >= sinir){
+      uyari(t('hs_platform_limit')(CAL_SM_NAMES[secilenPlatform] || secilenPlatform, sinir));
+      return;
+    }
+  }
   const alanlar = {
     name: ad,
-    platform: document.getElementById('hs_platform').value,
+    platform: secilenPlatform,
     handle: document.getElementById('hs_handle').value,
     url: document.getElementById('hs_url').value,
     notes: document.getElementById('hs_notlar').value
@@ -26052,6 +26132,27 @@ function hesapKaydet(){
 //      (yukarida): sayfaya dugmeye basmadan da gelinebiliyor (adres
 //      satiri, oturum hatirasi) ve o yollarda liste bos kalirdi.
 document.getElementById('hs_kaydet').addEventListener('click', hesapKaydet);
+
+// ⛔ 20 KASIM 2026 — ENTER SESSIZCE YUTULUYORDU (YAPILACAKLAR 53a).
+//    `hs_kaydet` `type="button"` ve etrafinda `<form>` yok; alanlarda
+//    Enter'a basmak HICBIR SEY yapmiyordu. Ne kayit olusuyor ne uyari
+//    cikiyordu: alanlari doldurup Enter'a basan kullanici hesabin
+//    eklendigini saniyordu.
+//    ⚠ ALANLAR BIR <form> ICINE ALINMADI: form Enter'da sayfayi
+//      yenileyebilir ve yenilenme kaydi kaybeder. `preventDefault`
+//      unutuldugu an veri kaybi olurdu. Onun yerine alanlara dogrudan
+//      dinleyici konuyor -- yenilenme ihtimali hic dogmuyor.
+//    ⚠ `hs_platform` bir <select>: orada Enter zaten listeyi kapatma
+//      isi goruyor, ona dokunulmuyor.
+['hs_ad','hs_handle','hs_url','hs_notlar'].forEach(id=>{
+  const el = document.getElementById(id);
+  if(!el) return;
+  el.addEventListener('keydown', (e)=>{
+    if(e.key !== 'Enter') return;
+    e.preventDefault();
+    hesapKaydet();
+  });
+});
 document.getElementById('hs_vazgec').addEventListener('click', ()=>{ hesapFormuTemizle(); });
 
 
