@@ -2053,6 +2053,20 @@ textarea.sc-ai-brief{min-height:64px;resize:vertical;line-height:1.5;}
    KESKIN bicimde kesiyordu ("açıklama" yarida kaliyordu). Gecisle
    yazi isaretin altina dogru soluyor -- kesilme kaza degil,
    bilerek yapilmis gibi okunuyor. */
+/* ⛔ ONCELIK ROZETI (YAPILACAKLAR 52). ⚠ YENI RENK YOK: uc duzey
+   uygulamanin var olan degiskenlerine bagli (--accent / --amber /
+   --text-dim), boylece palet isi ne zaman yapilirsa yapilsin oncelik
+   renkleri kendiliginden uyuyor.
+   ⛔ --red KULLANILMIYOR: uygulamada hata ve gecikme demek.
+   ⚠ Yalnizca renge dayanilmiyor: rakam ve dolu/bos nokta da var. */
+.fk-onc{
+  font:inherit;font-size:11px;line-height:1;padding:3px 4px;border-radius:2px;
+  border:1px solid var(--line);background:var(--surface);color:var(--text-dim);
+  cursor:pointer;flex:none;
+}
+.fk-onc[data-d="1"]{color:var(--accent);border-color:var(--accent-dim);}
+.fk-onc[data-d="2"]{color:var(--amber);}
+.fk-onc:focus-visible{outline:2px solid var(--accent);outline-offset:1px;}
 .fk-gizli{position:absolute;right:0;bottom:0;
   font-size:11px;font-weight:600;line-height:1.5;
   color:var(--text-dim);
@@ -7562,6 +7576,13 @@ const LANG = {
     fk_filter_remove: (ad)=> `Remove ${ad} from the filter`,
     fk_filter_clear: "Show all",
     fk_filter_all: "Every project",
+    fk_onc_yok: "No priority",
+    fk_onc_1: "High priority",
+    fk_onc_2: "Medium priority",
+    fk_onc_3: "Low priority",
+    fk_onc_label: (ad)=> `Priority: ${ad}`,
+    fk_onc_filtre: "Priority",
+    fk_onc_sec: "Set priority",
     fk_filter_none: "Without a project",
     fk_count_filtered: (n,tum)=> `${n} / ${tum} ideas`,
     fk_none_match: "No idea here yet.",
@@ -8959,6 +8980,13 @@ const LANG = {
     fk_filter_remove: (ad)=> `${ad} filtreden çıksın`,
     fk_filter_clear: "Hepsini göster",
     fk_filter_all: "Bütün projeler",
+    fk_onc_yok: "Önceliksiz",
+    fk_onc_1: "Çok Öncelikli",
+    fk_onc_2: "Orta Öncelik",
+    fk_onc_3: "Düşük Öncelik",
+    fk_onc_label: (ad)=> `Öncelik: ${ad}`,
+    fk_onc_filtre: "Öncelik",
+    fk_onc_sec: "Öncelik ver",
     fk_filter_none: "Projesiz olanlar",
     fk_count_filtered: (n,tum)=> `${n} / ${tum} fikir`,
     fk_none_match: "Burada henüz fikir yok.",
@@ -12897,6 +12925,15 @@ function filtreSecenekleri(){
   const secili = fikirFiltreleri;
   const bas = [`<option value="">${escapeHtml(t('fk_filter_add'))}</option>`];
   if(secili.indexOf('-') === -1) bas.push(`<option value="-">${escapeHtml(t('fk_filter_none'))}</option>`);
+  // Oncelik suzgecleri yalnizca kapi acikken listeleniyor.
+  if(proAcik){
+    ['yok'].concat(ONCELIKLER).forEach(k=>{
+      const deger = 'onc:' + k;
+      if(secili.indexOf(deger) === -1){
+        bas.push(`<option value="${deger}">${escapeHtml(t('fk_onc_filtre') + ' · ' + oncelikAdi(k === 'yok' ? '' : k))}</option>`);
+      }
+    });
+  }
   return bas.concat(projects.slice().sort((a,b)=> a.name.localeCompare(b.name, 'tr'))
     .filter(p=> secili.indexOf(p.id) === -1)
     .map(p=>`<option value="${escapeHtml(p.id)}">${escapeHtml(p.name)}</option>`)
@@ -12904,6 +12941,10 @@ function filtreSecenekleri(){
 }
 function fikirFiltreAdi(kimlik){
   if(kimlik === '-') return t('fk_filter_none');
+  if(kimlik.indexOf('onc:') === 0){
+    const k = kimlik.slice(4);
+    return t('fk_onc_filtre') + ' · ' + oncelikAdi(k === 'yok' ? '' : k);
+  }
   const p = projectById(kimlik);
   return p ? p.name : kimlik;
 }
@@ -12997,10 +13038,20 @@ function fikirleriSuz(){
       if(fikirAjanda === 'gec' && !(f.due < bugun)) return false;
       if(fikirAjanda === 'bugun' && f.due !== bugun) return false;
     }
-    if(fikirFiltreleri.length){
+    // ⚠ IKI AYRI BOYUT: proje suzgecleri kendi aralarinda VEYA,
+    //   oncelik suzgecleri kendi aralarinda VEYA, ikisinin ARASI VE.
+    //   Hepsini tek listede VEYA saymak "1. oncelikli VE Kariye
+    //   projesinden" diye suzmeyi imkansiz kilardi.
+    const oncSuz = fikirFiltreleri.filter(x=> x.indexOf('onc:') === 0);
+    const projSuz = fikirFiltreleri.filter(x=> x.indexOf('onc:') !== 0);
+    if(projSuz.length){
       const bagli = fikirProjeleri(f);
-      const projesiz = fikirFiltreleri.indexOf('-') !== -1 && !bagli.length;
-      if(!projesiz && !bagli.some(x=> fikirFiltreleri.indexOf(x) !== -1)) return false;
+      const projesiz = projSuz.indexOf('-') !== -1 && !bagli.length;
+      if(!projesiz && !bagli.some(x=> projSuz.indexOf(x) !== -1)) return false;
+    }
+    if(oncSuz.length){
+      const simdiki = 'onc:' + (f.oncelik || 'yok');
+      if(oncSuz.indexOf(simdiki) === -1) return false;
     }
     if(!q) return true;
     // Arama metinde VE proje adinda: "Kariye" yazan biri o projenin
@@ -13058,6 +13109,13 @@ function fikirKartiHtml(f){
                 title="${escapeHtml(t('fk_project_title'))}">${bagli.length ? '+' : escapeHtml(t('fk_no_project'))}</button>
       </span>
       ${aiRozet('ideas', f.id)}
+      ${proAcik ? `<select class="fk-onc" data-fk-onc="${escapeHtml(f.id)}"
+              data-d="${escapeHtml(f.oncelik || '')}"
+              title="${escapeHtml(t('fk_onc_label')(oncelikAdi(f.oncelik)))}"
+              aria-label="${escapeHtml(t('fk_onc_label')(oncelikAdi(f.oncelik)))}">
+        <option value=""${f.oncelik ? '' : ' selected'}>—</option>
+        ${ONCELIKLER.map(k=> `<option value="${k}"${f.oncelik === k ? ' selected' : ''}>${k} ${ONCELIK_IM[k]}</option>`).join('')}
+      </select>` : ''}
       <button type="button" class="fk-x" data-fk-del="${escapeHtml(f.id)}"
               title="${escapeHtml(t('fk_remove'))}" aria-label="${escapeHtml(t('fk_remove'))}">
         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"
@@ -13162,6 +13220,17 @@ function renderFikirler(){
 }
 
 function fikirKartOlaylari(kap){
+  kap.querySelectorAll('[data-fk-onc]').forEach(el=>{
+    el.addEventListener('change', ()=>{
+      const f = fikirById(el.dataset.fkOnc);
+      if(!f) return;
+      f.oncelik = ONCELIKLER.indexOf(el.value) !== -1 ? el.value : '';
+      f.updatedAt = Date.now();
+      fikirDirty.add(f.id);
+      saveFikirler();
+      renderFikirler();
+    });
+  });
   const ac = document.getElementById('fk_openAdd');
   if(ac) ac.addEventListener('click', ()=>{ fikirTaslakAcik = true; renderFikirler(); });
   const vazgec = document.getElementById('fk_addCancel');
@@ -15972,6 +16041,38 @@ function fikirProjeleri(f){
   if(!f) return [];
   return (f.projectIds && f.projectIds.length) ? f.projectIds : (f.projectId ? [f.projectId] : []);
 }
+// ⛔ FIKIR ONCELIGI (YAPILACAKLAR 52). Kullanicinin karari
+//    (16 Kasim 2026): uc duzey, adlari kesin.
+//      '1' Cok Oncelikli · '2' Orta Oncelik · '3' Dusuk Oncelik
+//    ⚠ ISTEGE BAGLI: secmeden kaydetmek engellenmiyor ve VARSAYILAN
+//      DUZEY ATANMIYOR. "Onceliksiz" AYRI bir durum, "dusuk" degil.
+//      Bu yuzden bos dizge gecerli bir deger.
+const ONCELIKLER = ['1', '2', '3'];
+// ⚠ YALNIZCA RENGE DAYANILMIYOR: turuncu ile sari renk korlugunde
+//   yakin duruyor. Her duzeyin RAKAMI ve dolu/bos noktasi var; ekran
+//   okuyucuya da duzeyin ADI gidiyor.
+const ONCELIK_IM = { '1': '●●●', '2': '●●○', '3': '●○○' };
+function oncelikAdi(k){ return t('fk_onc_' + (k || 'yok')); }
+// ⛔ ILK UCRETLI KAPI (YAPILACAKLAR 52). Kullanicinin karari:
+//    oncelik YALNIZCA Creator Pro'da gorunur, ama kendi hesabi muaf.
+//    ⚠ KAYNAK KODA E-POSTA GOMULMUYOR. Depoda bunun yazili kalibi
+//      var: MCP ve otomatik story bayraklari da hesabin KENDI
+//      ayarlarinda (`user_prefs.prefs`) duruyor, kodda kimsenin adi
+//      gecmiyor. `prefs.pro` ayni yoldan aciliyor.
+//    ⚠ TARAYICIDAKI KAPI GERCEK BIR SINIR DEGIL: isteyen gelistirici
+//      araclarindan acar. Burada olculen sey GORUNURLUK; asil zorlama
+//      odeme duvari gelince sunucuda olacak (29. madde).
+//    ⚠ KAPI KAPALIYKEN VERI SILINMIYOR: oncelikler kayitta duruyor,
+//      yalnizca gorunmuyor. Tersi, plani dusen birinin yazdigi seyi yok
+//      etmek olurdu.
+let proAcik = false;
+// Birlesmede BUYUK oncelik kazanir (1+2->1, 2+3->2, 2+2->2;
+// oncelikli + onceliksiz -> oncelikli). Kucuk rakam = buyuk oncelik.
+function oncelikKazanan(a, b){
+  if(!a) return b || '';
+  if(!b) return a;
+  return a < b ? a : b;
+}
 function fikirTemizle(ham){
   if(!ham || typeof ham !== 'object') return null;
   const kimlik = (typeof ham.id === 'string' && /^[A-Za-z0-9_-]{1,64}$/.test(ham.id)) ? ham.id : yeniFikirId();
@@ -15995,6 +16096,11 @@ function fikirTemizle(ham){
     // dagimik olabilmelerinde: her fikre tarih sormak o gucu bozardi.
     // Tarih verilen fikir bir yapilacak oluyor, otekiler oldugu gibi.
     due: (typeof ham.due === 'string' && /^\d{4}-\d{2}-\d{2}$/.test(ham.due)) ? ham.due : '',
+    // ⛔ BEYAZ LISTEDE OLMAYAN ALAN SESSIZCE DUSER. `oncelik` buraya
+    //   yazilmasaydi yedekten geri yukleme, bulut esitlemesi ve eski
+    //   surumle acik kalmis ikinci bir sekme onu SILERDI. Ayni tuzak
+    //   `setTemizle`de yasandi (8. madde) ve mekan koordinatlarinda.
+    oncelik: ONCELIKLER.indexOf(ham.oncelik) !== -1 ? ham.oncelik : '',
     done: ham.done === true,
     createdAt: typeof ham.createdAt === 'number' ? ham.createdAt : Date.now(),
     updatedAt: typeof ham.updatedAt === 'number' ? ham.updatedAt : Date.now()
@@ -16145,6 +16251,13 @@ function fikirBirlestir(hedefId, kaynakId){
   // Tarih de ayni mantikla devraliniyor, ama YALNIZCA hedefte yoksa:
   // iki tarihten erken olani secmek kullanicinin koymadigi bir soz olur.
   if(!hedef.due && kaynak.due){ hedef.due = kaynak.due; hedef.done = kaynak.done; }
+  // ⛔ ONCELIKTE BUYUK OLAN KAZANIR (kullanicinin karari, 16 Kasim
+  //    2026): 1+2->1, 2+3->2, 2+2->2; oncelikli + onceliksiz ->
+  //    oncelikli. ⚠ Tarihten FARKLI kural: tarihte "hedefte yoksa
+  //    devral" deniyor cunku iki tarihten birini secmek kullanicinin
+  //    koymadigi bir soz olurdu. Oncelikte ise iki deger de
+  //    kullanicinin kendi koydugu sey; buyugunu dusurmek bilgi kaybi.
+  hedef.oncelik = oncelikKazanan(hedef.oncelik, kaynak.oncelik);
   hedef.updatedAt = Date.now();
   fikirDirty.add(hedef.id);
   fikirSil(kaynakId);
@@ -16367,6 +16480,9 @@ function fikirRowYap(f, uid){
            // sql/31 calistirilmadiysa bu iki alan cikariliyor: tarihsiz
            // calisan biri icin hicbir sey degismesin.
            ...(fikirAjandaSutunu ? { due_date: f.due || null, done: !!f.done } : {}),
+           // sql/75 calistirilmadiysa bu alan cikariliyor: oncelik
+           // tarayicida kalir, betik calisinca ilk kayitta gider.
+           ...(fikirOncelikSutunu ? { oncelik: f.oncelik || null } : {}),
            sort_index: f.sort,
            deleted_at: null,
            created_at: new Date(f.createdAt).toISOString(),
@@ -16377,6 +16493,7 @@ function fikirRowOku(r){
                         projectIds: r.project_ids || [],
                         projectId: r.project_id || '',
                         due: r.due_date || '', done: r.done === true,
+                        oncelik: r.oncelik || '',
                         sort: typeof r.sort_index === 'number' ? r.sort_index : 0,
                         createdAt: r.created_at ? Date.parse(r.created_at) : Date.now(),
                         updatedAt: r.updated_at ? Date.parse(r.updated_at) : 0 });
@@ -16403,6 +16520,8 @@ function scriptRowOku(r){
 }
 
 let fikirProjeSutunu = true;
+// sql/75 (fikir onceligi) calistirilmadiysa ayni sekilde false'a duser.
+let fikirOncelikSutunu = true;
 let fikirAjandaSutunu = true;
 // Eksik sutun yuzunden butun fikirlerin kaydi durmasin: sunucu "boyle bir
 // alan yok" derse o alan cikariliyor ve gonderim yineleniyor. Boylece
@@ -16416,6 +16535,10 @@ async function fikirPush(){
   }
   if(hata && fikirAjandaSutunu && /due_date|\bdone\b/.test(yazi())){
     fikirAjandaSutunu = false;
+    await kayitPush('ideas', fikirler, fikirDirty, fikirRemoved, fikirRowYap);
+  }
+  if(hata && fikirOncelikSutunu && /\boncelik\b/.test(yazi())){
+    fikirOncelikSutunu = false;
     await kayitPush('ideas', fikirler, fikirDirty, fikirRemoved, fikirRowYap);
   }
 }
@@ -18069,6 +18192,9 @@ function gelenAlinanOku(satir){
   // MCP erisimi bayragi. Kaynak koda e-posta GOMULMUYOR: bayrak hesabin
   // kendi ayarlarinda duruyor, Supabase panelinden aciliyor.
   mcpAcik = !!(satir && satir.prefs && satir.prefs.mcp);
+  // Creator Pro kapisi. MCP ile ayni kalip: kaynak koda e-posta
+  // gomulmuyor, bayrak hesabin kendi ayarlarinda duruyor.
+  proAcik = !!(satir && satir.prefs && satir.prefs.pro);
   // Otomatik story yayini bayragi. MCP gibi: kaynak koda e-posta
   // gomulmuyor, bayrak hesabin kendi ayarlarinda duruyor. Buradan
   // yalnizca OKUNUYOR -- yazilmiyor. PREFS_BIZIM'de de yok, yani

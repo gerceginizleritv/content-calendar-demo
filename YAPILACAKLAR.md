@@ -498,37 +498,56 @@ dokunmak ve ikinci seferde birincisini bozmak demek.
 ⚠ 48'in ayrıca **41'den (altı dil) önce bitmesi şart** — orada yazılı.
 
 ### 3 · Sınırlar
-- ⬜ **52.** **Fikirlere öncelik** (kullanıcı kararı, 16 Kasım 2026).
-  Üç düzey, adlar kesin: **1 Çok Öncelikli · 2 Orta Öncelik ·
-  3 Düşük Öncelik** (EN: High / Medium / Low priority).
-  **İsteğe bağlı** — seçmeden kaydetmek engellenmez, varsayılan düzey
-  atanmaz; "önceliksiz" ayrı bir durumdur, "düşük" değildir.
-  **Yalnızca Creator Pro.** Süzme olacak (1/2/3/önceliksiz).
-  Birleşmede **büyük öncelik kazanır** (1+2→1, 2+3→2, 2+2→2;
-  öncelikli + önceliksiz → öncelikli). **Projeye dönüşünce öncelik
-  biter** — projeye öncelik alanı EKLENMEZ. **AI, İçe Aktar ve MCP
-  ile gelen fikirler önceliksiz** gelir. Mevcut fikirlere dokunulmaz.
-  **Paylaşımda görünmez.**
+- ✅ **52. BİTTİ (20 Kasım 2026).** **Fikirlere öncelik**
+  (kullanıcı kararı, 16 Kasım 2026). Üç düzey, adlar kesin:
+  **1 Çok Öncelikli · 2 Orta Öncelik · 3 Düşük Öncelik**
+  (EN: High / Medium / Low priority).
 
-  ⛔ **KODDAN DOĞRULANDI — VERİ KAYBI RİSKİ GERÇEK.**
-  `fikirTemizle` (`app.html:14643`) beyaz listeli bir nesne kuruyor;
-  **listede olmayan alan sessizce DÜŞER.** Yani `priority` alanı
-  temizleyiciye eklenmezse yedekten geri yükleme, bulut eşitleme ve
-  eski sürümle açık kalmış ikinci bir sekme onu **siler**. Aynı tuzak
-  `setTemizle`'de vardı (8. madde) ve orada iki biçim birden kabul
-  edilerek çözüldü — burada da **test yazılacak**.
+  **Kurulanlar:**
+  - `fikirTemizle` beyaz listesine `oncelik`. ⛔ **EN BÜYÜK RİSK
+    BUYDU:** listede olmayan alan **sessizce düşer**; yedekten geri
+    yükleme, bulut eşitlemesi ve eski sürümle açık kalmış ikinci bir
+    sekme önceliği **silerdi**. Mutasyonla kanıtlandı.
+  - `sql/75-fikir-onceligi.sql` — `ideas.oncelik` sütunu + CHECK.
+    ⚠ Betik çalışmadan da uygulama çalışıyor (`fikirOncelikSutunu`
+    bayrağı, sql/30 ve sql/31 kalıbı).
+  - Kartta rozet: `1 ●●● · 2 ●●○ · 3 ●○○`. ⚠ **Yalnızca renge
+    dayanılmıyor** (turuncu ve sarı renk körlüğünde yakın): rakam +
+    dolu/boş nokta var, ekran okuyucuya düzeyin **adı** gidiyor.
+  - Süzme: önceliksiz · 1 · 2 · 3. ⚠ **İki ayrı boyut:** proje
+    süzgeçleri kendi aralarında VEYA, öncelik süzgeçleri kendi
+    aralarında VEYA, ikisinin arası VE.
+  - Birleşmede **büyük öncelik kazanıyor** (1+2→1, 2+3→2, 2+2→2;
+    öncelikli + önceliksiz → öncelikli).
 
-  ⚠ Renk için ilke: **yeni renk yok.** Üç düzey uygulamanın var olan
-  değişkenlerine bağlanacak — `--accent` / `--amber` / `--text-dim` —
-  böylece palet işi (C grubu) ne zaman yapılırsa yapılsın öncelik
-  renkleri kendiliğinden uyar. ⛔ `--red` **kullanılmayacak**:
-  uygulamada hata ve gecikme demek. ⚠ Yalnızca renge dayanılmayacak
-  (turuncu ve sarı renk körlüğünde yakın): rakam + dolu nokta
-  (1 ●●● · 2 ●●○ · 3 ●○○) ve ekran okuyucu için düzeyin adı.
-  ⚠ Açık temada **ikinci yüzey** üstünde 1. ve 2. düzey 4.5
-  kontrastın altına düşüyor — işaret ana yüzeyde dursun. Kontrastlar
-  uygulanmadan **ölçülecek** (Bölüm 4).
+  ⚠ **Renk için ilke tutuldu: YENİ RENK YOK.** Üç düzey var olan
+  değişkenlere bağlı (`--accent` / `--amber` / `--text-dim`), böylece
+  palet işi ne zaman yapılırsa yapılsın renkler kendiliğinden uyuyor.
+  ⛔ `--red` kullanılmıyor; test bunu da ölçüyor.
+  **Kontrast ölçüldü** (Bölüm 4) ve ölçüm **teste kondu**: açık temada
+  en düşük 5.01:1, koyu temada 6.27:1 — hepsi 4.5'in üstünde.
 
+  ⛔ **İLK ÜCRETLİ KAPI BURADA KURULDU.** Ölçüldü: uygulamada plana
+  bağlı tek bir özellik yoktu; `gecerli_plan()` yalnızca Ayarlar'daki
+  etiketi yazıyordu.
+  ⚠ **Kullanıcıya soruldu** (ödeme canlı değil, yani kapıyı kurarsak
+  kimse göremez): *"Kapıyı kur, benim hesabım muaf"* dedi.
+  ⛔ **KAYNAK KODA E-POSTA GÖMÜLMEDİ.** Depodaki yazılı kalıp
+  kullanıldı: bayrak hesabın kendi ayarlarında (`user_prefs.prefs.pro`),
+  MCP ve otomatik story bayrakları gibi. Kodda kimsenin adı geçmiyor.
+  ⚠ **Tarayıcıdaki kapı gerçek bir sınır değil** — ölçülen şey
+  görünürlük. Asıl zorlama 29. maddede (ödeme duvarı) sunucuda olacak.
+  ⛔ **Kapı kapanınca veri silinmiyor:** öncelikler kayıtta duruyor,
+  yalnızca görünmüyor. Planı düşen birinin yazdığı şeyi yok etmek
+  olurdu; test bunu ayrıca ölçüyor.
+
+  **Bekçi: `testler/fikir-onceligi.test.js`, 27 iddia.**
+  Üç mutasyonla kanıtlandı: `oncelik` beyaz listeden çıkarılırsa
+  3 iddia düşer (sessiz veri kaybı), birleşme kuralı tersine dönerse 2,
+  kapı yok sayılırsa 2.
+
+  ⬜ **KULLANICININ YAPACAĞI:** `sql/75` Supabase'de çalıştırılacak,
+  ve `prefs.pro` bayrağı kendi hesabında açılacak. Adımlar sohbette.
 - ⬜ **53.** **Çoklu hesap: platform başına en fazla 2** (kullanıcı
   kararı, 16 Kasım 2026). Starter 1, Creator Pro 2. Bugünkü
   `HESAP_ADET = 60` toplam sınırı bunun yerine geçer.
@@ -2558,6 +2577,45 @@ dokunmak ve ikinci seferde birincisini bozmak demek.
   güvence korunup ifadesi sayfaya taşınacak (18 Kasım'da 11 testte
   aynısı yapıldı).
 
+- ⬜ **67. YÖNETİM PANELİNDE ÖZELLİK × PLAN MATRİSİ.**
+  Kullanıcı 20 Kasım 2026'da istedi:
+
+  > *"Yönetim panelinde Creator Pro - Starter gibi hangi uygulamanın
+  > hangi plana açık ya da kapalı olacağını her zaman
+  > değiştirebileceğim bir panel de hazırlamanı istiyorum. Mümkünse
+  > özellikler satırda, plan tipleri sütunda olsun."*
+
+  ⚠ **Bu, 52. maddede kurulan kapının doğal genellemesi.** 52'de
+  öncelik için tek bir bayrak (`prefs.pro`) açıldı; burada karar
+  **veriye** taşınıyor: hangi özellik hangi planda açık, panelden
+  değiştirilebilir olacak.
+
+  **İstenen düzen:** satırlarda özellikler, sütunlarda planlar
+  (Starter · Creator Pro · Studio · Founding). ⚠ Fiyat matrisinde
+  (61. madde) kurulan düzenin aynısı; o zincir **zaten çalışıyor**:
+  `yonetim.html` → Edge Function → sunucu → uygulama.
+
+  ⛔ **ÖZELLİK LİSTESİ ELLE YAZILMAYACAK.** Panelde özellikleri elle
+  saymak, bu deponun tekrarlayan hatasını davet eder: kodda yeni bir
+  ücretli özellik açılır, panele yazılmaz ve kimse fark etmez. Liste
+  **koddan** gelecek (tek bir `OZELLIKLER` tablosu) ve panel onu
+  okuyacak. ⚠ Bekçi test: koddaki her özelliğin panelde bir satırı
+  olduğunu ölçen, **listeyi kendi bulan** bir test.
+
+  ⛔ **TARAYICIDAKİ KAPI GERÇEK BİR SINIR DEĞİL.** Bu matris *kararı*
+  veriye taşıyor; **zorlamayı** değil. Bir özelliğin gerçekten
+  kapanması için sunucu tarafı da (RLS ya da Edge Function) aynı
+  tabloya bakmalı. İkisi ayrı iş: matris bu madde, zorlama 29. madde
+  (ödeme duvarı).
+
+  ⚠ **Cevap bekleyen sorular** (sırası gelince sorulacak):
+  1. Hücre iki durumlu mu (açık/kapalı), yoksa sayı da tutacak mı
+     (örn. "platform başına hesap: Starter 1, Pro 2" — 53. madde)?
+  2. Planı düşen kullanıcının **verisine** ne olacak? (52'de karar
+     verildi: veri durur, yalnızca görünmez. Aynısı mı?)
+  3. Yeni bir özellik eklendiğinde varsayılan **açık** mı **kapalı** mı?
+     ⚠ "Kapalı" güvenli ama unutulursa özellik hiç görünmez;
+     "açık" tersi.
 - ⬜ **66. AYARLAR SAYFASININ SIRALAMASI — benzer işler bir araya.**
   Kullanıcı 19 Kasım 2026'da söyledi:
 
