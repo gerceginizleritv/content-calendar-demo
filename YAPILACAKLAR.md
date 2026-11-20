@@ -548,9 +548,40 @@ dokunmak ve ikinci seferde birincisini bozmak demek.
 
   ⬜ **KULLANICININ YAPACAĞI:** `sql/75` Supabase'de çalıştırılacak,
   ve `prefs.pro` bayrağı kendi hesabında açılacak. Adımlar sohbette.
-- ⬜ **53.** **Çoklu hesap: platform başına en fazla 2** (kullanıcı
-  kararı, 16 Kasım 2026). Starter 1, Creator Pro 2. Bugünkü
-  `HESAP_ADET = 60` toplam sınırı bunun yerine geçer.
+- ✅ **53. BİTTİ (20 Kasım 2026).** **Platform başına hesap sınırı +
+  üç arayüz düzeltmesi (53a · 53b · 53c), dördü bir arada.**
+
+  Sayı **kodda sabit değil**: `plan_limits.accounts_per_platform`
+  (`sql/77`), yönetim panelinden değiştirilebiliyor — kullanıcının
+  20 Kasım kararı. Canlıdan doğrulandı: starter 1 · creator_pro 2 ·
+  studio 2 · founding 2.
+
+  - ✅ **53a** Enter kaydediyor. Eskiden `hs_kaydet` `type="button"`
+    ve etrafında `<form>` olmadığı için Enter **sessizce
+    yutuluyordu**: ne kayıt oluşuyor ne uyarı çıkıyordu.
+    ⚠ Alanlar `<form>` içine **alınmadı** — form Enter'da sayfayı
+      yenileyebilir ve yenilenme kaydı kaybeder.
+  - ✅ **53b** Açıklama artık "iki hesap" şartını söylüyor.
+    ⛔ `MARKA.md`'nin "bağlanmaz / senin adına gönderi atmaz"
+      cümlesi aynen duruyor; bekçi test onu da ölçüyor.
+  - ✅ **53c** Ad alanının zorunlu olduğu **basmadan önce** belli:
+    yıldız + `required` + `aria-required`, yıldızın başlığı
+    sözlükten (her dilde).
+
+  ⛔ **MEVCUT VERİYE DOKUNULMADI.** Sınırın üstünde hesabı olanın
+  hesapları silinmiyor, kayıt bağları kopmuyor; yalnızca yenisi
+  eklenemiyor. ⚠ **Düzenleme de engellenmiyor** — sınırın üstünde
+  kalmış biri kendi hesabını düzenleyebilmeli. İkisi de ayrı iddia.
+
+  ⚠ **Sınır okunamazsa varsayılan 2, 1 değil.** Bir ağ kesintisinde
+  kullanıcıyı bugünkünden dar bir yere sıkıştırmak yanlış olurdu.
+
+  Bekçi test: `testler/hesap-platform-siniri.test.js` (17 iddia),
+  altı mutasyonla sınandı.
+
+  **(Aşağısı maddenin açılış gerekçesi, 16 Kasım 2026.)**
+  Bugünkü `HESAP_ADET = 60` toplam sınırı emniyet tavanı olarak
+  duruyor (7 platform × 2 = 14, pratikte hiç dolmuyor).
   Takvim kutusuna hesabın **kısa adı** yalnızca o platformda iki
   hesap varsa eklenecek. Süzgeç kalır, varsayılan "tüm hesaplar".
   ⛔ **Mevcut veriye dokunulmaz:** 2'den fazla hesabı olanın
