@@ -2682,13 +2682,24 @@ dokunmak ve ikinci seferde birincisini bozmak demek.
      düğmesi çıkmayacak (kullanıcının şartı: *"eğer çoklu ise"*).
      ⚠ Hem **tablo** hem **liste** görünümünde geçerli.
 
+  ✅ **DÖRDÜNCÜ CEVAP: İKİ GÖRÜNÜM (20 Kasım 2026).**
+  Kullanıcı: *"aynı mekanlar gibi iki görünüm olacak"*.
+
+  ⛔ **Yani ayrı bir "tablo" görünümü YOK.** Kullanıcının "tablo ve
+  liste" dediği şey tek bir görünüm: mekânlardaki **satır listesi**.
+  Üç görünüm okuması YANLIŞTI, düzeltildi.
+    - `kart` — bugünkü ızgara
+    - `liste` — satır listesi (mekânlardaki `.mk-liste` karşılığı)
+  ⚠ Yukarıdaki cevaplarda geçen "tablo" sözcüğü de bu satır
+    listesini anlatıyor: *"birleşince tek bir satır olacak"*,
+    *"hem tablo hem de liste görünüm için"*.
+
   ⚠ **Hâlâ cevap bekleyen sorular** (sırası gelince sorulacak):
-  1. Kaç görünüm olacak? Kullanıcı hep "tablo ve liste" diyor; bu
-     bugünküyle birlikte **üç** görünüm demek (kart · liste · tablo).
-     ⛔ Bu bir OKUMA, karar değil — başlamadan önce doğrulanacak.
-  2. Tablo olacaksa **hangi sütunlar**? (fikir metni · proje(ler) ·
-     öncelik · teslim tarihi · durum — hangileri?)
-  3. Varsayılan hangisi? ⚠ Mekânlarda kullanıcı "bugünkü hâli
+  1. Satırda **hangi alanlar** görünecek? (fikir metni · proje(ler) ·
+     öncelik · teslim tarihi · durum — hangileri, hangi sırayla?)
+     ⚠ Mekânlarda satır fotoğraf + ad + şehir taşıyor; fikirlerde
+       fotoğraf yok, yani düzen birebir kopyalanamaz.
+  2. Varsayılan hangisi? ⚠ Mekânlarda kullanıcı "bugünkü hâli
      gelsin" dedi (18 Kasım 2026); burada da varsayılan **kart**
      olması aynı mantık, ama kararı kullanıcı verir.
 
