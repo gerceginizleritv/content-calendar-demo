@@ -6019,7 +6019,10 @@ textarea.sc-ai-brief{min-height:64px;resize:vertical;line-height:1.5;}
       <div class="ai-status sc-baslik-durum" id="sc_titleDurum"></div>
     </div>
 
-    <div class="sc-blok sc-blok-duz">
+    <!-- ⛔ Kimlik 20 Kasim 2026'da kondu (YAPILACAKLAR 67): bu blok
+         `drive_script` ozelligi kapaliyken gizleniyor. Dugmeleri tek
+         tek gizlemek yetmezdi -- baslik ve bos bir cubuk kalirdi. -->
+    <div class="sc-blok sc-blok-duz" id="sc_driveBlok">
       <div class="sc-blok-bas"><span lang="en" data-i18n="sc_drive_step">4 · Drive</span></div>
       <div class="sc-bar">
       <button type="button" class="btn btn-sm" id="sc_drive">
@@ -12946,7 +12949,7 @@ function filtreSecenekleri(){
   const bas = [`<option value="">${escapeHtml(t('fk_filter_add'))}</option>`];
   if(secili.indexOf('-') === -1) bas.push(`<option value="-">${escapeHtml(t('fk_filter_none'))}</option>`);
   // Oncelik suzgecleri yalnizca kapi acikken listeleniyor.
-  if(proAcik){
+  if(ozellikAcik('fikir_onceligi')){
     ['yok'].concat(ONCELIKLER).forEach(k=>{
       const deger = 'onc:' + k;
       if(secili.indexOf(deger) === -1){
@@ -13129,7 +13132,7 @@ function fikirKartiHtml(f){
                 title="${escapeHtml(t('fk_project_title'))}">${bagli.length ? '+' : escapeHtml(t('fk_no_project'))}</button>
       </span>
       ${aiRozet('ideas', f.id)}
-      ${proAcik ? `<select class="fk-onc" data-fk-onc="${escapeHtml(f.id)}"
+      ${ozellikAcik('fikir_onceligi') ? `<select class="fk-onc" data-fk-onc="${escapeHtml(f.id)}"
               data-d="${escapeHtml(f.oncelik || '')}"
               title="${escapeHtml(t('fk_onc_label')(oncelikAdi(f.oncelik)))}"
               aria-label="${escapeHtml(t('fk_onc_label')(oncelikAdi(f.oncelik)))}">
@@ -16093,6 +16096,113 @@ function oncelikAdi(k){ return t('fk_onc_' + (k || 'yok')); }
 //      yalnizca gorunmuyor. Tersi, plani dusen birinin yazdigi seyi yok
 //      etmek olurdu.
 let proAcik = false;
+
+// ⛔ PLAN x OZELLIK KAPISI (YAPILACAKLAR 67, 5. asama).
+//    52'de tek bir bayrak vardi (prefs.pro). Burada karar VERIYE
+//    tasiniyor: hangi ozellik hangi planda acik, yonetim panelinden
+//    degistiriliyor (plan_features tablosu, sql/76).
+//
+// ⛔ KODDA GECERLI OZELLIKLERIN TEK LISTESI BU. Yeni bir ucretli
+//    ozellik eklerken buraya bir satir YAZILACAK ve sql/76'ya bir
+//    satir eklenecek. Bekci test ikisinin ayrismadigini olcuyor
+//    (testler/plan-kapisi.test.js) -- bu deponun tekrarlayan hatasi
+//    tam olarak "bir yerde yapip otekinde unutmak".
+//
+// ⚠ DEGERLER "KAPI OKUNAMAZSA NE OLACAK" sorusunun cevabi, yani
+//   BUGUNKU davranis. ⛔ Hepsine "acik" demek YANLIS olurdu: fikir
+//   onceligi bugun yalnizca prefs.pro ile acik, giris yapmamis
+//   kullanicida kapali. Kapi okunamadiginda urun DUNKU halinde
+//   kalmali, ne daha acik ne daha kapali.
+//   ⚠ Bu, "yeni ozellik KAPALI baslar" kararindan AYRI bir sey:
+//     o karar tablodaki SATIRIN varsayilani (sql/76'da
+//     `default false`). Bu ise satiri hic okuyamadigimiz hal.
+//     Ikisini karistirmak, her ag kesintisinde ozelliklerin
+//     kaybolmasi demek olurdu.
+const OZELLIK_VARSAYILAN = {
+  drive_script:   ()=> true,      // bugun herkeste acik
+  cekim_setleri:  ()=> true,      // bugun herkeste acik
+  fikir_onceligi: ()=> proAcik    // bugun yalnizca prefs.pro
+};
+
+// Kullanicinin plani. Abonelik satiri yoksa 'starter'.
+let planAnahtari = 'starter';
+// plan_features'tan okunan harita: { ozellik: true/false }. null =
+// HENUZ OKUNMADI (ya da okunamadi) -- o zaman varsayilanlar gecerli.
+let ozellikKapisi = null;
+
+function ozellikAcik(anahtar){
+  if(ozellikKapisi && Object.prototype.hasOwnProperty.call(ozellikKapisi, anahtar)){
+    return ozellikKapisi[anahtar] === true;
+  }
+  const v = OZELLIK_VARSAYILAN[anahtar];
+  return v ? v() : true;
+}
+
+// ⛔ PLANI DUSEN KULLANICININ VERISI SILINMIYOR. Kullanicinin karari
+//    (20 Kasim 2026): "veri durur, yalnizca gorunmez". Bu fonksiyon
+//    yalnizca GORUNURLUK degistiriyor; hicbir yerde kayit silmiyor,
+//    alan bosaltmiyor. Plan geri yukselince her sey yerinde cikiyor.
+function ozellikKapilariUygula(){
+  // Cekim setleri: sekme ve sayfa.
+  const setSekme = document.getElementById('tabKit');
+  const setSayfa = document.getElementById('kitPage');
+  const setAcik = ozellikAcik('cekim_setleri');
+  if(setSekme) setSekme.hidden = !setAcik;
+  // ⚠ Sayfa acikken kapanirsa kullanici bos ekranda kalmasin.
+  if(!setAcik && setSayfa && !setSayfa.hidden) setPage('calendar');
+
+  // Drive'a script gonderme: script duzenleyicideki blok.
+  const driveBlok = document.getElementById('sc_driveBlok');
+  if(driveBlok) driveBlok.hidden = !ozellikAcik('drive_script');
+
+  // Fikir onceligi: kartlar ve suzgec yeniden ciziliyor.
+  try{ if(typeof renderFikirler === 'function') renderFikirler(); }catch(e){}
+}
+
+// Plani ve kapiyi sunucudan okuyor.
+// ⚠ HATA DURUMUNDA KAPI ACILMIYOR DA KAPANMIYOR DA: `ozellikKapisi`
+//   null kaliyor ve varsayilanlar gecerli oluyor. Bir ag kesintisi
+//   kullanicinin ozelliklerini kaybettirmemeli -- 20 Kasim 2026'da
+//   tam bu aileden dort ariza yasandi (62. madde).
+async function planKapisiSenkron(){
+  if(!sb || !session) return;
+  try{
+    // ⚠ prefs.pro bir PLAN YERINE GECIYOR. 52. maddede kullanicinin
+    //   karari: "kapiyi kur, senin hesabim muaf". Odeme acilana kadar
+    //   kimsenin abonelik satiri yok; bu bayrak sahibin kendi
+    //   hesabini Creator Pro gibi gosteriyor.
+    let plan = proAcik ? 'creator_pro' : 'starter';
+    if(!proAcik){
+      const { data: ab } = await sb.from('subscriptions')
+        .select('plan_key,status').eq('user_id', session.user.id).maybeSingle();
+      // ⚠ 'past_due' PLANI DUSURMUYOR. Karti yenilenmeyen birinin
+      //   ozelliklerini ayni dakika gizlemek, odeme sorununu veri
+      //   kaybi gibi hissettirir. Asil zorlama 29. maddede (odeme
+      //   duvari) tanimlanacak; orada kullaniciya sorulacak.
+      if(ab && ab.plan_key && ['active','lifetime','past_due'].indexOf(ab.status) !== -1){
+        plan = ab.plan_key;
+      }
+    }
+    planAnahtari = plan;
+    const { data, error } = await sb.from('plan_features')
+      .select('feature_key,enabled').eq('plan_key', plan);
+    if(error) throw error;
+    const harita = {};
+    (data || []).forEach(x=>{ harita[x.feature_key] = x.enabled === true; });
+    ozellikKapisi = harita;
+    ozellikKapilariUygula();
+  }catch(err){
+    // ⛔ SESSIZ BIRAKMA AMA KAPATMA DA. Kapi null kaliyor.
+    console.error('[plan] ozellik kapisi okunamadi', err);
+  }
+}
+
+// Cikista bugunku hale donuyor: kapi yok, varsayilanlar gecerli.
+function planKapisiSifirla(){
+  planAnahtari = 'starter';
+  ozellikKapisi = null;
+  ozellikKapilariUygula();
+}
 // Birlesmede BUYUK oncelik kazanir (1+2->1, 2+3->2, 2+2->2;
 // oncelikli + onceliksiz -> oncelikli). Kucuk rakam = buyuk oncelik.
 function oncelikKazanan(a, b){
@@ -18381,6 +18491,10 @@ async function tercihSenkron(){
     ihtiyaclarBuluttan(data && data.prefs && data.prefs.ihtiyaclar);
     setlerBuluttan(data && data.prefs && data.prefs.ihtiyac_setleri);
     gelenAlinanOku(data);
+    // ⚠ SIRA ONEMLI: `gelenAlinanOku` proAcik'i kuruyor ve plan kapisi
+    //   onu okuyor (prefs.pro bir plan yerine geciyor, 52. madde).
+    //   Once cagrilsaydi sahibin kendi hesabi Starter gorunurdu.
+    planKapisiSenkron();
     const uzakDil = data && data.prefs && data.prefs.lang;
     const uzakTs = data && data.updated_at ? Date.parse(data.updated_at) : 0;
     if(uzakDil && LANG[uzakDil] && uzakTs > dilDamgasi()){
@@ -26761,6 +26875,10 @@ function afterSignOut(){
   dirtyIds.clear(); removedIds.clear();
   bulutHatasiUygula(false);
   sinirlariSifirla();
+  // ⚠ Plan kapisi da sifirlaniyor: cikan hesabin plani, giren
+  //   hesabin (ya da hesapsiz kullanimin) ozelliklerini belirlemesin.
+  //   ⛔ VERI SILINMIYOR, yalnizca kapi bugunku haline donuyor.
+  planKapisiSifirla();
   const anonim = readLocal(STORAGE_KEY);
   events = anonim || seedData();
   projAfterSignOut();
