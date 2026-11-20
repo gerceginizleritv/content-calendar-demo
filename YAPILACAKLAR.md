@@ -2657,13 +2657,38 @@ dokunmak ve ikinci seferde birincisini bozmak demek.
     tahmin edilmeyecek.** Üç görünüm mü olacak (kart · liste ·
     tablo), yoksa iki mi?
 
-  ⚠ **Cevap bekleyen sorular** (sırası gelince sorulacak):
-  1. Kaç görünüm: iki mi (kart · liste), üç mü (kart · liste · tablo)?
+  ✅ **ÜÇ SORU CEVAPLANDI (20 Kasım 2026).** Kullanıcının kendi
+  sözleriyle:
+
+  > *"evet çalışacak. birleşince tek bir satır olacak ayrılınca da
+  > ayrı ayrı görünecek tıpkı tabloda olduğu gibi. bir çok projeye
+  > bağlanabilir — bağlı projeler için gerekirse hem tablo hem de
+  > liste görünüm için projeler eklendikten sonra (eğer çoklu ise)
+  > projeleri "+" ya da "-" ile açılır kapanır görünür bir hale
+  > getirebiliriz"*
+
+  Yani:
+  1. **Sürükleyerek sıralama DURACAK** — yeni görünümlerde de
+     çalışacak. ⚠ Üçünün en riskli kararı bu: sürükleme bugün kart
+     ızgarasında kurulu; tablo satırında çalışıp çalışmadığı
+     **ölçülmedi**. Sırası gelince önce ölçülecek; çalışmıyorsa
+     uydurma bir çözüm yazılmayacak, kullanıcıya söylenecek.
+  2. **Birleşmiş fikir TEK SATIR**, parçalara ayrılınca **ayrı ayrı
+     satırlar**. Yani birleşme/ayrılma satır sayısını değiştiriyor;
+     kart görünümündeki "tek kart, içinde parçalar" düzeninin
+     karşılığı bu.
+  3. **Çok projeli fikirde projeler açılır/kapanır olacak**, `+` ve
+     `-` ile. ⚠ **Yalnızca çoklu ise** — tek projeli fikirde açma
+     düğmesi çıkmayacak (kullanıcının şartı: *"eğer çoklu ise"*).
+     ⚠ Hem **tablo** hem **liste** görünümünde geçerli.
+
+  ⚠ **Hâlâ cevap bekleyen sorular** (sırası gelince sorulacak):
+  1. Kaç görünüm olacak? Kullanıcı hep "tablo ve liste" diyor; bu
+     bugünküyle birlikte **üç** görünüm demek (kart · liste · tablo).
+     ⛔ Bu bir OKUMA, karar değil — başlamadan önce doğrulanacak.
   2. Tablo olacaksa **hangi sütunlar**? (fikir metni · proje(ler) ·
      öncelik · teslim tarihi · durum — hangileri?)
-  3. Satır/tablo görünümünde **sürükleyerek sıralama** dursun mu,
-     yoksa orada sütun başlığına tıklayarak mı sıralansın?
-  4. Varsayılan hangisi? ⚠ Mekânlarda kullanıcı "bugünkü hâli
+  3. Varsayılan hangisi? ⚠ Mekânlarda kullanıcı "bugünkü hâli
      gelsin" dedi (18 Kasım 2026); burada da varsayılan **kart**
      olması aynı mantık, ama kararı kullanıcı verir.
 
