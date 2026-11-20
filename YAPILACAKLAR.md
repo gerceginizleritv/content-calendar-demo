@@ -2616,6 +2616,66 @@ dokunmak ve ikinci seferde birincisini bozmak demek.
   3. Yeni bir özellik eklendiğinde varsayılan **açık** mı **kapalı** mı?
      ⚠ "Kapalı" güvenli ama unutulursa özellik hiç görünmez;
      "açık" tersi.
+- ⬜ **68. FİKİRLER SAYFASINA GÖRÜNÜM SEÇİCİSİ (mekânlardaki gibi).**
+  Kullanıcı 20 Kasım 2026'da istedi:
+
+  > *"Bir de fikirleri de mekanlar gibi tablo ve liste görünümü
+  > uygulayabilir miyiz?"*
+
+  ✅ **YAPILABİLİR — desen zaten kurulu ve koddan doğrulandı.**
+  Mekânlar sayfasındaki seçici şu parçalardan oluşuyor; hepsi
+  yeniden kullanılabilir:
+  - `mekanGorunumu` değişkeni + `demo_mk_gorunum` yerel kaydı
+    (takvimdeki `demo_view` ile aynı kalıp)
+  - `mekanGorunumTusu()` — iki ikonlu çift, seçili olan
+    `aria-pressed="true"` taşıyor, biçim ondan besleniyor
+  - `.gorunum-sec` / `.gs-dug` biçimleri, `IKON_IZGARA` · `IKON_SATIR`
+  - `renderMekanlar()` kapsayıcıya `.mk-liste` sınıfını takıp
+    çıkarıyor; kart HTML'i **değişmiyor**, yalnızca CSS değişiyor
+
+  Fikirler bugün yalnızca kart ızgarası çiziyor (`renderFikirler`,
+  `.fk-card`). Aynı kalıp `fikirGorunumu` + `demo_fk_gorunum` olarak
+  kurulabilir.
+
+  ⛔ **AMA FİKİRLER MEKÂNLARDAN DAHA ZOR — ÜÇ DAVRANIŞI VAR:**
+  1. **Sürükleyerek sıralama** (`fikirSuruklemeKur`). Kartlar
+     sürüklenerek diziliyor ve sıra kesirli `sort` ile saklanıyor.
+     Satır listesinde sürükleme çalışacak mı, yoksa o görünümde
+     kapanacak mı? ⚠ Mekânlarda böyle bir davranış **yok**, yani
+     bu kalıbın hiç sınanmadığı yer burası.
+  2. **Birleştirme ve parçalara ayırma** (`fk-part`, `fikirBirlestir`,
+     `fikirParcaCikar`). Bir kart birden çok parça taşıyabiliyor.
+     Dar bir satırda ya da tablo hücresinde bu nasıl görünecek?
+  3. **Çok projeye bağlanma** (`fk-proj-chip`). Bir fikrin birkaç
+     projesi olabiliyor; tabloda tek sütuna nasıl sığacak?
+
+  ⚠ **"TABLO" ve "LİSTE" AYNI ŞEY Mİ, İKİ AYRI GÖRÜNÜM MÜ?**
+  Mekânlarda **iki** görünüm var: `kart` (ızgara) ve `liste`
+  (fotoğraflı satır). Takvimde ise ayrı bir **tablo** görünümü var
+  (`app.html`, "Tablo gorunumu" bölümü) ve o gerçek bir tablo.
+  ⛔ Kullanıcının cümlesi ikisini birden sayıyor; **sorulacak,
+    tahmin edilmeyecek.** Üç görünüm mü olacak (kart · liste ·
+    tablo), yoksa iki mi?
+
+  ⚠ **Cevap bekleyen sorular** (sırası gelince sorulacak):
+  1. Kaç görünüm: iki mi (kart · liste), üç mü (kart · liste · tablo)?
+  2. Tablo olacaksa **hangi sütunlar**? (fikir metni · proje(ler) ·
+     öncelik · teslim tarihi · durum — hangileri?)
+  3. Satır/tablo görünümünde **sürükleyerek sıralama** dursun mu,
+     yoksa orada sütun başlığına tıklayarak mı sıralansın?
+  4. Varsayılan hangisi? ⚠ Mekânlarda kullanıcı "bugünkü hâli
+     gelsin" dedi (18 Kasım 2026); burada da varsayılan **kart**
+     olması aynı mantık, ama kararı kullanıcı verir.
+
+  ⚠ **Bölüm 7:** görünüm adları (ızgara/liste/tablo) ve varsa sütun
+  başlıkları **her dilin sözlüğüne** girer. Mekânlarda karşılıkları
+  `mk_view_cards` ve `mk_view_list`.
+
+  ⚠ **Bekçi test listeyi elle yazmayacak:** görünüm düğmelerini
+  sayfadan bulsun, her görünümde fikirlerin **hepsinin** göründüğünü
+  ve hiçbirinin kaybolmadığını ölçsün. ⛔ En büyük risk bir
+  görünümde kaydın görünmemesi — kullanıcı "fikrim silindi" der.
+
 - 🟡 **66. SIRALAMA BİTTİ (19 Kasım 2026), SON PARÇASI AÇIK.**
   **AYARLAR SAYFASININ SIRALAMASI — benzer işler bir araya.**
   ✅ Gruplama kullanıcının onayıyla uygulandı ve canlıda.
