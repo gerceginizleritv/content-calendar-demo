@@ -1257,6 +1257,29 @@ body.suruklenirken *{cursor:grabbing !important;}
 .proj-table-wrap{overflow-x:auto;overscroll-behavior-x:contain;
   border:1px solid var(--line);border-radius:2px;
   background:var(--surface);}
+/* ⛔ 20 KASIM 2026 — UST BASLIK SABITLENMIYORDU (YAPILACAKLAR 70).
+   Kullanici 72 projeyle asagi inince SCRIPT/CEKIM/... basliklarinin
+   kayboldugunu ve hangi sutuna baktiginin anlasilmadigini soyledi.
+
+   ⚠ `position:sticky` ZATEN YAZILIYDI (asagida, thead th). Calismama
+     sebebi bu kutuydu: `overflow-x:auto` verilince tarayici
+     `overflow-y`yi de `auto` yapiyor (sartname: bir eksen `visible`
+     degilse oteki de olamaz). Boylece bu kutu bir KAYDIRMA KUTUSU
+     oluyor ve baslik SAYFAYA degil ONA yapisiyor. Kutunun kendisi
+     dikey kaymadigi icin (yuksekligi 2357 piksel olculdu) baslik
+     sayfayla birlikte yukari kayip gidiyordu.
+
+   ⚠ ESIK OLCULDU, SECILMEDI: tablo 1180 pikselde 10 piksel tasiyor,
+     1220'de hic tasmiyor. Bu genislikten sonra yatay kaydirmaya
+     gerek olmadigi icin kutunun kaydirma kutusu olmasina da gerek
+     yok; `overflow:visible` ile baslik sayfaya yapisiyor.
+     ⛔ Dar ekranda DOKUNULMUYOR: orada yatay kaydirma gerekiyor ve
+       baslik bugunku gibi kaliyor.
+   ⚠ Kirilganligi bekci test tutuyor: tablo bir gun genislerse
+     1220'de tasma olur ve `projeler-sabit-baslik.test.js` duser. */
+@media(min-width:1220px){
+  .proj-table-wrap{overflow:visible;}
+}
 .proj-table{border-collapse:collapse;table-layout:fixed;width:100%;
   min-width:calc(var(--pname-w,268px) + 7 * 92px);font-size:13px;}
 .proj-table th,.proj-table td{border-bottom:1px solid var(--line-soft);

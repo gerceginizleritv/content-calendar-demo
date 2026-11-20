@@ -2669,6 +2669,29 @@ dokunmak ve ikinci seferde birincisini bozmak demek.
   hâlâ görünür olduğunu ölçsün — ve telefon genişliğinde kart
   düzeninin bozulmadığını. Sütun listesini elle yazmasın.
 
+- ⬜ **72. AYNI STICKY ARIZASI İKİ TABLODA DAHA OLABİLİR.**
+  70. madde yapılırken yol üstünde çıktı (20 Kasım 2026).
+
+  `position:sticky;top:0` üç tabloda birden yazılı:
+  `.proj-table` (düzeltildi) · `.cal-table` · `.tpl-table`.
+
+  ⚠ **`.cal-table` aynı tuzakta görünüyor:** sarmalayıcısı
+  `.cal-table-wrap{overflow-x:auto}` — yani o da bir kaydırma kutusu
+  ve başlık sayfaya değil ona yapışıyor olmalı.
+  ⛔ **AMA 70'TEKİ ÇÖZÜM ORAYA UYMAZ.** Takvim tablosu
+  `width:max-content` ile kurulu, yani yatay kaydırması **bilerek**
+  var; `overflow:visible` içeriği dışarı taşırır. Orada başka bir yol
+  gerekiyor (örneğin kutuya yükseklik verip içinde kaydırmak).
+
+  ⚠ **`.tpl-table` için CSS var ama `class="tpl-table"` kullanan bir
+  HTML bulunamadı** — ölü kural mı, dinamik mi çiziliyor,
+  **doğrulanmadı.** Başlarken ilk iş bu.
+
+  ⛔ **ÖLÇÜLMEDİ, VARSAYILDI.** Yukarıdakiler koddaki kalıba bakarak
+  yazıldı; ikisi de tarayıcıda **denenmedi**. Sırası gelince önce
+  70'teki gibi ölçülecek (kaydır, başlık görünür mü), sonra
+  yazılacak.
+
 - ⬜ **71. TÜM CİHAZ TESTİ — GELİŞTİRMELER BİTİNCE.**
   Kullanıcı 20 Kasım 2026'da söyledi:
 
