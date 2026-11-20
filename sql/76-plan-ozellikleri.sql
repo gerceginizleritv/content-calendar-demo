@@ -7,6 +7,9 @@ create table if not exists public.plan_features (
 alter table public.plan_features drop constraint if exists plan_features_feature_key_check;
 alter table public.plan_features add constraint plan_features_feature_key_check
   check (feature_key in ('drive_script','cekim_setleri','fikir_onceligi'));
+alter table public.plan_features enable row level security;
+drop policy if exists plan_features_oku on public.plan_features;
+create policy plan_features_oku on public.plan_features for select using (true);
 insert into public.plan_features (plan_key, feature_key, enabled) values
   ('starter',     'drive_script',    true),
   ('creator_pro', 'drive_script',    true),
@@ -109,6 +112,21 @@ select 'plan_limits', count(*) from public.plan_limits;
 --   Sütunlar `plans.visible = true` olanlardan ÜRETİLECEK, elle
 --   yazılmayacak; Studio satışa açıldığı gün sütun kendiliğinden
 --   gelsin ve satırları hazır olsun diye burada tohumlanıyorlar.
+--
+-- ⛔ RLS: KARDEŞ TABLOLARIN AYNISI — HERKES OKUR, KİMSE YAZAMAZ.
+--   `sql/69` `plans`, `plan_prices` ve `plan_limits` için tam olarak
+--   bunu yapıyor: RLS açık, `for select using (true)` politikası var,
+--   YAZMA politikası YOK. Politikası olmayan işlem RLS'te varsayılan
+--   olarak reddedilir; yazan tek şey sunucu (Edge Function, servis
+--   anahtarı).
+--   ⚠ 20 KASIM 2026 — BU SATIRLAR DOSYAYA SONRADAN EKLENDİ.
+--     İlk hâlinde yoktu; kullanıcı betiği çalıştırınca Supabase
+--     "Enable RLS" uyarısı verdi ve sordu. ⛔ Panelden tıklamak
+--     YANLIŞ olurdu: düğme RLS'i açar ama OKUMA politikasını açmaz,
+--     o zaman tablo tarayıcıdan hiç okunamaz ve 5. aşamada uygulama
+--     matrisi göremezdi — sessiz bir arıza. Ayarın depoda yazılı
+--     olması da ayrı bir gerekçe: panelde tıklanan ayar, yeni bir
+--     Supabase projesinde kendiliğinden geri gelmez.
 --
 -- ⚠ HİÇBİR ŞEYİ SİLMİYOR. `if not exists` ve `on conflict do nothing`
 --   var; tekrar çalıştırılabilir, var olan satırları ezmez.
