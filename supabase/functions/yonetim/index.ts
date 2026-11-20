@@ -272,6 +272,89 @@ async function vergiKaydet(actor: string, g: any) {
   return cevap(200, { ok: true });
 }
 
+// ---- PLAN x OZELLIK MATRISI (YAPILACAKLAR 67) ------------------------
+//
+// ⛔ SUTUNLAR BURADA SECILMIYOR. `planlar` oldugu gibi donuyor,
+// hangisinin sutun olacagina SAYFA karar veriyor (`visible === true`).
+// Sebep: kullanicinin karari "yalnizca satistaki planlar" ve o karar
+// `plans.visible` sutununda zaten yaziyor. Listeyi burada bir daha
+// yazsaydim iki kopya olurdu ve biri degistiginde oteki sessizce
+// eskirdi -- bu deponun tekrarlayan hatasi.
+async function matris() {
+  return {
+    planlar:   await db('/plans?select=key,visible,badge,sort&order=sort'),
+    ozellikler: await db('/plan_features?select=plan_key,feature_key,enabled' +
+                         '&order=feature_key,plan_key'),
+    limitler:  await db('/plan_limits?select=plan_key,limit_key,limit_value' +
+                        '&order=limit_key,plan_key'),
+  };
+}
+
+// ⛔ YALNIZCA VAR OLAN SATIR DEGISTIRILIR, YENISI ACILMAZ.
+// Gecerli ozellik adlarinin listesi burada YAZILI DEGIL; "satir varsa
+// degistir, yoksa reddet" deniyor. Boylece liste tek yerde kaliyor
+// (sql/76'daki check kisiti ve tohum satirlari). Yeni bir ozellik SQL
+// ile aciliyor, panelden degil -- kod ile matris ayni anda degissin.
+async function ozellikDegistir(actor: string, g: any) {
+  const { plan_key, feature_key, enabled } = g ?? {};
+  if (typeof plan_key !== 'string' || typeof feature_key !== 'string') {
+    return hata(400, 'eksik_alan');
+  }
+  // ⛔ true/false DISINDA hicbir sey kabul edilmiyor. "0", "", undefined
+  // gibi degerler JavaScript'te sessizce false'a donusur; burada
+  // reddediliyorlar ki panelde bir hata varsa GORUNUR olsun.
+  if (enabled !== true && enabled !== false) return hata(400, 'gecersiz_deger');
+
+  const mevcut = await db(
+    `/plan_features?plan_key=eq.${encodeURIComponent(plan_key)}` +
+    `&feature_key=eq.${encodeURIComponent(feature_key)}&select=enabled`);
+  if (!Array.isArray(mevcut) || !mevcut.length) return hata(400, 'satir_yok');
+  const eski = mevcut[0].enabled;
+  if (eski === enabled) return cevap(200, { ok: true, degisiklik: false });
+
+  await db(`/plan_features?plan_key=eq.${encodeURIComponent(plan_key)}` +
+           `&feature_key=eq.${encodeURIComponent(feature_key)}`, {
+    method: 'PATCH',
+    headers: { Prefer: 'return=minimal' },
+    body: JSON.stringify({ enabled }),
+  });
+  await denetimeYaz(actor, 'ozellik_degistir', `${plan_key}/${feature_key}`,
+                    { enabled: eski }, { enabled });
+  return cevap(200, { ok: true, degisiklik: true });
+}
+
+// ⛔ SIFIR ILE BOS AYNI SEY DEGIL. `null` = SINIRSIZ, `0` = HIC.
+// sql/69 bu ikisinin karistirilmasinin ucretli kullaniciyi hicbir sey
+// yapamaz hale getirdigini yaziyor. Bu yuzden alan ya tam sayi ya da
+// ACIKCA null olmak zorunda: bos metin, undefined ve NaN reddediliyor.
+// Panelde bos birakilan kutu sessizce 0'a donusmesin diye.
+async function limitDegistir(actor: string, g: any) {
+  const { plan_key, limit_key } = g ?? {};
+  const deger = g?.limit_value;
+  if (typeof plan_key !== 'string' || typeof limit_key !== 'string') {
+    return hata(400, 'eksik_alan');
+  }
+  if (deger !== null && !Number.isInteger(deger)) return hata(400, 'gecersiz_deger');
+  if (deger !== null && deger < 0) return hata(400, 'eksi_deger');
+
+  const mevcut = await db(
+    `/plan_limits?plan_key=eq.${encodeURIComponent(plan_key)}` +
+    `&limit_key=eq.${encodeURIComponent(limit_key)}&select=limit_value`);
+  if (!Array.isArray(mevcut) || !mevcut.length) return hata(400, 'satir_yok');
+  const eski = mevcut[0].limit_value;
+  if (eski === deger) return cevap(200, { ok: true, degisiklik: false });
+
+  await db(`/plan_limits?plan_key=eq.${encodeURIComponent(plan_key)}` +
+           `&limit_key=eq.${encodeURIComponent(limit_key)}`, {
+    method: 'PATCH',
+    headers: { Prefer: 'return=minimal' },
+    body: JSON.stringify({ limit_value: deger }),
+  });
+  await denetimeYaz(actor, 'limit_degistir', `${plan_key}/${limit_key}`,
+                    { limit_value: eski }, { limit_value: deger });
+  return cevap(200, { ok: true, degisiklik: true });
+}
+
 async function denetim() {
   return await db('/admin_audit?select=id,actor,action,target,old_value,new_value,created_at' +
                   '&order=created_at.desc&limit=200');
@@ -312,6 +395,7 @@ Deno.serve(async (istek) => {
       case 'odemeler':  return cevap(200, await odemeler());
       case 'fiyatlar':  return cevap(200, await fiyatlar());
       case 'denetim':   return cevap(200, await denetim());
+      case 'matris':    return cevap(200, await matris());
 
       // --- Değiştiren: onay şart ---
       case 'fiyat-degistir':
@@ -320,6 +404,12 @@ Deno.serve(async (istek) => {
       case 'vergi-kaydet':
         if (govde?.onay !== true) return hata(400, 'onay_gerekli');
         return await vergiKaydet(actor, govde);
+      case 'ozellik-degistir':
+        if (govde?.onay !== true) return hata(400, 'onay_gerekli');
+        return await ozellikDegistir(actor, govde);
+      case 'limit-degistir':
+        if (govde?.onay !== true) return hata(400, 'onay_gerekli');
+        return await limitDegistir(actor, govde);
 
       default:
         return hata(400, 'bilinmeyen_islem');

@@ -24,8 +24,39 @@ scriptler okunmuyor — yalnızca sayılıyor.
 | `odemeler` | son 500 ödeme | hayır |
 | `fiyatlar` | planlar, fiyatlar, limitler, vergi | hayır |
 | `denetim` | son 200 denetim kaydı | hayır |
+| `matris` | planlar, özellik matrisi, sayı sınırları | hayır |
 | `fiyat-degistir` | fiyat yazar | ⛔ `onay: true` |
 | `vergi-kaydet` | vergi oranı yazar | ⛔ `onay: true` |
+| `ozellik-degistir` | bir planın bir özelliğini açar/kapatır | ⛔ `onay: true` |
+| `limit-degistir` | bir planın bir sayı sınırını yazar | ⛔ `onay: true` |
+
+### Matris uçları (YAPILACAKLAR 67)
+
+⛔ **Geçerli özellik adlarının listesi burada YAZILI DEĞİL.**
+`ozellik-degistir` "satır varsa değiştir, yoksa reddet" diyor
+(`satir_yok`). Böylece liste tek yerde kalıyor: `sql/76`'daki check
+kısıtı ve tohum satırları. Yeni bir özellik **SQL ile** açılıyor,
+panelden değil — kod ile matris aynı anda değişsin diye.
+
+⛔ **Sütunlar sunucuda seçilmiyor.** `matris` bütün planları
+döndürüyor; hangisinin sütun olacağına **sayfa** karar veriyor
+(`visible === true`). Kullanıcının kararı "yalnızca satıştaki
+planlar" ve o karar `plans.visible` sütununda zaten yazıyor; burada
+bir daha yazmak iki kopya demek olurdu.
+
+⛔ **`null` = SINIRSIZ, `0` = HİÇ.** `limit-degistir` alanın ya tam
+sayı ya da **açıkça `null`** olmasını şart koşuyor; boş metin,
+`undefined` ve `NaN` reddediliyor (`gecersiz_deger`). Panelde boş
+bırakılan bir kutu sessizce `0`'a dönüşmesin diye — `sql/69` bu
+ikisinin karıştırılmasının ücretli kullanıcıyı hiçbir şey yapamaz
+hâle getirdiğini yazıyor.
+
+⚠ `enabled` yalnızca `true` ya da `false` kabul ediyor. `"0"`, `""`,
+`undefined` JavaScript'te sessizce `false`'a dönüşür; burada
+reddediliyorlar ki paneldeki bir hata **görünür** olsun.
+
+⚠ Değer zaten aynıysa yazma yapılmıyor ve denetim kaydı da
+düşmüyor; cevap `{ ok: true, degisiklik: false }`.
 
 ### Sunucu denetimleri (`fiyat-degistir`)
 
