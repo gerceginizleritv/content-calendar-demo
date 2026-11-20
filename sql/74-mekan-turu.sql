@@ -1,3 +1,29 @@
+alter table public.places add column if not exists tur text;
+alter table public.places drop constraint if exists places_tur_check;
+alter table public.places add constraint places_tur_check check (tur is null or tur in ('dis','mekan','studyo','diger'));
+select column_name, data_type from information_schema.columns where table_schema='public' and table_name='places' and column_name='tur';
+
+-- ═══════════════════════════════════════════════════════════════════
+-- YUKARIDAKİ DÖRT SATIR ÇALIŞTIRILACAK OLAN. Aşağısı yalnızca açıklama.
+-- ═══════════════════════════════════════════════════════════════════
+--
+-- ⛔ 19 KASIM 2026 — DOSYA BU DÜZENE SOKULDU, SEBEBİ ŞU:
+--    İlk hâlinde açıklamalar en üstteydi ve kullanıcı dosyayı
+--    yapıştırınca Supabase şu hatayı verdi:
+--
+--      ERROR: 42601: syntax error at or near "74"
+--      LINE 1: 74 — MEKÂN TÜRÜ
+--
+--    Dosyanın ilk satırı `-- 74 — MEKÂN TÜRÜ` idi; kopyalama sırasında
+--    baştaki `-- ` (yorum işareti) düştü ve Postgres o satırı komut
+--    sandı. ⚠ Dosyada bir hata yoktu, KOPYALAMA kırılgandı.
+--
+--    Ders (CLAUDE.md Bölüm 1'in yazılı kuralı): çalıştırılacak parça
+--    AYRI ve yorumsuz bir blok olarak, en üstte dursun. Böyle bir
+--    blokta ilk satır zaten bir komut; baştan bir şey düşerse hata
+--    açık olur, sessizce yanlış çalışmaz.
+--    ⚠ Yeni SQL dosyaları da bu düzeni izlesin.
+--
 -- 74 — MEKÂN TÜRÜ (YAPILACAKLAR 51)
 --
 -- NEDEN
@@ -7,36 +33,27 @@
 --   Mekân kaydında tür alanı yoktu, bu yüzden "sadece stüdyo adresleri
 --   gelsin" demek mümkün değildi. Bu betik o alanı açıyor.
 --
--- ⚠ BU DOSYA HİÇBİR ŞEYİ GERİ ALMIYOR. Yalnızca bir sütun ekliyor;
---   var olan satırlara dokunmuyor, veri silmiyor.
---   Tekrar çalıştırılabilir: `if not exists` var.
+-- NE YAPIYOR
+--   1. `places` tablosuna `tur` adında bir metin sütunu ekliyor.
+--   2. Geçerli değerleri kısıtlıyor: dis · mekan · studyo · diger
+--      (ve boş). ⚠ Kısıt CHECK ile konuyor, enum ile değil: yeni bir
+--      tür eklemek enum'da ayrı bir geçiş betiği gerektirir, CHECK'te
+--      tek satır.
+--   3. Son satır KONTROL: sütunun geldiğini gösteriyor.
+--
+-- ⚠ HİÇBİR ŞEYİ GERİ ALMIYOR. Yalnızca bir sütun ekliyor; var olan
+--   satırlara dokunmuyor, veri silmiyor. Tekrar çalıştırılabilir:
+--   `if not exists` ve `drop constraint if exists` var.
 --
 -- ⚠ BETİK ÇALIŞMADAN ÖNCE DE UYGULAMA ÇALIŞIR. Sütun yoksa kaydetme
---   isteği `tur` alanını düşürüyor (`mekanTurSutunu` bayrağı,
---   sql/27 ve sql/33'teki kalıbın aynısı) — tür yalnızca tarayıcıda
---   kalır ve betik çalıştığı an ilk kayıtta sunucuya gider.
+--   isteği `tur` alanını düşürüyor (`mekanTurSutunu` bayrağı, sql/27
+--   ve sql/33'teki kalıbın aynısı) — tür yalnızca tarayıcıda kalır ve
+--   betik çalıştığı an ilk kayıtta sunucuya gider.
 --
 -- ⚠ TÜRÜ BOŞ OLAN MEKÂNLAR HER PROJEDE GÖRÜNÜR. Kullanıcının kararı
---   (19 Kasım 2026): bugünkü mekânların hiçbiri kaybolmasın.
---   Bu yüzden sütuna varsayılan değer YAZILMIYOR; boş kalması anlamlı.
-
-alter table public.places
-  add column if not exists tur text;
-
--- Geçerli değerler: dis · mekan · studyo · diger  (ve boş)
--- ⚠ Kısıt CHECK ile konuyor, enum ile değil: yeni bir tür eklemek
---   enum'da ayrı bir geçiş betiği gerektirir, CHECK'te tek satır.
-alter table public.places
-  drop constraint if exists places_tur_check;
-
-alter table public.places
-  add constraint places_tur_check
-  check (tur is null or tur in ('dis', 'mekan', 'studyo', 'diger'));
-
--- Kontrol: sütun geldi mi?
---   Aşağıdaki satır 1 satır döndürmeli, `tur` ve `text` yazmalı.
-select column_name, data_type
-  from information_schema.columns
- where table_schema = 'public'
-   and table_name   = 'places'
-   and column_name  = 'tur';
+--   (19 Kasım 2026): bugünkü mekânların hiçbiri kaybolmasın. Bu yüzden
+--   sütuna varsayılan değer YAZILMIYOR; boş kalması anlamlı.
+--
+-- BEKLENEN SONUÇ
+--   Son satır tek satırlık bir tablo döndürür: column_name = tur,
+--   data_type = text.
