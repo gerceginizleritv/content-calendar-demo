@@ -311,24 +311,7 @@ a{color:inherit;}
     <p class="tepe-alt" data-m="alt">For running the ten posts that come out of one shoot from a single place. You can start without an account.</p>
 
     <div class="secici">
-      <div class="grup" role="group" id="paraSecici">
-        <!-- ⚠ YER TUTUCU. Fiyat verisi gelene kadar gorunen hal.
-             ⛔ 18 Kasim 2026'da bir sure HIC dugme yoktu ve bu bir
-             GERILEME idi: Supabase yavassa ya da erisilemezse
-             kullanici para birimi secicisini HIC goremiyordu.
-             `fiyat-baglantisi` testi yakaladi.
-             Veri gelince `paraSeciciCiz()` burayi BASTAN yaziyor. -->
-        <button type="button" data-para="TRY" aria-pressed="false">TRY</button>
-        <button type="button" data-para="USD" aria-pressed="true">USD</button>
-        <!-- ⛔ 18 KASIM 2026 — VERI GELINCE LISTE ELLE YAZILMIYOR.
-             Onceden TRY ve USD burada sabit duruyordu; EUR eklenince
-             ucuncusu da elle yazilmak zorunda kalirdi ve yarin baska
-             bir para birimi gelince yine. Artik `paraSeciciCiz()`
-             bunlari VERIDEN uretiyor: panelde `active` olan her para
-             birimi kendiliginden cikiyor, kapatilan kayboluyor.
-             Kullanici 18 Kasim 2026: "admin panelinde hangi fiyati
-             kullanabilecegimizi ... ben yazabileyim." -->
-      </div>
+      <div class="grup" role="group" id="paraSecici"><button type="button" data-para="TRY" aria-pressed="false">TRY</button><button type="button" data-para="USD" aria-pressed="true">USD</button><button type="button" data-para="EUR" aria-pressed="false">EUR</button></div>
       <div class="donem-sarmal">
         <div class="grup" role="group" id="donemSecici">
           <button type="button" data-donem="monthly" aria-pressed="true" data-m="aylik">Monthly</button>
@@ -346,15 +329,15 @@ a{color:inherit;}
              ⛔ Geri eklenmeyecek -- kullanici soylemedikce. -->
       </div>
     </div>
-    <p class="indirim" id="indirim"></p>
+    <p class="indirim" id="indirim">Paying yearly is <span class="ind-rozet ind-cumle">9%</span> cheaper.</p>
   </div>
 </section>
 <div class="klaket" aria-hidden="true"></div>
 
 <section class="bolum">
   <div class="sar">
-    <div id="durum" class="durum">The page could not load. Check your connection and reload.</div>
-    <div class="kartlar" id="kartlar"></div>
+    <div id="durum" class="durum"></div>
+    <div class="kartlar" id="kartlar"><div class="kart"><h2>Starter</h2><p class="tanim">To start trying it out.</p><p class="fiyat">$0</p><p class="fiyat-alt"></p><ul><li>Works in the browser, no account</li><li>Calendar and the "one shoot, many posts" view</li><li>Ideas, scripts, places</li><li>Shot checklist and ready-made kits</li></ul><a class="btn" href="/app.html">Start free</a></div><div class="kart onerilen"><span class="rozet">Recommended</span><h2>Creator Pro</h2><p class="tanim">For a creator working alone.</p><p class="fiyat">$9<small>/mo</small></p><p class="fiyat-alt"> <span class="ind-rozet ind-kart" aria-hidden="true" data-yer-tutucu="">9% off</span></p><ul><li>Everything in Starter</li><li>Cloud: plan at the desk, open it on your phone on location</li><li>Unlimited projects, scripts and ideas</li><li>Unlimited kit list</li><li>Permission and watch-out notes tied to a place</li><li>Notifications on your phone, even when Shootboard is closed</li></ul><a class="btn btn-ana" href="/app.html">Start</a></div></div>
   </div>
 </section>
 
@@ -374,7 +357,7 @@ a{color:inherit;}
 
 
 
-<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.45.4/dist/umd/supabase.js"></script>
+<script src="/vendor/supabase.js"></script>
 <script>
 // Bu anahtar app.html'dekiyle ayni: "publishable" (anon) anahtar,
 // istemci kodunda durmak uzere tasarlanmis. Guvenligi saglayan sey
