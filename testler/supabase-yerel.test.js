@@ -94,8 +94,8 @@ function htmlBul(dizin, toplam){
   });
 
   // ── 2. DOSYA DEPODA GERÇEKTEN VAR ───────────────────────────────
-  dene('★ vendor/supabase.js depoda duruyor ve boş değil', ()=>{
-    const p = yol.join(KOK, 'vendor', 'supabase.js');
+  dene('★ vendor/supabase-js.js depoda duruyor ve boş değil', ()=>{
+    const p = yol.join(KOK, 'vendor', 'supabase-js.js');
     assert.ok(fs.existsSync(p), 'dosya yok');
     assert.ok(fs.statSync(p).size > 50000, 'boyut: ' + fs.statSync(p).size);
   });

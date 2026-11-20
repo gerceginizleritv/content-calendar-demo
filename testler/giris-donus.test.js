@@ -46,6 +46,19 @@ const { chromium } = require('./araclar');
         signInWithOtp(){ return Promise.resolve({}); },
       }};}};
     });
+    // ⛔ 20 KASIM 2026 — BU TEST YANLIS SEBEPLE YESILDI.
+    //   Taklit `addInitScript` ile kuruluyor ama kutuphane DOSYASI
+    //   engellenmiyordu. Eskiden dosya cdn.jsdelivr.net'ten geliyordu
+    //   ve bu olcum ortaminda o adres kapaliydi: dosya hic gelmiyor,
+    //   taklit ayakta kaliyordu. Yani test, internetin OLMAMASINA
+    //   dayaniyordu -- internetli bir makinede o zaman da duserdi.
+    //   62. maddede kutuphane depoya alinip gercekten yuklenmeye
+    //   baslayinca taklidin ustune yazdi ve ariza gorunur oldu.
+    //   ⚠ IDDIA DEGISMEDI: "oturum gec gelse bile app.html'e gecilir".
+    //     Yalnizca taklit, oteki 115 testteki kalibin aynisiyla
+    //     korunuyor.
+    await p.route('**/supabase-js**', r=> r.fulfill({ status:200,
+      contentType:'application/javascript', body:'' }));
     await p.goto('http://127.0.0.1:8098/index.html', { waitUntil:'domcontentloaded' });
     await p.waitForTimeout(2500);
     // ⚠ HASH ONCE ATILIYOR. 16 Kasim 2026'da uygulamaya adres yonetimi
@@ -71,6 +84,11 @@ const { chromium } = require('./araclar');
         signInWithOtp(){ return Promise.resolve({}); },
       }};}};
     });
+    // ⚠ Kutuphane dosyasi engelleniyor: yoksa gercek supabase-js
+    //   yuklenip yukaridaki taklidin ustune yazar (yukarida
+    //   birinci blokta ayrintisi yazili).
+    await p.route('**/supabase-js**', r=> r.fulfill({ status:200,
+      contentType:'application/javascript', body:'' }));
     await p.goto('http://127.0.0.1:8098/index.html', { waitUntil:'domcontentloaded' });
     await p.waitForTimeout(1500);
     // ⚠ HASH ONCE ATILIYOR. 16 Kasim 2026'da uygulamaya adres yonetimi
@@ -94,6 +112,11 @@ const { chromium } = require('./araclar');
         signInWithOtp(){ return Promise.resolve({}); },
       }};}};
     });
+    // ⚠ Kutuphane dosyasi engelleniyor: yoksa gercek supabase-js
+    //   yuklenip yukaridaki taklidin ustune yazar (yukarida
+    //   birinci blokta ayrintisi yazili).
+    await p.route('**/supabase-js**', r=> r.fulfill({ status:200,
+      contentType:'application/javascript', body:'' }));
     await p.goto('http://127.0.0.1:8098/index.html', { waitUntil:'domcontentloaded' });
     await p.waitForTimeout(1200);
     const tur = await p.evaluate(()=>typeof izleyipGit);

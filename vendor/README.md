@@ -29,7 +29,7 @@ olsun bu arıza *sınıfını* tamamen kaldırıyor.
 
 | Dosya | Ne |
 |---|---|
-| `supabase.js` | supabase-js **2.45.4** UMD yapısı |
+| `supabase-js.js` | supabase-js **2.45.4** UMD yapısı |
 | `591.supabase.js` | Aynı sürümün webpack parçası |
 
 ⚠ `591.supabase.js` tarayıcıda **hiç çağrılmıyor**: içeriği yalnızca
@@ -45,6 +45,14 @@ npm kayıt defterinden, jsdelivr'ın da aldığı yerden:
 
 Paketin içinden `package/dist/umd/` klasörü alındı. ⛔ Dosya **elle
 düzenlenmedi**; sürüm, CDN'den çekilenle birebir aynı.
+
+⛔ **ADI NEDEN `supabase-js.js`** (paketteki adı `supabase.js`):
+testler kütüphaneyi `**/supabase-js**` kalıbıyla yakalayıp taklit
+ediyor — **115 test dosyasında 128 yerde**. İlk denemede dosyaya
+`supabase.js` adı verildi ve kalıp tutmadı: taklit devreye girmedi,
+gerçek kütüphane yüklendi ve tam koşuda **24 test düştü**.
+⚠ Testler değiştirilmedi; dosyaya paketin kendi adı (`supabase-js`)
+  verildi. Yeni bir sürüm koyarken **bu adı koru**.
 
 ## Sürüm yükseltmek gerekirse
 
