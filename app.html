@@ -983,18 +983,18 @@ a.lockup:focus-visible{outline:2px solid var(--accent);outline-offset:3px;border
    YOKTU. */
 .tpl-wrap{overflow-x:auto;overscroll-behavior-x:contain;
   border:1px solid var(--line);border-radius:2px;background:var(--surface);}
-.tpl-table{border-collapse:collapse;width:max-content;min-width:100%;font-size:12.5px;}
-.tpl-table th,.tpl-table td{border-bottom:1px solid var(--line-soft);
-  border-right:1px solid var(--line-soft);padding:9px 9px;vertical-align:top;text-align:left;}
-.tpl-table th:last-child,.tpl-table td:last-child{border-right:0;}
-.tpl-table thead th{position:sticky;top:0;z-index:2;background:var(--surface-2);
-  font-size:11px;text-transform:uppercase;letter-spacing:.07em;color:var(--text-dim);
-  font-weight:600;white-space:nowrap;}
-.tpl-phead{display:inline-flex;align-items:center;gap:6px;}
-.tpl-row-head{position:sticky;left:0;z-index:3;background:var(--surface-2);
-  width:150px;min-width:150px;border-right:1px solid var(--line);font-weight:600;
-  display:table-cell;}
-.tpl-table thead th.tpl-row-head{z-index:4;}
+/* ⛔ 21 KASIM 2026 (YAPILACAKLAR 72) — SABLON TABLOSUNUN CSS'I
+   SILINDI. `.tpl-table`, `.tpl-phead` ve `.tpl-row-head` hicbir
+   HTML'de kullanilmiyordu (sayildi: `class="tpl-table"` SIFIR kez
+   geciyor); yalnizca `testler/eski/index.html` adli eski surumde
+   vardi. Kullanicinin karari (21 Kasim 2026): silinsin.
+   ⚠ Bu kurallardan biri `position:sticky;top:0` tasiyordu ve 72.
+     maddenin "ayni ariza iki tabloda daha olabilir" supheslerinden
+     biriydi. Olculdu: tablo YOK, yani ariza da yok.
+   ⚠ AYNI AILEDEN KALANLAR (hala olu, ayri bir temizlige birakildi):
+     `.tpl-wrap`, `.tpl-text`, `.tpl-bos`, `.tpl-cell`, `.tpl-prev`,
+     `.tpl-prev-row`. ⛔ `.tpl-h`, `.tpl-step`, `.tpl-card`,
+     `.tpl-draft*` KULLANILIYOR, onlara dokunulmadi. */
 .tpl-text{width:100%;min-width:150px;padding:7px 8px;border:1px solid var(--line);
   border-radius:2px;background:var(--bg);color:var(--text);font:inherit;font-size:12px;
   resize:vertical;}

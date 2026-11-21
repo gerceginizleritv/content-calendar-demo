@@ -3155,10 +3155,48 @@ dokunmak ve ikinci seferde birincisini bozmak demek.
   HTML bulunamadı** — ölü kural mı, dinamik mi çiziliyor,
   **doğrulanmadı.** Başlarken ilk iş bu.
 
-  ⛔ **ÖLÇÜLMEDİ, VARSAYILDI.** Yukarıdakiler koddaki kalıba bakarak
-  yazıldı; ikisi de tarayıcıda **denenmedi**. Sırası gelince önce
-  70'teki gibi ölçülecek (kaydır, başlık görünür mü), sonra
-  yazılacak.
+  ✅ **ÖLÇÜLDÜ (21 Kasım 2026, tarayıcıda). İKİ ŞÜPHE DE DOĞRU
+  ÇIKTI, AMA SONUÇLARI AYRI.**
+
+  **72a · `.tpl-table` — ARIZA YOK, ÇÜNKÜ TABLO YOK.**
+  `class="tpl-table"` `app.html` içinde **sıfır kez** geçiyor;
+  kural yalnızca `testler/eski/index.html` adlı eski sürümde
+  kullanılıyordu. **Ölü CSS'ti.** Kullanıcının kararı (21 Kasım
+  2026): silinsin. `.tpl-table`, `.tpl-phead`, `.tpl-row-head`
+  silindi (12 satır).
+  ⚠ **Aynı aileden kalanlar hâlâ ölü, ayrı bir temizliğe
+  bırakıldı:** `.tpl-wrap`, `.tpl-text`, `.tpl-bos`, `.tpl-cell`,
+  `.tpl-prev`, `.tpl-prev-row`.
+  ⛔ `.tpl-h`, `.tpl-step`, `.tpl-card`, `.tpl-draft*`
+  **KULLANILIYOR** — onlara dokunulmadı.
+
+  **72b · `.cal-table` — ARIZA GERÇEK, ÖLÇÜLDÜ.**
+  Sayfa 600 piksel kaydırılınca başlığın tepesi **293 → −307**
+  oluyor, yani ekrandan çıkıyor (1400 · 1220 · 1024 — üçünde de).
+  Sarmalayıcının `overflow-y` değeri ölçüldü: **`auto`** — yani
+  `overflow-x:auto` yazıldığı için tarayıcı dikey ekseni de
+  kaydırma kutusuna çeviriyor. Başlık sayfaya değil o kutuya
+  yapışıyor. 70'teki tuzağın aynısı.
+
+  ⛔ **AMA 70'TEKİ ÇÖZÜM GERÇEKTEN UYMUYOR — SAYIYLA:**
+
+  | Genişlik | Tablo | Kutuya sığan | Taşma |
+  |---|---|---|---|
+  | 1600 | 1210 px | 1210 px | yok |
+  | 1400 | 1134 px | 1122 px | 12 px |
+  | 1220 | 1134 px | 942 px | 192 px |
+  | 1024 | 1134 px | 746 px | 388 px |
+
+  Yani `overflow:visible` vermek içeriği dışarı taşırır ve yatay
+  taşmayı yasaklayan bekçi testler **haklı olarak** düşer.
+  Geriye tek yol kalıyor: kutuya yükseklik verip içinde dikey
+  kaydırmak — bedeli sayfada **iki ayrı kaydırma alanı**.
+
+  ✅ **KULLANICIYA SORULDU (21 Kasım 2026). Kararı: şimdilik
+  dokunma, madde açık kalsın.** Gerekçe kullanıcıya böyle sunuldu:
+  tek çözümün bedeli kazandığının çoğunu geri alıyor.
+  ⛔ **Bu madde artık "ölçülecek" değil, "karar bekliyor".** Ölçüm
+  yapıldı ve yukarıda duruyor; yeniden ölçmeye gerek yok.
 
 - ⬜ **73. GÖRÜNÜM TOPARLAMA — GELİŞTİRMELER BİTİNCE.**
   Kullanıcı 21 Kasım 2026'da istedi:
