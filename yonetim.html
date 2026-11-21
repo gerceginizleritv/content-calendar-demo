@@ -578,10 +578,19 @@ async function yukle(ad, zorla){
 //   ozellik acilip buraya adi yazilmasa bile satir EKRANDA GORUNUR.
 //   ⛔ Tersi olsaydi (bilinmeyeni gizlemek) yeni ozellik panelde hic
 //     cikmaz ve kimse fark etmezdi.
+// ⚠ YALNIZCA OKUNABILIRLIK ICIN. Adi olmayan anahtar GIZLENMIYOR,
+//   ham haliyle cikiyor (`yonetim-plan-matris` bunu olcuyor) --
+//   cunku gorunmeyen bir ozellik, yonetilemeyen bir ozellik olurdu.
+// ⛔ 21 KASIM 2026 — `set_kisisellestirme` EKSIKTI. 54. maddede
+//    ozellik eklendi, kapiya baglandi, SQL'e tohum satiri yazildi
+//    ama panelin etiketi unutuldu: panelde ham anahtar goruluyordu.
+//    Tam da bu deponun tekrarlayan hatasi (bir yerde yapip otekinde
+//    unutmak). `plan-kapisi` testine bekci iddiasi eklendi.
 const OZELLIK_ADI = {
   drive_script:   "Google Drive'a script gönderme",
   cekim_setleri:  'Çekim setleri',
   fikir_onceligi: 'Fikirlere öncelik',
+  set_kisisellestirme: 'Kendi çekim türün ve set kişiselleştirme',
 };
 const LIMIT_ADI = {
   projects: 'Proje', sets: 'Çekim seti', scripts: 'Script', ideas: 'Fikir',

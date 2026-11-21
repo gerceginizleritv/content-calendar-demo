@@ -2975,9 +2975,37 @@ dokunmak ve ikinci seferde birincisini bozmak demek.
        sütun kendiliğinden geliyor ve "listeyi elle yazma" tuzağına
        düşülmüyor (bu deponun tekrarlayan hatası).
 
-  ⚠ **Sırası gelince sorulacak, henüz sorulmadı:** özellik listesinin
-  kendisi (1. aşamanın çıktısı) kullanıcıya onaylatılacak.
-- ⬜ **70. PROJELER TABLOSUNDA ÜST BAŞLIK SABİT KALSIN.**
+  ✅ **SORULDU (21 Kasım 2026).** Bugün panelde dört özellik var:
+  Google Drive'a script gönderme · Çekim setleri · Fikirlere öncelik ·
+  Kendi çekim türün ve set kişiselleştirme. Kullanıcının cevabı:
+  *"şimdi bakmayayım, açık kalsın"*. ⛔ **67 AÇIK KALIYOR**; panel
+  bugünkü dört özellikle çalışmaya devam ediyor.
+
+  ✅ **KODDAN DOĞRULANDI (21 Kasım 2026) — İŞLEVSEL OLARAK HAZIR:**
+
+  | 67'nin şartı | Bugün |
+  |---|---|
+  | İki bölüm: sınırlar + özellik matrisi | ✅ `matrisCiz` ikisini de çiziyor |
+  | Sınırlar artık düzenlenebilir | ✅ `limit-degistir` ucu |
+  | Özellikler açılıp kapanıyor | ✅ `ozellik-degistir` ucu |
+  | Sütunlar `visible=true` planlardan ÜRETİLİYOR | ✅ `matrisSutunlari` |
+  | Satırlar veriden ÜRETİLİYOR, elle yazılmıyor | ✅ `matrisSatirlari` |
+  | Yeni özelliğin varsayılanı kapalı | ✅ veritabanı varsayılanı `false` |
+  | Plan düşünce veri durur | ✅ `plan-kapisi` ölçüyor |
+  | Bekçi: koddaki her özelliğin panelde satırı var | ✅ `plan-kapisi` `sql/` klasörünü tarıyor |
+
+  ⚠ **BİR EKSİK BULUNDU VE DÜZELTİLDİ (21 Kasım 2026).**
+  `yonetim.html`deki `OZELLIK_ADI` tablosunda **`set_kisisellestirme`
+  yoktu**: 54. maddede özellik eklendi, kapıya bağlandı, SQL'e tohum
+  satırı yazıldı ama **panelin etiketi unutuldu** ve panelde ham
+  anahtar görünüyordu. Tam da bu deponun tekrarlayan hatası.
+  ⛔ Ham anahtarın görünmesi **bilerek** (gizlenen özellik
+  yönetilemez), ama her özelliğin okunur bir adı **olmalı**.
+  `plan-kapisi` testine iki iddia eklendi — biri eksik adı, öteki
+  silinmiş özelliğin artık adını yakalıyor; listeyi elle yazmıyor,
+  `yonetim.html`den okuyor. **2 mutasyon denendi, 2'si de
+  yakalandı.**
+- ✅ **70. PROJELER TABLOSUNDA ÜST BAŞLIK SABİT KALSIN.** — **BİTTİ (20 Kasım 2026).**
   Kullanıcı 20 Kasım 2026'da ekran görüntüsüyle istedi:
 
   > *"projeler sayfasında proje sayısı çok olduğunda aşağı scroll
@@ -3004,6 +3032,28 @@ dokunmak ve ikinci seferde birincisini bozmak demek.
   ⚠ **Bekçi test:** sayfa aşağı kaydırıldıktan sonra başlık satırının
   hâlâ görünür olduğunu ölçsün — ve telefon genişliğinde kart
   düzeninin bozulmadığını. Sütun listesini elle yazmasın.
+
+  ✅ **KUTUSU AÇIK KALMIŞTI, 21 KASIM 2026'DA ÖLÇÜLDÜ VE KAPATILDI.**
+  Üç madde (68, 69, 70) bitmiş ama işareti konmamıştı. ⛔ Hafızaya
+  değil **ölçüme** bakıldı (Bölüm 4):
+
+  | Ne | Ölçüm |
+  |---|---|
+  | Başlık sabitlemesi | `.proj-table thead th{position:sticky;top:0}` ve `@media(min-width:1220px){.proj-table-wrap{overflow:visible}}` |
+  | Bekçi | `testler/projeler-sabit-baslik.test.js` — **16 iddia, hepsi geçiyor** |
+  | Telefon | 375 pikselde başlık gizli, kart düzeni bozulmamış (ölçülüyor) |
+  | Dar ekran | 1024'te yatay kaydırma hâlâ mümkün (ölçülüyor) |
+
+  ⛔ **TUZAK GERÇEKTEN VARDI VE ÇÖZÜLDÜ:** `overflow-x:auto` olan bir
+  kapsayıcı `overflow-y`yi de `auto` yapar ve öge bir kaydırma
+  kutusuna döner — başlık sayfaya değil o kutuya yapışırdı. Geniş
+  ekranda `overflow:visible` veriliyor; dar ekranda yatay kaydırma
+  korunuyor. **İkisi de ayrı ayrı ölçülüyor.**
+
+  ✅ **68 ve 69 da aynı gün ölçülerek kapatıldı:** `fk_sira` düğmesi
+  (`Sıra: kendi düzenim` ↔ `Sıra: öncelik`) ve görünüm seçicisi
+  kodda; bekçi `testler/fikir-gorunum-sira.test.js` — **20 iddia,
+  hepsi geçiyor.**
 
 - ⬜ **74. FİKİRLER — "YENİ FİKİR" KUTUSU VE LİSTE SATIRLARI.**
   Kullanıcı 21 Kasım 2026'da ekran görüntüsüyle bildirdi, kendi
@@ -3273,7 +3323,7 @@ dokunmak ve ikinci seferde birincisini bozmak demek.
   kapatılırken ikisinin de yapılması gerekiyor; kullanıcının kendi
   telefonunda bakacağı bir liste çıkarılacak.
 
-- ⬜ **69. FİKİRLERİ ÖNCELİĞE GÖRE SIRALAMA.**
+- ✅ **69. FİKİRLERİ ÖNCELİĞE GÖRE SIRALAMA.** — **BİTTİ (20 Kasım 2026).**
   Kullanıcı 20 Kasım 2026'da sordu:
 
   > *"Fikirlerdeki öncelik OK ama unutma yapılacaklarda var mı
@@ -3328,7 +3378,7 @@ dokunmak ve ikinci seferde birincisini bozmak demek.
   kaldığını (hiçbiri kaybolmadığını) ve öncelik modunda sıranın
   gerçekten 1→2→3 olduğunu ölçsün.
 
-- ⬜ **68. FİKİRLER SAYFASINA GÖRÜNÜM SEÇİCİSİ (mekânlardaki gibi).**
+- ✅ **68. FİKİRLER SAYFASINA GÖRÜNÜM SEÇİCİSİ (mekânlardaki gibi).** — **BİTTİ (20 Kasım 2026).**
   Kullanıcı 20 Kasım 2026'da istedi:
 
   > *"Bir de fikirleri de mekanlar gibi tablo ve liste görünümü

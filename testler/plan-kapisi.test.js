@@ -90,6 +90,34 @@ function dene(ad, fn){
       'kod=' + kodAnahtar.join(',') + '  tohum=' + sqlTohum.join(','));
   });
 
+  // ── YONETIM PANELINDE OKUNUR BIR ADI VAR MI ─────────────────────
+  // ⛔ 21 KASIM 2026 — EKSIKTI VE KIMSE GORMEDI. 54. maddede
+  //    `set_kisisellestirme` eklendi, kapiya baglandi, SQL'e tohum
+  //    satiri yazildi; YONETIM PANELININ ETIKETI unutuldu ve panelde
+  //    ham anahtar (`set_kisisellestirme`) goruluyordu.
+  //    ⚠ Ham anahtarin GORUNMESI bilerek (gizlenen ozellik
+  //      yonetilemez); ama her ozelligin okunur bir adi OLMALI.
+  // ⚠ LISTE ELLE YAZILMIYOR: anahtarlar yukarida koddan cikarildi,
+  //   adlar da `yonetim.html`den okunuyor.
+  const yonetim = fs.readFileSync(yol.join(KOK, 'yonetim.html'), 'utf8');
+  const adBlok = /const OZELLIK_ADI = \{([\s\S]*?)\};/.exec(yonetim);
+  const adliAnahtar = adBlok
+    ? [...adBlok[1].matchAll(/^\s*([a-z_]+):/gm)].map(m=> m[1]).sort() : [];
+
+  dene('yönetim panelinin ad tablosu okunabildi (ölçüm boşa düşmüyor)', ()=>{
+    assert.ok(adliAnahtar.length >= 3, 'adlar: ' + JSON.stringify(adliAnahtar));
+  });
+  dene('⛔ koddaki HER özelliğin yönetim panelinde okunur bir adı var', ()=>{
+    const eksik = kodAnahtar.filter(k=> adliAnahtar.indexOf(k) === -1);
+    assert.deepStrictEqual(eksik, [],
+      'panelde ham anahtar olarak görünecek: ' + eksik.join(', '));
+  });
+  dene('★ panelde KARŞILIĞI OLMAYAN ad kalmamış (silinen özelliğin artığı)', ()=>{
+    const fazla = adliAnahtar.filter(k=> kodAnahtar.indexOf(k) === -1);
+    assert.deepStrictEqual(fazla, [],
+      'kodda olmayan özelliğin adı duruyor: ' + fazla.join(', '));
+  });
+
   // ── 2. TARAYICIDA: KAPININ DAVRANIŞI ────────────────────────────
   const b = await chromium.launch({});
   const p = await b.newPage({ viewport:{ width:1280, height:1000 } });
