@@ -859,8 +859,20 @@ dokunmak ve ikinci seferde birincisini bozmak demek.
   alt başlık sayısı eşit mi, menüde ölü bağlantı var mı.
   **4 mutasyon denendi, 4'ü de yakalandı.**
 
-  ⛔ **54. MADDE BÖYLECE TAMAMEN KAPANDI:** 54a (kapı), 54b (set
-  ataması), 54c (kendi çekim türü), fiyat sayfası ve kılavuz.
+  ⛔ **BU SATIR YANLIŞ YAZILMIŞTI, DÜZELTİLDİ (21 Kasım 2026).**
+  Burada *"54. madde böylece tamamen kapandı"* yazıyordu. **Değildi:**
+  `ozellikAcik('set_kisisellestirme')` koddaki **yedi yerin hepsinde**
+  54b ve 54c'ye ait; **54a (hazır setin kendi kopyanı düzenleme)
+  kapıya hiç bağlanmamıştı.** Sayılmadan yazılmış bir "bitti"ydi —
+  Bölüm 4'ün tam olarak uyardığı şey.
+
+  ⬜ **54a — KALAN TEK İŞ: DÜZENLEME DENETİMLERİNİ KAPIYA BAĞLA.**
+  1. kararın gereği (*"üçü de Creator Pro, 54a dâhil"*).
+  ⛔ **Setler KULLANILMAYA devam eder, yalnızca DÜZENLENEMEZ** —
+  veri silinmiyor, kapı yalnızca düzenleme denetimlerini gizliyor.
+  ⚠ **Bilinen bedeli zaten kayıtlı:** 54a bugün herkeste açık
+  çalışıyor; kapıya bağlamak onu bugünkü Starter kullanıcılarından
+  geri alıyor. Kullanıcıya söylendi ve kararını böyle verdi.
   | 54c | **Kendi çekim türünü** ekleme (örn. "Podcast — iki kişi") |
 
   ✅ **54c BİTTİ (21 Kasım 2026).** İki aşamada yapıldı:
