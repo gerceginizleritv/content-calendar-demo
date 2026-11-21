@@ -3382,19 +3382,160 @@ dokunmak ve ikinci seferde birincisini bozmak demek.
   **noktası** `elementFromPoint` ile ölçülüyor, kutu okunmuyor —
   ama son sözü 71. maddedeki gerçek cihaz geçişi söyleyecek.
 
-- ⬜ **77. ⛔ KAYDEDİLMEMİŞ DEĞİŞİKLİK UYARISIZ KAYBOLUYOR.**
-  Aynı rapordan; **bu oturumda doğrulandı — ama farklı bir kanıtla.**
-  Rapor "değiştirip çıktım, sormadı" diyordu; benim ilk denemem
-  izlenmeyen bir alanı değiştirdiği için **bağlayıcı değildi.**
-  ⛔ **Kesin kanıt:** uygulamada böyle bir koruma **hiç yok** —
-  `beforeunload` yok, kayıt penceresi için kirlilik izleme yok,
-  "kaydetmeden çıkılsın mı?" diye bir sözlük anahtarı yok. Yani
-  pencereden çıkınca değişiklik sessizce gidiyor.
-  ⚠ **Veri kaybı sınıfı bir hata.**
+- ✅ **77. KAYDEDİLMEMİŞ DEĞİŞİKLİK UYARISIZ KAYBOLUYORDU —
+  DÜZELTİLDİ (21 Kasım 2026).** Açık çıkış yolları kapatıldı;
+  tarayıcı/Android **geri tuşu açık kaldı** — aşağıdaki 78. madde.
 
-  ⬜ **ÖNERİLEN YÖN (kullanıcı onayı bekliyor):** değişiklik varsa
-  çıkarken üç seçenekli soru — Kaydet / Çık / Kal.
-  ⚠ Bölüm 7: soru metni her dile girer.
+  **ÖNCESİ (ölçüldü, 375 px).** Beş çıkış yolunun hepsinde
+  hiçbir şey sorulmuyordu ve yazılan metin sessizce gidiyordu
+  (kayıttaki başlık eski kalıyordu): kayıt penceresi Vazgeç ·
+  Escape · geri şeridi, proje Vazgeç, script Vazgeç.
+  `beforeunload` da yoktu.
+
+  **SONRASI (ölçüldü, dokuz durum).** Hiç değişmeden çıkışta
+  **sormuyor**; değişiklik varsa üç seçenekli soru çıkıyor.
+  *Burada kal* → pencere açık, yazılan metin duruyor.
+  *Kaydetmeden çık* → pencere kapanıyor, kayıt eski kalıyor,
+  **ikinci bir soru çıkmıyor**. *Kaydet* → kayıt güncellendi,
+  pencere kapandı.
+
+  ⛔ **SORU `closeModal` İÇİNE KONULAMAZ — önemli.** O
+  fonksiyondan kaydettikten sonra da, kayıt silindikten sonra da,
+  sayfa değişiminde de geçiliyor; oraya konsa **Kaydet'e basan
+  kişiye** "kaydetmeden çıkılsın mı?" diye sorulurdu. Soru yalnızca
+  kullanıcının **vazgeçtiği** yollarda.
+
+  ⚠ **HER YOLUN KENDI ARGÜMANI KORUNDU.**
+  `addEventListener('click', closeModal)` fonksiyona **olay
+  nesnesini** geçiriyordu, yani `sessizRota` dolu geliyor ve adres
+  yazılmıyordu. Ok fonksiyonuna çevirirken `true` verilmeseydi
+  davranış sessizce değişirdi; geri şeridi ise argümansız çağırıyor
+  ve o da aynen korundu.
+
+  **"KIRLİ" NEYE GÖRE.** Pencere açılırken formun **temiz hali**
+  bir harita olarak alınıyor, çıkışta yeniden alınıp
+  karşılaştırılıyor. ⛔ **Alan listesi elle yazılmadı** (Bölüm
+  7/8): pencerenin kendi kutusundaki bütün alanlar geziliyor.
+  Üç şey dışarda: `type="search"`, `data-kirli-sayma="hayir"`
+  işaretli ara kutuları (`sc_newIdea`, `sc_aiBrief`) ve **kendi
+  `.modal`i olan iç bölümler** — çekim listesi bölümü çalışma
+  anında proje sayfasının içine taşınıyor ve kendi kendine
+  kaydediliyor; `closest('.modal')` karşılaştırması bunu listesiz
+  ayırıyor.
+
+  ⛔ **İLK SURÜM YANLIŞTI, ÖLÇÜM YAKALADI.** İki imzayı birebir
+  karşılaştırıyordu. Fikir **arama** kutusuna yazınca fikir listesi
+  daralıyor ve kutucuklar DOM'dan çıkıyor; bu "değişiklik" sanılıp
+  **boşuna soru** soruluyordu. Şimdi karşılaştırma yalnızca **hala
+  duran** alanlar üzerinden. ⚠ Ters yöndeki kaçak da kapatıldı:
+  kullanıcının **dokunduğu** alanların son değeri ayrıca tutuluyor,
+  böylece bir fikri tikleyip sonra süzgeçle gizleyen kişi onu
+  sessizce kaybetmiyor (ölçüldü: ikisi de çalışıyor).
+
+  **TELEFON (Bölüm 8).** Üç düğme yan yana dizilince "Kaydet" tek
+  başına ikinci satıra düşüyor ve birinci satırın **en sağında
+  yıkıcı olan** kalıyordu — parmağın önce düştüğü yer. Hiçbiri
+  kırpılmıyor ve hepsi 44 px, yani sorun ölçü değil **sıra**ydı.
+  Telefonda (`.uc-secenek`) alt alta, tam genişlik diziliyor:
+  Kal · Çık · Kaydet — okuma sırası görünen sırayla aynı, ana eylem
+  en altta. Ölçüldü 360 · 375 · 390, Türkçe ve İngilizce: yana
+  taşma yok, kırpılma yok, üçü de 44 px ve dokunulabiliyor.
+  Masaüstünde tek satırda kalıyor.
+  ⚠ **İki düğmeli onay pencereleri etkilenmedi** ve üç düğmeliden
+  sonra ne sınıf, ne orta düğmenin yazısı, ne kırmızısı, ne de
+  "Vazgeç" etiketi asılı kalıyor (dört ayrı iddia).
+
+  ✅ **BİR ŞEY DAHA: metin her dilde.** Diyalog `en` ve `tr`
+  sözlüklerine girdi. Bekçi dil listesini **sabit yazmıyor**,
+  `Object.keys(LANG)` ile geziyor — 41. madde altı dil ekleyince
+  kendiliğinden kapsayacak. Ve yalnızca "boş mu" diye bakmıyor:
+  `t()` eksik anahtarda `en`'e düştüğü için, İngilizce dışındaki
+  dilde metnin İngilizcenin **aynisi olmaması** da iddia ediliyor.
+
+  ✅ **BEKÇİ: `testler/kaydedilmemis-uyari.test.js` (176 iddia).**
+  ⛔ Pencere listesi elle yazılmıyor: uygulamanın kendi
+  `KIRLI_PENCERELER` haritası okunuyor; yeni bir pencere eklenirse
+  testin "senaryo" tablosu eksik kalır ve test onu söyler. Saymayan
+  alanlar da aynı şekilde pencereden bulunuyor.
+  ⚠ **O iddia bir kez düştü ve haklıydı:** "arama kutusuna yazınca
+  sormaz" diyordu. Kayıt penceresinde proje aramasına yazınca
+  `#f_project` seçimi **"+ yeni proje"ye düşüyor** (bkz. 79. madde),
+  yani form gerçekten değişiyor — orada **sormamak** veri kaybı
+  olurdu. İddia keskinleştirildi, zayıflatılmadı: alanın kendi
+  yazısı sayılmaz, ama sayılan bir alanı değiştirdiyse sormak
+  **zorunlu**.
+  ⛔ **TAM KOŞU BİR GERİLEME YAKALADI — `akis.test.js`.** İlk sürüm
+  korumayı `await` ile bekliyordu; sorulacak bir şey olmasa **bile**
+  kapanış bir mikro-göreve erteleniyordu. O testte Vazgeç'ten hemen
+  sonra gelen `setPage('scripts')` pencere **hala açıkken** koştu ve
+  script silme hiç gerçekleşmedi (iki iddia düştü).
+  ⚠ **Düzeltilen test değil KODdu:** kirli değilse hiçbir şey
+  beklenmiyor, kapanış eskiden olduğu gibi **aynı tikte** oluyor.
+  ⚠ Ve bu geri gelmesin diye 77'nin kendi bekçisine ayrı bir iddia
+  eklendi (üç pencere için): tıklamadan sonra **hiç beklemeden**
+  pencerenin kapandığı okunuyor. Tesadüfe bırakılmadı.
+  ⚠ **Ders:** "`await` zararsizdır" varsayımı yanlıştı.
+
+  ⛔ **MUTASYON SINAMASI İKİ KAÇAK GÖSTERDİ — İKİSİ DE BENİM
+  TESTİMDE.** Sekiz mutasyon denendi; altısı ilk seferde yakalandı,
+  ikisi **176/0 ile geçti** ve testi düzeltmek gerekti:
+  1. *`data-kirli-sayma` yok sayılıyor.* İddia beklentisini
+     uygulamanın **kendi** `formHaritasi` fonksiyonundan türetiyordu:
+     uygulamanın "sayılan alan" tanımı bozulunca testin beklentisi de
+     onunla birlikte bozuldu. **Döngüsel bir iddia.** Test artık
+     alanları kendisi okuyor; kimlik şeması uygulamayla aynı, ama
+     "değişiklik var mı" kuralı testin kendi kuralı.
+  2. *Eski birebir kıyas.* O adımda hiç fikir yoktu, fikir arama
+     kutusu hiçbir şeyi süzmüyordu, yani yanlış alarm hali
+     **oluşmuyordu bile.** Fikirler artık o döngüden önce ekleniyor.
+  ⚠ **Ders (Bölüm 4'ün tekrarı):** yeşil bir test, doğru sebeple
+  yeşil olduğunu kanıtlamaz. Bir testin beklentisi **ölçtüğü
+  şeyden türetilemez.**
+
+  ⚠ **Test ÇÖKMEMELİ, DÜŞMELİ.** İlk sürüm diyalog düğmesine
+  doğrudan tıklıyordu; mutasyon denemesinde diyalog hiç açılmadı,
+  tıklama zaman aşımına düştü ve test **çöktü** — Node yığın izi,
+  temiz bir "YOK" değil. Yokluk artık veri olarak dönüyor ve
+  beklenmeyen hata da sayılan bir düşme.
+
+- ⬜ **78. GERİ TUŞUNDA DA KAYDEDİLMEMİŞ DEĞİŞİKLİK SORULSUN.**
+  77. maddenin **açık kalan yarısı.** Kapatılan yollar: Vazgeç,
+  geri şeridi, Escape. Kapatılmayan: tarayıcının / Android'in
+  **geri tuşu** ve alt menüden başka sayfaya geçmek.
+
+  ⚠ **Neden ayrı madde:** `popstate` **iptal edilemiyor** — olay
+  geldiğinde adres zaten değişmiş oluyor. Dolayısıyla önce adresi
+  geri yazmak, sonra sormak, "Çık"/"Kaydet" seçilirse geri tuşunu
+  **yeniden** çalıştırmak gerekiyor. Bu, 77'nin kalanından farklı
+  bir iş ve kendi ölçümünü istiyor; 77 ile aynı commit'e
+  sıkıştırılması **doğru olmazdı.**
+  ⚠ **Telefonda en sık kullanılan yol bu** (Bölüm 8), yani
+  77 tek başına yeterli değil.
+  ⚠ Alt menüden sayfa değiştirmek şu an veriyi **hemen**
+  kaybettirmiyor: `setPage` sayfayı `hidden` yapıyor, pencere
+  açık kalıyor ve geri dönünce yazılan duruyor. Ölçülüp
+  doğrulanacak; öyleyse oraya soru koymak gereksiz olur.
+  ⬜ `beforeunload` (sekmeyi kapatma / yenileme) aynı maddede
+  değerlendirilecek.
+
+- ⬜ **79. PROJE ARAMASINA YAZINCA SEÇİM "+ YENİ PROJE"YE
+  DÜŞÜYOR — ÖLÇÜLDÜ.** 77'nin bekçisini yazarken çıktı, 77'nin
+  konusu değil.
+
+  Ölçüm (375 px, kayıt penceresi, projesi atanmış bir kayıt):
+  `#f_projectSearch`e eşleşmeyen bir metin yazılınca açılır liste
+  boşalıyor ve `#f_project` değeri `pr_ornek_...` → `__yeni__`
+  oluyor. Yani **kayıt kaydedilirse projesi değişir.**
+
+  ⚠ Arama kutusu bir **süzgeç**; seçimi değiştirmemesi beklenir.
+  ⚠ Şu an görünür bir zararı yok çünkü 77'nin uyarısı bu hali
+  "değişiklik" sayıp soruyor — ama doğrusu, süzgecin seçime hiç
+  dokunmaması.
+  ⬜ **Kullanıcı onayı bekliyor:** süzgeç eşleşme bulamayınca
+  seçili proje **yerinde kalsın** (listede görünmese bile).
+  ⚠ Aynı kalıp başka arama kutularında da olabilir
+  (`pe_placeAra`, `sc_ideaSearch`); maddeye başlarken üçü birden
+  ölçülecek.
 
 - ⬜ **75. LİSTE SATIRLARINDA SAĞDAKİ DENETİMLER SÜTUN TUTSUN.**
   Kullanıcı 21 Kasım 2026'da ekran görüntüsüyle bildirdi:

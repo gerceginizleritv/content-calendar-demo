@@ -4492,6 +4492,18 @@ textarea.sc-ai-brief{min-height:64px;resize:vertical;line-height:1.5;}
   #dlgOverlay .modal{padding-bottom:18px;}
   #dlgOverlay .modal-actions{position:static;margin:16px 0 0;padding:0;border-top:0;background:transparent;}
   #dlgOverlay .modal-actions .btn{flex:0 1 auto;}
+  /* ⛔ UC SECENEKLI DIYALOG (77. madde) TELEFONDA ALT ALTA.
+     Olculdu (360/375/390): yan yana dizilince ucuncu dugme
+     ("Kaydet") tek basina ikinci satira dusuyor ve birinci satirin
+     EN SAGINDA yikici olan ("Kaydetmeden cik") kaliyordu -- parmagin
+     once dustugu yer. Hicbiri kirpilmiyor ve hepsi 44px, yani sorun
+     olcu degil SIRA. Alt alta dizilince okuma sirasi (Kal · Cik ·
+     Kaydet) gorunur sirayla ayni oluyor ve ana eylem en altta,
+     basparmagin en rahat yerinde kaliyor.
+     ⚠ YALNIZCA uc dugmeli diyalogda: iki dugmeli onay pencereleri
+       (sil, uzerine yaz...) oldugu gibi kaliyor. */
+  #dlgOverlay .modal-actions.uc-secenek{flex-direction:column;align-items:stretch;}
+  #dlgOverlay .modal-actions.uc-secenek .btn{width:100%;}
   body.sheet-open,body.menu-open{overflow:hidden;}
   /* Pencere acikken govde YERINDE donuyor. overflow:hidden iOS'ta tek
      basina yetmiyor: parmak sayfayi yine de suruklüyor ve pencere
@@ -6340,7 +6352,11 @@ textarea.sc-ai-brief{min-height:64px;resize:vertical;line-height:1.5;}
       <!-- Fikir buradan da eklenebiliyor: aklina gelen bir seyi not etmek
            icin pencereyi kapatip Fikirler sayfasina gitmek gerekmesin. -->
       <div class="sc-idea-ekle">
-        <input type="text" id="sc_newIdea" maxlength="600"
+        <!-- data-kirli-sayma="hayir": bu kutu scriptin KENDI alani
+             degil, "+ Ekle" ile listeye tasinan bir ara kutu. Burada
+             yazi kalmasi kaydedilmemis bir degisiklik sayilmaz; 77.
+             madde sorusunu bosa cikarirdi. -->
+        <input type="text" id="sc_newIdea" maxlength="600" data-kirli-sayma="hayir"
                data-i18n-placeholder="sc_idea_new_ph" placeholder="A new idea…">
         <button type="button" class="btn btn-sm" id="sc_addIdea" data-i18n="sc_idea_add">+ Add</button>
       </div>
@@ -6408,7 +6424,10 @@ textarea.sc-ai-brief{min-height:64px;resize:vertical;line-height:1.5;}
            uzunluk, ton, hedef kitle, bolum sirasi gibi seyleri yaziyor.
            Tek satirlik bir kutuda yazdigini goremiyordu. -->
       <div class="sc-ai-satir">
+        <!-- data-kirli-sayma="hayir": AI'ya verilen tarif kayda
+             yazilmiyor (her acilista bosaltiliyor, bkz. openScript). -->
         <textarea id="sc_aiBrief" maxlength="1500" class="sc-ai-brief" rows="3"
+                  data-kirli-sayma="hayir"
                   data-i18n-placeholder="sc_ai_brief_ph"
                   placeholder="What should the AI write? e.g. a 1400-word script covering the ideas I picked"></textarea>
         <button type="button" class="btn btn-sm ai-btn" id="sc_ai" data-i18n="sc_ai">✨ Write with AI</button>
@@ -6509,6 +6528,14 @@ textarea.sc-ai-brief{min-height:64px;resize:vertical;line-height:1.5;}
     <input type="text" id="dlgInput" class="dlg-input" hidden autocomplete="off">
     <div class="modal-actions">
       <button type="button" class="btn" id="dlgCancel" data-i18n="btn_cancel">Cancel</button>
+      <!-- ⛔ ORTA DUGME (77. madde). Iki dugmeli diyalog
+           "kaydetmeden cik" sorusuna yetmiyor: Kaydet / Cik / Kal uc
+           ayri karar. Gizli duruyor, `dlgAc` yalnizca `orta` verilince
+           gosteriyor. SIRASI BILEREK ORTADA: en solda geri donusu olan
+           secenek (Kal), en sagda ana eylem (Kaydet), yikici olan
+           ikisinin arasinda -- parmagin kazara dustugu iki kenar da
+           veri kaybetmiyor. -->
+      <button type="button" class="btn" id="dlgAlt" hidden></button>
       <button type="button" class="btn btn-primary" id="dlgOk" data-i18n="dlg_ok">OK</button>
     </div>
   </div>
@@ -8576,6 +8603,11 @@ const LANG = {
     pending_title: "Not Yet Posted",
     btn_close: "Close",
     dlg_ok: "OK",
+    kyb_baslik: "You haven't saved yet",
+    kyb_govde: "This window has changes that aren't saved.",
+    kyb_not: "If you leave now, they are gone — nothing is kept.",
+    kyb_cik: "Leave without saving",
+    kyb_kal: "Stay here",
     alert_fill_required: "Please fill in title, date and time.",
     alert_fill_missing: (alanlar)=> `Still missing: ${alanlar}.`,
     count_label: (n, max)=> `${n} / ${max} entries`,
@@ -9987,6 +10019,11 @@ const LANG = {
     pending_title: "Henüz Yüklenmemiş",
     btn_close: "Kapat",
     dlg_ok: "Tamam",
+    kyb_baslik: "Henüz kaydetmedin",
+    kyb_govde: "Bu pencerede kaydedilmemiş değişiklik var.",
+    kyb_not: "Şimdi çıkarsan kaybolur — hiçbiri saklanmaz.",
+    kyb_cik: "Kaydetmeden çık",
+    kyb_kal: "Burada kal",
     alert_fill_required: "Lütfen başlık, tarih ve saati doldur.",
     alert_fill_missing: (alanlar)=> `Şu alan eksik: ${alanlar}.`,
     count_label: (n, max)=> `${n} / ${max} kayıt`,
@@ -16083,6 +16120,171 @@ async function scriptAiYaz(){
 // id verilirse o script aciliyor; verilmezse yeni bir taslak baslatiliyor
 // (baslangic degerleriyle: bir fikirden ya da fikir listesinden gelmis
 // olabilir).
+// ╔════════════════════════════════════════════════════════════
+// KAYDEDILMEMIS DEGISIKLIK UYARISI (YAPILACAKLAR 77)
+// ╚════════════════════════════════════════════════════════════
+// Olculdu (21 Kasim 2026): kayit penceresinde basligi degistirip
+// Vazgec / Escape / geri seridinden cikildiginda HICBIR SEY sorulmuyor
+// ve yazilan metin sessizce gidiyor (kayittaki baslik eski kaliyor).
+// Proje ve script pencerelerinde de ayni. `beforeunload` da yok.
+//
+// ⛔ UYARI `closeModal` ICINE KONULAMAZ. O fonksiyondan kaydettikten
+//    sonra da, kayit silindikten sonra da, sayfa degisiminde de
+//    geciliyor -- oraya konsa Kaydet'e basan kisiye "kaydetmeden
+//    cikilsin mi?" diye sorulurdu. Soru yalnizca KULLANICININ
+//    VAZGECTIGI yollarda: Vazgec dugmesi, geri seridi, Escape.
+//
+// ⚠ "KIRLI" NEYE GORE: pencere acilirken formun bir IMZASI aliniyor,
+//   cikista yeniden alinip karsilastiriliyor. Alan listesi elle
+//   yazilmiyor (CLAUDE.md 7/8), pencerenin kendi kutusundaki butun
+//   alanlar geziliyor. Iki sey disarida:
+//     · `type="search"` — arama kutusu kayda yazilmiyor.
+//     · `data-kirli-sayma="hayir"` — ara kutular (sc_newIdea gibi).
+//   ⛔ IC BOLUMLER DE DISARIDA: cekim listesi bolumu calisma aninda
+//     proje sayfasinin icine tasiniyor ve KENDI `.modal`i var; onun
+//     alanlari kendi kendine kaydediliyor. `closest('.modal')`
+//     karsilastirmasi bunu listesiz ayiriyor.
+// kapId -> { kimlik: deger } — pencere acilirken alinan TEMIZ hal.
+const kirliImzalar = {};
+// kapId -> { kimlik: deger } — kullanicinin ELLE dokundugu alanlarin
+// son degeri. ⛔ NEDEN GEREKLI: olculdu (21 Kasim 2026), fikir arama
+// kutusuna yazmak fikir listesini daraltiyor ve kutucuklar DOM'dan
+// cikiyor. Yalnizca "iki imza birebir ayni mi" diye bakan ilk surum
+// bunu DEGISIKLIK sanip bos yere soru soruyordu. Artik kiyas yalnizca
+// HALA DURAN alanlar uzerinden; DOM'dan cikmis bir alan ancak
+// kullanici ona dokunduysa ve degeri temiz halden farkliysa sayiliyor
+// (bir fikri tikleyip sonra suzgecle gizleyen kisi sessizce
+// kaybetmesin — ters yondeki kacak).
+const kirliDokunulan = {};
+// Pencere -> o pencerenin Kaydet dugmesi. "Kaydet" secilince bu
+// dugmeye basiliyor: dogrulamasi, hata mesaji, kapanmasi hep kendi
+// akisindan geciyor (baslik bossa pencere ACIK kaliyor -- dogrusu bu).
+const KIRLI_PENCERELER = {
+  editOverlay:        'saveBtn',
+  projectEditOverlay: 'pe_save',
+  scriptOverlay:      'sc_save'
+};
+// Bir alan kirlilige SAYILIYOR mu? Hem imza hem dokunma takibi ayni
+// olcute bakiyor; ikisi ayrismasin diye tek yerde.
+function kirliSayilir(el, kutu){
+  if(el.type === 'file' || el.type === 'search') return false;
+  if(el.dataset.kirliSayma === 'hayir') return false;
+  return el.closest('.modal') === kutu;
+}
+function kirliKutusu(kapId){
+  const kap = document.getElementById(kapId);
+  return (kap && kap.querySelector(':scope > .modal')) || null;
+}
+function kirliDeger(el){
+  return (el.type === 'checkbox' || el.type === 'radio')
+    ? (el.checked ? '1' : '0') : el.value;
+}
+function kirliKimlik(el){
+  // Kimlik sirasi: id, name, `data-*`, son care kapsayan id + `value`.
+  // ⛔ SIRAYLA NUMARALAMAK KIRILGAN OLURDU: uretilen listeler
+  //   (proje/fikir secimi) yeniden ciziliyor ve numara kayardi.
+  //   Uretilen kutucuklar kimligini `data-*` ile tasiyor
+  //   (`data-proje-sec="<id>"` gibi), o yuzden oradan okunuyor.
+  //   Platform ve tur kutucuklarinin ikisi de yok; onlar `value`
+  //   tasiyor ve kaydetme akisi da onlari `value` ile buluyor.
+  const nitelikler = Object.keys(el.dataset).sort()
+    .filter(x=> x !== 'kirliSayma')
+    .map(x=> x + '=' + el.dataset[x]).join(',');
+  return el.id || el.name || nitelikler
+    || ((el.closest('[id]') ? el.closest('[id]').id : '') + ':' + (el.value || ''));
+}
+function formHaritasi(kapId){
+  const kutu = kirliKutusu(kapId);
+  const harita = {};
+  if(!kutu) return harita;
+  kutu.querySelectorAll('input, textarea, select').forEach(el=>{
+    if(!kirliSayilir(el, kutu)) return;
+    harita[kirliKimlik(el)] = kirliDeger(el);
+  });
+  return harita;
+}
+// Tek dizelik imza: olcum ve testler okusun diye. Karar
+// `kirliMi` icinde HARITA uzerinden veriliyor.
+function formImzasi(kapId){
+  const h = formHaritasi(kapId);
+  return Object.keys(h).sort().map(k=> k + '=' + h[k]).join('\u0001');
+}
+function kirliBaslat(kapId){
+  kirliImzalar[kapId] = formHaritasi(kapId);
+  kirliDokunulan[kapId] = {};
+}
+function kirliSifirla(kapId){
+  delete kirliImzalar[kapId];
+  delete kirliDokunulan[kapId];
+}
+function kirliMi(kapId){
+  const kap = document.getElementById(kapId);
+  if(!kap || !kap.classList.contains('open')) return false;
+  const taban = kirliImzalar[kapId];
+  if(!taban) return false;                 // temiz hal alinmadi: sormuyoruz
+  const simdi = formHaritasi(kapId);
+  // 1) Hala duran alanlar
+  for(const k in simdi){
+    if(k in taban && simdi[k] !== taban[k]) return true;
+  }
+  // 2) Dokunulmus ama artik DOM'da olmayan alanlar (suzgec daraltti)
+  const dok = kirliDokunulan[kapId] || {};
+  for(const k in dok){
+    if(!(k in simdi) && (k in taban) && dok[k] !== taban[k]) return true;
+  }
+  return false;
+}
+// Dokunma takibi: her pencerenin kendi kutusunda, yakalama kipinde.
+// Olay delegasyonu SART — uretilen listeler yeniden ciziliyor, tek tek
+// baglanan dinleyiciler her cizimde kaybolurdu.
+(function kirliDokunmaKur(){
+  Object.keys(KIRLI_PENCERELER).forEach(kapId=>{
+    const kap = document.getElementById(kapId);
+    if(!kap) return;
+    const isle = (e)=>{
+      const kutu = kirliKutusu(kapId);
+      const el = e.target;
+      if(!kutu || !el || !el.matches || !el.matches('input, textarea, select')) return;
+      if(!kirliSayilir(el, kutu)) return;
+      if(!kirliDokunulan[kapId]) return;    // pencere acik degil / temiz hal yok
+      kirliDokunulan[kapId][kirliKimlik(el)] = kirliDeger(el);
+    };
+    kap.addEventListener('input', isle, true);
+    kap.addEventListener('change', isle, true);
+  });
+})();
+// Uc secenekli cikis sorusu. Donus: 'kaydet' | 'cik' | 'kal'.
+function kaydetCikKal(){
+  return dlgAc(t('kyb_govde'), {
+    baslik: t('kyb_baslik'), not: t('kyb_not'),
+    iptalli:true, girisli:false, iptal:'kal',
+    iptalAd: t('kyb_kal'), tamam: t('btn_save'),
+    orta: t('kyb_cik'), ortaTehlike:true
+  }).then(v=> v === true ? 'kaydet' : (v === 'orta' ? 'cik' : 'kal'));
+}
+// Kullanicinin vazgectigi her yol bunu cagiriyor; `kapat` o yolun
+// KENDI kapatma cagrisi.
+//
+// ⛔ KIRLI DEGILSE HICBIR SEY BEKLENMIYOR — kapanis eskiden oldugu
+//    gibi AYNI TIKTE oluyor. Ilk surum korumayi `await` ile
+//    bekliyordu ve sorulacak bir sey olmasa bile kapanisi bir
+//    mikro-goreve erteliyordu. `akis.test.js` bunu YAKALADI: Vazgec'ten
+//    hemen sonra gelen `setPage('scripts')` pencere HALA ACIKKEN
+//    kosuyor, sonra script silme hic gerceklesmiyordu (iki iddia
+//    dustu). Yani "await zararsizdir" varsayimi yanlisti.
+function cikisKorumasi(kapId, kapat){
+  if(!kirliMi(kapId)){ kapat(); return; }
+  kaydetCikKal().then(karar=>{
+    if(karar === 'kal') return;
+    if(karar === 'kaydet'){
+      document.getElementById(KIRLI_PENCERELER[kapId]).click();
+      return;                // kaydetme akisi kendi kapatiyor
+    }
+    kirliSifirla(kapId);     // "Cik": bir daha sorulmasin
+    kapat();
+  });
+}
+
 function openScript(id, baslangic, sessizRota){
   const sc = id ? scriptById(id) : null;
   acikScriptId = sc ? sc.id : null;
@@ -16140,6 +16342,7 @@ function openScript(id, baslangic, sessizRota){
   if(!sessizRota) rotaYaz('/script/' + (id || 'yeni'), true);
   sayfaBasaGit();
   (veri.text ? document.getElementById('sc_text') : document.getElementById('sc_title')).focus();
+  kirliBaslat('scriptOverlay');     // 77: temiz hal burada olculuyor
 }
 // Proje sayfasiyla ayni yontem: eleman acilista #scriptsPage icine
 // tasiniyor, geri seridi JS uretiyor.
@@ -16155,7 +16358,8 @@ function scriptSayfaKipineTasi(){
     serit.innerHTML = '<button type="button" id="sc_geri"></button>'
                     + '<span class="sayfa-geri-ad" id="sc_geriAd"></span>';
     kutu.insertBefore(serit, kutu.firstChild);
-    serit.querySelector('#sc_geri').addEventListener('click', ()=> closeScript());
+    serit.querySelector('#sc_geri').addEventListener('click',
+      ()=> cikisKorumasi('scriptOverlay', ()=> closeScript()));
   }
   scriptGeriTazele();
 }
@@ -16290,7 +16494,8 @@ function sayfaKipineTasi(){
     serit.innerHTML = '<button type="button" id="pe_geri"></button>'
                     + '<span class="sayfa-geri-ad" id="pe_geriAd"></span>';
     kutu.insertBefore(serit, kutu.firstChild);
-    serit.querySelector('#pe_geri').addEventListener('click', ()=> closeProjectEdit());
+    serit.querySelector('#pe_geri').addEventListener('click',
+      ()=> cikisKorumasi('projectEditOverlay', ()=> closeProjectEdit()));
   }
   projeGeriTazele();
 }
@@ -16396,6 +16601,7 @@ function openProjectEdit(id, sessizRota){
   // ⚠ `cekimListesiAc` icinde "sayfa zaten acik mi" kontrolu var,
   //   o yuzden buradan cagirmak ozyineleme uretmiyor.
   if(projeListesi(p).length) cekimListesiAc(id, true);
+  kirliBaslat('projectEditOverlay');   // 77: temiz hal burada olculuyor
 }
 async function projeSil(p){
   if(!p) return;
@@ -18516,6 +18722,7 @@ function openProjectNew(ad){
   projeGeriTazele();
   rotaYaz('/proje/yeni', true);
   document.getElementById('pe_name').focus();
+  kirliBaslat('projectEditOverlay');   // 77: temiz hal burada olculuyor
 }
 document.getElementById('p_openNew').addEventListener('click', ()=> openProjectNew());
 document.getElementById('pe_type').addEventListener('change', ()=>
@@ -18536,7 +18743,9 @@ document.getElementById('dlSave').addEventListener('click', ()=>{
   saveProjects(); closeDeadlines(); renderProjects();
 });
 
-document.getElementById('pe_cancel').addEventListener('click', closeProjectEdit);
+// `true`: bkz. cancelBtn notu.
+document.getElementById('pe_cancel').addEventListener('click',
+  ()=> cikisKorumasi('projectEditOverlay', ()=> closeProjectEdit(true)));
 document.getElementById('pe_delete').addEventListener('click', ()=>{
   const p = duzenlenenProje;
   closeProjectEdit();
@@ -18920,7 +19129,9 @@ document.getElementById('sc_addIdea').addEventListener('click', scriptPencereFik
 document.getElementById('sc_newIdea').addEventListener('keydown', e=>{
   if(e.key === 'Enter'){ e.preventDefault(); scriptPencereFikirEkle(); }
 });
-document.getElementById('sc_cancel').addEventListener('click', closeScript);
+// `true`: bkz. cancelBtn notu.
+document.getElementById('sc_cancel').addEventListener('click',
+  ()=> cikisKorumasi('scriptOverlay', ()=> closeScript(true)));
 // ⛔ PERDE TIKLAMASI KALDIRILDI (proje sayfasiyla ayni gerekce):
 //   sayfa kipinde "disarisi" sayfanin kendi bos alani.
 document.getElementById('sc_save').addEventListener('click', scriptKaydet);
@@ -20903,7 +21114,18 @@ function dlgAc(mesaj, secenek){
   const okDugme = document.getElementById('dlgOk');
   okDugme.textContent = secenek.tamam || t('dlg_ok');
   okDugme.classList.toggle('btn-danger', !!secenek.tehlike);
-  iptalDugme.textContent = t('btn_cancel');
+  // Iptal dugmesinin yazisi degistirilebilir: "kaydetmeden cik"
+  // sorusunda "Vazgec" neyden vazgectigini soylemiyor, "Kal" diyor.
+  iptalDugme.textContent = secenek.iptalAd || t('btn_cancel');
+  // Ucuncu (orta) dugme: verilmediyse gizli. Bir onceki pencereden
+  // asili kalmasin diye yazisi da her seferinde siliniyor.
+  const ortaDugme = document.getElementById('dlgAlt');
+  ortaDugme.hidden = !secenek.orta;
+  ortaDugme.textContent = secenek.orta || '';
+  ortaDugme.classList.toggle('btn-danger', !!secenek.ortaTehlike);
+  // Serit sinifi: telefonda uc dugme alt alta dizilsin (yukaridaki
+  // `.uc-secenek` kurali). Iki dugmeli diyaloglar etkilenmiyor.
+  ov.querySelector('.modal-actions').classList.toggle('uc-secenek', !!secenek.orta);
   ov.classList.add('open');
   // Odak: girisli ise kutuya, degilse Tamam'a. Klavye ve ekran okuyucu
   // dogrudan dogru yere gelsin.
@@ -20926,6 +21148,9 @@ function sor(mesaj, varsayilan){ return dlgAc(String(mesaj), { iptalli:true, gir
   const giris = document.getElementById('dlgInput');
   const tamam = ()=> dlgKapat(giris.hidden ? true : giris.value);
   document.getElementById('dlgOk').addEventListener('click', tamam);
+  // Orta dugme kendi degerini donduruyor: cagiran taraf 'orta' diye
+  // ayirt ediyor (true = Tamam, false/null = iptal).
+  document.getElementById('dlgAlt').addEventListener('click', ()=> dlgKapat('orta'));
   document.getElementById('dlgCancel').addEventListener('click', ()=> dlgKapat(giris.hidden ? false : null));
   // Perde ve Escape: iptal. Tek dugmeli uyarida perde de "Tamam" sayilir,
   // cunku iptal edilecek bir sey yok.
@@ -22422,6 +22647,7 @@ function openModal(ev, hazirTarih, hazirSaat, hazirProje){
   const bas = document.getElementById('modalTitle');
   if(bas){ bas.setAttribute('tabindex','-1'); bas.focus({preventScroll:true}); }
   kunyeTazele();
+  kirliBaslat('editOverlay');       // 77: temiz hal burada olculuyor
 }
 // KUNYE: cizimdeki "KAYIT · CAR 11 KAS 2026 · 10:00" satiri.
 // Tarih/saat formdan okunuyor, kayittan DEGIL: kullanici alani
@@ -22483,7 +22709,8 @@ function kayitSayfaKipineTasi(){
     serit.innerHTML = '<button type="button" id="ev_geri"></button>'
                     + '<span class="sayfa-geri-ad" id="ev_geriAd"></span>';
     kutu.insertBefore(serit, kutu.firstChild);
-    serit.querySelector('#ev_geri').addEventListener('click', ()=> closeModal());
+    serit.querySelector('#ev_geri').addEventListener('click',
+      ()=> cikisKorumasi('editOverlay', ()=> closeModal()));
   }
   kayitGeriTazele();
 }
@@ -22796,7 +23023,11 @@ document.getElementById('f_platform').addEventListener('change', ()=>{
   if(kap) kap.addEventListener('change', ()=>{ dilSeridiTazele(); modalHesapTazele(); otoYayinTazele(); });
 });
 document.getElementById('addBtn').addEventListener('click', ()=> openModal(null));
-document.getElementById('cancelBtn').addEventListener('click', closeModal);
+// `closeModal(true)`: eski halde dinleyici fonksiyonu DOGRUDAN
+// veriyordu ve olay nesnesi `sessizRota` yerine gecip adres
+// yazilmasini engelliyordu. Ayni davranis korunuyor.
+document.getElementById('cancelBtn').addEventListener('click',
+  ()=> cikisKorumasi('editOverlay', ()=> closeModal(true)));
 // ⛔ PERDE TIKLAMASI KALDIRILDI (oteki sayfalarla ayni gerekce):
 //   sayfa kipinde "disarisi" sayfanin kendi bos alani.
 // Esc = Vazgec. YENI BIR KAYIP YOLU DEGIL: perdeye tiklamak zaten ayni
@@ -22808,7 +23039,7 @@ document.addEventListener('keydown', (e)=>{
   if(e.key !== 'Escape') return;
   const o = document.getElementById('editOverlay');
   if(!o.classList.contains('open')) return;
-  closeModal();
+  cikisKorumasi('editOverlay', ()=> closeModal());
 });
 document.getElementById('uploadToggle').addEventListener('click', ()=> setUploadToggle(document.getElementById('uploadToggle').dataset.val !== '1'));
 

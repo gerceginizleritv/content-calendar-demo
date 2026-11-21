@@ -76,7 +76,11 @@ const ACICILAR = {
         setPage('calendar');
       });
       await p.waitForTimeout(350);
-      await p.evaluate(()=> openModal('e76'));
+      // ⚠ openModal NESNE aliyor, id DEGIL (bkz. app.html
+      //   `function openModal(ev, ...)`). Id gecilince bos bir YENI
+      //   kayit formu aciliyor -- pencere yine aciliyor ama olculen
+      //   form o kaydin formu olmuyor.
+      await p.evaluate(()=> openModal(events.find(e=> e.id === 'e76')));
       await p.waitForTimeout(600);
     }
   },
