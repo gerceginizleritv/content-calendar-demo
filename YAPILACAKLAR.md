@@ -3308,6 +3308,65 @@ dokunmak ve ikinci seferde birincisini bozmak demek.
   ⛔ **Bu madde artık "ölçülecek" değil, "karar bekliyor".** Ölçüm
   yapıldı ve yukarıda duruyor; yeniden ölçmeye gerek yok.
 
+- ⬜ **75. LİSTE SATIRLARINDA SAĞDAKİ DENETİMLER SÜTUN TUTSUN.**
+  Kullanıcı 21 Kasım 2026'da ekran görüntüsüyle bildirdi:
+
+  > *"liste görünümünde sağ tarafta görünen proje adı, öncelik gibi
+  > özellikler bazı yerlerde dolu bazılarında boş geldiğinde karmaşık
+  > bir görünüm sunuyor. Bu kullanıcı deneyimi açısından gözle
+  > taraması için kolay değil. Bunun daha düzenli olması lazım. Bu
+  > sadece fikirler sayfası için değil, diğer tüm sayfalar için de
+  > geçerli."*
+
+  ✅ **ÖLÇÜLDÜ (21 Kasım 2026, tarayıcıda, 1600 px).** Ölçülen şey:
+  her satırda **aynı roldeki** öğenin sol kenarı. Hepsi aynı x'te
+  ise göz aşağı doğru bir sütun takip edebiliyor.
+
+  | Sayfa | Ölçüm | Durum |
+  |---|---|---|
+  | **Fikirler** (liste) | proje kutusu **108 px**, çöp **102 px**, saat **102 px** oynuyor | ⛔ |
+  | **Mekânlar** (liste) | rozet kutusu **132 px** oynuyor | ⛔ |
+  | Scriptler | 0 px | ✅ zaten hizalı |
+  | Bugün | 0 px | ✅ zaten hizalı |
+  | Ayarlar · hesap etiketleri | 0 px | ✅ zaten hizalı |
+  | Projeler · Takvim | — | ✅ gerçek tablo |
+
+  ⛔ **KULLANICININ "TÜM SAYFALAR" SEZGİSİ ÖLÇÜMLE DARALDI:**
+  sorun **iki** sayfada var, beşinde yok. Bu maddeye başlarken
+  tekrar ölçülecek — yeni bir liste eklenmiş olabilir.
+
+  ✅ **SEBEP (ölçümden):** satır bir **akış** (flex) olarak
+  diziliyor, sütun olarak değil. Ortadaki metin `flex:1` ile
+  genişleyince sağdaki her öğe metnin bittiği yerden başlıyor;
+  metin uzunluğu ve "HEPSİNİ AYIR" gibi **bazen çıkan** öğeler
+  değiştikçe hepsi kayıyor.
+  ⚠ **Hizalı olan tek öğe SCRIPT düğmesi** — çünkü o en sağa
+  dayanıyor (ölçüm: 1446 × 4, yayılım 0).
+
+  ✅ **KULLANICININ KARARI (21 Kasım 2026): SABİT SÜTUNLAR.**
+  Satır ızgaraya çevrilecek: **metin | proje | öncelik | işlemler**
+  her satırda aynı genişlikte duracak. "HEPSİNİ AYIR" gibi bazen
+  çıkan öğeler kendi sütununda **boş** kalacak, hiçbir şey
+  kaymayacak.
+  ⛔ Seçilmeyen yollar: (a) sağa dayayıp boşları yer tutucuyla
+  doldurmak — öğe genişliği değişince yine kayıyor; (b) önce tek
+  sayfada denemek.
+
+  ✅ **ZAMANLAMA — KULLANICININ KARARI: 73 İLE BİRLİKTE, SONDA.**
+  Gerekçe kullanıcıya böyle sunuldu: düzen değişikliği 248 testin
+  bir kısmını etkiler, hepsini tek turda elden geçirmek daha az
+  riskli.
+
+  ⚠ **TELEFON (Bölüm 8):** 560 pikselin altında Fikirler listesi
+  **ızgaraya** dönüyor, Mekânlar satırı ise **sarıyor**
+  (`.mk-satir{flex-wrap:wrap}`). Yani sütun düzeni yalnızca geniş
+  ekranda geçerli; dar ekranda ayrı ölçülecek.
+
+  ⛔ **BEKÇİ TEST:** her satırda aynı roldeki öğenin sol kenarını
+  ölçüp **yayılımın sıfır** olduğunu söylesin. ⚠ Sayfa listesini
+  elle yazmasın — liste görünümü olan sayfaları kendisi bulsun
+  (bu deponun tekrarlayan hatası).
+
 - ⬜ **73. GÖRÜNÜM TOPARLAMA — GELİŞTİRMELER BİTİNCE.**
   Kullanıcı 21 Kasım 2026'da istedi:
 
