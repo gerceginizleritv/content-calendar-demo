@@ -3308,6 +3308,43 @@ dokunmak ve ikinci seferde birincisini bozmak demek.
   ⛔ **Bu madde artık "ölçülecek" değil, "karar bekliyor".** Ölçüm
   yapıldı ve yukarıda duruyor; yeniden ölçmeye gerek yok.
 
+- ⬜ **76. ⛔ TELEFONDA "KAYDET" ALT MENÜNÜN ALTINDA KALIYOR — HATA.**
+  Başka bir oturumun kullanıcı deneyimi raporundan geldi
+  (21 Kasım 2026); **bu oturumda yeniden ölçüldü ve doğrulandı.**
+
+  | Ne | Yeri (375 × 812) |
+  |---|---|
+  | "Kaydet" düğmesi (`#saveBtn`) | 750 – 798 |
+  | Alt menü şeridi (`.rail-nav`) | 754 – 806 |
+  | Düğmenin **tam ortasına** basınca gelen öğe | **`BUTTON.tab`** (alt menü sekmesi) |
+
+  ⛔ **Yani düğme göründüğü yerde basılamıyor.** Ölçüm kutu okumakla
+  değil `elementFromPoint` ile yapıldı — gerçek dokunma noktası
+  alt menüye gidiyor. Kullanıcı kaydı ancak formun **en altına**
+  kadar kaydırırsa Kaydet'e ulaşabiliyor (form 1402 piksel).
+  ⚠ **Bu bir görünüm işi değil, işi engelleyen bir hata.** 73'ün
+  değil kendi maddesinin konusu.
+  ⚠ Playwright gerçek bir telefon değil (Bölüm 8); düzeltmeden önce
+  gerçek cihazda da bakılmalı, ama ölçüm zaten yeterince açık.
+
+  ⬜ **ÖNERİLEN YÖN (kullanıcı onayı bekliyor):** düğme şeridi alt
+  menünün **üstünde** bitsin. Rapor tek satır öneriyor: solda Sil,
+  sağda Vazgeç + Kaydet.
+
+- ⬜ **77. ⛔ KAYDEDİLMEMİŞ DEĞİŞİKLİK UYARISIZ KAYBOLUYOR.**
+  Aynı rapordan; **bu oturumda doğrulandı — ama farklı bir kanıtla.**
+  Rapor "değiştirip çıktım, sormadı" diyordu; benim ilk denemem
+  izlenmeyen bir alanı değiştirdiği için **bağlayıcı değildi.**
+  ⛔ **Kesin kanıt:** uygulamada böyle bir koruma **hiç yok** —
+  `beforeunload` yok, kayıt penceresi için kirlilik izleme yok,
+  "kaydetmeden çıkılsın mı?" diye bir sözlük anahtarı yok. Yani
+  pencereden çıkınca değişiklik sessizce gidiyor.
+  ⚠ **Veri kaybı sınıfı bir hata.**
+
+  ⬜ **ÖNERİLEN YÖN (kullanıcı onayı bekliyor):** değişiklik varsa
+  çıkarken üç seçenekli soru — Kaydet / Çık / Kal.
+  ⚠ Bölüm 7: soru metni her dile girer.
+
 - ⬜ **75. LİSTE SATIRLARINDA SAĞDAKİ DENETİMLER SÜTUN TUTSUN.**
   Kullanıcı 21 Kasım 2026'da ekran görüntüsüyle bildirdi:
 
