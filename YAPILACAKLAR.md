@@ -817,8 +817,50 @@ dokunmak ve ikinci seferde birincisini bozmak demek.
   `yeniSetId()` base36 üretiyor. Testin iddiası ("çöp süzülüyor")
   hâlâ doğru ve artık `st_...` de geçiyor.
 
-  ⬜ **54b'NİN KALAN TEK PARÇASI:** `fiyatlar.html`'deki plan
-  karşılaştırmasına satır (54'ün genel notu).
+  ✅ **FİYAT SAYFASI BİTTİ (21 Kasım 2026).** Creator Pro listesine
+  iki dilde satır: *"Kendi çekim türlerin ve setleri kişiselleştirme"*
+  / *"Your own shoot types, and kits you can personalise"*. Site
+  yeniden üretildi (`tr/fiyatlar`, `en/pricing`).
+
+  ⚠ **BİR BOŞLUK BULUNDU VE KAPATILDI.** `app.html`'in sözlüğünü
+  `sozluk-paritesi` koruyor ama **fiyat sayfasının kendi sözlüğünü
+  hiçbir şey korumuyordu**: satır Türkçe eklenip İngilizce unutulsa
+  kimse görmeyecekti. Yeni bekçi
+  `testler/fiyat-ozellik-paritesi.test.js` (16 iddia) dil ve plan
+  listesini sayfanın kendi `M` sözlüğünden **buluyor**; metni değil
+  **sayıyı** ölçüyor (aynı planın madde sayısı her dilde eşit mi,
+  madde boş mu, ekranda çizilen `<li>` sayısı sözlükle aynı mı).
+  **6 mutasyon denendi, 6'sı da yakalandı.**
+  ⚠ Biri testi **çökerterek** yakalanıyordu (çizim hiç madde
+  yazmayınca bekleme zaman aşımına uğruyordu); bekleme artık
+  çökertmiyor, yokluk **iddia olarak** ölçülüyor.
+
+  ✅ **KILAVUZ BİTTİ (21 Kasım 2026) — İKİ DİLDE.** Kullanıcıya
+  soruldu, *"şimdi ekleyeyim"* dedi. İki bölüm eklendi:
+
+  | Nereye | Ne anlatıyor |
+  |---|---|
+  | Projeler ve yedi adım → **Kendi çekim türün** | Nereden eklenir, "adres sorulsun" tiki ne yapar, tür silinince projelere ne olur |
+  | Çekim listesi → **Hangi set hangi türde önerilsin** | Atama ekranı, kendi setlerinin listede çıkması, "Varsayılana dön" |
+
+  ⛔ **KILAVUZDA PLAN ADI GEÇMİYOR — BİLEREK.** Kılavuz bugün
+  hiçbir yerde "Creator Pro" demiyor; planları fiyat sayfası
+  anlatıyor. Tek bir yere plan etiketi koymak "bir yerde yapıp
+  ötekinde unutmak" ailesinden olurdu. ⚠ Kullanıcı tersini isterse
+  **bütün kılavuza** aynı anda konur.
+
+  ⚠ **BURADA DA AYNI BOŞLUK VARDI.** `kilavuz-vurgu` her kılavuzu
+  **ayrı ayrı** denetliyor ("en az 10 bölüm var mı", "işaret
+  görünüyor mu") ama kılavuzları **birbiriyle karşılaştırmıyordu**:
+  Türkçeye bölüm ekleyip İngilizceyi unutmak sessizce geçerdi. Yeni
+  bekçi `testler/kilavuz-paritesi.test.js` (6 iddia) kılavuzları
+  `id="yanMenu"` ile **buluyor**, metni değil **yapıyı**
+  karşılaştırıyor: bölüm kimlikleri aynı sırada mı, her bölümdeki
+  alt başlık sayısı eşit mi, menüde ölü bağlantı var mı.
+  **4 mutasyon denendi, 4'ü de yakalandı.**
+
+  ⛔ **54. MADDE BÖYLECE TAMAMEN KAPANDI:** 54a (kapı), 54b (set
+  ataması), 54c (kendi çekim türü), fiyat sayfası ve kılavuz.
   | 54c | **Kendi çekim türünü** ekleme (örn. "Podcast — iki kişi") |
 
   ✅ **54c BİTTİ (21 Kasım 2026).** İki aşamada yapıldı:

@@ -311,7 +311,24 @@ a{color:inherit;}
     <p class="tepe-alt" data-m="alt">Bir çekimden çıkan on paylaşımı tek yerden yönetmek için. Hesap açmadan denemeye başlayabilirsin.</p>
 
     <div class="secici">
-      <div class="grup" role="group" id="paraSecici"><button type="button" data-para="TRY" aria-pressed="false">TRY</button><button type="button" data-para="USD" aria-pressed="true">USD</button><button type="button" data-para="EUR" aria-pressed="false">EUR</button></div>
+      <div class="grup" role="group" id="paraSecici">
+        <!-- ⚠ YER TUTUCU. Fiyat verisi gelene kadar gorunen hal.
+             ⛔ 18 Kasim 2026'da bir sure HIC dugme yoktu ve bu bir
+             GERILEME idi: Supabase yavassa ya da erisilemezse
+             kullanici para birimi secicisini HIC goremiyordu.
+             `fiyat-baglantisi` testi yakaladi.
+             Veri gelince `paraSeciciCiz()` burayi BASTAN yaziyor. -->
+        <button type="button" data-para="TRY" aria-pressed="false">TRY</button>
+        <button type="button" data-para="USD" aria-pressed="true">USD</button>
+        <!-- ⛔ 18 KASIM 2026 — VERI GELINCE LISTE ELLE YAZILMIYOR.
+             Onceden TRY ve USD burada sabit duruyordu; EUR eklenince
+             ucuncusu da elle yazilmak zorunda kalirdi ve yarin baska
+             bir para birimi gelince yine. Artik `paraSeciciCiz()`
+             bunlari VERIDEN uretiyor: panelde `active` olan her para
+             birimi kendiliginden cikiyor, kapatilan kayboluyor.
+             Kullanici 18 Kasim 2026: "admin panelinde hangi fiyati
+             kullanabilecegimizi ... ben yazabileyim." -->
+      </div>
       <div class="donem-sarmal">
         <div class="grup" role="group" id="donemSecici">
           <button type="button" data-donem="monthly" aria-pressed="true" data-m="aylik">Aylık</button>
@@ -329,15 +346,15 @@ a{color:inherit;}
              ⛔ Geri eklenmeyecek -- kullanici soylemedikce. -->
       </div>
     </div>
-    <p class="indirim" id="indirim">Yıllık ödemede <span class="ind-rozet ind-cumle">%9</span> kadar daha ucuz.</p>
+    <p class="indirim" id="indirim"></p>
   </div>
 </section>
 <div class="klaket" aria-hidden="true"></div>
 
 <section class="bolum">
   <div class="sar">
-    <div id="durum" class="durum"></div>
-    <div class="kartlar" id="kartlar"><div class="kart"><h2>Starter</h2><p class="tanim">Denemeye başlamak için.</p><p class="fiyat">$0</p><p class="fiyat-alt"></p><ul><li>Hesapsız, tarayıcıda çalışır</li><li>Takvim ve "tek çekim, çok paylaşım" görünümü</li><li>Fikirler, scriptler, mekanlar</li><li>Çekim listesi ve hazır setler</li></ul><a class="btn" href="/app.html">Ücretsiz başla</a></div><div class="kart onerilen"><span class="rozet">Önerilen</span><h2>Creator Pro</h2><p class="tanim">Tek başına çalışan üretici için.</p><p class="fiyat">$9<small>/ay</small></p><p class="fiyat-alt"> <span class="ind-rozet ind-kart" aria-hidden="true" data-yer-tutucu="">%9 indirim</span></p><ul><li>Starter’daki her şey</li><li>Bulut: masaüstünde planla, sahada telefondan aç</li><li>Sınırsız proje, script ve fikir</li><li>Sınırsız malzeme kütüphanesi</li><li>Mekana bağlı izin ve dikkat notları</li><li>Telefona bildirim: Shootboard kapalıyken de hatırlatma</li><li>Kendi çekim türlerin ve setleri kişiselleştirme</li></ul><a class="btn btn-ana" href="/app.html">Başla</a></div></div>
+    <div id="durum" class="durum">Fiyatlar yükleniyor…</div>
+    <div class="kartlar" id="kartlar"></div>
   </div>
 </section>
 
