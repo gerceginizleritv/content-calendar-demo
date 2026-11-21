@@ -156,16 +156,34 @@ const assert = require('node:assert');
       //    195,63 px. Sebep DUGME DEGIL ICERIK'ti -- parcalar ayri
       //    satirlar oldugu icin sinira hemen dayaniyorlar -- ama
       //    pratikte "parcali olan" = "dugmesi olan".
-      //    Govde SABIT yukseklige cevrildi; iddia artik daha guclu:
-      //    kisasi, uzunu, parcalisi ve "YENI FIKIR" kutusu BIR ARADA.
-      const y = o.yukseklikler.concat(o.ekleKutusu);
+      //    Govde SABIT yukseklige cevrildi.
+      //
+      // ⛔ 21 KASIM 2026 — IDDIA IKIYE AYRILDI, ZAYIFLATILMADI.
+      //    Ilk hali "YENI FIKIR" kutusunu da FIKIR KARTLARIYLA ayni
+      //    kefeye koyuyordu. Kullanici o gun kutunun KUCULMESINI
+      //    istedi: "Yeni fikir ekle butonu cok buyuk. Hem tablo hem
+      //    de liste gorunumunde daha kuculturulmus bir buton haline
+      //    getirmek lazim." (YAPILACAKLAR 74a).
+      //    ⚠ 19 Kasim'daki sikayet zaten KUTU hakkinda degildi:
+      //      "hepsini ayir tusu OLANLAR ile OLMAYANLAR arasinda
+      //      yukseklik farki var" -- yani FIKIR KARTLARI. Kutu o
+      //      iddiaya testin sozcugu yuzunden girmisti.
+      //    ⛔ Yerine IKI ayri ve DAHA KESKIN iddia kondu: fikir
+      //      kartlari birbirine esit, kutu ise onlardan KUCUK.
+      const y = o.yukseklikler;
       assert.ok(o.yukseklikler.length >= 5,
         'yalnizca ' + o.yukseklikler.length + ' fikir karti olculdu');
       assert.ok(o.ekleKutusu.length >= 1, '"YENI FIKIR" kutusu olculemedi');
       const fark = Math.max(...y) - Math.min(...y);
       assert.ok(fark < 0.5, fark.toFixed(3) + ' px fark: fikir kartlari '
-        + JSON.stringify(o.yukseklikler) + ', ekleme kutusu '
-        + JSON.stringify(o.ekleKutusu));
+        + JSON.stringify(o.yukseklikler));
+      // ⛔ 74a: kutu fikir kartindan KUCUK olmali. Eskiden izgaranin
+      //    germesiyle komsu kartin boyuna uzuyordu (1920 pikselde
+      //    309 px bos kutu).
+      assert.ok(Math.max(...o.ekleKutusu) < Math.min(...y) - 40,
+        '"YENI FIKIR" kutusu ' + JSON.stringify(o.ekleKutusu)
+        + ', fikir kartlari ' + JSON.stringify(o.yukseklikler)
+        + ' -- kutu kuculmemis (74a)');
       // ⛔ GOVDELER DE ESIT OLMALI (yukarida sebebi). Izgara germesi
       //    kartlari esitler ama govdeyi esitlemez; sabit yukseklik
       //    gidince bu iddia duser.
@@ -270,7 +288,10 @@ const assert = require('node:assert');
     // ⚠ Isaret dugme satirina konsaydi mini dugmeler UCUNCU satira
     //   inerdi -- az once duzeltilen sorunun ta kendisi. Mutlak
     //   konumda duruyor; isaretli ve isaretsiz kartlar AYNI boyda.
-    const y = sonuc.tr.yukseklikler.concat(sonuc.tr.ekleKutusu);
+    // ⚠ 21 KASIM 2026: "YENI FIKIR" kutusu bu olcumden CIKARILDI --
+    //   artik bilerek daha kucuk (74a). Olculen sey ISARETIN etkisi,
+    //   yani FIKIR KARTLARININ birbirine esitligi.
+    const y = sonuc.tr.yukseklikler;
     const yayilim = Math.max(...y) - Math.min(...y);
     assert.ok(yayilim < 0.5,
       'isaretli ve isaretsiz kartlar arasinda ' + yayilim.toFixed(2)

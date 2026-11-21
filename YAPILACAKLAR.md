@@ -3181,6 +3181,19 @@ dokunmak ve ikinci seferde birincisini bozmak demek.
   taşınırsa gerekir) ama yorumu artık doğruyu söylüyor ve bekçi
   **konumu** ölçüyor.
 
+  ⛔ **BİR TEST DÜŞTÜ VE ZAYIFLATILMADI — İKİ İSTEK ÇATIŞTI.**
+  `fikir-kart-olcu` *"BÜTÜN kartlar aynı yükseklikte"* diyordu ve
+  **"YENİ FİKİR" kutusunu da fikir kartlarıyla aynı kefeye
+  koyuyordu.** Kutu küçülünce test haklı olarak düştü.
+  ⚠ Ama 19 Kasım'daki şikâyet zaten kutu hakkında **değildi**:
+  *"hepsini ayır tuşu OLANLAR ile OLMAYANLAR arasında yükseklik
+  farkı var"* — yani **fikir kartları**. Kutu o iddiaya testin
+  sözcüğü yüzünden girmişti.
+  ⛔ İddia **ikiye ayrıldı ve keskinleşti**: (1) fikir kartları
+  birbirine eşit, (2) kutu onlardan **belirgin küçük**. İkisi de
+  mutasyonla doğrulandı — 74a geri alınırsa (1) değil **(2)**
+  düşüyor, 19 Kasım kararı bozulursa **(1)** düşüyor.
+
   **Bekçi:** `testler/fikir-liste-satiri.test.js` — 61 iddia.
   360 · 375 · 390 · 900 · 1366 · 1920 pikselde ölçüyor; dil listesini
   `LANG`dan buluyor. **12 mutasyon denendi, 12'si de yakalandı.**
