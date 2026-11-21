@@ -767,9 +767,58 @@ dokunmak ve ikinci seferde birincisini bozmak demek.
      ⛔ Çekim Setleri sayfasında her setin yanına tik koymak
      **seçilmedi** (tür sayısı artınca satır kalabalıklaşıyor).
 
-  ⬜ **54b AŞAMA 2 — ARAYÜZ.** Yukarıdaki 2. karara göre; kapı
-  `set_kisisellestirme`, 54c'deki kalıpla (veri durur, yalnızca
-  düzenleme gizlenir).
+  ✅ **54b AŞAMA 2 BİTTİ (21 Kasım 2026) — ARAYÜZ.**
+  Ayarlar → Planlama bilgileri → **"Hangi setler hazır tikli
+  gelsin"**: bir çekim türü seçilir, altında setler tik listesi
+  olarak gelir (kullanıcının 2. kararı). Kendi setleri **"kendi
+  setin"** işaretiyle ayırt ediliyor.
+
+  - ⛔ **TİK ANINDA KAYDEDİLİYOR**, ayrı bir "kaydet" düğmesi yok —
+    ayarlardaki öteki tikler de böyle. Ayrı düğme "kaydettim mi?"
+    sorusunu doğururdu.
+  - ⛔ **"Varsayılana dön" satırı SİLİYOR, boşaltmıyor.** Satırın
+    olmaması "uygulamayla gelen öneriler geçerli"; boş dizi "hiçbiri
+    tikli gelmesin". İkisi ayrı şey ve düğme yalnızca o türe
+    **dokunulduysa** görünüyor.
+  - ⛔ **Kendi çekim türü silinince o türün set ataması da kalkıyor**
+    (ölü veri yok). "Diğer"in kendi atamasına dokunulmuyor.
+  - ⛔ **Kapı:** kapalı + hiç atama yok → bölüm hiç çıkmıyor;
+    kapalı + atama var → bölüm duruyor, tikler kapalı, sebep
+    ekranda, atama **çalışmaya devam ediyor** (67'deki kural).
+
+  **Bekçi:** `testler/set-atama-arayuz.test.js` — 53 iddia.
+  Dil listesini `LANG`dan, tür sayısını `PROJ_TYPES`'tan **buluyor**.
+  360 · 375 · 390 pikselde ölçüyor. **16 mutasyon denendi, 16'sı da
+  yakalandı.**
+
+  ⚠ **ÖLÇÜMLE ÇIKAN GERÇEK BİR ARAYÜZ SORUNU.** İlk sürüm her tikten
+  sonra **bütün tik listesini yeniden çiziyordu.** Bunun iki bedeli
+  vardı: klavyeyle gezen biri her tikten sonra listenin başına
+  dönüyordu, ve telefonda parmağın altındaki öge değişiyordu.
+  Testin başına gelen şey kullanıcının da başına gelecek olan şeydi
+  (ard arda tik atan döngünün elindeki ögeler DOM'dan koptu).
+  Artık tikten sonra **yalnızca durum satırı ve düğme** tazeleniyor
+  (`setAtamaDurumTazele`), liste yerinde kalıyor. Odağın yerinde
+  kaldığı ayrı bir iddiayla ölçülüyor.
+
+  ⚠ **TESTİN KENDİSİ DE SAĞLAMLAŞTIRILDI.** Bir mutasyon denemesinde
+  test **çöktü** (kendi setleri listeden çıkarılınca `null`'a
+  yazılıyordu) ve çökme **sonraki 30 iddiayı durdurdu.** Bir
+  mutasyonu çökerek "yakalamak" kötü bir yakalamadır: küçük bir
+  gerileme, kendinden sonraki her şeyi gizler. Yokluk artık veri
+  olarak dönüyor ve ayrı bir iddiayla ölçülüyor.
+
+  ⛔ **BİR TESTİ DÜŞÜRDÜM VE ZAYIFLATMADIM.** `SET_ANAHTAR_BICIM`
+  ilk sürümde `/^[A-Za-z0-9_]{1,40}$/` yazıldı; `liste-duzeni`
+  testi düştü, çünkü o test *"bozuk set değeri temizleniyor"* diye
+  `'BUYUK'` değerinin **süzüldüğünü** ölçüyor. ⚠ Test değil
+  **kalıp daraltıldı** (`/^[a-z0-9_]{1,40}$/`): büyük harfe hiç
+  ihtiyaç yok, çünkü hazır set anahtarları küçük harf ve
+  `yeniSetId()` base36 üretiyor. Testin iddiası ("çöp süzülüyor")
+  hâlâ doğru ve artık `st_...` de geçiyor.
+
+  ⬜ **54b'NİN KALAN TEK PARÇASI:** `fiyatlar.html`'deki plan
+  karşılaştırmasına satır (54'ün genel notu).
   | 54c | **Kendi çekim türünü** ekleme (örn. "Podcast — iki kişi") |
 
   ✅ **54c BİTTİ (21 Kasım 2026).** İki aşamada yapıldı:
@@ -2977,10 +3026,22 @@ dokunmak ve ikinci seferde birincisini bozmak demek.
 
   **Raporun küçük notları (hepsi doğrulanacak):**
 
-  - Türkçe arayüzde, giriş yapılmamışken `.auth-etiket` "Sign in"
-    yazıyor (yerel kopyada görülmüş, canlıda doğrulanmamış).
-    ⚠ **Bu bir görünüm işi değil, Bölüm 7 hatası olabilir** —
-    doğrulanırsa 73'ün değil, kendi maddesinin konusu.
+  - ✅ **`.auth-etiket` "Sign in" — ÖLÇÜLDÜ (21 Kasım 2026),
+    ÇEVİRİ EKSİKLİĞİ DEĞİL.** Bir tarayıcıda, dil anahtarı `tr`
+    iken açılıştan itibaren 30 ms aralıklarla okundu:
+
+    | Ne | Ölçüm |
+    |---|---|
+    | TR sözlüğü | `btn_signin: "☁ Giriş yap"` ✅ var |
+    | Dil değişince tazeleniyor mu | `setLanguage` → `refreshAuthUi()` ✅ |
+    | "Sign in" ne kadar görünüyor | ~210–270 ms arası, **~60 ms** |
+    | Sonrası | "Giriş yap" ve öyle kalıyor |
+
+    Yani bu bir **açılış kırpışması**: düğmede `data-i18n` bilerek
+    yok (yorumda yazılı: `applyStaticI18n` o yapıyı düz metne
+    çevirip siliyordu), HTML'deki "Sign in" betik koşana kadarki
+    yer tutucu. ⚠ 60 ms gözle neredeyse görünmez; kullanıcı
+    rahatsız olduğunu söylemedikçe kendi maddesi açılmıyor.
   - Scriptler sayfasında düğme "+ Yeniscript" gibi bitişik görünüyor.
   - `.cal-range` ("Kasım 2026") PC'de 13px Mono ve soluk; telefonda
     aynı bilgi 17px kalın Sans.

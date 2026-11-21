@@ -428,6 +428,15 @@ a.lockup:focus-visible{outline:2px solid var(--accent);outline-offset:3px;border
      Bu yuzden secici `.field .pcheck.ct-tik` (0,3,0). */
   .field .pcheck.ct-tik{min-height:44px;}
 }
+/* ---- 54b · set atamasi ------------------------------------------- */
+.sa-setler{display:flex;flex-wrap:wrap;gap:8px;margin:0 0 14px;}
+/* ⚠ Bolum 8 — 44 piksel. Ozgulluk: `.pcheck` (0,1,0) temel kurali
+   `min-height:40px` diyor; `.sa-setler .sa-tik` (0,2,0) onu yeniyor.
+   ⛔ 54c'de tam bu hesap atlandi ve olcum 40 px cikti. */
+@media(max-width:760px){ .sa-setler .sa-tik{min-height:44px;} }
+.sa-kendi-im{font-size:10.5px;color:var(--text-dim);
+  border:1px solid var(--line-soft);border-radius:2px;padding:0 4px;margin-left:2px;}
+.sa-durum{margin:-4px 0 10px;}
 .ct-adres-im{flex:none;font-size:11px;color:var(--text-dim);
   border:1px solid var(--line-soft);border-radius:2px;padding:1px 6px;}
 .ct-plan{margin:-4px 0 14px;line-height:1.55;}
@@ -5262,6 +5271,38 @@ textarea.sc-ai-brief{min-height:64px;resize:vertical;line-height:1.5;}
           </div>
         </div>
       </div>
+
+      <!-- ⛔ 21 KASIM 2026 (YAPILACAKLAR 54b asama 2) — SET ATAMASI.
+           Kullanicinin karari (21 Kasim 2026): arayuz AYARLAR'da
+           olacak ve "bir cekim turu secilir, altinda setler tik
+           listesi olarak gelir". ⛔ Cekim Setleri sayfasinda her
+           setin yanina tik koymak SECILMEDI: tur sayisi artinca
+           satir kalabaliklasiyor ve telefonda sikisiyor.
+           ⛔ TIK ANINDA KAYDEDILIYOR, ayri bir "kaydet" dugmesi YOK:
+             ayarlardaki oteki tikler de boyle (hatirlatma tikleri).
+             Ayri dugme "kaydettim mi?" sorusunu dogururdu.
+           ⛔ "Varsayilana don" ancak kullanici o ture DOKUNDUYSA
+             gorunuyor: dokunmadigi bir turde geri alinacak bir sey
+             yok ve dugme kullaniciya "bir sey degistirmisim" dedirtir.
+           ⛔ Kapi (set_kisisellestirme) 54c'deki kalipla: veri durur,
+             yalnizca duzenleme kapanir. -->
+      <div id="sa_blok">
+        <h4 class="ayar-alt" data-i18n="sa_title">Which kits for which shoot type</h4>
+        <p class="hint hs_not" data-i18n="sa_intro">Pick a shoot type, then tick the kits.</p>
+        <p class="hint ct-plan" id="sa_plan" hidden data-i18n="sa_plan">Your choices keep working.</p>
+
+        <div class="field">
+          <label for="sa_tur" data-i18n="sa_tur">Shoot type</label>
+          <select id="sa_tur"></select>
+        </div>
+
+        <p class="hint sa-durum" id="sa_durum"></p>
+        <div class="sa-setler" id="sa_setler"></div>
+
+        <div class="modal-actions">
+          <button type="button" class="btn" id="sa_sifirla" hidden data-i18n="sa_sifirla">Back to the defaults</button>
+        </div>
+      </div>
     </div>
 
     <!-- ⛔ 19 KASIM 2026 (YAPILACAKLAR 66) — YAPAY ZEKA.
@@ -8180,6 +8221,17 @@ const LANG = {
     ct_ayni: "You already have a type with that name.",
     ct_sil: (ad)=> `Delete “${ad}”?`,
     ct_sil_bagli: (ad, n)=> `${n} project${n === 1 ? '' : 's'} use${n === 1 ? 's' : ''} “${ad}”. Those projects are not deleted — their type becomes “Other”. Delete the type?`,
+    // 54b · SET ATAMASI. Setin ve turun ADI kullanici verisi olabilir;
+    // cevrilen yalnizca bu arayuz dizeleri.
+    sa_title: "Which kits come ready-ticked",
+    sa_intro: "When you enter a shoot date, Shootboard offers the kits that suit that type. Pick a type below and tick the kits you want ready-ticked for it. Nothing is added to your list without you — the ticks only decide what comes up.",
+    sa_plan: "Your choices keep working. Changing them is part of Creator Pro.",
+    sa_tur: "Shoot type",
+    sa_kendi_im: "your kit",
+    sa_varsayilan: "This type uses the kits that came with the app.",
+    sa_kendi: (n)=> `You set this type yourself: ${n} kit${n === 1 ? '' : 's'} ready-ticked.`,
+    sa_kendi_bos: "You set this type yourself: no kit comes ready-ticked.",
+    sa_sifirla: "Back to the defaults",
     kur_btn_telefon: "Install on phone",
     kur_btn_bilgisayar: "Install on computer",
     kur_not: "Add Shootboard to your Home Screen. It opens like an app and works without a connection.",
@@ -9578,6 +9630,16 @@ const LANG = {
     ct_ayni: "Bu adda bir türün zaten var.",
     ct_sil: (ad)=> `“${ad}” silinsin mi?`,
     ct_sil_bagli: (ad, n)=> `“${ad}” türünü ${n} proje kullanıyor. O projeler silinmiyor — türleri “Diğer” olur. Tür silinsin mi?`,
+    // 54b · SET ATAMASI.
+    sa_title: "Hangi setler hazır tikli gelsin",
+    sa_intro: "Çekim tarihini girdiğinde Shootboard o türe uyan setleri öneriyor. Aşağıda bir tür seç, o türde hazır tikli gelmesini istediğin setleri tikle. Listene sensiz hiçbir şey eklenmez — tikler yalnızca neyin önüne geleceğini belirler.",
+    sa_plan: "Seçimlerin çalışmaya devam eder. Değiştirmek Creator Pro'nun parçası.",
+    sa_tur: "Çekim türü",
+    sa_kendi_im: "kendi setin",
+    sa_varsayilan: "Bu türde uygulamayla gelen setler geçerli.",
+    sa_kendi: (n)=> `Bu türü sen ayarladın: ${n} set hazır tikli geliyor.`,
+    sa_kendi_bos: "Bu türü sen ayarladın: hiçbir set hazır tikli gelmiyor.",
+    sa_sifirla: "Varsayılana dön",
     kur_btn_telefon: "Telefona kur",
     kur_btn_bilgisayar: "Bilgisayara kur",
     kur_not: "Shootboard'u ana ekranına ekle. Uygulama gibi açılır, internet yokken de çalışır.",
@@ -11828,7 +11890,14 @@ async function setiSil(id){
 //    Bu depo o tuzagi iki kez yasadi (`ayarlarHazir`, `turDuzenId`).
 // ⚠ Hem hazir setlerin anahtarina ('dis', 'konusmali') hem de
 //   kullanicinin kendi setinin kimligine ('st_...') uyuyor.
-const SET_ANAHTAR_BICIM = /^[A-Za-z0-9_]{1,40}$/;
+// ⛔ BUYUK HARF YOK, VE BU BILEREK. Ilk surumde [A-Za-z0-9_] yazildi
+//    ve `liste-duzeni` testi dusurdu: o test "bozuk set degeri
+//    temizleniyor" diye 'BUYUK' degerinin SUZULDUGUNU olcuyor.
+//    ⚠ Test ZAYIFLATILMADI, kalip DARALTILDI -- cunku buyuk harfe
+//      hic ihtiyac yok: hazir set anahtarlari kucuk harf ve
+//      `yeniSetId()` base36 uretiyor ('st_' + kucuk harf + rakam).
+//      Testin iddiasi ("cop suzuluyor") hala dogru.
+const SET_ANAHTAR_BICIM = /^[a-z0-9_]{1,40}$/;
 function listeMaddeTemizle(ham){
   const metin = String((ham && ham.metin) || '').trim().slice(0, 200);
   if(!metin) return null;
@@ -12259,6 +12328,16 @@ function turSetAtamasiVarMi(tur){
   return Object.prototype.hasOwnProperty.call(turSetleri, tur)
          && Array.isArray(turSetleri[tur]);
 }
+// ⛔ "O TURDE HANGI SETLER TIKLI" SORUSUNUN TEK CEVABI BURADA.
+//    Hem oneri turetmesi (`setOnerisiListesi`) hem atama ekrani
+//    (`setAtamaCiz`) buna bakiyor. Iki yerde ayri yazilsaydi biri
+//    degisince oteki SESSIZCE ayrisirdi -- bu deponun tekrarlayan
+//    hatasi (otomatik yayin tablosu, palet, ikon ailesi...).
+function turTikliSetler(tur){
+  if(turSetAtamasiVarMi(tur)) return turSetleri[tur].slice();
+  const e = SET_ONERI[tur];
+  return e ? e.tikli.slice() : [];
+}
 
 // Oneri listesi: once tikli olanlar, sonra tiksizler, en sonda uc genel
 // set (hepsi tiksiz -- kullanici karari 17 Kasim 2026: "tabloda
@@ -12274,8 +12353,9 @@ function setOnerisiListesi(pr){
   if(!e && !kendiAtama) return [];
   const eklenmis = (pr.setOneri && Array.isArray(pr.setOneri.eklenen))
                    ? pr.setOneri.eklenen : [];
-  // ⛔ TIKLI LISTE: kullanicinin atamasi varsa O, yoksa tablo.
-  const tikliListe = kendiAtama ? turSetleri[tur].slice() : e.tikli.slice();
+  // ⛔ TIKLI LISTE TEK YERDEN: `turTikliSetler` (atama varsa o,
+  //    yoksa tablo). Atama ekrani da ayni islevi okuyor.
+  const tikliListe = turTikliSetler(tur);
   // Tiksizler: tablodaki her sey (tiklisi dahil, cunku kullanici onu
   // tikten CIKARMIS olabilir) + uc genel set. Tikliya giren burada
   // ikinci kez yazilmiyor.
@@ -16724,6 +16804,7 @@ function ozellikKapilariUygula(){
   // Kendi cekim turleri: kapi yalnizca duzenleme denetimlerini
   // gizliyor, turleri degil.
   try{ if(typeof turleriCiz === 'function') turleriCiz(); }catch(e){}
+  try{ if(typeof setAtamaCiz === 'function') setAtamaCiz(); }catch(e){}
 }
 
 // Plani ve kapiyi sunucudan okuyor.
@@ -17541,6 +17622,8 @@ function ayarSayfasiTazele(){
   hesaplariCiz();
   turFormuTemizle();
   turleriCiz();
+  setAtamaTurDoldur();
+  setAtamaCiz();
   havaAyarTazele();
   hesapBolumunuTazele();
   openAiSettings();
@@ -26758,6 +26841,10 @@ function turKaydet(){
   saveTurler();
   turFormuTemizle();
   turleriCiz();
+  // ⚠ Atama ekranindaki tur listesi de tazelenmeli: yeni tur orada
+  //   da secilebilsin (bir yerde yapip otekinde unutmak bu deponun
+  //   tekrarlayan hatasi -- CLAUDE.md Bolum 7'nin notu).
+  setAtamaTurDoldur(); setAtamaCiz();
   // Tur adi proje tablosunda ve suzgecte de yaziyor.
   renderProjects();
 }
@@ -26775,11 +26862,119 @@ async function turSil(k){
     if(p && p.type === k){ p.type = 'other'; projDirtyIsaretle(p.id); degisen++; }
   });
   kendiTurler = kendiTurler.filter(y=> y.k !== k);
+  // ⛔ O TURUN SET ATAMASI DA KALKIYOR: tanimi olmayan bir ture ait
+  //    satir, `turSetTemizle` bicime baktigi icin sonsuza kadar
+  //    dururdu ve kimse onu goremezdi (olu veri).
+  //    ⚠ Projeler "Diger"e dustu; "Diger"in kendi atamasina
+  //      DOKUNULMUYOR -- kullanicinin orada kendi secimi olabilir.
+  if(Object.prototype.hasOwnProperty.call(turSetleri, k)){
+    delete turSetleri[k];
+    saveTurSetleri();
+  }
   saveTurler();
   if(degisen) saveProjects();
   if(turDuzenId === k) turFormuTemizle();
   turleriCiz();
+  setAtamaTurDoldur(); setAtamaCiz();
   renderProjects();
+}
+
+// ⛔ 21 KASIM 2026 (YAPILACAKLAR 54b asama 2) — SET ATAMA ARAYUZU.
+//    Veri katmani asama 1'de (`turSetleri`, `turTikliSetler`,
+//    `turSetTemizle`); burasi yalnizca ekran.
+function setAtamaTurDoldur(){
+  const sel = document.getElementById('sa_tur');
+  if(!sel) return;
+  const onceki = sel.value;
+  // ⚠ Hazir yedi tur + kullanicinin kendi turleri: `projTypeSelectDoldur`
+  //   zaten ikisini birden veriyor, ikinci bir liste yazilmiyor.
+  projTypeSelectDoldur(sel, onceki || 'vlog');
+}
+// Durum satiri ve "Varsayilana don" dugmesi. AYRI duruyor cunku bir
+// tikten sonra yalnizca BUNLAR tazeleniyor; tik listesi yeniden
+// cizilmiyor.
+// ⛔ SEBEP: her tikte listeyi yeniden cizmek KLAVYE ODAGINI
+//    kaybettiriyor (tab ile gezen biri her tikten sonra basa
+//    donuyordu) ve telefonda parmagin altindaki ogeyi degistiriyor.
+//    ⚠ Ilk surum boyle yaziliydi; `set-atama-arayuz` testi yakaladi:
+//      ard arda tik atan bir dongunun elindeki ogeler DOM'dan
+//      kopuyordu. Testin basina gelen sey, klavyeyle gezen
+//      kullanicinin da basina gelen seydi.
+function setAtamaDurumTazele(){
+  const sel = document.getElementById('sa_tur');
+  const durum = document.getElementById('sa_durum');
+  const sifirla = document.getElementById('sa_sifirla');
+  if(!sel) return;
+  const tur = sel.value;
+  const tikli = turTikliSetler(tur);
+  const kendiAtama = turSetAtamasiVarMi(tur);
+  if(durum){
+    durum.textContent = !kendiAtama ? t('sa_varsayilan')
+      : (tikli.length ? t('sa_kendi')(tikli.length) : t('sa_kendi_bos'));
+  }
+  // ⛔ "Varsayilana don" yalnizca o ture DOKUNULDUYSA, ve kapi acikken.
+  if(sifirla) sifirla.hidden = !kendiAtama || !ozellikAcik('set_kisisellestirme');
+}
+function setAtamaCiz(){
+  const kutu = document.getElementById('sa_setler');
+  const sel = document.getElementById('sa_tur');
+  if(!kutu || !sel) return;
+  const acik = ozellikAcik('set_kisisellestirme');
+  const blok = document.getElementById('sa_blok');
+  const plan = document.getElementById('sa_plan');
+  // ⛔ Kapali planda HIC atamasi olmayana bolum gosterilmiyor
+  //    (54c'deki ayni gerekce: anlatacak seyi olmayan bir ekran).
+  const atamaVar = Object.keys(turSetleri).length > 0;
+  if(blok) blok.hidden = !acik && !atamaVar;
+  if(plan) plan.hidden = acik;
+  const tur = sel.value;
+  const tikli = turTikliSetler(tur);
+  setAtamaDurumTazele();
+  const secili = new Set(tikli);
+  kutu.innerHTML = secilebilirSetler().map(x=>
+    '<label class="pcheck sa-tik">'
+    + '<input type="checkbox" data-sa-set="' + escapeHtml(x.k) + '"'
+    +   (secili.has(x.k) ? ' checked' : '') + (acik ? '' : ' disabled') + '>'
+    + '<span>' + escapeHtml(x.ad) + '</span>'
+    // Kullanicinin kendi seti ayirt edilsin: hazir setle karismasin.
+    + (x.kendi ? '<span class="sa-kendi-im">' + escapeHtml(t('sa_kendi_im')) + '</span>' : '')
+    + '</label>').join('');
+  kutu.querySelectorAll('[data-sa-set]').forEach(el=>{
+    el.addEventListener('change', ()=> setAtamaTikOku());
+  });
+}
+// ⛔ TIK ANINDA KAYDEDILIYOR. Ayri bir "kaydet" dugmesi yok; ayarlardaki
+//    oteki tikler de boyle (`hatirlatmaAyariniOku`).
+function setAtamaTikOku(){
+  if(!ozellikAcik('set_kisisellestirme')) return;
+  const sel = document.getElementById('sa_tur');
+  const kutu = document.getElementById('sa_setler');
+  if(!sel || !kutu) return;
+  const tur = sel.value;
+  if(!projTuruGecerli(tur)) return;
+  // ⛔ SIRA EKRANDAKI SIRA: "en cok unutulan en ustte" dizilisi
+  //    `secilebilirSetler` icinde ve oneri listesi de o sirayi
+  //    kullaniyor.
+  const secilen = [...kutu.querySelectorAll('[data-sa-set]')]
+    .filter(el=> el.checked).map(el=> el.dataset.saSet);
+  // ⛔ BOS DIZI DE YAZILIYOR: "bu turde hicbir set tikli gelmesin"
+  //    bir KARAR, "dokunmadim" degil (asama 1'deki ayirim).
+  turSetleri[tur] = secilen;
+  saveTurSetleri();
+  // ⛔ LISTE YENIDEN CIZILMIYOR: yalnizca durum satiri ve dugme.
+  //    Sebebi `setAtamaDurumTazele`nin ustunde yazili (odak kaybi).
+  setAtamaDurumTazele();
+}
+function setAtamaSifirla(){
+  if(!ozellikAcik('set_kisisellestirme')) return;
+  const sel = document.getElementById('sa_tur');
+  if(!sel) return;
+  // ⛔ SATIR SILINIYOR, BOSALTILMIYOR: satirin olmamasi "uygulamayla
+  //    gelen oneriler gecerli" demek; bos dizi "hicbiri gelmesin"
+  //    demek. Ikisi ayri sey.
+  delete turSetleri[sel.value];
+  saveTurSetleri();
+  setAtamaCiz();
 }
 
 // ⛔ 19 KASIM 2026 — `hesapEtiketleriniAc()` KALDIRILDI
@@ -26833,6 +27028,8 @@ document.getElementById('ct_ad').addEventListener('keydown', (e)=>{
   e.preventDefault();
   turKaydet();
 });
+document.getElementById('sa_tur').addEventListener('change', ()=> setAtamaCiz());
+document.getElementById('sa_sifirla').addEventListener('click', setAtamaSifirla);
 
 
 ['rm_once','rm_gun','rm_gecikti'].forEach(id=>{
