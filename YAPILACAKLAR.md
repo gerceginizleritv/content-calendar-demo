@@ -652,7 +652,7 @@ dokunmak ve ikinci seferde birincisini bozmak demek.
   etiketi değiştiriyor: ikisi de her dilin sözlüğüne girecek.
   `testler/sozluk-paritesi.test.js` eksik anahtarı yakalar.
 
-- ⬜ **54.** ⛔ **KENDİ SETLERİNİ VE KENDİ ÇEKİM TÜRÜNÜ KUR —
+- ✅ **54.** ⛔ **KENDİ SETLERİNİ VE KENDİ ÇEKİM TÜRÜNÜ KUR —
   CREATOR PRO.** Kullanıcı istedi (17 Kasım 2026), kendi sözleriyle:
 
   > *"Bu hazır setleri de kullanıcı kendi isteğine göre bazı araçları
@@ -866,13 +866,49 @@ dokunmak ve ikinci seferde birincisini bozmak demek.
   kapıya hiç bağlanmamıştı.** Sayılmadan yazılmış bir "bitti"ydi —
   Bölüm 4'ün tam olarak uyardığı şey.
 
-  ⬜ **54a — KALAN TEK İŞ: DÜZENLEME DENETİMLERİNİ KAPIYA BAĞLA.**
+  ✅ **54a BİTTİ (21 Kasım 2026) — DÜZENLEME DENETİMLERİ KAPIDA.**
   1. kararın gereği (*"üçü de Creator Pro, 54a dâhil"*).
-  ⛔ **Setler KULLANILMAYA devam eder, yalnızca DÜZENLENEMEZ** —
-  veri silinmiyor, kapı yalnızca düzenleme denetimlerini gizliyor.
-  ⚠ **Bilinen bedeli zaten kayıtlı:** 54a bugün herkeste açık
-  çalışıyor; kapıya bağlamak onu bugünkü Starter kullanıcılarından
-  geri alıyor. Kullanıcıya söylendi ve kararını böyle verdi.
+
+  | Kapı kapalıyken KAPANAN | Kapı kapalıyken AÇIK KALAN |
+  |---|---|
+  | Set yaratma ("Yeni set") | Sete dokununca malzemelerin çekim listesine girmesi |
+  | Set silme (×) | Setin içine bakma (▾) |
+  | Sete madde ekleme (+) | Hazır setleri listeye ekleme |
+  | Setten madde çıkarma (−) | Bütün veri — hiçbir set silinmiyor |
+  | Hazır seti setlerine kopyalama | |
+
+  ⛔ **Tek kaynak `setDuzenlenebilir()`:** hem çizim hem işlevler
+  ona bakıyor. İki yerde ayrı yazılsaydı biri değişince öteki
+  sessizce ayrışırdı.
+  ⛔ **Çizimde gizlemek YETMEZ:** bayat bir DOM, klavye ya da ikinci
+  bir sekme işlevi hâlâ çağırabilir. `setYap`, `setiSil`,
+  `setMaddeSil`, `seteEkle`, `hazirSetiKopyala` — beşinin de kendi
+  kapısı var ve ayrı ayrı ölçülüyor.
+  ⚠ **Sebep EKRANDA yazıyor** (`set_plan`, iki dilde): denetimlerin
+  sessizce kaybolması kullanıcıya "bozuldu" dedirtirdi.
+  ⚠ **Bilinen bedel kayıtlı:** 54a bugüne kadar herkeste açıktı;
+  kapıya bağlamak onu bugünkü Starter kullanıcılarından geri
+  alıyor. Kullanıcıya söylendi ve kararını böyle verdi.
+
+  **Bekçi:** `testler/set-duzenleme-kapisi.test.js` — 20 iddia.
+  **13 mutasyon denendi, 13'ü de yakalandı.**
+  ⛔ İki mutasyon ayrıca şunu ölçüyor: kapı **fazla** kapanırsa da
+  test düşüyor (set çipi gizlenirse, `setiListeyeEkle` kapanırsa).
+  Yani bekçi yalnızca "kapandı mı" demiyor, **"kullanım açık kaldı
+  mı"** da diyor.
+
+  ⚠ **YAMA İLK HÂLİNDE GERÇEK BİR HATA TAŞIYORDU, TEST YAKALADI.**
+  "Yeni set" düğmesi kapalı planda hiç çizilmiyor ama dinleyicisi
+  `kap.querySelector('[data-set-yap]').addEventListener(...)` diye
+  koşulsuz bağlanıyordu: `null.addEventListener` **betiği
+  öldürür**, yani sayfanın geri kalanı da çalışmazdı. Bu depo o
+  aileyi biliyor (bir tırnak işareti bir kez bütün betiği
+  öldürmüştü).
+
+  ⛔ **54. MADDE ŞİMDİ GERÇEKTEN KAPANDI:** 54a (kapı), 54b (set
+  ataması), 54c (kendi çekim türü), fiyat sayfası, kılavuz.
+  ⚠ Bu kez **sayılarak** yazıldı: `setDuzenlenebilir()` 8 yerde,
+  `ozellikAcik('set_kisisellestirme')` 7 yerde.
   | 54c | **Kendi çekim türünü** ekleme (örn. "Podcast — iki kişi") |
 
   ✅ **54c BİTTİ (21 Kasım 2026).** İki aşamada yapıldı:

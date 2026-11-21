@@ -8152,6 +8152,8 @@ const LANG = {
     set_item_removed: (ad)=> `“${ad}” taken out.`,
     set_last_item: "A kit cannot be empty. Delete the whole kit instead.",
     set_hazir_read: "This one comes with the app, so it cannot be edited. “+” copies the gear into your own kits — then it is yours to change.",
+    // 54a: duzenleme kapisi. Setler kullanilmaya devam eder.
+    set_plan: "Your kits keep working — tap one and its gear goes into your list. Building and changing kits is part of Creator Pro.",
     set_made: (ad, n)=> `"${ad}" saved — ${n} items.`,
     set_del_ask: (ad)=> `Remove the kit "${ad}"? The items stay in your kit list.`,
     set_limit: (n)=> `You can keep ${n} kits.`,
@@ -9563,6 +9565,8 @@ const LANG = {
     set_item_removed: (ad)=> `“${ad}” çıkarıldı.`,
     set_last_item: "Set boş kalamaz. Bunun yerine setin tamamını sil.",
     set_hazir_read: "Bu set uygulamayla geliyor, değiştirilemez. “+” malzemeleri kendi setlerine kopyalar — sonrası senin.",
+    // 54a: duzenleme kapisi.
+    set_plan: "Setlerin çalışmaya devam eder — dokunduğunda malzemeleri listene girer. Set kurmak ve değiştirmek Creator Pro'nun parçası.",
     set_made: (ad, n)=> `"${ad}" kaydedildi \u2014 ${n} madde.`,
     set_del_ask: (ad)=> `"${ad}" seti silinsin mi? Maddeler k\u00fct\u00fcphanende kal\u0131r.`,
     set_limit: (n)=> `${n} set tutabilirsin.`,
@@ -11685,13 +11689,31 @@ function setBakCevir(kap, anahtar, ciz){
 // maddeler: [{metin, not}]. silinebilir: yalnizca KULLANICININ kendi
 // setinde true -- hazir setler kodun icinde metin ve herkeste ayni,
 // onlardan madde cikarmak once kendi kopyani yaratmayi gerektiriyor.
-function setIcerikHtml(maddeler, silinebilir, anahtar){
+// ⛔ 21 KASIM 2026 (YAPILACAKLAR 54a) — SET DUZENLEME KAPISI.
+//    Kullanicinin karari (21 Kasim 2026, 1): "ucu de Creator Pro,
+//    54a dahil". ⚠ BILINEN BEDEL KAYITLI: 54a bugun herkeste acik
+//    calisiyor, kapiya baglamak onu bugunku Starter
+//    kullanicilarindan GERI ALIYOR. Kullaniciya soylendi.
+// ⛔ SETLER KULLANILMAYA DEVAM EDER, YALNIZCA DUZENLENEMEZ:
+//    - kapali: set yaratma, silme, sete madde ekleme/cikarma,
+//      hazir seti kendi setlerine kopyalama
+//    - acik kalir: sete dokununca maddelerin cekim listesine
+//      girmesi, setin icine BAKMA, hazir setleri listeye ekleme
+//    67. maddedeki kural: "veri durur, yalnizca gorunmez".
+// ⚠ TEK KAYNAK: hem cizim hem islevler buna bakiyor. Iki yerde ayri
+//   yazilsaydi biri degisince oteki sessizce ayrisirdi.
+function setDuzenlenebilir(){ return ozellikAcik('set_kisisellestirme'); }
+// `kapali` DORDUNCU parametre, `silinebilir`in yerine GECMIYOR:
+// `silinebilir` "bu kullanicinin kendi seti mi" sorusunun cevabi ve
+// hazir set notunu da o belirliyor. Kapali planda kendi setinde o
+// not CIKMAMALI -- "uygulamayla geliyor" demek yanlis olurdu.
+function setIcerikHtml(maddeler, silinebilir, anahtar, kapali){
   if(!maddeler.length) return '';
   return `<div class="set-icerik">`
     + maddeler.map((m, i)=>
         `<div class="set-sat"><span>${escapeHtml(m.metin)}</span>`
         + (m.not ? `<i class="set-not">${escapeHtml(m.not)}</i>` : '')
-        + (silinebilir
+        + (silinebilir && !kapali
             ? `<button type="button" class="set-mad-sil"
                  data-set-mad="${escapeHtml(String(anahtar))}" data-set-sira="${i}"
                  title="${escapeHtml(t('set_item_del'))}"
@@ -11705,6 +11727,7 @@ function setIcerikHtml(maddeler, silinebilir, anahtar){
 // olan "−" eklenmemisti: ekleme kolaylasmis, geri alma seti bastan
 // yaratmak olarak kalmisti. Kullanici 16 Kasim 2026'da bildirdi.
 function setMaddeSil(id, sira){
+  if(!setDuzenlenebilir()) return;
   const st = ihtiyacSetleri.find(x=> x.id === id);
   if(!st || !st.maddeler[sira]) return;
   // ⛔ SON MADDE SILINMIYOR. setTemizle bos seti null donduruyor, yani
@@ -11728,7 +11751,9 @@ function setleriCiz(onek){
   // 7. madde: "+" YALNIZCA kutuphane sayfasinda ve YALNIZCA bir sey
   // isaretliyken cikiyor. Pencerede (onek 'ih') coklu secim yok --
   // orada tiklamak maddeyi dogrudan listeye atiyor, isaretlemiyor.
-  const artVar = sayfa && sayfaSecimi.size > 0;
+  // ⛔ 54a: kapi kapaliyken DUZENLEME denetimleri hic cizilmiyor.
+  const duzen = setDuzenlenebilir();
+  const artVar = sayfa && sayfaSecimi.size > 0 && duzen;
   const setler = ihtiyacSetleri.map(s=>
     `<span class="ih-set" data-set-ekle="${escapeHtml(s.id)}" role="button" tabindex="0">
        ${escapeHtml(s.ad)}<b>${s.maddeler.length}</b>
@@ -11739,8 +11764,8 @@ function setleriCiz(onek){
        ${artVar ? `<button type="button" class="ih-set-art" data-set-art="${escapeHtml(s.id)}"
                title="${escapeHtml(t('set_add_here')(sayfaSecimi.size))}"
                aria-label="${escapeHtml(t('set_add_here')(sayfaSecimi.size))}">+</button>` : ''}
-       <button type="button" class="ih-set-sil" data-set-sil="${escapeHtml(s.id)}"
-               title="${escapeHtml(t('cl_remove'))}" aria-label="${escapeHtml(t('cl_remove'))}">×</button>
+       ${duzen ? `<button type="button" class="ih-set-sil" data-set-sil="${escapeHtml(s.id)}"
+               title="${escapeHtml(t('cl_remove'))}" aria-label="${escapeHtml(t('cl_remove'))}">×</button>` : ''}
      </span>`).join('');
   // Acik set panelini ciplerin ARDINA koyuyoruz: .set-icerik tam
   // genislik aliyor, yani flex seridinde kendi satirina dusuyor.
@@ -11748,8 +11773,12 @@ function setleriCiz(onek){
   const acikOlan = ihtiyacSetleri.find(x=> setAcikMi(ek, x.id));
   kap.innerHTML = (ihtiyacSetleri.length ? `<p class="hint">${escapeHtml(t('set_head'))}</p>` : '')
     + setler
-    + `<button type="button" class="ih-set ih-set-yeni" data-set-yap>${escapeHtml(t(sayfa ? 'set_new_sayfa' : 'set_new'))}</button>`
-    + (acikOlan ? setIcerikHtml(acikOlan.maddeler, true, acikOlan.id) : '');
+    + (duzen
+        ? `<button type="button" class="ih-set ih-set-yeni" data-set-yap>${escapeHtml(t(sayfa ? 'set_new_sayfa' : 'set_new'))}</button>`
+        // ⚠ Sebep EKRANDA yaziyor: denetimlerin kaybolmasi sessiz
+        //   kalirsa kullanici "bozuldu" diye okur.
+        : `<p class="hint set-plan">${escapeHtml(t('set_plan'))}</p>`)
+    + (acikOlan ? setIcerikHtml(acikOlan.maddeler, true, acikOlan.id, !duzen) : '');
   kap.querySelectorAll('[data-set-ekle]').forEach(el=>{
     el.addEventListener('click', e=>{
       if(e.target.closest('[data-set-sil]')) return;
@@ -11780,12 +11809,20 @@ function setleriCiz(onek){
       setMaddeSil(el.dataset.setMad, +el.dataset.setSira);
     });
   });
-  kap.querySelector('[data-set-yap]').addEventListener('click', ()=> setYap(ek));
+  // ⛔ 21 KASIM 2026 (54a) — `querySelector` NULL DONEBILIYOR.
+  //    Kapi kapaliyken "yeni set" dugmesi HIC cizilmiyor; dinleyiciyi
+  //    kosulsuz baglamak `null.addEventListener` demekti ve o hata
+  //    BETIGI OLDURUR -- yani sayfanin geri kalani da calismaz.
+  //    ⚠ Bu depo o aileyi biliyor (bir tirnak isareti bir kez butun
+  //      betigi oldurmustu). `set-duzenleme-kapisi` testi yakaladi.
+  const yapDug = kap.querySelector('[data-set-yap]');
+  if(yapDug) yapDug.addEventListener('click', ()=> setYap(ek));
 }
 // 7. MADDE — VAR OLAN BIR SETE TEK DUGMEYLE MADDE EKLEME.
 // Oncesinde tek yol seti AYNI ADLA bastan yaratmakti (setYap ayni adli
 // seti siliyor): uc adim ve adi yeniden yazmak. Artik isaretle + bas.
 function seteEkle(id){
+  if(!setDuzenlenebilir()) return;
   const s = ihtiyacSetleri.find(x=> x.id === id);
   if(!s) return;
   if(!sayfaSecimi.size){ ihNot('ihs', t('set_sel_empty')); return; }
@@ -11844,6 +11881,7 @@ function ihNot(onek, metin){
 // sectigini biliyor. Ayri bir "set duzenleme" ekrani kurmak, ayni isi
 // ikinci bir yerde tekrar yaptirmak olurdu.
 async function setYap(onek){
+  if(!setDuzenlenebilir()) return;
   const sayfa = onek === 'ihs';
   // Sayfada isaretlenenler, pencerede o projenin listesindekiler.
   // 8. madde: artik { metin, not } toplaniyor. Sayfadaki kutuphane
@@ -11874,6 +11912,7 @@ async function setYap(onek){
   ihNot(onek || 'ih', t('set_made')(s.ad, s.maddeler.length));
 }
 async function setiSil(id){
+  if(!setDuzenlenebilir()) return;
   const s = ihtiyacSetleri.find(x=> x.id === id);
   if(!s) return;
   if(!await onayla(t('set_del_ask')(s.ad))) return;
@@ -12574,8 +12613,12 @@ function hazirSetCipleri(){
           // ⛔ "Kendi setlerime kopyala" BURAYA TASINDI. Eskiden "+"
           //    bunu yapiyordu ama hicbir yerde soylemiyordu. Burada
           //    ADIYLA duruyor, yani ne oldugu belli.
-          + `<div class="hset-kopya"><button type="button" class="hset-kopya-dug"`
-          + ` data-hkopyala="${acikSira}">${escapeHtml(t('set_copy_here'))}</button></div>`
+          // ⛔ 54a: kopyalamak bir DUZENLEME islemi -- kendi
+          //    setlerine yeni bir set yaratiyor.
+          + (setDuzenlenebilir()
+              ? `<div class="hset-kopya"><button type="button" class="hset-kopya-dug"`
+                + ` data-hkopyala="${acikSira}">${escapeHtml(t('set_copy_here'))}</button></div>`
+              : '')
         : '');
 }
 // 7. MADDE — HAZIR SETI KENDI SETLERINE KOPYALA.
@@ -12588,6 +12631,7 @@ function hazirSetCipleri(){
 //   demek; "30 saniye oda sesi kaydet" bir is, malzeme degil. Ayni
 //   kural setYap'ta da var.
 function hazirSetiKopyala(sira){
+  if(!setDuzenlenebilir()) return;
   const h = hazirSetler()[sira];
   if(!h) return;
   const maddeler = h.m.filter(x=> x[0] === 'canta').map(x=> ({ metin: x[1], not: '' }));
@@ -16805,6 +16849,9 @@ function ozellikKapilariUygula(){
   // gizliyor, turleri degil.
   try{ if(typeof turleriCiz === 'function') turleriCiz(); }catch(e){}
   try{ if(typeof setAtamaCiz === 'function') setAtamaCiz(); }catch(e){}
+
+  // 54a: set seritlerindeki duzenleme denetimleri.
+  try{ if(typeof setleriCiz === 'function'){ setleriCiz('ih'); setleriCiz('ihs'); } }catch(e){}
 }
 
 // Plani ve kapiyi sunucudan okuyor.
