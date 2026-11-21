@@ -710,6 +710,66 @@ dokunmak ve ikinci seferde birincisini bozmak demek.
   |---|---|
   | 54a | Hazır setin **kendi kopyanı** düzenleyebilme (araç çıkar / ekle) |
   | 54b | Bir seti **hangi çekim türüne** öneri olarak atayacağını seçme |
+
+  ✅ **54b AŞAMA 1 BİTTİ (21 Kasım 2026) — veri katmanı ve türetme.**
+
+  - `turSetleri[tür] = [set anahtarı, …]` = **o türde TİKLİ gelecek**
+    setler. Satır **yalnızca** kullanıcı o türe dokunduysa var.
+    ⛔ **Yoksa bugünkü `SET_ONERI` aynen geçerli** — 4. kararın
+    *"kullanıcı dokunmazsa hiçbir şey değişmez"* sözü ölçülebilir
+    bir iddia olarak yazıldı ve yedi türün hepsinde ölçüldü.
+  - ⛔ **Boş dizi de bir karar:** "bu türde hiçbir set tikli
+    gelmesin". `undefined` (hiç dokunmadı) ile **aynı şey değil.**
+  - `setBul(k)` = öneri bölümünün **tek set okuma yolu.** İki set
+    biçimi de olduğu gibi kalıyor (hazır: `{k, ad, m}` sözlükten;
+    kendi: `{id, ad, maddeler}` kullanıcıdan); burada yalnızca ortak
+    bir **yüz** veriliyor.
+  - ⛔ **Kullanıcının KENDİ seti artık öneri listesine girebiliyor.**
+    Kullanıcının isteği zaten buydu: *"hangi tip videoya atamak
+    istiyorsa"*.
+  - ⛔ **Masabaşı/grafik türü:** atama yoksa bölüm yine HİÇ çıkmıyor
+    (kullanıcının kararı). Kullanıcı o türe set atarsa açılıyor —
+    çünkü bu onun kendi işareti.
+
+  **Bekçi:** `testler/set-atama.test.js` — 39 iddia.
+  Tür listesini `PROJ_TYPES`'tan **buluyor**, elle yazmıyor.
+  **17 mutasyon denendi, 17'si de yakalandı.**
+
+  ⚠ **ÖLÇÜMLE ÇIKAN GERÇEK BİR HATA.** `listeMaddeTemizle` içindeki
+  `set` alanı `/^[a-z]{1,20}$/` ile doğrulanıyordu: yalnızca hazır
+  setlerin anahtarlarına uyuyor. Kullanıcının kendi setinin kimliği
+  `st_<base36>_<…>` — alt çizgi ve rakam taşıyor, yani **her okumada
+  sessizce siliniyordu.** Alanın hemen üstündeki not zaten *"beyaz
+  liste, yazılmayan alan her okumada sessizce silinir"* diyordu; tam
+  o oldu. Kalıp `SET_ANAHTAR_BICIM` (`/^[A-Za-z0-9_]{1,40}$/`)
+  yapıldı. ⚠ **Yalnızca daha çok kabul ediyor:** eski kalıbın kabul
+  ettiği her değer bunun içinde, kayıtlı hiçbir veri düşmüyor.
+
+  ⚠ **İKİNCİ TDZ TUZAĞI.** `SET_ANAHTAR_BICIM` ilk sürümde 54b
+  bölümünde tanımlıydı, ama `listeMaddeTemizle` dosyada çok daha
+  önce ve betiğin ortasından çağrılabiliyor. `const` yukarı
+  taşınmadığı için `ReferenceError` olurdu. Tanım
+  `listeMaddeTemizle`nin üstüne alındı. (Depo bu tuzağı artık **üç**
+  kez yaşadı: `ayarlarHazir`, `turDuzenId`, bu.)
+
+  ✅ **KULLANICININ İKİ YENİ KARARI (21 Kasım 2026):**
+
+  1. **Kendi setinden gelen madde çekim listesinde BUGÜNKÜ gibi
+     dursun** — kütüphanedeki grubunun altında (ör. "Enerji").
+     ⛔ Setin adını başlık yapmak **seçilmedi**; gruplama
+     `listeGrupAnahtari` içinde ve yalnızca hazır setleri tanıyor,
+     yani bugünkü davranış korunuyor. Veri (hangi setten geldiği)
+     yine saklanıyor — karar değişirse elde duruyor.
+  2. **Atama ekranı AYARLAR'da olacak:** Planlama bilgileri →
+     "Kendi çekim türlerin"in yanında. **Bir çekim türü seçilir,
+     altında setler tik listesi olarak gelir.** Tek ekran, tek
+     seferde bir karar; telefonda da sığıyor.
+     ⛔ Çekim Setleri sayfasında her setin yanına tik koymak
+     **seçilmedi** (tür sayısı artınca satır kalabalıklaşıyor).
+
+  ⬜ **54b AŞAMA 2 — ARAYÜZ.** Yukarıdaki 2. karara göre; kapı
+  `set_kisisellestirme`, 54c'deki kalıpla (veri durur, yalnızca
+  düzenleme gizlenir).
   | 54c | **Kendi çekim türünü** ekleme (örn. "Podcast — iki kişi") |
 
   ✅ **54c BİTTİ (21 Kasım 2026).** İki aşamada yapıldı:
@@ -2939,7 +2999,11 @@ dokunmak ve ikinci seferde birincisini bozmak demek.
   etkileyecek olanlar; dokunma hedefi (5) ve boyut kademeleri (8)
   en çok etkileyecekler.
 
-  ⬜ **KULLANICIYA SORULACAK (raporun 9. maddesi):** sayfa başlığı
+  ✅ **SORULDU VE ERTELENDİ (21 Kasım 2026).** Kullanıcı: *"şimdi
+  karar vermeyelim"* — 73 zaten "geliştirmeler bitince" yapılacak,
+  bu soru da o tura kaldı. ⛔ Kendi başına eklenmeyecek.
+
+  ⬜ **O TURDA SORULACAK (raporun 9. maddesi):** sayfa başlığı
   eklemek **yeni bir öge**. Bugün Bugün sayfasında 24px başlık var,
   Fikirler'de hiç yok, Mekânlar ve Projeler doğrudan arama kutusuyla
   başlıyor. Her sayfaya başlık eklenecek mi, yoksa bugünkü gibi

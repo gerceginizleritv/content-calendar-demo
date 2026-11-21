@@ -11821,6 +11821,14 @@ async function setiSil(id){
 }
 
 // ---- Projenin listesi ----------------------------------------------
+// ⛔ SET ANAHTARININ BICIMI. Tanim BURADA, 54b bolumunde degil:
+//    `listeMaddeTemizle` dosyada cok daha once ve betigin ortasindan
+//    cagrilabiliyor; `const` yukari tasinmadigi icin orada tanimli
+//    olmayan bir sabiti okumak TDZ hatasi (ReferenceError) olurdu.
+//    Bu depo o tuzagi iki kez yasadi (`ayarlarHazir`, `turDuzenId`).
+// ⚠ Hem hazir setlerin anahtarina ('dis', 'konusmali') hem de
+//   kullanicinin kendi setinin kimligine ('st_...') uyuyor.
+const SET_ANAHTAR_BICIM = /^[A-Za-z0-9_]{1,40}$/;
 function listeMaddeTemizle(ham){
   const metin = String((ham && ham.metin) || '').trim().slice(0, 200);
   if(!metin) return null;
@@ -11847,7 +11855,21 @@ function listeMaddeTemizle(ham){
     // ⚠ Bos olabilir: 17 Kasim 2026'dan ONCE eklenmis maddelerde ve
     //    elle yazilan maddelerde set yok. Onlar kaynak basliklari
     //    altinda duruyor; zorla bir sete atanmiyorlar.
-    set: (ham && typeof ham.set === 'string' && /^[a-z]{1,20}$/.test(ham.set))
+    // ⛔ 21 KASIM 2026 (YAPILACAKLAR 54b) — BICIM GENISLETILDI.
+    //    Eskiden /^[a-z]{1,20}$/ idi: yalnizca hazir setlerin
+    //    anahtarlarina uyuyordu. 54b ile KULLANICININ KENDI SETI de
+    //    oneri listesine girebiliyor ve onun kimligi 'st_<base36>_<...>'
+    //    -- alt cizgi ve rakam tasiyor, yani eski kalip onu SESSIZCE
+    //    SILIYORDU (set-atama testi yakaladi). Alan bir beyaz listede
+    //    ve bu notun hemen ustu "yazilmayan alan her okumada sessizce
+    //    silinir" diyor; tam o oldu.
+    // ⚠ YALNIZCA DAHA COK KABUL EDIYOR: eski kalibin kabul ettigi her
+    //   deger bu kalibin da icinde, yani kayitli hicbir veri dusmuyor.
+    // ⚠ GORUNUM DEGISMIYOR: gruplama `listeGrupAnahtari` icinde ve o
+    //   yalnizca HAZIR setleri tanidigi icin kendi setinden gelen
+    //   madde bugun oldugu gibi kutuphane grubunda duruyor. Burada
+    //   yalnizca "hangi setten geldi" bilgisi KAYBOLMUYOR.
+    set: (ham && typeof ham.set === 'string' && SET_ANAHTAR_BICIM.test(ham.set))
       ? ham.set : ''
   };
 }
@@ -12151,28 +12173,131 @@ const SET_ONERI = {
   review:  { tikli: ['konusmali'],       tiksiz: ['telefon'] },
   other:   { tikli: [],                  tiksiz: ['dis','konusmali','telefon'] }
 };
+// ---- 54b · SET ATAMASI: KULLANICI KENDISI SECIYOR ----------------
+// Kullanici istedi (17 Kasim 2026): *"hangi tip videoya atamak
+// istiyorsa duzenleme arayuzu vermeliyiz"*. Karari (21 Kasim 2026,
+// 4): *"Set onerileri HAZIR turlerde de degistirilebilir. Bugunku
+// SET_ONERI degerleri baslangic olarak kalir; kullanici dokunmazsa
+// hicbir sey degismez."*
+//
+// ⛔ YAPI: `turSetleri[tur] = [set anahtari, ...]` = O TURDE TIKLI
+//    GELECEK setler. Satir YALNIZCA kullanici o ture dokunduysa var.
+//    Yoksa yukaridaki `SET_ONERI` aynen gecerli -- "dokunmazsa
+//    hicbir sey degismez" tam olarak bu demek.
+// ⛔ BOS DIZI DE BIR KARAR: "bu turde hicbir set tikli gelmesin".
+//    `undefined` (hic dokunmadi) ile ayni sey DEGIL.
+// ⛔ DOGRULAMA BICIME BAKIYOR, LISTEYE DEGIL -- 54c'deki ders.
+//    Hazir setlerin anahtarlari SOZLUKTEN geliyor (`t('hset')`), yani
+//    dil yuklenmeden once liste bos. Listeye bakan bir dogrulama
+//    kullanicinin atamasini SESSIZCE SILERDI. Tanimadigi anahtar
+//    gosterim aninda zaten atlaniyor (`setBul` null donuyor).
+const TURSET_KEY = 'demo_tur_setleri';
+// ⚠ `SET_ANAHTAR_BICIM` YUKARIDA, `listeMaddeTemizle`nin ustunde:
+//   sebebi orada yazili (TDZ).
+let turSetleri = {};
+
+// ⛔ ONERI BOLUMUNUN TEK SET OKUMA YOLU. Iki set bicimi birden var ve
+//    IKISI DE OLDUGU GIBI KALIYOR:
+//      hazir set : { k, ad, m: [['canta'|'yap', metin], ...] }  (sozluk)
+//      kendi seti: { id, ad, maddeler: [{metin, not}, ...] }     (kullanici)
+//    Burada yalnizca ortak bir YUZ veriliyor. Maddenin `kaynak`i
+//    korunuyor: kendi setinin maddesi kutuphaneden geliyor ve NOTU
+//    tasiniyor (`setiListeyeEkle`deki davranis) -- duzlestirip
+//    'canta' demek 8. maddede kazanilan notu sessizce silerdi.
+function setBul(k){
+  const hz = hazirSetler().find(x=> x && x.k === k);
+  if(hz) return { k: hz.k, ad: hz.ad, kendi: false,
+    maddeler: (Array.isArray(hz.m) ? hz.m : []).map(x=>
+      ({ metin: x[1], kaynak: x[0] === 'canta' ? 'canta' : 'yap', not: '' })) };
+  const km = ihtiyacSetleri.find(x=> x && x.id === k);
+  if(km) return { k: km.id, ad: km.ad, kendi: true,
+    maddeler: (Array.isArray(km.maddeler) ? km.maddeler : []).map(x=>
+      ({ metin: x.metin, kaynak: 'kutuphane', not: x.not || '' })) };
+  return null;
+}
+// Kullanicinin secebilecegi setlerin TAMAMI: hazir sekiz + kendi
+// setleri. Arayuz (asama 2) bunu listeleyecek.
+function secilebilirSetler(){
+  return hazirSetler().filter(x=> x && x.k).map(x=> ({ k: x.k, ad: x.ad, kendi: false }))
+    .concat(ihtiyacSetleri.map(x=> ({ k: x.id, ad: x.ad, kendi: true })));
+}
+// ⛔ BEYAZ LISTELI TEMIZLEYICI (`setTemizle` ile ayni kalip).
+function turSetTemizle(ham){
+  if(!ham || typeof ham !== 'object') return {};
+  const cikti = {};
+  Object.keys(ham).forEach(tur=>{
+    if(!projTuruGecerli(tur)) return;            // tanimadigimiz tur duser
+    if(!Array.isArray(ham[tur])) return;
+    const gorulen = new Set();
+    const liste = [];
+    ham[tur].forEach(k=>{
+      const a = String(k || '');
+      if(!SET_ANAHTAR_BICIM.test(a) || gorulen.has(a)) return;
+      gorulen.add(a); liste.push(a);
+    });
+    cikti[tur] = liste.slice(0, SET_MAX);        // bos dizi de KORUNUYOR
+  });
+  return cikti;
+}
+function readTurSetleri(){
+  try{ return turSetTemizle(JSON.parse(localStorage.getItem(TURSET_KEY) || 'null')); }
+  catch(e){ return {}; }
+}
+function saveTurSetleri(){
+  try{ localStorage.setItem(TURSET_KEY, JSON.stringify(turSetleri)); }catch(e){}
+  tercihPushKuyrukla();
+}
+function turSetleriBuluttan(uzak){
+  if(!uzak || typeof uzak !== 'object') return;
+  turSetleri = turSetTemizle(uzak);
+  // ⛔ `saveTurSetleri` DEGIL: buluttan geleni ayni dakika buluta geri
+  //    yazmak gereksiz bir tur olurdu (`turlerBuluttan` ile ayni).
+  try{ localStorage.setItem(TURSET_KEY, JSON.stringify(turSetleri)); }catch(e){}
+}
+// O turde kullanicinin kendi atamasi var mi? (bos dizi = VAR)
+function turSetAtamasiVarMi(tur){
+  return Object.prototype.hasOwnProperty.call(turSetleri, tur)
+         && Array.isArray(turSetleri[tur]);
+}
+
 // Oneri listesi: once tikli olanlar, sonra tiksizler, en sonda uc genel
 // set (hepsi tiksiz -- kullanici karari 17 Kasim 2026: "tabloda
 // olmamalari 'onerilmesin' degil 'tikli gelmesin' diye okunur").
 // ⛔ ZATEN EKLENMIS SET LISTEYE GIRMIYOR.
 function setOnerisiListesi(pr){
-  const e = SET_ONERI[pr && pr.type];
-  if(!e) return [];                      // desk ya da bilinmeyen tur
+  const tur = pr && pr.type;
+  const e = SET_ONERI[tur];
+  const kendiAtama = turSetAtamasiVarMi(tur);
+  // ⛔ KULLANICI DOKUNMADIYSA HICBIR SEY DEGISMIYOR: tablo yoksa ve
+  //    atama da yoksa bolum yine HIC cikmiyor (Masabasi/grafik turu,
+  //    kullanicinin karari; kendi turleri de tabloda yok).
+  if(!e && !kendiAtama) return [];
   const eklenmis = (pr.setOneri && Array.isArray(pr.setOneri.eklenen))
                    ? pr.setOneri.eklenen : [];
-  const setler = hazirSetler();
+  // ⛔ TIKLI LISTE: kullanicinin atamasi varsa O, yoksa tablo.
+  const tikliListe = kendiAtama ? turSetleri[tur].slice() : e.tikli.slice();
+  // Tiksizler: tablodaki her sey (tiklisi dahil, cunku kullanici onu
+  // tikten CIKARMIS olabilir) + uc genel set. Tikliya giren burada
+  // ikinci kez yazilmiyor.
+  const tiksizHam = (e ? e.tikli.concat(e.tiksiz) : []).concat(SET_ONERI_GENEL);
+  const gorulen = new Set(tikliListe);
+  const tiksizListe = [];
+  tiksizHam.forEach(k=>{
+    if(gorulen.has(k)) return;
+    gorulen.add(k); tiksizListe.push(k);
+  });
   const satir = (k, tikli)=>{
-    const sira = setler.findIndex(x=> x && x.k === k);
-    // Sozlukte o anahtar yoksa satir sessizce atlaniyor: eksik ceviri
-    // oneriyi topluca dusurmesin. Sozluk parite testi eksigi yakalar.
-    if(sira === -1) return null;
+    // ⛔ TANIMADIGI ANAHTAR SESSIZCE ATLANIYOR: eksik bir ceviri ya da
+    //    silinmis bir set oneriyi TOPLUCA dusurmesin. Dogrulamanin
+    //    yuklenme sirasindan bagimsiz olmasinin sebebi de bu
+    //    (54c'deki ders).
+    const st = setBul(k);
+    if(!st) return null;
     if(eklenmis.indexOf(k) !== -1) return null;
-    return { k, sira, ad: setler[sira].ad, tikli,
-             madde: Array.isArray(setler[sira].m) ? setler[sira].m.length : 0 };
+    return { k, ad: st.ad, tikli, kendi: st.kendi, madde: st.maddeler.length };
   };
-  return e.tikli.map(k=> satir(k, true))
-    .concat(e.tiksiz.map(k=> satir(k, false)))
-    .concat(SET_ONERI_GENEL.map(k=> satir(k, false)))
+  return tikliListe.map(k=> satir(k, true))
+    .concat(tiksizListe.map(k=> satir(k, false)))
     .filter(Boolean);
 }
 
@@ -12196,10 +12321,11 @@ let oneriHaricMad = {};
 //    goruntusuyle bildirdi ("Telefonla cekim" tiksiz, 10 aracin hepsi
 //    tikli). Artik maddeler setin tikini IZLIYOR.
 let oneriSetTik = {};
-// Setin maddeleri: [['canta'|'yap', metin], ...]
+// Setin maddeleri: [{metin, kaynak, not}, ...] -- `setBul` ikisini
+// birden okuyor (hazir set + kullanicinin kendi seti).
 function setOnerisiMaddeleri(k){
-  const st = hazirSetler().find(x=> x && x.k === k);
-  return (st && Array.isArray(st.m)) ? st.m : [];
+  const st = setBul(k);
+  return st ? st.maddeler : [];
 }
 // ⛔ KULLANICI ISTEDI (17 Kasim 2026): "bu setlerin icerikleri de mutlaka
 //    gorunuyor olmali. Hatta bu setlerin icerisinde yer alan bazi
@@ -12249,7 +12375,7 @@ function setOnerisiCiz(){
               + '<input type="checkbox" data-somad="' + escapeHtml(x.k + ':' + i) + '"'
               +   (setTikli && !oneriHaricMad[x.k + ':' + i] ? ' checked' : '')
               +   (setTikli ? '' : ' disabled') + '>'
-              + '<span>' + escapeHtml(m[1]) + '</span>'
+              + '<span>' + escapeHtml(m.metin) + '</span>'
               + '</label>').join('') + '</div>'
           : '')
       + '</div>';
@@ -12289,19 +12415,26 @@ function setOnerisiKapat(){
 //    Kullanici karari (17 Kasim 2026): "illa her vlogda hep ayni
 //    araclari kullanmasi gerekmiyor".
 function setOnerisiUygula(pr, anahtarlar, haric){
-  const setler = hazirSetler();
   const oncekiHedef = listeProjesi;
   const atlanan = haric || {};
   listeProjesi = pr;
   let eklenen = 0;
   try{
     anahtarlar.forEach(k=>{
-      const st = setler.find(x=> x && x.k === k);
-      if(!st || !Array.isArray(st.m)) return;
+      const st = setBul(k);
+      if(!st) return;
       // Sira KORUNUYOR: setler "en cok unutulan en ustte" diye dizili.
-      st.m.forEach((x, i)=>{
+      st.maddeler.forEach((m, i)=>{
         if(atlanan[k + ':' + i]) return;
-        if(listeMaddeEkle(x[1], x[0] === 'canta' ? 'canta' : 'yap', '', '', k)) eklenen++;
+        // ⛔ KENDI SETININ NOTU VE GRUBU KORUNUYOR (`setiListeyeEkle`
+        //    ile ayni davranis). 8. maddede kazanilan not burada
+        //    kaybolmamali: "Powerbank -- cantanin yan cebinde".
+        const grup = m.kaynak === 'kutuphane'
+          ? (()=>{ const kt = ihtiyaclar.find(x=>
+                     ihtiyacAnahtari(x.ad) === ihtiyacAnahtari(m.metin));
+                   return kt ? kt.grup : ''; })()
+          : '';
+        if(listeMaddeEkle(m.metin, m.kaynak, grup, m.not, k)) eklenen++;
       });
     });
   } finally { listeProjesi = oncekiHedef; }
@@ -18842,6 +18975,7 @@ function tercihPrefsYap(){
   if(ihtiyaclar.length) prefs.ihtiyaclar = ihtiyaclar;
   if(ihtiyacSetleri.length) prefs.ihtiyac_setleri = ihtiyacSetleri;
   if(kendiTurler.length) prefs.cekim_turleri = kendiTurler;
+  if(Object.keys(turSetleri).length) prefs.tur_setleri = turSetleri;
   if(gelenAlinan.length) prefs.gelen_alinan = gelenAlinan;
   // Bayrak buradan yazilmiyor, yalnizca KORUNUYOR: bu islev satirin
   // tamamini yeniden yaziyor, atlanirsa ilk kaydetmede bayrak silinirdi.
@@ -18960,6 +19094,7 @@ async function tercihSenkron(){
     ihtiyaclarBuluttan(data && data.prefs && data.prefs.ihtiyaclar);
     setlerBuluttan(data && data.prefs && data.prefs.ihtiyac_setleri);
     turlerBuluttan(data && data.prefs && data.prefs.cekim_turleri);
+    turSetleriBuluttan(data && data.prefs && data.prefs.tur_setleri);
     gelenAlinanOku(data);
     // ⚠ SIRA ONEMLI: `gelenAlinanOku` proAcik'i kuruyor ve plan kapisi
     //   onu okuyor (prefs.pro bir plan yerine geciyor, 52. madde).
@@ -24897,6 +25032,7 @@ ihtiyacSetleri = readSetler();
 //   ve adres kuralini veriyor; gec okunursa tur bir an "Diger" diye
 //   GORUNUR ama VERIDE bozulmaz ve cizim tazelenince duzelir.
 kendiTurler = readTurler();
+turSetleri = readTurSetleri();
 paylasimYukle();
 // Bir onceki surumde proje serbest metindi; o kayitlar gercek projeye
 // cevriliyor. Kayitlar yuklendikten SONRA calismali.
