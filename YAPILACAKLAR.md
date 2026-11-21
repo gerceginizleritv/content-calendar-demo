@@ -665,6 +665,45 @@ dokunmak ve ikinci seferde birincisini bozmak demek.
   > edip sürekli kullanabilmeli. Bu Creator Pro planda yer alacak bir
   > özellik olacak."*
 
+  ✅ **54a BÜYÜK ÖLÇÜDE ZATEN YAPILMIŞ (21 Kasım 2026'da ölçüldü).**
+  ⚠ Bu ÜÇÜNCÜ kez oluyor (19a, 49, şimdi 54a): madde "yapılacak"
+  görünüyor ama iş yapılmış. Ölçmeden başlamak bir günü yeniden
+  yazmak olurdu.
+
+  | 54a'nın parçası | Bugün |
+  |---|---|
+  | Hazır seti kendi setlerine kopyala | ✅ `hazirSetiKopyala` |
+  | Kendi setinden araç çıkar | ✅ `setMaddeSil` |
+  | Kendi setine araç ekle | ✅ sayfadan seçip "buraya ekle" |
+  | Sıfırdan kendi setini yarat | ✅ ad sorup kaydediyor |
+  | Seti sil | ✅ |
+
+  ⚠ Tek boşluk: kopyalama yalnızca **çanta** maddelerini alıyor,
+  "yapılacak" maddelerini almıyor — bilerek yapılmış görünüyor
+  (boş kalırsa ayrı bir uyarı var: `set_copy_bos`).
+
+  **Yani gerçek iş 54b ve 54c; 54a yalnızca KAPIYA bağlanacak.**
+
+  ✅ **DÖRT KARAR ALINDI (21 Kasım 2026, kullanıcı):**
+
+  1. ⛔ **ÜÇÜ DE CREATOR PRO.** 54a dâhil.
+     ⚠ **BİLİNEN BEDELİ KAYDA GEÇSİN:** 54a bugün **herkeste açık**
+       çalışıyor; kapıya bağlamak onu bugünkü Starter
+       kullanıcılarından **geri alıyor**. Kullanıcıya bu söylendi
+       (28. maddenin uyarısı hatırlatıldı) ve kararını böyle verdi.
+     ⛔ **Setler KULLANILMAYA devam eder, yalnızca DÜZENLENEMEZ.**
+       Veri silinmiyor; kapı yalnızca düzenleme denetimlerini
+       gizliyor (67'deki "veri durur, yalnızca görünmez" kuralı).
+  2. **Kendi türünde adres SORULUP sorulmayacağını kullanıcı seçer.**
+     Türü oluştururken bir tik. Bugün yalnızca `outdoor` ve `venue`
+     adres istiyor (`PROJ_TYPES_ADDRESS`).
+  3. **Kendi türü silinirse o türdeki projeler "Diğer"e düşer.**
+     ⛔ Proje SİLİNMEZ, hiçbir veri kaybolmaz; yalnızca tür etiketi
+     değişir.
+  4. **Set önerileri HAZIR türlerde de değiştirilebilir.**
+     Bugünkü `SET_ONERI` değerleri **başlangıç** olarak kalır;
+     kullanıcı dokunmazsa hiçbir şey değişmez.
+
   **Üç ayrı iş var, sırası da bu:**
 
   | # | İş |
