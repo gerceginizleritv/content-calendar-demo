@@ -2915,6 +2915,79 @@ dokunmak ve ikinci seferde birincisini bozmak demek.
   hâlâ görünür olduğunu ölçsün — ve telefon genişliğinde kart
   düzeninin bozulmadığını. Sütun listesini elle yazmasın.
 
+- ⬜ **74. FİKİRLER — "YENİ FİKİR" KUTUSU VE LİSTE SATIRLARI.**
+  Kullanıcı 21 Kasım 2026'da ekran görüntüsüyle bildirdi, kendi
+  sözleriyle:
+
+  > *"fikirler sayfasını liste haline getirince — Yeni fikir ekle
+  > butonu çok büyük. Hem tablo hem de liste görünümünde daha
+  > küçültülmüş bir buton haline getirmek lazım. fikirler satırları
+  > listede çok kötü görünüyor. Her bir satır aynı yükseklikte
+  > olmalı. Eğer yükseklik sığmıyorsa devam için diğer kutu ve
+  > satırlarda yaptığımız gibi silik bir yazı ile '… devamı' gibi
+  > bir kelime ile açılır hale getirilebilir."*
+
+  ✅ **ÖLÇÜLDÜ (21 Kasım 2026, tarayıcıda).** Dört fikir (biri tek
+  kelime, biri uzun, birinde dört proje bağı) ve dört genişlik:
+
+  | Genişlik | Liste satırları | "Yeni fikir" (liste) | Kart görünümü kartları | "Yeni fikir" (kart) |
+  |---|---|---|---|---|
+  | 900 | 150 · 150 · 150 · 150 | 125 × 150 | 196 · 196 · 283 · 283 | 275 × 196 |
+  | 1366 | 150 · 150 · 150 · 150 | 125 × 150 | 196 · 196 · 196 · 309 | 262 × 196 |
+  | 1920 | 150 · 150 · 150 · 150 | 125 × 150 | 309 · 309 · 309 · 309 | 231 × 309 |
+  | 390 (telefon) | 199 · 229 · 229 · 229 | 166 × 199 | 191 · 218 · 218 · 305 | 166 × 191 |
+
+  **ÜÇ AYRI BULGU, ÜÇÜ DE AYNI MADDEDE AMA AYNI ŞEY DEĞİL:**
+
+  **74a · "Yeni fikir" kutusu.** Kullanıcı haklı, iki görünümde de
+  büyük. ⛔ **Sebebi ölçüldü:** kutu bir **kart** (`.fk-card.fk-add`),
+  yani kart görünümünde izgaranın germesiyle **komşu kartın boyuna
+  uzuyor** — 1920'de **309 piksel** boş bir kutu. Bu germe 19 Kasım
+  2026'da **bilerek** eklenmişti (56. madde: kutu tek başına kısa
+  kalıyor, alt kenarı komşularıyla hizalanmıyordu). ⚠ Yani burada
+  bir **karar değişiyor**: "hizalı ama kocaman" yerine "küçük ama
+  hizasız". Kullanıcı küçüğü istedi.
+
+  **74b · Liste satırları.** ⛔ **ÖLÇÜM KULLANICININ TEŞHİSİNİ
+  KISMEN DÜZELTİYOR — masaüstünde satırlar ZATEN EŞİT:** 900, 1366
+  ve 1920'de dördü de **tam 150 piksel**, dört proje bağı olan satır
+  dâhil. Yükseklik içerikten değil, `.fk-card{min-height:150px}`
+  kuralından geliyor. Yani asıl şikâyet **"eşit değil"** değil,
+  **"hepsi gereksiz yüksek"**: tek kelimelik bir fikir de 150 piksel
+  kaplıyor, altında ~100 piksel boşluk kalıyor. ⚠ Maddeyi yaparken
+  hedef "eşitle" değil **"alçalt"** olmalı.
+
+  **74c · TELEFONDA SATIRLAR EŞİT DEĞİL.** 390 pikselde liste
+  düğmesi açık olsa bile görünüm **ızgaraya dönüyor**
+  (`@media(max-width:560px)`) ve yükseklikler **199 · 229 · 229 ·
+  229** çıkıyor. ⛔ **CLAUDE.md Bölüm 8:** kullanıcı bu maddeyi
+  bilgisayardan bakarak yazdı; telefonda "liste satırı" diye bir şey
+  **yok**. Karar gerekiyor: telefonda da liste mi olsun (dar ekranda
+  yedi öge yan yana sığmıyor — 19 Kasım'da bilerek ızgaraya
+  düşürülmüştü), yoksa madde "yalnızca geniş ekranda geçerli" diye mi
+  yazılsın?
+
+  ✅ **KULLANICININ DEDİĞİ KALIP ZATEN VAR.** *"diğer kutu ve
+  satırlarda yaptığımız gibi"* = mekân kartlarındaki `.mk-foy`:
+  kalan yeri dolduruyor, taşarsa **"Devamı"** düğmesiyle açılıyor,
+  metin **silinmiyor** yalnızca katlanıyor.
+  ⛔ **O kalıbın kendi dersi de alınacak:** solma (`::after`)
+  yalnızca `.tasiyor` sınıfı varken çiziliyor. Her satıra konulsaydı
+  taşmayan satırda da yarım silik bir son satır görünür ve
+  **"devamı var" diye yanıltırdı** — *"kullanıcı gözüyle fark etti,
+  ölçüm fark etmedi"* (kodda yazılı).
+
+  ⚠ **BUGÜN LİSTEDE METİN İKİ SATIRA KIRPILIYOR**
+  (`.fk-grid.fk-liste .fk-card-body > p{-webkit-line-clamp:2}`) ve
+  üç noktayı tarayıcı kendisi koyuyor. Yani "…" zaten var; eksik
+  olan **açma**. Kullanıcının istediği şey bu.
+
+  ⛔ **BEKÇİ TEST ŞART VE DAR GENİŞLİĞİ DE ÖLÇMELİ** (Bölüm 8).
+  Ölçtüğü şey: aynı görünümdeki satırların yüksekliği eşit mi, satır
+  içeriğe göre mi alçalıyor, "Devamı" yalnızca gerçekten taşan
+  satırda mı çıkıyor, ve "Yeni fikir" kutusu komşu karttan büyük
+  değil mi.
+
 - ⬜ **72. AYNI STICKY ARIZASI İKİ TABLODA DAHA OLABİLİR.**
   70. madde yapılırken yol üstünde çıktı (20 Kasım 2026).
 
