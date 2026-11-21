@@ -3055,7 +3055,7 @@ dokunmak ve ikinci seferde birincisini bozmak demek.
   kodda; bekçi `testler/fikir-gorunum-sira.test.js` — **20 iddia,
   hepsi geçiyor.**
 
-- ⬜ **74. FİKİRLER — "YENİ FİKİR" KUTUSU VE LİSTE SATIRLARI.**
+- ⬜ **74. FİKİRLER — "YENİ FİKİR" KUTUSU VE LİSTE SATIRLARI.** — **74a ve 74b BİTTİ (21 Kasım 2026); 74c açık.**
   Kullanıcı 21 Kasım 2026'da ekran görüntüsüyle bildirdi, kendi
   sözleriyle:
 
@@ -3136,6 +3136,60 @@ dokunmak ve ikinci seferde birincisini bozmak demek.
   içeriğe göre mi alçalıyor, "Devamı" yalnızca gerçekten taşan
   satırda mı çıkıyor, ve "Yeni fikir" kutusu komşu karttan büyük
   değil mi.
+
+  ---
+
+  ✅ **74a ve 74b BİTTİ (21 Kasım 2026).** Ölçülen sonuç:
+
+  | | Önce | Sonra |
+  |---|---|---|
+  | Liste satırı (900 · 1366 · 1920) | 150 · 150 · 150 · 150 | **68 · 68 · 68 · 68** |
+  | "Yeni fikir" (1920, kart görünümü) | 231 × **309** | 231 × **40** |
+  | "Yeni fikir" (liste) | 125 × 150 | 125 × **40** |
+  | Telefon (390) | 199 · 229 · 229 · 229 | **değişmedi** |
+
+  ⛔ **SATIRIN BOŞLUĞUNUN KAYNAĞI METİN DEĞİLDİ.** `.fk-card-body`ye
+  19 Kasım 2026'da **sabit** yükseklik verilmiş (5 satır = 104,6 px,
+  gerekçesi: *"kutular eşit olsun"*). Liste görünümünde 42 piksellik
+  bir yazıya 105 piksel ayırıyordu. ⚠ Kart görünümündeki o kural
+  **yerinde duruyor**; yalnızca liste onu aşıyor.
+
+  ⛔ **"DEVAMI" İLK HÂLİNDE SATIRLARI EŞİTSİZ YAPIYORDU** — ölçüldü:
+  taşan satır 156, taşmayan 131. Yani düğme tam da kullanıcının
+  şikâyet ettiği şeyi üretiyordu. Artık metin bloğunun sağ alt
+  köşesinde duruyor ve yükseklik eklemiyor.
+
+  ⛔ **TELEFONA BİR GERİLEME SIZDIRILDI VE ÖLÇÜM YAKALADI.** Kurallar
+  sarılmamıştı; kartlar 199/229/229/229 iken **136/229/229/187**
+  oldu — yani daha da eşitsiz. Kurallar `@media(min-width:561px)`
+  içine alındı, telefon tam olarak eski hâline döndü.
+  ⚠ **Kesme noktası JS'e kopyalanmadı:** düğmenin görünürlüğünü CSS
+  belirliyor, yani 561 sayısı **tek yerde**. JS'te `innerWidth >= 561`
+  yazılsaydı iki kopya olur ve biri değişince öteki sessizce
+  ayrışırdı.
+
+  ⚠ **YENİ BEKÇİ VAR OLAN BİR KUSURU DA BULDU:** liste görünümünde
+  **taslak** satır düzeninde açılıyordu ve metin alanı 1090 pikselin
+  817'sine sıkışıyordu. 68. maddeden beri böyleymiş, 74'ün getirdiği
+  bir şey değil. Düzeltildi: taslak listede de sütun.
+
+  ⚠ **BİR YORUM ÖLÇÜMLE DÜZELTİLDİ.** Koda *"durdurulmazsa 'Devamı'ya
+  basan kullanıcı düzenleme kipine düşerdi"* yazmıştım; mutasyon
+  denendi ve **hiçbir şey değişmedi**: düğme `.fk-card-body`nin
+  *dışında* duruyor, düzenlemeyi açan dinleyici ise gövdenin
+  kendisinde. `stopPropagation` yine duruyor (düğme ileride içeri
+  taşınırsa gerekir) ama yorumu artık doğruyu söylüyor ve bekçi
+  **konumu** ölçüyor.
+
+  **Bekçi:** `testler/fikir-liste-satiri.test.js` — 61 iddia.
+  360 · 375 · 390 · 900 · 1366 · 1920 pikselde ölçüyor; dil listesini
+  `LANG`dan buluyor. **12 mutasyon denendi, 12'si de yakalandı.**
+
+  ⬜ **74c AÇIK:** telefonda (390 px) kartların kendi arasında
+  yüksekliği eşit değil — **199 · 229 · 229 · 229**. Liste görünümü
+  orada ızgaraya döndüğü için bu ayrı bir iş; kullanıcının kararı
+  (21 Kasım 2026) telefonda bugünkü düzenin kalması yönündeydi, ama
+  eşitsizlik yine de düzeltilecek.
 
 - ⬜ **72. AYNI STICKY ARIZASI İKİ TABLODA DAHA OLABİLİR.**
   70. madde yapılırken yol üstünde çıktı (20 Kasım 2026).

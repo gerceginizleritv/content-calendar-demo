@@ -2064,11 +2064,83 @@ textarea.sc-ai-brief{min-height:64px;resize:vertical;line-height:1.5;}
   align-items:center;gap:6px;}
 .fk-grid.fk-liste .fk-proj-kutu{flex:0 0 auto;min-width:0;max-width:220px;}
 .fk-grid.fk-liste .fk-body-sar{flex:1;min-width:0;order:1;}
-/* Satirda metin TEK SATIR: kart gorunumunde bes satira kadar
-   uzuyor, listede her fikir ayni yuksekligi tutsun. */
-.fk-grid.fk-liste .fk-card-body{min-height:0;}
-.fk-grid.fk-liste .fk-card-body > p{display:-webkit-box;-webkit-line-clamp:2;
-  -webkit-box-orient:vertical;overflow:hidden;margin:0;}
+/* ⛔ 21 KASIM 2026 (YAPILACAKLAR 74b) — SATIRLAR ALCALDI.
+   Kullanici bildirdi: "fikirler satirlari listede cok kotu
+   gorunuyor. Her bir satir ayni yukseklikte olmali."
+   ⚠ OLCUM TESHISI DUZELTTI: satirlar ZATEN esitti -- 900, 1366 ve
+     1920 pikselde dordu de TAM 150 piksel, dort proje bagi olan
+     satir dahil. Yukseklik icerikten degil `.fk-card{min-height:150px}`
+     kuralindan geliyordu. Yani sorun esitlik DEGIL, hepsinin
+     gereksiz yuksek olmasiydi: tek kelimelik bir fikir de 150 piksel
+     kapliyor, altinda ~100 piksel bosluk kaliyordu.
+   ⛔ COZUM: satirin kendi min-height'i kalkiyor, metin blogu
+     DEGISMEZ IKI SATIR tutuyor. Boylece satirlar yine ESIT ama cok
+     daha alcak.
+   ⚠ SABIT PIKSEL YAZILMADI: iki satirin yuksekligi `line-height`ten
+     turetiliyor (`calc(2 * 1.55em)`). Yarin yazi boyu degisirse
+     kendiliginden uyuyor; elle yazilmis bir "42px" o gun sessizce
+     yanlis olurdu (19 Kasim 2026'daki ayni ders). */
+/* ⛔ VARSAYILAN GIZLI. Dugme 74b'nin, yani LISTE gorunumunun isi;
+   560'in altinda liste diye bir sey yok (izgaraya donuyor) ve orada
+   kart zaten bes satirda "…" ile kesiliyor.
+   ⚠ OLCULDU: gizlenmeden once telefonda kart boylari 199/277/277/229
+     oluyordu -- dugme akista yer kapliyordu.
+   ⚠ KESME NOKTASI JS'E KOPYALANMADI: gorunurlugu CSS belirliyor,
+     yani 561 sayisi TEK yerde duruyor. JS'te `innerWidth >= 561`
+     yazsaydik iki kopya olur ve biri degisince oteki sessizce
+     ayrisirdi -- bu deponun tekrarlayan hatasi. */
+.fk-devam{display:none;margin-top:4px;padding:3px 0;border:0;
+  background:none;font:inherit;font-size:12px;font-weight:600;
+  color:var(--accent);cursor:pointer;text-decoration:underline;
+  text-underline-offset:2px;}
+/* ⛔ 74b'NIN BUTUN KURALLARI 561 PIKSEL VE USTUNDE. 560'in altinda
+   liste gorunumu zaten IZGARAYA donuyor (asagidaki medya blogu) ve
+   orada KART duzeni gecerli -- kartlarin esit yukseklikte olmasi
+   19 Kasim 2026'da kullanicinin kendi istegiydi.
+   ⚠ ILK SURUMDE BU KURALLAR SARILMAMIŞTI ve telefona SIZDI: olcum
+     gosterdi ki kartlar 199/229/229/229 iken 136/229/229/187 oldu --
+     yani daha da esitsiz. Bir gerilemeydi, olcum yakaladi. */
+@media(min-width:561px){
+.fk-grid.fk-liste .fk-card{min-height:0;}
+  /* ⛔ LISTEDE KIRPAN KUTU GOVDE DEGIL, PARAGRAFIN KENDISI.
+     ⚠ OLCULDU: temel kural `.fk-card-body`ye `-webkit-box` +
+       `line-clamp:5` veriyor; listede paragraf 42 piksel olmasina
+       ragmen GOVDE 105 piksel kapliyordu. Satirin bosu buradan
+       geliyordu. Listede govde duz bir blok, kirpma paragrafta. */
+  .fk-grid.fk-liste .fk-card-body{min-height:0;display:block;
+    -webkit-line-clamp:none;line-clamp:none;overflow:visible;
+    /* ⛔ `height` DE GECILIYOR. Temel kural govdeye SABIT yukseklik
+       veriyor (5 satir = 104,6 px, 19 Kasim 2026: "kutular esit
+       olsun"). Listede o yukseklik 42 piksellik bir yaziya 105 piksel
+       ayiriyordu -- satirin bosu tam buydu, OLCULDU. Kart
+       gorunumundeki esitlik kurali YERINDE DURUYOR, yalnizca liste
+       onu asiyor. */
+    height:auto;}
+  .fk-grid.fk-liste .fk-card-body > p{display:-webkit-box;-webkit-line-clamp:2;
+    -webkit-box-orient:vertical;overflow:hidden;margin:0;
+    min-height:calc(2 * 1.55em);}
+  /* Satir acilinca kirpma kalkiyor; metin SILINMIYOR, katlaniyor
+     (mekan kartlarindaki `.mk-foy` kalibinin aynisi). */
+  .fk-grid.fk-liste .fk-card.fk-acik .fk-card-body > p{
+    -webkit-line-clamp:none;display:block;overflow:visible;}
+  
+  /* ⛔ LISTEDE DUGME SATIRI UZATMIYOR. Ilk surumde duz bir blok olarak
+     eklendi ve OLCUM gosterdi: tasan satir 156, tasmayan 131 -- yani
+     dugmenin kendisi satirlari ESITSIZ yapiyordu, oysa kullanicinin
+     istedigi tam tersi. Simdi metin blogunun sag alt kosesinde
+     duruyor (`.fk-body-sar` zaten `position:relative`).
+     ⚠ Arkasindaki yumusak gecis METNIN ALTINDAN okunmasin diye:
+       zemin degiskenden geliyor, iki temada da dogru. */
+  .fk-grid.fk-liste .fk-devam{display:inline-block;
+    position:absolute;right:0;bottom:0;margin:0;
+    padding:0 0 0 28px;
+    background:linear-gradient(to right, transparent, var(--surface) 24px);}
+  /* Satir acikken dugme metnin AKISINA giriyor: kirpma yok, ustune
+     binecek bir sey de yok. */
+  .fk-grid.fk-liste .fk-card.fk-acik .fk-devam{position:static;background:none;
+    padding-left:0;margin-top:4px;}
+}
+@media(max-width:760px){ .fk-devam{min-height:44px;} }
 .fk-grid.fk-liste .fk-card-foot{flex:none;order:3;margin:0;}
 /* ⚠ Telefonda listeye dusurmek satiri okunmaz yapardi: ekran zaten
    dar, yedi oge yan yana sigmaz. Orada kart duzeni kaliyor. */
@@ -2254,9 +2326,43 @@ textarea.sc-ai-brief{min-height:64px;resize:vertical;line-height:1.5;}
 /* Ekleme karti duvarin ilk kutusu: "buraya fikir eklenir" yazmaya gerek
    birakmiyor, kutunun kendisi soyluyor. Kesik cizgi bunun bir fikir
    DEGIL, bir yer oldugunu anlatiyor. */
+/* ⛔ 21 KASIM 2026 (YAPILACAKLAR 74a) — KUTU KUCULDU.
+   Kullanici bildirdi: "Yeni fikir ekle butonu cok buyuk. Hem tablo
+   hem de liste gorunumunde daha kuculturulmus bir buton haline
+   getirmek lazim."
+   ⚠ OLCULDU: kutu bir KART oldugu icin izgaranin germesiyle komsu
+     kartin boyuna uzuyordu -- 1920 pikselde 231x309, yani ucte biri
+     ekran olan BOS bir kutu. Listede 125x150.
+   ⛔ BIR KARAR TERSINE DONDU, VE BILEREK. 19 Kasim 2026'da
+     `align-items:start` KALDIRILMISTI (56. madde): kutu tek basina
+     kisa kaliyor, alt kenari komsulariyla hizalanmiyordu. Simdi
+     kullanici kucugu istedi; yani "hizali ama kocaman" yerine
+     "kucuk ama hizasiz" secildi. Eski gerekce yanlis degildi,
+     kullanicinin tercihi degisti.
+   ⚠ `:not(.acik)` SART: tasak acildiginda kutu yine TAM KART olmali,
+     icinde metin alani ve dugmeler var. */
 .fk-card.fk-add{background:transparent;border-color:var(--accent-dim);
   border-style:dashed;align-items:center;justify-content:center;cursor:pointer;
   color:var(--accent);gap:6px;}
+.fk-card.fk-add:not(.acik){
+  min-height:0;align-self:start;flex-direction:row;padding:10px 14px;
+}
+.fk-card.fk-add:not(.acik) .fk-add-plus{font-size:18px;}
+/* ⚠ Liste gorunumunde satir genisligini KAPLAMASIN: block bir kapsayici
+   icinde `display:flex` tam genislige yayilirdi. */
+.fk-grid.fk-liste .fk-card.fk-add:not(.acik){display:inline-flex;width:auto;}
+/* ⛔ TASLAK LISTEDE DE SUTUN. `.fk-grid.fk-liste .fk-card` butun
+   kartlari SATIR yapiyor (68. madde) ve taslak kutusu da bir kart;
+   sonucta metin alani dugmelerin yanina sikisiyordu.
+   ⚠ OLCULDU (21 Kasim 2026): kutu 1090 piksel, metin alani 817 --
+     yani ucte biri dugmelere gidiyordu. Bu 74'ten ONCE de boyleydi,
+     yeni bekci test yakaladi. */
+.fk-grid.fk-liste .fk-card.fk-add.acik{flex-direction:column;align-items:stretch;}
+/* ⚠ CLAUDE.md Bolum 8 — dokunma hedefi 44 piksel. Kucultmek parmakla
+   basilamaz hale getirmemeli. */
+@media(max-width:760px){
+  .fk-card.fk-add:not(.acik){min-height:44px;}
+}
 .fk-card.fk-add:hover{border-color:var(--accent);background:var(--accent-soft);}
 .fk-card.fk-add.acik{background:var(--surface);border-style:solid;border-color:var(--line);
   align-items:stretch;justify-content:flex-start;cursor:default;}
@@ -7796,6 +7902,7 @@ const LANG = {
     fk_onc_label: (ad)=> `Priority: ${ad}`,
     fk_onc_filtre: "Priority",
     fk_onc_sec: "Set priority",
+    fk_devam: "Show more", fk_daha_az: "Show less",
     fk_sira_elle: "Order: mine",
     fk_sira_oncelik: "Order: priority",
     fk_sira_ipucu: "Switch between your own order and priority order",
@@ -9241,6 +9348,7 @@ const LANG = {
     fk_onc_label: (ad)=> `Öncelik: ${ad}`,
     fk_onc_filtre: "Öncelik",
     fk_onc_sec: "Öncelik ver",
+    fk_devam: "Devamı", fk_daha_az: "Daha az",
     fk_sira_elle: "Sıra: kendi düzenim",
     fk_sira_oncelik: "Sıra: önceliğe göre",
     fk_sira_ipucu: "Kendi düzenin ile öncelik sırası arasında geçiş yap",
@@ -13884,6 +13992,55 @@ function renderFikirler(){
     alan.focus();
   }
   fikirKartOlaylari(kap);
+  fikirDevamDugmeleri(kap);
+}
+
+// ⛔ 21 KASIM 2026 (YAPILACAKLAR 74b) — "DEVAMI" DUGMESI.
+//    Kullanicinin istedigi: "yukseklik sigmiyorsa ... silik bir yazi
+//    ile '... devami' gibi bir kelime ile acilir hale
+//    getirilebilir." ⚠ Kullanici "diger kutu ve satirlarda
+//    yaptigimiz gibi" dedi: kalip MEKAN KARTLARINDAKI `.mk-foy`.
+//    Uc dersi de oradan aynen geliyor:
+//
+// ⚠ 1) DUGME YALNIZCA GERCEKTEN TASAN SATIRA KONUYOR. Her satira
+//      konulsaydi kisa fikirlerde tiklayinca hicbir sey olmayan bir
+//      dugme dururdu. Olcum: scrollHeight > clientHeight.
+// ⚠ 2) OLCUM BIR SONRAKI CIZIME BIRAKILIYOR. Hemen olculurse yazi
+//      tipleri ve izgara yerlesmeden once bakilmis oluyor.
+// ⚠ 3) ZATEN VARSA IKINCISINI KOYMA: liste ayni karede iki kez
+//      cizilirse iki requestAnimationFrame sirada bekler, ikisi de
+//      dugme ekler ve satirda alt alta IKI "Devami" olusur. Mekan
+//      kartlarinda tam bu oldu (16 Kasim 2026, ekran goruntusunde).
+function fikirDevamDugmeleri(kap){
+  if(!kap) return;
+  requestAnimationFrame(()=> kap.querySelectorAll('.fk-card-body > p').forEach(p=>{
+    const kart = p.closest('.fk-card');
+    if(!kart) return;
+    const sar = p.closest('.fk-card-body');
+    if(sar && sar.nextElementSibling &&
+       sar.nextElementSibling.classList.contains('fk-devam')) return;
+    if(kart.classList.contains('fk-acik')) return;
+    if(p.scrollHeight <= p.clientHeight + 2) return;
+    const dug = document.createElement('button');
+    dug.type = 'button';
+    dug.className = 'fk-devam';
+    dug.textContent = t('fk_devam');
+    dug.setAttribute('aria-expanded', 'false');
+    dug.addEventListener('click', (e)=>{
+      // ⚠ DUGME `.fk-card-body`NIN DISINDA (kardesi) duruyor ve
+      //   duzenlemeyi acan dinleyici govdenin KENDISINDE. Yani bugun
+      //   bu `stopPropagation` olmadan da duzenleme acilmiyor --
+      //   OLCULDU (mutasyon denendi, hicbir sey degismedi).
+      //   ⛔ YINE DE DURUYOR: dugme ileride govdenin ICINE tasinirsa
+      //     o gun sessizce duzenleme kipi acilirdi. Bekci test
+      //     dugmenin govdenin DISINDA oldugunu ayrica olcuyor.
+      e.stopPropagation();
+      const acik = kart.classList.toggle('fk-acik');
+      dug.textContent = t(acik ? 'fk_daha_az' : 'fk_devam');
+      dug.setAttribute('aria-expanded', acik ? 'true' : 'false');
+    });
+    if(sar && sar.parentNode) sar.parentNode.insertBefore(dug, sar.nextSibling);
+  }));
 }
 
 function fikirKartOlaylari(kap){
