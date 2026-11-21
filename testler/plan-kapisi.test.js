@@ -42,20 +42,41 @@ function dene(ad, fn){
 
 (async ()=>{
   // ── 1. İKİ DOSYA AYRIŞMAMIŞ MI ──────────────────────────────────
-  const sql = fs.readFileSync(yol.join(KOK, 'sql', '76-plan-ozellikleri.sql'), 'utf8');
   const app = fs.readFileSync(yol.join(KOK, 'app.html'), 'utf8');
 
-  // sql/76: CHECK kısıtındaki anahtarlar
-  const kisit = /feature_key in \(([^)]*)\)/.exec(sql);
-  const sqlKisit = kisit ? [...kisit[1].matchAll(/'([^']+)'/g)].map(m=> m[1]).sort() : [];
-  // sql/76: tohumlanan satırlardaki anahtarlar
-  const sqlTohum = [...new Set([...sql.matchAll(/'(?:starter|creator_pro|studio|founding)',\s*'([a-z_]+)',\s*(?:true|false)/g)]
-    .map(m=> m[1]))].sort();
+  // ⛔ 21 KASIM 2026 — TEST TEK BIR SQL DOSYASINA BAKIYORDU VE DUSTU.
+  //   Ilk halinde yalnizca `sql/76` okunuyordu. 54. maddede dorduncu
+  //   ozellik `sql/78` ile geldi; kod listesi dogruydu ama test onu
+  //   goremedigi icin "ayrismis" dedi.
+  //   ⚠ Test ZAYIFLATILMADI, KAPSAMI DUZELTILDI: artik `sql/` klasoru
+  //     TARANIYOR. Kisit birden cok dosyada yeniden kuruluyor
+  //     (her yeni ozellik onu genisletiyor), bu yuzden GECERLI olan
+  //     EN YUKSEK NUMARALI dosyadaki -- veritabaninda en son o kaldi.
+  //     Tohum satirlari ise butun dosyalardan toplaniyor.
+  //   ⛔ Dosya adlari elle yazilmiyor; yarin `sql/83` eklenirse
+  //     kendiliginden kapsama giriyor.
+  const sqlDosyalari = fs.readdirSync(yol.join(KOK, 'sql'))
+    .filter(x=> x.endsWith('.sql'))
+    .sort((a,b)=> parseInt(a,10) - parseInt(b,10))
+    .map(ad=> ({ ad, metin: fs.readFileSync(yol.join(KOK, 'sql', ad), 'utf8') }));
+
+  const kisitliDosyalar = sqlDosyalari.filter(d=> /feature_key in \(/.test(d.metin));
+  const sonKisit = kisitliDosyalar.length
+    ? /feature_key in \(([^)]*)\)/.exec(kisitliDosyalar[kisitliDosyalar.length - 1].metin)
+    : null;
+  const sqlKisit = sonKisit
+    ? [...sonKisit[1].matchAll(/'([^']+)'/g)].map(m=> m[1]).sort() : [];
+
+  const sqlTohum = [...new Set(sqlDosyalari.flatMap(d=>
+    [...d.metin.matchAll(/'(?:starter|creator_pro|studio|founding)',\s*'([a-z_]+)',\s*(?:true|false)/g)]
+      .map(m=> m[1])))].sort();
   // app.html: OZELLIK_VARSAYILAN anahtarlari
   const blok = /const OZELLIK_VARSAYILAN = \{([\s\S]*?)\};/.exec(app);
   const kodAnahtar = blok ? [...blok[1].matchAll(/^\s*([a-z_]+):/gm)].map(m=> m[1]).sort() : [];
 
   dene('üç listeyi de okuyabildik (ölçüm boşa düşmüyor)', ()=>{
+    assert.ok(kisitliDosyalar.length >= 1,
+      'kisiti kuran sql dosyasi bulunamadi');
     assert.ok(sqlKisit.length >= 3, 'kisit: ' + JSON.stringify(sqlKisit));
     assert.ok(sqlTohum.length >= 3, 'tohum: ' + JSON.stringify(sqlTohum));
     assert.ok(kodAnahtar.length >= 3, 'kod: ' + JSON.stringify(kodAnahtar));

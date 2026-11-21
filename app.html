@@ -11009,7 +11009,7 @@ function sanitizeProject(raw){
     notes: str(raw.notes, 2000),
     shootDate: /^\d{4}-\d{2}-\d{2}$/.test(raw.shootDate) ? raw.shootDate : '',
     // Tur, isin nerede yapildigini soyluyor; saha isiyse adres de isteniyor.
-    type: PROJ_TYPES.indexOf(raw.type) !== -1 ? raw.type : 'other',
+    type: projTuruGecerli(raw.type) ? raw.type : 'other',
     address: str(raw.address, 300),
     // Mekan bagi. Adres alanlari projede DURMAYA devam ediyor: mekani
     // olmayan projeler ve eski kayitlar bozulmasin.
@@ -11172,6 +11172,64 @@ function projeAra(liste, q){
 const PROJ_TYPES = ['outdoor','venue','studio','vlog','review','desk','other'];
 const PROJ_TYPES_ADDRESS = ['outdoor','venue'];
 
+// ⛔ KENDI CEKIM TURLERI (YAPILACAKLAR 54c). Kullanicinin istegi
+//    (17 Kasim 2026): "bizim default video tipleri haricinde kendi bir
+//    tip eklemek isteyecek, mesela 2 kisinin karsilikli konustugu
+//    podcast gibi".
+//
+// ⛔ BEYAZ LISTE BICIME BAKIYOR, LISTEYE DEGIL -- VE SEBEBI VERI KAYBI.
+//    Onceki hal `PROJ_TYPES.indexOf(raw.type) !== -1 ? raw.type :
+//    'other'` idi. Kendi turu o listede olmadigi icin her okumada
+//    'other'a duserdi.
+//    ⚠ Ve bu, kullanici verisini okumadan ONCE oluyordu: projeler
+//      `readLocalProjects` ile acilista okunup sanitizeProject'ten
+//      geciyor, kullanici verisi (`readSetler`) COK daha sonra
+//      okunuyor. Yani "once turleri oku, sonra projeleri" demek de
+//      yetmezdi; bulut senkronu, ornek veri ve ikinci sekme ayri ayri
+//      sira kuruyor.
+//    ⛔ Bu yuzden gecerlilik LISTEYE degil BICIME bakiyor: `ct_` ile
+//      baslayan ve guvenli karakter tasiyan her anahtar korunuyor.
+//      Boylece dogrulama yukleme sirasindan BAGIMSIZ. Cop yine
+//      eleniyor: bicime uymayan deger 'other'a dusuyor.
+const TUR_KEY = 'demo_cekim_turleri';
+const CT_ONEK = 'ct_';
+const CT_BICIM = /^ct_[A-Za-z0-9_-]{1,32}$/;
+const CT_MAX = 12;                       // kendi turu sayisi tavani
+let kendiTurler = [];                    // [{k, ad, adres}]
+
+function projTuruGecerli(k){
+  return PROJ_TYPES.indexOf(k) !== -1 || CT_BICIM.test(String(k || ''));
+}
+function kendiTurBul(k){ return kendiTurler.find(x=> x.k === k) || null; }
+function yeniTurId(){
+  return CT_ONEK + Date.now().toString(36) + Math.random().toString(36).slice(2,5);
+}
+// ⛔ BEYAZ LISTELI TEMIZLEYICI. Listede olmayan alan SESSIZCE duser --
+//    `setTemizle` ve `fikirTemizle` ile ayni kalip.
+function turTemizle(ham){
+  if(!ham || typeof ham !== 'object') return null;
+  const k = CT_BICIM.test(String(ham.k || '')) ? ham.k : yeniTurId();
+  const ad = String(ham.ad || '').trim().slice(0, 40);
+  if(!ad) return null;
+  // ⚠ Adres sorulup sorulmayacagini KULLANICI seciyor (karari,
+  //   21 Kasim 2026). Varsayilan: sorulmasin.
+  return { k, ad, adres: ham.adres === true };
+}
+function readTurler(){
+  try{
+    const ham = JSON.parse(localStorage.getItem(TUR_KEY) || 'null');
+    return Array.isArray(ham) ? ham.map(turTemizle).filter(Boolean).slice(0, CT_MAX) : [];
+  }catch(e){ return []; }
+}
+function saveTurler(){
+  try{ localStorage.setItem(TUR_KEY, JSON.stringify(kendiTurler)); }catch(e){}
+}
+function turlerBuluttan(uzak){
+  if(!Array.isArray(uzak)) return;
+  kendiTurler = uzak.map(turTemizle).filter(Boolean).slice(0, CT_MAX);
+  saveTurler();
+}
+
 // ⛔ MEKAN TURU (YAPILACAKLAR 51). Kullanici 16 Kasim 2026'da
 //    ekran goruntusuyle sordu: "Masabasi cekimde neden altta mekanlar
 //    cikiyor?" Mekan kaydinda tur alani yoktu; sql/74 onu acti.
@@ -11204,8 +11262,21 @@ function mekanTuruUyar(m, projeTuru){
   return izin.indexOf(m.tur) !== -1;
 }
 function mekanBagiSorulurMu(projeTuru){ return PROJE_MEKAN_TURU[projeTuru] !== null; }
-function projTypeName(k){ return t('ptype_' + k) || k; }
-function adresGerekir(k){ return PROJ_TYPES_ADDRESS.indexOf(k) !== -1; }
+function projTypeName(k){
+  // Kendi turunun adi KULLANICI VERISI: cevrilmiyor, oldugu gibi
+  // gosteriliyor (Bolum 7 arayuz dizelerini kapsar, veriyi degil).
+  const kendi = kendiTurBul(k);
+  if(kendi) return kendi.ad;
+  // ⚠ Tanimi silinmis bir ct_ anahtari kalmissa "Diger" gibi okunsun;
+  //   ham `ct_abc123` gostermek kullaniciya hicbir sey anlatmaz.
+  if(CT_BICIM.test(String(k || ''))) return t('ptype_other');
+  return t('ptype_' + k) || k;
+}
+function adresGerekir(k){
+  const kendi = kendiTurBul(k);
+  if(kendi) return kendi.adres === true;   // kullanicinin kendi secimi
+  return PROJ_TYPES_ADDRESS.indexOf(k) !== -1;
+}
 
 function bugunKey(){
   const d = new Date(); d.setHours(0,0,0,0);
@@ -15554,8 +15625,12 @@ function scriptKaydet(){
 // --- Proje duzenleme penceresi ---------------------------------------
 let duzenlenenProje = null;
 function projTypeSelectDoldur(sel, deger){
-  sel.innerHTML = PROJ_TYPES.map(k=>`<option value="${k}">${escapeHtml(projTypeName(k))}</option>`).join('');
-  sel.value = PROJ_TYPES.indexOf(deger) !== -1 ? deger : 'other';
+  // ⚠ Kendi turleri hazir turlerin ARDINDAN geliyor: "Diger" en sonda
+  //   kalsin diye degil -- kullanici kendi ekledigini ararken listenin
+  //   sonuna bakar, hazir turlerin arasina karismasin.
+  const turler = PROJ_TYPES.concat(kendiTurler.map(x=> x.k));
+  sel.innerHTML = turler.map(k=>`<option value="${k}">${escapeHtml(projTypeName(k))}</option>`).join('');
+  sel.value = turler.indexOf(deger) !== -1 ? deger : 'other';
 }
 function adresAlaniniTazele(turSel, sarmal){
   // Adres alani iki sarta birden bakiyor:
@@ -16345,7 +16420,16 @@ let proAcik = false;
 const OZELLIK_VARSAYILAN = {
   drive_script:   ()=> true,      // bugun herkeste acik
   cekim_setleri:  ()=> true,      // bugun herkeste acik
-  fikir_onceligi: ()=> proAcik    // bugun yalnizca prefs.pro
+  fikir_onceligi: ()=> proAcik,   // bugun yalnizca prefs.pro
+  // ⛔ 54 (set kisisellestirme). ⚠ VARSAYILAN ACIK, VE SEBEBI SU:
+  //   54a bugun HERKESTE calisiyor. Varsayilani kapali yapmak, kapi
+  //   okunamadigi her an (ag kesintisi, hesapsiz kullanim) kullanicinin
+  //   kendi setlerini duzenleyemez hale getirirdi -- yani bugun calisan
+  //   bir seyi bir ag hatasi yuzunden kaybederdi.
+  //   ⚠ Kapi OKUNDUGUNDA Starter'da kapaniyor; bu kullanicinin
+  //     21 Kasim 2026 karari ve bedeli (bugunku Starter kullanicilari
+  //     duzenlemeyi kaybediyor) kendisine soylendi.
+  set_kisisellestirme: ()=> true
 };
 
 // Kullanicinin plani. Abonelik satiri yoksa 'starter'.
@@ -18581,7 +18665,7 @@ let gelenKutusuAcik = false;
 //
 // Listeye anahtar EKLEMEK, o anahtarin yonetimini uygulamaya almak
 // demek: tercihPrefsYap onu yazmiyorsa silinir. Tersi guvenli.
-const PREFS_BIZIM = ['lang', 'ihtiyaclar', 'ihtiyac_setleri', 'gelen_alinan',
+const PREFS_BIZIM = ['lang', 'ihtiyaclar', 'ihtiyac_setleri', 'cekim_turleri', 'gelen_alinan',
                      'gelen_kutusu', 'mcp', 'ai', 'share', 'reminders'];
 let prefsYabanci = {};
 // Satir OKUNDU MU. Okunamadan yazmak, bilmedigimiz anahtarlari bos bir
@@ -18642,6 +18726,7 @@ function tercihPrefsYap(){
   // bilgisayarda da hazir olsun. Bos ise satira hic yazilmiyor.
   if(ihtiyaclar.length) prefs.ihtiyaclar = ihtiyaclar;
   if(ihtiyacSetleri.length) prefs.ihtiyac_setleri = ihtiyacSetleri;
+  if(kendiTurler.length) prefs.cekim_turleri = kendiTurler;
   if(gelenAlinan.length) prefs.gelen_alinan = gelenAlinan;
   // Bayrak buradan yazilmiyor, yalnizca KORUNUYOR: bu islev satirin
   // tamamini yeniden yaziyor, atlanirsa ilk kaydetmede bayrak silinirdi.
@@ -18759,6 +18844,7 @@ async function tercihSenkron(){
     hatirlatmaBuluttan(data && data.prefs && data.prefs.reminders);
     ihtiyaclarBuluttan(data && data.prefs && data.prefs.ihtiyaclar);
     setlerBuluttan(data && data.prefs && data.prefs.ihtiyac_setleri);
+    turlerBuluttan(data && data.prefs && data.prefs.cekim_turleri);
     gelenAlinanOku(data);
     // ⚠ SIRA ONEMLI: `gelenAlinanOku` proAcik'i kuruyor ve plan kapisi
     //   onu okuyor (prefs.pro bir plan yerine geciyor, 52. madde).
@@ -24691,6 +24777,11 @@ ornekleriGerekirseKur();
 loadHesaplar();
 ihtiyaclar = readIhtiyaclar();
 ihtiyacSetleri = readSetler();
+// ⚠ Burada okunmasi YETERLI degil ama ZARARSIZ: sanitizeProject
+//   gecerliligi BICIME bakiyor, bu listeye degil. Liste yalnizca ADI
+//   ve adres kuralini veriyor; gec okunursa tur bir an "Diger" diye
+//   GORUNUR ama VERIDE bozulmaz ve cizim tazelenince duzelir.
+kendiTurler = readTurler();
 paylasimYukle();
 // Bir onceki surumde proje serbest metindi; o kayitlar gercek projeye
 // cevriliyor. Kayitlar yuklendikten SONRA calismali.
