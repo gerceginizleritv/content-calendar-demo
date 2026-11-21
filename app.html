@@ -410,6 +410,27 @@ a.lockup:focus-visible{outline:2px solid var(--accent);outline-offset:3px;border
 .hs-bos{margin:0 0 16px;padding:16px;border:1px dashed var(--line);
   border-radius:2px;color:var(--text-dim);font-size:13px;text-align:center;}
 .hs-form{border-top:1px solid var(--line);padding-top:14px;}
+/* ---- Kendi cekim turleri (YAPILACAKLAR 54c) ---------------------- */
+/* ⚠ CLAUDE.md Bolum 8 — DOKUNMA HEDEFI 44 PIKSEL. Ustteki
+   `.hs-liste .hs-islem .btn` kurali masaustu icin 25 piksel
+   civarinda kaliyor; yeni listede telefonda 44'e cikiyor.
+   ⛔ Hesap etiketleri listesine DOKUNULMADI: olculmeden
+     degistirmek, ayri bir maddenin isini sessizce yapmak olurdu. */
+.ct-liste .hs-ad{flex:none;}
+@media(max-width:760px){
+  /* ⚠ GENISLIK DE 44: "Sil" kisa bir kelime, yalnizca yuksekligi
+     buyutmek 40 piksel genisliginde bir dugme biraktiydi (olculdu). */
+  .ct-liste .hs-islem .btn{min-height:44px;min-width:44px;padding:4px 12px;}
+  .ct-liste li{flex-wrap:wrap;}
+  /* ⛔ OZGULLUK TUZAGI: `.field .pcheck` (0,2,0) bu dosyada DAHA
+     SONRA geliyor ve `min-height:40px` diyor; duz `.ct-tik` (0,1,0)
+     onu YENEMIYOR -- ilk surumde tam bu oldu, olcum 40 px cikti.
+     Bu yuzden secici `.field .pcheck.ct-tik` (0,3,0). */
+  .field .pcheck.ct-tik{min-height:44px;}
+}
+.ct-adres-im{flex:none;font-size:11px;color:var(--text-dim);
+  border:1px solid var(--line-soft);border-radius:2px;padding:1px 6px;}
+.ct-plan{margin:-4px 0 14px;line-height:1.55;}
 @media(max-width:560px){
   /* Telefonda tarih ve ad tek satira sigmiyor; yan bilgi alta iniyor. */
   .bg-satir{flex-wrap:wrap;gap:4px 8px;padding:9px 11px;}
@@ -5201,6 +5222,46 @@ textarea.sc-ai-brief{min-height:64px;resize:vertical;line-height:1.5;}
           <button type="button" class="btn btn-primary" id="hs_kaydet" data-i18n="hs_ekle">Add</button>
         </div>
       </div>
+
+      <!-- ⛔ 21 KASIM 2026 (YAPILACAKLAR 54c) — KENDI CEKIM TURLERI.
+           Kullanicinin kendi turu ("Podcast — iki kisi") hazir yedi
+           turun YANINA giriyor; hazir turlere dokunulmuyor.
+           ⛔ KAPI (set_kisisellestirme) YALNIZCA DUZENLEME
+             DENETIMLERINI GIZLIYOR. Var olan turler calismaya devam
+             ediyor; 67. maddedeki "veri durur, yalnizca gorunmez"
+             kurali. Kapali planda turu HIC olmayana bolum hic
+             gosterilmiyor: anlatacak bir seyi olmayan bir ekran olurdu.
+           ⛔ Tur silinince o turdeki projeler "Diger"e duser;
+             PROJE SILINMEZ (kullanicinin karari, 21 Kasim 2026).
+           ⚠ Buraya kondu cunku cekim turu bir PLANLAMA bilgisi:
+             projeyi planlarken secilen sey. -->
+      <div id="ct_blok">
+        <h4 class="ayar-alt" data-i18n="ct_title">Your own shoot types</h4>
+        <p class="hint hs_not" data-i18n="ct_intro">Seven shoot types come with the app.</p>
+        <p class="hint ct-plan" id="ct_plan" hidden data-i18n="ct_plan">Your own types keep working.</p>
+
+        <ul class="hs-liste ct-liste" id="ct_liste"></ul>
+
+        <div class="hs-form" id="ct_form">
+          <div class="row2">
+            <div class="field">
+              <label data-i18n="ct_ad">Type name</label><span class="zorunlu-im"
+                    data-i18n-title="hs_zorunlu" title="Required" aria-hidden="true">*</span>
+              <input type="text" id="ct_ad" maxlength="40" required aria-required="true"
+                     data-i18n-placeholder="ct_ad_ph" placeholder="Podcast — two people">
+            </div>
+            <div class="field">
+              <label data-i18n="ct_adres_bas">Address</label>
+              <label class="pcheck ct-tik"><input type="checkbox" id="ct_adresTik"><span
+                    data-i18n="ct_adres_label">Ask for an address in this type</span></label>
+            </div>
+          </div>
+          <div class="modal-actions">
+            <button type="button" class="btn" id="ct_vazgec" hidden data-i18n="btn_cancel">Cancel</button>
+            <button type="button" class="btn btn-primary" id="ct_kaydet" data-i18n="ct_ekle">Add</button>
+          </div>
+        </div>
+      </div>
     </div>
 
     <!-- ⛔ 19 KASIM 2026 (YAPILACAKLAR 66) — YAPAY ZEKA.
@@ -8101,6 +8162,24 @@ const LANG = {
     hs_limit: (n)=> `Up to ${n} accounts.`,
     hs_sil: (ad)=> `Delete “${ad}”?`,
     hs_sil_bagli: (ad, n)=> `“${ad}” is used by ${n} entr${n === 1 ? 'y' : 'ies'}. Those entries are not deleted; they will show the account as removed. Delete it?`,
+    // KENDI CEKIM TURLERI (YAPILACAKLAR 54c). Turun ADI kullanici
+    // verisi, cevrilmiyor; cevrilen yalnizca bu arayuz dizeleri.
+    ct_title: "Your own shoot types",
+    ct_intro: "Seven shoot types come with the app. If none of them describes your work — a podcast with two people, say — add your own here and it appears in the type list of every project.",
+    ct_plan: "Your own types keep working and the projects that use them are untouched. Adding, renaming and deleting a type is part of Creator Pro.",
+    ct_ad: "Type name",
+    ct_ad_ph: "Podcast — two people",
+    ct_adres_bas: "Address",
+    ct_adres_label: "Ask for an address in this type",
+    ct_adres_im: "asks for an address",
+    ct_ekle: "Add",
+    ct_bos: "No type of your own yet. The seven ready-made types stay as they are.",
+    ct_kullanim: (n)=> `${n} project${n === 1 ? '' : 's'}`,
+    ct_ad_gerek: "Give the type a name — that is how you will pick it on the project screen.",
+    ct_limit: (n)=> `Up to ${n} types of your own.`,
+    ct_ayni: "You already have a type with that name.",
+    ct_sil: (ad)=> `Delete “${ad}”?`,
+    ct_sil_bagli: (ad, n)=> `${n} project${n === 1 ? '' : 's'} use${n === 1 ? 's' : ''} “${ad}”. Those projects are not deleted — their type becomes “Other”. Delete the type?`,
     kur_btn_telefon: "Install on phone",
     kur_btn_bilgisayar: "Install on computer",
     kur_not: "Add Shootboard to your Home Screen. It opens like an app and works without a connection.",
@@ -9482,6 +9561,23 @@ const LANG = {
     hs_limit: (n)=> `En fazla ${n} hesap.`,
     hs_sil: (ad)=> `“${ad}” silinsin mi?`,
     hs_sil_bagli: (ad, n)=> `“${ad}” ${n} kayıtta kullanılıyor. O kayıtlar silinmiyor; hesabı silinmiş olarak gösterecekler. Yine de silinsin mi?`,
+    // KENDI CEKIM TURLERI (YAPILACAKLAR 54c).
+    ct_title: "Kendi çekim türlerin",
+    ct_intro: "Uygulama yedi çekim türüyle geliyor. Hiçbiri yaptığın işi anlatmıyorsa — iki kişinin konuştuğu bir podcast gibi — kendi türünü buraya ekle; her projenin tür listesinde çıkar.",
+    ct_plan: "Kendi türlerin çalışmaya devam eder, onları kullanan projelere dokunulmaz. Yeni tür eklemek, adını değiştirmek ve silmek Creator Pro'nun parçası.",
+    ct_ad: "Tür adı",
+    ct_ad_ph: "Podcast — iki kişi",
+    ct_adres_bas: "Adres",
+    ct_adres_label: "Bu türde adres sorulsun",
+    ct_adres_im: "adres soruyor",
+    ct_ekle: "Ekle",
+    ct_bos: "Henüz kendi türün yok. Hazır yedi tür olduğu gibi duruyor.",
+    ct_kullanim: (n)=> `${n} proje`,
+    ct_ad_gerek: "Türe bir ad ver — proje ekranında onu bu adla seçeceksin.",
+    ct_limit: (n)=> `En fazla ${n} kendi türün olabilir.`,
+    ct_ayni: "Bu adda bir türün zaten var.",
+    ct_sil: (ad)=> `“${ad}” silinsin mi?`,
+    ct_sil_bagli: (ad, n)=> `“${ad}” türünü ${n} proje kullanıyor. O projeler silinmiyor — türleri “Diğer” olur. Tür silinsin mi?`,
     kur_btn_telefon: "Telefona kur",
     kur_btn_bilgisayar: "Bilgisayara kur",
     kur_not: "Shootboard'u ana ekranına ekle. Uygulama gibi açılır, internet yokken de çalışır.",
@@ -11196,6 +11292,12 @@ const CT_ONEK = 'ct_';
 const CT_BICIM = /^ct_[A-Za-z0-9_-]{1,32}$/;
 const CT_MAX = 12;                       // kendi turu sayisi tavani
 let kendiTurler = [];                    // [{k, ad, adres}]
+// ⛔ TANIM BURADA, ARAYUZUN YANINDA DEGIL. `turleriCiz` bir islev
+//    bildirimi, yani yukari tasiniyor; `let` tasinmiyor. Arayuz
+//    islevlerinin yaninda durdugunda, kapi senkronu betigin
+//    ortasindan cagirirsa TDZ hatasi (ReferenceError) olurdu --
+//    bu depo o tuzagi ZATEN yasadi (`ayarlarHazir` notuna bak).
+let turDuzenId = null;
 
 function projTuruGecerli(k){
   return PROJ_TYPES.indexOf(k) !== -1 || CT_BICIM.test(String(k || ''));
@@ -11223,11 +11325,18 @@ function readTurler(){
 }
 function saveTurler(){
   try{ localStorage.setItem(TUR_KEY, JSON.stringify(kendiTurler)); }catch(e){}
+  // ⚠ `saveIhtiyaclar` ile ayni kalip: tur telefonda eklenince
+  //   bilgisayarda da hazir olsun. Oturum yoksa islev kendisi
+  //   donuyor, yani cevrimdisi kullanimda zararsiz.
+  tercihPushKuyrukla();
 }
 function turlerBuluttan(uzak){
   if(!Array.isArray(uzak)) return;
   kendiTurler = uzak.map(turTemizle).filter(Boolean).slice(0, CT_MAX);
-  saveTurler();
+  // ⛔ `saveTurler` DEGIL: buluttan geleni ayni dakika buluta geri
+  //    yazmak gereksiz bir tur olurdu (`ihtiyaclarBuluttan` da
+  //    dogrudan yaziyor).
+  try{ localStorage.setItem(TUR_KEY, JSON.stringify(kendiTurler)); }catch(e){}
 }
 
 // ⛔ MEKAN TURU (YAPILACAKLAR 51). Kullanici 16 Kasim 2026'da
@@ -16478,6 +16587,10 @@ function ozellikKapilariUygula(){
 
   // Fikir onceligi: kartlar ve suzgec yeniden ciziliyor.
   try{ if(typeof renderFikirler === 'function') renderFikirler(); }catch(e){}
+
+  // Kendi cekim turleri: kapi yalnizca duzenleme denetimlerini
+  // gizliyor, turleri degil.
+  try{ if(typeof turleriCiz === 'function') turleriCiz(); }catch(e){}
 }
 
 // Plani ve kapiyi sunucudan okuyor.
@@ -17293,6 +17406,8 @@ function ayarSayfasiTazele(){
   hesapPlatformDoldur();
   hesapFormuTemizle();
   hesaplariCiz();
+  turFormuTemizle();
+  turleriCiz();
   havaAyarTazele();
   hesapBolumunuTazele();
   openAiSettings();
@@ -26405,6 +26520,132 @@ function hesapKaydet(){
   renderCal();
 }
 
+// ⛔ 21 KASIM 2026 (YAPILACAKLAR 54c) — KENDI CEKIM TURU ARAYUZU.
+//    Veri katmani ayri duruyor (`turTemizle`, `readTurler`,
+//    `projTuruGecerli`); burasi yalnizca ekran.
+//    ⚠ `turDuzenId` YUKARIDA, veri katmaninin yaninda: sebebi orada.
+
+function turFormuTemizle(){
+  turDuzenId = null;
+  const ad = document.getElementById('ct_ad');
+  const tik = document.getElementById('ct_adresTik');
+  const kaydet = document.getElementById('ct_kaydet');
+  const vaz = document.getElementById('ct_vazgec');
+  if(ad) ad.value = '';
+  if(tik) tik.checked = false;
+  if(kaydet) kaydet.textContent = t('ct_ekle');
+  if(vaz) vaz.hidden = true;
+}
+function turFormunaAl(x){
+  turDuzenId = x.k;
+  document.getElementById('ct_ad').value = x.ad;
+  document.getElementById('ct_adresTik').checked = x.adres === true;
+  document.getElementById('ct_kaydet').textContent = t('btn_save');
+  document.getElementById('ct_vazgec').hidden = false;
+  document.getElementById('ct_ad').focus();
+}
+// Kac proje bu turu kullaniyor: kullanici silmeden once bilmeli
+// (`hesapSil`deki davranis).
+function turProjeSayisi(k){
+  return projects.filter(p=> p && p.type === k).length;
+}
+function turleriCiz(){
+  const kutu = document.getElementById('ct_liste');
+  if(!kutu) return;
+  const acik = ozellikAcik('set_kisisellestirme');
+  const blok = document.getElementById('ct_blok');
+  const form = document.getElementById('ct_form');
+  const plan = document.getElementById('ct_plan');
+  // ⛔ KAPI YALNIZCA DUZENLEMEYI GIZLIYOR: var olan turler listede
+  //    DURUYOR ve projelerde calismaya devam ediyor.
+  if(blok) blok.hidden = !acik && !kendiTurler.length;
+  if(form) form.hidden = !acik;
+  if(plan) plan.hidden = acik;
+  if(!acik && turDuzenId) turFormuTemizle();
+  if(!kendiTurler.length){
+    kutu.innerHTML = '<li class="hs-bos">' + escapeHtml(t('ct_bos')) + '</li>';
+    return;
+  }
+  kutu.innerHTML = kendiTurler.map(x=>{
+    const sayi = turProjeSayisi(x.k);
+    return '<li>'
+      + '<span class="hs-ad">' + escapeHtml(x.ad) + '</span>'
+      + (x.adres ? '<span class="ct-adres-im">' + escapeHtml(t('ct_adres_im')) + '</span>' : '')
+      + '<span class="hs-yan">' + (sayi ? escapeHtml(t('ct_kullanim')(sayi)) : '') + '</span>'
+      + (acik
+          ? '<span class="hs-islem">'
+            + '<button type="button" class="btn" data-ct-duzen="' + escapeHtml(x.k) + '">'
+              + escapeHtml(t('btn_edit')) + '</button>'
+            + '<button type="button" class="btn" data-ct-sil="' + escapeHtml(x.k) + '">'
+              + escapeHtml(t('btn_delete')) + '</button>'
+            + '</span>'
+          : '')
+      + '</li>';
+  }).join('');
+  kutu.querySelectorAll('[data-ct-duzen]').forEach(el=>{
+    el.addEventListener('click', ()=>{
+      const x = kendiTurBul(el.dataset.ctDuzen);
+      if(x) turFormunaAl(x);
+    });
+  });
+  kutu.querySelectorAll('[data-ct-sil]').forEach(el=>{
+    el.addEventListener('click', ()=> turSil(el.dataset.ctSil));
+  });
+}
+
+function turKaydet(){
+  // ⛔ KAPI KAPALIYSA HIC CALISMIYOR: form gizli ama gizli bir form
+  //    hala Enter alabilir.
+  if(!ozellikAcik('set_kisisellestirme')) return;
+  const giris = document.getElementById('ct_ad');
+  const ad = giris.value.trim().slice(0, 40);
+  if(!ad){ uyari(t('ct_ad_gerek')); giris.focus(); return; }
+  // Ayni ad iki kez girilirse listede hangisinin hangisi oldugu
+  // anlasilmaz; Turkce'de buyuk/kucuk harf kurali da farkli.
+  const yer = currentLang === 'tr' ? 'tr' : 'en';
+  const ayni = kendiTurler.some(x=>
+    x.k !== turDuzenId && x.ad.toLocaleLowerCase(yer) === ad.toLocaleLowerCase(yer));
+  if(ayni){ uyari(t('ct_ayni')); giris.focus(); return; }
+  const adres = document.getElementById('ct_adresTik').checked;
+  if(turDuzenId){
+    const x = kendiTurBul(turDuzenId);
+    if(x){ x.ad = ad; x.adres = adres; }
+  }else{
+    // ⛔ TAVANA YALNIZCA YENI EKLERKEN BAKILIYOR: tavanin ustunde
+    //    kalmis biri kendi turunu DUZENLEYEMEZ hale gelmemeli
+    //    (platform hesap sinirindaki ayni gerekce).
+    if(kendiTurler.length >= CT_MAX){ uyari(t('ct_limit')(CT_MAX)); return; }
+    const yeni = turTemizle({ ad: ad, adres: adres });
+    if(!yeni) return;
+    kendiTurler.push(yeni);
+  }
+  saveTurler();
+  turFormuTemizle();
+  turleriCiz();
+  // Tur adi proje tablosunda ve suzgecte de yaziyor.
+  renderProjects();
+}
+
+async function turSil(k){
+  if(!ozellikAcik('set_kisisellestirme')) return;
+  const x = kendiTurBul(k);
+  if(!x) return;
+  const sayi = turProjeSayisi(k);
+  if(!await onayla(sayi ? t('ct_sil_bagli')(x.ad, sayi) : t('ct_sil')(x.ad))) return;
+  // ⛔ PROJE SILINMIYOR, HICBIR VERI KAYBOLMUYOR: yalnizca tur
+  //    etiketi "Diger" oluyor (kullanicinin karari, 21 Kasim 2026).
+  let degisen = 0;
+  projects.forEach(p=>{
+    if(p && p.type === k){ p.type = 'other'; projDirtyIsaretle(p.id); degisen++; }
+  });
+  kendiTurler = kendiTurler.filter(y=> y.k !== k);
+  saveTurler();
+  if(degisen) saveProjects();
+  if(turDuzenId === k) turFormuTemizle();
+  turleriCiz();
+  renderProjects();
+}
+
 // ⛔ 19 KASIM 2026 — `hesapEtiketleriniAc()` KALDIRILDI
 //    (YAPILACAKLAR 58 asama 4). Hesap etiketleri bir PENCERE degil,
 //    ayarlar sayfasinin bir bolumu; onu acan tek yer seritteki
@@ -26446,6 +26687,16 @@ document.getElementById('hs_kaydet').addEventListener('click', hesapKaydet);
   });
 });
 document.getElementById('hs_vazgec').addEventListener('click', ()=>{ hesapFormuTemizle(); });
+
+// ⚠ 53a'daki ayni gerekce: alanlar bir <form> ICINE ALINMADI, Enter
+//   dogrudan dinleniyor. Form olsa Enter sayfayi yenileyebilirdi.
+document.getElementById('ct_kaydet').addEventListener('click', turKaydet);
+document.getElementById('ct_vazgec').addEventListener('click', ()=>{ turFormuTemizle(); });
+document.getElementById('ct_ad').addEventListener('keydown', (e)=>{
+  if(e.key !== 'Enter') return;
+  e.preventDefault();
+  turKaydet();
+});
 
 
 ['rm_once','rm_gun','rm_gecikti'].forEach(id=>{

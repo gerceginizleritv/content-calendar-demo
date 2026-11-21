@@ -712,6 +712,55 @@ dokunmak ve ikinci seferde birincisini bozmak demek.
   | 54b | Bir seti **hangi çekim türüne** öneri olarak atayacağını seçme |
   | 54c | **Kendi çekim türünü** ekleme (örn. "Podcast — iki kişi") |
 
+  ✅ **54c BİTTİ (21 Kasım 2026).** İki aşamada yapıldı:
+
+  - **Veri katmanı.** `kendiTurler` (`demo_cekim_turleri`), beyaz
+    listeli `turTemizle`, hesaba taşınma (`prefs.cekim_turleri`).
+    ⛔ **Geçerlilik LİSTEYE değil BİÇİME bakıyor**
+    (`/^ct_[A-Za-z0-9_-]{1,32}$/`): böylece `sanitizeProject`
+    doğrulaması **yükleme sırasından bağımsız.** Önceki hâlinde
+    kullanıcının türü her okumada `'other'`a düşüyordu — maddenin
+    en başta yazdığı tuzak buydu.
+  - **Arayüz.** Ayarlar → *Planlama bilgileri* → **Kendi çekim
+    türlerin**: liste, satır başına Düzenle/Sil, ad kutusu, "Bu
+    türde adres sorulsun" tiki, Ekle. Tavan 12 tür.
+
+  **Dört kararın hepsi koda girdi ve ayrı ayrı ölçüldü:**
+
+  | Karar | Nasıl ölçüldü |
+  |---|---|
+  | 1 · Creator Pro kapısı | Kapı kapalı + tür yok → bölüm hiç çıkmıyor; kapalı + tür VAR → liste duruyor, form ve Sil/Düzenle yok, sebep ekranda |
+  | 2 · Adresi kullanıcı seçer | Tik açıkken `adresGerekir` true, kapalıyken false |
+  | 3 · Tür silinince proje "Diğer"e düşer | Proje SAYISI değişmiyor (3 → 3), türleri `other` oluyor, onay metni kaç projeyi etkilediğini söylüyor |
+  | 4 · Hazır türlerde de set önerisi değişir | **54b'de**; 54c hazır yedi türe dokunmadı (listede duruyorlar) |
+
+  **Bekçi:** `testler/kendi-tur-arayuz.test.js` — 47 iddia.
+  Dil listesini `LANG`'dan **buluyor**, elle yazmıyor (Bölüm 7);
+  360 · 375 · 390 pikselde de ölçüyor (Bölüm 8).
+  **13 mutasyon denendi, 13'ü de yakalandı.**
+
+  ⚠ **ÖLÇÜMLE ÇIKAN İKİ GERÇEK HATA (Bölüm 8).** İlk sürümde
+  "Sil" düğmesi telefonda **40 piksel genişti** ve adres tiki
+  **40 piksel yüksekti**; ikisi de 44'ün altında. Yalnızca
+  yüksekliği büyütmek yetmedi — "Sil" kısa bir kelime, genişlik de
+  ayrıca gerekiyor.
+  ⛔ İkincisi bu deponun bildiği **özgüllük tuzağı:** `.field
+  .pcheck` (0,2,0) dosyada DAHA SONRA geliyor ve `min-height:40px`
+  diyor; düz `.ct-tik` (0,1,0) onu yenemiyordu. Seçici
+  `.field .pcheck.ct-tik` (0,3,0) yapıldı.
+
+  ⚠ **TDZ RİSKİ KAPATILDI.** `let turDuzenId` ilk sürümde arayüz
+  işlevlerinin yanındaydı. İşlev bildirimleri yukarı taşınır, `let`
+  taşınmaz: plan kapısı betiğin ortasından çağırırsa
+  `ReferenceError` olurdu. Tanım veri katmanının yanına taşındı.
+  (Depo bu tuzağı zaten yaşadı — `ayarlarHazir` notu.)
+
+  ⬜ **AÇIK KALAN, 54c'NİN DIŞINDA:** hesap etiketleri listesindeki
+  Düzenle/Sil düğmeleri de telefonda 44 pikselin **altında** (aynı
+  `.hs-liste .hs-islem .btn` kuralı). **Ölçülmedi, dokunulmadı:**
+  ölçmeden değiştirmek başka bir maddenin işini sessizce yapmak
+  olurdu. 71. maddeyle birlikte bakılacak.
+
   **Koddan doğrulanan tuzaklar — sırası gelince bunlara dikkat:**
 
   - ⛔ **`sanitizeProject` kendi türünü SESSİZCE SİLER.** Bugün
