@@ -694,8 +694,18 @@ dokunmak ve ikinci seferde birincisini bozmak demek.
     **veri**, çevrilmez; ama arayüz dizeleri her dile girer.
 
   ⚠ **Creator Pro'ya ait.** `fiyatlar.html`'deki plan karşılaştırmasına
-  da satır eklenecek — ⛔ **44. madde (fiyatlar sayfası) bundan ÖNCE
-  bitmeli**, yoksa satır iki kez yazılır.
+  da satır eklenecek.
+
+  ⛔ **ESKİMİŞ ŞART KALDIRILDI (21 Kasım 2026, kullanıcı onayladı).**
+  Burada şu yazıyordu: *"44. madde bundan ÖNCE bitmeli, yoksa satır
+  iki kez yazılır."* Gerekçesi 44'ün fiyat sayfasını yeniden
+  düzenleyecek olmasıydı. **O parçalar bitti** (eşit kutular ✅,
+  EUR ✅); 44'ün kalan tek parçası para birimi **düğmeleriyle**
+  ilgili, plan karşılaştırma tablosuyla değil — ve o da Cloudflare'e
+  bağlı, yani beklemek 54'ü süresiz durdururdu.
+  ⚠ Ders: bir maddeye "önce şu bitsin" yazarken **hangi parçası
+    yüzünden** olduğunu da yaz; yoksa o parça bitince şart kendi
+    kendine eskimiyor.
 
   ⚠ Bu madde **49** ile aynı aileden (set yönetimi: içi görünsün,
   madde çıkarılsın). 49 bitmeden 54a'ya başlanmaz.
@@ -1235,8 +1245,16 @@ dokunmak ve ikinci seferde birincisini bozmak demek.
   sayfasında, her dilde, **dil değiştirip** bütün iç bağlantıların
   o dile gittiğini ölçen bir test. Listeyi elle yazmayan, sayfaları
   kendi bulan cinsten — yoksa dördüncü bağlantı yine kaçar.
-- ⬜ **44.** **Fiyatlar sayfası — EUR, bölgeye göre para birimi, eşit
-  kutu, özet satırı.** Kullanıcı 16 Kasım 2026'da istedi.
+- ⏸ **44. ENGELLİ — CLOUDFLARE TAŞIMASINI BEKLİYOR (21 Kasım 2026'da
+  işaretlendi).** **Fiyatlar sayfası — EUR, bölgeye göre para birimi,
+  eşit kutu, özet satırı.** Kullanıcı 16 Kasım 2026'da istedi.
+
+  ⚠ **İŞARET NEDEN DEĞİŞTİ:** altı parçasından beşi kapandı; tek açık
+  parça (3 · ülkeye göre para birimi) kullanıcının kararıyla
+  Cloudflare taşımasına bağlandı. Madde ⬜ "sırada" göründüğü için
+  "sıra ile devam et" denince ilk buraya çarpılıyordu, oysa **şu an
+  yapılacak bir şey yok**. ⛔ Düğmelerin hâlâ durması bir eksik değil,
+  verilmiş karar.
 
   ✅ **ÖNCE İYİ HABER — panel → sayfa zinciri ZATEN KURULU.**
   Kullanıcı *"admin panelinden gireceğim fiyat fiyatlar sayfasında
