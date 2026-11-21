@@ -1973,6 +1973,19 @@ textarea.sc-ai-brief{min-height:64px;resize:vertical;line-height:1.5;}
    ⚠ .bos (hic projesi olmayan kart) YAYILMAYA DEVAM EDIYOR: orada
      kutu satirin tek ogesi ve "— proje yok —" yazisini tasiyor. */
 .fk-proj-chip.ekle{font-weight:600;flex:none;}
+/* COKLU PROJE AC/KAPAT (YAPILACAKLAR 68). Dugme HER gorunumde
+   basiliyor ama yalnizca LISTE gorunumunde isi var; kartta
+   gizleniyor ki iki yerde iki ayri markup olmasin. */
+.fk-proj-ac{flex:none;display:none;border:1px dashed var(--line);
+  background:none;color:var(--text-dim);font:inherit;font-size:10.5px;
+  font-weight:700;border-radius:2px;padding:4px 7px;cursor:pointer;}
+.fk-proj-ac:hover{border-color:var(--accent-dim);color:var(--text);}
+.fk-grid.fk-liste .fk-proj-ac{display:inline-block;}
+/* ⚠ Yalnizca BAGLI cipler gizleniyor: "+" ekleme dugmesi ve
+   "— proje yok —" kutusu `.bagli` tasimadigi icin bu kurala
+   girmiyor. */
+.fk-grid.fk-liste .fk-proj-kutu:not(.acik) .fk-proj-chip.bagli ~ .fk-proj-chip.bagli{
+  display:none;}
 .fk-proj-chip.ekle.bos{flex:1;}
 .fk-secili{display:flex;flex-wrap:wrap;gap:6px;margin:-6px 0 14px;}
 .fk-secili .fk-cip{display:inline-flex;align-items:center;gap:6px;font-size:12px;
@@ -2002,6 +2015,41 @@ textarea.sc-ai-brief{min-height:64px;resize:vertical;line-height:1.5;}
      etkilemiyor. */
 .fk-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(228px,1fr));
   gap:14px;}
+/* ── FIKIR SATIRI (liste gorunumu) — YAPILACAKLAR 68 ─────────────
+   ⛔ AYNI KART HTML'I, YALNIZCA BICIM DEGISIYOR. Mekanlarda satir
+     icin AYRI bir HTML uretiliyor; burada oyle YAPILMADI, cunku
+     fikir karti onlarca `data-fk-*` bagi tasiyor (surukleme,
+     birlestirme, parcaya ayirma, oncelik, script, teslim tarihi).
+     Ikinci bir HTML yazmak hepsini ikinci kez yazmak olurdu ve
+     biri degistiginde oteki sessizce eskirdi.
+   ⚠ Bunun dogal sonucu kullanicinin istedigi davranis: birlesmis
+     fikir TEK satir (parcalari icinde), ayrilinca AYRI satirlar.
+   ⚠ Belirginlik: kapsayici `.fk-grid` (bir sinif), bu kural iki
+     sinif -- yeniyor. Mekanlarda kapsayici KIMLIKLE yazildigi icin
+     duz sinif yetmemisti (18 Kasim 2026). */
+.fk-grid.fk-liste{display:block;}
+.fk-grid.fk-liste .fk-card{flex-direction:row;align-items:center;
+  gap:12px;margin-bottom:-1px;border-radius:2px;}
+.fk-grid.fk-liste .fk-card-top{flex:none;order:2;flex-direction:row;
+  align-items:center;gap:6px;}
+.fk-grid.fk-liste .fk-proj-kutu{flex:0 0 auto;min-width:0;max-width:220px;}
+.fk-grid.fk-liste .fk-body-sar{flex:1;min-width:0;order:1;}
+/* Satirda metin TEK SATIR: kart gorunumunde bes satira kadar
+   uzuyor, listede her fikir ayni yuksekligi tutsun. */
+.fk-grid.fk-liste .fk-card-body{min-height:0;}
+.fk-grid.fk-liste .fk-card-body > p{display:-webkit-box;-webkit-line-clamp:2;
+  -webkit-box-orient:vertical;overflow:hidden;margin:0;}
+.fk-grid.fk-liste .fk-card-foot{flex:none;order:3;margin:0;}
+/* ⚠ Telefonda listeye dusurmek satiri okunmaz yapardi: ekran zaten
+   dar, yedi oge yan yana sigmaz. Orada kart duzeni kaliyor. */
+@media(max-width:560px){
+  .fk-grid.fk-liste{display:grid;}
+  .fk-grid.fk-liste .fk-card{flex-direction:column;align-items:stretch;}
+  .fk-grid.fk-liste .fk-card-top{order:0;}
+  .fk-grid.fk-liste .fk-body-sar{order:1;}
+  .fk-grid.fk-liste .fk-card-foot{order:2;}
+  .fk-grid.fk-liste .fk-card-body > p{-webkit-line-clamp:5;}
+}
 .fk-empty{grid-column:1/-1;}
 .fk-card{position:relative;display:flex;flex-direction:column;gap:8px;
   border:1px solid var(--line);border-radius:2px;background:var(--surface);
@@ -4820,6 +4868,12 @@ textarea.sc-ai-brief{min-height:64px;resize:vertical;line-height:1.5;}
       <input type="search" id="fk_search" data-i18n-placeholder="fk_search_ph" placeholder="Search ideas…">
       <select id="fk_filter" class="fk-filter" aria-label="Project"></select>
       <span class="proj-count" id="fk_count"></span>
+      <!-- SIRA (YAPILACAKLAR 69) ve GORUNUM (YAPILACAKLAR 68).
+           ⚠ Projelerdeki/mekanlardaki uc durumlu dongu DEGIL: fikirlerde
+             yalnizca iki durum var (elle · oncelik). "Yeni/eski
+             eklenme" fikirlerde bugun hic yok; eklemek ayri bir is. -->
+      <button type="button" class="btn btn-sira" id="fk_sira"></button>
+      <div class="gorunum-sec" id="fk_gorunum" role="group"></div>
     </div>
     <!-- Secilen projeler cip olarak duruyor: acilir liste tek secim
          yapiyor, birden fazla proje ancak boyle birikebiliyor. -->
@@ -7640,6 +7694,13 @@ const LANG = {
     fk_onc_label: (ad)=> `Priority: ${ad}`,
     fk_onc_filtre: "Priority",
     fk_onc_sec: "Set priority",
+    fk_sira_elle: "Order: mine",
+    fk_sira_oncelik: "Order: priority",
+    fk_sira_ipucu: "Switch between your own order and priority order",
+    fk_view_cards: "Cards",
+    fk_view_list: "List",
+    fk_proj_ac: (n)=> `Show ${n} projects`,
+    fk_proj_kapat: "Hide projects",
     fk_filter_none: "Without a project",
     fk_count_filtered: (n,tum)=> `${n} / ${tum} ideas`,
     fk_none_match: "No idea here yet.",
@@ -9047,6 +9108,13 @@ const LANG = {
     fk_onc_label: (ad)=> `Öncelik: ${ad}`,
     fk_onc_filtre: "Öncelik",
     fk_onc_sec: "Öncelik ver",
+    fk_sira_elle: "Sıra: kendi düzenim",
+    fk_sira_oncelik: "Sıra: önceliğe göre",
+    fk_sira_ipucu: "Kendi düzenin ile öncelik sırası arasında geçiş yap",
+    fk_view_cards: "Kartlar",
+    fk_view_list: "Liste",
+    fk_proj_ac: (n)=> `${n} projeyi göster`,
+    fk_proj_kapat: "Projeleri gizle",
     fk_filter_none: "Projesiz olanlar",
     fk_count_filtered: (n,tum)=> `${n} / ${tum} fikir`,
     fk_none_match: "Burada henüz fikir yok.",
@@ -13042,8 +13110,85 @@ async function secimdenProje(sel, oncekiDeger){
   return p.id;
 }
 
+// ⛔ FIKIR SIRASI (YAPILACAKLAR 69). Kullanici 20 Kasim 2026'da
+//    hatirlatti: "fikirleri oncelik sirasina gore siralayabilmek de
+//    olmali". Oncelik o gune kadar yalnizca bir SUZGECTI.
+//
+// ⚠ IKI DURUM, UC DEGIL. Projelerde ve mekanlarda dongu
+//   akilli/yeni/eski; fikirlerde "eklenme tarihine gore" diye bir
+//   secenek bugun hic yok ve bu madde onu getirmiyor.
+const FIKIR_SIRA_KEY = 'demo_fikir_sira';
+let fikirSirasi = 'elle';
+try{
+  const v = localStorage.getItem(FIKIR_SIRA_KEY);
+  if(v === 'elle' || v === 'oncelik') fikirSirasi = v;
+}catch(e){}
+
+// ⛔ KENDI DUGME CIZICISI, `siraDugmesiTazele` DEGIL.
+//    O yardimci `deger !== 'akilli'` ise dugmeyi "acik" isaretliyor;
+//    fikirlerde varsayilan 'elle' oldugu icin o kural dugmeyi HEP
+//    acik gosterirdi. Paylasmak yerine dogrusunu yazmak daha az
+//    yanlis: iki sayfanin varsayilani farkli.
+function fikirSiraTusu(){
+  const d = document.getElementById('fk_sira');
+  if(!d) return;
+  d.textContent = t('fk_sira_' + fikirSirasi);
+  d.title = t('fk_sira_ipucu');
+  d.setAttribute('aria-label', t('fk_sira_ipucu'));
+  d.classList.toggle('acik', fikirSirasi !== 'elle');
+}
+
+// GORUNUM (YAPILACAKLAR 68): kart izgarasi / satir listesi.
+// ⚠ VARSAYILAN 'kart': mekanlardaki kararin aynisi -- "bugunku hali
+//   gelsin, liste istege bagli ikinci gorunum olsun".
+let fikirGorunumu = 'kart';
+try{
+  const v = localStorage.getItem('demo_fk_gorunum');
+  if(v === 'kart' || v === 'liste') fikirGorunumu = v;
+}catch(e){}
+
+function fikirGorunumuYaz(mod){
+  if(mod !== 'kart' && mod !== 'liste') return;
+  fikirGorunumu = mod;
+  try{ localStorage.setItem('demo_fk_gorunum', mod); }catch(e){}
+  renderFikirler();
+}
+function fikirGorunumTusu(){
+  const kutu = document.getElementById('fk_gorunum');
+  if(!kutu) return;
+  const dugme = (mod, ikon, anahtar)=>
+    `<button type="button" class="gs-dug" data-fkgor="${mod}"`
+    + ` aria-pressed="${fikirGorunumu === mod ? 'true' : 'false'}"`
+    + ` title="${escapeHtml(t(anahtar))}" aria-label="${escapeHtml(t(anahtar))}">${ikon}</button>`;
+  kutu.innerHTML = dugme('kart', IKON_IZGARA, 'fk_view_cards')
+                 + dugme('liste', IKON_SATIR, 'fk_view_list');
+  kutu.querySelectorAll('[data-fkgor]').forEach(b=>{
+    b.addEventListener('click', ()=> fikirGorunumuYaz(b.getAttribute('data-fkgor')));
+  });
+}
+
+function fikirSirasiYaz(mod){
+  if(mod !== 'elle' && mod !== 'oncelik') return;
+  fikirSirasi = mod;
+  try{ localStorage.setItem(FIKIR_SIRA_KEY, mod); }catch(e){}
+  renderFikirler();
+}
+
+// ⛔ ONCELIKSIZ EN ALTA. Kullanicinin karari (20 Kasim 2026).
+//    "Onceliksiz" AYRI bir durum, "dusuk" DEGIL (52. madde): bu
+//    yuzden '3'ten de sonra geliyor, '4' gibi davranmiyor.
+// ⚠ Esitlikte ELLE SIRA devreye giriyor: ayni oncelikteki fikirler
+//   kullanicinin surukleyerek kurdugu duzende kaliyor. Boylece
+//   oncelik sirasina gecmek elle duzeni YOK ETMIYOR, onun ustune
+//   ikinci bir olcut koyuyor.
+function fikirOncelikSirasi(f){
+  const o = f && f.oncelik;
+  return (o === '1' || o === '2' || o === '3') ? Number(o) : 9;
+}
 function fikirSiraliListe(){
-  return fikirler.slice().sort((a,b)=> a.sort - b.sort || b.createdAt - a.createdAt);
+  const temel = fikirler.slice().sort((a,b)=> a.sort - b.sort || b.createdAt - a.createdAt);
+  if(fikirSirasi !== 'oncelik') return temel;
+  return temel.sort((a,b)=> fikirOncelikSirasi(a) - fikirOncelikSirasi(b));
 }
 // Ajanda suzgeci proje suzgecinden AYRI duruyor: biri "hangi is", oteki
 // "ne zaman". Ikisi ayni satirda tek bir listeye sikistirilsaydi
@@ -13170,6 +13315,11 @@ function fikirKartiHtml(f){
              aria-label="${escapeHtml(t('fk_project_remove')(p.name))}">×</button></span>`).join('')}
         <button type="button" class="fk-proj-chip ekle${bagli.length ? '' : ' bos'}" data-fk-projbtn="${escapeHtml(f.id)}"
                 title="${escapeHtml(t('fk_project_title'))}">${bagli.length ? '+' : escapeHtml(t('fk_no_project'))}</button>
+        ${bagli.length > 1 ? `<button type="button" class="fk-proj-ac"
+                data-fk-projac="${escapeHtml(f.id)}"
+                title="${escapeHtml(t('fk_proj_ac')(bagli.length))}"
+                aria-label="${escapeHtml(t('fk_proj_ac')(bagli.length))}"
+                aria-expanded="false">+${bagli.length - 1}</button>` : ''}
       </span>
       ${aiRozet('ideas', f.id)}
       ${ozellikAcik('fikir_onceligi') ? `<select class="fk-onc" data-fk-onc="${escapeHtml(f.id)}"
@@ -13249,6 +13399,16 @@ function renderFikirler(){
   fikirAjandaCizgisi();
   const aramaKutusu = document.getElementById('fk_search');
   if(aramaKutusu.value !== fikirArama) aramaKutusu.value = fikirArama;
+  fikirSiraTusu();
+  fikirGorunumTusu();
+  // ⛔ BELIRGINLIK TUZAGI (mekanlarda yasandi, 18 Kasim 2026):
+  //   orada kapsayici `#mk_list{display:grid}` diye KIMLIKLE
+  //   yazildigi icin duz `.mk-liste` onu yenemedi ve satirlar yan
+  //   yana dizildi. Burada kapsayici `.fk-grid` (sinif), bizim
+  //   kuralimiz `.fk-grid.fk-liste` (iki sinif) -- yeniyor.
+  //   ⚠ `fk-grid` sinifi KALIYOR: suruklemenin birakma alani
+  //     (`fk-grid.birakmaya-hazir`) ona bagli.
+  kap.classList.toggle('fk-liste', fikirGorunumu === 'liste');
 
   const liste = fikirleriSuz();
   document.getElementById('fk_count').textContent =
@@ -13290,6 +13450,30 @@ function renderFikirler(){
 }
 
 function fikirKartOlaylari(kap){
+  // ⛔ COKLU PROJEDE AC/KAPAT (YAPILACAKLAR 68). Kullanicinin
+  //    karari (20 Kasim 2026): "bagli projeler ... (eger coklu ise)
+  //    projeleri + ya da - ile acilir kapanir gorunur bir hale
+  //    getirebiliriz".
+  // ⚠ YALNIZCA LISTE GORUNUMUNDE GIZLENIYOR. Kart gorunumunde
+  //   cipler zaten alt alta siraya giriyor ve yer sikintisi yok;
+  //   kullanicinin cumlesi de "gerekirse" diyor. Kartta da
+  //   gizlenmesi istenirse tek satirlik bir CSS degisikligi.
+  // ⚠ Durum KAYDEDILMIYOR: bu bir gorunum tercihi degil, o anki bir
+  //   bakis. Sayfaya her girise acik gelmesi gereksiz gurultu olurdu.
+  kap.querySelectorAll('[data-fk-projac]').forEach(el=>{
+    el.addEventListener('click', (e)=>{
+      e.stopPropagation();
+      const kutu = el.closest('.fk-proj-kutu');
+      if(!kutu) return;
+      const acik = kutu.classList.toggle('acik');
+      el.setAttribute('aria-expanded', String(acik));
+      const n = kutu.querySelectorAll('.fk-proj-chip.bagli').length;
+      el.textContent = acik ? '−' : ('+' + (n - 1));
+      const ip = acik ? t('fk_proj_kapat') : t('fk_proj_ac')(n);
+      el.title = ip; el.setAttribute('aria-label', ip);
+    });
+  });
+
   kap.querySelectorAll('[data-fk-onc]').forEach(el=>{
     el.addEventListener('change', ()=>{
       const f = fikirById(el.dataset.fkOnc);
@@ -16539,9 +16723,23 @@ function fikirAyir(id){
 }
 // Suruklenen karti hedefin oncesine/sonrasina koy. Yalnizca suruklenenin
 // sira degeri degisiyor.
+// ⛔ ONCELIK MODUNDA SURUKLEYINCE ELLE MODA DONULUYOR.
+//    Kullanicinin karari (20 Kasim 2026). ⚠ Benim onerim "oncelik
+//    modunda surukleme kapansin" idi; kullanici bunu secti.
+//    Sebebi onemli: oncelik sirasindayken surukleme SESSIZCE ise
+//    yaramasa kullanici kartin neden yerinde kaldigini anlamazdi.
+//    Simdi surukleme CALISIYOR ve mod elle'ye donuyor; sira dugmesi
+//    de yeniden cizildigi icin degisiklik EKRANDA gorunuyor.
+// ⚠ Elle sira ZATEN kayitli (kesirli `sort`), yani mod degismesi
+//   hicbir veriyi kaybetmiyor -- yalnizca hangi olcutun once
+//   geldigini degistiriyor.
 function fikirSirala(id, hedefId, oncesine){
   const f = fikirById(id), h = fikirById(hedefId);
   if(!f || !h || f === h) return false;
+  if(fikirSirasi === 'oncelik'){
+    fikirSirasi = 'elle';
+    try{ localStorage.setItem(FIKIR_SIRA_KEY, 'elle'); }catch(e){}
+  }
   const sirali = fikirler.slice().sort((a,b)=> a.sort - b.sort || a.createdAt - b.createdAt);
   const i = sirali.indexOf(h);
   const komsu = oncesine ? sirali[i-1] : sirali[i+1];
@@ -26131,6 +26329,9 @@ function hesapKaydet(){
 //    ⚠ Listenin ve platform listesinin DOLMASI `setPage`'e bagli
 //      (yukarida): sayfaya dugmeye basmadan da gelinebiliyor (adres
 //      satiri, oturum hatirasi) ve o yollarda liste bos kalirdi.
+document.getElementById('fk_sira').addEventListener('click', ()=>
+  fikirSirasiYaz(fikirSirasi === 'elle' ? 'oncelik' : 'elle'));
+
 document.getElementById('hs_kaydet').addEventListener('click', hesapKaydet);
 
 // ⛔ 20 KASIM 2026 — ENTER SESSIZCE YUTULUYORDU (YAPILACAKLAR 53a).
