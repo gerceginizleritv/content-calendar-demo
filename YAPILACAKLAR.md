@@ -3055,7 +3055,7 @@ dokunmak ve ikinci seferde birincisini bozmak demek.
   kodda; bekçi `testler/fikir-gorunum-sira.test.js` — **20 iddia,
   hepsi geçiyor.**
 
-- ⬜ **74. FİKİRLER — "YENİ FİKİR" KUTUSU VE LİSTE SATIRLARI.** — **74a ve 74b BİTTİ (21 Kasım 2026); 74c açık.**
+- ✅ **74. FİKİRLER — "YENİ FİKİR" KUTUSU VE LİSTE SATIRLARI.** — **BİTTİ (21 Kasım 2026): 74a, 74b, 74c.**
   Kullanıcı 21 Kasım 2026'da ekran görüntüsüyle bildirdi, kendi
   sözleriyle:
 
@@ -3198,11 +3198,54 @@ dokunmak ve ikinci seferde birincisini bozmak demek.
   360 · 375 · 390 · 900 · 1366 · 1920 pikselde ölçüyor; dil listesini
   `LANG`dan buluyor. **12 mutasyon denendi, 12'si de yakalandı.**
 
-  ⬜ **74c AÇIK:** telefonda (390 px) kartların kendi arasında
-  yüksekliği eşit değil — **199 · 229 · 229 · 229**. Liste görünümü
-  orada ızgaraya döndüğü için bu ayrı bir iş; kullanıcının kararı
-  (21 Kasım 2026) telefonda bugünkü düzenin kalması yönündeydi, ama
-  eşitsizlik yine de düzeltilecek.
+  ✅ **74c BİTTİ (21 Kasım 2026) — TELEFONDA KARTLAR EŞİTLENDİ.**
+
+  ⛔ **19 KASIM'DAKİ İSTEK TELEFONDA HİÇ SAĞLANMIYORDU.** Kullanıcının
+  sözü (*"hepsi aynı yükseklikte olsun"*) masaüstünde **ızgaranın
+  germesiyle** sağlanıyor; telefonda ızgara **tek sütun**, yani germe
+  diye bir şey yok ve kartlar içeriğe göre ayrışıyor.
+
+  ✅ **SEBEP ÖLÇÜLDÜ — TEK ŞEY: PROJE ÇİPLERİ.** 360 pikselde:
+
+  | Çip sayısı | Üst satır | Kart |
+  |---|---|---|
+  | 1 | 24 px | 220 px |
+  | 2 | 53 px | 247 px |
+  | 3 | 80 px | 276 px |
+
+  Çipler alt alta diziliyor ve her biri ~27 piksel ekliyor.
+
+  ✅ **KULLANICININ KARARI (21 Kasım 2026):** geniş ekrandaki aynı
+  **"+N"** kalıbı telefona da açılsın — yalnızca ilk çip görünür,
+  gerisi düğmenin arkasında.
+  ⛔ **KALIP YENİDEN YAZILMADI:** liste görünümündeki iki kural dar
+  ekrana da açıldı. Üçüncü bir yol olsaydı biri değişince öteki
+  sessizce ayrışırdı.
+
+  ⚠ **YALNIZCA ÇİP SAYISINI AZALTMAK YETMEDİ, ÖLÇÜM GÖSTERDİ.** Uzun
+  bir proje adı ("SÜLEYMANİYE CAMİİ") ya da "+2" düğmesi satıra
+  sığmayınca kutu yine **iki satıra** çıkıyordu (24 → 51 px) ve
+  kartlar yine eşitsizdi. Çip satırı artık sarmıyor; ad zaten "…"
+  ile kısalıyordu.
+
+  **Sonuç (ölçülen):**
+
+  | Genişlik | Önce | Sonra |
+  |---|---|---|
+  | 360 | 220 · 247 · 247 · 276 | **220 · 221 · 221 · 221** |
+  | 375 | 220 · 247 · 247 · 276 | **220 · 221 · 221 · 221** |
+  | 390 | 191 · 218 · 218 · 247 | **191 · 192 · 192 · 192** |
+
+  ⚠ **1 PİKSEL PAYI BIRAKILDI, SEBEBİ ÖLÇÜLDÜ:** bağlı çipin
+  içindeki "×" düğmesi 13 punto, çip yazısı 10,5 punto; fark oradan
+  geliyor ve gözle görünmüyor. Kullanıcının şikâyet ettiği fark
+  27-56 pikseldi.
+
+  **Bekçi:** `testler/fikir-kart-olcu.test.js`'e eklendi — 360 · 375
+  · 390 pikselde yedişer iddia. **4 mutasyon denendi, 4'ü de
+  yakalandı.** ⚠ İkisi beklediğimden **farklı** bir iddiayla
+  yakalandı: çip adının kırpılması kalkınca sayfa **yatay taşıyor**
+  ve onu "yatay taşma" iddiası yakalıyor.
 
 - ⬜ **72. AYNI STICKY ARIZASI İKİ TABLODA DAHA OLABİLİR.**
   70. madde yapılırken yol üstünde çıktı (20 Kasım 2026).

@@ -307,6 +307,94 @@ const assert = require('node:assert');
     assert.ok(!/\d/.test(m), 'metinde sayi var: ' + JSON.stringify(m));
   });
 
+  // ── TELEFONDA DA ESIT (YAPILACAKLAR 74c) ─────────────────────────
+  // ⛔ 21 KASIM 2026 — 19 KASIM'DAKI ISTEK TELEFONDA SAGLANMIYORDU.
+  //    Kullanicinin sozu ("hepsi ayni yukseklikte olsun") masaustunde
+  //    izgaranin germesiyle saglaniyor; telefonda izgara TEK SUTUN,
+  //    yani germe diye bir sey yok ve kartlar icerige gore ayrisiyor.
+  //    ⚠ SEBEP OLCULDU: tek sebep PROJE CIPLERIYDI. 360 pikselde
+  //      bir cipli kart 220, iki cipli 247, uc cipli 276 piksel;
+  //      cipler alt alta diziliyordu.
+  //    ✅ Kullanicinin karari (21 Kasim 2026): geniş ekrandaki ayni
+  //      "+N" kalibi telefona da acilsin.
+  //    ⚠ Yalnizca cip SAYISINI azaltmak YETMEDI: uzun bir proje adi
+  //      ya da "+2" dugmesi satira sigmayinca kutu yine iki satira
+  //      cikiyordu (24 -> 51 px). Cip satiri artik sarmiyor.
+  for(const g of [360, 375, 390]){
+    const tp = await b.newPage({ viewport:{ width:g, height:900 } });
+    const tpHata = [];
+    tp.on('pageerror', e=> tpHata.push(String(e.message)));
+    await tp.addInitScript(()=>{ try{ localStorage.setItem('demo_seen_intro','1');
+                                      localStorage.setItem('demo_tour_done','1'); }catch(e){} });
+    await tp.route('**/goatcounter**', r=> r.abort());
+    await tp.goto(SUNUCU + '/app.html', { waitUntil:'domcontentloaded' });
+    await tp.waitForTimeout(1600);
+    const o = await tp.evaluate(async ()=>{
+      document.querySelectorAll('.overlay.open').forEach(x=> x.classList.remove('open'));
+      setLanguage('tr');
+      projects = [{ id:'p1', name:'DENEME', type:'vlog', steps:{}, createdAt:Date.now() },
+                  { id:'p2', name:'SÜLEYMANİYE CAMİİ ÇOK UZUN AD', type:'venue', steps:{}, createdAt:Date.now() }];
+      const uzun = 'Zemindeki boşluk. İzleyici yorumda tarif etti: giriş kapısının '
+        + 'karşısı, ortadaki büyük avizeye varmadan, halının altı. Gözle değil '
+        + 'ayakla bulunuyor: yere vurunca boşluğun sesi farklı çıkıyor.';
+      fikirler = [
+        { id:'f1', text:'TEST', parts:[{ id:'a1', text:'TEST' }], sort:1, createdAt:Date.now() },
+        { id:'f2', text:'Orta boy', parts:[{ id:'a2', text:'Orta boy' }],
+          projectIds:['p1'], sort:2, createdAt:Date.now() },
+        { id:'f3', text:uzun, parts:[{ id:'a3', text:uzun }],
+          projectIds:['p2'], sort:3, createdAt:Date.now() },
+        { id:'f4', text:'Dörtlü', parts:[{ id:'a4', text:'Dörtlü' }],
+          projectIds:['p1','p2'], sort:4, createdAt:Date.now() }
+      ];
+      fikirGorunumu = 'kart';
+      setPage('ideas'); renderFikirler();
+      await new Promise(z=> setTimeout(z, 450));
+      const kartlar = [...document.querySelectorAll('.fk-grid .fk-card:not(.fk-add)')];
+      return {
+        yuk: kartlar.map(k=> Math.round(k.getBoundingClientRect().height)),
+        cipSatiri: kartlar.map(k=>{
+          const c = [...k.querySelectorAll('.fk-proj-chip')].filter(e=> e.offsetParent !== null);
+          return c.length ? [...new Set(c.map(e=> Math.round(e.getBoundingClientRect().top)))].length : 0;
+        }),
+        gorunenCip: kartlar.map(k=>
+          [...k.querySelectorAll('.fk-proj-chip.bagli')].filter(e=> e.offsetParent !== null).length),
+        artiDugme: kartlar.map(k=>{
+          const a2 = k.querySelector('.fk-proj-ac');
+          return !!(a2 && a2.offsetParent !== null); }),
+        tasma: document.documentElement.scrollWidth - window.innerWidth
+      };
+    });
+    dene(g + 'px: dört kart da çizildi (ölçüm boşa düşmüyor)', ()=>{
+      assert.strictEqual(o.yuk.length, 4, JSON.stringify(o));
+    });
+    dene('⛔ ' + g + 'px: TELEFONDA kartlar aynı yükseklikte', ()=>{
+      const fark = Math.max(...o.yuk) - Math.min(...o.yuk);
+      // ⚠ 2 PIKSEL PAYI BILEREK: bagli cipin icindeki "×" dugmesi
+      //   13 punto, cip yazisi 10,5 punto; aradaki 1 piksel oradan
+      //   geliyor ve gozle gorunmuyor. Kullanicinin sikayet ettigi
+      //   fark 27-56 pikseldi.
+      assert.ok(fark <= 2, fark + ' px fark: ' + JSON.stringify(o.yuk));
+    });
+    dene('⛔ ' + g + 'px: çip satırı İKİNCİ satıra taşmıyor', ()=>{
+      assert.deepStrictEqual(o.cipSatiri.filter(x=> x > 1), [],
+        'satır sayıları: ' + JSON.stringify(o.cipSatiri));
+    });
+    dene('⛔ ' + g + 'px: çok projeli kartta YALNIZCA bir çip + "+N"', ()=>{
+      assert.strictEqual(o.gorunenCip[3], 1, JSON.stringify(o.gorunenCip));
+      assert.strictEqual(o.artiDugme[3], true, JSON.stringify(o.artiDugme));
+    });
+    dene('⛔ ' + g + 'px: tek projeli kartta "+N" düğmesi YOK', ()=>{
+      assert.strictEqual(o.artiDugme[1], false, JSON.stringify(o.artiDugme));
+    });
+    dene(g + 'px: sayfa yatay taşmıyor', ()=>{
+      assert.ok(o.tasma <= 0, 'taşma ' + o.tasma + ' px');
+    });
+    dene(g + 'px: JS hatası yok', ()=>{
+      assert.deepStrictEqual(tpHata, [], tpHata.join(' | '));
+    });
+    await tp.close();
+  }
+
   dene('sayfa hatasi yok', ()=>{
     assert.deepStrictEqual(jsHata, [], jsHata.join(' | '));
   });

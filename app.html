@@ -2016,6 +2016,32 @@ textarea.sc-ai-brief{min-height:64px;resize:vertical;line-height:1.5;}
    girmiyor. */
 .fk-grid.fk-liste .fk-proj-kutu:not(.acik) .fk-proj-chip.bagli ~ .fk-proj-chip.bagli{
   display:none;}
+/* ⛔ 21 KASIM 2026 (YAPILACAKLAR 74c) — AYNI KALIP TELEFONDA DA.
+   Kullanici 21 Kasim 2026'da sordu ve "ayni '+N' kalibini telefona
+   da uygula" dedi.
+   ⚠ SEBEBI OLCULDU: telefonda kartlarin yuksekligi birbirini
+     tutmuyordu ve tek sebep PROJE CIPLERIYDI -- 360 pikselde bir
+     cipli kart 220, iki cipli 247, uc cipli 276 piksel. Cipler alt
+     alta diziliyor ve her biri ~27 piksel ekliyor. Izgara tek
+     sutun oldugu icin kartlar birbirini esitleyemiyor.
+   ⚠ 19 Kasim 2026'daki istek ("hepsi ayni yukseklikte olsun")
+     telefonda bu yuzden saglanmiyordu.
+   ⛔ KALIP YENIDEN YAZILMADI: liste gorunumundeki ayni iki kural
+     dar ekrana da aciliyor. Ucuncu bir yol olsaydi biri degisince
+     oteki sessizce ayrisirdi. */
+@media(max-width:560px){
+  .fk-proj-ac{display:inline-block;}
+  .fk-proj-kutu:not(.acik) .fk-proj-chip.bagli ~ .fk-proj-chip.bagli{
+    display:none;}
+  /* ⛔ CIP SATIRI IKINCI SATIRA TASMIYOR. Yalnizca ciplerin SAYISINI
+     azaltmak yetmedi -- olculdu: uzun bir proje adi ("SULEYMANIYE
+     CAMII") ya da "+2" dugmesi satira sigmayinca kutu yine iki
+     satira cikiyordu (24 -> 51 piksel) ve kartlar yine esitsizdi.
+     ⚠ Ad zaten "…" ile kisaliyor (`.fk-proj-ad` ve `.fk-proj-chip`
+       ikisinde de `text-overflow:ellipsis` var); eksik olan tek sey
+       sarmamasiydi. */
+  .fk-proj-kutu{flex-wrap:nowrap;}
+}
 .fk-proj-chip.ekle.bos{flex:1;}
 .fk-secili{display:flex;flex-wrap:wrap;gap:6px;margin:-6px 0 14px;}
 .fk-secili .fk-cip{display:inline-flex;align-items:center;gap:6px;font-size:12px;
