@@ -2868,6 +2868,83 @@ dokunmak ve ikinci seferde birincisini bozmak demek.
   güncelle (20 Kasım'da bir test "internetin olmamasına" dayanarak
   yanlış sebeple yeşil bulunmuştu).
 
+  ---
+
+  ### 73a · TASARIM BRİFİNE GELEN CEVAP (21 Kasım 2026)
+
+  Kullanıcının isteğiyle **başka bir sohbet** (araştırma oturumu)
+  `MARKA.md` ve tasarım brifini okudu ve on maddelik bir rapor
+  gönderdi. Kullanıcının kendi sözü oradaki çıkış noktası:
+
+  > *"bazı sayfalarda bazı alanların fontları birbirinden farklı,
+  > bazılarının okunması zor."*
+
+  ⛔ **AŞAĞIDAKİ SAYILAR BU OTURUMDA DOĞRULANMADI.** Bölüm 4'ün
+  gereği: başka bir oturumun ölçümü benim ölçümüm değildir. Her
+  madde uygulanmadan önce **buradan yeniden ölçülecek.** Rapor
+  ölçüm yöntemini yazmış (origin/main 381e770'in geçici kopyası,
+  1366×800 ve 375×812, hesaplanan boyut/yazı tipi/kontrast
+  tarayıcıdan okunmuş) — ama depoda doğrulanmadı.
+
+  ⚠ **YENİ YÖN, YENİ RENK, YENİ KÜTÜPHANE ÖNERİSİ YOK.** Rapor
+  kullanıcının dar kapsamına uymuş: yalnızca yazı boyutu, yazı tipi
+  tutarlılığı, kontrast ve dokunma hedefi.
+
+  **Rapordaki on madde (önem sırasıyla, raporun kendi sırası):**
+
+  | # | Konu | Özü |
+  |---|---|---|
+  | 1 | Takvim · Tablo görünümü | 10px ve 9px yazılar → en az 11px; geçmiş gün etiketleri `--text-dim` |
+  | 2 | Kayıt ve mekân penceresi | "Kopyala"/"AI ile yaz" 10px Mono → 12px Sans; uzun parantezli etiketler alanın altına; textarea 12px Mono → 13px Sans |
+  | 3 | **Yazı tipi kuralı** | Aynı veri her yerde aynı yazı tipi: saat/tarih/sayaç/kod = Mono, ad/başlık/düğme = Sans |
+  | 4 | Alt sınır | 11px altında yazı olmasın |
+  | 5 | Telefonda dokunma hedefleri | Ölçtüğü 10 yer 44px'in altında |
+  | 6 | İki yerde kontrast eşiğin altında | `.pfilt.bos`, `.pn-meta` |
+  | 7 | Büyük harfli küçük etiketler altı ayrı biçimde | İki biçime indir |
+  | 8 | Boyut kademelerini azalt | 26 kademe → 7 kademe; yarım pikselleri kaldır |
+  | 9 | Sayfa girişleri birbirine benzemiyor | Açıklama her sayfada 13px, en fazla iki satır |
+  | 10 | Küçük notlar | Aşağıda ayrıca |
+
+  ⛔ **RAPORUN EN DEĞERLİ BULGUSU — YÜKLENMEYEN YAZI TİPİ.** Sayfa
+  yalnızca **IBM Plex Sans** ve **IBM Plex Mono** yüklüyor, ama şu
+  kurallar `'JetBrains Mono'` istiyor: `.fbadge`, `.lcount`,
+  `.ai-test-liste .tm-ad`, `.ai-durum .ai-durum-key`,
+  `.cloud-err-detail` ve tür çizimlerindeki üç SVG `text`; `.bg-ne`
+  ise `ui-monospace` istiyor. Yani o yerler **her cihazda o cihazın
+  kendi yazısına düşüyor** — "fontlar farklı" izleniminin
+  ölçülebilir kaynağı bu olabilir. ⚠ **Bu madde kendi başına ve
+  düzeni bozmadan düzeltilebilir görünüyor; önce doğrulanacak.**
+
+  **Raporun küçük notları (hepsi doğrulanacak):**
+
+  - Türkçe arayüzde, giriş yapılmamışken `.auth-etiket` "Sign in"
+    yazıyor (yerel kopyada görülmüş, canlıda doğrulanmamış).
+    ⚠ **Bu bir görünüm işi değil, Bölüm 7 hatası olabilir** —
+    doğrulanırsa 73'ün değil, kendi maddesinin konusu.
+  - Scriptler sayfasında düğme "+ Yeniscript" gibi bitişik görünüyor.
+  - `.cal-range` ("Kasım 2026") PC'de 13px Mono ve soluk; telefonda
+    aynı bilgi 17px kalın Sans.
+  - 360 pikselde iki kesilme: Projeler'de "Yayın Paketi" sütun adı,
+    Hafta görünümünde bir `.hg-dow`. 390'da yok.
+
+  **Raporun kendi söylediği ölçülmeyenler:** Şablonlar ve Scriptler
+  listesinin dolu hâli; telefonda yalnızca kayıt penceresi denenmiş;
+  **hangi testlerin düşeceği buradan görülemiyor.**
+
+  ⛔ **SIRA — DÜZEN TESTLERİNE GÖRE.** Raporun 8. maddesi (boyut
+  kademeleri) düzen testlerini en çok etkileyecek olan; raporun
+  kendisi de "en sona, tek seferde" diyor. Bu oturumun ön okuması
+  (ölçülmedi, **uygulamadan önce ölçülecek**): yazı tipi ailesi
+  (3) ve kontrast (6) düzeni değiştirmediği için testleri en az
+  etkileyecek olanlar; dokunma hedefi (5) ve boyut kademeleri (8)
+  en çok etkileyecekler.
+
+  ⬜ **KULLANICIYA SORULACAK (raporun 9. maddesi):** sayfa başlığı
+  eklemek **yeni bir öge**. Bugün Bugün sayfasında 24px başlık var,
+  Fikirler'de hiç yok, Mekânlar ve Projeler doğrudan arama kutusuyla
+  başlıyor. Her sayfaya başlık eklenecek mi, yoksa bugünkü gibi
+  kalsın mı? ⛔ Kendi başına eklenmeyecek.
+
 - ⬜ **71. TÜM CİHAZ TESTİ — GELİŞTİRMELER BİTİNCE.**
   Kullanıcı 20 Kasım 2026'da söyledi:
 
