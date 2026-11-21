@@ -2962,10 +2962,19 @@ dokunmak ve ikinci seferde birincisini bozmak demek.
   (`@media(max-width:560px)`) ve yükseklikler **199 · 229 · 229 ·
   229** çıkıyor. ⛔ **CLAUDE.md Bölüm 8:** kullanıcı bu maddeyi
   bilgisayardan bakarak yazdı; telefonda "liste satırı" diye bir şey
-  **yok**. Karar gerekiyor: telefonda da liste mi olsun (dar ekranda
-  yedi öge yan yana sığmıyor — 19 Kasım'da bilerek ızgaraya
-  düşürülmüştü), yoksa madde "yalnızca geniş ekranda geçerli" diye mi
-  yazılsın?
+  **yok**.
+
+  ✅ **SORULDU VE KARAR VERİLDİ (21 Kasım 2026, kullanıcı):
+  telefonda bugünkü gibi kalsın.** Dar ekranda kart düzeni duruyor;
+  19 Kasım'daki karar (yedi öge yan yana sığmıyor) geçerliliğini
+  koruyor.
+  ⛔ **74a ve 74b YALNIZCA GENİŞ EKRANDA GEÇERLİ** — liste görünümü
+  zaten yalnızca orada var.
+  ⚠ **AMA TELEFON BU MADDEDEN TAMAMEN ÇIKMIYOR:** 390 pikselde
+  kartların kendi arasında da yükseklik eşit değil (199 · 229 · 229
+  · 229). Bu ızgaranın germesiyle ilgili ayrı bir iş; 74 yapılırken
+  **ölçülüp düzeltilecek**, çünkü kullanıcının şikâyetinin aynısı
+  orada da geçerli.
 
   ✅ **KULLANICININ DEDİĞİ KALIP ZATEN VAR.** *"diğer kutu ve
   satırlarda yaptığımız gibi"* = mekân kartlarındaki `.mk-foy`:
