@@ -3308,28 +3308,79 @@ dokunmak ve ikinci seferde birincisini bozmak demek.
   ⛔ **Bu madde artık "ölçülecek" değil, "karar bekliyor".** Ölçüm
   yapıldı ve yukarıda duruyor; yeniden ölçmeye gerek yok.
 
-- ⬜ **76. ⛔ TELEFONDA "KAYDET" ALT MENÜNÜN ALTINDA KALIYOR — HATA.**
-  Başka bir oturumun kullanıcı deneyimi raporundan geldi
-  (21 Kasım 2026); **bu oturumda yeniden ölçüldü ve doğrulandı.**
+- ✅ **76. TELEFONDA "KAYDET" ALT MENÜNÜN ALTINDA KALIYORDU —
+  DÜZELTİLDİ (21 Kasım 2026).** Başka bir oturumun kullanıcı
+  deneyimi raporundan geldi; bu oturumda ölçülerek doğrulandı ve
+  kapatıldı. Kullanıcının kararı: *"Şerit alt menünün üstünde
+  bitsin"* — düğmeler yerlerini korudu.
 
-  | Ne | Yeri (375 × 812) |
+  **ÖNCESİ (375 × 812, ölçüldü):**
+
+  | Ne | Yeri |
   |---|---|
   | "Kaydet" düğmesi (`#saveBtn`) | 750 – 798 |
-  | Alt menü şeridi (`.rail-nav`) | 754 – 806 |
+  | Alt menü (`.alt-serit`, `position:fixed`) | 754 – 806 |
   | Düğmenin **tam ortasına** basınca gelen öğe | **`BUTTON.tab`** (alt menü sekmesi) |
 
-  ⛔ **Yani düğme göründüğü yerde basılamıyor.** Ölçüm kutu okumakla
-  değil `elementFromPoint` ile yapıldı — gerçek dokunma noktası
-  alt menüye gidiyor. Kullanıcı kaydı ancak formun **en altına**
-  kadar kaydırırsa Kaydet'e ulaşabiliyor (form 1402 piksel).
-  ⚠ **Bu bir görünüm işi değil, işi engelleyen bir hata.** 73'ün
-  değil kendi maddesinin konusu.
-  ⚠ Playwright gerçek bir telefon değil (Bölüm 8); düzeltmeden önce
-  gerçek cihazda da bakılmalı, ama ölçüm zaten yeterince açık.
+  **SONRASI (360 · 375 · 390, üçünde de aynı):** düğme 673–721,
+  menü 735–800, çakışma **0**, düğmenin tam ortasına basınca gelen
+  öğe **düğmenin kendisi**, yüksekliği 48 piksel (44 tabanının
+  üzerinde). Açılış halinde ve sayfa **en dibe** kaydırılmışken
+  ayrı ayrı ölçüldü.
 
-  ⬜ **ÖNERİLEN YÖN (kullanıcı onayı bekliyor):** düğme şeridi alt
-  menünün **üstünde** bitsin. Rapor tek satır öneriyor: solda Sil,
-  sağda Vazgeç + Kaydet.
+  **SEBEP.** Şerit `position:sticky; bottom:0`, alt menü ise
+  `position:fixed; bottom:0` — ikisi aynı yere oturuyor.
+  ⛔ **SABİT PİKSEL YAZILMADI:** menünün boyu içeriğine ve yazı
+  tipine göre değişiyor. Yüksekliği JS ölçüp `--alt-serit-h`
+  değişkenine yazıyor, CSS onu okuyor.
+
+  ⛔ **İKİ YANLIŞ DENEME — İKİSİNİ DE ÖLÇÜM YAKALADI:**
+  1. İlk sürüm menünün görünürlüğünü `offsetParent` ile sınadı.
+     O, `position:fixed` öğelerde **`null` dönüyor** — menü
+     "görünmüyor" sayılıp değişkene 0 yazıldı, düzeltme hiç
+     çalışmadı. Yerine `display` + gerçek yükseklik okunuyor.
+  2. İkinci sürüm kuralı doğru yazdı ama **yanlış yere** koydu:
+     aynı medya bloğunun başına. Bloğun **ilerisinde** duran
+     `.modal .modal-actions{bottom:0}` aynı özgüllükte (0,2,0)
+     olduğu için onu eziyordu; değişken 65px'ti ama şeridin
+     `bottom` değeri 0px kalıyordu. Kural şimdi o kuralın
+     **arkasında** ve özgüllüğü da yüksek (0,3,0).
+
+  ⛔ **KAPSAM ÖLÇÜMLE DARALDI — ÇOK ÖNEMLİ.** Arayışta 17 pencerenin
+  şeridi `sticky` çıktı ve bir ara hepsi kaldırılmıştı. Olmaz:
+  gerçek pencereler (`.overlay`, z-index **50**) alt menünün
+  **üstünde** duruyor — menü perdenin arkasında kalıyor, orada
+  şeridi kaldırmak dipte 65 piksel **boş bant** açardı. (Ölçüm:
+  menünün tam ortasına basınca `importOverlay`/`authOverlay`
+  `DIV.modal` dönüyor; `scriptOverlay` `BUTTON.tab`.) Kaldırılan
+  yalnız z-index'i `auto` olan, yani menünün **altında** kalan
+  **dört** sayfa: kayıt, proje, script ve çekim listesi.
+  ⚠ safe-area payı da yalnız onlarda kaldırıldı: pay menünün
+  kendi dolgusunda ve şerit onun **üstüne** oturuyor; ikinci kez
+  eklemek notch'lu telefonda şeridi boşuna ~34 piksel uzatıyordu.
+  Dipte kalan pencerelerde pay **duruyor**.
+
+  ✅ **BEKÇİ: `testler/serit-alt-menu.test.js` (104 iddia).**
+  ⛔ **Sayfa listesi tutmuyor** — hangi şeridin kaldırılması
+  gerektiğini **z-index yığınından** buluyor (Bölüm 7/8'in
+  "listeyi elle yazmayan bekçi" kuralı). Yeni bir pencere ya da
+  sayfa eklenince kendiliğinden ölçülüyor.
+  ⚠ **Bekçi bir sayfayı ben atladığım için buldu:** `cekimListesiAc`
+  çekim listesi bölümünü çalışma anında proje sayfasının içine
+  **taşıyor**; elle yazılmış bir liste onu kaçırırdı. (Test o
+  yüzden taramayı pencereleri açtıktan **sonra** yapıyor.)
+  ✅ **Mutasyon sınandı:** `bottom:0`'a dönmek (27 iddia düştü),
+  `offsetParent` tuzağını geri koymak (30), değişkeni hiç
+  yazmamak (30), kuralı bütün pencerelere genişletmek (3) ve
+  dolguyu 48px yapmak (3) — **hepsi yakalandı.**
+  ⚠ **Yakalanamayan bir şey var, yazılıyor:** `padding-bottom:14px`
+  satırının **tamamen silinmesi.** Playwright'ta
+  `env(safe-area-inset-bottom)` sıfır çözülüyor, yani iki hal aynı
+  sonucu veriyor. Notch'lu telefondaki fazlalık ancak gerçek
+  cihazda görünür (71. madde).
+  ⚠ Playwright gerçek bir telefon değil (Bölüm 8): dokunma
+  **noktası** `elementFromPoint` ile ölçülüyor, kutu okunmuyor —
+  ama son sözü 71. maddedeki gerçek cihaz geçişi söyleyecek.
 
 - ⬜ **77. ⛔ KAYDEDİLMEMİŞ DEĞİŞİKLİK UYARISIZ KAYBOLUYOR.**
   Aynı rapordan; **bu oturumda doğrulandı — ama farklı bir kanıtla.**

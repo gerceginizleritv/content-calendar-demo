@@ -4450,6 +4450,44 @@ textarea.sc-ai-brief{min-height:64px;resize:vertical;line-height:1.5;}
     flex-wrap:wrap;
   }
   .modal .modal-actions .btn{flex:1 1 auto;min-height:48px;}
+  /* ⛔ 21 KASIM 2026 (YAPILACAKLAR 76) — "KAYDET" ALT MENUNUN
+     ALTINDA KALIYORDU. Olculdu (375x812): Kaydet 750-798, alt serit
+     754-806, ve dugmenin TAM ORTASINA basinca `elementFromPoint`
+     `BUTTON.tab` donuyordu -- dokunus alt menuye gidiyordu. Kullanici
+     ancak formun en altina (1402 px) kadar kaydirirsa ulasabiliyordu.
+     ⚠ SEBEP: serit `sticky;bottom:0`, `.alt-serit` ise
+       `fixed;bottom:0` -- ikisi ayni yere oturuyor.
+     ⛔ YALNIZCA BU UC SAYFA. Olculdu: gercek pencereler
+       (`.overlay`, z-index 50) alt menunun USTUNDE duruyor -- menu
+       perdenin arkasinda kaliyor, seridi kaldirmak orada 65 piksel
+       BOS BANT acardi. Bu uc sayfanin z-index'i `auto`, yani menu
+       onlarin USTUNDE paint ediliyor; ortulen yalniz onlar.
+       (Olcum: menunun tam ortasina basinca importOverlay/authOverlay
+       `DIV.modal` donuyor, scriptOverlay `BUTTON.tab`.)
+     ⛔ KURAL NEDEN BURADA, YUKARIDA DEGIL: ilk deneme ayni medya
+       blogunun basina `.kayit-sayfasi .modal-actions` diye
+       yazilmisti ve HIC ISLEMEDI -- yukarideki `.modal
+       .modal-actions` daha SONRA geliyor ve ozgulluk de ayni
+       (0,2,0), onu eziyordu. Olculdu: degisken 65px'ti ama seridin
+       `bottom` degeri 0px kaliyordu. Simdi hem sonra geliyor hem
+       ozgullugu yuksek (0,3,0).
+     ⛔ SABIT PIKSEL YAZILMADI: menunun boyu icerigine gore
+       degisiyor (yukaridaki not bunu soyluyor: "her yazi tipi
+       degisikliginde kayardi"). Yukseklik OLCULUP `--alt-serit-h`
+       degiskenine yaziliyor; burasi onu okuyor.
+     ⚠ safe-area PAYI BURADA KALKIYOR: pay `.alt-serit`in kendi
+       dolgusunda (`6px + env(safe-area-inset-bottom)`) ve serit
+       onun USTUNE oturuyor; ikinci kez eklemek notch'lu telefonda
+       seridi bosuna ~34px uzatiyordu. Gercek pencerelerde
+       (yukaridaki kural) pay DURUYOR: onlar hala en dipte.
+     Bekci: testler/serit-alt-menu.test.js -- sayfa listesi elle
+     yazilmiyor, z-index yiginindan bulunuyor. */
+  .kayit-sayfasi .modal .modal-actions,
+  .proje-sayfasi .modal .modal-actions,
+  .script-sayfasi .modal .modal-actions{
+    bottom:var(--alt-serit-h, 0px);
+    padding-bottom:14px;
+  }
   /* Diyalog kucuk: yapisik serit ve cizgi gereksiz. */
   #dlgOverlay .modal{padding-bottom:18px;}
   #dlgOverlay .modal-actions{position:static;margin:16px 0 0;padding:0;border-top:0;background:transparent;}
@@ -17843,6 +17881,38 @@ const SAYFALAR = [
 //    ⛔ COZUM: tazeleme bir HAZIRLIK BAYRAGINA bagli. Acilista
 //      sessizce atlaniyor; betigin sonunda bayrak aciliyor ve ayarlar
 //      sayfasi o an acikken tazeleme bir kez kendisi kosuyor.
+// ⛔ 21 KASIM 2026 (YAPILACAKLAR 76) — ALT SERIDIN YUKSEKLIGI.
+//    Telefonda `.alt-serit` ekranin altina SABITLENMIS duruyor;
+//    kayit/proje/script sayfalarinin dugme seridi de `sticky;
+//    bottom:0` ile ayni yere oturuyordu ve altinda kaliyordu.
+//    ⚠ SAYI ELLE YAZILAMAZ: seridin boyu icerigine ve yazi tipine
+//      gore degisiyor. Olculup degiskene yaziliyor, CSS onu okuyor.
+//    ⚠ Serit GORUNMUYORSA sifir yaziliyor: genis ekranda dugme
+//      seridi oldugu yerde kalsin.
+function altSeritYuksekligi(){
+  try{
+    const sr = document.querySelector('.alt-serit');
+    // ⛔ `offsetParent` KULLANILMIYOR: `position:fixed` ogelerde
+    //    tarayicilarin cogunda NULL doner. Ilk surumde oyle yazildi
+    //    ve serit "gorunmuyor" sayilip degiskene 0 yazildi -- yani
+    //    duzeltme hic calismadi. Olcum yakaladi.
+    const gorunur = !!sr && getComputedStyle(sr).display !== 'none'
+      && sr.getBoundingClientRect().height > 0;
+    const h = gorunur ? Math.ceil(sr.getBoundingClientRect().height) : 0;
+    document.documentElement.style.setProperty('--alt-serit-h', h + 'px');
+  }catch(e){ /* olcum basarisizsa degisken 0 kalir, bugunku davranis */ }
+}
+// Serit yeniden cizildiginde, ekran dondugunde ve genislik
+// degistiginde yeniden olculuyor.
+try{
+  const sr0 = document.querySelector('.alt-serit');
+  if(sr0 && typeof ResizeObserver === 'function'){
+    new ResizeObserver(()=> altSeritYuksekligi()).observe(sr0);
+  }
+}catch(e){}
+window.addEventListener('resize', altSeritYuksekligi);
+window.addEventListener('orientationchange', altSeritYuksekligi);
+
 let ayarlarHazir = false;
 function ayarSayfasiTazele(){
   if(!ayarlarHazir) return;     // acilis: degiskenler henuz hazir degil
@@ -29149,6 +29219,8 @@ if(turuGordu){
 //    (yukaridaki `ayarlarHazir` notuna bak). Uygulama ayarlar
 //    sayfasindan acildiysa tazeleme burada bir kez kosuyor.
 ayarlarHazir = true;
+// 76: serit cizildikten sonra ilk olcum.
+altSeritYuksekligi();
 try{
   const ap = document.getElementById('ayarlarPage');
   if(ap && !ap.hidden) ayarSayfasiTazele();
