@@ -2723,6 +2723,45 @@ dokunmak ve ikinci seferde birincisini bozmak demek.
   70'teki gibi ölçülecek (kaydır, başlık görünür mü), sonra
   yazılacak.
 
+- ⬜ **73. GÖRÜNÜM TOPARLAMA — GELİŞTİRMELER BİTİNCE.**
+  Kullanıcı 21 Kasım 2026'da istedi:
+
+  > *"benim yapmak istediğim index.html de bir değişiklik değil. app
+  > içerisinde bir miktar sadece görünümü toparlamak (özellikler ile
+  > ilgili bir değişiklik değil)"* … *"belki tüm geliştirmeler bitince
+  > bazı font değişiklikleri, bazı satırların yerinin değişmesi gibi"*
+
+  ⛔ **KAPSAM DAR VE NET:** yalnızca `app.html` **içi**. Tanıtım
+  sitesine (`index.html`, `kaynak/`) **dokunulmuyor** — kullanıcı bunu
+  açıkça ayırdı. Özellik değişikliği de yok; yalnızca görünüm.
+
+  ⚠ **"DAĞINIK OLDUĞU İÇİN" DEĞİL.** 21 Kasım 2026'da ölçüldü ve
+  dağınık **çıkmadı** — kullanıcının kendi değerlendirmesi doğruydu:
+
+  | Ne | Ölçüm |
+  |---|---|
+  | Token dışı renk | 3 satır (üçü de meşru) |
+  | Köşe yarıçapı | 211 yerde 2px, 3 yerde 3px |
+  | Tek değerli padding | 13 çeşit |
+  | Yazı boyutu | 437 bildirim, 26 kademe — tutarlı kullanılmış |
+
+  ⛔ **O ÖLÇÜMDEN ÖNCE ÜÇ SAYI YANLIŞ BİLDİRİLDİ** ("142 farklı
+  padding", "67 token dışı renk", "dağınık"). Üçü de izlenimle
+  yazılmıştı ve ölçüm çürüttü. Bu maddeye başlarken **önce ölç**
+  (Bölüm 4), "nasıl olsa dağınıktır" diye başlama.
+
+  ⚠ **SIRASI: 71. MADDEYLE BİRLİKTE.** İkisi de "geliştirmeler
+  bitince" yapılacak; görünüm ve cihaz geçişi aynı turda yapılırsa
+  ekranlar bir kez elden geçer. 2b bölümündeki tasarım maddeleri
+  (43-48) bunun kardeşi — bu madde onların yerine geçmiyor, yanında
+  duruyor: orası tasarım kararları, burası son rötuş.
+
+  ⚠ **Bekçi testler kapı olacak.** 241 test düzeni ölçüyor; yazı
+  boyutu ve satır yeri değişiklikleri onları düşürebilir. ⛔ Düşen
+  testi zayıflatma — ya düzeni düzelt ya iddiayı doğru sebeple
+  güncelle (20 Kasım'da bir test "internetin olmamasına" dayanarak
+  yanlış sebeple yeşil bulunmuştu).
+
 - ⬜ **71. TÜM CİHAZ TESTİ — GELİŞTİRMELER BİTİNCE.**
   Kullanıcı 20 Kasım 2026'da söyledi:
 
